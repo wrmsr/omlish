@@ -1,4 +1,4 @@
-# ruff: noqa: N802
+# ruff: noqa: N802 N815
 import ast
 import typing as ta
 
@@ -13,7 +13,7 @@ MAGIC_VARS: ta.Mapping[str, ta.AbstractSet[str]] = {
 
 
 def is_magic_var(name: str) -> bool:
-    return any(name in vars for vars in MAGIC_VARS.values())
+    return any(name in names for names in MAGIC_VARS.values())
 
 
 class NameFinder(ast.NodeVisitor):

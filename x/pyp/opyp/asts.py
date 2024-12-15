@@ -1,4 +1,5 @@
 import ast
+import typing as ta
 
 
 def dfs_walk(node: ast.AST) -> ta.Iterator[ast.AST]:

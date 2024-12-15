@@ -12,6 +12,7 @@ from .errors import PypError
 from .names import MAGIC_VARS
 from .names import NameFinder
 from .names import is_magic_var
+from .print import pypprint
 
 
 class PypTransform:
@@ -278,11 +279,13 @@ class PypTransform:
             return getattr(mod, '__all__', (n for n in dir(mod) if not n.startswith('_')))
 
         subimports = {'Path': 'pathlib', 'pp': 'pprint'}
-        wildcard_imports = (
-            ['itertools', 'math', 'collections']
-            + self.config.wildcard_imports
-            + self.wildcard_imports
-        )
+        wildcard_imports = [
+            'itertools',
+            'math',
+            'collections',
+            *self.config.wildcard_imports,
+            *self.wildcard_imports,
+        ]
         subimports.update({name: module for module in wildcard_imports for name in get_names_in_module(module)})
 
         def get_import_for_name(name: str) -> str:

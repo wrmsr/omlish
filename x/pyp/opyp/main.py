@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # ruff: noqa: N802
 """
 https://github.com/hauntsaninja/pyp/tree/5af2a583fcac2e0f57272ee2112eb76cb0449191
@@ -55,14 +54,14 @@ def run_pyp(args: argparse.Namespace) -> None:
             for fs in tb_except.stack:
                 if fs.filename == '<pyp>':
                     if fs.lineno is None:
-                        raise RuntimeError('When would this happen?')
+                        raise RuntimeError('When would this happen?')  # noqa
 
                     if sys.version_info >= (3, 13):
-                        fs._lines = code_for_line(fs.lineno)  # type: ignore[attr-defined]
+                        fs._lines = code_for_line(fs.lineno)  # type: ignore[attr-defined]  # noqa
                         fs.colno = None
                         fs.lineno = 'PYP_REDACTED'  # type: ignore[assignment]
                     else:
-                        fs._line = code_for_line(fs.lineno)  # type: ignore[attr-defined]
+                        fs._line = code_for_line(fs.lineno)  # type: ignore[attr-defined]  # noqa
                         fs.lineno = 'PYP_REDACTED'  # type: ignore[assignment]
 
             tb_format = tb_except.format()
