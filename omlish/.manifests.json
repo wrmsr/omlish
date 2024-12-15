@@ -32,7 +32,7 @@
       "$.codecs.base.LazyLoadedCodec": {
         "mod_name": "omlish.formats.cbor",
         "attr_name": "CBOR_CODEC",
-        "name": "cbor2",
+        "name": "cbor",
         "aliases": null
       }
     }

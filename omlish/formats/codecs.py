@@ -4,11 +4,34 @@ from .. import codecs
 from .. import reflect as rfl
 
 
+ObjectCodecT = ta.TypeVar('ObjectCodecT', bound='ObjectCodec')
+
+
 ##
 
 
 class ObjectCodec(codecs.Codec):
     pass
+
+
+def make_object_codec(
+        cls: type[ObjectCodecT],
+        name: str,
+        dumps: ta.Callable,
+        loads: ta.Callable,
+        *,
+        input: rfl.Type = rfl.type_(ta.Any),  # noqa
+        aliases: ta.Collection[str] | None = None,
+) -> ObjectCodecT:
+    return cls(
+        name=name,
+        aliases=aliases,
+
+        input=input,
+        output=bytes,
+
+        new=lambda: codecs.FnPairEagerCodec.of(dumps, loads),
+    )
 
 
 ##
@@ -22,17 +45,14 @@ def make_bytes_object_codec(
         name: str,
         dumps: ta.Callable[[ta.Any], bytes],
         loads: ta.Callable[[bytes], ta.Any],
-        *,
-        aliases: ta.Collection[str] | None = None,
+        **kwargs: ta.Any,
 ) -> BytesObjectCodec:
-    return BytesObjectCodec(
-        name=name,
-        aliases=aliases,
-
-        input=rfl.type_(ta.Any),
-        output=bytes,
-
-        new=lambda: codecs.FnPairEagerCodec.of(dumps, loads),
+    return make_object_codec(
+        BytesObjectCodec,
+        name,
+        dumps,
+        loads,
+        **kwargs,
     )
 
 
@@ -47,17 +67,14 @@ def make_str_object_codec(
         name: str,
         dumps: ta.Callable[[ta.Any], str],
         loads: ta.Callable[[str], ta.Any],
-        *,
-        aliases: ta.Collection[str] | None = None,
+        **kwargs: ta.Any,
 ) -> StrObjectCodec:
-    return StrObjectCodec(
-        name=name,
-        aliases=aliases,
-
-        input=rfl.type_(ta.Any),
-        output=str,
-
-        new=lambda: codecs.FnPairEagerCodec.of(dumps, loads),
+    return make_object_codec(
+        StrObjectCodec,
+        name,
+        dumps,
+        loads,
+        **kwargs,
     )
 
 
