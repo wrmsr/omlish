@@ -54,7 +54,7 @@ def build_resource_lines(
         with open(rf, 'rb') as bf:
             rb = bf.read()  # noqa
 
-        out: list[Tokens] = [
+        out: list[Tokens] = [[
             trt.Token(name='NAME', src=rsrc.variable),
             trt.Token(name='UNIMPORTANT_WS', src=' '),
             trt.Token(name='OP', src='='),
@@ -64,7 +64,7 @@ def build_resource_lines(
             trt.Token(name='NAME', src='b64decode'),
             trt.Token(name='OP', src='('),
             trt.Token(name='NL', src='\n'),
-        ]
+        ]]
 
         rb64 = base64.b64encode(rb).decode('ascii')
         for chunk in itertools.batched(rb64, 96):
@@ -86,14 +86,14 @@ def build_resource_lines(
             rt = tf.read()  # noqa
         rt = rt.replace('\\', '\\\\')  # Escape backslashes
         rt = rt.replace('"""', r'\"\"\"')
-        return [
+        return [[
             trt.Token(name='NAME', src=rsrc.variable),
             trt.Token(name='UNIMPORTANT_WS', src=' '),
             trt.Token(name='OP', src='='),
             trt.Token(name='UNIMPORTANT_WS', src=' '),
             trt.Token(name='STRING', src=f'"""\\\n{rt}"""\n'),
             trt.Token(name='NEWLINE', src=''),
-        ]
+        ]]
 
     else:
         raise ValueError(rsrc.kind)
