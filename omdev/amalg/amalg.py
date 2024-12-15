@@ -25,14 +25,10 @@ Targets:
  - supervisor?
 """
 import argparse
-import ast
-import base64
 import dataclasses as dc
 import io
-import itertools
 import logging
 import os.path
-import re
 import textwrap
 import typing as ta
 
@@ -44,277 +40,24 @@ from omlish import lang
 from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 from omlish.logs import all as logs
 
-from .. import magic
 from .. import tokens as tks
-
-
-Tokens: ta.TypeAlias = tks.Tokens
+from .imports import Import
+from .imports import make_import
+from .manifests import comment_out_manifest_comment
+from .manifests import is_manifest_comment
+from .resources import build_resource_lines
+from .resources import is_root_level_resources_read
+from .strip import split_header_lines
+from .strip import strip_header_lines
+from .strip import strip_main_lines
+from .types import Tokens
+from .typing import Typing
+from .typing import is_root_level_if_type_checking_block
+from .typing import make_typing
+from .typing import skip_root_level_if_type_checking_block
 
 
 log = logging.getLogger(__name__)
-
-
-##
-
-
-HEADER_NAMES = (*tks.WS_NAMES, 'COMMENT', 'STRING')
-
-
-def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[Tokens]]:
-    ws = []
-    nws = []
-    for line in (it := iter(lines)):
-        if line[0].name in HEADER_NAMES:
-            ws.append(line)
-        else:
-            nws.append(line)
-            nws.extend(it)
-            break
-    return ws, nws
-
-
-#
-
-
-IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
-
-
-def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
-    out = []
-
-    for l in (it := iter(cls)):
-        if IF_MAIN_PAT.fullmatch(tks.join_toks(l).strip()):
-            for l in it:
-                if l[0].name not in ('INDENT', 'UNIMPORTANT_WS') and tks.join_toks(l).strip():
-                    break
-        else:
-            out.append(l)
-
-    return out
-
-
-#
-
-
-STRIPPED_HEADER_MAGICS = [
-    '@omlish-lite',
-    '@omlish-script',
-]
-
-STRIPPED_HEADER_PAT = magic.compile_magic_style_pat(
-    magic.PY_MAGIC_STYLE,
-    keys=STRIPPED_HEADER_MAGICS,
-)
-
-
-def strip_header_lines(hls: ta.Sequence[Tokens]) -> list[Tokens]:
-    if hls and tks.join_toks(hls[0]).startswith('#!'):
-        hls = hls[1:]
-    out = []
-    for l in hls:
-        ls = tks.join_toks(l)
-        if not STRIPPED_HEADER_PAT.fullmatch(ls):
-            out.append(l)
-    return out
-
-
-##
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class Import:
-    mod: str
-    item: str | None
-    as_: str | None
-
-    src_path: str
-    line: int
-
-    mod_path: str | None
-
-    toks: Tokens = dc.field(repr=False)
-
-
-def make_import(
-        lts: Tokens,
-        *,
-        src_path: str,
-        mounts: ta.Mapping[str, str],
-) -> Import | None:
-    if not lts:
-        return None
-    ft = lts[0]
-
-    if ft.name != 'NAME' or ft.src not in ('import', 'from'):
-        return None
-
-    ml = []
-    il: list[str] | None = None
-    as_ = None
-    for tok in (it := iter(tks.ignore_ws(lts[1:]))):
-        if tok.name in ('NAME', 'OP'):
-            if tok.src == 'as':
-                check.none(as_)
-                nt = next(it)
-                check.equal(nt.name, 'NAME')
-                as_ = nt.src
-            elif tok.src == 'import':
-                check.equal(ft.src, 'from')
-                il = []
-            elif il is not None:
-                il.append(tok.src)
-            else:
-                ml.append(tok.src)
-        else:
-            raise Exception(tok)
-
-    mod = ''.join(ml)
-    item = ''.join(il) if il is not None else None
-
-    if (mnt := mounts.get(mod.partition('.')[0])) is not None:
-        ps = mod.split('.')
-        mod_path = os.path.abspath(os.path.join(
-            mnt,
-            *ps[1:-1],
-            ps[-1] + '.py',
-        ))
-
-    elif not mod.startswith('.'):
-        mod_path = None
-
-    else:
-        parts = mod.split('.')
-        nd = len(parts) - parts[::-1].index('')
-        mod_path = os.path.abspath(os.path.join(
-            os.path.dirname(src_path),
-            '../' * (nd - 1),
-            *parts[nd:-1],
-            parts[-1] + '.py',
-        ))
-
-        mod = check.isinstance(mod_path, str)
-
-    return Import(
-        mod=mod,
-        item=item,
-        as_=as_,
-
-        src_path=src_path,
-        line=ft.line,
-
-        mod_path=mod_path,
-
-        toks=lts,
-    )
-
-
-##
-
-
-TYPE_ALIAS_COMMENT = '# ta.TypeAlias'
-NOQA_TYPE_ALIAS_COMMENT = TYPE_ALIAS_COMMENT + '  # noqa'
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class Typing:
-    src: str
-
-    src_path: str
-    line: int
-
-    toks: Tokens = dc.field(repr=False)
-
-
-def _is_typing(
-        lts: Tokens,
-        *,
-        exclude_newtypes: bool = False,
-) -> bool:
-    es = tks.join_toks(lts).strip()
-    if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
-        return True
-
-    wts = list(tks.ignore_ws(lts, keep=['INDENT', 'UNINDENT']))
-    if not tks.match_toks(wts, [
-        ('NAME', None),
-        ('OP', '='),
-        ('NAME', 'ta'),
-        ('OP', '.'),
-        (None, None),
-    ]):
-        return False
-
-    if exclude_newtypes:
-        if wts[4].name == 'NAME' and wts[4].src == 'NewType':
-            return False
-
-    return True
-
-
-def make_typing(
-        lts: Tokens,
-        *,
-        src_path: str,
-) -> Typing | None:
-    if not lts or lts[0].name == 'UNIMPORTANT_WS':
-        return None
-
-    if not _is_typing(lts, exclude_newtypes=True):
-        return None
-
-    ft = next(iter(tks.ignore_ws(lts)))
-    return Typing(
-        src=tks.join_toks(lts),
-
-        src_path=src_path,
-        line=ft.line,
-
-        toks=lts,
-    )
-
-
-##
-
-
-def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
-    return tks.match_toks(tks.ignore_ws(lts, keep=['INDENT']), [
-        ('NAME', 'if'),
-        ('NAME', 'ta'),
-        ('OP', '.'),
-        ('NAME', 'TYPE_CHECKING'),
-        ('OP', ':'),
-    ])
-
-
-##
-
-
-class RootLevelResourcesRead(ta.NamedTuple):
-    variable: str
-    kind: ta.Literal['binary', 'text']
-    resource: str
-
-
-def is_root_level_resources_read(lts: Tokens) -> RootLevelResourcesRead | None:
-    wts = list(tks.ignore_ws(lts, keep=['INDENT']))
-
-    if not tks.match_toks(wts, [
-        ('NAME', None),
-        ('OP', '='),
-        ('NAME', ('read_package_resource_binary', 'read_package_resource_text')),
-        ('OP', '('),
-        ('NAME', '__package__'),
-        ('OP', ','),
-        ('STRING', None),
-        ('OP', ')'),
-    ]):
-        return None
-
-    return RootLevelResourcesRead(
-        wts[0].src,
-        'binary' if wts[2].src == 'read_package_resource_binary' else 'text',
-        ast.literal_eval(wts[6].src),
-    )
 
 
 ##
@@ -378,99 +121,21 @@ def make_src_file(
         )) is not None:
             tys.append(ty)
 
-        elif (
-                line and
-                (ft := line[0]).name == 'COMMENT' and
-                ft.src.startswith('# @omlish-manifest')
-        ):
-            mls = [line]
-            while True:
-                mls.append(cls[i])
-                i += 1
-
-                msrc = tks.join_lines(mls).strip()
-                try:
-                    node = ast.parse(msrc)
-                except SyntaxError:
-                    continue
-
-                mmod = check.isinstance(node, ast.Module)
-                check.isinstance(check.single(mmod.body), ast.Assign)
-                break
-
-            ctls.extend([
-                [trt.Token('COMMENT', '# ' + tks.join_toks(ml))]
-                for ml in mls
-            ])
+        elif is_manifest_comment(line):
+            out, i = comment_out_manifest_comment(line, cls, i)
+            ctls.extend(out)
 
         elif is_root_level_if_type_checking_block(line):
-            def skip_block():
-                nonlocal i
-                while True:
-                    nl = cls[i]
-                    if nl and nl[0].name != 'INDENT':
-                        return nl
-                    i += 1
-
-            nl = skip_block()
-
-            if tks.match_toks(nl, [
-                ('DEDENT', None),
-                ('NAME', 'else'),
-            ]):
-                i += 1
-                skip_block()
+            i = skip_root_level_if_type_checking_block(cls, i)
 
         elif (rsrc := is_root_level_resources_read(line)) is not None:
-            rf = os.path.join(os.path.dirname(path), rsrc.resource)
+            ctls.extend(build_resource_lines(
+                rsrc,
+                path,
+            ))
 
             if rsrc.kind == 'binary':
-                with open(rf, 'rb') as bf:
-                    rb = bf.read()  # noqa
-
-                ctls.append([
-                    trt.Token(name='NAME', src=rsrc.variable),
-                    trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    trt.Token(name='OP', src='='),
-                    trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    trt.Token(name='NAME', src='base64'),
-                    trt.Token(name='OP', src='.'),
-                    trt.Token(name='NAME', src='b64decode'),
-                    trt.Token(name='OP', src='('),
-                    trt.Token(name='NL', src='\n'),
-                ])
-
-                rb64 = base64.b64encode(rb).decode('ascii')
-                for chunk in itertools.batched(rb64, 96):
-                    ctls.append([
-                        trt.Token(name='UNIMPORTANT_WS', src='    '),
-                        trt.Token(name='STRING', src=f"'{''.join(chunk)}'"),
-                        trt.Token(name='NL', src='\n'),
-                    ])
-
-                ctls.append([
-                    trt.Token(name='OP', src=')'),
-                    trt.Token(name='NEWLINE', src='\n'),
-                ])
-
                 has_binary_resources = True
-
-            elif rsrc.kind == 'text':
-                with open(rf) as tf:
-                    rt = tf.read()  # noqa
-                rt = rt.replace('\\', '\\\\')  # Escape backslashes
-                rt = rt.replace('"""', r'\"\"\"')
-                ctls.append([
-                    trt.Token(name='NAME', src=rsrc.variable),
-                    trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    trt.Token(name='OP', src='='),
-                    trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    trt.Token(name='STRING', src=f'"""\\\n{rt}"""\n'),
-                    trt.Token(name='NEWLINE', src=''),
-                ])
-
-            else:
-                raise ValueError(rsrc.kind)
 
         else:
             ctls.append(line)
