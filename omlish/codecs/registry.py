@@ -126,3 +126,14 @@ REGISTRY = CodecRegistry(
 
 register = REGISTRY.register
 lookup = REGISTRY.lookup
+
+
+##
+
+
+def encode(i: ta.Any, name: str, **kwargs: ta.Any) -> ta.Any:
+    return lookup(name).new(**kwargs).encode(i)
+
+
+def decode(o: ta.Any, name: str, **kwargs: ta.Any) -> ta.Any:
+    return lookup(name).new(**kwargs).decode(o)

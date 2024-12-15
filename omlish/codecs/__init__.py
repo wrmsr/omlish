@@ -32,6 +32,9 @@ from .registry import (  # noqa
     REGISTRY,
     register,
     lookup,
+
+    encode,
+    decode,
 )
 
 from .standard import (  # noqa
