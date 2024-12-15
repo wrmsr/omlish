@@ -24,6 +24,20 @@
     }
   },
   {
+    "module": ".formats.cbor",
+    "attr": "_CBOR_LAZY_CODEC",
+    "file": "omlish/formats/cbor.py",
+    "line": 30,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.cbor",
+        "attr_name": "CBOR_CODEC",
+        "name": "cbor2",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".formats.json.codecs",
     "attr": "_JSON_LAZY_CODEC",
     "file": "omlish/formats/json/codecs.py",
