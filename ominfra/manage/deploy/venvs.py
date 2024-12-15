@@ -44,9 +44,7 @@ class DeployVenvManager(DeployPathOwner):
             self,
             app_dir: str,
             venv_dir: str,
-            # spec: DeployVenvSpec,
-            *,
-            use_uv: bool = True,
+            spec: DeployVenvSpec,
     ) -> None:
         sys_exe = 'python3'
 
@@ -63,7 +61,7 @@ class DeployVenvManager(DeployPathOwner):
         reqs_txt = os.path.join(app_dir, 'requirements.txt')
 
         if os.path.isfile(reqs_txt):
-            if use_uv:
+            if spec.use_uv:
                 await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
                 pip_cmd = ['-m', 'uv', 'pip']
             else:
@@ -71,8 +69,13 @@ class DeployVenvManager(DeployPathOwner):
 
             await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
 
-    async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
+    async def setup_app_venv(
+            self,
+            app_tag: DeployAppTag,
+            spec: DeployVenvSpec,
+    ) -> None:
         await self.setup_venv(
             os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
             os.path.join(self._dir(), app_tag.app, app_tag.tag),
+            spec,
         )
