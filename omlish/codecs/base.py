@@ -52,8 +52,8 @@ class ComboCodec(  # noqa
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Codec:
-    name: str = dc.field(validate=check.non_empty_str)
-    aliases: ta.Collection[str] | None = dc.field(default=None, validate=check.of_not_isinstance(str))
+    name: str = dc.xfield(coerce=check.non_empty_str)
+    aliases: ta.Collection[str] | None = dc.xfield(default=None, coerce=check.of_not_isinstance(str))
 
     input: rfl.Type
     output: rfl.Type
