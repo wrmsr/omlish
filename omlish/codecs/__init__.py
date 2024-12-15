@@ -22,6 +22,12 @@ from .bytes import (  # noqa
     HEX,
 )
 
+from .chain import (  # noqa
+    ChainEagerCodec,
+
+    chain,
+)
+
 from .funcs import (  # noqa
     FnPairEagerCodec,
 )
