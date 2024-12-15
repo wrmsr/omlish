@@ -7,8 +7,7 @@ from omlish import check
 
 from .base import Codec
 from .base import ComboCodec
-from .registry import REGISTRY
-from .registry import CodecRegistry
+from .standard import STANDARD_CODECS
 
 
 ##
@@ -116,7 +115,6 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
 class TextEncodingCodec(Codec):
     pass
 
@@ -131,7 +129,7 @@ def make_text_encoding_codec(
         name: str,
         aliases: ta.Collection[str] | None = None,
         *,
-        registry: CodecRegistry | None = None,
+        append_to: ta.MutableSequence[Codec] | None = None,
 ) -> TextEncodingCodec:
     codec = TextEncodingCodec(
         name=check.equal(name, normalize_text_encoding_name(name)),
@@ -144,8 +142,8 @@ def make_text_encoding_codec(
         new_incremental=functools.partial(TextEncodingComboCodec.lookup, name),
     )
 
-    if registry is not None:
-        registry.register(codec)
+    if append_to is not None:
+        append_to.append(codec)
 
     return codec
 
@@ -153,14 +151,67 @@ def make_text_encoding_codec(
 ##
 
 
-ASCII = make_text_encoding_codec('ascii', ['646', 'us-ascii'], registry=REGISTRY)
-LATIN1 = make_text_encoding_codec('latin-1', ['iso-8859-1', 'iso8859-1', '8859', 'cp819', 'latin', 'latin1', 'l1'], registry=REGISTRY)  # noqa
-UTF32 = make_text_encoding_codec('utf-32', ['u32', 'utf32'], registry=REGISTRY)
-UTF32BE = make_text_encoding_codec('utf-32-be', ['utf-32be'], registry=REGISTRY)
-UTF32LE = make_text_encoding_codec('utf-32-le', ['utf-32le'], registry=REGISTRY)
-UTF16 = make_text_encoding_codec('utf-16', ['u16', 'utf16'], registry=REGISTRY)
-UTF16BE = make_text_encoding_codec('utf-16-be', ['utf-16be'], registry=REGISTRY)
-UTF16LE = make_text_encoding_codec('utf-16-le', ['utf-16le'], registry=REGISTRY)
-UTF7 = make_text_encoding_codec('utf-7', ['u7', 'unicode-1-1-utf-7'], registry=REGISTRY)
-UTF8 = make_text_encoding_codec('utf-8', ['u8', 'utf', 'utf8', 'cp65001'], registry=REGISTRY)
-UTF8SIG = make_text_encoding_codec('utf-8-sig', registry=REGISTRY)
+ASCII = make_text_encoding_codec(
+    'ascii',
+    ['646', 'us-ascii'],
+    append_to=STANDARD_CODECS,
+)
+
+LATIN1 = make_text_encoding_codec(
+    'latin-1',
+    ['iso-8859-1', 'iso8859-1', '8859', 'cp819', 'latin', 'latin1', 'l1'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF32 = make_text_encoding_codec(
+    'utf-32',
+    ['u32', 'utf32'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF32BE = make_text_encoding_codec(
+    'utf-32-be',
+    ['utf-32be'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF32LE = make_text_encoding_codec(
+    'utf-32-le',
+    ['utf-32le'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF16 = make_text_encoding_codec(
+    'utf-16',
+    ['u16', 'utf16'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF16BE = make_text_encoding_codec(
+    'utf-16-be',
+    ['utf-16be'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF16LE = make_text_encoding_codec(
+    'utf-16-le',
+    ['utf-16le'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF7 = make_text_encoding_codec(
+    'utf-7',
+    ['u7', 'unicode-1-1-utf-7'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF8 = make_text_encoding_codec(
+    'utf-8',
+    ['u8', 'utf', 'utf8', 'cp65001'],
+    append_to=STANDARD_CODECS,
+)
+
+UTF8SIG = make_text_encoding_codec(
+    'utf-8-sig',
+    append_to=STANDARD_CODECS,
+)
