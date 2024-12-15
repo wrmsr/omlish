@@ -1,3 +1,4 @@
+import contextlib
 import importlib
 import threading
 import typing as ta
@@ -39,6 +40,12 @@ class CodecRegistry:
                 cb(self)
             self._late_load_callbacks = None
 
+    @contextlib.contextmanager
+    def _lock_and_load(self) -> ta.Iterator[None]:
+        with self._lock:
+            self._late_load()
+            yield
+
     def _post_load(self, codec: Codec) -> None:
         for t in type(codec).__mro__:
             if t is not object:
@@ -61,9 +68,7 @@ class CodecRegistry:
         return self
 
     def lookup(self, name_or_alias: str) -> Codec:
-        with self._lock:
-            self._late_load()
-
+        with self._lock_and_load():
             name = self._names_by_alias[name_or_alias]
             codec_or_lazy = self._by_name[name]
 
@@ -78,10 +83,12 @@ class CodecRegistry:
             return codec
 
     def lookup_type(self, cls: type) -> list[Codec]:
-        with self._lock:
-            self._late_load()
-
+        with self._lock_and_load():
             return [self.lookup(n) for n in self._names_by_cls.get(cls, [])]
+
+    def all(self) -> frozenset[str]:
+        with self._lock_and_load():
+            return frozenset(self._by_name)
 
 
 ##
