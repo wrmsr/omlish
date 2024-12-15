@@ -112,6 +112,7 @@ from .functions import (  # noqa
     issubclass_of,
     maybe_call,
     opt_coalesce,
+    opt_fn,
     periodically,
     raise_,
     raising,

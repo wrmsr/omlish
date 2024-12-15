@@ -4,6 +4,7 @@ import time
 import typing as ta
 
 
+F = ta.TypeVar('F')
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
@@ -79,6 +80,16 @@ def finally_(fn: ta.Callable[P, T], fin: ta.Callable) -> ta.Callable[P, T]:
 
 def identity(obj: T) -> T:
     return obj
+
+
+def opt_fn(fn: ta.Callable[[F], T]) -> ta.Callable[[F | None], T | None]:
+    @functools.wraps(fn)
+    def inner(v: F | None) -> T | None:
+        if v is not None:
+            return fn(v)
+        else:
+            return None
+    return inner
 
 
 class constant(ta.Generic[T]):  # noqa
