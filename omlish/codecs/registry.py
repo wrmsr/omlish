@@ -73,6 +73,8 @@ class CodecRegistry:
 
     def lookup(self, name_or_alias: str) -> Codec:
         with self._lock:
+            self._late_load()
+
             name = self._names_by_alias[name_or_alias]
             codec_or_lazy = self._by_name[name]
 
@@ -88,6 +90,8 @@ class CodecRegistry:
 
     def lookup_type(self, cls: type) -> list[Codec]:
         with self._lock:
+            self._late_load()
+
             return [self.lookup(n) for n in self._names_by_cls.get(cls, [])]
 
 
@@ -100,7 +104,7 @@ def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
 
 
 def _install_manifest_lazy_loaded_codecs(registry: CodecRegistry) -> None:
-    pass
+    registry.register(*_build_manifest_lazy_loaded_codecs())
 
 
 ##
