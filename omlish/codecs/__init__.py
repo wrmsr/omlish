@@ -4,6 +4,8 @@ from .base import (  # noqa
     ComboCodec,
 
     Codec,
+
+    LazyLoadedCodec,
 )
 
 from .registry import (  # noqa
