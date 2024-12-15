@@ -10,6 +10,17 @@ from .base import (  # noqa
     LazyLoadedCodec,
 )
 
+from .bytes import (  # noqa
+    ASCII85,
+    BASE16,
+    BASE32,
+    BASE64,
+    BASE85,
+    BASE32_HEX,
+    BASE64_HEX,
+    BASE64_URLSAFE,
+)
+
 from .funcs import (  # noqa
     FnPairEagerCodec,
 )
@@ -22,6 +33,10 @@ from .registry import (  # noqa
     lookup,
 )
 
+from .standard import (  # noqa
+    STANDARD_CODECS,
+)
+
 from .text import (  # noqa
     TextEncodingErrors,
     TextEncodingOptions,
@@ -29,9 +44,6 @@ from .text import (  # noqa
     TextEncodingComboCodec,
 
     TextEncodingCodec,
-
-    normalize_text_encoding_name,
-    make_text_encoding_codec,
 
     ASCII,
     LATIN1,
