@@ -3,9 +3,16 @@ import importlib
 import threading
 import typing as ta
 
+from .. import cached
 from .. import check
-from ..manifests.load import MANIFEST_LOADER
+from .. import lang
 from .base import Codec
+
+
+if ta.TYPE_CHECKING:
+    from ..manifests import load as manifest_load
+else:
+    manifest_load = lang.proxy_import('..manifests.load', __package__)
 
 
 ##
@@ -87,7 +94,21 @@ class CodecRegistry:
 ##
 
 
-REGISTRY = CodecRegistry()
+@cached.function
+def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
+    raise NotImplementedError
+
+
+def _install_manifest_lazy_loaded_codecs(registry: CodecRegistry) -> None:
+    pass
+
+
+##
+
+
+REGISTRY = CodecRegistry(
+    late_load_callbacks=[_install_manifest_lazy_loaded_codecs],
+)
 
 register = REGISTRY.register
 lookup = REGISTRY.lookup
