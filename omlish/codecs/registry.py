@@ -4,6 +4,7 @@ import threading
 import typing as ta
 
 from .. import check
+from ..manifests.load import MANIFEST_LOADER
 from .base import Codec
 
 
@@ -22,13 +23,25 @@ class LazyLoadedCodec:
 
 
 class CodecRegistry:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            late_load_callbacks: ta.Iterable[ta.Callable[['CodecRegistry'], None]] | None = None,
+    ) -> None:
         super().__init__()
+
+        self._late_load_callbacks = late_load_callbacks
 
         self._lock = threading.RLock()
         self._by_name: dict[str, Codec | LazyLoadedCodec] = {}
         self._names_by_alias: dict[str, str] = {}
         self._names_by_cls: dict[type, list[str]] = {}
+
+    def _late_load(self) -> None:
+        if self._late_load_callbacks:
+            for cb in self._late_load_callbacks:
+                cb(self)
+            self._late_load_callbacks = None
 
     def _post_load(self, codec: Codec) -> None:
         for t in type(codec).__mro__:

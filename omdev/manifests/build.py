@@ -28,7 +28,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log
-from omlish.manifests.load import ManifestLoader
+from omlish.manifests.load import MANIFEST_LOADER
 from omlish.manifests.types import Manifest
 from omlish.manifests.types import ManifestOrigin
 
@@ -271,11 +271,10 @@ def check_package_manifests(
     with open(manifests_file) as f:
         manifests_json = json.load(f)
 
-    ldr = ManifestLoader()
     for entry in manifests_json:
         manifest = Manifest(**entry)
         [(key, value_dct)] = manifest.value.items()
         if key.startswith('$.'):
             key = f'${name}{key[1:]}'
-        cls = ldr.load_cls(key)
+        cls = MANIFEST_LOADER.load_cls(key)
         value = cls(**value_dct)  # noqa
