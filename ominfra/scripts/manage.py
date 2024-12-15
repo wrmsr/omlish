@@ -4330,9 +4330,27 @@ class DeployGitCheckout:
 
 
 @dc.dataclass(frozen=True)
+class DeployVenvSpec:
+    interp: ta.Optional[str] = None
+
+    requirements_files: ta.Optional[ta.Sequence[str]] = None
+    extra_dependencies: ta.Optional[ta.Sequence[str]] = None
+
+    use_uv: bool = False
+
+    def __post_init__(self) -> None:
+        hash(self)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
     checkout: DeployGitCheckout
+
+    venv: ta.Optional[DeployVenvSpec] = None
 
     def __post_init__(self) -> None:
         hash(self)
@@ -8284,8 +8302,7 @@ class DeployVenvManager(DeployPathOwner):
             self,
             app_dir: str,
             venv_dir: str,
-            *,
-            use_uv: bool = True,
+            spec: DeployVenvSpec,
     ) -> None:
         sys_exe = 'python3'
 
@@ -8302,7 +8319,7 @@ class DeployVenvManager(DeployPathOwner):
         reqs_txt = os.path.join(app_dir, 'requirements.txt')
 
         if os.path.isfile(reqs_txt):
-            if use_uv:
+            if spec.use_uv:
                 await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
                 pip_cmd = ['-m', 'uv', 'pip']
             else:
@@ -8310,10 +8327,15 @@ class DeployVenvManager(DeployPathOwner):
 
             await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
 
-    async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
+    async def setup_app_venv(
+            self,
+            app_tag: DeployAppTag,
+            spec: DeployVenvSpec,
+    ) -> None:
         await self.setup_venv(
             os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
             os.path.join(self._dir(), app_tag.app, app_tag.tag),
+            spec,
         )
 
 
@@ -8879,7 +8901,7 @@ class DeployAppManager(DeployPathOwner):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            DeployPath.parse('apps/@app/@tag'),
+            DeployPath.parse('apps/@app/@tag/'),
         }
 
     async def prepare_app(
@@ -8898,7 +8920,8 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        await self._venvs.setup_app_venv(app_tag)
+        if spec.venv is not None:
+            await self._venvs.setup_app_venv(app_tag, spec.venv)
 
 
 ########################################

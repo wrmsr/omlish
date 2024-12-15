@@ -70,4 +70,5 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        await self._venvs.setup_app_venv(app_tag)
+        if spec.venv is not None:
+            await self._venvs.setup_app_venv(app_tag, spec.venv)

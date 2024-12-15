@@ -10,6 +10,7 @@ from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..specs import DeployGitCheckout
 from ..specs import DeploySpec
+from ..specs import DeployVenvSpec
 from ..types import DeployApp
 from ..types import DeployHome
 from ..types import DeployRev
@@ -41,6 +42,9 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     path='wrmsr/flaskthing',
                 ),
                 rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
+            ),
+            venv=DeployVenvSpec(
+                use_uv=True,
             ),
         )
 
