@@ -3,9 +3,10 @@ TODO:
  - bytes-like - bytearray, memoryview
 """
 import abc
-import dataclasses as dc
 import typing as ta
 
+from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import reflect as rfl
 
@@ -50,9 +51,9 @@ class ComboCodec(  # noqa
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Codec(lang.Final):
-    name: str
-    aliases: ta.Collection[str] | None = None
+class Codec:
+    name: str = dc.field(validate=check.non_empty_str)
+    aliases: ta.Collection[str] | None = dc.field(default=None, validate=check.of_not_isinstance(str))
 
     input: rfl.Type
     output: rfl.Type
