@@ -6,6 +6,6 @@ _CLI_MODULE = CliModule('amalg', __name__)
 
 
 if __name__ == '__main__':
-    from .amalg import _main
+    from .main import _main
 
     _main()
