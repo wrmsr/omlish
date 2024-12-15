@@ -1,3 +1,4 @@
+import dataclasses as dc
 import typing as ta
 
 from ... import codecs
@@ -7,17 +8,15 @@ from .base import Compression
 ##
 
 
+@dc.dataclass(frozen=True)
 class CompressionEagerCodec(codecs.EagerCodec[bytes, bytes]):
-    def __init__(self, compression: Compression) -> None:
-        super().__init__()
-
-        self._compression = compression
+    compression: Compression
 
     def encode(self, i: bytes) -> bytes:
-        return self._compression.compress(i)
+        return self.compression.compress(i)
 
     def decode(self, o: bytes) -> bytes:
-        return self._compression.decompress(o)
+        return self.compression.decompress(o)
 
 
 ##

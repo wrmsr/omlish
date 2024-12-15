@@ -69,7 +69,7 @@ class CodecRegistry:
 
     def lookup(self, name_or_alias: str) -> Codec:
         with self._lock_and_load():
-            name = self._names_by_alias[name_or_alias]
+            name = self._names_by_alias[name_or_alias.replace('_', '-')]
             codec_or_lazy = self._by_name[name]
 
             if isinstance(codec_or_lazy, LazyLoadedCodec):

@@ -3,9 +3,15 @@ from .base import (  # noqa
     IncrementalCodec,
     ComboCodec,
 
+    check_codec_name,
+
     Codec,
 
     LazyLoadedCodec,
+)
+
+from .funcs import (  # noqa
+    FnPairEagerCodec,
 )
 
 from .registry import (  # noqa
