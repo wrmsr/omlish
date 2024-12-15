@@ -14,6 +14,8 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .codecs import make_object_lazy_loaded_codec
+from .codecs import make_str_object_codec
 
 
 if ta.TYPE_CHECKING:
@@ -239,3 +241,19 @@ def full_load(stream):  # noqa
 
 def full_load_all(stream):  # noqa  # noqa
     return load_all(stream, yaml.FullLoader)
+
+
+##
+
+
+def dump(obj, **kwargs):
+    return yaml.dump(obj, **kwargs)
+
+
+##
+
+
+YAML_CODEC = make_str_object_codec('yaml', dump, safe_load, aliases=['yml'])
+
+# @omlish-manifest
+_YAML_LAZY_CODEC = make_object_lazy_loaded_codec(__name__, 'YAML_CODEC', YAML_CODEC)

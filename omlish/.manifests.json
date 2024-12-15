@@ -24,6 +24,78 @@
     }
   },
   {
+    "module": ".formats.json.codecs",
+    "attr": "_JSON_LAZY_CODEC",
+    "file": "omlish/formats/json/codecs.py",
+    "line": 14,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.json.codecs",
+        "attr_name": "JSON_CODEC",
+        "name": "json",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".formats.json.codecs",
+    "attr": "_JSON_COMPACT_LAZY_CODEC",
+    "file": "omlish/formats/json/codecs.py",
+    "line": 23,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.json.codecs",
+        "attr_name": "JSON_COMPACT_CODEC",
+        "name": "json-compact",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".formats.json.codecs",
+    "attr": "_JSON_PRETTY_LAZY_CODEC",
+    "file": "omlish/formats/json/codecs.py",
+    "line": 32,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.json.codecs",
+        "attr_name": "JSON_PRETTY_CODEC",
+        "name": "json-pretty",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".formats.toml",
+    "attr": "_TOML_LAZY_CODEC",
+    "file": "omlish/formats/toml.py",
+    "line": 16,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.toml",
+        "attr_name": "TOML_CODEC",
+        "name": "toml",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".formats.yaml",
+    "attr": "_YAML_LAZY_CODEC",
+    "file": "omlish/formats/yaml.py",
+    "line": 258,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.yaml",
+        "attr_name": "YAML_CODEC",
+        "name": "yaml",
+        "aliases": [
+          "yml"
+        ]
+      }
+    }
+  },
+  {
     "module": ".io.compress.brotli",
     "attr": "_BROTLI_LAZY_CODEC",
     "file": "omlish/io/compress/brotli.py",
