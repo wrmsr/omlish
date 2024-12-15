@@ -48,6 +48,8 @@ from ..generators import BytesSteppedReaderGenerator
 from ..generators.readers import PrependableBytesGeneratorReader
 from .base import Compression
 from .base import IncrementalCompression
+from .codecs import make_compression_codec
+from .codecs import make_compression_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
@@ -337,3 +339,12 @@ class IncrementalGzipDecompressor:
             stream_size += len(uncompress)
             pos += len(uncompress)
             check.none((yield uncompress))
+
+
+##
+
+
+GZIP_CODEC = make_compression_codec('gzip', GzipCompression, aliases=['gz'])
+
+# @omlish-manifest
+_GZIP_LAZY_CODEC = make_compression_lazy_loaded_codec(__name__, 'GZIP_CODEC', GZIP_CODEC)
