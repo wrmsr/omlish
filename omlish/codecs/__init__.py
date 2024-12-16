@@ -30,6 +30,9 @@ from .chain import (  # noqa
 
 from .funcs import (  # noqa
     FnPairEagerCodec,
+
+    of_pair,
+    of,
 )
 
 from .registry import (  # noqa
