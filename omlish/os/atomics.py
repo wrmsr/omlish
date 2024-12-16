@@ -122,7 +122,7 @@ class AtomicPathSwapping(abc.ABC):
 ##
 
 
-class OsRenameAtomicPathSwap(AtomicPathSwap):
+class OsReplaceAtomicPathSwap(AtomicPathSwap):
     def __init__(
             self,
             kind: AtomicPathSwapKind,
@@ -150,7 +150,7 @@ class OsRenameAtomicPathSwap(AtomicPathSwap):
         return self._tmp_path
 
     def _commit(self) -> None:
-        os.rename(self._tmp_path, self._dst_path)
+        os.replace(self._tmp_path, self._dst_path)
 
     def _abort(self) -> None:
         shutil.rmtree(self._tmp_path, ignore_errors=True)
@@ -197,7 +197,7 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
         else:
             raise TypeError(kind)
 
-        return OsRenameAtomicPathSwap(
+        return OsReplaceAtomicPathSwap(
             kind,
             dst_path,
             tmp_path,

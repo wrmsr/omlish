@@ -51,7 +51,10 @@ class DeployAppManager(DeployPathOwner):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            DeployPath.parse('apps/@app/@tag/'),
+            DeployPath.parse('apps/@app/current'),
+            DeployPath.parse('apps/@app/deploying'),
+            DeployPath.parse('apps/@app/tags/@tag/git/'),
+            DeployPath.parse('apps/@app/tags/@tag/venv/'),
         }
 
     async def prepare_app(
@@ -59,16 +62,43 @@ class DeployAppManager(DeployPathOwner):
             spec: DeploySpec,
     ) -> None:
         app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.checkout.rev, spec.key()))
-        app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
+        app_dir = os.path.join(self._dir(), spec.app)
+        os.makedirs(app_dir, exist_ok=True)
+
+        #
+
+        tag_dir = os.path.join(app_dir, 'tags', app_tag.tag)
+        os.makedirs(tag_dir)
+
+        #
+
+        deploying_file = os.path.join(app_dir, 'deploying')
+        if os.path.exists(deploying_file):
+            os.unlink(deploying_file)
+        os.symlink(tag_dir, deploying_file, target_is_directory=True)
+
+        #
+
+        git_dir = os.path.join(tag_dir, 'git')
         await self._git.checkout(
             spec.checkout,
-            app_dir,
+            git_dir,
         )
 
         #
 
         if spec.venv is not None:
-            await self._venvs.setup_app_venv(app_tag, spec.venv)
+            venv_dir = os.path.join(tag_dir, 'venv')
+            await self._venvs.setup_venv(
+                git_dir,
+                venv_dir,
+                spec.venv,
+            )
+
+        #
+
+        current_file = os.path.join(app_dir, 'current')
+        os.replace(deploying_file, current_file)

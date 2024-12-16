@@ -4068,11 +4068,12 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 # ../deploy/paths.py
 """
 TODO:
- - run/pidfile
+ - run/{.pid,.sock}
  - logs/...
  - current symlink
  - conf/{nginx,supervisor}
  - env/?
+ - apps/<app>/shared
 """
 
 
@@ -4348,6 +4349,7 @@ class DeployVenvSpec:
 @dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
+
     checkout: DeployGitCheckout
 
     venv: ta.Optional[DeployVenvSpec] = None
@@ -6435,7 +6437,7 @@ class AtomicPathSwapping(abc.ABC):
 ##
 
 
-class OsRenameAtomicPathSwap(AtomicPathSwap):
+class OsReplaceAtomicPathSwap(AtomicPathSwap):
     def __init__(
             self,
             kind: AtomicPathSwapKind,
@@ -6463,7 +6465,7 @@ class OsRenameAtomicPathSwap(AtomicPathSwap):
         return self._tmp_path
 
     def _commit(self) -> None:
-        os.rename(self._tmp_path, self._dst_path)
+        os.replace(self._tmp_path, self._dst_path)
 
     def _abort(self) -> None:
         shutil.rmtree(self._tmp_path, ignore_errors=True)
@@ -6510,7 +6512,7 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
         else:
             raise TypeError(kind)
 
-        return OsRenameAtomicPathSwap(
+        return OsReplaceAtomicPathSwap(
             kind,
             dst_path,
             tmp_path,
@@ -8277,30 +8279,19 @@ TODO:
 """
 
 
-class DeployVenvManager(DeployPathOwner):
+class DeployVenvManager:
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome] = None,
             atomics: AtomicPathSwapping,
     ) -> None:
         super().__init__()
 
-        self._deploy_home = deploy_home
         self._atomics = atomics
-
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), 'venvs')
-
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return {
-            DeployPath.parse('venvs/@app/@tag/'),
-        }
 
     async def setup_venv(
             self,
-            app_dir: str,
+            git_dir: str,
             venv_dir: str,
             spec: DeployVenvSpec,
     ) -> None:
@@ -8316,7 +8307,7 @@ class DeployVenvManager(DeployPathOwner):
 
         #
 
-        reqs_txt = os.path.join(app_dir, 'requirements.txt')
+        reqs_txt = os.path.join(git_dir, 'requirements.txt')
 
         if os.path.isfile(reqs_txt):
             if spec.use_uv:
@@ -8326,17 +8317,6 @@ class DeployVenvManager(DeployPathOwner):
                 pip_cmd = ['-m', 'pip']
 
             await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
-
-    async def setup_app_venv(
-            self,
-            app_tag: DeployAppTag,
-            spec: DeployVenvSpec,
-    ) -> None:
-        await self.setup_venv(
-            os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
-            os.path.join(self._dir(), app_tag.app, app_tag.tag),
-            spec,
-        )
 
 
 ########################################
@@ -8901,7 +8881,10 @@ class DeployAppManager(DeployPathOwner):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            DeployPath.parse('apps/@app/@tag/'),
+            DeployPath.parse('apps/@app/current'),
+            DeployPath.parse('apps/@app/deploying'),
+            DeployPath.parse('apps/@app/tags/@tag/git/'),
+            DeployPath.parse('apps/@app/tags/@tag/venv/'),
         }
 
     async def prepare_app(
@@ -8909,19 +8892,46 @@ class DeployAppManager(DeployPathOwner):
             spec: DeploySpec,
     ) -> None:
         app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.checkout.rev, spec.key()))
-        app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
+        app_dir = os.path.join(self._dir(), spec.app)
+        os.makedirs(app_dir, exist_ok=True)
+
+        #
+
+        tag_dir = os.path.join(app_dir, 'tags', app_tag.tag)
+        os.makedirs(tag_dir)
+
+        #
+
+        deploying_file = os.path.join(app_dir, 'deploying')
+        if os.path.exists(deploying_file):
+            os.unlink(deploying_file)
+        os.symlink(tag_dir, deploying_file, target_is_directory=True)
+
+        #
+
+        git_dir = os.path.join(tag_dir, 'git')
         await self._git.checkout(
             spec.checkout,
-            app_dir,
+            git_dir,
         )
 
         #
 
         if spec.venv is not None:
-            await self._venvs.setup_app_venv(app_tag, spec.venv)
+            venv_dir = os.path.join(tag_dir, 'venv')
+            await self._venvs.setup_venv(
+                git_dir,
+                venv_dir,
+                spec.venv,
+            )
+
+        #
+
+        current_file = os.path.join(app_dir, 'current')
+        os.replace(deploying_file, current_file)
 
 
 ########################################

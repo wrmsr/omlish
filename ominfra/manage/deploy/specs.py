@@ -62,6 +62,7 @@ class DeployVenvSpec:
 @dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
+
     checkout: DeployGitCheckout
 
     venv: ta.Optional[DeployVenvSpec] = None

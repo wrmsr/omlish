@@ -5,44 +5,26 @@ TODO:
  - share more code with pyproject?
 """
 import os.path
-import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
 from omlish.os.atomics import AtomicPathSwapping
 
-from .paths import DeployPath
-from .paths import DeployPathOwner
 from .specs import DeployVenvSpec
-from .types import DeployAppTag
-from .types import DeployHome
 
 
-class DeployVenvManager(DeployPathOwner):
+class DeployVenvManager:
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome] = None,
             atomics: AtomicPathSwapping,
     ) -> None:
         super().__init__()
 
-        self._deploy_home = deploy_home
         self._atomics = atomics
-
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), 'venvs')
-
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return {
-            DeployPath.parse('venvs/@app/@tag/'),
-        }
 
     async def setup_venv(
             self,
-            app_dir: str,
+            git_dir: str,
             venv_dir: str,
             spec: DeployVenvSpec,
     ) -> None:
@@ -58,7 +40,7 @@ class DeployVenvManager(DeployPathOwner):
 
         #
 
-        reqs_txt = os.path.join(app_dir, 'requirements.txt')
+        reqs_txt = os.path.join(git_dir, 'requirements.txt')
 
         if os.path.isfile(reqs_txt):
             if spec.use_uv:
@@ -68,14 +50,3 @@ class DeployVenvManager(DeployPathOwner):
                 pip_cmd = ['-m', 'pip']
 
             await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
-
-    async def setup_app_venv(
-            self,
-            app_tag: DeployAppTag,
-            spec: DeployVenvSpec,
-    ) -> None:
-        await self.setup_venv(
-            os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
-            os.path.join(self._dir(), app_tag.app, app_tag.tag),
-            spec,
-        )
