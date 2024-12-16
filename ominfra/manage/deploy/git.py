@@ -18,8 +18,8 @@ from omlish.lite.check import check
 from omlish.os.atomics import AtomicPathSwapping
 
 from .paths import SingleDirDeployPathOwner
-from .specs import DeployGitSpec
 from .specs import DeployGitRepo
+from .specs import DeployGitSpec
 from .types import DeployHome
 from .types import DeployRev
 

@@ -209,6 +209,9 @@ class DeployPathOwner(abc.ABC):
         raise NotImplementedError
 
 
+DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
+
+
 class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
     def __init__(
             self,
