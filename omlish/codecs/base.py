@@ -9,6 +9,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import reflect as rfl
+from omlish.funcs import pairs as fps
 
 
 I = ta.TypeVar('I')
@@ -26,6 +27,9 @@ class EagerCodec(lang.Abstract, ta.Generic[I, O]):
     @abc.abstractmethod
     def decode(self, o: O) -> I:
         raise NotImplementedError
+
+    def as_pair(self) -> fps.FnPair[I, O]:
+        return fps.of(self.encode, self.decode)
 
 
 class IncrementalCodec(lang.Abstract, ta.Generic[I, O]):

@@ -1,22 +1,4 @@
-"""
-TODO:
- - objects
-  - csv
-  - csvloader
- - wrapped (wait for usecase)
- - streams / incremental
-  - fileobj -> fileobj?
- - swap zstandard for zstd
-
-Compression choice:
- - lzma if-available minimal-space
- - lz4 if-available read-heavy
- - zstd if-available
- - bz2 read-heavy (but no parallel decompress)
- - gz
-"""
 import abc
-import codecs
 import dataclasses as dc
 import typing as ta
 
@@ -24,40 +6,9 @@ from .. import lang
 
 
 if ta.TYPE_CHECKING:
-    import bz2 as _bz2
-    import gzip as _gzip
-    import lzma as _lzma
-    import pickle as _pickle
     import struct as _struct
-    import tomllib as _tomllib
-
-    import cbor2 as _cbor2
-    import cloudpickle as _cloudpickle
-    import json5 as _json5
-    import lz4.frame as _lz4_frame
-    import snappy as _snappy
-    import yaml as _yaml
-    import zstandard as _zstandard
-
-    from ..formats import json as _json
-
 else:
-    _bz2 = lang.proxy_import('bz2')
-    _gzip = lang.proxy_import('gzip')
-    _lzma = lang.proxy_import('lzma')
-    _pickle = lang.proxy_import('pickle')
     _struct = lang.proxy_import('struct')
-    _tomllib = lang.proxy_import('tomllib')
-
-    _cbor2 = lang.proxy_import('cbor2')
-    _cloudpickle = lang.proxy_import('cloudpickle')
-    _json5 = lang.proxy_import('json5')
-    _lz4_frame = lang.proxy_import('lz4.frame')
-    _snappy = lang.proxy_import('snappy')
-    _yaml = lang.proxy_import('yaml')
-    _zstandard = lang.proxy_import('zstandard')
-
-    _json = lang.proxy_import('..formats.json', __package__)
 
 
 ##
@@ -212,36 +163,6 @@ def compose(*ps):
 
 
 @dc.dataclass(frozen=True)
-class Text(FnPair[str, bytes]):
-    ci: codecs.CodecInfo
-    encode_errors: str = dc.field(default='strict', kw_only=True)
-    decode_errors: str = dc.field(default='strict', kw_only=True)
-
-    def forward(self, f: str) -> bytes:
-        # Python ignores the returned length:
-        #   https://github.com/python/cpython/blob/7431c3799efbd06ed03ee70b64420f45e83b3667/Python/codecs.c#L424
-        t, _ = self.ci.encode(f, self.encode_errors)
-        return t
-
-    def backward(self, t: bytes) -> str:
-        f, _ = self.ci.decode(t, self.decode_errors)
-        return f
-
-
-def text(name: str, *, encode_errors: str = 'strict', decode_errors: str = 'strict') -> Text:
-    ci = codecs.lookup(name)
-    if not ci._is_text_encoding:  # noqa
-        raise TypeError(f'must be text codec: {name}')
-    return Text(ci, encode_errors=encode_errors, decode_errors=decode_errors)
-
-
-UTF8 = text('utf-8')
-
-
-#
-
-
-@dc.dataclass(frozen=True)
 class Optional(FnPair[F | None, T | None]):
     fp: FnPair[F, T]
 
@@ -258,99 +179,6 @@ class Lines(FnPair[ta.Sequence[str], str]):
 
     def backward(self, t: str) -> ta.Sequence[str]:
         return t.splitlines()
-
-
-##
-
-
-_EXTENSION_REGISTRY: dict[str, type[FnPair]] = {}
-
-
-def _register_extension(*ss):
-    def inner(cls):
-        for s in ss:
-            if s in _EXTENSION_REGISTRY:
-                raise KeyError(s)
-            _EXTENSION_REGISTRY[s] = cls
-        return cls
-    return inner
-
-
-def get_for_extension(ext: str) -> FnPair:
-    return compose(*[_EXTENSION_REGISTRY[p]() for p in ext.split('.')])
-
-
-##
-
-
-class Compression(FnPair[bytes, bytes], abc.ABC):
-    pass
-
-
-@_register_extension('bz2')
-@dc.dataclass(frozen=True)
-class Bz2(Compression):
-    compresslevel: int = 9
-
-    def forward(self, f: bytes) -> bytes:
-        return _bz2.compress(f, compresslevel=self.compresslevel)
-
-    def backward(self, t: bytes) -> bytes:
-        return _bz2.decompress(t)
-
-
-@_register_extension('gz')
-@dc.dataclass(frozen=True)
-class Gzip(Compression):
-    compresslevel: int = 9
-
-    def forward(self, f: bytes) -> bytes:
-        return _gzip.compress(f, compresslevel=self.compresslevel)
-
-    def backward(self, t: bytes) -> bytes:
-        return _gzip.decompress(t)
-
-
-@_register_extension('lzma')
-class Lzma(Compression):
-    def forward(self, f: bytes) -> bytes:
-        return _lzma.compress(f)
-
-    def backward(self, t: bytes) -> bytes:
-        return _lzma.decompress(t)
-
-
-#
-
-
-@_register_extension('lz4')
-@dc.dataclass(frozen=True)
-class Lz4(Compression):
-    compression_level: int = 0
-
-    def forward(self, f: bytes) -> bytes:
-        return _lz4_frame.compress(f, compression_level=self.compression_level)
-
-    def backward(self, t: bytes) -> bytes:
-        return _lz4_frame.decompress(t)
-
-
-@_register_extension('snappy')
-class Snappy(Compression):
-    def forward(self, f: bytes) -> bytes:
-        return _snappy.compress(f)
-
-    def backward(self, t: bytes) -> bytes:
-        return _snappy.decompress(t)
-
-
-@_register_extension('zstd')
-class Zstd(Compression):
-    def forward(self, f: bytes) -> bytes:
-        return _zstandard.compress(f)
-
-    def backward(self, t: bytes) -> bytes:
-        return _zstandard.decompress(t)
 
 
 ##
@@ -385,112 +213,3 @@ class ObjectStr_(Object_[str], lang.Abstract):  # noqa
 
 class ObjectBytes_(Object_[bytes], lang.Abstract):  # noqa
     pass
-
-
-#
-
-
-@_register_extension('pkl')
-@dc.dataclass(frozen=True)
-class Pickle(ObjectBytes_):
-    protocol: int | None = None
-
-    def forward(self, f: ta.Any) -> bytes:
-        return _pickle.dumps(f, protocol=self.protocol)
-
-    def backward(self, t: bytes) -> ta.Any:
-        return _pickle.loads(t)
-
-
-class _Json(ObjectStr_, lang.Abstract):  # noqa
-    def backward(self, t: str) -> ta.Any:
-        return _json.loads(t)
-
-
-@_register_extension('json')
-class Json(_Json):
-    def forward(self, f: ta.Any) -> str:
-        return _json.dumps(f)
-
-
-class JsonPretty(_Json):
-    def forward(self, f: ta.Any) -> str:
-        return _json.dumps_pretty(f)
-
-
-class JsonCompact(_Json):
-    def forward(self, f: ta.Any) -> str:
-        return _json.dumps_compact(f)
-
-
-JSON = Json()
-PRETTY_JSON = JsonPretty()
-COMPACT_JSON = JsonCompact()
-
-
-@_register_extension('jsonl')
-class JsonLines(FnPair[ta.Sequence[ta.Any], str]):
-    def forward(self, f: ta.Sequence[ta.Any]) -> str:
-        return '\n'.join(_json.dumps(e) for e in f)
-
-    def backward(self, t: str) -> ta.Sequence[ta.Any]:
-        return [_json.loads(l) for l in t.splitlines()]
-
-
-@_register_extension('toml')
-class Toml(ObjectStr_):
-    def forward(self, f: ta.Any) -> str:
-        raise NotImplementedError
-
-    def backward(self, t: str) -> ta.Any:
-        return _tomllib.loads(t)
-
-
-#
-
-
-@_register_extension('cbor')
-class Cbor(ObjectBytes_):
-    def forward(self, f: ta.Any) -> bytes:
-        return _cbor2.dumps(f)
-
-    def backward(self, t: bytes) -> ta.Any:
-        return _cbor2.loads(t)
-
-
-@_register_extension('clpkl')
-@dc.dataclass(frozen=True)
-class Cloudpickle(ObjectBytes_):
-    protocol: int | None = None
-
-    def forward(self, f: ta.Any) -> bytes:
-        return _cloudpickle.dumps(f, protocol=self.protocol)
-
-    def backward(self, t: bytes) -> ta.Any:
-        return _cloudpickle.loads(t)
-
-
-@_register_extension('json5')
-class Json5(ObjectStr_):
-    def forward(self, f: ta.Any) -> str:
-        return _json5.dumps(f)
-
-    def backward(self, t: str) -> ta.Any:
-        return _json5.loads(t)
-
-
-@_register_extension('yml', 'yaml')
-class Yaml(ObjectStr_):
-    def forward(self, f: ta.Any) -> str:
-        return _yaml.dump(f)
-
-    def backward(self, t: str) -> ta.Any:
-        return _yaml.safe_load(t)
-
-
-class YamlUnsafe(ObjectStr_):
-    def forward(self, f: ta.Any) -> str:
-        return _yaml.dump(f)
-
-    def backward(self, t: str) -> ta.Any:
-        return _yaml.load(t, _yaml.FullLoader)
