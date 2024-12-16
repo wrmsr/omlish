@@ -38,6 +38,20 @@
     }
   },
   {
+    "module": ".formats.cloudpickle",
+    "attr": "_CLOUDPICKLE_LAZY_CODEC",
+    "file": "omlish/formats/cloudpickle.py",
+    "line": 30,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.cloudpickle",
+        "attr_name": "CLOUDPICKLE_CODEC",
+        "name": "cloudpickle",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".formats.json.codecs",
     "attr": "_JSON_LAZY_CODEC",
     "file": "omlish/formats/json/codecs.py",
@@ -55,7 +69,7 @@
     "module": ".formats.json.codecs",
     "attr": "_JSON_COMPACT_LAZY_CODEC",
     "file": "omlish/formats/json/codecs.py",
-    "line": 23,
+    "line": 21,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
         "mod_name": "omlish.formats.json.codecs",
@@ -69,7 +83,7 @@
     "module": ".formats.json.codecs",
     "attr": "_JSON_PRETTY_LAZY_CODEC",
     "file": "omlish/formats/json/codecs.py",
-    "line": 32,
+    "line": 28,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
         "mod_name": "omlish.formats.json.codecs",
@@ -134,6 +148,20 @@
         "aliases": [
           "yml"
         ]
+      }
+    }
+  },
+  {
+    "module": ".formats.yaml",
+    "attr": "_YAML_UNSAFE_LAZY_CODEC",
+    "file": "omlish/formats/yaml.py",
+    "line": 265,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.yaml",
+        "attr_name": "YAML_UNSAFE_CODEC",
+        "name": "yaml-unsafe",
+        "aliases": null
       }
     }
   },

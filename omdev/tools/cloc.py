@@ -71,15 +71,29 @@ def count_lines(file_path: str, language: str) -> FileLineCount:
     )
 
 
-def count_lines_in_directory(directory: str) -> ta.Mapping[str, FileLineCount]:
+def count_lines_in_directory(
+        directory: str,
+        *,
+        include: list[re.Pattern[str]] | None = None,
+        exclude: list[re.Pattern[str]] | None = None,
+) -> ta.Mapping[str, FileLineCount]:
     results: dict[str, FileLineCount] = {}
     for root, _, files in os.walk(directory):
         for file in files:
             ext = os.path.splitext(file)[1]
-            if ext in SUPPORTED_EXTENSIONS:
-                language = SUPPORTED_EXTENSIONS[ext]
-                file_path = os.path.join(root, file)
-                results[file_path] = count_lines(file_path, language)
+            if ext not in SUPPORTED_EXTENSIONS:
+                continue
+
+            file_path = os.path.join(root, file)
+
+            if include and not any(p.fullmatch(file_path) for p in include):
+                continue
+            if exclude and any(p.fullmatch(file_path) for p in exclude):
+                continue
+
+            language = SUPPORTED_EXTENSIONS[ext]
+            results[file_path] = count_lines(file_path, language)
+
     return results
 
 
@@ -132,12 +146,48 @@ def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description='Count lines of code in source files.')
+
     parser.add_argument('directory', help='The directory to analyze.', nargs='+')
+
+    parser.add_argument('-i,', '--include', action='append')
+    parser.add_argument('-e,', '--exclude', action='append')
+
     args = parser.parse_args()
 
+    #
+
+    include: list[re.Pattern[str]] | None = None
+    if args.include:
+        include = [re.compile(p) for p in args.include]
+
+    exclude: list[re.Pattern[str]] | None = None
+    if args.exclude:
+        exclude = [re.compile(p) for p in args.exclude]
+
+    #
+
+    results_by_directory: dict[str, FileLineCount] = {}
     for directory in args.directory:
-        results = count_lines_in_directory(directory)
+        results = count_lines_in_directory(
+            directory,
+            include=include,
+            exclude=exclude,
+        )
+
+        if not results:
+            continue
+
         display_results(results)
+        print()
+
+        results_by_directory[directory] = FileLineCount(
+            loc=sum(flc.loc for flc in results.values()),
+            blanks=sum(flc.blanks for flc in results.values()),
+            comments=sum(flc.comments for flc in results.values()),
+        )
+
+    if len(results_by_directory) > 1:
+        display_results(results_by_directory)
         print()
 
 
