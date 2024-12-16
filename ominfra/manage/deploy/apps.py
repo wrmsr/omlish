@@ -6,6 +6,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
+from .conf import DeployConfManager
 from .git import DeployGitManager
 from .paths import DeployPath
 from .paths import DeployPathOwner
@@ -36,12 +37,16 @@ class DeployAppManager(DeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+
+            conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
+
+        self._conf = conf
         self._git = git
         self._venvs = venvs
 
@@ -97,6 +102,13 @@ class DeployAppManager(DeployPathOwner):
                 git_dir,
                 venv_dir,
                 spec.venv,
+            )
+
+        #
+
+        if spec.conf is not None:
+            await self._conf.write_conf(
+                spec.conf,
             )
 
         #

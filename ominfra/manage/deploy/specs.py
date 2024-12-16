@@ -60,12 +60,22 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
+class DeployConfSpec:
+    files: ta.Optional[ta.Mapping[str, str]] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
 
     git: DeployGitSpec
 
     venv: ta.Optional[DeployVenvSpec] = None
+
+    conf: ta.Optional[DeployConfSpec] = None
 
     def __post_init__(self) -> None:
         hash(self)

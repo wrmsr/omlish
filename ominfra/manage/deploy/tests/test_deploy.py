@@ -8,6 +8,7 @@ from ..apps import DeployAppManager
 from ..config import DeployConfig
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
+from ..paths import DeployPathOwners
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
@@ -18,8 +19,16 @@ from ..types import DeployRev
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
+        deploy_home = DeployHome(tempfile.mkdtemp())
+
+        print()
+        print(deploy_home)
+        print()
+
+        #
+
         deploy_config = DeployConfig(
-            deploy_home=DeployHome(tempfile.mkdtemp()),
+            deploy_home=deploy_home,
         )
 
         injector = inj.create_injector(
@@ -27,6 +36,10 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                 deploy_config=deploy_config,
             ),
         )
+
+        #
+
+        print(injector[DeployPathOwners])
 
         #
 
@@ -48,8 +61,12 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
+        #
+
         from omlish.lite.json import json_dumps_compact
         from omlish.lite.marshal import marshal_obj
         print(json_dumps_compact(marshal_obj(spec)))
+
+        #
 
         await apps.prepare_app(spec)
