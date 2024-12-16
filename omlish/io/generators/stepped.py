@@ -151,18 +151,31 @@ def read_into_str_stepped_generator(
 def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> BytesSteppedGenerator:
     o = g.send(None)
     buf: ta.Any = None
+    eof = False
 
     while True:
+        if eof:
+            raise EOFError
+
         if not buf:
             buf = check.isinstance((yield None), bytes)
+            if not buf:
+                eof = True
 
-        if o is None or not buf:
+        if o is None:
             i = buf
+            buf = None
+
         elif isinstance(o, int):
-            if len(buf) < o:
-                raise NotImplementedError
+            while len(buf) < o:
+                more = check.isinstance((yield None), bytes)
+                if not more:
+                    raise EOFError
+                buf += more
+
             i = buf[:o]
             buf = buf[o:]
+
         else:
             raise TypeError(o)
 
@@ -171,5 +184,7 @@ def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> Byt
             i = None
             if isinstance(o, bytes):
                 check.none((yield o))
+                if not o:
+                    return
             else:
                 break

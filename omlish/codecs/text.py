@@ -46,8 +46,8 @@ TextEncodingErrors: ta.TypeAlias = ta.Literal[
     'namereplace',
 
     ##
-    # In addition, the following error handler is specific to the given codecs:
-    # utf-8, utf-16, utf-32, utf-16-be, utf-16-le, utf-32-be, utf-32-le
+    # In addition, the following error handler is specific to the given codecs: utf-8, utf-16, utf-32, utf-16-be,
+    # utf-16-le, utf-32-be, utf-32-le
 
     # Allow encoding and decoding surrogate code point (U+D800 - U+DFFF) as normal code point. Otherwise these codecs
     # treat the presence of surrogate code point in str as an error.
