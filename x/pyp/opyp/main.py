@@ -34,8 +34,8 @@ def run_pyp(args: argparse.Namespace) -> None:
         exec(compile(tree, filename='<pyp>', mode='exec'), {})
 
     except Exception as e:
-        # On error, reconstruct a traceback into the generated code
-        # Also add some diagnostics for ModuleNotFoundError and NameError
+        # On error, reconstruct a traceback into the generated code. Also add some diagnostics for ModuleNotFoundError
+        # and NameError
         try:
             line_to_node: dict[int, ast.AST] = {}
             for node in dfs_walk(tree):
@@ -70,6 +70,7 @@ def run_pyp(args: argparse.Namespace) -> None:
             message = 'Possible reconstructed traceback (most recent call last):\n'
             message += ''.join(tb_format).strip('\n')
             message = message.replace(', line PYP_REDACTED', '')
+
         except Exception:  # noqa
             message = ''.join(traceback.format_exception_only(type(e), e)).strip()
 
