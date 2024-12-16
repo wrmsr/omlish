@@ -50,4 +50,7 @@ from .stepped import (  # noqa
     joined_str_stepped_generator,
 
     read_into_bytes_stepped_generator,
+    read_into_str_stepped_generator,
+
+    buffer_bytes_stepped_reader_generator,
 )
