@@ -1,11 +1,12 @@
 # ruff: noqa: UP006 UP007
 """
 TODO:
- - run/pidfile
+ - run/{.pid,.sock}
  - logs/...
  - current symlink
  - conf/{nginx,supervisor}
  - env/?
+ - apps/<app>/shared
 """
 import abc
 import dataclasses as dc
