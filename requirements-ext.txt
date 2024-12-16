@@ -12,7 +12,7 @@
 # thinc
 ##
 
-matplotlib==3.9.4
+matplotlib==3.10.0
 
 evaluate==0.4.3
 
@@ -79,7 +79,7 @@ git+https://github.com/huggingface/peft.git
 
 scipy==1.14.1
 scikit-learn==1.6.0
-scikit-image==0.24.0
+scikit-image==0.25.0
 
 simsimd>=5.9.11
 
@@ -98,7 +98,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.2.0
+accelerate==1.2.1
 
 pytorch-lightning==2.4.0
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.79
+boto3>=1.35.81
 
 google-api-python-client==2.155.0
 google-cloud-compute==1.23.0
@@ -198,16 +198,16 @@ customtkinter==5.2.2
 
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
-langchain-community==0.3.11
-langchain-core==0.3.24
+langchain-community==0.3.12
+langchain-core==0.3.25
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.3
 langchain-openai==0.2.12
 langchain-qdrant==0.2.0
-langchain-text-splitters==0.3.2
-langchain==0.3.11
+langchain-text-splitters==0.3.3
+langchain==0.3.12
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
@@ -282,7 +282,7 @@ docopt==0.6.2
 
 rapidocr_onnxruntime==1.4.3
 
-gguf==0.11.0
+gguf==0.13.0
 
 pytesseract==0.3.13
 
