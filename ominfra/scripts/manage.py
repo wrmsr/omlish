@@ -4263,6 +4263,9 @@ class DeployPathOwner(abc.ABC):
         raise NotImplementedError
 
 
+DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
+
+
 class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
     def __init__(
             self,
@@ -4347,12 +4350,22 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
+class DeployConfSpec:
+    files: ta.Optional[ta.Mapping[str, str]] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
 
     git: DeployGitSpec
 
     venv: ta.Optional[DeployVenvSpec] = None
+
+    conf: ta.Optional[DeployConfSpec] = None
 
     def __post_init__(self) -> None:
         hash(self)
@@ -6751,6 +6764,15 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 
 
 ########################################
+# ../deploy/conf.py
+
+
+class DeployConfManager:
+    async def write_conf(self, spec: DeployConfSpec) -> None:
+        pass
+
+
+########################################
 # ../deploy/tmp.py
 
 
@@ -8866,12 +8888,16 @@ class DeployAppManager(DeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+
+            conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
+
+        self._conf = conf
         self._git = git
         self._venvs = venvs
 
@@ -8927,6 +8953,13 @@ class DeployAppManager(DeployPathOwner):
                 git_dir,
                 venv_dir,
                 spec.venv,
+            )
+
+        #
+
+        if spec.conf is not None:
+            await self._conf.write_conf(
+                spec.conf,
             )
 
         #
@@ -10054,23 +10087,45 @@ def bind_deploy(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
+    ]
 
-        #
+    #
 
-        inj.bind(DeployAppManager, singleton=True),
+    def bind_manager(cls: type) -> InjectorBindings:
+        return inj.as_bindings(
+            inj.bind(cls, singleton=True),
 
-        inj.bind(DeployGitManager, singleton=True),
+            *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
+        )
 
-        inj.bind(DeployTmpManager, singleton=True),
+    lst.extend([
+        inj.bind_array(DeployPathOwner),
+        inj.bind_array_type(DeployPathOwner, DeployPathOwners),
+    ])
+
+    #
+
+    lst.extend([
+        bind_manager(DeployAppManager),
+
+        bind_manager(DeployConfManager),
+
+        bind_manager(DeployGitManager),
+
+        bind_manager(DeployTmpManager),
         inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),
 
-        inj.bind(DeployVenvManager, singleton=True),
+        bind_manager(DeployVenvManager),
+    ])
 
-        #
+    #
 
+    lst.extend([
         bind_command(DeployCommand, DeployCommandExecutor),
         bind_command(InterpCommand, InterpCommandExecutor),
-    ]
+    ])
+
+    #
 
     if (dh := deploy_config.deploy_home) is not None:
         dh = os.path.abspath(os.path.expanduser(dh))

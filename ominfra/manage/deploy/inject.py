@@ -11,10 +11,13 @@ from ..commands.inject import bind_command
 from .apps import DeployAppManager
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor
+from .conf import DeployConfManager
 from .config import DeployConfig
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
+from .paths import DeployPathOwner
+from .paths import DeployPathOwners
 from .tmp import DeployTmpManager
 from .types import DeployHome
 from .venvs import DeployVenvManager
@@ -26,23 +29,45 @@ def bind_deploy(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
+    ]
 
-        #
+    #
 
-        inj.bind(DeployAppManager, singleton=True),
+    def bind_manager(cls: type) -> InjectorBindings:
+        return inj.as_bindings(
+            inj.bind(cls, singleton=True),
 
-        inj.bind(DeployGitManager, singleton=True),
+            *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
+        )
 
-        inj.bind(DeployTmpManager, singleton=True),
+    lst.extend([
+        inj.bind_array(DeployPathOwner),
+        inj.bind_array_type(DeployPathOwner, DeployPathOwners),
+    ])
+
+    #
+
+    lst.extend([
+        bind_manager(DeployAppManager),
+
+        bind_manager(DeployConfManager),
+
+        bind_manager(DeployGitManager),
+
+        bind_manager(DeployTmpManager),
         inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),
 
-        inj.bind(DeployVenvManager, singleton=True),
+        bind_manager(DeployVenvManager),
+    ])
 
-        #
+    #
 
+    lst.extend([
         bind_command(DeployCommand, DeployCommandExecutor),
         bind_command(InterpCommand, InterpCommandExecutor),
-    ]
+    ])
+
+    #
 
     if (dh := deploy_config.deploy_home) is not None:
         dh = os.path.abspath(os.path.expanduser(dh))
