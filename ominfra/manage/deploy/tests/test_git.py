@@ -6,7 +6,7 @@ from omlish.os.atomics import TempDirAtomicPathSwapping
 
 from ..git import DeployGitManager
 from ..git import DeployGitRepo
-from ..specs import DeployGitCheckout
+from ..specs import DeployGitSpec
 from ..types import DeployHome
 from ..types import DeployRev
 
@@ -20,7 +20,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
             atomics=TempDirAtomicPathSwapping(),
         )
 
-        checkout = DeployGitCheckout(
+        checkout = DeployGitSpec(
             repo=DeployGitRepo(
                 host='github.com',
                 path='wrmsr/flaskthing',
@@ -44,7 +44,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
             atomics=TempDirAtomicPathSwapping(),
         )
 
-        checkout = DeployGitCheckout(
+        checkout = DeployGitSpec(
             repo=DeployGitRepo(
                 host='github.com',
                 path='wrmsr/flaskthing',

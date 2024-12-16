@@ -8,7 +8,7 @@ from ..apps import DeployAppManager
 from ..config import DeployConfig
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..specs import DeployGitCheckout
+from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
 from ..types import DeployApp
@@ -36,7 +36,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         spec = DeploySpec(
             app=DeployApp('flaskthing'),
-            checkout=DeployGitCheckout(
+            git=DeployGitSpec(
                 repo=DeployGitRepo(
                     host='github.com',
                     path='wrmsr/flaskthing',

@@ -53,6 +53,7 @@ class DeployAppManager(DeployPathOwner):
         return {
             DeployPath.parse('apps/@app/current'),
             DeployPath.parse('apps/@app/deploying'),
+
             DeployPath.parse('apps/@app/tags/@tag/git/'),
             DeployPath.parse('apps/@app/tags/@tag/venv/'),
         }
@@ -61,7 +62,7 @@ class DeployAppManager(DeployPathOwner):
             self,
             spec: DeploySpec,
     ) -> None:
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.checkout.rev, spec.key()))
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.git.rev, spec.key()))
 
         #
 
@@ -84,7 +85,7 @@ class DeployAppManager(DeployPathOwner):
 
         git_dir = os.path.join(tag_dir, 'git')
         await self._git.checkout(
-            spec.checkout,
+            spec.git,
             git_dir,
         )
 
