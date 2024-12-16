@@ -26,7 +26,7 @@ class DeployGitRepo:
 
 
 @dc.dataclass(frozen=True)
-class DeployGitCheckout:
+class DeployGitSpec:
     repo: DeployGitRepo
     rev: DeployRev
 
@@ -63,7 +63,7 @@ class DeployVenvSpec:
 class DeploySpec:
     app: DeployApp
 
-    checkout: DeployGitCheckout
+    git: DeployGitSpec
 
     venv: ta.Optional[DeployVenvSpec] = None
 
