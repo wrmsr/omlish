@@ -171,6 +171,7 @@ def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> Byt
                 more = check.isinstance((yield None), bytes)
                 if not more:
                     raise EOFError
+                # FIXME: lol - share guts with readers
                 buf += more
 
             i = buf[:o]
