@@ -4,6 +4,7 @@ import unittest
 
 from omlish.lite.inject import inj
 from omlish.lite.json import json_dumps_pretty
+from omlish.lite.strings import strip_with_newline
 
 from ..apps import DeployAppManager
 from ..config import DeployConfig
@@ -69,7 +70,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                 files=[
                     DeployConfFile(
                         'supervisor/flaskthing.json',
-                        json_dumps_pretty({
+                        strip_with_newline(json_dumps_pretty({
                             'groups': {
                                 'flaskthing': {
                                     'processes': {
@@ -79,7 +80,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                                     },
                                 },
                             },
-                        }),
+                        })),
                     ),
                 ],
                 dir_links=[
