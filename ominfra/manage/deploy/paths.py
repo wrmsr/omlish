@@ -263,3 +263,32 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return self._owned_deploy_paths
+
+
+##
+
+
+class DeployPathsManager:
+    def __init__(
+            self,
+            *,
+            deploy_home: ta.Optional[DeployHome],
+            deploy_path_owners: DeployPathOwners,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_home = deploy_home
+        self._deploy_path_owners = deploy_path_owners
+
+    @cached_nullary
+    def owners_by_path(self) -> ta.Mapping[DeployPath, DeployPathOwner]:
+        dct: ta.Dict[DeployPath, DeployPathOwner] = {}
+        for o in self._deploy_path_owners:
+            for p in o.get_owned_deploy_paths():
+                if p in dct:
+                    raise DeployPathError(f'Duplicate deploy path owner: {p}')
+                dct[p] = o
+        return dct
+
+    def validate_deploy_paths(self) -> None:
+        self.owners_by_path()

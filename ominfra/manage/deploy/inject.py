@@ -13,11 +13,13 @@ from .commands import DeployCommand
 from .commands import DeployCommandExecutor
 from .conf import DeployConfManager
 from .config import DeployConfig
+from .deploy import DeployManager
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths import DeployPathOwner
 from .paths import DeployPathOwners
+from .paths import DeployPathsManager
 from .tmp import DeployTmpManager
 from .types import DeployHome
 from .venvs import DeployVenvManager
@@ -53,6 +55,10 @@ def bind_deploy(
         bind_manager(DeployConfManager),
 
         bind_manager(DeployGitManager),
+
+        bind_manager(DeployManager),
+
+        bind_manager(DeployPathsManager),
 
         bind_manager(DeployTmpManager),
         inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),

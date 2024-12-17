@@ -24,7 +24,6 @@ from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
 from .paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
-from .paths import SingleDirDeployPathOwner
 from .specs import AppDeployConfLink
 from .specs import DeployConfFile
 from .specs import DeployConfLink
@@ -34,16 +33,17 @@ from .types import DeployAppTag
 from .types import DeployHome
 
 
-class DeployConfManager(SingleDirDeployPathOwner):
+class DeployConfManager:
     def __init__(
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
     ) -> None:
-        super().__init__(
-            owned_dir='conf',
-            deploy_home=deploy_home,
-        )
+        super().__init__()
+
+        self._deploy_home = deploy_home
+
+    #
 
     async def _write_conf_file(
             self,
@@ -58,32 +58,36 @@ class DeployConfManager(SingleDirDeployPathOwner):
         with open(conf_file, 'w') as f:  # noqa
             f.write(cf.body)
 
-    async def _make_conf_link(
+    #
+
+    class _ComputedConfLink(ta.NamedTuple):
+        is_dir: bool
+        link_src: str
+        link_dst: str
+        sym_root: str
+
+    def _compute_conf_link_dst(
             self,
             link: DeployConfLink,
-            conf_dir: str,
             app_tag: DeployAppTag,
+            conf_dir: str,
             link_dir: str,
-    ) -> None:
+    ) -> _ComputedConfLink:
         link_src = os.path.join(conf_dir, link.src)
         check.arg(is_path_in_dir(conf_dir, link_src))
 
-        is_link_dir = link.src.endswith('/')
-        if is_link_dir:
+        if (is_dir := link.src.endswith('/')):
             check.arg(link.src.count('/') == 1)
-            check.arg(os.path.isdir(link_src))
             link_dst_pfx = link.src
             link_dst_sfx = ''
 
         elif '/' in link.src:
-            check.arg(os.path.isfile(link_src))
             d, f = os.path.split(link.src)
             # TODO: check filename :|
             link_dst_pfx = d + '/'
             link_dst_sfx = '-' + f
 
         else:
-            check.arg(os.path.isfile(link_src))
             if '.' in link.src:
                 l, _, r = link.src.partition('.')
                 link_dst_pfx = l + '/'
@@ -107,26 +111,58 @@ class DeployConfManager(SingleDirDeployPathOwner):
             link_dst_sfx,
         ])
 
-        root_conf_dir = self._make_dir()
-        sym_src = os.path.join(sym_root, link.src)
-        sym_dst = os.path.join(root_conf_dir, link_dst)
-        check.arg(is_path_in_dir(root_conf_dir, sym_dst))
+        return DeployConfManager._ComputedConfLink(
+            is_dir=is_dir,
+            link_src=link_src,
+            link_dst=link_dst,
+            sym_root=sym_root,
+        )
 
-        os.makedirs(os.path.dirname(sym_dst), exist_ok=True)
-        relative_symlink(sym_src, sym_dst, target_is_directory=is_link_dir)
+    async def _make_conf_link(
+            self,
+            link: DeployConfLink,
+            app_tag: DeployAppTag,
+            conf_dir: str,
+            link_dir: str,
+    ) -> None:
+        comp = self._compute_conf_link_dst(
+            link,
+            app_tag,
+            conf_dir,
+            link_dir,
+        )
+
+        #
+
+        if comp.is_dir:
+            check.arg(os.path.isdir(comp.link_src))
+        else:
+            check.arg(os.path.isfile(comp.link_src))
+
+        #
+
+        sym_src = os.path.join(comp.sym_root, link.src)
+        sym_dst = os.path.join(conf_dir, comp.link_dst)
+        check.arg(is_path_in_dir(conf_dir, sym_dst))
+
+        raise NotImplementedError
+
+        relative_symlink(  # noqa
+            sym_src,
+            sym_dst,
+            target_is_directory=comp.is_dir,
+            make_dirs=True,
+        )
+
+    #
 
     async def write_conf(
             self,
             spec: DeployConfSpec,
-            conf_dir: str,
             app_tag: DeployAppTag,
+            conf_dir: str,
             link_dir: str,
     ) -> None:
-        conf_dir = os.path.abspath(conf_dir)
-        os.makedirs(conf_dir)
-
-        #
-
         for cf in spec.files or []:
             await self._write_conf_file(
                 cf,
@@ -138,7 +174,7 @@ class DeployConfManager(SingleDirDeployPathOwner):
         for link in spec.links or []:
             await self._make_conf_link(
                 link,
-                conf_dir,
                 app_tag,
+                conf_dir,
                 link_dir,
             )

@@ -141,8 +141,8 @@ class DeployAppManager(DeployPathOwner):
             conf_link_dir = os.path.join(deploying_dir, 'conf')
             await self._conf.write_conf(
                 spec.conf,
-                conf_dir,
                 app_tag,
+                conf_dir,
                 conf_link_dir,
             )
 
