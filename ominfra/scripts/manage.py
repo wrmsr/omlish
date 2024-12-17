@@ -4412,10 +4412,19 @@ class DeployConfFile:
 
 @dc.dataclass(frozen=True)
 class DeployConfLink(abc.ABC):  # noqa
+    """
+    May be either:
+     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
+    """
+
     src: str
 
     def __post_init__(self) -> None:
         check_valid_deploy_spec_path(self.src)
+        if '/' in self.src:
+            check.equal(self.src.count('/'), 1)
+            check.arg(self.src.endswith('/'))
 
 
 class AppDeployConfLink(DeployConfLink):
@@ -6853,12 +6862,6 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 # ../deploy/conf.py
 """
 TODO:
- - link kinds:
-  - conf/nginx/@app.conf -> current/conf/nginx/@app.conf
-  - conf/nginx/@app-@tag.conf -> current/conf/nginx/@app.conf
-  - conf/nginx/@app -> current/conf/nginx/
-  - conf/nginx/@app-@tag -> current/conf/nginx/
-
  - @conf DeployPathPlaceholder? :|
  - post-deploy: remove any dir_links not present in new spec
   - * only if succeeded * - otherwise, remove any dir_links present in new spec but not previously present?
@@ -6887,6 +6890,76 @@ class DeployConfManager(SingleDirDeployPathOwner):
             deploy_home=deploy_home,
         )
 
+    async def _write_conf_file(
+            self,
+            cf: DeployConfFile,
+            conf_dir: str,
+    ) -> None:
+        conf_file = os.path.join(conf_dir, cf.path)
+        check.arg(is_path_in_dir(conf_dir, conf_file))
+
+        os.makedirs(os.path.dirname(conf_file), exist_ok=True)
+
+        with open(conf_file, 'w') as f:  # noqa
+            f.write(cf.body)
+
+    async def _make_conf_link(
+            self,
+            link: DeployConfLink,
+            conf_dir: str,
+            app_tag: DeployAppTag,
+            link_dir: str,
+    ) -> None:
+        """
+        Link kinds:
+          - conf/nginx/@app.conf -> current/conf/nginx/@app.conf
+          - conf/nginx/@app-@tag.conf -> current/conf/nginx/@app.conf
+          - conf/nginx/@app -> current/conf/nginx/
+          - conf/nginx/@app-@tag -> current/conf/nginx/
+        """
+
+        link_src = os.path.join(conf_dir, link.src)
+        check.arg(is_path_in_dir(conf_dir, link_src))
+
+        is_link_dir = link.src.endswith('/')
+        if is_link_dir:
+            check.arg(link.src.count('/') == 1)
+            check.arg(os.path.isdir(link_src))
+            link_dst_pfx = link.src
+            link_dst_sfx = ''
+
+        else:
+            check.not_in('/', link.src)
+            check.arg(os.path.isfile(link_src))
+            if '.' in link.src:
+                l, _, r = link.src.partition('.')
+                link_dst_pfx = l + '/'
+                link_dst_sfx = '.' + r
+            else:
+                link_dst_pfx = link.src + '/'
+                link_dst_sfx = ''
+
+        if isinstance(link, AppDeployConfLink):
+            link_dst_mid = str(app_tag.app)
+        elif isinstance(link, TagDeployConfLink):
+            link_dst_mid = '-'.join([app_tag.app, app_tag.tag])
+        else:
+            raise TypeError(link)
+
+        link_dst = ''.join([
+            link_dst_pfx,
+            link_dst_mid,
+            link_dst_sfx,
+        ])
+
+        root_conf_dir = self._make_dir()
+        sym_src = os.path.join(link_dir, link.src)
+        sym_dst = os.path.join(root_conf_dir, link_dst)
+        check.arg(is_path_in_dir(root_conf_dir, sym_dst))
+
+        os.makedirs(os.path.dirname(sym_dst), exist_ok=True)
+        relative_symlink(sym_src, sym_dst, target_is_directory=is_link_dir)
+
     async def write_conf(
             self,
             spec: DeployConfSpec,
@@ -6897,46 +6970,23 @@ class DeployConfManager(SingleDirDeployPathOwner):
         conf_dir = os.path.abspath(conf_dir)
         os.makedirs(conf_dir)
 
+        #
+
         for cf in spec.files or []:
-            conf_file = os.path.join(conf_dir, cf.path)
-            check.arg(is_path_in_dir(conf_dir, conf_file))
+            await self._write_conf_file(
+                cf,
+                conf_dir,
+            )
 
-            os.makedirs(os.path.dirname(conf_file), exist_ok=True)
-
-            with open(conf_file, 'w') as f:  # noqa
-                f.write(cf.body)
+        #
 
         for link in spec.links or []:
-            link_src = os.path.join(conf_dir, link.src)
-            check.arg(is_path_in_dir(conf_dir, link_src))
-
-            is_link_dir = link.src.endswith('/')
-            if is_link_dir:
-                check.arg(os.path.isdir(link_src))
-                link_dst_base = link.src[:-1]
-            else:
-                check.arg(os.path.isfile(link_src))
-                link_dst_base = link.src
-
-            if '.' in link_dst_base:
-                link_dst_sfx = '.' + link_dst_base.partition('.')[2]
-            else:
-                link_dst_sfx = ''
-
-            if isinstance(link, AppDeployConfLink):
-                link_dst_pfx = str(app_tag.app)
-            elif isinstance(link, TagDeployConfLink):
-                link_dst_pfx = '-'.join([app_tag.app, app_tag.tag])
-            else:
-                raise TypeError(link)
-
-            link_dst_name = link_dst_pfx + link_dst_sfx
-
-            root_conf_dir = self._make_dir()
-            link_dst = os.path.join(root_conf_dir, link_dst_name)
-            check.arg(is_path_in_dir(root_conf_dir, link_dst))
-
-            relative_symlink(link_src, link_dst, target_is_directory=is_link_dir)
+            await self._make_conf_link(
+                link,
+                conf_dir,
+                app_tag,
+                link_dir,
+            )
 
 
 ########################################
