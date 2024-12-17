@@ -7,8 +7,8 @@ from omlish.lite.inject import inj
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.strings import strip_with_newline
 
-from ..apps import DeployAppManager
 from ..config import DeployConfig
+from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..paths import DeployPathOwners
@@ -26,34 +26,6 @@ from ..types import DeployRev
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
-        deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
-
-        print()
-        print(deploy_home)
-        print()
-
-        #
-
-        deploy_config = DeployConfig(
-            deploy_home=deploy_home,
-        )
-
-        injector = inj.create_injector(
-            bind_deploy(
-                deploy_config=deploy_config,
-            ),
-        )
-
-        #
-
-        print(injector[DeployPathOwners])
-
-        #
-
-        apps = injector[DeployAppManager]
-
-        #
-
         spec = DeploySpec(
             app=DeployApp('flaskthing'),
 
@@ -111,8 +83,27 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         from omlish.lite.json import json_dumps_compact
         from omlish.lite.marshal import marshal_obj
+        print()
         print(json_dumps_compact(marshal_obj(spec)))
+        print()
 
         #
 
-        await apps.prepare_app(spec)
+        deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
+
+        print(deploy_home)
+        print()
+
+        #
+
+        injector = inj.create_injector(
+            bind_deploy(
+                deploy_config=DeployConfig(
+                    deploy_home=deploy_home,
+                ),
+            ),
+        )
+
+        #
+
+        await injector[DeployManager].deploy_app(spec)
