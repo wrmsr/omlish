@@ -2,9 +2,12 @@
 import datetime
 import itertools
 import os.path
+import shutil
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
 from .conf import DeployConfManager
@@ -51,12 +54,16 @@ class DeployAppManager(DeployPathOwner):
         self._git = git
         self._venvs = venvs
 
+    #
+
     _APP_TAG_PATH_STR = 'tags/apps/@app--@tag/'
     _APP_TAG_PATH = DeployPath.parse(_APP_TAG_PATH_STR)
 
+    @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             *itertools.chain.from_iterable([
+                DeployPath.parse(f'{pfx}/'),
                 DeployPath.parse(f'{pfx}/apps/@app'),
                 DeployPath.parse(f'{pfx}/conf/@conf'),
             ] for pfx in [
@@ -67,7 +74,7 @@ class DeployAppManager(DeployPathOwner):
             self._APP_TAG_PATH,
 
             *[
-                DeployPath.parse(f'{self._APP_TAG_PATH_STR}/{sfx}/')
+                DeployPath.parse(f'{self._APP_TAG_PATH_STR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
@@ -78,6 +85,8 @@ class DeployAppManager(DeployPathOwner):
             DeployPath.parse('tags/conf/@conf--@app--@tag'),
         }
 
+    #
+
     async def prepare_app(
             self,
             spec: DeploySpec,
@@ -86,28 +95,30 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        self._APP_TAG_PATH.render(app_tag.placeholders())
-
-        app_dir = os.path.join(check.non_empty_str(self._deploy_home), 'tags', 'apps', spec.app)
-        os.makedirs(app_dir, exist_ok=True)
-
-        #
-
-        tag_dir = os.path.join(app_dir, 'tags', app_tag.tag)
-        os.makedirs(tag_dir)
+        deploy_home = check.non_empty_str(self._deploy_home)
+        app_tag_dir = os.path.join(deploy_home, self._APP_TAG_PATH.render(app_tag.placeholders()))
+        os.makedirs(app_tag_dir)
 
         #
 
-        deploying_file = os.path.join(app_dir, 'deploying')
-        current_file = os.path.join(app_dir, 'current')
-
-        if os.path.exists(deploying_file):
-            os.unlink(deploying_file)
-        relative_symlink(tag_dir, deploying_file, target_is_directory=True)
+        deploying_dir = os.path.join(deploy_home, 'deploying')
+        if os.path.exists(deploying_dir):
+            check.state(is_path_in_dir(deploy_home, deploying_dir))
+            shutil.rmtree(deploying_dir)
+        os.makedirs(deploying_dir)
 
         #
 
-        git_dir = os.path.join(tag_dir, 'git')
+        relative_symlink(
+            app_tag_dir,
+            os.path.join(deploying_dir, 'apps', app_tag.app),
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        git_dir = os.path.join(app_tag_dir, 'git')
         await self._git.checkout(
             spec.git,
             git_dir,
@@ -116,7 +127,7 @@ class DeployAppManager(DeployPathOwner):
         #
 
         if spec.venv is not None:
-            venv_dir = os.path.join(tag_dir, 'venv')
+            venv_dir = os.path.join(app_tag_dir, 'venv')
             await self._venvs.setup_venv(
                 spec.venv,
                 git_dir,
@@ -126,8 +137,8 @@ class DeployAppManager(DeployPathOwner):
         #
 
         if spec.conf is not None:
-            conf_dir = os.path.join(tag_dir, 'conf')
-            conf_link_dir = os.path.join(current_file, 'conf')
+            conf_dir = os.path.join(app_tag_dir, 'conf')
+            conf_link_dir = os.path.join(deploying_dir, 'conf')
             await self._conf.write_conf(
                 spec.conf,
                 conf_dir,
@@ -137,4 +148,4 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.replace(deploying_file, current_file)
+        # os.replace(deploying_file, current_file)
