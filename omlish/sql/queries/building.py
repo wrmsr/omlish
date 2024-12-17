@@ -5,6 +5,7 @@ from .idents import IdentBuilder
 from .inserts import InsertBuilder
 from .multi import MultiBuilder
 from .names import NameBuilder
+from .params import ParamBuilder
 from .relations import RelationBuilder
 from .selects import SelectBuilder
 from .stmts import StmtBuilder
@@ -22,6 +23,8 @@ class StdBuilder(
     ExprBuilder,
 
     RelationBuilder,
+
+    ParamBuilder,
 
     NameBuilder,
     IdentBuilder,

@@ -29,13 +29,13 @@ from .binary import BinaryOp
 from .binary import BinaryOps
 from .exprs import Literal
 from .exprs import NameExpr
-from .exprs import Param
 from .idents import Ident
 from .inserts import Insert
 from .inserts import Values
 from .multi import Multi
 from .multi import MultiKind
 from .names import Name
+from .params import Param
 from .relations import Table
 from .selects import Select
 from .selects import SelectItem

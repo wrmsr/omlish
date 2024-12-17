@@ -1,7 +1,7 @@
+import abc
 import functools
 import typing as ta
 
-from ... import check
 from ... import lang
 from .base import Builder
 from .base import Node
@@ -10,7 +10,14 @@ from .base import Node
 ##
 
 
-class Ident(Node, lang.Final):
+class IdentLike(abc.ABC):  # noqa
+    pass
+
+
+##
+
+
+class Ident(Node, IdentLike, lang.Final):
     s: str
 
 
@@ -35,23 +42,26 @@ def _(s: str) -> Ident:
 ##
 
 
-class IdentAccessor:
+CanIdent: ta.TypeAlias = IdentLike | Ident | str
+
+
+class IdentAccessor(lang.Final):
     def __getattr__(self, s: str) -> Ident:
-        check.not_in('.', s)
-        check.arg(not s.startswith('__'))
         return Ident(s)
+
+    def __call__(self, o: CanIdent) -> Ident:
+        return as_ident(o)
 
 
 ##
 
 
-CanIdent: ta.TypeAlias = Ident | str
-
-
 class IdentBuilder(Builder):
+    @ta.final
     def ident(self, o: CanIdent) -> Ident:
         return as_ident(o)
 
     @ta.final
-    def i(self, o: CanIdent) -> Ident:
-        return self.ident(o)
+    @property
+    def i(self) -> IdentAccessor:
+        return IdentAccessor()
