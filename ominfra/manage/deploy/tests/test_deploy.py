@@ -66,7 +66,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
             ),
 
             conf=DeployConfSpec(
-                files=(
+                files=[
                     DeployConfFile(
                         'supervisor/flaskthing.json',
                         json_dumps_pretty({
@@ -81,7 +81,10 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                             },
                         }),
                     ),
-                ),
+                ],
+                dir_links=[
+                    'supervisor',
+                ],
             ),
         )
 
