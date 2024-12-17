@@ -35,7 +35,7 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
-blis==0.7.11
+blis==1.1.0
 boto3==1.35.82
 botocore==1.35.82
 Brotli==1.1.0
@@ -460,7 +460,7 @@ sounddevice==0.5.1
 soundfile==0.12.1
 soupsieve==2.6
 soxr==0.5.0.post1
-spacy==3.8.0
+spacy==3.8.3
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
@@ -483,7 +483,7 @@ tensorflow==2.17.1
 termcolor==2.5.0
 terminado==0.18.1
 tf_keras==2.17.0
-thinc==8.2.5
+thinc==8.3.3
 threadpoolctl==3.5.0
 tifffile==2024.12.12
 tiktoken==0.8.0
