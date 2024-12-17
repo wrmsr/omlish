@@ -11,16 +11,13 @@ TODO:
 import abc
 import dataclasses as dc
 import itertools
-import os.path
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
-from .types import DeployHome
-from .types import DeployPathKind
-from .types import DeployPathPlaceholder
+from ..types import DeployPathKind
+from ..types import DeployPathPlaceholder
 
 
 ##
@@ -220,75 +217,3 @@ class DeployPath:
         check.non_empty_str(s)
         ps = split_keep_delimiter(s, '/')
         return cls(tuple(DeployPathPart.parse(p) for p in ps))
-
-
-##
-
-
-class DeployPathOwner(abc.ABC):
-    @abc.abstractmethod
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        raise NotImplementedError
-
-
-DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
-
-
-class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
-    def __init__(
-            self,
-            *args: ta.Any,
-            owned_dir: str,
-            deploy_home: ta.Optional[DeployHome],
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-
-        check.not_in('/', owned_dir)
-        self._owned_dir: str = check.non_empty_str(owned_dir)
-
-        self._deploy_home = deploy_home
-
-        self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
-
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), self._owned_dir)
-
-    @cached_nullary
-    def _make_dir(self) -> str:
-        if not os.path.isdir(d := self._dir()):
-            os.makedirs(d, exist_ok=True)
-        return d
-
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return self._owned_deploy_paths
-
-
-##
-
-
-class DeployPathsManager:
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome],
-            deploy_path_owners: DeployPathOwners,
-    ) -> None:
-        super().__init__()
-
-        self._deploy_home = deploy_home
-        self._deploy_path_owners = deploy_path_owners
-
-    @cached_nullary
-    def owners_by_path(self) -> ta.Mapping[DeployPath, DeployPathOwner]:
-        dct: ta.Dict[DeployPath, DeployPathOwner] = {}
-        for o in self._deploy_path_owners:
-            for p in o.get_owned_deploy_paths():
-                if p in dct:
-                    raise DeployPathError(f'Duplicate deploy path owner: {p}')
-                dct[p] = o
-        return dct
-
-    def validate_deploy_paths(self) -> None:
-        self.owners_by_path()
