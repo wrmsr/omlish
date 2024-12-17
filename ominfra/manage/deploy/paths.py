@@ -26,7 +26,7 @@ DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
 ##
 
 
-DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER = '@'
+DEPLOY_PATH_PLACEHOLDER_SIGIL = '@'
 DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
 DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([DEPLOY_PATH_PLACEHOLDER_SEPARATOR, '.'])
 
@@ -41,137 +41,130 @@ class DeployPathError(Exception):
     pass
 
 
-@dc.dataclass(frozen=True)
-class DeployPathPart(abc.ABC):  # noqa
-    @property
-    @abc.abstractmethod
-    def kind(self) -> DeployPathKind:
-        raise NotImplementedError
-
+class DeployPathRenderable(abc.ABC):
     @abc.abstractmethod
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         raise NotImplementedError
 
 
-#
+##
 
 
-class DirDeployPathPart(DeployPathPart, abc.ABC):
-    @property
-    def kind(self) -> DeployPathKind:
-        return 'dir'
-
-    @classmethod
-    def parse(cls, s: str) -> 'DirDeployPathPart':
-        if DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER in s:
-            check.equal(s[0], DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER)
-            return PlaceholderDirDeployPathPart(s[1:])
-        else:
-            return ConstDirDeployPathPart(s)
-
-
-class FileDeployPathPart(DeployPathPart, abc.ABC):
-    @property
-    def kind(self) -> DeployPathKind:
-        return 'file'
-
-    @classmethod
-    def parse(cls, s: str) -> 'FileDeployPathPart':
-        if DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER in s:
-            check.equal(s[0], DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER)
-            if not any(c in s for c in DEPLOY_PATH_PLACEHOLDER_DELIMITERS):
-                return PlaceholderFileDeployPathPart(s[1:], '')
-            else:
-                p = min(f for c in DEPLOY_PATH_PLACEHOLDER_DELIMITERS if (f := s.find(c)) > 0)
-                return PlaceholderFileDeployPathPart(s[1:p], s[p:])
-        else:
-            return ConstFileDeployPathPart(s)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class ConstDeployPathPart(DeployPathPart, abc.ABC):
-    name: str
-
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-        check.not_in('/', self.name)
-        check.not_in(DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, self.name)
-
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return self.name
-
-
-class ConstDirDeployPathPart(ConstDeployPathPart, DirDeployPathPart):
+class DeployPathNamePart(DeployPathRenderable, abc.ABC):
     pass
 
 
-class ConstFileDeployPathPart(ConstDeployPathPart, FileDeployPathPart):
-    pass
-
-
-#
-
-
 @dc.dataclass(frozen=True)
-class PlaceholderDeployPathPart(DeployPathPart, abc.ABC):
-    placeholder: str  # DeployPathPlaceholder
+class PlaceholderDeployPathNamePart(DeployPathNamePart):
+    placeholder: str
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.placeholder)
-        for c in [*DEPLOY_PATH_PLACEHOLDER_DELIMITERS, DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
-            check.not_in(c, self.placeholder)
         check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
 
-    def _render_placeholder(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         if placeholders is not None:
             return placeholders[self.placeholder]  # type: ignore
         else:
-            return DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER + self.placeholder
+            return DEPLOY_PATH_PLACEHOLDER_SIGIL + self.placeholder
 
 
-@dc.dataclass(frozen=True)
-class PlaceholderDirDeployPathPart(PlaceholderDeployPathPart, DirDeployPathPart):
+class PlaceholderSeparatorDeployPathNamePart(DeployPathNamePart):
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return self._render_placeholder(placeholders)
+        return DEPLOY_PATH_PLACEHOLDER_SEPARATOR
 
 
 @dc.dataclass(frozen=True)
-class PlaceholderFileDeployPathPart(PlaceholderDeployPathPart, FileDeployPathPart):
-    suffix: str
+class ConstDeployPathNamePart(DeployPathNamePart):
+    const: str
 
     def __post_init__(self) -> None:
-        super().__post_init__()
-        if self.suffix:
-            for c in [DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
-                check.not_in(c, self.suffix)
+        check.non_empty_str(self.const)
+        for c in [DEPLOY_PATH_PLACEHOLDER_SEPARATOR, DEPLOY_PATH_PLACEHOLDER_SIGIL, '/']:
+            check.not_in(c, self.const)
 
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return self._render_placeholder(placeholders) + self.suffix
+        return self.const
+
+
+@dc.dataclass(frozen=True)
+class DeployPathName(DeployPathRenderable):
+    parts: ta.Sequence[DeployPathNamePart]
+
+    def __post_init__(self) -> None:
+        hash(self)
+        check.not_empty(self.parts)
+
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+        return ''.join(p.render(placeholders) for p in self.parts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'DeployPathName':
+        check.non_empty_str(s)
+        check.not_in('/', s)
+
+        ps = [s]
+        for d in DEPLOY_PATH_PLACEHOLDER_DELIMITERS:
+            ps = [p.split(d) for p in ps]
+
+        raise NotImplementedError
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
+class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
+    name: DeployPathName
+
+    @property
+    @abc.abstractmethod
+    def kind(self) -> DeployPathKind:
+        raise NotImplementedError
+
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+        return self.name.render(placeholders) + ('/' if self.kind == 'dir' else '')
+
+    @classmethod
+    def parse(cls, s: str) -> 'DeployPath':
+        raise NotImplementedError
+
+
+class DirDeployPathPart(DeployPathPart):
+    @property
+    def kind(self) -> DeployPathKind:
+        return 'dir'
+
+
+class FileDeployPathPart(DeployPathPart):
+    @property
+    def kind(self) -> DeployPathKind:
+        return 'file'
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class DeployPath:
     parts: ta.Sequence[DeployPathPart]
 
+    @property
+    def name_parts(self) -> ta.Iterator[DeployPathNamePart]:
+        for p in self.parts:
+            yield from p.name.parts
+
     def __post_init__(self) -> None:
         hash(self)
-
         check.not_empty(self.parts)
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
 
         pd = {}
-        for i, p in enumerate(self.parts):
-            if isinstance(p, PlaceholderDeployPathPart):
-                if p.placeholder in pd:
+        for i, np in enumerate(self.name_parts):
+            if isinstance(np, PlaceholderDeployPathNamePart):
+                if np.placeholder in pd:
                     raise DeployPathError('Duplicate placeholders in path', self)
-                pd[p.placeholder] = i
+                pd[np.placeholder] = i
 
         if 'tag' in pd:
             if 'app' not in pd or pd['app'] >= pd['tag']:
@@ -182,24 +175,24 @@ class DeployPath:
         return self.parts[-1].kind
 
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return os.path.join(  # noqa
+        return '/'.join(  # noqa
             *[p.render(placeholders) for p in self.parts],
             *([''] if self.kind == 'dir' else []),
         )
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
-        tail_parse: ta.Callable[[str], DeployPathPart]
-        if s.endswith('/'):
-            tail_parse = DirDeployPathPart.parse
-            s = s[:-1]
-        else:
-            tail_parse = FileDeployPathPart.parse
-        ps = check.non_empty_str(s).split('/')
-        return cls((
-            *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
-            tail_parse(ps[-1]),
-        ))
+        check.non_empty_str(s)
+        ps = []
+        i = 0
+        while i < len(s):
+            if (n := s.find('/', i)) < i:
+                ps.append(s[i:])
+                break
+            ps.append(s[i:n + 1])
+            i = n + 1
+
+        raise NotImplementedError
 
 
 ##
