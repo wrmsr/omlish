@@ -12,7 +12,7 @@ from .idents import IdentBuilder
 
 
 class Name(Node, lang.Final):
-    ps: ta.Sequence[Ident] = dc.xfield(coerce=tuple)
+    ps: ta.Sequence[Ident] = dc.xfield(coerce=tuple, validate=bool)
 
 
 CanName: ta.TypeAlias = Name | CanIdent | ta.Sequence[CanIdent]
