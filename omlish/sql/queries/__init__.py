@@ -22,13 +22,13 @@ from .exprs import (  # noqa
     ExprBuilder,
     Literal,
     NameExpr,
-    Param,
 )
 
 from .idents import (  # noqa
     CanIdent,
     Ident,
     IdentBuilder,
+    IdentLike,
 )
 
 from .multi import (  # noqa
@@ -41,10 +41,18 @@ from .names import (  # noqa
     CanName,
     Name,
     NameBuilder,
+    NameLike,
 )
 
 from .ops import (  # noqa
     OpKind,
+)
+
+from .params import (  # noqa
+    CanParam,
+    Param,
+    ParamBuilder,
+    as_param,
 )
 
 from .relations import (  # noqa
