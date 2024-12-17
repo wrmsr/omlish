@@ -10,11 +10,13 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import itertools
 import os.path
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.lite.strings import split_keep_delimiter
 
 from .types import DeployHome
 
@@ -28,7 +30,11 @@ DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
 
 DEPLOY_PATH_PLACEHOLDER_SIGIL = '@'
 DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
-DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([DEPLOY_PATH_PLACEHOLDER_SEPARATOR, '.'])
+
+DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([
+    DEPLOY_PATH_PLACEHOLDER_SEPARATOR,
+    '.',
+])
 
 DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
@@ -51,7 +57,15 @@ class DeployPathRenderable(abc.ABC):
 
 
 class DeployPathNamePart(DeployPathRenderable, abc.ABC):
-    pass
+    @classmethod
+    def parse(cls, s: str) -> 'DeployPathNamePart':
+        check.non_empty_str(s)
+        if s.startswith(DEPLOY_PATH_PLACEHOLDER_SIGIL):
+            return PlaceholderDeployPathNamePart(s[1:])
+        elif s in DEPLOY_PATH_PLACEHOLDER_DELIMITERS:
+            return DelimiterDeployPathNamePart(s)
+        else:
+            return ConstDeployPathNamePart(s)
 
 
 @dc.dataclass(frozen=True)
@@ -68,9 +82,15 @@ class PlaceholderDeployPathNamePart(DeployPathNamePart):
             return DEPLOY_PATH_PLACEHOLDER_SIGIL + self.placeholder
 
 
-class PlaceholderSeparatorDeployPathNamePart(DeployPathNamePart):
+@dc.dataclass(frozen=True)
+class DelimiterDeployPathNamePart(DeployPathNamePart):
+    delimiter: str
+
+    def __post_init__(self) -> None:
+        check.in_(self.delimiter, DEPLOY_PATH_PLACEHOLDER_DELIMITERS)
+
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return DEPLOY_PATH_PLACEHOLDER_SEPARATOR
+        return self.delimiter
 
 
 @dc.dataclass(frozen=True)
@@ -79,7 +99,7 @@ class ConstDeployPathNamePart(DeployPathNamePart):
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.const)
-        for c in [DEPLOY_PATH_PLACEHOLDER_SEPARATOR, DEPLOY_PATH_PLACEHOLDER_SIGIL, '/']:
+        for c in [*DEPLOY_PATH_PLACEHOLDER_DELIMITERS, DEPLOY_PATH_PLACEHOLDER_SIGIL, '/']:
             check.not_in(c, self.const)
 
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
@@ -93,6 +113,9 @@ class DeployPathName(DeployPathRenderable):
     def __post_init__(self) -> None:
         hash(self)
         check.not_empty(self.parts)
+        for k, g in itertools.groupby(self.parts, type):
+            if len(gl := list(g)) > 1:
+                raise DeployPathError(f'May not have consecutive path name part types: {k} {gl}')
 
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         return ''.join(p.render(placeholders) for p in self.parts)
@@ -102,11 +125,19 @@ class DeployPathName(DeployPathRenderable):
         check.non_empty_str(s)
         check.not_in('/', s)
 
-        ps = [s]
-        for d in DEPLOY_PATH_PLACEHOLDER_DELIMITERS:
-            ps = [p.split(d) for p in ps]
+        i = 0
+        ps = []
+        while i < len(s):
+            ns = [(n, d) for d in DEPLOY_PATH_PLACEHOLDER_DELIMITERS if (n := s.find(d, i)) >= 0]
+            if not ns:
+                ps.append(s[i:])
+                break
+            n, d = min(ns)
+            ps.append(check.non_empty_str(s[i:n]))
+            ps.append(s[n:n + len(d)])
+            i = n + len(d)
 
-        raise NotImplementedError
+        return cls(tuple(DeployPathNamePart.parse(p) for p in ps))
 
 
 ##
@@ -125,13 +156,17 @@ class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
         return self.name.render(placeholders) + ('/' if self.kind == 'dir' else '')
 
     @classmethod
-    def parse(cls, s: str) -> 'DeployPath':
+    def parse(cls, s: str) -> 'DeployPathPart':
         if (is_dir := s.endswith('/')):
             s = s[:-1]
         check.non_empty_str(s)
         check.not_in('/', s)
 
-        raise NotImplementedError
+        n = DeployPathName.parse(s)
+        if is_dir:
+            return DirDeployPathPart(n)
+        else:
+            return FileDeployPathPart(n)
 
 
 class DirDeployPathPart(DeployPathPart):
@@ -180,25 +215,13 @@ class DeployPath:
         return self.parts[-1].kind
 
     def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return '/'.join(  # noqa
-            *[p.render(placeholders) for p in self.parts],
-            *([''] if self.kind == 'dir' else []),
-        )
+        return ''.join([p.render(placeholders) for p in self.parts])
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
         check.non_empty_str(s)
-
-        ps = []
-        i = 0
-        while i < len(s):
-            if (n := s.find('/', i)) < i:
-                ps.append(s[i:])
-                break
-            ps.append(s[i:n + 1])
-            i = n + 1
-
-        raise NotImplementedError
+        ps = split_keep_delimiter(s, '/')
+        return cls(tuple(DeployPathPart.parse(p) for p in ps))
 
 
 ##

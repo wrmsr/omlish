@@ -27,6 +27,28 @@ def strip_with_newline(s: str) -> str:
     return s.strip() + '\n'
 
 
+@ta.overload
+def split_keep_delimiter(s: str, d: str) -> str:
+    ...
+
+
+@ta.overload
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
+    ...
+
+
+def split_keep_delimiter(s, d):
+    ps = []
+    i = 0
+    while i < len(s):
+        if (n := s.find(d, i)) < i:
+            ps.append(s[i:])
+            break
+        ps.append(s[i:n + 1])
+        i = n + 1
+    return ps
+
+
 ##
 
 
