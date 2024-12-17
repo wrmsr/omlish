@@ -4357,9 +4357,6 @@ class DeployVenvSpec:
 
     use_uv: bool = False
 
-    def __post_init__(self) -> None:
-        hash(self)
-
 
 ##
 
@@ -4379,12 +4376,18 @@ class DeployConfFile:
 class DeployConfSpec:
     files: ta.Optional[ta.Sequence[DeployConfFile]] = None
 
+    dir_links: ta.Sequence[str] = ()
+
     def __post_init__(self) -> None:
         if self.files:
             seen: ta.Set[str] = set()
             for f in self.files:
                 check.not_in(f.path, seen)
                 seen.add(f.path)
+
+        for dl in self.dir_links:
+            check.non_empty_str(dl)
+            check.arg(not any(c in dl for c in ('.', '/')))
 
 
 ##
@@ -4399,9 +4402,6 @@ class DeploySpec:
     venv: ta.Optional[DeployVenvSpec] = None
 
     conf: ta.Optional[DeployConfSpec] = None
-
-    def __post_init__(self) -> None:
-        hash(self)
 
     @cached_nullary
     def key(self) -> DeployKey:
@@ -6798,13 +6798,41 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 
 ########################################
 # ../deploy/conf.py
+"""
+TODO:
+ - post-deploy: remove any dir_links not present in new spec
+  - * only if succeeded * - otherwise, remove any dir_links present in new spec but not previously present?
+   - no such thing as 'previously present'.. build a 'deploy state' and pass it back?
+ - ** whole thing can be atomic **
+  - 1) new atomic temp dir
+  - 2) for each subdir not needing modification, hardlink into temp dir
+  - 3) for each subdir needing modification, new subdir, hardlink all files not needing modification
+  - 4) write (or if deleting, omit) new files
+  - 5) swap top level
+ - ** whole deploy can be atomic(-ish) - do this for everything **
+  - just a '/deploy/current' dir
+  - some things (venvs) cannot be moved, thus the /deploy/venvs dir
+  - ** ensure (enforce) equivalent relpath nesting
+"""
 
 
-class DeployConfManager:
+class DeployConfManager(SingleDirDeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: ta.Optional[DeployHome] = None,
+    ) -> None:
+        super().__init__(
+            owned_dir='conf',
+            deploy_home=deploy_home,
+        )
+
     async def write_conf(
             self,
             spec: DeployConfSpec,
             conf_dir: str,
+            app_tag: DeployAppTag,
+            link_dir: str,
     ) -> None:
         conf_dir = os.path.abspath(conf_dir)
         os.makedirs(conf_dir)
@@ -6817,6 +6845,15 @@ class DeployConfManager:
 
             with open(conf_file, 'w') as f:  # noqa
                 f.write(cf.body)
+
+        for dl in spec.dir_links:
+            cdd = os.path.join(self._make_dir(), dl)
+            check.arg(is_path_in_dir(self._make_dir(), cdd))
+            os.makedirs(cdd, exist_ok=True)
+
+            link_src = os.path.join(link_dir, dl)
+            link_dst = os.path.join(cdd, app_tag.app)
+            os.symlink(link_src, link_dst)
 
 
 ########################################
@@ -8985,6 +9022,8 @@ class DeployAppManager(DeployPathOwner):
         #
 
         deploying_file = os.path.join(app_dir, 'deploying')
+        current_file = os.path.join(app_dir, 'current')
+
         if os.path.exists(deploying_file):
             os.unlink(deploying_file)
         os.symlink(tag_dir, deploying_file, target_is_directory=True)
@@ -9011,14 +9050,16 @@ class DeployAppManager(DeployPathOwner):
 
         if spec.conf is not None:
             conf_dir = os.path.join(tag_dir, 'conf')
+            conf_link_dir = os.path.join(current_file, 'conf')
             await self._conf.write_conf(
                 spec.conf,
                 conf_dir,
+                app_tag,
+                conf_link_dir,
             )
 
         #
 
-        current_file = os.path.join(app_dir, 'current')
         os.replace(deploying_file, current_file)
 
 

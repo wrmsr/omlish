@@ -83,6 +83,8 @@ class DeployAppManager(DeployPathOwner):
         #
 
         deploying_file = os.path.join(app_dir, 'deploying')
+        current_file = os.path.join(app_dir, 'current')
+
         if os.path.exists(deploying_file):
             os.unlink(deploying_file)
         os.symlink(tag_dir, deploying_file, target_is_directory=True)
@@ -109,12 +111,14 @@ class DeployAppManager(DeployPathOwner):
 
         if spec.conf is not None:
             conf_dir = os.path.join(tag_dir, 'conf')
+            conf_link_dir = os.path.join(current_file, 'conf')
             await self._conf.write_conf(
                 spec.conf,
                 conf_dir,
+                app_tag,
+                conf_link_dir,
             )
 
         #
 
-        current_file = os.path.join(app_dir, 'current')
         os.replace(deploying_file, current_file)
