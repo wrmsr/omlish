@@ -126,6 +126,11 @@ class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
+        if (is_dir := s.endswith('/')):
+            s = s[:-1]
+        check.non_empty_str(s)
+        check.not_in('/', s)
+
         raise NotImplementedError
 
 
@@ -183,6 +188,7 @@ class DeployPath:
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
         check.non_empty_str(s)
+
         ps = []
         i = 0
         while i < len(s):
