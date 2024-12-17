@@ -10,7 +10,6 @@ from ..types import DeployHome
 from .paths import DeployPath
 
 
-
 class DeployPathOwner(abc.ABC):
     @abc.abstractmethod
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:

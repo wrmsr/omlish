@@ -17,9 +17,8 @@ from .deploy import DeployManager
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
-from .paths import DeployPathOwner
-from .paths import DeployPathOwners
-from .paths import DeployPathsManager
+from .paths.inject import bind_deploy_paths
+from .paths.owners import DeployPathOwner
 from .tmp import DeployTmpManager
 from .types import DeployHome
 from .venvs import DeployVenvManager
@@ -31,6 +30,8 @@ def bind_deploy(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
+
+        bind_deploy_paths(),
     ]
 
     #
@@ -42,11 +43,6 @@ def bind_deploy(
             *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
         )
 
-    lst.extend([
-        inj.bind_array(DeployPathOwner),
-        inj.bind_array_type(DeployPathOwner, DeployPathOwners),
-    ])
-
     #
 
     lst.extend([
@@ -57,8 +53,6 @@ def bind_deploy(
         bind_manager(DeployGitManager),
 
         bind_manager(DeployManager),
-
-        bind_manager(DeployPathsManager),
 
         bind_manager(DeployTmpManager),
         inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),

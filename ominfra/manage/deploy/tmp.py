@@ -8,7 +8,7 @@ from omlish.os.atomics import AtomicPathSwapKind
 from omlish.os.atomics import AtomicPathSwapping
 from omlish.os.atomics import TempDirAtomicPathSwapping
 
-from .paths import SingleDirDeployPathOwner
+from .paths.owners import SingleDirDeployPathOwner
 from .types import DeployHome
 
 

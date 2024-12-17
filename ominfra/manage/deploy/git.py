@@ -17,7 +17,7 @@ from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 from omlish.os.atomics import AtomicPathSwapping
 
-from .paths import SingleDirDeployPathOwner
+from .paths.owners import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
 from .specs import DeployGitSpec
 from .types import DeployHome
