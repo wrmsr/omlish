@@ -86,7 +86,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     ),
                     DeployConfFile(
                         'nginx.conf',
-                        '',
+                        'nginx conf goes here',
                     ),
                 ],
                 links=[

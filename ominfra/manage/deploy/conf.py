@@ -106,26 +106,10 @@ class DeployConfManager(SingleDirDeployPathOwner):
                 link_dst_sfx,
             ])
 
-            breakpoint()
+            root_conf_dir = self._make_dir()
+            sym_src = os.path.join(link_dir, link.src)
+            sym_dst = os.path.join(root_conf_dir, link_dst)
+            check.arg(is_path_in_dir(root_conf_dir, sym_dst))
 
-            # if '.' in link_dst_base:
-            #     link_dst_sfx = '.' + link_dst_base.partition('.')[2]
-            # else:
-            #     link_dst_sfx = ''
-            #
-            # if isinstance(link, AppDeployConfLink):
-            #     link_dst_pfx = str(app_tag.app)
-            # elif isinstance(link, TagDeployConfLink):
-            #     link_dst_pfx = '-'.join([app_tag.app, app_tag.tag])
-            # else:
-            #     raise TypeError(link)
-            #
-            # link_dst_name = link_dst_pfx + link_dst_sfx
-            #
-            # root_conf_dir = self._make_dir()
-            # link_dst = os.path.join(root_conf_dir, link_dst_name)
-            # check.arg(is_path_in_dir(root_conf_dir, link_dst))
-            #
-            # relative_symlink(link_src, link_dst, target_is_directory=is_link_dir)
-
-            # raise NotImplementedError
+            os.makedirs(os.path.dirname(sym_dst), exist_ok=True)
+            relative_symlink(sym_src, sym_dst, target_is_directory=is_link_dir)
