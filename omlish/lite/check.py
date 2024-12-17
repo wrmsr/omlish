@@ -2,6 +2,8 @@
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
+ - def not_ ?
+ - ** class @dataclass Raise - user message should be able to be an exception type or instance or factory
 """
 import collections
 import threading

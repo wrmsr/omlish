@@ -19,10 +19,8 @@ from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
 from .types import DeployHome
-
-
-DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
+from .types import DeployPathKind
+from .types import DeployPathPlaceholder
 
 
 ##
