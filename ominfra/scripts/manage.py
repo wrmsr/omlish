@@ -102,7 +102,7 @@ CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # deploy/paths.py
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathPlaceholder = ta.Literal['app', 'tag']  # ta.TypeAlias
+DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -4122,11 +4122,13 @@ TODO:
 
 
 DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER = '@'
-DEPLOY_PATH_PLACEHOLDER_SEPARATORS = '-.'
+DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
+DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([DEPLOY_PATH_PLACEHOLDER_SEPARATOR, '.'])
 
 DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
     'tag',
+    'conf',
 ])
 
 
@@ -4172,10 +4174,10 @@ class FileDeployPathPart(DeployPathPart, abc.ABC):
     def parse(cls, s: str) -> 'FileDeployPathPart':
         if DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER in s:
             check.equal(s[0], DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER)
-            if not any(c in s for c in DEPLOY_PATH_PLACEHOLDER_SEPARATORS):
+            if not any(c in s for c in DEPLOY_PATH_PLACEHOLDER_DELIMITERS):
                 return PlaceholderFileDeployPathPart(s[1:], '')
             else:
-                p = min(f for c in DEPLOY_PATH_PLACEHOLDER_SEPARATORS if (f := s.find(c)) > 0)
+                p = min(f for c in DEPLOY_PATH_PLACEHOLDER_DELIMITERS if (f := s.find(c)) > 0)
                 return PlaceholderFileDeployPathPart(s[1:p], s[p:])
         else:
             return ConstFileDeployPathPart(s)
@@ -4214,7 +4216,7 @@ class PlaceholderDeployPathPart(DeployPathPart, abc.ABC):
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.placeholder)
-        for c in [*DEPLOY_PATH_PLACEHOLDER_SEPARATORS, DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
+        for c in [*DEPLOY_PATH_PLACEHOLDER_DELIMITERS, DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
             check.not_in(c, self.placeholder)
         check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
 
@@ -6941,7 +6943,7 @@ class DeployConfManager(SingleDirDeployPathOwner):
             link_dst_mid = str(app_tag.app)
             sym_root = link_dir
         elif isinstance(link, TagDeployConfLink):
-            link_dst_mid = '-'.join([app_tag.app, app_tag.tag])
+            link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
             sym_root = conf_dir
         else:
             raise TypeError(link)

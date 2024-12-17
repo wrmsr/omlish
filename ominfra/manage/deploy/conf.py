@@ -23,6 +23,7 @@ from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
+from .paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
 from .paths import SingleDirDeployPathOwner
 from .specs import AppDeployConfLink
 from .specs import DeployConfFile
@@ -95,7 +96,7 @@ class DeployConfManager(SingleDirDeployPathOwner):
             link_dst_mid = str(app_tag.app)
             sym_root = link_dir
         elif isinstance(link, TagDeployConfLink):
-            link_dst_mid = '-'.join([app_tag.app, app_tag.tag])
+            link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
             sym_root = conf_dir
         else:
             raise TypeError(link)
