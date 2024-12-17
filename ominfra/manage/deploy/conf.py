@@ -64,14 +64,6 @@ class DeployConfManager(SingleDirDeployPathOwner):
             app_tag: DeployAppTag,
             link_dir: str,
     ) -> None:
-        """
-        Link kinds:
-          - conf/nginx/@app.conf -> current/conf/nginx/@app.conf
-          - conf/nginx/@app-@tag.conf -> current/conf/nginx/@app.conf
-          - conf/nginx/@app -> current/conf/nginx/
-          - conf/nginx/@app-@tag -> current/conf/nginx/
-        """
-
         link_src = os.path.join(conf_dir, link.src)
         check.arg(is_path_in_dir(conf_dir, link_src))
 
@@ -82,8 +74,14 @@ class DeployConfManager(SingleDirDeployPathOwner):
             link_dst_pfx = link.src
             link_dst_sfx = ''
 
+        elif '/' in link.src:
+            check.arg(os.path.isfile(link_src))
+            d, f = os.path.split(link.src)
+            # TODO: check filename :|
+            link_dst_pfx = d + '/'
+            link_dst_sfx = '-' + f
+
         else:
-            check.not_in('/', link.src)
             check.arg(os.path.isfile(link_src))
             if '.' in link.src:
                 l, _, r = link.src.partition('.')
