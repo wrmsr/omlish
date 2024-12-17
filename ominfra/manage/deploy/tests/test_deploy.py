@@ -43,7 +43,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
             conf=DeployConfSpec(
                 files=[
                     DeployConfFile(
-                        'supervisor/flaskthing.json',
+                        'supervisor/sv.json',
                         strip_with_newline(json_dumps_pretty({
                             'groups': {
                                 'flaskthing': {
@@ -105,4 +105,4 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         #
 
-        await injector[DeployManager].deploy_app(spec)
+        await injector[DeployManager].run_deploy(spec)

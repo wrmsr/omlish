@@ -5,7 +5,7 @@ from omlish.lite.logs import log
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
-from .apps import DeployAppManager
+from .deploy import DeployManager
 from .specs import DeploySpec
 
 
@@ -23,11 +23,11 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 @dc.dataclass(frozen=True)
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
-    _apps: DeployAppManager
+    _deploy: DeployManager
 
     async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
         log.info('Deploying! %r', cmd.spec)
 
-        await self._apps.prepare_app(cmd.spec)
+        await self._deploy.run_deploy(cmd.spec)
 
         return DeployCommand.Output()
