@@ -60,8 +60,26 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
+class DeployConfFile:
+    path: str
+    body: str
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.path)
+        check.not_in('..', self.path)
+        check.arg(not self.path.startswith('/'))
+
+
+@dc.dataclass(frozen=True)
 class DeployConfSpec:
-    files: ta.Optional[ta.Mapping[str, str]] = None
+    files: ta.Optional[ta.Sequence[DeployConfFile]] = None
+
+    def __post_init__(self) -> None:
+        if self.files:
+            seen: ta.Set[str] = set()
+            for f in self.files:
+                check.not_in(f.path, seen)
+                seen.add(f.path)
 
 
 ##

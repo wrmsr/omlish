@@ -24,9 +24,9 @@ class DeployVenvManager:
 
     async def setup_venv(
             self,
+            spec: DeployVenvSpec,
             git_dir: str,
             venv_dir: str,
-            spec: DeployVenvSpec,
     ) -> None:
         sys_exe = 'python3'
 

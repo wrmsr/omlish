@@ -3393,6 +3393,21 @@ class LinuxOsRelease:
 
 
 ########################################
+# ../../../omlish/os/paths.py
+
+
+def abs_real_path(p: str) -> str:
+    return os.path.abspath(os.path.realpath(p))
+
+
+def is_path_in_dir(base_dir: str, target_path: str) -> bool:
+    base_dir = abs_real_path(base_dir)
+    target_path = abs_real_path(target_path)
+
+    return target_path.startswith(base_dir + os.path.sep)
+
+
+########################################
 # ../../../omdev/packaging/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
@@ -4350,8 +4365,26 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
+class DeployConfFile:
+    path: str
+    body: str
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.path)
+        check.not_in('..', self.path)
+        check.arg(not self.path.startswith('/'))
+
+
+@dc.dataclass(frozen=True)
 class DeployConfSpec:
-    files: ta.Optional[ta.Mapping[str, str]] = None
+    files: ta.Optional[ta.Sequence[DeployConfFile]] = None
+
+    def __post_init__(self) -> None:
+        if self.files:
+            seen: ta.Set[str] = set()
+            for f in self.files:
+                check.not_in(f.path, seen)
+                seen.add(f.path)
 
 
 ##
@@ -6768,8 +6801,22 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 
 
 class DeployConfManager:
-    async def write_conf(self, spec: DeployConfSpec) -> None:
-        pass
+    async def write_conf(
+            self,
+            spec: DeployConfSpec,
+            conf_dir: str,
+    ) -> None:
+        conf_dir = os.path.abspath(conf_dir)
+        os.makedirs(conf_dir)
+
+        for cf in spec.files or []:
+            conf_file = os.path.join(conf_dir, cf.path)
+            check.arg(is_path_in_dir(conf_dir, conf_file))
+
+            os.makedirs(os.path.dirname(conf_file), exist_ok=True)
+
+            with open(conf_file, 'w') as f:  # noqa
+                f.write(cf.body)
 
 
 ########################################
@@ -8288,7 +8335,11 @@ class DeployGitManager(SingleDirDeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+    async def checkout(
+            self,
+            spec: DeployGitSpec,
+            dst_dir: str,
+    ) -> None:
         await self.get_repo_dir(spec.repo).checkout(spec, dst_dir)
 
 
@@ -8313,9 +8364,9 @@ class DeployVenvManager:
 
     async def setup_venv(
             self,
+            spec: DeployVenvSpec,
             git_dir: str,
             venv_dir: str,
-            spec: DeployVenvSpec,
     ) -> None:
         sys_exe = 'python3'
 
@@ -8910,6 +8961,7 @@ class DeployAppManager(DeployPathOwner):
             DeployPath.parse('apps/@app/current'),
             DeployPath.parse('apps/@app/deploying'),
 
+            DeployPath.parse('apps/@app/tags/@tag/conf/'),
             DeployPath.parse('apps/@app/tags/@tag/git/'),
             DeployPath.parse('apps/@app/tags/@tag/venv/'),
         }
@@ -8950,16 +9002,18 @@ class DeployAppManager(DeployPathOwner):
         if spec.venv is not None:
             venv_dir = os.path.join(tag_dir, 'venv')
             await self._venvs.setup_venv(
+                spec.venv,
                 git_dir,
                 venv_dir,
-                spec.venv,
             )
 
         #
 
         if spec.conf is not None:
+            conf_dir = os.path.join(tag_dir, 'conf')
             await self._conf.write_conf(
                 spec.conf,
+                conf_dir,
             )
 
         #

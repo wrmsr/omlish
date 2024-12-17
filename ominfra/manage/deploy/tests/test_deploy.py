@@ -3,12 +3,15 @@ import tempfile
 import unittest
 
 from omlish.lite.inject import inj
+from omlish.lite.json import json_dumps_pretty
 
 from ..apps import DeployAppManager
 from ..config import DeployConfig
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..paths import DeployPathOwners
+from ..specs import DeployConfFile
+from ..specs import DeployConfSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
@@ -49,6 +52,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         spec = DeploySpec(
             app=DeployApp('flaskthing'),
+
             git=DeployGitSpec(
                 repo=DeployGitRepo(
                     host='github.com',
@@ -56,8 +60,28 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                 ),
                 rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
             ),
+
             venv=DeployVenvSpec(
                 use_uv=True,
+            ),
+
+            conf=DeployConfSpec(
+                files=(
+                    DeployConfFile(
+                        'supervisor/flaskthing.json',
+                        json_dumps_pretty({
+                            'groups': {
+                                'flaskthing': {
+                                    'processes': {
+                                        'flaskthing': {
+                                            'command': 'sleep 600',
+                                        },
+                                    },
+                                },
+                            },
+                        }),
+                    ),
+                ),
             ),
         )
 
