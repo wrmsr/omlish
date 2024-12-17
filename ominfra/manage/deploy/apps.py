@@ -12,8 +12,8 @@ from omlish.os.paths import relative_symlink
 
 from .conf import DeployConfManager
 from .git import DeployGitManager
-from .paths import DeployPath
-from .paths import DeployPathOwner
+from .paths.owners import DeployPathOwner
+from .paths.paths import DeployPath
 from .specs import DeploySpec
 from .types import DeployAppTag
 from .types import DeployHome

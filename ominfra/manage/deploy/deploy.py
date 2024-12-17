@@ -1,6 +1,6 @@
 # ruff: noqa: UP006 UP007
 from .apps import DeployAppManager
-from .paths import DeployPathsManager
+from .paths.manager import DeployPathsManager
 from .specs import DeploySpec
 
 

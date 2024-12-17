@@ -10,7 +10,7 @@ from .owners import DeployPathOwner
 from .owners import DeployPathOwners
 
 
-def bind_deploy() -> InjectorBindings:
+def bind_deploy_paths() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(DeployPathOwner),
         inj.bind_array_type(DeployPathOwner, DeployPathOwners),

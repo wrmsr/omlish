@@ -23,7 +23,7 @@ from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
-from .paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
+from .paths.paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
 from .specs import AppDeployConfLink
 from .specs import DeployConfFile
 from .specs import DeployConfLink
@@ -76,18 +76,23 @@ class DeployConfManager:
         link_src = os.path.join(conf_dir, link.src)
         check.arg(is_path_in_dir(conf_dir, link_src))
 
+        #
+
         if (is_dir := link.src.endswith('/')):
+            # @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
             check.arg(link.src.count('/') == 1)
             link_dst_pfx = link.src
             link_dst_sfx = ''
 
         elif '/' in link.src:
+            # @conf/file - links a single file in a single subdir to conf/@conf/@dst-file
             d, f = os.path.split(link.src)
             # TODO: check filename :|
             link_dst_pfx = d + '/'
             link_dst_sfx = '-' + f
 
-        else:
+        else:  # noqa
+            # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
             if '.' in link.src:
                 l, _, r = link.src.partition('.')
                 link_dst_pfx = l + '/'
@@ -95,6 +100,8 @@ class DeployConfManager:
             else:
                 link_dst_pfx = link.src + '/'
                 link_dst_sfx = ''
+
+        #
 
         if isinstance(link, AppDeployConfLink):
             link_dst_mid = str(app_tag.app)
@@ -104,6 +111,8 @@ class DeployConfManager:
             sym_root = conf_dir
         else:
             raise TypeError(link)
+
+        #
 
         link_dst = ''.join([
             link_dst_pfx,
