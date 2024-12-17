@@ -21,8 +21,12 @@ def relative_symlink(
         *,
         target_is_directory: bool = False,
         dir_fd: ta.Optional[int] = None,
+        make_dirs: bool = False,
         **kwargs: ta.Any,
 ) -> None:
+    if make_dirs:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+
     os.symlink(
         os.path.relpath(src, os.path.dirname(dst)),
         dst,

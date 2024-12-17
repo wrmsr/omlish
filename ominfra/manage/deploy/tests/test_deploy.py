@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import os.path
 import tempfile
 import unittest
 
@@ -25,7 +26,7 @@ from ..types import DeployRev
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
-        deploy_home = DeployHome(tempfile.mkdtemp())
+        deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
 
         print()
         print(deploy_home)
