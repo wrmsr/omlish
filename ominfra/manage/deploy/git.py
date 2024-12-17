@@ -119,5 +119,9 @@ class DeployGitManager(SingleDirDeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+    async def checkout(
+            self,
+            spec: DeployGitSpec,
+            dst_dir: str,
+    ) -> None:
         await self.get_repo_dir(spec.repo).checkout(spec, dst_dir)

@@ -59,6 +59,7 @@ class DeployAppManager(DeployPathOwner):
             DeployPath.parse('apps/@app/current'),
             DeployPath.parse('apps/@app/deploying'),
 
+            DeployPath.parse('apps/@app/tags/@tag/conf/'),
             DeployPath.parse('apps/@app/tags/@tag/git/'),
             DeployPath.parse('apps/@app/tags/@tag/venv/'),
         }
@@ -99,16 +100,18 @@ class DeployAppManager(DeployPathOwner):
         if spec.venv is not None:
             venv_dir = os.path.join(tag_dir, 'venv')
             await self._venvs.setup_venv(
+                spec.venv,
                 git_dir,
                 venv_dir,
-                spec.venv,
             )
 
         #
 
         if spec.conf is not None:
+            conf_dir = os.path.join(tag_dir, 'conf')
             await self._conf.write_conf(
                 spec.conf,
+                conf_dir,
             )
 
         #
