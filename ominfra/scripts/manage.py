@@ -3416,8 +3416,21 @@ def is_path_in_dir(base_dir: str, target_path: str) -> bool:
     return target_path.startswith(base_dir + os.path.sep)
 
 
-def relative_symlink(src: str, dst: str, **kwargs: ta.Any) -> None:
-    os.symlink(os.path.relpath(src, os.path.dirname(dst)), dst, **kwargs)
+def relative_symlink(
+        src: str,
+        dst: str,
+        *,
+        target_is_directory: bool = False,
+        dir_fd: ta.Optional[int] = None,
+        **kwargs: ta.Any,
+) -> None:
+    os.symlink(
+        os.path.relpath(src, os.path.dirname(dst)),
+        dst,
+        target_is_directory=target_is_directory,
+        dir_fd=dir_fd,
+        **kwargs,
+    )
 
 
 ########################################
@@ -4332,6 +4345,17 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
 ##
 
 
+def check_valid_deploy_spec_path(s: str) -> str:
+    check.non_empty_str(s)
+    for c in ['..', '//']:
+        check.not_in(c, s)
+    check.arg(not s.startswith('/'))
+    return s
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class DeployGitRepo:
     host: ta.Optional[str] = None
@@ -4380,16 +4404,36 @@ class DeployConfFile:
     body: str
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.path)
-        check.not_in('..', self.path)
-        check.arg(not self.path.startswith('/'))
+        check_valid_deploy_spec_path(self.path)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class DeployConfLink(abc.ABC):  # noqa
+    src: str
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.src)
+
+
+class AppDeployConfLink(DeployConfLink):
+    pass
+
+
+class TagDeployConfLink(DeployConfLink):
+    pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
 class DeployConfSpec:
     files: ta.Optional[ta.Sequence[DeployConfFile]] = None
 
-    dir_links: ta.Sequence[str] = ()
+    links: ta.Optional[ta.Sequence[DeployConfLink]] = None
 
     def __post_init__(self) -> None:
         if self.files:
@@ -4397,10 +4441,6 @@ class DeployConfSpec:
             for f in self.files:
                 check.not_in(f.path, seen)
                 seen.add(f.path)
-
-        for dl in self.dir_links:
-            check.non_empty_str(dl)
-            check.arg(not any(c in dl for c in ('.', '/')))
 
 
 ##
@@ -6813,6 +6853,13 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 # ../deploy/conf.py
 """
 TODO:
+ - link kinds:
+  - conf/nginx/@app.conf -> current/conf/nginx/@app.conf
+  - conf/nginx/@app-@tag.conf -> current/conf/nginx/@app.conf
+  - conf/nginx/@app -> current/conf/nginx/
+  - conf/nginx/@app-@tag -> current/conf/nginx/
+
+ - @conf DeployPathPlaceholder? :|
  - post-deploy: remove any dir_links not present in new spec
   - * only if succeeded * - otherwise, remove any dir_links present in new spec but not previously present?
    - no such thing as 'previously present'.. build a 'deploy state' and pass it back?
@@ -6859,14 +6906,37 @@ class DeployConfManager(SingleDirDeployPathOwner):
             with open(conf_file, 'w') as f:  # noqa
                 f.write(cf.body)
 
-        for dl in spec.dir_links:
-            cdd = os.path.join(self._make_dir(), dl)
-            check.arg(is_path_in_dir(self._make_dir(), cdd))
-            os.makedirs(cdd, exist_ok=True)
+        for link in spec.links or []:
+            link_src = os.path.join(conf_dir, link.src)
+            check.arg(is_path_in_dir(conf_dir, link_src))
 
-            link_src = os.path.join(link_dir, dl)
-            link_dst = os.path.join(cdd, app_tag.app)
-            relative_symlink(link_src, link_dst)
+            is_link_dir = link.src.endswith('/')
+            if is_link_dir:
+                check.arg(os.path.isdir(link_src))
+                link_dst_base = link.src[:-1]
+            else:
+                check.arg(os.path.isfile(link_src))
+                link_dst_base = link.src
+
+            if '.' in link_dst_base:
+                link_dst_sfx = '.' + link_dst_base.partition('.')[2]
+            else:
+                link_dst_sfx = ''
+
+            if isinstance(link, AppDeployConfLink):
+                link_dst_pfx = str(app_tag.app)
+            elif isinstance(link, TagDeployConfLink):
+                link_dst_pfx = '-'.join([app_tag.app, app_tag.tag])
+            else:
+                raise TypeError(link)
+
+            link_dst_name = link_dst_pfx + link_dst_sfx
+
+            root_conf_dir = self._make_dir()
+            link_dst = os.path.join(root_conf_dir, link_dst_name)
+            check.arg(is_path_in_dir(root_conf_dir, link_dst))
+
+            relative_symlink(link_src, link_dst, target_is_directory=is_link_dir)
 
 
 ########################################

@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import dataclasses as dc
 import hashlib
 import typing as ta
@@ -9,6 +10,17 @@ from omlish.lite.check import check
 from .types import DeployApp
 from .types import DeployKey
 from .types import DeployRev
+
+
+##
+
+
+def check_valid_deploy_spec_path(s: str) -> str:
+    check.non_empty_str(s)
+    for c in ['..', '//']:
+        check.not_in(c, s)
+    check.arg(not s.startswith('/'))
+    return s
 
 
 ##
@@ -62,16 +74,36 @@ class DeployConfFile:
     body: str
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.path)
-        check.not_in('..', self.path)
-        check.arg(not self.path.startswith('/'))
+        check_valid_deploy_spec_path(self.path)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class DeployConfLink(abc.ABC):  # noqa
+    src: str
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.src)
+
+
+class AppDeployConfLink(DeployConfLink):
+    pass
+
+
+class TagDeployConfLink(DeployConfLink):
+    pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
 class DeployConfSpec:
     files: ta.Optional[ta.Sequence[DeployConfFile]] = None
 
-    dir_links: ta.Sequence[str] = ()
+    links: ta.Optional[ta.Sequence[DeployConfLink]] = None
 
     def __post_init__(self) -> None:
         if self.files:
@@ -79,10 +111,6 @@ class DeployConfSpec:
             for f in self.files:
                 check.not_in(f.path, seen)
                 seen.add(f.path)
-
-        for dl in self.dir_links:
-            check.non_empty_str(dl)
-            check.arg(not any(c in dl for c in ('.', '/')))
 
 
 ##
