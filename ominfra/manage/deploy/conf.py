@@ -64,7 +64,6 @@ class DeployConfManager:
         is_dir: bool
         link_src: str
         link_dst: str
-        sym_root: str
 
     def _compute_conf_link_dst(
             self,
@@ -85,11 +84,11 @@ class DeployConfManager:
             link_dst_sfx = ''
 
         elif '/' in link.src:
-            # @conf/file - links a single file in a single subdir to conf/@conf/@dst-file
+            # @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
             d, f = os.path.split(link.src)
             # TODO: check filename :|
             link_dst_pfx = d + '/'
-            link_dst_sfx = '-' + f
+            link_dst_sfx = DEPLOY_PATH_PLACEHOLDER_SEPARATOR + f
 
         else:  # noqa
             # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -105,26 +104,24 @@ class DeployConfManager:
 
         if isinstance(link, AppDeployConfLink):
             link_dst_mid = str(app_tag.app)
-            sym_root = link_dir
         elif isinstance(link, TagDeployConfLink):
             link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
-            sym_root = conf_dir
         else:
             raise TypeError(link)
 
         #
 
-        link_dst = ''.join([
+        link_dst_name = ''.join([
             link_dst_pfx,
             link_dst_mid,
             link_dst_sfx,
         ])
+        link_dst = os.path.join(link_dir, link_dst_name)
 
         return DeployConfManager._ComputedConfLink(
             is_dir=is_dir,
             link_src=link_src,
             link_dst=link_dst,
-            sym_root=sym_root,
         )
 
     async def _make_conf_link(
@@ -143,6 +140,9 @@ class DeployConfManager:
 
         #
 
+        check.arg(is_path_in_dir(conf_dir, comp.link_src))
+        check.arg(is_path_in_dir(link_dir, comp.link_dst))
+
         if comp.is_dir:
             check.arg(os.path.isdir(comp.link_src))
         else:
@@ -150,15 +150,9 @@ class DeployConfManager:
 
         #
 
-        sym_src = os.path.join(comp.sym_root, link.src)
-        sym_dst = os.path.join(conf_dir, comp.link_dst)
-        check.arg(is_path_in_dir(conf_dir, sym_dst))
-
-        raise NotImplementedError
-
         relative_symlink(  # noqa
-            sym_src,
-            sym_dst,
+            comp.link_src,
+            comp.link_dst,
             target_is_directory=comp.is_dir,
             make_dirs=True,
         )

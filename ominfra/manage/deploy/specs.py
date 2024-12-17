@@ -85,7 +85,7 @@ class DeployConfLink(abc.ABC):  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
-     - @conf/file - links a single file in a single subdir to conf/@conf/@dst-file
+     - @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
      - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
     """
 

@@ -560,6 +560,8 @@ def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
+ - def not_ ?
+ - ** class @dataclass Raise - user message should be able to be an exception type or instance or factory
 """
 
 
@@ -1130,6 +1132,28 @@ def strip_with_newline(s: str) -> str:
     if not s:
         return ''
     return s.strip() + '\n'
+
+
+@ta.overload
+def split_keep_delimiter(s: str, d: str) -> str:
+    ...
+
+
+@ta.overload
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
+    ...
+
+
+def split_keep_delimiter(s, d):
+    ps = []
+    i = 0
+    while i < len(s):
+        if (n := s.find(d, i)) < i:
+            ps.append(s[i:])
+            break
+        ps.append(s[i:n + 1])
+        i = n + 1
+    return ps
 
 
 ##

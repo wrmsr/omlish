@@ -16,7 +16,7 @@ class DeployManager:
         self._apps = apps
         self._paths = paths
 
-    async def deploy_app(
+    async def run_deploy(
             self,
             spec: DeploySpec,
     ) -> None:
