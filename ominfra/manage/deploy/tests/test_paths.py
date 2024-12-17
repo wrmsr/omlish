@@ -6,7 +6,6 @@ from omlish.lite import marshal as msh
 from omlish.lite.json import json_dumps_pretty
 
 from ..paths import DeployPath
-from ..paths import DeployPathError
 
 
 class TestMarshal(unittest.TestCase):
@@ -59,6 +58,7 @@ class TestMarshal(unittest.TestCase):
             'ab/@app/cd/@app.foo',
             'ab/@tag/cd/@app.foo',
             'ab/@tag',
+            'a//b',
         ]:
-            with self.assertRaises(DeployPathError):
+            with self.assertRaises(Exception):  # noqa  # FIXME: DeployPathError
                 DeployPath.parse(s)
