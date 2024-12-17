@@ -88,12 +88,20 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                         'nginx.conf',
                         'nginx conf goes here',
                     ),
+                    DeployConfFile(
+                        'systemd/service.conf',
+                        'systemd conf goes here',
+                    ),
                 ],
                 links=[
                     AppDeployConfLink('supervisor/'),
                     TagDeployConfLink('supervisor/'),
+
                     AppDeployConfLink('nginx.conf'),
                     TagDeployConfLink('nginx.conf'),
+
+                    AppDeployConfLink('systemd/service.conf'),
+                    TagDeployConfLink('systemd/service.conf'),
                 ],
             ),
         )

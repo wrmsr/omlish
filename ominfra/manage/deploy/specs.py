@@ -85,6 +85,7 @@ class DeployConfLink(abc.ABC):  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+     - @conf/file - links a single file in a single subdir to conf/@conf/@dst-file
      - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
     """
 
@@ -94,7 +95,6 @@ class DeployConfLink(abc.ABC):  # noqa
         check_valid_deploy_spec_path(self.src)
         if '/' in self.src:
             check.equal(self.src.count('/'), 1)
-            check.arg(self.src.endswith('/'))
 
 
 class AppDeployConfLink(DeployConfLink):
