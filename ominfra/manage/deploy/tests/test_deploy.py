@@ -11,11 +11,13 @@ from ..config import DeployConfig
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..paths import DeployPathOwners
+from ..specs import AppDeployConfLink
 from ..specs import DeployConfFile
 from ..specs import DeployConfSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
+from ..specs import TagDeployConfLink
 from ..types import DeployApp
 from ..types import DeployHome
 from ..types import DeployRev
@@ -83,8 +85,11 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                         })),
                     ),
                 ],
-                dir_links=[
-                    'supervisor',
+                links=[
+                    AppDeployConfLink('supervisor/'),
+                    TagDeployConfLink('supervisor/'),
+                    AppDeployConfLink('supervisor/flaskthing.json'),
+                    TagDeployConfLink('supervisor/flaskthing.json'),
                 ],
             ),
         )
