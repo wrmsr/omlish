@@ -4,7 +4,6 @@ import itertools
 import os.path
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.os.paths import relative_symlink
 
@@ -52,9 +51,8 @@ class DeployAppManager(DeployPathOwner):
         self._git = git
         self._venvs = venvs
 
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), 'apps')
+    _APP_TAG_PATH_STR = 'tags/apps/@app--@tag/'
+    _APP_TAG_PATH = DeployPath.parse(_APP_TAG_PATH_STR)
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -66,9 +64,16 @@ class DeployAppManager(DeployPathOwner):
                 'deploying',
             ]),
 
-            DeployPath.parse('tags/apps/@app--@tag/conf/'),
-            DeployPath.parse('tags/apps/@app--@tag/git/'),
-            DeployPath.parse('tags/apps/@app--@tag/venv/'),
+            self._APP_TAG_PATH,
+
+            *[
+                DeployPath.parse(f'{self._APP_TAG_PATH_STR}/{sfx}/')
+                for sfx in [
+                    'conf',
+                    'git',
+                    'venv',
+                ]
+            ],
 
             DeployPath.parse('tags/conf/@conf--@app--@tag'),
         }
@@ -81,7 +86,9 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        app_dir = os.path.join(self._dir(), spec.app)
+        self._APP_TAG_PATH.render(app_tag.placeholders())
+
+        app_dir = os.path.join(check.non_empty_str(self._deploy_home), 'tags', 'apps', spec.app)
         os.makedirs(app_dir, exist_ok=True)
 
         #
