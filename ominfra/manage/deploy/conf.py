@@ -58,6 +58,8 @@ class DeployConfManager(SingleDirDeployPathOwner):
         conf_dir = os.path.abspath(conf_dir)
         os.makedirs(conf_dir)
 
+        #
+
         for cf in spec.files or []:
             conf_file = os.path.join(conf_dir, cf.path)
             check.arg(is_path_in_dir(conf_dir, conf_file))
@@ -67,34 +69,63 @@ class DeployConfManager(SingleDirDeployPathOwner):
             with open(conf_file, 'w') as f:  # noqa
                 f.write(cf.body)
 
+        #
+
         for link in spec.links or []:
             link_src = os.path.join(conf_dir, link.src)
             check.arg(is_path_in_dir(conf_dir, link_src))
 
             is_link_dir = link.src.endswith('/')
             if is_link_dir:
+                check.arg(link.src.count('/') == 1)
                 check.arg(os.path.isdir(link_src))
-                link_dst_base = link.src[:-1]
-            else:
-                check.arg(os.path.isfile(link_src))
-                link_dst_base = link.src
-
-            if '.' in link_dst_base:
-                link_dst_sfx = '.' + link_dst_base.partition('.')[2]
-            else:
+                link_dst_pfx = link.src
                 link_dst_sfx = ''
 
+            else:
+                check.not_in('/', link.src)
+                check.arg(os.path.isfile(link_src))
+                if '.' in link.src:
+                    l, _, r = link.src.partition('.')
+                    link_dst_pfx = l + '/'
+                    link_dst_sfx = '.' + r
+                else:
+                    link_dst_pfx = link.src + '/'
+                    link_dst_sfx = ''
+
             if isinstance(link, AppDeployConfLink):
-                link_dst_pfx = str(app_tag.app)
+                link_dst_mid = str(app_tag.app)
             elif isinstance(link, TagDeployConfLink):
-                link_dst_pfx = '-'.join([app_tag.app, app_tag.tag])
+                link_dst_mid = '-'.join([app_tag.app, app_tag.tag])
             else:
                 raise TypeError(link)
 
-            link_dst_name = link_dst_pfx + link_dst_sfx
+            link_dst = ''.join([
+                link_dst_pfx,
+                link_dst_mid,
+                link_dst_sfx,
+            ])
 
-            root_conf_dir = self._make_dir()
-            link_dst = os.path.join(root_conf_dir, link_dst_name)
-            check.arg(is_path_in_dir(root_conf_dir, link_dst))
+            breakpoint()
 
-            relative_symlink(link_src, link_dst, target_is_directory=is_link_dir)
+            # if '.' in link_dst_base:
+            #     link_dst_sfx = '.' + link_dst_base.partition('.')[2]
+            # else:
+            #     link_dst_sfx = ''
+            #
+            # if isinstance(link, AppDeployConfLink):
+            #     link_dst_pfx = str(app_tag.app)
+            # elif isinstance(link, TagDeployConfLink):
+            #     link_dst_pfx = '-'.join([app_tag.app, app_tag.tag])
+            # else:
+            #     raise TypeError(link)
+            #
+            # link_dst_name = link_dst_pfx + link_dst_sfx
+            #
+            # root_conf_dir = self._make_dir()
+            # link_dst = os.path.join(root_conf_dir, link_dst_name)
+            # check.arg(is_path_in_dir(root_conf_dir, link_dst))
+            #
+            # relative_symlink(link_src, link_dst, target_is_directory=is_link_dir)
+
+            # raise NotImplementedError

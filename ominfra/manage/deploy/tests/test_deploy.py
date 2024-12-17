@@ -84,12 +84,16 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                             },
                         })),
                     ),
+                    DeployConfFile(
+                        'nginx.conf',
+                        '',
+                    ),
                 ],
                 links=[
                     AppDeployConfLink('supervisor/'),
                     TagDeployConfLink('supervisor/'),
-                    AppDeployConfLink('supervisor/flaskthing.json'),
-                    TagDeployConfLink('supervisor/flaskthing.json'),
+                    AppDeployConfLink('nginx.conf'),
+                    TagDeployConfLink('nginx.conf'),
                 ],
             ),
         )

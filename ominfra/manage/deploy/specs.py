@@ -82,10 +82,19 @@ class DeployConfFile:
 
 @dc.dataclass(frozen=True)
 class DeployConfLink(abc.ABC):  # noqa
+    """
+    May be either:
+     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
+    """
+
     src: str
 
     def __post_init__(self) -> None:
         check_valid_deploy_spec_path(self.src)
+        if '/' in self.src:
+            check.equal(self.src.count('/'), 1)
+            check.arg(self.src.endswith('/'))
 
 
 class AppDeployConfLink(DeployConfLink):
