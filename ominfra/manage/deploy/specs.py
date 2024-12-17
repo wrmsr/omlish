@@ -52,9 +52,6 @@ class DeployVenvSpec:
 
     use_uv: bool = False
 
-    def __post_init__(self) -> None:
-        hash(self)
-
 
 ##
 
@@ -74,12 +71,18 @@ class DeployConfFile:
 class DeployConfSpec:
     files: ta.Optional[ta.Sequence[DeployConfFile]] = None
 
+    dir_links: ta.Sequence[str] = ()
+
     def __post_init__(self) -> None:
         if self.files:
             seen: ta.Set[str] = set()
             for f in self.files:
                 check.not_in(f.path, seen)
                 seen.add(f.path)
+
+        for dl in self.dir_links:
+            check.non_empty_str(dl)
+            check.arg(not any(c in dl for c in ('.', '/')))
 
 
 ##
@@ -94,9 +97,6 @@ class DeploySpec:
     venv: ta.Optional[DeployVenvSpec] = None
 
     conf: ta.Optional[DeployConfSpec] = None
-
-    def __post_init__(self) -> None:
-        hash(self)
 
     @cached_nullary
     def key(self) -> DeployKey:

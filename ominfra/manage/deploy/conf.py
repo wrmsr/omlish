@@ -1,12 +1,26 @@
+# ruff: noqa: UP006 UP007
 import os.path
+import typing as ta
 
 from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 
+from .paths import SingleDirDeployPathOwner
 from .specs import DeployConfSpec
+from .types import DeployHome
 
 
-class DeployConfManager:
+class DeployConfManager(SingleDirDeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: ta.Optional[DeployHome] = None,
+    ) -> None:
+        super().__init__(
+            owned_dir='conf',
+            deploy_home=deploy_home,
+        )
+
     async def write_conf(
             self,
             spec: DeployConfSpec,
@@ -23,3 +37,6 @@ class DeployConfManager:
 
             with open(conf_file, 'w') as f:  # noqa
                 f.write(cf.body)
+
+        for dl in spec.dir_links:
+            raise NotImplementedError
