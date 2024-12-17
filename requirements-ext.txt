@@ -83,7 +83,7 @@ scikit-image==0.25.0
 
 simsimd>=5.9.11
 
-spacy==3.8.0  # FIXME: llama-index-core
+spacy==3.8.3  # FIXME: llama-index-core
 
 regex==2024.11.6
 
