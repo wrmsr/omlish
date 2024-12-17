@@ -3416,6 +3416,10 @@ def is_path_in_dir(base_dir: str, target_path: str) -> bool:
     return target_path.startswith(base_dir + os.path.sep)
 
 
+def relative_symlink(src: str, dst: str, **kwargs: ta.Any) -> None:
+    os.symlink(os.path.relpath(src, os.path.dirname(dst)), dst, **kwargs)
+
+
 ########################################
 # ../../../omdev/packaging/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
@@ -6862,7 +6866,7 @@ class DeployConfManager(SingleDirDeployPathOwner):
 
             link_src = os.path.join(link_dir, dl)
             link_dst = os.path.join(cdd, app_tag.app)
-            os.symlink(link_src, link_dst)
+            relative_symlink(link_src, link_dst)
 
 
 ########################################
@@ -9035,7 +9039,7 @@ class DeployAppManager(DeployPathOwner):
 
         if os.path.exists(deploying_file):
             os.unlink(deploying_file)
-        os.symlink(tag_dir, deploying_file, target_is_directory=True)
+        relative_symlink(tag_dir, deploying_file, target_is_directory=True)
 
         #
 

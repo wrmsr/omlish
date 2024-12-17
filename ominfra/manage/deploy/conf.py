@@ -20,6 +20,7 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
+from omlish.os.paths import relative_symlink
 
 from .paths import SingleDirDeployPathOwner
 from .specs import DeployConfSpec
@@ -64,4 +65,4 @@ class DeployConfManager(SingleDirDeployPathOwner):
 
             link_src = os.path.join(link_dir, dl)
             link_dst = os.path.join(cdd, app_tag.app)
-            os.symlink(link_src, link_dst)
+            relative_symlink(link_src, link_dst)
