@@ -148,4 +148,5 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        # os.replace(deploying_file, current_file)
+        current_dir = os.path.join(deploy_home, 'current')
+        os.replace(deploying_dir, current_dir)
