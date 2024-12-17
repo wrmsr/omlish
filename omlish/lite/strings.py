@@ -21,6 +21,15 @@ def snake_case(name: str) -> str:
 ##
 
 
+def strip_with_newline(s: str) -> str:
+    if not s:
+        return ''
+    return s.strip() + '\n'
+
+
+##
+
+
 def is_dunder(name: str) -> bool:
     return (
         name[:2] == name[-2:] == '__' and
