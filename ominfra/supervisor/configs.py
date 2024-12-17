@@ -245,6 +245,7 @@ class ServerConfig:
 
     groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
 
+    # TODO: implement - make sure to accept broken symlinks
     group_config_dirs: ta.Optional[ta.Sequence[str]] = None
 
     @classmethod
