@@ -6939,8 +6939,10 @@ class DeployConfManager(SingleDirDeployPathOwner):
 
         if isinstance(link, AppDeployConfLink):
             link_dst_mid = str(app_tag.app)
+            sym_root = link_dir
         elif isinstance(link, TagDeployConfLink):
             link_dst_mid = '-'.join([app_tag.app, app_tag.tag])
+            sym_root = conf_dir
         else:
             raise TypeError(link)
 
@@ -6951,7 +6953,7 @@ class DeployConfManager(SingleDirDeployPathOwner):
         ])
 
         root_conf_dir = self._make_dir()
-        sym_src = os.path.join(link_dir, link.src)
+        sym_src = os.path.join(sym_root, link.src)
         sym_dst = os.path.join(root_conf_dir, link_dst)
         check.arg(is_path_in_dir(root_conf_dir, sym_dst))
 
