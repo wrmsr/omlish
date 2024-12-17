@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.os.paths import relative_symlink
 
 from .conf import DeployConfManager
 from .git import DeployGitManager
@@ -87,7 +88,7 @@ class DeployAppManager(DeployPathOwner):
 
         if os.path.exists(deploying_file):
             os.unlink(deploying_file)
-        os.symlink(tag_dir, deploying_file, target_is_directory=True)
+        relative_symlink(tag_dir, deploying_file, target_is_directory=True)
 
         #
 
