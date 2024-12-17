@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 import datetime
+import itertools
 import os.path
 import typing as ta
 
@@ -57,12 +58,19 @@ class DeployAppManager(DeployPathOwner):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            DeployPath.parse('apps/@app/current'),
-            DeployPath.parse('apps/@app/deploying'),
+            *itertools.chain.from_iterable([
+                DeployPath.parse(f'{pfx}/apps/@app'),
+                DeployPath.parse(f'{pfx}/conf/@conf'),
+            ] for pfx in [
+                'current',
+                'deploying',
+            ]),
 
-            DeployPath.parse('apps/@app/tags/@tag/conf/'),
-            DeployPath.parse('apps/@app/tags/@tag/git/'),
-            DeployPath.parse('apps/@app/tags/@tag/venv/'),
+            DeployPath.parse('tags/apps/@app--@tag/conf/'),
+            DeployPath.parse('tags/apps/@app--@tag/git/'),
+            DeployPath.parse('tags/apps/@app--@tag/venv/'),
+
+            DeployPath.parse('tags/conf/@conf--@app--@tag'),
         }
 
     async def prepare_app(
