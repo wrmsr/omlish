@@ -1,5 +1,5 @@
 from .. import Q
-from ..exprs import Param
+from ..params import Param
 
 
 def test_query():
@@ -7,10 +7,10 @@ def test_query():
         [
             1,
         ],
-        'foo',
+        Q.n.foo,
         Q.and_(
-            Q.eq(Q.i('foo'), 1),
-            Q.ne(Q.i('bar'), Q.add(Q.i('baz'), 2)),
+            Q.eq(Q.i.foo, Q.p.param_one),
+            Q.ne(Q.i.bar, Q.add(Q.n.baz.qux, 2)),
         ),
     )
 

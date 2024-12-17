@@ -1,3 +1,4 @@
+import abc
 import functools
 import typing as ta
 
@@ -14,12 +15,19 @@ from .idents import as_ident
 ##
 
 
+class NameLike(abc.ABC):  # noqa
+    pass
+
+
+##
+
+
 def _coerce_name_parts(o: ta.Iterable[Ident]) -> ta.Sequence[Ident]:
     check.not_isinstance(o, str)
     return check.not_empty(tuple(check.isinstance(e, Ident) for e in o))
 
 
-class Name(Node, lang.Final):
+class Name(Node, NameLike, lang.Final):
     ps: ta.Sequence[Ident] = dc.xfield(coerce=_coerce_name_parts)
 
 
@@ -47,38 +55,47 @@ def _(o: Ident | str) -> Name:
 ##
 
 
-class NameAccessor:
-    def __init__(self, n: Name | None = None) -> None:
+CanName: ta.TypeAlias = ta.Union[
+    NameLike,
+    Name,
+    CanIdent,
+    ta.Sequence[CanIdent],
+    'NameAccessor',
+]
+
+
+class NameAccessor(NameLike, lang.Final):
+    def __init__(self, ps: tuple[str, ...] = ()) -> None:
         super().__init__()
-        self.__query_name__ = n
+        self.__query_name_parts__ = ps
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.__query_name__!r})'
+        return f'{self.__class__.__name__}({self.__query_name_parts__!r})'
 
     def __getattr__(self, s: str) -> 'NameAccessor':
-        check.not_in('.', s)
-        check.arg(not s.startswith('__'))
-        return NameAccessor(Name([
-            *(sn.ps if (sn := self.__query_name__) is not None else []),
-            Ident(s),
-        ]))
+        return NameAccessor((*self.__query_name_parts__, s))
+
+    def __call__(self, o: CanName) -> Name:
+        n = as_name(o)
+        if (ps := self.__query_name_parts__):
+            n = Name(tuple(*tuple(Ident(p) for p in ps), *n.ps))  # type: ignore[arg-type]
+        return n
 
 
 @as_name.register
 def _(a: NameAccessor) -> Name:
-    return check.not_none(a.__query_name__)
+    return Name(tuple(Ident(p) for p in a.__query_name_parts__))
 
 
 ##
 
 
-CanName: ta.TypeAlias = Name | CanIdent | ta.Sequence[CanIdent] | NameAccessor
-
-
 class NameBuilder(IdentBuilder):
+    @ta.final
     def name(self, o: CanName) -> Name:
         return as_name(o)
 
     @ta.final
-    def n(self, o: CanName) -> Name:
-        return self.name(o)
+    @property
+    def n(self) -> NameAccessor:
+        return NameAccessor()
