@@ -11,7 +11,6 @@ from ..config import DeployConfig
 from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..paths import DeployPathOwners
 from ..specs import AppDeployConfLink
 from ..specs import DeployConfFile
 from ..specs import DeployConfSpec
