@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+#SIGIL ruff: noqa: UP006 UP007
 """
 TODO:
  - run/{.pid,.sock}
@@ -17,21 +17,15 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
-from .placeholders import DEPLOY_PATH_PLACEHOLDERS
+from ..tags import DEPLOY_TAG_DELIMITERS
+from ..tags import DEPLOY_TAG_SIGIL
+from ..tags import DEPLOY_TAGS_BY_NAME
+from ..tags import DeployTag
+from ..tags import DeployTagMap
 from .types import DeployPathKind
-from .types import DeployPathPlaceholder
 
 
 ##
-
-
-DEPLOY_PATH_PLACEHOLDER_SIGIL = '@'
-DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
-
-DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([
-    DEPLOY_PATH_PLACEHOLDER_SEPARATOR,
-    '.',
-])
 
 
 class DeployPathError(Exception):
@@ -40,7 +34,7 @@ class DeployPathError(Exception):
 
 class DeployPathRenderable(abc.ABC):
     @abc.abstractmethod
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         raise NotImplementedError
 
 
@@ -51,26 +45,30 @@ class DeployPathNamePart(DeployPathRenderable, abc.ABC):
     @classmethod
     def parse(cls, s: str) -> 'DeployPathNamePart':
         check.non_empty_str(s)
-        if s.startswith(DEPLOY_PATH_PLACEHOLDER_SIGIL):
-            return PlaceholderDeployPathNamePart(s[1:])
-        elif s in DEPLOY_PATH_PLACEHOLDER_DELIMITERS:
+        if s.startswith(DEPLOY_TAG_SIGIL):
+            return TagDeployPathNamePart(s[1:])
+        elif s in DEPLOY_TAG_DELIMITERS:
             return DelimiterDeployPathNamePart(s)
         else:
             return ConstDeployPathNamePart(s)
 
 
 @dc.dataclass(frozen=True)
-class PlaceholderDeployPathNamePart(DeployPathNamePart):
-    placeholder: str  # DeployPathPlaceholder
+class TagDeployPathNamePart(DeployPathNamePart):
+    name: str
 
     def __post_init__(self) -> None:
-        check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
+        check.in_(self.name, DEPLOY_TAGS_BY_NAME)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        if placeholders is not None:
-            return placeholders[self.placeholder]  # type: ignore
+    @property
+    def tag(self) -> ta.Type[DeployTag]:
+        return DEPLOY_TAGS_BY_NAME[self.name]
+
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        if tags is not None:
+            return tags[self.tag].s
         else:
-            return DEPLOY_PATH_PLACEHOLDER_SIGIL + self.placeholder
+            return DEPLOY_TAG_SIGIL + self.name
 
 
 @dc.dataclass(frozen=True)
@@ -78,9 +76,9 @@ class DelimiterDeployPathNamePart(DeployPathNamePart):
     delimiter: str
 
     def __post_init__(self) -> None:
-        check.in_(self.delimiter, DEPLOY_PATH_PLACEHOLDER_DELIMITERS)
+        check.in_(self.delimiter, DEPLOY_TAG_DELIMITERS)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         return self.delimiter
 
 
@@ -90,10 +88,10 @@ class ConstDeployPathNamePart(DeployPathNamePart):
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.const)
-        for c in [*DEPLOY_PATH_PLACEHOLDER_DELIMITERS, DEPLOY_PATH_PLACEHOLDER_SIGIL, '/']:
+        for c in [*DEPLOY_TAG_DELIMITERS, DEPLOY_TAG_SIGIL, '/']:
             check.not_in(c, self.const)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         return self.const
 
 
@@ -108,8 +106,8 @@ class DeployPathName(DeployPathRenderable):
             if len(gl := list(g)) > 1:
                 raise DeployPathError(f'May not have consecutive path name part types: {k} {gl}')
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return ''.join(p.render(placeholders) for p in self.parts)
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return ''.join(p.render(tags) for p in self.parts)
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathName':
@@ -119,7 +117,7 @@ class DeployPathName(DeployPathRenderable):
         i = 0
         ps = []
         while i < len(s):
-            ns = [(n, d) for d in DEPLOY_PATH_PLACEHOLDER_DELIMITERS if (n := s.find(d, i)) >= 0]
+            ns = [(n, d) for d in DEPLOY_TAG_DELIMITERS if (n := s.find(d, i)) >= 0]
             if not ns:
                 ps.append(s[i:])
                 break
@@ -143,8 +141,8 @@ class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
     def kind(self) -> DeployPathKind:
         raise NotImplementedError
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return self.name.render(placeholders) + ('/' if self.kind == 'dir' else '')
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return self.name.render(tags) + ('/' if self.kind == 'dir' else '')
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathPart':
@@ -191,19 +189,19 @@ class DeployPath:
             check.equal(p.kind, 'dir')
 
     @cached_nullary
-    def placeholder_indices(self) -> ta.Mapping[DeployPathPlaceholder, ta.Sequence[int]]:
-        pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
+    def tag_indices(self) -> ta.Mapping[ta.Type[DeployTag], ta.Sequence[int]]:
+        pd: ta.Dict[ta.Type[DeployTag], ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
-            if isinstance(np, PlaceholderDeployPathNamePart):
-                pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
+            if isinstance(np, TagDeployPathNamePart):
+                pd.setdefault(np.tag, []).append(i)
         return pd
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
         return self.parts[-1].kind
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return ''.join([p.render(placeholders) for p in self.parts])
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return ''.join([p.render(tags) for p in self.parts])
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
