@@ -390,7 +390,7 @@ class Reflector:
             if check_only:
                 return None
 
-            raise NotImplementedError
+            return Literal(ta.get_args(obj), obj=obj)
 
         ##
         # Failure
