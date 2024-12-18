@@ -1,4 +1,4 @@
-#SIGIL ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - run/{.pid,.sock}

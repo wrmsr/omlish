@@ -25,7 +25,6 @@ DEPLOY_TAG_ILLEGAL_STRS: ta.AbstractSet[str] = frozenset([
 ])
 
 
-
 ##
 
 
@@ -197,7 +196,7 @@ class DeployTagMap:
     def __hash__(self) -> int:
         return hash(self._tup)
 
-    def __eq__(self, other: ta.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, DeployTagMap):
             return self._tup == other._tup
         else:
