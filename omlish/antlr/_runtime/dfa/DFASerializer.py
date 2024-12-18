@@ -9,7 +9,7 @@
 
 # A DFA walker that knows how to dump them to serialized strings.#/
 from io import StringIO
-from .. import DFA
+from ..dfa.DFA import DFA
 from ..Utils import str_list
 from .DFAState import DFAState
 

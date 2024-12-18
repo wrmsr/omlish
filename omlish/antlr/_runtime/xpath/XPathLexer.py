@@ -2,7 +2,7 @@
 # ruff: noqa
 # flake8: noqa
 # Generated from XPathLexer.g4 by ANTLR 4.11.2-SNAPSHOT
-from .. import *
+from .._all import *
 from io import StringIO
 import sys
 if sys.version_info[1] > 5:

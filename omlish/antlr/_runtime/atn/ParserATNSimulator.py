@@ -235,7 +235,7 @@
 # the input.</p>
 #
 import sys
-from .. import DFA
+from ..dfa.DFA import DFA
 from ..BufferedTokenStream import TokenStream
 from ..Parser import Parser
 from ..ParserRuleContext import ParserRuleContext
