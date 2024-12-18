@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.82
-botocore==1.35.82
+boto3==1.35.83
+botocore==1.35.83
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==6.4.1
+duckduckgo_search==6.3.7
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -226,7 +226,7 @@ langcodes==3.5.0
 langdetect==1.0.9
 langgraph==0.2.59
 langgraph-checkpoint==2.0.9
-langgraph-sdk==0.1.46
+langgraph-sdk==0.1.47
 langsmith==0.1.125
 language_data==1.3.0
 lazy_loader==0.4
@@ -338,7 +338,7 @@ portalocker==2.8.2
 posthog==3.7.4
 pprintpp==0.4.0
 preshed==3.0.9
-primp==0.9.0
+primp==0.8.2
 priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.48
@@ -529,7 +529,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.6
-uv==0.5.9
+uv==0.5.10
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
