@@ -1,19 +1,22 @@
 # ruff: noqa: UP006 UP007
+import json
 import os.path
 import tempfile
 import unittest
 
 from omlish.lite.inject import inj
+from omlish.lite.json import json_dumps_compact
 from omlish.lite.json import json_dumps_pretty
+from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.strings import strip_with_newline
 
 from ..config import DeployConfig
 from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..specs import AllActiveDeployAppConfLink
-from ..specs import CurrentOnlyDeployAppConfLink
 from ..specs import DeployAppConfFile
+from ..specs import DeployAppConfLink
 from ..specs import DeployAppConfSpec
 from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
@@ -69,14 +72,14 @@ def build_flask_thing_spec(
                 ),
             ],
             links=[
-                CurrentOnlyDeployAppConfLink('supervisor/'),
-                AllActiveDeployAppConfLink('supervisor/'),
+                DeployAppConfLink('supervisor/'),
+                DeployAppConfLink('supervisor/', kind='all_active'),
 
-                CurrentOnlyDeployAppConfLink('nginx.conf'),
-                AllActiveDeployAppConfLink('nginx.conf'),
+                DeployAppConfLink('nginx.conf'),
+                DeployAppConfLink('nginx.conf', kind='all_active'),
 
-                CurrentOnlyDeployAppConfLink('systemd/service.conf'),
-                AllActiveDeployAppConfLink('systemd/service.conf'),
+                DeployAppConfLink('systemd/service.conf'),
+                DeployAppConfLink('systemd/service.conf', kind='all_active'),
             ],
         ),
     )
@@ -104,8 +107,8 @@ SUPERVISOR_SPEC = DeployAppSpec(
             ),
         ],
         links=[
-            AllActiveDeployAppConfLink('systemd/service.conf'),
-            CurrentOnlyDeployAppConfLink('systemd/service.conf'),
+            DeployAppConfLink('systemd/service.conf'),
+            DeployAppConfLink('systemd/service.conf', kind='all_active'),
         ],
     ),
 )
@@ -129,14 +132,6 @@ DEPLOY_SPECS = [
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
-        # from omlish.lite.json import json_dumps_compact
-        # from omlish.lite.marshal import marshal_obj
-        # print()
-        # print(json_dumps_compact(marshal_obj(FLASK_THING_SPEC)))
-        # print()
-
-        #
-
         deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
 
         print()
@@ -157,4 +152,14 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         for _ in range(2):
             for spec in DEPLOY_SPECS:
+                print()
+
+                sj = json_dumps_compact(marshal_obj(spec))
+                print(sj)
+
+                unmarshal_obj(json.loads(sj), DeploySpec)
+                print()
+
+                #
+
                 await injector[DeployManager].run_deploy(spec)
