@@ -57,21 +57,16 @@ class DeployAppManager(DeployPathOwner):
     _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
     _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
 
-    _CONF_TAG_DIR_STR = 'tags/conf/@tag--@app/'
-    _CONF_TAG_DIR = DeployPath.parse(_CONF_TAG_DIR_STR)
-
     _DEPLOY_DIR_STR = 'deploys/@tag--@app/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
 
     _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf')
+    _CONF_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             self._APP_TAG_DIR,
-
-            self._CONF_TAG_DIR,
 
             self._DEPLOY_DIR,
 
@@ -104,7 +99,6 @@ class DeployAppManager(DeployPathOwner):
             return os.path.join(deploy_home, pth.render(app_tag.placeholders()))
 
         app_tag_dir = build_path(self._APP_TAG_DIR)
-        conf_tag_dir = build_path(self._CONF_TAG_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
         app_deploy_link = build_path(self._APP_DEPLOY_LINK)
         conf_deploy_link_file = build_path(self._CONF_DEPLOY_LINK)
