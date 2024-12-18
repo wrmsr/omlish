@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import typing as ta
 
@@ -17,6 +18,18 @@ DeployApp = ta.NewType('DeployApp', str)
 DeployTag = ta.NewType('DeployTag', str)
 DeployRev = ta.NewType('DeployRev', str)
 DeployKey = ta.NewType('DeployKey', str)
+
+
+##
+
+
+# Sync with DeployPathPlaceholder
+DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
+    'app',
+    'tag',
+    'conf',
+    'rev',
+])
 
 
 ##

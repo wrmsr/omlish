@@ -4166,6 +4166,18 @@ DeployKey = ta.NewType('DeployKey', str)
 ##
 
 
+# Sync with DeployPathPlaceholder
+DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
+    'app',
+    'tag',
+    'conf',
+    'rev',
+])
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class DeployAppTag:
     app: DeployApp
@@ -6640,13 +6652,6 @@ DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
 DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([
     DEPLOY_PATH_PLACEHOLDER_SEPARATOR,
     '.',
-])
-
-DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
-    'app',
-    'tag',
-    'conf',
-    'rev',
 ])
 
 
