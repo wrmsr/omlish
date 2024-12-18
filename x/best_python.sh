@@ -7,7 +7,6 @@ for version in "" 3 3.{8..13}; do
     exe="python$version"
     ver_info=$($exe -c 'import sys; print(sys.version_info[:])' 2>/dev/null)
     if [ $? -eq 0 ]; then
-        # Extract major and minor versions
         major_minor=$(echo $ver_info | tr -d '(), ')
         if [ -z "$best_version" ] || [ "$major_minor" \> "$best_version" ]; then
             best_version=$major_minor
