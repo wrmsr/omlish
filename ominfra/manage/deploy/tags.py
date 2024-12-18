@@ -155,10 +155,24 @@ class DeployTagMap:
 
         self._dct = dct
 
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __iter__(self) -> ta.Iterator[DeployTag]:
+        return iter(self._dct.values())
+
     def __getitem__(self, key: ta.Union[ta.Type[DeployTag], str]) -> DeployTag:
         if isinstance(key, str):
             return self._dct[DEPLOY_TAGS_BY_NAME[key]]
         elif isinstance(key, type):
             return self._dct[key]
+        else:
+            raise TypeError(key)
+
+    def __contains__(self, key: ta.Union[ta.Type[DeployTag], str]) -> bool:
+        if isinstance(key, str):
+            return DEPLOY_TAGS_BY_NAME[key] in self._dct
+        elif isinstance(key, type):
+            return key in self._dct
         else:
             raise TypeError(key)
