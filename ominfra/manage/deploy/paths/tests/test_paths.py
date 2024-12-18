@@ -6,6 +6,7 @@ from omlish.lite import marshal as msh
 from omlish.lite.json import json_dumps_pretty
 
 from ..paths import DeployPath
+from ..placeholders import DeployPathPlaceholders
 
 
 class TestMarshal(unittest.TestCase):
@@ -19,7 +20,7 @@ class TestMarshal(unittest.TestCase):
             'ab/@app/cd',
             'ab/@app/cd/',
             'ab/@app/cd/foo',
-            'ab/@app/cd/@tag.foo',
+            'ab/@app/cd/@app-rev.foo',
 
             #
 
@@ -31,11 +32,11 @@ class TestMarshal(unittest.TestCase):
                 'deploying',
             ]),
 
-            'tags/apps/@app--@tag/conf/',
-            'tags/apps/@app--@tag/git/',
-            'tags/apps/@app--@tag/venv/',
+            'tags/apps/@app--@app-key--@app-rev/conf/',
+            'tags/apps/@app--@app-key--@app-rev/git/',
+            'tags/apps/@app--@app-key--@app-rev/venv/',
 
-            'tags/conf/@conf--@app--@tag/',
+            'tags/conf/@conf--@app--@dt/',
         ]:
             print()
             print(s)
@@ -48,7 +49,10 @@ class TestMarshal(unittest.TestCase):
         #
 
         self.assertEqual(
-            DeployPath.parse('ab/@app/cd/@tag.foo').render({'app': 'foo', 'tag': 'bar'}),
+            DeployPath.parse('ab/@app/cd/@app-key.foo').render(DeployPathPlaceholders.map_of(
+                app='foo',
+                app_key='bar',
+            )),
             'ab/foo/cd/bar.foo',
         )
 
