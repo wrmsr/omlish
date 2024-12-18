@@ -5,22 +5,14 @@ import typing as ta
 from .apps import DeployAppManager
 from .paths.manager import DeployPathsManager
 from .specs import DeploySpec
-from .types import DeployKey
-from .types import DeployTag
+from .tags import DeployTime
+from .tags import DeployTagMap
 
 
 DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
 
 
-def make_deploy_tag(
-        key: DeployKey,
-        *,
-        utcnow: ta.Optional[datetime.datetime] = None,
-) -> DeployTag:
-    if utcnow is None:
-        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-    now_str = utcnow.strftime(DEPLOY_TAG_DATETIME_FMT)
-    return DeployTag('-'.join([now_str, key]))
+DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', ta.Callable)  # () -> datetime.datetime(tz=utc)
 
 
 class DeployManager:
@@ -29,11 +21,24 @@ class DeployManager:
             *,
             apps: DeployAppManager,
             paths: DeployPathsManager,
+
+            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
     ):
         super().__init__()
 
         self._apps = apps
         self._paths = paths
+
+        self._utc_clock = utc_clock
+
+    def _utc_now(self) -> datetime.datetime:
+        if self._utc_clock is not None:
+            return self._utc_clock()
+        else:
+            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+
+    def _make_deploy_time(self) -> DeployTime:
+        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
 
     async def run_deploy(
             self,
@@ -43,12 +48,14 @@ class DeployManager:
 
         #
 
-        tag = make_deploy_tag(spec.key())
+        tags = DeployTagMap(
+            self._make_deploy_time(),
+        )
 
         #
 
         for app in spec.apps:
             await self._apps.prepare_app(
                 app,
-                tag,
+                tags,
             )
