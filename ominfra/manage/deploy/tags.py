@@ -141,11 +141,19 @@ class DeployTagMap:
     ) -> None:
         super().__init__()
 
-        # FIXME: dedupe
-        self._dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {
-            **{type(a): a for a in args},
-            **{(tc := DEPLOY_TAGS_BY_KWARG[k]): tc(v) for k, v in kwargs.items()},
-        }
+        dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {}
+
+        for a in args:
+            c = type(check.isinstance(a, DeployTag))
+            check.not_in(c, dct)
+            dct[c] = a
+
+        for k, v in kwargs.items():
+            c = DEPLOY_TAGS_BY_KWARG[k]
+            check.not_in(c, dct)
+            dct[c] = c(v)
+
+        self._dct = dct
 
     def __getitem__(self, key: ta.Union[ta.Type[DeployTag], str]) -> DeployTag:
         if isinstance(key, str):
