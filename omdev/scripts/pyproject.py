@@ -3860,6 +3860,18 @@ class OptionalObjMarshaler(ObjMarshaler):
 
 
 @dc.dataclass(frozen=True)
+class LiteralObjMarshaler(ObjMarshaler):
+    item: ObjMarshaler
+    vs: frozenset
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.item.marshal(check.in_(o, self.vs), ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check.in_(self.item.unmarshal(o, ctx), self.vs)
+
+
+@dc.dataclass(frozen=True)
 class MappingObjMarshaler(ObjMarshaler):
     ty: type
     km: ObjMarshaler
@@ -4069,6 +4081,11 @@ class ObjMarshalerManager:
 
         if is_new_type(ty):
             return rec(get_new_type_supertype(ty))
+
+        if is_literal_type(ty):
+            lvs = frozenset(get_literal_type_args(ty))
+            lty = check.single(set(map(type, lvs)))
+            return LiteralObjMarshaler(rec(lty), lvs)
 
         if is_generic_alias(ty):
             try:

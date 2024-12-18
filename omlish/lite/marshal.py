@@ -21,9 +21,11 @@ import weakref  # noqa
 
 from .check import check
 from .reflect import deep_subclasses
+from .reflect import get_literal_type_args
 from .reflect import get_new_type_supertype
 from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
+from .reflect import is_literal_type
 from .reflect import is_new_type
 from .reflect import is_union_alias
 from .strings import snake_case
@@ -139,6 +141,18 @@ class OptionalObjMarshaler(ObjMarshaler):
         if o is None:
             return None
         return self.item.unmarshal(o, ctx)
+
+
+@dc.dataclass(frozen=True)
+class LiteralObjMarshaler(ObjMarshaler):
+    item: ObjMarshaler
+    vs: frozenset
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.item.marshal(check.in_(o, self.vs), ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check.in_(self.item.unmarshal(o, ctx), self.vs)
 
 
 @dc.dataclass(frozen=True)
@@ -351,6 +365,11 @@ class ObjMarshalerManager:
 
         if is_new_type(ty):
             return rec(get_new_type_supertype(ty))
+
+        if is_literal_type(ty):
+            lvs = frozenset(get_literal_type_args(ty))
+            lty = check.single(set(map(type, lvs)))
+            return LiteralObjMarshaler(rec(lty), lvs)
 
         if is_generic_alias(ty):
             try:
