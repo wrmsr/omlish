@@ -8,6 +8,7 @@ from .ops import get_concrete_type
 from .ops import to_annotation
 from .types import Any
 from .types import Generic
+from .types import Literal
 from .types import NewType
 from .types import Type
 from .types import Union
@@ -35,7 +36,7 @@ def replace_type_vars(
         update_aliases: bool = False,
 ) -> Type:
     def rec(cur):
-        if isinstance(cur, (type, NewType, Any)):
+        if isinstance(cur, (type, NewType, Any, Literal)):
             return cur
 
         if isinstance(cur, Generic):
