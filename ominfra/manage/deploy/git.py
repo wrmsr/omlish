@@ -21,6 +21,7 @@ from .paths.owners import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
 from .specs import DeployGitSpec
 from .types import DeployHome
+from .types import DeployRev
 
 
 ##
@@ -88,7 +89,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
             await self._call('git', 'init')
             await self._call('git', 'remote', 'add', 'origin', self.url)
 
-        async def fetch(self, rev: str) -> None:
+        async def fetch(self, rev: DeployRev) -> None:
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 

@@ -10,6 +10,7 @@ from omlish.lite.check import check
 from .tags import DeployApp
 from .tags import DeployAppKey
 from .tags import DeployKey
+from .types import DeployRev
 from .tags import KeyDeployTag
 
 
@@ -54,7 +55,7 @@ class DeployGitRepo:
 @dc.dataclass(frozen=True)
 class DeployGitSpec:
     repo: DeployGitRepo
-    rev: str
+    rev: DeployRev
 
     subtrees: ta.Optional[ta.Sequence[str]] = None
 
