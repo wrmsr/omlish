@@ -2,7 +2,7 @@
 import dataclasses as dc
 import unittest
 
-from ..dataclasses import cache_dataclass_hash
+from ..dataclasses import dataclass_cache_hash
 
 
 @dc.dataclass()
@@ -28,7 +28,7 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual(f.thing.num_times_hashed, 2)
         self.assertEqual(h1, h2)
 
-        cache_dataclass_hash()(Foo)
+        dataclass_cache_hash()(Foo)
 
         f = Foo()
         h1 = hash(f)

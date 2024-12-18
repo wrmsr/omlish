@@ -256,11 +256,13 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
     bs_z = zlib.compress(bs_src.encode('utf-8'), 9)
     bs_z85 = base64.b85encode(bs_z).replace(b'\n', b'')
+    if b'"' in bs_z85:
+        raise ValueError(bs_z85)
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
-        f'exec(zlib.decompress(base64.b85decode({bs_z85!r})))',
-        f'_pyremote_bootstrap_main({context_name!r})',
+        f'exec(zlib.decompress(base64.b85decode(b"{bs_z85.decode("ascii")}")))',
+        f'_pyremote_bootstrap_main("{context_name}")',
     ]
 
     cmd = '; '.join(stmts)

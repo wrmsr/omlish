@@ -2,6 +2,7 @@
 import abc
 import contextlib
 import dataclasses as dc
+import shlex
 import typing as ta
 
 from omlish.lite.check import check
@@ -12,6 +13,7 @@ from ..commands.local import LocalCommandExecutor
 from ..remote.connection import InProcessRemoteExecutionConnector
 from ..remote.connection import PyremoteRemoteExecutionConnector
 from ..remote.spawning import RemoteSpawning
+from .bestpython import get_best_python_sh
 from .targets import DockerManageTarget
 from .targets import InProcessManageTarget
 from .targets import LocalManageTarget
@@ -27,6 +29,13 @@ class ManageTargetConnector(abc.ABC):
     @abc.abstractmethod
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
         raise NotImplementedError
+
+    def _default_python(self, python: ta.Optional[ta.Sequence[str]]) -> ta.Sequence[str]:
+        check.not_isinstance(python, str)
+        if python is not None:
+            return python
+        else:
+            return ['sh', '-c', shlex.quote(get_best_python_sh()), '--']
 
 
 ##
@@ -79,7 +88,7 @@ class LocalManageTargetConnector(ManageTargetConnector):
         elif isinstance(lmt, SubprocessManageTarget):
             async with self._pyremote_connector.connect(
                     RemoteSpawning.Target(
-                        python=lmt.python,
+                        python=self._default_python(lmt.python),
                     ),
                     self._bootstrap,
             ) as rce:
@@ -112,7 +121,7 @@ class DockerManageTargetConnector(ManageTargetConnector):
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
-                    python=dmt.python,
+                    python=self._default_python(dmt.python),
                 ),
                 self._bootstrap,
         ) as rce:
@@ -143,7 +152,7 @@ class SshManageTargetConnector(ManageTargetConnector):
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
                     shell_quote=True,
-                    python=smt.python,
+                    python=self._default_python(smt.python),
                 ),
                 self._bootstrap,
         ) as rce:
