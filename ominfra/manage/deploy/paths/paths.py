@@ -17,6 +17,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
+from ..types import DEPLOY_PATH_PLACEHOLDERS
 from ..types import DeployPathKind
 from ..types import DeployPathPlaceholder
 
@@ -30,13 +31,6 @@ DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
 DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([
     DEPLOY_PATH_PLACEHOLDER_SEPARATOR,
     '.',
-])
-
-DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
-    'app',
-    'tag',
-    'conf',
-    'rev',
 ])
 
 
