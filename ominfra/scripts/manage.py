@@ -103,7 +103,7 @@ CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # deploy/types.py
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
+DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf', 'rev']  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -6646,6 +6646,7 @@ DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
     'tag',
     'conf',
+    'rev',
 ])
 
 
@@ -6805,13 +6806,13 @@ class DeployPath:
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
 
+    @cached_nullary
+    def placeholder_indices(self) -> ta.Mapping[DeployPathPlaceholder, ta.Sequence[int]]:
         pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
             if isinstance(np, PlaceholderDeployPathNamePart):
                 pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
-
-        # if 'tag' in pd and 'app' not in pd:
-        #     raise DeployPathError('Tag placeholder in path without app', self)
+        return pd
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
@@ -9402,7 +9403,7 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.makedirs(deploy_dir)
+        os.makedirs(deploy_dir, exist_ok=True)
 
         deploying_link = os.path.join(deploy_home, 'deploys/deploying')
         relative_symlink(
@@ -9425,7 +9426,7 @@ class DeployAppManager(DeployPathOwner):
         #
 
         deploy_conf_dir = os.path.join(deploy_dir, 'conf')
-        os.makedirs(deploy_conf_dir)
+        os.makedirs(deploy_conf_dir, exist_ok=True)
 
         #
 

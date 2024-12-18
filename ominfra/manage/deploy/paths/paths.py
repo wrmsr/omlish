@@ -13,6 +13,7 @@ import dataclasses as dc
 import itertools
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
@@ -35,6 +36,7 @@ DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
     'tag',
     'conf',
+    'rev',
 ])
 
 
@@ -194,13 +196,13 @@ class DeployPath:
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
 
+    @cached_nullary
+    def placeholder_indices(self) -> ta.Mapping[DeployPathPlaceholder, ta.Sequence[int]]:
         pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
             if isinstance(np, PlaceholderDeployPathNamePart):
                 pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
-
-        # if 'tag' in pd and 'app' not in pd:
-        #     raise DeployPathError('Tag placeholder in path without app', self)
+        return pd
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
