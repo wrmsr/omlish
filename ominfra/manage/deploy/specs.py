@@ -8,7 +8,12 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
 from .tags import DeployApp
+from .tags import DeployAppKey
 from .tags import DeployKey
+from .tags import KeyDeployTag
+
+
+KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound=KeyDeployTag)
 
 
 ##
@@ -22,10 +27,14 @@ def check_valid_deploy_spec_path(s: str) -> str:
     return s
 
 
-class _DeploySpecKeyed:
+class DeploySpecKeyed(ta.Generic[KeyDeployTagT]):
     @cached_nullary
-    def key(self) -> DeployKey:
-        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+    def _key_str(self) -> str:
+        return hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8]
+
+    @abc.abstractmethod
+    def key(self) -> KeyDeployTagT:
+        raise NotImplementedError
 
 
 ##
@@ -130,7 +139,7 @@ class DeployAppConfSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeployAppSpec(_DeploySpecKeyed):
+class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
     app: DeployApp
 
     git: DeployGitSpec
@@ -142,11 +151,16 @@ class DeployAppSpec(_DeploySpecKeyed):
     def __post_init__(self) -> None:
         check.non_empty_str(self.app)
 
+    # @ta.override
+    def key(self) -> DeployAppKey:
+        return DeployAppKey(self._key_str())
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
-class DeploySpec(_DeploySpecKeyed):
+class DeploySpec(DeploySpecKeyed[DeployKey]):
     apps: ta.Sequence[DeployAppSpec]
 
     def __post_init__(self) -> None:
@@ -155,3 +169,7 @@ class DeploySpec(_DeploySpecKeyed):
             if a.app in seen:
                 raise KeyError(a.app)
             seen.add(a.app)
+
+    # @ta.override
+    def key(self) -> DeployKey:
+        return DeployKey(self._key_str())
