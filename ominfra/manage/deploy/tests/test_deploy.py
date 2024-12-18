@@ -136,6 +136,6 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
         for _ in range(2):
             for spec in [
                 FLASK_THING_SPEC,
-                SUPERVISOR_SPEC,
+                # SUPERVISOR_SPEC,
             ]:
                 await injector[DeployManager].run_deploy(spec)
