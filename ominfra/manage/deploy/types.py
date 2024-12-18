@@ -5,7 +5,7 @@ from omlish.lite.check import check
 
 
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf']  # ta.TypeAlias
+DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf', 'rev']  # ta.TypeAlias
 
 
 ##

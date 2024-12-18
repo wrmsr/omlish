@@ -24,58 +24,62 @@ from ..types import DeployHome
 from ..types import DeployRev
 
 
-FLASK_THING_SPEC = DeployAppSpec(
-    app=DeployApp('flaskthing'),
+def build_flask_thing_spec(
+        *,
+        rev: str,
+) -> DeployAppSpec:
+    return DeployAppSpec(
+        app=DeployApp('flaskthing'),
 
-    git=DeployGitSpec(
-        repo=DeployGitRepo(
-            host='github.com',
-            path='wrmsr/flaskthing',
+        git=DeployGitSpec(
+            repo=DeployGitRepo(
+                host='github.com',
+                path='wrmsr/flaskthing',
+            ),
+            rev=DeployRev(rev),
         ),
-        rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
-    ),
 
-    venv=DeployVenvSpec(
-        use_uv=True,
-    ),
+        venv=DeployVenvSpec(
+            use_uv=True,
+        ),
 
-    conf=DeployAppConfSpec(
-        files=[
-            DeployAppConfFile(
-                'supervisor/sv.json',
-                strip_with_newline(json_dumps_pretty({
-                    'groups': {
-                        'flaskthing': {
-                            'processes': {
-                                'flaskthing': {
-                                    'command': 'sleep 600',
+        conf=DeployAppConfSpec(
+            files=[
+                DeployAppConfFile(
+                    'supervisor/sv.json',
+                    strip_with_newline(json_dumps_pretty({
+                        'groups': {
+                            'flaskthing': {
+                                'processes': {
+                                    'flaskthing': {
+                                        'command': 'sleep 600',
+                                    },
                                 },
                             },
                         },
-                    },
-                })),
-            ),
-            DeployAppConfFile(
-                'nginx.conf',
-                'nginx conf goes here',
-            ),
-            DeployAppConfFile(
-                'systemd/service.conf',
-                'systemd conf goes here',
-            ),
-        ],
-        links=[
-            AppDeployAppConfLink('supervisor/'),
-            TagDeployAppConfLink('supervisor/'),
+                    })),
+                ),
+                DeployAppConfFile(
+                    'nginx.conf',
+                    'flaskthing nginx conf goes here',
+                ),
+                DeployAppConfFile(
+                    'systemd/service.conf',
+                    'flaskthing systemd conf goes here',
+                ),
+            ],
+            links=[
+                AppDeployAppConfLink('supervisor/'),
+                TagDeployAppConfLink('supervisor/'),
 
-            AppDeployAppConfLink('nginx.conf'),
-            TagDeployAppConfLink('nginx.conf'),
+                AppDeployAppConfLink('nginx.conf'),
+                TagDeployAppConfLink('nginx.conf'),
 
-            AppDeployAppConfLink('systemd/service.conf'),
-            TagDeployAppConfLink('systemd/service.conf'),
-        ],
-    ),
-)
+                AppDeployAppConfLink('systemd/service.conf'),
+                TagDeployAppConfLink('systemd/service.conf'),
+            ],
+        ),
+    )
 
 
 SUPERVISOR_SPEC = DeployAppSpec(
@@ -96,7 +100,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
         files=[
             DeployAppConfFile(
                 'systemd/service.conf',
-                'systemd conf goes here',
+                'supervisor systemd conf goes here',
             ),
         ],
         links=[
@@ -106,10 +110,17 @@ SUPERVISOR_SPEC = DeployAppSpec(
     ),
 )
 
+
 DEPLOY_SPECS = [
     DeploySpec(
         apps=[
-            FLASK_THING_SPEC,
+            build_flask_thing_spec(rev='7bb3af10a21ac9c1884729638e1db765998cd7de'),
+            SUPERVISOR_SPEC,
+        ],
+    ),
+    DeploySpec(
+        apps=[
+            build_flask_thing_spec(rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
             SUPERVISOR_SPEC,
         ],
     ),
@@ -118,16 +129,17 @@ DEPLOY_SPECS = [
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
-        from omlish.lite.json import json_dumps_compact
-        from omlish.lite.marshal import marshal_obj
-        print()
-        print(json_dumps_compact(marshal_obj(FLASK_THING_SPEC)))
-        print()
+        # from omlish.lite.json import json_dumps_compact
+        # from omlish.lite.marshal import marshal_obj
+        # print()
+        # print(json_dumps_compact(marshal_obj(FLASK_THING_SPEC)))
+        # print()
 
         #
 
         deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
 
+        print()
         print(deploy_home)
         print()
 
