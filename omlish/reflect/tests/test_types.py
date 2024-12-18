@@ -134,4 +134,4 @@ def test_tuples():
 
 
 def test_literal():
-    rfl.type_(ta.Literal['a', 'b', 'c'])
+    assert set(check.isinstance(rfl.type_(ta.Literal['a', 'b', 'c']), rfl.Literal).args) == {'a', 'b', 'c'}

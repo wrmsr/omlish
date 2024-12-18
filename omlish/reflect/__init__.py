@@ -27,6 +27,7 @@ from .types import (  # noqa
     Any,
     DEFAULT_REFLECTOR,
     Generic,
+    Literal,
     NewType,
     ReflectTypeError,
     Reflector,
