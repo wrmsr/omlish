@@ -12,6 +12,7 @@ from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
 from .types import DeployHome
+from .tags import DeployTagMap
 from .venvs import DeployVenvManager
 
 
@@ -35,10 +36,10 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
-    _APP_DIR_STR = 'apps/@app/@tag/'
-    _APP_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
+    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
+    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
 
-    _DEPLOY_DIR_STR = 'deploys/@tag/'
+    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
 
     _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
@@ -47,7 +48,7 @@ class DeployAppManager(DeployPathOwner):
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            self._APP_TAG_DIR,
+            self._APP_DIR,
 
             self._DEPLOY_DIR,
 
@@ -55,7 +56,7 @@ class DeployAppManager(DeployPathOwner):
             self._CONF_DEPLOY_DIR,
 
             *[
-                DeployPath.parse(f'{self._APP_TAG_DIR_STR}{sfx}/')
+                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
@@ -69,18 +70,14 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeployAppSpec,
-            tag: DeployTag,
+            tags: DeployTagMap,
     ) -> None:
-        app_tag = DeployAppTag(spec.app, tag)
-
-        #
-
         deploy_home = check.non_empty_str(self._deploy_home)
 
         def build_path(pth: DeployPath) -> str:
-            return os.path.join(deploy_home, pth.render(app_tag.placeholders()))
+            return os.path.join(deploy_home, pth.render(tags))
 
-        app_tag_dir = build_path(self._APP_TAG_DIR)
+        app_dir = build_path(self._APP_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
         app_deploy_link = build_path(self._APP_DEPLOY_LINK)
 

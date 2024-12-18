@@ -23,13 +23,15 @@ from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
-from .paths.paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
-from .specs import AppDeployAppConfLink
+from .tags import DEPLOY_TAG_SEPARATOR
+from .specs import CurrentOnlyDeployAppConfLink
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
-from .specs import TagDeployAppConfLink
-from .types import DeployAppTag
+from .specs import AllActiveDeployAppConfLink
+from .tags import DeployTagMap
+from .tags import DeployApp
+from .paths.paths import DeployPath
 from .types import DeployHome
 
 
@@ -45,18 +47,18 @@ class DeployConfManager:
 
     #
 
-    async def _write_conf_file(
+    async def _write_app_conf_file(
             self,
-            cf: DeployAppConfFile,
-            conf_dir: str,
+            acf: DeployAppConfFile,
+            app_conf_dir: str,
     ) -> None:
-        conf_file = os.path.join(conf_dir, cf.path)
-        check.arg(is_path_in_dir(conf_dir, conf_file))
+        conf_file = os.path.join(app_conf_dir, acf.path)
+        check.arg(is_path_in_dir(app_conf_dir, conf_file))
 
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
         with open(conf_file, 'w') as f:  # noqa
-            f.write(cf.body)
+            f.write(acf.body)
 
     #
 
@@ -65,15 +67,18 @@ class DeployConfManager:
         link_src: str
         link_dst: str
 
-    def _compute_conf_link_dst(
+    _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
+    _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
+
+    def _compute_app_conf_link_dst(
             self,
             link: DeployAppConfLink,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> _ComputedConfLink:
-        link_src = os.path.join(conf_dir, link.src)
-        check.arg(is_path_in_dir(conf_dir, link_src))
+        link_src = os.path.join(app_conf_dir, link.src)
+        check.arg(is_path_in_dir(app_conf_dir, link_src))
 
         #
 
@@ -88,7 +93,7 @@ class DeployConfManager:
             d, f = os.path.split(link.src)
             # TODO: check filename :|
             link_dst_pfx = d + '/'
-            link_dst_sfx = DEPLOY_PATH_PLACEHOLDER_SEPARATOR + f
+            link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
 
         else:  # noqa
             # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -102,10 +107,10 @@ class DeployConfManager:
 
         #
 
-        if isinstance(link, AppDeployAppConfLink):
-            link_dst_mid = str(app_tag.app)
-        elif isinstance(link, TagDeployAppConfLink):
-            link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
+        if isinstance(link, CurrentOnlyDeployAppConfLink):
+            link_dst_mid = str(tags[DeployApp].s)
+        elif isinstance(link, AllActiveDeployAppConfLink):
+            link_dst_mid = self._UNIQUE_LINK_NAME.render(tags)
         else:
             raise TypeError(link)
 
@@ -116,7 +121,7 @@ class DeployConfManager:
             link_dst_mid,
             link_dst_sfx,
         ])
-        link_dst = os.path.join(link_dir, link_dst_name)
+        link_dst = os.path.join(conf_link_dir, link_dst_name)
 
         return DeployConfManager._ComputedConfLink(
             is_dir=is_dir,
@@ -124,24 +129,24 @@ class DeployConfManager:
             link_dst=link_dst,
         )
 
-    async def _make_conf_link(
+    async def _make_app_conf_link(
             self,
             link: DeployAppConfLink,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> None:
-        comp = self._compute_conf_link_dst(
+        comp = self._compute_app_conf_link_dst(
             link,
-            app_tag,
-            conf_dir,
-            link_dir,
+            tags,
+            app_conf_dir,
+            conf_link_dir,
         )
 
         #
 
-        check.arg(is_path_in_dir(conf_dir, comp.link_src))
-        check.arg(is_path_in_dir(link_dir, comp.link_dst))
+        check.arg(is_path_in_dir(app_conf_dir, comp.link_src))
+        check.arg(is_path_in_dir(conf_link_dir, comp.link_dst))
 
         if comp.is_dir:
             check.arg(os.path.isdir(comp.link_src))
@@ -162,22 +167,22 @@ class DeployConfManager:
     async def write_app_conf(
             self,
             spec: DeployAppConfSpec,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> None:
-        for cf in spec.files or []:
-            await self._write_conf_file(
-                cf,
-                conf_dir,
+        for acf in spec.files or []:
+            await self._write_app_conf_file(
+                acf,
+                app_conf_dir,
             )
 
         #
 
         for link in spec.links or []:
-            await self._make_conf_link(
+            await self._make_app_conf_link(
                 link,
-                app_tag,
-                conf_dir,
-                link_dir,
+                tags,
+                app_conf_dir,
+                conf_link_dir,
             )

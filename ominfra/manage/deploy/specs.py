@@ -111,11 +111,11 @@ class DeployAppConfLink(abc.ABC):  # noqa
             check.equal(self.src.count('/'), 1)
 
 
-class AppDeployAppConfLink(DeployAppConfLink):
+class CurrentOnlyDeployAppConfLink(DeployAppConfLink):
     pass
 
 
-class TagDeployAppConfLink(DeployAppConfLink):
+class AllActiveDeployAppConfLink(DeployAppConfLink):
     pass
 
 
