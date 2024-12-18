@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
+import typing as ta
 
 
 def dataclass_cache_hash(
@@ -30,3 +31,12 @@ def dataclass_cache_hash(
         return cls
 
     return inner
+
+
+def dataclass_maybe_post_init(sup: ta.Any) -> bool:
+    try:
+        fn = sup.__post_init__
+    except AttributeError:
+        return False
+    fn()
+    return True
