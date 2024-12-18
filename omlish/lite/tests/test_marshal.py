@@ -219,3 +219,14 @@ class FooNamedTuple(ta.NamedTuple):
 class NamedTupleTest(AbstractTestMarshal):
     def test_namedtuple(self):
         self._assert_marshal((FooNamedTuple(420), FooNamedTuple))
+
+
+##
+
+
+FooLiteral = ta.Literal['a', 'b', 'c']
+
+
+class TestMarshalLiterals(AbstractTestMarshal):
+    def test_literal(self):
+        self._assert_marshal(('b', FooLiteral))

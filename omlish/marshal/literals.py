@@ -15,9 +15,10 @@ from .values import Value
 @dc.dataclass(frozen=True)
 class LiteralMarshaler(Marshaler):
     e: Marshaler
+    vs: frozenset
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
-        return self.e.marshal(ctx, o)
+        return self.e.marshal(ctx, check.in_(o, self.vs))
 
 
 class LiteralMarshalerFactory(MarshalerFactory):
@@ -27,15 +28,16 @@ class LiteralMarshalerFactory(MarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         lty = check.isinstance(rty, rfl.Literal)
         ety = check.single(set(map(type, lty.args)))
-        return LiteralMarshaler(ctx.make(ety))
+        return LiteralMarshaler(ctx.make(ety), frozenset(lty.args))
 
 
 @dc.dataclass(frozen=True)
 class LiteralUnmarshaler(Unmarshaler):
     e: Unmarshaler
+    vs: frozenset
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
-        return self.e.unmarshal(ctx, v)
+        return check.in_(self.e.unmarshal(ctx, v), self.vs)
 
 
 class LiteralUnmarshalerFactory(UnmarshalerFactory):
@@ -45,4 +47,4 @@ class LiteralUnmarshalerFactory(UnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         lty = check.isinstance(rty, rfl.Literal)
         ety = check.single(set(map(type, lty.args)))
-        return LiteralUnmarshaler(ctx.make(ety))
+        return LiteralUnmarshaler(ctx.make(ety), frozenset(lty.args))
