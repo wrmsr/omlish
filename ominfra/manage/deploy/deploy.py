@@ -48,14 +48,18 @@ class DeployManager:
 
         #
 
-        tags = DeployTagMap(
+        deploy_tags = DeployTagMap(
             self._make_deploy_time(),
         )
 
         #
 
         for app in spec.apps:
+            app_tags = deploy_tags.add(
+                app.app,
+            )
+
             await self._apps.prepare_app(
                 app,
-                tags,
+                app_tags,
             )
