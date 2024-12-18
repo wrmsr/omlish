@@ -11,8 +11,8 @@ from .git import DeployGitManager
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
-from .types import DeployHome
 from .tags import DeployTagMap
+from .types import DeployHome
 from .venvs import DeployVenvManager
 
 
@@ -95,9 +95,9 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.makedirs(app_tag_dir)
+        os.makedirs(app_dir)
         relative_symlink(
-            app_tag_dir,
+            app_dir,
             app_deploy_link,
             target_is_directory=True,
             make_dirs=True,
@@ -144,29 +144,29 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        git_dir = os.path.join(app_tag_dir, 'git')
+        app_git_dir = os.path.join(app_dir, 'git')
         await self._git.checkout(
             spec.git,
-            git_dir,
+            app_git_dir,
         )
 
         #
 
         if spec.venv is not None:
-            venv_dir = os.path.join(app_tag_dir, 'venv')
+            app_venv_dir = os.path.join(app_dir, 'venv')
             await self._venvs.setup_venv(
                 spec.venv,
-                git_dir,
-                venv_dir,
+                app_git_dir,
+                app_venv_dir,
             )
 
         #
 
         if spec.conf is not None:
-            app_conf_dir = os.path.join(app_tag_dir, 'conf')
+            app_conf_dir = os.path.join(app_dir, 'conf')
             await self._conf.write_app_conf(
                 spec.conf,
-                app_tag,
+                tags,
                 app_conf_dir,
                 deploy_conf_dir,
             )
