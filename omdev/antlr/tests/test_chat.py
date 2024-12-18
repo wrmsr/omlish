@@ -1,4 +1,4 @@
-from omlish.antlr import _runtime as antlr4  # noqa
+from omlish.antlr import runtime as antlr4
 
 from ._antlr.ChatLexer import ChatLexer  # type: ignore
 from ._antlr.ChatParser import ChatParser  # type: ignore
@@ -13,9 +13,9 @@ class ChatVisitorImpl(ChatVisitor):
 
 
 def create_parser(buf: str) -> ChatParser:
-    lexer = ChatLexer(antlr4.InputStream(buf))  # type: ignore
+    lexer = ChatLexer(antlr4.InputStream(buf))
 
-    stream = antlr4.CommonTokenStream(lexer)  # type: ignore
+    stream = antlr4.CommonTokenStream(lexer)
     stream.fill()
 
     parser = ChatParser(stream)

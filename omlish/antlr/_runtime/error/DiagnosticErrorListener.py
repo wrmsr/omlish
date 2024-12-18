@@ -28,7 +28,8 @@
 # </ul>
 
 from io import StringIO
-from .. import Parser, DFA
+from ..Parser import Parser
+from ..dfa.DFA import DFA
 from ..atn.ATNConfigSet import ATNConfigSet
 from .ErrorListener import ErrorListener
 

@@ -50,7 +50,13 @@
 # <p>
 # Whitespace is not allowed.</p>
 #
-from .. import CommonTokenStream, DFA, PredictionContextCache, Lexer, LexerATNSimulator, ParserRuleContext, TerminalNode
+from ..CommonTokenStream import CommonTokenStream
+from ..dfa.DFA import DFA
+from ..PredictionContext import PredictionContextCache
+from ..Lexer import Lexer
+from ..atn.LexerATNSimulator import LexerATNSimulator
+from ..ParserRuleContext import ParserRuleContext
+from ..tree.Tree import TerminalNode
 from ..InputStream import InputStream
 from ..Parser import Parser
 from ..RuleContext import RuleContext

@@ -95,6 +95,10 @@ def _main() -> None:
     parser.add_argument('roots', nargs='*')
     args = parser.parse_args()
 
+    if not args.roots:
+        parser.print_help()
+        return
+
     base_dir = os.getcwd()
     if not os.path.isfile(os.path.join(base_dir, 'pyproject.toml')):
         raise RuntimeError('Must run from project root')
