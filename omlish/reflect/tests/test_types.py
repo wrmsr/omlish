@@ -131,3 +131,7 @@ def test_tuples():
         rfl.type_(ta.Tuple)  # FIXME
     with pytest.raises(TypeError):
         rfl.type_(tuple[int, ...])  # FIXME
+
+
+def test_literal():
+    rfl.type_(ta.Literal['a', 'b', 'c'])

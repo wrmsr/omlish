@@ -17,11 +17,12 @@ _NoneType = types.NoneType  # type: ignore
 _NONE_TYPE_FROZENSET: frozenset['Type'] = frozenset([_NoneType])
 
 
-_GenericAlias = ta._GenericAlias  # type: ignore  # noqa
+_AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
 _CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
+_GenericAlias = ta._GenericAlias  # type: ignore  # noqa
+_LiteralGenericAlias = ta._LiteralGenericAlias  # type: ignore  # noqa
 _SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
-_AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
 
 
 ##
@@ -123,6 +124,7 @@ Type: ta.TypeAlias = ta.Union[
     'Generic',
     'NewType',
     'Annotated',
+    'Literal',
     'Any',
 ]
 
@@ -181,6 +183,13 @@ class Annotated:
     obj: ta.Any = dc.field(compare=False, repr=False)
 
 
+@dc.dataclass(frozen=True)
+class Literal:
+    args: tuple[ta.Any, ...]
+
+    obj: ta.Any = dc.field(compare=False, repr=False)
+
+
 class Any:
     pass
 
@@ -213,6 +222,8 @@ class Reflector:
         self._override = override
 
     def is_type(self, obj: ta.Any) -> bool:
+        # `type` below but just the bool checks, no instantiation. Could be a MatchFn but this module can't really dep
+        # anything.
         if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
             return True
 
@@ -230,7 +241,9 @@ class Reflector:
 
                 isinstance(obj, type) or
 
-                isinstance(obj, _SpecialGenericAlias)
+                isinstance(obj, _SpecialGenericAlias) or
+
+                isinstance(obj, _LiteralGenericAlias)
         )
 
     def type(self, obj: ta.Any) -> Type:
@@ -312,6 +325,9 @@ class Reflector:
         if isinstance(obj, _AnnotatedAlias):
             o = ta.get_args(obj)[0]
             return Annotated(self.type(o), md=obj.__metadata__, obj=obj)
+
+        if isinstance(obj, _LiteralGenericAlias):
+            raise NotImplementedError
 
         raise TypeError(obj)
 
