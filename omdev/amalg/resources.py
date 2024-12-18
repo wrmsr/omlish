@@ -91,7 +91,7 @@ def build_resource_lines(
             trt.Token(name='UNIMPORTANT_WS', src=' '),
             trt.Token(name='OP', src='='),
             trt.Token(name='UNIMPORTANT_WS', src=' '),
-            trt.Token(name='STRING', src=f'"""\\\n{rt}"""\n'),
+            trt.Token(name='STRING', src=f'"""\\\n{rt}"""  # noqa\n'),
             trt.Token(name='NEWLINE', src=''),
         ]]
 
