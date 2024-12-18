@@ -2341,6 +2341,9 @@ log = logging.getLogger(__name__)
 # ../../../omlish/lite/reflect.py
 
 
+##
+
+
 _GENERIC_ALIAS_TYPES = (
     ta._GenericAlias,  # type: ignore  # noqa
     *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
@@ -2358,6 +2361,9 @@ is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
 is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
 
 
+##
+
+
 def is_optional_alias(spec: ta.Any) -> bool:
     return (
         isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
@@ -2372,6 +2378,9 @@ def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     return it
 
 
+##
+
+
 def is_new_type(spec: ta.Any) -> bool:
     if isinstance(ta.NewType, type):
         return isinstance(spec, ta.NewType)
@@ -2382,6 +2391,26 @@ def is_new_type(spec: ta.Any) -> bool:
 
 def get_new_type_supertype(spec: ta.Any) -> ta.Any:
     return spec.__supertype__
+
+
+##
+
+
+def is_literal_type(spec: ta.Any) -> bool:
+    if hasattr(ta, '_LiteralGenericAlias'):
+        return isinstance(spec, ta._LiteralGenericAlias)  # noqa
+    else:
+        return (
+            isinstance(spec, ta._GenericAlias) and  # type: ignore  # noqa
+            spec.__origin__ is ta.Literal
+        )
+
+
+def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
+    return spec.__args__
+
+
+##
 
 
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
