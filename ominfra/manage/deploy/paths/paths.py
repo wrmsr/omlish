@@ -17,9 +17,9 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
 
-from ..types import DEPLOY_PATH_PLACEHOLDERS
-from ..types import DeployPathKind
-from ..types import DeployPathPlaceholder
+from .placeholders import DEPLOY_PATH_PLACEHOLDERS
+from .types import DeployPathKind
+from .types import DeployPathPlaceholder
 
 
 ##
