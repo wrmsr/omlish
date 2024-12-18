@@ -65,7 +65,7 @@ class DeployPathNamePart(DeployPathRenderable, abc.ABC):
 
 @dc.dataclass(frozen=True)
 class PlaceholderDeployPathNamePart(DeployPathNamePart):
-    placeholder: str
+    placeholder: str  # DeployPathPlaceholder
 
     def __post_init__(self) -> None:
         check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
@@ -194,16 +194,13 @@ class DeployPath:
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
 
-        pd = {}
+        pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
             if isinstance(np, PlaceholderDeployPathNamePart):
-                if np.placeholder in pd:
-                    raise DeployPathError('Duplicate placeholders in path', self)
-                pd[np.placeholder] = i
+                pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
 
-        if 'tag' in pd:
-            if 'app' not in pd or pd['app'] >= pd['tag']:
-                raise DeployPathError('Tag placeholder in path without preceding app', self)
+        # if 'tag' in pd and 'app' not in pd:
+        #     raise DeployPathError('Tag placeholder in path without app', self)
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
