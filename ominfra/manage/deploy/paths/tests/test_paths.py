@@ -5,8 +5,8 @@ import unittest
 from omlish.lite import marshal as msh
 from omlish.lite.json import json_dumps_pretty
 
-from ..paths import DeployPath
 from ...tags import DeployTagMap
+from ..paths import DeployPath
 
 
 class TestMarshal(unittest.TestCase):
