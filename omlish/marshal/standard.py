@@ -17,6 +17,8 @@ from .enums import EnumMarshalerFactory
 from .enums import EnumUnmarshalerFactory
 from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
+from .literals import LiteralMarshalerFactory
+from .literals import LiteralUnmarshalerFactory
 from .mappings import MappingMarshalerFactory
 from .mappings import MappingUnmarshalerFactory
 from .maybes import MaybeMarshalerFactory
@@ -48,6 +50,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     DataclassMarshalerFactory(),
     NamedtupleMarshalerFactory(),
     EnumMarshalerFactory(),
+    LiteralMarshalerFactory(),
     NUMBERS_MARSHALER_FACTORY,
     UUID_MARSHALER_FACTORY,
     BASE64_MARSHALER_FACTORY,
@@ -80,6 +83,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     DataclassUnmarshalerFactory(),
     NamedtupleUnmarshalerFactory(),
     EnumUnmarshalerFactory(),
+    LiteralUnmarshalerFactory(),
     NUMBERS_UNMARSHALER_FACTORY,
     UUID_UNMARSHALER_FACTORY,
     BASE64_UNMARSHALER_FACTORY,
