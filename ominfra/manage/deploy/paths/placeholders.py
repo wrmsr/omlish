@@ -24,7 +24,7 @@ class DeployPathPlaceholders:
     @classmethod
     def map_of(cls, **kwargs: str) -> DeployPathPlaceholderMap:
         return {
-            ta.cast(DeployPathPlaceholder, check.in_(k, DEPLOY_PATH_PLACEHOLDERS)): v
+            DEPLOY_PATH_PLACEHOLDER_KWARGS_MAP[k]: v
             for k, v in kwargs.items()
         }
 
