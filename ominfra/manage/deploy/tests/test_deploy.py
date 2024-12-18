@@ -11,6 +11,7 @@ from ..config import DeployConfig
 from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
+from ..specs import AllActiveDeployAppConfLink
 from ..specs import CurrentOnlyDeployAppConfLink
 from ..specs import DeployAppConfFile
 from ..specs import DeployAppConfSpec
@@ -18,7 +19,6 @@ from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
-from ..specs import AllActiveDeployAppConfLink
 from ..tags import DeployApp
 from ..types import DeployHome
 from ..types import DeployRev

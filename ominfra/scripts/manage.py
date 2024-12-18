@@ -77,6 +77,9 @@ TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
+# deploy/paths/types.py
+DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
+
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
@@ -92,6 +95,11 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../omlish/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
+
 # ../../omdev/packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
@@ -100,10 +108,6 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # commands/base.py
 CommandT = ta.TypeVar('CommandT', bound='Command')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
-
-# deploy/types.py
-DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathPlaceholder = ta.Literal['app', 'tag', 'conf', 'rev']  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -124,6 +128,9 @@ AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
 # ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
+
+# deploy/specs.py
+KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound='KeyDeployTag')
 
 # ../../omlish/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -1378,6 +1385,25 @@ class MainConfig:
 @dc.dataclass(frozen=True)
 class DeployConfig:
     deploy_home: ta.Optional[str] = None
+
+
+########################################
+# ../deploy/paths/types.py
+
+
+##
+
+
+########################################
+# ../deploy/types.py
+
+
+##
+
+
+DeployHome = ta.NewType('DeployHome', str)
+
+DeployRev = ta.NewType('DeployRev', str)
 
 
 ########################################
@@ -2824,6 +2850,54 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
+# ../../../omlish/lite/typing.py
+
+
+##
+# A workaround for typing deficiencies (like `Argument 2 to NewType(...) must be subclassable`).
+
+
+@dc.dataclass(frozen=True)
+class AnyFunc(ta.Generic[T]):
+    fn: ta.Callable[..., T]
+
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class Func0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        return self.fn()
+
+
+@dc.dataclass(frozen=True)
+class Func1(ta.Generic[A0, T]):
+    fn: ta.Callable[[A0], T]
+
+    def __call__(self, a0: A0) -> T:
+        return self.fn(a0)
+
+
+@dc.dataclass(frozen=True)
+class Func2(ta.Generic[A0, A1, T]):
+    fn: ta.Callable[[A0, A1], T]
+
+    def __call__(self, a0: A0, a1: A1) -> T:
+        return self.fn(a0, a1)
+
+
+@dc.dataclass(frozen=True)
+class Func3(ta.Generic[A0, A1, A2, T]):
+    fn: ta.Callable[[A0, A1, A2], T]
+
+    def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
+        return self.fn(a0, a1, a2)
+
+
+########################################
 # ../../../omlish/logs/filters.py
 
 
@@ -4149,29 +4223,25 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 
 
 ########################################
-# ../deploy/types.py
+# ../deploy/tags.py
 
 
 ##
 
 
-DeployHome = ta.NewType('DeployHome', str)
+DEPLOY_TAG_SIGIL = '@'
 
-DeployApp = ta.NewType('DeployApp', str)
-DeployTag = ta.NewType('DeployTag', str)
-DeployRev = ta.NewType('DeployRev', str)
-DeployKey = ta.NewType('DeployKey', str)
+DEPLOY_TAG_SEPARATOR = '--'
 
+DEPLOY_TAG_DELIMITERS: ta.AbstractSet[str] = frozenset([
+    DEPLOY_TAG_SEPARATOR,
+    '.',
+])
 
-##
-
-
-# Sync with DeployPathPlaceholder
-DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
-    'app',
-    'tag',
-    'conf',
-    'rev',
+DEPLOY_TAG_ILLEGAL_STRS: ta.AbstractSet[str] = frozenset([
+    DEPLOY_TAG_SIGIL,
+    *DEPLOY_TAG_DELIMITERS,
+    '/',
 ])
 
 
@@ -4179,20 +4249,202 @@ DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
 
 
 @dc.dataclass(frozen=True)
-class DeployAppTag:
-    app: DeployApp
-    tag: DeployTag
+class DeployTag(abc.ABC):  # noqa
+    s: str
 
     def __post_init__(self) -> None:
-        for s in [self.app, self.tag]:
-            check.non_empty_str(s)
-            check.equal(s, s.strip())
+        check.not_in(abc.ABC, type(self).__bases__)
+        check.non_empty_str(self.s)
+        for ch in DEPLOY_TAG_ILLEGAL_STRS:
+            check.state(ch not in self.s)
 
-    def placeholders(self) -> ta.Mapping[DeployPathPlaceholder, str]:
-        return {
-            'app': self.app,
-            'tag': self.tag,
+    #
+
+    tag_name: ta.ClassVar[str]
+    tag_kwarg: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if abc.ABC in cls.__bases__:
+            return
+
+        for b in cls.__bases__:
+            if issubclass(b, DeployTag):
+                check.in_(abc.ABC, b.__bases__)
+
+        check.non_empty_str(tn := cls.tag_name)
+        check.equal(tn, tn.lower().strip())
+        check.not_in('_', tn)
+
+        check.state(not hasattr(cls, 'tag_kwarg'))
+        cls.tag_kwarg = tn.replace('-', '_')
+
+
+##
+
+
+_DEPLOY_TAGS: ta.Set[ta.Type[DeployTag]] = set()
+DEPLOY_TAGS: ta.AbstractSet[ta.Type[DeployTag]] = _DEPLOY_TAGS
+
+_DEPLOY_TAGS_BY_NAME: ta.Dict[str, ta.Type[DeployTag]] = {}
+DEPLOY_TAGS_BY_NAME: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_NAME
+
+_DEPLOY_TAGS_BY_KWARG: ta.Dict[str, ta.Type[DeployTag]] = {}
+DEPLOY_TAGS_BY_KWARG: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_KWARG
+
+
+def _register_deploy_tag(cls):
+    check.not_in(cls.tag_name, _DEPLOY_TAGS_BY_NAME)
+    check.not_in(cls.tag_kwarg, _DEPLOY_TAGS_BY_KWARG)
+
+    _DEPLOY_TAGS.add(cls)
+    _DEPLOY_TAGS_BY_NAME[cls.tag_name] = cls
+    _DEPLOY_TAGS_BY_KWARG[cls.tag_kwarg] = cls
+
+    return cls
+
+
+##
+
+
+@_register_deploy_tag
+class DeployTime(DeployTag):
+    tag_name: ta.ClassVar[str] = 'time'
+
+
+##
+
+
+class NameDeployTag(DeployTag, abc.ABC):  # noqa
+    pass
+
+
+@_register_deploy_tag
+class DeployApp(NameDeployTag):
+    tag_name: ta.ClassVar[str] = 'app'
+
+
+@_register_deploy_tag
+class DeployConf(NameDeployTag):
+    tag_name: ta.ClassVar[str] = 'conf'
+
+
+##
+
+
+class KeyDeployTag(DeployTag, abc.ABC):  # noqa
+    pass
+
+
+@_register_deploy_tag
+class DeployKey(KeyDeployTag):
+    tag_name: ta.ClassVar[str] = 'deploy-key'
+
+
+@_register_deploy_tag
+class DeployAppKey(KeyDeployTag):
+    tag_name: ta.ClassVar[str] = 'app-key'
+
+
+##
+
+
+class RevDeployTag(DeployTag, abc.ABC):  # noqa
+    pass
+
+
+@_register_deploy_tag
+class DeployAppRev(RevDeployTag):
+    tag_name: ta.ClassVar[str] = 'app-rev'
+
+
+##
+
+
+class DeployTagMap:
+    # TODO: with/without
+
+    def __init__(
+            self,
+            *args: DeployTag,
+            **kwargs: str,
+    ) -> None:
+        super().__init__()
+
+        dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {}
+
+        for a in args:
+            c = type(check.isinstance(a, DeployTag))
+            check.not_in(c, dct)
+            dct[c] = a
+
+        for k, v in kwargs.items():
+            c = DEPLOY_TAGS_BY_KWARG[k]
+            check.not_in(c, dct)
+            dct[c] = c(v)
+
+        self._dct = dct
+        self._tup = tuple(sorted((type(t).tag_kwarg, t.s) for t in dct.values()))
+
+    #
+
+    def add(self, *args: ta.Any, **kwargs: ta.Any) -> 'DeployTagMap':
+        return DeployTagMap(
+            *self,
+            *args,
+            **kwargs,
+        )
+
+    def remove(self, *tags_or_names: ta.Union[ta.Type[DeployTag], str]) -> 'DeployTagMap':
+        dcs = {
+            check.issubclass(a, DeployTag) if isinstance(a, type) else DEPLOY_TAGS_BY_NAME[a]
+            for a in tags_or_names
         }
+
+        return DeployTagMap(*[
+            t
+            for t in self._dct.values()
+            if t not in dcs
+        ])
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({", ".join(f"{k}={v!r}" for k, v in self._tup)})'
+
+    def __hash__(self) -> int:
+        return hash(self._tup)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, DeployTagMap):
+            return self._tup == other._tup
+        else:
+            return NotImplemented
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __iter__(self) -> ta.Iterator[DeployTag]:
+        return iter(self._dct.values())
+
+    def __getitem__(self, key: ta.Union[ta.Type[DeployTag], str]) -> DeployTag:
+        if isinstance(key, str):
+            return self._dct[DEPLOY_TAGS_BY_NAME[key]]
+        elif isinstance(key, type):
+            return self._dct[key]
+        else:
+            raise TypeError(key)
+
+    def __contains__(self, key: ta.Union[ta.Type[DeployTag], str]) -> bool:
+        if isinstance(key, str):
+            return DEPLOY_TAGS_BY_NAME[key] in self._dct
+        elif isinstance(key, type):
+            return key in self._dct
+        else:
+            raise TypeError(key)
 
 
 ########################################
@@ -6646,22 +6898,13 @@ TODO:
 ##
 
 
-DEPLOY_PATH_PLACEHOLDER_SIGIL = '@'
-DEPLOY_PATH_PLACEHOLDER_SEPARATOR = '--'
-
-DEPLOY_PATH_PLACEHOLDER_DELIMITERS: ta.AbstractSet[str] = frozenset([
-    DEPLOY_PATH_PLACEHOLDER_SEPARATOR,
-    '.',
-])
-
-
 class DeployPathError(Exception):
     pass
 
 
 class DeployPathRenderable(abc.ABC):
     @abc.abstractmethod
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         raise NotImplementedError
 
 
@@ -6672,26 +6915,30 @@ class DeployPathNamePart(DeployPathRenderable, abc.ABC):
     @classmethod
     def parse(cls, s: str) -> 'DeployPathNamePart':
         check.non_empty_str(s)
-        if s.startswith(DEPLOY_PATH_PLACEHOLDER_SIGIL):
-            return PlaceholderDeployPathNamePart(s[1:])
-        elif s in DEPLOY_PATH_PLACEHOLDER_DELIMITERS:
+        if s.startswith(DEPLOY_TAG_SIGIL):
+            return TagDeployPathNamePart(s[1:])
+        elif s in DEPLOY_TAG_DELIMITERS:
             return DelimiterDeployPathNamePart(s)
         else:
             return ConstDeployPathNamePart(s)
 
 
 @dc.dataclass(frozen=True)
-class PlaceholderDeployPathNamePart(DeployPathNamePart):
-    placeholder: str  # DeployPathPlaceholder
+class TagDeployPathNamePart(DeployPathNamePart):
+    name: str
 
     def __post_init__(self) -> None:
-        check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
+        check.in_(self.name, DEPLOY_TAGS_BY_NAME)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        if placeholders is not None:
-            return placeholders[self.placeholder]  # type: ignore
+    @property
+    def tag(self) -> ta.Type[DeployTag]:
+        return DEPLOY_TAGS_BY_NAME[self.name]
+
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        if tags is not None:
+            return tags[self.tag].s
         else:
-            return DEPLOY_PATH_PLACEHOLDER_SIGIL + self.placeholder
+            return DEPLOY_TAG_SIGIL + self.name
 
 
 @dc.dataclass(frozen=True)
@@ -6699,9 +6946,9 @@ class DelimiterDeployPathNamePart(DeployPathNamePart):
     delimiter: str
 
     def __post_init__(self) -> None:
-        check.in_(self.delimiter, DEPLOY_PATH_PLACEHOLDER_DELIMITERS)
+        check.in_(self.delimiter, DEPLOY_TAG_DELIMITERS)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         return self.delimiter
 
 
@@ -6711,10 +6958,10 @@ class ConstDeployPathNamePart(DeployPathNamePart):
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.const)
-        for c in [*DEPLOY_PATH_PLACEHOLDER_DELIMITERS, DEPLOY_PATH_PLACEHOLDER_SIGIL, '/']:
+        for c in [*DEPLOY_TAG_DELIMITERS, DEPLOY_TAG_SIGIL, '/']:
             check.not_in(c, self.const)
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         return self.const
 
 
@@ -6729,8 +6976,8 @@ class DeployPathName(DeployPathRenderable):
             if len(gl := list(g)) > 1:
                 raise DeployPathError(f'May not have consecutive path name part types: {k} {gl}')
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return ''.join(p.render(placeholders) for p in self.parts)
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return ''.join(p.render(tags) for p in self.parts)
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathName':
@@ -6740,7 +6987,7 @@ class DeployPathName(DeployPathRenderable):
         i = 0
         ps = []
         while i < len(s):
-            ns = [(n, d) for d in DEPLOY_PATH_PLACEHOLDER_DELIMITERS if (n := s.find(d, i)) >= 0]
+            ns = [(n, d) for d in DEPLOY_TAG_DELIMITERS if (n := s.find(d, i)) >= 0]
             if not ns:
                 ps.append(s[i:])
                 break
@@ -6764,8 +7011,8 @@ class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
     def kind(self) -> DeployPathKind:
         raise NotImplementedError
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return self.name.render(placeholders) + ('/' if self.kind == 'dir' else '')
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return self.name.render(tags) + ('/' if self.kind == 'dir' else '')
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathPart':
@@ -6812,19 +7059,19 @@ class DeployPath:
             check.equal(p.kind, 'dir')
 
     @cached_nullary
-    def placeholder_indices(self) -> ta.Mapping[DeployPathPlaceholder, ta.Sequence[int]]:
-        pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
+    def tag_indices(self) -> ta.Mapping[ta.Type[DeployTag], ta.Sequence[int]]:
+        pd: ta.Dict[ta.Type[DeployTag], ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
-            if isinstance(np, PlaceholderDeployPathNamePart):
-                pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
+            if isinstance(np, TagDeployPathNamePart):
+                pd.setdefault(np.tag, []).append(i)
         return pd
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
         return self.parts[-1].kind
 
-    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
-        return ''.join([p.render(placeholders) for p in self.parts])
+    def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return ''.join([p.render(tags) for p in self.parts])
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
@@ -6848,10 +7095,14 @@ def check_valid_deploy_spec_path(s: str) -> str:
     return s
 
 
-class _DeploySpecKeyed:
+class DeploySpecKeyed(ta.Generic[KeyDeployTagT]):
     @cached_nullary
-    def key(self) -> DeployKey:
-        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+    def _key_str(self) -> str:
+        return hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8]
+
+    @abc.abstractmethod
+    def key(self) -> KeyDeployTagT:
+        raise NotImplementedError
 
 
 ##
@@ -6927,11 +7178,11 @@ class DeployAppConfLink(abc.ABC):  # noqa
             check.equal(self.src.count('/'), 1)
 
 
-class AppDeployAppConfLink(DeployAppConfLink):
+class CurrentOnlyDeployAppConfLink(DeployAppConfLink):
     pass
 
 
-class TagDeployAppConfLink(DeployAppConfLink):
+class AllActiveDeployAppConfLink(DeployAppConfLink):
     pass
 
 
@@ -6956,7 +7207,7 @@ class DeployAppConfSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeployAppSpec(_DeploySpecKeyed):
+class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
     app: DeployApp
 
     git: DeployGitSpec
@@ -6965,14 +7216,16 @@ class DeployAppSpec(_DeploySpecKeyed):
 
     conf: ta.Optional[DeployAppConfSpec] = None
 
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.app)
+    # @ta.override
+    def key(self) -> DeployAppKey:
+        return DeployAppKey(self._key_str())
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class DeploySpec(_DeploySpecKeyed):
+class DeploySpec(DeploySpecKeyed[DeployKey]):
     apps: ta.Sequence[DeployAppSpec]
 
     def __post_init__(self) -> None:
@@ -6981,6 +7234,10 @@ class DeploySpec(_DeploySpecKeyed):
             if a.app in seen:
                 raise KeyError(a.app)
             seen.add(a.app)
+
+    # @ta.override
+    def key(self) -> DeployKey:
+        return DeployKey(self._key_str())
 
 
 ########################################
@@ -7600,18 +7857,18 @@ class DeployConfManager:
 
     #
 
-    async def _write_conf_file(
+    async def _write_app_conf_file(
             self,
-            cf: DeployAppConfFile,
-            conf_dir: str,
+            acf: DeployAppConfFile,
+            app_conf_dir: str,
     ) -> None:
-        conf_file = os.path.join(conf_dir, cf.path)
-        check.arg(is_path_in_dir(conf_dir, conf_file))
+        conf_file = os.path.join(app_conf_dir, acf.path)
+        check.arg(is_path_in_dir(app_conf_dir, conf_file))
 
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
         with open(conf_file, 'w') as f:  # noqa
-            f.write(cf.body)
+            f.write(acf.body)
 
     #
 
@@ -7620,15 +7877,18 @@ class DeployConfManager:
         link_src: str
         link_dst: str
 
-    def _compute_conf_link_dst(
+    _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
+    _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
+
+    def _compute_app_conf_link_dst(
             self,
             link: DeployAppConfLink,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> _ComputedConfLink:
-        link_src = os.path.join(conf_dir, link.src)
-        check.arg(is_path_in_dir(conf_dir, link_src))
+        link_src = os.path.join(app_conf_dir, link.src)
+        check.arg(is_path_in_dir(app_conf_dir, link_src))
 
         #
 
@@ -7643,7 +7903,7 @@ class DeployConfManager:
             d, f = os.path.split(link.src)
             # TODO: check filename :|
             link_dst_pfx = d + '/'
-            link_dst_sfx = DEPLOY_PATH_PLACEHOLDER_SEPARATOR + f
+            link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
 
         else:  # noqa
             # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -7657,10 +7917,10 @@ class DeployConfManager:
 
         #
 
-        if isinstance(link, AppDeployAppConfLink):
-            link_dst_mid = str(app_tag.app)
-        elif isinstance(link, TagDeployAppConfLink):
-            link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
+        if isinstance(link, CurrentOnlyDeployAppConfLink):
+            link_dst_mid = str(tags[DeployApp].s)
+        elif isinstance(link, AllActiveDeployAppConfLink):
+            link_dst_mid = self._UNIQUE_LINK_NAME.render(tags)
         else:
             raise TypeError(link)
 
@@ -7671,7 +7931,7 @@ class DeployConfManager:
             link_dst_mid,
             link_dst_sfx,
         ])
-        link_dst = os.path.join(link_dir, link_dst_name)
+        link_dst = os.path.join(conf_link_dir, link_dst_name)
 
         return DeployConfManager._ComputedConfLink(
             is_dir=is_dir,
@@ -7679,24 +7939,24 @@ class DeployConfManager:
             link_dst=link_dst,
         )
 
-    async def _make_conf_link(
+    async def _make_app_conf_link(
             self,
             link: DeployAppConfLink,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> None:
-        comp = self._compute_conf_link_dst(
+        comp = self._compute_app_conf_link_dst(
             link,
-            app_tag,
-            conf_dir,
-            link_dir,
+            tags,
+            app_conf_dir,
+            conf_link_dir,
         )
 
         #
 
-        check.arg(is_path_in_dir(conf_dir, comp.link_src))
-        check.arg(is_path_in_dir(link_dir, comp.link_dst))
+        check.arg(is_path_in_dir(app_conf_dir, comp.link_src))
+        check.arg(is_path_in_dir(conf_link_dir, comp.link_dst))
 
         if comp.is_dir:
             check.arg(os.path.isdir(comp.link_src))
@@ -7717,24 +7977,24 @@ class DeployConfManager:
     async def write_app_conf(
             self,
             spec: DeployAppConfSpec,
-            app_tag: DeployAppTag,
-            conf_dir: str,
-            link_dir: str,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
     ) -> None:
-        for cf in spec.files or []:
-            await self._write_conf_file(
-                cf,
-                conf_dir,
+        for acf in spec.files or []:
+            await self._write_app_conf_file(
+                acf,
+                app_conf_dir,
             )
 
         #
 
         for link in spec.links or []:
-            await self._make_conf_link(
+            await self._make_app_conf_link(
                 link,
-                app_tag,
-                conf_dir,
-                link_dir,
+                tags,
+                app_conf_dir,
+                conf_link_dir,
             )
 
 
@@ -9357,10 +9617,10 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
-    _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
-    _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
+    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
+    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
 
-    _DEPLOY_DIR_STR = 'deploys/@tag/'
+    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
 
     _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
@@ -9369,7 +9629,7 @@ class DeployAppManager(DeployPathOwner):
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            self._APP_TAG_DIR,
+            self._APP_DIR,
 
             self._DEPLOY_DIR,
 
@@ -9377,7 +9637,7 @@ class DeployAppManager(DeployPathOwner):
             self._CONF_DEPLOY_DIR,
 
             *[
-                DeployPath.parse(f'{self._APP_TAG_DIR_STR}{sfx}/')
+                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
@@ -9391,18 +9651,14 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeployAppSpec,
-            tag: DeployTag,
+            tags: DeployTagMap,
     ) -> None:
-        app_tag = DeployAppTag(spec.app, tag)
-
-        #
-
         deploy_home = check.non_empty_str(self._deploy_home)
 
         def build_path(pth: DeployPath) -> str:
-            return os.path.join(deploy_home, pth.render(app_tag.placeholders()))
+            return os.path.join(deploy_home, pth.render(tags))
 
-        app_tag_dir = build_path(self._APP_TAG_DIR)
+        app_dir = build_path(self._APP_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
         app_deploy_link = build_path(self._APP_DEPLOY_LINK)
 
@@ -9420,9 +9676,9 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.makedirs(app_tag_dir)
+        os.makedirs(app_dir)
         relative_symlink(
-            app_tag_dir,
+            app_dir,
             app_deploy_link,
             target_is_directory=True,
             make_dirs=True,
@@ -9469,29 +9725,29 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        git_dir = os.path.join(app_tag_dir, 'git')
+        app_git_dir = os.path.join(app_dir, 'git')
         await self._git.checkout(
             spec.git,
-            git_dir,
+            app_git_dir,
         )
 
         #
 
         if spec.venv is not None:
-            venv_dir = os.path.join(app_tag_dir, 'venv')
+            app_venv_dir = os.path.join(app_dir, 'venv')
             await self._venvs.setup_venv(
                 spec.venv,
-                git_dir,
-                venv_dir,
+                app_git_dir,
+                app_venv_dir,
             )
 
         #
 
         if spec.conf is not None:
-            app_conf_dir = os.path.join(app_tag_dir, 'conf')
+            app_conf_dir = os.path.join(app_dir, 'conf')
             await self._conf.write_app_conf(
                 spec.conf,
-                app_tag,
+                tags,
                 app_conf_dir,
                 deploy_conf_dir,
             )
@@ -10237,15 +10493,7 @@ class SystemInterpProvider(InterpProvider):
 DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
 
 
-def make_deploy_tag(
-        key: DeployKey,
-        *,
-        utcnow: ta.Optional[datetime.datetime] = None,
-) -> DeployTag:
-    if utcnow is None:
-        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-    now_str = utcnow.strftime(DEPLOY_TAG_DATETIME_FMT)
-    return DeployTag('-'.join([now_str, key]))
+DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
 
 
 class DeployManager:
@@ -10254,11 +10502,24 @@ class DeployManager:
             *,
             apps: DeployAppManager,
             paths: DeployPathsManager,
+
+            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
     ):
         super().__init__()
 
         self._apps = apps
         self._paths = paths
+
+        self._utc_clock = utc_clock
+
+    def _utc_now(self) -> datetime.datetime:
+        if self._utc_clock is not None:
+            return self._utc_clock()  # noqa
+        else:
+            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+
+    def _make_deploy_time(self) -> DeployTime:
+        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
 
     async def run_deploy(
             self,
@@ -10268,14 +10529,23 @@ class DeployManager:
 
         #
 
-        tag = make_deploy_tag(spec.key())
+        deploy_tags = DeployTagMap(
+            self._make_deploy_time(),
+            spec.key(),
+        )
 
         #
 
         for app in spec.apps:
+            app_tags = deploy_tags.add(
+                app.app,
+                app.key(),
+                DeployAppRev(app.git.rev),
+            )
+
             await self._apps.prepare_app(
                 app,
-                tag,
+                app_tags,
             )
 
 
