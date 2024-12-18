@@ -11,16 +11,17 @@ from ..config import DeployConfig
 from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..specs import AppDeployAppConfLink
+from ..specs import CurrentOnlyDeployAppConfLink
 from ..specs import DeployAppConfFile
 from ..specs import DeployAppConfSpec
 from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
-from ..specs import TagDeployAppConfLink
+from ..specs import AllActiveDeployAppConfLink
 from ..tags import DeployApp
 from ..types import DeployHome
+from ..types import DeployRev
 
 
 def build_flask_thing_spec(
@@ -35,7 +36,7 @@ def build_flask_thing_spec(
                 host='github.com',
                 path='wrmsr/flaskthing',
             ),
-            rev=rev,
+            rev=DeployRev(rev),
         ),
 
         venv=DeployVenvSpec(
@@ -68,14 +69,14 @@ def build_flask_thing_spec(
                 ),
             ],
             links=[
-                AppDeployAppConfLink('supervisor/'),
-                TagDeployAppConfLink('supervisor/'),
+                CurrentOnlyDeployAppConfLink('supervisor/'),
+                AllActiveDeployAppConfLink('supervisor/'),
 
-                AppDeployAppConfLink('nginx.conf'),
-                TagDeployAppConfLink('nginx.conf'),
+                CurrentOnlyDeployAppConfLink('nginx.conf'),
+                AllActiveDeployAppConfLink('nginx.conf'),
 
-                AppDeployAppConfLink('systemd/service.conf'),
-                TagDeployAppConfLink('systemd/service.conf'),
+                CurrentOnlyDeployAppConfLink('systemd/service.conf'),
+                AllActiveDeployAppConfLink('systemd/service.conf'),
             ],
         ),
     )
@@ -89,7 +90,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
             host='github.com',
             path='wrmsr/omlish',
         ),
-        rev='4dc487c3620d4629b8a2895a84511a4be478a801',
+        rev=DeployRev('4dc487c3620d4629b8a2895a84511a4be478a801'),
         subtrees=[
             'ominfra/scripts/supervisor.py',
         ],
@@ -103,8 +104,8 @@ SUPERVISOR_SPEC = DeployAppSpec(
             ),
         ],
         links=[
-            AppDeployAppConfLink('systemd/service.conf'),
-            TagDeployAppConfLink('systemd/service.conf'),
+            AllActiveDeployAppConfLink('systemd/service.conf'),
+            CurrentOnlyDeployAppConfLink('systemd/service.conf'),
         ],
     ),
 )

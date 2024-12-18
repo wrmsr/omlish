@@ -149,9 +149,6 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
     conf: ta.Optional[DeployAppConfSpec] = None
 
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.app)
-
     # @ta.override
     def key(self) -> DeployAppKey:
         return DeployAppKey(self._key_str())
