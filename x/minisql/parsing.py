@@ -3,7 +3,7 @@ import typing as ta
 from omlish import check
 from omlish.antlr import runtime as antlr4
 from omlish.antlr.delimit import DelimitingLexer
-from omlish.antlr.parsing import SilentRaisingErrorListener
+from omlish.antlr.errors import SilentRaisingErrorListener
 
 from . import nodes as no
 from ._antlr.MiniSqlLexer import MiniSqlLexer
