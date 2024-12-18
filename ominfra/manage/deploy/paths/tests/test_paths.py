@@ -6,7 +6,7 @@ from omlish.lite import marshal as msh
 from omlish.lite.json import json_dumps_pretty
 
 from ..paths import DeployPath
-from ..placeholders import DeployPathPlaceholders
+from ...tags import DeployTagMap
 
 
 class TestMarshal(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestMarshal(unittest.TestCase):
             'tags/apps/@app--@app-key--@app-rev/git/',
             'tags/apps/@app--@app-key--@app-rev/venv/',
 
-            'tags/conf/@conf--@app--@dt/',
+            'tags/conf/@conf--@app--@time/',
         ]:
             print()
             print(s)
@@ -49,7 +49,7 @@ class TestMarshal(unittest.TestCase):
         #
 
         self.assertEqual(
-            DeployPath.parse('ab/@app/cd/@app-key.foo').render(DeployPathPlaceholders.map_of(
+            DeployPath.parse('ab/@app/cd/@app-key.foo').render(DeployTagMap(
                 app='foo',
                 app_key='bar',
             )),
