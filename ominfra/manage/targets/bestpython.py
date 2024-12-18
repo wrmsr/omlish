@@ -1,11 +1,13 @@
 import io
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.resources import read_package_resource_text
 
 
 BEST_PYTHON_SH = read_package_resource_text(__package__, 'bestpython.sh')
 
 
+@cached_nullary
 def get_best_python_sh() -> str:
     buf = io.StringIO()
 

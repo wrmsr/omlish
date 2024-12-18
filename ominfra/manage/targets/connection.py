@@ -2,7 +2,6 @@
 import abc
 import contextlib
 import dataclasses as dc
-import shlex
 import typing as ta
 
 from omlish.lite.check import check
@@ -35,7 +34,7 @@ class ManageTargetConnector(abc.ABC):
         if python is not None:
             return python
         else:
-            return ['sh', '-c', shlex.quote(get_best_python_sh()), '--']
+            return ['sh', '-c', get_best_python_sh(), '--']
 
 
 ##
