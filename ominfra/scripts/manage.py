@@ -4338,7 +4338,7 @@ if [ -z "$bx" ]; then
 fi
 
 exec "$bx" "$@"
-"""
+"""  # noqa
 
 
 @cached_nullary
