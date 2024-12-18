@@ -132,7 +132,7 @@ class DeployAppRev(RevDeployTag):
 
 
 class DeployTagMap:
-    # TODO: with/without, tup hash_eq, iter, coll.abc, repr, etc
+    # TODO: with/without
 
     def __init__(
             self,
@@ -154,6 +154,19 @@ class DeployTagMap:
             dct[c] = c(v)
 
         self._dct = dct
+        self._tup = tuple(sorted((type(t).tag_name, t.s) for t in dct.values()))
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._tup!r})'
+
+    def __hash__(self) -> int:
+        return hash(self._tup)
+
+    def __eq__(self, other: ta.Any) -> bool:
+        if isinstance(other, DeployTagMap):
+            return self._tup == other._tup
+        else:
+            return NotImplemented
 
     def __len__(self) -> int:
         return len(self._dct)
