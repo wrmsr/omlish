@@ -122,6 +122,20 @@
     }
   },
   {
+    "module": ".formats.repr",
+    "attr": "_REPR_LAZY_CODEC",
+    "file": "omlish/formats/repr.py",
+    "line": 24,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.repr",
+        "attr_name": "REPR_CODEC",
+        "name": "repr",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".formats.toml",
     "attr": "_TOML_LAZY_CODEC",
     "file": "omlish/formats/toml.py",
