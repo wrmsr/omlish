@@ -7,9 +7,8 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
-from .types import DeployApp
-from .types import DeployKey
-from .types import DeployRev
+from .tags import DeployApp
+from .tags import DeployKey
 
 
 ##
@@ -46,7 +45,7 @@ class DeployGitRepo:
 @dc.dataclass(frozen=True)
 class DeployGitSpec:
     repo: DeployGitRepo
-    rev: DeployRev
+    rev: str
 
     subtrees: ta.Optional[ta.Sequence[str]] = None
 

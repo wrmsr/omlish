@@ -19,9 +19,8 @@ from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
 from ..specs import TagDeployAppConfLink
-from ..types import DeployApp
+from ..tags import DeployApp
 from ..types import DeployHome
-from ..types import DeployRev
 
 
 def build_flask_thing_spec(
@@ -36,7 +35,7 @@ def build_flask_thing_spec(
                 host='github.com',
                 path='wrmsr/flaskthing',
             ),
-            rev=DeployRev(rev),
+            rev=rev,
         ),
 
         venv=DeployVenvSpec(
@@ -90,7 +89,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
             host='github.com',
             path='wrmsr/omlish',
         ),
-        rev=DeployRev('4dc487c3620d4629b8a2895a84511a4be478a801'),
+        rev='4dc487c3620d4629b8a2895a84511a4be478a801',
         subtrees=[
             'ominfra/scripts/supervisor.py',
         ],
