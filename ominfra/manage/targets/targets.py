@@ -26,8 +26,11 @@ class ManageTarget(abc.ABC):  # noqa
 
 @dc.dataclass(frozen=True)
 class PythonRemoteManageTarget:
-    DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
-    python: str = DEFAULT_PYTHON
+    DEFAULT_PYTHON: ta.ClassVar[ta.Optional[ta.Sequence[str]]] = None
+    python: ta.Optional[ta.Sequence[str]] = DEFAULT_PYTHON
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.python, str)
 
 
 #

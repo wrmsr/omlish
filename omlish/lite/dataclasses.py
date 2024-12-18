@@ -2,7 +2,7 @@
 import dataclasses as dc
 
 
-def cache_dataclass_hash(
+def dataclass_cache_hash(
         *,
         cached_hash_attr: str = '__dataclass_hash__',
 ):
