@@ -134,5 +134,4 @@ def test_tuples():
 
 
 def test_literal():
-    # rfl.type_(ta.Literal['a', 'b', 'c'])
-    pass
+    rfl.type_(ta.Literal['a', 'b', 'c'])
