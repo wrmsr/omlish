@@ -60,12 +60,16 @@ DEPLOY_TAGS: ta.AbstractSet[ta.Type[DeployTag]] = _DEPLOY_TAGS
 _DEPLOY_TAGS_BY_NAME: ta.Dict[str, ta.Type[DeployTag]] = {}
 DEPLOY_TAGS_BY_NAME: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_NAME
 
+_DEPLOY_TAGS_BY_KWARG: ta.Dict[str, ta.Type[DeployTag]] = {}
+DEPLOY_TAGS_BY_KWARG: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_NAME
+
 
 def _register_deploy_tag(cls):
     check.not_in(cls.tag_name, _DEPLOY_TAGS_BY_NAME)
 
     _DEPLOY_TAGS.add(cls)
     _DEPLOY_TAGS_BY_NAME[cls.tag_name] = cls
+    _DEPLOY_TAGS_BY_KWARG[cls.tag_name.replace('-', '_')] = cls
 
     return cls
 
@@ -122,3 +126,23 @@ class RevDeployTag(DeployTag, abc.ABC):  # noqa
 @_register_deploy_tag
 class AppRevDeployTag(RevDeployTag):
     tag_name: ta.ClassVar[str] = 'app-rev'
+
+
+##
+
+
+class DeployTagMap:
+    # TODO: with/without, tup hash_eq, iter, coll.abc, repr, etc
+
+    def __init__(
+            self,
+            *args: DeployTag,
+            **kwargs: str,
+    ) -> None:
+        super().__init__()
+
+        # FIXME: dedupe
+        dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {
+            **{type(a): a for a in args},
+            **{(tc := DEPLOY_TAGS_BY_KWARG[k]): tc(v) for k, v in kwargs.items()},
+        }
