@@ -8,3 +8,7 @@ class Node(abc.ABC):
 
 class Stmt(Node, abc.ABC):
     pass
+
+
+class Select(Stmt):
+    pass

@@ -28,6 +28,9 @@ class _ParseVisitor(MiniSqlVisitor):
             check.none(aggregate)
             return nextResult
 
+    def visitSelect(self, ctx: MiniSqlParser.SelectContext):
+        return no.Select()
+
 
 ##
 
