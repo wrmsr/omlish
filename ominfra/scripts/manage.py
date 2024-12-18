@@ -6597,7 +6597,7 @@ class DeployPathNamePart(DeployPathRenderable, abc.ABC):
 
 @dc.dataclass(frozen=True)
 class PlaceholderDeployPathNamePart(DeployPathNamePart):
-    placeholder: str
+    placeholder: str  # DeployPathPlaceholder
 
     def __post_init__(self) -> None:
         check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
@@ -6726,16 +6726,13 @@ class DeployPath:
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
 
-        pd = {}
+        pd: ta.Dict[DeployPathPlaceholder, ta.List[int]] = {}
         for i, np in enumerate(self.name_parts):
             if isinstance(np, PlaceholderDeployPathNamePart):
-                if np.placeholder in pd:
-                    raise DeployPathError('Duplicate placeholders in path', self)
-                pd[np.placeholder] = i
+                pd.setdefault(ta.cast(DeployPathPlaceholder, np.placeholder), []).append(i)
 
-        if 'tag' in pd:
-            if 'app' not in pd or pd['app'] >= pd['tag']:
-                raise DeployPathError('Tag placeholder in path without preceding app', self)
+        # if 'tag' in pd and 'app' not in pd:
+        #     raise DeployPathError('Tag placeholder in path without app', self)
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
@@ -6788,7 +6785,6 @@ class DeployGitSpec:
     subtrees: ta.Optional[ta.Sequence[str]] = None
 
     def __post_init__(self) -> None:
-        hash(self)
         check.non_empty_str(self.rev)
         if self.subtrees is not None:
             for st in self.subtrees:
@@ -9263,33 +9259,38 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
-    _APP_TAG_PATH_STR = 'tags/apps/@app--@tag/'
-    _APP_TAG_PATH = DeployPath.parse(_APP_TAG_PATH_STR)
+    _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
+    _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
+
+    _CONF_TAG_DIR_STR = 'tags/conf/@tag--@app/'
+    _CONF_TAG_DIR = DeployPath.parse(_CONF_TAG_DIR_STR)
+
+    _DEPLOY_DIR_STR = 'deploys/@tag--@app/'
+    _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
+
+    _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
+    _CONF_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            *itertools.chain.from_iterable([
-                DeployPath.parse(f'{pfx}/'),
-                DeployPath.parse(f'{pfx}/apps/@app'),
-                DeployPath.parse(f'{pfx}/conf/@conf'),
-            ] for pfx in [
-                'current',
-                'deploying',
-            ]),
+            self._APP_TAG_DIR,
 
-            self._APP_TAG_PATH,
+            self._CONF_TAG_DIR,
+
+            self._DEPLOY_DIR,
+
+            self._APP_DEPLOY_LINK,
+            self._CONF_DEPLOY_LINK,
 
             *[
-                DeployPath.parse(f'{self._APP_TAG_PATH_STR}{sfx}/')
+                DeployPath.parse(f'{self._APP_TAG_DIR_STR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
                     'venv',
                 ]
             ],
-
-            DeployPath.parse('tags/conf/@conf--@app--@tag'),
         }
 
     #
@@ -9303,22 +9304,44 @@ class DeployAppManager(DeployPathOwner):
         #
 
         deploy_home = check.non_empty_str(self._deploy_home)
-        app_tag_dir = os.path.join(deploy_home, self._APP_TAG_PATH.render(app_tag.placeholders()))
+
+        def build_path(pth: DeployPath) -> str:
+            return os.path.join(deploy_home, pth.render(app_tag.placeholders()))
+
+        app_tag_dir = build_path(self._APP_TAG_DIR)
+        conf_tag_dir = build_path(self._CONF_TAG_DIR)
+        deploy_dir = build_path(self._DEPLOY_DIR)
+        app_deploy_link = build_path(self._APP_DEPLOY_LINK)
+        conf_deploy_link_file = build_path(self._CONF_DEPLOY_LINK)
+
+        #
+
+        os.makedirs(deploy_dir)
+
+        deploying_link = os.path.join(deploy_home, 'deploys/deploying')
+        relative_symlink(
+            deploy_dir,
+            deploying_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
         os.makedirs(app_tag_dir)
-
-        #
-
-        deploying_dir = os.path.join(deploy_home, 'deploying')
-        if os.path.exists(deploying_dir):
-            check.state(is_path_in_dir(deploy_home, deploying_dir))
-            shutil.rmtree(deploying_dir)
-        os.makedirs(deploying_dir)
-
-        #
-
         relative_symlink(
             app_tag_dir,
-            os.path.join(deploying_dir, 'apps', app_tag.app),
+            app_deploy_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        os.makedirs(conf_tag_dir)
+        relative_symlink(
+            conf_tag_dir,
+            conf_deploy_link_file,
             target_is_directory=True,
             make_dirs=True,
         )
@@ -9345,18 +9368,17 @@ class DeployAppManager(DeployPathOwner):
 
         if spec.conf is not None:
             conf_dir = os.path.join(app_tag_dir, 'conf')
-            conf_link_dir = os.path.join(deploying_dir, 'conf')
             await self._conf.write_conf(
                 spec.conf,
                 app_tag,
                 conf_dir,
-                conf_link_dir,
+                conf_tag_dir,
             )
 
         #
 
-        current_dir = os.path.join(deploy_home, 'current')
-        os.replace(deploying_dir, current_dir)
+        current_link = os.path.join(deploy_home, 'deploys/current')
+        os.replace(deploying_link, current_link)
 
 
 ########################################
