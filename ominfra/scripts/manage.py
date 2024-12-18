@@ -6842,6 +6842,12 @@ def check_valid_deploy_spec_path(s: str) -> str:
     return s
 
 
+class _DeploySpecKeyed:
+    @cached_nullary
+    def key(self) -> DeployKey:
+        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+
+
 ##
 
 
@@ -6887,7 +6893,7 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeployConfFile:
+class DeployAppConfFile:
     path: str
     body: str
 
@@ -6899,7 +6905,7 @@ class DeployConfFile:
 
 
 @dc.dataclass(frozen=True)
-class DeployConfLink(abc.ABC):  # noqa
+class DeployAppConfLink(abc.ABC):  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -6915,11 +6921,11 @@ class DeployConfLink(abc.ABC):  # noqa
             check.equal(self.src.count('/'), 1)
 
 
-class AppDeployConfLink(DeployConfLink):
+class AppDeployAppConfLink(DeployAppConfLink):
     pass
 
 
-class TagDeployConfLink(DeployConfLink):
+class TagDeployAppConfLink(DeployAppConfLink):
     pass
 
 
@@ -6927,10 +6933,10 @@ class TagDeployConfLink(DeployConfLink):
 
 
 @dc.dataclass(frozen=True)
-class DeployConfSpec:
-    files: ta.Optional[ta.Sequence[DeployConfFile]] = None
+class DeployAppConfSpec:
+    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
 
-    links: ta.Optional[ta.Sequence[DeployConfLink]] = None
+    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
 
     def __post_init__(self) -> None:
         if self.files:
@@ -6944,18 +6950,31 @@ class DeployConfSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeploySpec:
+class DeployAppSpec(_DeploySpecKeyed):
     app: DeployApp
 
     git: DeployGitSpec
 
     venv: ta.Optional[DeployVenvSpec] = None
 
-    conf: ta.Optional[DeployConfSpec] = None
+    conf: ta.Optional[DeployAppConfSpec] = None
 
-    @cached_nullary
-    def key(self) -> DeployKey:
-        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.app)
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeploySpec(_DeploySpecKeyed):
+    apps: ta.Sequence[DeployAppSpec]
+
+    def __post_init__(self) -> None:
+        seen: ta.Set[DeployApp] = set()
+        for a in self.apps:
+            if a.app in seen:
+                raise KeyError(a.app)
+            seen.add(a.app)
 
 
 ########################################
@@ -7577,7 +7596,7 @@ class DeployConfManager:
 
     async def _write_conf_file(
             self,
-            cf: DeployConfFile,
+            cf: DeployAppConfFile,
             conf_dir: str,
     ) -> None:
         conf_file = os.path.join(conf_dir, cf.path)
@@ -7597,7 +7616,7 @@ class DeployConfManager:
 
     def _compute_conf_link_dst(
             self,
-            link: DeployConfLink,
+            link: DeployAppConfLink,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,
@@ -7632,9 +7651,9 @@ class DeployConfManager:
 
         #
 
-        if isinstance(link, AppDeployConfLink):
+        if isinstance(link, AppDeployAppConfLink):
             link_dst_mid = str(app_tag.app)
-        elif isinstance(link, TagDeployConfLink):
+        elif isinstance(link, TagDeployAppConfLink):
             link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
         else:
             raise TypeError(link)
@@ -7656,7 +7675,7 @@ class DeployConfManager:
 
     async def _make_conf_link(
             self,
-            link: DeployConfLink,
+            link: DeployAppConfLink,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,
@@ -7689,9 +7708,9 @@ class DeployConfManager:
 
     #
 
-    async def write_conf(
+    async def write_app_conf(
             self,
-            spec: DeployConfSpec,
+            spec: DeployAppConfSpec,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,
@@ -9312,19 +9331,6 @@ def bind_commands(
 # ../deploy/apps.py
 
 
-def make_deploy_tag(
-        rev: DeployRev,
-        key: DeployKey,
-        *,
-        utcnow: ta.Optional[datetime.datetime] = None,
-) -> DeployTag:
-    if utcnow is None:
-        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-    now_fmt = '%Y%m%dT%H%M%SZ'
-    now_str = utcnow.strftime(now_fmt)
-    return DeployTag('-'.join([now_str, rev, key]))
-
-
 class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
@@ -9348,26 +9354,21 @@ class DeployAppManager(DeployPathOwner):
     _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
     _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
 
-    _CONF_TAG_DIR_STR = 'tags/conf/@tag--@app/'
-    _CONF_TAG_DIR = DeployPath.parse(_CONF_TAG_DIR_STR)
-
-    _DEPLOY_DIR_STR = 'deploys/@tag--@app/'
+    _DEPLOY_DIR_STR = 'deploys/@tag/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
 
     _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf')
+    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             self._APP_TAG_DIR,
 
-            self._CONF_TAG_DIR,
-
             self._DEPLOY_DIR,
 
             self._APP_DEPLOY_LINK,
-            self._CONF_DEPLOY_LINK,
+            self._CONF_DEPLOY_DIR,
 
             *[
                 DeployPath.parse(f'{self._APP_TAG_DIR_STR}{sfx}/')
@@ -9383,9 +9384,10 @@ class DeployAppManager(DeployPathOwner):
 
     async def prepare_app(
             self,
-            spec: DeploySpec,
+            spec: DeployAppSpec,
+            tag: DeployTag,
     ) -> None:
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.git.rev, spec.key()))
+        app_tag = DeployAppTag(spec.app, tag)
 
         #
 
@@ -9395,10 +9397,8 @@ class DeployAppManager(DeployPathOwner):
             return os.path.join(deploy_home, pth.render(app_tag.placeholders()))
 
         app_tag_dir = build_path(self._APP_TAG_DIR)
-        conf_tag_dir = build_path(self._CONF_TAG_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
         app_deploy_link = build_path(self._APP_DEPLOY_LINK)
-        conf_deploy_link_file = build_path(self._CONF_DEPLOY_LINK)
 
         #
 
@@ -9424,37 +9424,33 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.makedirs(conf_tag_dir)
-        relative_symlink(
-            conf_tag_dir,
-            conf_deploy_link_file,
-            target_is_directory=True,
-            make_dirs=True,
-        )
+        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
+        os.makedirs(deploy_conf_dir)
 
         #
 
-        def mirror_symlinks(src: str, dst: str) -> None:
-            def mirror_link(lp: str) -> None:
-                check.state(os.path.islink(lp))
-                shutil.copy2(
-                    lp,
-                    os.path.join(dst, os.path.relpath(lp, src)),
-                    follow_symlinks=False,
-                )
-
-            for dp, dns, fns in os.walk(src, followlinks=False):
-                for fn in fns:
-                    mirror_link(os.path.join(dp, fn))
-
-                for dn in dns:
-                    dp2 = os.path.join(dp, dn)
-                    if os.path.islink(dp2):
-                        mirror_link(dp2)
-                    else:
-                        os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
+        # def mirror_symlinks(src: str, dst: str) -> None:
+        #     def mirror_link(lp: str) -> None:
+        #         check.state(os.path.islink(lp))
+        #         shutil.copy2(
+        #             lp,
+        #             os.path.join(dst, os.path.relpath(lp, src)),
+        #             follow_symlinks=False,
+        #         )
+        #
+        #     for dp, dns, fns in os.walk(src, followlinks=False):
+        #         for fn in fns:
+        #             mirror_link(os.path.join(dp, fn))
+        #
+        #         for dn in dns:
+        #             dp2 = os.path.join(dp, dn)
+        #             if os.path.islink(dp2):
+        #                 mirror_link(dp2)
+        #             else:
+        #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
 
         current_link = os.path.join(deploy_home, 'deploys/current')
+
         # if os.path.exists(current_link):
         #     mirror_symlinks(
         #         os.path.join(current_link, 'conf'),
@@ -9486,12 +9482,12 @@ class DeployAppManager(DeployPathOwner):
         #
 
         if spec.conf is not None:
-            conf_dir = os.path.join(app_tag_dir, 'conf')
-            await self._conf.write_conf(
+            app_conf_dir = os.path.join(app_tag_dir, 'conf')
+            await self._conf.write_app_conf(
                 spec.conf,
                 app_tag,
-                conf_dir,
-                conf_tag_dir,
+                app_conf_dir,
+                deploy_conf_dir,
             )
 
         #
@@ -10232,6 +10228,20 @@ class SystemInterpProvider(InterpProvider):
 # ../deploy/deploy.py
 
 
+DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+
+
+def make_deploy_tag(
+        key: DeployKey,
+        *,
+        utcnow: ta.Optional[datetime.datetime] = None,
+) -> DeployTag:
+    if utcnow is None:
+        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+    now_str = utcnow.strftime(DEPLOY_TAG_DATETIME_FMT)
+    return DeployTag('-'.join([now_str, key]))
+
+
 class DeployManager:
     def __init__(
             self,
@@ -10252,7 +10262,15 @@ class DeployManager:
 
         #
 
-        await self._apps.prepare_app(spec)
+        tag = make_deploy_tag(spec.key())
+
+        #
+
+        for app in spec.apps:
+            await self._apps.prepare_app(
+                app,
+                tag,
+            )
 
 
 ########################################
