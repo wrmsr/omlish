@@ -42,13 +42,24 @@ class DeployTag(abc.ABC):  # noqa
     #
 
     tag_name: ta.ClassVar[str]
+    tag_kwarg: ta.ClassVar[str]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
-        if abc.ABC not in cls.__bases__:
-            check.non_empty_str(tn := cls.tag_name)
-            check.equal(tn, tn.lower().strip())
-            check.not_in('_', tn)
+
+        if abc.ABC in cls.__bases__:
+            return
+
+        for b in cls.__bases__:
+            if issubclass(b, DeployTag):
+                check.in_(abc.ABC, b.__bases__)
+
+        check.non_empty_str(tn := cls.tag_name)
+        check.equal(tn, tn.lower().strip())
+        check.not_in('_', tn)
+
+        check.state(not hasattr(cls, 'tag_kwarg'))
+        cls.tag_kwarg = tn.replace('-', '_')
 
 
 ##
@@ -66,10 +77,11 @@ DEPLOY_TAGS_BY_KWARG: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_KWAR
 
 def _register_deploy_tag(cls):
     check.not_in(cls.tag_name, _DEPLOY_TAGS_BY_NAME)
+    check.not_in(cls.tag_kwarg, _DEPLOY_TAGS_BY_KWARG)
 
     _DEPLOY_TAGS.add(cls)
     _DEPLOY_TAGS_BY_NAME[cls.tag_name] = cls
-    _DEPLOY_TAGS_BY_KWARG[cls.tag_name.replace('-', '_')] = cls
+    _DEPLOY_TAGS_BY_KWARG[cls.tag_kwarg] = cls
 
     return cls
 
@@ -154,10 +166,10 @@ class DeployTagMap:
             dct[c] = c(v)
 
         self._dct = dct
-        self._tup = tuple(sorted((type(t).tag_name, t.s) for t in dct.values()))
+        self._tup = tuple(sorted((type(t).tag_kwarg, t.s) for t in dct.values()))
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._tup!r})'
+        return f'{self.__class__.__name__}({", ".join(f"{k}={v!r}" for k, v in self._tup)})'
 
     def __hash__(self) -> int:
         return hash(self._tup)
