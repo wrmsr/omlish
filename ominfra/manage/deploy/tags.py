@@ -107,12 +107,12 @@ class KeyDeployTag(DeployTag, abc.ABC):  # noqa
 
 
 @_register_deploy_tag
-class DeployKeyDeployTag(KeyDeployTag):
+class DeployKey(KeyDeployTag):
     tag_name: ta.ClassVar[str] = 'deploy-key'
 
 
 @_register_deploy_tag
-class AppKeyDeployTag(KeyDeployTag):
+class DeployAppKey(KeyDeployTag):
     tag_name: ta.ClassVar[str] = 'app-key'
 
 
@@ -124,7 +124,7 @@ class RevDeployTag(DeployTag, abc.ABC):  # noqa
 
 
 @_register_deploy_tag
-class AppRevDeployTag(RevDeployTag):
+class DeployAppRev(RevDeployTag):
     tag_name: ta.ClassVar[str] = 'app-rev'
 
 
