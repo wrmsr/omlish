@@ -61,7 +61,7 @@ _DEPLOY_TAGS_BY_NAME: ta.Dict[str, ta.Type[DeployTag]] = {}
 DEPLOY_TAGS_BY_NAME: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_NAME
 
 _DEPLOY_TAGS_BY_KWARG: ta.Dict[str, ta.Type[DeployTag]] = {}
-DEPLOY_TAGS_BY_KWARG: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_NAME
+DEPLOY_TAGS_BY_KWARG: ta.Mapping[str, ta.Type[DeployTag]] = _DEPLOY_TAGS_BY_KWARG
 
 
 def _register_deploy_tag(cls):
@@ -78,8 +78,8 @@ def _register_deploy_tag(cls):
 
 
 @_register_deploy_tag
-class DeployTimestamp(DeployTag):
-    tag_name: ta.ClassVar[str] = 'timestamp'
+class DeployTime(DeployTag):
+    tag_name: ta.ClassVar[str] = 'time'
 
 
 ##
@@ -142,7 +142,15 @@ class DeployTagMap:
         super().__init__()
 
         # FIXME: dedupe
-        dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {
+        self._dct: ta.Dict[ta.Type[DeployTag], DeployTag] = {
             **{type(a): a for a in args},
             **{(tc := DEPLOY_TAGS_BY_KWARG[k]): tc(v) for k, v in kwargs.items()},
         }
+
+    def __getitem__(self, key: ta.Union[ta.Type[DeployTag], str]) -> DeployTag:
+        if isinstance(key, str):
+            return self._dct[DEPLOY_TAGS_BY_NAME[key]]
+        elif isinstance(key, type):
+            return self._dct[key]
+        else:
+            raise TypeError(key)
