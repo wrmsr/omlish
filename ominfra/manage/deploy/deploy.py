@@ -5,8 +5,9 @@ import typing as ta
 from .apps import DeployAppManager
 from .paths.manager import DeployPathsManager
 from .specs import DeploySpec
-from .tags import DeployTime
+from .tags import DeployAppRev
 from .tags import DeployTagMap
+from .tags import DeployTime
 
 
 DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
@@ -50,6 +51,7 @@ class DeployManager:
 
         deploy_tags = DeployTagMap(
             self._make_deploy_time(),
+            spec.key(),
         )
 
         #
@@ -57,6 +59,8 @@ class DeployManager:
         for app in spec.apps:
             app_tags = deploy_tags.add(
                 app.app,
+                app.key(),
+                DeployAppRev(app.git.rev),
             )
 
             await self._apps.prepare_app(
