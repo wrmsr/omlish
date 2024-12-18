@@ -24,11 +24,11 @@ from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
 from .paths.paths import DEPLOY_PATH_PLACEHOLDER_SEPARATOR
-from .specs import AppDeployConfLink
-from .specs import DeployConfFile
-from .specs import DeployConfLink
-from .specs import DeployConfSpec
-from .specs import TagDeployConfLink
+from .specs import AppDeployAppConfLink
+from .specs import DeployAppConfFile
+from .specs import DeployAppConfLink
+from .specs import DeployAppConfSpec
+from .specs import TagDeployAppConfLink
 from .types import DeployAppTag
 from .types import DeployHome
 
@@ -47,7 +47,7 @@ class DeployConfManager:
 
     async def _write_conf_file(
             self,
-            cf: DeployConfFile,
+            cf: DeployAppConfFile,
             conf_dir: str,
     ) -> None:
         conf_file = os.path.join(conf_dir, cf.path)
@@ -67,7 +67,7 @@ class DeployConfManager:
 
     def _compute_conf_link_dst(
             self,
-            link: DeployConfLink,
+            link: DeployAppConfLink,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,
@@ -102,9 +102,9 @@ class DeployConfManager:
 
         #
 
-        if isinstance(link, AppDeployConfLink):
+        if isinstance(link, AppDeployAppConfLink):
             link_dst_mid = str(app_tag.app)
-        elif isinstance(link, TagDeployConfLink):
+        elif isinstance(link, TagDeployAppConfLink):
             link_dst_mid = DEPLOY_PATH_PLACEHOLDER_SEPARATOR.join([app_tag.app, app_tag.tag])
         else:
             raise TypeError(link)
@@ -126,7 +126,7 @@ class DeployConfManager:
 
     async def _make_conf_link(
             self,
-            link: DeployConfLink,
+            link: DeployAppConfLink,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,
@@ -159,9 +159,9 @@ class DeployConfManager:
 
     #
 
-    async def write_conf(
+    async def write_app_conf(
             self,
-            spec: DeployConfSpec,
+            spec: DeployAppConfSpec,
             app_tag: DeployAppTag,
             conf_dir: str,
             link_dir: str,

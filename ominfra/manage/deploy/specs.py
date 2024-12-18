@@ -23,6 +23,12 @@ def check_valid_deploy_spec_path(s: str) -> str:
     return s
 
 
+class _DeploySpecKeyed:
+    @cached_nullary
+    def key(self) -> DeployKey:
+        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+
+
 ##
 
 
@@ -68,7 +74,7 @@ class DeployVenvSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeployConfFile:
+class DeployAppConfFile:
     path: str
     body: str
 
@@ -80,7 +86,7 @@ class DeployConfFile:
 
 
 @dc.dataclass(frozen=True)
-class DeployConfLink(abc.ABC):  # noqa
+class DeployAppConfLink(abc.ABC):  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -96,11 +102,11 @@ class DeployConfLink(abc.ABC):  # noqa
             check.equal(self.src.count('/'), 1)
 
 
-class AppDeployConfLink(DeployConfLink):
+class AppDeployAppConfLink(DeployAppConfLink):
     pass
 
 
-class TagDeployConfLink(DeployConfLink):
+class TagDeployAppConfLink(DeployAppConfLink):
     pass
 
 
@@ -108,10 +114,10 @@ class TagDeployConfLink(DeployConfLink):
 
 
 @dc.dataclass(frozen=True)
-class DeployConfSpec:
-    files: ta.Optional[ta.Sequence[DeployConfFile]] = None
+class DeployAppConfSpec:
+    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
 
-    links: ta.Optional[ta.Sequence[DeployConfLink]] = None
+    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
 
     def __post_init__(self) -> None:
         if self.files:
@@ -125,15 +131,28 @@ class DeployConfSpec:
 
 
 @dc.dataclass(frozen=True)
-class DeploySpec:
+class DeployAppSpec(_DeploySpecKeyed):
     app: DeployApp
 
     git: DeployGitSpec
 
     venv: ta.Optional[DeployVenvSpec] = None
 
-    conf: ta.Optional[DeployConfSpec] = None
+    conf: ta.Optional[DeployAppConfSpec] = None
 
-    @cached_nullary
-    def key(self) -> DeployKey:
-        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.app)
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeploySpec(_DeploySpecKeyed):
+    apps: ta.Sequence[DeployAppSpec]
+
+    def __post_init__(self) -> None:
+        seen: ta.Set[DeployApp] = set()
+        for a in self.apps:
+            if a.app in seen:
+                raise KeyError(a.app)
+            seen.add(a.app)
