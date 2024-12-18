@@ -24,8 +24,6 @@ from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
 from .paths.paths import DeployPath
-from .specs import AllActiveDeployAppConfLink
-from .specs import CurrentOnlyDeployAppConfLink
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
@@ -107,9 +105,9 @@ class DeployConfManager:
 
         #
 
-        if isinstance(link, CurrentOnlyDeployAppConfLink):
+        if link.kind == 'current_only':
             link_dst_mid = str(tags[DeployApp].s)
-        elif isinstance(link, AllActiveDeployAppConfLink):
+        elif link.kind == 'all_active':
             link_dst_mid = self._UNIQUE_LINK_NAME.render(tags)
         else:
             raise TypeError(link)
