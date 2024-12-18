@@ -1,7 +1,5 @@
 # ruff: noqa: UP006 UP007
-import datetime
 import os.path
-import shutil
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -12,26 +10,11 @@ from .conf import DeployConfManager
 from .git import DeployGitManager
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
-from .specs import DeploySpec
+from .specs import DeployAppSpec
 from .types import DeployAppTag
 from .types import DeployHome
-from .types import DeployKey
-from .types import DeployRev
 from .types import DeployTag
 from .venvs import DeployVenvManager
-
-
-def make_deploy_tag(
-        rev: DeployRev,
-        key: DeployKey,
-        *,
-        utcnow: ta.Optional[datetime.datetime] = None,
-) -> DeployTag:
-    if utcnow is None:
-        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-    now_fmt = '%Y%m%dT%H%M%SZ'
-    now_str = utcnow.strftime(now_fmt)
-    return DeployTag('-'.join([now_str, rev, key]))
 
 
 class DeployAppManager(DeployPathOwner):
@@ -57,11 +40,11 @@ class DeployAppManager(DeployPathOwner):
     _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
     _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
 
-    _DEPLOY_DIR_STR = 'deploys/@tag--@app/'
+    _DEPLOY_DIR_STR = 'deploys/@tag/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
 
     _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf')
+    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
@@ -71,7 +54,7 @@ class DeployAppManager(DeployPathOwner):
             self._DEPLOY_DIR,
 
             self._APP_DEPLOY_LINK,
-            self._CONF_DEPLOY_LINK,
+            self._CONF_DEPLOY_DIR,
 
             *[
                 DeployPath.parse(f'{self._APP_TAG_DIR_STR}{sfx}/')
@@ -87,9 +70,10 @@ class DeployAppManager(DeployPathOwner):
 
     async def prepare_app(
             self,
-            spec: DeploySpec,
+            spec: DeployAppSpec,
+            tag: DeployTag,
     ) -> None:
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.git.rev, spec.key()))
+        app_tag = DeployAppTag(spec.app, tag)
 
         #
 
@@ -101,11 +85,10 @@ class DeployAppManager(DeployPathOwner):
         app_tag_dir = build_path(self._APP_TAG_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
         app_deploy_link = build_path(self._APP_DEPLOY_LINK)
-        conf_deploy_link_file = build_path(self._CONF_DEPLOY_LINK)
 
         #
 
-        os.makedirs(deploy_dir)
+        os.makedirs(deploy_dir, exist_ok=True)
 
         deploying_link = os.path.join(deploy_home, 'deploys/deploying')
         relative_symlink(
@@ -127,37 +110,33 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        os.makedirs(conf_tag_dir)
-        relative_symlink(
-            conf_tag_dir,
-            conf_deploy_link_file,
-            target_is_directory=True,
-            make_dirs=True,
-        )
+        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
+        os.makedirs(deploy_conf_dir, exist_ok=True)
 
         #
 
-        def mirror_symlinks(src: str, dst: str) -> None:
-            def mirror_link(lp: str) -> None:
-                check.state(os.path.islink(lp))
-                shutil.copy2(
-                    lp,
-                    os.path.join(dst, os.path.relpath(lp, src)),
-                    follow_symlinks=False,
-                )
-
-            for dp, dns, fns in os.walk(src, followlinks=False):
-                for fn in fns:
-                    mirror_link(os.path.join(dp, fn))
-
-                for dn in dns:
-                    dp2 = os.path.join(dp, dn)
-                    if os.path.islink(dp2):
-                        mirror_link(dp2)
-                    else:
-                        os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
+        # def mirror_symlinks(src: str, dst: str) -> None:
+        #     def mirror_link(lp: str) -> None:
+        #         check.state(os.path.islink(lp))
+        #         shutil.copy2(
+        #             lp,
+        #             os.path.join(dst, os.path.relpath(lp, src)),
+        #             follow_symlinks=False,
+        #         )
+        #
+        #     for dp, dns, fns in os.walk(src, followlinks=False):
+        #         for fn in fns:
+        #             mirror_link(os.path.join(dp, fn))
+        #
+        #         for dn in dns:
+        #             dp2 = os.path.join(dp, dn)
+        #             if os.path.islink(dp2):
+        #                 mirror_link(dp2)
+        #             else:
+        #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
 
         current_link = os.path.join(deploy_home, 'deploys/current')
+
         # if os.path.exists(current_link):
         #     mirror_symlinks(
         #         os.path.join(current_link, 'conf'),
@@ -189,12 +168,12 @@ class DeployAppManager(DeployPathOwner):
         #
 
         if spec.conf is not None:
-            conf_dir = os.path.join(app_tag_dir, 'conf')
-            await self._conf.write_conf(
+            app_conf_dir = os.path.join(app_tag_dir, 'conf')
+            await self._conf.write_app_conf(
                 spec.conf,
                 app_tag,
-                conf_dir,
-                conf_tag_dir,
+                app_conf_dir,
+                deploy_conf_dir,
             )
 
         #

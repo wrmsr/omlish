@@ -11,19 +11,20 @@ from ..config import DeployConfig
 from ..deploy import DeployManager
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..specs import AppDeployConfLink
-from ..specs import DeployConfFile
-from ..specs import DeployConfSpec
+from ..specs import AppDeployAppConfLink
+from ..specs import DeployAppConfFile
+from ..specs import DeployAppConfSpec
+from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
 from ..specs import DeployVenvSpec
-from ..specs import TagDeployConfLink
+from ..specs import TagDeployAppConfLink
 from ..types import DeployApp
 from ..types import DeployHome
 from ..types import DeployRev
 
 
-FLASK_THING_SPEC = DeploySpec(
+FLASK_THING_SPEC = DeployAppSpec(
     app=DeployApp('flaskthing'),
 
     git=DeployGitSpec(
@@ -38,9 +39,9 @@ FLASK_THING_SPEC = DeploySpec(
         use_uv=True,
     ),
 
-    conf=DeployConfSpec(
+    conf=DeployAppConfSpec(
         files=[
-            DeployConfFile(
+            DeployAppConfFile(
                 'supervisor/sv.json',
                 strip_with_newline(json_dumps_pretty({
                     'groups': {
@@ -54,30 +55,30 @@ FLASK_THING_SPEC = DeploySpec(
                     },
                 })),
             ),
-            DeployConfFile(
+            DeployAppConfFile(
                 'nginx.conf',
                 'nginx conf goes here',
             ),
-            DeployConfFile(
+            DeployAppConfFile(
                 'systemd/service.conf',
                 'systemd conf goes here',
             ),
         ],
         links=[
-            AppDeployConfLink('supervisor/'),
-            TagDeployConfLink('supervisor/'),
+            AppDeployAppConfLink('supervisor/'),
+            TagDeployAppConfLink('supervisor/'),
 
-            AppDeployConfLink('nginx.conf'),
-            TagDeployConfLink('nginx.conf'),
+            AppDeployAppConfLink('nginx.conf'),
+            TagDeployAppConfLink('nginx.conf'),
 
-            AppDeployConfLink('systemd/service.conf'),
-            TagDeployConfLink('systemd/service.conf'),
+            AppDeployAppConfLink('systemd/service.conf'),
+            TagDeployAppConfLink('systemd/service.conf'),
         ],
     ),
 )
 
 
-SUPERVISOR_SPEC = DeploySpec(
+SUPERVISOR_SPEC = DeployAppSpec(
     app=DeployApp('supervisor'),
 
     git=DeployGitSpec(
@@ -91,19 +92,28 @@ SUPERVISOR_SPEC = DeploySpec(
         ],
     ),
 
-    conf=DeployConfSpec(
+    conf=DeployAppConfSpec(
         files=[
-            DeployConfFile(
+            DeployAppConfFile(
                 'systemd/service.conf',
                 'systemd conf goes here',
             ),
         ],
         links=[
-            AppDeployConfLink('systemd/service.conf'),
-            TagDeployConfLink('systemd/service.conf'),
+            AppDeployAppConfLink('systemd/service.conf'),
+            TagDeployAppConfLink('systemd/service.conf'),
         ],
     ),
 )
+
+DEPLOY_SPECS = [
+    DeploySpec(
+        apps=[
+            FLASK_THING_SPEC,
+            SUPERVISOR_SPEC,
+        ],
+    ),
+]
 
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
@@ -134,8 +144,5 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
         #
 
         for _ in range(2):
-            for spec in [
-                FLASK_THING_SPEC,
-                # SUPERVISOR_SPEC,
-            ]:
+            for spec in DEPLOY_SPECS:
                 await injector[DeployManager].run_deploy(spec)
