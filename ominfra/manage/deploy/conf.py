@@ -23,15 +23,15 @@ from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
-from .tags import DEPLOY_TAG_SEPARATOR
+from .paths.paths import DeployPath
+from .specs import AllActiveDeployAppConfLink
 from .specs import CurrentOnlyDeployAppConfLink
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
-from .specs import AllActiveDeployAppConfLink
-from .tags import DeployTagMap
+from .tags import DEPLOY_TAG_SEPARATOR
 from .tags import DeployApp
-from .paths.paths import DeployPath
+from .tags import DeployTagMap
 from .types import DeployHome
 
 
