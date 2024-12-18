@@ -23,67 +23,95 @@ from ..types import DeployHome
 from ..types import DeployRev
 
 
-class TestDeploy(unittest.IsolatedAsyncioTestCase):
-    async def test_deploy(self):
-        spec = DeploySpec(
-            app=DeployApp('flaskthing'),
+FLASK_THING_SPEC = DeploySpec(
+    app=DeployApp('flaskthing'),
 
-            git=DeployGitSpec(
-                repo=DeployGitRepo(
-                    host='github.com',
-                    path='wrmsr/flaskthing',
-                ),
-                rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
-            ),
+    git=DeployGitSpec(
+        repo=DeployGitRepo(
+            host='github.com',
+            path='wrmsr/flaskthing',
+        ),
+        rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
+    ),
 
-            venv=DeployVenvSpec(
-                use_uv=True,
-            ),
+    venv=DeployVenvSpec(
+        use_uv=True,
+    ),
 
-            conf=DeployConfSpec(
-                files=[
-                    DeployConfFile(
-                        'supervisor/sv.json',
-                        strip_with_newline(json_dumps_pretty({
-                            'groups': {
+    conf=DeployConfSpec(
+        files=[
+            DeployConfFile(
+                'supervisor/sv.json',
+                strip_with_newline(json_dumps_pretty({
+                    'groups': {
+                        'flaskthing': {
+                            'processes': {
                                 'flaskthing': {
-                                    'processes': {
-                                        'flaskthing': {
-                                            'command': 'sleep 600',
-                                        },
-                                    },
+                                    'command': 'sleep 600',
                                 },
                             },
-                        })),
-                    ),
-                    DeployConfFile(
-                        'nginx.conf',
-                        'nginx conf goes here',
-                    ),
-                    DeployConfFile(
-                        'systemd/service.conf',
-                        'systemd conf goes here',
-                    ),
-                ],
-                links=[
-                    AppDeployConfLink('supervisor/'),
-                    TagDeployConfLink('supervisor/'),
-
-                    AppDeployConfLink('nginx.conf'),
-                    TagDeployConfLink('nginx.conf'),
-
-                    AppDeployConfLink('systemd/service.conf'),
-                    TagDeployConfLink('systemd/service.conf'),
-                ],
+                        },
+                    },
+                })),
             ),
-        )
+            DeployConfFile(
+                'nginx.conf',
+                'nginx conf goes here',
+            ),
+            DeployConfFile(
+                'systemd/service.conf',
+                'systemd conf goes here',
+            ),
+        ],
+        links=[
+            AppDeployConfLink('supervisor/'),
+            TagDeployConfLink('supervisor/'),
 
-        #
+            AppDeployConfLink('nginx.conf'),
+            TagDeployConfLink('nginx.conf'),
 
+            AppDeployConfLink('systemd/service.conf'),
+            TagDeployConfLink('systemd/service.conf'),
+        ],
+    ),
+)
+
+
+SUPERVISOR_SPEC = DeploySpec(
+    app=DeployApp('supervisor'),
+
+    git=DeployGitSpec(
+        repo=DeployGitRepo(
+            host='github.com',
+            path='wrmsr/omlish',
+        ),
+        rev=DeployRev('4dc487c3620d4629b8a2895a84511a4be478a801'),
+        subtrees=[
+            'ominfra/scripts/supervisor.py',
+        ],
+    ),
+
+    conf=DeployConfSpec(
+        files=[
+            DeployConfFile(
+                'systemd/service.conf',
+                'systemd conf goes here',
+            ),
+        ],
+        links=[
+            AppDeployConfLink('systemd/service.conf'),
+            TagDeployConfLink('systemd/service.conf'),
+        ],
+    ),
+)
+
+
+class TestDeploy(unittest.IsolatedAsyncioTestCase):
+    async def test_deploy(self):
         from omlish.lite.json import json_dumps_compact
         from omlish.lite.marshal import marshal_obj
         print()
-        print(json_dumps_compact(marshal_obj(spec)))
+        print(json_dumps_compact(marshal_obj(FLASK_THING_SPEC)))
         print()
 
         #
@@ -105,4 +133,9 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         #
 
-        await injector[DeployManager].run_deploy(spec)
+        for _ in range(2):
+            for spec in [
+                FLASK_THING_SPEC,
+                SUPERVISOR_SPEC,
+            ]:
+                await injector[DeployManager].run_deploy(spec)
