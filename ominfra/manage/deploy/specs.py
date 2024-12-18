@@ -95,7 +95,7 @@ class DeployAppConfFile:
 
 
 @dc.dataclass(frozen=True)
-class DeployAppConfLink(abc.ABC):  # noqa
+class DeployAppConfLink:  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -105,18 +105,12 @@ class DeployAppConfLink(abc.ABC):  # noqa
 
     src: str
 
+    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
+
     def __post_init__(self) -> None:
         check_valid_deploy_spec_path(self.src)
         if '/' in self.src:
             check.equal(self.src.count('/'), 1)
-
-
-class CurrentOnlyDeployAppConfLink(DeployAppConfLink):
-    pass
-
-
-class AllActiveDeployAppConfLink(DeployAppConfLink):
-    pass
 
 
 #
