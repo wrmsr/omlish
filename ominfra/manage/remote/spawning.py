@@ -9,6 +9,7 @@ import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
+from omlish.lite.shlex import shlex_maybe_quote
 from omlish.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.subprocesses import SubprocessChannelOption
 
@@ -22,10 +23,13 @@ class RemoteSpawning(abc.ABC):
         shell: ta.Optional[str] = None
         shell_quote: bool = False
 
-        DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
-        python: str = DEFAULT_PYTHON
+        DEFAULT_PYTHON: ta.ClassVar[ta.Sequence[str]] = ('python3',)
+        python: ta.Sequence[str] = DEFAULT_PYTHON
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.python, str)
 
     @dc.dataclass(frozen=True)
     class Spawned:
@@ -59,14 +63,18 @@ class SubprocessRemoteSpawning(RemoteSpawning):
             src: str,
     ) -> _PreparedCmd:
         if tgt.shell is not None:
-            sh_src = f'{tgt.python} -c {shlex.quote(src)}'
+            sh_src = ' '.join([
+                *map(shlex_maybe_quote, tgt.python),
+                '-c',
+                shlex_maybe_quote(src),
+            ])
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
             return SubprocessRemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
-            return SubprocessRemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
+            return SubprocessRemoteSpawning._PreparedCmd([*tgt.python, '-c', src], shell=False)
 
     #
 

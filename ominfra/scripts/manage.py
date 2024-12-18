@@ -26,6 +26,7 @@ import fractions
 import functools
 import hashlib
 import inspect
+import io
 import itertools
 import json
 import logging
@@ -1626,11 +1627,13 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
     bs_z = zlib.compress(bs_src.encode('utf-8'), 9)
     bs_z85 = base64.b85encode(bs_z).replace(b'\n', b'')
+    if b'"' in bs_z85:
+        raise ValueError(bs_z85)
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
-        f'exec(zlib.decompress(base64.b85decode({bs_z85!r})))',
-        f'_pyremote_bootstrap_main({context_name!r})',
+        f'exec(zlib.decompress(base64.b85decode(b"{bs_z85.decode("ascii")}")))',
+        f'_pyremote_bootstrap_main("{context_name}")',
     ]
 
     cmd = '; '.join(stmts)
@@ -2691,6 +2694,35 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
         seen.add(cur)
         yield cur
         todo.extend(reversed(cur.__subclasses__()))
+
+
+########################################
+# ../../../omlish/lite/resources.py
+
+
+def read_package_resource_binary(package: str, resource: str) -> bytes:
+    import importlib.resources
+    return importlib.resources.read_binary(package, resource)
+
+
+def read_package_resource_text(package: str, resource: str) -> str:
+    import importlib.resources
+    return importlib.resources.read_text(package, resource)
+
+
+########################################
+# ../../../omlish/lite/shlex.py
+
+
+def shlex_needs_quote(s: str) -> bool:
+    return bool(s) and len(list(shlex.shlex(s))) > 1
+
+
+def shlex_maybe_quote(s: str) -> str:
+    if shlex_needs_quote(s):
+        return shlex.quote(s)
+    else:
+        return s
 
 
 ########################################
@@ -4281,6 +4313,52 @@ def detect_system_platform() -> Platform:
 
 
 ########################################
+# ../targets/bestpython.py
+
+
+BEST_PYTHON_SH = """\
+bv=""
+bx=""
+
+for version in "" 3 3.{8..13}; do
+    x="python$version"
+    v=$($x -c "import sys; print(sys.version_info[:])" 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        cv=$(echo $v | tr -d "(), ")
+        if [ -z "$bv" ] || [ "$cv" \\> "$bv" ]; then
+            bv=$cv
+            bx=$x
+        fi
+    fi
+done
+
+if [ -z "$bx" ]; then
+    echo "no python" >&2
+    exit 1
+fi
+
+exec "$bx" "$@"
+"""
+
+
+def get_best_python_sh() -> str:
+    buf = io.StringIO()
+
+    for l in BEST_PYTHON_SH.strip().splitlines():
+        if not (l := l.strip()):
+            continue
+
+        buf.write(l)
+
+        if l.split()[-1] not in ('do', 'then', 'else'):
+            buf.write(';')
+
+        buf.write(' ')
+
+    return buf.getvalue().strip(' ;')
+
+
+########################################
 # ../targets/targets.py
 """
 It's desugaring. Subprocess and locals are only leafs. Retain an origin?
@@ -4303,8 +4381,11 @@ class ManageTarget(abc.ABC):  # noqa
 
 @dc.dataclass(frozen=True)
 class PythonRemoteManageTarget:
-    DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
-    python: str = DEFAULT_PYTHON
+    DEFAULT_PYTHON: ta.ClassVar[ta.Optional[ta.Sequence[str]]] = None
+    python: ta.Optional[ta.Sequence[str]] = DEFAULT_PYTHON
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.python, str)
 
 
 #
@@ -8852,10 +8933,13 @@ class RemoteSpawning(abc.ABC):
         shell: ta.Optional[str] = None
         shell_quote: bool = False
 
-        DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
-        python: str = DEFAULT_PYTHON
+        DEFAULT_PYTHON: ta.ClassVar[ta.Sequence[str]] = ('python3',)
+        python: ta.Sequence[str] = DEFAULT_PYTHON
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.python, str)
 
     @dc.dataclass(frozen=True)
     class Spawned:
@@ -8889,14 +8973,18 @@ class SubprocessRemoteSpawning(RemoteSpawning):
             src: str,
     ) -> _PreparedCmd:
         if tgt.shell is not None:
-            sh_src = f'{tgt.python} -c {shlex.quote(src)}'
+            sh_src = ' '.join([
+                *map(shlex_maybe_quote, tgt.python),
+                '-c',
+                shlex_maybe_quote(src),
+            ])
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
             return SubprocessRemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
-            return SubprocessRemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
+            return SubprocessRemoteSpawning._PreparedCmd([*tgt.python, '-c', src], shell=False)
 
     #
 
@@ -10257,6 +10345,13 @@ class ManageTargetConnector(abc.ABC):
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
         raise NotImplementedError
 
+    def _default_python(self, python: ta.Optional[ta.Sequence[str]]) -> ta.Sequence[str]:
+        check.not_isinstance(python, str)
+        if python is not None:
+            return python
+        else:
+            return ['sh', '-c', shlex.quote(get_best_python_sh()), '--']
+
 
 ##
 
@@ -10308,7 +10403,7 @@ class LocalManageTargetConnector(ManageTargetConnector):
         elif isinstance(lmt, SubprocessManageTarget):
             async with self._pyremote_connector.connect(
                     RemoteSpawning.Target(
-                        python=lmt.python,
+                        python=self._default_python(lmt.python),
                     ),
                     self._bootstrap,
             ) as rce:
@@ -10341,7 +10436,7 @@ class DockerManageTargetConnector(ManageTargetConnector):
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
-                    python=dmt.python,
+                    python=self._default_python(dmt.python),
                 ),
                 self._bootstrap,
         ) as rce:
@@ -10372,7 +10467,7 @@ class SshManageTargetConnector(ManageTargetConnector):
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
                     shell_quote=True,
-                    python=smt.python,
+                    python=self._default_python(smt.python),
                 ),
                 self._bootstrap,
         ) as rce:
