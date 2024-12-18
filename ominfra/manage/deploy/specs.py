@@ -10,11 +10,11 @@ from omlish.lite.check import check
 from .tags import DeployApp
 from .tags import DeployAppKey
 from .tags import DeployKey
-from .tags import KeyDeployTag
+from .tags import KeyDeployTag  # noqa
 from .types import DeployRev
 
 
-KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound=KeyDeployTag)
+KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound='KeyDeployTag')
 
 
 ##

@@ -2,6 +2,8 @@
 import datetime
 import typing as ta
 
+from omlish.lite.typing import Func0
+
 from .apps import DeployAppManager
 from .paths.manager import DeployPathsManager
 from .specs import DeploySpec
@@ -13,7 +15,7 @@ from .tags import DeployTime
 DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
 
 
-DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', ta.Callable)  # () -> datetime.datetime(tz=utc)
+DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
 
 
 class DeployManager:
@@ -34,7 +36,7 @@ class DeployManager:
 
     def _utc_now(self) -> datetime.datetime:
         if self._utc_clock is not None:
-            return self._utc_clock()
+            return self._utc_clock()  # noqa
         else:
             return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
 
