@@ -11,9 +11,7 @@ from .git import DeployGitManager
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
-from .types import DeployAppTag
 from .types import DeployHome
-from .types import DeployTag
 from .venvs import DeployVenvManager
 
 
@@ -37,8 +35,8 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
-    _APP_TAG_DIR_STR = 'tags/apps/@app/@tag/'
-    _APP_TAG_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
+    _APP_DIR_STR = 'apps/@app/@tag/'
+    _APP_DIR = DeployPath.parse(_APP_TAG_DIR_STR)
 
     _DEPLOY_DIR_STR = 'deploys/@tag/'
     _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)

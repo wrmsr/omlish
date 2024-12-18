@@ -168,6 +168,29 @@ class DeployTagMap:
         self._dct = dct
         self._tup = tuple(sorted((type(t).tag_kwarg, t.s) for t in dct.values()))
 
+    #
+
+    def add(self, *args: ta.Any, **kwargs: ta.Any) -> 'DeployTagMap':
+        return DeployTagMap(
+            *self,
+            *args,
+            **kwargs,
+        )
+
+    def remove(self, *tags_or_names: ta.Union[ta.Type[DeployTag], str]) -> 'DeployTagMap':
+        dcs = {
+            check.issubclass(a, DeployTag) if isinstance(a, type) else DEPLOY_TAGS_BY_NAME[a]
+            for a in tags_or_names
+        }
+
+        return DeployTagMap(*[
+            t
+            for t in self._dct.values()
+            if t not in dcs
+        ])
+
+    #
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(f"{k}={v!r}" for k, v in self._tup)})'
 
@@ -179,6 +202,8 @@ class DeployTagMap:
             return self._tup == other._tup
         else:
             return NotImplemented
+
+    #
 
     def __len__(self) -> int:
         return len(self._dct)
