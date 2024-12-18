@@ -4363,8 +4363,6 @@ class DeployAppRev(RevDeployTag):
 
 
 class DeployTagMap:
-    # TODO: with/without
-
     def __init__(
             self,
             *args: DeployTag,
