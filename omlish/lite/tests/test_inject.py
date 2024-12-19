@@ -3,6 +3,7 @@ import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
+from ..inject import ContextvarInjectorScope
 from ..inject import CyclicDependencyInjectorKeyError
 from ..inject import ExclusiveInjectorScope
 from ..inject import _do_injection_inspect  # noqa
@@ -315,6 +316,20 @@ class TestEager(unittest.TestCase):
 class TestScopes(unittest.TestCase):
     def test_scopes(self):
         class Ss(ExclusiveInjectorScope):
+            pass
+        i = inj.create_injector(
+            inj.bind_scope(Ss),
+            inj.bind(420, in_=Ss),
+            inj.bind_scope_seed(float, Ss),
+        )
+        with i[Ss].enter({
+            inj.as_key(float): 4.2,
+        }):
+            self.assertEqual(i[int], 420)
+            self.assertEqual(i[float], 4.2)
+
+    def test_cv_scopes(self):
+        class Ss(ContextvarInjectorScope):
             pass
         i = inj.create_injector(
             inj.bind_scope(Ss),
