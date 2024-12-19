@@ -6,7 +6,10 @@ TODO:
 """
 import os.path
 
+from omdev.interp.resolvers import DEFAULT_INTERP_RESOLVER
+from omdev.interp.types import InterpSpecifier
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.check import check
 from omlish.os.atomics import AtomicPathSwapping
 
 from .specs import DeployVenvSpec
@@ -28,7 +31,14 @@ class DeployVenvManager:
             git_dir: str,
             venv_dir: str,
     ) -> None:
-        sys_exe = 'python3'
+        if spec.interp is not None:
+            i = InterpSpecifier.parse(check.not_none(spec.interp))
+            o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i))
+            sys_exe = o.exe
+        else:
+            sys_exe = 'python3'
+
+        #
 
         # !! NOTE: (most) venvs cannot be relocated, so an atomic swap can't be used. it's up to the path manager to
         # garbage collect orphaned dirs.
