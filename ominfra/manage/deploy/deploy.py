@@ -54,7 +54,7 @@ class DeployManager:
 
         #
 
-        hs = check.none_empty_str(spec.home)
+        hs = check.non_empty_str(spec.home)
         hs = os.path.expanduser(hs)
         hs = os.path.realpath(hs)
         hs = os.path.abspath(hs)
