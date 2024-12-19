@@ -319,7 +319,7 @@ class TestScopes(unittest.TestCase):
         i = inj.create_injector(
             inj.bind_scope(Ss),
             inj.bind(420, in_=Ss),
-            inj.bind_scope_seed(Ss, float),
+            inj.bind_scope_seed(float, Ss),
         )
         with i[Ss].enter({
             inj.as_key(float): 4.2,
