@@ -2,7 +2,7 @@
 import contextlib
 import typing as ta
 
-from omlish.lite.inject import ExclusiveInjectorScope
+from omlish.lite.inject import ContextvarInjectorScope
 from omlish.lite.inject import Injector
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
@@ -28,7 +28,7 @@ from .tmp import DeployTmpManager
 from .venvs import DeployVenvManager
 
 
-class DeployInjectorScope(ExclusiveInjectorScope):
+class DeployInjectorScope(ContextvarInjectorScope):
     pass
 
 

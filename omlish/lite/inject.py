@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import abc
 import contextlib
+import contextvars
 import dataclasses as dc
 import functools
 import inspect
@@ -393,6 +394,34 @@ class ExclusiveInjectorScope(InjectorScope, abc.ABC):
             yield
         finally:
             self._st = None
+
+
+class ContextvarInjectorScope(InjectorScope, abc.ABC):
+    _cv: contextvars.ContextVar
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        check.not_in(abc.ABC, cls.__bases__)
+        check.state(not hasattr(cls, '_cv'))
+        cls._cv = contextvars.ContextVar(f'{cls.__name__}_cv')
+
+    def state(self) -> InjectorScope.State:
+        return self._cv.get()
+
+    @contextlib.contextmanager
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
+        try:
+            self._cv.get()
+        except LookupError:
+            pass
+        else:
+            raise RuntimeError(f'Scope already entered: {self}')
+        st = self.new_state(vs)
+        tok = self._cv.set(st)
+        try:
+            yield
+        finally:
+            self._cv.reset(tok)
 
 
 #
