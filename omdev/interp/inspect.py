@@ -99,6 +99,3 @@ class InterpInspector:
                 ret = None
             self._cache[exe] = ret
             return ret
-
-
-INTERP_INSPECTOR = InterpInspector()
