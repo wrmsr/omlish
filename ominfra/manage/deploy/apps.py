@@ -20,15 +20,11 @@ class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome] = None,
-
             conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
         super().__init__()
-
-        self._deploy_home = deploy_home
 
         self._conf = conf
         self._git = git
@@ -70,12 +66,13 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeployAppSpec,
+            home: DeployHome,
             tags: DeployTagMap,
     ) -> None:
-        deploy_home = check.non_empty_str(self._deploy_home)
+        check.non_empty_str(home)
 
         def build_path(pth: DeployPath) -> str:
-            return os.path.join(deploy_home, pth.render(tags))
+            return os.path.join(home, pth.render(tags))
 
         app_dir = build_path(self._APP_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
@@ -85,7 +82,7 @@ class DeployAppManager(DeployPathOwner):
 
         os.makedirs(deploy_dir, exist_ok=True)
 
-        deploying_link = os.path.join(deploy_home, 'deploys/deploying')
+        deploying_link = os.path.join(home, 'deploys/deploying')
         if os.path.exists(deploying_link):
             os.unlink(deploying_link)
         relative_symlink(
@@ -132,7 +129,7 @@ class DeployAppManager(DeployPathOwner):
         #             else:
         #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
 
-        current_link = os.path.join(deploy_home, 'deploys/current')
+        current_link = os.path.join(home, 'deploys/current')
 
         # if os.path.exists(current_link):
         #     mirror_symlinks(
@@ -149,6 +146,7 @@ class DeployAppManager(DeployPathOwner):
         app_git_dir = os.path.join(app_dir, 'git')
         await self._git.checkout(
             spec.git,
+            home,
             app_git_dir,
         )
 

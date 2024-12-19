@@ -20,7 +20,6 @@ from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
 from .paths.owners import DeployPathOwner
 from .tmp import DeployTmpManager
-from .types import DeployHome
 from .venvs import DeployVenvManager
 
 
@@ -68,9 +67,5 @@ def bind_deploy(
     ])
 
     #
-
-    if (dh := deploy_config.deploy_home) is not None:
-        dh = os.path.abspath(os.path.expanduser(dh))
-        lst.append(inj.bind(dh, key=DeployHome))
 
     return inj.as_bindings(*lst)

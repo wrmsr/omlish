@@ -31,21 +31,9 @@ from .tags import DEPLOY_TAG_SEPARATOR
 from .tags import DeployApp
 from .tags import DeployConf
 from .tags import DeployTagMap
-from .types import DeployHome
 
 
 class DeployConfManager:
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome] = None,
-    ) -> None:
-        super().__init__()
-
-        self._deploy_home = deploy_home
-
-    #
-
     async def _write_app_conf_file(
             self,
             acf: DeployAppConfFile,

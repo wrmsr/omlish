@@ -3,7 +3,6 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 
-from ..types import DeployHome
 from .owners import DeployPathOwner
 from .owners import DeployPathOwners
 from .paths import DeployPath
@@ -14,12 +13,10 @@ class DeployPathsManager:
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome],
             deploy_path_owners: DeployPathOwners,
     ) -> None:
         super().__init__()
 
-        self._deploy_home = deploy_home
         self._deploy_path_owners = deploy_path_owners
 
     @cached_nullary
