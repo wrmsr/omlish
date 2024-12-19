@@ -3,7 +3,6 @@ import abc
 import os.path
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
 from ..types import DeployHome
@@ -24,7 +23,6 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
             self,
             *args: ta.Any,
             owned_dir: str,
-            deploy_home: ta.Optional[DeployHome],
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -32,17 +30,13 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
         check.not_in('/', owned_dir)
         self._owned_dir: str = check.non_empty_str(owned_dir)
 
-        self._deploy_home = deploy_home
-
         self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
 
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), self._owned_dir)
+    def _dir(self, home: DeployHome) -> str:
+        return os.path.join(check.non_empty_str(home), self._owned_dir)
 
-    @cached_nullary
-    def _make_dir(self) -> str:
-        if not os.path.isdir(d := self._dir()):
+    def _make_dir(self, home: DeployHome) -> str:
+        if not os.path.isdir(d := self._dir(home)):
             os.makedirs(d, exist_ok=True)
         return d
 

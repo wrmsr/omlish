@@ -11,6 +11,7 @@ from .tags import DeployApp
 from .tags import DeployAppKey
 from .tags import DeployKey
 from .tags import KeyDeployTag  # noqa
+from .types import DeployHome
 from .types import DeployRev
 
 
@@ -153,9 +154,13 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
 @dc.dataclass(frozen=True)
 class DeploySpec(DeploySpecKeyed[DeployKey]):
+    home: DeployHome
+
     apps: ta.Sequence[DeployAppSpec]
 
     def __post_init__(self) -> None:
+        check.non_empty_str(self.home)
+
         seen: ta.Set[DeployApp] = set()
         for a in self.apps:
             if a.app in seen:
