@@ -70,6 +70,10 @@ class InjectorBinding:
     key: InjectorKey
     provider: InjectorProvider
 
+    def __post_init__(self) -> None:
+        check.isinstance(self.key, InjectorKey)
+        check.isinstance(self.provider, InjectorProvider)
+
 
 class InjectorBindings(abc.ABC):
     @abc.abstractmethod
@@ -354,18 +358,26 @@ class InjectorScope(abc.ABC):  # noqa
     def __init__(
             self,
             *,
-            i: Injector,
-            all_seeds: _InjectorScopeSeeds,
+            _i: Injector,
+            _all_seeds: _InjectorScopeSeeds,
     ) -> None:
         super().__init__()
 
-        self._i = i
-        self._sks = {s.k for s in all_seeds if s.sc is type(self)}
+        self._i = _i
+        self._sks = {s.k for s in _all_seeds if s.sc is type(self)}
 
+    @dc.dataclass(frozen=True)
+    class _State:
+        seeds: ta.Dict[InjectorKey, ta.Any]
+        prvs: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
+
+    def _state(self) -> _State:
+        raise NotImplementedError
+
+    @contextlib.contextmanager
     def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Any:
         check.equal(set(vs.keys()), self._sks)
-
-        raise NotImplementedError
+        yield
 
 
 @dc.dataclass(frozen=True)
@@ -387,6 +399,21 @@ class ScopedInjectorProvider(InjectorProvider):
         return pfn
 
 
+@dc.dataclass(frozen=True)
+class _ScopeSeedInjectorProvider(InjectorProvider):
+    k: InjectorKey
+    sc: ta.Type[InjectorScope]
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.k, InjectorKey)
+        check.issubclass(self.sc, InjectorScope)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            sc = i[self.sc]  # noqa
+            return sc._state().seeds[self.k]  # noqa
+        return pfn
+
 def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
     return as_injector_bindings(
         InjectorBinder.bind(sc, singleton=True),
@@ -398,8 +425,10 @@ def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings
 
 
 def bind_injector_scope_seed(sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
+    kk = as_injector_key(k)
     return as_injector_bindings(
-        InjectorBinder.bind(_InjectorScopeSeed(sc, as_injector_key(k)), array=True),
+        InjectorBinding(kk, _ScopeSeedInjectorProvider(kk, sc)),
+        InjectorBinder.bind(_InjectorScopeSeed(sc, kk), array=True),
     )
 
 
