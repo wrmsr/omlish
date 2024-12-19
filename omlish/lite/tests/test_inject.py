@@ -4,10 +4,10 @@ import typing as ta  # noqa
 import unittest
 
 from ..inject import CyclicDependencyInjectorKeyError
+from ..inject import InjectorScope
 from ..inject import _do_injection_inspect  # noqa
 from ..inject import build_injection_kwargs_target
 from ..inject import inj
-from ..inject import InjectorScope
 from ..typing import AnyFunc
 
 
@@ -308,8 +308,8 @@ class TestEager(unittest.TestCase):
         injector = inj.create_injector(
             inj.bind(foo, eager=True),
         )
-        assert c == 1
-        assert injector.provide(int) == 0
+        self.assertEqual(c, 1)
+        self.assertEqual(injector.provide(int), 0)
 
 
 class TestScopes(unittest.TestCase):

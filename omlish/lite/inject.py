@@ -252,7 +252,7 @@ class ArrayInjectorProvider(InjectorProvider):
 # scopes
 
 
-class InjectorScope(abc.ABC):
+class InjectorScope(abc.ABC):  # noqa
     def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Any:
         raise NotImplementedError
 
@@ -907,6 +907,7 @@ class InjectionApi:
             to_const: ta.Any = None,
             to_key: ta.Any = None,
 
+            in_: ta.Optional[ta.Type[InjectorScope]] = None,
             singleton: bool = False,
 
             eager: bool = False,
@@ -923,6 +924,7 @@ class InjectionApi:
             to_const=to_const,
             to_key=to_key,
 
+            in_=in_,
             singleton=singleton,
 
             eager=eager,
