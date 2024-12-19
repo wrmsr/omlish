@@ -8911,55 +8911,6 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
 
 
 ########################################
-# ../deploy/venvs.py
-"""
-TODO:
- - interp
- - share more code with pyproject?
-"""
-
-
-class DeployVenvManager:
-    def __init__(
-            self,
-            *,
-            atomics: AtomicPathSwapping,
-    ) -> None:
-        super().__init__()
-
-        self._atomics = atomics
-
-    async def setup_venv(
-            self,
-            spec: DeployVenvSpec,
-            git_dir: str,
-            venv_dir: str,
-    ) -> None:
-        sys_exe = 'python3'
-
-        # !! NOTE: (most) venvs cannot be relocated, so an atomic swap can't be used. it's up to the path manager to
-        # garbage collect orphaned dirs.
-        await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
-
-        #
-
-        venv_exe = os.path.join(venv_dir, 'bin', 'python3')
-
-        #
-
-        reqs_txt = os.path.join(git_dir, 'requirements.txt')
-
-        if os.path.isfile(reqs_txt):
-            if spec.use_uv:
-                await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
-                pip_cmd = ['-m', 'uv', 'pip']
-            else:
-                pip_cmd = ['-m', 'pip']
-
-            await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
-
-
-########################################
 # ../remote/_main.py
 
 
@@ -10390,170 +10341,6 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
-# ../deploy/apps.py
-
-
-class DeployAppManager(DeployPathOwner):
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome] = None,
-
-            conf: DeployConfManager,
-            git: DeployGitManager,
-            venvs: DeployVenvManager,
-    ) -> None:
-        super().__init__()
-
-        self._deploy_home = deploy_home
-
-        self._conf = conf
-        self._git = git
-        self._venvs = venvs
-
-    #
-
-    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
-    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
-
-    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
-    _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
-
-    _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
-
-    @cached_nullary
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return {
-            self._APP_DIR,
-
-            self._DEPLOY_DIR,
-
-            self._APP_DEPLOY_LINK,
-            self._CONF_DEPLOY_DIR,
-
-            *[
-                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
-                for sfx in [
-                    'conf',
-                    'git',
-                    'venv',
-                ]
-            ],
-        }
-
-    #
-
-    async def prepare_app(
-            self,
-            spec: DeployAppSpec,
-            tags: DeployTagMap,
-    ) -> None:
-        deploy_home = check.non_empty_str(self._deploy_home)
-
-        def build_path(pth: DeployPath) -> str:
-            return os.path.join(deploy_home, pth.render(tags))
-
-        app_dir = build_path(self._APP_DIR)
-        deploy_dir = build_path(self._DEPLOY_DIR)
-        app_deploy_link = build_path(self._APP_DEPLOY_LINK)
-
-        #
-
-        os.makedirs(deploy_dir, exist_ok=True)
-
-        deploying_link = os.path.join(deploy_home, 'deploys/deploying')
-        relative_symlink(
-            deploy_dir,
-            deploying_link,
-            target_is_directory=True,
-            make_dirs=True,
-        )
-
-        #
-
-        os.makedirs(app_dir)
-        relative_symlink(
-            app_dir,
-            app_deploy_link,
-            target_is_directory=True,
-            make_dirs=True,
-        )
-
-        #
-
-        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
-        os.makedirs(deploy_conf_dir, exist_ok=True)
-
-        #
-
-        # def mirror_symlinks(src: str, dst: str) -> None:
-        #     def mirror_link(lp: str) -> None:
-        #         check.state(os.path.islink(lp))
-        #         shutil.copy2(
-        #             lp,
-        #             os.path.join(dst, os.path.relpath(lp, src)),
-        #             follow_symlinks=False,
-        #         )
-        #
-        #     for dp, dns, fns in os.walk(src, followlinks=False):
-        #         for fn in fns:
-        #             mirror_link(os.path.join(dp, fn))
-        #
-        #         for dn in dns:
-        #             dp2 = os.path.join(dp, dn)
-        #             if os.path.islink(dp2):
-        #                 mirror_link(dp2)
-        #             else:
-        #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
-
-        current_link = os.path.join(deploy_home, 'deploys/current')
-
-        # if os.path.exists(current_link):
-        #     mirror_symlinks(
-        #         os.path.join(current_link, 'conf'),
-        #         conf_tag_dir,
-        #     )
-        #     mirror_symlinks(
-        #         os.path.join(current_link, 'apps'),
-        #         os.path.join(deploy_dir, 'apps'),
-        #     )
-
-        #
-
-        app_git_dir = os.path.join(app_dir, 'git')
-        await self._git.checkout(
-            spec.git,
-            app_git_dir,
-        )
-
-        #
-
-        if spec.venv is not None:
-            app_venv_dir = os.path.join(app_dir, 'venv')
-            await self._venvs.setup_venv(
-                spec.venv,
-                app_git_dir,
-                app_venv_dir,
-            )
-
-        #
-
-        if spec.conf is not None:
-            app_conf_dir = os.path.join(app_dir, 'conf')
-            await self._conf.write_app_conf(
-                spec.conf,
-                tags,
-                app_conf_dir,
-                deploy_conf_dir,
-            )
-
-        #
-
-        os.replace(deploying_link, current_link)
-
-
-########################################
 # ../deploy/paths/inject.py
 
 
@@ -10884,6 +10671,287 @@ DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
 
 
 ########################################
+# ../targets/inject.py
+
+
+def bind_targets() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(LocalManageTargetConnector, singleton=True),
+        inj.bind(DockerManageTargetConnector, singleton=True),
+        inj.bind(SshManageTargetConnector, singleton=True),
+
+        inj.bind(TypeSwitchedManageTargetConnector, singleton=True),
+        inj.bind(ManageTargetConnector, to_key=TypeSwitchedManageTargetConnector),
+    ]
+
+    #
+
+    def provide_manage_target_connector_map(injector: Injector) -> ManageTargetConnectorMap:
+        return ManageTargetConnectorMap({
+            LocalManageTarget: injector[LocalManageTargetConnector],
+            DockerManageTarget: injector[DockerManageTargetConnector],
+            SshManageTarget: injector[SshManageTargetConnector],
+        })
+    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../deploy/interp.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpCommand(Command['InterpCommand.Output']):
+    spec: str
+    install: bool = False
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        exe: str
+        version: str
+        opts: InterpOpts
+
+
+class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
+    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
+        i = InterpSpecifier.parse(check.not_none(cmd.spec))
+        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        return InterpCommand.Output(
+            exe=o.exe,
+            version=str(o.version.version),
+            opts=o.version.opts,
+        )
+
+
+########################################
+# ../deploy/venvs.py
+"""
+TODO:
+ - interp
+ - share more code with pyproject?
+"""
+
+
+class DeployVenvManager:
+    def __init__(
+            self,
+            *,
+            atomics: AtomicPathSwapping,
+    ) -> None:
+        super().__init__()
+
+        self._atomics = atomics
+
+    async def setup_venv(
+            self,
+            spec: DeployVenvSpec,
+            git_dir: str,
+            venv_dir: str,
+    ) -> None:
+        if spec.interp is not None:
+            i = InterpSpecifier.parse(check.not_none(spec.interp))
+            o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i))
+            sys_exe = o.exe
+        else:
+            sys_exe = 'python3'
+
+        #
+
+        # !! NOTE: (most) venvs cannot be relocated, so an atomic swap can't be used. it's up to the path manager to
+        # garbage collect orphaned dirs.
+        await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
+
+        #
+
+        venv_exe = os.path.join(venv_dir, 'bin', 'python3')
+
+        #
+
+        reqs_txt = os.path.join(git_dir, 'requirements.txt')
+
+        if os.path.isfile(reqs_txt):
+            if spec.use_uv:
+                await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                pip_cmd = ['-m', 'uv', 'pip']
+            else:
+                pip_cmd = ['-m', 'pip']
+
+            await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
+
+
+########################################
+# ../deploy/apps.py
+
+
+class DeployAppManager(DeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: ta.Optional[DeployHome] = None,
+
+            conf: DeployConfManager,
+            git: DeployGitManager,
+            venvs: DeployVenvManager,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_home = deploy_home
+
+        self._conf = conf
+        self._git = git
+        self._venvs = venvs
+
+    #
+
+    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
+    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
+
+    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
+    _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
+
+    _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
+    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
+
+    @cached_nullary
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            self._APP_DIR,
+
+            self._DEPLOY_DIR,
+
+            self._APP_DEPLOY_LINK,
+            self._CONF_DEPLOY_DIR,
+
+            *[
+                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
+                for sfx in [
+                    'conf',
+                    'git',
+                    'venv',
+                ]
+            ],
+        }
+
+    #
+
+    async def prepare_app(
+            self,
+            spec: DeployAppSpec,
+            tags: DeployTagMap,
+    ) -> None:
+        deploy_home = check.non_empty_str(self._deploy_home)
+
+        def build_path(pth: DeployPath) -> str:
+            return os.path.join(deploy_home, pth.render(tags))
+
+        app_dir = build_path(self._APP_DIR)
+        deploy_dir = build_path(self._DEPLOY_DIR)
+        app_deploy_link = build_path(self._APP_DEPLOY_LINK)
+
+        #
+
+        os.makedirs(deploy_dir, exist_ok=True)
+
+        deploying_link = os.path.join(deploy_home, 'deploys/deploying')
+        if os.path.exists(deploying_link):
+            os.unlink(deploying_link)
+        relative_symlink(
+            deploy_dir,
+            deploying_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        os.makedirs(app_dir)
+        relative_symlink(
+            app_dir,
+            app_deploy_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
+        os.makedirs(deploy_conf_dir, exist_ok=True)
+
+        #
+
+        # def mirror_symlinks(src: str, dst: str) -> None:
+        #     def mirror_link(lp: str) -> None:
+        #         check.state(os.path.islink(lp))
+        #         shutil.copy2(
+        #             lp,
+        #             os.path.join(dst, os.path.relpath(lp, src)),
+        #             follow_symlinks=False,
+        #         )
+        #
+        #     for dp, dns, fns in os.walk(src, followlinks=False):
+        #         for fn in fns:
+        #             mirror_link(os.path.join(dp, fn))
+        #
+        #         for dn in dns:
+        #             dp2 = os.path.join(dp, dn)
+        #             if os.path.islink(dp2):
+        #                 mirror_link(dp2)
+        #             else:
+        #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
+
+        current_link = os.path.join(deploy_home, 'deploys/current')
+
+        # if os.path.exists(current_link):
+        #     mirror_symlinks(
+        #         os.path.join(current_link, 'conf'),
+        #         conf_tag_dir,
+        #     )
+        #     mirror_symlinks(
+        #         os.path.join(current_link, 'apps'),
+        #         os.path.join(deploy_dir, 'apps'),
+        #     )
+
+        #
+
+        app_git_dir = os.path.join(app_dir, 'git')
+        await self._git.checkout(
+            spec.git,
+            app_git_dir,
+        )
+
+        #
+
+        if spec.venv is not None:
+            app_venv_dir = os.path.join(app_dir, 'venv')
+            await self._venvs.setup_venv(
+                spec.venv,
+                app_git_dir,
+                app_venv_dir,
+            )
+
+        #
+
+        if spec.conf is not None:
+            app_conf_dir = os.path.join(app_dir, 'conf')
+            await self._conf.write_app_conf(
+                spec.conf,
+                tags,
+                app_conf_dir,
+                deploy_conf_dir,
+            )
+
+        #
+
+        os.replace(deploying_link, current_link)
+
+
+########################################
 # ../deploy/deploy.py
 
 
@@ -10947,35 +11015,6 @@ class DeployManager:
 
 
 ########################################
-# ../targets/inject.py
-
-
-def bind_targets() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(LocalManageTargetConnector, singleton=True),
-        inj.bind(DockerManageTargetConnector, singleton=True),
-        inj.bind(SshManageTargetConnector, singleton=True),
-
-        inj.bind(TypeSwitchedManageTargetConnector, singleton=True),
-        inj.bind(ManageTargetConnector, to_key=TypeSwitchedManageTargetConnector),
-    ]
-
-    #
-
-    def provide_manage_target_connector_map(injector: Injector) -> ManageTargetConnectorMap:
-        return ManageTargetConnectorMap({
-            LocalManageTarget: injector[LocalManageTargetConnector],
-            DockerManageTarget: injector[DockerManageTargetConnector],
-            SshManageTarget: injector[SshManageTargetConnector],
-        })
-    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
 # ../deploy/commands.py
 
 
@@ -11001,36 +11040,6 @@ class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]
         await self._deploy.run_deploy(cmd.spec)
 
         return DeployCommand.Output()
-
-
-########################################
-# ../deploy/interp.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpCommand(Command['InterpCommand.Output']):
-    spec: str
-    install: bool = False
-
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        exe: str
-        version: str
-        opts: InterpOpts
-
-
-class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
-    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
-        i = InterpSpecifier.parse(check.not_none(cmd.spec))
-        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
-        return InterpCommand.Output(
-            exe=o.exe,
-            version=str(o.version.version),
-            opts=o.version.opts,
-        )
 
 
 ########################################

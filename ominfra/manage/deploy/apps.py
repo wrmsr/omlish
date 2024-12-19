@@ -86,6 +86,8 @@ class DeployAppManager(DeployPathOwner):
         os.makedirs(deploy_dir, exist_ok=True)
 
         deploying_link = os.path.join(deploy_home, 'deploys/deploying')
+        if os.path.exists(deploying_link):
+            os.unlink(deploying_link)
         relative_symlink(
             deploy_dir,
             deploying_link,
