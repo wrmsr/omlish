@@ -197,7 +197,7 @@ class DeployPath:
         return pd
 
     @property
-    def kind(self) -> ta.Literal['file', 'dir']:
+    def kind(self) -> DeployPathKind:
         return self.parts[-1].kind
 
     def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
