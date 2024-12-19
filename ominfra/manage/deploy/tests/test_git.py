@@ -7,6 +7,7 @@ from omlish.os.atomics import TempDirAtomicPathSwapping
 from ..git import DeployGitManager
 from ..git import DeployGitRepo
 from ..specs import DeployGitSpec
+from ..tmp import DeployHomeAtomics
 from ..types import DeployHome
 from ..types import DeployRev
 
@@ -16,8 +17,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
         deploy_home = DeployHome(tempfile.mkdtemp())
 
         git = DeployGitManager(
-            deploy_home=deploy_home,
-            atomics=TempDirAtomicPathSwapping(),
+            atomics=DeployHomeAtomics(lambda _: TempDirAtomicPathSwapping()),
         )
 
         checkout = DeployGitSpec(
@@ -33,6 +33,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
 
         await git.checkout(
             checkout,
+            deploy_home,
             checkout_dir,
         )
 
@@ -40,8 +41,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
         deploy_home = DeployHome(tempfile.mkdtemp())
 
         git = DeployGitManager(
-            deploy_home=deploy_home,
-            atomics=TempDirAtomicPathSwapping(),
+            atomics=DeployHomeAtomics(lambda _: TempDirAtomicPathSwapping()),
         )
 
         checkout = DeployGitSpec(
@@ -60,5 +60,6 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
 
         await git.checkout(
             checkout,
+            deploy_home,
             checkout_dir,
         )

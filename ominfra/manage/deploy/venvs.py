@@ -10,24 +10,16 @@ from omdev.interp.resolvers import DEFAULT_INTERP_RESOLVER
 from omdev.interp.types import InterpSpecifier
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.os.atomics import AtomicPathSwapping
 
 from .specs import DeployVenvSpec
+from .types import DeployHome
 
 
 class DeployVenvManager:
-    def __init__(
-            self,
-            *,
-            atomics: AtomicPathSwapping,
-    ) -> None:
-        super().__init__()
-
-        self._atomics = atomics
-
     async def setup_venv(
             self,
             spec: DeployVenvSpec,
+            home: DeployHome,
             git_dir: str,
             venv_dir: str,
     ) -> None:

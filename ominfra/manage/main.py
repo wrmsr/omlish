@@ -35,8 +35,6 @@ from .targets.targets import ManageTarget
 
 @dc.dataclass(frozen=True)
 class ManageConfig:
-    deploy_home: ta.Optional[str] = None
-
     targets: ta.Optional[ta.Mapping[str, ManageTarget]] = None
 
 
@@ -68,8 +66,6 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
-        argparse_arg('--deploy-home'),
-
         argparse_arg('target'),
         argparse_arg('-f', '--command-file', action='append'),
         argparse_arg('command', nargs='*'),
@@ -82,9 +78,7 @@ class MainCli(ArgparseCli):
                 debug=bool(self.args.debug),
             ),
 
-            deploy_config=DeployConfig(
-                deploy_home=self.args.deploy_home or self.config().deploy_home,
-            ),
+            deploy_config=DeployConfig(),
 
             remote_config=RemoteConfig(
                 payload_file=self.args._payload_file,  # noqa

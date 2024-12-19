@@ -114,22 +114,6 @@ SUPERVISOR_SPEC = DeployAppSpec(
 )
 
 
-DEPLOY_SPECS = [
-    DeploySpec(
-        apps=[
-            build_flask_thing_spec(rev='7bb3af10a21ac9c1884729638e1db765998cd7de'),
-            SUPERVISOR_SPEC,
-        ],
-    ),
-    DeploySpec(
-        apps=[
-            build_flask_thing_spec(rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
-            SUPERVISOR_SPEC,
-        ],
-    ),
-]
-
-
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
         deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
@@ -140,18 +124,35 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         #
 
+        deploy_specs = [
+            DeploySpec(
+                home=deploy_home,
+                apps=[
+                    build_flask_thing_spec(rev='7bb3af10a21ac9c1884729638e1db765998cd7de'),
+                    SUPERVISOR_SPEC,
+                ],
+            ),
+            DeploySpec(
+                home=deploy_home,
+                apps=[
+                    build_flask_thing_spec(rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
+                    SUPERVISOR_SPEC,
+                ],
+            ),
+        ]
+
+        #
+
         injector = inj.create_injector(
             bind_deploy(
-                deploy_config=DeployConfig(
-                    deploy_home=deploy_home,
-                ),
+                deploy_config=DeployConfig(),
             ),
         )
 
         #
 
         for _ in range(2):
-            for spec in DEPLOY_SPECS:
+            for spec in deploy_specs:
                 print()
 
                 sj = json_dumps_compact(marshal_obj(spec))

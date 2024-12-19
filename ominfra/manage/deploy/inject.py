@@ -1,11 +1,9 @@
 # ruff: noqa: UP006 UP007
-import os.path
 import typing as ta
 
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
-from omlish.os.atomics import AtomicPathSwapping
 
 from ..commands.inject import bind_command
 from .apps import DeployAppManager
@@ -19,6 +17,7 @@ from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
 from .paths.owners import DeployPathOwner
+from .tmp import DeployHomeAtomics
 from .tmp import DeployTmpManager
 from .venvs import DeployVenvManager
 
@@ -54,10 +53,15 @@ def bind_deploy(
         bind_manager(DeployManager),
 
         bind_manager(DeployTmpManager),
-        inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),
 
         bind_manager(DeployVenvManager),
     ])
+
+    #
+
+    def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
+        return DeployHomeAtomics(tmp.get_swapping)
+    lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
 
     #
 

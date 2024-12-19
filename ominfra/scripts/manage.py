@@ -1384,7 +1384,7 @@ class MainConfig:
 
 @dc.dataclass(frozen=True)
 class DeployConfig:
-    deploy_home: ta.Optional[str] = None
+    pass
 
 
 ########################################
@@ -7885,9 +7885,13 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
 @dc.dataclass(frozen=True)
 class DeploySpec(DeploySpecKeyed[DeployKey]):
+    home: DeployHome
+
     apps: ta.Sequence[DeployAppSpec]
 
     def __post_init__(self) -> None:
+        check.non_empty_str(self.home)
+
         seen: ta.Set[DeployApp] = set()
         for a in self.apps:
             if a.app in seen:
@@ -8707,17 +8711,6 @@ TODO:
 
 
 class DeployConfManager:
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome] = None,
-    ) -> None:
-        super().__init__()
-
-        self._deploy_home = deploy_home
-
-    #
-
     async def _write_app_conf_file(
             self,
             acf: DeployAppConfFile,
@@ -8884,7 +8877,6 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
             self,
             *args: ta.Any,
             owned_dir: str,
-            deploy_home: ta.Optional[DeployHome],
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -8892,17 +8884,13 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
         check.not_in('/', owned_dir)
         self._owned_dir: str = check.non_empty_str(owned_dir)
 
-        self._deploy_home = deploy_home
-
         self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
 
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), self._owned_dir)
+    def _dir(self, home: DeployHome) -> str:
+        return os.path.join(check.non_empty_str(home), self._owned_dir)
 
-    @cached_nullary
-    def _make_dir(self) -> str:
-        if not os.path.isdir(d := self._dir()):
+    def _make_dir(self, home: DeployHome) -> str:
+        if not os.path.isdir(d := self._dir(home)):
             os.makedirs(d, exist_ok=True)
         return d
 
@@ -9443,122 +9431,6 @@ def bind_commands(
 
 
 ########################################
-# ../deploy/git.py
-"""
-TODO:
- - 'repos'?
-
-git/github.com/wrmsr/omlish <- bootstrap repo
- - shallow clone off bootstrap into /apps
-
-github.com/wrmsr/omlish@rev
-"""
-
-
-##
-
-
-class DeployGitManager(SingleDirDeployPathOwner):
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome] = None,
-            atomics: AtomicPathSwapping,
-    ) -> None:
-        super().__init__(
-            owned_dir='git',
-            deploy_home=deploy_home,
-        )
-
-        self._atomics = atomics
-
-        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
-
-    class RepoDir:
-        def __init__(
-                self,
-                git: 'DeployGitManager',
-                repo: DeployGitRepo,
-        ) -> None:
-            super().__init__()
-
-            self._git = git
-            self._repo = repo
-            self._dir = os.path.join(
-                self._git._make_dir(),  # noqa
-                check.non_empty_str(repo.host),
-                check.non_empty_str(repo.path),
-            )
-
-        @property
-        def repo(self) -> DeployGitRepo:
-            return self._repo
-
-        @property
-        def url(self) -> str:
-            if self._repo.username is not None:
-                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
-            else:
-                return f'https://{self._repo.host}/{self._repo.path}'
-
-        #
-
-        async def _call(self, *cmd: str) -> None:
-            await asyncio_subprocesses.check_call(
-                *cmd,
-                cwd=self._dir,
-            )
-
-        #
-
-        @async_cached_nullary
-        async def init(self) -> None:
-            os.makedirs(self._dir, exist_ok=True)
-            if os.path.exists(os.path.join(self._dir, '.git')):
-                return
-
-            await self._call('git', 'init')
-            await self._call('git', 'remote', 'add', 'origin', self.url)
-
-        async def fetch(self, rev: DeployRev) -> None:
-            await self.init()
-            await self._call('git', 'fetch', '--depth=1', 'origin', rev)
-
-        #
-
-        async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
-            check.state(not os.path.exists(dst_dir))
-            with self._git._atomics.begin_atomic_path_swap(  # noqa
-                    'dir',
-                    dst_dir,
-                    auto_commit=True,
-                    make_dirs=True,
-            ) as dst_swap:
-                await self.fetch(spec.rev)
-
-                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
-                await dst_call('git', 'init')
-
-                await dst_call('git', 'remote', 'add', 'local', self._dir)
-                await dst_call('git', 'fetch', '--depth=1', 'local', spec.rev)
-                await dst_call('git', 'checkout', spec.rev, *(spec.subtrees or []))
-
-    def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
-        try:
-            return self._repo_dirs[repo]
-        except KeyError:
-            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
-            return repo_dir
-
-    async def checkout(
-            self,
-            spec: DeployGitSpec,
-            dst_dir: str,
-    ) -> None:
-        await self.get_repo_dir(spec.repo).checkout(spec, dst_dir)
-
-
-########################################
 # ../deploy/paths/manager.py
 
 
@@ -9566,12 +9438,10 @@ class DeployPathsManager:
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome],
             deploy_path_owners: DeployPathOwners,
     ) -> None:
         super().__init__()
 
-        self._deploy_home = deploy_home
         self._deploy_path_owners = deploy_path_owners
 
     @cached_nullary
@@ -9592,37 +9462,22 @@ class DeployPathsManager:
 # ../deploy/tmp.py
 
 
+class DeployHomeAtomics(Func1[DeployHome, AtomicPathSwapping]):
+    pass
+
+
 class DeployTmpManager(
     SingleDirDeployPathOwner,
-    AtomicPathSwapping,
 ):
-    def __init__(
-            self,
-            *,
-            deploy_home: ta.Optional[DeployHome] = None,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__(
             owned_dir='tmp',
-            deploy_home=deploy_home,
         )
 
-    @cached_nullary
-    def _swapping(self) -> AtomicPathSwapping:
+    def get_swapping(self, home: DeployHome) -> AtomicPathSwapping:
         return TempDirAtomicPathSwapping(
-            temp_dir=self._make_dir(),
-            root_dir=check.non_empty_str(self._deploy_home),
-        )
-
-    def begin_atomic_path_swap(
-            self,
-            kind: AtomicPathSwapKind,
-            dst_path: str,
-            **kwargs: ta.Any,
-    ) -> AtomicPathSwap:
-        return self._swapping().begin_atomic_path_swap(
-            kind,
-            dst_path,
-            **kwargs,
+            temp_dir=self._make_dir(home),
+            root_dir=check.non_empty_str(home),
         )
 
 
@@ -10341,6 +10196,137 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
+# ../deploy/git.py
+"""
+TODO:
+ - 'repos'?
+
+git/github.com/wrmsr/omlish <- bootstrap repo
+ - shallow clone off bootstrap into /apps
+
+github.com/wrmsr/omlish@rev
+"""
+
+
+##
+
+
+class DeployGitManager(SingleDirDeployPathOwner):
+    def __init__(
+            self,
+            *,
+            atomics: DeployHomeAtomics,
+    ) -> None:
+        super().__init__(
+            owned_dir='git',
+        )
+
+        self._atomics = atomics
+
+        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
+
+    class RepoDir:
+        def __init__(
+                self,
+                git: 'DeployGitManager',
+                repo: DeployGitRepo,
+                home: DeployHome,
+        ) -> None:
+            super().__init__()
+
+            self._git = git
+            self._repo = repo
+            self._home = home
+            self._dir = os.path.join(
+                self._git._make_dir(home),  # noqa
+                check.non_empty_str(repo.host),
+                check.non_empty_str(repo.path),
+            )
+
+        @property
+        def repo(self) -> DeployGitRepo:
+            return self._repo
+
+        @property
+        def url(self) -> str:
+            if self._repo.username is not None:
+                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
+            else:
+                return f'https://{self._repo.host}/{self._repo.path}'
+
+        #
+
+        async def _call(self, *cmd: str) -> None:
+            await asyncio_subprocesses.check_call(
+                *cmd,
+                cwd=self._dir,
+            )
+
+        #
+
+        @async_cached_nullary
+        async def init(self) -> None:
+            os.makedirs(self._dir, exist_ok=True)
+            if os.path.exists(os.path.join(self._dir, '.git')):
+                return
+
+            await self._call('git', 'init')
+            await self._call('git', 'remote', 'add', 'origin', self.url)
+
+        async def fetch(self, rev: DeployRev) -> None:
+            await self.init()
+            await self._call('git', 'fetch', '--depth=1', 'origin', rev)
+
+        #
+
+        async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+            check.state(not os.path.exists(dst_dir))
+            with self._git._atomics(self._home).begin_atomic_path_swap(  # noqa
+                    'dir',
+                    dst_dir,
+                    auto_commit=True,
+                    make_dirs=True,
+            ) as dst_swap:
+                await self.fetch(spec.rev)
+
+                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
+                await dst_call('git', 'init')
+
+                await dst_call('git', 'remote', 'add', 'local', self._dir)
+                await dst_call('git', 'fetch', '--depth=1', 'local', spec.rev)
+                await dst_call('git', 'checkout', spec.rev, *(spec.subtrees or []))
+
+    def get_repo_dir(
+            self,
+            repo: DeployGitRepo,
+            home: DeployHome,
+    ) -> RepoDir:
+        try:
+            return self._repo_dirs[repo]
+        except KeyError:
+            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(
+                self,
+                repo,
+                home,
+            )
+            return repo_dir
+
+    async def checkout(
+            self,
+            spec: DeployGitSpec,
+            home: DeployHome,
+            dst_dir: str,
+    ) -> None:
+        await self.get_repo_dir(
+            spec.repo,
+            home,
+        ).checkout(
+            spec,
+            dst_dir,
+        )
+
+
+########################################
 # ../deploy/paths/inject.py
 
 
@@ -10739,18 +10725,10 @@ TODO:
 
 
 class DeployVenvManager:
-    def __init__(
-            self,
-            *,
-            atomics: AtomicPathSwapping,
-    ) -> None:
-        super().__init__()
-
-        self._atomics = atomics
-
     async def setup_venv(
             self,
             spec: DeployVenvSpec,
+            home: DeployHome,
             git_dir: str,
             venv_dir: str,
     ) -> None:
@@ -10793,15 +10771,11 @@ class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome] = None,
-
             conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
         super().__init__()
-
-        self._deploy_home = deploy_home
 
         self._conf = conf
         self._git = git
@@ -10843,12 +10817,13 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeployAppSpec,
+            home: DeployHome,
             tags: DeployTagMap,
     ) -> None:
-        deploy_home = check.non_empty_str(self._deploy_home)
+        check.non_empty_str(home)
 
         def build_path(pth: DeployPath) -> str:
-            return os.path.join(deploy_home, pth.render(tags))
+            return os.path.join(home, pth.render(tags))
 
         app_dir = build_path(self._APP_DIR)
         deploy_dir = build_path(self._DEPLOY_DIR)
@@ -10858,7 +10833,7 @@ class DeployAppManager(DeployPathOwner):
 
         os.makedirs(deploy_dir, exist_ok=True)
 
-        deploying_link = os.path.join(deploy_home, 'deploys/deploying')
+        deploying_link = os.path.join(home, 'deploys/deploying')
         if os.path.exists(deploying_link):
             os.unlink(deploying_link)
         relative_symlink(
@@ -10905,7 +10880,7 @@ class DeployAppManager(DeployPathOwner):
         #             else:
         #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
 
-        current_link = os.path.join(deploy_home, 'deploys/current')
+        current_link = os.path.join(home, 'deploys/current')
 
         # if os.path.exists(current_link):
         #     mirror_symlinks(
@@ -10922,6 +10897,7 @@ class DeployAppManager(DeployPathOwner):
         app_git_dir = os.path.join(app_dir, 'git')
         await self._git.checkout(
             spec.git,
+            home,
             app_git_dir,
         )
 
@@ -10931,6 +10907,7 @@ class DeployAppManager(DeployPathOwner):
             app_venv_dir = os.path.join(app_dir, 'venv')
             await self._venvs.setup_venv(
                 spec.venv,
+                home,
                 app_git_dir,
                 app_venv_dir,
             )
@@ -10994,6 +10971,15 @@ class DeployManager:
 
         #
 
+        hs = check.non_empty_str(spec.home)
+        hs = os.path.expanduser(hs)
+        hs = os.path.realpath(hs)
+        hs = os.path.abspath(hs)
+
+        home = DeployHome(hs)
+
+        #
+
         deploy_tags = DeployTagMap(
             self._make_deploy_time(),
             spec.key(),
@@ -11010,6 +10996,7 @@ class DeployManager:
 
             await self._apps.prepare_app(
                 app,
+                home,
                 app_tags,
             )
 
@@ -11077,10 +11064,15 @@ def bind_deploy(
         bind_manager(DeployManager),
 
         bind_manager(DeployTmpManager),
-        inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),
 
         bind_manager(DeployVenvManager),
     ])
+
+    #
+
+    def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
+        return DeployHomeAtomics(tmp.get_swapping)
+    lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
 
     #
 
@@ -11090,10 +11082,6 @@ def bind_deploy(
     ])
 
     #
-
-    if (dh := deploy_config.deploy_home) is not None:
-        dh = os.path.abspath(os.path.expanduser(dh))
-        lst.append(inj.bind(dh, key=DeployHome))
 
     return inj.as_bindings(*lst)
 
@@ -11190,8 +11178,6 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 @dc.dataclass(frozen=True)
 class ManageConfig:
-    deploy_home: ta.Optional[str] = None
-
     targets: ta.Optional[ta.Mapping[str, ManageTarget]] = None
 
 
@@ -11223,8 +11209,6 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
-        argparse_arg('--deploy-home'),
-
         argparse_arg('target'),
         argparse_arg('-f', '--command-file', action='append'),
         argparse_arg('command', nargs='*'),
@@ -11237,9 +11221,7 @@ class MainCli(ArgparseCli):
                 debug=bool(self.args.debug),
             ),
 
-            deploy_config=DeployConfig(
-                deploy_home=self.args.deploy_home or self.config().deploy_home,
-            ),
+            deploy_config=DeployConfig(),
 
             remote_config=RemoteConfig(
                 payload_file=self.args._payload_file,  # noqa
