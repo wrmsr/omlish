@@ -5998,7 +5998,7 @@ _DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
-    ta.Any: DynamicObjMarshaler(),
+    **{t: DynamicObjMarshaler() for t in (ta.Any, object)},
 
     **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
     decimal.Decimal: DecimalObjMarshaler(),
@@ -6636,6 +6636,7 @@ def read_config_file(
         cls: ta.Type[T],
         *,
         prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
+        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
 ) -> T:
     with open(path) as cf:
         config_dct = parse_config_file(os.path.basename(path), cf)
@@ -6643,7 +6644,7 @@ def read_config_file(
     if prepare is not None:
         config_dct = prepare(config_dct)
 
-    return unmarshal_obj(config_dct, cls)
+    return msh.unmarshal_obj(config_dct, cls)
 
 
 def build_config_named_children(
@@ -11180,6 +11181,8 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 @dc.dataclass(frozen=True)
 class ManageConfig:
+    deploy_home: ta.Optional[str] = None
+
     targets: ta.Optional[ta.Mapping[str, ManageTarget]] = None
 
 
@@ -11214,7 +11217,8 @@ class MainCli(ArgparseCli):
         argparse_arg('--deploy-home'),
 
         argparse_arg('target'),
-        argparse_arg('command', nargs='+'),
+        argparse_arg('-f', '--command-file', action='append'),
+        argparse_arg('command', nargs='*'),
     )
     async def run(self) -> None:
         bs = MainBootstrap(
@@ -11225,7 +11229,7 @@ class MainCli(ArgparseCli):
             ),
 
             deploy_config=DeployConfig(
-                deploy_home=self.args.deploy_home,
+                deploy_home=self.args.deploy_home or self.config().deploy_home,
             ),
 
             remote_config=RemoteConfig(
@@ -11260,11 +11264,17 @@ class MainCli(ArgparseCli):
         #
 
         cmds: ta.List[Command] = []
+
         cmd: Command
-        for c in self.args.command:
+
+        for c in self.args.command or []:
             if not c.startswith('{'):
                 c = json.dumps({c: {}})
             cmd = msh.unmarshal_obj(json.loads(c), Command)
+            cmds.append(cmd)
+
+        for cf in self.args.command_file or []:
+            cmd = read_config_file(cf, Command, msh=msh)
             cmds.append(cmd)
 
         #

@@ -4002,7 +4002,7 @@ _DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
-    ta.Any: DynamicObjMarshaler(),
+    **{t: DynamicObjMarshaler() for t in (ta.Any, object)},
 
     **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
     decimal.Decimal: DecimalObjMarshaler(),

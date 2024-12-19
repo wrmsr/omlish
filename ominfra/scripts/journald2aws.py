@@ -2772,7 +2772,7 @@ _DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
-    ta.Any: DynamicObjMarshaler(),
+    **{t: DynamicObjMarshaler() for t in (ta.Any, object)},
 
     **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
     decimal.Decimal: DecimalObjMarshaler(),
@@ -3293,6 +3293,7 @@ def read_config_file(
         cls: ta.Type[T],
         *,
         prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
+        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
 ) -> T:
     with open(path) as cf:
         config_dct = parse_config_file(os.path.basename(path), cf)
@@ -3300,7 +3301,7 @@ def read_config_file(
     if prepare is not None:
         config_dct = prepare(config_dct)
 
-    return unmarshal_obj(config_dct, cls)
+    return msh.unmarshal_obj(config_dct, cls)
 
 
 def build_config_named_children(

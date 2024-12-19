@@ -6,7 +6,8 @@ import typing as ta
 
 from omdev.toml.parser import toml_loads
 from omlish.lite.check import check
-from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
+from omlish.lite.marshal import ObjMarshalerManager
 
 
 T = ta.TypeVar('T')
@@ -46,6 +47,7 @@ def read_config_file(
         cls: ta.Type[T],
         *,
         prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
+        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
 ) -> T:
     with open(path) as cf:
         config_dct = parse_config_file(os.path.basename(path), cf)
@@ -53,7 +55,7 @@ def read_config_file(
     if prepare is not None:
         config_dct = prepare(config_dct)
 
-    return unmarshal_obj(config_dct, cls)
+    return msh.unmarshal_obj(config_dct, cls)
 
 
 def build_config_named_children(
