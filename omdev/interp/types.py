@@ -8,6 +8,9 @@ from ..packaging.versions import InvalidVersion
 from ..packaging.versions import Version
 
 
+##
+
+
 # See https://peps.python.org/pep-3149/
 INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
     ('debug', 'd'),
@@ -39,6 +42,9 @@ class InterpOpts:
         return s, cls(**kw)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class InterpVersion:
     version: Version
@@ -62,6 +68,9 @@ class InterpVersion:
             return cls.parse(s)
         except (KeyError, InvalidVersion):
             return None
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -89,6 +98,9 @@ class InterpSpecifier:
 
     def __contains__(self, iv: InterpVersion) -> bool:
         return self.contains(iv)
+
+
+##
 
 
 @dc.dataclass(frozen=True)

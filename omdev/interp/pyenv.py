@@ -26,7 +26,6 @@ from omlish.lite.logs import log
 
 from ..packaging.versions import InvalidVersion
 from ..packaging.versions import Version
-from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
 from .providers import InterpProvider
 from .types import Interp
@@ -251,9 +250,10 @@ class PyenvVersionInstaller:
             opts: ta.Optional[PyenvInstallOpts] = None,
             interp_opts: InterpOpts = InterpOpts(),
             *,
+            pyenv: Pyenv,
+
             install_name: ta.Optional[str] = None,
             no_default_opts: bool = False,
-            pyenv: Pyenv = Pyenv(),
     ) -> None:
         super().__init__()
 
@@ -343,25 +343,25 @@ class PyenvVersionInstaller:
 
 
 class PyenvInterpProvider(InterpProvider):
+    @dc.dataclass(frozen=True)
+    class Options:
+        inspect: bool = False
+
+        try_update: bool = False
+
     def __init__(
             self,
-            pyenv: Pyenv = Pyenv(),
-
-            inspect: bool = False,
-            inspector: InterpInspector = INTERP_INSPECTOR,
-
+            options: Options = Options(),
             *,
-
-            try_update: bool = False,
+            pyenv: Pyenv,
+            inspector: InterpInspector,
     ) -> None:
         super().__init__()
 
+        self._options = options
+
         self._pyenv = pyenv
-
-        self._inspect = inspect
         self._inspector = inspector
-
-        self._try_update = try_update
 
     #
 
@@ -387,7 +387,7 @@ class PyenvInterpProvider(InterpProvider):
 
     async def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
         iv: ta.Optional[InterpVersion]
-        if self._inspect:
+        if self._options.inspect:
             try:
                 iv = check.not_none(await self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
@@ -443,7 +443,7 @@ class PyenvInterpProvider(InterpProvider):
     async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         lst = await self._get_installable_versions(spec)
 
-        if self._try_update and not any(v in spec for v in lst):
+        if self._options.try_update and not any(v in spec for v in lst):
             if self._pyenv.update():
                 lst = await self._get_installable_versions(spec)
 
@@ -459,6 +459,7 @@ class PyenvInterpProvider(InterpProvider):
         installer = PyenvVersionInstaller(
             inst_version,
             interp_opts=inst_opts,
+            pyenv=self._pyenv,
         )
 
         exe = await installer.install()
