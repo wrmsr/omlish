@@ -7084,7 +7084,7 @@ class FileDeployPathPart(DeployPathPart):
         return 'file'
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -7206,7 +7206,7 @@ class DeployAppConfFile:
 
 
 @dc.dataclass(frozen=True)
-class DeployAppConfLink(abc.ABC):  # noqa
+class DeployAppConfLink:  # noqa
     """
     May be either:
      - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
@@ -7216,18 +7216,12 @@ class DeployAppConfLink(abc.ABC):  # noqa
 
     src: str
 
+    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
+
     def __post_init__(self) -> None:
         check_valid_deploy_spec_path(self.src)
         if '/' in self.src:
             check.equal(self.src.count('/'), 1)
-
-
-class CurrentOnlyDeployAppConfLink(DeployAppConfLink):
-    pass
-
-
-class AllActiveDeployAppConfLink(DeployAppConfLink):
-    pass
 
 
 #
@@ -7917,6 +7911,7 @@ class DeployConfManager:
     #
 
     class _ComputedConfLink(ta.NamedTuple):
+        conf: DeployConf
         is_dir: bool
         link_src: str
         link_dst: str
@@ -7924,8 +7919,9 @@ class DeployConfManager:
     _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
     _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
 
+    @classmethod
     def _compute_app_conf_link_dst(
-            self,
+            cls,
             link: DeployAppConfLink,
             tags: DeployTagMap,
             app_conf_dir: str,
@@ -7939,6 +7935,7 @@ class DeployConfManager:
         if (is_dir := link.src.endswith('/')):
             # @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
             check.arg(link.src.count('/') == 1)
+            conf = DeployConf(link.src.split('/')[0])
             link_dst_pfx = link.src
             link_dst_sfx = ''
 
@@ -7946,6 +7943,7 @@ class DeployConfManager:
             # @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
             d, f = os.path.split(link.src)
             # TODO: check filename :|
+            conf = DeployConf(d)
             link_dst_pfx = d + '/'
             link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
 
@@ -7953,18 +7951,20 @@ class DeployConfManager:
             # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
             if '.' in link.src:
                 l, _, r = link.src.partition('.')
+                conf = DeployConf(l)
                 link_dst_pfx = l + '/'
                 link_dst_sfx = '.' + r
             else:
+                conf = DeployConf(link.src)
                 link_dst_pfx = link.src + '/'
                 link_dst_sfx = ''
 
         #
 
-        if isinstance(link, CurrentOnlyDeployAppConfLink):
+        if link.kind == 'current_only':
             link_dst_mid = str(tags[DeployApp].s)
-        elif isinstance(link, AllActiveDeployAppConfLink):
-            link_dst_mid = self._UNIQUE_LINK_NAME.render(tags)
+        elif link.kind == 'all_active':
+            link_dst_mid = cls._UNIQUE_LINK_NAME.render(tags)
         else:
             raise TypeError(link)
 
@@ -7978,6 +7978,7 @@ class DeployConfManager:
         link_dst = os.path.join(conf_link_dir, link_dst_name)
 
         return DeployConfManager._ComputedConfLink(
+            conf=conf,
             is_dir=is_dir,
             link_src=link_src,
             link_dst=link_dst,
