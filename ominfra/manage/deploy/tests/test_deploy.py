@@ -13,6 +13,7 @@ from omlish.lite.strings import strip_with_newline
 
 from ..config import DeployConfig
 from ..deploy import DeployManager
+from ..driver import DeployDriverFactory
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..specs import DeployAppConfFile
@@ -163,4 +164,5 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
                 #
 
-                await injector[DeployManager].run_deploy(spec)
+                with injector[DeployDriverFactory](spec) as driver:
+                    await driver.drive_deploy()
