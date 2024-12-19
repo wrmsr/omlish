@@ -54,7 +54,7 @@ class Harness:
             *[
                 inj.as_elements(
                     inj.bind_scope(ss),
-                    inj.bind_scope_seed(ss, inj.Key(pytest.FixtureRequest, tag=pts)),
+                    inj.bind_scope_seed(inj.Key(pytest.FixtureRequest, tag=pts), ss),
                 )
                 for pts, ss in _SCOPES_BY_PYTEST_SCOPE.items()
             ],

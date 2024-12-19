@@ -80,7 +80,7 @@ class ScopeSeededProvider(Provider):
         return self.key.ty
 
 
-def bind_scope_seed(ss: SeededScope, k: ta.Any) -> Element:
+def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:
     k = as_key(k)
     return Binding(k, ScopeSeededProvider(ss, k))
 

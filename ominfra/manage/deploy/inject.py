@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
+from omlish.lite.inject import ExclusiveInjectorScope
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
@@ -12,14 +13,21 @@ from .commands import DeployCommandExecutor
 from .conf import DeployConfManager
 from .config import DeployConfig
 from .deploy import DeployManager
+from .driver import DeployDriver
+from .driver import DeployDriverFactory  # noqa
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
 from .paths.owners import DeployPathOwner
+from .specs import DeploySpec
 from .tmp import DeployHomeAtomics
 from .tmp import DeployTmpManager
 from .venvs import DeployVenvManager
+
+
+class DeployInjectorScope(ExclusiveInjectorScope):
+    pass
 
 
 def bind_deploy(
@@ -62,6 +70,13 @@ def bind_deploy(
     def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
         return DeployHomeAtomics(tmp.get_swapping)
     lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
+
+    #
+
+    lst.extend([
+        inj.bind_scope(DeployInjectorScope),
+        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
+    ])
 
     #
 
