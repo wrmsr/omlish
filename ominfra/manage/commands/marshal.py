@@ -13,7 +13,7 @@ def install_command_marshaling(
         lambda c: c,
         lambda c: c.Output,
     ]:
-        msh.register_obj_marshaler(
+        msh.set_obj_marshaler(
             fn(Command),
             PolymorphicObjMarshaler.of([
                 PolymorphicObjMarshaler.Impl(
