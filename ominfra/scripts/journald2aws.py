@@ -2881,7 +2881,7 @@ class ObjMarshalerManager:
 
     #
 
-    def register_opj_marshaler(self, ty: ta.Any, m: ObjMarshaler) -> None:
+    def register_obj_marshaler(self, ty: ta.Any, m: ObjMarshaler) -> None:
         with self._lock:
             if ty in self._obj_marshalers:
                 raise KeyError(ty)
@@ -2974,7 +2974,7 @@ class ObjMarshalContext:
 
 OBJ_MARSHALER_MANAGER = ObjMarshalerManager()
 
-register_opj_marshaler = OBJ_MARSHALER_MANAGER.register_opj_marshaler
+register_obj_marshaler = OBJ_MARSHALER_MANAGER.register_obj_marshaler
 get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
 
 marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
