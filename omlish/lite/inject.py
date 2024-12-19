@@ -253,7 +253,8 @@ class ArrayInjectorProvider(InjectorProvider):
 
 
 class InjectorScope(abc.ABC):
-    pass
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Any:
+        raise NotImplementedError
 
 
 @dc.dataclass(frozen=True)
@@ -275,6 +276,12 @@ class ScopedInjectorProvider(InjectorProvider):
         return pfn
 
 
+def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+    raise NotImplementedError
+
+
+def bind_injector_scope_seed(sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
+    raise NotImplementedError
 
 
 ###
@@ -863,6 +870,14 @@ class InjectionApi:
 
     def tag(self, o: ta.Any, t: ta.Any) -> InjectorKey:
         return dc.replace(as_injector_key(o), tag=t)
+
+    # scopes
+
+    def bind_scope(self, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+        return bind_injector_scope(sc)
+
+    def bind_scope_seed(self, sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
+        return bind_injector_scope_seed(sc, k)
 
     # bindings
 
