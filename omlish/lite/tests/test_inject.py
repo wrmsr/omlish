@@ -7,6 +7,7 @@ from ..inject import CyclicDependencyInjectorKeyError
 from ..inject import _do_injection_inspect  # noqa
 from ..inject import build_injection_kwargs_target
 from ..inject import inj
+from ..inject import InjectorScope
 from ..typing import AnyFunc
 
 
@@ -313,4 +314,15 @@ class TestEager(unittest.TestCase):
 
 class TestScopes(unittest.TestCase):
     def test_scopes(self):
-        pass
+        class Ss(InjectorScope):
+            pass
+        i = inj.create_injector(
+            inj.bind_scope(Ss),
+            inj.bind(420, in_=Ss),
+            inj.bind_scope_seed(Ss, float),
+        )
+        with i[Ss].enter({
+            inj.as_key(float): 4.2,
+        }):
+            self.assertEqual(i[int], 420)
+            self.assertEqual(i[float], 4.2)
