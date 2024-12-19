@@ -4,7 +4,7 @@ import typing as ta  # noqa
 import unittest
 
 from ..inject import CyclicDependencyInjectorKeyError
-from ..inject import InjectorScope
+from ..inject import ExclusiveInjectorScope
 from ..inject import _do_injection_inspect  # noqa
 from ..inject import build_injection_kwargs_target
 from ..inject import inj
@@ -314,7 +314,7 @@ class TestEager(unittest.TestCase):
 
 class TestScopes(unittest.TestCase):
     def test_scopes(self):
-        class Ss(InjectorScope):
+        class Ss(ExclusiveInjectorScope):
             pass
         i = inj.create_injector(
             inj.bind_scope(Ss),
