@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - custom tags
@@ -9,7 +10,6 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import itertools
@@ -319,11 +319,11 @@ class PyenvVersionInstaller:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
-                self.install_dir(),
+                await self.install_dir(),
             ]
         else:
             full_args = [
-                self._pyenv.exe(),
+                await self._pyenv.exe(),
                 'install',
                 *conf_args,
             ]
