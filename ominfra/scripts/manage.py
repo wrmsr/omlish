@@ -9936,11 +9936,11 @@ class PyenvVersionInstaller:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
-                self.install_dir(),
+                await self.install_dir(),
             ]
         else:
             full_args = [
-                self._pyenv.exe(),
+                await self._pyenv.exe(),
                 'install',
                 *conf_args,
             ]

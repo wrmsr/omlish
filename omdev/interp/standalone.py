@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - ~/.cache/omlish/interp/standalone/...
@@ -20,7 +21,6 @@ TODO:
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # https://github.com/tusharsadhwani/yen/blob/8d1bb0c1232c7b0159caefb1bf3a5348b93f7b43/src/yen/github.py
-# ruff: noqa: UP006 UP007
 import json
 import os.path
 import platform
@@ -91,6 +91,7 @@ class StandalonePythons:
 
     def fallback_release_data(self) -> GitHubReleaseData:
         """Returns the fallback release data, for when GitHub API gives an error."""
+
         log.warning('GitHub unreachable. Using fallback release data.')
         data_file = os.path.join(os.path.dirname(__file__), 'fallback_release_data.json')
         with open(data_file) as data:
@@ -101,6 +102,7 @@ class StandalonePythons:
 
     def get_latest_python_releases(self, is_linux_i686: bool) -> GitHubReleaseData:
         """Returns the list of python download links from the latest github release."""
+
         # They stopped shipping for 32 bit linux since after the 20230826 tag
         if is_linux_i686:
             data_file = os.path.join(os.path.dirname(__file__), 'linux_i686_release.json')
@@ -120,6 +122,7 @@ class StandalonePythons:
     @cached_nullary
     def list_pythons(self) -> ta.Mapping[str, str]:
         """Returns available python versions for your machine and their download links."""
+
         system, machine = platform.system(), platform.machine()
         download_link_suffixes = self.MACHINE_SUFFIX[system][machine]
         # linux suffixes are nested under glibc or musl builds
