@@ -351,20 +351,20 @@ class _InjectorScopeSeed:
         check.isinstance(self.k, InjectorKey)
 
 
-_InjectorScopeSeeds = ta.NewType('_InjectorScopeSeeds', ta.Sequence[_InjectorScopeSeed])
-
-
 class InjectorScope(abc.ABC):  # noqa
     def __init__(
             self,
             *,
             _i: Injector,
-            _all_seeds: _InjectorScopeSeeds,
     ) -> None:
         super().__init__()
 
         self._i = _i
-        self._sks = {s.k for s in _all_seeds if s.sc is type(self)}
+
+        all_seeds: ta.Iterable[_InjectorScopeSeed] = self._i.provide(InjectorKey(_InjectorScopeSeed, array=True))
+        self._sks = {s.k for s in all_seeds if s.sc is type(self)}
+
+        self._st: ta.Optional[InjectorScope._State] = None
 
     @dc.dataclass(frozen=True)
     class _State:
@@ -372,27 +372,41 @@ class InjectorScope(abc.ABC):  # noqa
         prvs: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
 
     def _state(self) -> _State:
-        raise NotImplementedError
+        return check.not_none(self._st)
 
     @contextlib.contextmanager
     def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Any:
+        check.none(self._st)
+        vs = dict(vs)
         check.equal(set(vs.keys()), self._sks)
-        yield
+        st = InjectorScope._State(vs)
+        self._st = st
+        try:
+            yield
+        finally:
+            self._st = None
 
 
 @dc.dataclass(frozen=True)
 class ScopedInjectorProvider(InjectorProvider):
     p: InjectorProvider
+    k: InjectorKey
     sc: ta.Type[InjectorScope]
 
     def __post_init__(self) -> None:
         check.isinstance(self.p, InjectorProvider)
+        check.isinstance(self.k, InjectorKey)
         check.issubclass(self.sc, InjectorScope)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            sc = i[self.sc]  # noqa
+            st = i[self.sc]._state()  # noqa
+            try:
+                return st.prvs[self.k]
+            except KeyError:
+                pass
             v = ufn(i)
+            st.prvs[self.k] = v
             return v
 
         ufn = self.p.provider_fn()
@@ -410,17 +424,14 @@ class _ScopeSeedInjectorProvider(InjectorProvider):
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            sc = i[self.sc]  # noqa
-            return sc._state().seeds[self.k]  # noqa
+            st = i[self.sc]._state()  # noqa
+            return st.seeds[self.k]
         return pfn
+
 
 def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
     return as_injector_bindings(
         InjectorBinder.bind(sc, singleton=True),
-
-        # FIXME: default bindings
-        bind_injector_array(_InjectorScopeSeed),
-        InjectorBinder.bind(make_injector_array_type(_InjectorScopeSeed, _InjectorScopeSeeds)),
     )
 
 
@@ -576,13 +587,21 @@ _INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEa
 
 
 class _Injector(Injector):
+    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
+
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
         self._bs = check.isinstance(bs, InjectorBindings)
         self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, type(None)))
 
-        self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
+        self._pfm = {
+            k: v.provider_fn()
+            for k, v in build_injector_provider_map(as_injector_bindings(
+                *self._DEFAULT_BINDINGS,
+                bs,
+            )).items()
+        }
 
         if _INJECTOR_INJECTOR_KEY in self._pfm:
             raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
@@ -827,7 +846,7 @@ class InjectorBinder:
         if in_ is not None:
             check.issubclass(in_, InjectorScope)
             check.not_in(abc.ABC, in_.__bases__)
-            pws.append(functools.partial(ScopedInjectorProvider, sc=in_))
+            pws.append(functools.partial(ScopedInjectorProvider, k=key, sc=in_))
         if singleton:
             pws.append(SingletonInjectorProvider)
         if len(pws) > 1:
@@ -919,7 +938,8 @@ def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
     return InjectorBinding(_INJECTOR_EAGER_ARRAY_KEY, ConstInjectorProvider(_InjectorEager(as_injector_key(key))))
 
 
-##
+###
+## api
 
 
 class InjectionApi:
