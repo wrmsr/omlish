@@ -86,6 +86,7 @@ class DeployConfManager:
         if (is_dir := link.src.endswith('/')):
             # @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
             check.arg(link.src.count('/') == 1)
+            conf = DeployConf(link.src.split('/')[0])
             link_dst_pfx = link.src
             link_dst_sfx = ''
 
@@ -93,6 +94,7 @@ class DeployConfManager:
             # @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
             d, f = os.path.split(link.src)
             # TODO: check filename :|
+            conf = DeployConf(d)
             link_dst_pfx = d + '/'
             link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
 
@@ -100,9 +102,11 @@ class DeployConfManager:
             # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
             if '.' in link.src:
                 l, _, r = link.src.partition('.')
+                conf = DeployConf(l)
                 link_dst_pfx = l + '/'
                 link_dst_sfx = '.' + r
             else:
+                conf = DeployConf(link.src)
                 link_dst_pfx = link.src + '/'
                 link_dst_sfx = ''
 
