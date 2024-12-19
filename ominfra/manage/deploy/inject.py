@@ -1,7 +1,9 @@
 # ruff: noqa: UP006 UP007
+import contextlib
 import typing as ta
 
 from omlish.lite.inject import ExclusiveInjectorScope
+from omlish.lite.inject import Injector
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
@@ -14,7 +16,7 @@ from .conf import DeployConfManager
 from .config import DeployConfig
 from .deploy import DeployManager
 from .driver import DeployDriver
-from .driver import DeployDriverFactory  # noqa
+from .driver import DeployDriverFactory
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
@@ -73,9 +75,21 @@ def bind_deploy(
 
     #
 
+    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
+        @contextlib.contextmanager
+        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
+            with sc.enter({
+                inj.as_key(DeploySpec): spec,
+            }):
+                yield injector[DeployDriver]
+        return DeployDriverFactory(factory)
+    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
+
     lst.extend([
         inj.bind_scope(DeployInjectorScope),
         inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
+
+        inj.bind(DeployDriver, in_=DeployInjectorScope),
     ])
 
     #

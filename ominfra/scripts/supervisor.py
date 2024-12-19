@@ -4459,7 +4459,7 @@ class _InjectorScopeSeed:
         check.isinstance(self.k, InjectorKey)
 
 
-def bind_injector_scope_seed(sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
+def bind_injector_scope_seed(k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
     kk = as_injector_key(k)
     return as_injector_bindings(
         InjectorBinding(kk, _ScopeSeedInjectorProvider(kk, sc)),
@@ -4991,8 +4991,8 @@ class InjectionApi:
     def bind_scope(self, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
         return bind_injector_scope(sc)
 
-    def bind_scope_seed(self, sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
-        return bind_injector_scope_seed(sc, k)
+    def bind_scope_seed(self, k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+        return bind_injector_scope_seed(k, sc)
 
     # injector
 
