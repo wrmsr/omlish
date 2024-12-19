@@ -309,3 +309,8 @@ class TestEager(unittest.TestCase):
         )
         assert c == 1
         assert injector.provide(int) == 0
+
+
+class TestScopes(unittest.TestCase):
+    def test_scopes(self):
+        pass
