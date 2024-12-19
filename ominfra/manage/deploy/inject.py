@@ -25,11 +25,49 @@ from .paths.owners import DeployPathOwner
 from .specs import DeploySpec
 from .tmp import DeployHomeAtomics
 from .tmp import DeployTmpManager
+from .types import DeployHome
 from .venvs import DeployVenvManager
+
+
+##
 
 
 class DeployInjectorScope(ContextvarInjectorScope):
     pass
+
+
+def bind_deploy_scope() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind_scope(DeployInjectorScope),
+        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
+
+        inj.bind(DeployDriver, in_=DeployInjectorScope),
+    ]
+
+    #
+
+    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
+        @contextlib.contextmanager
+        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
+            with sc.enter({
+                inj.as_key(DeploySpec): spec,
+            }):
+                yield injector[DeployDriver]
+        return DeployDriverFactory(factory)
+    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
+
+    #
+
+    def provide_deploy_home(deploy: DeploySpec) -> DeployHome:
+        return deploy.home
+    lst.append(inj.bind(provide_deploy_home))
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+##
 
 
 def bind_deploy(
@@ -40,6 +78,8 @@ def bind_deploy(
         inj.bind(deploy_config),
 
         bind_deploy_paths(),
+
+        bind_deploy_scope(),
     ]
 
     #
@@ -72,25 +112,6 @@ def bind_deploy(
     def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
         return DeployHomeAtomics(tmp.get_swapping)
     lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
-
-    #
-
-    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
-        @contextlib.contextmanager
-        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
-            with sc.enter({
-                inj.as_key(DeploySpec): spec,
-            }):
-                yield injector[DeployDriver]
-        return DeployDriverFactory(factory)
-    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
-
-    lst.extend([
-        inj.bind_scope(DeployInjectorScope),
-        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
-
-        inj.bind(DeployDriver, in_=DeployInjectorScope),
-    ])
 
     #
 
