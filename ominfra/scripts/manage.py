@@ -5294,7 +5294,7 @@ class _InjectorScopeSeed:
         check.isinstance(self.k, InjectorKey)
 
 
-def bind_injector_scope_seed(sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
+def bind_injector_scope_seed(k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
     kk = as_injector_key(k)
     return as_injector_bindings(
         InjectorBinding(kk, _ScopeSeedInjectorProvider(kk, sc)),
@@ -5826,8 +5826,8 @@ class InjectionApi:
     def bind_scope(self, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
         return bind_injector_scope(sc)
 
-    def bind_scope_seed(self, sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
-        return bind_injector_scope_seed(sc, k)
+    def bind_scope_seed(self, k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+        return bind_injector_scope_seed(k, sc)
 
     # injector
 
@@ -7710,6 +7710,37 @@ class LocalCommandExecutor(CommandExecutor):
     async def execute(self, cmd: Command) -> Command.Output:
         ce: CommandExecutor = self._command_executors[type(cmd)]
         return await ce.execute(cmd)
+
+
+########################################
+# ../deploy/deploy.py
+
+
+DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+
+
+DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
+
+
+class DeployManager:
+    def __init__(
+            self,
+            *,
+
+            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
+    ):
+        super().__init__()
+
+        self._utc_clock = utc_clock
+
+    def _utc_now(self) -> datetime.datetime:
+        if self._utc_clock is not None:
+            return self._utc_clock()  # noqa
+        else:
+            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+
+    def make_deploy_time(self) -> DeployTime:
+        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
 
 
 ########################################
@@ -11094,49 +11125,37 @@ class DeployAppManager(DeployPathOwner):
 
 
 ########################################
-# ../deploy/deploy.py
+# ../deploy/driver.py
 
 
-DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+class DeployDriverFactory(Func1[DeploySpec, ta.ContextManager['DeployDriver']]):
+    pass
 
 
-DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
-
-
-class DeployManager:
+class DeployDriver:
     def __init__(
             self,
             *,
-            apps: DeployAppManager,
-            paths: DeployPathsManager,
+            spec: DeploySpec,
 
-            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
-    ):
+            deploys: DeployManager,
+            paths: DeployPathsManager,
+            apps: DeployAppManager,
+    ) -> None:
         super().__init__()
 
-        self._apps = apps
+        self._spec = spec
+
+        self._deploys = deploys
         self._paths = paths
+        self._apps = apps
 
-        self._utc_clock = utc_clock
-
-    def _utc_now(self) -> datetime.datetime:
-        if self._utc_clock is not None:
-            return self._utc_clock()  # noqa
-        else:
-            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-
-    def _make_deploy_time(self) -> DeployTime:
-        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
-
-    async def run_deploy(
-            self,
-            spec: DeploySpec,
-    ) -> None:
+    async def drive_deploy(self) -> None:
         self._paths.validate_deploy_paths()
 
         #
 
-        hs = check.non_empty_str(spec.home)
+        hs = check.non_empty_str(self._spec.home)
         hs = os.path.expanduser(hs)
         hs = os.path.realpath(hs)
         hs = os.path.abspath(hs)
@@ -11146,13 +11165,13 @@ class DeployManager:
         #
 
         deploy_tags = DeployTagMap(
-            self._make_deploy_time(),
-            spec.key(),
+            self._deploys.make_deploy_time(),
+            self._spec.key(),
         )
 
         #
 
-        for app in spec.apps:
+        for app in self._spec.apps:
             app_tags = deploy_tags.add(
                 app.app,
                 app.key(),
@@ -11184,18 +11203,23 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 @dc.dataclass(frozen=True)
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
-    _deploy: DeployManager
+    _driver_factory: DeployDriverFactory
 
     async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
         log.info('Deploying! %r', cmd.spec)
 
-        await self._deploy.run_deploy(cmd.spec)
+        with self._driver_factory(cmd.spec) as driver:
+            await driver.drive_deploy()
 
         return DeployCommand.Output()
 
 
 ########################################
 # ../deploy/inject.py
+
+
+class DeployInjectorScope(ExclusiveInjectorScope):
+    pass
 
 
 def bind_deploy(
@@ -11238,6 +11262,25 @@ def bind_deploy(
     def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
         return DeployHomeAtomics(tmp.get_swapping)
     lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
+
+    #
+
+    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
+        @contextlib.contextmanager
+        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
+            with sc.enter({
+                inj.as_key(DeploySpec): spec,
+            }):
+                yield injector[DeployDriver]
+        return DeployDriverFactory(factory)
+    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
+
+    lst.extend([
+        inj.bind_scope(DeployInjectorScope),
+        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
+
+        inj.bind(DeployDriver, in_=DeployInjectorScope),
+    ])
 
     #
 
