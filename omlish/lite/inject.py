@@ -357,6 +357,8 @@ class InjectorScope(abc.ABC):  # noqa
             *,
             _i: Injector,
     ) -> None:
+        check.not_in(abc.ABC, type(self).__bases__)
+
         super().__init__()
 
         self._i = _i
@@ -364,23 +366,35 @@ class InjectorScope(abc.ABC):  # noqa
         all_seeds: ta.Iterable[_InjectorScopeSeed] = self._i.provide(InjectorKey(_InjectorScopeSeed, array=True))
         self._sks = {s.k for s in all_seeds if s.sc is type(self)}
 
-        self._st: ta.Optional[InjectorScope._State] = None
-
     @dc.dataclass(frozen=True)
-    class _State:
+    class State:
         seeds: ta.Dict[InjectorKey, ta.Any]
         prvs: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
 
-    def _state(self) -> _State:
+    @abc.abstractmethod
+    def state(self) -> State:
+        raise NotImplementedError
+
+    def new_state(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> State:
+        vs = dict(vs)
+        check.equal(set(vs.keys()), self._sks)
+        return InjectorScope.State(vs)
+
+    @abc.abstractmethod
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.ContextManager[None]:
+        raise NotImplementedError
+
+
+class ExclusiveInjectorScope(InjectorScope, abc.ABC):
+    _st: ta.Optional[InjectorScope.State] = None
+
+    def state(self) -> InjectorScope.State:
         return check.not_none(self._st)
 
     @contextlib.contextmanager
-    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Any:
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
         check.none(self._st)
-        vs = dict(vs)
-        check.equal(set(vs.keys()), self._sks)
-        st = InjectorScope._State(vs)
-        self._st = st
+        self._st = self.new_state(vs)
         try:
             yield
         finally:
@@ -400,7 +414,7 @@ class ScopedInjectorProvider(InjectorProvider):
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            st = i[self.sc]._state()  # noqa
+            st = i[self.sc].state()
             try:
                 return st.prvs[self.k]
             except KeyError:
@@ -424,7 +438,7 @@ class _ScopeSeedInjectorProvider(InjectorProvider):
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            st = i[self.sc]._state()  # noqa
+            st = i[self.sc].state()
             return st.seeds[self.k]
         return pfn
 
