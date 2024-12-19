@@ -35,6 +35,8 @@ from .targets.targets import ManageTarget
 
 @dc.dataclass(frozen=True)
 class ManageConfig:
+    deploy_home: ta.Optional[str] = None
+
     targets: ta.Optional[ta.Mapping[str, ManageTarget]] = None
 
 
@@ -69,7 +71,8 @@ class MainCli(ArgparseCli):
         argparse_arg('--deploy-home'),
 
         argparse_arg('target'),
-        argparse_arg('command', nargs='+'),
+        argparse_arg('-f', '--command-file', action='append'),
+        argparse_arg('command', nargs='*'),
     )
     async def run(self) -> None:
         bs = MainBootstrap(
@@ -80,7 +83,7 @@ class MainCli(ArgparseCli):
             ),
 
             deploy_config=DeployConfig(
-                deploy_home=self.args.deploy_home,
+                deploy_home=self.args.deploy_home or self.config().deploy_home,
             ),
 
             remote_config=RemoteConfig(
@@ -115,11 +118,17 @@ class MainCli(ArgparseCli):
         #
 
         cmds: ta.List[Command] = []
+
         cmd: Command
-        for c in self.args.command:
+
+        for c in self.args.command or []:
             if not c.startswith('{'):
                 c = json.dumps({c: {}})
             cmd = msh.unmarshal_obj(json.loads(c), Command)
+            cmds.append(cmd)
+
+        for cf in self.args.command_file or []:
+            cmd = read_config_file(cf, Command, msh=msh)
             cmds.append(cmd)
 
         #
