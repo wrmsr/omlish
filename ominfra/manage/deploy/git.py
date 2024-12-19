@@ -31,12 +31,10 @@ class DeployGitManager(SingleDirDeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: ta.Optional[DeployHome] = None,
             atomics: AtomicPathSwapping,
     ) -> None:
         super().__init__(
             owned_dir='git',
-            deploy_home=deploy_home,
         )
 
         self._atomics = atomics
@@ -48,13 +46,14 @@ class DeployGitManager(SingleDirDeployPathOwner):
                 self,
                 git: 'DeployGitManager',
                 repo: DeployGitRepo,
+                home: DeployHome,
         ) -> None:
             super().__init__()
 
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._make_dir(),  # noqa
+                self._git._make_dir(home),  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
@@ -112,16 +111,31 @@ class DeployGitManager(SingleDirDeployPathOwner):
                 await dst_call('git', 'fetch', '--depth=1', 'local', spec.rev)
                 await dst_call('git', 'checkout', spec.rev, *(spec.subtrees or []))
 
-    def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
+    def get_repo_dir(
+            self,
+            repo: DeployGitRepo,
+            home: DeployHome,
+    ) -> RepoDir:
         try:
             return self._repo_dirs[repo]
         except KeyError:
-            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
+            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(
+                self,
+                repo,
+                home,
+            )
             return repo_dir
 
     async def checkout(
             self,
             spec: DeployGitSpec,
+            home: DeployHome,
             dst_dir: str,
     ) -> None:
-        await self.get_repo_dir(spec.repo).checkout(spec, dst_dir)
+        await self.get_repo_dir(
+            spec.repo,
+            home,
+        ).checkout(
+            spec,
+            dst_dir,
+        )

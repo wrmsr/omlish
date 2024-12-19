@@ -1,0 +1,76 @@
+---
+- name: ANSISTRANO | GIT | Ensure GIT deployment key is up to date (local key file)
+  copy:
+    src: "{{ ansistrano_git_identity_key_path }}"
+    dest: "{{ ansistrano_deploy_to }}/git_identity_key"
+    mode: 0400
+  when: ansistrano_git_identity_key_path|trim
+
+- name: ANSISTRANO | GIT | Ensure GIT deployment key is up to date (remote key file)
+  copy:
+    remote_src: true
+    src: "{{ ansistrano_git_identity_key_remote_path }}"
+    dest: "{{ ansistrano_deploy_to }}/git_identity_key"
+    mode: 0400
+  when: ansistrano_git_identity_key_remote_path|trim
+
+- name: ANSISTRANO | GIT | Update remote repository
+  git:
+    repo: "{{ ansistrano_git_repo }}"
+    dest: "{{ ansistrano_deploy_to }}/{{ ansistrano_repo_dir }}"
+    version: "{{ ansistrano_git_branch }}"
+    accept_hostkey: true
+    update: yes
+    force: yes
+    ssh_opts: "{{ ansistrano_git_ssh_opts | default(omit) }}"
+    refspec: "{{ ansistrano_git_refspec | default(omit) }}"
+    depth: "{{ ansistrano_git_depth | default(omit) }}"
+    executable: "{{ ansistrano_git_executable | default(omit) }}"
+  register: ansistrano_git_result_update
+  when: not ansistrano_git_identity_key_path|trim and not ansistrano_git_identity_key_remote_path|trim
+
+- name: ANSISTRANO | GIT | Update remote repository using SSH key
+  git:
+    repo: "{{ ansistrano_git_repo }}"
+    dest: "{{ ansistrano_deploy_to }}/{{ ansistrano_repo_dir }}"
+    version: "{{ ansistrano_git_branch }}"
+    accept_hostkey: true
+    update: yes
+    force: yes
+    ssh_opts: "{{ ansistrano_git_ssh_opts | default(omit) }}"
+    refspec: "{{ ansistrano_git_refspec | default(omit) }}"
+    depth: "{{ ansistrano_git_depth | default(omit) }}"
+    key_file: "{{ ansistrano_deploy_to }}/git_identity_key"
+    executable: "{{ ansistrano_git_executable | default(omit) }}"
+  register: ansistrano_git_result_update_ssh
+  when: ansistrano_git_identity_key_path|trim or ansistrano_git_identity_key_remote_path|trim
+
+- name: ANSISTRANO | GIT | Register ansistrano_git_result variable
+  set_fact: ansistrano_git_result={{ ansistrano_git_result_update_ssh if ansistrano_git_result_update is skipped else ansistrano_git_result_update }}
+
+- name: ANSISTRANO | GIT | Shred GIT deployment key
+  command: shred -f "{{ ansistrano_deploy_to }}/git_identity_key"
+  when: (ansistrano_git_identity_key_path|trim or ansistrano_git_identity_key_remote_path|trim) and ansistrano_git_identity_key_shred|bool == true
+
+- name: ANSISTRANO | GIT | Set git_real_repo_tree
+  set_fact:
+    ansistrano_git_real_repo_tree: "{{ ansistrano_git_repo_tree | trim | regex_replace('^[/]*', '') | regex_replace('([^/])/*$', '\\1/') | regex_replace('^[/]*$', '') }}"
+
+- name: ANSISTRANO | GIT | Create release folder
+  file:
+    state: directory
+    path: "{{ ansistrano_release_path.stdout }}"
+
+- name: ANSISTRANO | GIT | Sync repo subtree["{{ ansistrano_git_real_repo_tree }}"] to release path
+  shell: >-
+           {
+             git ls-files -z --with-tree="{{ ansistrano_git_branch }}" | tr '\0' '\n';
+             git submodule foreach --recursive | sed -n -e "s/^[a-zA-Z]* '\(.*\)'$/\1/p" | while read -r line; do (cd "$line"; git ls-files -z | tr "\0" "\n" | sed "s#^#$line/#"; cd $OLDPWD); done
+           }
+           | grep "^$prefix"
+           | sed "s#^$prefix##"
+           | rsync -a --files-from=- "./$prefix" {{ ansistrano_release_path.stdout }}/
+  args:
+    chdir: "{{ ansistrano_deploy_to }}/{{ ansistrano_repo_dir }}/"
+  environment:
+    prefix: "{{ ansistrano_git_real_repo_tree }}"

@@ -1,0 +1,33 @@
+---
+# Ensure symlinks target paths is absent
+# This was removed in 1.7.3 to improve speed but it introduced regressions in cases where 
+# there are .gitkeep files in such folders (common practice in some PHP frameworks)
+- name: ANSISTRANO | Ensure shared paths targets are absent
+  file:
+    state: absent
+    path: "{{ ansistrano_release_path.stdout }}/{{ item }}"
+  loop: "{{ (ansistrano_shared_paths | flatten ) + (ansistrano_shared_files | flatten) }}"
+
+# Symlinks shared paths and files
+- name: ANSISTRANO | Create softlinks for shared paths and files
+  file:
+    state: link
+    path: "{{ ansistrano_release_path.stdout }}/{{ item }}"
+    src: "{{ item | regex_replace('[^\\/]+', '..') }}/../{{ ansistrano_shared_dir }}/{{ item }}"
+  loop: "{{ (ansistrano_shared_paths | flatten ) + (ansistrano_shared_files | flatten) }}"
+
+# Remove previous .rsync-filter file (rsync current deployment)
+- name: ANSISTRANO | Ensure .rsync-filter is absent
+  file:
+    state: absent
+    path: "{{ ansistrano_release_path.stdout }}/.rsync-filter"
+  when: ansistrano_current_via == "rsync"
+
+# Setup .rsync-filter file for current rsync deployment (exclude shared folders for rsync current deployment)
+- name: ANSISTRANO | Setup .rsync-filter with shared-folders
+  lineinfile:
+    dest: "{{ ansistrano_release_path.stdout }}/.rsync-filter"
+    line: "- /{{ item }}"
+    create: yes
+  loop: "{{ (ansistrano_shared_paths | flatten ) + (ansistrano_shared_files | flatten) }}"
+  when: ansistrano_current_via == "rsync"

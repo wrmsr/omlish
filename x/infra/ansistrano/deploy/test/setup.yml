@@ -1,0 +1,41 @@
+---
+- name: Basic setup for Ansible to run properly
+  hosts: all
+
+  pre_tasks:
+    - name: Update apt cache.
+      command: apt -y update
+      when: update_cache is defined and ansible_os_family == 'Debian'
+
+  tasks:
+
+    - name: Check Ansible Is Installed
+      changed_when: False
+      command: /usr/bin/env ansible --version
+
+    - name: Install Required Packages For Debian
+      when: ansible_os_family == 'Debian'
+      apt:
+        name:
+          - rsync
+          - tar
+          - ssh
+          - git
+          - unzip
+          - subversion
+          - mercurial
+        state: present
+
+    - name: Install Required Packages For Redhat
+      when: ansible_os_family == 'RedHat'
+      yum:
+        name:
+          - rsync
+          - tar
+          - openssh-clients
+          - git
+          - unzip
+          - subversion
+          - mercurial
+          - findutils
+        state: present

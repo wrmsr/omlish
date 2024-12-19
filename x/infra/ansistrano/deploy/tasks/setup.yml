@@ -1,0 +1,32 @@
+---
+# Setup folders
+- name: ANSISTRANO | Ensure deployment base path exists
+  file:
+    state: directory
+    path: "{{ ansistrano_deploy_to }}"
+
+- name: ANSISTRANO | Ensure releases folder exists
+  file:
+    state: directory
+    path: "{{ ansistrano_releases_path }}"
+
+- name: ANSISTRANO | Ensure shared elements folder exists
+  file:
+    state: directory
+    path: "{{ ansistrano_shared_path }}"
+
+# Ensure shared path exists
+- name: ANSISTRANO | Ensure shared paths exists
+  file:
+    state: directory
+    path: "{{ ansistrano_shared_path }}/{{ item }}"
+  with_items: "{{ ansistrano_shared_paths }}"
+  when: ansistrano_ensure_shared_paths_exist|bool
+
+# Ensure basedir shared files exists
+- name: ANSISTRANO | Ensure basedir shared files exists
+  file:
+    state: directory
+    path: "{{ ansistrano_shared_path }}/{{ item | dirname }}"
+  with_items: "{{ ansistrano_shared_files }}"
+  when: ansistrano_ensure_basedirs_shared_files_exist|bool

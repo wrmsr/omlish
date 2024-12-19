@@ -1,7 +1,9 @@
 # ruff: noqa: UP006 UP007
 import datetime
+import os.path
 import typing as ta
 
+from omlish.lite.check import check
 from omlish.lite.typing import Func0
 
 from .apps import DeployAppManager
@@ -10,6 +12,7 @@ from .specs import DeploySpec
 from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .tags import DeployTime
+from .types import DeployHome
 
 
 DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
@@ -51,6 +54,15 @@ class DeployManager:
 
         #
 
+        hs = check.none_empty_str(spec.home)
+        hs = os.path.expanduser(hs)
+        hs = os.path.realpath(hs)
+        hs = os.path.abspath(hs)
+
+        home = DeployHome(hs)
+
+        #
+
         deploy_tags = DeployTagMap(
             self._make_deploy_time(),
             spec.key(),
@@ -67,5 +79,6 @@ class DeployManager:
 
             await self._apps.prepare_app(
                 app,
+                home,
                 app_tags,
             )
