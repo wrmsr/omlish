@@ -24,7 +24,7 @@ class TestConf(unittest.TestCase):
             DeployAppConfLink('systemd/service.conf'),
             DeployAppConfLink('systemd/service.conf', kind='all_active'),
         ]:
-            cl = DeployConfManager._compute_app_conf_link_dst(
+            cl = DeployConfManager._compute_app_conf_link_dst(  # noqa
                 lnk,
                 tags,
                 'app_conf_dir',
