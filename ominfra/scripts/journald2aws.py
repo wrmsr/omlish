@@ -2687,6 +2687,18 @@ class FieldsObjMarshaler(ObjMarshaler):
 
 
 @dc.dataclass(frozen=True)
+class SingleFieldObjMarshaler(ObjMarshaler):
+    ty: type
+    fld: str
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return getattr(o, self.fld)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.ty(**{self.fld: o})
+
+
+@dc.dataclass(frozen=True)
 class PolymorphicObjMarshaler(ObjMarshaler):
     class Impl(ta.NamedTuple):
         ty: type
@@ -2785,6 +2797,16 @@ _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
 ##
 
 
+_REGISTERED_OBJ_MARSHALERS_BY_TYPE: ta.MutableMapping[type, ObjMarshaler] = weakref.WeakKeyDictionary()
+
+
+def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
+    _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
+
+
+##
+
+
 class ObjMarshalerManager:
     def __init__(
             self,
@@ -2794,6 +2816,8 @@ class ObjMarshalerManager:
             default_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = _DEFAULT_OBJ_MARSHALERS,  # noqa
             generic_mapping_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES,  # noqa
             generic_iterable_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES,  # noqa
+
+            registered_obj_marshalers: ta.Mapping[type, ObjMarshaler] = _REGISTERED_OBJ_MARSHALERS_BY_TYPE,
     ) -> None:
         super().__init__()
 
@@ -2802,6 +2826,7 @@ class ObjMarshalerManager:
         self._obj_marshalers = dict(default_obj_marshalers)
         self._generic_mapping_types = generic_mapping_types
         self._generic_iterable_types = generic_iterable_types
+        self._registered_obj_marshalers = registered_obj_marshalers
 
         self._lock = threading.RLock()
         self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
@@ -2817,6 +2842,9 @@ class ObjMarshalerManager:
             non_strict_fields: bool = False,
     ) -> ObjMarshaler:
         if isinstance(ty, type):
+            if (reg := self._registered_obj_marshalers.get(ty)) is not None:
+                return reg
+
             if abc.ABC in ty.__bases__:
                 impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]  # type: ignore
                 if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
@@ -2881,9 +2909,15 @@ class ObjMarshalerManager:
 
     #
 
-    def register_obj_marshaler(self, ty: ta.Any, m: ObjMarshaler) -> None:
+    def set_obj_marshaler(
+            self,
+            ty: ta.Any,
+            m: ObjMarshaler,
+            *,
+            override: bool = False,
+    ) -> None:
         with self._lock:
-            if ty in self._obj_marshalers:
+            if not override and ty in self._obj_marshalers:
                 raise KeyError(ty)
             self._obj_marshalers[ty] = m
 
@@ -2974,7 +3008,7 @@ class ObjMarshalContext:
 
 OBJ_MARSHALER_MANAGER = ObjMarshalerManager()
 
-register_obj_marshaler = OBJ_MARSHALER_MANAGER.register_obj_marshaler
+set_obj_marshaler = OBJ_MARSHALER_MANAGER.set_obj_marshaler
 get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
 
 marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
