@@ -10,10 +10,10 @@ import re
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check
 from omlish.lite.logs import log
 
 from ..packaging.versions import InvalidVersion
-from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
 from .providers import InterpProvider
 from .types import Interp
@@ -24,13 +24,25 @@ from .types import InterpVersion
 ##
 
 
-@dc.dataclass(frozen=True)
 class SystemInterpProvider(InterpProvider):
-    cmd: str = 'python3'
-    path: ta.Optional[str] = None
+    @dc.dataclass(frozen=True)
+    class Options:
+        cmd: str = 'python3'  # FIXME: unused lol
+        path: ta.Optional[str] = None
 
-    inspect: bool = False
-    inspector: InterpInspector = INTERP_INSPECTOR
+        inspect: bool = False
+
+    def __init__(
+            self,
+            options: Options = Options(),
+            *,
+            inspector: ta.Optional[InterpInspector] = None,
+    ) -> None:
+        super().__init__()
+
+        self._options = options
+
+        self._inspector = inspector
 
     #
 
@@ -82,13 +94,13 @@ class SystemInterpProvider(InterpProvider):
     def exes(self) -> ta.List[str]:
         return self._re_which(
             re.compile(r'python3(\.\d+)?'),
-            path=self.path,
+            path=self._options.path,
         )
 
     #
 
     async def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
-        if not self.inspect:
+        if not self._options.inspect:
             s = os.path.basename(exe)
             if s.startswith('python'):
                 s = s[len('python'):]
@@ -97,7 +109,7 @@ class SystemInterpProvider(InterpProvider):
                     return InterpVersion.parse(s)
                 except InvalidVersion:
                     pass
-        ii = await self.inspector.inspect(exe)
+        ii = await check.not_none(self._inspector).inspect(exe)
         return ii.iv if ii is not None else None
 
     async def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
