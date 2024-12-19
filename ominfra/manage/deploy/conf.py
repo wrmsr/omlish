@@ -29,6 +29,7 @@ from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
 from .tags import DEPLOY_TAG_SEPARATOR
 from .tags import DeployApp
+from .tags import DeployConf
 from .tags import DeployTagMap
 from .types import DeployHome
 
@@ -61,6 +62,7 @@ class DeployConfManager:
     #
 
     class _ComputedConfLink(ta.NamedTuple):
+        conf: DeployConf
         is_dir: bool
         link_src: str
         link_dst: str
@@ -68,8 +70,9 @@ class DeployConfManager:
     _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
     _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
 
+    @classmethod
     def _compute_app_conf_link_dst(
-            self,
+            cls,
             link: DeployAppConfLink,
             tags: DeployTagMap,
             app_conf_dir: str,
@@ -108,7 +111,7 @@ class DeployConfManager:
         if link.kind == 'current_only':
             link_dst_mid = str(tags[DeployApp].s)
         elif link.kind == 'all_active':
-            link_dst_mid = self._UNIQUE_LINK_NAME.render(tags)
+            link_dst_mid = cls._UNIQUE_LINK_NAME.render(tags)
         else:
             raise TypeError(link)
 
@@ -122,6 +125,7 @@ class DeployConfManager:
         link_dst = os.path.join(conf_link_dir, link_dst_name)
 
         return DeployConfManager._ComputedConfLink(
+            conf=conf,
             is_dir=is_dir,
             link_src=link_src,
             link_dst=link_dst,
