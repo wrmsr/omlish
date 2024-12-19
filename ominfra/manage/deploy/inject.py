@@ -1,7 +1,9 @@
 # ruff: noqa: UP006 UP007
 import contextlib
+import os.path
 import typing as ta
 
+from omlish.lite.check import check
 from omlish.lite.inject import ContextvarInjectorScope
 from omlish.lite.inject import Injector
 from omlish.lite.inject import InjectorBindingOrBindings
@@ -23,6 +25,7 @@ from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
 from .paths.owners import DeployPathOwner
 from .specs import DeploySpec
+from .tags import DeployTime
 from .tmp import DeployHomeAtomics
 from .tmp import DeployTmpManager
 from .types import DeployHome
@@ -59,8 +62,18 @@ def bind_deploy_scope() -> InjectorBindings:
     #
 
     def provide_deploy_home(deploy: DeploySpec) -> DeployHome:
-        return deploy.home
-    lst.append(inj.bind(provide_deploy_home))
+        hs = check.non_empty_str(deploy.home)
+        hs = os.path.expanduser(hs)
+        hs = os.path.realpath(hs)
+        hs = os.path.abspath(hs)
+        return DeployHome(hs)
+    lst.append(inj.bind(provide_deploy_home, in_=DeployInjectorScope))
+
+    #
+
+    def provide_deploy_time(deploys: DeployManager) -> DeployTime:
+        return deploys.make_deploy_time()
+    lst.append(inj.bind(provide_deploy_time, in_=DeployInjectorScope))
 
     #
 

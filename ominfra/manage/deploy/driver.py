@@ -1,16 +1,14 @@
 # ruff: noqa: UP006 UP007
-import os.path
 import typing as ta
 
-from omlish.lite.check import check
 from omlish.lite.typing import Func1
 
 from .apps import DeployAppManager
-from .deploy import DeployManager
 from .paths.manager import DeployPathsManager
 from .specs import DeploySpec
 from .tags import DeployAppRev
 from .tags import DeployTagMap
+from .tags import DeployTime
 from .types import DeployHome
 
 
@@ -23,16 +21,18 @@ class DeployDriver:
             self,
             *,
             spec: DeploySpec,
+            home: DeployHome,
+            time: DeployTime,
 
-            deploys: DeployManager,
             paths: DeployPathsManager,
             apps: DeployAppManager,
     ) -> None:
         super().__init__()
 
         self._spec = spec
+        self._home = home
+        self._time = time
 
-        self._deploys = deploys
         self._paths = paths
         self._apps = apps
 
@@ -41,17 +41,8 @@ class DeployDriver:
 
         #
 
-        hs = check.non_empty_str(self._spec.home)
-        hs = os.path.expanduser(hs)
-        hs = os.path.realpath(hs)
-        hs = os.path.abspath(hs)
-
-        home = DeployHome(hs)
-
-        #
-
         deploy_tags = DeployTagMap(
-            self._deploys.make_deploy_time(),
+            self._time,
             self._spec.key(),
         )
 
@@ -66,6 +57,6 @@ class DeployDriver:
 
             await self._apps.prepare_app(
                 app,
-                home,
+                self._home,
                 app_tags,
             )
