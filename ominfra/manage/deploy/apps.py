@@ -156,6 +156,7 @@ class DeployAppManager(DeployPathOwner):
             app_venv_dir = os.path.join(app_dir, 'venv')
             await self._venvs.setup_venv(
                 spec.venv,
+                home,
                 app_git_dir,
                 app_venv_dir,
             )

@@ -15,11 +15,11 @@ import typing as ta
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
-from omlish.os.atomics import AtomicPathSwapping
 
 from .paths.owners import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
 from .specs import DeployGitSpec
+from .tmp import DeployHomeAtomics
 from .types import DeployHome
 from .types import DeployRev
 
@@ -31,7 +31,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
     def __init__(
             self,
             *,
-            atomics: AtomicPathSwapping,
+            atomics: DeployHomeAtomics,
     ) -> None:
         super().__init__(
             owned_dir='git',
@@ -52,6 +52,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
             self._git = git
             self._repo = repo
+            self._home = home
             self._dir = os.path.join(
                 self._git._make_dir(home),  # noqa
                 check.non_empty_str(repo.host),
@@ -96,7 +97,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
-            with self._git._atomics.begin_atomic_path_swap(  # noqa
+            with self._git._atomics(self._home).begin_atomic_path_swap(  # noqa
                     'dir',
                     dst_dir,
                     auto_commit=True,
