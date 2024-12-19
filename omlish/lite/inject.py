@@ -341,16 +341,6 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 # scopes
 
 
-@dc.dataclass(frozen=True)
-class _InjectorScopeSeed:
-    sc: ta.Type['InjectorScope']
-    k: InjectorKey
-
-    def __post_init__(self) -> None:
-        check.issubclass(self.sc, InjectorScope)
-        check.isinstance(self.k, InjectorKey)
-
-
 class InjectorScope(abc.ABC):  # noqa
     def __init__(
             self,
@@ -366,19 +356,23 @@ class InjectorScope(abc.ABC):  # noqa
         all_seeds: ta.Iterable[_InjectorScopeSeed] = self._i.provide(InjectorKey(_InjectorScopeSeed, array=True))
         self._sks = {s.k for s in all_seeds if s.sc is type(self)}
 
+    #
+
     @dc.dataclass(frozen=True)
     class State:
         seeds: ta.Dict[InjectorKey, ta.Any]
         prvs: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
 
-    @abc.abstractmethod
-    def state(self) -> State:
-        raise NotImplementedError
-
     def new_state(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> State:
         vs = dict(vs)
         check.equal(set(vs.keys()), self._sks)
         return InjectorScope.State(vs)
+
+    #
+
+    @abc.abstractmethod
+    def state(self) -> State:
+        raise NotImplementedError
 
     @abc.abstractmethod
     def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.ContextManager[None]:
@@ -399,6 +393,9 @@ class ExclusiveInjectorScope(InjectorScope, abc.ABC):
             yield
         finally:
             self._st = None
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -447,6 +444,19 @@ def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings
     return as_injector_bindings(
         InjectorBinder.bind(sc, singleton=True),
     )
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class _InjectorScopeSeed:
+    sc: ta.Type['InjectorScope']
+    k: InjectorKey
+
+    def __post_init__(self) -> None:
+        check.issubclass(self.sc, InjectorScope)
+        check.isinstance(self.k, InjectorKey)
 
 
 def bind_injector_scope_seed(sc: ta.Type[InjectorScope], k: ta.Any) -> InjectorBindingOrBindings:
@@ -953,7 +963,7 @@ def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
 
 
 ###
-## api
+# api
 
 
 class InjectionApi:
