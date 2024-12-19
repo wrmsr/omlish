@@ -249,6 +249,35 @@ class ArrayInjectorProvider(InjectorProvider):
 
 
 ###
+# scopes
+
+
+class InjectorScope(abc.ABC):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class ScopedInjectorProvider(InjectorProvider):
+    p: InjectorProvider
+    sc: ta.Type[InjectorScope]
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.p, InjectorProvider)
+        check.issubclass(self.sc, InjectorScope)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            sc = i[self.sc]  # noqa
+            v = ufn(i)
+            return v
+
+        ufn = self.p.provider_fn()
+        return pfn
+
+
+
+
+###
 # bindings
 
 
@@ -650,6 +679,7 @@ class InjectorBinder:
             to_const: ta.Any = None,
             to_key: ta.Any = None,
 
+            in_: ta.Optional[ta.Type[InjectorScope]] = None,
             singleton: bool = False,
 
             eager: bool = False,
@@ -659,12 +689,12 @@ class InjectorBinder:
         if isinstance(obj, cls._BANNED_BIND_TYPES):
             raise TypeError(obj)
 
-        ##
+        #
 
         if key is not None:
             key = as_injector_key(key)
 
-        ##
+        #
 
         has_to = (
             to_fn is not None or
@@ -694,7 +724,7 @@ class InjectorBinder:
                 key = InjectorKey(type(obj))
         del has_to
 
-        ##
+        #
 
         if tag is not None:
             if key.tag is not None:
@@ -704,7 +734,7 @@ class InjectorBinder:
         if array is not None:
             key = dc.replace(key, array=array)
 
-        ##
+        #
 
         providers: ta.List[InjectorProvider] = []
         if to_fn is not None:
@@ -719,23 +749,34 @@ class InjectorBinder:
             raise TypeError('Must specify provider')
         if len(providers) > 1:
             raise TypeError('May not specify multiple providers')
-        provider, = providers
+        provider = check.single(providers)
 
-        ##
+        #
 
+        pws: ta.List[ta.Any] = []
+        if in_ is not None:
+            check.issubclass(in_, InjectorScope)
+            check.not_in(abc.ABC, in_.__bases__)
+            pws.append(functools.partial(ScopedInjectorProvider, sc=in_))
         if singleton:
-            provider = SingletonInjectorProvider(provider)
+            pws.append(SingletonInjectorProvider)
+        if len(pws) > 1:
+            raise TypeError('May not specify multiple provider wrappers')
+        elif pws:
+            provider = check.single(pws)(provider)
+
+        #
 
         binding = InjectorBinding(key, provider)
 
-        ##
+        #
 
         extras: ta.List[InjectorBinding] = []
 
         if eager:
             extras.append(bind_injector_eager_key(key))
 
-        ##
+        #
 
         if extras:
             return as_injector_bindings(binding, *extras)
