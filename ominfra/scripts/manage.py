@@ -11166,16 +11166,18 @@ class DeployDriver:
             self,
             *,
             spec: DeploySpec,
+            home: DeployHome,
+            time: DeployTime,
 
-            deploys: DeployManager,
             paths: DeployPathsManager,
             apps: DeployAppManager,
     ) -> None:
         super().__init__()
 
         self._spec = spec
+        self._home = home
+        self._time = time
 
-        self._deploys = deploys
         self._paths = paths
         self._apps = apps
 
@@ -11184,17 +11186,8 @@ class DeployDriver:
 
         #
 
-        hs = check.non_empty_str(self._spec.home)
-        hs = os.path.expanduser(hs)
-        hs = os.path.realpath(hs)
-        hs = os.path.abspath(hs)
-
-        home = DeployHome(hs)
-
-        #
-
         deploy_tags = DeployTagMap(
-            self._deploys.make_deploy_time(),
+            self._time,
             self._spec.key(),
         )
 
@@ -11209,7 +11202,7 @@ class DeployDriver:
 
             await self._apps.prepare_app(
                 app,
-                home,
+                self._home,
                 app_tags,
             )
 
@@ -11247,8 +11240,55 @@ class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]
 # ../deploy/inject.py
 
 
+##
+
+
 class DeployInjectorScope(ContextvarInjectorScope):
     pass
+
+
+def bind_deploy_scope() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind_scope(DeployInjectorScope),
+        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
+
+        inj.bind(DeployDriver, in_=DeployInjectorScope),
+    ]
+
+    #
+
+    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
+        @contextlib.contextmanager
+        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
+            with sc.enter({
+                inj.as_key(DeploySpec): spec,
+            }):
+                yield injector[DeployDriver]
+        return DeployDriverFactory(factory)
+    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
+
+    #
+
+    def provide_deploy_home(deploy: DeploySpec) -> DeployHome:
+        hs = check.non_empty_str(deploy.home)
+        hs = os.path.expanduser(hs)
+        hs = os.path.realpath(hs)
+        hs = os.path.abspath(hs)
+        return DeployHome(hs)
+    lst.append(inj.bind(provide_deploy_home, in_=DeployInjectorScope))
+
+    #
+
+    def provide_deploy_time(deploys: DeployManager) -> DeployTime:
+        return deploys.make_deploy_time()
+    lst.append(inj.bind(provide_deploy_time, in_=DeployInjectorScope))
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+##
 
 
 def bind_deploy(
@@ -11259,6 +11299,8 @@ def bind_deploy(
         inj.bind(deploy_config),
 
         bind_deploy_paths(),
+
+        bind_deploy_scope(),
     ]
 
     #
@@ -11291,25 +11333,6 @@ def bind_deploy(
     def provide_deploy_home_atomics(tmp: DeployTmpManager) -> DeployHomeAtomics:
         return DeployHomeAtomics(tmp.get_swapping)
     lst.append(inj.bind(provide_deploy_home_atomics, singleton=True))
-
-    #
-
-    def provide_deploy_driver_factory(injector: Injector, sc: DeployInjectorScope) -> DeployDriverFactory:
-        @contextlib.contextmanager
-        def factory(spec: DeploySpec) -> ta.Iterator[DeployDriver]:
-            with sc.enter({
-                inj.as_key(DeploySpec): spec,
-            }):
-                yield injector[DeployDriver]
-        return DeployDriverFactory(factory)
-    lst.append(inj.bind(provide_deploy_driver_factory, singleton=True))
-
-    lst.extend([
-        inj.bind_scope(DeployInjectorScope),
-        inj.bind_scope_seed(DeploySpec, DeployInjectorScope),
-
-        inj.bind(DeployDriver, in_=DeployInjectorScope),
-    ])
 
     #
 
