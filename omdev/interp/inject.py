@@ -28,15 +28,21 @@ def bind_interp() -> InjectorBindings:
     #
 
     def provide_interp_resolver_providers(injector: Injector) -> InterpResolverProviders:
+        # FIXME: lol
         from .providers.running import RunningInterpProvider
         from .providers.system import SystemInterpProvider
         from .pyenv.pyenv import PyenvInterpProvider
 
-        return InterpResolverProviders([((p := injector[c]).name, p) for c in [  # type: ignore
-            PyenvInterpProvider,
-            RunningInterpProvider,
-            SystemInterpProvider,
-        ]])
+        rps: ta.List[ta.Any] = [
+            injector.provide(c)
+            for c in [
+                PyenvInterpProvider,
+                RunningInterpProvider,
+                SystemInterpProvider,
+            ]
+        ]
+
+        return InterpResolverProviders([(rp.name, rp) for rp in rps])
 
     lst.append(inj.bind(provide_interp_resolver_providers, singleton=True))
 
