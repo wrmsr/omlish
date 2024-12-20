@@ -1,6 +1,7 @@
 import sys
 import unittest
 
+from ...inspect import InterpInspector
 from .. import pyenv as pe
 
 
@@ -14,5 +15,8 @@ class TestPyenv(unittest.IsolatedAsyncioTestCase):
         print(await pe.LinuxPyenvInstallOpts().opts())
 
     async def test_pyenv(self):
-        p = pe.PyenvInterpProvider()
+        p = pe.PyenvInterpProvider(
+            pyenv=pe.Pyenv(),
+            inspector=InterpInspector(),
+        )
         print(await p.installed())
