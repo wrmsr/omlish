@@ -148,10 +148,11 @@ class Cli(ap.Cli):
             print(base_rev)
 
     @ap.cmd(
+        ap.arg('dir', nargs='?'),
         ap.arg('-v', '--verbose', action='store_true'),
     )
     def status(self) -> None:
-        st = get_git_status()
+        st = get_git_status(cwd=self.args.dir)
 
         def gsi_dct(gsi: GitStatusItem) -> ta.Mapping[str, ta.Any]:
             return {
