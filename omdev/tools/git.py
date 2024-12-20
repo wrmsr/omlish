@@ -188,7 +188,7 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
         ap.arg('--time-fmt', default='%Y-%m-%dT%H:%M:%SZ'),
-        ap.arg('dir', action='append'),
+        ap.arg('dir', nargs='*'),
         aliases=['acp'],
     )
     def add_commit_push(self) -> None:
@@ -207,7 +207,7 @@ class Cli(ap.Cli):
 
             subprocess.check_call(['git', 'push'], cwd=cwd)
 
-        if self.args.dir is None:
+        if not self.args.dir:
             run(None)
         else:
             for d in self.args.dir:
@@ -222,7 +222,7 @@ class Cli(ap.Cli):
             subprocess.check_call(['git', 'pull'], cwd=cwd)
             subprocess.check_call(['git', 'submodule', 'update'], cwd=cwd)
 
-        if self.args.dir is None:
+        if not self.args.dir:
             run(None)
         else:
             for d in self.args.dir:
