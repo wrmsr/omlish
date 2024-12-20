@@ -1,32 +1,27 @@
 # ruff: noqa: UP006 UP007
-import abc
 import collections
+import dataclasses as dc
 import typing as ta
 
-from omlish.lite.reflect import deep_subclasses
-
-from .providers import InterpProvider
-from .providers import RunningInterpProvider
-from .pyenv import PyenvInterpProvider
-from .system import SystemInterpProvider
+from .providers.base import InterpProvider
 from .types import Interp
 from .types import InterpSpecifier
 from .types import InterpVersion
 
 
-INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
-    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
-}
+@dc.dataclass(frozen=True)
+class InterpResolverProviders:
+    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
 
 
 class InterpResolver:
     def __init__(
             self,
-            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
+            providers: InterpResolverProviders,
     ) -> None:
         super().__init__()
 
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
 
     async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
         lst = [
@@ -96,13 +91,3 @@ class InterpResolver:
                 print(f'  {n}')
                 for si in lst:
                     print(f'    {si}')
-
-
-DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
-    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
-    PyenvInterpProvider(try_update=True),
-
-    RunningInterpProvider(),
-
-    SystemInterpProvider(),
-]])
