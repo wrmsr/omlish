@@ -66,7 +66,7 @@ import time
 import types
 import typing as ta
 import uuid
-import weakref  # noqa
+import weakref
 import zipfile
 
 
@@ -107,6 +107,11 @@ CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
 CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
+
+# ../../omlish/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
 
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
@@ -2573,6 +2578,54 @@ def format_num_bytes(num_bytes: int) -> str:
                 return f'{value:.2f}{suffix}'
 
     return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
+# ../../../omlish/lite/typing.py
+
+
+##
+# A workaround for typing deficiencies (like `Argument 2 to NewType(...) must be subclassable`).
+
+
+@dc.dataclass(frozen=True)
+class AnyFunc(ta.Generic[T]):
+    fn: ta.Callable[..., T]
+
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class Func0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        return self.fn()
+
+
+@dc.dataclass(frozen=True)
+class Func1(ta.Generic[A0, T]):
+    fn: ta.Callable[[A0], T]
+
+    def __call__(self, a0: A0) -> T:
+        return self.fn(a0)
+
+
+@dc.dataclass(frozen=True)
+class Func2(ta.Generic[A0, A1, T]):
+    fn: ta.Callable[[A0, A1], T]
+
+    def __call__(self, a0: A0, a1: A1) -> T:
+        return self.fn(a0, a1)
+
+
+@dc.dataclass(frozen=True)
+class Func3(ta.Generic[A0, A1, A2, T]):
+    fn: ta.Callable[[A0, A1, A2], T]
+
+    def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
+        return self.fn(a0, a1, a2)
 
 
 ########################################
@@ -5548,104 +5601,6 @@ def bind_interp_uv() -> InjectorBindings:
 
 
 ########################################
-# ../configs.py
-
-
-@dc.dataclass(frozen=True)
-class VenvConfig:
-    inherits: ta.Optional[ta.Sequence[str]] = None
-    interp: ta.Optional[str] = None
-    requires: ta.Optional[ta.List[str]] = None
-    docker: ta.Optional[str] = None
-    srcs: ta.Optional[ta.List[str]] = None
-    use_uv: ta.Optional[bool] = None
-
-
-@dc.dataclass(frozen=True)
-class PyprojectConfig:
-    pkgs: ta.Sequence[str] = dc.field(default_factory=list)
-    srcs: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
-    venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
-
-    venvs_dir: str = '.venvs'
-    versions_file: ta.Optional[str] = '.versions'
-
-
-class PyprojectConfigPreparer:
-    def __init__(
-            self,
-            *,
-            python_versions: ta.Optional[ta.Mapping[str, str]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._python_versions = python_versions or {}
-
-    def _inherit_venvs(self, m: ta.Mapping[str, VenvConfig]) -> ta.Mapping[str, VenvConfig]:
-        done: ta.Dict[str, VenvConfig] = {}
-
-        def rec(k):
-            try:
-                return done[k]
-            except KeyError:
-                pass
-
-            c = m[k]
-            kw = dc.asdict(c)
-            for i in c.inherits or ():
-                ic = rec(i)
-                kw.update({k: v for k, v in dc.asdict(ic).items() if v is not None and kw.get(k) is None})
-            del kw['inherits']
-
-            d = done[k] = VenvConfig(**kw)
-            return d
-
-        for k in m:
-            rec(k)
-        return done
-
-    def _resolve_srcs(
-            self,
-            lst: ta.Sequence[str],
-            aliases: ta.Mapping[str, ta.Sequence[str]],
-    ) -> ta.List[str]:
-        todo = list(reversed(lst))
-        raw: ta.List[str] = []
-        seen: ta.Set[str] = set()
-
-        while todo:
-            cur = todo.pop()
-            if cur in seen:
-                continue
-
-            seen.add(cur)
-            if not cur.startswith('@'):
-                raw.append(cur)
-                continue
-
-            todo.extend(aliases[cur[1:]][::-1])
-
-        return raw
-
-    def _fixup_interp(self, s: ta.Optional[str]) -> ta.Optional[str]:
-        if not s or not s.startswith('@'):
-            return s
-        return self._python_versions[s[1:]]
-
-    def prepare_config(self, dct: ta.Mapping[str, ta.Any]) -> PyprojectConfig:
-        pcfg: PyprojectConfig = unmarshal_obj(dct, PyprojectConfig)
-
-        ivs = dict(self._inherit_venvs(pcfg.venvs or {}))
-        for k, v in ivs.items():
-            v = dc.replace(v, srcs=self._resolve_srcs(v.srcs or [], pcfg.srcs or {}))
-            v = dc.replace(v, interp=self._fixup_interp(v.interp))
-            ivs[k] = v
-
-        pcfg = dc.replace(pcfg, venvs=ivs)
-        return pcfg
-
-
-########################################
 # ../../../omlish/logs/standard.py
 """
 TODO:
@@ -6443,8 +6398,14 @@ class InterpInspection:
 
 
 class InterpInspector:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
         super().__init__()
+
+        self._log = log
 
         self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
 
@@ -6494,8 +6455,8 @@ class InterpInspector:
             try:
                 ret = await self._inspect(exe)
             except Exception as e:  # noqa
-                if log.isEnabledFor(logging.DEBUG):
-                    log.exception('Failed to inspect interp: %s', exe)
+                if self._log is not None and self._log.isEnabledFor(logging.DEBUG):
+                    self._log.exception('Failed to inspect interp: %s', exe)
                 ret = None
             self._cache[exe] = ret
             return ret
@@ -6755,12 +6716,14 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
         self._options = options
 
         self._inspector = inspector
+        self._log = log
 
     #
 
@@ -6834,7 +6797,8 @@ class SystemInterpProvider(InterpProvider):
         lst = []
         for e in self.exes():
             if (ev := await self.get_exe_version(e)) is None:
-                log.debug('Invalid system version: %s', e)
+                if self._log is not None:
+                    self._log.debug('Invalid system version: %s', e)
                 continue
             lst.append((e, ev))
         return lst
@@ -7191,6 +7155,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
@@ -7198,6 +7163,7 @@ class PyenvInterpProvider(InterpProvider):
 
         self._pyenv = pyenv
         self._inspector = inspector
+        self._log = log
 
     #
 
@@ -7242,7 +7208,8 @@ class PyenvInterpProvider(InterpProvider):
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in await self._pyenv.version_exes():
             if (i := await self._make_installed(vn, ep)) is None:
-                log.debug('Invalid pyenv version: %s', vn)
+                if self._log is not None:
+                    self._log.debug('Invalid pyenv version: %s', vn)
                 continue
             ret.append(i)
         return ret
@@ -7945,6 +7912,205 @@ def get_default_interp_resolver() -> InterpResolver:
 
 
 ########################################
+# ../../interp/venvs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpVenvConfig:
+    interp: ta.Optional[str] = None
+    requires: ta.Optional[ta.Sequence[str]] = None
+    use_uv: ta.Optional[bool] = None
+
+
+class InterpVenvRequirementsProcessor(Func2['InterpVenv', ta.Sequence[str], ta.Sequence[str]]):
+    pass
+
+
+class InterpVenv:
+    def __init__(
+            self,
+            path: str,
+            cfg: InterpVenvConfig,
+            *,
+            requirements_processor: ta.Optional[InterpVenvRequirementsProcessor] = None,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._path = path
+        self._cfg = cfg
+
+        self._requirements_processor = requirements_processor
+        self._log = log
+
+    @property
+    def path(self) -> str:
+        return self._path
+
+    @property
+    def cfg(self) -> InterpVenvConfig:
+        return self._cfg
+
+    @async_cached_nullary
+    async def interp_exe(self) -> str:
+        i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
+        return check.not_none(await get_default_interp_resolver().resolve(i, install=True)).exe
+
+    @cached_nullary
+    def exe(self) -> str:
+        ve = os.path.join(self._path, 'bin/python')
+        if not os.path.isfile(ve):
+            raise Exception(f'venv exe {ve} does not exist or is not a file!')
+        return ve
+
+    @async_cached_nullary
+    async def create(self) -> bool:
+        if os.path.exists(dn := self._path):
+            if not os.path.isdir(dn):
+                raise Exception(f'{dn} exists but is not a directory!')
+            return False
+
+        ie = await self.interp_exe()
+
+        if self._log is not None:
+            self._log.info('Using interpreter %s', ie)
+
+        await asyncio_subprocesses.check_call(ie, '-m', 'venv', dn)
+
+        ve = self.exe()
+        uv = self._cfg.use_uv
+
+        await asyncio_subprocesses.check_call(
+            ve,
+            '-m', 'pip',
+            'install', '-v', '--upgrade',
+            'pip',
+            'setuptools',
+            'wheel',
+            *(['uv'] if uv else []),
+        )
+
+        if sr := self._cfg.requires:
+            reqs = list(sr)
+            if self._requirements_processor is not None:
+                reqs = list(self._requirements_processor(self, reqs))
+
+            # TODO: automatically try slower uv download when it fails? lol
+            #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
+            #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
+
+            await asyncio_subprocesses.check_call(
+                ve,
+                '-m',
+                *(['uv'] if uv else []),
+                'pip',
+                'install',
+                *([] if uv else ['-v']),
+                *reqs,
+            )
+
+        return True
+
+
+########################################
+# ../configs.py
+
+
+@dc.dataclass(frozen=True)
+class VenvConfig(InterpVenvConfig):
+    inherits: ta.Optional[ta.Sequence[str]] = None
+    docker: ta.Optional[str] = None
+    srcs: ta.Optional[ta.List[str]] = None
+
+
+@dc.dataclass(frozen=True)
+class PyprojectConfig:
+    pkgs: ta.Sequence[str] = dc.field(default_factory=list)
+    srcs: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
+    venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
+
+    venvs_dir: str = '.venvs'
+    versions_file: ta.Optional[str] = '.versions'
+
+
+class PyprojectConfigPreparer:
+    def __init__(
+            self,
+            *,
+            python_versions: ta.Optional[ta.Mapping[str, str]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._python_versions = python_versions or {}
+
+    def _inherit_venvs(self, m: ta.Mapping[str, VenvConfig]) -> ta.Mapping[str, VenvConfig]:
+        done: ta.Dict[str, VenvConfig] = {}
+
+        def rec(k):
+            try:
+                return done[k]
+            except KeyError:
+                pass
+
+            c = m[k]
+            kw = dc.asdict(c)
+            for i in c.inherits or ():
+                ic = rec(i)
+                kw.update({k: v for k, v in dc.asdict(ic).items() if v is not None and kw.get(k) is None})
+            del kw['inherits']
+
+            d = done[k] = VenvConfig(**kw)
+            return d
+
+        for k in m:
+            rec(k)
+        return done
+
+    def _resolve_srcs(
+            self,
+            lst: ta.Sequence[str],
+            aliases: ta.Mapping[str, ta.Sequence[str]],
+    ) -> ta.List[str]:
+        todo = list(reversed(lst))
+        raw: ta.List[str] = []
+        seen: ta.Set[str] = set()
+
+        while todo:
+            cur = todo.pop()
+            if cur in seen:
+                continue
+
+            seen.add(cur)
+            if not cur.startswith('@'):
+                raw.append(cur)
+                continue
+
+            todo.extend(aliases[cur[1:]][::-1])
+
+        return raw
+
+    def _fixup_interp(self, s: ta.Optional[str]) -> ta.Optional[str]:
+        if not s or not s.startswith('@'):
+            return s
+        return self._python_versions[s[1:]]
+
+    def prepare_config(self, dct: ta.Mapping[str, ta.Any]) -> PyprojectConfig:
+        pcfg: PyprojectConfig = unmarshal_obj(dct, PyprojectConfig)
+
+        ivs = dict(self._inherit_venvs(pcfg.venvs or {}))
+        for k, v in ivs.items():
+            v = dc.replace(v, srcs=self._resolve_srcs(v.srcs or [], pcfg.srcs or {}))
+            v = dc.replace(v, interp=self._fixup_interp(v.interp))
+            ivs[k] = v
+
+        pcfg = dc.replace(pcfg, venvs=ivs)
+        return pcfg
+
+
+########################################
 # ../venvs.py
 
 
@@ -7971,60 +8137,26 @@ class Venv:
     def dir_name(self) -> str:
         return os.path.join(self.DIR_NAME, self._name)
 
-    @async_cached_nullary
-    async def interp_exe(self) -> str:
-        i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
-        return check.not_none(await get_default_interp_resolver().resolve(i, install=True)).exe
+    @cached_nullary
+    def _iv(self) -> InterpVenv:
+        rr = RequirementsRewriter(self._name)
+
+        return InterpVenv(
+            self.dir_name,
+            self._cfg,
+            requirements_processor=InterpVenvRequirementsProcessor(
+                lambda iv, reqs: [rr.rewrite(req) for req in reqs]  # noqa
+            ),
+            log=log,
+        )
 
     @cached_nullary
     def exe(self) -> str:
-        ve = os.path.join(self.dir_name, 'bin/python')
-        if not os.path.isfile(ve):
-            raise Exception(f'venv exe {ve} does not exist or is not a file!')
-        return ve
+        return self._iv().exe()
 
     @async_cached_nullary
     async def create(self) -> bool:
-        if os.path.exists(dn := self.dir_name):
-            if not os.path.isdir(dn):
-                raise Exception(f'{dn} exists but is not a directory!')
-            return False
-
-        log.info('Using interpreter %s', (ie := await self.interp_exe()))
-        await asyncio_subprocesses.check_call(ie, '-m', 'venv', dn)
-
-        ve = self.exe()
-        uv = self._cfg.use_uv
-
-        await asyncio_subprocesses.check_call(
-            ve,
-            '-m', 'pip',
-            'install', '-v', '--upgrade',
-            'pip',
-            'setuptools',
-            'wheel',
-            *(['uv'] if uv else []),
-        )
-
-        if sr := self._cfg.requires:
-            rr = RequirementsRewriter(self._name)
-            reqs = [rr.rewrite(req) for req in sr]
-
-            # TODO: automatically try slower uv download when it fails? lol
-            #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
-            #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
-
-            await asyncio_subprocesses.check_call(
-                ve,
-                '-m',
-                *(['uv'] if uv else []),
-                'pip',
-                'install',
-                *([] if uv else ['-v']),
-                *reqs,
-            )
-
-        return True
+        return await self._iv().create()
 
     @staticmethod
     def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:

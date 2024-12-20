@@ -1051,13 +1051,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-
-
-log = logging.getLogger(__name__)
-
-
-########################################
 # ../../../omlish/lite/maybes.py
 
 
@@ -4205,8 +4198,14 @@ class InterpInspection:
 
 
 class InterpInspector:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
         super().__init__()
+
+        self._log = log
 
         self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
 
@@ -4256,8 +4255,8 @@ class InterpInspector:
             try:
                 ret = await self._inspect(exe)
             except Exception as e:  # noqa
-                if log.isEnabledFor(logging.DEBUG):
-                    log.exception('Failed to inspect interp: %s', exe)
+                if self._log is not None and self._log.isEnabledFor(logging.DEBUG):
+                    self._log.exception('Failed to inspect interp: %s', exe)
                 ret = None
             self._cache[exe] = ret
             return ret
@@ -4397,12 +4396,14 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
         self._options = options
 
         self._inspector = inspector
+        self._log = log
 
     #
 
@@ -4476,7 +4477,8 @@ class SystemInterpProvider(InterpProvider):
         lst = []
         for e in self.exes():
             if (ev := await self.get_exe_version(e)) is None:
-                log.debug('Invalid system version: %s', e)
+                if self._log is not None:
+                    self._log.debug('Invalid system version: %s', e)
                 continue
             lst.append((e, ev))
         return lst
@@ -4833,6 +4835,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
@@ -4840,6 +4843,7 @@ class PyenvInterpProvider(InterpProvider):
 
         self._pyenv = pyenv
         self._inspector = inspector
+        self._log = log
 
     #
 
@@ -4884,7 +4888,8 @@ class PyenvInterpProvider(InterpProvider):
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in await self._pyenv.version_exes():
             if (i := await self._make_installed(vn, ep)) is None:
-                log.debug('Invalid pyenv version: %s', vn)
+                if self._log is not None:
+                    self._log.debug('Invalid pyenv version: %s', vn)
                 continue
             ret.append(i)
         return ret

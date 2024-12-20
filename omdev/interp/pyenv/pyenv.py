@@ -13,6 +13,7 @@ TODO:
 import abc
 import dataclasses as dc
 import itertools
+import logging
 import os.path
 import shutil
 import sys
@@ -22,7 +23,6 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.logs import log
 
 from ...packaging.versions import InvalidVersion
 from ...packaging.versions import Version
@@ -355,6 +355,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
@@ -362,6 +363,7 @@ class PyenvInterpProvider(InterpProvider):
 
         self._pyenv = pyenv
         self._inspector = inspector
+        self._log = log
 
     #
 
@@ -406,7 +408,8 @@ class PyenvInterpProvider(InterpProvider):
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in await self._pyenv.version_exes():
             if (i := await self._make_installed(vn, ep)) is None:
-                log.debug('Invalid pyenv version: %s', vn)
+                if self._log is not None:
+                    self._log.debug('Invalid pyenv version: %s', vn)
                 continue
             ret.append(i)
         return ret

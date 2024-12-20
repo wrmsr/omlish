@@ -6,7 +6,6 @@ import sys
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.logs import log
 
 from ..packaging.versions import Version
 from .types import InterpOpts
@@ -43,8 +42,14 @@ class InterpInspection:
 
 
 class InterpInspector:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
         super().__init__()
+
+        self._log = log
 
         self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
 
@@ -94,8 +99,8 @@ class InterpInspector:
             try:
                 ret = await self._inspect(exe)
             except Exception as e:  # noqa
-                if log.isEnabledFor(logging.DEBUG):
-                    log.exception('Failed to inspect interp: %s', exe)
+                if self._log is not None and self._log.isEnabledFor(logging.DEBUG):
+                    self._log.exception('Failed to inspect interp: %s', exe)
                 ret = None
             self._cache[exe] = ret
             return ret

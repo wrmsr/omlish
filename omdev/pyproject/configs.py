@@ -4,15 +4,14 @@ import typing as ta
 
 from omlish.lite.marshal import unmarshal_obj
 
+from ..interp.venvs import InterpVenvConfig
+
 
 @dc.dataclass(frozen=True)
-class VenvConfig:
+class VenvConfig(InterpVenvConfig):
     inherits: ta.Optional[ta.Sequence[str]] = None
-    interp: ta.Optional[str] = None
-    requires: ta.Optional[ta.List[str]] = None
     docker: ta.Optional[str] = None
     srcs: ta.Optional[ta.List[str]] = None
-    use_uv: ta.Optional[bool] = None
 
 
 @dc.dataclass(frozen=True)
