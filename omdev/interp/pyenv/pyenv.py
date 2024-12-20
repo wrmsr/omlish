@@ -24,14 +24,14 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
 
-from ..packaging.versions import InvalidVersion
-from ..packaging.versions import Version
-from .inspect import InterpInspector
-from .providers import InterpProvider
-from .types import Interp
-from .types import InterpOpts
-from .types import InterpSpecifier
-from .types import InterpVersion
+from ...packaging.versions import InvalidVersion
+from ...packaging.versions import Version
+from ..inspect import InterpInspector
+from ..providers.base import InterpProvider
+from ..types import Interp
+from ..types import InterpOpts
+from ..types import InterpSpecifier
+from ..types import InterpVersion
 
 
 ##

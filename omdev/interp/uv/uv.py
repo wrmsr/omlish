@@ -7,10 +7,10 @@ python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.1
 """
 import typing as ta
 
-from .providers import InterpProvider
-from .types import Interp
-from .types import InterpSpecifier
-from .types import InterpVersion
+from ..providers.base import InterpProvider
+from ..types import Interp
+from ..types import InterpSpecifier
+from ..types import InterpVersion
 
 
 class PyenvInterpProvider(InterpProvider):

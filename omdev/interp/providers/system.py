@@ -13,12 +13,12 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
 
-from ..packaging.versions import InvalidVersion
-from .inspect import InterpInspector
-from .providers import InterpProvider
-from .types import Interp
-from .types import InterpSpecifier
-from .types import InterpVersion
+from ...packaging.versions import InvalidVersion
+from ..inspect import InterpInspector
+from ..types import Interp
+from ..types import InterpSpecifier
+from ..types import InterpVersion
+from .base import InterpProvider
 
 
 ##

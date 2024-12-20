@@ -5,19 +5,22 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
-from .inspect import InterpInspector
-from .providers import InterpProvider
-from .providers import InterpProviders
-from .pyenv import PyenvInterpProvider
+from .base import InterpProvider
+from .base import InterpProviders
 from .running import RunningInterpProvider
+from .system import SystemInterpProvider
 
 
-def bind_interp() -> InjectorBindings:
+def bind_interp_providers() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(InterpInspector, singleton=True),
+        inj.bind_array(InterpProvider),
+        inj.bind_array_type(InterpProvider, InterpProviders),
 
         inj.bind(RunningInterpProvider, singleton=True),
         inj.bind(InterpProvider, to_key=RunningInterpProvider, array=True),
+
+        inj.bind(SystemInterpProvider, singleton=True),
+        inj.bind(InterpProvider, to_key=SystemInterpProvider, array=True),
     ]
 
     return inj.as_bindings(*lst)
