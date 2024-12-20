@@ -5,7 +5,7 @@ from . import metadata
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('key', nargs='*'),
         ap.arg('--url'),
     )

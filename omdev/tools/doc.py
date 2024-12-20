@@ -64,7 +64,7 @@ class Cli(ap.Cli):
 
         return src, name
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('input-file', nargs='?'),
         ap.arg('--report-level', type=int),
         ap.arg('-O', '--open', action='store_true'),
@@ -85,7 +85,7 @@ class Cli(ap.Cli):
         else:
             print(html)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('input-file', nargs='?'),
         ap.arg('-O', '--open', action='store_true'),
     )

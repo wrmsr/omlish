@@ -21,15 +21,15 @@ class CliCli(ap.Cli):
 
     #
 
-    @ap.command(name='version', aliases=['ver'])
+    @ap.cmd(name='version', aliases=['ver'])
     def print_version(self) -> None:
         print(__about__.__version__)
 
-    @ap.command(name='revision', aliases=['rev'])
+    @ap.cmd(name='revision', aliases=['rev'])
     def print_revision(self) -> None:
         print(__about__.__revision__)
 
-    @ap.command(name='home')
+    @ap.cmd(name='home')
     def print_home(self) -> None:
         print(sys.prefix)
 
@@ -52,7 +52,7 @@ class CliCli(ap.Cli):
             ],
         )
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('args', nargs=ap.REMAINDER),
         name='python',
         accepts_unknown=True,
@@ -60,7 +60,7 @@ class CliCli(ap.Cli):
     def python_cmd(self) -> None:
         self._passthrough_args_cmd(sys.executable)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('args', nargs=ap.REMAINDER),
         name='pip',
         accepts_unknown=True,
@@ -70,7 +70,7 @@ class CliCli(ap.Cli):
 
     #
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
         ap.arg('extra_deps', nargs='*'),

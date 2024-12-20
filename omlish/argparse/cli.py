@@ -21,7 +21,7 @@ from ..lite.reflect import is_optional_alias
 T = ta.TypeVar('T')
 
 
-ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
+ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
 
 ##
@@ -47,15 +47,15 @@ def argparse_arg(*args, **kwargs) -> ArgparseArg:
 
 
 @dc.dataclass(eq=False)
-class ArgparseCommand:
+class ArgparseCmd:
     name: str
-    fn: ArgparseCommandFn
+    fn: ArgparseCmdFn
     args: ta.Sequence[ArgparseArg] = ()  # noqa
 
     # _: dc.KW_ONLY
 
     aliases: ta.Optional[ta.Sequence[str]] = None
-    parent: ta.Optional['ArgparseCommand'] = None
+    parent: ta.Optional['ArgparseCmd'] = None
     accepts_unknown: bool = False
 
     def __post_init__(self) -> None:
@@ -70,7 +70,7 @@ class ArgparseCommand:
 
         check.arg(callable(self.fn))
         check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
-        check.isinstance(self.parent, (ArgparseCommand, type(None)))
+        check.isinstance(self.parent, (ArgparseCmd, type(None)))
         check.isinstance(self.accepts_unknown, bool)
 
         functools.update_wrapper(self, self.fn)
@@ -84,21 +84,21 @@ class ArgparseCommand:
         return self.fn(*args, **kwargs)
 
 
-def argparse_command(
+def argparse_cmd(
         *args: ArgparseArg,
         name: ta.Optional[str] = None,
         aliases: ta.Optional[ta.Iterable[str]] = None,
-        parent: ta.Optional[ArgparseCommand] = None,
+        parent: ta.Optional[ArgparseCmd] = None,
         accepts_unknown: bool = False,
-) -> ta.Any:  # ta.Callable[[ArgparseCommandFn], ArgparseCommand]:  # FIXME
+) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
     for arg in args:
         check.isinstance(arg, ArgparseArg)
     check.isinstance(name, (str, type(None)))
-    check.isinstance(parent, (ArgparseCommand, type(None)))
+    check.isinstance(parent, (ArgparseCmd, type(None)))
     check.not_isinstance(aliases, str)
 
     def inner(fn):
-        return ArgparseCommand(
+        return ArgparseCmd(
             (name if name is not None else fn.__name__).replace('_', '-'),
             fn,
             args,
@@ -153,7 +153,7 @@ class ArgparseCli:
         for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
             bseen = set()  # type: ignore
             for k, v in bns.items():
-                if isinstance(v, (ArgparseCommand, ArgparseArg)):
+                if isinstance(v, (ArgparseCmd, ArgparseArg)):
                     check.not_in(v, bseen)
                     bseen.add(v)
                     objs[k] = v
@@ -180,7 +180,7 @@ class ArgparseCli:
         subparsers = parser.add_subparsers()
 
         for att, obj in objs.items():
-            if isinstance(obj, ArgparseCommand):
+            if isinstance(obj, ArgparseCmd):
                 if obj.parent is not None:
                     raise NotImplementedError
 
@@ -242,7 +242,7 @@ class ArgparseCli:
 
     #
 
-    def _bind_cli_cmd(self, cmd: ArgparseCommand) -> ta.Callable:
+    def _bind_cli_cmd(self, cmd: ArgparseCmd) -> ta.Callable:
         return cmd.__get__(self, type(self))
 
     def prepare_cli_run(self) -> ta.Optional[ta.Callable]:

@@ -77,11 +77,11 @@ def parse_wmctrl_lxp_line(l: str) -> WmctrlLine:
 
 
 class Cli(ap.Cli):
-    @ap.command()
+    @ap.cmd()
     def version(self) -> None:
         print(get_pycharm_version())
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('python-exe'),
         ap.arg('args', nargs=ap.REMAINDER),
     )
@@ -99,7 +99,7 @@ class Cli(ap.Cli):
         proc = subprocess.run([exe, src_file, *self.args.args], check=False)
         return proc.returncode
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('dir', nargs='?'),
         ap.arg('--clion', action='store_true'),
     )

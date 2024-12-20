@@ -12,7 +12,7 @@ import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_command
+from omlish.argparse.cli import argparse_cmd
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.inject import Injector
@@ -37,7 +37,7 @@ class InterpCli(ArgparseCli):
 
     #
 
-    @argparse_command(
+    @argparse_cmd(
         argparse_arg('version'),
         argparse_arg('-d', '--debug', action='store_true'),
     )
@@ -46,7 +46,7 @@ class InterpCli(ArgparseCli):
         s = InterpSpecifier.parse(self.args.version)
         await r.list(s)
 
-    @argparse_command(
+    @argparse_cmd(
         argparse_arg('version'),
         argparse_arg('-p', '--provider'),
         argparse_arg('-d', '--debug', action='store_true'),

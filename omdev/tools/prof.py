@@ -13,7 +13,7 @@ from ..cli import CliModule
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('file'),
         ap.arg('out-file', nargs='?'),
         ap.arg('-w', '--write', action='store_true'),

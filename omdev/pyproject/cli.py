@@ -35,7 +35,7 @@ import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_command
+from omlish.argparse.cli import argparse_cmd
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -141,7 +141,7 @@ class Run:
 class PyprojectCli(ArgparseCli):
     _docker_container = argparse_arg('--_docker_container', help=argparse.SUPPRESS)
 
-    @argparse_command(
+    @argparse_cmd(
         argparse_arg('name'),
         argparse_arg('-e', '--docker-env', action='append'),
         argparse_arg('cmd', nargs='?'),
@@ -223,7 +223,7 @@ class PyprojectCli(ArgparseCli):
         else:
             raise Exception(f'unknown subcommand: {cmd}')
 
-    @argparse_command(
+    @argparse_cmd(
         argparse_arg('-b', '--build', action='store_true'),
         argparse_arg('-r', '--revision', action='store_true'),
         argparse_arg('-j', '--jobs', type=int),

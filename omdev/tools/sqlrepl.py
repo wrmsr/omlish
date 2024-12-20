@@ -157,7 +157,7 @@ def exec_postgres_cli(
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('--no-dbcli', action='store_true'),
         ap.arg('dialect'),
         ap.arg('target'),

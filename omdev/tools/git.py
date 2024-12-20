@@ -43,7 +43,7 @@ def get_first_commit_of_day(rev: str) -> str | None:
 
 
 class Cli(ap.Cli):
-    @ap.command()
+    @ap.cmd()
     def blob_sizes(self) -> None:
         # https://stackoverflow.com/a/42544963
         subprocess.check_call(  # noqa
@@ -56,7 +56,7 @@ class Cli(ap.Cli):
 
     #
 
-    @ap.command()
+    @ap.cmd()
     def commits_by_date(self) -> None:
         subprocess.check_call(['git log --date=short --pretty=format:%ad | sort | uniq -c'], shell=True)  # noqa
 
@@ -64,7 +64,7 @@ class Cli(ap.Cli):
 
     _GITHUB_PAT = re.compile(r'((http(s)?://)?(www\./)?github(\.com)?/)?(?P<user>[^/.]+)/(?P<repo>[^/.]+)(/.*)?')
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('repo'),
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
@@ -107,7 +107,7 @@ class Cli(ap.Cli):
         finally:
             print(out_dir)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('rev', nargs='?', default='HEAD'),
         ap.arg('-d', '--diff', action='store_true'),
         ap.arg('-s', '--stat', action='store_true'),
@@ -147,7 +147,7 @@ class Cli(ap.Cli):
         else:
             print(base_rev)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
     )
     def status(self) -> None:
@@ -184,7 +184,7 @@ class Cli(ap.Cli):
 
     # Lazy helpers
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
         ap.arg('--time-fmt', default='%Y-%m-%dT%H:%M:%SZ'),
         aliases=['acp'],
@@ -204,7 +204,7 @@ class Cli(ap.Cli):
 
         subprocess.check_call(['git', 'push'])
 
-    @ap.command(
+    @ap.cmd(
         aliases=['psu'],
     )
     def pull_submodule_update(self) -> None:

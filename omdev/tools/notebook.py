@@ -18,7 +18,7 @@ from ..cli import CliModule
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('file'),
         ap.arg('-w', '--write', action='store_true'),
         ap.arg('-o', '--overwrite', action='store_true'),

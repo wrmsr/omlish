@@ -107,7 +107,7 @@ def _main() -> None:
     from omlish.argparse import all as ap
 
     class Cli(ap.Cli):
-        @ap.command(
+        @ap.cmd(
             ap.arg('file'),
         )
         def upload(self) -> None:

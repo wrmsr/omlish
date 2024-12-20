@@ -5,9 +5,9 @@ from .cli import (  # noqa
     ArgparseArg as Arg,
     argparse_arg as arg,
 
-    ArgparseCommandFn as CommandFn,
-    ArgparseCommand as Command,
-    argparse_command as command,
+    ArgparseCmdFn as CmdFn,
+    ArgparseCmd as Cmd,
+    argparse_cmd as cmd,
 
     ArgparseCli as Cli,
 )

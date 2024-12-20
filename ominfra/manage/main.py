@@ -14,7 +14,7 @@ import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_command
+from omlish.argparse.cli import argparse_cmd
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log  # noqa
@@ -55,7 +55,7 @@ class MainCli(ArgparseCli):
 
     #
 
-    @argparse_command(
+    @argparse_cmd(
         argparse_arg('--_payload-file'),
 
         argparse_arg('--pycharm-debug-port', type=int),
