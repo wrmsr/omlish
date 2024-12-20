@@ -4,8 +4,7 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.marshal import SingleFieldObjMarshaler
-from omlish.lite.marshal import register_type_obj_marshaler
+from omlish.lite.marshal import register_single_field_type_obj_marshaler
 
 
 ##
@@ -84,7 +83,7 @@ def _register_deploy_tag(cls):
     _DEPLOY_TAGS_BY_NAME[cls.tag_name] = cls
     _DEPLOY_TAGS_BY_KWARG[cls.tag_kwarg] = cls
 
-    register_type_obj_marshaler(cls, SingleFieldObjMarshaler(cls, 's'))
+    register_single_field_type_obj_marshaler('s', cls)
 
     return cls
 

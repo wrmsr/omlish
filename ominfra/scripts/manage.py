@@ -129,6 +129,7 @@ AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
 # ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
+IniConfigSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
 
 # ../../omlish/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -6237,6 +6238,16 @@ def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
     _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
 
 
+def register_single_field_type_obj_marshaler(fld, ty=None):
+    def inner(ty):  # noqa
+        register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
+        return ty
+    if ty is not None:
+        return inner(ty)
+    else:
+        return inner
+
+
 ##
 
 
@@ -6833,6 +6844,9 @@ def bind_interp_uv() -> InjectorBindings:
 # ../../configs.py
 
 
+##
+
+
 def parse_config_file(
         name: str,
         f: ta.TextIO,
@@ -6876,6 +6890,9 @@ def read_config_file(
     return msh.unmarshal_obj(config_dct, cls)
 
 
+##
+
+
 def build_config_named_children(
         o: ta.Union[
             ta.Sequence[ConfigMapping],
@@ -6912,6 +6929,30 @@ def build_config_named_children(
         seen.add(n)
 
     return lst
+
+
+##
+
+
+def render_ini_config(
+        settings_by_section: IniConfigSectionSettingsMap,
+) -> str:
+    out = io.StringIO()
+
+    for i, (section, settings) in enumerate(settings_by_section.items()):
+        if i:
+            out.write('\n')
+
+        out.write(f'[{section}]\n')
+
+        for k, v in settings.items():
+            if isinstance(v, str):
+                out.write(f'{k}={v}\n')
+            else:
+                for vv in v:
+                    out.write(f'{k}={vv}\n')
+
+    return out.getvalue()
 
 
 ########################################
@@ -6965,79 +7006,6 @@ class PingCommandExecutor(CommandExecutor[PingCommand, PingCommand.Output]):
 
 
 CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
-
-
-########################################
-# ../deploy/conf/specs.py
-
-
-##
-
-
-class DeployAppConfContent(abc.ABC):  # noqa
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class RawDeployAppConfContent(DeployAppConfContent):
-    body: str
-
-
-register_type_obj_marshaler(RawDeployAppConfContent, SingleFieldObjMarshaler(RawDeployAppConfContent, 'body'))
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfFile:
-    path: str
-    content: DeployAppConfContent
-
-    def __post_init__(self) -> None:
-        check_valid_deploy_spec_path(self.path)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfLink:  # noqa
-    """
-    May be either:
-     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
-     - @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
-     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
-    """
-
-    src: str
-
-    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
-
-    def __post_init__(self) -> None:
-        check_valid_deploy_spec_path(self.src)
-        if '/' in self.src:
-            check.equal(self.src.count('/'), 1)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfSpec:
-    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
-
-    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
-
-    def __post_init__(self) -> None:
-        if self.files:
-            seen: ta.Set[str] = set()
-            for f in self.files:
-                check.not_in(f.path, seen)
-                seen.add(f.path)
 
 
 ########################################
@@ -7120,7 +7088,7 @@ def _register_deploy_tag(cls):
     _DEPLOY_TAGS_BY_NAME[cls.tag_name] = cls
     _DEPLOY_TAGS_BY_KWARG[cls.tag_kwarg] = cls
 
-    register_type_obj_marshaler(cls, SingleFieldObjMarshaler(cls, 's'))
+    register_single_field_type_obj_marshaler('s', cls)
 
     return cls
 
@@ -7894,6 +7862,95 @@ class LocalCommandExecutor(CommandExecutor):
 
 
 ########################################
+# ../deploy/conf/specs.py
+
+
+##
+
+
+class DeployAppConfContent(abc.ABC):  # noqa
+    pass
+
+
+#
+
+
+@register_single_field_type_obj_marshaler('body')
+@dc.dataclass(frozen=True)
+class RawDeployAppConfContent(DeployAppConfContent):
+    body: str
+
+
+#
+
+
+@register_single_field_type_obj_marshaler('obj')
+@dc.dataclass(frozen=True)
+class JsonDeployAppConfContent(DeployAppConfContent):
+    obj: ta.Any
+
+
+#
+
+
+@register_single_field_type_obj_marshaler('sections')
+@dc.dataclass(frozen=True)
+class IniDeployAppConfContent(DeployAppConfContent):
+    sections: IniConfigSectionSettingsMap
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfFile:
+    path: str
+    content: DeployAppConfContent
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.path)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfLink:  # noqa
+    """
+    May be either:
+     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+     - @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
+     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
+    """
+
+    src: str
+
+    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.src)
+        if '/' in self.src:
+            check.equal(self.src.count('/'), 1)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfSpec:
+    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
+
+    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
+
+    def __post_init__(self) -> None:
+        if self.files:
+            seen: ta.Set[str] = set()
+            for f in self.files:
+                check.not_in(f.path, seen)
+                seen.add(f.path)
+
+
+########################################
 # ../deploy/deploy.py
 
 
@@ -8120,105 +8177,6 @@ class DeployPath:
         check.non_empty_str(s)
         ps = split_keep_delimiter(s, '/')
         return cls(tuple(DeployPathPart.parse(p) for p in ps))
-
-
-########################################
-# ../deploy/specs.py
-
-
-##
-
-
-class DeploySpecKeyed(ta.Generic[KeyDeployTagT]):
-    @cached_nullary
-    def _key_str(self) -> str:
-        return hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8]
-
-    @abc.abstractmethod
-    def key(self) -> KeyDeployTagT:
-        raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployGitRepo:
-    host: ta.Optional[str] = None
-    username: ta.Optional[str] = None
-    path: ta.Optional[str] = None
-
-    def __post_init__(self) -> None:
-        check.not_in('..', check.non_empty_str(self.host))
-        check.not_in('.', check.non_empty_str(self.path))
-
-
-@dc.dataclass(frozen=True)
-class DeployGitSpec:
-    repo: DeployGitRepo
-    rev: DeployRev
-
-    subtrees: ta.Optional[ta.Sequence[str]] = None
-
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.rev)
-        if self.subtrees is not None:
-            for st in self.subtrees:
-                check.non_empty_str(st)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployVenvSpec:
-    interp: ta.Optional[str] = None
-
-    requirements_files: ta.Optional[ta.Sequence[str]] = None
-    extra_dependencies: ta.Optional[ta.Sequence[str]] = None
-
-    use_uv: bool = False
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
-    app: DeployApp
-
-    git: DeployGitSpec
-
-    venv: ta.Optional[DeployVenvSpec] = None
-
-    conf: ta.Optional[DeployAppConfSpec] = None
-
-    # @ta.override
-    def key(self) -> DeployAppKey:
-        return DeployAppKey(self._key_str())
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeploySpec(DeploySpecKeyed[DeployKey]):
-    home: DeployHome
-
-    apps: ta.Sequence[DeployAppSpec]
-
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.home)
-
-        seen: ta.Set[DeployApp] = set()
-        for a in self.apps:
-            if a.app in seen:
-                raise KeyError(a.app)
-            seen.add(a.app)
-
-    # @ta.override
-    def key(self) -> DeployKey:
-        return DeployKey(self._key_str())
 
 
 ########################################
@@ -9391,6 +9349,105 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return self._owned_deploy_paths
+
+
+########################################
+# ../deploy/specs.py
+
+
+##
+
+
+class DeploySpecKeyed(ta.Generic[KeyDeployTagT]):
+    @cached_nullary
+    def _key_str(self) -> str:
+        return hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8]
+
+    @abc.abstractmethod
+    def key(self) -> KeyDeployTagT:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployGitRepo:
+    host: ta.Optional[str] = None
+    username: ta.Optional[str] = None
+    path: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.not_in('..', check.non_empty_str(self.host))
+        check.not_in('.', check.non_empty_str(self.path))
+
+
+@dc.dataclass(frozen=True)
+class DeployGitSpec:
+    repo: DeployGitRepo
+    rev: DeployRev
+
+    subtrees: ta.Optional[ta.Sequence[str]] = None
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.rev)
+        if self.subtrees is not None:
+            for st in self.subtrees:
+                check.non_empty_str(st)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployVenvSpec:
+    interp: ta.Optional[str] = None
+
+    requirements_files: ta.Optional[ta.Sequence[str]] = None
+    extra_dependencies: ta.Optional[ta.Sequence[str]] = None
+
+    use_uv: bool = False
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
+    app: DeployApp
+
+    git: DeployGitSpec
+
+    venv: ta.Optional[DeployVenvSpec] = None
+
+    conf: ta.Optional[DeployAppConfSpec] = None
+
+    # @ta.override
+    def key(self) -> DeployAppKey:
+        return DeployAppKey(self._key_str())
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeploySpec(DeploySpecKeyed[DeployKey]):
+    home: DeployHome
+
+    apps: ta.Sequence[DeployAppSpec]
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.home)
+
+        seen: ta.Set[DeployApp] = set()
+        for a in self.apps:
+            if a.app in seen:
+                raise KeyError(a.app)
+            seen.add(a.app)
+
+    # @ta.override
+    def key(self) -> DeployKey:
+        return DeployKey(self._key_str())
 
 
 ########################################

@@ -143,6 +143,7 @@ SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'S
 
 # ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
+IniConfigSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
 
 # ../../omlish/http/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
@@ -5371,6 +5372,16 @@ def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
     _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
 
 
+def register_single_field_type_obj_marshaler(fld, ty=None):
+    def inner(ty):  # noqa
+        register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
+        return ty
+    if ty is not None:
+        return inner(ty)
+    else:
+        return inner
+
+
 ##
 
 
@@ -5839,6 +5850,9 @@ class SocketHandler(abc.ABC):
 # ../../configs.py
 
 
+##
+
+
 def parse_config_file(
         name: str,
         f: ta.TextIO,
@@ -5882,6 +5896,9 @@ def read_config_file(
     return msh.unmarshal_obj(config_dct, cls)
 
 
+##
+
+
 def build_config_named_children(
         o: ta.Union[
             ta.Sequence[ConfigMapping],
@@ -5918,6 +5935,30 @@ def build_config_named_children(
         seen.add(n)
 
     return lst
+
+
+##
+
+
+def render_ini_config(
+        settings_by_section: IniConfigSectionSettingsMap,
+) -> str:
+    out = io.StringIO()
+
+    for i, (section, settings) in enumerate(settings_by_section.items()):
+        if i:
+            out.write('\n')
+
+        out.write(f'[{section}]\n')
+
+        for k, v in settings.items():
+            if isinstance(v, str):
+                out.write(f'{k}={v}\n')
+            else:
+                for vv in v:
+                    out.write(f'{k}={vv}\n')
+
+    return out.getvalue()
 
 
 ########################################
