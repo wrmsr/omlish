@@ -16,8 +16,8 @@ import wsproto
 from omlish import lang
 
 from ..config import Config
+from ..default import serve
 from ..types import AsgiWrapper
-from ..workers import serve
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import sanity_framework
 from .utils import CONNECTION_REFUSED_EXCEPTION_TYPES

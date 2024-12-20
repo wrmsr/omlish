@@ -2,8 +2,8 @@
 # @omlish-lite
 """
 TODO:
- - literal '{'
- - blocks / inheritence
+ - raw
+ - blocks / inheritance
 """
 import io
 import re
@@ -31,8 +31,8 @@ class MinjaTemplate:
 
 class MinjaTemplateCompiler:
     """
-    Compiles a template string into a Python function. The returned function
-    takes a dictionary 'context' and returns the rendered string.
+    Compiles a template string into a Python function. The returned function takes a dictionary 'context' and returns
+    the rendered string.
 
     Supported syntax:
     - Literal text remains literal.

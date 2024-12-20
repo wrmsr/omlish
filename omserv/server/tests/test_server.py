@@ -19,8 +19,8 @@ from omlish import check
 from omlish import lang
 
 from ..config import Config
+from ..default import serve
 from ..types import AsgiWrapper
-from ..workers import serve
 from .hello import hello_app
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import SANITY_RESPONSE_BODY

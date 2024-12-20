@@ -15,4 +15,4 @@ See:
  - https://github.com/tiangolo/fastapi
 """
 from .config import Config  # noqa
-from .workers import serve  # noqa
+from .default import serve  # noqa
