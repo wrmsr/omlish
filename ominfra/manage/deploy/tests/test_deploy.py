@@ -13,6 +13,7 @@ from omlish.lite.strings import strip_with_newline
 
 from ..conf.specs import DeployAppConfFile
 from ..conf.specs import DeployAppConfLink
+from ..conf.specs import RawDeployAppConfContent
 from ..config import DeployConfig
 from ..driver import DeployDriverFactory
 from ..git import DeployGitRepo
@@ -50,7 +51,7 @@ def build_flask_thing_spec(
             files=[
                 DeployAppConfFile(
                     'supervisor/sv.json',
-                    strip_with_newline(json_dumps_pretty({
+                    RawDeployAppConfContent(strip_with_newline(json_dumps_pretty({
                         'groups': {
                             'flaskthing': {
                                 'processes': {
@@ -60,15 +61,15 @@ def build_flask_thing_spec(
                                 },
                             },
                         },
-                    })),
+                    }))),
                 ),
                 DeployAppConfFile(
                     'nginx.conf',
-                    'flaskthing nginx conf goes here',
+                    RawDeployAppConfContent('flaskthing nginx conf goes here'),
                 ),
                 DeployAppConfFile(
                     'systemd/service.conf',
-                    'flaskthing systemd conf goes here',
+                    RawDeployAppConfContent('flaskthing systemd conf goes here'),
                 ),
             ],
             links=[
@@ -103,7 +104,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
         files=[
             DeployAppConfFile(
                 'systemd/service.conf',
-                'supervisor systemd conf goes here',
+                RawDeployAppConfContent('supervisor systemd conf goes here'),
             ),
         ],
         links=[

@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -10,10 +11,25 @@ from ..paths.specs import check_valid_deploy_spec_path
 ##
 
 
+class DeployAppConfContent(abc.ABC):  # noqa
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class RawDeployAppConfContent(DeployAppConfContent):
+    body: str
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class DeployAppConfFile:
     path: str
-    body: str
+    content: DeployAppConfContent
 
     def __post_init__(self) -> None:
         check_valid_deploy_spec_path(self.path)

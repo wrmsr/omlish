@@ -31,6 +31,7 @@ from ..tags import DeployTagMap
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
+from .specs import RawDeployAppConfContent
 
 
 class DeployConfManager:
@@ -44,8 +45,12 @@ class DeployConfManager:
 
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
-        with open(conf_file, 'w') as f:  # noqa
-            f.write(acf.body)
+        if isinstance(acf.content, RawDeployAppConfContent):
+            with open(conf_file, 'w') as f:  # noqa
+                f.write(acf.content.body)
+
+        else:
+            raise TypeError(acf.content)
 
     #
 
