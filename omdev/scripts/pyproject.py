@@ -2910,16 +2910,6 @@ def find_magic_py_modules(
             yield fp
 
 
-##
-
-
-# # @omlish-manifest
-# _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-#     'cmd_name': 'py/findmagic',
-#     'mod_name': __name__,
-# }}
-
-
 ########################################
 # ../../packaging/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
