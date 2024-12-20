@@ -32,7 +32,7 @@ def bind_interp() -> InjectorBindings:
         from .providers.system import SystemInterpProvider
         from .pyenv.pyenv import PyenvInterpProvider
 
-        return InterpResolverProviders([((p := injector[c]).name, p) for c in [
+        return InterpResolverProviders([((p := injector[c]).name, p) for c in [  # type: ignore
             PyenvInterpProvider,
             RunningInterpProvider,
             SystemInterpProvider,
