@@ -5207,6 +5207,7 @@ def register_single_field_type_obj_marshaler(fld, ty=None):
     def inner(ty):  # noqa
         register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
         return ty
+
     if ty is not None:
         return inner(ty)
     else:
