@@ -6,6 +6,16 @@ TODO:
  - partial best-matches - '3.12'
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
  - colon sep provider name prefix - pyenv:3.12
+
+
+DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
+    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
+    PyenvInterpProvider(try_update=True),
+
+    RunningInterpProvider(),
+
+    SystemInterpProvider(),
+]])
 """
 import argparse
 import asyncio
