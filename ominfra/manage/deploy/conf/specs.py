@@ -4,6 +4,8 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.marshal import SingleFieldObjMarshaler
+from omlish.lite.marshal import register_type_obj_marshaler
 
 from ..paths.specs import check_valid_deploy_spec_path
 
@@ -21,6 +23,9 @@ class DeployAppConfContent(abc.ABC):  # noqa
 @dc.dataclass(frozen=True)
 class RawDeployAppConfContent(DeployAppConfContent):
     body: str
+
+
+register_type_obj_marshaler(RawDeployAppConfContent, SingleFieldObjMarshaler(RawDeployAppConfContent, 'body'))
 
 
 ##

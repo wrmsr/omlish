@@ -6986,6 +6986,9 @@ class RawDeployAppConfContent(DeployAppConfContent):
     body: str
 
 
+register_type_obj_marshaler(RawDeployAppConfContent, SingleFieldObjMarshaler(RawDeployAppConfContent, 'body'))
+
+
 ##
 
 
