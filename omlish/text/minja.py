@@ -1,5 +1,10 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - literal '{'
+ - blocks / inheritence
+"""
 import io
 import re
 import typing as ta
@@ -53,7 +58,7 @@ class MinjaTemplateCompiler:
         self._args = check.not_isinstance(args, str)
         self._indent_str: str = check.non_empty_str(indent)
 
-        self._block_stack: ta.List[ta.Literal['for', 'if']] = []
+        self._stack: ta.List[ta.Literal['for', 'if']] = []
         self._lines: ta.List[str] = []
 
     #
@@ -113,14 +118,14 @@ class MinjaTemplateCompiler:
     #
 
     def _indent(self, line: str, ofs: int = 0) -> str:
-        return self._indent_str * (len(self._block_stack) + 1 + ofs) + line
+        return self._indent_str * (len(self._stack) + 1 + ofs) + line
 
     #
 
     _RENDER_FN_NAME = '__render'
 
     @cached_nullary
-    def render(self) -> str:
+    def render(self) -> ta.Tuple[str, ta.Mapping[str, ta.Any]]:
         parts = self._split_tags(self._src)
 
         self._lines.append(f'def {self._RENDER_FN_NAME}({", ".join(self._args)}):')
@@ -136,21 +141,21 @@ class MinjaTemplateCompiler:
 
                 if stmt.startswith('for '):
                     self._lines.append(self._indent(stmt + ':'))
-                    self._block_stack.append('for')
+                    self._stack.append('for')
                 elif stmt.startswith('endfor'):
-                    check.equal(self._block_stack.pop(), 'for')
+                    check.equal(self._stack.pop(), 'for')
 
                 elif stmt.startswith('if '):
                     self._lines.append(self._indent(stmt + ':'))
-                    self._block_stack.append('if')
+                    self._stack.append('if')
                 elif stmt.startswith('elif '):
-                    check.equal(self._block_stack[-1], 'if')
+                    check.equal(self._stack[-1], 'if')
                     self._lines.append(self._indent(stmt + ':', -1))
                 elif stmt.strip() == 'else':
-                    check.equal(self._block_stack[-1], 'if')
+                    check.equal(self._stack[-1], 'if')
                     self._lines.append(self._indent('else:', -1))
                 elif stmt.startswith('endif'):
-                    check.equal(self._block_stack.pop(), 'if')
+                    check.equal(self._stack.pop(), 'if')
 
                 else:
                     self._lines.append(self._indent(stmt))
@@ -166,9 +171,15 @@ class MinjaTemplateCompiler:
             else:
                 raise KeyError(g)
 
+        check.empty(self._stack)
+
         self._lines.append(self._indent('return __output.getvalue()'))
 
-        return '\n'.join(self._lines)
+        ns = {
+            '__StringIO': io.StringIO,
+        }
+
+        return ('\n'.join(self._lines), ns)
 
     #
 
@@ -189,13 +200,12 @@ class MinjaTemplateCompiler:
 
     @cached_nullary
     def compile(self) -> MinjaTemplate:
-        render_src = self.render()
+        render_src, render_ns = self.render()
 
         render_fn = self._make_fn(
             self._RENDER_FN_NAME,
-            render_src, {
-                '__StringIO': io.StringIO,
-            },
+            render_src,
+            render_ns,
         )
 
         return MinjaTemplate(render_fn)
