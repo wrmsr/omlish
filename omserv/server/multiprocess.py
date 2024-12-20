@@ -12,11 +12,11 @@ import typing as ta
 import anyio
 
 from .config import Config
+from .default import serve
 from .sockets import Sockets
 from .sockets import create_sockets
 from .types import AsgiFramework
 from .types import wrap_app
-from .workers import serve
 
 
 async def check_multiprocess_shutdown_event(

@@ -21,7 +21,7 @@ from omlish.http.asgi import stub_lifespan
 from omlish.logs import all as logs
 
 from ...config import Config
-from ...workers import serve
+from ...default import serve
 
 
 log = logging.getLogger(__name__)

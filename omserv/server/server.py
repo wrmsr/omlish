@@ -6,6 +6,7 @@ import typing as ta
 import anyio.abc
 
 from omlish import check
+from omlish import lang
 
 from .config import Config
 from .events import Closed
@@ -25,13 +26,18 @@ log = logging.getLogger(__name__)
 MAX_RECV = 2 ** 16
 
 
-class TcpServer:
+class ServerFactory(lang.Func3[AppWrapper, WorkerContext, anyio.abc.SocketStream, 'Server']):
+    pass
+
+
+class Server:
     def __init__(
             self,
             app: AppWrapper,
-            config: Config,
             context: WorkerContext,
             stream: anyio.abc.SocketStream,
+            *,
+            config: Config,
     ) -> None:
         super().__init__()
 

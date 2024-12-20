@@ -11,10 +11,10 @@ import anyio.abc
 
 from .config import Config
 from .lifespans import Lifespan
+from .server import ServerFactory
 from .sockets import Sockets
 from .sockets import create_sockets
 from .sockets import repr_socket_addr
-from .tcpserver import TcpServer
 from .types import AppWrapper
 from .types import AsgiFramework
 from .types import wrap_app
@@ -125,69 +125,80 @@ async def _install_signal_handler(
     return signal_event.wait
 
 
-async def serve(
-        app: AsgiFramework | AppWrapper,
-        config: Config,
-        *,
-        sockets: Sockets | None = None,
-        shutdown_trigger: ta.Callable[..., ta.Awaitable[None]] | None = None,
-        handle_shutdown_signals: bool = False,
-        task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
-) -> None:
-    app = wrap_app(app)
+class Listener:
+    def __init__(
+            self,
+            *,
+            server_factory: ServerFactory,
+    ) -> None:
+        super().__init__()
 
-    lifespan = Lifespan(app, config)
-    max_requests = None
-    if config.max_requests is not None:
-        max_requests = config.max_requests + random.randint(0, config.max_requests_jitter)
-    context = WorkerContext(max_requests)
+        self._server_factory = server_factory
 
-    async with anyio.create_task_group() as lifespan_task_group:
-        if shutdown_trigger is None and handle_shutdown_signals:
-            shutdown_trigger = await _install_signal_handler(lifespan_task_group)
+    async def listen(
+            self,
+            app: AsgiFramework | AppWrapper,
+            config: Config,
+            *,
+            sockets: Sockets | None = None,
+            shutdown_trigger: ta.Callable[..., ta.Awaitable[None]] | None = None,
+            handle_shutdown_signals: bool = False,
+            task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
+        app = wrap_app(app)
 
-        await lifespan_task_group.start(lifespan.handle_lifespan)
-        await lifespan.wait_for_startup()
+        lifespan = Lifespan(app, config)
+        max_requests = None
+        if config.max_requests is not None:
+            max_requests = config.max_requests + random.randint(0, config.max_requests_jitter)
+        context = WorkerContext(max_requests)
 
-        async with anyio.create_task_group() as server_task_group:
-            if sockets is None:
-                sockets = create_sockets(config)
+        async with anyio.create_task_group() as lifespan_task_group:
+            if shutdown_trigger is None and handle_shutdown_signals:
+                shutdown_trigger = await _install_signal_handler(lifespan_task_group)
+
+            await lifespan_task_group.start(lifespan.handle_lifespan)
+            await lifespan.wait_for_startup()
+
+            async with anyio.create_task_group() as server_task_group:
+                if sockets is None:
+                    sockets = create_sockets(config)
+                    for sock in sockets.insecure_sockets:
+                        sock.listen(config.backlog)
+
+                listeners = []
+                binds = []
+
                 for sock in sockets.insecure_sockets:
-                    sock.listen(config.backlog)
+                    listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))  # noqa
+                    bind = repr_socket_addr(sock.family, sock.getsockname())
+                    binds.append(f'http://{bind}')
+                    log.info('Running on http://%s (CTRL + C to quit)', bind)
 
-            listeners = []
-            binds = []
+                task_status.started(binds)
+                try:
+                    async with anyio.create_task_group() as task_group:
+                        if shutdown_trigger is not None:
+                            task_group.start_soon(raise_shutdown, shutdown_trigger)
+                        task_group.start_soon(raise_shutdown, context.terminate.wait)
 
-            for sock in sockets.insecure_sockets:
-                listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))  # noqa
-                bind = repr_socket_addr(sock.family, sock.getsockname())
-                binds.append(f'http://{bind}')
-                log.info('Running on http://%s (CTRL + C to quit)', bind)
+                        task_group.start_soon(
+                            functools.partial(
+                                serve_listeners,
+                                functools.partial(self._server_factory, app, context),
+                                listeners,
+                                handler_task_group=server_task_group,
+                            ),
+                        )
 
-            task_status.started(binds)
-            try:
-                async with anyio.create_task_group() as task_group:
-                    if shutdown_trigger is not None:
-                        task_group.start_soon(raise_shutdown, shutdown_trigger)
-                    task_group.start_soon(raise_shutdown, context.terminate.wait)
+                        await anyio.sleep_forever()
+                except BaseExceptionGroup as error:
+                    _, other_errors = error.split((ShutdownError, KeyboardInterrupt))  # noqa
+                    if other_errors is not None:
+                        raise other_errors  # noqa
+                finally:
+                    await context.terminated.set()
+                    server_task_group.cancel_scope.deadline = anyio.current_time() + config.graceful_timeout
 
-                    task_group.start_soon(
-                        functools.partial(
-                            serve_listeners,
-                            functools.partial(TcpServer, app, config, context),
-                            listeners,
-                            handler_task_group=server_task_group,
-                        ),
-                    )
-
-                    await anyio.sleep_forever()
-            except BaseExceptionGroup as error:
-                _, other_errors = error.split((ShutdownError, KeyboardInterrupt))  # noqa
-                if other_errors is not None:
-                    raise other_errors  # noqa
-            finally:
-                await context.terminated.set()
-                server_task_group.cancel_scope.deadline = anyio.current_time() + config.graceful_timeout
-
-        await lifespan.wait_for_shutdown()
-        lifespan_task_group.cancel_scope.cancel()
+            await lifespan.wait_for_shutdown()
+            lifespan_task_group.cancel_scope.cancel()
