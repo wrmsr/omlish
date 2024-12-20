@@ -26,7 +26,7 @@ def load_dynamic(name: str, path: str) -> types.ModuleType:
     spec = importlib.machinery.ModuleSpec(name=name, loader=loader, origin=path)
 
     import importlib._bootstrap  # FIXME:  # noqa
-    return importlib._bootstrap._load(spec)  # noqa
+    return importlib._bootstrap._load(spec)  # type: ignore  # noqa
 
 
 ##

@@ -4061,30 +4061,6 @@ def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
 ##
 
 
-@dc.dataclass(frozen=True)
-class OverridesInjectorBindings(InjectorBindings):
-    p: InjectorBindings
-    m: ta.Mapping[InjectorKey, InjectorBinding]
-
-    def bindings(self) -> ta.Iterator[InjectorBinding]:
-        for b in self.p.bindings():
-            yield self.m.get(b.key, b)
-
-
-def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
-    m: ta.Dict[InjectorKey, InjectorBinding] = {}
-
-    for b in as_injector_bindings(*args).bindings():
-        if b.key in m:
-            raise DuplicateInjectorKeyError(b.key)
-        m[b.key] = b
-
-    return OverridesInjectorBindings(p, m)
-
-
-##
-
-
 def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
     pm: ta.Dict[InjectorKey, InjectorProvider] = {}
     am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
@@ -4106,6 +4082,31 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
             pm[k] = ArrayInjectorProvider(aps)
 
     return pm
+
+
+###
+# overrides
+
+
+@dc.dataclass(frozen=True)
+class OverridesInjectorBindings(InjectorBindings):
+    p: InjectorBindings
+    m: ta.Mapping[InjectorKey, InjectorBinding]
+
+    def bindings(self) -> ta.Iterator[InjectorBinding]:
+        for b in self.p.bindings():
+            yield self.m.get(b.key, b)
+
+
+def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+    m: ta.Dict[InjectorKey, InjectorBinding] = {}
+
+    for b in as_injector_bindings(*args).bindings():
+        if b.key in m:
+            raise DuplicateInjectorKeyError(b.key)
+        m[b.key] = b
+
+    return OverridesInjectorBindings(p, m)
 
 
 ###
@@ -4132,7 +4133,7 @@ class InjectorScope(abc.ABC):  # noqa
     @dc.dataclass(frozen=True)
     class State:
         seeds: ta.Dict[InjectorKey, ta.Any]
-        prvs: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
+        provisions: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
 
     def new_state(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> State:
         vs = dict(vs)
@@ -4212,11 +4213,11 @@ class ScopedInjectorProvider(InjectorProvider):
         def pfn(i: Injector) -> ta.Any:
             st = i[self.sc].state()
             try:
-                return st.prvs[self.k]
+                return st.provisions[self.k]
             except KeyError:
                 pass
             v = ufn(i)
-            st.prvs[self.k] = v
+            st.provisions[self.k] = v
             return v
 
         ufn = self.p.provider_fn()
@@ -4240,9 +4241,7 @@ class _ScopeSeedInjectorProvider(InjectorProvider):
 
 
 def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
-    return as_injector_bindings(
-        InjectorBinder.bind(sc, singleton=True),
-    )
+    return InjectorBinder.bind(sc, singleton=True)
 
 
 #
@@ -4781,6 +4780,8 @@ class InjectionApi:
 
     def as_bindings(self, *args: InjectorBindingOrBindings) -> InjectorBindings:
         return as_injector_bindings(*args)
+
+    # overrides
 
     def override(self, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
         return injector_override(p, *args)
