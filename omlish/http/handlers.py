@@ -4,7 +4,7 @@ import dataclasses as dc
 import http.server
 import typing as ta
 
-from ..lite.socket import SocketAddress
+from ..sockets.addresses import SocketAddress
 from .parsing import HttpHeaders
 
 

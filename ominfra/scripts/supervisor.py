@@ -113,14 +113,13 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../omlish/lite/socket.py
-SocketAddress = ta.Any
-SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
-
 # ../../omlish/lite/typing.py
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
+
+# ../../omlish/sockets/addresses.py
+SocketAddress = ta.Any
 
 # events.py
 EventCallback = ta.Callable[['Event'], None]
@@ -138,6 +137,9 @@ InjectorKeyCls = ta.Union[type, ta.NewType]
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+
+# ../../omlish/sockets/handlers.py
+SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
 
 # ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
@@ -2345,76 +2347,6 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
-# ../../../omlish/lite/socket.py
-"""
-TODO:
- - SocketClientAddress family / tuple pairs
-  + codification of https://docs.python.org/3/library/socket.html#socket-families
-"""
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SocketAddressInfoArgs:
-    host: ta.Optional[str]
-    port: ta.Union[str, int, None]
-    family: socket.AddressFamily = socket.AddressFamily.AF_UNSPEC
-    type: int = 0
-    proto: int = 0
-    flags: socket.AddressInfo = socket.AddressInfo(0)
-
-
-@dc.dataclass(frozen=True)
-class SocketAddressInfo:
-    family: socket.AddressFamily
-    type: int
-    proto: int
-    canonname: ta.Optional[str]
-    sockaddr: SocketAddress
-
-
-def get_best_socket_family(
-        host: ta.Optional[str],
-        port: ta.Union[str, int, None],
-        family: ta.Union[int, socket.AddressFamily] = socket.AddressFamily.AF_UNSPEC,
-) -> ta.Tuple[socket.AddressFamily, SocketAddress]:
-    """https://github.com/python/cpython/commit/f289084c83190cc72db4a70c58f007ec62e75247"""
-
-    infos = socket.getaddrinfo(
-        host,
-        port,
-        family,
-        type=socket.SOCK_STREAM,
-        flags=socket.AI_PASSIVE,
-    )
-    ai = SocketAddressInfo(*next(iter(infos)))
-    return ai.family, ai.sockaddr
-
-
-##
-
-
-class SocketHandler(abc.ABC):
-    def __init__(
-            self,
-            client_address: SocketAddress,
-            rfile: ta.BinaryIO,
-            wfile: ta.BinaryIO,
-    ) -> None:
-        super().__init__()
-
-        self._client_address = client_address
-        self._rfile = rfile
-        self._wfile = wfile
-
-    @abc.abstractmethod
-    def handle(self) -> None:
-        raise NotImplementedError
-
-
-########################################
 # ../../../omlish/lite/strings.py
 
 
@@ -2668,6 +2600,55 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../../omlish/sockets/addresses.py
+"""
+TODO:
+ - SocketClientAddress family / tuple pairs
+  + codification of https://docs.python.org/3/library/socket.html#socket-families
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SocketAddressInfoArgs:
+    host: ta.Optional[str]
+    port: ta.Union[str, int, None]
+    family: socket.AddressFamily = socket.AddressFamily.AF_UNSPEC
+    type: int = 0
+    proto: int = 0
+    flags: socket.AddressInfo = socket.AddressInfo(0)
+
+
+@dc.dataclass(frozen=True)
+class SocketAddressInfo:
+    family: socket.AddressFamily
+    type: int
+    proto: int
+    canonname: ta.Optional[str]
+    sockaddr: SocketAddress
+
+
+def get_best_socket_family(
+        host: ta.Optional[str],
+        port: ta.Union[str, int, None],
+        family: ta.Union[int, socket.AddressFamily] = socket.AddressFamily.AF_UNSPEC,
+) -> ta.Tuple[socket.AddressFamily, SocketAddress]:
+    """https://github.com/python/cpython/commit/f289084c83190cc72db4a70c58f007ec62e75247"""
+
+    infos = socket.getaddrinfo(
+        host,
+        port,
+        family,
+        type=socket.SOCK_STREAM,
+        flags=socket.AI_PASSIVE,
+    )
+    ai = SocketAddressInfo(*next(iter(infos)))
+    return ai.family, ai.sockaddr
 
 
 ########################################
@@ -5827,6 +5808,31 @@ def journald_log_handler_factory(
         return JournaldLogHandler()
 
     return logging.StreamHandler()
+
+
+########################################
+# ../../../omlish/sockets/handlers.py
+
+
+##
+
+
+class SocketHandler(abc.ABC):
+    def __init__(
+            self,
+            client_address: SocketAddress,
+            rfile: ta.BinaryIO,
+            wfile: ta.BinaryIO,
+    ) -> None:
+        super().__init__()
+
+        self._client_address = client_address
+        self._rfile = rfile
+        self._wfile = wfile
+
+    @abc.abstractmethod
+    def handle(self) -> None:
+        raise NotImplementedError
 
 
 ########################################

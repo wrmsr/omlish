@@ -12,7 +12,7 @@ from omlish.io.fdio.handlers import SocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
 from omlish.lite.json import JSON_PRETTY_KWARGS
-from omlish.lite.socket import SocketAddress
+from omlish.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
 from .groups import ProcessGroupManager

@@ -1,4 +1,5 @@
 # ruff: noqa: PT009 UP007
+# @omlish-lite
 import unittest
 
 from ..shlex import shlex_maybe_quote
