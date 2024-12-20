@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.84
-botocore==1.35.84
+boto3==1.35.85
+botocore==1.35.85
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.0
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.122.4
+hypothesis==6.122.5
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.1
@@ -198,7 +198,7 @@ jupyter-events==0.11.0
 jupyter-lsp==2.2.5
 jupyter_client==8.6.3
 jupyter_core==5.7.2
-jupyter_server==2.14.2
+jupyter_server==2.15.0
 jupyter_server_terminals==0.5.3
 jupyterlab==4.3.4
 jupyterlab_pygments==0.3.0
@@ -213,12 +213,12 @@ langchain==0.3.13
 langchain-anthropic==0.3.1
 langchain-chroma==0.1.4
 langchain-community==0.3.13
-langchain-core==0.3.27
+langchain-core==0.3.28
 langchain-elasticsearch==0.3.0
-langchain-experimental==0.3.3
+langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
-langchain-openai==0.2.13
+langchain-openai==0.2.14
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.4
 langchainhub==0.1.21
@@ -273,7 +273,7 @@ multiprocess==0.70.16
 murmurhash==1.0.11
 mwparserfromhell==0.6.6
 mycli==1.29.2
-mypy==1.13.0
+mypy==1.14.0
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
 mysqlclient==2.2.6
@@ -529,7 +529,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.6
-uv==0.5.10
+uv==0.5.11
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
