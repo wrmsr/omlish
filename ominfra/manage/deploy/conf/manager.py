@@ -20,21 +20,40 @@ import os.path
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.json import json_dumps_pretty
+from omlish.lite.strings import strip_with_newline
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
+from ....configs import render_ini_config
 from ..paths.paths import DeployPath
 from ..tags import DEPLOY_TAG_SEPARATOR
 from ..tags import DeployApp
 from ..tags import DeployConf
 from ..tags import DeployTagMap
+from .specs import DeployAppConfContent
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
+from .specs import IniDeployAppConfContent
+from .specs import JsonDeployAppConfContent
 from .specs import RawDeployAppConfContent
 
 
 class DeployConfManager:
+    def _render_app_conf_content(self, ac: DeployAppConfContent) -> str:
+        if isinstance(ac, RawDeployAppConfContent):
+            return ac.body
+
+        elif isinstance(ac, JsonDeployAppConfContent):
+            return strip_with_newline(json_dumps_pretty(ac.obj))
+
+        elif isinstance(ac, IniDeployAppConfContent):
+            return strip_with_newline(render_ini_config(ac.sections))
+
+        else:
+            raise TypeError(ac)
+
     async def _write_app_conf_file(
             self,
             acf: DeployAppConfFile,
@@ -43,14 +62,12 @@ class DeployConfManager:
         conf_file = os.path.join(app_conf_dir, acf.path)
         check.arg(is_path_in_dir(app_conf_dir, conf_file))
 
+        body = self._render_app_conf_content(acf.content)
+
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
-        if isinstance(acf.content, RawDeployAppConfContent):
-            with open(conf_file, 'w') as f:  # noqa
-                f.write(acf.content.body)
-
-        else:
-            raise TypeError(acf.content)
+        with open(conf_file, 'w') as f:  # noqa
+            f.write(body)
 
     #
 

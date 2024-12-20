@@ -6242,6 +6242,7 @@ def register_single_field_type_obj_marshaler(fld, ty=None):
     def inner(ty):  # noqa
         register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
         return ty
+
     if ty is not None:
         return inner(ty)
     else:
@@ -9160,6 +9161,19 @@ TODO:
 
 
 class DeployConfManager:
+    def _render_app_conf_content(self, ac: DeployAppConfContent) -> str:
+        if isinstance(ac, RawDeployAppConfContent):
+            return ac.body
+
+        elif isinstance(ac, JsonDeployAppConfContent):
+            return strip_with_newline(json_dumps_pretty(ac.obj))
+
+        elif isinstance(ac, IniDeployAppConfContent):
+            return strip_with_newline(render_ini_config(ac.sections))
+
+        else:
+            raise TypeError(ac)
+
     async def _write_app_conf_file(
             self,
             acf: DeployAppConfFile,
@@ -9168,14 +9182,12 @@ class DeployConfManager:
         conf_file = os.path.join(app_conf_dir, acf.path)
         check.arg(is_path_in_dir(app_conf_dir, conf_file))
 
+        body = self._render_app_conf_content(acf.content)
+
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
-        if isinstance(acf.content, RawDeployAppConfContent):
-            with open(conf_file, 'w') as f:  # noqa
-                f.write(acf.content.body)
-
-        else:
-            raise TypeError(acf.content)
+        with open(conf_file, 'w') as f:  # noqa
+            f.write(body)
 
     #
 
