@@ -7922,10 +7922,6 @@ def bind_interp() -> InjectorBindings:
 
     def provide_interp_resolver_providers(injector: Injector) -> InterpResolverProviders:
         # FIXME: lol
-        from .providers.running import RunningInterpProvider
-        from .providers.system import SystemInterpProvider
-        from .pyenv.pyenv import PyenvInterpProvider
-
         rps: ta.List[ta.Any] = [
             injector.provide(c)
             for c in [
