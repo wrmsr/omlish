@@ -12,7 +12,7 @@ import jinja2
 from omlish.logs import all as logs
 
 from ..config import Config
-from ..workers import serve
+from ..default import serve
 
 
 JINJA_ENV = jinja2.Environment(autoescape=True)

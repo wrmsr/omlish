@@ -19,8 +19,8 @@ class ElementGenerator(lang.Abstract, lang.PackageSealed):
 
 @dc.dataclass(frozen=True)
 class Elements(lang.Final):
-    es: frozenset[Element] | None = dc.xfield(None, coerce=check.of_isinstance((frozenset, None)))
-    cs: frozenset['Elements'] | None = dc.xfield(None, coerce=check.of_isinstance((frozenset, None)))
+    es: ta.Collection[Element] | None = None
+    cs: ta.Collection['Elements'] | None = None
 
     def __iter__(self) -> ta.Generator[Element, None, None]:
         if self.es:
@@ -38,14 +38,14 @@ Elemental = ta.Union[  # noqa
 
 
 def as_elements(*args: Elemental) -> Elements:
-    es: set[Element] = set()
-    cs: set[Elements] = set()
+    es: list[Element] = []
+    cs: list[Elements] = []
 
     def rec(a):
         if isinstance(a, Element):
-            es.add(a)
+            es.append(a)
         elif isinstance(a, Elements):
-            cs.add(a)
+            cs.append(a)
         elif isinstance(a, ElementGenerator):
             for n in a:
                 rec(n)
@@ -59,6 +59,6 @@ def as_elements(*args: Elemental) -> Elements:
         return next(iter(cs))
 
     return Elements(
-        frozenset(es) if es else None,
-        frozenset(cs) if cs else None,
+        es if es else None,
+        cs if cs else None,
     )
