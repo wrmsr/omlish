@@ -6,13 +6,13 @@ import unittest
 
 from omlish.lite.inject import inj
 from omlish.lite.json import json_dumps_compact
-from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
-from omlish.lite.strings import strip_with_newline
 
 from ..conf.specs import DeployAppConfFile
 from ..conf.specs import DeployAppConfLink
+from ..conf.specs import IniDeployAppConfContent
+from ..conf.specs import JsonDeployAppConfContent
 from ..conf.specs import RawDeployAppConfContent
 from ..config import DeployConfig
 from ..driver import DeployDriverFactory
@@ -51,7 +51,7 @@ def build_flask_thing_spec(
             files=[
                 DeployAppConfFile(
                     'supervisor/sv.json',
-                    RawDeployAppConfContent(strip_with_newline(json_dumps_pretty({
+                    JsonDeployAppConfContent({
                         'groups': {
                             'flaskthing': {
                                 'processes': {
@@ -61,17 +61,33 @@ def build_flask_thing_spec(
                                 },
                             },
                         },
-                    }))),
+                    }),
                 ),
+
                 DeployAppConfFile(
                     'nginx.conf',
                     RawDeployAppConfContent('flaskthing nginx conf goes here'),
                 ),
+
                 DeployAppConfFile(
                     'systemd/service.conf',
-                    RawDeployAppConfContent('flaskthing systemd conf goes here'),
+                    IniDeployAppConfContent({
+                        'Unit': {
+                            'Description': "User-specific service to run 'sleep infinity'",
+                            'After': 'default.target',
+                        },
+                        'Service': {
+                            'ExecStart': '/bin/sleep infinity',
+                            'Restart': 'always',
+                            'RestartSec': '5',
+                        },
+                        'Install': {
+                            'WantedBy': 'default.target',
+                        },
+                    }),
                 ),
             ],
+
             links=[
                 DeployAppConfLink('supervisor/'),
                 DeployAppConfLink('supervisor/', kind='all_active'),
