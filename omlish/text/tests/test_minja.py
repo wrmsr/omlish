@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import typing as ta
 import unittest
 
