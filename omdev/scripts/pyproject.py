@@ -6463,6 +6463,88 @@ class InterpInspector:
 
 
 ########################################
+# ../../interp/pyenv/pyenv.py
+"""
+TODO:
+ - custom tags
+  - 'aliases'
+  - https://github.com/pyenv/pyenv/pull/2966
+  - https://github.com/pyenv/pyenv/issues/218 (lol)
+  - probably need custom (temp?) definition file
+  - *or* python-build directly just into the versions dir?
+ - optionally install / upgrade pyenv itself
+ - new vers dont need these custom mac opts, only run on old vers
+"""
+
+
+class Pyenv:
+    def __init__(
+            self,
+            *,
+            root: ta.Optional[str] = None,
+    ) -> None:
+        if root is not None and not (isinstance(root, str) and root):
+            raise ValueError(f'pyenv_root: {root!r}')
+
+        super().__init__()
+
+        self._root_kw = root
+
+    @async_cached_nullary
+    async def root(self) -> ta.Optional[str]:
+        if self._root_kw is not None:
+            return self._root_kw
+
+        if shutil.which('pyenv'):
+            return await asyncio_subprocesses.check_output_str('pyenv', 'root')
+
+        d = os.path.expanduser('~/.pyenv')
+        if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
+            return d
+
+        return None
+
+    @async_cached_nullary
+    async def exe(self) -> str:
+        return os.path.join(check.not_none(await self.root()), 'bin', 'pyenv')
+
+    async def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
+        if (root := await self.root()) is None:
+            return []
+        ret = []
+        vp = os.path.join(root, 'versions')
+        if os.path.isdir(vp):
+            for dn in os.listdir(vp):
+                ep = os.path.join(vp, dn, 'bin', 'python')
+                if not os.path.isfile(ep):
+                    continue
+                ret.append((dn, ep))
+        return ret
+
+    async def installable_versions(self) -> ta.List[str]:
+        if await self.root() is None:
+            return []
+        ret = []
+        s = await asyncio_subprocesses.check_output_str(await self.exe(), 'install', '--list')
+        for l in s.splitlines():
+            if not l.startswith('  '):
+                continue
+            l = l.strip()
+            if not l:
+                continue
+            ret.append(l)
+        return ret
+
+    async def update(self) -> bool:
+        if (root := await self.root()) is None:
+            return False
+        if not os.path.isdir(os.path.join(root, '.git')):
+            return False
+        await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
+        return True
+
+
+########################################
 # ../../interp/resolvers.py
 
 
@@ -6820,88 +6902,7 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
-# ../../interp/pyenv/pyenv.py
-"""
-TODO:
- - custom tags
-  - 'aliases'
-  - https://github.com/pyenv/pyenv/pull/2966
-  - https://github.com/pyenv/pyenv/issues/218 (lol)
-  - probably need custom (temp?) definition file
-  - *or* python-build directly just into the versions dir?
- - optionally install / upgrade pyenv itself
- - new vers dont need these custom mac opts, only run on old vers
-"""
-
-
-##
-
-
-class Pyenv:
-    def __init__(
-            self,
-            *,
-            root: ta.Optional[str] = None,
-    ) -> None:
-        if root is not None and not (isinstance(root, str) and root):
-            raise ValueError(f'pyenv_root: {root!r}')
-
-        super().__init__()
-
-        self._root_kw = root
-
-    @async_cached_nullary
-    async def root(self) -> ta.Optional[str]:
-        if self._root_kw is not None:
-            return self._root_kw
-
-        if shutil.which('pyenv'):
-            return await asyncio_subprocesses.check_output_str('pyenv', 'root')
-
-        d = os.path.expanduser('~/.pyenv')
-        if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
-            return d
-
-        return None
-
-    @async_cached_nullary
-    async def exe(self) -> str:
-        return os.path.join(check.not_none(await self.root()), 'bin', 'pyenv')
-
-    async def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
-        if (root := await self.root()) is None:
-            return []
-        ret = []
-        vp = os.path.join(root, 'versions')
-        if os.path.isdir(vp):
-            for dn in os.listdir(vp):
-                ep = os.path.join(vp, dn, 'bin', 'python')
-                if not os.path.isfile(ep):
-                    continue
-                ret.append((dn, ep))
-        return ret
-
-    async def installable_versions(self) -> ta.List[str]:
-        if await self.root() is None:
-            return []
-        ret = []
-        s = await asyncio_subprocesses.check_output_str(await self.exe(), 'install', '--list')
-        for l in s.splitlines():
-            if not l.startswith('  '):
-                continue
-            l = l.strip()
-            if not l:
-                continue
-            ret.append(l)
-        return ret
-
-    async def update(self) -> bool:
-        if (root := await self.root()) is None:
-            return False
-        if not os.path.isdir(os.path.join(root, '.git')):
-            return False
-        await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
-        return True
+# ../../interp/pyenv/install.py
 
 
 ##
@@ -7137,136 +7138,6 @@ class PyenvVersionInstaller:
         if not os.path.isfile(exe):
             raise RuntimeError(f'Interpreter not found: {exe}')
         return exe
-
-
-##
-
-
-class PyenvInterpProvider(InterpProvider):
-    @dc.dataclass(frozen=True)
-    class Options:
-        inspect: bool = False
-
-        try_update: bool = False
-
-    def __init__(
-            self,
-            options: Options = Options(),
-            *,
-            pyenv: Pyenv,
-            inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
-    ) -> None:
-        super().__init__()
-
-        self._options = options
-
-        self._pyenv = pyenv
-        self._inspector = inspector
-        self._log = log
-
-    #
-
-    @staticmethod
-    def guess_version(s: str) -> ta.Optional[InterpVersion]:
-        def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
-            if s.endswith(sfx):
-                return s[:-len(sfx)], True
-            return s, False
-        ok = {}
-        s, ok['debug'] = strip_sfx(s, '-debug')
-        s, ok['threaded'] = strip_sfx(s, 't')
-        try:
-            v = Version(s)
-        except InvalidVersion:
-            return None
-        return InterpVersion(v, InterpOpts(**ok))
-
-    class Installed(ta.NamedTuple):
-        name: str
-        exe: str
-        version: InterpVersion
-
-    async def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
-        iv: ta.Optional[InterpVersion]
-        if self._options.inspect:
-            try:
-                iv = check.not_none(await self._inspector.inspect(ep)).iv
-            except Exception as e:  # noqa
-                return None
-        else:
-            iv = self.guess_version(vn)
-        if iv is None:
-            return None
-        return PyenvInterpProvider.Installed(
-            name=vn,
-            exe=ep,
-            version=iv,
-        )
-
-    async def installed(self) -> ta.Sequence[Installed]:
-        ret: ta.List[PyenvInterpProvider.Installed] = []
-        for vn, ep in await self._pyenv.version_exes():
-            if (i := await self._make_installed(vn, ep)) is None:
-                if self._log is not None:
-                    self._log.debug('Invalid pyenv version: %s', vn)
-                continue
-            ret.append(i)
-        return ret
-
-    #
-
-    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [i.version for i in await self.installed()]
-
-    async def get_installed_version(self, version: InterpVersion) -> Interp:
-        for i in await self.installed():
-            if i.version == version:
-                return Interp(
-                    exe=i.exe,
-                    version=i.version,
-                )
-        raise KeyError(version)
-
-    #
-
-    async def _get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        lst = []
-
-        for vs in await self._pyenv.installable_versions():
-            if (iv := self.guess_version(vs)) is None:
-                continue
-            if iv.opts.debug:
-                raise Exception('Pyenv installable versions not expected to have debug suffix')
-            for d in [False, True]:
-                lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
-
-        return lst
-
-    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        lst = await self._get_installable_versions(spec)
-
-        if self._options.try_update and not any(v in spec for v in lst):
-            if self._pyenv.update():
-                lst = await self._get_installable_versions(spec)
-
-        return lst
-
-    async def install_version(self, version: InterpVersion) -> Interp:
-        inst_version = str(version.version)
-        inst_opts = version.opts
-        if inst_opts.threaded:
-            inst_version += 't'
-            inst_opts = dc.replace(inst_opts, threaded=False)
-
-        installer = PyenvVersionInstaller(
-            inst_version,
-            interp_opts=inst_opts,
-            pyenv=self._pyenv,
-        )
-
-        exe = await installer.install()
-        return Interp(exe, version)
 
 
 ########################################
@@ -7844,6 +7715,137 @@ def bind_interp_providers() -> InjectorBindings:
     ]
 
     return inj.as_bindings(*lst)
+
+
+########################################
+# ../../interp/pyenv/provider.py
+
+
+class PyenvInterpProvider(InterpProvider):
+    @dc.dataclass(frozen=True)
+    class Options:
+        inspect: bool = False
+
+        try_update: bool = False
+
+    def __init__(
+            self,
+            options: Options = Options(),
+            *,
+            pyenv: Pyenv,
+            inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._options = options
+
+        self._pyenv = pyenv
+        self._inspector = inspector
+        self._log = log
+
+    #
+
+    @staticmethod
+    def guess_version(s: str) -> ta.Optional[InterpVersion]:
+        def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
+            if s.endswith(sfx):
+                return s[:-len(sfx)], True
+            return s, False
+        ok = {}
+        s, ok['debug'] = strip_sfx(s, '-debug')
+        s, ok['threaded'] = strip_sfx(s, 't')
+        try:
+            v = Version(s)
+        except InvalidVersion:
+            return None
+        return InterpVersion(v, InterpOpts(**ok))
+
+    class Installed(ta.NamedTuple):
+        name: str
+        exe: str
+        version: InterpVersion
+
+    async def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
+        iv: ta.Optional[InterpVersion]
+        if self._options.inspect:
+            try:
+                iv = check.not_none(await self._inspector.inspect(ep)).iv
+            except Exception as e:  # noqa
+                return None
+        else:
+            iv = self.guess_version(vn)
+        if iv is None:
+            return None
+        return PyenvInterpProvider.Installed(
+            name=vn,
+            exe=ep,
+            version=iv,
+        )
+
+    async def installed(self) -> ta.Sequence[Installed]:
+        ret: ta.List[PyenvInterpProvider.Installed] = []
+        for vn, ep in await self._pyenv.version_exes():
+            if (i := await self._make_installed(vn, ep)) is None:
+                if self._log is not None:
+                    self._log.debug('Invalid pyenv version: %s', vn)
+                continue
+            ret.append(i)
+        return ret
+
+    #
+
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return [i.version for i in await self.installed()]
+
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        for i in await self.installed():
+            if i.version == version:
+                return Interp(
+                    exe=i.exe,
+                    version=i.version,
+                )
+        raise KeyError(version)
+
+    #
+
+    async def _get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        lst = []
+
+        for vs in await self._pyenv.installable_versions():
+            if (iv := self.guess_version(vs)) is None:
+                continue
+            if iv.opts.debug:
+                raise Exception('Pyenv installable versions not expected to have debug suffix')
+            for d in [False, True]:
+                lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
+
+        return lst
+
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        lst = await self._get_installable_versions(spec)
+
+        if self._options.try_update and not any(v in spec for v in lst):
+            if self._pyenv.update():
+                lst = await self._get_installable_versions(spec)
+
+        return lst
+
+    async def install_version(self, version: InterpVersion) -> Interp:
+        inst_version = str(version.version)
+        inst_opts = version.opts
+        if inst_opts.threaded:
+            inst_version += 't'
+            inst_opts = dc.replace(inst_opts, threaded=False)
+
+        installer = PyenvVersionInstaller(
+            inst_version,
+            interp_opts=inst_opts,
+            pyenv=self._pyenv,
+        )
+
+        exe = await installer.install()
+        return Interp(exe, version)
 
 
 ########################################

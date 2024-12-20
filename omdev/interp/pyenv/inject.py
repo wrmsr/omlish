@@ -6,8 +6,8 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from ..providers.base import InterpProvider
+from .provider import PyenvInterpProvider
 from .pyenv import Pyenv
-from .pyenv import PyenvInterpProvider
 
 
 def bind_interp_pyenv() -> InjectorBindings:
