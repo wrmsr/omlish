@@ -6,7 +6,7 @@ TODO:
 """
 import os.path
 
-from omdev.interp.resolvers import DEFAULT_INTERP_RESOLVER
+from omdev.interp.default import get_default_interp_resolver
 from omdev.interp.types import InterpSpecifier
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
@@ -25,7 +25,7 @@ class DeployVenvManager:
     ) -> None:
         if spec.interp is not None:
             i = InterpSpecifier.parse(check.not_none(spec.interp))
-            o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i))
+            o = check.not_none(await get_default_interp_resolver().resolve(i))
             sys_exe = o.exe
         else:
             sys_exe = 'python3'

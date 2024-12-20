@@ -9,7 +9,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
 
-from ..interp.resolvers import DEFAULT_INTERP_RESOLVER
+from ..interp.default import get_default_interp_resolver
 from ..interp.types import InterpSpecifier
 from .configs import VenvConfig
 from .reqs import RequirementsRewriter
@@ -41,7 +41,7 @@ class Venv:
     @async_cached_nullary
     async def interp_exe(self) -> str:
         i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
-        return check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
+        return check.not_none(await get_default_interp_resolver().resolve(i, install=True)).exe
 
     @cached_nullary
     def exe(self) -> str:
