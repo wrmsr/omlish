@@ -187,29 +187,45 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
         ap.arg('--time-fmt', default='%Y-%m-%dT%H:%M:%SZ'),
+        ap.arg('dir', action='append'),
         aliases=['acp'],
     )
     def add_commit_push(self) -> None:
-        st = get_git_status()
+        def run(cwd: str | None) -> None:
+            st = get_git_status(cwd=cwd)
 
-        if st.has_dirty:
-            subprocess.check_call(['git', 'add', '.'])
+            if st.has_dirty:
+                subprocess.check_call(['git', 'add', '.'], cwd=cwd)
 
-        if st.has_staged or st.has_dirty:
-            if self.args.message is not None:
-                msg = self.args.message
-            else:
-                msg = lang.utcnow().strftime(self.args.time_fmt)
-            subprocess.check_call(['git', 'commit', '-m', msg])
+            if st.has_staged or st.has_dirty:
+                if self.args.message is not None:
+                    msg = self.args.message
+                else:
+                    msg = lang.utcnow().strftime(self.args.time_fmt)
+                subprocess.check_call(['git', 'commit', '-m', msg], cwd=cwd)
 
-        subprocess.check_call(['git', 'push'])
+            subprocess.check_call(['git', 'push'], cwd=cwd)
+
+        if self.args.dir is None:
+            run(None)
+        else:
+            for d in self.args.dir:
+                run(d)
 
     @ap.cmd(
+        ap.arg('dir', nargs='*'),
         aliases=['psu'],
     )
     def pull_submodule_update(self) -> None:
-        subprocess.check_call(['git', 'pull'])
-        subprocess.check_call(['git', 'submodule', 'update'])
+        def run(cwd: str | None) -> None:
+            subprocess.check_call(['git', 'pull'], cwd=cwd)
+            subprocess.check_call(['git', 'submodule', 'update'], cwd=cwd)
+
+        if self.args.dir is None:
+            run(None)
+        else:
+            for d in self.args.dir:
+                run(d)
 
 
 # @omlish-manifest
