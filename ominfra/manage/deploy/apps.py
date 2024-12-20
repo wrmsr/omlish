@@ -6,7 +6,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.os.paths import relative_symlink
 
-from .conf import DeployConfManager
+from .conf.manager import DeployConfManager
 from .git import DeployGitManager
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath

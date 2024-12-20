@@ -4253,6 +4253,18 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 
 
 ########################################
+# ../deploy/paths/specs.py
+
+
+def check_valid_deploy_spec_path(s: str) -> str:
+    check.non_empty_str(s)
+    for c in ['..', '//']:
+        check.not_in(c, s)
+    check.arg(not s.startswith('/'))
+    return s
+
+
+########################################
 # ../remote/config.py
 
 
@@ -6956,6 +6968,61 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 
 
 ########################################
+# ../deploy/conf/specs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfFile:
+    path: str
+    body: str
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.path)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfLink:  # noqa
+    """
+    May be either:
+     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+     - @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
+     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
+    """
+
+    src: str
+
+    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
+
+    def __post_init__(self) -> None:
+        check_valid_deploy_spec_path(self.src)
+        if '/' in self.src:
+            check.equal(self.src.count('/'), 1)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployAppConfSpec:
+    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
+
+    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
+
+    def __post_init__(self) -> None:
+        if self.files:
+            seen: ta.Set[str] = set()
+            for f in self.files:
+                check.not_in(f.path, seen)
+                seen.add(f.path)
+
+
+########################################
 # ../deploy/tags.py
 
 
@@ -8044,14 +8111,6 @@ class DeployPath:
 ##
 
 
-def check_valid_deploy_spec_path(s: str) -> str:
-    check.non_empty_str(s)
-    for c in ['..', '//']:
-        check.not_in(c, s)
-    check.arg(not s.startswith('/'))
-    return s
-
-
 class DeploySpecKeyed(ta.Generic[KeyDeployTagT]):
     @cached_nullary
     def _key_str(self) -> str:
@@ -8101,57 +8160,6 @@ class DeployVenvSpec:
     extra_dependencies: ta.Optional[ta.Sequence[str]] = None
 
     use_uv: bool = False
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfFile:
-    path: str
-    body: str
-
-    def __post_init__(self) -> None:
-        check_valid_deploy_spec_path(self.path)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfLink:  # noqa
-    """
-    May be either:
-     - @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
-     - @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
-     - @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
-    """
-
-    src: str
-
-    kind: ta.Literal['current_only', 'all_active'] = 'current_only'
-
-    def __post_init__(self) -> None:
-        check_valid_deploy_spec_path(self.src)
-        if '/' in self.src:
-            check.equal(self.src.count('/'), 1)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class DeployAppConfSpec:
-    files: ta.Optional[ta.Sequence[DeployAppConfFile]] = None
-
-    links: ta.Optional[ta.Sequence[DeployAppConfLink]] = None
-
-    def __post_init__(self) -> None:
-        if self.files:
-            seen: ta.Set[str] = set()
-            for f in self.files:
-                check.not_in(f.path, seen)
-                seen.add(f.path)
 
 
 ##
@@ -9155,7 +9163,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 
 ########################################
-# ../deploy/conf.py
+# ../deploy/conf/manager.py
 """
 TODO:
  - @conf DeployPathPlaceholder? :|
@@ -10223,6 +10231,18 @@ def bind_commands(
 
 
 ########################################
+# ../deploy/inject_.py
+
+
+def bind_deploy_manager(cls: type) -> InjectorBindings:
+    return inj.as_bindings(
+        inj.bind(cls, singleton=True),
+
+        *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
+    )
+
+
+########################################
 # ../deploy/paths/manager.py
 
 
@@ -10577,6 +10597,18 @@ class PyenvInterpProvider(InterpProvider):
 
         exe = await installer.install()
         return Interp(exe, version)
+
+
+########################################
+# ../deploy/conf/inject.py
+
+
+def bind_deploy_conf() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        bind_deploy_manager(DeployConfManager),
+    ]
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -11424,6 +11456,8 @@ def bind_deploy(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
 
+        bind_deploy_conf(),
+
         bind_deploy_paths(),
 
         bind_deploy_scope(),
@@ -11431,27 +11465,16 @@ def bind_deploy(
 
     #
 
-    def bind_manager(cls: type) -> InjectorBindings:
-        return inj.as_bindings(
-            inj.bind(cls, singleton=True),
-
-            *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
-        )
-
-    #
-
     lst.extend([
-        bind_manager(DeployAppManager),
+        bind_deploy_manager(DeployAppManager),
 
-        bind_manager(DeployConfManager),
+        bind_deploy_manager(DeployGitManager),
 
-        bind_manager(DeployGitManager),
+        bind_deploy_manager(DeployManager),
 
-        bind_manager(DeployManager),
+        bind_deploy_manager(DeployTmpManager),
 
-        bind_manager(DeployTmpManager),
-
-        bind_manager(DeployVenvManager),
+        bind_deploy_manager(DeployVenvManager),
     ])
 
     #

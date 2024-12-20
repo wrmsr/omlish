@@ -1,9 +1,9 @@
 # ruff: noqa: PT009 PT027 UP006 UP007
 import unittest
 
-from ..conf import DeployConfManager
+from ...tags import DeployTagMap
+from ..manager import DeployConfManager
 from ..specs import DeployAppConfLink
-from ..tags import DeployTagMap
 
 
 class TestConf(unittest.TestCase):

@@ -14,16 +14,16 @@ from ..commands.inject import bind_command
 from .apps import DeployAppManager
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor
-from .conf import DeployConfManager
+from .conf.inject import bind_deploy_conf
 from .config import DeployConfig
 from .deploy import DeployManager
 from .driver import DeployDriver
 from .driver import DeployDriverFactory
 from .git import DeployGitManager
+from .inject_ import bind_deploy_manager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
-from .paths.owners import DeployPathOwner
 from .specs import DeploySpec
 from .tags import DeployTime
 from .tmp import DeployHomeAtomics
@@ -90,6 +90,8 @@ def bind_deploy(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
 
+        bind_deploy_conf(),
+
         bind_deploy_paths(),
 
         bind_deploy_scope(),
@@ -97,27 +99,16 @@ def bind_deploy(
 
     #
 
-    def bind_manager(cls: type) -> InjectorBindings:
-        return inj.as_bindings(
-            inj.bind(cls, singleton=True),
-
-            *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
-        )
-
-    #
-
     lst.extend([
-        bind_manager(DeployAppManager),
+        bind_deploy_manager(DeployAppManager),
 
-        bind_manager(DeployConfManager),
+        bind_deploy_manager(DeployGitManager),
 
-        bind_manager(DeployGitManager),
+        bind_deploy_manager(DeployManager),
 
-        bind_manager(DeployManager),
+        bind_deploy_manager(DeployTmpManager),
 
-        bind_manager(DeployTmpManager),
-
-        bind_manager(DeployVenvManager),
+        bind_deploy_manager(DeployVenvManager),
     ])
 
     #

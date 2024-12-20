@@ -23,14 +23,14 @@ from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
 
-from .paths.paths import DeployPath
+from ..paths.paths import DeployPath
+from ..tags import DEPLOY_TAG_SEPARATOR
+from ..tags import DeployApp
+from ..tags import DeployConf
+from ..tags import DeployTagMap
 from .specs import DeployAppConfFile
 from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
-from .tags import DEPLOY_TAG_SEPARATOR
-from .tags import DeployApp
-from .tags import DeployConf
-from .tags import DeployTagMap
 
 
 class DeployConfManager:
