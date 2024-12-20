@@ -50,7 +50,8 @@ class HashProcessor(Processor):
         if self._info.params_extras.cache_hash:
             body = [
                 f'try: return self.{self.CACHED_HASH_ATTR}',
-                f'except AttributeError: object.__setattr__(self, {self.CACHED_HASH_ATTR!r}, h := hash({self_tuple}))',
+                f'except AttributeError: pass',
+                f'object.__setattr__(self, {self.CACHED_HASH_ATTR!r}, h := hash({self_tuple}))',
                 f'return h',
             ]
         else:
