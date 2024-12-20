@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+import io
 import json
 import os.path
 import typing as ta
@@ -13,6 +14,11 @@ from omlish.lite.marshal import ObjMarshalerManager
 T = ta.TypeVar('T')
 
 ConfigMapping = ta.Mapping[str, ta.Any]
+
+IniConfigSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
+
+
+##
 
 
 def parse_config_file(
@@ -58,6 +64,9 @@ def read_config_file(
     return msh.unmarshal_obj(config_dct, cls)
 
 
+##
+
+
 def build_config_named_children(
         o: ta.Union[
             ta.Sequence[ConfigMapping],
@@ -94,3 +103,27 @@ def build_config_named_children(
         seen.add(n)
 
     return lst
+
+
+##
+
+
+def render_ini_config(
+        settings_by_section: IniConfigSectionSettingsMap,
+) -> str:
+    out = io.StringIO()
+
+    for i, (section, settings) in enumerate(settings_by_section.items()):
+        if i:
+            out.write('\n')
+
+        out.write(f'[{section}]\n')
+
+        for k, v in settings.items():
+            if isinstance(v, str):
+                out.write(f'{k}={v}\n')
+            else:
+                for vv in v:
+                    out.write(f'{k}={vv}\n')
+
+    return out.getvalue()

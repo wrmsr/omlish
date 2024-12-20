@@ -5203,6 +5203,16 @@ def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
     _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
 
 
+def register_single_field_type_obj_marshaler(fld, ty=None):
+    def inner(ty):  # noqa
+        register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
+        return ty
+    if ty is not None:
+        return inner(ty)
+    else:
+        return inner
+
+
 ##
 
 
