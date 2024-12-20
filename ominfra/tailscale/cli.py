@@ -72,7 +72,7 @@ class Cli(ap.Cli):
         else:
             return 'tailscale'
 
-    @ap.command(name='bin')
+    @ap.cmd(name='bin')
     def bin_cmd(self) -> None:
         print(self.bin())
 
@@ -84,7 +84,7 @@ class Cli(ap.Cli):
         ])
         return msh.unmarshal(json.loads(stdout.decode()), CliStatus)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('name', nargs='?'),
         name='status',
     )
@@ -97,14 +97,14 @@ class Cli(ap.Cli):
             out = status
         print(json.dumps_pretty(msh.marshal(out)))
 
-    @ap.command()
+    @ap.cmd()
     def ips(self) -> None:
         print(json.dumps_pretty({
             hn: node.ipv4s
             for hn, node in self.status().nodes_by_host_name.items()
         }))
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('name', nargs='?'),
     )
     def ip(self) -> None:

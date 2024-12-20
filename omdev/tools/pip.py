@@ -20,20 +20,20 @@ from ..pip import lookup_latest_package_version
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('package'),
     )
     def lookup_latest_version(self) -> None:
         print(lookup_latest_package_version(self.args.package))
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('path', nargs='*'),
     )
     def list_root_dists(self) -> None:
         for d in get_root_dists(paths=self.args.path):
             print(d)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('file'),
         ap.arg('-w', '--write', action='store_true'),
         ap.arg('-q', '--quiet', action='store_true'),
@@ -57,7 +57,7 @@ class Cli(ap.Cli):
             with open(self.args.file, 'w') as f:
                 f.write(new_src)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('files', nargs='*'),
         ap.arg('-r', '--follow-requirements', action='store_true'),
         ap.arg('-j', '--json', action='store_true'),

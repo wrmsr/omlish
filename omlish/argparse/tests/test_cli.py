@@ -8,7 +8,7 @@ from .. import cli
 class JunkCli(cli.ArgparseCli):
     num_runs = 0
 
-    @cli.argparse_command(
+    @cli.argparse_cmd(
         cli.argparse_arg('foo', metavar='foo'),
         cli.argparse_arg('--bar', dest='bar', action='store_true'),
     )

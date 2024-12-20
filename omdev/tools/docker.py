@@ -37,7 +37,7 @@ def get_local_platform() -> str:
 
 
 class Cli(ap.Cli):
-    @ap.command(
+    @ap.cmd(
         ap.arg('args', nargs='*'),
     )
     def ns1(self) -> None:
@@ -69,7 +69,7 @@ class Cli(ap.Cli):
             *self.args.args,
         )
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('--amd64', action='store_true'),
     )
     def enable_ptrace(self) -> None:
@@ -87,7 +87,7 @@ class Cli(ap.Cli):
             'sh', '-c', 'echo 0 > /proc/sys/kernel/yama/ptrace_scope',
         )
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('-f', '--file'),
         ap.arg('-w', '--write', action='store_true'),
         ap.arg('-q', '--quiet', action='store_true'),
@@ -182,7 +182,7 @@ class Cli(ap.Cli):
             with open(yml_file, 'w') as f:
                 f.write(new_src)
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('repo'),
         ap.arg('tags', nargs='*'),
     )
@@ -192,7 +192,7 @@ class Cli(ap.Cli):
         print(json.dumps_pretty(msh.marshal(info)))
         return 0
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('image'),
     )
     def repo_latest_image(self) -> int:
@@ -205,7 +205,7 @@ class Cli(ap.Cli):
         print(dck.select_latest_tag(info.tags, base=base))
         return 0
 
-    @ap.command(
+    @ap.cmd(
         ap.arg('-f', '--file'),
     )
     def compose_image_updates(self) -> None:
@@ -234,7 +234,7 @@ class Cli(ap.Cli):
 
     #
 
-    @ap.command()
+    @ap.cmd()
     def dockly(self) -> None:
         os.execl(
             exe := docker_exe(),
@@ -244,7 +244,7 @@ class Cli(ap.Cli):
             'lirantal/dockly',
         )
 
-    @ap.command()
+    @ap.cmd()
     def lazy(self) -> None:
         os.execl(
             exe := docker_exe(),
