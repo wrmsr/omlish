@@ -11,7 +11,7 @@ from .providers.inject import bind_interp_providers
 from .providers.running import RunningInterpProvider
 from .providers.system import SystemInterpProvider
 from .pyenv.inject import bind_interp_pyenv
-from .pyenv.pyenv import PyenvInterpProvider
+from .pyenv.provider import PyenvInterpProvider
 from .resolvers import InterpResolver
 from .resolvers import InterpResolverProviders
 from .uv.inject import bind_interp_uv
