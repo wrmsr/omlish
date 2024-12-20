@@ -96,14 +96,14 @@
     }
   },
   {
-    "module": ".magic.find",
+    "module": ".magic.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/magic/find.py",
-    "line": 230,
+    "file": "omdev/magic/__main__.py",
+    "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/findmagic",
-        "mod_name": "omdev.magic.find"
+        "cmd_name": "magic",
+        "mod_name": "omdev.magic.__main__"
       }
     }
   },

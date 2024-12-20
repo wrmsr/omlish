@@ -7,7 +7,6 @@ import typing as ta
 from .magic import Magic
 from .prepare import MagicPrepareError
 from .prepare import py_compile_magic_preparer
-from .styles import C_MAGIC_STYLE
 from .styles import PY_MAGIC_STYLE
 from .styles import MagicStyle
 
@@ -222,47 +221,3 @@ def find_magic_py_modules(
             yield fp[:-3].replace(os.sep, '.')
         else:
             yield fp
-
-
-##
-
-
-# @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'py/findmagic',
-    'mod_name': __name__,
-}}
-
-
-if __name__ == '__main__':
-    def _main(argv=None) -> None:
-        import argparse
-
-        arg_parser = argparse.ArgumentParser()
-        arg_parser.add_argument('--style', '-s', default='py')
-        arg_parser.add_argument('--key', '-k', dest='keys', action='append')
-        arg_parser.add_argument('--modules', action='store_true')
-        arg_parser.add_argument('roots', nargs='*')
-        args = arg_parser.parse_args(argv)
-
-        style = {
-            'py': PY_MAGIC_STYLE,
-            'c': C_MAGIC_STYLE,
-        }[args.style]
-
-        kw: dict = dict(
-            roots=args.roots,
-            style=style,
-            keys=args.keys,
-        )
-
-        fn: ta.Callable
-        if args.modules:
-            fn = find_magic_py_modules
-        else:
-            fn = find_magic_files
-
-        for out in fn(**kw):
-            print(out)
-
-    _main()
