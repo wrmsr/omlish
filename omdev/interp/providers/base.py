@@ -11,9 +11,9 @@ import typing as ta
 
 from omlish.lite.strings import snake_case
 
-from .types import Interp
-from .types import InterpSpecifier
-from .types import InterpVersion
+from ..types import Interp
+from ..types import InterpSpecifier
+from ..types import InterpVersion
 
 
 ##

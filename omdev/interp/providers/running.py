@@ -3,11 +3,11 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 
-from .inspect import InterpInspector
-from .providers import InterpProvider
-from .types import Interp
-from .types import InterpSpecifier
-from .types import InterpVersion
+from ..inspect import InterpInspector
+from ..types import Interp
+from ..types import InterpSpecifier
+from ..types import InterpVersion
+from .base import InterpProvider
 
 
 class RunningInterpProvider(InterpProvider):
