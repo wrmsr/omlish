@@ -1,7 +1,6 @@
 import abc
 import typing as ta
 
-from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .impl.origins import HasOriginsImpl
