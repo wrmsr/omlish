@@ -13,6 +13,9 @@ import argparse
 import asyncio
 import typing as ta
 
+from omlish.argparse.cli import ArgparseCli
+from omlish.argparse.cli import argparse_arg
+from omlish.argparse.cli import argparse_command
 from omlish.lite.check import check
 from omlish.lite.runtime import check_lite_runtime_version
 from omlish.logs.standard import configure_standard_logging
@@ -23,40 +26,30 @@ from .resolvers import InterpResolver
 from .types import InterpSpecifier
 
 
-async def _list_cmd(args) -> None:
-    r = DEFAULT_INTERP_RESOLVER
-    s = InterpSpecifier.parse(args.version)
-    await r.list(s)
-
-
-async def _resolve_cmd(args) -> None:
-    if args.provider:
-        p = INTERP_PROVIDER_TYPES_BY_NAME[args.provider]()
-        r = InterpResolver([(p.name, p)])
-    else:
+class InterpCli(ArgparseCli):
+    @argparse_command(
+        argparse_arg('version'),
+        argparse_arg('-d', '--debug', action='store_true'),
+    )
+    async def list(self) -> None:
         r = DEFAULT_INTERP_RESOLVER
-    s = InterpSpecifier.parse(args.version)
-    print(check.not_none(await r.resolve(s, install=bool(args.install))).exe)
+        s = InterpSpecifier.parse(args.version)
+        await r.list(s)
 
-
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-
-    subparsers = parser.add_subparsers()
-
-    parser_list = subparsers.add_parser('list')
-    parser_list.add_argument('version')
-    parser_list.add_argument('-d', '--debug', action='store_true')
-    parser_list.set_defaults(func=_list_cmd)
-
-    parser_resolve = subparsers.add_parser('resolve')
-    parser_resolve.add_argument('version')
-    parser_resolve.add_argument('-p', '--provider')
-    parser_resolve.add_argument('-d', '--debug', action='store_true')
-    parser_resolve.add_argument('-i', '--install', action='store_true')
-    parser_resolve.set_defaults(func=_resolve_cmd)
-
-    return parser
+    @argparse_command(
+        argparse_arg('version'),
+        argparse_arg('-p', '--provider'),
+        argparse_arg('-d', '--debug', action='store_true'),
+        argparse_arg('-i', '--install', action='store_true'),
+    )
+    async def resolve(self) -> None:
+        if args.provider:
+            p = INTERP_PROVIDER_TYPES_BY_NAME[args.provider]()
+            r = InterpResolver([(p.name, p)])
+        else:
+            r = DEFAULT_INTERP_RESOLVER
+        s = InterpSpecifier.parse(args.version)
+        print(check.not_none(await r.resolve(s, install=bool(args.install))).exe)
 
 
 async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
