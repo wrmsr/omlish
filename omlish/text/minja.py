@@ -38,12 +38,14 @@ class MinjaTemplateCompiler:
     - {# comment #}: Ignored completely.
     """
 
+    DEFAULT_INDENT: str = '  '
+
     def __init__(
             self,
             src: str,
             args: ta.Sequence[str],
             *,
-            indent: str = '  ',
+            indent: str = DEFAULT_INDENT,
     ) -> None:
         super().__init__()
 
