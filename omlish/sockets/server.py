@@ -1,12 +1,13 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import socket
 import socketserver
 import typing as ta
 
 from omlish.lite.check import check
 
-from .socket import SocketAddress
-from .socket import SocketHandlerFactory
+from .addresses import SocketAddress
+from .handlers import SocketHandlerFactory
 
 
 ##

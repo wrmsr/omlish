@@ -4,7 +4,7 @@ import socket
 import typing as ta
 
 from ...lite.check import check
-from ...lite.socket import SocketAddress
+from ...sockets.addresses import SocketAddress
 
 
 class FdioHandler(abc.ABC):

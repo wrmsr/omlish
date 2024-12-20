@@ -64,8 +64,8 @@ import time
 import typing as ta
 
 from ...lite.check import check
-from ...lite.socket import SocketAddress
-from ...lite.socket import SocketHandler
+from ...sockets.addresses import SocketAddress
+from ...sockets.handlers import SocketHandler
 from ..handlers import HttpHandler
 from ..handlers import HttpHandlerRequest
 from ..handlers import UnsupportedMethodHttpHandlerError

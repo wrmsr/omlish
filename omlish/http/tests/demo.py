@@ -10,11 +10,11 @@ import socket
 import socketserver
 import sys
 
-from ...socket import get_best_socket_family
-from ...socketserver import SocketHandlerSocketServerStreamRequestHandler
-from ..coroserver import CoroHttpServer
-from ..coroserver import CoroHttpServerSocketHandler
-from ..coroserver import UnsupportedMethodHttpHandlerError
+from ...sockets.addresses import get_best_socket_family
+from ...sockets.server import SocketHandlerSocketServerStreamRequestHandler
+from ..coro.server import CoroHttpServer
+from ..coro.server import CoroHttpServerSocketHandler
+from ..coro.server import UnsupportedMethodHttpHandlerError
 from ..handlers import HttpHandlerRequest
 from ..handlers import HttpHandlerResponse
 from ..parsing import HttpRequestParser
