@@ -8,7 +8,10 @@ from omlish.lite.inject import inj
 
 from .inspect import InterpInspector
 from .providers.inject import bind_interp_providers
+from .providers.running import RunningInterpProvider
+from .providers.system import SystemInterpProvider
 from .pyenv.inject import bind_interp_pyenv
+from .pyenv.pyenv import PyenvInterpProvider
 from .resolvers import InterpResolver
 from .resolvers import InterpResolverProviders
 from .uv.inject import bind_interp_uv
@@ -29,10 +32,6 @@ def bind_interp() -> InjectorBindings:
 
     def provide_interp_resolver_providers(injector: Injector) -> InterpResolverProviders:
         # FIXME: lol
-        from .providers.running import RunningInterpProvider
-        from .providers.system import SystemInterpProvider
-        from .pyenv.pyenv import PyenvInterpProvider
-
         rps: ta.List[ta.Any] = [
             injector.provide(c)
             for c in [
