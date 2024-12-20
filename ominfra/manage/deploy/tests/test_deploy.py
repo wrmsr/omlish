@@ -11,12 +11,12 @@ from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.strings import strip_with_newline
 
+from ..conf.specs import DeployAppConfFile
+from ..conf.specs import DeployAppConfLink
 from ..config import DeployConfig
 from ..driver import DeployDriverFactory
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
-from ..specs import DeployAppConfFile
-from ..specs import DeployAppConfLink
 from ..specs import DeployAppConfSpec
 from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
