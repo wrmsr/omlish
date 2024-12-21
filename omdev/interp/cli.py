@@ -66,7 +66,7 @@ async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_lite_runtime_version()
     configure_standard_logging()
 
-    cli = ArgparseCli(argv)
+    cli = InterpCli(argv)
     await cli.async_cli_run()
 
 
