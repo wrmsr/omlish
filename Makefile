@@ -142,7 +142,7 @@ gen-amalg: venv
 
 .PHONY: gen-cmake
 gen-cmake:
-	${PYTHON} -m omdev.cexts.cmake gen ${SRCS} x/dev/c
+	${PYTHON} -m omdev.cexts.cmake gen ${SRCS}
 
 .PHONY: gen-manifest
 gen-manifest:
