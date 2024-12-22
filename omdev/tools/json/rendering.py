@@ -3,10 +3,10 @@ import json
 import typing as ta
 
 from omlish import lang
-from omlish import term
 from omlish.formats.json.render import JsonRenderer
 from omlish.formats.json.stream.parse import JsonStreamParserEvent
 from omlish.formats.json.stream.render import StreamJsonRenderer
+from omlish.term import codes as tc
 
 
 ##
@@ -43,9 +43,9 @@ class Renderer(lang.Abstract):
 
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
     if state is JsonRenderer.State.KEY:
-        return term.SGR(term.SGRs.FG.BRIGHT_BLUE), term.SGR(term.SGRs.RESET)
+        return tc.SGR(tc.SGRs.FG.BRIGHT_BLUE), tc.SGR(tc.SGRs.RESET)
     elif isinstance(o, str):
-        return term.SGR(term.SGRs.FG.GREEN), term.SGR(term.SGRs.RESET)
+        return tc.SGR(tc.SGRs.FG.GREEN), tc.SGR(tc.SGRs.RESET)
     else:
         return '', ''
 

@@ -2,15 +2,15 @@
 import logging
 import typing as ta
 
-from .. import term
+from ..term import codes as tc
 from .standard import StandardLogFormatter
 
 
 class ColorLogFormatter(StandardLogFormatter):
-    LEVEL_COLORS: ta.Mapping[int, term.SGRs.FG] = {
-        logging.WARNING: term.SGRs.FG.BRIGHT_YELLOW,
-        logging.ERROR: term.SGRs.FG.BRIGHT_RED,
-        logging.CRITICAL: term.SGRs.FG.BRIGHT_RED,
+    LEVEL_COLORS: ta.Mapping[int, tc.SGRs.FG] = {
+        logging.WARNING: tc.SGRs.FG.BRIGHT_YELLOW,
+        logging.ERROR: tc.SGRs.FG.BRIGHT_RED,
+        logging.CRITICAL: tc.SGRs.FG.BRIGHT_RED,
     }
 
     def formatMessage(self, record):
@@ -20,5 +20,5 @@ class ColorLogFormatter(StandardLogFormatter):
         except KeyError:
             pass
         else:
-            buf = term.SGR(c) + buf + term.SGR(term.SGRs.RESET)
+            buf = tc.SGR(c) + buf + tc.SGR(tc.SGRs.RESET)
         return buf

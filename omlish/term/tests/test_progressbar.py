@@ -1,7 +1,7 @@
 import io
 import time
 
-from ..term import progress_bar
+from ..progressbar import progress_bar
 
 
 def test_progress_bar() -> None:
