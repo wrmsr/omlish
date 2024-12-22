@@ -30,7 +30,7 @@ backoff==2.2.1
 bayesian-optimization==1.4.0
 bcrypt==4.2.1
 beautifulsoup4==4.12.3
-bellows==0.42.5
+bellows==0.42.6
 bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
@@ -70,7 +70,7 @@ contourpy==1.3.1
 courlan==1.3.2
 cramjam==2.9.1
 crccheck==1.3.0
-cryptography==43.0.3
+cryptography==44.0.0
 customtkinter==5.2.2
 cycler==0.12.1
 cymem==2.0.10
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==6.3.7
+duckduckgo_search==7.0.1
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -182,7 +182,7 @@ jaraco.context==6.0.1
 jaraco.functools==4.1.0
 jedi==0.19.2
 jedi-language-server==0.42.0
-Jinja2==3.1.4
+Jinja2==3.1.5
 jiter==0.6.1
 jmespath==1.0.1
 joblib==1.4.2
@@ -287,7 +287,7 @@ networkx==3.4.2
 nevergrad==1.0.8
 nh3==0.2.20
 nltk==3.9.1
-notebook==7.3.1
+notebook==7.3.2
 notebook_shim==0.2.4
 numba==0.60.0
 numpy==1.26.4
@@ -525,7 +525,7 @@ unstructured==0.16.11
 unstructured-client==0.25.9
 uri-template==1.3.0
 uritemplate==4.1.1
-urllib3==2.2.3
+urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.6
@@ -553,7 +553,7 @@ wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
 yarl==1.18.3
-zigpy==0.73.1
+zigpy==0.73.2
 zipp==3.21.0
 zope.event==5.0
 zope.interface==7.2

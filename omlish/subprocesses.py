@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import abc
 import contextlib
 import logging

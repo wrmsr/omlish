@@ -93,7 +93,7 @@ ipykernel==6.29.4
 ipywidgets==8.1.2
 jupyter-console==6.6.3
 nbconvert==7.16.4
-notebook==7.3.1
+notebook==7.3.2
 qtconsole==5.5.1
 
 fairscale==0.4.13
@@ -159,8 +159,8 @@ soco==0.30.6
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.42.5
-zigpy==0.73.1
+bellows==0.42.6
+zigpy==0.73.2
 
 # python-openzwave
 zwave-js-server-python==0.60.0
