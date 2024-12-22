@@ -21,7 +21,7 @@ ruff==0.8.4
 docutils-stubs==0.0.22
 types-markdown==3.7.0.20241204
 types-paramiko==3.5.0.20240928  # @omlish-venv !13t
-types-pyyaml==6.0.12.20240917
+types-pyyaml==6.0.12.20241221
 types-ujson==5.10.0.20240515
 
 black==24.10.0
@@ -32,7 +32,7 @@ gprof2dot==2024.6.6
 guppy3==3.1.4.post1; python_version < "3.13"
 objgraph==3.6.2
 
-ipython==8.30.0
+ipython==8.31.0
 
 pg8000==1.31.2
 pymysql==1.1.1
