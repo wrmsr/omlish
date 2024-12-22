@@ -53,7 +53,7 @@ class Uv:
                 self._log.info(f'Bootstrapping uv into %s', bd)
 
             vn = 'uv-bootstrap'
-            await asyncio_subprocesses.check_call(sys.executable, '-m', 'venv', vn, cwd=bd)
+            await asyncio_subprocesses.check_call(os.path.realpath(sys.executable), '-m', 'venv', vn, cwd=bd)
 
             vx = os.path.join(bd, vn, 'bin', 'python3')
             await asyncio_subprocesses.check_call(vx, '-m', 'pip', 'install', 'uv', cwd=bd)
