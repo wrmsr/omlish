@@ -39,17 +39,19 @@ from .types import DeployHome
 
 
 class DeploySystemdManager:
-    def _unlink_all(
+    def _scan_link_dir(
             self,
-            home: DeployHome,
-            unit_dir: str,
-    ) -> None:
-        for f in os.listdir(unit_dir):
-            fp = os.path.join(unit_dir, f)
-            if os.path.islink(fp):
-                if is_path_in_dir(home, fp):
-                    os.unlink(fp)
-
+            d: str,
+            *,
+            strict: bool = False,
+    ) -> ta.Dict[str, str]:
+        o: ta.Dict[str, str] = {}
+        for f in os.listdir(d):
+            fp = os.path.join(d, f)
+            if strict:
+                check.state(os.path.islink(fp))
+            o[f] = abs_real_path(fp)
+        return o
 
     async def sync_systemd(
             self,
@@ -69,11 +71,21 @@ class DeploySystemdManager:
 
         os.makedirs(ud, exist_ok=True)
 
-        # FIXME: don't unlink unnecessarily
-        self._unlink_all(home, ud)
+        uld = {
+            n: p
+            for n, p in self._scan_link_dir(ud).items()
+            if is_path_in_dir(p, home)
+        }
 
         if os.path.exists(conf_dir):
-            for f in os.listdir(conf_dir):
-                fp = abs_real_path(os.path.join(conf_dir, f))
-                check.state(os.path.isfile(fp))
-                relative_symlink(fp, os.path.join(ud, f))
+            cld = self._scan_link_dir(conf_dir, strict=True)
+        else:
+            cld = {}
+
+        for n in sorted(set(uld) | set(cld)):
+            ul = uld.get(n)  # noqa
+            cl = cld.get(n)
+            if cl is None:
+                os.unlink(os.path.join(ud, n))
+            else:
+                relative_symlink(cl, os.path.join(ud, n))
