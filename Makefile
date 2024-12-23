@@ -136,8 +136,10 @@ gen: gen-amalg gen-cmake gen-manifest gen-pkg
 .PHONY: gen-amalg
 gen-amalg: venv
 	${PYTHON} -m omdev.amalg gen \
-		-m omlish \
 		-m omdev \
+		-m ominfra \
+		-m omlish \
+		-m omserv \
 		${SRCS}
 
 .PHONY: gen-cmake

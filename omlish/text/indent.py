@@ -1,19 +1,20 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import contextlib
 import io
 import typing as ta
 
-from .. import check
+from omlish.lite.check import check
 
 
 class IndentWriter:
-
     DEFAULT_INDENT = ' ' * 4
 
     def __init__(
             self,
             *,
-            buf: io.StringIO | None = None,
-            indent: str | None = None,
+            buf: ta.Optional[io.StringIO] = None,
+            indent: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 

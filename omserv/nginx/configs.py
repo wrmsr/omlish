@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 """
 TODO:
  - omnibus/jmespath
@@ -12,43 +14,42 @@ import collections.abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omlish.lite.check import check
 from omlish.text.indent import IndentWriter
 
 
 @dc.dataclass()
-class Items(lang.Final):
-    lst: list['Item']
+class NginxConfigItems:
+    lst: ta.List['NginxConfigItem']
 
     @classmethod
-    def of(cls, obj: ta.Any) -> 'Items':
-        if isinstance(obj, Items):
+    def of(cls, obj: ta.Any) -> 'NginxConfigItems':
+        if isinstance(obj, NginxConfigItems):
             return obj
-        return cls([Item.of(e) for e in check.isinstance(obj, list)])
+        return cls([NginxConfigItem.of(e) for e in check.isinstance(obj, list)])
 
 
 @dc.dataclass()
-class Item(lang.Final):
+class NginxConfigItem:
     name: str
-    args: list[str] | None = None
-    block: Items | None = None
+    args: ta.Optional[ta.List[str]] = None
+    block: ta.Optional[NginxConfigItems] = None
 
     @classmethod
-    def of(cls, obj: ta.Any) -> 'Item':
-        if isinstance(obj, Item):
+    def of(cls, obj: ta.Any) -> 'NginxConfigItem':
+        if isinstance(obj, NginxConfigItem):
             return obj
         args = check.isinstance(check.not_isinstance(obj, str), collections.abc.Sequence)
         name, args = check.isinstance(args[0], str), args[1:]
         if args and not isinstance(args[-1], str):
-            block, args = Items.of(args[-1]), args[:-1]
+            block, args = NginxConfigItems.of(args[-1]), args[:-1]
         else:
             block = None
-        return Item(name, [check.isinstance(e, str) for e in args], block=block)
+        return NginxConfigItem(name, [check.isinstance(e, str) for e in args], block=block)
 
 
-def render(wr: IndentWriter, obj: ta.Any) -> None:
-    if isinstance(obj, Item):
+def render_nginx_config(wr: IndentWriter, obj: ta.Any) -> None:
+    if isinstance(obj, NginxConfigItem):
         wr.write(obj.name)
         for e in obj.args or ():
             wr.write(' ')
@@ -56,14 +57,14 @@ def render(wr: IndentWriter, obj: ta.Any) -> None:
         if obj.block:
             wr.write(' {\n')
             with wr.indent():
-                render(wr, obj.block)
+                render_nginx_config(wr, obj.block)
             wr.write('}\n')
         else:
             wr.write(';\n')
 
-    elif isinstance(obj, Items):
+    elif isinstance(obj, NginxConfigItems):
         for e2 in obj.lst:
-            render(wr, e2)
+            render_nginx_config(wr, e2)
 
     else:
         raise TypeError(obj)
