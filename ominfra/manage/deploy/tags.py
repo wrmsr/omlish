@@ -29,7 +29,7 @@ DEPLOY_TAG_ILLEGAL_STRS: ta.AbstractSet[str] = frozenset([
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, order=True)
 class DeployTag(abc.ABC):  # noqa
     s: str
 

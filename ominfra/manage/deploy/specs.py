@@ -95,6 +95,8 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 class DeployAppLinksSpec:
     apps: ta.Sequence[DeployApp] = ()
 
+    exclude_unspecified: bool = False
+
 
 ##
 
