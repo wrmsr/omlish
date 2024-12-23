@@ -12,6 +12,7 @@ from omlish.lite.typing import Func1
 from omlish.os.paths import relative_symlink
 
 from .apps import DeployAppManager
+from .conf.manager import DeployConfManager
 from .paths.manager import DeployPathsManager
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
@@ -104,6 +105,7 @@ class DeployDriver:
             deploys: DeployManager,
             paths: DeployPathsManager,
             apps: DeployAppManager,
+            conf: DeployConfManager,
 
             msh: ObjMarshalerManager,
     ) -> None:
@@ -116,6 +118,7 @@ class DeployDriver:
         self._deploys = deploys
         self._paths = paths
         self._apps = apps
+        self._conf = conf
 
         self._msh = msh
 
@@ -128,8 +131,8 @@ class DeployDriver:
             self._spec.key(),
         )
 
-    def render_deploy_path(self, pth: DeployPath) -> str:
-        return os.path.join(self._home, pth.render(self.deploy_tags()))
+    def render_deploy_path(self, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return os.path.join(self._home, pth.render(tags if tags is not None else self.deploy_tags()))
 
     @property
     def deploy_dir(self) -> str:
@@ -168,19 +171,21 @@ class DeployDriver:
 
         #
 
-        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
-        os.makedirs(deploy_conf_dir, exist_ok=True)
-
-        #
-
-        spec_file = os.path.join(deploy_dir, 'spec.json')
-        with open(spec_file, 'w') as f:
-            f.write(spec_json)
+        for md in [
+            self._deploys.APPS_DEPLOY_DIR,
+            self._deploys.CONF_DEPLOY_DIR,
+        ]:
+            os.makedirs(self.render_deploy_path(md))
 
         #
 
         for app in self._spec.apps:
             await self.drive_app_deploy(app)
+
+        #
+
+        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+        os.replace(deploying_link, current_link)
 
     #
 
@@ -193,18 +198,26 @@ class DeployDriver:
 
         #
 
-        os.makedirs(app_dir)
+        app_dir = await self._apps.prepare_app(
+            app,
+            self._home,
+            app_tags,
+        )
+
+        #
+
+        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, app_tags)
         relative_symlink(
             app_dir,
-            app_deploy_link,
+            app_link,
             target_is_directory=True,
             make_dirs=True,
         )
 
         #
 
-        await self._apps.prepare_app(
-            app,
-            self._home,
-            app_tags,
-        )
+        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
+        os.makedirs(deploy_conf_dir, exist_ok=True)
+
+        #
+

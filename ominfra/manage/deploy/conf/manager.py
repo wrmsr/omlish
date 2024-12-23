@@ -69,6 +69,17 @@ class DeployConfManager:
         with open(conf_file, 'w') as f:  # noqa
             f.write(body)
 
+    async def write_app_conf(
+            self,
+            spec: DeployAppConfSpec,
+            app_conf_dir: str,
+    ) -> None:
+        for acf in spec.files or []:
+            await self._write_app_conf_file(
+                acf,
+                app_conf_dir,
+            )
+
     #
 
     class _ComputedConfLink(ta.NamedTuple):
@@ -178,23 +189,13 @@ class DeployConfManager:
             make_dirs=True,
         )
 
-    #
-
-    async def write_app_conf(
+    async def link_app_conf(
             self,
             spec: DeployAppConfSpec,
             tags: DeployTagMap,
             app_conf_dir: str,
             conf_link_dir: str,
-    ) -> None:
-        for acf in spec.files or []:
-            await self._write_app_conf_file(
-                acf,
-                app_conf_dir,
-            )
-
-        #
-
+    ):
         for link in spec.links or []:
             await self._make_app_conf_link(
                 link,

@@ -16,9 +16,9 @@ from .commands import DeployCommand
 from .commands import DeployCommandExecutor
 from .conf.inject import bind_deploy_conf
 from .config import DeployConfig
-from .deploy import DeployManager
 from .deploy import DeployDriver
 from .deploy import DeployDriverFactory
+from .deploy import DeployManager
 from .git import DeployGitManager
 from .inject_ import bind_deploy_manager
 from .interp import InterpCommand

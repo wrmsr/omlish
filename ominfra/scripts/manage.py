@@ -7952,37 +7952,6 @@ class DeployAppConfSpec:
 
 
 ########################################
-# ../deploy/deploy.py
-
-
-DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
-
-
-DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
-
-
-class DeployManager:
-    def __init__(
-            self,
-            *,
-
-            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
-    ):
-        super().__init__()
-
-        self._utc_clock = utc_clock
-
-    def _utc_now(self) -> datetime.datetime:
-        if self._utc_clock is not None:
-            return self._utc_clock()  # noqa
-        else:
-            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-
-    def make_deploy_time(self) -> DeployTime:
-        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
-
-
-########################################
 # ../deploy/paths/paths.py
 """
 TODO:
@@ -8003,6 +7972,10 @@ class DeployPathError(Exception):
 
 
 class DeployPathRenderable(abc.ABC):
+    @cached_nullary
+    def __str__(self) -> str:
+        return self.render(None)
+
     @abc.abstractmethod
     def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         raise NotImplementedError
@@ -8144,7 +8117,7 @@ class FileDeployPathPart(DeployPathPart):
 
 
 @dc.dataclass(frozen=True)
-class DeployPath:
+class DeployPath(DeployPathRenderable):
     parts: ta.Sequence[DeployPathPart]
 
     @property
@@ -9189,6 +9162,17 @@ class DeployConfManager:
         with open(conf_file, 'w') as f:  # noqa
             f.write(body)
 
+    async def write_app_conf(
+            self,
+            spec: DeployAppConfSpec,
+            app_conf_dir: str,
+    ) -> None:
+        for acf in spec.files or []:
+            await self._write_app_conf_file(
+                acf,
+                app_conf_dir,
+            )
+
     #
 
     class _ComputedConfLink(ta.NamedTuple):
@@ -9298,23 +9282,13 @@ class DeployConfManager:
             make_dirs=True,
         )
 
-    #
-
-    async def write_app_conf(
+    async def link_app_conf(
             self,
             spec: DeployAppConfSpec,
             tags: DeployTagMap,
             app_conf_dir: str,
             conf_link_dir: str,
-    ) -> None:
-        for acf in spec.files or []:
-            await self._write_app_conf_file(
-                acf,
-                app_conf_dir,
-            )
-
-        #
-
+    ):
         for link in spec.links or []:
             await self._make_app_conf_link(
                 link,
@@ -11245,39 +11219,31 @@ class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
+            conf: DeployConfManager,
+
+            msh: ObjMarshalerManager,
     ) -> None:
         super().__init__()
 
-        self._conf = conf
         self._git = git
         self._venvs = venvs
+        self._conf = conf
+
+        self._msh = msh
 
     #
 
-    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
-    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
-
-    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
-    _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
-
-    _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
+    APP_DIR = DeployPath.parse('apps/@app/@time--@app-rev--@app-key/')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            self._APP_DIR,
-
-            self._DEPLOY_DIR,
-
-            self._APP_DEPLOY_LINK,
-            self._CONF_DEPLOY_DIR,
+            self.APP_DIR,
 
             *[
-                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
+                DeployPath.parse(f'{self.APP_DIR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
@@ -11293,78 +11259,22 @@ class DeployAppManager(DeployPathOwner):
             spec: DeployAppSpec,
             home: DeployHome,
             tags: DeployTagMap,
-    ) -> None:
+    ) -> str:
+        spec_json = json_dumps_pretty(self._msh.marshal_obj(spec))
+
+        #
+
         check.non_empty_str(home)
 
-        def build_path(pth: DeployPath) -> str:
-            return os.path.join(home, pth.render(tags))
+        app_dir = os.path.join(home, self.APP_DIR.render(tags))
 
-        app_dir = build_path(self._APP_DIR)
-        deploy_dir = build_path(self._DEPLOY_DIR)
-        app_deploy_link = build_path(self._APP_DEPLOY_LINK)
+        os.makedirs(app_dir, exist_ok=True)
 
         #
 
-        os.makedirs(deploy_dir, exist_ok=True)
-
-        deploying_link = os.path.join(home, 'deploys/deploying')
-        if os.path.exists(deploying_link):
-            os.unlink(deploying_link)
-        relative_symlink(
-            deploy_dir,
-            deploying_link,
-            target_is_directory=True,
-            make_dirs=True,
-        )
-
-        #
-
-        os.makedirs(app_dir)
-        relative_symlink(
-            app_dir,
-            app_deploy_link,
-            target_is_directory=True,
-            make_dirs=True,
-        )
-
-        #
-
-        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
-        os.makedirs(deploy_conf_dir, exist_ok=True)
-
-        #
-
-        # def mirror_symlinks(src: str, dst: str) -> None:
-        #     def mirror_link(lp: str) -> None:
-        #         check.state(os.path.islink(lp))
-        #         shutil.copy2(
-        #             lp,
-        #             os.path.join(dst, os.path.relpath(lp, src)),
-        #             follow_symlinks=False,
-        #         )
-        #
-        #     for dp, dns, fns in os.walk(src, followlinks=False):
-        #         for fn in fns:
-        #             mirror_link(os.path.join(dp, fn))
-        #
-        #         for dn in dns:
-        #             dp2 = os.path.join(dp, dn)
-        #             if os.path.islink(dp2):
-        #                 mirror_link(dp2)
-        #             else:
-        #                 os.makedirs(os.path.join(dst, os.path.relpath(dp2, src)))
-
-        current_link = os.path.join(home, 'deploys/current')
-
-        # if os.path.exists(current_link):
-        #     mirror_symlinks(
-        #         os.path.join(current_link, 'conf'),
-        #         conf_tag_dir,
-        #     )
-        #     mirror_symlinks(
-        #         os.path.join(current_link, 'apps'),
-        #         os.path.join(deploy_dir, 'apps'),
-        #     )
+        spec_file = os.path.join(app_dir, 'spec.json')
+        with open(spec_file, 'w') as f:
+            f.write(spec_json)
 
         #
 
@@ -11392,18 +11302,82 @@ class DeployAppManager(DeployPathOwner):
             app_conf_dir = os.path.join(app_dir, 'conf')
             await self._conf.write_app_conf(
                 spec.conf,
-                tags,
                 app_conf_dir,
-                deploy_conf_dir,
             )
 
         #
 
-        os.replace(deploying_link, current_link)
+        return app_dir
 
 
 ########################################
-# ../deploy/driver.py
+# ../deploy/deploy.py
+
+
+##
+
+
+DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+
+
+DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])
+
+
+class DeployManager(DeployPathOwner):
+    def __init__(
+            self,
+            *,
+            utc_clock: ta.Optional[DeployManagerUtcClock] = None,
+    ):
+        super().__init__()
+
+        self._utc_clock = utc_clock
+
+    #
+
+    DEPLOYS_DIR = DeployPath.parse('deploys/')
+
+    CURRENT_DEPLOY_LINK = DeployPath.parse(f'{DEPLOYS_DIR}current')
+    DEPLOYING_DEPLOY_LINK = DeployPath.parse(f'{DEPLOYS_DIR}deploying')
+
+    DEPLOY_DIR = DeployPath.parse(f'{DEPLOYS_DIR}@time--@deploy-key/')
+    DEPLOY_SPEC_FILE = DeployPath.parse(f'{DEPLOY_DIR}spec.json')
+
+    APPS_DEPLOY_DIR = DeployPath.parse(f'{DEPLOY_DIR}apps/')
+    APP_DEPLOY_LINK = DeployPath.parse(f'{APPS_DEPLOY_DIR}@app')
+
+    CONF_DEPLOY_DIR = DeployPath.parse(f'{DEPLOY_DIR}conf/@conf/')
+
+    @cached_nullary
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            self.DEPLOYS_DIR,
+
+            self.CURRENT_DEPLOY_LINK,
+            self.DEPLOYING_DEPLOY_LINK,
+
+            self.DEPLOY_DIR,
+            self.DEPLOY_SPEC_FILE,
+
+            self.APPS_DEPLOY_DIR,
+            self.APP_DEPLOY_LINK,
+
+            self.CONF_DEPLOY_DIR,
+        }
+
+    #
+
+    def _utc_now(self) -> datetime.datetime:
+        if self._utc_clock is not None:
+            return self._utc_clock()  # noqa
+        else:
+            return datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+
+    def make_deploy_time(self) -> DeployTime:
+        return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
+
+
+##
 
 
 class DeployDriverFactory(Func1[DeploySpec, ta.ContextManager['DeployDriver']]):
@@ -11418,8 +11392,12 @@ class DeployDriver:
             home: DeployHome,
             time: DeployTime,
 
+            deploys: DeployManager,
             paths: DeployPathsManager,
             apps: DeployAppManager,
+            conf: DeployConfManager,
+
+            msh: ObjMarshalerManager,
     ) -> None:
         super().__init__()
 
@@ -11427,33 +11405,111 @@ class DeployDriver:
         self._home = home
         self._time = time
 
+        self._deploys = deploys
         self._paths = paths
         self._apps = apps
+        self._conf = conf
 
-    async def drive_deploy(self) -> None:
-        self._paths.validate_deploy_paths()
+        self._msh = msh
 
-        #
+    #
 
-        deploy_tags = DeployTagMap(
+    @cached_nullary
+    def deploy_tags(self) -> DeployTagMap:
+        return DeployTagMap(
             self._time,
             self._spec.key(),
         )
 
+    def render_deploy_path(self, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return os.path.join(self._home, pth.render(tags if tags is not None else self.deploy_tags()))
+
+    @property
+    def deploy_dir(self) -> str:
+        return self.render_deploy_path(self._deploys.DEPLOY_DIR)
+
+    #
+
+    async def drive_deploy(self) -> None:
+        spec_json = json_dumps_pretty(self._msh.marshal_obj(self._spec))
+
+        #
+
+        self._paths.validate_deploy_paths()
+
+        #
+
+        os.makedirs(self.deploy_dir)
+
+        #
+
+        spec_file = self.render_deploy_path(self._deploys.DEPLOY_SPEC_FILE)
+        with open(spec_file, 'w') as f:
+            f.write(spec_json)
+
+        #
+
+        deploying_link = self.render_deploy_path(self._deploys.DEPLOYING_DEPLOY_LINK)
+        if os.path.exists(deploying_link):
+            os.unlink(deploying_link)
+        relative_symlink(
+            self.deploy_dir,
+            deploying_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        for md in [
+            self._deploys.APPS_DEPLOY_DIR,
+            self._deploys.CONF_DEPLOY_DIR,
+        ]:
+            os.makedirs(self.render_deploy_path(md))
+
         #
 
         for app in self._spec.apps:
-            app_tags = deploy_tags.add(
-                app.app,
-                app.key(),
-                DeployAppRev(app.git.rev),
-            )
+            await self.drive_app_deploy(app)
 
-            await self._apps.prepare_app(
-                app,
-                self._home,
-                app_tags,
-            )
+        #
+
+        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+        os.replace(deploying_link, current_link)
+
+    #
+
+    async def drive_app_deploy(self, app: DeployAppSpec) -> None:
+        app_tags = self.deploy_tags.add(
+            app.app,
+            app.key(),
+            DeployAppRev(app.git.rev),
+        )
+
+        #
+
+        app_dir = await self._apps.prepare_app(
+            app,
+            self._home,
+            app_tags,
+        )
+
+        #
+
+        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, app_tags)
+        relative_symlink(
+            app_dir,
+            app_link,
+            target_is_directory=True,
+            make_dirs=True,
+        )
+
+        #
+
+        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
+        os.makedirs(deploy_conf_dir, exist_ok=True)
+
+        #
 
 
 ########################################
