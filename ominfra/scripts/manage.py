@@ -10980,6 +10980,7 @@ TODO:
  - sudo loginctl enable-linger "$USER"
  - idemp kill services that shouldn't be running, start ones that should
   - ideally only those defined by links to deploy home
+  - ominfra.systemd / x.sd_orphans
 """
 
 
@@ -11081,9 +11082,8 @@ class DeploySystemdManager:
                             cs = ['restart']
                     else:  # noqa
                         if ul is not None:
-                            cs = []
-                            # cs = ['stop']
-                            # num_deleted += 1
+                            cs = ['stop']
+                            num_deleted += 1
                         else:
                             cs = []
 

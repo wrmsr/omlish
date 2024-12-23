@@ -28,8 +28,7 @@ class SystemdListUnit:
         ]
 
 
-
-PARSABLE_SYSTEMD_LIST_UNIT_ARGS = [
+PARSABLE_SYSTEMD_LIST_UNIT_ARGS: ta.Sequence[str] = [
     '--all',
     '--no-legend',
     '--no-pager',
