@@ -10967,7 +10967,9 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         async def fetch(self, rev: DeployRev) -> None:
             await self.init()
-            await self._call('git', 'fetch', '--depth=1', 'origin', rev)
+
+            # This fetch shouldn't be depth=1 - git doesn't reuse local data with shallow fetches.
+            await self._call('git', 'fetch', 'origin', rev)
 
         #
 
