@@ -176,6 +176,12 @@ class ReadableListBuffer:
 
         return None
 
+    def read_exact(self, sz: int) -> bytes:
+        d = self.read(sz)
+        if d is None or len(d) != sz:
+            raise EOFError(f'GeneratorReader got {"no" if d is None else len(d)}, expected {sz}')
+        return d
+
     def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
         if not (lst := self._lst):
             return None
