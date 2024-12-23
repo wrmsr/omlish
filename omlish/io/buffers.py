@@ -129,9 +129,14 @@ class DelimitingBuffer:
 
 
 class ReadableListBuffer:
+    # FIXME: merge with PrependableGeneratorReader
+
     def __init__(self) -> None:
         super().__init__()
         self._lst: list[bytes] = []
+
+    def __len__(self) -> int:
+        return sum(map(len, self._lst))
 
     def feed(self, d: bytes) -> None:
         if d:

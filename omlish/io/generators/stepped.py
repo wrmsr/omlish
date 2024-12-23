@@ -2,6 +2,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ..buffers import ReadableListBuffer
 from .consts import DEFAULT_BUFFER_SIZE
 from .direct import BytesDirectGenerator
 from .direct import StrDirectGenerator
@@ -149,33 +150,33 @@ def read_into_str_stepped_generator(
 
 @lang.autostart
 def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> BytesSteppedGenerator:
+    i: bytes | None
     o = g.send(None)
-    buf: ta.Any = None
+    rlb = ReadableListBuffer()
     eof = False
 
     while True:
         if eof:
             raise EOFError
 
-        if not buf:
-            buf = check.isinstance((yield None), bytes)
-            if not buf:
+        if not len(rlb):
+            if (more := check.isinstance((yield None), bytes)):
+                rlb.feed(more)
+            else:
                 eof = True
 
         if o is None:
-            i = buf
-            buf = None
+            i = check.not_none(rlb.read())
 
         elif isinstance(o, int):
-            while len(buf) < o:
+            while len(rlb) < o:
                 more = check.isinstance((yield None), bytes)
                 if not more:
                     raise EOFError
                 # FIXME: lol - share guts with readers
-                buf += more
+                rlb.feed(more)
 
-            i = buf[:o]
-            buf = buf[o:]
+            i = check.not_none(rlb.read(o))
 
         else:
             raise TypeError(o)
