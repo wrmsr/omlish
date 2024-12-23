@@ -183,8 +183,9 @@ class DeployDriver:
 
         das: ta.Set[DeployApp] = {a.app for a in self._spec.apps}
         las: ta.Set[DeployApp] = set(self._spec.app_links.apps)
-        if (ras := das & las):
-            raise RuntimeError(f'Must not specify apps as both deploy and link: {sorted(a.s for a in ras)}')
+        ras: ta.Set[DeployApp] = set(self._spec.app_links.removed_apps)
+        check.empty(das & (las | ras))
+        check.empty(las & ras)
 
         #
 
@@ -230,7 +231,7 @@ class DeployDriver:
             cad = abs_real_path(os.path.join(current_link, 'apps'))
             if os.path.exists(cad):
                 for d in os.listdir(cad):
-                    if (da := DeployApp(d)) not in das:
+                    if (da := DeployApp(d)) not in das and da not in ras:
                         las.add(da)
 
         for la in self._spec.app_links.apps:
