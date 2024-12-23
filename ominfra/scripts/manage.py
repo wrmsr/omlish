@@ -9268,20 +9268,48 @@ TODO:
 """
 
 
+##
+
+
 class DeployConfManager:
+    def _process_conf_str(self, s: str) -> str:
+        return s
+
+    def _process_conf_content(self, o: T) -> T:
+        if isinstance(o, str):
+            return type(o)(self._process_conf_str(o))  # type: ignore
+
+        elif isinstance(o, collections.abc.Mapping):
+            return type(o)([  # type: ignore
+                (self._process_conf_content(k), self._process_conf_content(v))
+                for k, v in o.items()
+            ])
+
+        elif isinstance(o, collections.abc.Iterable):
+            return type(o)([  # type: ignore
+                self._process_conf_content(e) for e in o
+            ])
+
+        else:
+            return o
+
+    #
+
     def _render_app_conf_content(self, ac: DeployAppConfContent) -> str:
         if isinstance(ac, RawDeployAppConfContent):
-            return ac.body
+            return self._process_conf_content(ac.body)
 
         elif isinstance(ac, JsonDeployAppConfContent):
-            return strip_with_newline(json_dumps_pretty(ac.obj))
+            json_obj = self._process_conf_content(ac.obj)
+            return strip_with_newline(json_dumps_pretty(json_obj))
 
         elif isinstance(ac, IniDeployAppConfContent):
-            return strip_with_newline(render_ini_config(ac.sections))
+            ini_sections = self._process_conf_content(ac.sections)
+            return strip_with_newline(render_ini_config(ini_sections))
 
         elif isinstance(ac, NginxDeployAppConfContent):
-            ni = NginxConfigItems.of(ac.items)
-            return strip_with_newline(render_nginx_config_str(ni))
+            nginx_items = NginxConfigItems.of(self._process_conf_content(ac.items))
+            return strip_with_newline(render_nginx_config_str(nginx_items))
 
         else:
             raise TypeError(ac)

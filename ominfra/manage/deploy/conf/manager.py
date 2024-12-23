@@ -16,6 +16,7 @@ TODO:
   - some things (venvs) cannot be moved, thus the /deploy/venvs dir
   - ** ensure (enforce) equivalent relpath nesting
 """
+import collections.abc
 import os.path
 import typing as ta
 
@@ -50,8 +51,26 @@ T = ta.TypeVar('T')
 
 
 class DeployConfManager:
+    def _process_conf_str(self, s: str) -> str:
+        return s
+
     def _process_conf_content(self, o: T) -> T:
-        return o
+        if isinstance(o, str):
+            return type(o)(self._process_conf_str(o))  # type: ignore
+
+        elif isinstance(o, collections.abc.Mapping):
+            return type(o)([  # type: ignore
+                (self._process_conf_content(k), self._process_conf_content(v))
+                for k, v in o.items()
+            ])
+
+        elif isinstance(o, collections.abc.Iterable):
+            return type(o)([  # type: ignore
+                self._process_conf_content(e) for e in o
+            ])
+
+        else:
+            return o
 
     #
 
