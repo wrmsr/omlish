@@ -218,25 +218,17 @@ class DeployDriver:
     #
 
     async def _drive_app_deploy(self, app: DeployAppSpec) -> None:
-        app_tags = self.deploy_tags.add(
-            app.app,
-            app.key(),
-            DeployAppRev(app.git.rev),
-        )
-
-        #
-
-        da = await self._apps.prepare_app(
+        pa = await self._apps.prepare_app(
             app,
             self._home,
-            app_tags,
+            self.deploy_tags,
         )
 
         #
 
-        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, app_tags)
+        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, pa.tags)
         relative_symlink(
-            da.app_dir,
+            pa.dir,
             app_link,
             target_is_directory=True,
             make_dirs=True,
@@ -244,14 +236,7 @@ class DeployDriver:
 
         #
 
-        deploy_conf_dir = self.render_deploy_path(self._deploys.CONFS_DEPLOY_DIR)
-        if app.conf is not None:
-            await self._conf.link_app_conf(
-                app.conf,
-                app_tags,
-                check.non_empty_str(da.conf_dir),
-                deploy_conf_dir,
-            )
+        await self._drive_app_configure(pa)
 
     async def _drive_app_link(
             self,
@@ -264,10 +249,34 @@ class DeployDriver:
         app_dir = abs_real_path(app_link)
         check.state(os.path.isdir(app_dir))
 
-        # relative_symlink(
-        #     ad,
-        #     os.path.join(self.deploy_dir, 'apps', la.s),  # FIXME: DeployPath
-        #     target_is_directory=True,
-        # )
+        #
 
-        raise NotImplementedError
+        pa = await self._apps.prepare_app_link(
+            app,
+            app_dir,
+        )
+
+        #
+
+        relative_symlink(
+            app_dir,
+            os.path.join(self.deploy_dir, 'apps', app.s),
+            target_is_directory=True,
+        )
+
+        #
+
+        await self._drive_app_configure(pa)
+
+    async def _drive_app_configure(
+            self,
+            pa: DeployAppManager.PreparedApp,
+    ) -> None:
+        deploy_conf_dir = self.render_deploy_path(self._deploys.CONFS_DEPLOY_DIR)
+        if pa.spec.conf is not None:
+            await self._conf.link_app_conf(
+                pa.spec.conf,
+                pa.tags,
+                check.non_empty_str(pa.conf_dir),
+                deploy_conf_dir,
+            )

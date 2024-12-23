@@ -10,6 +10,8 @@ from omlish.lite.marshal import ObjMarshalerManager
 
 from .conf.manager import DeployConfManager
 from .git import DeployGitManager
+from .tags import DeployAppRev
+from .tags import DeployApp
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
@@ -59,7 +61,10 @@ class DeployAppManager(DeployPathOwner):
 
     @dc.dataclass(frozen=True)
     class PreparedApp:
-        app_dir: str
+        spec: DeployAppSpec
+        tags: DeployTagMap
+
+        dir: str
 
         git_dir: ta.Optional[str] = None
         venv_dir: ta.Optional[str] = None
@@ -75,16 +80,27 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
+        app_tags = tags.add(
+            spec.app,
+            spec.key(),
+            DeployAppRev(spec.git.rev),
+        )
+
+        #
+
         check.non_empty_str(home)
 
-        app_dir = os.path.join(home, self.APP_DIR.render(tags))
+        app_dir = os.path.join(home, self.APP_DIR.render(app_tags))
 
         os.makedirs(app_dir, exist_ok=True)
 
         #
 
         rkw: ta.Dict[str, ta.Any] = dict(
-            app_dir=app_dir,
+            spec=spec,
+            tags=app_tags,
+
+            dir=app_dir,
         )
 
         #
@@ -127,3 +143,10 @@ class DeployAppManager(DeployPathOwner):
         #
 
         return DeployAppManager.PreparedApp(**rkw)
+
+    async def prepare_app_link(
+            self,
+            app: DeployApp,
+            app_dir: str,
+    ) -> PreparedApp:
+        raise NotImplementedError
