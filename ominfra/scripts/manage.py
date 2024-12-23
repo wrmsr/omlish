@@ -9272,43 +9272,58 @@ TODO:
 
 
 class DeployConfManager:
-    def _process_conf_str(self, s: str) -> str:
-        return s
+    def _process_conf_content(
+            self,
+            content: T,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
+    ) -> T:
+        def rec(o):
+            if isinstance(o, str):
+                if str_processor is not None:
+                    return type(o)(str_processor(o))
 
-    def _process_conf_content(self, o: T) -> T:
-        if isinstance(o, str):
-            return type(o)(self._process_conf_str(o))  # type: ignore
+            elif isinstance(o, collections.abc.Mapping):
+                return type(o)([  # type: ignore
+                    (rec(k), rec(v))
+                    for k, v in o.items()
+                ])
 
-        elif isinstance(o, collections.abc.Mapping):
-            return type(o)([  # type: ignore
-                (self._process_conf_content(k), self._process_conf_content(v))
-                for k, v in o.items()
-            ])
+            elif isinstance(o, collections.abc.Iterable):
+                return type(o)([  # type: ignore
+                    rec(e) for e in o
+                ])
 
-        elif isinstance(o, collections.abc.Iterable):
-            return type(o)([  # type: ignore
-                self._process_conf_content(e) for e in o
-            ])
-
-        else:
             return o
+
+        return rec(content)
 
     #
 
-    def _render_app_conf_content(self, ac: DeployAppConfContent) -> str:
+    def _render_app_conf_content(
+            self,
+            ac: DeployAppConfContent,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
+    ) -> str:
+        pcc = functools.partial(
+            self._process_conf_content,
+            str_processor=str_processor,
+        )
+
         if isinstance(ac, RawDeployAppConfContent):
-            return self._process_conf_content(ac.body)
+            return pcc(ac.body)
 
         elif isinstance(ac, JsonDeployAppConfContent):
-            json_obj = self._process_conf_content(ac.obj)
+            json_obj = pcc(ac.obj)
             return strip_with_newline(json_dumps_pretty(json_obj))
 
         elif isinstance(ac, IniDeployAppConfContent):
-            ini_sections = self._process_conf_content(ac.sections)
+            ini_sections = pcc(ac.sections)
             return strip_with_newline(render_ini_config(ini_sections))
 
         elif isinstance(ac, NginxDeployAppConfContent):
-            nginx_items = NginxConfigItems.of(self._process_conf_content(ac.items))
+            nginx_items = NginxConfigItems.of(pcc(ac.items))
             return strip_with_newline(render_nginx_config_str(nginx_items))
 
         else:
@@ -9318,11 +9333,16 @@ class DeployConfManager:
             self,
             acf: DeployAppConfFile,
             app_conf_dir: str,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
     ) -> None:
         conf_file = os.path.join(app_conf_dir, acf.path)
         check.arg(is_path_in_dir(app_conf_dir, conf_file))
 
-        body = self._render_app_conf_content(acf.content)
+        body = self._render_app_conf_content(
+            acf.content,
+            str_processor=str_processor,
+        )
 
         os.makedirs(os.path.dirname(conf_file), exist_ok=True)
 
@@ -9334,10 +9354,14 @@ class DeployConfManager:
             spec: DeployAppConfSpec,
             app_conf_dir: str,
     ) -> None:
+        def process_str(s: str) -> str:
+            return s
+
         for acf in spec.files or []:
             await self._write_app_conf_file(
                 acf,
                 app_conf_dir,
+                str_processor=process_str,
             )
 
     #
