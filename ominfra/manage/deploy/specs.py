@@ -96,6 +96,7 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
 @dc.dataclass(frozen=True)
 class DeploySystemdSpec:
+    # ~/.config/systemd/user/
     unit_dir: ta.Optional[str] = None
 
 

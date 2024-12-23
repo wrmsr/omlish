@@ -6635,6 +6635,7 @@ class AtomicPathSwapping(abc.ABC):
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
+            skip_root_dir_check: bool = False,
             **kwargs: ta.Any,
     ) -> AtomicPathSwap:
         raise NotImplementedError
@@ -6698,10 +6699,15 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
+            skip_root_dir_check: bool = False,
             **kwargs: ta.Any,
     ) -> AtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
-        if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
+        if (
+                not skip_root_dir_check and
+                self._root_dir is not None and
+                not dst_path.startswith(check.non_empty_str(self._root_dir))
+        ):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
 
         dst_dir = os.path.dirname(dst_path)
@@ -9550,10 +9556,21 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
 
 @dc.dataclass(frozen=True)
+class DeploySystemdSpec:
+    # ~/.config/systemd/user/
+    unit_dir: ta.Optional[str] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec(DeploySpecKeyed[DeployKey]):
     home: DeployHome
 
-    apps: ta.Sequence[DeployAppSpec]
+    apps: ta.Sequence[DeployAppSpec] = ()
+
+    systemd: ta.Optional[DeploySystemdSpec] = None
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.home)
@@ -10956,6 +10973,109 @@ def bind_deploy_paths() -> InjectorBindings:
 
 
 ########################################
+# ../deploy/systemd.py
+"""
+~/.config/systemd/user/
+
+verify - systemd-analyze
+
+sudo loginctl enable-linger "$USER"
+
+cat ~/.config/systemd/user/sleep-infinity.service
+    [Unit]
+    Description=User-specific service to run 'sleep infinity'
+    After=default.target
+
+    [Service]
+    ExecStart=/bin/sleep infinity
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=default.target
+
+systemctl --user daemon-reload
+
+systemctl --user enable sleep-infinity.service
+systemctl --user start sleep-infinity.service
+
+systemctl --user status sleep-infinity.service
+"""
+
+
+class DeploySystemdManager:
+    def __init__(
+            self,
+            *,
+            atomics: DeployHomeAtomics,
+    ) -> None:
+        super().__init__()
+
+        self._atomics = atomics
+
+    def _scan_link_dir(
+            self,
+            d: str,
+            *,
+            strict: bool = False,
+    ) -> ta.Dict[str, str]:
+        o: ta.Dict[str, str] = {}
+        for f in os.listdir(d):
+            fp = os.path.join(d, f)
+            if strict:
+                check.state(os.path.islink(fp))
+            o[f] = abs_real_path(fp)
+        return o
+
+    async def sync_systemd(
+            self,
+            spec: ta.Optional[DeploySystemdSpec],
+            home: DeployHome,
+            conf_dir: str,
+    ) -> None:
+        check.non_empty_str(home)
+
+        if not spec:
+            return
+
+        if not (ud := spec.unit_dir):
+            return
+
+        ud = abs_real_path(os.path.expanduser(ud))
+
+        os.makedirs(ud, exist_ok=True)
+
+        uld = {
+            n: p
+            for n, p in self._scan_link_dir(ud).items()
+            if is_path_in_dir(home, p)
+        }
+
+        if os.path.exists(conf_dir):
+            cld = self._scan_link_dir(conf_dir, strict=True)
+        else:
+            cld = {}
+
+        for n in sorted(set(uld) | set(cld)):
+            ul = uld.get(n)  # noqa
+            cl = cld.get(n)
+            if cl is None:
+                os.unlink(os.path.join(ud, n))
+            else:
+                with self._atomics(home).begin_atomic_path_swap(  # noqa
+                        'file',
+                        os.path.join(ud, n),
+                        auto_commit=True,
+                        skip_root_dir_check=True,
+                ) as dst_swap:
+                    os.unlink(dst_swap.tmp_path)
+                    os.symlink(
+                        os.path.relpath(cl, os.path.dirname(dst_swap.dst_path)),
+                        dst_swap.tmp_path,
+                    )
+
+
+########################################
 # ../remote/inject.py
 
 
@@ -11309,7 +11429,6 @@ class DeployVenvManager:
     async def setup_venv(
             self,
             spec: DeployVenvSpec,
-            home: DeployHome,
             git_dir: str,
             venv_dir: str,
     ) -> None:
@@ -11440,7 +11559,6 @@ class DeployAppManager(DeployPathOwner):
             rkw.update(venv_dir=venv_dir)
             await self._venvs.setup_venv(
                 spec.venv,
-                home,
                 git_dir,
                 venv_dir,
             )
@@ -11548,6 +11666,7 @@ class DeployDriver:
             paths: DeployPathsManager,
             apps: DeployAppManager,
             conf: DeployConfManager,
+            systemd: DeploySystemdManager,
 
             msh: ObjMarshalerManager,
     ) -> None:
@@ -11561,6 +11680,7 @@ class DeployDriver:
         self._paths = paths
         self._apps = apps
         self._conf = conf
+        self._systemd = systemd
 
         self._msh = msh
 
@@ -11628,6 +11748,14 @@ class DeployDriver:
 
         current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
         os.replace(deploying_link, current_link)
+
+        #
+
+        await self._systemd.sync_systemd(
+            self._spec.systemd,
+            self._home,
+            os.path.join(self.deploy_dir, 'conf', 'systemd'),  # FIXME
+        )
 
     #
 
@@ -11770,13 +11898,10 @@ def bind_deploy(
 
     lst.extend([
         bind_deploy_manager(DeployAppManager),
-
         bind_deploy_manager(DeployGitManager),
-
         bind_deploy_manager(DeployManager),
-
+        bind_deploy_manager(DeploySystemdManager),
         bind_deploy_manager(DeployTmpManager),
-
         bind_deploy_manager(DeployVenvManager),
     ])
 

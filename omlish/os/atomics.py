@@ -114,6 +114,7 @@ class AtomicPathSwapping(abc.ABC):
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
+            skip_root_dir_check: bool = False,
             **kwargs: ta.Any,
     ) -> AtomicPathSwap:
         raise NotImplementedError
@@ -177,10 +178,15 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
+            skip_root_dir_check: bool = False,
             **kwargs: ta.Any,
     ) -> AtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
-        if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
+        if (
+                not skip_root_dir_check and
+                self._root_dir is not None and
+                not dst_path.startswith(check.non_empty_str(self._root_dir))
+        ):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
 
         dst_dir = os.path.dirname(dst_path)

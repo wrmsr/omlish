@@ -18,11 +18,11 @@ from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
 from .specs import DeploySpec
+from .systemd import DeploySystemdManager
 from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .tags import DeployTime
 from .types import DeployHome
-from .systemd import DeploySystemdManager
 
 
 ##

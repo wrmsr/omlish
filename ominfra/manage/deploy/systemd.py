@@ -26,19 +26,28 @@ systemctl --user start sleep-infinity.service
 
 systemctl --user status sleep-infinity.service
 """
-import typing as ta
 import os.path
+import typing as ta
 
 from omlish.lite.check import check
 from omlish.os.paths import abs_real_path
 from omlish.os.paths import is_path_in_dir
-from omlish.os.paths import relative_symlink
 
 from .specs import DeploySystemdSpec
+from .tmp import DeployHomeAtomics
 from .types import DeployHome
 
 
 class DeploySystemdManager:
+    def __init__(
+            self,
+            *,
+            atomics: DeployHomeAtomics,
+    ) -> None:
+        super().__init__()
+
+        self._atomics = atomics
+
     def _scan_link_dir(
             self,
             d: str,
@@ -74,7 +83,7 @@ class DeploySystemdManager:
         uld = {
             n: p
             for n, p in self._scan_link_dir(ud).items()
-            if is_path_in_dir(p, home)
+            if is_path_in_dir(home, p)
         }
 
         if os.path.exists(conf_dir):
@@ -88,4 +97,14 @@ class DeploySystemdManager:
             if cl is None:
                 os.unlink(os.path.join(ud, n))
             else:
-                relative_symlink(cl, os.path.join(ud, n))
+                with self._atomics(home).begin_atomic_path_swap(  # noqa
+                        'file',
+                        os.path.join(ud, n),
+                        auto_commit=True,
+                        skip_root_dir_check=True,
+                ) as dst_swap:
+                    os.unlink(dst_swap.tmp_path)
+                    os.symlink(
+                        os.path.relpath(cl, os.path.dirname(dst_swap.dst_path)),
+                        dst_swap.tmp_path,
+                    )
