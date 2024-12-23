@@ -19,7 +19,7 @@ from omlish.formats import dotenv
 from omlish.http.asgi import AsgiApp
 from omlish.logs import all as logs
 from omserv import server
-from omserv.node import registry as nr
+from omserv.nodes import registry as nr
 
 
 ShellTask = ta.NewType('ShellTask', lang.Func1[anyio.Event, ta.Awaitable[None]])
