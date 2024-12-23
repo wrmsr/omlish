@@ -234,7 +234,7 @@ class DeployDriver:
                     if (da := DeployApp(d)) not in das and da not in ras:
                         las.add(da)
 
-        for la in self._spec.app_links.apps:
+        for la in las:
             await self._drive_app_link(
                 la,
                 current_link,
