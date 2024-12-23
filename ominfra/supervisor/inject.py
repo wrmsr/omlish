@@ -131,16 +131,19 @@ def bind_server(
 
     #
 
-    def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
-        return HttpServer.Handler(s.handle)
+    if config.http_port is not None:
+        def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
+            return HttpServer.Handler(s.handle)
 
-    lst.extend([
-        inj.bind(HttpServer, singleton=True, eager=True),
-        inj.bind(HasDispatchers, array=True, to_key=HttpServer),
+        lst.extend([
+            inj.bind(HttpServer, singleton=True, eager=True),
+            inj.bind(HasDispatchers, array=True, to_key=HttpServer),
 
-        inj.bind(SupervisorHttpHandler, singleton=True),
-        inj.bind(_provide_http_handler),
-    ])
+            inj.bind(HttpServer.Address(('localhost', config.http_port))),
+
+            inj.bind(SupervisorHttpHandler, singleton=True),
+            inj.bind(_provide_http_handler),
+        ])
 
     #
 

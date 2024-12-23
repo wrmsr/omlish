@@ -60,7 +60,7 @@ class HttpServer(HasDispatchers):
     def __init__(
             self,
             handler: Handler,
-            addr: Address = Address(('localhost', 8000)),
+            addr: Address,  # = Address(('localhost', 8000)),
             *,
             exit_stack: contextlib.ExitStack,
     ) -> None:

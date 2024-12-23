@@ -248,6 +248,12 @@ class ServerConfig:
     # TODO: implement - make sure to accept broken symlinks
     group_config_dirs: ta.Optional[ta.Sequence[str]] = None
 
+    #
+
+    http_port: ta.Optional[int] = None
+
+    #
+
     @classmethod
     def new(
             cls,
