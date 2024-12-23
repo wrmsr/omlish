@@ -25,6 +25,7 @@ from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths
 from .specs import DeploySpec
+from .systemd import DeploySystemdManager
 from .tags import DeployTime
 from .tmp import DeployHomeAtomics
 from .tmp import DeployTmpManager
@@ -101,13 +102,10 @@ def bind_deploy(
 
     lst.extend([
         bind_deploy_manager(DeployAppManager),
-
         bind_deploy_manager(DeployGitManager),
-
         bind_deploy_manager(DeployManager),
-
+        bind_deploy_manager(DeploySystemdManager),
         bind_deploy_manager(DeployTmpManager),
-
         bind_deploy_manager(DeployVenvManager),
     ])
 

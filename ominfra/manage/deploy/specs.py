@@ -95,10 +95,20 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
 
 
 @dc.dataclass(frozen=True)
+class DeploySystemdSpec:
+    unit_dir: ta.Optional[str] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec(DeploySpecKeyed[DeployKey]):
     home: DeployHome
 
-    apps: ta.Sequence[DeployAppSpec]
+    apps: ta.Sequence[DeployAppSpec] = ()
+
+    systemd: ta.Optional[DeploySystemdSpec] = None
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.home)

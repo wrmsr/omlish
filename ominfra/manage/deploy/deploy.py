@@ -22,6 +22,7 @@ from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .tags import DeployTime
 from .types import DeployHome
+from .systemd import DeploySystemdManager
 
 
 ##
@@ -108,6 +109,7 @@ class DeployDriver:
             paths: DeployPathsManager,
             apps: DeployAppManager,
             conf: DeployConfManager,
+            systemd: DeploySystemdManager,
 
             msh: ObjMarshalerManager,
     ) -> None:
@@ -121,6 +123,7 @@ class DeployDriver:
         self._paths = paths
         self._apps = apps
         self._conf = conf
+        self._systemd = systemd
 
         self._msh = msh
 
@@ -188,6 +191,14 @@ class DeployDriver:
 
         current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
         os.replace(deploying_link, current_link)
+
+        #
+
+        await self._systemd.sync_systemd(
+            self._spec.systemd,
+            self._home,
+            os.path.join(self.deploy_dir, 'conf', 'systemd'),  # FIXME
+        )
 
     #
 

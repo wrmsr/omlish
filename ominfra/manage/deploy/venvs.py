@@ -12,14 +12,12 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 
 from .specs import DeployVenvSpec
-from .types import DeployHome
 
 
 class DeployVenvManager:
     async def setup_venv(
             self,
             spec: DeployVenvSpec,
-            home: DeployHome,
             git_dir: str,
             venv_dir: str,
     ) -> None:

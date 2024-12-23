@@ -110,7 +110,6 @@ class DeployAppManager(DeployPathOwner):
             rkw.update(venv_dir=venv_dir)
             await self._venvs.setup_venv(
                 spec.venv,
-                home,
                 git_dir,
                 venv_dir,
             )

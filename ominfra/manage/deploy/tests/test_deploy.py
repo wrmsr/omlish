@@ -24,6 +24,7 @@ from ..specs import DeployAppConfSpec
 from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
+from ..specs import DeploySystemdSpec
 from ..specs import DeployVenvSpec
 from ..tags import DeployApp
 from ..types import DeployHome
@@ -143,8 +144,11 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
         deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
 
+        systemd_unit_dir = tempfile.mkdtemp()
+
         print()
-        print(deploy_home)
+        print(f'{deploy_home=}')
+        print(f'{systemd_unit_dir=}')
         print()
 
         #
@@ -156,6 +160,9 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     build_flask_thing_spec(rev='7bb3af10a21ac9c1884729638e1db765998cd7de'),
                     SUPERVISOR_SPEC,
                 ],
+                systemd=DeploySystemdSpec(
+                    unit_dir=systemd_unit_dir,
+                ),
             ),
             DeploySpec(
                 home=deploy_home,
@@ -163,6 +170,9 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     build_flask_thing_spec(rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
                     SUPERVISOR_SPEC,
                 ],
+                systemd=DeploySystemdSpec(
+                    unit_dir=systemd_unit_dir,
+                ),
             ),
         ]
 
