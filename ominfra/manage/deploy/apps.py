@@ -84,6 +84,8 @@ class DeployAppManager(DeployPathOwner):
             spec: DeployAppSpec,
             home: DeployHome,
             tags: DeployTagMap,
+            *,
+            conf_string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> PreparedApp:
         spec_json = json_dumps_pretty(self._msh.marshal_obj(spec))
 
@@ -142,8 +144,9 @@ class DeployAppManager(DeployPathOwner):
             rkw.update(conf_dir=conf_dir)
 
             conf_ns: ta.Dict[str, ta.Any] = dict(
+                **(conf_string_ns or {}),
                 app=spec.app.s,
-                app_dir=app_dir,
+                app_dir=app_dir.rstrip('/'),
             )
 
             await self._conf.write_app_conf(

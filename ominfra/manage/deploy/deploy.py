@@ -263,10 +263,16 @@ class DeployDriver:
     #
 
     async def _drive_app_deploy(self, app: DeployAppSpec) -> None:
+        current_deploy_link = os.path.join(self._home, self._deploys.CURRENT_DEPLOY_LINK.render())
+
         pa = await self._apps.prepare_app(
             app,
             self._home,
             self.tags,
+            conf_string_ns=dict(
+                deploy_home=self._home,
+                current_deploy_link=current_deploy_link,
+            ),
         )
 
         #

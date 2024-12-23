@@ -129,25 +129,38 @@ SUPERVISOR_SPEC = DeployAppSpec(
     conf=DeployAppConfSpec(
         files=[
             DeployAppConfFile(
+                'supervisor.json',
+                JsonDeployAppConfContent({
+                    'nodaemon': True,
+                }),
+            ),
+
+            DeployAppConfFile(
                 'systemd.service',
                 IniDeployAppConfContent({
                     'Unit': {
                         'After': 'default.target',
                     },
                     'Service': {
-                        'ExecStart': '{app}/venv/bin/python ominfra/scripts/supervisor.py /dev/null',
-                        'WorkingDirectory': '{app}',
+                        'ExecStart': (
+                            '{app_dir}/venv/bin/python '
+                            'ominfra/scripts/supervisor.py '
+                            '{current_deploy_link}/conf/supervisor/supervisor.json',
+                        ),
+                        'WorkingDirectory': '{app_dir}',
                         'Restart': 'always',
                         'RestartSec': '1',
                     },
                     'Install': {
-                        'WantedBy': 'default.target',
+                        'WantedBy': 'multi-user.target',
                     },
                 }),
 
             ),
         ],
         links=[
+            DeployAppConfLink('supervisor.json'),
+
             DeployAppConfLink('systemd.service'),
         ],
     ),

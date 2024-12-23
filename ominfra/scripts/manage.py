@@ -11622,6 +11622,8 @@ class DeployAppManager(DeployPathOwner):
             spec: DeployAppSpec,
             home: DeployHome,
             tags: DeployTagMap,
+            *,
+            conf_string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> PreparedApp:
         spec_json = json_dumps_pretty(self._msh.marshal_obj(spec))
 
@@ -11680,8 +11682,9 @@ class DeployAppManager(DeployPathOwner):
             rkw.update(conf_dir=conf_dir)
 
             conf_ns: ta.Dict[str, ta.Any] = dict(
+                **(conf_string_ns or {}),
                 app=spec.app.s,
-                app_dir=app_dir,
+                app_dir=app_dir.rstrip('/'),
             )
 
             await self._conf.write_app_conf(
@@ -11983,10 +11986,16 @@ class DeployDriver:
     #
 
     async def _drive_app_deploy(self, app: DeployAppSpec) -> None:
+        current_deploy_link = os.path.join(self._home, self._deploys.CURRENT_DEPLOY_LINK.render())
+
         pa = await self._apps.prepare_app(
             app,
             self._home,
             self.tags,
+            conf_string_ns=dict(
+                deploy_home=self._home,
+                current_deploy_link=current_deploy_link,
+            ),
         )
 
         #
