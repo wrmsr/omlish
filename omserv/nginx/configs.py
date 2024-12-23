@@ -8,6 +8,7 @@ https://nginx.org/en/docs/example.html
 
 https://github.com/yandex/gixy
 """
+import collections.abc
 import dataclasses as dc
 import typing as ta
 
@@ -37,7 +38,7 @@ class Item(lang.Final):
     def of(cls, obj: ta.Any) -> 'Item':
         if isinstance(obj, Item):
             return obj
-        args = check.isinstance(obj, tuple)
+        args = check.isinstance(check.not_isinstance(obj, str), collections.abc.Sequence)
         name, args = check.isinstance(args[0], str), args[1:]
         if args and not isinstance(args[-1], str):
             block, args = Items.of(args[-1]), args[:-1]
@@ -66,21 +67,3 @@ def render(wr: IndentWriter, obj: ta.Any) -> None:
 
     else:
         raise TypeError(obj)
-
-
-def _main() -> None:
-    conf = Items.of([
-        ('user', 'www', 'www'),
-        ('worker_processes', '2'),
-        ('events', [
-            ('worker_connections', '2000'),
-        ]),
-    ])
-
-    wr = IndentWriter()
-    render(wr, conf)
-    print(wr.getvalue())
-
-
-if __name__ == '__main__':
-    _main()

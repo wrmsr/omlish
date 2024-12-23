@@ -264,7 +264,7 @@ STATE_TABLES = _build_state_tables()
 ##
 
 
-def check_state_table(state_tables: ta.Mapping[str, TransitionTable]) -> None:
+def check_state_tables(state_tables: ta.Mapping[str, TransitionTable]) -> None:
     for state, transitions in state_tables.items():
         for i, val in enumerate(transitions):
             if not val:

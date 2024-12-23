@@ -6,7 +6,7 @@ from .states import STATE_TABLES
 from .states import STATES
 from .states import STATES_IN_ORDER
 from .states import StateTransition
-from .states import check_state_table
+from .states import check_state_tables
 
 
 def _pad(s: str, length: int) -> str:
@@ -99,7 +99,7 @@ def _generate_c() -> dict[str, str]:
 
 
 if __name__ == '__main__':
-    check_state_table(STATE_TABLES)
+    check_state_tables(STATE_TABLES)
     for f, c in _generate_c().items():
         print(f)
         print(c)
