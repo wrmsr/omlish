@@ -140,9 +140,16 @@ class DeployAppManager(DeployPathOwner):
         if spec.conf is not None:
             conf_dir = os.path.join(app_dir, 'conf')
             rkw.update(conf_dir=conf_dir)
+
+            conf_ns: ta.Dict[str, ta.Any] = dict(
+                app=spec.app.s,
+                app_dir=app_dir,
+            )
+
             await self._conf.write_app_conf(
                 spec.conf,
                 conf_dir,
+                string_ns=conf_ns,
             )
 
         #

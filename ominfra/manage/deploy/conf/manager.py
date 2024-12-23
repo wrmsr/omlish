@@ -133,9 +133,15 @@ class DeployConfManager:
             self,
             spec: DeployAppConfSpec,
             app_conf_dir: str,
+            *,
+            string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> None:
-        def process_str(s: str) -> str:
-            return s
+        process_str: ta.Any
+        if string_ns is not None:
+            def process_str(s: str) -> str:
+                return s.format(**string_ns)
+        else:
+            process_str = None
 
         for acf in spec.files or []:
             await self._write_app_conf_file(

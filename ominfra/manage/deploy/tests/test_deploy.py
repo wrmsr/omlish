@@ -15,7 +15,6 @@ from ..conf.specs import DeployAppConfLink
 from ..conf.specs import IniDeployAppConfContent
 from ..conf.specs import JsonDeployAppConfContent
 from ..conf.specs import NginxDeployAppConfContent
-from ..conf.specs import RawDeployAppConfContent
 from ..config import DeployConfig
 from ..deploy import DeployDriverFactory
 from ..git import DeployGitRepo
@@ -83,13 +82,12 @@ def build_flask_thing_spec(
                     'systemd/service.conf',
                     IniDeployAppConfContent({
                         'Unit': {
-                            'Description': "User-specific service to run 'sleep infinity'",
                             'After': 'default.target',
                         },
                         'Service': {
-                            'ExecStart': '/bin/sleep infinity',
+                            'ExecStart': 'sleep infinity',
                             'Restart': 'always',
-                            'RestartSec': '5',
+                            'RestartSec': '1',
                         },
                         'Install': {
                             'WantedBy': 'default.target',
@@ -129,13 +127,26 @@ SUPERVISOR_SPEC = DeployAppSpec(
     conf=DeployAppConfSpec(
         files=[
             DeployAppConfFile(
-                'systemd/service.conf',
-                RawDeployAppConfContent('supervisor systemd conf goes here'),
+                'systemd.service',
+                IniDeployAppConfContent({
+                    'Unit': {
+                        'After': 'default.target',
+                    },
+                    'Service': {
+                        'ExecStart': '{app}/venv/bin/python ominfra/scripts/supervisor.py /dev/null',
+                        'WorkingDirectory': '{app}',
+                        'Restart': 'always',
+                        'RestartSec': '1',
+                    },
+                    'Install': {
+                        'WantedBy': 'default.target',
+                    },
+                }),
+
             ),
         ],
         links=[
-            DeployAppConfLink('systemd/service.conf'),
-            DeployAppConfLink('systemd/service.conf', kind='all_active'),
+            DeployAppConfLink('systemd.service'),
         ],
     ),
 )
