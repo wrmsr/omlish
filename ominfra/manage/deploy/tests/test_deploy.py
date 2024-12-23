@@ -21,6 +21,7 @@ from ..deploy import DeployDriverFactory
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..specs import DeployAppConfSpec
+from ..specs import DeployAppLinksSpec
 from ..specs import DeployAppSpec
 from ..specs import DeployGitSpec
 from ..specs import DeploySpec
@@ -164,12 +165,28 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     unit_dir=systemd_unit_dir,
                 ),
             ),
+
             DeploySpec(
                 home=deploy_home,
                 apps=[
                     build_flask_thing_spec(rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
                     SUPERVISOR_SPEC,
                 ],
+                systemd=DeploySystemdSpec(
+                    unit_dir=systemd_unit_dir,
+                ),
+            ),
+
+            DeploySpec(
+                home=deploy_home,
+                apps=[
+                    SUPERVISOR_SPEC,
+                ],
+                app_links=DeployAppLinksSpec(
+                    apps=[
+                        DeployApp('flaskthing'),
+                    ],
+                ),
                 systemd=DeploySystemdSpec(
                     unit_dir=systemd_unit_dir,
                 ),

@@ -91,6 +91,11 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
         return DeployAppKey(self._key_str())
 
 
+@dc.dataclass(frozen=True)
+class DeployAppLinksSpec:
+    apps: ta.Sequence[DeployApp] = ()
+
+
 ##
 
 
@@ -108,6 +113,8 @@ class DeploySpec(DeploySpecKeyed[DeployKey]):
     home: DeployHome
 
     apps: ta.Sequence[DeployAppSpec] = ()
+
+    app_links: DeployAppLinksSpec = DeployAppLinksSpec()
 
     systemd: ta.Optional[DeploySystemdSpec] = None
 

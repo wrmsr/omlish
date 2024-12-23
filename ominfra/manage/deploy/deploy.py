@@ -9,6 +9,7 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.typing import Func0
 from omlish.lite.typing import Func1
+from omlish.os.paths import abs_real_path
 from omlish.os.paths import relative_symlink
 
 from .apps import DeployAppManager
@@ -19,6 +20,7 @@ from .paths.paths import DeployPath
 from .specs import DeployAppSpec
 from .specs import DeploySpec
 from .systemd import DeploySystemdManager
+from .tags import DeployApp
 from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .tags import DeployTime
@@ -165,6 +167,10 @@ class DeployDriver:
         #
 
         deploying_link = self.render_deploy_path(self._deploys.DEPLOYING_DEPLOY_LINK)
+        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+
+        #
+
         if os.path.exists(deploying_link):
             os.unlink(deploying_link)
         relative_symlink(
@@ -184,12 +190,21 @@ class DeployDriver:
 
         #
 
-        for app in self._spec.apps:
-            await self.drive_app_deploy(app)
+        for la in self._spec.app_links.apps:
+            await self._drive_app_link(
+                la,
+                current_link,
+            )
 
         #
 
-        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+        for app in self._spec.apps:
+            await self._drive_app_deploy(
+                app,
+            )
+
+        #
+
         os.replace(deploying_link, current_link)
 
         #
@@ -202,7 +217,7 @@ class DeployDriver:
 
     #
 
-    async def drive_app_deploy(self, app: DeployAppSpec) -> None:
+    async def _drive_app_deploy(self, app: DeployAppSpec) -> None:
         app_tags = self.deploy_tags.add(
             app.app,
             app.key(),
@@ -237,3 +252,22 @@ class DeployDriver:
                 check.non_empty_str(da.conf_dir),
                 deploy_conf_dir,
             )
+
+    async def _drive_app_link(
+            self,
+            app: DeployApp,
+            current_link: str,
+    ) -> None:
+        app_link = os.path.join(abs_real_path(current_link), 'apps', app.s)
+        check.state(os.path.islink(app_link))
+
+        app_dir = abs_real_path(app_link)
+        check.state(os.path.isdir(app_dir))
+
+        # relative_symlink(
+        #     ad,
+        #     os.path.join(self.deploy_dir, 'apps', la.s),  # FIXME: DeployPath
+        #     target_is_directory=True,
+        # )
+
+        raise NotImplementedError
