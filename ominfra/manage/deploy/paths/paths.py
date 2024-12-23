@@ -33,6 +33,10 @@ class DeployPathError(Exception):
 
 
 class DeployPathRenderable(abc.ABC):
+    @cached_nullary
+    def __str__(self) -> str:
+        return self.render(None)
+
     @abc.abstractmethod
     def render(self, tags: ta.Optional[DeployTagMap] = None) -> str:
         raise NotImplementedError
@@ -174,7 +178,7 @@ class FileDeployPathPart(DeployPathPart):
 
 
 @dc.dataclass(frozen=True)
-class DeployPath:
+class DeployPath(DeployPathRenderable):
     parts: ta.Sequence[DeployPathPart]
 
     @property

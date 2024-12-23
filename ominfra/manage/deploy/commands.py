@@ -5,7 +5,7 @@ from omlish.lite.logs import log
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
-from .driver import DeployDriverFactory
+from .deploy import DeployDriverFactory
 from .specs import DeploySpec
 
 

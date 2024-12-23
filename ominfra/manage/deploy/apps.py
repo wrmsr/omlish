@@ -4,6 +4,8 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.lite.json import json_dumps_pretty
+from omlish.lite.marshal import ObjMarshalerManager
 from omlish.os.paths import relative_symlink
 
 from .conf.manager import DeployConfManager
@@ -23,6 +25,8 @@ class DeployAppManager(DeployPathOwner):
             conf: DeployConfManager,
             git: DeployGitManager,
             venvs: DeployVenvManager,
+
+            msh: ObjMarshalerManager,
     ) -> None:
         super().__init__()
 
@@ -30,29 +34,19 @@ class DeployAppManager(DeployPathOwner):
         self._git = git
         self._venvs = venvs
 
+        self._msh = msh
+
     #
 
-    _APP_DIR_STR = 'apps/@app/@time--@app-rev--@app-key/'
-    _APP_DIR = DeployPath.parse(_APP_DIR_STR)
-
-    _DEPLOY_DIR_STR = 'deploys/@time--@deploy-key/'
-    _DEPLOY_DIR = DeployPath.parse(_DEPLOY_DIR_STR)
-
-    _APP_DEPLOY_LINK = DeployPath.parse(f'{_DEPLOY_DIR_STR}apps/@app')
-    _CONF_DEPLOY_DIR = DeployPath.parse(f'{_DEPLOY_DIR_STR}conf/@conf/')
+    APP_DIR = DeployPath.parse('apps/@app/@time--@app-rev--@app-key/')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            self._APP_DIR,
-
-            self._DEPLOY_DIR,
-
-            self._APP_DEPLOY_LINK,
-            self._CONF_DEPLOY_DIR,
+            self.APP_DIR,
 
             *[
-                DeployPath.parse(f'{self._APP_DIR_STR}{sfx}/')
+                DeployPath.parse(f'{self.APP_DIR}{sfx}/')
                 for sfx in [
                     'conf',
                     'git',
@@ -69,6 +63,10 @@ class DeployAppManager(DeployPathOwner):
             home: DeployHome,
             tags: DeployTagMap,
     ) -> None:
+        spec_json = json_dumps_pretty(self._msh.marshal_obj(spec))
+
+        #
+
         check.non_empty_str(home)
 
         def build_path(pth: DeployPath) -> str:
@@ -91,6 +89,12 @@ class DeployAppManager(DeployPathOwner):
             target_is_directory=True,
             make_dirs=True,
         )
+
+        #
+
+        spec_file = os.path.join(app_dir, 'spec.json')
+        with open(spec_file, 'w') as f:
+            f.write(spec_json)
 
         #
 

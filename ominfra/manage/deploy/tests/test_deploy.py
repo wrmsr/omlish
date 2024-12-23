@@ -6,6 +6,7 @@ import unittest
 
 from omlish.lite.inject import inj
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
@@ -15,7 +16,7 @@ from ..conf.specs import IniDeployAppConfContent
 from ..conf.specs import JsonDeployAppConfContent
 from ..conf.specs import RawDeployAppConfContent
 from ..config import DeployConfig
-from ..driver import DeployDriverFactory
+from ..deploy import DeployDriverFactory
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..specs import DeployAppConfSpec
@@ -164,6 +165,8 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
             bind_deploy(
                 deploy_config=DeployConfig(),
             ),
+
+            inj.bind(OBJ_MARSHALER_MANAGER),
         )
 
         #
