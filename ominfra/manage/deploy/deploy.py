@@ -23,6 +23,7 @@ from .systemd import DeploySystemdManager
 from .tags import DeployApp
 from .tags import DeployTagMap
 from .tags import DeployTime
+from .tmp import DeployHomeAtomics
 from .types import DeployHome
 
 
@@ -39,16 +40,24 @@ class DeployManager(DeployPathOwner):
     def __init__(
             self,
             *,
+            atomics: DeployHomeAtomics,
+
             utc_clock: ta.Optional[DeployManagerUtcClock] = None,
     ):
         super().__init__()
+
+        self._atomics = atomics
 
         self._utc_clock = utc_clock
 
     #
 
+    # Home current link just points to CURRENT_DEPLOY_LINK, and is intended for user convenience.
+    HOME_CURRENT_LINK = DeployPath.parse('current')
+
     DEPLOYS_DIR = DeployPath.parse('deploys/')
 
+    # Authoritative current symlink is not in deploy-home, just to prevent accidental corruption.
     CURRENT_DEPLOY_LINK = DeployPath.parse(f'{DEPLOYS_DIR}current')
     DEPLOYING_DEPLOY_LINK = DeployPath.parse(f'{DEPLOYS_DIR}deploying')
 
@@ -81,6 +90,11 @@ class DeployManager(DeployPathOwner):
 
     #
 
+    def render_path(self, home: DeployHome, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return os.path.join(check.non_empty_str(home), pth.render(tags))
+
+    #
+
     def _utc_now(self) -> datetime.datetime:
         if self._utc_clock is not None:
             return self._utc_clock()  # noqa
@@ -89,6 +103,22 @@ class DeployManager(DeployPathOwner):
 
     def make_deploy_time(self) -> DeployTime:
         return DeployTime(self._utc_now().strftime(DEPLOY_TAG_DATETIME_FMT))
+
+    #
+
+    def make_home_current_link(self, home: DeployHome) -> None:
+        home_current_link = os.path.join(check.non_empty_str(home), self.HOME_CURRENT_LINK.render())
+        current_deploy_link = os.path.join(check.non_empty_str(home), self.CURRENT_DEPLOY_LINK.render())
+        with self._atomics(home).begin_atomic_path_swap(  # noqa
+                'file',
+                home_current_link,
+                auto_commit=True,
+        ) as dst_swap:
+            os.unlink(dst_swap.tmp_path)
+            os.symlink(
+                os.path.relpath(current_deploy_link, os.path.dirname(dst_swap.dst_path)),
+                dst_swap.tmp_path,
+            )
 
 
 ##
@@ -131,18 +161,18 @@ class DeployDriver:
     #
 
     @property
-    def deploy_tags(self) -> DeployTagMap:
+    def tags(self) -> DeployTagMap:
         return DeployTagMap(
             self._time,
             self._spec.key(),
         )
 
-    def render_deploy_path(self, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
-        return os.path.join(self._home, pth.render(tags if tags is not None else self.deploy_tags))
+    def render_path(self, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
+        return os.path.join(self._home, pth.render(tags if tags is not None else self.tags))
 
     @property
-    def deploy_dir(self) -> str:
-        return self.render_deploy_path(self._deploys.DEPLOY_DIR)
+    def dir(self) -> str:
+        return self.render_path(self._deploys.DEPLOY_DIR)
 
     #
 
@@ -162,25 +192,25 @@ class DeployDriver:
 
         #
 
-        os.makedirs(self.deploy_dir)
+        os.makedirs(self.dir)
 
         #
 
-        spec_file = self.render_deploy_path(self._deploys.DEPLOY_SPEC_FILE)
+        spec_file = self.render_path(self._deploys.DEPLOY_SPEC_FILE)
         with open(spec_file, 'w') as f:  # noqa
             f.write(spec_json)
 
         #
 
-        deploying_link = self.render_deploy_path(self._deploys.DEPLOYING_DEPLOY_LINK)
-        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+        deploying_link = self.render_path(self._deploys.DEPLOYING_DEPLOY_LINK)
+        current_link = self.render_path(self._deploys.CURRENT_DEPLOY_LINK)
 
         #
 
         if os.path.exists(deploying_link):
             os.unlink(deploying_link)
         relative_symlink(
-            self.deploy_dir,
+            self.dir,
             deploying_link,
             target_is_directory=True,
             make_dirs=True,
@@ -192,7 +222,7 @@ class DeployDriver:
             self._deploys.APPS_DEPLOY_DIR,
             self._deploys.CONFS_DEPLOY_DIR,
         ]:
-            os.makedirs(self.render_deploy_path(md))
+            os.makedirs(self.render_path(md))
 
         #
 
@@ -223,8 +253,12 @@ class DeployDriver:
         await self._systemd.sync_systemd(
             self._spec.systemd,
             self._home,
-            os.path.join(self.deploy_dir, 'conf', 'systemd'),  # FIXME
+            os.path.join(self.dir, 'conf', 'systemd'),  # FIXME
         )
+
+        #
+
+        self._deploys.make_home_current_link(self._home)
 
     #
 
@@ -232,12 +266,12 @@ class DeployDriver:
         pa = await self._apps.prepare_app(
             app,
             self._home,
-            self.deploy_tags,
+            self.tags,
         )
 
         #
 
-        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, pa.tags)
+        app_link = self.render_path(self._deploys.APP_DEPLOY_LINK, pa.tags)
         relative_symlink(
             pa.dir,
             app_link,
@@ -263,7 +297,7 @@ class DeployDriver:
         #
 
         pa = await self._apps.prepare_app_link(
-            self.deploy_tags,
+            self.tags,
             app_dir,
         )
 
@@ -271,7 +305,7 @@ class DeployDriver:
 
         relative_symlink(
             app_dir,
-            os.path.join(self.deploy_dir, 'apps', app.s),
+            os.path.join(self.dir, 'apps', app.s),
             target_is_directory=True,
         )
 
@@ -283,7 +317,7 @@ class DeployDriver:
             self,
             pa: DeployAppManager.PreparedApp,
     ) -> None:
-        deploy_conf_dir = self.render_deploy_path(self._deploys.CONFS_DEPLOY_DIR)
+        deploy_conf_dir = self.render_path(self._deploys.CONFS_DEPLOY_DIR)
         if pa.spec.conf is not None:
             await self._conf.link_app_conf(
                 pa.spec.conf,
