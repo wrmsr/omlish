@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import os.path
 import typing as ta
 
@@ -56,12 +57,20 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
+    @dc.dataclass(frozen=True)
+    class PreparedApp:
+        app_dir: str
+
+        git_dir: ta.Optional[str] = None
+        venv_dir: ta.Optional[str] = None
+        conf_dir: ta.Optional[str] = None
+
     async def prepare_app(
             self,
             spec: DeployAppSpec,
             home: DeployHome,
             tags: DeployTagMap,
-    ) -> str:
+    ) -> PreparedApp:
         spec_json = json_dumps_pretty(self._msh.marshal_obj(spec))
 
         #
@@ -74,39 +83,48 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
+        rkw: ta.Dict[str, ta.Any] = dict(
+            app_dir=app_dir,
+        )
+
+        #
+
         spec_file = os.path.join(app_dir, 'spec.json')
-        with open(spec_file, 'w') as f:
+        with open(spec_file, 'w') as f:  # noqa
             f.write(spec_json)
 
         #
 
-        app_git_dir = os.path.join(app_dir, 'git')
+        git_dir = os.path.join(app_dir, 'git')
+        rkw.update(git_dir=git_dir)
         await self._git.checkout(
             spec.git,
             home,
-            app_git_dir,
+            git_dir,
         )
 
         #
 
         if spec.venv is not None:
-            app_venv_dir = os.path.join(app_dir, 'venv')
+            venv_dir = os.path.join(app_dir, 'venv')
+            rkw.update(venv_dir=venv_dir)
             await self._venvs.setup_venv(
                 spec.venv,
                 home,
-                app_git_dir,
-                app_venv_dir,
+                git_dir,
+                venv_dir,
             )
 
         #
 
         if spec.conf is not None:
-            app_conf_dir = os.path.join(app_dir, 'conf')
+            conf_dir = os.path.join(app_dir, 'conf')
+            rkw.update(conf_dir=conf_dir)
             await self._conf.write_app_conf(
                 spec.conf,
-                app_conf_dir,
+                conf_dir,
             )
 
         #
 
-        return app_dir
+        return DeployAppManager.PreparedApp(**rkw)

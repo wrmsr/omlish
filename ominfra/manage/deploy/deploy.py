@@ -56,7 +56,8 @@ class DeployManager(DeployPathOwner):
     APPS_DEPLOY_DIR = DeployPath.parse(f'{DEPLOY_DIR}apps/')
     APP_DEPLOY_LINK = DeployPath.parse(f'{APPS_DEPLOY_DIR}@app')
 
-    CONF_DEPLOY_DIR = DeployPath.parse(f'{DEPLOY_DIR}conf/@conf/')
+    CONFS_DEPLOY_DIR = DeployPath.parse(f'{DEPLOY_DIR}conf/')
+    CONF_DEPLOY_DIR = DeployPath.parse(f'{CONFS_DEPLOY_DIR}@conf/')
 
     @cached_nullary
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
@@ -72,6 +73,7 @@ class DeployManager(DeployPathOwner):
             self.APPS_DEPLOY_DIR,
             self.APP_DEPLOY_LINK,
 
+            self.CONFS_DEPLOY_DIR,
             self.CONF_DEPLOY_DIR,
         }
 
@@ -124,7 +126,7 @@ class DeployDriver:
 
     #
 
-    @cached_nullary
+    @property
     def deploy_tags(self) -> DeployTagMap:
         return DeployTagMap(
             self._time,
@@ -132,7 +134,7 @@ class DeployDriver:
         )
 
     def render_deploy_path(self, pth: DeployPath, tags: ta.Optional[DeployTagMap] = None) -> str:
-        return os.path.join(self._home, pth.render(tags if tags is not None else self.deploy_tags()))
+        return os.path.join(self._home, pth.render(tags if tags is not None else self.deploy_tags))
 
     @property
     def deploy_dir(self) -> str:
@@ -154,7 +156,7 @@ class DeployDriver:
         #
 
         spec_file = self.render_deploy_path(self._deploys.DEPLOY_SPEC_FILE)
-        with open(spec_file, 'w') as f:
+        with open(spec_file, 'w') as f:  # noqa
             f.write(spec_json)
 
         #
@@ -173,7 +175,7 @@ class DeployDriver:
 
         for md in [
             self._deploys.APPS_DEPLOY_DIR,
-            self._deploys.CONF_DEPLOY_DIR,
+            self._deploys.CONFS_DEPLOY_DIR,
         ]:
             os.makedirs(self.render_deploy_path(md))
 
@@ -198,7 +200,7 @@ class DeployDriver:
 
         #
 
-        app_dir = await self._apps.prepare_app(
+        da = await self._apps.prepare_app(
             app,
             self._home,
             app_tags,
@@ -208,7 +210,7 @@ class DeployDriver:
 
         app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, app_tags)
         relative_symlink(
-            app_dir,
+            da.app_dir,
             app_link,
             target_is_directory=True,
             make_dirs=True,
@@ -216,8 +218,11 @@ class DeployDriver:
 
         #
 
-        deploy_conf_dir = os.path.join(deploy_dir, 'conf')
-        os.makedirs(deploy_conf_dir, exist_ok=True)
-
-        #
-
+        deploy_conf_dir = self.render_deploy_path(self._deploys.CONFS_DEPLOY_DIR)
+        if app.conf is not None:
+            await self._conf.link_app_conf(
+                app.conf,
+                app_tags,
+                check.non_empty_str(da.conf_dir),
+                deploy_conf_dir,
+            )
