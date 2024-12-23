@@ -6727,6 +6727,54 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
 
 
 ########################################
+# ../../../omlish/text/indent.py
+
+
+class IndentWriter:
+    DEFAULT_INDENT = ' ' * 4
+
+    def __init__(
+            self,
+            *,
+            buf: ta.Optional[io.StringIO] = None,
+            indent: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        self._buf = buf if buf is not None else io.StringIO()
+        self._indent = check.isinstance(indent, str) if indent is not None else self.DEFAULT_INDENT
+        self._level = 0
+        self._has_indented = False
+
+    @contextlib.contextmanager
+    def indent(self, num: int = 1) -> ta.Iterator[None]:
+        self._level += num
+        try:
+            yield
+        finally:
+            self._level -= num
+
+    def write(self, s: str) -> None:
+        indent = self._indent * self._level
+        i = 0
+        while i < len(s):
+            if not self._has_indented:
+                self._buf.write(indent)
+                self._has_indented = True
+            try:
+                n = s.index('\n', i)
+            except ValueError:
+                self._buf.write(s[i:])
+                break
+            self._buf.write(s[i:n + 1])
+            self._has_indented = False
+            i = n + 2
+
+    def getvalue(self) -> str:
+        return self._buf.getvalue()
+
+
+########################################
 # ../../../omdev/interp/types.py
 
 
@@ -7785,6 +7833,78 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
 
 ########################################
+# ../../../omserv/nginx/configs.py
+"""
+TODO:
+ - omnibus/jmespath
+
+https://nginx.org/en/docs/dev/development_guide.html
+https://nginx.org/en/docs/dev/development_guide.html#config_directives
+https://nginx.org/en/docs/example.html
+
+https://github.com/yandex/gixy
+"""
+
+
+@dc.dataclass()
+class NginxConfigItems:
+    lst: ta.List['NginxConfigItem']
+
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'NginxConfigItems':
+        if isinstance(obj, NginxConfigItems):
+            return obj
+        return cls([NginxConfigItem.of(e) for e in check.isinstance(obj, list)])
+
+
+@dc.dataclass()
+class NginxConfigItem:
+    name: str
+    args: ta.Optional[ta.List[str]] = None
+    block: ta.Optional[NginxConfigItems] = None
+
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'NginxConfigItem':
+        if isinstance(obj, NginxConfigItem):
+            return obj
+        args = check.isinstance(check.not_isinstance(obj, str), collections.abc.Sequence)
+        name, args = check.isinstance(args[0], str), args[1:]
+        if args and not isinstance(args[-1], str):
+            block, args = NginxConfigItems.of(args[-1]), args[:-1]
+        else:
+            block = None
+        return NginxConfigItem(name, [check.isinstance(e, str) for e in args], block=block)
+
+
+def render_nginx_config(wr: IndentWriter, obj: ta.Any) -> None:
+    if isinstance(obj, NginxConfigItem):
+        wr.write(obj.name)
+        for e in obj.args or ():
+            wr.write(' ')
+            wr.write(e)
+        if obj.block:
+            wr.write(' {\n')
+            with wr.indent():
+                render_nginx_config(wr, obj.block)
+            wr.write('}\n')
+        else:
+            wr.write(';\n')
+
+    elif isinstance(obj, NginxConfigItems):
+        for e2 in obj.lst:
+            render_nginx_config(wr, e2)
+
+    else:
+        raise TypeError(obj)
+
+
+def render_nginx_config_str(obj: ta.Any) -> str:
+    iw = IndentWriter()
+    render_nginx_config(iw, obj)
+    return iw.getvalue()
+
+
+########################################
 # ../../../omdev/interp/providers/base.py
 """
 TODO:
@@ -7898,6 +8018,15 @@ class JsonDeployAppConfContent(DeployAppConfContent):
 @dc.dataclass(frozen=True)
 class IniDeployAppConfContent(DeployAppConfContent):
     sections: IniConfigSectionSettingsMap
+
+
+#
+
+
+@register_single_field_type_obj_marshaler('items')
+@dc.dataclass(frozen=True)
+class NginxDeployAppConfContent(DeployAppConfContent):
+    items: ta.Any
 
 
 ##
@@ -9143,6 +9272,10 @@ class DeployConfManager:
 
         elif isinstance(ac, IniDeployAppConfContent):
             return strip_with_newline(render_ini_config(ac.sections))
+
+        elif isinstance(ac, NginxDeployAppConfContent):
+            ni = NginxConfigItems.of(ac.items)
+            return strip_with_newline(render_nginx_config_str(ni))
 
         else:
             raise TypeError(ac)

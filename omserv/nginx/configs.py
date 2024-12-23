@@ -68,3 +68,9 @@ def render_nginx_config(wr: IndentWriter, obj: ta.Any) -> None:
 
     else:
         raise TypeError(obj)
+
+
+def render_nginx_config_str(obj: ta.Any) -> str:
+    iw = IndentWriter()
+    render_nginx_config(iw, obj)
+    return iw.getvalue()

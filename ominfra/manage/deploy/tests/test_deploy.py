@@ -14,6 +14,7 @@ from ..conf.specs import DeployAppConfFile
 from ..conf.specs import DeployAppConfLink
 from ..conf.specs import IniDeployAppConfContent
 from ..conf.specs import JsonDeployAppConfContent
+from ..conf.specs import NginxDeployAppConfContent
 from ..conf.specs import RawDeployAppConfContent
 from ..config import DeployConfig
 from ..deploy import DeployDriverFactory
@@ -67,7 +68,13 @@ def build_flask_thing_spec(
 
                 DeployAppConfFile(
                     'nginx.conf',
-                    RawDeployAppConfContent('flaskthing nginx conf goes here'),
+                    NginxDeployAppConfContent([
+                        ['user', 'www', 'www'],
+                        ['worker_processes', '2'],
+                        ['events', [
+                            ['worker_connections', '2000'],
+                        ]],
+                    ]),
                 ),
 
                 DeployAppConfFile(

@@ -44,6 +44,15 @@ class IniDeployAppConfContent(DeployAppConfContent):
     sections: IniConfigSectionSettingsMap
 
 
+#
+
+
+@register_single_field_type_obj_marshaler('items')
+@dc.dataclass(frozen=True)
+class NginxDeployAppConfContent(DeployAppConfContent):
+    items: ta.Any
+
+
 ##
 
 

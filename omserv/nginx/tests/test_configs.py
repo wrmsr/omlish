@@ -1,10 +1,8 @@
 # @omlish-lite
 import unittest
 
-from omlish.text.indent import IndentWriter
-
 from ..configs import NginxConfigItems
-from ..configs import render_nginx_config
+from ..configs import render_nginx_config_str
 
 
 class TestConfigs(unittest.TestCase):
@@ -17,6 +15,4 @@ class TestConfigs(unittest.TestCase):
             ]],
         ])
 
-        wr = IndentWriter()
-        render_nginx_config(wr, conf)
-        print(wr.getvalue())
+        print(render_nginx_config_str(conf))

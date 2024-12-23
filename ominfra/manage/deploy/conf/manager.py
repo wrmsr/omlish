@@ -24,6 +24,8 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.strings import strip_with_newline
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
+from omserv.nginx.configs import NginxConfigItems
+from omserv.nginx.configs import render_nginx_config_str
 
 from ....configs import render_ini_config
 from ..paths.paths import DeployPath
@@ -37,6 +39,7 @@ from .specs import DeployAppConfLink
 from .specs import DeployAppConfSpec
 from .specs import IniDeployAppConfContent
 from .specs import JsonDeployAppConfContent
+from .specs import NginxDeployAppConfContent
 from .specs import RawDeployAppConfContent
 
 
@@ -50,6 +53,10 @@ class DeployConfManager:
 
         elif isinstance(ac, IniDeployAppConfContent):
             return strip_with_newline(render_ini_config(ac.sections))
+
+        elif isinstance(ac, NginxDeployAppConfContent):
+            ni = NginxConfigItems.of(ac.items)
+            return strip_with_newline(render_nginx_config_str(ni))
 
         else:
             raise TypeError(ac)
