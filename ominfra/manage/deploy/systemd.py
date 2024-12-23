@@ -1,34 +1,16 @@
 # ruff: noqa: UP006 UP007
 """
-~/.config/systemd/user/
-
-verify - systemd-analyze
-
-sudo loginctl enable-linger "$USER"
-
-cat ~/.config/systemd/user/sleep-infinity.service
-    [Unit]
-    Description=User-specific service to run 'sleep infinity'
-    After=default.target
-
-    [Service]
-    ExecStart=/bin/sleep infinity
-    Restart=always
-    RestartSec=5
-
-    [Install]
-    WantedBy=default.target
-
-systemctl --user daemon-reload
-
-systemctl --user enable sleep-infinity.service
-systemctl --user start sleep-infinity.service
-
-systemctl --user status sleep-infinity.service
+TODO:
+ - verify - systemd-analyze
+ - sudo loginctl enable-linger "$USER"
+ - idemp kill services that shouldn't be running, start ones that should
+  - ideally only those defined by links to deploy home
 """
 import os.path
+import sys
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.os.paths import abs_real_path
 from omlish.os.paths import is_path_in_dir
@@ -73,12 +55,16 @@ class DeploySystemdManager:
         if not spec:
             return
 
+        #
+
         if not (ud := spec.unit_dir):
             return
 
         ud = abs_real_path(os.path.expanduser(ud))
 
         os.makedirs(ud, exist_ok=True)
+
+        #
 
         uld = {
             n: p
@@ -91,8 +77,11 @@ class DeploySystemdManager:
         else:
             cld = {}
 
-        for n in sorted(set(uld) | set(cld)):
-            ul = uld.get(n)  # noqa
+        #
+
+        ns = sorted(set(uld) | set(cld))
+
+        for n in ns:
             cl = cld.get(n)
             if cl is None:
                 os.unlink(os.path.join(ud, n))
@@ -108,3 +97,35 @@ class DeploySystemdManager:
                         os.path.relpath(cl, os.path.dirname(dst_swap.dst_path)),
                         dst_swap.tmp_path,
                     )
+
+        #
+
+        if sys.platform == 'linux':
+            async def reload() -> None:
+                await asyncio_subprocesses.check_call('systemctl', '--user', 'daemon-reload')
+
+            await reload()
+
+            num_deleted = 0
+            for n in ns:
+                if n.endswith('.service'):
+                    cl = cld.get(n)
+                    ul = uld.get(n)
+                    if cl is not None:
+                        if ul is None:
+                            cs = ['enable', 'start']
+                        else:
+                            cs = ['restart']
+                    else:  # noqa
+                        if ul is not None:
+                            cs = []
+                            # cs = ['stop']
+                            # num_deleted += 1
+                        else:
+                            cs = []
+
+                    for c in cs:
+                        await asyncio_subprocesses.check_call('systemctl', '--user', c, n)
+
+            if num_deleted:
+                await reload()

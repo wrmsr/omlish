@@ -5,6 +5,7 @@ TODO:
  - share more code with pyproject?
 """
 import os.path
+import shutil
 
 from omdev.interp.default import get_default_interp_resolver
 from omdev.interp.types import InterpSpecifier
@@ -44,9 +45,12 @@ class DeployVenvManager:
 
         if os.path.isfile(reqs_txt):
             if spec.use_uv:
-                await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
-                pip_cmd = ['-m', 'uv', 'pip']
+                if shutil.which('uv') is not None:
+                    pip_cmd = ['uv', 'pip']
+                else:
+                    await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                    pip_cmd = [venv_exe, '-m', 'uv', 'pip']
             else:
-                pip_cmd = ['-m', 'pip']
+                pip_cmd = [venv_exe, '-m', 'pip']
 
-            await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
+            await asyncio_subprocesses.check_call(*pip_cmd, 'install', '-r', reqs_txt, cwd=venv_dir)
