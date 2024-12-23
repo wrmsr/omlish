@@ -1,4 +1,4 @@
-from ..vt100 import Vt100Terminal
+from ..terminal import Vt100Terminal
 
 
 def test_vt100():
