@@ -30,7 +30,7 @@ from .types import DeployHome
 ##
 
 
-DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+DEPLOY_TAG_DATETIME_FMT = '%Y-%m-%d-T-%H-%M-%S-%f-Z'
 
 
 DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])

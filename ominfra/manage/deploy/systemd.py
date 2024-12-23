@@ -8,6 +8,7 @@ TODO:
   - ominfra.systemd / x.sd_orphans
 """
 import os.path
+import shutil
 import sys
 import typing as ta
 
@@ -101,7 +102,7 @@ class DeploySystemdManager:
 
         #
 
-        if sys.platform == 'linux':
+        if sys.platform == 'linux' and shutil.which('systemctl') is not None:
             async def reload() -> None:
                 await asyncio_subprocesses.check_call('systemctl', '--user', 'daemon-reload')
 

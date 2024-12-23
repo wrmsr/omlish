@@ -9353,9 +9353,15 @@ class DeployConfManager:
             self,
             spec: DeployAppConfSpec,
             app_conf_dir: str,
+            *,
+            string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> None:
-        def process_str(s: str) -> str:
-            return s
+        process_str: ta.Any
+        if string_ns is not None:
+            def process_str(s: str) -> str:
+                return s.format(**string_ns)
+        else:
+            process_str = None
 
         for acf in spec.files or []:
             await self._write_app_conf_file(
@@ -11127,7 +11133,7 @@ class DeploySystemdManager:
 
         #
 
-        if sys.platform == 'linux':
+        if sys.platform == 'linux' and shutil.which('systemctl') is not None:
             async def reload() -> None:
                 await asyncio_subprocesses.check_call('systemctl', '--user', 'daemon-reload')
 
@@ -11672,9 +11678,16 @@ class DeployAppManager(DeployPathOwner):
         if spec.conf is not None:
             conf_dir = os.path.join(app_dir, 'conf')
             rkw.update(conf_dir=conf_dir)
+
+            conf_ns: ta.Dict[str, ta.Any] = dict(
+                app=spec.app.s,
+                app_dir=app_dir,
+            )
+
             await self._conf.write_app_conf(
                 spec.conf,
                 conf_dir,
+                string_ns=conf_ns,
             )
 
         #
@@ -11737,7 +11750,7 @@ class DeployAppManager(DeployPathOwner):
 ##
 
 
-DEPLOY_TAG_DATETIME_FMT = '%Y%m%dT%H%M%SZ'
+DEPLOY_TAG_DATETIME_FMT = '%Y-%m-%d-T-%H-%M-%S-%f-Z'
 
 
 DeployManagerUtcClock = ta.NewType('DeployManagerUtcClock', Func0[datetime.datetime])

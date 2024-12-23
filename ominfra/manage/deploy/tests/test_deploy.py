@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import datetime
 import json
 import os.path
 import tempfile
@@ -17,6 +18,7 @@ from ..conf.specs import JsonDeployAppConfContent
 from ..conf.specs import NginxDeployAppConfContent
 from ..config import DeployConfig
 from ..deploy import DeployDriverFactory
+from ..deploy import DeployManagerUtcClock
 from ..git import DeployGitRepo
 from ..inject import bind_deploy
 from ..specs import DeployAppConfSpec
@@ -206,12 +208,30 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
 
         #
 
+        def new_utc_clock() -> DeployManagerUtcClock:
+            clock_count = 0
+
+            def utc_clock() -> datetime.datetime:
+                now = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+
+                nonlocal clock_count
+                then = now + datetime.timedelta(seconds=clock_count)
+                clock_count += 1
+
+                return then
+
+            return DeployManagerUtcClock(utc_clock)  # type: ignore
+
+        #
+
         injector = inj.create_injector(
             bind_deploy(
                 deploy_config=DeployConfig(),
             ),
 
             inj.bind(OBJ_MARSHALER_MANAGER),
+
+            inj.bind(new_utc_clock, singleton=True),
         )
 
         #
