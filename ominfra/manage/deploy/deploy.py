@@ -21,7 +21,6 @@ from .specs import DeployAppSpec
 from .specs import DeploySpec
 from .systemd import DeploySystemdManager
 from .tags import DeployApp
-from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .tags import DeployTime
 from .types import DeployHome
@@ -252,7 +251,7 @@ class DeployDriver:
         #
 
         pa = await self._apps.prepare_app_link(
-            app,
+            self.deploy_tags,
             app_dir,
         )
 

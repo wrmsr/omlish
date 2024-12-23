@@ -9552,6 +9552,11 @@ class DeployAppSpec(DeploySpecKeyed[DeployAppKey]):
         return DeployAppKey(self._key_str())
 
 
+@dc.dataclass(frozen=True)
+class DeployAppLinksSpec:
+    apps: ta.Sequence[DeployApp] = ()
+
+
 ##
 
 
@@ -9569,6 +9574,8 @@ class DeploySpec(DeploySpecKeyed[DeployKey]):
     home: DeployHome
 
     apps: ta.Sequence[DeployAppSpec] = ()
+
+    app_links: DeployAppLinksSpec = DeployAppLinksSpec()
 
     systemd: ta.Optional[DeploySystemdSpec] = None
 
@@ -11528,9 +11535,21 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
+    def _make_tags(self, spec: DeployAppSpec) -> DeployTagMap:
+        return DeployTagMap(
+            spec.app,
+            spec.key(),
+            DeployAppRev(spec.git.rev),
+        )
+
+    #
+
     @dc.dataclass(frozen=True)
     class PreparedApp:
-        app_dir: str
+        spec: DeployAppSpec
+        tags: DeployTagMap
+
+        dir: str
 
         git_dir: ta.Optional[str] = None
         venv_dir: ta.Optional[str] = None
@@ -11546,16 +11565,23 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
+        app_tags = tags.add(*self._make_tags(spec))
+
+        #
+
         check.non_empty_str(home)
 
-        app_dir = os.path.join(home, self.APP_DIR.render(tags))
+        app_dir = os.path.join(home, self.APP_DIR.render(app_tags))
 
         os.makedirs(app_dir, exist_ok=True)
 
         #
 
         rkw: ta.Dict[str, ta.Any] = dict(
-            app_dir=app_dir,
+            spec=spec,
+            tags=app_tags,
+
+            dir=app_dir,
         )
 
         #
@@ -11594,6 +11620,54 @@ class DeployAppManager(DeployPathOwner):
                 spec.conf,
                 conf_dir,
             )
+
+        #
+
+        return DeployAppManager.PreparedApp(**rkw)
+
+    async def prepare_app_link(
+            self,
+            tags: DeployTagMap,
+            app_dir: str,
+    ) -> PreparedApp:
+        spec_file = os.path.join(app_dir, 'spec.json')
+        with open(spec_file) as f:  # noqa
+            spec_json = f.read()
+
+        spec: DeployAppSpec = self._msh.unmarshal_obj(json.loads(spec_json), DeployAppSpec)
+
+        #
+
+        app_tags = tags.add(*self._make_tags(spec))
+
+        #
+
+        rkw: ta.Dict[str, ta.Any] = dict(
+            spec=spec,
+            tags=app_tags,
+
+            dir=app_dir,
+        )
+
+        #
+
+        git_dir = os.path.join(app_dir, 'git')
+        check.state(os.path.isdir(git_dir))
+        rkw.update(git_dir=git_dir)
+
+        #
+
+        if spec.venv is not None:
+            venv_dir = os.path.join(app_dir, 'venv')
+            check.state(os.path.isdir(venv_dir))
+            rkw.update(venv_dir=venv_dir)
+
+        #
+
+        if spec.conf is not None:
+            conf_dir = os.path.join(app_dir, 'conf')
+            check.state(os.path.isdir(conf_dir))
+            rkw.update(conf_dir=conf_dir)
 
         #
 
@@ -11744,6 +11818,10 @@ class DeployDriver:
         #
 
         deploying_link = self.render_deploy_path(self._deploys.DEPLOYING_DEPLOY_LINK)
+        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+
+        #
+
         if os.path.exists(deploying_link):
             os.unlink(deploying_link)
         relative_symlink(
@@ -11763,12 +11841,21 @@ class DeployDriver:
 
         #
 
-        for app in self._spec.apps:
-            await self.drive_app_deploy(app)
+        for la in self._spec.app_links.apps:
+            await self._drive_app_link(
+                la,
+                current_link,
+            )
 
         #
 
-        current_link = self.render_deploy_path(self._deploys.CURRENT_DEPLOY_LINK)
+        for app in self._spec.apps:
+            await self._drive_app_deploy(
+                app,
+            )
+
+        #
+
         os.replace(deploying_link, current_link)
 
         #
@@ -11781,26 +11868,18 @@ class DeployDriver:
 
     #
 
-    async def drive_app_deploy(self, app: DeployAppSpec) -> None:
-        app_tags = self.deploy_tags.add(
-            app.app,
-            app.key(),
-            DeployAppRev(app.git.rev),
-        )
-
-        #
-
-        da = await self._apps.prepare_app(
+    async def _drive_app_deploy(self, app: DeployAppSpec) -> None:
+        pa = await self._apps.prepare_app(
             app,
             self._home,
-            app_tags,
+            self.deploy_tags,
         )
 
         #
 
-        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, app_tags)
+        app_link = self.render_deploy_path(self._deploys.APP_DEPLOY_LINK, pa.tags)
         relative_symlink(
-            da.app_dir,
+            pa.dir,
             app_link,
             target_is_directory=True,
             make_dirs=True,
@@ -11808,12 +11887,48 @@ class DeployDriver:
 
         #
 
+        await self._drive_app_configure(pa)
+
+    async def _drive_app_link(
+            self,
+            app: DeployApp,
+            current_link: str,
+    ) -> None:
+        app_link = os.path.join(abs_real_path(current_link), 'apps', app.s)
+        check.state(os.path.islink(app_link))
+
+        app_dir = abs_real_path(app_link)
+        check.state(os.path.isdir(app_dir))
+
+        #
+
+        pa = await self._apps.prepare_app_link(
+            self.deploy_tags,
+            app_dir,
+        )
+
+        #
+
+        relative_symlink(
+            app_dir,
+            os.path.join(self.deploy_dir, 'apps', app.s),
+            target_is_directory=True,
+        )
+
+        #
+
+        await self._drive_app_configure(pa)
+
+    async def _drive_app_configure(
+            self,
+            pa: DeployAppManager.PreparedApp,
+    ) -> None:
         deploy_conf_dir = self.render_deploy_path(self._deploys.CONFS_DEPLOY_DIR)
-        if app.conf is not None:
+        if pa.spec.conf is not None:
             await self._conf.link_app_conf(
-                app.conf,
-                app_tags,
-                check.non_empty_str(da.conf_dir),
+                pa.spec.conf,
+                pa.tags,
+                check.non_empty_str(pa.conf_dir),
                 deploy_conf_dir,
             )
 

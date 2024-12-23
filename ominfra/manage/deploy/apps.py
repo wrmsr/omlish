@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
+import json
 import os.path
 import typing as ta
 
@@ -10,11 +11,10 @@ from omlish.lite.marshal import ObjMarshalerManager
 
 from .conf.manager import DeployConfManager
 from .git import DeployGitManager
-from .tags import DeployAppRev
-from .tags import DeployApp
 from .paths.owners import DeployPathOwner
 from .paths.paths import DeployPath
 from .specs import DeployAppSpec
+from .tags import DeployAppRev
 from .tags import DeployTagMap
 from .types import DeployHome
 from .venvs import DeployVenvManager
@@ -59,6 +59,15 @@ class DeployAppManager(DeployPathOwner):
 
     #
 
+    def _make_tags(self, spec: DeployAppSpec) -> DeployTagMap:
+        return DeployTagMap(
+            spec.app,
+            spec.key(),
+            DeployAppRev(spec.git.rev),
+        )
+
+    #
+
     @dc.dataclass(frozen=True)
     class PreparedApp:
         spec: DeployAppSpec
@@ -80,11 +89,7 @@ class DeployAppManager(DeployPathOwner):
 
         #
 
-        app_tags = tags.add(
-            spec.app,
-            spec.key(),
-            DeployAppRev(spec.git.rev),
-        )
+        app_tags = tags.add(*self._make_tags(spec))
 
         #
 
@@ -146,7 +151,48 @@ class DeployAppManager(DeployPathOwner):
 
     async def prepare_app_link(
             self,
-            app: DeployApp,
+            tags: DeployTagMap,
             app_dir: str,
     ) -> PreparedApp:
-        raise NotImplementedError
+        spec_file = os.path.join(app_dir, 'spec.json')
+        with open(spec_file) as f:  # noqa
+            spec_json = f.read()
+
+        spec: DeployAppSpec = self._msh.unmarshal_obj(json.loads(spec_json), DeployAppSpec)
+
+        #
+
+        app_tags = tags.add(*self._make_tags(spec))
+
+        #
+
+        rkw: ta.Dict[str, ta.Any] = dict(
+            spec=spec,
+            tags=app_tags,
+
+            dir=app_dir,
+        )
+
+        #
+
+        git_dir = os.path.join(app_dir, 'git')
+        check.state(os.path.isdir(git_dir))
+        rkw.update(git_dir=git_dir)
+
+        #
+
+        if spec.venv is not None:
+            venv_dir = os.path.join(app_dir, 'venv')
+            check.state(os.path.isdir(venv_dir))
+            rkw.update(venv_dir=venv_dir)
+
+        #
+
+        if spec.conf is not None:
+            conf_dir = os.path.join(app_dir, 'conf')
+            check.state(os.path.isdir(conf_dir))
+            rkw.update(conf_dir=conf_dir)
+
+        #
+
+        return DeployAppManager.PreparedApp(**rkw)
