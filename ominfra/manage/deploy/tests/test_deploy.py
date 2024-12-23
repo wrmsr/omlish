@@ -110,7 +110,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
             host='github.com',
             path='wrmsr/omlish',
         ),
-        rev=DeployRev('4dc487c3620d4629b8a2895a84511a4be478a801'),
+        rev=DeployRev('a2fc184a53ba524221b2443750c2493765d34efd'),
         subtrees=[
             'ominfra/scripts/supervisor.py',
         ],
