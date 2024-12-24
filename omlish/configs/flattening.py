@@ -3,23 +3,20 @@ import itertools
 import typing as ta
 
 from .. import check
-from .. import lang
 
 
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
-StrMap = ta.Mapping[str, ta.Any]
-
-
-class _MISSING(lang.Marker):
-    pass
 
 
 class Flattening:
-
     DEFAULT_DELIMITER = '.'
     DEFAULT_INDEX_OPEN = '('
     DEFAULT_INDEX_CLOSE = ')'
+
+    class _MISSING:
+        def __new__(cls, *args, **kwargs):
+            raise TypeError
 
     def __init__(
             self,
@@ -34,7 +31,7 @@ class Flattening:
         self._index_open = check.not_empty(index_open)
         self._index_close = check.not_empty(index_close)
 
-    def flatten(self, unflattened: StrMap) -> StrMap:
+    def flatten(self, unflattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
         def rec(prefix: list[str], value: ta.Any) -> None:
             if isinstance(value, dict):
                 for k, v in value.items():
@@ -53,8 +50,7 @@ class Flattening:
         rec([], unflattened)
         return ret
 
-    class UnflattenNode(lang.Abstract, ta.Generic[K]):
-
+    class UnflattenNode(abc.ABC, ta.Generic[K]):
         @abc.abstractmethod
         def get(self, key: K) -> ta.Any:
             raise NotImplementedError
@@ -65,7 +61,7 @@ class Flattening:
 
         def setdefault(self, key: K, supplier: ta.Callable[[], V]) -> V:
             ret = self.get(key)
-            if ret is _MISSING:
+            if ret is Flattening._MISSING:
                 ret = supplier()
                 self.put(key, ret)
             return ret
@@ -80,14 +76,13 @@ class Flattening:
             return value.build() if isinstance(value, Flattening.UnflattenNode) else value
 
     class UnflattenDict(UnflattenNode[str]):
-
         def __init__(self) -> None:
             super().__init__()
 
             self._dict: dict[str, ta.Any] = {}
 
         def get(self, key: str) -> ta.Any:
-            return self._dict.get(key, _MISSING)
+            return self._dict.get(key, Flattening._MISSING)
 
         def put(self, key: str, value: ta.Any) -> None:
             check.arg(key not in self._dict)
@@ -97,7 +92,6 @@ class Flattening:
             return {k: Flattening.UnflattenNode.maybe_build(v) for k, v in self._dict.items()}
 
     class UnflattenList(UnflattenNode[int]):
-
         def __init__(self) -> None:
             super().__init__()
 
@@ -105,19 +99,19 @@ class Flattening:
 
         def get(self, key: int) -> ta.Any:
             check.arg(key >= 0)
-            return self._list[key] if key < len(self._list) else _MISSING
+            return self._list[key] if key < len(self._list) else Flattening._MISSING
 
         def put(self, key: int, value: ta.Any) -> None:
             check.arg(key >= 0)
             if key >= len(self._list):
-                self._list.extend([_MISSING] * (key - len(self._list) + 1))
-            check.arg(self._list[key] is _MISSING)
+                self._list.extend([Flattening._MISSING] * (key - len(self._list) + 1))
+            check.arg(self._list[key] is Flattening._MISSING)
             self._list[key] = value
 
         def build(self) -> ta.Any:
             return [Flattening.UnflattenNode.maybe_build(e) for e in self._list]
 
-    def unflatten(self, flattened: StrMap) -> StrMap:
+    def unflatten(self, flattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
         root = Flattening.UnflattenDict()
 
         def split_keys(fkey: str) -> ta.Iterable[str | int]:
