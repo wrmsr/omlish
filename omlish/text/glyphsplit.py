@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 """
 Note: string.Formatter (and string.Template) shouldn't be ignored - if they can be used they probably should be.
  - https://docs.python.org/3/library/string.html#custom-string-formatting
@@ -5,22 +7,22 @@ Note: string.Formatter (and string.Template) shouldn't be ignored - if they can 
 """
 import dataclasses as dc
 import re
+import typing as ta
 
-from .. import check
+from ..lite.check import check
 
 
 @dc.dataclass(frozen=True)
-class GlyphMatch:
+class GlyphSplitMatch:
     l: str
     s: str
     r: str
 
 
 class GlyphSplitter:
-
     def __init__(
             self,
-            glyphs: tuple[str, str],
+            glyphs: ta.Tuple[str, str],
             *,
             escape_returned_doubles: bool = False,
             compact: bool = False,
@@ -49,7 +51,7 @@ class GlyphSplitter:
 
         self._single_glyph_pat = re.compile(r'(%s[^%s]*?%s)' % (self._l_escaped_glyph, self._r_escaped_glyph, self._r_escaped_glyph))  # noqa
 
-    def split(self, s: str) -> list[GlyphMatch | str]:
+    def split(self, s: str) -> ta.List[ta.Union[GlyphSplitMatch, str]]:
         ps = self._l_glyph_pat.split(s)
         ps = [p[::-1] for p in ps for p in reversed(self._r_glyph_pat.split(p[::-1]))]
 
@@ -77,7 +79,7 @@ class GlyphSplitter:
             for m in ms:
                 if m.start() != l:
                     append_ret(p[l:m.start()])
-                append_ret(GlyphMatch(self._l_glyph, p[m.start() + 1:m.end() - 1], self._r_glyph))
+                append_ret(GlyphSplitMatch(self._l_glyph, p[m.start() + 1:m.end() - 1], self._r_glyph))
                 l = m.end()
 
             if l < len(p):
@@ -91,7 +93,7 @@ _BRACE_GLYPH_SPLITTER = GlyphSplitter(('{', '}'), escape_returned_doubles=True, 
 _BRACKET_GLYPH_SPLITTER = GlyphSplitter(('[', ']'), escape_returned_doubles=True, compact=True)
 _ANGLE_BRACKET_GLYPH_SPLITTER = GlyphSplitter(('<', '>'), escape_returned_doubles=True, compact=True)
 
-split_parens = _PAREN_GLYPH_SPLITTER.split
-split_braces = _BRACE_GLYPH_SPLITTER.split
-split_brackets = _BRACKET_GLYPH_SPLITTER.split
-split_angle_brackets = _ANGLE_BRACKET_GLYPH_SPLITTER.split
+glyph_split_parens = _PAREN_GLYPH_SPLITTER.split
+glyph_split_braces = _BRACE_GLYPH_SPLITTER.split
+glyph_split_brackets = _BRACKET_GLYPH_SPLITTER.split
+glyph_split_angle_brackets = _ANGLE_BRACKET_GLYPH_SPLITTER.split

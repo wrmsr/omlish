@@ -1,29 +1,34 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import abc
 import itertools
 import typing as ta
 
-from .. import check
+from ..lite.check import check
 
 
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-class Flattening:
+##
+
+
+class ConfigFlattening:
     DEFAULT_DELIMITER = '.'
     DEFAULT_INDEX_OPEN = '('
     DEFAULT_INDEX_CLOSE = ')'
 
     class _MISSING:
-        def __new__(cls, *args, **kwargs):
+        def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError
 
     def __init__(
             self,
             *,
-            delimiter=DEFAULT_DELIMITER,
-            index_open=DEFAULT_INDEX_OPEN,
-            index_close=DEFAULT_INDEX_CLOSE,
+            delimiter: str = DEFAULT_DELIMITER,
+            index_open: str = DEFAULT_INDEX_OPEN,
+            index_close: str = DEFAULT_INDEX_CLOSE,
     ) -> None:
         super().__init__()
 
@@ -61,7 +66,7 @@ class Flattening:
 
         def setdefault(self, key: K, supplier: ta.Callable[[], V]) -> V:
             ret = self.get(key)
-            if ret is Flattening._MISSING:
+            if ret is ConfigFlattening._MISSING:
                 ret = supplier()
                 self.put(key, ret)
             return ret
@@ -73,7 +78,7 @@ class Flattening:
         @staticmethod
         def maybe_build(value: ta.Any) -> ta.Any:
             check.not_none(value)
-            return value.build() if isinstance(value, Flattening.UnflattenNode) else value
+            return value.build() if isinstance(value, ConfigFlattening.UnflattenNode) else value
 
     class UnflattenDict(UnflattenNode[str]):
         def __init__(self) -> None:
@@ -82,14 +87,14 @@ class Flattening:
             self._dict: dict[str, ta.Any] = {}
 
         def get(self, key: str) -> ta.Any:
-            return self._dict.get(key, Flattening._MISSING)
+            return self._dict.get(key, ConfigFlattening._MISSING)
 
         def put(self, key: str, value: ta.Any) -> None:
             check.arg(key not in self._dict)
             self._dict[key] = value
 
         def build(self) -> ta.Any:
-            return {k: Flattening.UnflattenNode.maybe_build(v) for k, v in self._dict.items()}
+            return {k: ConfigFlattening.UnflattenNode.maybe_build(v) for k, v in self._dict.items()}
 
     class UnflattenList(UnflattenNode[int]):
         def __init__(self) -> None:
@@ -99,20 +104,20 @@ class Flattening:
 
         def get(self, key: int) -> ta.Any:
             check.arg(key >= 0)
-            return self._list[key] if key < len(self._list) else Flattening._MISSING
+            return self._list[key] if key < len(self._list) else ConfigFlattening._MISSING
 
         def put(self, key: int, value: ta.Any) -> None:
             check.arg(key >= 0)
             if key >= len(self._list):
-                self._list.extend([Flattening._MISSING] * (key - len(self._list) + 1))
-            check.arg(self._list[key] is Flattening._MISSING)
+                self._list.extend([ConfigFlattening._MISSING] * (key - len(self._list) + 1))
+            check.arg(self._list[key] is ConfigFlattening._MISSING)
             self._list[key] = value
 
         def build(self) -> ta.Any:
-            return [Flattening.UnflattenNode.maybe_build(e) for e in self._list]
+            return [ConfigFlattening.UnflattenNode.maybe_build(e) for e in self._list]
 
     def unflatten(self, flattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-        root = Flattening.UnflattenDict()
+        root = ConfigFlattening.UnflattenDict()
 
         def split_keys(fkey: str) -> ta.Iterable[str | int]:
             for part in fkey.split(self._delimiter):
@@ -128,13 +133,13 @@ class Flattening:
                     yield part
 
         for fk, v in flattened.items():
-            node: Flattening.UnflattenNode = root
+            node: ConfigFlattening.UnflattenNode = root
             fks = list(split_keys(fk))
             for key, nkey in itertools.pairwise(fks):
                 if isinstance(nkey, str):
-                    node = node.setdefault(key, Flattening.UnflattenDict)
+                    node = node.setdefault(key, ConfigFlattening.UnflattenDict)
                 elif isinstance(nkey, int):
-                    node = node.setdefault(key, Flattening.UnflattenList)
+                    node = node.setdefault(key, ConfigFlattening.UnflattenList)
                 else:
                     raise TypeError(key)
             node.put(fks[-1], v)

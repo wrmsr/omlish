@@ -1,34 +1,39 @@
-from .. import flattening as flattening_
+# ruff: noqa: PT009
+# @omlish-lite
+import unittest
+
+from ..flattening import ConfigFlattening
 
 
-def test_flattening():
-    m = {
-        'a': 1,
-        'b': {
-            'c': 2,
-        },
-        'd': [
-            'e',
-            {
-                'f': 3,
+class TestFlattening(unittest.TestCase):
+    def test_flattening(self):
+        m = {
+            'a': 1,
+            'b': {
+                'c': 2,
             },
-        ],
-        'g': [
-            [
-                'a',
-                'b',
+            'd': [
+                'e',
+                {
+                    'f': 3,
+                },
             ],
-            [
-                'c',
-                'd',
+            'g': [
+                [
+                    'a',
+                    'b',
+                ],
+                [
+                    'c',
+                    'd',
+                ],
             ],
-        ],
-    }
-    for f in [
-        flattening_.Flattening(),
-        flattening_.Flattening(index_open='[', index_close=']'),
-        flattening_.Flattening(index_open='((', index_close='))'),
-    ]:
-        fl = f.flatten(m)
-        ufl = f.unflatten(fl)
-        assert ufl == m
+        }
+        for f in [
+            ConfigFlattening(),
+            ConfigFlattening(index_open='[', index_close=']'),
+            ConfigFlattening(index_open='((', index_close='))'),
+        ]:
+            fl = f.flatten(m)
+            ufl = f.unflatten(fl)
+            self.assertEqual(ufl, m)

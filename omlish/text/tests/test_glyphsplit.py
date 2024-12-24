@@ -1,12 +1,20 @@
-from ..glyphsplit import GlyphMatch
-from ..glyphsplit import split_braces
+# ruff: noqa: PT009
+# @omlish-lite
+import unittest
+
+from ..glyphsplit import GlyphSplitMatch
+from ..glyphsplit import glyph_split_braces
 
 
-def test_glyph_split():
-    assert split_braces('foo {hi} bar {bye[} {{q}} baz') == [
-        'foo ',
-        GlyphMatch('{', 'hi', '}'),
-        ' bar ',
-        GlyphMatch('{', 'bye[', '}'),
-        ' {q} baz',
-    ]
+class TestGlyphSplit(unittest.TestCase):
+    def test_glyph_split(self):
+        self.assertEqual(
+            glyph_split_braces('foo {hi} bar {bye[} {{q}} baz'),
+            [
+                'foo ',
+                GlyphSplitMatch('{', 'hi', '}'),
+                ' bar ',
+                GlyphSplitMatch('{', 'bye[', '}'),
+                ' {q} baz',
+            ],
+        )

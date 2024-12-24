@@ -88,9 +88,9 @@ def interpolate_strings(v: T, rpl: ta.Mapping[str, str]) -> T:
     def fn(v):
         if not v:
             return v
-        sps = glyphsplit.split_braces(v)
+        sps = glyphsplit.glyph_split_braces(v)
         if len(sps) == 1 and isinstance(sps[0], str):
             return sps[0]
-        return ''.join(rpl[p.s] if isinstance(p, glyphsplit.GlyphMatch) else p for p in sps)
+        return ''.join(rpl[p.s] if isinstance(p, glyphsplit.GlyphSplitMatch) else p for p in sps)
 
     return StringRewriter(fn)(v)
