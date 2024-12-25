@@ -10,9 +10,9 @@ from .sections import render_ini_sections
 ##
 
 
-def loads(f) -> IniSectionSettingsMap:
+def loads(s: str) -> IniSectionSettingsMap:
     cp = configparser.ConfigParser()
-    cp.read_file(f)
+    cp.read_string(s)
     return extract_ini_sections(cp)
 
 

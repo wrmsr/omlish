@@ -1,6 +1,8 @@
 """
 TODO:
  - bytes-like - bytearray, memoryview
+ - FileCodec
+ - implement options
 """
 import abc
 import typing as ta
