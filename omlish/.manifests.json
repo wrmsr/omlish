@@ -52,6 +52,20 @@
     }
   },
   {
+    "module": ".formats.ini.codec",
+    "attr": "_INI_LAZY_CODEC",
+    "file": "omlish/formats/ini/codec.py",
+    "line": 25,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.ini.codec",
+        "attr_name": "INI_CODEC",
+        "name": "ini",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".formats.json.codecs",
     "attr": "_JSON_LAZY_CODEC",
     "file": "omlish/formats/json/codecs.py",
@@ -136,13 +150,13 @@
     }
   },
   {
-    "module": ".formats.toml",
+    "module": ".formats.toml.codec",
     "attr": "_TOML_LAZY_CODEC",
-    "file": "omlish/formats/toml.py",
+    "file": "omlish/formats/toml/codec.py",
     "line": 16,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.toml",
+        "mod_name": "omlish.formats.toml.codec",
         "attr_name": "TOML_CODEC",
         "name": "toml",
         "aliases": null

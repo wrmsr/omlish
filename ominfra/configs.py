@@ -5,7 +5,7 @@ import json
 import os.path
 import typing as ta
 
-from omdev.toml.parser import toml_loads
+from omlish.formats.toml.parser import toml_loads
 from omlish.lite.check import check
 from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
 from omlish.lite.marshal import ObjMarshalerManager

@@ -92,14 +92,14 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../omdev/toml/parser.py
-TomlParseFloat = ta.Callable[[str], ta.Any]
-TomlKey = ta.Tuple[str, ...]
-TomlPos = int  # ta.TypeAlias
-
 # utils/collections.py
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
+
+# ../../omlish/formats/toml/parser.py
+TomlParseFloat = ta.Callable[[str], ta.Any]
+TomlKey = ta.Tuple[str, ...]
+TomlPos = int  # ta.TypeAlias
 
 # ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
@@ -153,7 +153,477 @@ CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
 
 ########################################
-# ../../../omdev/toml/parser.py
+# ../exceptions.py
+
+
+class ProcessError(Exception):
+    """Specialized exceptions used when attempting to start a process."""
+
+
+class BadCommandError(ProcessError):
+    """Indicates the command could not be parsed properly."""
+
+
+class NotExecutableError(ProcessError):
+    """
+    Indicates that the filespec cannot be executed because its path resolves to a file which is not executable, or which
+    is a directory.
+    """
+
+
+class NotFoundError(ProcessError):
+    """Indicates that the filespec cannot be executed because it could not be found."""
+
+
+class NoPermissionError(ProcessError):
+    """
+    Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
+    filesystem permission to execute the file.
+    """
+
+
+########################################
+# ../privileges.py
+
+
+def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
+    """
+    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
+    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
+    """
+
+    if user is None:
+        return 'No user specified to setuid to!'
+
+    # get uid for user, which can be a number or username
+    try:
+        uid = int(user)
+    except ValueError:
+        try:
+            pwrec = pwd.getpwnam(user)  # type: ignore
+        except KeyError:
+            return f"Can't find username {user!r}"
+        uid = pwrec[2]
+    else:
+        try:
+            pwrec = pwd.getpwuid(uid)
+        except KeyError:
+            return f"Can't find uid {uid!r}"
+
+    current_uid = os.getuid()
+
+    if current_uid == uid:
+        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
+        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
+        return None
+
+    if current_uid != 0:
+        return "Can't drop privilege as nonroot user"
+
+    gid = pwrec[3]
+    if hasattr(os, 'setgroups'):
+        user = pwrec[0]
+        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
+
+        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
+        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
+        # python 2.7 - this will be safe though for all unix /python version combos)
+        groups.insert(0, gid)
+        try:
+            os.setgroups(groups)
+        except OSError:
+            return 'Could not set groups of effective user'
+
+    try:
+        os.setgid(gid)
+    except OSError:
+        return 'Could not set group id of effective user'
+
+    os.setuid(uid)
+
+    return None
+
+
+########################################
+# ../states.py
+
+
+##
+
+
+class ProcessState(enum.IntEnum):
+    STOPPED = 0
+    STARTING = 10
+    RUNNING = 20
+    BACKOFF = 30
+    STOPPING = 40
+    EXITED = 100
+    FATAL = 200
+    UNKNOWN = 1000
+
+    @property
+    def stopped(self) -> bool:
+        return self in STOPPED_STATES
+
+    @property
+    def running(self) -> bool:
+        return self in RUNNING_STATES
+
+    @property
+    def signalable(self) -> bool:
+        return self in SIGNALABLE_STATES
+
+
+# http://supervisord.org/subprocess.html
+STATE_TRANSITIONS = {
+    ProcessState.STOPPED: (ProcessState.STARTING,),
+    ProcessState.STARTING: (ProcessState.RUNNING, ProcessState.BACKOFF, ProcessState.STOPPING),
+    ProcessState.RUNNING: (ProcessState.STOPPING, ProcessState.EXITED),
+    ProcessState.BACKOFF: (ProcessState.STARTING, ProcessState.FATAL),
+    ProcessState.STOPPING: (ProcessState.STOPPED,),
+    ProcessState.EXITED: (ProcessState.STARTING,),
+    ProcessState.FATAL: (ProcessState.STARTING,),
+}
+
+STOPPED_STATES = (
+    ProcessState.STOPPED,
+    ProcessState.EXITED,
+    ProcessState.FATAL,
+    ProcessState.UNKNOWN,
+)
+
+RUNNING_STATES = (
+    ProcessState.RUNNING,
+    ProcessState.BACKOFF,
+    ProcessState.STARTING,
+)
+
+SIGNALABLE_STATES = (
+    ProcessState.RUNNING,
+    ProcessState.STARTING,
+    ProcessState.STOPPING,
+)
+
+
+##
+
+
+class SupervisorState(enum.IntEnum):
+    FATAL = 2
+    RUNNING = 1
+    RESTARTING = 0
+    SHUTDOWN = -1
+
+
+########################################
+# ../utils/collections.py
+
+
+class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
+    @property
+    @abc.abstractmethod
+    def _by_key(self) -> ta.Mapping[K, V]:
+        raise NotImplementedError
+
+    def __iter__(self) -> ta.Iterator[V]:
+        return iter(self._by_key.values())
+
+    def __len__(self) -> int:
+        return len(self._by_key)
+
+    def __contains__(self, key: K) -> bool:
+        return key in self._by_key
+
+    def __getitem__(self, key: K) -> V:
+        return self._by_key[key]
+
+    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
+        return self._by_key.get(key, default)
+
+    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
+        return iter(self._by_key.items())
+
+
+class KeyedCollection(KeyedCollectionAccessors[K, V]):
+    def __init__(self, items: ta.Iterable[V]) -> None:
+        super().__init__()
+
+        by_key: ta.Dict[K, V] = {}
+        for v in items:
+            if (k := self._key(v)) in by_key:
+                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
+            by_key[k] = v
+        self.__by_key = by_key
+
+    @property
+    def _by_key(self) -> ta.Mapping[K, V]:
+        return self.__by_key
+
+    @abc.abstractmethod
+    def _key(self, v: V) -> K:
+        raise NotImplementedError
+
+
+########################################
+# ../utils/diag.py
+
+
+def compact_traceback() -> ta.Tuple[
+    ta.Tuple[str, str, int],
+    ta.Type[BaseException],
+    BaseException,
+    types.TracebackType,
+]:
+    t, v, tb = sys.exc_info()
+    if not tb:
+        raise RuntimeError('No traceback')
+
+    tbinfo = []
+    while tb:
+        tbinfo.append((
+            tb.tb_frame.f_code.co_filename,
+            tb.tb_frame.f_code.co_name,
+            str(tb.tb_lineno),
+        ))
+        tb = tb.tb_next
+
+    # just to be safe
+    del tb
+
+    file, function, line = tbinfo[-1]
+    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
+    return (file, function, line), t, v, info  # type: ignore
+
+
+########################################
+# ../utils/fs.py
+
+
+def try_unlink(path: str) -> bool:
+    try:
+        os.unlink(path)
+    except OSError:
+        return False
+    return True
+
+
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
+    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
+    os.close(fd)
+    return filename
+
+
+def get_path() -> ta.Sequence[str]:
+    """Return a list corresponding to $PATH, or a default."""
+
+    path = ['/bin', '/usr/bin', '/usr/local/bin']
+    if 'PATH' in os.environ:
+        p = os.environ['PATH']
+        if p:
+            path = p.split(os.pathsep)
+    return path
+
+
+def check_existing_dir(v: str) -> str:
+    nv = os.path.expanduser(v)
+    if os.path.isdir(nv):
+        return nv
+    raise ValueError(f'{v} is not an existing directory')
+
+
+def check_path_with_existing_dir(v: str) -> str:
+    nv = os.path.expanduser(v)
+    dir = os.path.dirname(nv)  # noqa
+    if not dir:
+        # relative pathname with no directory component
+        return nv
+    if os.path.isdir(dir):
+        return nv
+    raise ValueError(f'The directory named as part of the path {v} does not exist')
+
+
+########################################
+# ../utils/ostypes.py
+
+
+Fd = ta.NewType('Fd', int)
+Pid = ta.NewType('Pid', int)
+Rc = ta.NewType('Rc', int)
+
+Uid = ta.NewType('Uid', int)
+Gid = ta.NewType('Gid', int)
+
+
+########################################
+# ../utils/signals.py
+
+
+##
+
+
+_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
+_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
+
+
+def sig_num(value: ta.Union[int, str]) -> int:
+    try:
+        num = int(value)
+
+    except (ValueError, TypeError):
+        name = value.strip().upper()  # type: ignore
+        if not name.startswith('SIG'):
+            name = f'SIG{name}'
+
+        if (sn := _SIGS_BY_NAME.get(name)) is None:
+            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+        num = sn
+
+    if num not in _SIGS_BY_NUM:
+        raise ValueError(f'value {value!r} is not a valid signal number')
+
+    return num
+
+
+def sig_name(num: int) -> str:
+    if (sig := _SIGS_BY_NUM.get(num)) is not None:
+        return sig.name
+    return f'signal {sig}'
+
+
+##
+
+
+class SignalReceiver:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._signals_recvd: ta.List[int] = []
+
+    def receive(self, sig: int, frame: ta.Any = None) -> None:
+        if sig not in self._signals_recvd:
+            self._signals_recvd.append(sig)
+
+    def install(self, *sigs: int) -> None:
+        for sig in sigs:
+            signal.signal(sig, self.receive)
+
+    def get_signal(self) -> ta.Optional[int]:
+        if self._signals_recvd:
+            sig = self._signals_recvd.pop(0)
+        else:
+            sig = None
+        return sig
+
+
+########################################
+# ../utils/strings.py
+
+
+##
+
+
+def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
+    if isinstance(s, bytes):
+        return s
+    else:
+        return s.encode(encoding)
+
+
+@ta.overload
+def find_prefix_at_end(haystack: str, needle: str) -> int:
+    ...
+
+
+@ta.overload
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
+    ...
+
+
+def find_prefix_at_end(haystack, needle):
+    l = len(needle) - 1
+    while l and not haystack.endswith(needle[:l]):
+        l -= 1
+    return l
+
+
+##
+
+
+ANSI_ESCAPE_BEGIN = b'\x1b['
+ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
+
+
+def strip_escapes(s: bytes) -> bytes:
+    """Remove all ANSI color escapes from the given string."""
+
+    result = b''
+    show = 1
+    i = 0
+    l = len(s)
+    while i < l:
+        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
+            show = 1
+        elif show:
+            n = s.find(ANSI_ESCAPE_BEGIN, i)
+            if n == -1:
+                return result + s[i:]
+            else:
+                result = result + s[i:n]
+                i = n
+                show = 0
+        i += 1
+    return result
+
+
+##
+
+
+class SuffixMultiplier:
+    # d is a dictionary of suffixes to integer multipliers. If no suffixes match, default is the multiplier. Matches are
+    # case insensitive. Return values are in the fundamental unit.
+    def __init__(self, d, default=1):
+        super().__init__()
+        self._d = d
+        self._default = default
+        # all keys must be the same size
+        self._keysz = None
+        for k in d:
+            if self._keysz is None:
+                self._keysz = len(k)
+            elif self._keysz != len(k):  # type: ignore
+                raise ValueError(k)
+
+    def __call__(self, v: ta.Union[str, int]) -> int:
+        if isinstance(v, int):
+            return v
+        v = v.lower()
+        for s, m in self._d.items():
+            if v[-self._keysz:] == s:  # type: ignore
+                return int(v[:-self._keysz]) * m  # type: ignore
+        return int(v) * self._default
+
+
+parse_bytes_size = SuffixMultiplier({
+    'kb': 1024,
+    'mb': 1024 * 1024,
+    'gb': 1024 * 1024 * 1024,
+})
+
+
+#
+
+
+def parse_octal(arg: ta.Union[str, int]) -> int:
+    if isinstance(arg, int):
+        return arg
+    try:
+        return int(arg, 8)
+    except (TypeError, ValueError):
+        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
+
+
+########################################
+# ../../../omlish/formats/toml/parser.py
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
@@ -968,476 +1438,6 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
         return float_value
 
     return safe_parse_float
-
-
-########################################
-# ../exceptions.py
-
-
-class ProcessError(Exception):
-    """Specialized exceptions used when attempting to start a process."""
-
-
-class BadCommandError(ProcessError):
-    """Indicates the command could not be parsed properly."""
-
-
-class NotExecutableError(ProcessError):
-    """
-    Indicates that the filespec cannot be executed because its path resolves to a file which is not executable, or which
-    is a directory.
-    """
-
-
-class NotFoundError(ProcessError):
-    """Indicates that the filespec cannot be executed because it could not be found."""
-
-
-class NoPermissionError(ProcessError):
-    """
-    Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
-    filesystem permission to execute the file.
-    """
-
-
-########################################
-# ../privileges.py
-
-
-def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
-    """
-    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
-    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
-    """
-
-    if user is None:
-        return 'No user specified to setuid to!'
-
-    # get uid for user, which can be a number or username
-    try:
-        uid = int(user)
-    except ValueError:
-        try:
-            pwrec = pwd.getpwnam(user)  # type: ignore
-        except KeyError:
-            return f"Can't find username {user!r}"
-        uid = pwrec[2]
-    else:
-        try:
-            pwrec = pwd.getpwuid(uid)
-        except KeyError:
-            return f"Can't find uid {uid!r}"
-
-    current_uid = os.getuid()
-
-    if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
-        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
-        return None
-
-    if current_uid != 0:
-        return "Can't drop privilege as nonroot user"
-
-    gid = pwrec[3]
-    if hasattr(os, 'setgroups'):
-        user = pwrec[0]
-        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
-
-        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
-        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
-        # python 2.7 - this will be safe though for all unix /python version combos)
-        groups.insert(0, gid)
-        try:
-            os.setgroups(groups)
-        except OSError:
-            return 'Could not set groups of effective user'
-
-    try:
-        os.setgid(gid)
-    except OSError:
-        return 'Could not set group id of effective user'
-
-    os.setuid(uid)
-
-    return None
-
-
-########################################
-# ../states.py
-
-
-##
-
-
-class ProcessState(enum.IntEnum):
-    STOPPED = 0
-    STARTING = 10
-    RUNNING = 20
-    BACKOFF = 30
-    STOPPING = 40
-    EXITED = 100
-    FATAL = 200
-    UNKNOWN = 1000
-
-    @property
-    def stopped(self) -> bool:
-        return self in STOPPED_STATES
-
-    @property
-    def running(self) -> bool:
-        return self in RUNNING_STATES
-
-    @property
-    def signalable(self) -> bool:
-        return self in SIGNALABLE_STATES
-
-
-# http://supervisord.org/subprocess.html
-STATE_TRANSITIONS = {
-    ProcessState.STOPPED: (ProcessState.STARTING,),
-    ProcessState.STARTING: (ProcessState.RUNNING, ProcessState.BACKOFF, ProcessState.STOPPING),
-    ProcessState.RUNNING: (ProcessState.STOPPING, ProcessState.EXITED),
-    ProcessState.BACKOFF: (ProcessState.STARTING, ProcessState.FATAL),
-    ProcessState.STOPPING: (ProcessState.STOPPED,),
-    ProcessState.EXITED: (ProcessState.STARTING,),
-    ProcessState.FATAL: (ProcessState.STARTING,),
-}
-
-STOPPED_STATES = (
-    ProcessState.STOPPED,
-    ProcessState.EXITED,
-    ProcessState.FATAL,
-    ProcessState.UNKNOWN,
-)
-
-RUNNING_STATES = (
-    ProcessState.RUNNING,
-    ProcessState.BACKOFF,
-    ProcessState.STARTING,
-)
-
-SIGNALABLE_STATES = (
-    ProcessState.RUNNING,
-    ProcessState.STARTING,
-    ProcessState.STOPPING,
-)
-
-
-##
-
-
-class SupervisorState(enum.IntEnum):
-    FATAL = 2
-    RUNNING = 1
-    RESTARTING = 0
-    SHUTDOWN = -1
-
-
-########################################
-# ../utils/collections.py
-
-
-class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
-    @property
-    @abc.abstractmethod
-    def _by_key(self) -> ta.Mapping[K, V]:
-        raise NotImplementedError
-
-    def __iter__(self) -> ta.Iterator[V]:
-        return iter(self._by_key.values())
-
-    def __len__(self) -> int:
-        return len(self._by_key)
-
-    def __contains__(self, key: K) -> bool:
-        return key in self._by_key
-
-    def __getitem__(self, key: K) -> V:
-        return self._by_key[key]
-
-    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
-        return self._by_key.get(key, default)
-
-    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
-        return iter(self._by_key.items())
-
-
-class KeyedCollection(KeyedCollectionAccessors[K, V]):
-    def __init__(self, items: ta.Iterable[V]) -> None:
-        super().__init__()
-
-        by_key: ta.Dict[K, V] = {}
-        for v in items:
-            if (k := self._key(v)) in by_key:
-                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
-            by_key[k] = v
-        self.__by_key = by_key
-
-    @property
-    def _by_key(self) -> ta.Mapping[K, V]:
-        return self.__by_key
-
-    @abc.abstractmethod
-    def _key(self, v: V) -> K:
-        raise NotImplementedError
-
-
-########################################
-# ../utils/diag.py
-
-
-def compact_traceback() -> ta.Tuple[
-    ta.Tuple[str, str, int],
-    ta.Type[BaseException],
-    BaseException,
-    types.TracebackType,
-]:
-    t, v, tb = sys.exc_info()
-    if not tb:
-        raise RuntimeError('No traceback')
-
-    tbinfo = []
-    while tb:
-        tbinfo.append((
-            tb.tb_frame.f_code.co_filename,
-            tb.tb_frame.f_code.co_name,
-            str(tb.tb_lineno),
-        ))
-        tb = tb.tb_next
-
-    # just to be safe
-    del tb
-
-    file, function, line = tbinfo[-1]
-    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
-    return (file, function, line), t, v, info  # type: ignore
-
-
-########################################
-# ../utils/fs.py
-
-
-def try_unlink(path: str) -> bool:
-    try:
-        os.unlink(path)
-    except OSError:
-        return False
-    return True
-
-
-def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
-    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
-    os.close(fd)
-    return filename
-
-
-def get_path() -> ta.Sequence[str]:
-    """Return a list corresponding to $PATH, or a default."""
-
-    path = ['/bin', '/usr/bin', '/usr/local/bin']
-    if 'PATH' in os.environ:
-        p = os.environ['PATH']
-        if p:
-            path = p.split(os.pathsep)
-    return path
-
-
-def check_existing_dir(v: str) -> str:
-    nv = os.path.expanduser(v)
-    if os.path.isdir(nv):
-        return nv
-    raise ValueError(f'{v} is not an existing directory')
-
-
-def check_path_with_existing_dir(v: str) -> str:
-    nv = os.path.expanduser(v)
-    dir = os.path.dirname(nv)  # noqa
-    if not dir:
-        # relative pathname with no directory component
-        return nv
-    if os.path.isdir(dir):
-        return nv
-    raise ValueError(f'The directory named as part of the path {v} does not exist')
-
-
-########################################
-# ../utils/ostypes.py
-
-
-Fd = ta.NewType('Fd', int)
-Pid = ta.NewType('Pid', int)
-Rc = ta.NewType('Rc', int)
-
-Uid = ta.NewType('Uid', int)
-Gid = ta.NewType('Gid', int)
-
-
-########################################
-# ../utils/signals.py
-
-
-##
-
-
-_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
-_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
-
-
-def sig_num(value: ta.Union[int, str]) -> int:
-    try:
-        num = int(value)
-
-    except (ValueError, TypeError):
-        name = value.strip().upper()  # type: ignore
-        if not name.startswith('SIG'):
-            name = f'SIG{name}'
-
-        if (sn := _SIGS_BY_NAME.get(name)) is None:
-            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
-        num = sn
-
-    if num not in _SIGS_BY_NUM:
-        raise ValueError(f'value {value!r} is not a valid signal number')
-
-    return num
-
-
-def sig_name(num: int) -> str:
-    if (sig := _SIGS_BY_NUM.get(num)) is not None:
-        return sig.name
-    return f'signal {sig}'
-
-
-##
-
-
-class SignalReceiver:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._signals_recvd: ta.List[int] = []
-
-    def receive(self, sig: int, frame: ta.Any = None) -> None:
-        if sig not in self._signals_recvd:
-            self._signals_recvd.append(sig)
-
-    def install(self, *sigs: int) -> None:
-        for sig in sigs:
-            signal.signal(sig, self.receive)
-
-    def get_signal(self) -> ta.Optional[int]:
-        if self._signals_recvd:
-            sig = self._signals_recvd.pop(0)
-        else:
-            sig = None
-        return sig
-
-
-########################################
-# ../utils/strings.py
-
-
-##
-
-
-def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
-    if isinstance(s, bytes):
-        return s
-    else:
-        return s.encode(encoding)
-
-
-@ta.overload
-def find_prefix_at_end(haystack: str, needle: str) -> int:
-    ...
-
-
-@ta.overload
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    ...
-
-
-def find_prefix_at_end(haystack, needle):
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
-##
-
-
-ANSI_ESCAPE_BEGIN = b'\x1b['
-ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
-
-
-def strip_escapes(s: bytes) -> bytes:
-    """Remove all ANSI color escapes from the given string."""
-
-    result = b''
-    show = 1
-    i = 0
-    l = len(s)
-    while i < l:
-        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
-            show = 1
-        elif show:
-            n = s.find(ANSI_ESCAPE_BEGIN, i)
-            if n == -1:
-                return result + s[i:]
-            else:
-                result = result + s[i:n]
-                i = n
-                show = 0
-        i += 1
-    return result
-
-
-##
-
-
-class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers. If no suffixes match, default is the multiplier. Matches are
-    # case insensitive. Return values are in the fundamental unit.
-    def __init__(self, d, default=1):
-        super().__init__()
-        self._d = d
-        self._default = default
-        # all keys must be the same size
-        self._keysz = None
-        for k in d:
-            if self._keysz is None:
-                self._keysz = len(k)
-            elif self._keysz != len(k):  # type: ignore
-                raise ValueError(k)
-
-    def __call__(self, v: ta.Union[str, int]) -> int:
-        if isinstance(v, int):
-            return v
-        v = v.lower()
-        for s, m in self._d.items():
-            if v[-self._keysz:] == s:  # type: ignore
-                return int(v[:-self._keysz]) * m  # type: ignore
-        return int(v) * self._default
-
-
-parse_bytes_size = SuffixMultiplier({
-    'kb': 1024,
-    'mb': 1024 * 1024,
-    'gb': 1024 * 1024 * 1024,
-})
-
-
-#
-
-
-def parse_octal(arg: ta.Union[str, int]) -> int:
-    if isinstance(arg, int):
-        return arg
-    try:
-        return int(arg, 8)
-    except (TypeError, ValueError):
-        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
 
 
 ########################################

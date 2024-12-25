@@ -1,9 +1,9 @@
 import json
 import unittest
 
+from omlish.formats.toml.parser import toml_loads
 from omlish.lite.marshal import marshal_obj
 
-from ...toml.parser import toml_loads
 from ..cli import VersionsFile
 from ..configs import PyprojectConfigPreparer
 

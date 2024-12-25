@@ -37,12 +37,12 @@ from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.formats.toml.parser import toml_loads
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.runtime import check_lite_runtime_version
 from omlish.logs.standard import configure_standard_logging
 
-from ..toml.parser import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
 from .pkg import BasePyprojectPackageGenerator

@@ -52,7 +52,7 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../../omdev/toml/parser.py
+# ../../../../omlish/formats/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
@@ -84,7 +84,7 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 
 
 ########################################
-# ../../../../../omdev/toml/parser.py
+# ../../../../../omlish/formats/toml/parser.py
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.

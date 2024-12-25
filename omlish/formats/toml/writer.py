@@ -1,3 +1,4 @@
+# @omlish-lite
 import dataclasses as dc
 import string
 import typing as ta

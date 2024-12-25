@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
@@ -39,7 +41,6 @@
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/9ce90206b7a4649600218cf0bd4826db79c9a312/Lib/tomllib/_parser.py
-# ruff: noqa: UP006 UP007
 import datetime
 import functools
 import re
