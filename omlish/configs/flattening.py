@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 import abc
-import itertools
 import typing as ta
 
 from ..lite.check import check
@@ -37,7 +36,7 @@ class ConfigFlattening:
         self._index_close = check.not_empty(index_close)
 
     def flatten(self, unflattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-        def rec(prefix: list[str], value: ta.Any) -> None:
+        def rec(prefix: ta.List[str], value: ta.Any) -> None:
             if isinstance(value, dict):
                 for k, v in value.items():
                     rec([*prefix, k], v)
@@ -100,7 +99,7 @@ class ConfigFlattening:
         def __init__(self) -> None:
             super().__init__()
 
-            self._list: list[ta.Any] = []
+            self._list: ta.List[ta.Any] = []
 
         def get(self, key: int) -> ta.Any:
             check.arg(key >= 0)
@@ -119,7 +118,7 @@ class ConfigFlattening:
     def unflatten(self, flattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
         root = ConfigFlattening.UnflattenDict()
 
-        def split_keys(fkey: str) -> ta.Iterable[str | int]:
+        def split_keys(fkey: str) -> ta.Iterable[ta.Union[str, int]]:
             for part in fkey.split(self._delimiter):
                 if self._index_open in part:
                     check.state(part.endswith(self._index_close))
@@ -135,7 +134,7 @@ class ConfigFlattening:
         for fk, v in flattened.items():
             node: ConfigFlattening.UnflattenNode = root
             fks = list(split_keys(fk))
-            for key, nkey in itertools.pairwise(fks):
+            for key, nkey in zip(fks, fks[1:]):
                 if isinstance(nkey, str):
                     node = node.setdefault(key, ConfigFlattening.UnflattenDict)
                 elif isinstance(nkey, int):
