@@ -94,7 +94,7 @@ httpx[http2]==0.28.1  # FIXME: ,zstd,cli (dev only)
 
 ### async
 
-trio==0.27.0
+trio==0.28.0
 trio-asyncio==0.15.0
 
 aiomysql==0.2.0

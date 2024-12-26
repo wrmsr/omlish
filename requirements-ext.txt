@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.123.0
+hypothesis==6.123.1
 
 hexdump==3.3
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.8
+boto3>=1.35.87
 google-api-python-client==2.156.0
 google-cloud-compute==1.23.0
 
@@ -185,7 +185,7 @@ openai==1.58.1
 trl==0.12.1
 tf-keras==2.17.0
 
-polars==1.17.1
+polars==1.18.0
 
 pyzmq==26.2.0
 
@@ -254,7 +254,7 @@ unstructured==0.16.11
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
 
-libtmux==0.40.0
+libtmux==0.40.1
 
 sqlite-vec==0.1.6
 
@@ -266,7 +266,7 @@ jedi==0.19.2
 jedi-language-server==0.42.0
 
 tree-sitter==0.23.2
-tree-sitter-python==0.23.5
+tree-sitter-python==0.23.6
 
 gitpython==3.1.43
 
@@ -291,7 +291,7 @@ trafilatura==1.12.2
 qdrant-client==1.12.1
 
 mlx==0.21.1; sys_platform == "darwin"
-mlx-lm==0.20.4; sys_platform == "darwin"
+mlx-lm==0.20.5; sys_platform == "darwin"
 
 flask==3.1.0
 
