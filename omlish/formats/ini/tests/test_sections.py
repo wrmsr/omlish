@@ -1,11 +1,11 @@
 # @omlish-lite
 import unittest
 
-from ..configs import render_ini_config
+from ..sections import render_ini_sections
 
 
-class TestSystemd(unittest.TestCase):
-    def test_render_ini_config(self) -> None:
+class TestIniRender(unittest.TestCase):
+    def test_render_ini_sections(self) -> None:
         sd_unit = {
             'Unit': {
                 'Description': "User-specific service to run 'sleep infinity'",
@@ -21,4 +21,4 @@ class TestSystemd(unittest.TestCase):
             },
         }
 
-        print(render_ini_config(sd_unit))
+        print(render_ini_sections(sd_unit))

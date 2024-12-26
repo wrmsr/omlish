@@ -29,7 +29,7 @@ from omlish.os.paths import relative_symlink
 from omserv.nginx.configs import NginxConfigItems
 from omserv.nginx.configs import render_nginx_config_str
 
-from ....configs import render_ini_config
+from omlish.formats.ini.sections import render_ini_sections
 from ..paths.paths import DeployPath
 from ..tags import DEPLOY_TAG_SEPARATOR
 from ..tags import DeployApp
@@ -100,7 +100,7 @@ class DeployConfManager:
 
         elif isinstance(ac, IniDeployAppConfContent):
             ini_sections = pcc(ac.sections)
-            return strip_with_newline(render_ini_config(ini_sections))
+            return strip_with_newline(render_ini_sections(ini_sections))
 
         elif isinstance(ac, NginxDeployAppConfContent):
             nginx_items = NginxConfigItems.of(pcc(ac.items))

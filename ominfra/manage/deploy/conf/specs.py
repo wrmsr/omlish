@@ -6,7 +6,7 @@ import typing as ta
 from omlish.lite.check import check
 from omlish.lite.marshal import register_single_field_type_obj_marshaler
 
-from ....configs import IniConfigSectionSettingsMap
+from omlish.formats.ini.sections import IniSectionSettingsMap
 from ..paths.specs import check_valid_deploy_spec_path
 
 
@@ -41,7 +41,7 @@ class JsonDeployAppConfContent(DeployAppConfContent):
 @register_single_field_type_obj_marshaler('sections')
 @dc.dataclass(frozen=True)
 class IniDeployAppConfContent(DeployAppConfContent):
-    sections: IniConfigSectionSettingsMap
+    sections: IniSectionSettingsMap
 
 
 #
