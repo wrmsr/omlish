@@ -147,7 +147,6 @@ from .imports import (  # noqa
 )
 
 from .iterables import (  # noqa
-    BUILTIN_SCALAR_ITERABLE_TYPES,
     asrange,
     exhaust,
     flatmap,
@@ -237,6 +236,10 @@ from .typing import (  # noqa
 )
 
 ##
+
+from ..lite.types import (  # noqa
+    BUILTIN_SCALAR_ITERABLE_TYPES,
+)
 
 from ..lite.typing import (  # noqa
     AnyFunc,

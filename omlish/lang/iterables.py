@@ -8,13 +8,6 @@ T = ta.TypeVar('T')
 R = ta.TypeVar('R')
 
 
-BUILTIN_SCALAR_ITERABLE_TYPES: tuple[type, ...] = (
-    bytearray,
-    bytes,
-    str,
-)
-
-
 ##
 
 
