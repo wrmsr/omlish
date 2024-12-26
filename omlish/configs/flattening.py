@@ -134,7 +134,7 @@ class ConfigFlattening:
         for fk, v in flattened.items():
             node: ConfigFlattening.UnflattenNode = root
             fks = list(split_keys(fk))
-            for key, nkey in zip(fks, fks[1:]):
+            for key, nkey in zip(fks, fks[1:]):  # noqa
                 if isinstance(nkey, str):
                     node = node.setdefault(key, ConfigFlattening.UnflattenDict)
                 elif isinstance(nkey, int):
