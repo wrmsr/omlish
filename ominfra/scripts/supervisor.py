@@ -80,7 +80,7 @@ import types
 import typing as ta
 import uuid
 import warnings
-import weakref  # noqa
+import weakref
 
 
 ########################################
@@ -150,9 +150,6 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 # ../../omlish/sockets/handlers.py
 SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
-
-# ../configs.py
-ConfigMapping = ta.Mapping[str, ta.Any]
 
 # ../../omlish/http/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
@@ -3527,6 +3524,54 @@ def render_config_data(
 
 
 ########################################
+# ../../../omlish/configs/processing/names.py
+"""
+usecase: supervisor process groups
+"""
+
+
+##
+
+
+def build_config_named_children(
+        o: ta.Union[
+            ta.Sequence[ConfigMap],
+            ta.Mapping[str, ConfigMap],
+            None,
+        ],
+        *,
+        name_key: str = 'name',
+) -> ta.Optional[ta.Sequence[ConfigMap]]:
+    if o is None:
+        return None
+
+    lst: ta.List[ConfigMap] = []
+    if isinstance(o, ta.Mapping):
+        for k, v in o.items():
+            check.isinstance(v, ta.Mapping)
+            if name_key in v:
+                n = v[name_key]
+                if k != n:
+                    raise KeyError(f'Given names do not match: {n} != {k}')
+                lst.append(v)
+            else:
+                lst.append({name_key: k, **v})
+
+    else:
+        check.not_isinstance(o, str)
+        lst.extend(o)
+
+    seen = set()
+    for d in lst:
+        n = d['name']
+        if n in d:
+            raise KeyError(f'Duplicate name: {n}')
+        seen.add(n)
+
+    return lst
+
+
+########################################
 # ../../../omlish/http/parsing.py
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -6259,94 +6304,302 @@ class SocketHandler(abc.ABC):
 
 
 ########################################
-# ../../configs.py
+# ../configs.py
 
 
 ##
 
 
-def parse_config_file(
-        name: str,
-        f: ta.TextIO,
-) -> ConfigMapping:
-    if name.endswith('.toml'):
-        return toml_loads(f.read())
-
-    elif any(name.endswith(e) for e in ('.yml', '.yaml')):
-        yaml = __import__('yaml')
-        return yaml.safe_load(f)
-
-    elif name.endswith('.ini'):
-        import configparser
-        cp = configparser.ConfigParser()
-        cp.read_file(f)
-        config_dct: ta.Dict[str, ta.Any] = {}
-        for sec in cp.sections():
-            cd = config_dct
-            for k in sec.split('.'):
-                cd = cd.setdefault(k, {})
-            cd.update(cp.items(sec))
-        return config_dct
-
-    else:
-        return json.loads(f.read())
+class RestartWhenExitUnexpected:
+    pass
 
 
-def read_config_file(
-        path: str,
-        cls: ta.Type[T],
-        *,
-        prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
-        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
-) -> T:
-    with open(path) as cf:
-        config_dct = parse_config_file(os.path.basename(path), cf)
-
-    if prepare is not None:
-        config_dct = prepare(config_dct)
-
-    return msh.unmarshal_obj(config_dct, cls)
+class RestartUnconditionally:
+    pass
 
 
 ##
 
 
-def build_config_named_children(
-        o: ta.Union[
-            ta.Sequence[ConfigMapping],
-            ta.Mapping[str, ConfigMapping],
-            None,
-        ],
-        *,
-        name_key: str = 'name',
-) -> ta.Optional[ta.Sequence[ConfigMapping]]:
-    if o is None:
-        return None
+@dc.dataclass(frozen=True)
+class ProcessConfig:
+    # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
+    # need to worry about setting this unless you change numprocs. The string expression is evaluated against a
+    # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
+    # supervisord config file).
+    name: str
 
-    lst: ta.List[ConfigMapping] = []
-    if isinstance(o, ta.Mapping):
-        for k, v in o.items():
-            check.isinstance(v, ta.Mapping)
-            if name_key in v:
-                n = v[name_key]
-                if k != n:
-                    raise KeyError(f'Given names do not match: {n} != {k}')
-                lst.append(v)
-            else:
-                lst.append({name_key: k, **v})
+    # The command that will be run when this program is started. The command can be either absolute (e.g.
+    # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
+    # be searched for the executable. Programs can accept arguments, e.g. /path/to/program foo bar. The command line can
+    # use double quotes to group arguments with spaces in them to pass to the program, e.g. /path/to/program/name -p
+    # "foo bar". Note that the value of command may include Python string expressions, e.g. /path/to/programname
+    # --port=80%(process_num)02d might expand to /path/to/programname --port=8000 at runtime. String expressions are
+    # evaluated against a dictionary containing the keys group_name, host_node_name, program_name, process_num,
+    # numprocs, here (the directory of the supervisord config file), and all supervisord's environment variables
+    # prefixed with ENV_. Controlled programs should themselves not be daemons, as supervisord assumes it is responsible
+    # for daemonizing its subprocesses
+    command: str
 
-    else:
-        check.not_isinstance(o, str)
-        lst.extend(o)
+    #
 
-    seen = set()
-    for d in lst:
-        n = d['name']
-        if n in d:
-            raise KeyError(f'Duplicate name: {n}')
-        seen.add(n)
+    # Supervisor will start as many instances of this program as named by numprocs. Note that if numprocs > 1, the
+    # process_name expression must include %(process_num)s (or any other valid Python string expression that includes
+    # process_num) within it.
+    num_procs: int = 1
 
-    return lst
+    # An integer offset that is used to compute the number at which process_num starts.
+    num_procs_start: int = 0
+
+    #
+
+    # Instruct supervisord to use this UNIX user account as the account which runs the program. The user can only be
+    # switched if supervisord is run as the root user. If supervisord can't switch to the specified user, the program
+    # will not be started.
+    #
+    # Note: The user will be changed using setuid only. This does not start a login shell and does not change
+    # environment variables like USER or HOME
+    user: ta.Optional[str] = None
+    uid: ta.Optional[int] = None
+
+    # An octal number (e.g. 002, 022) representing the umask of the process.
+    umask: ta.Optional[int] = None
+
+    #
+
+    # A file path representing a directory to which supervisord should temporarily chdir before exec'ing the child.
+    directory: ta.Optional[str] = None
+
+    # A list of key/value pairs in the form KEY="val",KEY2="val2" that will be placed in the child process' environment.
+    # The environment string may contain Python string expressions that will be evaluated against a dictionary
+    # containing group_name, host_node_name, process_num, program_name, and here (the directory of the supervisord
+    # config file). Values containing non-alphanumeric characters should be quoted (e.g. KEY="val:123",KEY2="val,456").
+    # Otherwise, quoting the values is optional but recommended. Note that the subprocess will inherit the environment
+    # variables of the shell used to start “supervisord” except for the ones overridden here.
+    environment: ta.Optional[ta.Mapping[str, str]] = None
+
+    #
+
+    # The relative priority of the program in the start and shutdown ordering. Lower priorities indicate programs that
+    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. “start
+    # all”/”stop all”). Higher priorities indicate programs that start last and shut down first.
+    priority: int = 999
+
+    # If true, this program will start automatically when supervisord is started.
+    auto_start: bool = True
+
+    # Specifies if supervisord should automatically restart a process if it exits when it is in the RUNNING state. May
+    # be one of false, unexpected, or true. If false, the process will not be autorestarted. If unexpected, the process
+    # will be restarted when the program exits with an exit code that is not one of the exit codes associated with this
+    # process' configuration (see exitcodes). If true, the process will be unconditionally restarted when it exits,
+    # without regard to its exit code.
+    #
+    # Note: autorestart controls whether supervisord will autorestart a program if it exits after it has successfully
+    # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
+    # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
+    # startsecs and startretries.
+    auto_restart: str = 'unexpected'
+
+    # The total number of seconds which the program needs to stay running after a startup to consider the start
+    # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
+    # program needn't stay running for any particular amount of time.
+    #
+    # Note: Even if a process exits with an “expected” exit code (see exitcodes), the start will still be considered a
+    # failure if the process exits quicker than startsecs.
+    start_secs: int = 1
+
+    # The number of serial failure attempts that supervisord will allow when attempting to start the program before
+    # giving up and putting the process into an FATAL state.
+    #
+    # Note: After each failed restart, process will be put in BACKOFF state and each retry attempt will take
+    # increasingly more time.
+    start_retries: int = 3
+
+    # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
+    # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
+    stop_signal: int = signal.SIGTERM
+
+    # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
+    # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
+    # will attempt to kill it with a final SIGKILL.
+    stop_wait_secs: int = 10
+
+    # If true, the flag causes supervisor to send the stop signal to the whole process group and implies killasgroup is
+    # true. This is useful for programs, such as Flask in debug mode, that do not propagate stop signals to their
+    # children, leaving them orphaned.
+    stop_as_group: bool = False
+
+    # If true, when resorting to send SIGKILL to the program to terminate it send it to its whole process group instead,
+    # taking care of its children as well, useful e.g with Python programs using multiprocessing.
+    kill_as_group: bool = False
+
+    # The list of “expected” exit codes for this program used with autorestart. If the autorestart parameter is set to
+    # unexpected, and the process exits in any other way than as a result of a supervisor stop request, supervisord will
+    # restart the process if it exits with an exit code that is not defined in this list.
+    #
+    # Note: In Supervisor versions prior to 4.0, the default was 0,2. In Supervisor 4.0, the default was changed to 0.
+    exitcodes: ta.Sequence[int] = (0,)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Log:
+        file: ta.Optional[str] = None
+        capture_max_bytes: ta.Optional[int] = None
+        events_enabled: bool = False
+        syslog: bool = False
+        backups: ta.Optional[int] = None
+        max_bytes: ta.Optional[int] = None
+
+    stdout: Log = Log()
+    stderr: Log = Log()
+
+    # If true, cause the process' stderr output to be sent back to supervisord on its stdout file descriptor (in UNIX
+    # shell terms, this is the equivalent of executing /the/program 2>&1).
+    #
+    # Note: Do not set redirect_stderr=true in an [eventlistener:x] section. Eventlisteners use stdout and stdin to
+    # communicate with supervisord. If stderr is redirected, output from stderr will interfere with the eventlistener
+    # protocol.
+    redirect_stderr: bool = False
+
+
+@dc.dataclass(frozen=True)
+class ProcessGroupConfig:
+    name: str
+
+    priority: int = 999
+
+    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+
+@dc.dataclass(frozen=True)
+class ServerConfig:
+    # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
+    # can only be switched if supervisord is started as the root user.
+    user: ta.Optional[str] = None
+
+    # If true, supervisord will start in the foreground instead of daemonizing.
+    nodaemon: bool = False
+
+    # The umask of the supervisord process.
+    umask: int = 0o22
+
+    #
+
+    # When supervisord daemonizes, switch to this directory. This option can include the value %(here)s, which expands
+    # to the directory in which the supervisord configuration file was found.
+    directory: ta.Optional[str] = None
+
+    # The location in which supervisord keeps its pid file. This option can include the value %(here)s, which expands to
+    # the directory in which the supervisord configuration file was found.
+    pidfile: str = 'supervisord.pid'
+
+    # The identifier string for this supervisor process, used by the RPC interface.
+    identifier: str = 'supervisor'
+
+    # The minimum number of file descriptors that must be available before supervisord will start successfully.
+    min_fds: int = 1024
+    # The minimum number of process descriptors that must be available before supervisord will start successfully.
+    min_procs: int = 200
+
+    # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
+    nocleanup: bool = False
+
+    # Strip all ANSI escape sequences from child log files.
+    strip_ansi: bool = False
+
+    #
+
+    # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
+    # to the directory in which the supervisord configuration file was found.
+    logfile: str = 'supervisord.log'
+
+    # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
+    # like “KB”, “MB”, and “GB” can be used in the value). Set this value to 0 to indicate an unlimited log size.
+    logfile_max_bytes: int = 50 * 1024 * 1024
+
+    # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
+    # kept.
+    logfile_backups: int = 10
+
+    # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
+    # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
+    # output of its child processes and extended info about process state changes, which is useful for debugging a
+    # process which isn't starting properly.
+    loglevel: int = logging.INFO
+
+    # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
+    # directory in which the supervisord configuration file was found.
+    child_logdir: str = '/dev/null'
+
+    # If true and not daemonized, logs will not be directed to stdout.
+    silent: bool = False
+
+    #
+
+    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
+
+    # TODO: implement - make sure to accept broken symlinks
+    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
+
+    #
+
+    http_port: ta.Optional[int] = None
+
+    #
+
+    @classmethod
+    def new(
+            cls,
+            *,
+            umask: ta.Union[int, str] = 0o22,
+            directory: ta.Optional[str] = None,
+            logfile: str = 'supervisord.log',
+            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            loglevel: ta.Union[int, str] = logging.INFO,
+            pidfile: str = 'supervisord.pid',
+            child_logdir: ta.Optional[str] = None,
+            **kwargs: ta.Any,
+    ) -> 'ServerConfig':
+        return cls(
+            umask=parse_octal(umask),
+            directory=check_existing_dir(directory) if directory is not None else None,
+            logfile=check_path_with_existing_dir(logfile),
+            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
+            loglevel=parse_logging_level(loglevel),
+            pidfile=check_path_with_existing_dir(pidfile),
+            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
+            **kwargs,
+        )
+
+
+##
+
+
+def prepare_process_group_config(dct: ConfigMap) -> ConfigMap:
+    out = dict(dct)
+    out['processes'] = build_config_named_children(out.get('processes'))
+    return out
+
+
+def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+    out = dict(dct)
+    group_dcts = build_config_named_children(out.get('groups'))
+    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
+    return out
+
+
+##
+
+
+def parse_logging_level(value: ta.Union[str, int]) -> int:
+    if isinstance(value, int):
+        return value
+    s = str(value).lower()
+    level = logging.getLevelNamesMapping().get(s.upper())
+    if level is None:
+        raise ValueError(f'bad logging level name {value!r}')
+    return level
 
 
 ########################################
@@ -6652,302 +6905,183 @@ def configure_standard_logging(
 
 
 ########################################
-# ../configs.py
+# ../types.py
 
 
 ##
 
 
-class RestartWhenExitUnexpected:
+class ExitNow(Exception):  # noqa
     pass
 
 
-class RestartUnconditionally:
-    pass
+ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessConfig:
-    # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
-    # need to worry about setting this unless you change numprocs. The string expression is evaluated against a
-    # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
-    # supervisord config file).
-    name: str
+@functools.total_ordering
+class ConfigPriorityOrdered(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def config(self) -> ta.Any:
+        raise NotImplementedError
 
-    # The command that will be run when this program is started. The command can be either absolute (e.g.
-    # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
-    # be searched for the executable. Programs can accept arguments, e.g. /path/to/program foo bar. The command line can
-    # use double quotes to group arguments with spaces in them to pass to the program, e.g. /path/to/program/name -p
-    # "foo bar". Note that the value of command may include Python string expressions, e.g. /path/to/programname
-    # --port=80%(process_num)02d might expand to /path/to/programname --port=8000 at runtime. String expressions are
-    # evaluated against a dictionary containing the keys group_name, host_node_name, program_name, process_num,
-    # numprocs, here (the directory of the supervisord config file), and all supervisord's environment variables
-    # prefixed with ENV_. Controlled programs should themselves not be daemons, as supervisord assumes it is responsible
-    # for daemonizing its subprocesses
-    command: str
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
 
-    #
-
-    # Supervisor will start as many instances of this program as named by numprocs. Note that if numprocs > 1, the
-    # process_name expression must include %(process_num)s (or any other valid Python string expression that includes
-    # process_num) within it.
-    num_procs: int = 1
-
-    # An integer offset that is used to compute the number at which process_num starts.
-    num_procs_start: int = 0
-
-    #
-
-    # Instruct supervisord to use this UNIX user account as the account which runs the program. The user can only be
-    # switched if supervisord is run as the root user. If supervisord can't switch to the specified user, the program
-    # will not be started.
-    #
-    # Note: The user will be changed using setuid only. This does not start a login shell and does not change
-    # environment variables like USER or HOME
-    user: ta.Optional[str] = None
-    uid: ta.Optional[int] = None
-
-    # An octal number (e.g. 002, 022) representing the umask of the process.
-    umask: ta.Optional[int] = None
-
-    #
-
-    # A file path representing a directory to which supervisord should temporarily chdir before exec'ing the child.
-    directory: ta.Optional[str] = None
-
-    # A list of key/value pairs in the form KEY="val",KEY2="val2" that will be placed in the child process' environment.
-    # The environment string may contain Python string expressions that will be evaluated against a dictionary
-    # containing group_name, host_node_name, process_num, program_name, and here (the directory of the supervisord
-    # config file). Values containing non-alphanumeric characters should be quoted (e.g. KEY="val:123",KEY2="val,456").
-    # Otherwise, quoting the values is optional but recommended. Note that the subprocess will inherit the environment
-    # variables of the shell used to start “supervisord” except for the ones overridden here.
-    environment: ta.Optional[ta.Mapping[str, str]] = None
-
-    #
-
-    # The relative priority of the program in the start and shutdown ordering. Lower priorities indicate programs that
-    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. “start
-    # all”/”stop all”). Higher priorities indicate programs that start last and shut down first.
-    priority: int = 999
-
-    # If true, this program will start automatically when supervisord is started.
-    auto_start: bool = True
-
-    # Specifies if supervisord should automatically restart a process if it exits when it is in the RUNNING state. May
-    # be one of false, unexpected, or true. If false, the process will not be autorestarted. If unexpected, the process
-    # will be restarted when the program exits with an exit code that is not one of the exit codes associated with this
-    # process' configuration (see exitcodes). If true, the process will be unconditionally restarted when it exits,
-    # without regard to its exit code.
-    #
-    # Note: autorestart controls whether supervisord will autorestart a program if it exits after it has successfully
-    # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
-    # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
-    # startsecs and startretries.
-    auto_restart: str = 'unexpected'
-
-    # The total number of seconds which the program needs to stay running after a startup to consider the start
-    # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
-    # program needn't stay running for any particular amount of time.
-    #
-    # Note: Even if a process exits with an “expected” exit code (see exitcodes), the start will still be considered a
-    # failure if the process exits quicker than startsecs.
-    start_secs: int = 1
-
-    # The number of serial failure attempts that supervisord will allow when attempting to start the program before
-    # giving up and putting the process into an FATAL state.
-    #
-    # Note: After each failed restart, process will be put in BACKOFF state and each retry attempt will take
-    # increasingly more time.
-    start_retries: int = 3
-
-    # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
-    # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
-    stop_signal: int = signal.SIGTERM
-
-    # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
-    # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
-    # will attempt to kill it with a final SIGKILL.
-    stop_wait_secs: int = 10
-
-    # If true, the flag causes supervisor to send the stop signal to the whole process group and implies killasgroup is
-    # true. This is useful for programs, such as Flask in debug mode, that do not propagate stop signals to their
-    # children, leaving them orphaned.
-    stop_as_group: bool = False
-
-    # If true, when resorting to send SIGKILL to the program to terminate it send it to its whole process group instead,
-    # taking care of its children as well, useful e.g with Python programs using multiprocessing.
-    kill_as_group: bool = False
-
-    # The list of “expected” exit codes for this program used with autorestart. If the autorestart parameter is set to
-    # unexpected, and the process exits in any other way than as a result of a supervisor stop request, supervisord will
-    # restart the process if it exits with an exit code that is not defined in this list.
-    #
-    # Note: In Supervisor versions prior to 4.0, the default was 0,2. In Supervisor 4.0, the default was changed to 0.
-    exitcodes: ta.Sequence[int] = (0,)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Log:
-        file: ta.Optional[str] = None
-        capture_max_bytes: ta.Optional[int] = None
-        events_enabled: bool = False
-        syslog: bool = False
-        backups: ta.Optional[int] = None
-        max_bytes: ta.Optional[int] = None
-
-    stdout: Log = Log()
-    stderr: Log = Log()
-
-    # If true, cause the process' stderr output to be sent back to supervisord on its stdout file descriptor (in UNIX
-    # shell terms, this is the equivalent of executing /the/program 2>&1).
-    #
-    # Note: Do not set redirect_stderr=true in an [eventlistener:x] section. Eventlisteners use stdout and stdin to
-    # communicate with supervisord. If stderr is redirected, output from stderr will interfere with the eventlistener
-    # protocol.
-    redirect_stderr: bool = False
-
-
-@dc.dataclass(frozen=True)
-class ProcessGroupConfig:
-    name: str
-
-    priority: int = 999
-
-    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
-
-
-@dc.dataclass(frozen=True)
-class ServerConfig:
-    # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
-    # can only be switched if supervisord is started as the root user.
-    user: ta.Optional[str] = None
-
-    # If true, supervisord will start in the foreground instead of daemonizing.
-    nodaemon: bool = False
-
-    # The umask of the supervisord process.
-    umask: int = 0o22
-
-    #
-
-    # When supervisord daemonizes, switch to this directory. This option can include the value %(here)s, which expands
-    # to the directory in which the supervisord configuration file was found.
-    directory: ta.Optional[str] = None
-
-    # The location in which supervisord keeps its pid file. This option can include the value %(here)s, which expands to
-    # the directory in which the supervisord configuration file was found.
-    pidfile: str = 'supervisord.pid'
-
-    # The identifier string for this supervisor process, used by the RPC interface.
-    identifier: str = 'supervisor'
-
-    # The minimum number of file descriptors that must be available before supervisord will start successfully.
-    min_fds: int = 1024
-    # The minimum number of process descriptors that must be available before supervisord will start successfully.
-    min_procs: int = 200
-
-    # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
-    nocleanup: bool = False
-
-    # Strip all ANSI escape sequences from child log files.
-    strip_ansi: bool = False
-
-    #
-
-    # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
-    # to the directory in which the supervisord configuration file was found.
-    logfile: str = 'supervisord.log'
-
-    # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
-    # like “KB”, “MB”, and “GB” can be used in the value). Set this value to 0 to indicate an unlimited log size.
-    logfile_max_bytes: int = 50 * 1024 * 1024
-
-    # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
-    # kept.
-    logfile_backups: int = 10
-
-    # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
-    # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
-    # output of its child processes and extended info about process state changes, which is useful for debugging a
-    # process which isn't starting properly.
-    loglevel: int = logging.INFO
-
-    # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
-    # directory in which the supervisord configuration file was found.
-    child_logdir: str = '/dev/null'
-
-    # If true and not daemonized, logs will not be directed to stdout.
-    silent: bool = False
-
-    #
-
-    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
-
-    # TODO: implement - make sure to accept broken symlinks
-    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
-
-    #
-
-    http_port: ta.Optional[int] = None
-
-    #
-
-    @classmethod
-    def new(
-            cls,
-            *,
-            umask: ta.Union[int, str] = 0o22,
-            directory: ta.Optional[str] = None,
-            logfile: str = 'supervisord.log',
-            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
-            loglevel: ta.Union[int, str] = logging.INFO,
-            pidfile: str = 'supervisord.pid',
-            child_logdir: ta.Optional[str] = None,
-            **kwargs: ta.Any,
-    ) -> 'ServerConfig':
-        return cls(
-            umask=parse_octal(umask),
-            directory=check_existing_dir(directory) if directory is not None else None,
-            logfile=check_path_with_existing_dir(logfile),
-            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
-            loglevel=parse_logging_level(loglevel),
-            pidfile=check_path_with_existing_dir(pidfile),
-            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
-            **kwargs,
-        )
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
 
 
 ##
 
 
-def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
-    out = dict(dct)
-    out['processes'] = build_config_named_children(out.get('processes'))
-    return out
+class SupervisorStateManager(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def state(self) -> SupervisorState:
+        raise NotImplementedError
 
-
-def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-    out = dict(dct)
-    group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
-    return out
+    @abc.abstractmethod
+    def set_state(self, state: SupervisorState) -> None:
+        raise NotImplementedError
 
 
 ##
 
 
-def parse_logging_level(value: ta.Union[str, int]) -> int:
-    if isinstance(value, int):
-        return value
-    s = str(value).lower()
-    level = logging.getLevelNamesMapping().get(s.upper())
-    if level is None:
-        raise ValueError(f'bad logging level name {value!r}')
-    return level
+class HasDispatchers(abc.ABC):
+    @abc.abstractmethod
+    def get_dispatchers(self) -> 'Dispatchers':
+        raise NotImplementedError
+
+
+class ProcessDispatcher(FdioHandler, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def channel(self) -> ProcessOutputChannel:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+
+class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
+    @abc.abstractmethod
+    def remove_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
+
+
+class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
+    @abc.abstractmethod
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class Process(
+    ConfigPriorityOrdered,
+    HasDispatchers,
+    abc.ABC,
+):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def config(self) -> ProcessConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def group(self) -> 'ProcessGroup':
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def pid(self) -> Pid:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def finish(self, sts: Rc) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def stop(self) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def give_up(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def transition(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def state(self) -> ProcessState:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def after_setuid(self) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class ProcessGroup(
+    ConfigPriorityOrdered,
+    KeyedCollectionAccessors[str, Process],
+    abc.ABC,
+):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def config(self) -> ProcessGroupConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def by_name(self) -> ta.Mapping[str, Process]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_unstopped_processes(self) -> ta.List[Process]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def before_remove(self) -> None:
+        raise NotImplementedError
 
 
 ########################################
@@ -7508,315 +7642,6 @@ class CoroHttpServerSocketHandler(SocketHandler):
                     o = next(gen)
             except StopIteration:
                 break
-
-
-########################################
-# ../types.py
-
-
-##
-
-
-class ExitNow(Exception):  # noqa
-    pass
-
-
-ServerEpoch = ta.NewType('ServerEpoch', int)
-
-
-##
-
-
-@functools.total_ordering
-class ConfigPriorityOrdered(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ta.Any:
-        raise NotImplementedError
-
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
-
-
-##
-
-
-class SupervisorStateManager(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def state(self) -> SupervisorState:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_state(self, state: SupervisorState) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class HasDispatchers(abc.ABC):
-    @abc.abstractmethod
-    def get_dispatchers(self) -> 'Dispatchers':
-        raise NotImplementedError
-
-
-class ProcessDispatcher(FdioHandler, abc.ABC):
-    @property
-    @abc.abstractmethod
-    def channel(self) -> ProcessOutputChannel:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def process(self) -> 'Process':
-        raise NotImplementedError
-
-
-class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
-    @abc.abstractmethod
-    def remove_logs(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def reopen_logs(self) -> None:
-        raise NotImplementedError
-
-
-class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
-    @abc.abstractmethod
-    def write(self, chars: ta.Union[bytes, str]) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def flush(self) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class Process(
-    ConfigPriorityOrdered,
-    HasDispatchers,
-    abc.ABC,
-):
-    @property
-    @abc.abstractmethod
-    def name(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def config(self) -> ProcessConfig:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def group(self) -> 'ProcessGroup':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def pid(self) -> Pid:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def finish(self, sts: Rc) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def stop(self) -> ta.Optional[str]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def give_up(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def transition(self) -> None:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def state(self) -> ProcessState:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def after_setuid(self) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class ProcessGroup(
-    ConfigPriorityOrdered,
-    KeyedCollectionAccessors[str, Process],
-    abc.ABC,
-):
-    @property
-    @abc.abstractmethod
-    def name(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def config(self) -> ProcessGroupConfig:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def by_name(self) -> ta.Mapping[str, Process]:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def stop_all(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_unstopped_processes(self) -> ta.List[Process]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def before_remove(self) -> None:
-        raise NotImplementedError
-
-
-########################################
-# ../../../omlish/http/coro/fdio.py
-
-
-class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            sock: socket.socket,
-            handler: HttpHandler,
-            *,
-            read_size: int = 0x10000,
-            write_size: int = 0x10000,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
-    ) -> None:
-        check.state(not sock.getblocking())
-
-        super().__init__(addr, sock)
-
-        self._handler = handler
-        self._read_size = read_size
-        self._write_size = write_size
-        self._log_handler = log_handler
-
-        self._read_buf = ReadableListBuffer()
-        self._write_buf: IncrementalWriteBuffer | None = None
-
-        self._coro_srv = CoroHttpServer(
-            addr,
-            handler=self._handler,
-        )
-        self._srv_coro: ta.Optional[ta.Generator[CoroHttpServer.Io, ta.Optional[bytes], None]] = self._coro_srv.coro_handle()  # noqa
-
-        self._cur_io: CoroHttpServer.Io | None = None
-        self._next_io()
-
-    #
-
-    def _next_io(self) -> None:  # noqa
-        coro = check.not_none(self._srv_coro)
-
-        d: bytes | None = None
-        o = self._cur_io
-        while True:
-            if o is None:
-                try:
-                    if d is not None:
-                        o = coro.send(d)
-                        d = None
-                    else:
-                        o = next(coro)
-                except StopIteration:
-                    self.close()
-                    o = None
-                    break
-
-            if isinstance(o, CoroHttpServer.AnyLogIo):
-                if self._log_handler is not None:
-                    self._log_handler(self._coro_srv, o)
-                o = None
-
-            elif isinstance(o, CoroHttpServer.ReadIo):
-                if (d := self._read_buf.read(o.sz)) is None:
-                    break
-                o = None
-
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
-                if (d := self._read_buf.read_until(b'\n')) is None:
-                    break
-                o = None
-
-            elif isinstance(o, CoroHttpServer.WriteIo):
-                check.none(self._write_buf)
-                self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
-                break
-
-            else:
-                raise TypeError(o)
-
-        self._cur_io = o
-
-    #
-
-    def readable(self) -> bool:
-        return True
-
-    def writable(self) -> bool:
-        return self._write_buf is not None
-
-    #
-
-    def on_readable(self) -> None:
-        try:
-            buf = check.not_none(self._sock).recv(self._read_size)
-        except BlockingIOError:
-            return
-        except ConnectionResetError:
-            self.close()
-            return
-        if not buf:
-            self.close()
-            return
-
-        self._read_buf.feed(buf)
-
-        if isinstance(self._cur_io, CoroHttpServer.AnyReadIo):
-            self._next_io()
-
-    def on_writable(self) -> None:
-        check.isinstance(self._cur_io, CoroHttpServer.WriteIo)
-        wb = check.not_none(self._write_buf)
-        while wb.rem > 0:
-            def send(d: bytes) -> int:
-                try:
-                    return check.not_none(self._sock).send(d)
-                except ConnectionResetError:
-                    self.close()
-                    return 0
-                except BlockingIOError:
-                    return 0
-            if not wb.write(send):
-                break
-
-        if wb.rem < 1:
-            self._write_buf = None
-            self._cur_io = None
-            self._next_io()
 
 
 ########################################
@@ -8517,6 +8342,135 @@ class SupervisorSetupImpl(SupervisorSetup):
         # again after the setsid() call, for obscure SVR4 reasons.
         os.setsid()
         os.umask(self._config.umask)
+
+
+########################################
+# ../../../omlish/http/coro/fdio.py
+
+
+class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            sock: socket.socket,
+            handler: HttpHandler,
+            *,
+            read_size: int = 0x10000,
+            write_size: int = 0x10000,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
+    ) -> None:
+        check.state(not sock.getblocking())
+
+        super().__init__(addr, sock)
+
+        self._handler = handler
+        self._read_size = read_size
+        self._write_size = write_size
+        self._log_handler = log_handler
+
+        self._read_buf = ReadableListBuffer()
+        self._write_buf: IncrementalWriteBuffer | None = None
+
+        self._coro_srv = CoroHttpServer(
+            addr,
+            handler=self._handler,
+        )
+        self._srv_coro: ta.Optional[ta.Generator[CoroHttpServer.Io, ta.Optional[bytes], None]] = self._coro_srv.coro_handle()  # noqa
+
+        self._cur_io: CoroHttpServer.Io | None = None
+        self._next_io()
+
+    #
+
+    def _next_io(self) -> None:  # noqa
+        coro = check.not_none(self._srv_coro)
+
+        d: bytes | None = None
+        o = self._cur_io
+        while True:
+            if o is None:
+                try:
+                    if d is not None:
+                        o = coro.send(d)
+                        d = None
+                    else:
+                        o = next(coro)
+                except StopIteration:
+                    self.close()
+                    o = None
+                    break
+
+            if isinstance(o, CoroHttpServer.AnyLogIo):
+                if self._log_handler is not None:
+                    self._log_handler(self._coro_srv, o)
+                o = None
+
+            elif isinstance(o, CoroHttpServer.ReadIo):
+                if (d := self._read_buf.read(o.sz)) is None:
+                    break
+                o = None
+
+            elif isinstance(o, CoroHttpServer.ReadLineIo):
+                if (d := self._read_buf.read_until(b'\n')) is None:
+                    break
+                o = None
+
+            elif isinstance(o, CoroHttpServer.WriteIo):
+                check.none(self._write_buf)
+                self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
+                break
+
+            else:
+                raise TypeError(o)
+
+        self._cur_io = o
+
+    #
+
+    def readable(self) -> bool:
+        return True
+
+    def writable(self) -> bool:
+        return self._write_buf is not None
+
+    #
+
+    def on_readable(self) -> None:
+        try:
+            buf = check.not_none(self._sock).recv(self._read_size)
+        except BlockingIOError:
+            return
+        except ConnectionResetError:
+            self.close()
+            return
+        if not buf:
+            self.close()
+            return
+
+        self._read_buf.feed(buf)
+
+        if isinstance(self._cur_io, CoroHttpServer.AnyReadIo):
+            self._next_io()
+
+    def on_writable(self) -> None:
+        check.isinstance(self._cur_io, CoroHttpServer.WriteIo)
+        wb = check.not_none(self._write_buf)
+        while wb.rem > 0:
+            def send(d: bytes) -> int:
+                try:
+                    return check.not_none(self._sock).send(d)
+                except ConnectionResetError:
+                    self.close()
+                    return 0
+                except BlockingIOError:
+                    return 0
+            if not wb.write(send):
+                break
+
+        if wb.rem < 1:
+            self._write_buf = None
+            self._cur_io = None
+            self._next_io()
 
 
 ########################################
