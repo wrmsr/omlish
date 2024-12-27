@@ -4,11 +4,11 @@ import os.path
 import typing as ta
 import unittest
 
+from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
 from omlish.logs.standard import configure_standard_logging
 
-from ...configs import read_config_file
 from ..configs import ServerConfig
 from ..configs import prepare_server_config
 from ..inject import bind_server
@@ -28,7 +28,7 @@ class TestSupervisor(unittest.TestCase):
 
         config_file = os.path.join(os.path.dirname(__file__), 'configs', 'demo.json')
 
-        config = read_config_file(
+        config = load_config_file_obj(
             os.path.expanduser(config_file),
             ServerConfig,
             prepare=prepare_server_config,

@@ -36,6 +36,7 @@ import abc
 import base64
 import collections
 import collections.abc
+import configparser
 import contextlib
 import contextvars
 import ctypes as ct
@@ -96,6 +97,12 @@ if sys.version_info < (3, 8):
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+# ../../omlish/configs/types.py
+ConfigMap = ta.Mapping[str, ta.Any]
+
+# ../../omlish/formats/ini/sections.py
+IniSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
+
 # ../../omlish/formats/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
@@ -124,6 +131,9 @@ SocketAddress = ta.Any
 # events.py
 EventCallback = ta.Callable[['Event'], None]
 ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
+
+# ../../omlish/configs/formats.py
+ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 # ../../omlish/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
@@ -619,6 +629,54 @@ def parse_octal(arg: ta.Union[str, int]) -> int:
         return int(arg, 8)
     except (TypeError, ValueError):
         raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
+
+
+########################################
+# ../../../omlish/configs/types.py
+
+
+#
+
+
+########################################
+# ../../../omlish/formats/ini/sections.py
+
+
+##
+
+
+def extract_ini_sections(cp: configparser.ConfigParser) -> IniSectionSettingsMap:
+    config_dct: ta.Dict[str, ta.Any] = {}
+    for sec in cp.sections():
+        cd = config_dct
+        for k in sec.split('.'):
+            cd = cd.setdefault(k, {})
+        cd.update(cp.items(sec))
+    return config_dct
+
+
+##
+
+
+def render_ini_sections(
+        settings_by_section: IniSectionSettingsMap,
+) -> str:
+    out = io.StringIO()
+
+    for i, (section, settings) in enumerate(settings_by_section.items()):
+        if i:
+            out.write('\n')
+
+        out.write(f'[{section}]\n')
+
+        for k, v in settings.items():
+            if isinstance(v, str):
+                out.write(f'{k}={v}\n')
+            else:
+                for vv in v:
+                    out.write(f'{k}={vv}\n')
+
+    return out.getvalue()
 
 
 ########################################
@@ -1437,6 +1495,129 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
         return float_value
 
     return safe_parse_float
+
+
+########################################
+# ../../../omlish/formats/toml/writer.py
+
+
+class TomlWriter:
+    @dc.dataclass(frozen=True)
+    class Literal:
+        s: str
+
+    def __init__(self, out: ta.TextIO) -> None:
+        super().__init__()
+        self._out = out
+
+        self._indent = 0
+        self._wrote_indent = False
+
+    #
+
+    def _w(self, s: str) -> None:
+        if not self._wrote_indent:
+            self._out.write('    ' * self._indent)
+            self._wrote_indent = True
+        self._out.write(s)
+
+    def _nl(self) -> None:
+        self._out.write('\n')
+        self._wrote_indent = False
+
+    def _needs_quote(self, s: str) -> bool:
+        return (
+            not s or
+            any(c in s for c in '\'"\n') or
+            s[0] not in string.ascii_letters
+        )
+
+    def _maybe_quote(self, s: str) -> str:
+        if self._needs_quote(s):
+            return repr(s)
+        else:
+            return s
+
+    #
+
+    def write_root(self, obj: ta.Mapping) -> None:
+        for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._nl()
+            self._w('[')
+            self._w(self._maybe_quote(k))
+            self._w(']')
+            self._nl()
+            self.write_table_contents(v)
+
+    def write_table_contents(self, obj: ta.Mapping) -> None:
+        for k, v in obj.items():
+            self.write_key(k)
+            self._w(' = ')
+            self.write_value(v)
+            self._nl()
+
+    def write_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        self._nl()
+        self._indent += 1
+        for e in obj:
+            self.write_value(e)
+            self._w(',')
+            self._nl()
+        self._indent -= 1
+        self._w(']')
+
+    def write_inline_table(self, obj: ta.Mapping) -> None:
+        self._w('{')
+        for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._w(', ')
+            self.write_key(k)
+            self._w(' = ')
+            self.write_value(v)
+        self._w('}')
+
+    def write_inline_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        for i, e in enumerate(obj):
+            if i:
+                self._w(', ')
+            self.write_value(e)
+        self._w(']')
+
+    def write_key(self, obj: ta.Any) -> None:
+        if isinstance(obj, TomlWriter.Literal):
+            self._w(obj.s)
+        elif isinstance(obj, str):
+            self._w(self._maybe_quote(obj.replace('_', '-')))
+        elif isinstance(obj, int):
+            self._w(repr(str(obj)))
+        else:
+            raise TypeError(obj)
+
+    def write_value(self, obj: ta.Any) -> None:
+        if isinstance(obj, bool):
+            self._w(str(obj).lower())
+        elif isinstance(obj, (str, int, float)):
+            self._w(repr(obj))
+        elif isinstance(obj, ta.Mapping):
+            self.write_inline_table(obj)
+        elif isinstance(obj, ta.Sequence):
+            if not obj:
+                self.write_inline_array(obj)
+            else:
+                self.write_array(obj)
+        else:
+            raise TypeError(obj)
+
+    #
+
+    @classmethod
+    def write_str(cls, obj: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out).write_value(obj)
+        return out.getvalue()
 
 
 ########################################
@@ -3123,6 +3304,226 @@ def get_user(name: str) -> User:
         uid=(uid := name_to_uid(name)),
         gid=gid_for_uid(uid),
     )
+
+
+########################################
+# ../../../omlish/configs/formats.py
+"""
+Formats:
+ - json
+ - toml
+ - yaml
+ - ini
+
+Formats todo:
+ - nginx
+ - raw
+
+Notes:
+ - necessarily string-oriented
+ - single file, as this is intended to be amalg'd and thus all included anyway
+
+TODO:
+ - ConfigDataMapper? to_map -> ConfigMap?
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ConfigData(abc.ABC):  # noqa
+    @abc.abstractmethod
+    def as_map(self) -> ConfigMap:
+        raise NotImplementedError
+
+
+#
+
+
+class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return ()
+
+    def match_file(self, n: str) -> bool:
+        return '.' in n and n.split('.')[-1] in check.not_isinstance(self.file_exts, str)
+
+    #
+
+    def load_file(self, p: str) -> ConfigDataT:
+        with open(p) as f:
+            return self.load_str(f.read())
+
+    @abc.abstractmethod
+    def load_str(self, s: str) -> ConfigDataT:
+        raise NotImplementedError
+
+
+#
+
+
+class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
+    @property
+    @abc.abstractmethod
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        raise NotImplementedError
+
+    def match_data(self, d: ConfigDataT) -> bool:
+        return isinstance(d, self.data_cls)
+
+    #
+
+    @abc.abstractmethod
+    def render(self, d: ConfigDataT) -> str:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ObjConfigData(ConfigData, abc.ABC):
+    obj: ta.Any
+
+    def as_map(self) -> ConfigMap:
+        return check.isinstance(self.obj, collections.abc.Mapping)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class JsonConfigData(ObjConfigData):
+    pass
+
+
+class JsonConfigLoader(ConfigLoader[JsonConfigData]):
+    file_exts = ('json',)
+
+    def load_str(self, s: str) -> JsonConfigData:
+        return JsonConfigData(json.loads(s))
+
+
+class JsonConfigRenderer(ConfigRenderer[JsonConfigData]):
+    data_cls = JsonConfigData
+
+    def render(self, d: JsonConfigData) -> str:
+        return json_dumps_pretty(d.obj)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class TomlConfigData(ObjConfigData):
+    pass
+
+
+class TomlConfigLoader(ConfigLoader[TomlConfigData]):
+    file_exts = ('toml',)
+
+    def load_str(self, s: str) -> TomlConfigData:
+        return TomlConfigData(toml_loads(s))
+
+
+class TomlConfigRenderer(ConfigRenderer[TomlConfigData]):
+    data_cls = TomlConfigData
+
+    def render(self, d: TomlConfigData) -> str:
+        return TomlWriter.write_str(d.obj)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class YamlConfigData(ObjConfigData):
+    pass
+
+
+class YamlConfigLoader(ConfigLoader[YamlConfigData]):
+    file_exts = ('yaml', 'yml')
+
+    def load_str(self, s: str) -> YamlConfigData:
+        return YamlConfigData(__import__('yaml').safe_load(s))
+
+
+class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
+    data_cls = YamlConfigData
+
+    def render(self, d: YamlConfigData) -> str:
+        return __import__('yaml').safe_dump(d.obj)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class IniConfigData(ConfigData):
+    sections: IniSectionSettingsMap
+
+    def as_map(self) -> ConfigMap:
+        return self.sections
+
+
+class IniConfigLoader(ConfigLoader[IniConfigData]):
+    file_exts = ('ini',)
+
+    def load_str(self, s: str) -> IniConfigData:
+        cp = configparser.ConfigParser()
+        cp.read_string(s)
+        return IniConfigData(extract_ini_sections(cp))
+
+
+class IniConfigRenderer(ConfigRenderer[IniConfigData]):
+    data_cls = IniConfigData
+
+    def render(self, d: IniConfigData) -> str:
+        return render_ini_sections(d.sections)
+
+
+##
+
+
+DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
+    JsonConfigLoader(),
+    TomlConfigLoader(),
+    YamlConfigLoader(),
+    IniConfigLoader(),
+]
+
+
+def load_config_file(
+        f: str,
+        loaders: ta.Sequence[ConfigLoader] = DEFAULT_CONFIG_LOADERS,
+) -> ConfigData:
+    n = os.path.basename(f)
+    for l in loaders:
+        if l.match_file(n):
+            return l.load_file(f)
+    raise NameError(n)
+
+
+#
+
+
+DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
+    JsonConfigRenderer(),
+    TomlConfigRenderer(),
+    YamlConfigRenderer(),
+    IniConfigRenderer(),
+]
+
+
+def render_config_data(
+        d: ConfigData,
+        renderers: ta.Sequence[ConfigRenderer] = DEFAULT_CONFIG_RENDERERS,
+) -> str:
+    for r in renderers:
+        if r.match_data(d):
+            return r.render(d)
+    raise TypeError(d)
 
 
 ########################################
@@ -6093,6 +6494,39 @@ class HttpHandlerError(Exception):
 
 class UnsupportedMethodHttpHandlerError(Exception):
     pass
+
+
+########################################
+# ../../../omlish/lite/configs.py
+
+
+##
+
+
+def load_config_file_obj(
+        f: str,
+        cls: ta.Type[T],
+        *,
+        loaders: ta.Sequence[ConfigLoader] = DEFAULT_CONFIG_LOADERS,
+        prepare: ta.Union[
+            ta.Callable[[ConfigMap], ConfigMap],
+            ta.Iterable[ta.Callable[[ConfigMap], ConfigMap]],
+        ] = (),
+        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
+) -> T:
+    config_data = load_config_file(f, loaders)
+
+    config_dct = config_data.as_map()
+
+    if prepare is not None:
+        if isinstance(prepare, ta.Iterable):
+            pfs = list(prepare)
+        else:
+            pfs = [prepare]
+        for pf in pfs:
+            config_dct = pf(config_dct)
+
+    return msh.unmarshal_obj(config_dct, cls)
 
 
 ########################################
@@ -9660,7 +10094,7 @@ def main(
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
-        config = read_config_file(
+        config = load_config_file_obj(
             os.path.expanduser(cf),
             ServerConfig,
             prepare=prepare_server_config,

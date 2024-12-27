@@ -35,12 +35,12 @@ import os.path
 import typing as ta
 
 from omlish.http.coro.server import CoroHttpServer
+from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
 from omlish.logs.standard import configure_standard_logging
 from omlish.os.journald import journald_log_handler_factory
 
-from ..configs import read_config_file
 from .configs import ServerConfig
 from .configs import prepare_server_config
 from .inject import bind_server
@@ -91,7 +91,7 @@ def main(
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
-        config = read_config_file(
+        config = load_config_file_obj(
             os.path.expanduser(cf),
             ServerConfig,
             prepare=prepare_server_config,

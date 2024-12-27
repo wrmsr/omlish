@@ -5,9 +5,9 @@ import dataclasses as dc
 import os.path
 import sys
 
+from omlish.lite.configs import load_config_file_obj
 from omlish.logs.standard import configure_standard_logging
 
-from ....configs import read_config_file
 from .driver import JournalctlToAwsDriver
 
 
@@ -36,7 +36,10 @@ def _main() -> None:
 
     config: JournalctlToAwsDriver.Config
     if args.config_file:
-        config = read_config_file(os.path.expanduser(args.config_file), JournalctlToAwsDriver.Config)
+        config = load_config_file_obj(
+            os.path.expanduser(args.config_file),
+            JournalctlToAwsDriver.Config,
+        )
     else:
         config = JournalctlToAwsDriver.Config()
 
