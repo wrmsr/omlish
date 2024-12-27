@@ -113,3 +113,11 @@ class TomlWriter:
                 self.write_array(obj)
         else:
             raise TypeError(obj)
+
+    #
+
+    @classmethod
+    def write_str(cls, obj: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out).write(obj)
+        return out.getvalue()

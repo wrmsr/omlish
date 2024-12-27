@@ -97,3 +97,16 @@ glyph_split_parens = _PAREN_GLYPH_SPLITTER.split
 glyph_split_braces = _BRACE_GLYPH_SPLITTER.split
 glyph_split_brackets = _BRACKET_GLYPH_SPLITTER.split
 glyph_split_angle_brackets = _ANGLE_BRACKET_GLYPH_SPLITTER.split
+
+
+def glyph_split_interpolate(
+        split_fn: ta.Callable[[str], ta.Sequence[ta.Union[GlyphSplitMatch, str]]],
+        dct: ta.Mapping[str, str],
+        s: str,
+) -> str:
+    if not s:
+        return s
+    sps = split_fn(s)
+    if len(sps) == 1 and isinstance(sps[0], str):
+        return sps[0]
+    return ''.join(dct[p.s] if isinstance(p, GlyphSplitMatch) else p for p in sps)

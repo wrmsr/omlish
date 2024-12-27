@@ -1,9 +1,11 @@
 # ruff: noqa: PT009
 # @omlish-lite
+import functools
 import unittest
 
 from ..glyphsplit import GlyphSplitMatch
 from ..glyphsplit import glyph_split_braces
+from ..glyphsplit import glyph_split_interpolate
 
 
 class TestGlyphSplit(unittest.TestCase):
@@ -17,4 +19,19 @@ class TestGlyphSplit(unittest.TestCase):
                 GlyphSplitMatch('{', 'bye[', '}'),
                 ' {q} baz',
             ],
+        )
+
+    def test_interpolate(self):
+        fn = functools.partial(
+            glyph_split_interpolate,
+            glyph_split_braces,
+            dict(
+                hi='hi!',
+                bye='bye?',
+            ),
+        )
+
+        self.assertEqual(
+            fn('foo {hi} bar {bye} baz'),
+            'foo hi! bar bye? baz',
         )
