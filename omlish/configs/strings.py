@@ -22,13 +22,15 @@ class InterpolateStringsMetadata(lang.Marker):
 @dc.field_modifier
 def secret_or_key_field(f: dc.Field) -> dc.Field:
     return dc.update_field_metadata(f, {
-        InterpolateStringsMetadata: True,
+        InterpolateStringsMetadata: False,
     })
 
 
 @dc.field_modifier
 def interpolate_field(f: dc.Field) -> dc.Field:
-    return dc.update_field_metadata(f, {InterpolateStringsMetadata: True})
+    return dc.update_field_metadata(f, {
+        InterpolateStringsMetadata: True,
+    })
 
 
 class StringRewriter:
