@@ -3,7 +3,7 @@
 import abc
 import typing as ta
 
-from ..lite.check import check
+from ...lite.check import check
 
 
 K = ta.TypeVar('K')

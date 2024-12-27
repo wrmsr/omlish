@@ -1,5 +1,6 @@
 # @omlish-lite
 import dataclasses as dc
+import io
 import string
 import typing as ta
 
@@ -119,5 +120,5 @@ class TomlWriter:
     @classmethod
     def write_str(cls, obj: ta.Any) -> str:
         out = io.StringIO()
-        cls(out).write(obj)
+        cls(out).write_value(obj)
         return out.getvalue()

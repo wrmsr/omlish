@@ -1,8 +1,8 @@
 # @omlish-lite
 import unittest
 
-from ..configs import NginxConfigItems
-from ..configs import render_nginx_config_str
+from ..nginx import NginxConfigItems
+from ..nginx import render_nginx_config_str
 
 
 class TestConfigs(unittest.TestCase):

@@ -26,8 +26,8 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.strings import strip_with_newline
 from omlish.os.paths import is_path_in_dir
 from omlish.os.paths import relative_symlink
-from omserv.nginx.configs import NginxConfigItems
-from omserv.nginx.configs import render_nginx_config_str
+from omlish.configs.nginx import NginxConfigItems
+from omlish.configs.nginx import render_nginx_config_str
 
 from omlish.formats.ini.sections import render_ini_sections
 from ..paths.paths import DeployPath

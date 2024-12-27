@@ -3,7 +3,7 @@ import os
 
 from omlish import dataclasses as dc
 from omlish import inject as inj
-from omlish.configs import strings as cfgstr
+from omlish.configs.processing.strings import StringConfigRewriter
 from omserv.apps.base import BaseServerUrl
 
 from .. import shell
@@ -44,7 +44,7 @@ def _main(cfg: ServerConfig | None = None) -> None:
         def fn(v):
             raise NotImplementedError
 
-        cfg = cfgstr.StringRewriter(fn)(cfg)
+        cfg = StringConfigRewriter(fn)(cfg)
 
     shell.run_shell(
         shell.bind_asgi_server(bind_app()),

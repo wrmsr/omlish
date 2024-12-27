@@ -1,21 +1,17 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 """
-TODO:
- - omnibus/jmespath
-
-https://nginx.org/en/docs/dev/development_guide.html
-https://nginx.org/en/docs/dev/development_guide.html#config_directives
-https://nginx.org/en/docs/example.html
-
-https://github.com/yandex/gixy
+See:
+ - https://nginx.org/en/docs/dev/development_guide.html
+ - https://nginx.org/en/docs/dev/development_guide.html#config_directives
+ - https://nginx.org/en/docs/example.html
 """
 import collections.abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.text.indent import IndentWriter
+from ..lite.check import check
+from ..text.indent import IndentWriter
 
 
 @dc.dataclass()

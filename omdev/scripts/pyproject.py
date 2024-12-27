@@ -1803,6 +1803,14 @@ class TomlWriter:
         else:
             raise TypeError(obj)
 
+    #
+
+    @classmethod
+    def write_str(cls, obj: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out).write_value(obj)
+        return out.getvalue()
+
 
 ########################################
 # ../../../omlish/lite/cached.py

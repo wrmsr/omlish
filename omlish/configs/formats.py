@@ -1,0 +1,232 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
+"""
+Formats:
+ - json
+ - toml
+ - yaml
+ - ini
+
+Formats todo:
+ - nginx
+ - raw
+
+Notes:
+ - necessarily string-oriented
+ - single file, as this is intended to be amalg'd and thus all included anyway
+
+TODO:
+ - ConfigDataMapper? to_map -> ConfigMap?
+"""
+import abc
+import configparser
+import dataclasses as dc
+import json
+import os.path
+import typing as ta
+
+from ..formats.ini.sections import IniSectionSettingsMap
+from ..formats.ini.sections import extract_ini_sections
+from ..formats.ini.sections import render_ini_sections
+from ..formats.toml.parser import toml_loads
+from ..formats.toml.writer import TomlWriter
+from ..lite.check import check
+from ..lite.json import json_dumps_pretty
+from ..lite.marshal import register_single_field_type_obj_marshaler
+
+
+ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ConfigData(abc.ABC):  # noqa
+    pass
+
+
+#
+
+
+class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return ()
+
+    def match_file(self, n: str) -> bool:
+        return '.' in n and n.split('.')[-1] in check.not_isinstance(self.file_exts, str)
+
+    #
+
+    def load_file(self, p: str) -> ConfigDataT:
+        with open(p) as f:
+            return self.load_str(f.read())
+
+    @abc.abstractmethod
+    def load_str(self, s: str) -> ConfigDataT:
+        raise NotImplementedError
+
+
+#
+
+
+class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
+    @property
+    @abc.abstractmethod
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        raise NotImplementedError
+
+    def match_data(self, d: ConfigDataT) -> bool:
+        return isinstance(d, self.data_cls)
+
+    #
+
+    @abc.abstractmethod
+    def render(self, d: ConfigDataT) -> str:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ObjConfigData(ConfigData, abc.ABC):
+    obj: ta.Any
+
+
+##
+
+
+@register_single_field_type_obj_marshaler('obj')
+@dc.dataclass(frozen=True)
+class JsonConfigData(ObjConfigData):
+    pass
+
+
+class JsonConfigLoader(ConfigLoader[JsonConfigData]):
+    file_exts = ('json',)
+
+    def load_str(self, s: str) -> JsonConfigData:
+        return JsonConfigData(json.loads(s))
+
+
+class JsonConfigRenderer(ConfigRenderer[JsonConfigData]):
+    data_cls = JsonConfigData
+
+    def render(self, d: JsonConfigData) -> str:
+        return json_dumps_pretty(d.obj)
+
+
+##
+
+
+@register_single_field_type_obj_marshaler('obj')
+@dc.dataclass(frozen=True)
+class TomlConfigData(ObjConfigData):
+    pass
+
+
+class TomlConfigLoader(ConfigLoader[TomlConfigData]):
+    file_exts = ('toml',)
+
+    def load_str(self, s: str) -> TomlConfigData:
+        return TomlConfigData(toml_loads(s))
+
+
+class TomlConfigRenderer(ConfigRenderer[TomlConfigData]):
+    data_cls = TomlConfigData
+
+    def render(self, d: TomlConfigData) -> str:
+        return TomlWriter.write_str(d.obj)
+
+
+##
+
+
+@register_single_field_type_obj_marshaler('obj')
+@dc.dataclass(frozen=True)
+class YamlConfigData(ObjConfigData):
+    pass
+
+
+class YamlConfigLoader(ConfigLoader[YamlConfigData]):
+    file_exts = ('yaml', 'yml')
+
+    def load_str(self, s: str) -> YamlConfigData:
+        return YamlConfigData(__import__('yaml').safe_load(s))
+
+
+class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
+    data_cls = YamlConfigData
+
+    def render(self, d: YamlConfigData) -> str:
+        return __import__('yaml').safe_dump(d.obj)
+
+
+##
+
+
+@register_single_field_type_obj_marshaler('sections')
+@dc.dataclass(frozen=True)
+class IniConfigData(ConfigData):
+    sections: IniSectionSettingsMap
+
+
+class IniConfigLoader(ConfigLoader[IniConfigData]):
+    file_exts = ('ini',)
+
+    def load_str(self, s: str) -> IniConfigData:
+        cp = configparser.ConfigParser()
+        cp.read_string(s)
+        return IniConfigData(extract_ini_sections(cp))
+
+
+class IniConfigRenderer(ConfigRenderer[IniConfigData]):
+    data_cls = IniConfigData
+
+    def render(self, d: IniConfigData) -> str:
+        return render_ini_sections(d.sections)
+
+
+##
+
+
+DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
+    JsonConfigLoader(),
+    TomlConfigLoader(),
+    YamlConfigLoader(),
+    IniConfigLoader(),
+]
+
+
+def load_config_file(
+        f: str,
+        loaders: ta.Sequence[ConfigLoader] = DEFAULT_CONFIG_LOADERS,
+) -> ConfigData:
+    n = os.path.basename(f)
+    for l in loaders:
+        if l.match_file(n):
+            return l.load_file(f)
+    raise NameError(n)
+
+
+#
+
+
+DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
+    JsonConfigRenderer(),
+    TomlConfigRenderer(),
+    YamlConfigRenderer(),
+    IniConfigRenderer(),
+]
+
+
+def render_config_data(
+        d: ConfigData,
+        renderers: ta.Sequence[ConfigRenderer] = DEFAULT_CONFIG_RENDERERS,
+) -> str:
+    for r in renderers:
+        if r.match_data(d):
+            return r.render(d)
+    raise TypeError(d)
