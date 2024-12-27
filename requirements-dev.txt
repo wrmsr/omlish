@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.0.1
 wheel>=0.45.1
 
-uv>=0.5.12
+uv>=0.5.13
 
 pytest==8.3.4
 pytest-asyncio==0.25.0
@@ -119,4 +119,4 @@ llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.1
 
-duckduckgo_search==7.1.0  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==7.1.1  # @omlish-venv !13t  # segfault lol

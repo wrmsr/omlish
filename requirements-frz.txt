@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.87
-botocore==1.35.87
+boto3==1.35.89
+botocore==1.35.89
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==7.1.0
+duckduckgo_search==7.1.1
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -528,8 +528,8 @@ uritemplate==4.1.1
 urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
-usearch==2.16.6
-uv==0.5.12
+usearch==2.16.8
+uv==0.5.13
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
