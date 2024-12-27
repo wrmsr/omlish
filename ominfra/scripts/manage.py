@@ -8339,7 +8339,7 @@ class GitSubtreeCloner:
 
     # _: dc.KW_ONLY
 
-    repo_subtrees: ta.Sequence[str]
+    repo_subtrees: ta.Optional[ta.Sequence[str]] = None
 
     branch: ta.Optional[str] = None
     rev: ta.Optional[str] = None
@@ -8385,7 +8385,7 @@ class GitSubtreeCloner:
                 'sparse-checkout',
                 'set',
                 '--no-cone',
-                *self.repo_subtrees,
+                *(self.repo_subtrees or []),
             ),
             cwd=rd,
         )
@@ -8408,7 +8408,7 @@ def git_clone_subtree(
         repo_dir: str,
         branch: ta.Optional[str] = None,
         rev: ta.Optional[str] = None,
-        repo_subtrees: ta.Sequence[str],
+        repo_subtrees: ta.Optional[ta.Sequence[str]] = None,
 ) -> None:
     for cmd in GitSubtreeCloner(
         base_dir=base_dir,
@@ -8741,6 +8741,7 @@ class DeployGitSpec:
     rev: DeployRev
 
     subtrees: ta.Optional[ta.Sequence[str]] = None
+
     shallow: bool = False
 
     def __post_init__(self) -> None:
@@ -11439,7 +11440,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
     #
 
-    async def shallow_clone_subtrees(
+    async def shallow_clone(
             self,
             spec: DeployGitSpec,
             home: DeployHome,
@@ -11459,7 +11460,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
                     repo_url=self.make_repo_url(spec.repo),
                     repo_dir=tdn,
                     rev=spec.rev,
-                    repo_subtrees=check.not_none(spec.subtrees),
+                    repo_subtrees=spec.subtrees,
             ).build_commands():
                 await asyncio_subprocesses.check_call(
                     *cmd.cmd,
@@ -11483,8 +11484,8 @@ class DeployGitManager(SingleDirDeployPathOwner):
             home: DeployHome,
             dst_dir: str,
     ) -> None:
-        if spec.shallow and spec.subtrees:
-            await self.shallow_clone_subtrees(
+        if spec.shallow:
+            await self.shallow_clone(
                 spec,
                 home,
                 dst_dir,

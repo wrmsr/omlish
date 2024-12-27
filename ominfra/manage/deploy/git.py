@@ -139,7 +139,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
     #
 
-    async def shallow_clone_subtrees(
+    async def shallow_clone(
             self,
             spec: DeployGitSpec,
             home: DeployHome,
@@ -159,7 +159,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
                     repo_url=self.make_repo_url(spec.repo),
                     repo_dir=tdn,
                     rev=spec.rev,
-                    repo_subtrees=check.not_none(spec.subtrees),
+                    repo_subtrees=spec.subtrees,
             ).build_commands():
                 await asyncio_subprocesses.check_call(
                     *cmd.cmd,
@@ -183,8 +183,8 @@ class DeployGitManager(SingleDirDeployPathOwner):
             home: DeployHome,
             dst_dir: str,
     ) -> None:
-        if spec.shallow and spec.subtrees:
-            await self.shallow_clone_subtrees(
+        if spec.shallow:
+            await self.shallow_clone(
                 spec,
                 home,
                 dst_dir,

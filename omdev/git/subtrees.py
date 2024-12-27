@@ -15,7 +15,7 @@ class GitSubtreeCloner:
 
     # _: dc.KW_ONLY
 
-    repo_subtrees: ta.Sequence[str]
+    repo_subtrees: ta.Optional[ta.Sequence[str]] = None
 
     branch: ta.Optional[str] = None
     rev: ta.Optional[str] = None
@@ -61,7 +61,7 @@ class GitSubtreeCloner:
                 'sparse-checkout',
                 'set',
                 '--no-cone',
-                *self.repo_subtrees,
+                *(self.repo_subtrees or []),
             ),
             cwd=rd,
         )
@@ -84,7 +84,7 @@ def git_clone_subtree(
         repo_dir: str,
         branch: ta.Optional[str] = None,
         rev: ta.Optional[str] = None,
-        repo_subtrees: ta.Sequence[str],
+        repo_subtrees: ta.Optional[ta.Sequence[str]] = None,
 ) -> None:
     for cmd in GitSubtreeCloner(
         base_dir=base_dir,
