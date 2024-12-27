@@ -2398,22 +2398,14 @@ class JournalctlToAwsCursor:
 ########################################
 # ../../../../../omlish/configs/formats.py
 """
-Formats:
- - json
- - toml
- - yaml
- - ini
-
-Formats todo:
- - nginx
- - raw
-
 Notes:
  - necessarily string-oriented
  - single file, as this is intended to be amalg'd and thus all included anyway
 
 TODO:
  - ConfigDataMapper? to_map -> ConfigMap?
+ - nginx ?
+ - raw ?
 """
 
 
@@ -2575,6 +2567,24 @@ class IniConfigRenderer(ConfigRenderer[IniConfigData]):
 ##
 
 
+@dc.dataclass(frozen=True)
+class SwitchedConfigFileLoader:
+    loaders: ta.Sequence[ConfigLoader]
+    default: ta.Optional[ConfigLoader] = None
+
+    def load_file(self, p: str) -> ConfigData:
+        n = os.path.basename(p)
+
+        for l in self.loaders:
+            if l.match_file(n):
+                return l.load_file(p)
+
+        if (d := self.default) is not None:
+            return d.load_file(p)
+
+        raise NameError(n)
+
+
 DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
     JsonConfigLoader(),
     TomlConfigLoader(),
@@ -2582,19 +2592,26 @@ DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
     IniConfigLoader(),
 ]
 
+DEFAULT_CONFIG_LOADER: ConfigLoader = JsonConfigLoader()
 
-def load_config_file(
-        f: str,
-        loaders: ta.Sequence[ConfigLoader] = DEFAULT_CONFIG_LOADERS,
-) -> ConfigData:
-    n = os.path.basename(f)
-    for l in loaders:
-        if l.match_file(n):
-            return l.load_file(f)
-    raise NameError(n)
+DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
+    loaders=DEFAULT_CONFIG_LOADERS,
+    default=DEFAULT_CONFIG_LOADER,
+)
 
 
-#
+##
+
+
+@dc.dataclass(frozen=True)
+class SwitchedConfigRenderer:
+    renderers: ta.Sequence[ConfigRenderer]
+
+    def render(self, d: ConfigData) -> str:
+        for r in self.renderers:
+            if r.match_data(d):
+                return r.render(d)
+        raise TypeError(d)
 
 
 DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
@@ -2604,15 +2621,7 @@ DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
     IniConfigRenderer(),
 ]
 
-
-def render_config_data(
-        d: ConfigData,
-        renderers: ta.Sequence[ConfigRenderer] = DEFAULT_CONFIG_RENDERERS,
-) -> str:
-    for r in renderers:
-        if r.match_data(d):
-            return r.render(d)
-    raise TypeError(d)
+DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
 
 
 ########################################
@@ -3947,14 +3956,13 @@ def load_config_file_obj(
         f: str,
         cls: ta.Type[T],
         *,
-        loaders: ta.Sequence[ConfigLoader] = DEFAULT_CONFIG_LOADERS,
         prepare: ta.Union[
             ta.Callable[[ConfigMap], ConfigMap],
             ta.Iterable[ta.Callable[[ConfigMap], ConfigMap]],
         ] = (),
         msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
 ) -> T:
-    config_data = load_config_file(f, loaders)
+    config_data = DEFAULT_CONFIG_FILE_LOADER.load_file(f)
 
     config_dct = config_data.as_map()
 
