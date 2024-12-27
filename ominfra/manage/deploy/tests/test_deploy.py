@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import datetime
 import json
 import os.path
@@ -203,20 +204,29 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                 ),
             ),
 
-            DeploySpec(
-                home=deploy_home,
-                apps=[
-                    SUPERVISOR_SPEC,
-                ],
-                app_links=DeployAppLinksSpec(
+            *[
+                DeploySpec(
+                    home=deploy_home,
                     apps=[
-                        DeployApp('flaskthing'),
+                        dc.replace(
+                            SUPERVISOR_SPEC,
+                            git=dc.replace(
+                                SUPERVISOR_SPEC.git,
+                                shallow=shallow,
+                            ),
+                        ),
                     ],
-                ),
-                systemd=DeploySystemdSpec(
-                    unit_dir=systemd_unit_dir,
-                ),
-            ),
+                    app_links=DeployAppLinksSpec(
+                        apps=[
+                            DeployApp('flaskthing'),
+                        ],
+                    ),
+                    systemd=DeploySystemdSpec(
+                        unit_dir=systemd_unit_dir,
+                    ),
+                )
+                for shallow in [False, True]
+            ]
         ]
 
         #

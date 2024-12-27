@@ -8328,6 +8328,103 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
 
 ########################################
+# ../../../omdev/git/subtrees.py
+
+
+@dc.dataclass(frozen=True)
+class GitSubtreeCloner:
+    base_dir: str
+    repo_url: str
+    repo_dir: str
+
+    # _: dc.KW_ONLY
+
+    repo_subtrees: ta.Sequence[str]
+
+    branch: ta.Optional[str] = None
+    rev: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if not bool(self.branch) ^ bool(self.rev):
+            raise ValueError('must set branch or rev')
+
+        if isinstance(self.repo_subtrees, str):
+            raise TypeError(self.repo_subtrees)
+
+    @dc.dataclass(frozen=True)
+    class Command:
+        cmd: ta.Sequence[str]
+        cwd: str
+
+    def build_commands(self) -> ta.Iterator[Command]:
+        git_opts = [
+            '-c', 'advice.detachedHead=false',
+        ]
+
+        yield GitSubtreeCloner.Command(
+            cmd=(
+                'git',
+                *git_opts,
+                'clone',
+                '-n',
+                '--depth=1',
+                '--filter=tree:0',
+                *(['-b', self.branch] if self.branch else []),
+                '--single-branch',
+                self.repo_url,
+                self.repo_dir,
+            ),
+            cwd=self.base_dir,
+        )
+
+        rd = os.path.join(self.base_dir, self.repo_dir)
+        yield GitSubtreeCloner.Command(
+            cmd=(
+                'git',
+                *git_opts,
+                'sparse-checkout',
+                'set',
+                '--no-cone',
+                *self.repo_subtrees,
+            ),
+            cwd=rd,
+        )
+
+        yield GitSubtreeCloner.Command(
+            cmd=(
+                'git',
+                *git_opts,
+                'checkout',
+                *([self.rev] if self.rev else []),
+            ),
+            cwd=rd,
+        )
+
+
+def git_clone_subtree(
+        *,
+        base_dir: str,
+        repo_url: str,
+        repo_dir: str,
+        branch: ta.Optional[str] = None,
+        rev: ta.Optional[str] = None,
+        repo_subtrees: ta.Sequence[str],
+) -> None:
+    for cmd in GitSubtreeCloner(
+        base_dir=base_dir,
+        repo_url=repo_url,
+        repo_dir=repo_dir,
+        branch=branch,
+        rev=rev,
+        repo_subtrees=repo_subtrees,
+    ).build_commands():
+        subprocesses.check_call(
+            *cmd.cmd,
+            cwd=cmd.cwd,
+        )
+
+
+########################################
 # ../../../omdev/interp/providers/base.py
 """
 TODO:
@@ -8644,6 +8741,7 @@ class DeployGitSpec:
     rev: DeployRev
 
     subtrees: ta.Optional[ta.Sequence[str]] = None
+    shallow: bool = False
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.rev)
@@ -11218,10 +11316,8 @@ def bind_deploy_conf() -> InjectorBindings:
 # ../deploy/git.py
 """
 TODO:
- - 'repos'?
-
-git/github.com/wrmsr/omlish <- bootstrap repo
- - shallow clone off bootstrap into /apps
+ - parse refs, resolve revs
+ - non-subtree shallow clone
 
 github.com/wrmsr/omlish@rev
 """
@@ -11244,6 +11340,16 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
 
+    #
+
+    def make_repo_url(self, repo: DeployGitRepo) -> str:
+        if repo.username is not None:
+            return f'{repo.username}@{repo.host}:{repo.path}'
+        else:
+            return f'https://{repo.host}/{repo.path}'
+
+    #
+
     class RepoDir:
         def __init__(
                 self,
@@ -11262,16 +11368,15 @@ class DeployGitManager(SingleDirDeployPathOwner):
                 check.non_empty_str(repo.path),
             )
 
+        #
+
         @property
         def repo(self) -> DeployGitRepo:
             return self._repo
 
         @property
         def url(self) -> str:
-            if self._repo.username is not None:
-                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
-            else:
-                return f'https://{self._repo.host}/{self._repo.path}'
+            return self._git.make_repo_url(self._repo)
 
         #
 
@@ -11332,19 +11437,67 @@ class DeployGitManager(SingleDirDeployPathOwner):
             )
             return repo_dir
 
+    #
+
+    async def shallow_clone_subtrees(
+            self,
+            spec: DeployGitSpec,
+            home: DeployHome,
+            dst_dir: str,
+    ) -> None:
+        check.state(not os.path.exists(dst_dir))
+        with self._atomics(home).begin_atomic_path_swap(  # noqa
+                'dir',
+                dst_dir,
+                auto_commit=True,
+                make_dirs=True,
+        ) as dst_swap:
+            tdn = '.omlish-git-shallow-clone'
+
+            for cmd in GitSubtreeCloner(
+                    base_dir=dst_swap.tmp_path,
+                    repo_url=self.make_repo_url(spec.repo),
+                    repo_dir=tdn,
+                    rev=spec.rev,
+                    repo_subtrees=check.not_none(spec.subtrees),
+            ).build_commands():
+                await asyncio_subprocesses.check_call(
+                    *cmd.cmd,
+                    cwd=cmd.cwd,
+                )
+
+            td = os.path.join(dst_swap.tmp_path, tdn)
+            check.state(os.path.isdir(td))
+            for n in sorted(os.listdir(td)):
+                os.rename(
+                    os.path.join(td, n),
+                    os.path.join(dst_swap.tmp_path, n),
+                )
+            os.rmdir(td)
+
+    #
+
     async def checkout(
             self,
             spec: DeployGitSpec,
             home: DeployHome,
             dst_dir: str,
     ) -> None:
-        await self.get_repo_dir(
-            spec.repo,
-            home,
-        ).checkout(
-            spec,
-            dst_dir,
-        )
+        if spec.shallow and spec.subtrees:
+            await self.shallow_clone_subtrees(
+                spec,
+                home,
+                dst_dir,
+            )
+
+        else:
+            await self.get_repo_dir(
+                spec.repo,
+                home,
+            ).checkout(
+                spec,
+                dst_dir,
+            )
 
 
 ########################################

@@ -1,10 +1,8 @@
 # ruff: noqa: UP006 UP007
 """
 TODO:
- - 'repos'?
-
-git/github.com/wrmsr/omlish <- bootstrap repo
- - shallow clone off bootstrap into /apps
+ - parse refs, resolve revs
+ - non-subtree shallow clone
 
 github.com/wrmsr/omlish@rev
 """
@@ -12,6 +10,7 @@ import functools
 import os.path
 import typing as ta
 
+from omdev.git.subtrees import GitSubtreeCloner
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
@@ -41,6 +40,16 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
 
+    #
+
+    def make_repo_url(self, repo: DeployGitRepo) -> str:
+        if repo.username is not None:
+            return f'{repo.username}@{repo.host}:{repo.path}'
+        else:
+            return f'https://{repo.host}/{repo.path}'
+
+    #
+
     class RepoDir:
         def __init__(
                 self,
@@ -59,16 +68,15 @@ class DeployGitManager(SingleDirDeployPathOwner):
                 check.non_empty_str(repo.path),
             )
 
+        #
+
         @property
         def repo(self) -> DeployGitRepo:
             return self._repo
 
         @property
         def url(self) -> str:
-            if self._repo.username is not None:
-                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
-            else:
-                return f'https://{self._repo.host}/{self._repo.path}'
+            return self._git.make_repo_url(self._repo)
 
         #
 
@@ -129,16 +137,64 @@ class DeployGitManager(SingleDirDeployPathOwner):
             )
             return repo_dir
 
+    #
+
+    async def shallow_clone_subtrees(
+            self,
+            spec: DeployGitSpec,
+            home: DeployHome,
+            dst_dir: str,
+    ) -> None:
+        check.state(not os.path.exists(dst_dir))
+        with self._atomics(home).begin_atomic_path_swap(  # noqa
+                'dir',
+                dst_dir,
+                auto_commit=True,
+                make_dirs=True,
+        ) as dst_swap:
+            tdn = '.omlish-git-shallow-clone'
+
+            for cmd in GitSubtreeCloner(
+                    base_dir=dst_swap.tmp_path,
+                    repo_url=self.make_repo_url(spec.repo),
+                    repo_dir=tdn,
+                    rev=spec.rev,
+                    repo_subtrees=check.not_none(spec.subtrees),
+            ).build_commands():
+                await asyncio_subprocesses.check_call(
+                    *cmd.cmd,
+                    cwd=cmd.cwd,
+                )
+
+            td = os.path.join(dst_swap.tmp_path, tdn)
+            check.state(os.path.isdir(td))
+            for n in sorted(os.listdir(td)):
+                os.rename(
+                    os.path.join(td, n),
+                    os.path.join(dst_swap.tmp_path, n),
+                )
+            os.rmdir(td)
+
+    #
+
     async def checkout(
             self,
             spec: DeployGitSpec,
             home: DeployHome,
             dst_dir: str,
     ) -> None:
-        await self.get_repo_dir(
-            spec.repo,
-            home,
-        ).checkout(
-            spec,
-            dst_dir,
-        )
+        if spec.shallow and spec.subtrees:
+            await self.shallow_clone_subtrees(
+                spec,
+                home,
+                dst_dir,
+            )
+
+        else:
+            await self.get_repo_dir(
+                spec.repo,
+                home,
+            ).checkout(
+                spec,
+                dst_dir,
+            )

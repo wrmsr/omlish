@@ -52,6 +52,7 @@ class DeployGitSpec:
     rev: DeployRev
 
     subtrees: ta.Optional[ta.Sequence[str]] = None
+    shallow: bool = False
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.rev)
