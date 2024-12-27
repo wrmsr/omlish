@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 if [ -t 1 ] ; then
@@ -9,7 +9,7 @@ fi
 
 SERVICE_NAME="omlish-dev"
 if ! [ $# -eq 0 ] ; then
-    if [ "$1" == "--amd64" ] ; then
+    if [ "$1" = "--amd64" ] ; then
         SERVICE_NAME="$SERVICE_NAME-amd64"
         shift
     fi
@@ -22,9 +22,9 @@ if [ -z "$CONTAINER_ID" ] ; then
 fi
 
 if [ -z "$DOCKER_HOST_PLATFORM" ] ; then
-    if [ $(uname) == "Linux" ] ; then
+    if [ $(uname) = "Linux" ] ; then
         DOCKER_HOST_PLATFORM=linux
-    elif [ $(uname) == "Darwin" ] ; then
+    elif [ $(uname) = "Darwin" ] ; then
         DOCKER_HOST_PLATFORM=darwin
     fi
 fi
