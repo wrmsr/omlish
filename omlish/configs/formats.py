@@ -19,6 +19,7 @@ TODO:
  - ConfigDataMapper? to_map -> ConfigMap?
 """
 import abc
+import collections.abc
 import configparser
 import dataclasses as dc
 import json
@@ -32,9 +33,10 @@ from ..formats.toml.parser import toml_loads
 from ..formats.toml.writer import TomlWriter
 from ..lite.check import check
 from ..lite.json import json_dumps_pretty
-from ..lite.marshal import register_single_field_type_obj_marshaler
+from .types import ConfigMap
 
 
+T = ta.TypeVar('T')
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 
@@ -43,7 +45,9 @@ ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 @dc.dataclass(frozen=True)
 class ConfigData(abc.ABC):  # noqa
-    pass
+    @abc.abstractmethod
+    def as_map(self) -> ConfigMap:
+        raise NotImplementedError
 
 
 #
@@ -94,11 +98,13 @@ class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
 class ObjConfigData(ConfigData, abc.ABC):
     obj: ta.Any
 
+    def as_map(self) -> ConfigMap:
+        return check.isinstance(self.obj, collections.abc.Mapping)
+
 
 ##
 
 
-@register_single_field_type_obj_marshaler('obj')
 @dc.dataclass(frozen=True)
 class JsonConfigData(ObjConfigData):
     pass
@@ -121,7 +127,6 @@ class JsonConfigRenderer(ConfigRenderer[JsonConfigData]):
 ##
 
 
-@register_single_field_type_obj_marshaler('obj')
 @dc.dataclass(frozen=True)
 class TomlConfigData(ObjConfigData):
     pass
@@ -144,7 +149,6 @@ class TomlConfigRenderer(ConfigRenderer[TomlConfigData]):
 ##
 
 
-@register_single_field_type_obj_marshaler('obj')
 @dc.dataclass(frozen=True)
 class YamlConfigData(ObjConfigData):
     pass
@@ -167,10 +171,12 @@ class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
 ##
 
 
-@register_single_field_type_obj_marshaler('sections')
 @dc.dataclass(frozen=True)
 class IniConfigData(ConfigData):
     sections: IniSectionSettingsMap
+
+    def as_map(self) -> ConfigMap:
+        return self.sections
 
 
 class IniConfigLoader(ConfigLoader[IniConfigData]):

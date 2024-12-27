@@ -17,12 +17,12 @@ from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.lite.configs import load_config_file_obj
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.pycharm import PycharmRemoteDebug
 
-from ..configs import read_config_file
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
@@ -51,7 +51,7 @@ class MainCli(ArgparseCli):
         if cf is None:
             return ManageConfig()
         else:
-            return read_config_file(cf, ManageConfig)
+            return load_config_file_obj(cf, ManageConfig)
 
     #
 
@@ -122,7 +122,7 @@ class MainCli(ArgparseCli):
             cmds.append(cmd)
 
         for cf in self.args.command_file or []:
-            cmd = read_config_file(cf, Command, msh=msh)
+            cmd = load_config_file_obj(cf, Command, msh=msh)
             cmds.append(cmd)
 
         #
