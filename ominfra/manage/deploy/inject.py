@@ -10,7 +10,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
-from ..commands.inject import bind_command
+from ..commands.inject_ import bind_command
 from .apps import DeployAppManager
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor

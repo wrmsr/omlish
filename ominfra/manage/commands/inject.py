@@ -18,6 +18,7 @@ from .base import CommandNameMap
 from .base import CommandRegistration
 from .base import CommandRegistrations
 from .base import build_command_name_map
+from .inject_ import bind_command
 from .local import LocalCommandExecutor
 from .marshal import install_command_marshaling
 from .ping import PingCommand
@@ -25,26 +26,6 @@ from .ping import PingCommandExecutor
 from .subprocess import SubprocessCommand
 from .subprocess import SubprocessCommandExecutor
 from .types import CommandExecutorMap
-
-
-##
-
-
-def bind_command(
-        command_cls: ta.Type[Command],
-        executor_cls: ta.Optional[ta.Type[CommandExecutor]],
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(CommandRegistration(command_cls), array=True),
-    ]
-
-    if executor_cls is not None:
-        lst.extend([
-            inj.bind(executor_cls, singleton=True),
-            inj.bind(CommandExecutorRegistration(command_cls, executor_cls), array=True),
-        ])
-
-    return inj.as_bindings(*lst)
 
 
 ##
