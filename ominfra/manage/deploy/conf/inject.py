@@ -5,7 +5,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
-from ..inject_ import bind_deploy_manager
+from ..injection import bind_deploy_manager
 from .manager import DeployConfManager
 
 

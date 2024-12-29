@@ -28,6 +28,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
+    'mlx-lm ~= 0.20.5; sys_platform == "darwin"',
     'sentence-transformers ~= 3.2',
     'transformers ~= 4.45',
     'huggingface-hub ~= 0.25',
@@ -45,6 +46,7 @@ all = [
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 backends = [
+    'mlx-lm ~= 0.20.5; sys_platform == "darwin"',
     'sentence-transformers ~= 3.2',
     'transformers ~= 4.45',
 ]

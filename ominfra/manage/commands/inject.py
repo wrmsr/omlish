@@ -18,7 +18,7 @@ from .base import CommandNameMap
 from .base import CommandRegistration
 from .base import CommandRegistrations
 from .base import build_command_name_map
-from .inject_ import bind_command
+from .injection import bind_command
 from .local import LocalCommandExecutor
 from .marshal import install_command_marshaling
 from .ping import PingCommand

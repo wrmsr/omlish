@@ -10,7 +10,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
-from ..commands.inject_ import bind_command
+from ..commands.injection import bind_command
 from .apps import DeployAppManager
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor
@@ -20,7 +20,7 @@ from .deploy import DeployDriver
 from .deploy import DeployDriverFactory
 from .deploy import DeployManager
 from .git import DeployGitManager
-from .inject_ import bind_deploy_manager
+from .injection import bind_deploy_manager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
 from .paths.inject import bind_deploy_paths

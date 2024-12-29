@@ -7302,7 +7302,7 @@ def bind_interp_uv() -> InjectorBindings:
 
 
 ########################################
-# ../commands/inject_.py
+# ../commands/injection.py
 
 
 def bind_command(
@@ -10934,7 +10934,7 @@ def bind_commands(
 
 
 ########################################
-# ../deploy/inject_.py
+# ../deploy/injection.py
 
 
 def bind_deploy_manager(cls: type) -> InjectorBindings:

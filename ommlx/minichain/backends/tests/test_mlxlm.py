@@ -6,8 +6,8 @@ from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.testing import pytest as ptu
 
 from ...backends.llamacpp import LlamacppPromptModel
-from ...backends.openai import OpenaiChatModel
 from ...backends.mlxlm import MlxlmChatModel
+from ...backends.openai import OpenaiChatModel
 from ...chat import Message
 from ...chat import SystemMessage
 from ...chat import Tool

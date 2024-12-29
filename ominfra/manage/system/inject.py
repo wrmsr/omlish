@@ -5,7 +5,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
-from ..commands.inject_ import bind_command
+from ..commands.injection import bind_command
 from .commands import CheckSystemPackageCommand
 from .commands import CheckSystemPackageCommandExecutor
 from .config import SystemConfig

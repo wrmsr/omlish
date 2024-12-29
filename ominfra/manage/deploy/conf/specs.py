@@ -3,10 +3,10 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.formats.ini.sections import IniSectionSettingsMap
 from omlish.lite.check import check
 from omlish.lite.marshal import register_single_field_type_obj_marshaler
 
-from omlish.formats.ini.sections import IniSectionSettingsMap
 from ..paths.specs import check_valid_deploy_spec_path
 
 
