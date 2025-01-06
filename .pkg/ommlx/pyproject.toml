@@ -28,10 +28,10 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'mlx-lm ~= 0.20.5; sys_platform == "darwin"',
+    'mlx-lm ~= 0.20; sys_platform == "darwin"',
     'sentence-transformers ~= 3.2',
     'transformers ~= 4.45',
-    'huggingface-hub ~= 0.25',
+    'huggingface-hub ~= 0.27',
     'datasets ~= 3.1',
     'llama-cpp-python ~= 0.3',
     'numpy >= 1.20',
@@ -46,12 +46,12 @@ all = [
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 backends = [
-    'mlx-lm ~= 0.20.5; sys_platform == "darwin"',
+    'mlx-lm ~= 0.20; sys_platform == "darwin"',
     'sentence-transformers ~= 3.2',
     'transformers ~= 4.45',
 ]
 huggingface = [
-    'huggingface-hub ~= 0.25',
+    'huggingface-hub ~= 0.27',
     'datasets ~= 3.1',
 ]
 llamacpp = [

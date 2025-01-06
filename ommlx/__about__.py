@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            'mlx-lm ~= 0.20.5; sys_platform == "darwin"',
+            'mlx-lm ~= 0.20; sys_platform == "darwin"',
 
             'sentence-transformers ~= 3.2',
 
@@ -22,7 +22,7 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 0.25',
+            'huggingface-hub ~= 0.27',
             'datasets ~= 3.1',
         ],
 
