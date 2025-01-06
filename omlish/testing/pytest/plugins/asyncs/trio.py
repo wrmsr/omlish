@@ -133,6 +133,6 @@ def trio_test_runner_factory(item, testfunc=None):
         if len(test_ctx.error_list) == 1:
             raise test_ctx.error_list[0]
         elif test_ctx.error_list:
-            raise BaseExceptionGroup('errors in async test and trio fixtures', test_ctx.error_list)
+            raise BaseExceptionGroup('errors in async test and async fixtures', test_ctx.error_list)
 
     return _bootstrap_fixtures_and_run_test
