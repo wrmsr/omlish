@@ -65,7 +65,7 @@ def trio_test(fn):
             )
 
         except BaseExceptionGroup as eg:
-            queue = [eg]
+            queue: list[BaseException] = [eg]
             leaves = []
 
             while queue:

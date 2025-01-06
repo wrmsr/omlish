@@ -33,8 +33,8 @@ class AlreadyUsedError(RuntimeError):
     """An Outcome can only be unwrapped once."""
 
 
-def remove_tb_frames(exc: BaseException, n: int) -> BaseException:
-    tb = exc.__traceback__
+def _remove_tb_frames(exc: BaseException, n: int) -> BaseException:
+    tb: ta.Any = exc.__traceback__
     for _ in range(n):
         check.not_none(tb)
         tb = tb.tb_next
@@ -78,7 +78,7 @@ def capture(
         return Value(sync_fn(*args, **kwargs))
 
     except BaseException as exc:  # noqa
-        exc = remove_tb_frames(exc, 1)
+        exc = _remove_tb_frames(exc, 1)
         return Error(exc)
 
 
@@ -119,7 +119,7 @@ async def acapture(
         return Value(await async_fn(*args, **kwargs))
 
     except BaseException as exc:  # noqa
-        exc = remove_tb_frames(exc, 1)
+        exc = _remove_tb_frames(exc, 1)
         return Error(exc)
 
 

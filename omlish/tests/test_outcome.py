@@ -48,9 +48,9 @@ def test_outcome():
 
     e = outcome.Error(exc)
     with pytest.raises(TypeError):
-        outcome.Error('hello')
+        outcome.Error('hello')  # type: ignore
     with pytest.raises(TypeError):
-        outcome.Error(RuntimeError)
+        outcome.Error(RuntimeError)  # type: ignore
 
     def expect_1():
         assert (yield) == 1
@@ -102,7 +102,7 @@ def test_value_compare():
     assert outcome.Value(1) < outcome.Value(2)
     assert not outcome.Value(3) < outcome.Value(2)
     with pytest.raises(TypeError):
-        outcome.Value(1) < outcome.Value('foo')  # noqa
+        outcome.Value(1) < outcome.Value('foo')  # type: ignore  # noqa
 
 
 def test_capture():
@@ -149,11 +149,11 @@ def test_error_unwrap_does_not_create_reference_cycles():
         pass
     # Top frame in the traceback is the current test function; we don't care
     # about its references
-    assert exc.__traceback__.tb_frame is sys._getframe()  # noqa
+    assert exc.__traceback__.tb_frame is sys._getframe()  # type: ignore  # noqa
     # The next frame down is the 'unwrap' frame; we want to make sure it
     # doesn't reference the exception (or anything else for that matter, just
     # to be thorough)
-    unwrap_frame = exc.__traceback__.tb_next.tb_frame
+    unwrap_frame = exc.__traceback__.tb_next.tb_frame  # type: ignore
     assert unwrap_frame.f_code.co_name == 'unwrap'
     assert unwrap_frame.f_locals == {}
 

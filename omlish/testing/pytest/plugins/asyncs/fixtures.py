@@ -41,7 +41,7 @@ else:
 ##
 
 
-CANARY = contextvars.ContextVar('pytest-omlish-asyncs canary')
+CANARY: contextvars.ContextVar[ta.Any] = contextvars.ContextVar('pytest-omlish-asyncs canary')
 
 
 class NURSERY_FIXTURE_PLACEHOLDER:  # noqa
@@ -62,8 +62,8 @@ class AsyncsTestContext:
         # at any given moment, it's the stuff we need to cancel if we want to start tearing down our fixture DAG.
         self.active_cancel_scopes: set[anyio.CancelScope] = set()
 
-        self.fixtures_with_errors = set()
-        self.fixtures_with_cancel = set()
+        self.fixtures_with_errors: set[AsyncsFixture] = set()
+        self.fixtures_with_cancel: set[AsyncsFixture] = set()
 
         self.error_list: list[BaseException] = []
 
@@ -96,8 +96,9 @@ class AsyncsFixture:
             name: str,
             func,
             pytest_kwargs,
-            is_test=False,
-    ):
+            *,
+            is_test: bool = False,
+    ) -> None:
         super().__init__()
 
         self.name = name
@@ -107,7 +108,7 @@ class AsyncsFixture:
         self._teardown_done = anyio.Event()
 
         # These attrs are all accessed from other objects: Downstream users read this value.
-        self.fixture_value = None
+        self.fixture_value: ta.Any = None
 
         # This event notifies downstream users that we're done setting up. Invariant: if this is set, then either
         # fixture_value is usable *or* test_ctx.crashed is True.
@@ -115,7 +116,7 @@ class AsyncsFixture:
 
         # Downstream users *modify* this value, by adding their _teardown_done events to it, so we know who we need to
         # wait for before tearing down.
-        self.user_done_events = set()
+        self.user_done_events: set[anyio.Event] = set()
 
     def register_and_collect_dependencies(self):
         # Returns the set of all AsyncsFixtures that this fixture depends on, directly or indirectly, and sets up all
@@ -170,7 +171,7 @@ class AsyncsFixture:
         # there's an unhandled exception.
         async with self._fixture_manager(test_ctx) as nursery_fixture:
             # Resolve our kwargs
-            resolved_kwargs = {}
+            resolved_kwargs: dict = {}
             for name, value in self._pytest_kwargs.items():
                 if isinstance(value, AsyncsFixture):
                     await value.setup_done.wait()
@@ -230,7 +231,7 @@ class AsyncsFixture:
             # process), save any exception that *isn't* Cancelled (because if its Cancelled then we can't route it to
             # the right place, and anyway the teardown code will get it again if it matters), and then use a shield to
             # keep waiting for the teardown to finish without having to worry about cancellation.
-            yield_outcome = outcome.Value(None)
+            yield_outcome: outcome.Outcome = outcome.Value(None)
             try:
                 for event in self.user_done_events:
                     await event.wait()
