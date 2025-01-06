@@ -1,4 +1,3 @@
-import contextlib
 import typing as ta
 
 from omlish import check
@@ -29,10 +28,12 @@ class MlxlmChatModel(ChatModel):
         # 'mlx-community/Mixtral-8x7B-Instruct-v0.1'
         # 'mlx-community/QwQ-32B-Preview-8bit'
         # 'mlx-community/QwQ-32B-Preview-bf16'
+        # 'mlx-community/Qwen2.5-0.5B-4bit'
         # 'mlx-community/Qwen2.5-32B-Instruct-8bit'
         # 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
         # 'mlx-community/mamba-2.8b-hf-f16'
     )
+
     def __init__(
             self,
             model: str = DEFAULT_MODEL,
@@ -65,34 +66,25 @@ class MlxlmChatModel(ChatModel):
         ):
             raise RuntimeError(tokenizer)
 
-        messages = [{'role': 'user', 'content': request.v}]
-
         prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-
-        output = llm.create_chat_completion(
-            messages=[  # noqa
-                dict(  # type: ignore
+            [
+                dict(
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
                 )
                 for m in request.v
             ],
-            max_tokens=1024,
-            # stop=['\n'],
+            tokenize=False,
+            add_generation_prompt=True,
         )
 
         response = mlx_lm.generate(
             model,
             tokenizer,
             prompt=prompt,
-            verbose=True,
+            # verbose=True,
         )
 
         return ChatResponse(v=[
-            AiChoice(AiMessage(c['message']['content']))  # noqa
-            for c in output['choices']  # type: ignore
+            AiChoice(AiMessage(response))  # noqa
         ])

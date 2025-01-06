@@ -7,11 +7,12 @@ wheel>=0.45.1
 uv>=0.5.14
 
 pytest==8.3.4
-pytest-asyncio==0.25.1
+pytest-asyncio==0.25.0
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.3.1
+pytest-trio==0.8.0
 pytest-xdist==3.6.1
 
 flake8==7.1.1
@@ -54,7 +55,6 @@ lxml==5.3.0  # @omlish-venv !13t
 
 # clang
 
-pytest-trio==0.8.0
 
 json5==0.10.0
 

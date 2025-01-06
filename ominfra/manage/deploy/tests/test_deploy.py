@@ -226,7 +226,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                     ),
                 )
                 for shallow in [False, True]
-            ]
+            ],
         ]
 
         #
