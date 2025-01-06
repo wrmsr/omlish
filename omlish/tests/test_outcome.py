@@ -62,12 +62,12 @@ def test_outcome():
     with pytest.raises(outcome.AlreadyUsedError):
         v.send(it)
 
-    def expect_RuntimeError():
+    def expect_runtime_error():
         with pytest.raises(RuntimeError):
             yield
         yield 'ok'
 
-    it = iter(expect_RuntimeError())
+    it = iter(expect_runtime_error())
     next(it)
     assert e.send(it) == 'ok'
     with pytest.raises(outcome.AlreadyUsedError):
@@ -82,7 +82,7 @@ def test_outcome_eq_hash():
     assert v1 == v2
     assert v1 != v3
     with pytest.raises(TypeError):
-        {v1}
+        {v1}  # noqa
     assert {v3, v4} == {v3}
 
     # exceptions in general compare by identity
@@ -102,7 +102,7 @@ def test_value_compare():
     assert outcome.Value(1) < outcome.Value(2)
     assert not outcome.Value(3) < outcome.Value(2)
     with pytest.raises(TypeError):
-        outcome.Value(1) < outcome.Value('foo')
+        outcome.Value(1) < outcome.Value('foo')  # noqa
 
 
 def test_capture():
@@ -110,14 +110,14 @@ def test_capture():
         return x + y
 
     v = outcome.capture(add, 2, y=3)
-    assert type(v) == outcome.Value
+    assert type(v) is outcome.Value
     assert v.unwrap() == 5
 
-    def raise_ValueError(x):
+    def raise_value_error(x):
         raise ValueError(x)
 
-    e = outcome.capture(raise_ValueError, 'two')
-    assert type(e) == outcome.Error
+    e = outcome.capture(raise_value_error, 'two')
+    assert type(e) is outcome.Error
     assert type(e.error) is ValueError
     assert e.error.args == ('two',)
 
@@ -128,15 +128,15 @@ def test_inheritance():
 
 
 def test_traceback_frame_removal():
-    def raise_ValueError(x):
+    def raise_value_error(x):
         raise ValueError(x)
 
-    e = outcome.capture(raise_ValueError, 'abc')
-    with pytest.raises(ValueError) as exc_info:
+    e = outcome.capture(raise_value_error, 'abc')
+    with pytest.raises(ValueError) as exc_info:  # noqa
         e.unwrap()
     frames = traceback.extract_tb(exc_info.value.__traceback__)
     functions = [function for _, _, function, _ in frames]
-    assert functions[-2:] == ['unwrap', 'raise_ValueError']
+    assert functions[-2:] == ['unwrap', 'raise_value_error']
 
 
 def test_error_unwrap_does_not_create_reference_cycles():
@@ -149,7 +149,7 @@ def test_error_unwrap_does_not_create_reference_cycles():
         pass
     # Top frame in the traceback is the current test function; we don't care
     # about its references
-    assert exc.__traceback__.tb_frame is sys._getframe()
+    assert exc.__traceback__.tb_frame is sys._getframe()  # noqa
     # The next frame down is the 'unwrap' frame; we want to make sure it
     # doesn't reference the exception (or anything else for that matter, just
     # to be thorough)
@@ -170,11 +170,11 @@ def test_acapture():
         v = await outcome.acapture(add, 3, y=4)
         assert v == outcome.Value(7)
 
-        async def raise_ValueError(x):
+        async def raise_value_error(x):
             await asyncio.sleep(0)
             raise ValueError(x)
 
-        e = await outcome.acapture(raise_ValueError, 9)
+        e = await outcome.acapture(raise_value_error, 9)
         assert type(e.error) is ValueError
         assert e.error.args == (9,)
 
@@ -206,16 +206,16 @@ def test_asend():
     asyncio.run(run())
 
 
-def test_traceback_frame_removal():
+def test_async_traceback_frame_removal():
     async def run():
-        async def raise_ValueError(x):
+        async def raise_value_error(x):
             raise ValueError(x)
 
-        e = await outcome.acapture(raise_ValueError, 'abc')
-        with pytest.raises(ValueError) as exc_info:
+        e = await outcome.acapture(raise_value_error, 'abc')
+        with pytest.raises(ValueError) as exc_info:  # noqa
             e.unwrap()
         frames = traceback.extract_tb(exc_info.value.__traceback__)
         functions = [function for _, _, function, _ in frames]
-        assert functions[-2:] == ['unwrap', 'raise_ValueError']
+        assert functions[-2:] == ['unwrap', 'raise_value_error']
 
     asyncio.run(run())

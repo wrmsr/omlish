@@ -28,6 +28,8 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import check
 from ..... import lang
 from ..... import outcome
+from .consts import ASYNCS_MARK
+from .utils import is_coroutine_function
 
 
 if ta.TYPE_CHECKING:
@@ -42,8 +44,11 @@ else:
 CANARY = contextvars.ContextVar('pytest-omlish-asyncs canary')
 
 
-class NURSERY_FIXTURE_PLACEHOLDER:
+class NURSERY_FIXTURE_PLACEHOLDER:  # noqa
     pass
+
+
+##
 
 
 class AsyncsTestContext:
@@ -73,6 +78,9 @@ class AsyncsTestContext:
 
         for cscope in self.active_cancel_scopes:
             cscope.cancel()
+
+
+##
 
 
 class AsyncsFixture:
@@ -131,7 +139,7 @@ class AsyncsFixture:
                 finally:
                     nursery_fixture.cancel_scope.cancel()
 
-        except BaseException as exc:
+        except BaseException as exc:  # noqa
             test_ctx.crash(self, exc)
 
         finally:
@@ -141,7 +149,7 @@ class AsyncsFixture:
     async def run(self, test_ctx, contextvars_ctx):
         __tracebackhide__ = True
 
-        ## FIXME:
+        # FIXME:
 
         import trio
 
@@ -153,7 +161,7 @@ class AsyncsFixture:
         # Force a yield so we pick up the new context
         await trio.sleep(0)
 
-        ## /FIXME
+        # /FIXME
 
         # Check that it worked, since technically trio doesn't *guarantee* that sleep(0) will actually yield.
         check.equal(CANARY.get(), 'in correct context')
@@ -214,7 +222,7 @@ class AsyncsFixture:
             # At this point we're in a very strange state: if the fixture yielded inside a nursery or cancel scope, then
             # we are still "inside" that scope even though its with block is not on the stack. In particular this means
             # that if they get cancelled, then our waiting might get a Cancelled error, that we cannot really deal with
-            # – it should get thrown back into the fixture generator, but pytest fixture generators don't work that way:
+            # - it should get thrown back into the fixture generator, but pytest fixture generators don't work that way:
             #   https://github.com/python-trio/pytest-trio/issues/55
             # And besides, we can't start tearing down until all our users have finished.
             #
@@ -227,7 +235,7 @@ class AsyncsFixture:
                 for event in self.user_done_events:
                     await event.wait()
 
-            except BaseException as exc:
+            except BaseException as exc:  # noqa
                 check.isinstance(exc, anyio.get_cancelled_exc_class())
                 yield_outcome = outcome.Error(exc)
                 test_ctx.crash(self, None)
@@ -242,7 +250,7 @@ class AsyncsFixture:
                 except StopAsyncIteration:
                     pass
                 else:
-                    raise RuntimeError("too many yields in fixture")
+                    raise RuntimeError('too many yields in fixture')
 
             elif isinstance(func_value, collections.abc.Generator):
                 try:
@@ -250,4 +258,42 @@ class AsyncsFixture:
                 except StopIteration:
                     pass
                 else:
-                    raise RuntimeError("too many yields in fixture")
+                    raise RuntimeError('too many yields in fixture')
+
+
+##
+
+
+def is_asyncs_fixture(func, coerce_async, kwargs):
+    if coerce_async and (is_coroutine_function(func) or inspect.isasyncgenfunction(func)):
+        return True
+
+    if any(isinstance(value, AsyncsFixture) for value in kwargs.values()):
+        return True
+
+    return False
+
+
+def handle_fixture(fixturedef, request):
+    is_asyncs_test = request.node.get_closest_marker(ASYNCS_MARK) is not None
+
+    kwargs = {name: request.getfixturevalue(name) for name in fixturedef.argnames}
+
+    if not is_asyncs_fixture(fixturedef.func, is_asyncs_test, kwargs):
+        return None
+
+    if request.scope != 'function':
+        raise RuntimeError('Asyncs fixtures must be function-scope')
+
+    if not is_asyncs_test:
+        raise RuntimeError('Asyncs fixtures can only be used by Asyncs tests')
+
+    fixture = AsyncsFixture(
+        '<fixture {!r}>'.format(fixturedef.argname),  # noqa
+        fixturedef.func,
+        kwargs,
+    )
+
+    fixturedef.cached_result = (fixture, request.param_index, None)
+
+    return fixture

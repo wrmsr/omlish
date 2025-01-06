@@ -15,11 +15,13 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import abc
-import typing as ta
 import dataclasses as dc
+import typing as ta
+
+from . import check
 
 
-ValueT = ta.TypeVar('ValueT', covariant=True)
+ValueT_co = ta.TypeVar('ValueT_co', covariant=True)
 ResultT = ta.TypeVar('ResultT')
 ArgsT = ta.ParamSpec('ArgsT')
 
@@ -34,7 +36,7 @@ class AlreadyUsedError(RuntimeError):
 def remove_tb_frames(exc: BaseException, n: int) -> BaseException:
     tb = exc.__traceback__
     for _ in range(n):
-        assert tb is not None
+        check.not_none(tb)
         tb = tb.tb_next
     return exc.with_traceback(tb)
 
@@ -44,7 +46,6 @@ def remove_tb_frames(exc: BaseException, n: int) -> BaseException:
 
 @ta.overload
 def capture(
-        # NoReturn = raises exception, so we should get an error.
         sync_fn: ta.Callable[ArgsT, ta.NoReturn],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
@@ -75,7 +76,8 @@ def capture(
 
     try:
         return Value(sync_fn(*args, **kwargs))
-    except BaseException as exc:
+
+    except BaseException as exc:  # noqa
         exc = remove_tb_frames(exc, 1)
         return Error(exc)
 
@@ -116,7 +118,7 @@ async def acapture(
     try:
         return Value(await async_fn(*args, **kwargs))
 
-    except BaseException as exc:
+    except BaseException as exc:  # noqa
         exc = remove_tb_frames(exc, 1)
         return Error(exc)
 
@@ -125,7 +127,7 @@ async def acapture(
 
 
 @dc.dataclass(repr=False, init=False, slots=True, frozen=True, order=True)
-class Outcome(abc.ABC, ta.Generic[ValueT]):
+class Outcome(abc.ABC, ta.Generic[ValueT_co]):
     """
     An abstract class representing the result of a Python computation.
 
@@ -147,7 +149,7 @@ class Outcome(abc.ABC, ta.Generic[ValueT]):
         object.__setattr__(self, '_unwrapped', True)
 
     @abc.abstractmethod
-    def unwrap(self) -> ValueT:
+    def unwrap(self) -> ValueT_co:
         """
         Return or raise the contained value or exception.
 
@@ -158,7 +160,7 @@ class Outcome(abc.ABC, ta.Generic[ValueT]):
         """
 
     @abc.abstractmethod
-    def send(self, gen: ta.Generator[ResultT, ValueT, object]) -> ResultT:
+    def send(self, gen: ta.Generator[ResultT, ValueT_co, object]) -> ResultT:
         """
         Send or throw the contained value or exception into the given generator object.
 
@@ -167,7 +169,7 @@ class Outcome(abc.ABC, ta.Generic[ValueT]):
         """
 
     @abc.abstractmethod
-    async def asend(self, agen: ta.AsyncGenerator[ResultT, ValueT]) -> ResultT:
+    async def asend(self, agen: ta.AsyncGenerator[ResultT, ValueT_co]) -> ResultT:
         """
         Send or throw the contained value or exception into the given async generator object.
 
@@ -178,23 +180,23 @@ class Outcome(abc.ABC, ta.Generic[ValueT]):
 
 @ta.final
 @dc.dataclass(frozen=True, repr=False, slots=True, order=True)
-class Value(Outcome[ValueT], ta.Generic[ValueT]):
+class Value(Outcome[ValueT_co], ta.Generic[ValueT_co]):
     """Concrete :class:`Outcome` subclass representing a regular value."""
 
-    value: ValueT
+    value: ValueT_co
 
     def __repr__(self) -> str:
         return f'Value({self.value!r})'
 
-    def unwrap(self) -> ValueT:
+    def unwrap(self) -> ValueT_co:
         self._set_unwrapped()
         return self.value
 
-    def send(self, gen: ta.Generator[ResultT, ValueT, object]) -> ResultT:
+    def send(self, gen: ta.Generator[ResultT, ValueT_co, object]) -> ResultT:
         self._set_unwrapped()
         return gen.send(self.value)
 
-    async def asend(self, agen: ta.AsyncGenerator[ResultT, ValueT]) -> ResultT:
+    async def asend(self, agen: ta.AsyncGenerator[ResultT, ValueT_co]) -> ResultT:
         self._set_unwrapped()
         return await agen.asend(self.value)
 
@@ -245,4 +247,4 @@ class Error(Outcome[ta.NoReturn]):
 
 
 # A convenience alias to a union of both results, allowing exhaustiveness checking.
-Maybe = Value[ValueT] | Error
+Maybe = Value[ValueT_co] | Error

@@ -20,148 +20,26 @@
 TODO:
  - auto drain_asyncio
 """
-import contextvars
-import functools
-import inspect
 import sys
 import typing as ta
 import warnings
 
 import pytest
-
-import trio
-
 from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
-from .fixtures import AsyncsFixture
-from .fixtures import AsyncsTestContext
-from .fixtures import CANARY
-
-
-if ta.TYPE_CHECKING:
-    import anyio
-    import trio_asyncio
-else:
-    anyio = lang.proxy_import('anyio')
-    trio_asyncio = lang.proxy_import('trio_asyncio')
+from .consts import ASYNCS_MARK
+from .consts import KNOWN_BACKENDS
+from .consts import PARAM_NAME
+from .fixtures import handle_fixture
+from .trio import trio_test_runner_factory
+from .utils import is_async_function
 
 
 ##
-
-
-ASYNCS_MARK = 'asyncs'
-
-KNOWN_BACKENDS = (
-    'asyncio',
-    'trio',
-    'trio_asyncio',
-)
-
-PARAM_NAME = '__async_backend'
-
-
-def iscoroutinefunction(func: ta.Any) -> bool:
-    return inspect.iscoroutinefunction(func) or getattr(func, '_is_coroutine', False)
-
-
-def is_async_function(func: ta.Any) -> bool:
-    return iscoroutinefunction(func) or inspect.isasyncgenfunction(func)
-
-
-##
-
-
-
-def _trio_test(fn):
-    from trio.abc import Clock
-    from trio.abc import Instrument
-
-    @functools.wraps(fn)
-    def wrapper(**kwargs):
-        __tracebackhide__ = True
-
-        clocks = {k: c for k, c in kwargs.items() if isinstance(c, Clock)}
-        if not clocks:
-            clock = None
-        elif len(clocks) == 1:
-            clock = list(clocks.values())[0]
-        else:
-            raise ValueError(f"Expected at most one Clock in kwargs, got {clocks!r}")
-
-        instruments = [i for i in kwargs.values() if isinstance(i, Instrument)]
-
-        try:
-            return trio.run(
-                functools.partial(fn, **kwargs),
-                clock=clock,
-                instruments=instruments,
-            )
-
-        except BaseExceptionGroup as eg:
-            queue = [eg]
-            leaves = []
-
-            while queue:
-                ex = queue.pop()
-                if isinstance(ex, BaseExceptionGroup):
-                    queue.extend(ex.exceptions)
-                else:
-                    leaves.append(ex)
-
-            if len(leaves) == 1:
-                if isinstance(leaves[0], XFailed):
-                    pytest.xfail()
-                if isinstance(leaves[0], Skipped):
-                    pytest.skip()
-
-            # Since our leaf exceptions don't consist of exactly one 'magic' skipped or xfailed exception, re-raise the
-            # whole group.
-            raise
-
-    return wrapper
-
-
-##
-
-
-def _is_asyncs_fixture(func, coerce_async, kwargs):
-    if coerce_async and (iscoroutinefunction(func) or inspect.isasyncgenfunction(func)):
-        return True
-
-    if any(isinstance(value, AsyncsFixture) for value in kwargs.values()):
-        return True
-
-    return False
-
-
-def handle_fixture(fixturedef, request):
-    is_asyncs_test = request.node.get_closest_marker(ASYNCS_MARK) is not None
-
-    kwargs = {name: request.getfixturevalue(name) for name in fixturedef.argnames}
-
-    if _is_asyncs_fixture(fixturedef.func, is_asyncs_test, kwargs):
-        if request.scope != "function":
-            raise RuntimeError("Asyncs fixtures must be function-scope")
-
-        if not is_asyncs_test:
-            raise RuntimeError("Asyncs fixtures can only be used by Asyncs tests")
-
-        fixture = AsyncsFixture(
-            "<fixture {!r}>".format(fixturedef.argname),
-            fixturedef.func,
-            kwargs,
-        )
-
-        fixturedef.cached_result = (fixture, request.param_index, None)
-
-        return fixture
-
-
-###
 
 
 @register
@@ -212,7 +90,7 @@ class AsyncsPlugin:
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
-        if (m := item.get_closest_marker(ASYNCS_MARK)) is None:
+        if (m := item.get_closest_marker(ASYNCS_MARK)) is None:  # noqa
             if is_async_function(item.obj):
                 from _pytest.unittest import UnitTestCase  # noqa
                 if isinstance(item.parent, UnitTestCase):
@@ -227,11 +105,11 @@ class AsyncsPlugin:
         be = item.callspec.params[PARAM_NAME]
 
         if be == 'asyncio':
-            item.obj = self._asyncio_test_runner_factory(item)
+            raise NotImplementedError
         elif be == 'trio':
-            item.obj = self._trio_test_runner_factory(item)
+            item.obj = trio_test_runner_factory(item)
         elif be == 'trio_asyncio':
-            item.obj = self._trio_asyncio_test_runner_factory(item)
+            raise NotImplementedError
         else:
             raise ValueError(be)
 
@@ -259,55 +137,3 @@ class AsyncsPlugin:
         #     item.obj = run
         #
         # yield
-
-    def _asyncio_test_runner_factory(self, item, testfunc=None):
-        raise NotImplementedError
-
-    def _trio_test_runner_factory(self, item, testfunc=None):
-        if not testfunc:
-            testfunc = item.obj
-
-        if not iscoroutinefunction(testfunc):
-            pytest.fail("test function `%r` is marked trio but is not async" % item)
-
-        @_trio_test
-        async def _bootstrap_fixtures_and_run_test(**kwargs):
-            __tracebackhide__ = True
-
-            test_ctx = AsyncsTestContext()
-            test = AsyncsFixture(
-                "<test {!r}>".format(testfunc.__name__),
-                testfunc,
-                kwargs,
-                is_test=True,
-            )
-
-            contextvars_ctx = contextvars.copy_context()
-            contextvars_ctx.run(CANARY.set, "in correct context")
-
-            async with anyio.create_task_group() as nursery:
-                for fixture in test.register_and_collect_dependencies():
-                    nursery.start_soon(
-                        fixture.run,
-                        test_ctx,
-                        contextvars_ctx,
-                        name=fixture.name,
-                    )
-
-            silent_cancellers = test_ctx.fixtures_with_cancel - test_ctx.fixtures_with_errors
-
-            if silent_cancellers:
-                for fixture in silent_cancellers:
-                    test_ctx.error_list.append(
-                        RuntimeError("{} cancelled the test but didn't " "raise an error".format(fixture.name)),
-                    )
-
-            if len(test_ctx.error_list) == 1:
-                raise test_ctx.error_list[0]
-            elif test_ctx.error_list:
-                raise BaseExceptionGroup("errors in async test and trio fixtures", test_ctx.error_list)
-
-        return _bootstrap_fixtures_and_run_test
-
-    def _trio_asyncio_test_runner_factory(self, item, testfunc=None):
-        raise NotImplementedError
