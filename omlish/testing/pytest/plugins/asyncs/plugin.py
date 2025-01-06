@@ -34,7 +34,8 @@ from .._registry import register
 from .consts import ASYNCS_MARK
 from .consts import KNOWN_BACKENDS
 from .consts import PARAM_NAME
-from .fixtures import handle_fixture
+from .fixtures import AsyncsFixture
+from .fixtures import is_asyncs_fixture
 from .trio import trio_test_runner_factory
 from .utils import is_async_function
 
@@ -86,7 +87,28 @@ class AsyncsPlugin:
         metafunc.parametrize(PARAM_NAME, bes)
 
     def pytest_fixture_setup(self, fixturedef, request):
-        return handle_fixture(fixturedef, request)
+        is_asyncs_test = request.node.get_closest_marker(ASYNCS_MARK) is not None
+
+        kwargs = {name: request.getfixturevalue(name) for name in fixturedef.argnames}
+
+        if not is_asyncs_fixture(fixturedef.func, is_asyncs_test, kwargs):
+            return None
+
+        if request.scope != 'function':
+            raise RuntimeError('Asyncs fixtures must be function-scope')
+
+        if not is_asyncs_test:
+            raise RuntimeError('Asyncs fixtures can only be used by Asyncs tests')
+
+        fixture = AsyncsFixture(
+            '<fixture {!r}>'.format(fixturedef.argname),  # noqa
+            fixturedef.func,
+            kwargs,
+        )
+
+        fixturedef.cached_result = (fixture, request.param_index, None)
+
+        return fixture
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):

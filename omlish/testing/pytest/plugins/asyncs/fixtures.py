@@ -28,14 +28,13 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import check
 from ..... import lang
 from ..... import outcome
-from .consts import ASYNCS_MARK
 from .utils import is_coroutine_function
 
 
 if ta.TYPE_CHECKING:
-    import anyio
+    import anyio.abc
 else:
-    anyio = lang.proxy_import('anyio')
+    anyio = lang.proxy_import('anyio', extras=['abc'])
 
 
 ##
@@ -94,8 +93,8 @@ class AsyncsFixture:
     def __init__(
             self,
             name: str,
-            func,
-            pytest_kwargs,
+            func: ta.Callable,
+            pytest_kwargs: ta.Mapping[str, ta.Any],
             *,
             is_test: bool = False,
     ) -> None:
@@ -118,7 +117,7 @@ class AsyncsFixture:
         # wait for before tearing down.
         self.user_done_events: set[anyio.Event] = set()
 
-    def register_and_collect_dependencies(self):
+    def register_and_collect_dependencies(self) -> set['AsyncsFixture']:
         # Returns the set of all AsyncsFixtures that this fixture depends on, directly or indirectly, and sets up all
         # their user_done_events.
         deps = set()
@@ -130,7 +129,7 @@ class AsyncsFixture:
         return deps
 
     @contextlib.asynccontextmanager
-    async def _fixture_manager(self, test_ctx):
+    async def _fixture_manager(self, test_ctx: AsyncsTestContext) -> ta.AsyncIterator['anyio.abc.TaskGroup']:
         __tracebackhide__ = True
 
         try:
@@ -147,7 +146,11 @@ class AsyncsFixture:
             self.setup_done.set()
             self._teardown_done.set()
 
-    async def run(self, test_ctx, contextvars_ctx):
+    async def run(
+            self,
+            test_ctx: AsyncsTestContext,
+            contextvars_ctx: contextvars.Context,
+    ) -> None:
         __tracebackhide__ = True
 
         # FIXME:
@@ -265,7 +268,11 @@ class AsyncsFixture:
 ##
 
 
-def is_asyncs_fixture(func, coerce_async, kwargs):
+def is_asyncs_fixture(
+        func: ta.Callable,
+        coerce_async: bool,
+        kwargs: ta.Mapping[str, ta.Any],
+) -> bool:
     if coerce_async and (is_coroutine_function(func) or inspect.isasyncgenfunction(func)):
         return True
 
@@ -273,28 +280,3 @@ def is_asyncs_fixture(func, coerce_async, kwargs):
         return True
 
     return False
-
-
-def handle_fixture(fixturedef, request):
-    is_asyncs_test = request.node.get_closest_marker(ASYNCS_MARK) is not None
-
-    kwargs = {name: request.getfixturevalue(name) for name in fixturedef.argnames}
-
-    if not is_asyncs_fixture(fixturedef.func, is_asyncs_test, kwargs):
-        return None
-
-    if request.scope != 'function':
-        raise RuntimeError('Asyncs fixtures must be function-scope')
-
-    if not is_asyncs_test:
-        raise RuntimeError('Asyncs fixtures can only be used by Asyncs tests')
-
-    fixture = AsyncsFixture(
-        '<fixture {!r}>'.format(fixturedef.argname),  # noqa
-        fixturedef.func,
-        kwargs,
-    )
-
-    fixturedef.cached_result = (fixture, request.param_index, None)
-
-    return fixture
