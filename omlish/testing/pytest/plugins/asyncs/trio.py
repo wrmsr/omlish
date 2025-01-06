@@ -36,7 +36,7 @@ if ta.TYPE_CHECKING:
     import trio
 else:
     anyio = lang.proxy_import('anyio')
-    trio = lang.proxy_import('trio.abc', extras=['abc'])
+    trio = lang.proxy_import('trio', extras=['abc'])
 
 
 ##
