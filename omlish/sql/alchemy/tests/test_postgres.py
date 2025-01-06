@@ -106,7 +106,7 @@ async def _test_postgres_async(url: str) -> None:
 
 
 @ptu.skip.if_cant_import('asyncpg')
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_async_postgres_asyncpg(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')
@@ -116,7 +116,7 @@ async def test_async_postgres_asyncpg(harness) -> None:
 @ptu.skip.if_cant_import('asyncpg')
 @ptu.skip.if_cant_import('trio')
 @ptu.skip.if_cant_import('trio_asyncio')
-@pytest.mark.trio
+@pytest.mark.asyncs('trio')
 async def test_trio_postgres_asyncpg(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')

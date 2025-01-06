@@ -22,7 +22,7 @@ def test_no_import_backend():
         assert m not in mods
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_simple():
     l = []
 

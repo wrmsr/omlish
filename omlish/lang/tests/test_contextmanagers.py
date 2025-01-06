@@ -95,7 +95,7 @@ def test_contextmanager_class():
     assert c.c == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_asynccontextmanager_class():
     class C(AsyncContextManager[int]):
         c = 0

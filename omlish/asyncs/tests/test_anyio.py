@@ -55,7 +55,7 @@ async def _test_send_receive(
     assert response == b'halb'
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_send_receive_asyncio(
         server_sock: socket.socket,
         server_addr: tuple[str, int],
@@ -63,7 +63,7 @@ async def test_send_receive_asyncio(
     await _test_send_receive(server_sock, server_addr)
 
 
-@pytest.mark.trio
+@pytest.mark.asyncs('trio')
 async def test_send_receive_trio(
         server_sock: socket.socket,
         server_addr: tuple[str, int],
@@ -71,7 +71,7 @@ async def test_send_receive_trio(
     await _test_send_receive(server_sock, server_addr)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_lazy_fn():
     c = 0
 
@@ -89,7 +89,7 @@ async def test_lazy_fn():
     assert c == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_lazy_fn2():
     c = 0
 
@@ -107,7 +107,7 @@ async def test_lazy_fn2():
     assert c == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.drain_asyncio
 async def test_lazy_fn3():
     c = 0

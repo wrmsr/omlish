@@ -65,7 +65,7 @@ class SomeAsyncManager:
 
 
 @ptu.skip.if_cant_import('greenlet')
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.parametrize('eager', [False, True])
 async def test_async_managed(eager):
     async with inj.create_async_managed_injector(

@@ -114,7 +114,7 @@ async def _test_mysql_async(url: str) -> None:
 
 @ptu.skip.if_cant_import('aiomysql')
 @ptu.skip.if_cant_import('greenlet')
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_async_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')
@@ -124,7 +124,7 @@ async def test_async_mysql_aiomysql(harness) -> None:
 @ptu.skip.if_cant_import('aiomysql')
 @ptu.skip.if_cant_import('trio')
 @ptu.skip.if_cant_import('trio_asyncio')
-@pytest.mark.trio
+@pytest.mark.asyncs('trio')
 async def test_trio_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')

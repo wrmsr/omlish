@@ -83,6 +83,6 @@ async def _test_async_sqlite(scheme: str) -> None:
 
 @ptu.skip.if_cant_import('aiosqlite')
 @ptu.skip.if_cant_import('greenlet')
-@pytest.mark.asyncio
+@pytest.mark.asyncs('asyncio')
 async def test_async_sqlite():
     await _test_async_sqlite('sqlite+aiosqlite')
