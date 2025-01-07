@@ -15,7 +15,7 @@ class AsyncioAsyncsBackend(AsyncsBackend):
     def wrap_runner(self, fn):
         @functools.wraps(fn)
         def wrapper(**kwargs):
-            with asyncio.Runner(loop_factory=asyncio.new_event_loop) as runner:
+            with asyncio.Runner(loop_factory=asyncio.get_event_loop_policy().new_event_loop) as runner:
                 return runner.run(fn(**kwargs))
 
         return wrapper
