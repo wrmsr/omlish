@@ -233,7 +233,7 @@ class _BlueletRunner:
 
         try:
             if is_exc:
-                next_event = coro.throw(*value)
+                next_event = coro.throw(value[0])
             else:
                 next_event = coro.send(value)
 
