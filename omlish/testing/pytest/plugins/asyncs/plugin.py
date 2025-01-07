@@ -3,6 +3,7 @@ TODO:
  - auto drain_asyncio
 """
 import contextvars
+import functools
 import sys
 import typing as ta
 import warnings
@@ -14,8 +15,9 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
-from .asyncio import AsyncioAsyncsBackend
-from .base import AsyncsBackend
+from .backends.asyncio import AsyncioAsyncsBackend
+from .backends.base import AsyncsBackend
+from .backends.trio import TrioAsyncsBackend
 from .consts import ASYNCS_MARK
 from .consts import KNOWN_BACKENDS
 from .consts import PARAM_NAME
@@ -23,7 +25,6 @@ from .fixtures import CANARY
 from .fixtures import AsyncsFixture
 from .fixtures import AsyncsTestContext
 from .fixtures import is_asyncs_fixture
-from .trio import TrioAsyncsBackend
 from .utils import is_async_function
 from .utils import is_coroutine_function
 
@@ -181,11 +182,14 @@ class AsyncsPlugin:
 
             async with anyio.create_task_group() as nursery:
                 for fixture in test.register_and_collect_dependencies():
-                    nursery.start_soon(
-                        fixture.run,
-                        test_ctx,
-                        contextvars_ctx,
-                        name=fixture.name,
+                    contextvars_ctx.run(
+                        functools.partial(
+                            nursery.start_soon,
+                            fixture.run,
+                            test_ctx,
+                            contextvars_ctx,
+                            name=fixture.name,
+                        ),
                     )
 
             silent_cancellers = test_ctx.fixtures_with_cancel - test_ctx.fixtures_with_errors

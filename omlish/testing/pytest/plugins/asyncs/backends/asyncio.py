@@ -1,7 +1,7 @@
 import functools
 import typing as ta
 
-from ..... import lang
+from ...... import lang
 from .base import AsyncsBackend
 
 

@@ -23,10 +23,8 @@ import pytest
 from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
-from ..... import check
-from ..... import lang
+from ...... import lang
 from .base import AsyncsBackend
-from .fixtures import CANARY
 
 
 if ta.TYPE_CHECKING:
@@ -90,12 +88,3 @@ def trio_test(fn):
 class TrioAsyncsBackend(AsyncsBackend):
     def wrap_runner(self, fn):
         return trio_test(fn)
-
-    async def install_context(self, contextvars_ctx):
-        # This is a gross hack. I guess Trio should provide a context= argument to start_soon/start?
-        task = trio.lowlevel.current_task()
-        check.not_in(CANARY, task.context)
-        task.context = contextvars_ctx
-
-        # Force a yield so we pick up the new context
-        await trio.sleep(0)

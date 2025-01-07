@@ -6,6 +6,5 @@ class AsyncsBackend(abc.ABC):
     def wrap_runner(self, fn):
         raise NotImplementedError
 
-    @abc.abstractmethod
     async def install_context(self, contextvars_ctx):
-        raise NotImplementedError
+        pass
