@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
 # @omlish-amalg ../scripts/supervisor.py
+#
+# Supervisor is Copyright (c) 2006-2015 Agendaless Consulting and Contributors.
+# (http://www.agendaless.com), All Rights Reserved
+#
 # Supervisor is licensed under the following license:
 #
 #  A copyright notice accompanies this license document that identifies the copyright holders.

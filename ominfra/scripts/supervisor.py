@@ -4,6 +4,10 @@
 # @omlish-script
 # @omlish-amalg-output ../supervisor/main.py
 # ruff: noqa: N802 UP006 UP007 UP012 UP036
+#
+# Supervisor is Copyright (c) 2006-2015 Agendaless Consulting and Contributors.
+# (http://www.agendaless.com), All Rights Reserved
+#
 # Supervisor is licensed under the following license:
 #
 #  A copyright notice accompanies this license document that identifies the copyright holders.
