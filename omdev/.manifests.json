@@ -303,6 +303,18 @@
     }
   },
   {
+    "module": ".tools.linehisto",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/linehisto.py",
+    "line": 292,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "linehisto",
+        "mod_name": "omdev.tools.linehisto"
+      }
+    }
+  },
+  {
     "module": ".tools.mkrelimp",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/mkrelimp.py",
