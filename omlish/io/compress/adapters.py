@@ -37,8 +37,8 @@
 import typing as ta
 
 from ... import check
-from ..generators import BytesSteppedGenerator
-from ..generators import BytesSteppedReaderGenerator
+from ..coro import BytesSteppedCoro
+from ..coro import BytesSteppedReaderCoro
 from .abc import CompressorObject
 from .abc import NeedsInputDecompressorObject
 from .abc import UnconsumedTailDecompressorObject
@@ -56,7 +56,7 @@ class CompressorObjectIncrementalAdapter:
 
         self._factory = factory
 
-    def __call__(self) -> BytesSteppedGenerator:
+    def __call__(self) -> BytesSteppedCoro:
         compressor = self._factory()
 
         while True:
@@ -89,7 +89,7 @@ class DecompressorObjectIncrementalAdapter:
         self._factory = factory
         self._trailing_error = trailing_error
 
-    def __call__(self) -> BytesSteppedReaderGenerator:
+    def __call__(self) -> BytesSteppedReaderCoro:
         pos = 0
 
         data = None  # Default if EOF is encountered

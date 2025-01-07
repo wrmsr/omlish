@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from ... import codecs
-from ..generators import buffer_bytes_stepped_reader_generator
+from ..coro import buffer_bytes_stepped_reader_coro
 from .base import Compression
 from .base import IncrementalCompression
 
@@ -32,7 +32,7 @@ class CompressionIncrementalCodec(codecs.IncrementalCodec[bytes, bytes]):
         return self.compression.compress_incremental()
 
     def decode_incremental(self) -> ta.Generator[bytes | None, bytes, None]:
-        return buffer_bytes_stepped_reader_generator(self.compression.decompress_incremental())
+        return buffer_bytes_stepped_reader_coro(self.compression.decompress_incremental())
 
 
 ##

@@ -43,9 +43,9 @@ import typing as ta
 from ... import cached
 from ... import check
 from ... import lang
-from ..generators import BytesSteppedGenerator
-from ..generators import BytesSteppedReaderGenerator
-from ..generators.readers import PrependableBytesGeneratorReader
+from ..coro import BytesSteppedCoro
+from ..coro import BytesSteppedReaderCoro
+from ..coro.readers import PrependableBytesCoroReader
 from .base import Compression
 from .base import IncrementalCompression
 from .codecs import make_compression_codec
@@ -86,13 +86,13 @@ class GzipCompression(Compression, IncrementalCompression):
             d,
         )
 
-    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+    def compress_incremental(self) -> BytesSteppedCoro[None]:
         return lang.nextgen(IncrementalGzipCompressor(
             level=self.level,
             mtime=self.mtime,
         )())
 
-    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
+    def decompress_incremental(self) -> BytesSteppedReaderCoro[None]:
         return IncrementalGzipDecompressor()()
 
 
@@ -159,7 +159,7 @@ class IncrementalGzipCompressor:
         if fname:
             check.none((yield fname + b'\000'))
 
-    def __call__(self) -> BytesSteppedGenerator:
+    def __call__(self) -> BytesSteppedCoro:
         crc = _zero_crc()
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
@@ -222,7 +222,7 @@ class IncrementalGzipDecompressor:
 
     def _read_gzip_header(
             self,
-            rdr: PrependableBytesGeneratorReader,
+            rdr: PrependableBytesCoroReader,
     ) -> ta.Generator[int | None, bytes, int | None]:
         magic = yield from rdr.read(2)
         if magic == b'':
@@ -264,7 +264,7 @@ class IncrementalGzipDecompressor:
 
     def _read_eof(
             self,
-            rdr: PrependableBytesGeneratorReader,
+            rdr: PrependableBytesCoroReader,
             crc: int,
             stream_size: int,
     ) -> ta.Generator[int | None, bytes, None]:
@@ -286,8 +286,8 @@ class IncrementalGzipDecompressor:
         if c:
             rdr.prepend(c)
 
-    def __call__(self) -> BytesSteppedReaderGenerator:
-        rdr = PrependableBytesGeneratorReader()
+    def __call__(self) -> BytesSteppedReaderCoro:
+        rdr = PrependableBytesCoroReader()
 
         pos = 0  # Current offset in decompressed stream
 

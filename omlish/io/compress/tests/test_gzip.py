@@ -1,7 +1,7 @@
 import gzip
 import io
 
-from ...generators.stepped import read_into_bytes_stepped_generator
+from ...coro.stepped import read_into_bytes_stepped_coro
 from ..gzip import GzipCompression
 
 
@@ -12,7 +12,7 @@ _ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 
 def test_gzip_inc_compressor():
     ow = io.BytesIO()
-    for b in read_into_bytes_stepped_generator(
+    for b in read_into_bytes_stepped_coro(
             GzipCompression(mtime=_MTIME).compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,

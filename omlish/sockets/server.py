@@ -4,8 +4,7 @@ import socket
 import socketserver
 import typing as ta
 
-from omlish.lite.check import check
-
+from ..lite.check import check
 from .addresses import SocketAddress
 from .handlers import SocketHandlerFactory
 

@@ -1,7 +1,7 @@
 import io
 import lzma
 
-from ...generators.stepped import read_into_bytes_stepped_generator
+from ...coro.stepped import read_into_bytes_stepped_coro
 from ..lzma import LzmaCompression
 
 
@@ -11,7 +11,7 @@ _ENC_DATA = lzma.compress(_DEC_DATA)
 
 def test_lzma_inc_compressor():
     ow = io.BytesIO()
-    for b in read_into_bytes_stepped_generator(
+    for b in read_into_bytes_stepped_coro(
             LzmaCompression().compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,

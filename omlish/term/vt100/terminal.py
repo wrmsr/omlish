@@ -2,7 +2,7 @@ import dataclasses as dc
 import string
 import typing as ta
 
-from omlish.lite.check import check
+from ...lite.check import check
 
 
 T = ta.TypeVar('T')

@@ -1,7 +1,7 @@
 import abc
 
-from ..generators import BytesSteppedGenerator
-from ..generators import BytesSteppedReaderGenerator
+from ..coro import BytesSteppedCoro
+from ..coro import BytesSteppedReaderCoro
 
 
 class Compression(abc.ABC):
@@ -16,9 +16,9 @@ class Compression(abc.ABC):
 
 class IncrementalCompression(abc.ABC):
     @abc.abstractmethod
-    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+    def compress_incremental(self) -> BytesSteppedCoro[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
+    def decompress_incremental(self) -> BytesSteppedReaderCoro[None]:
         raise NotImplementedError

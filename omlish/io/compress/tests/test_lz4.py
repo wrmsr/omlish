@@ -1,7 +1,7 @@
 import io
 
 from ....testing import pytest as ptu
-from ...generators import read_into_bytes_stepped_generator
+from ...coro import read_into_bytes_stepped_coro
 from ..lz4 import Lz4Compression
 
 
@@ -15,7 +15,7 @@ def test_lz4():
     assert d == _DEC_DATA
 
     ow = io.BytesIO()
-    for b in read_into_bytes_stepped_generator(
+    for b in read_into_bytes_stepped_coro(
             Lz4Compression().compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
@@ -25,7 +25,7 @@ def test_lz4():
     assert d == _DEC_DATA
 
     ow = io.BytesIO()
-    for b in read_into_bytes_stepped_generator(
+    for b in read_into_bytes_stepped_coro(
             Lz4Compression().decompress_incremental(),
             io.BytesIO(c),
             read_size=13,

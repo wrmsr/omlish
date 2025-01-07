@@ -3,7 +3,7 @@
 """
 import time
 
-from omlish.dispatch import function
+from ...dispatch import function
 
 
 @function

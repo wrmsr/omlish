@@ -6,8 +6,8 @@ import shutil
 import tempfile
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.strings import attr_repr
+from ..lite.check import check
+from ..lite.strings import attr_repr
 
 
 AtomicPathSwapKind = ta.Literal['dir', 'file']

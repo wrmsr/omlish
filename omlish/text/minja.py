@@ -9,8 +9,8 @@ import io
 import re
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
+from ..lite.cached import cached_nullary
+from ..lite.check import check
 
 
 ##

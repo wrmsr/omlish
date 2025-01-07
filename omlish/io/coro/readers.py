@@ -1,6 +1,6 @@
 """
 TODO:
- - BufferedBytesGeneratorReader
+ - BufferedBytesCoroReader
  - docstrings
  - memoryviews
 """
@@ -20,18 +20,18 @@ R = ta.TypeVar('R')
 AnyT = ta.TypeVar('AnyT', bound=ta.Any)
 
 
-# Reader generators yield ints of amounts of data needed, or None for needing any amount of data.
-ReaderGenerator: ta.TypeAlias = ta.Generator[int | None, I, R]
+# Reader coros yield ints of amounts of data needed, or None for needing any amount of data.
+ReaderCoro: ta.TypeAlias = ta.Generator[int | None, I, R]
 
-BytesReaderGenerator: ta.TypeAlias = ReaderGenerator[bytes, R]
-StrReaderGenerator: ta.TypeAlias = ReaderGenerator[str, R]
+BytesReaderCoro: ta.TypeAlias = ReaderCoro[bytes, R]
+StrReaderCoro: ta.TypeAlias = ReaderCoro[str, R]
 
 
-# Exact reader generators always specify read sizes.
-ExactReaderGenerator: ta.TypeAlias = ta.Generator[int, I, R]
+# Exact reader coros always specify read sizes.
+ExactReaderCoro: ta.TypeAlias = ta.Generator[int, I, R]
 
-BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
-StrExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[str, R]
+BytesExactReaderCoro: ta.TypeAlias = ExactReaderCoro[bytes, R]
+StrExactReaderCoro: ta.TypeAlias = ExactReaderCoro[str, R]
 
 
 ##
@@ -50,22 +50,22 @@ class _StrJoiner:
 ##
 
 
-class GeneratorReader(abc.ABC, ta.Generic[T]):
+class CoroReader(abc.ABC, ta.Generic[T]):
     @abc.abstractmethod
-    def read(self, sz: int | None) -> ReaderGenerator[T, T]:
+    def read(self, sz: int | None) -> ReaderCoro[T, T]:
         raise NotImplementedError
 
-    def read_exact(self, sz: int) -> ReaderGenerator[T, T]:
+    def read_exact(self, sz: int) -> ReaderCoro[T, T]:
         d: ta.Any = yield from self.read(sz)
         if len(d) != sz:
-            raise EOFError(f'GeneratorReader got {len(d)}, expected {sz}')
+            raise EOFError(f'CoroReader got {len(d)}, expected {sz}')
         return d
 
 
 ##
 
 
-class PrependableGeneratorReader(GeneratorReader[AnyT]):
+class PrependableCoroReader(CoroReader[AnyT]):
     def __init__(self) -> None:
         super().__init__()
 
@@ -75,7 +75,7 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
     def _join(self, lst: list[AnyT]) -> AnyT:
         raise NotImplementedError
 
-    def read(self, sz: int | None) -> ReaderGenerator[AnyT, AnyT]:
+    def read(self, sz: int | None) -> ReaderCoro[AnyT, AnyT]:
         if not self._queue:
             d: AnyT = check.not_none((yield sz))
             return d
@@ -112,28 +112,28 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
             self._queue.insert(0, (d, p or 0))
 
 
-class PrependableBytesGeneratorReader(
+class PrependableBytesCoroReader(
     _BytesJoiner,
-    PrependableGeneratorReader[bytes],
+    PrependableCoroReader[bytes],
 ):
     pass
 
 
-class PrependableStrGeneratorReader(
+class PrependableStrCoroReader(
     _StrJoiner,
-    PrependableGeneratorReader[str],
+    PrependableCoroReader[str],
 ):
     pass
 
 
-prependable_bytes_generator_reader = PrependableBytesGeneratorReader
-prependable_str_generator_reader = PrependableStrGeneratorReader
+prependable_bytes_coro_reader = PrependableBytesCoroReader
+prependable_str_coro_reader = PrependableStrCoroReader
 
 
 ##
 
 
-class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
+class BufferedCoroReader(PrependableCoroReader[AnyT], abc.ABC):
     def __init__(
             self,
             buffer_size: int = DEFAULT_BUFFER_SIZE,
@@ -144,7 +144,7 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
 
         self._buffer_size = buffer_size
 
-    def read(self, sz: int | None) -> ReaderGenerator[AnyT, AnyT]:
+    def read(self, sz: int | None) -> ReaderCoro[AnyT, AnyT]:
         g = super().read(sz)
         i: ta.Any = None
         while True:
@@ -169,21 +169,21 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
             self.prepend(d, q)
 
 
-class BufferedBytesGeneratorReader(
+class BufferedBytesCoroReader(
     _BytesJoiner,
-    BufferedGeneratorReader[bytes],
-    PrependableGeneratorReader[bytes],
+    BufferedCoroReader[bytes],
+    PrependableCoroReader[bytes],
 ):
     pass
 
 
-class BufferedStrGeneratorReader(
+class BufferedStrCoroReader(
     _StrJoiner,
-    BufferedGeneratorReader[str],
-    PrependableGeneratorReader[str],
+    BufferedCoroReader[str],
+    PrependableCoroReader[str],
 ):
     pass
 
 
-buffered_bytes_generator_reader = BufferedBytesGeneratorReader
-buffered_str_generator_reader = BufferedStrGeneratorReader
+buffered_bytes_coro_reader = BufferedBytesCoroReader
+buffered_str_coro_reader = BufferedStrCoroReader

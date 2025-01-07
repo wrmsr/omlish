@@ -7,11 +7,11 @@ TODO:
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import reflect as rfl
-from omlish.funcs import pairs as fps
+from .. import check
+from .. import dataclasses as dc
+from .. import lang
+from .. import reflect as rfl
+from ..funcs import pairs as fps
 
 
 I = ta.TypeVar('I')

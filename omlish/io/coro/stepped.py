@@ -4,8 +4,8 @@ from ... import check
 from ... import lang
 from ..buffers import ReadableListBuffer
 from .consts import DEFAULT_BUFFER_SIZE
-from .direct import BytesDirectGenerator
-from .direct import StrDirectGenerator
+from .direct import BytesDirectCoro
+from .direct import StrDirectCoro
 
 
 T = ta.TypeVar('T')
@@ -18,44 +18,44 @@ OF = ta.TypeVar('OF')
 OT = ta.TypeVar('OT')
 
 
-# Stepped generators accept a non-None input, then in response yield zero or more non-None outputs, until yielding None
-# to signal they need more input again.
-SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
+# Stepped coros accept a non-None input, then in response yield zero or more non-None outputs, until yielding None to
+# signal they need more input again.
+SteppedCoro: ta.TypeAlias = ta.Generator[O | None, I | None, R]
 
 # Conventionally, these are sent and themselves yield an empty value to signify termination.
-BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
-StrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, str, R]
+BytesSteppedCoro: ta.TypeAlias = SteppedCoro[bytes, bytes, R]
+StrSteppedCoro: ta.TypeAlias = SteppedCoro[str, str, R]
 
-BytesToStrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, bytes, R]
-StrToBytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, str, R]
+BytesToStrSteppedCoro: ta.TypeAlias = SteppedCoro[str, bytes, R]
+StrToBytesSteppedCoro: ta.TypeAlias = SteppedCoro[bytes, str, R]
 
 
 # Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
-SteppedReaderGenerator: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
+SteppedReaderCoro: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
 
-BytesSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[bytes, bytes, R]
-StrSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[str, str, R]
+BytesSteppedReaderCoro: ta.TypeAlias = SteppedReaderCoro[bytes, bytes, R]
+StrSteppedReaderCoro: ta.TypeAlias = SteppedReaderCoro[str, str, R]
 
 
 ##
 
 
 @lang.autostart
-def flatmap_stepped_generator(
+def flatmap_stepped_coro(
         fn: ta.Callable[[list[OF]], OT],
-        g: SteppedGenerator[OF, I, R],
+        g: SteppedCoro[OF, I, R],
         *,
         terminate: ta.Callable[[OF], bool] | None = None,
 ) -> ta.Generator[OT, I, lang.Maybe[R]]:
     """
-    Given a stepped generator and a function taking a list, returns a direct (1:1) generator which accepts input, builds
-    a list of yielded generator output, calls the given function with that list, and yields the result.
+    Given a stepped coro and a function taking a list, returns a direct (1:1) coro which accepts input, builds a list of
+    yielded coro output, calls the given function with that list, and yields the result.
 
     An optional terminate function may be provided which will cause this function to return early if it returns true for
     an encountered yielded value. The encountered value causing termination will be included in the list sent to the
     given fn.
 
-    Returns a Maybe of either the given generator's return value or empty if the terminator was encountered.
+    Returns a Maybe of either the given coro's return value or empty if the terminator was encountered.
     """
 
     l: list[OF]
@@ -110,37 +110,37 @@ def _is_empty(o: T) -> bool:
     return len(o) < 1  # type: ignore
 
 
-def joined_bytes_stepped_generator(g: BytesSteppedGenerator[R]) -> BytesDirectGenerator[R]:
-    return flatmap_stepped_generator(_join_bytes, g, terminate=_is_empty)
+def joined_bytes_stepped_coro(g: BytesSteppedCoro[R]) -> BytesDirectCoro[R]:
+    return flatmap_stepped_coro(_join_bytes, g, terminate=_is_empty)
 
 
-def joined_str_stepped_generator(g: StrSteppedGenerator[R]) -> StrDirectGenerator[R]:
-    return flatmap_stepped_generator(_join_str, g, terminate=_is_empty)
+def joined_str_stepped_coro(g: StrSteppedCoro[R]) -> StrDirectCoro[R]:
+    return flatmap_stepped_coro(_join_str, g, terminate=_is_empty)
 
 
 ##
 
 
-def read_into_bytes_stepped_generator(
-        g: BytesSteppedGenerator,
+def read_into_bytes_stepped_coro(
+        g: BytesSteppedCoro,
         f: ta.IO,
         *,
         read_size: int = DEFAULT_BUFFER_SIZE,
 ) -> ta.Iterator[bytes]:
     yield from lang.genmap(  # type: ignore[misc]
-        joined_bytes_stepped_generator(g),
+        joined_bytes_stepped_coro(g),
         lang.readiter(f, read_size),
     )
 
 
-def read_into_str_stepped_generator(
-        g: StrSteppedGenerator,
+def read_into_str_stepped_coro(
+        g: StrSteppedCoro,
         f: ta.TextIO,
         *,
         read_size: int = DEFAULT_BUFFER_SIZE,
 ) -> ta.Iterator[str]:
     yield from lang.genmap(
-        joined_str_stepped_generator(g),
+        joined_str_stepped_coro(g),
         lang.readiter(f, read_size),
     )
 
@@ -149,7 +149,7 @@ def read_into_str_stepped_generator(
 
 
 @lang.autostart
-def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> BytesSteppedGenerator:
+def buffer_bytes_stepped_reader_coro(g: BytesSteppedReaderCoro) -> BytesSteppedCoro:
     i: bytes | None
     o = g.send(None)
     rlb = ReadableListBuffer()

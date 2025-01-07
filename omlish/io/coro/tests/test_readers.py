@@ -2,9 +2,9 @@ from .... import lang
 from .. import readers as gs
 
 
-def test_prependable_generator_reader():
+def test_prependable_coro_reader():
     def f():
-        rdr = gs.PrependableStrGeneratorReader()
+        rdr = gs.PrependableStrCoroReader()
 
         i = yield from rdr.read(2)
         assert i == 'ab'
@@ -30,9 +30,9 @@ def test_prependable_generator_reader():
     assert cg.send('i') == cg.Return('done')
 
 
-def test_buffered_generator_reader():
+def test_buffered_coro_reader():
     def f():
-        rdr = gs.BufferedStrGeneratorReader(4)
+        rdr = gs.BufferedStrCoroReader(4)
 
         i = yield from rdr.read(2)
         assert i == 'ab'

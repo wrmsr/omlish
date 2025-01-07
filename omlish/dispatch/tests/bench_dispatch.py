@@ -1,6 +1,6 @@
 import time
 
-from omlish.dispatch import Dispatcher
+from ...dispatch import Dispatcher
 
 
 def _main():

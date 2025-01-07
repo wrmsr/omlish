@@ -1,10 +1,9 @@
 import pytest
 
-from omlish import check
-from omlish import lang
-
-from ..text import UTF8
+from ... import check
+from ... import lang
 from ..text import TextEncodingOptions
+from ..text import UTF8
 
 
 def test_text():

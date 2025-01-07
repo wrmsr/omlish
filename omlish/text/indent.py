@@ -4,7 +4,7 @@ import contextlib
 import io
 import typing as ta
 
-from omlish.lite.check import check
+from ..lite.check import check
 
 
 class IndentWriter:

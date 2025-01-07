@@ -1,7 +1,7 @@
 import io
 import zlib
 
-from ...generators.stepped import read_into_bytes_stepped_generator
+from ...coro.stepped import read_into_bytes_stepped_coro
 from ..zlib import ZlibCompression
 
 
@@ -11,7 +11,7 @@ _ENC_DATA = zlib.compress(_DEC_DATA)
 
 def test_zlib_inc_compressor():
     ow = io.BytesIO()
-    for b in read_into_bytes_stepped_generator(
+    for b in read_into_bytes_stepped_coro(
             ZlibCompression().compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,

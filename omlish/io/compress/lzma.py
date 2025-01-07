@@ -3,8 +3,8 @@ import functools
 import typing as ta
 
 from ... import lang
-from ..generators import BytesSteppedGenerator
-from ..generators import BytesSteppedReaderGenerator
+from ..coro import BytesSteppedCoro
+from ..coro import BytesSteppedReaderCoro
 from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
 from .base import Compression
@@ -49,7 +49,7 @@ class LzmaCompression(Compression, IncrementalCompression):
             filters=self.filters,  # type: ignore[arg-type]
         )
 
-    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+    def compress_incremental(self) -> BytesSteppedCoro[None]:
         return lang.nextgen(CompressorObjectIncrementalAdapter(
             functools.partial(  # type: ignore
                 lzma.LZMACompressor,
@@ -60,7 +60,7 @@ class LzmaCompression(Compression, IncrementalCompression):
             ),
         )())
 
-    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
+    def decompress_incremental(self) -> BytesSteppedReaderCoro[None]:
         return DecompressorObjectIncrementalAdapter(
             functools.partial(  # type: ignore
                 lzma.LZMADecompressor,

@@ -2,8 +2,8 @@ import typing as ta
 
 from .... import check
 from .... import lang
-from ..stepped import buffer_bytes_stepped_reader_generator
-from ..stepped import flatmap_stepped_generator
+from ..stepped import buffer_bytes_stepped_reader_coro
+from ..stepped import flatmap_stepped_coro
 
 
 T = ta.TypeVar('T')
@@ -26,32 +26,32 @@ def test_fmg():
 
     print()
 
-    g: ta.Any = flatmap_stepped_generator(lang.identity, f())
+    g: ta.Any = flatmap_stepped_coro(lang.identity, f())
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(lang.identity, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_coro(lang.identity, f(), terminate=of_equal_to('c?'))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_coro(''.join, f(), terminate=of_equal_to('c?'))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to(''))
+    g = flatmap_stepped_coro(''.join, f(), terminate=of_equal_to(''))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_coro(''.join, f(), terminate=of_equal_to('c?'))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_coro(''.join, f(), terminate=of_equal_to('c?'))
     for o in lang.genmap(g, 'abc'):
         print(repr(o))
     print()
@@ -68,7 +68,7 @@ def test_buffer():
         assert (yield b'D') is None
         assert (yield b'') is None
 
-    g = buffer_bytes_stepped_reader_generator(f())
+    g = buffer_bytes_stepped_reader_coro(f())
     assert g.send(b'abcd') == b'A'
     assert next(g) == b'B'
     assert next(g) == b'C'

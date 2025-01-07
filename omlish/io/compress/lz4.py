@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..generators import BytesSteppedGenerator
+from ..coro import BytesSteppedCoro
 from .base import Compression
 from .base import IncrementalCompression
 from .codecs import make_compression_codec
@@ -46,7 +46,7 @@ class Lz4Compression(Compression, IncrementalCompression):
         )
 
     @lang.autostart
-    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+    def compress_incremental(self) -> BytesSteppedCoro[None]:
         with lz4_frame.LZ4FrameCompressor(
                 compression_level=self.level,
                 block_size=self.block_size,
@@ -69,9 +69,9 @@ class Lz4Compression(Compression, IncrementalCompression):
                     yield o
 
     @lang.autostart
-    def decompress_incremental(self) -> BytesSteppedGenerator[None]:
-        # lz4 lib does internal buffering so this is simply a BytesSteppedGenerator not a BytesSteppedReaderGenerator as
-        # it only yields None, accepting any number of bytes at a time.
+    def decompress_incremental(self) -> BytesSteppedCoro[None]:
+        # lz4 lib does internal buffering so this is simply a BytesSteppedCoro not a BytesSteppedReaderCoro as it
+        # only yields None, accepting any number of bytes at a time.
         with lz4_frame.LZ4FrameDecompressor() as decompressor:
             while True:
                 i = check.isinstance((yield None), bytes)

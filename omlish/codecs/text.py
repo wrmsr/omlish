@@ -3,8 +3,7 @@ import dataclasses as dc
 import functools
 import typing as ta
 
-from omlish import check
-
+from .. import check
 from .base import Codec
 from .base import ComboCodec
 from .standard import STANDARD_CODECS
