@@ -17,6 +17,11 @@ class AsyncsBackend(abc.ABC):
 
     #
 
+    def prepare_for_metafunc(self, metafunc) -> None:  # noqa
+        pass
+
+    #
+
     @abc.abstractmethod
     def wrap_runner(self, fn):
         raise NotImplementedError

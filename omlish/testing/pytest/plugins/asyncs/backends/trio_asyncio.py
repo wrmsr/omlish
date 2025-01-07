@@ -23,7 +23,9 @@ import typing as ta
 from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
+from ...... import cached
 from ...... import lang
+from ......diag import pydevd as pdu
 from .base import AsyncsBackend
 
 
@@ -42,6 +44,20 @@ class TrioAsyncioAsyncsBackend(AsyncsBackend):
 
     def is_imported(self) -> bool:
         return 'trio_asyncio' in sys.modules
+
+    #
+
+    @cached.function
+    def _prepare(self) -> None:
+        # NOTE: Importing it here is apparently necessary to get its patching working - otherwise fails later with
+        # `no running event loop` in anyio._backends._asyncio and such.
+        import trio_asyncio  # noqa
+
+        if pdu.is_present():
+            pdu.patch_for_trio_asyncio()
+
+    def prepare_for_metafunc(self, metafunc) -> None:
+        self._prepare()
 
     #
 

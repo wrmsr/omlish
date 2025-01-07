@@ -14,7 +14,6 @@ from _pytest.outcomes import XFailed  # noqa
 
 from ..... import check
 from ..... import lang
-from .....diag import pydevd as pdu
 from .._registry import register
 from .backends import ASYNC_BACKENDS
 from .backends import AsyncsBackend
@@ -75,22 +74,18 @@ class AsyncsPlugin:
     def pytest_generate_tests(self, metafunc):
         if (m := metafunc.definition.get_closest_marker(ASYNCS_MARK)) is not None:
             if m.args:
-                bes = m.args
+                bns = m.args
             else:
-                bes = list(self._backends)
+                bns = list(self._backends)
         else:
             return
 
-        if 'trio_asyncio' in bes:
-            # NOTE: Importing it here is apparently necessary to get its patching working - otherwise fails later with
-            # `no running event loop` in anyio._backends._asyncio and such.
-            import trio_asyncio  # noqa
-
-        if pdu.is_present():
-            pdu.patch_for_trio_asyncio()
+        for bn in bns:
+            be = self._backends[bn]
+            be.prepare_for_metafunc(metafunc)
 
         metafunc.fixturenames.append(PARAM_NAME)
-        metafunc.parametrize(PARAM_NAME, bes)
+        metafunc.parametrize(PARAM_NAME, bns)
 
     def pytest_fixture_setup(self, fixturedef, request):
         is_asyncs_test = request.node.get_closest_marker(ASYNCS_MARK) is not None
