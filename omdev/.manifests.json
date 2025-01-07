@@ -306,7 +306,7 @@
     "module": ".tools.linehisto",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/linehisto.py",
-    "line": 292,
+    "line": 330,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "linehisto",
