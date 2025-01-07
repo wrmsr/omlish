@@ -2,8 +2,8 @@ import pytest
 
 from ... import check
 from ... import lang
-from ..text import TextEncodingOptions
 from ..text import UTF8
+from ..text import TextEncodingOptions
 
 
 def test_text():
