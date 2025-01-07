@@ -62,8 +62,8 @@ class TestTagStrings(unittest.TestCase):
         )
 
         e = TagStringSet({
-            'throttle': frozenset({'disk', 'cpu'}),
-            'platform': frozenset({('linux',), ('linux', 'ubuntu', '22'), ('linux', 'ubuntu')}),
+            'throttle': frozenset({'cpu', 'disk'}),
+            'platform': frozenset({('linux',), ('linux', 'ubuntu'), ('linux', 'ubuntu', '22')}),
             'host': frozenset({'foo', 'bar'}),
         })
 
