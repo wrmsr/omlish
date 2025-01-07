@@ -15,10 +15,10 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
-from .backends.trio_asyncio import TrioAsyncioAsyncsBackend
 from .backends.asyncio import AsyncioAsyncsBackend
 from .backends.base import AsyncsBackend
 from .backends.trio import TrioAsyncsBackend
+from .backends.trio_asyncio import TrioAsyncioAsyncsBackend
 from .consts import ASYNCS_MARK
 from .consts import KNOWN_BACKENDS
 from .consts import PARAM_NAME
