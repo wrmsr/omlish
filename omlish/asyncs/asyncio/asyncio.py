@@ -20,13 +20,9 @@ def asyncio_once(fn: CallableT) -> CallableT:
     return ta.cast(CallableT, inner)
 
 
-def get_real_current_loop() -> asyncio.AbstractEventLoop | None:
-    return asyncio.get_event_loop_policy()._local._loop  # type: ignore  # noqa
-
-
 def drain_tasks(loop=None):
     if loop is None:
-        loop = get_real_current_loop()
+        loop = asyncio.get_running_loop()
 
     while loop._ready or loop._scheduled:  # noqa
         loop._run_once()  # noqa
@@ -34,7 +30,7 @@ def drain_tasks(loop=None):
 
 @contextlib.contextmanager
 def draining_asyncio_tasks() -> ta.Iterator[None]:
-    loop = get_real_current_loop()
+    loop = asyncio.get_running_loop()
     try:
         yield
     finally:

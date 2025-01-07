@@ -86,7 +86,7 @@ class BridgeAwaitRequiredError(Exception):
     pass
 
 
-class MissingBridgeGreenletError(Exception):
+class MissingBridgeThreadletError(Exception):
     pass
 
 
@@ -224,7 +224,7 @@ def s_to_a_await(awaitable: ta.Awaitable[T]) -> T:
 
     if not getattr(g.underlying, _BRIDGE_THREADLET_ATTR, False):
         _safe_cancel_awaitable(awaitable)
-        raise MissingBridgeGreenletError
+        raise MissingBridgeThreadletError
 
     return check.not_none(g.parent).switch(awaitable)
 

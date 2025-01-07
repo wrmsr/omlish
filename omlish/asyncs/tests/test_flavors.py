@@ -7,7 +7,6 @@ import sniffio
 import trio
 
 from ... import lang
-from ...diag import pydevd as pdu
 from ...testing import pytest as ptu
 from .. import flavors
 
@@ -16,14 +15,6 @@ if ta.TYPE_CHECKING:
     import trio_asyncio
 else:
     trio_asyncio = lang.proxy_import('trio_asyncio')
-
-
-##
-
-
-@pytest.fixture(autouse=True)
-def _patch_for_trio_asyncio_fixture():
-    pdu.patch_for_trio_asyncio()
 
 
 ##

@@ -36,7 +36,7 @@ def test_greenlet():
 
 
 @ptu.skip.if_cant_import('greenlet')
-def test_bridge(event_loop):
+def test_bridge():
     import greenlet
 
     l = []
@@ -69,4 +69,5 @@ def test_bridge(event_loop):
         )
         assert rs == [4, 4]
 
-    event_loop.run_until_complete(main())  # noqa
+    with asyncio.Runner() as runner:
+        runner.get_loop().run_until_complete(main())  # noqa

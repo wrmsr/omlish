@@ -15,20 +15,13 @@ import sniffio
 import trio
 
 from ... import lang
-from ...diag import pydevd as pdu
 from ...testing import pytest as ptu
-from ..asyncio import all as asu
 
 
 if ta.TYPE_CHECKING:
     import trio_asyncio as trai
 else:
     trai = lang.proxy_import('trio_asyncio')
-
-
-@pytest.fixture(autouse=True)
-def _patch_for_trio_asyncio_fixture():
-    pdu.patch_for_trio_asyncio()
 
 
 @ptu.skip.if_cant_import('trio_asyncio')
@@ -179,7 +172,7 @@ async def test_all_asyncs(__async_backend):  # noqa
     match __async_backend:
         case 'asyncio':
             assert backend == 'asyncio'
-            assert asu.get_real_current_loop() is not None
+            assert asyncio.get_running_loop() is not None
             assert trai.current_loop.get() is None
             assert not isinstance(asyncio.get_running_loop(), trai.TrioEventLoop)
 
@@ -189,7 +182,8 @@ async def test_all_asyncs(__async_backend):  # noqa
 
         case 'trio':
             assert backend == 'trio'
-            assert asu.get_real_current_loop() is None
+            with pytest.raises(RuntimeError):
+                assert asyncio.get_running_loop()
             assert trai.current_loop.get() is None
 
             with pytest.raises(RuntimeError):
