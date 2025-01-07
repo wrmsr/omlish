@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.92
-botocore==1.35.92
+boto3==1.35.93
+botocore==1.35.93
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -100,7 +100,7 @@ duckdb==1.1.3
 duckduckgo_search==7.2.0
 durationpy==0.9
 einops==0.8.0
-elastic-transport==8.15.1
+elastic-transport==8.17.0
 elasticsearch==8.17.0
 emoji==2.14.0
 evaluate==0.4.3
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.1
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.123.4
+hypothesis==6.123.7
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.1
@@ -205,7 +205,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 jusText==3.0.1
-keras==3.7.0
+keras==3.8.0
 keyring==25.6.0
 kiwisolver==1.4.8
 kubernetes==31.0.0
@@ -220,7 +220,7 @@ langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
 langchain-openai==0.2.14
 langchain-qdrant==0.2.0
-langchain-text-splitters==0.3.4
+langchain-text-splitters==0.3.5
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
@@ -253,13 +253,13 @@ marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
-marshmallow==3.24.0
+marshmallow==3.24.1
 matplotlib==3.10.0
 matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 mistune==3.1.0
-mitogen==0.3.19
+mitogen==0.3.20
 ml-dtypes==0.4.1
 mlx==0.21.1
 mlx-lm==0.20.6
@@ -298,7 +298,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.59.3
+openai==1.59.4
 opencv-python==4.10.0.84
 opentelemetry-api==1.29.0
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
@@ -323,7 +323,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@ad1ff5c33885d50406658be174024defd1daddcc
+peft @ git+https://github.com/huggingface/peft.git@3d2bf9a8b261ed2960f26e61246cf0aa624a6115
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -333,7 +333,7 @@ pipdeptree==2.24.0
 pkginfo==1.12.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.18.0
+polars==1.19.0
 pooch==1.8.2
 portalocker==2.8.2
 posthog==3.7.5
@@ -389,12 +389,10 @@ pyserial-asyncio==0.6
 pyspnego==0.11.2
 pytesseract==0.3.13
 pytest==8.3.4
-pytest-asyncio==0.25.1
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.3.1
-pytest-trio==0.8.0
 pytest-xdist==3.6.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
@@ -430,7 +428,7 @@ rfc3986-validator==0.1.1
 rich==13.9.4
 rpds-py==0.22.3
 rsa==4.9
-rubicon-objc==0.4.9
+rubicon-objc==0.5.0
 ruff==0.8.6
 s3transfer==0.10.4
 safetensors==0.4.5
@@ -530,7 +528,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.14
+uv==0.5.15
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
