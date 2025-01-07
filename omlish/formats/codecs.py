@@ -20,7 +20,8 @@ def make_object_codec(
         dumps: ta.Callable,
         loads: ta.Callable,
         *,
-        input: rfl.Type = rfl.type_(ta.Any),  # noqa
+        input: rfl.Type,  # noqa
+        output: rfl.Type = rfl.type_(ta.Any),
         aliases: ta.Collection[str] | None = None,
 ) -> ObjectCodecT:
     return cls(
@@ -28,7 +29,7 @@ def make_object_codec(
         aliases=aliases,
 
         input=input,
-        output=bytes,
+        output=output,
 
         new=lambda: codecs.FnPairEagerCodec.of(dumps, loads),
     )
@@ -52,6 +53,7 @@ def make_bytes_object_codec(
         name,
         dumps,
         loads,
+        input=bytes,
         **kwargs,
     )
 
@@ -74,6 +76,7 @@ def make_str_object_codec(
         name,
         dumps,
         loads,
+        input=str,
         **kwargs,
     )
 

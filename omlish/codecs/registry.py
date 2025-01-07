@@ -124,8 +124,13 @@ REGISTRY = CodecRegistry(
     ],
 )
 
-register = REGISTRY.register
-lookup = REGISTRY.lookup
+
+def register(*codecs: Codec | LazyLoadedCodec) -> CodecRegistry:
+    return REGISTRY.register(*codecs)
+
+
+def lookup(name_or_alias: str) -> Codec:
+    return REGISTRY.lookup(name_or_alias)
 
 
 ##
