@@ -1,6 +1,7 @@
 import functools
 import typing as ta
 
+from ...... import check
 from ...... import lang
 from .base import AsyncsBackend
 
@@ -16,6 +17,8 @@ class AsyncioAsyncsBackend(AsyncsBackend):
         @functools.wraps(fn)
         def wrapper(**kwargs):
             with asyncio.Runner(loop_factory=asyncio.get_event_loop_policy().new_event_loop) as runner:
+                loop_cls = type(runner.get_loop())
+                check.equal(loop_cls.__module__.split('.')[0], 'asyncio')
                 return runner.run(fn(**kwargs))
 
         return wrapper

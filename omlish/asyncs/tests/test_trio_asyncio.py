@@ -219,13 +219,12 @@ async def test_just_trio_asyncio(__async_backend):  # noqa
     await anyio.sleep(.1)
 
 
-# FIXME
-# @ptu.skip.if_cant_import('trio_asyncio')
-# @pytest.mark.asyncs('trio_asyncio')
-# async def test_asyncio_no_loop():
-#     backend = sniffio.current_async_library()
-#     assert backend == 'asyncio'
-#
-#     assert trai.current_loop.get() is None
-#
-#     await anyio.sleep(.1)
+@ptu.skip.if_cant_import('trio_asyncio')
+@pytest.mark.asyncs('trio_asyncio')
+async def test_asyncio_no_loop():
+    backend = sniffio.current_async_library()
+    assert backend == 'asyncio'
+
+    assert trai.current_loop.get() is None
+
+    await anyio.sleep(.1)
