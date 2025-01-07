@@ -15,6 +15,7 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
+from .backends.trio_asyncio import TrioAsyncioAsyncsBackend
 from .backends.asyncio import AsyncioAsyncsBackend
 from .backends.base import AsyncsBackend
 from .backends.trio import TrioAsyncsBackend
@@ -127,7 +128,7 @@ class AsyncsPlugin:
         elif be == 'trio':
             beo = TrioAsyncsBackend()
         elif be == 'trio_asyncio':
-            raise NotImplementedError
+            beo = TrioAsyncioAsyncsBackend()
         else:
             raise ValueError(be)
 
