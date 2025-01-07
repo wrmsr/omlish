@@ -17,22 +17,8 @@ class ManagerMark(lang.Abstract):
         raise NotImplementedError
 
 
-def _deep_subclasses(cls):
-    ret = set()
-
-    def rec(cur):
-        for nxt in cur.__subclasses__():
-            if nxt not in ret:
-                ret.add(nxt)
-                rec(nxt)
-
-    rec(cls)
-    return ret
-
-
 @register
 class ManagerMarksPlugin:
-
     @lang.cached_function
     def mark_classes(self) -> ta.Mapping[str, type[ManagerMark]]:
         return {

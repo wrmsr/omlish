@@ -108,7 +108,6 @@ async def test_lazy_fn2():
 
 
 @pytest.mark.asyncs('asyncio')
-@pytest.mark.drain_asyncio
 async def test_lazy_fn3():
     c = 0
 
@@ -128,7 +127,6 @@ async def test_lazy_fn3():
 
 @pytest.mark.asyncs
 # @pytest.mark.asyncio
-# @pytest.mark.drain_asyncio
 async def test_cancel():
     await anu.gather(
         functools.partial(anyio.sleep, .02),
