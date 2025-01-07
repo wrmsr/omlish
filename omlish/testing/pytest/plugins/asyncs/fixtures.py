@@ -28,6 +28,7 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import check
 from ..... import lang
 from ..... import outcome
+from .base import AsyncsBackend
 from .utils import is_coroutine_function
 
 
@@ -51,8 +52,10 @@ class NURSERY_FIXTURE_PLACEHOLDER:  # noqa
 
 
 class AsyncsTestContext:
-    def __init__(self) -> None:
+    def __init__(self, backend: AsyncsBackend) -> None:
         super().__init__()
+
+        self.backend = backend
 
         self.crashed = False
 
@@ -153,19 +156,7 @@ class AsyncsFixture:
     ) -> None:
         __tracebackhide__ = True
 
-        # FIXME:
-
-        import trio
-
-        # This is a gross hack. I guess Trio should provide a context= argument to start_soon/start?
-        task = trio.lowlevel.current_task()
-        check.not_in(CANARY, task.context)
-        task.context = contextvars_ctx
-
-        # Force a yield so we pick up the new context
-        await trio.sleep(0)
-
-        # /FIXME
+        await test_ctx.backend.install_context(contextvars_ctx)
 
         # Check that it worked, since technically trio doesn't *guarantee* that sleep(0) will actually yield.
         check.equal(CANARY.get(), 'in correct context')

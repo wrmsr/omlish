@@ -16,7 +16,6 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import contextvars
 import functools
 import typing as ta
 
@@ -24,18 +23,15 @@ import pytest
 from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
+from ..... import check
 from ..... import lang
+from .base import AsyncsBackend
 from .fixtures import CANARY
-from .fixtures import AsyncsFixture
-from .fixtures import AsyncsTestContext
-from .utils import is_coroutine_function
 
 
 if ta.TYPE_CHECKING:
-    import anyio
     import trio
 else:
-    anyio = lang.proxy_import('anyio')
     trio = lang.proxy_import('trio', extras=['abc'])
 
 
@@ -91,48 +87,15 @@ def trio_test(fn):
 ##
 
 
-def trio_test_runner_factory(item, testfunc=None):
-    if not testfunc:
-        testfunc = item.obj
+class TrioAsyncsBackend(AsyncsBackend):
+    def wrap_runner(self, fn):
+        return trio_test(fn)
 
-    if not is_coroutine_function(testfunc):
-        pytest.fail(f'test function `{item!r}` is marked trio but is not async')
+    async def install_context(self, contextvars_ctx):
+        # This is a gross hack. I guess Trio should provide a context= argument to start_soon/start?
+        task = trio.lowlevel.current_task()
+        check.not_in(CANARY, task.context)
+        task.context = contextvars_ctx
 
-    @trio_test
-    async def _bootstrap_fixtures_and_run_test(**kwargs):
-        __tracebackhide__ = True
-
-        test_ctx = AsyncsTestContext()
-        test = AsyncsFixture(
-            '<test {!r}>'.format(testfunc.__name__),  # noqa
-            testfunc,
-            kwargs,
-            is_test=True,
-        )
-
-        contextvars_ctx = contextvars.copy_context()
-        contextvars_ctx.run(CANARY.set, 'in correct context')
-
-        async with anyio.create_task_group() as nursery:
-            for fixture in test.register_and_collect_dependencies():
-                nursery.start_soon(
-                    fixture.run,
-                    test_ctx,
-                    contextvars_ctx,
-                    name=fixture.name,
-                )
-
-        silent_cancellers = test_ctx.fixtures_with_cancel - test_ctx.fixtures_with_errors
-
-        if silent_cancellers:
-            for fixture in silent_cancellers:
-                test_ctx.error_list.append(
-                    RuntimeError(f"{fixture.name} cancelled the test but didn't raise an error"),
-                )
-
-        if len(test_ctx.error_list) == 1:
-            raise test_ctx.error_list[0]
-        elif test_ctx.error_list:
-            raise BaseExceptionGroup('errors in async test and async fixtures', test_ctx.error_list)
-
-    return _bootstrap_fixtures_and_run_test
+        # Force a yield so we pick up the new context
+        await trio.sleep(0)
