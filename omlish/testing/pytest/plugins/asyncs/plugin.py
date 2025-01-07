@@ -14,6 +14,7 @@ from _pytest.outcomes import XFailed  # noqa
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
+from .asyncio import AsyncioAsyncsBackend
 from .base import AsyncsBackend
 from .consts import ASYNCS_MARK
 from .consts import KNOWN_BACKENDS
@@ -121,7 +122,7 @@ class AsyncsPlugin:
 
         beo: AsyncsBackend
         if be == 'asyncio':
-            raise NotImplementedError
+            beo = AsyncioAsyncsBackend()
         elif be == 'trio':
             beo = TrioAsyncsBackend()
         elif be == 'trio_asyncio':
