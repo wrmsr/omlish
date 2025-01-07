@@ -23,12 +23,10 @@ from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
 from ...... import lang
-from ..fixtures import CANARY
 from .base import AsyncsBackend
 
 
 if ta.TYPE_CHECKING:
-    import trio
     import trio_asyncio
 else:
     trio = lang.proxy_import('trio', extras=['abc'])
@@ -43,20 +41,25 @@ class TrioAsyncioAsyncsBackend(AsyncsBackend):
         @functools.wraps(fn)
         def wrapper(**kwargs):
             return trio_asyncio.run(
-                functools.partial(fn, **kwargs),
+                trio_asyncio.aio_as_trio(
+                    functools.partial(fn, **kwargs),
+                ),
             )
 
         return wrapper
 
     async def install_context(self, contextvars_ctx):
+        # Seemingly no longer necessary?
         # https://github.com/python-trio/pytest-trio/commit/ef0cd267ea62188a8e475c66cb584e7a2addc02a
 
-        # This is a gross hack. I guess Trio should provide a context= argument to start_soon/start?
-        task = trio.lowlevel.current_task()
-        if CANARY in task.context:
-            return
+        # # This is a gross hack. I guess Trio should provide a context= argument to start_soon/start?
+        # task = trio.lowlevel.current_task()
+        # if CANARY in task.context:
+        #     return
 
-        task.context = contextvars_ctx
+        # task.context = contextvars_ctx
 
-        # Force a yield so we pick up the new context
-        await trio.sleep(0)
+        # # Force a yield so we pick up the new context
+        # await trio.sleep(0)
+
+        pass
