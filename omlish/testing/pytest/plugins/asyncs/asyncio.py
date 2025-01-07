@@ -15,9 +15,8 @@ class AsyncioAsyncsBackend(AsyncsBackend):
     def wrap_runner(self, fn):
         @functools.wraps(fn)
         def wrapper(**kwargs):
-            print(fn)
-
-            raise NotImplementedError
+            with asyncio.Runner(loop_factory=asyncio.new_event_loop) as runner:
+                return runner.run(fn(**kwargs))
 
         return wrapper
 
