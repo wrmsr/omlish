@@ -17,6 +17,7 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import functools
+import sys
 import typing as ta
 
 import pytest
@@ -33,58 +34,58 @@ else:
     trio = lang.proxy_import('trio', extras=['abc'])
 
 
-##
-
-
-def trio_test(fn):
-    @functools.wraps(fn)
-    def wrapper(**kwargs):
-        __tracebackhide__ = True
-
-        clocks = {k: c for k, c in kwargs.items() if isinstance(c, trio.abc.Clock)}
-        if not clocks:
-            clock = None
-        elif len(clocks) == 1:
-            clock = list(clocks.values())[0]  # noqa
-        else:
-            raise ValueError(f'Expected at most one Clock in kwargs, got {clocks!r}')
-
-        instruments = [i for i in kwargs.values() if isinstance(i, trio.abc.Instrument)]
-
-        try:
-            return trio.run(
-                functools.partial(fn, **kwargs),
-                clock=clock,
-                instruments=instruments,
-            )
-
-        except BaseExceptionGroup as eg:
-            queue: list[BaseException] = [eg]
-            leaves = []
-
-            while queue:
-                ex = queue.pop()
-                if isinstance(ex, BaseExceptionGroup):
-                    queue.extend(ex.exceptions)
-                else:
-                    leaves.append(ex)
-
-            if len(leaves) == 1:
-                if isinstance(leaves[0], XFailed):
-                    pytest.xfail()
-                if isinstance(leaves[0], Skipped):
-                    pytest.skip()
-
-            # Since our leaf exceptions don't consist of exactly one 'magic' skipped or xfailed exception, re-raise the
-            # whole group.
-            raise
-
-    return wrapper
-
-
-##
-
-
 class TrioAsyncsBackend(AsyncsBackend):
+    name = 'trio'
+
+    def is_available(self) -> bool:
+        return lang.can_import('trio')
+
+    def is_imported(self) -> bool:
+        return 'trio' in sys.modules
+
+    #
+
     def wrap_runner(self, fn):
-        return trio_test(fn)
+        @functools.wraps(fn)
+        def wrapper(**kwargs):
+            __tracebackhide__ = True
+
+            clocks = {k: c for k, c in kwargs.items() if isinstance(c, trio.abc.Clock)}
+            if not clocks:
+                clock = None
+            elif len(clocks) == 1:
+                clock = list(clocks.values())[0]  # noqa
+            else:
+                raise ValueError(f'Expected at most one Clock in kwargs, got {clocks!r}')
+
+            instruments = [i for i in kwargs.values() if isinstance(i, trio.abc.Instrument)]
+
+            try:
+                return trio.run(
+                    functools.partial(fn, **kwargs),
+                    clock=clock,
+                    instruments=instruments,
+                )
+
+            except BaseExceptionGroup as eg:
+                queue: list[BaseException] = [eg]
+                leaves = []
+
+                while queue:
+                    ex = queue.pop()
+                    if isinstance(ex, BaseExceptionGroup):
+                        queue.extend(ex.exceptions)
+                    else:
+                        leaves.append(ex)
+
+                if len(leaves) == 1:
+                    if isinstance(leaves[0], XFailed):
+                        pytest.xfail()
+                    if isinstance(leaves[0], Skipped):
+                        pytest.skip()
+
+                # Since our leaf exceptions don't consist of exactly one 'magic' skipped or xfailed exception, re-raise
+                # the whole group.
+                raise
+
+        return wrapper

@@ -1,4 +1,5 @@
 import functools
+import sys
 import typing as ta
 
 from ...... import check
@@ -13,6 +14,16 @@ else:
 
 
 class AsyncioAsyncsBackend(AsyncsBackend):
+    name = 'asyncio'
+
+    def is_available(self) -> bool:
+        return True
+
+    def is_imported(self) -> bool:
+        return 'asyncio' in sys.modules
+
+    #
+
     def wrap_runner(self, fn):
         @functools.wraps(fn)
         def wrapper(**kwargs):
@@ -22,6 +33,3 @@ class AsyncioAsyncsBackend(AsyncsBackend):
                 return runner.run(fn(**kwargs))
 
         return wrapper
-
-    async def install_context(self, contextvars_ctx):
-        pass

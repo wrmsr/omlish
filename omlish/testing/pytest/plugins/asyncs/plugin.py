@@ -12,15 +12,13 @@ import pytest
 from _pytest.outcomes import Skipped  # noqa
 from _pytest.outcomes import XFailed  # noqa
 
+from ..... import check
 from ..... import lang
 from .....diag import pydevd as pdu
 from .._registry import register
-from .backends.asyncio import AsyncioAsyncsBackend
-from .backends.base import AsyncsBackend
-from .backends.trio import TrioAsyncsBackend
-from .backends.trio_asyncio import TrioAsyncioAsyncsBackend
+from .backends import ASYNC_BACKENDS
+from .backends import AsyncsBackend
 from .consts import ASYNCS_MARK
-from .consts import KNOWN_BACKENDS
 from .consts import PARAM_NAME
 from .fixtures import CANARY
 from .fixtures import AsyncsFixture
@@ -41,9 +39,21 @@ else:
 
 @register
 class AsyncsPlugin:
-    ASYNC_BACKENDS: ta.ClassVar[ta.Sequence[str]] = [
-        *[s for s in KNOWN_BACKENDS if lang.can_import(s)],
-    ]
+    def __init__(self, backends: ta.Collection[type[AsyncsBackend]] | None = None) -> None:
+        super().__init__()
+
+        if backends is None:
+            backends = ASYNC_BACKENDS
+
+        bd: dict[str, AsyncsBackend] = {}
+        for bc in backends:
+            be = bc()
+            if not be.is_available():
+                continue
+            bn = be.name
+            check.not_in(bn, bd)
+            bd[bn] = be
+        self._backends = bd
 
     def pytest_cmdline_main(self, config):
         if (aio_plugin := sys.modules.get('pytest_asyncio.plugin')):
@@ -67,7 +77,7 @@ class AsyncsPlugin:
             if m.args:
                 bes = m.args
             else:
-                bes = self.ASYNC_BACKENDS
+                bes = list(self._backends)
         else:
             return
 
@@ -120,44 +130,12 @@ class AsyncsPlugin:
             yield
             return
 
-        be = item.callspec.params[PARAM_NAME]
+        bn = item.callspec.params[PARAM_NAME]
+        be = self._backends[bn]
 
-        beo: AsyncsBackend
-        if be == 'asyncio':
-            beo = AsyncioAsyncsBackend()
-        elif be == 'trio':
-            beo = TrioAsyncsBackend()
-        elif be == 'trio_asyncio':
-            beo = TrioAsyncioAsyncsBackend()
-        else:
-            raise ValueError(be)
-
-        item.obj = self.test_runner_factory(beo, item)
+        item.obj = self.test_runner_factory(be, item)
 
         yield
-
-        # bes = [be for be in self.ASYNC_BACKENDS if item.get_closest_marker(be) is not None]
-        # if len(bes) > 1 and set(bes) != {'trio', 'trio_asyncio'}:
-        #     raise Exception(f'{item.nodeid}: multiple async backends specified: {bes}')
-        # elif is_async_function(item.obj) and not bes:
-        #     from _pytest.unittest import UnitTestCase  # noqa
-        #     if isinstance(item.parent, UnitTestCase):
-        #         # unittest handles these itself.
-        #         pass
-        #     else:
-        #         raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
-        #
-        # if 'trio_asyncio' in bes:
-        #     obj = item.obj
-        #
-        #     @functools.wraps(obj)
-        #     @trai.with_trio_asyncio_loop(wait=True)
-        #     async def run(*args, **kwargs):
-        #         await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
-        #
-        #     item.obj = run
-        #
-        # yield
 
     def test_runner_factory(self, backend: AsyncsBackend, item, testfunc=None):
         if not testfunc:
