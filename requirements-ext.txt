@@ -179,7 +179,7 @@ mitogen==0.3.20
 
 ##
 
-openai==1.59.4
+openai==1.59.5
 
 trl==0.13.0
 tf-keras==2.17.0
@@ -188,7 +188,7 @@ polars==1.19.0
 
 pyzmq==26.2.0
 
-safetensors==0.4.5
+safetensors==0.5.2
 
 customtkinter==5.2.2
 
