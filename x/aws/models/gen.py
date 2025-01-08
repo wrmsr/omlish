@@ -144,6 +144,7 @@ class ModelGen:
         '# flake8: noqa: E501',
         '# fmt: off',
         'import dataclasses as _dc  # noqa',
+        'import enum as _enum  # noqa',
         'import typing as _ta  # noqa',
         '',
         'from .. import base as _base  # noqa',
@@ -172,6 +173,7 @@ class ModelGen:
         src: str
 
         class_name: str | None = dc.field(default=None, kw_only=True)
+        double_space: bool = False
 
     def gen_shape(
             self,
@@ -218,7 +220,11 @@ class ModelGen:
                     fls = ['# ' + fl for fl in fls]
                 lines.append('\n'.join('    ' + fl for fl in fls))
 
-            return self.ShapeSrc('\n'.join(lines), class_name=shape.name)
+            return self.ShapeSrc(
+                '\n'.join(lines),
+                class_name=shape.name,
+                double_space=True,
+            )
 
         elif isinstance(shape, botocore.model.ListShape):
             mn = shape.member.name
@@ -250,8 +256,18 @@ class ModelGen:
 
         elif isinstance(shape, botocore.model.StringShape):
             if shape.enum:
-                es = [f'\n    {e!r},' for e in shape.enum]
-                return self.ShapeSrc(f"{shape.name} = _ta.NewType('{shape.name}', _ta.Literal[{"".join(es)}\n])")
+                ls = [
+                    f'class {shape.name}(_enum.Enum):',
+                ]
+                for v in shape.enum:
+                    n = v.upper()
+                    for c in '.-:':
+                        n = n.replace(c, '_')
+                    ls.append(f'    {n} = {v!r}')
+                return self.ShapeSrc(
+                    '\n'.join(ls),
+                    double_space=True,
+                )
 
             else:
                 return self.ShapeSrc(f"{shape.name} = _ta.NewType('{shape.name}', str)")
@@ -282,7 +298,7 @@ class ModelGen:
         for shape_src in shape_srcs:
             if prev_shape_src is not None:
                 out.write('\n')
-                if shape_src.class_name or prev_shape_src.class_name:
+                if shape_src.double_space or prev_shape_src.double_space:
                     out.write('\n')
             out.write(shape_src.src)
             out.write('\n')

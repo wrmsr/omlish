@@ -1,6 +1,7 @@
 # flake8: noqa: E501
 # fmt: off
 import dataclasses as _dc  # noqa
+import enum as _enum  # noqa
 import typing as _ta  # noqa
 
 from .. import base as _base  # noqa
@@ -23,20 +24,22 @@ BypassGovernanceRetention = _ta.NewType('BypassGovernanceRetention', bool)
 
 CacheControl = _ta.NewType('CacheControl', str)
 
-ChecksumAlgorithm = _ta.NewType('ChecksumAlgorithm', _ta.Literal[
-    'CRC32',
-    'CRC32C',
-    'SHA1',
-    'SHA256',
-])
+
+class ChecksumAlgorithm(_enum.Enum):
+    CRC32 = 'CRC32'
+    CRC32C = 'CRC32C'
+    SHA1 = 'SHA1'
+    SHA256 = 'SHA256'
+
 
 ChecksumCRC32 = _ta.NewType('ChecksumCRC32', str)
 
 ChecksumCRC32C = _ta.NewType('ChecksumCRC32C', str)
 
-ChecksumMode = _ta.NewType('ChecksumMode', _ta.Literal[
-    'ENABLED',
-])
+
+class ChecksumMode(_enum.Enum):
+    ENABLED = 'ENABLED'
+
 
 ChecksumSHA1 = _ta.NewType('ChecksumSHA1', str)
 
@@ -93,10 +96,10 @@ IfNoneMatch = _ta.NewType('IfNoneMatch', str)
 
 IfUnmodifiedSince = _ta.NewType('IfUnmodifiedSince', _base.Timestamp)
 
-IntelligentTieringAccessTier = _ta.NewType('IntelligentTieringAccessTier', _ta.Literal[
-    'ARCHIVE_ACCESS',
-    'DEEP_ARCHIVE_ACCESS',
-])
+
+class IntelligentTieringAccessTier(_enum.Enum):
+    ARCHIVE_ACCESS = 'ARCHIVE_ACCESS'
+    DEEP_ARCHIVE_ACCESS = 'DEEP_ARCHIVE_ACCESS'
 
 
 @_dc.dataclass(frozen=True)
@@ -134,27 +137,28 @@ class NoSuchKey(
     pass
 
 
-ObjectCannedACL = _ta.NewType('ObjectCannedACL', _ta.Literal[
-    'private',
-    'public-read',
-    'public-read-write',
-    'authenticated-read',
-    'aws-exec-read',
-    'bucket-owner-read',
-    'bucket-owner-full-control',
-])
+class ObjectCannedACL(_enum.Enum):
+    PRIVATE = 'private'
+    PUBLIC_READ = 'public-read'
+    PUBLIC_READ_WRITE = 'public-read-write'
+    AUTHENTICATED_READ = 'authenticated-read'
+    AWS_EXEC_READ = 'aws-exec-read'
+    BUCKET_OWNER_READ = 'bucket-owner-read'
+    BUCKET_OWNER_FULL_CONTROL = 'bucket-owner-full-control'
+
 
 ObjectKey = _ta.NewType('ObjectKey', str)
 
-ObjectLockLegalHoldStatus = _ta.NewType('ObjectLockLegalHoldStatus', _ta.Literal[
-    'ON',
-    'OFF',
-])
 
-ObjectLockMode = _ta.NewType('ObjectLockMode', _ta.Literal[
-    'GOVERNANCE',
-    'COMPLIANCE',
-])
+class ObjectLockLegalHoldStatus(_enum.Enum):
+    ON = 'ON'
+    OFF = 'OFF'
+
+
+class ObjectLockMode(_enum.Enum):
+    GOVERNANCE = 'GOVERNANCE'
+    COMPLIANCE = 'COMPLIANCE'
+
 
 ObjectLockRetainUntilDate = _ta.NewType('ObjectLockRetainUntilDate', _base.Timestamp)
 
@@ -166,21 +170,22 @@ PartsCount = _ta.NewType('PartsCount', int)
 
 Range = _ta.NewType('Range', str)
 
-ReplicationStatus = _ta.NewType('ReplicationStatus', _ta.Literal[
-    'COMPLETE',
-    'PENDING',
-    'FAILED',
-    'REPLICA',
-    'COMPLETED',
-])
 
-RequestCharged = _ta.NewType('RequestCharged', _ta.Literal[
-    'requester',
-])
+class ReplicationStatus(_enum.Enum):
+    COMPLETE = 'COMPLETE'
+    PENDING = 'PENDING'
+    FAILED = 'FAILED'
+    REPLICA = 'REPLICA'
+    COMPLETED = 'COMPLETED'
 
-RequestPayer = _ta.NewType('RequestPayer', _ta.Literal[
-    'requester',
-])
+
+class RequestCharged(_enum.Enum):
+    REQUESTER = 'requester'
+
+
+class RequestPayer(_enum.Enum):
+    REQUESTER = 'requester'
+
 
 ResponseCacheControl = _ta.NewType('ResponseCacheControl', str)
 
@@ -206,27 +211,29 @@ SSEKMSEncryptionContext = _ta.NewType('SSEKMSEncryptionContext', str)
 
 SSEKMSKeyId = _ta.NewType('SSEKMSKeyId', str)
 
-ServerSideEncryption = _ta.NewType('ServerSideEncryption', _ta.Literal[
-    'AES256',
-    'aws:kms',
-    'aws:kms:dsse',
-])
+
+class ServerSideEncryption(_enum.Enum):
+    AES256 = 'AES256'
+    AWS_KMS = 'aws:kms'
+    AWS_KMS_DSSE = 'aws:kms:dsse'
+
 
 Size = _ta.NewType('Size', int)
 
-StorageClass = _ta.NewType('StorageClass', _ta.Literal[
-    'STANDARD',
-    'REDUCED_REDUNDANCY',
-    'STANDARD_IA',
-    'ONEZONE_IA',
-    'INTELLIGENT_TIERING',
-    'GLACIER',
-    'DEEP_ARCHIVE',
-    'OUTPOSTS',
-    'GLACIER_IR',
-    'SNOW',
-    'EXPRESS_ONEZONE',
-])
+
+class StorageClass(_enum.Enum):
+    STANDARD = 'STANDARD'
+    REDUCED_REDUNDANCY = 'REDUCED_REDUNDANCY'
+    STANDARD_IA = 'STANDARD_IA'
+    ONEZONE_IA = 'ONEZONE_IA'
+    INTELLIGENT_TIERING = 'INTELLIGENT_TIERING'
+    GLACIER = 'GLACIER'
+    DEEP_ARCHIVE = 'DEEP_ARCHIVE'
+    OUTPOSTS = 'OUTPOSTS'
+    GLACIER_IR = 'GLACIER_IR'
+    SNOW = 'SNOW'
+    EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
+
 
 TagCount = _ta.NewType('TagCount', int)
 
