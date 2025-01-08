@@ -1206,7 +1206,7 @@ class InstanceAttachmentEnaSrdUdpSpecification(
     ))
 
 
-InstanceIdStringList = _ta.NewType('InstanceIdStringList', _ta.Sequence[InstanceId])
+InstanceIdStringList: _ta.TypeAlias = _ta.Sequence[InstanceId]
 
 
 @_dc.dataclass(frozen=True)
@@ -1470,7 +1470,7 @@ class StateReason(
     ))
 
 
-ValueStringList = _ta.NewType('ValueStringList', _ta.Sequence[str])
+ValueStringList: _ta.TypeAlias = _ta.Sequence[str]
 
 
 @_dc.dataclass(frozen=True)
@@ -1523,9 +1523,9 @@ class EbsInstanceBlockDevice(
     ))
 
 
-ElasticGpuAssociationList = _ta.NewType('ElasticGpuAssociationList', _ta.Sequence[ElasticGpuAssociation])
+ElasticGpuAssociationList: _ta.TypeAlias = _ta.Sequence[ElasticGpuAssociation]
 
-ElasticInferenceAcceleratorAssociationList = _ta.NewType('ElasticInferenceAcceleratorAssociationList', _ta.Sequence[ElasticInferenceAcceleratorAssociation])
+ElasticInferenceAcceleratorAssociationList: _ta.TypeAlias = _ta.Sequence[ElasticInferenceAcceleratorAssociation]
 
 
 @_dc.dataclass(frozen=True)
@@ -1543,7 +1543,7 @@ class Filter(
     ))
 
 
-GroupIdentifierList = _ta.NewType('GroupIdentifierList', _ta.Sequence[GroupIdentifier])
+GroupIdentifierList: _ta.TypeAlias = _ta.Sequence[GroupIdentifier]
 
 
 @_dc.dataclass(frozen=True)
@@ -1561,11 +1561,11 @@ class InstanceAttachmentEnaSrdSpecification(
     ))
 
 
-InstanceIpv4PrefixList = _ta.NewType('InstanceIpv4PrefixList', _ta.Sequence[InstanceIpv4Prefix])
+InstanceIpv4PrefixList: _ta.TypeAlias = _ta.Sequence[InstanceIpv4Prefix]
 
-InstanceIpv6AddressList = _ta.NewType('InstanceIpv6AddressList', _ta.Sequence[InstanceIpv6Address])
+InstanceIpv6AddressList: _ta.TypeAlias = _ta.Sequence[InstanceIpv6Address]
 
-InstanceIpv6PrefixList = _ta.NewType('InstanceIpv6PrefixList', _ta.Sequence[InstanceIpv6Prefix])
+InstanceIpv6PrefixList: _ta.TypeAlias = _ta.Sequence[InstanceIpv6Prefix]
 
 
 @_dc.dataclass(frozen=True)
@@ -1610,9 +1610,9 @@ class InstanceStateChange(
     ))
 
 
-LicenseList = _ta.NewType('LicenseList', _ta.Sequence[LicenseConfiguration])
+LicenseList: _ta.TypeAlias = _ta.Sequence[LicenseConfiguration]
 
-ProductCodeList = _ta.NewType('ProductCodeList', _ta.Sequence[ProductCode])
+ProductCodeList: _ta.TypeAlias = _ta.Sequence[ProductCode]
 
 
 @_dc.dataclass(frozen=True)
@@ -1657,7 +1657,7 @@ class StopInstancesRequest(
     ))
 
 
-FilterList = _ta.NewType('FilterList', _ta.Sequence[Filter])
+FilterList: _ta.TypeAlias = _ta.Sequence[Filter]
 
 
 @_dc.dataclass(frozen=True)
@@ -1710,9 +1710,9 @@ class InstanceNetworkInterfaceAttachment(
     ))
 
 
-InstancePrivateIpAddressList = _ta.NewType('InstancePrivateIpAddressList', _ta.Sequence[InstancePrivateIpAddress])
+InstancePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[InstancePrivateIpAddress]
 
-InstanceStateChangeList = _ta.NewType('InstanceStateChangeList', _ta.Sequence[InstanceStateChange])
+InstanceStateChangeList: _ta.TypeAlias = _ta.Sequence[InstanceStateChange]
 
 
 @_dc.dataclass(frozen=True)
@@ -1742,7 +1742,7 @@ class DescribeInstancesRequest(
     ))
 
 
-InstanceBlockDeviceMappingList = _ta.NewType('InstanceBlockDeviceMappingList', _ta.Sequence[InstanceBlockDeviceMapping])
+InstanceBlockDeviceMappingList: _ta.TypeAlias = _ta.Sequence[InstanceBlockDeviceMapping]
 
 
 @_dc.dataclass(frozen=True)
@@ -1854,7 +1854,7 @@ class StopInstancesResult(
     ))
 
 
-InstanceNetworkInterfaceList = _ta.NewType('InstanceNetworkInterfaceList', _ta.Sequence[InstanceNetworkInterface])
+InstanceNetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterface]
 
 
 @_dc.dataclass(frozen=True)
@@ -2100,7 +2100,7 @@ class Instance(
     ))
 
 
-InstanceList = _ta.NewType('InstanceList', _ta.Sequence[Instance])
+InstanceList: _ta.TypeAlias = _ta.Sequence[Instance]
 
 
 @_dc.dataclass(frozen=True)
@@ -2130,7 +2130,7 @@ class Reservation(
     ))
 
 
-ReservationList = _ta.NewType('ReservationList', _ta.Sequence[Reservation])
+ReservationList: _ta.TypeAlias = _ta.Sequence[Reservation]
 
 
 @_dc.dataclass(frozen=True)

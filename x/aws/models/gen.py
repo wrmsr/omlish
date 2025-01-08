@@ -1,12 +1,3 @@
-"""
-TODO:
- - better name de-mangling
-  - ordered prefix chopping
-   - AAAA
-   - KMS
-   - SHA
-   - SSE
-"""
 import dataclasses as dc
 import io
 import typing as ta
@@ -151,9 +142,15 @@ class ModelGen:
 
     DEMANGLE_PREFIXES: ta.ClassVar[ta.Sequence[str]] = [
         'AAAA',
+        'ACP',
+        'CRC32',
+        'CRC32C',
         'KMS',
+        'MD5',
+        'SHA1',
         'SHA256',
         'SSE',
+        'ETag',
     ]
 
     def demangle_name(self, n: str) -> str:
@@ -272,7 +269,7 @@ class ModelGen:
                 mn,
                 unquoted_names=unquoted_names,
             )
-            l = f"{shape.name} = _ta.NewType('{shape.name}', _ta.Sequence[{ma or mn}])"
+            l = f"{shape.name}: _ta.TypeAlias = _ta.Sequence[{ma or mn}]"
             if ma is None:
                 l = '# ' + l
             return self.ShapeSrc(l)
@@ -289,7 +286,7 @@ class ModelGen:
                 vn,
                 unquoted_names=unquoted_names,
             )
-            l = f"{shape.name} = _ta.NewType('{shape.name}', _ta.Mapping[{ka or kn}, {va or vn}])"
+            l = f"{shape.name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]"
             if ka is None or va is None:
                 l = '# ' + l
             return self.ShapeSrc(l)

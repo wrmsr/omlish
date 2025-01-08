@@ -388,7 +388,7 @@ class GetObjectRequest(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
-    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
@@ -425,7 +425,7 @@ class InvalidObjectState(
     ))
 
 
-Metadata = _ta.NewType('Metadata', _ta.Mapping[MetadataKey, MetadataKey])
+Metadata: _ta.TypeAlias = _ta.Mapping[MetadataKey, MetadataKey]
 
 
 @_dc.dataclass(frozen=True)
@@ -437,19 +437,19 @@ class PutObjectOutput(
         member_name='Expiration',
         shape_name='Expiration',
     ))
-    e_tag: ETag = _dc.field(metadata=_base.field_metadata(
+    etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
         shape_name='ETag',
     ))
-    checksum_c_r_c32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
-    checksum_c_r_c32_c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
-    checksum_s_h_a1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
@@ -469,7 +469,7 @@ class PutObjectOutput(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
@@ -528,19 +528,19 @@ class GetObjectOutput(
         member_name='ContentLength',
         shape_name='ContentLength',
     ))
-    e_tag: ETag = _dc.field(metadata=_base.field_metadata(
+    etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
         shape_name='ETag',
     ))
-    checksum_c_r_c32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
-    checksum_c_r_c32_c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
-    checksum_s_h_a1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
@@ -600,7 +600,7 @@ class GetObjectOutput(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
@@ -683,7 +683,7 @@ class PutObjectRequest(
         member_name='ContentLength',
         shape_name='ContentLength',
     ))
-    content_m_d5: ContentMD5 = _dc.field(metadata=_base.field_metadata(
+    content_md5: ContentMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='ContentMD5',
         shape_name='ContentMD5',
     ))
@@ -695,15 +695,15 @@ class PutObjectRequest(
         member_name='ChecksumAlgorithm',
         shape_name='ChecksumAlgorithm',
     ))
-    checksum_c_r_c32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
-    checksum_c_r_c32_c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
+    checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
-    checksum_s_h_a1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
@@ -731,11 +731,11 @@ class PutObjectRequest(
         member_name='GrantRead',
         shape_name='GrantRead',
     ))
-    grant_read_a_c_p: GrantReadACP = _dc.field(metadata=_base.field_metadata(
+    grant_read_acp: GrantReadACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantReadACP',
         shape_name='GrantReadACP',
     ))
-    grant_write_a_c_p: GrantWriteACP = _dc.field(metadata=_base.field_metadata(
+    grant_write_acp: GrantWriteACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantWriteACP',
         shape_name='GrantWriteACP',
     ))
@@ -771,7 +771,7 @@ class PutObjectRequest(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
-    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
