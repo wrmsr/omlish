@@ -1,3 +1,12 @@
+"""
+TODO:
+ - better name de-mangling
+  - ordered prefix chopping
+   - AAAA
+   - KMS
+   - SHA
+   - SSE
+"""
 import dataclasses as dc
 import io
 import typing as ta
@@ -140,6 +149,37 @@ class ModelGen:
 
     #
 
+    DEMANGLE_PREFIXES: ta.ClassVar[ta.Sequence[str]] = [
+        'AAAA',
+        'KMS',
+        'SHA256',
+        'SSE',
+    ]
+
+    def demangle_name(self, n: str) -> str:
+        ps: list[str] = []
+        while n:
+            ms: list[tuple[str, int]] = []
+            for pfx in self.DEMANGLE_PREFIXES:
+                if (i := n.find(pfx)) >= 0:
+                    ms.append((pfx, i))
+            if not ms:
+                ps.append(n)
+                break
+            if len(ms) > 1:
+                m = sorted(ms, key=lambda t: (t[1], -len(t[0])))[0]
+            else:
+                m = ms[0]
+            pfx, i = m
+            l, r = n[:i], n[i + len(pfx):]
+            if l:
+                ps.append(l)
+            ps.append(pfx.lower())
+            n = r
+        return '_'.join(lang.snake_case(p) for p in ps)
+
+    #
+
     PREAMBLE_LINES: ta.Sequence[str] = [
         '# flake8: noqa: E501',
         '# fmt: off',
@@ -202,7 +242,7 @@ class ModelGen:
                 lines.append('    pass')
 
             for mn, ms in shape.members.items():
-                fn = lang.snake_case(mn)
+                fn = self.demangle_name(mn)
                 mds = [
                     f'member_name={mn!r}',
                     f'shape_name={ms.name!r}',
@@ -325,7 +365,7 @@ class ModelGen:
     ) -> OperationSrc:
         operation: botocore.model.OperationModel = self._service_model.operation_model(name)
 
-        dcn = lang.snake_case(operation.name).upper()
+        dcn = self.demangle_name(operation.name).upper()
 
         fls = [
             f'name={operation.name!r},',

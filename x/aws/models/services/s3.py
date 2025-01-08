@@ -380,15 +380,15 @@ class GetObjectRequest(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
-    s_s_e_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
+    sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    s_s_e_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
-    s_s_e_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
@@ -453,7 +453,7 @@ class PutObjectOutput(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
-    checksum_s_h_a256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
@@ -465,19 +465,19 @@ class PutObjectOutput(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
-    s_s_e_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
+    sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    s_s_e_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
-    s_s_e_k_m_s_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
+    sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
-    s_s_e_k_m_s_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
+    sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
         shape_name='SSEKMSEncryptionContext',
     ))
@@ -544,7 +544,7 @@ class GetObjectOutput(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
-    checksum_s_h_a256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
@@ -596,15 +596,15 @@ class GetObjectOutput(
         member_name='Metadata',
         shape_name='Metadata',
     ))
-    s_s_e_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
+    sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    s_s_e_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
-    s_s_e_k_m_s_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
+    sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
@@ -707,7 +707,7 @@ class PutObjectRequest(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
-    checksum_s_h_a256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
+    checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
@@ -763,23 +763,23 @@ class PutObjectRequest(
         member_name='WebsiteRedirectLocation',
         shape_name='WebsiteRedirectLocation',
     ))
-    s_s_e_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
+    sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
-    s_s_e_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
-    s_s_e_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
+    sse_customer_key_m_d5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
-    s_s_e_k_m_s_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
+    sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
-    s_s_e_k_m_s_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
+    sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
         shape_name='SSEKMSEncryptionContext',
     ))

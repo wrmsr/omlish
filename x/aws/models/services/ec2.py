@@ -1434,7 +1434,7 @@ class PrivateDnsNameOptionsResponse(
         member_name='EnableResourceNameDnsARecord',
         shape_name='Boolean',
     ))
-    enable_resource_name_dns_a_a_a_a_record: bool = _dc.field(metadata=_base.field_metadata(
+    enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsAAAARecord',
         shape_name='Boolean',
     ))
