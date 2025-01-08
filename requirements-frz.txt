@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.93
-botocore==1.35.93
+boto3==1.35.94
+botocore==1.35.94
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==7.2.0
+duckduckgo_search==7.2.1
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.17.0
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.1
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.123.7
+hypothesis==6.123.9
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.1
@@ -339,7 +339,7 @@ portalocker==2.8.2
 posthog==3.7.5
 pprintpp==0.4.0
 preshed==3.0.9
-primp==0.9.3
+primp==0.10.0
 priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.48

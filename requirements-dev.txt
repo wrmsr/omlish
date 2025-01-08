@@ -117,4 +117,4 @@ llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.1
 
-duckduckgo_search==7.2.0  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
