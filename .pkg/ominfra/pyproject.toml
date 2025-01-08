@@ -62,5 +62,6 @@ exclude = [
     '.manifests.json',
     'LICENSE',
     'LICENSE.txt',
+    'clouds/aws/models/services/*.toml',
     'manage/targets/bestpython.sh',
 ]
