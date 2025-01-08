@@ -30,7 +30,7 @@ class Select(Stmt, lang.Final):
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 
 
-class SelectBuilder(ExprBuilder, RelationBuilder):
+class SelectBuilder(RelationBuilder, ExprBuilder):
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o

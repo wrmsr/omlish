@@ -17,12 +17,12 @@ class StdBuilder(
     SelectBuilder,
     StmtBuilder,
 
+    RelationBuilder,
+
     MultiBuilder,
     BinaryBuilder,
     UnaryBuilder,
     ExprBuilder,
-
-    RelationBuilder,
 
     ParamBuilder,
 

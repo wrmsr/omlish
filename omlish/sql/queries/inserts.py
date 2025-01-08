@@ -30,7 +30,7 @@ class Insert(Stmt, lang.Final):
 CanValues: ta.TypeAlias = Values | ta.Sequence[CanExpr]
 
 
-class InsertBuilder(ExprBuilder, RelationBuilder):
+class InsertBuilder(RelationBuilder, ExprBuilder):
     def values(self, vs: CanValues) -> Values:
         if isinstance(vs, Values):
             return vs

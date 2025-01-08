@@ -14,12 +14,15 @@ def test_render():
                 Q.ne(Q.i.bar, Q.add(Q.i.baz, 2)),
             ),
         ),
+
         Q.insert(
             ['foo', 'bar'],
             Q.n.some_schema.some_table,
             [123, 'abc'],
         ),
+
         Q.select([Q.p.foo, Q.p(), Q.p.bar, Q.p.foo]),
+
     ]:
         print(query)
         print(render(query))
