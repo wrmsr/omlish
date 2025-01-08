@@ -3,6 +3,7 @@ TODO:
  - default values? nullability? maybe a new_default helper?
  - relative import base
 """
+import builtins
 import dataclasses as dc
 import io
 import typing as ta
@@ -159,6 +160,7 @@ class ModelGen:
             pass
 
         if name in self._shape_names:
+            name = self.sanitize_class_name(name)
             if not unquoted_names:
                 return f"'{name}'"
             else:
@@ -172,12 +174,18 @@ class ModelGen:
         'AAAA',
         'ACL',
         'ACP',
+        'AES',
+        'AES256',
         'AZ',
+        'CA',
         'CRC32',
         'CRC32C',
         'DB',
+        'EFS',
         'ETag',
         'IAM',
+        'IO',
+        'IP',
         'KMS',
         'MD5',
         'MFA',
@@ -191,29 +199,43 @@ class ModelGen:
         ps: list[str] = []
         while n:
             ms: list[tuple[str, int]] = []
+
             for pfx in self.DEMANGLE_PREFIXES:
                 if (i := n.find(pfx)) >= 0:
                     ms.append((pfx, i))
+
             if not ms:
                 ps.append(n)
                 break
+
             if len(ms) > 1:
                 m = sorted(ms, key=lambda t: (t[1], -len(t[0])))[0]
             else:
                 m = ms[0]
+
             pfx, i = m
             l, r = n[:i], n[i + len(pfx):]
+
             if l:
                 ps.append(l)
             ps.append(pfx.lower())
+
             n = r
+
         return '_'.join(lang.snake_case(p) for p in ps)
+
+    #
+
+    def sanitize_class_name(self, n: str) -> str:
+        if hasattr(builtins, n):
+            n += '_'
+        return n
 
     #
 
     PREAMBLE_LINES: ta.Sequence[str] = [
         '# flake8: noqa: E501',
-        '# ruff: noqa: S105',
+        '# ruff: noqa: N801 S105',
         '# fmt: off',
         'import dataclasses as _dc  # noqa',
         'import enum as _enum  # noqa',
@@ -255,6 +277,8 @@ class ModelGen:
     ) -> ShapeSrc:
         shape: botocore.model.Shape = self._service_model.shape_for(name)
 
+        san_name = self.sanitize_class_name(shape.name)
+
         if isinstance(shape, botocore.model.StructureShape):
             lines: list[str] = []
 
@@ -264,7 +288,7 @@ class ModelGen:
 
             lines.extend([
                 '@_dc.dataclass(frozen=True)',
-                f'class {shape.name}(',
+                f'class {san_name}(',
                 '    _base.Shape,',
                 *[f'    {dl},' for dl in mds],
                 '):',
@@ -294,7 +318,7 @@ class ModelGen:
 
             return self.ShapeSrc(
                 '\n'.join(lines),
-                class_name=shape.name,
+                class_name=san_name,
                 double_space=True,
             )
 
@@ -304,7 +328,7 @@ class ModelGen:
                 mn,
                 unquoted_names=unquoted_names,
             )
-            l = f'{shape.name}: _ta.TypeAlias = _ta.Sequence[{ma or mn}]'
+            l = f'{san_name}: _ta.TypeAlias = _ta.Sequence[{ma or mn}]'
             if ma is None:
                 l = '# ' + l
             return self.ShapeSrc(l)
@@ -321,7 +345,7 @@ class ModelGen:
                 vn,
                 unquoted_names=unquoted_names,
             )
-            l = f'{shape.name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]'
+            l = f'{san_name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]'
             if ka is None or va is None:
                 l = '# ' + l
             return self.ShapeSrc(l)
@@ -329,10 +353,14 @@ class ModelGen:
         elif isinstance(shape, botocore.model.StringShape):
             if shape.enum:
                 ls = [
-                    f'class {shape.name}(_enum.Enum):',
+                    f'class {san_name}(_enum.Enum):',
                 ]
+                all_caps = all(v == v.upper() for v in shape.enum)
                 for v in shape.enum:
-                    n = v.upper()
+                    n = v
+                    if not all_caps:
+                        n = self.demangle_name(n)
+                    n = n.upper()
                     for c in '.-:':
                         n = n.replace(c, '_')
                     ls.append(f'    {n} = {v!r}')
@@ -342,10 +370,10 @@ class ModelGen:
                 )
 
             else:
-                return self.ShapeSrc(f"{shape.name} = _ta.NewType('{shape.name}', str)")
+                return self.ShapeSrc(f"{san_name} = _ta.NewType('{san_name}', str)")
 
         elif (pt := self.PRIMITIVE_SHAPE_TYPES.get(shape.type_name)) is not None:
-            return self.ShapeSrc(f"{shape.name} = _ta.NewType('{shape.name}', {pt})")
+            return self.ShapeSrc(f'{san_name} = _ta.NewType({san_name!r}, {pt})')
 
         else:
             raise TypeError(shape.type_name)

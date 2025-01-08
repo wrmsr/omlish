@@ -1,5 +1,5 @@
 # flake8: noqa: E501
-# ruff: noqa: S105
+# ruff: noqa: N801 S105
 # fmt: off
 import dataclasses as _dc  # noqa
 import enum as _enum  # noqa
@@ -218,7 +218,7 @@ ObjectVersionId = _ta.NewType('ObjectVersionId', str)
 
 
 class OptionalObjectAttributes(_enum.Enum):
-    RESTORESTATUS = 'RestoreStatus'
+    RESTORE_STATUS = 'RestoreStatus'
 
 
 PartNumber = _ta.NewType('PartNumber', int)

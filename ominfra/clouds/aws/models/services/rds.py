@@ -1,5 +1,5 @@
 # flake8: noqa: E501
-# ruff: noqa: S105
+# ruff: noqa: N801 S105
 # fmt: off
 import dataclasses as _dc  # noqa
 import enum as _enum  # noqa
@@ -286,7 +286,7 @@ class CertificateDetails(
     _base.Shape,
     shape_name='CertificateDetails',
 ):
-    c_a_identifier: str = _dc.field(metadata=_base.field_metadata(
+    ca_identifier: str = _dc.field(metadata=_base.field_metadata(
         member_name='CAIdentifier',
         shape_name='String',
     ))
@@ -904,7 +904,7 @@ class CreateDBInstanceMessage(
         member_name='MasterUserSecretKmsKeyId',
         shape_name='String',
     ))
-    c_a_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
+    ca_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
         member_name='CACertificateIdentifier',
         shape_name='String',
     ))
@@ -980,7 +980,7 @@ class PendingModifiedValues(
         member_name='StorageType',
         shape_name='String',
     ))
-    c_a_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
+    ca_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
         member_name='CACertificateIdentifier',
         shape_name='String',
     ))
@@ -1260,7 +1260,7 @@ class DBInstance(
         member_name='DbiResourceId',
         shape_name='String',
     ))
-    c_a_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
+    ca_certificate_identifier: str = _dc.field(metadata=_base.field_metadata(
         member_name='CACertificateIdentifier',
         shape_name='String',
     ))

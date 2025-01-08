@@ -9,13 +9,9 @@ operations = [
   'TerminateInstances',
 ]
 
-[services.s3]
+[services.lambda]
 operations = [
-  'DeleteObject',
-  'GetObject',
-  'ListBuckets',
-  'ListObjectsV2',
-  'PutObject',
+  'ListFunctions',
 ]
 
 [services.rds]
@@ -26,4 +22,13 @@ operations = [
   'RebootDBInstance',
   'StartDBInstance',
   'StopDBInstance',
+]
+
+[services.s3]
+operations = [
+  'DeleteObject',
+  'GetObject',
+  'ListBuckets',
+  'ListObjectsV2',
+  'PutObject',
 ]

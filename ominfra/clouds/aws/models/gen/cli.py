@@ -1,4 +1,5 @@
 import dataclasses as dc
+import keyword
 import os.path
 import sys
 import typing as ta
@@ -78,7 +79,10 @@ class Cli(ap.Cli):
             operation_names=svc.operations,
         )
 
-        output_file = os.path.join(output_dir, f'{svc.name}.py')
+        fn = svc.name
+        if fn in keyword.kwlist:
+            fn += '_'
+        output_file = os.path.join(output_dir, f'{fn}.py')
         with open(output_file, 'w') as f:
             f.write(mod)
 
