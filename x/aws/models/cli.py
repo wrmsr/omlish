@@ -7,11 +7,14 @@ TODO:
 
 gen-module ec2 -o DescribeInstances
 """
+import dataclasses as dc
 import sys
 import typing as ta
 
 from omlish import lang
+from omlish import marshal as msh
 from omlish.argparse import all as ap
+from omlish.configs.formats import DEFAULT_CONFIG_FILE_LOADER
 
 from .gen import ModelGen
 
@@ -47,6 +50,25 @@ class Cli(ap.Cli):
         )
 
         sys.stdout.write(bmg.gen_module())
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ServicesConfig:
+        @dc.dataclass(frozen=True)
+        class Service:
+            shapes: ta.Sequence[str] | None = None
+            operations: ta.Sequence[str] | None = None
+
+        services: ta.Mapping[str, Service] | None = None
+
+    @ap.cmd(
+        ap.arg('config-file'),
+    )
+    def gen_services(self) -> None:
+        cfg_data = DEFAULT_CONFIG_FILE_LOADER.load_file(self.args.config_file)
+        cfg: Cli.ServicesConfig = msh.unmarshal(cfg_data.as_map(), Cli.ServicesConfig)
+        raise NotImplementedError
 
     #
 
