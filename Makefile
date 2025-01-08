@@ -315,7 +315,7 @@ test-lite:
 .PHONY: venv-docker
 venv-docker:
 	# FIXME: do this everywhere, even on darwin:
-	#   BERKELEYDB_DIR=$(brew --prefix 'berkeley-db@4') .venv/bin/pip install bsddb3
+	# BERKELEYDB_DIR=$(brew --prefix 'berkeley-db@4') .venv/bin/pip install bsddb3
 	if [ $$(arch) == "aarch64" ] || [ $$(arch) == "arm64" ]; then \
 		export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
 		export BERKELEYDB_INCDIR=/usr/include ; \
