@@ -186,6 +186,7 @@ class ModelGen:
         'IAM',
         'IO',
         'IP',
+        'JSON',
         'KMS',
         'MD5',
         'MFA',

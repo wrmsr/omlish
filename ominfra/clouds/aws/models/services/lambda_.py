@@ -88,7 +88,7 @@ LocalMountPath = _ta.NewType('LocalMountPath', str)
 
 
 class LogFormat(_enum.Enum):
-    J_S_O_N = 'JSON'
+    JSON = 'JSON'
     TEXT = 'Text'
 
 
