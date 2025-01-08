@@ -13,16 +13,25 @@ from omlish import lang
 
 
 if ta.TYPE_CHECKING:
+    import botocore.loaders
     import botocore.model
     import botocore.session
 else:
     botocore = lang.proxy_import('botocore', extras=[
+        'loaders',
         'model',
         'session',
     ])
 
 
 ##
+
+
+ServiceTypeName: ta.TypeAlias = ta.Literal[
+    'service-2',
+    'paginators-1',
+    'waiters-2',
+]
 
 
 class ModelGen:
@@ -54,15 +63,28 @@ class ModelGen:
     #
 
     @classmethod
+    def create_data_loader(cls) -> 'botocore.loaders.Loader':
+        session = botocore.session.get_session()
+        return session.get_component('data_loader')
+
+    @classmethod
+    def list_available_services(
+            cls,
+            *,
+            type_name: ServiceTypeName = 'service-2',
+    ) -> list[str]:
+        loader = cls.create_data_loader()
+        return list(loader.list_available_services(type_name))
+
+    @classmethod
     def load_service_model(
             cls,
             service_name: str,
             *,
-            type_name: ta.Literal['service-2', 'paginators-1', 'waiters-2'] = 'service-2',
+            type_name: ServiceTypeName = 'service-2',
             api_version: str | None = None,
     ) -> 'botocore.model.ServiceModel':
-        session = botocore.session.get_session()
-        loader = session.get_component('data_loader')
+        loader = cls.create_data_loader()
         json_model = loader.load_service_model(service_name, type_name, api_version=api_version)
         return botocore.model.ServiceModel(json_model, service_name=service_name)
 

@@ -105,6 +105,11 @@ class Cli(ap.Cli):
 
     #
 
+    @ap.cmd()
+    def list_services(self) -> None:
+        for name in sorted(ModelGen.list_available_services()):
+            print(name)
+
     @ap.cmd(
         ap.arg('service'),
     )
