@@ -78,8 +78,9 @@ class Cli(ap.Cli):
             operation_names=svc.operations,
         )
 
-        raise NotImplementedError
-
+        output_file = os.path.join(output_dir, f'{svc.name}.py')
+        with open(output_file, 'w') as f:
+            f.write(mod)
 
     @ap.cmd(
         ap.arg('config-file'),
