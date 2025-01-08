@@ -11,6 +11,9 @@ from .. import base as _base  # noqa
 ##
 
 
+AllocationId = _ta.NewType('AllocationId', str)
+
+
 class AmdSevSnpSpecification(_enum.Enum):
     ENABLED = 'enabled'
     DISABLED = 'disabled'
@@ -52,12 +55,27 @@ class CapacityReservationPreference(_enum.Enum):
     NONE = 'none'
 
 
+CoipPoolId = _ta.NewType('CoipPoolId', str)
+
+DescribeInternetGatewaysMaxResults = _ta.NewType('DescribeInternetGatewaysMaxResults', int)
+
+DescribeNetworkInterfacesMaxResults = _ta.NewType('DescribeNetworkInterfacesMaxResults', int)
+
+DescribeSecurityGroupsMaxResults = _ta.NewType('DescribeSecurityGroupsMaxResults', int)
+
+DescribeSubnetsMaxResults = _ta.NewType('DescribeSubnetsMaxResults', int)
+
 DescribeVpcsMaxResults = _ta.NewType('DescribeVpcsMaxResults', int)
 
 
 class DeviceType(_enum.Enum):
     EBS = 'ebs'
     INSTANCE_STORE = 'instance-store'
+
+
+class DomainType(_enum.Enum):
+    VPC = 'vpc'
+    STANDARD = 'standard'
 
 
 ElasticGpuId = _ta.NewType('ElasticGpuId', str)
@@ -1028,6 +1046,9 @@ class InstanceType(_enum.Enum):
     I8G_METAL_24XL = 'i8g.metal-24xl'
 
 
+InternetGatewayId = _ta.NewType('InternetGatewayId', str)
+
+
 class IpSource(_enum.Enum):
     AMAZON = 'amazon'
     BYOIP = 'byoip'
@@ -1041,7 +1062,15 @@ class Ipv6AddressAttribute(_enum.Enum):
 
 KernelId = _ta.NewType('KernelId', str)
 
+KeyPairId = _ta.NewType('KeyPairId', str)
+
 KeyPairName = _ta.NewType('KeyPairName', str)
+
+
+class KeyType(_enum.Enum):
+    RSA = 'rsa'
+    ED25519 = 'ed25519'
+
 
 LaunchTemplateId = _ta.NewType('LaunchTemplateId', str)
 
@@ -1067,6 +1096,27 @@ class NetworkInterfaceStatus(_enum.Enum):
     ATTACHING = 'attaching'
     IN_USE = 'in-use'
     DETACHING = 'detaching'
+
+
+class NetworkInterfaceType(_enum.Enum):
+    INTERFACE = 'interface'
+    NAT_GATEWAY = 'natGateway'
+    EFA = 'efa'
+    EFA_ONLY = 'efa-only'
+    TRUNK = 'trunk'
+    LOAD_BALANCER = 'load_balancer'
+    NETWORK_LOAD_BALANCER = 'network_load_balancer'
+    VPC_ENDPOINT = 'vpc_endpoint'
+    BRANCH = 'branch'
+    TRANSIT_GATEWAY = 'transit_gateway'
+    LAMBDA = 'lambda'
+    QUICKSIGHT = 'quicksight'
+    GLOBAL_ACCELERATOR_MANAGED = 'global_accelerator_managed'
+    API_GATEWAY_MANAGED = 'api_gateway_managed'
+    GATEWAY_LOAD_BALANCER = 'gateway_load_balancer'
+    GATEWAY_LOAD_BALANCER_ENDPOINT = 'gateway_load_balancer_endpoint'
+    IOT_RULES_MANAGED = 'iot_rules_managed'
+    AWS_CODESTAR_CONNECTIONS_MANAGED = 'aws_codestar_connections_managed'
 
 
 PlacementGroupId = _ta.NewType('PlacementGroupId', str)
@@ -1198,7 +1248,25 @@ class SpotInstanceType(_enum.Enum):
     PERSISTENT = 'persistent'
 
 
+SubnetCidrAssociationId = _ta.NewType('SubnetCidrAssociationId', str)
+
+
+class SubnetCidrBlockStateCode(_enum.Enum):
+    ASSOCIATING = 'associating'
+    ASSOCIATED = 'associated'
+    DISASSOCIATING = 'disassociating'
+    DISASSOCIATED = 'disassociated'
+    FAILING = 'failing'
+    FAILED = 'failed'
+
+
 SubnetId = _ta.NewType('SubnetId', str)
+
+
+class SubnetState(_enum.Enum):
+    PENDING = 'pending'
+    AVAILABLE = 'available'
+    UNAVAILABLE = 'unavailable'
 
 
 class Tenancy(_enum.Enum):
@@ -1240,6 +1308,83 @@ class VpcState(_enum.Enum):
 
 
 @_dc.dataclass(frozen=True)
+class Address(
+    _base.Shape,
+    shape_name='Address',
+):
+    allocation_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AllocationId',
+        shape_name='String',
+    ))
+    association_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationId',
+        shape_name='String',
+    ))
+    domain: DomainType = _dc.field(metadata=_base.field_metadata(
+        member_name='Domain',
+        shape_name='DomainType',
+    ))
+    network_interface_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceId',
+        shape_name='String',
+    ))
+    network_interface_owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceOwnerId',
+        shape_name='String',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+    public_ipv4_pool: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicIpv4Pool',
+        shape_name='String',
+    ))
+    network_border_group: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkBorderGroup',
+        shape_name='String',
+    ))
+    customer_owned_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CustomerOwnedIp',
+        shape_name='String',
+    ))
+    customer_owned_ipv4_pool: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CustomerOwnedIpv4Pool',
+        shape_name='String',
+    ))
+    carrier_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CarrierIp',
+        shape_name='String',
+    ))
+    instance_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceId',
+        shape_name='String',
+    ))
+    public_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicIp',
+        shape_name='String',
+    ))
+
+
+AllocationIdList: _ta.TypeAlias = _ta.Sequence[AllocationId]
+
+
+@_dc.dataclass(frozen=True)
+class AttachmentEnaSrdUdpSpecification(
+    _base.Shape,
+    shape_name='AttachmentEnaSrdUdpSpecification',
+):
+    ena_srd_udp_enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdUdpEnabled',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class BlockPublicAccessStates(
     _base.Shape,
     shape_name='BlockPublicAccessStates',
@@ -1277,6 +1422,25 @@ class CapacityReservationTargetResponse(
     capacity_reservation_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationResourceGroupArn',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class ConnectionTrackingConfiguration(
+    _base.Shape,
+    shape_name='ConnectionTrackingConfiguration',
+):
+    tcp_established_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='TcpEstablishedTimeout',
+        shape_name='Integer',
+    ))
+    udp_stream_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='UdpStreamTimeout',
+        shape_name='Integer',
+    ))
+    udp_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='UdpTimeout',
+        shape_name='Integer',
     ))
 
 
@@ -1515,6 +1679,9 @@ class EnclaveOptionsRequest(
     ))
 
 
+GroupIdStringList: _ta.TypeAlias = _ta.Sequence[SecurityGroupId]
+
+
 @_dc.dataclass(frozen=True)
 class GroupIdentifier(
     _base.Shape,
@@ -1528,6 +1695,9 @@ class GroupIdentifier(
         member_name='GroupName',
         shape_name='String',
     ))
+
+
+GroupNameStringList: _ta.TypeAlias = _ta.Sequence[SecurityGroupName]
 
 
 @_dc.dataclass(frozen=True)
@@ -1778,6 +1948,50 @@ class InstanceState(
 
 
 @_dc.dataclass(frozen=True)
+class InternetGatewayAttachment(
+    _base.Shape,
+    shape_name='InternetGatewayAttachment',
+):
+    state: AttachmentStatus = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        shape_name='AttachmentStatus',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+
+
+InternetGatewayIdList: _ta.TypeAlias = _ta.Sequence[InternetGatewayId]
+
+
+@_dc.dataclass(frozen=True)
+class IpRange(
+    _base.Shape,
+    shape_name='IpRange',
+):
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    cidr_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrIp',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Ipv4PrefixSpecification(
+    _base.Shape,
+    shape_name='Ipv4PrefixSpecification',
+):
+    ipv4_prefix: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4Prefix',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class Ipv4PrefixSpecificationRequest(
     _base.Shape,
     shape_name='Ipv4PrefixSpecificationRequest',
@@ -1789,12 +2003,78 @@ class Ipv4PrefixSpecificationRequest(
 
 
 @_dc.dataclass(frozen=True)
+class Ipv6PrefixSpecification(
+    _base.Shape,
+    shape_name='Ipv6PrefixSpecification',
+):
+    ipv6_prefix: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Prefix',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class Ipv6PrefixSpecificationRequest(
     _base.Shape,
     shape_name='Ipv6PrefixSpecificationRequest',
 ):
     ipv6_prefix: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Prefix',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Ipv6Range(
+    _base.Shape,
+    shape_name='Ipv6Range',
+):
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    cidr_ipv6: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrIpv6',
+        shape_name='String',
+    ))
+
+
+KeyNameStringList: _ta.TypeAlias = _ta.Sequence[KeyPairName]
+
+KeyPairIdStringList: _ta.TypeAlias = _ta.Sequence[KeyPairId]
+
+
+@_dc.dataclass(frozen=True)
+class KeyPairInfo(
+    _base.Shape,
+    shape_name='KeyPairInfo',
+):
+    key_pair_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyPairId',
+        shape_name='String',
+    ))
+    key_type: KeyType = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyType',
+        shape_name='KeyType',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+    public_key: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicKey',
+        shape_name='String',
+    ))
+    create_time: _base.MillisecondDateTime = _dc.field(metadata=_base.field_metadata(
+        member_name='CreateTime',
+        shape_name='MillisecondDateTime',
+    ))
+    key_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyName',
+        shape_name='String',
+    ))
+    key_fingerprint: str = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyFingerprint',
         shape_name='String',
     ))
 
@@ -1848,6 +2128,59 @@ class Monitoring(
     state: MonitoringState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='MonitoringState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInterfaceAssociation(
+    _base.Shape,
+    shape_name='NetworkInterfaceAssociation',
+):
+    allocation_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AllocationId',
+        shape_name='String',
+    ))
+    association_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationId',
+        shape_name='String',
+    ))
+    ip_owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='IpOwnerId',
+        shape_name='String',
+    ))
+    public_dns_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicDnsName',
+        shape_name='String',
+    ))
+    public_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicIp',
+        shape_name='String',
+    ))
+    customer_owned_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CustomerOwnedIp',
+        shape_name='String',
+    ))
+    carrier_ip: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CarrierIp',
+        shape_name='String',
+    ))
+
+
+NetworkInterfaceIdList: _ta.TypeAlias = _ta.Sequence[NetworkInterfaceId]
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInterfaceIpv6Address(
+    _base.Shape,
+    shape_name='NetworkInterfaceIpv6Address',
+):
+    ipv6_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Address',
+        shape_name='String',
+    ))
+    is_primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='IsPrimaryIpv6',
+        shape_name='Boolean',
     ))
 
 
@@ -1921,6 +2254,40 @@ class Placement(
 
 
 @_dc.dataclass(frozen=True)
+class PrefixListId(
+    _base.Shape,
+    shape_name='PrefixListId',
+):
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    prefix_list_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrefixListId',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class PrivateDnsNameOptionsOnLaunch(
+    _base.Shape,
+    shape_name='PrivateDnsNameOptionsOnLaunch',
+):
+    hostname_type: HostnameType = _dc.field(metadata=_base.field_metadata(
+        member_name='HostnameType',
+        shape_name='HostnameType',
+    ))
+    enable_resource_name_dns_a_record: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableResourceNameDnsARecord',
+        shape_name='Boolean',
+    ))
+    enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableResourceNameDnsAAAARecord',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class PrivateDnsNameOptionsRequest(
     _base.Shape,
     shape_name='PrivateDnsNameOptionsRequest',
@@ -1988,6 +2355,9 @@ class ProductCode(
     ))
 
 
+PublicIpStringList: _ta.TypeAlias = _ta.Sequence[str]
+
+
 @_dc.dataclass(frozen=True)
 class RunInstancesMonitoringEnabled(
     _base.Shape,
@@ -2047,6 +2417,24 @@ class StateReason(
 
 
 @_dc.dataclass(frozen=True)
+class SubnetCidrBlockState(
+    _base.Shape,
+    shape_name='SubnetCidrBlockState',
+):
+    state: SubnetCidrBlockStateCode = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        shape_name='SubnetCidrBlockStateCode',
+    ))
+    status_message: str = _dc.field(metadata=_base.field_metadata(
+        member_name='StatusMessage',
+        shape_name='String',
+    ))
+
+
+SubnetIdStringList: _ta.TypeAlias = _ta.Sequence[SubnetId]
+
+
+@_dc.dataclass(frozen=True)
 class TagSpecification(
     _base.Shape,
     shape_name='TagSpecification',
@@ -2058,6 +2446,41 @@ class TagSpecification(
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class UserIdGroupPair(
+    _base.Shape,
+    shape_name='UserIdGroupPair',
+):
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    user_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='UserId',
+        shape_name='String',
+    ))
+    group_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupName',
+        shape_name='String',
+    ))
+    group_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupId',
+        shape_name='String',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+    vpc_peering_connection_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcPeeringConnectionId',
+        shape_name='String',
+    ))
+    peering_status: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PeeringStatus',
+        shape_name='String',
     ))
 
 
@@ -2080,6 +2503,23 @@ class VpcCidrBlockState(
 
 
 VpcIdStringList: _ta.TypeAlias = _ta.Sequence[VpcId]
+
+AddressList: _ta.TypeAlias = _ta.Sequence[Address]
+
+
+@_dc.dataclass(frozen=True)
+class AttachmentEnaSrdSpecification(
+    _base.Shape,
+    shape_name='AttachmentEnaSrdSpecification',
+):
+    ena_srd_enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdEnabled',
+        shape_name='Boolean',
+    ))
+    ena_srd_udp_specification: AttachmentEnaSrdUdpSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdUdpSpecification',
+        shape_name='AttachmentEnaSrdUdpSpecification',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -2291,13 +2731,53 @@ class InstanceStateChange(
     ))
 
 
+InternetGatewayAttachmentList: _ta.TypeAlias = _ta.Sequence[InternetGatewayAttachment]
+
+IpRangeList: _ta.TypeAlias = _ta.Sequence[IpRange]
+
 Ipv4PrefixList: _ta.TypeAlias = _ta.Sequence[Ipv4PrefixSpecificationRequest]
 
+Ipv4PrefixesList: _ta.TypeAlias = _ta.Sequence[Ipv4PrefixSpecification]
+
 Ipv6PrefixList: _ta.TypeAlias = _ta.Sequence[Ipv6PrefixSpecificationRequest]
+
+Ipv6PrefixesList: _ta.TypeAlias = _ta.Sequence[Ipv6PrefixSpecification]
+
+Ipv6RangeList: _ta.TypeAlias = _ta.Sequence[Ipv6Range]
+
+KeyPairList: _ta.TypeAlias = _ta.Sequence[KeyPairInfo]
 
 LicenseList: _ta.TypeAlias = _ta.Sequence[LicenseConfiguration]
 
 LicenseSpecificationListRequest: _ta.TypeAlias = _ta.Sequence[LicenseConfigurationRequest]
+
+NetworkInterfaceIpv6AddressesList: _ta.TypeAlias = _ta.Sequence[NetworkInterfaceIpv6Address]
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInterfacePrivateIpAddress(
+    _base.Shape,
+    shape_name='NetworkInterfacePrivateIpAddress',
+):
+    association: NetworkInterfaceAssociation = _dc.field(metadata=_base.field_metadata(
+        member_name='Association',
+        shape_name='NetworkInterfaceAssociation',
+    ))
+    primary: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Primary',
+        shape_name='Boolean',
+    ))
+    private_dns_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateDnsName',
+        shape_name='String',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+
+
+PrefixListIdList: _ta.TypeAlias = _ta.Sequence[PrefixListId]
 
 PrivateIpAddressSpecificationList: _ta.TypeAlias = _ta.Sequence[PrivateIpAddressSpecification]
 
@@ -2361,6 +2841,33 @@ class StopInstancesRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class SubnetIpv6CidrBlockAssociation(
+    _base.Shape,
+    shape_name='SubnetIpv6CidrBlockAssociation',
+):
+    association_id: SubnetCidrAssociationId = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationId',
+        shape_name='SubnetCidrAssociationId',
+    ))
+    ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlock',
+        shape_name='String',
+    ))
+    ipv6_cidr_block_state: SubnetCidrBlockState = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlockState',
+        shape_name='SubnetCidrBlockState',
+    ))
+    ipv6_address_attribute: Ipv6AddressAttribute = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6AddressAttribute',
+        shape_name='Ipv6AddressAttribute',
+    ))
+    ip_source: IpSource = _dc.field(metadata=_base.field_metadata(
+        member_name='IpSource',
+        shape_name='IpSource',
+    ))
+
+
 TagSpecificationList: _ta.TypeAlias = _ta.Sequence[TagSpecification]
 
 
@@ -2377,6 +2884,9 @@ class TerminateInstancesRequest(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
+
+UserIdGroupPairList: _ta.TypeAlias = _ta.Sequence[UserIdGroupPair]
 
 
 @_dc.dataclass(frozen=True)
@@ -2434,6 +2944,29 @@ class VpcIpv6CidrBlockAssociation(
 
 
 BlockDeviceMappingRequestList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeAddressesResult(
+    _base.Shape,
+    shape_name='DescribeAddressesResult',
+):
+    addresses: AddressList = _dc.field(metadata=_base.field_metadata(
+        member_name='Addresses',
+        shape_name='AddressList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeKeyPairsResult(
+    _base.Shape,
+    shape_name='DescribeKeyPairsResult',
+):
+    key_pairs: KeyPairList = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyPairs',
+        shape_name='KeyPairList',
+    ))
+
 
 FilterList: _ta.TypeAlias = _ta.Sequence[Filter]
 
@@ -2587,9 +3120,138 @@ InstancePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[InstancePrivateIpAddr
 
 InstanceStateChangeList: _ta.TypeAlias = _ta.Sequence[InstanceStateChange]
 
+
+@_dc.dataclass(frozen=True)
+class InternetGateway(
+    _base.Shape,
+    shape_name='InternetGateway',
+):
+    attachments: InternetGatewayAttachmentList = _dc.field(metadata=_base.field_metadata(
+        member_name='Attachments',
+        shape_name='InternetGatewayAttachmentList',
+    ))
+    internet_gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InternetGatewayId',
+        shape_name='String',
+    ))
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        shape_name='String',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class IpPermission(
+    _base.Shape,
+    shape_name='IpPermission',
+):
+    ip_protocol: str = _dc.field(metadata=_base.field_metadata(
+        member_name='IpProtocol',
+        shape_name='String',
+    ))
+    from_port: int = _dc.field(metadata=_base.field_metadata(
+        member_name='FromPort',
+        shape_name='Integer',
+    ))
+    to_port: int = _dc.field(metadata=_base.field_metadata(
+        member_name='ToPort',
+        shape_name='Integer',
+    ))
+    user_id_group_pairs: UserIdGroupPairList = _dc.field(metadata=_base.field_metadata(
+        member_name='UserIdGroupPairs',
+        shape_name='UserIdGroupPairList',
+    ))
+    ip_ranges: IpRangeList = _dc.field(metadata=_base.field_metadata(
+        member_name='IpRanges',
+        shape_name='IpRangeList',
+    ))
+    ipv6_ranges: Ipv6RangeList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Ranges',
+        shape_name='Ipv6RangeList',
+    ))
+    prefix_list_ids: PrefixListIdList = _dc.field(metadata=_base.field_metadata(
+        member_name='PrefixListIds',
+        shape_name='PrefixListIdList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInterfaceAttachment(
+    _base.Shape,
+    shape_name='NetworkInterfaceAttachment',
+):
+    attach_time: _base.DateTime = _dc.field(metadata=_base.field_metadata(
+        member_name='AttachTime',
+        shape_name='DateTime',
+    ))
+    attachment_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AttachmentId',
+        shape_name='String',
+    ))
+    delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DeleteOnTermination',
+        shape_name='Boolean',
+    ))
+    device_index: int = _dc.field(metadata=_base.field_metadata(
+        member_name='DeviceIndex',
+        shape_name='Integer',
+    ))
+    network_card_index: int = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkCardIndex',
+        shape_name='Integer',
+    ))
+    instance_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceId',
+        shape_name='String',
+    ))
+    instance_owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceOwnerId',
+        shape_name='String',
+    ))
+    status: AttachmentStatus = _dc.field(metadata=_base.field_metadata(
+        member_name='Status',
+        shape_name='AttachmentStatus',
+    ))
+    ena_srd_specification: AttachmentEnaSrdSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdSpecification',
+        shape_name='AttachmentEnaSrdSpecification',
+    ))
+
+
+NetworkInterfacePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[NetworkInterfacePrivateIpAddress]
+
+SubnetIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[SubnetIpv6CidrBlockAssociation]
+
 VpcCidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcCidrBlockAssociation]
 
 VpcIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcIpv6CidrBlockAssociation]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeAddressesRequest(
+    _base.Shape,
+    shape_name='DescribeAddressesRequest',
+):
+    public_ips: PublicIpStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='PublicIps',
+        shape_name='PublicIpStringList',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+    allocation_ids: AllocationIdList = _dc.field(metadata=_base.field_metadata(
+        member_name='AllocationIds',
+        shape_name='AllocationIdList',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -2616,6 +3278,145 @@ class DescribeInstancesRequest(
     max_results: int = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='Integer',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeInternetGatewaysRequest(
+    _base.Shape,
+    shape_name='DescribeInternetGatewaysRequest',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    max_results: DescribeInternetGatewaysMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeInternetGatewaysMaxResults',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    internet_gateway_ids: InternetGatewayIdList = _dc.field(metadata=_base.field_metadata(
+        member_name='InternetGatewayIds',
+        shape_name='InternetGatewayIdList',
+    ))
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeKeyPairsRequest(
+    _base.Shape,
+    shape_name='DescribeKeyPairsRequest',
+):
+    key_names: KeyNameStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyNames',
+        shape_name='KeyNameStringList',
+    ))
+    key_pair_ids: KeyPairIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyPairIds',
+        shape_name='KeyPairIdStringList',
+    ))
+    include_public_key: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='IncludePublicKey',
+        shape_name='Boolean',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeNetworkInterfacesRequest(
+    _base.Shape,
+    shape_name='DescribeNetworkInterfacesRequest',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    max_results: DescribeNetworkInterfacesMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeNetworkInterfacesMaxResults',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    network_interface_ids: NetworkInterfaceIdList = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceIds',
+        shape_name='NetworkInterfaceIdList',
+    ))
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeSecurityGroupsRequest(
+    _base.Shape,
+    shape_name='DescribeSecurityGroupsRequest',
+):
+    group_ids: GroupIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupIds',
+        shape_name='GroupIdStringList',
+    ))
+    group_names: GroupNameStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupNames',
+        shape_name='GroupNameStringList',
+    ))
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    max_results: DescribeSecurityGroupsMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeSecurityGroupsMaxResults',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeSubnetsRequest(
+    _base.Shape,
+    shape_name='DescribeSubnetsRequest',
+):
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+    subnet_ids: SubnetIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetIds',
+        shape_name='SubnetIdStringList',
+    ))
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    max_results: DescribeSubnetsMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeSubnetsMaxResults',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
     ))
 
 
@@ -2738,6 +3539,129 @@ class InstanceNetworkInterface(
 
 InstanceNetworkInterfaceSpecificationList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterfaceSpecification]
 
+InternetGatewayList: _ta.TypeAlias = _ta.Sequence[InternetGateway]
+
+IpPermissionList: _ta.TypeAlias = _ta.Sequence[IpPermission]
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInterface(
+    _base.Shape,
+    shape_name='NetworkInterface',
+):
+    association: NetworkInterfaceAssociation = _dc.field(metadata=_base.field_metadata(
+        member_name='Association',
+        shape_name='NetworkInterfaceAssociation',
+    ))
+    attachment: NetworkInterfaceAttachment = _dc.field(metadata=_base.field_metadata(
+        member_name='Attachment',
+        shape_name='NetworkInterfaceAttachment',
+    ))
+    availability_zone: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AvailabilityZone',
+        shape_name='String',
+    ))
+    connection_tracking_configuration: ConnectionTrackingConfiguration = _dc.field(metadata=_base.field_metadata(
+        member_name='ConnectionTrackingConfiguration',
+        shape_name='ConnectionTrackingConfiguration',
+    ))
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    groups: GroupIdentifierList = _dc.field(metadata=_base.field_metadata(
+        member_name='Groups',
+        shape_name='GroupIdentifierList',
+    ))
+    interface_type: NetworkInterfaceType = _dc.field(metadata=_base.field_metadata(
+        member_name='InterfaceType',
+        shape_name='NetworkInterfaceType',
+    ))
+    ipv6_addresses: NetworkInterfaceIpv6AddressesList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Addresses',
+        shape_name='NetworkInterfaceIpv6AddressesList',
+    ))
+    mac_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='MacAddress',
+        shape_name='String',
+    ))
+    network_interface_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceId',
+        shape_name='String',
+    ))
+    outpost_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OutpostArn',
+        shape_name='String',
+    ))
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        shape_name='String',
+    ))
+    private_dns_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateDnsName',
+        shape_name='String',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+    private_ip_addresses: NetworkInterfacePrivateIpAddressList = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddresses',
+        shape_name='NetworkInterfacePrivateIpAddressList',
+    ))
+    ipv4_prefixes: Ipv4PrefixesList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4Prefixes',
+        shape_name='Ipv4PrefixesList',
+    ))
+    ipv6_prefixes: Ipv6PrefixesList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Prefixes',
+        shape_name='Ipv6PrefixesList',
+    ))
+    requester_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RequesterId',
+        shape_name='String',
+    ))
+    requester_managed: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='RequesterManaged',
+        shape_name='Boolean',
+    ))
+    source_dest_check: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='SourceDestCheck',
+        shape_name='Boolean',
+    ))
+    status: NetworkInterfaceStatus = _dc.field(metadata=_base.field_metadata(
+        member_name='Status',
+        shape_name='NetworkInterfaceStatus',
+    ))
+    subnet_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetId',
+        shape_name='String',
+    ))
+    tag_set: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='TagSet',
+        shape_name='TagList',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+    deny_all_igw_traffic: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DenyAllIgwTraffic',
+        shape_name='Boolean',
+    ))
+    ipv6_native: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Native',
+        shape_name='Boolean',
+    ))
+    ipv6_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Address',
+        shape_name='String',
+    ))
+    operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
+        member_name='Operator',
+        shape_name='OperatorResponse',
+    ))
+
 
 @_dc.dataclass(frozen=True)
 class StartInstancesResult(
@@ -2758,6 +3682,101 @@ class StopInstancesResult(
     stopping_instances: InstanceStateChangeList = _dc.field(metadata=_base.field_metadata(
         member_name='StoppingInstances',
         shape_name='InstanceStateChangeList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Subnet(
+    _base.Shape,
+    shape_name='Subnet',
+):
+    availability_zone_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AvailabilityZoneId',
+        shape_name='String',
+    ))
+    enable_lni_at_device_index: int = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableLniAtDeviceIndex',
+        shape_name='Integer',
+    ))
+    map_customer_owned_ip_on_launch: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='MapCustomerOwnedIpOnLaunch',
+        shape_name='Boolean',
+    ))
+    customer_owned_ipv4_pool: CoipPoolId = _dc.field(metadata=_base.field_metadata(
+        member_name='CustomerOwnedIpv4Pool',
+        shape_name='CoipPoolId',
+    ))
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        shape_name='String',
+    ))
+    assign_ipv6_address_on_creation: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='AssignIpv6AddressOnCreation',
+        shape_name='Boolean',
+    ))
+    ipv6_cidr_block_association_set: SubnetIpv6CidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlockAssociationSet',
+        shape_name='SubnetIpv6CidrBlockAssociationSet',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+    subnet_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetArn',
+        shape_name='String',
+    ))
+    outpost_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OutpostArn',
+        shape_name='String',
+    ))
+    enable_dns64: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableDns64',
+        shape_name='Boolean',
+    ))
+    ipv6_native: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Native',
+        shape_name='Boolean',
+    ))
+    private_dns_name_options_on_launch: PrivateDnsNameOptionsOnLaunch = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateDnsNameOptionsOnLaunch',
+        shape_name='PrivateDnsNameOptionsOnLaunch',
+    ))
+    block_public_access_states: BlockPublicAccessStates = _dc.field(metadata=_base.field_metadata(
+        member_name='BlockPublicAccessStates',
+        shape_name='BlockPublicAccessStates',
+    ))
+    subnet_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetId',
+        shape_name='String',
+    ))
+    state: SubnetState = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        shape_name='SubnetState',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+    cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrBlock',
+        shape_name='String',
+    ))
+    available_ip_address_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='AvailableIpAddressCount',
+        shape_name='Integer',
+    ))
+    availability_zone: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AvailabilityZone',
+        shape_name='String',
+    ))
+    default_for_az: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DefaultForAz',
+        shape_name='Boolean',
+    ))
+    map_public_ip_on_launch: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='MapPublicIpOnLaunch',
+        shape_name='Boolean',
     ))
 
 
@@ -2823,7 +3842,24 @@ class Vpc(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class DescribeInternetGatewaysResult(
+    _base.Shape,
+    shape_name='DescribeInternetGatewaysResult',
+):
+    internet_gateways: InternetGatewayList = _dc.field(metadata=_base.field_metadata(
+        member_name='InternetGateways',
+        shape_name='InternetGatewayList',
+    ))
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+
+
 InstanceNetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterface]
+
+NetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[NetworkInterface]
 
 
 @_dc.dataclass(frozen=True)
@@ -3005,7 +4041,82 @@ class RunInstancesRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class SecurityGroup(
+    _base.Shape,
+    shape_name='SecurityGroup',
+):
+    group_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupId',
+        shape_name='String',
+    ))
+    ip_permissions_egress: IpPermissionList = _dc.field(metadata=_base.field_metadata(
+        member_name='IpPermissionsEgress',
+        shape_name='IpPermissionList',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+    security_group_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SecurityGroupArn',
+        shape_name='String',
+    ))
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        shape_name='String',
+    ))
+    group_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupName',
+        shape_name='String',
+    ))
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    ip_permissions: IpPermissionList = _dc.field(metadata=_base.field_metadata(
+        member_name='IpPermissions',
+        shape_name='IpPermissionList',
+    ))
+
+
+SubnetList: _ta.TypeAlias = _ta.Sequence[Subnet]
+
 VpcList: _ta.TypeAlias = _ta.Sequence[Vpc]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeNetworkInterfacesResult(
+    _base.Shape,
+    shape_name='DescribeNetworkInterfacesResult',
+):
+    network_interfaces: NetworkInterfaceList = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaces',
+        shape_name='NetworkInterfaceList',
+    ))
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeSubnetsResult(
+    _base.Shape,
+    shape_name='DescribeSubnetsResult',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    subnets: SubnetList = _dc.field(metadata=_base.field_metadata(
+        member_name='Subnets',
+        shape_name='SubnetList',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -3266,6 +4377,24 @@ class Instance(
     ))
 
 
+SecurityGroupList: _ta.TypeAlias = _ta.Sequence[SecurityGroup]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeSecurityGroupsResult(
+    _base.Shape,
+    shape_name='DescribeSecurityGroupsResult',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    security_groups: SecurityGroupList = _dc.field(metadata=_base.field_metadata(
+        member_name='SecurityGroups',
+        shape_name='SecurityGroupList',
+    ))
+
+
 InstanceList: _ta.TypeAlias = _ta.Sequence[Instance]
 
 
@@ -3315,19 +4444,35 @@ class DescribeInstancesResult(
 
 
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
+    Address,
+    AttachmentEnaSrdSpecification,
+    AttachmentEnaSrdUdpSpecification,
     BlockDeviceMapping,
     BlockPublicAccessStates,
     CapacityReservationSpecification,
     CapacityReservationSpecificationResponse,
     CapacityReservationTarget,
     CapacityReservationTargetResponse,
+    ConnectionTrackingConfiguration,
     ConnectionTrackingSpecificationRequest,
     ConnectionTrackingSpecificationResponse,
     CpuOptions,
     CpuOptionsRequest,
     CreditSpecificationRequest,
+    DescribeAddressesRequest,
+    DescribeAddressesResult,
     DescribeInstancesRequest,
     DescribeInstancesResult,
+    DescribeInternetGatewaysRequest,
+    DescribeInternetGatewaysResult,
+    DescribeKeyPairsRequest,
+    DescribeKeyPairsResult,
+    DescribeNetworkInterfacesRequest,
+    DescribeNetworkInterfacesResult,
+    DescribeSecurityGroupsRequest,
+    DescribeSecurityGroupsResult,
+    DescribeSubnetsRequest,
+    DescribeSubnetsResult,
     DescribeVpcsRequest,
     DescribeVpcsResult,
     EbsBlockDevice,
@@ -3367,15 +4512,30 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     InstancePrivateIpAddress,
     InstanceState,
     InstanceStateChange,
+    InternetGateway,
+    InternetGatewayAttachment,
+    IpPermission,
+    IpRange,
+    Ipv4PrefixSpecification,
     Ipv4PrefixSpecificationRequest,
+    Ipv6PrefixSpecification,
     Ipv6PrefixSpecificationRequest,
+    Ipv6Range,
+    KeyPairInfo,
     LaunchTemplateSpecification,
     LicenseConfiguration,
     LicenseConfigurationRequest,
     Monitoring,
+    NetworkInterface,
+    NetworkInterfaceAssociation,
+    NetworkInterfaceAttachment,
+    NetworkInterfaceIpv6Address,
+    NetworkInterfacePrivateIpAddress,
     OperatorRequest,
     OperatorResponse,
     Placement,
+    PrefixListId,
+    PrivateDnsNameOptionsOnLaunch,
     PrivateDnsNameOptionsRequest,
     PrivateDnsNameOptionsResponse,
     PrivateIpAddressSpecification,
@@ -3384,15 +4544,20 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     Reservation,
     RunInstancesMonitoringEnabled,
     RunInstancesRequest,
+    SecurityGroup,
     SpotMarketOptions,
     StartInstancesRequest,
     StartInstancesResult,
     StateReason,
     StopInstancesRequest,
     StopInstancesResult,
+    Subnet,
+    SubnetCidrBlockState,
+    SubnetIpv6CidrBlockAssociation,
     TagSpecification,
     TerminateInstancesRequest,
     TerminateInstancesResult,
+    UserIdGroupPair,
     Vpc,
     VpcCidrBlockAssociation,
     VpcCidrBlockState,
@@ -3403,10 +4568,52 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
 ##
 
 
+DESCRIBE_ADDRESSES = _base.Operation(
+    name='DescribeAddresses',
+    input=DescribeAddressesRequest,
+    output=DescribeAddressesResult,
+)
+
 DESCRIBE_INSTANCES = _base.Operation(
     name='DescribeInstances',
     input=DescribeInstancesRequest,
     output=DescribeInstancesResult,
+)
+
+DESCRIBE_INTERNET_GATEWAYS = _base.Operation(
+    name='DescribeInternetGateways',
+    input=DescribeInternetGatewaysRequest,
+    output=DescribeInternetGatewaysResult,
+)
+
+DESCRIBE_KEY_PAIRS = _base.Operation(
+    name='DescribeKeyPairs',
+    input=DescribeKeyPairsRequest,
+    output=DescribeKeyPairsResult,
+)
+
+DESCRIBE_NETWORK_INTERFACES = _base.Operation(
+    name='DescribeNetworkInterfaces',
+    input=DescribeNetworkInterfacesRequest,
+    output=DescribeNetworkInterfacesResult,
+)
+
+DESCRIBE_SECURITY_GROUPS = _base.Operation(
+    name='DescribeSecurityGroups',
+    input=DescribeSecurityGroupsRequest,
+    output=DescribeSecurityGroupsResult,
+)
+
+DESCRIBE_SUBNETS = _base.Operation(
+    name='DescribeSubnets',
+    input=DescribeSubnetsRequest,
+    output=DescribeSubnetsResult,
+)
+
+DESCRIBE_VPCS = _base.Operation(
+    name='DescribeVpcs',
+    input=DescribeVpcsRequest,
+    output=DescribeVpcsResult,
 )
 
 DESCRIBE_VPCS = _base.Operation(
@@ -3446,7 +4653,14 @@ TERMINATE_INSTANCES = _base.Operation(
 
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
+    DESCRIBE_ADDRESSES,
     DESCRIBE_INSTANCES,
+    DESCRIBE_INTERNET_GATEWAYS,
+    DESCRIBE_KEY_PAIRS,
+    DESCRIBE_NETWORK_INTERFACES,
+    DESCRIBE_SECURITY_GROUPS,
+    DESCRIBE_SUBNETS,
+    DESCRIBE_VPCS,
     DESCRIBE_VPCS,
     REBOOT_INSTANCES,
     RUN_INSTANCES,

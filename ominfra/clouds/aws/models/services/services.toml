@@ -1,6 +1,13 @@
 [services.ec2]
 operations = [
+  'DescribeAddresses',
   'DescribeInstances',
+  'DescribeInternetGateways',
+  'DescribeKeyPairs',
+  'DescribeNetworkInterfaces',
+  'DescribeSecurityGroups',
+  'DescribeSubnets',
+  'DescribeVpcs',
   'DescribeVpcs',
   'RebootInstances',
   'RunInstances',
