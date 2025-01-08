@@ -14,8 +14,7 @@ import typing as ta
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
-from omlish.configs.formats import DEFAULT_CONFIG_FILE_LOADER
-from omlish.configs.processing.names import build_config_named_children
+from omlish.configs import all as configs
 
 from .gen import ModelGen
 
@@ -68,8 +67,8 @@ class Cli(ap.Cli):
         ap.arg('config-file'),
     )
     def gen_services(self) -> None:
-        cfg_dct = dict(DEFAULT_CONFIG_FILE_LOADER.load_file(self.args.config_file).as_map())
-        cfg_dct['services'] = build_config_named_children(cfg_dct['services'])
+        cfg_dct = dict(configs.DEFAULT_FILE_LOADER.load_file(self.args.config_file).as_map())
+        cfg_dct['services'] = configs.processing.build_named_children(cfg_dct['services'])
         cfg: Cli.ServicesConfig = msh.unmarshal(cfg_dct, Cli.ServicesConfig)
         raise NotImplementedError
 
