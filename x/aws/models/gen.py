@@ -1,3 +1,8 @@
+"""
+TODO:
+ - default values? nullability? maybe a new_default helper?
+ - relative import base
+"""
 import dataclasses as dc
 import io
 import typing as ta

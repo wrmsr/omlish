@@ -1,12 +1,3 @@
-"""
-TODO:
- - default values? nullability? maybe a new_default helper?
- - relative import base
-
-==
-
-gen-module ec2 -o DescribeInstances
-"""
 import dataclasses as dc
 import os.path
 import sys
@@ -29,28 +20,40 @@ class Cli(ap.Cli):
 
     #
 
+    def _gen_module(
+            self,
+            service_name: str,
+            *,
+            shape_names: ta.Iterable[str] | None = None,
+            operation_names: ta.Iterable[str] | None = None,
+    ) -> str:
+        service_model = ModelGen.load_service_model(service_name)
+
+        bmg = ModelGen(
+            service_model,
+            shape_names=ModelGen.get_referenced_shape_names(
+                service_model,
+                shape_names=shape_names or (),
+                operation_names=operation_names or (),
+            ),
+            operation_names=operation_names,
+        )
+
+        return bmg.gen_module()
+
     @ap.cmd(
         ap.arg('service'),
         ap.arg('-s', '--shape', action='append'),
         ap.arg('-o', '--operation', action='append'),
     )
     def gen_module(self) -> None:
-        shape_names = self._arg_list(self.args.shape)
-        operation_names = self._arg_list(self.args.operation)
-
-        service_model = ModelGen.load_service_model(self.args.service)
-
-        bmg = ModelGen(
-            service_model,
-            shape_names=ModelGen.get_referenced_shape_names(
-                service_model,
-                shape_names=shape_names,
-                operation_names=operation_names,
-            ),
-            operation_names=operation_names,
+        mod = self._gen_module(
+            self.args.service,
+            shape_names=self._arg_list(self.args.shape),
+            operation_names=self._arg_list(self.args.operation),
         )
 
-        sys.stdout.write(bmg.gen_module())
+        sys.stdout.write(mod)
 
     #
 
@@ -69,7 +72,14 @@ class Cli(ap.Cli):
             svc: ServicesConfig.Service,
             output_dir: str,
     ) -> None:
+        mod = self._gen_module(
+            svc.name,
+            shape_names=svc.shapes,
+            operation_names=svc.operations,
+        )
+
         raise NotImplementedError
+
 
     @ap.cmd(
         ap.arg('config-file'),
