@@ -17,3 +17,13 @@ operations = [
   'ListObjectsV2',
   'PutObject',
 ]
+
+[services.rds]
+operations = [
+  'CreateDBInstance',
+  'DeleteDBInstance',
+  'DescribeDBInstances',
+  'RebootDBInstance',
+  'StartDBInstance',
+  'StopDBInstance',
+]

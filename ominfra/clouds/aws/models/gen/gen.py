@@ -177,6 +177,7 @@ class ModelGen:
         'CRC32C',
         'DB',
         'ETag',
+        'IAM',
         'KMS',
         'MD5',
         'MFA',
