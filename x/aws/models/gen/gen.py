@@ -395,7 +395,7 @@ class ModelGen:
     ) -> None:
         all_operations: list[str] = []
 
-        for i, name in enumerate(self._operation_names):
+        for i, name in enumerate(sorted(self._operation_names)):
             if i:
                 out.write('\n')
             ops = self.gen_operation(

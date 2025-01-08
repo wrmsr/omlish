@@ -832,6 +832,12 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
 ##
 
 
+DELETE_OBJECT = _base.Operation(
+    name='DeleteObject',
+    input=DeleteObjectRequest,
+    output=DeleteObjectOutput,
+)
+
 GET_OBJECT = _base.Operation(
     name='GetObject',
     input=GetObjectRequest,
@@ -854,15 +860,9 @@ PUT_OBJECT = _base.Operation(
     ],
 )
 
-DELETE_OBJECT = _base.Operation(
-    name='DeleteObject',
-    input=DeleteObjectRequest,
-    output=DeleteObjectOutput,
-)
-
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
+    DELETE_OBJECT,
     GET_OBJECT,
     PUT_OBJECT,
-    DELETE_OBJECT,
 ])
