@@ -35,7 +35,7 @@ class Table(Relation, lang.Final):
 #
 
 
-class JoinType(enum.Enum):
+class JoinKind(enum.Enum):
     DEFAULT = ''
     INNER = 'inner'
     LEFT = 'left'
@@ -49,7 +49,7 @@ class JoinType(enum.Enum):
 
 
 class Join(Relation, lang.Final):
-    t: JoinType
+    k: JoinKind
     l: Relation
     r: Relation
 
@@ -60,7 +60,7 @@ class Join(Relation, lang.Final):
 
 
 CanTable: ta.TypeAlias = Table | CanName
-CanJoinType: ta.TypeAlias = JoinType | str
+CanJoinKind: ta.TypeAlias = JoinKind | str
 CanRelation: ta.TypeAlias = Relation | CanTable
 
 
@@ -73,55 +73,55 @@ class RelationBuilder(MultiBuilder):
 
     #
 
-    def join_type(self, t: CanJoinType) -> JoinType:
-        if isinstance(t, JoinType):
+    def join_kind(self, t: CanJoinKind) -> JoinKind:
+        if isinstance(t, JoinKind):
             return t
         else:
-            return JoinType(t)
+            return JoinKind(t)
 
     def join(
             self,
-            t: CanJoinType,
+            k: CanJoinKind,
             l: CanRelation,
             r: CanRelation,
             *cs: CanExpr,
     ) -> Join:
         return Join(
-            self.join_type(t),
+            self.join_kind(k),
             self.relation(l),
             self.relation(r),
             self.or_(*cs) if cs else None,
         )
 
     def default_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.DEFAULT, l, r, *cs)
+        return self.join(JoinKind.DEFAULT, l, r, *cs)
 
     def inner_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.INNER, l, r, *cs)
+        return self.join(JoinKind.INNER, l, r, *cs)
 
     def left_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.LEFT, l, r, *cs)
+        return self.join(JoinKind.LEFT, l, r, *cs)
 
     def left_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.LEFT_OUTER, l, r, *cs)
+        return self.join(JoinKind.LEFT_OUTER, l, r, *cs)
 
     def right_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.RIGHT, l, r, *cs)
+        return self.join(JoinKind.RIGHT, l, r, *cs)
 
     def right_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.RIGHT_OUTER, l, r, *cs)
+        return self.join(JoinKind.RIGHT_OUTER, l, r, *cs)
 
     def full_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.FULL, l, r, *cs)
+        return self.join(JoinKind.FULL, l, r, *cs)
 
     def full_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.FULL_OUTER, l, r, *cs)
+        return self.join(JoinKind.FULL_OUTER, l, r, *cs)
 
     def cross_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.CROSS, l, r, *cs)
+        return self.join(JoinKind.CROSS, l, r, *cs)
 
     def natural_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinType.NATURAL, l, r, *cs)
+        return self.join(JoinKind.NATURAL, l, r, *cs)
 
     #
 

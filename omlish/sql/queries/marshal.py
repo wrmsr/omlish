@@ -9,6 +9,7 @@ from ... import cached
 from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
+from .relations import JoinKind
 from ... import lang
 from ... import marshal as msh
 from .base import Node
@@ -66,8 +67,12 @@ def _install_standard_marshalling() -> None:
         msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
         msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
 
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({MultiKind: LowerEnumMarshaler(MultiKind)})]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({MultiKind: LowerEnumMarshaler(MultiKind)})]  # noqa
+    ets = [
+        JoinKind,
+        MultiKind,
+    ]
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({t: LowerEnumMarshaler(t) for t in ets})]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets})]
 
     for cls in [
         Expr,

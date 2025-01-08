@@ -23,6 +23,18 @@ def test_render():
 
         Q.select([Q.p.foo, Q.p(), Q.p.bar, Q.p.foo]),
 
+        Q.select(
+            [
+                Q.p.foo,
+                Q.p.bar,
+                Q.p.baz,
+            ],
+            Q.inner_join(
+                Q.n.some_schema.some_table,
+                Q.n.some_schema.some_other_table,
+                Q.eq(Q.i.some_id, Q.i.some_other_id),
+            ),
+        ),
     ]:
         print(query)
         print(render(query))
