@@ -15,6 +15,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.configs.formats import DEFAULT_CONFIG_FILE_LOADER
+from omlish.configs.processing.names import build_config_named_children
 
 from .gen import ModelGen
 
@@ -57,17 +58,19 @@ class Cli(ap.Cli):
     class ServicesConfig:
         @dc.dataclass(frozen=True)
         class Service:
+            name: str
             shapes: ta.Sequence[str] | None = None
             operations: ta.Sequence[str] | None = None
 
-        services: ta.Mapping[str, Service] | None = None
+        services: ta.Sequence[Service] | None = None
 
     @ap.cmd(
         ap.arg('config-file'),
     )
     def gen_services(self) -> None:
-        cfg_data = DEFAULT_CONFIG_FILE_LOADER.load_file(self.args.config_file)
-        cfg: Cli.ServicesConfig = msh.unmarshal(cfg_data.as_map(), Cli.ServicesConfig)
+        cfg_dct = dict(DEFAULT_CONFIG_FILE_LOADER.load_file(self.args.config_file).as_map())
+        cfg_dct['services'] = build_config_named_children(cfg_dct['services'])
+        cfg: Cli.ServicesConfig = msh.unmarshal(cfg_dct, Cli.ServicesConfig)
         raise NotImplementedError
 
     #
