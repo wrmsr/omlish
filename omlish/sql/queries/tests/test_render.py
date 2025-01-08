@@ -5,9 +5,7 @@ from ..rendering import render
 def test_render():
     for query in [
         Q.select(
-            [
-                1,
-            ],
+            [1],
             Q.n.foo,
             Q.and_(
                 Q.eq(Q.i.foo, 1),
@@ -21,7 +19,12 @@ def test_render():
             [123, 'abc'],
         ),
 
-        Q.select([Q.p.foo, Q.p(), Q.p.bar, Q.p.foo]),
+        Q.select([
+            Q.p.foo,
+            Q.p(),
+            Q.p.bar,
+            Q.p.foo,
+        ]),
 
         Q.select(
             [
