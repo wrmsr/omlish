@@ -8,6 +8,7 @@ TODO:
 gen-module ec2 -o DescribeInstances
 """
 import dataclasses as dc
+import os.path
 import sys
 import typing as ta
 
@@ -63,14 +64,27 @@ class Cli(ap.Cli):
 
         services: ta.Sequence[Service] | None = None
 
+    def _gen_service(
+            self,
+            svc: ServicesConfig.Service,
+            output_dir: str,
+    ) -> None:
+        raise NotImplementedError
+
     @ap.cmd(
         ap.arg('config-file'),
     )
     def gen_services(self) -> None:
-        cfg_dct = dict(configs.DEFAULT_FILE_LOADER.load_file(self.args.config_file).as_map())
+        config_file = self.args.config_file
+
+        cfg_dct = dict(configs.DEFAULT_FILE_LOADER.load_file(config_file).as_map())
         cfg_dct['services'] = configs.processing.build_named_children(cfg_dct['services'])
         cfg: Cli.ServicesConfig = msh.unmarshal(cfg_dct, Cli.ServicesConfig)
-        raise NotImplementedError
+
+        output_dir = os.path.dirname(os.path.abspath(config_file))
+
+        for svc in cfg.services:
+            self._gen_service(svc, output_dir)
 
     #
 
