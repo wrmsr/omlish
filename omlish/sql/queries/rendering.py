@@ -36,6 +36,8 @@ from .multi import Multi
 from .multi import MultiKind
 from .names import Name
 from .params import Param
+from .relations import Join
+from .relations import JoinKind
 from .relations import Table
 from .selects import Select
 from .selects import SelectItem
@@ -156,7 +158,6 @@ class StdRenderer(Renderer):
     MULTI_KIND_TO_STR: ta.ClassVar[ta.Mapping[MultiKind, str]] = {
         MultiKind.AND: 'and',
         MultiKind.OR: 'or',
-
     }
 
     @Renderer.render.register
@@ -186,6 +187,30 @@ class StdRenderer(Renderer):
         if o.a is not None:
             self._out.write(' as ')
             self.render(o.a)
+
+    JOIN_KIND_TO_STR: ta.ClassVar[ta.Mapping[JoinKind, str]] = {
+        JoinKind.DEFAULT: 'join',
+        JoinKind.INNER: 'inner join',
+        JoinKind.LEFT: 'left join',
+        JoinKind.LEFT_OUTER: 'left outer join',
+        JoinKind.RIGHT: 'right join',
+        JoinKind.RIGHT_OUTER: 'right outer join',
+        JoinKind.FULL: 'full join',
+        JoinKind.FULL_OUTER: 'full outer join',
+        JoinKind.CROSS: 'cross join',
+        JoinKind.NATURAL: 'natural join',
+    }
+
+    @Renderer.render.register
+    def render_join(self, o: Join) -> None:
+        self.render(o.l)
+        self._out.write(' ')
+        self._out.write(self.JOIN_KIND_TO_STR[o.k])
+        self._out.write(' ')
+        self.render(o.r)
+        if o.c is not None:
+            self._out.write(' on ')
+            self.render(o.c)
 
     # selects
 

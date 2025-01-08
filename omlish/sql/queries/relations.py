@@ -36,16 +36,16 @@ class Table(Relation, lang.Final):
 
 
 class JoinKind(enum.Enum):
-    DEFAULT = ''
-    INNER = 'inner'
-    LEFT = 'left'
-    LEFT_OUTER = 'left outer'
-    RIGHT = 'right'
-    RIGHT_OUTER = 'right outer'
-    FULL = 'full'
-    FULL_OUTER = 'full outer'
-    CROSS = 'cross'
-    NATURAL = 'natural'
+    DEFAULT = enum.auto()
+    INNER = enum.auto()
+    LEFT = enum.auto()
+    LEFT_OUTER = enum.auto()
+    RIGHT = enum.auto()
+    RIGHT_OUTER = enum.auto()
+    FULL = enum.auto()
+    FULL_OUTER = enum.auto()
+    CROSS = enum.auto()
+    NATURAL = enum.auto()
 
 
 class Join(Relation, lang.Final):
@@ -60,7 +60,6 @@ class Join(Relation, lang.Final):
 
 
 CanTable: ta.TypeAlias = Table | CanName
-CanJoinKind: ta.TypeAlias = JoinKind | str
 CanRelation: ta.TypeAlias = Relation | CanTable
 
 
@@ -73,21 +72,15 @@ class RelationBuilder(MultiBuilder):
 
     #
 
-    def join_kind(self, t: CanJoinKind) -> JoinKind:
-        if isinstance(t, JoinKind):
-            return t
-        else:
-            return JoinKind(t)
-
     def join(
             self,
-            k: CanJoinKind,
+            k: JoinKind,
             l: CanRelation,
             r: CanRelation,
             *cs: CanExpr,
     ) -> Join:
         return Join(
-            self.join_kind(k),
+            k,
             self.relation(l),
             self.relation(r),
             self.or_(*cs) if cs else None,

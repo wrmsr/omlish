@@ -9,7 +9,6 @@ from ... import cached
 from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
-from .relations import JoinKind
 from ... import lang
 from ... import marshal as msh
 from .base import Node
@@ -18,6 +17,7 @@ from .binary import BinaryOps
 from .exprs import Expr
 from .inserts import Values
 from .multi import MultiKind
+from .relations import JoinKind
 from .relations import Relation
 from .selects import Select
 from .stmts import Stmt
