@@ -408,7 +408,7 @@ class ModelGen:
 
         out.write('\n\n')
         out.write('ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([\n')
-        for n in all_shapes:
+        for n in sorted(all_shapes):
             out.write(f'    {n},\n')
         out.write('])\n')
 
@@ -469,7 +469,7 @@ class ModelGen:
 
         out.write('\n')
         out.write('ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([\n')
-        for n in all_operations:
+        for n in sorted(all_operations):
             out.write(f'    {n},\n')
         out.write('])\n')
 
