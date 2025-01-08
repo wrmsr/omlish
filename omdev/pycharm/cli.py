@@ -57,20 +57,7 @@ class WmctrlLine:
 
 # TODO: https://stackoverflow.com/a/79016360
 def parse_wmctrl_lxp_line(l: str) -> WmctrlLine:
-    window_id, _, l = l.lstrip().partition(' ')
-    desktop_id, _, l = l.lstrip().partition(' ')
-    pid, _, l = l.lstrip().partition(' ')
-    wm_class, _, l = l.lstrip().partition(' ')
-    user, _, l = l.lstrip().partition(' ')
-    title = l.strip()
-    return WmctrlLine(
-        window_id,
-        desktop_id,
-        pid,
-        wm_class,
-        user,
-        title,
-    )
+    return WmctrlLine(*l.strip().split(maxsplit=5))
 
 
 ##
