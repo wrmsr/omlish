@@ -9,6 +9,8 @@ from .inheritance import (  # noqa
 
 from .matching import (  # noqa
     MatchingConfigRewriter as MatchingRewriter,
+
+    matched_config_rewrite as matched_rewrite,
 )
 
 from .names import (  # noqa

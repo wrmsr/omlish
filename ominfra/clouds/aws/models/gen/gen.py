@@ -274,7 +274,7 @@ class ModelGen:
                 mn,
                 unquoted_names=unquoted_names,
             )
-            l = f"{shape.name}: _ta.TypeAlias = _ta.Sequence[{ma or mn}]"
+            l = f'{shape.name}: _ta.TypeAlias = _ta.Sequence[{ma or mn}]'
             if ma is None:
                 l = '# ' + l
             return self.ShapeSrc(l)
@@ -291,7 +291,7 @@ class ModelGen:
                 vn,
                 unquoted_names=unquoted_names,
             )
-            l = f"{shape.name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]"
+            l = f'{shape.name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]'
             if ka is None or va is None:
                 l = '# ' + l
             return self.ShapeSrc(l)

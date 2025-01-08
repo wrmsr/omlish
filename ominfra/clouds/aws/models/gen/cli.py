@@ -36,7 +36,7 @@ class Cli(ap.Cli):
                 shape_names=shape_names or (),
                 operation_names=operation_names or (),
             ),
-            operation_names=operation_names,
+            operation_names=operation_names or (),
         )
 
         return bmg.gen_module()
@@ -83,18 +83,24 @@ class Cli(ap.Cli):
             f.write(mod)
 
     @ap.cmd(
-        ap.arg('config-file'),
+        ap.arg('config-file', nargs='?'),
     )
     def gen_services(self) -> None:
         config_file = self.args.config_file
+        if config_file is None:
+            config_file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../services/services.toml'))
 
         cfg_dct = dict(configs.DEFAULT_FILE_LOADER.load_file(config_file).as_map())
-        cfg_dct['services'] = configs.processing.build_named_children(cfg_dct['services'])
+        cfg_dct = configs.processing.matched_rewrite(
+            configs.processing.build_named_children,
+            cfg_dct,
+            ('services',),
+        )
         cfg: Cli.ServicesConfig = msh.unmarshal(cfg_dct, Cli.ServicesConfig)
 
         output_dir = os.path.dirname(os.path.abspath(config_file))
 
-        for svc in cfg.services:
+        for svc in cfg.services or []:
             self._gen_service(svc, output_dir)
 
     #
