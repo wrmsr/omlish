@@ -1316,54 +1316,67 @@ class Address(
         member_name='AllocationId',
         shape_name='String',
     ))
+
     association_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='AssociationId',
         shape_name='String',
     ))
+
     domain: DomainType = _dc.field(metadata=_base.field_metadata(
         member_name='Domain',
         shape_name='DomainType',
     ))
+
     network_interface_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceId',
         shape_name='String',
     ))
+
     network_interface_owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceOwnerId',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     public_ipv4_pool: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicIpv4Pool',
         shape_name='String',
     ))
+
     network_border_group: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkBorderGroup',
         shape_name='String',
     ))
+
     customer_owned_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CustomerOwnedIp',
         shape_name='String',
     ))
+
     customer_owned_ipv4_pool: str = _dc.field(metadata=_base.field_metadata(
         member_name='CustomerOwnedIpv4Pool',
         shape_name='String',
     ))
+
     carrier_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CarrierIp',
         shape_name='String',
     ))
+
     instance_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceId',
         shape_name='String',
     ))
+
     public_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicIp',
         shape_name='String',
@@ -1404,6 +1417,7 @@ class CapacityReservationTarget(
         member_name='CapacityReservationId',
         shape_name='CapacityReservationId',
     ))
+
     capacity_reservation_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationResourceGroupArn',
         shape_name='String',
@@ -1419,6 +1433,7 @@ class CapacityReservationTargetResponse(
         member_name='CapacityReservationId',
         shape_name='String',
     ))
+
     capacity_reservation_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationResourceGroupArn',
         shape_name='String',
@@ -1434,10 +1449,12 @@ class ConnectionTrackingConfiguration(
         member_name='TcpEstablishedTimeout',
         shape_name='Integer',
     ))
+
     udp_stream_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpStreamTimeout',
         shape_name='Integer',
     ))
+
     udp_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpTimeout',
         shape_name='Integer',
@@ -1453,10 +1470,12 @@ class ConnectionTrackingSpecificationRequest(
         member_name='TcpEstablishedTimeout',
         shape_name='Integer',
     ))
+
     udp_stream_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpStreamTimeout',
         shape_name='Integer',
     ))
+
     udp_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpTimeout',
         shape_name='Integer',
@@ -1472,10 +1491,12 @@ class ConnectionTrackingSpecificationResponse(
         member_name='TcpEstablishedTimeout',
         shape_name='Integer',
     ))
+
     udp_stream_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpStreamTimeout',
         shape_name='Integer',
     ))
+
     udp_timeout: int = _dc.field(metadata=_base.field_metadata(
         member_name='UdpTimeout',
         shape_name='Integer',
@@ -1491,10 +1512,12 @@ class CpuOptions(
         member_name='CoreCount',
         shape_name='Integer',
     ))
+
     threads_per_core: int = _dc.field(metadata=_base.field_metadata(
         member_name='ThreadsPerCore',
         shape_name='Integer',
     ))
+
     amd_sev_snp: AmdSevSnpSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='AmdSevSnp',
         shape_name='AmdSevSnpSpecification',
@@ -1510,10 +1533,12 @@ class CpuOptionsRequest(
         member_name='CoreCount',
         shape_name='Integer',
     ))
+
     threads_per_core: int = _dc.field(metadata=_base.field_metadata(
         member_name='ThreadsPerCore',
         shape_name='Integer',
     ))
+
     amd_sev_snp: AmdSevSnpSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='AmdSevSnp',
         shape_name='AmdSevSnpSpecification',
@@ -1540,34 +1565,42 @@ class EbsBlockDevice(
         member_name='DeleteOnTermination',
         shape_name='Boolean',
     ))
+
     iops: int = _dc.field(metadata=_base.field_metadata(
         member_name='Iops',
         shape_name='Integer',
     ))
+
     snapshot_id: SnapshotId = _dc.field(metadata=_base.field_metadata(
         member_name='SnapshotId',
         shape_name='SnapshotId',
     ))
+
     volume_size: int = _dc.field(metadata=_base.field_metadata(
         member_name='VolumeSize',
         shape_name='Integer',
     ))
+
     volume_type: VolumeType = _dc.field(metadata=_base.field_metadata(
         member_name='VolumeType',
         shape_name='VolumeType',
     ))
+
     kms_key_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='KmsKeyId',
         shape_name='String',
     ))
+
     throughput: int = _dc.field(metadata=_base.field_metadata(
         member_name='Throughput',
         shape_name='Integer',
     ))
+
     outpost_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='OutpostArn',
         shape_name='String',
     ))
+
     encrypted: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Encrypted',
         shape_name='Boolean',
@@ -1583,14 +1616,17 @@ class ElasticGpuAssociation(
         member_name='ElasticGpuId',
         shape_name='ElasticGpuId',
     ))
+
     elastic_gpu_association_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuAssociationId',
         shape_name='String',
     ))
+
     elastic_gpu_association_state: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuAssociationState',
         shape_name='String',
     ))
+
     elastic_gpu_association_time: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuAssociationTime',
         shape_name='String',
@@ -1617,6 +1653,7 @@ class ElasticInferenceAccelerator(
         member_name='Type',
         shape_name='String',
     ))
+
     count: ElasticInferenceAcceleratorCount = _dc.field(metadata=_base.field_metadata(
         member_name='Count',
         shape_name='ElasticInferenceAcceleratorCount',
@@ -1632,14 +1669,17 @@ class ElasticInferenceAcceleratorAssociation(
         member_name='ElasticInferenceAcceleratorArn',
         shape_name='String',
     ))
+
     elastic_inference_accelerator_association_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticInferenceAcceleratorAssociationId',
         shape_name='String',
     ))
+
     elastic_inference_accelerator_association_state: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticInferenceAcceleratorAssociationState',
         shape_name='String',
     ))
+
     elastic_inference_accelerator_association_time: _base.DateTime = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticInferenceAcceleratorAssociationTime',
         shape_name='DateTime',
@@ -1691,6 +1731,7 @@ class GroupIdentifier(
         member_name='GroupId',
         shape_name='String',
     ))
+
     group_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='GroupName',
         shape_name='String',
@@ -1731,6 +1772,7 @@ class IamInstanceProfile(
         member_name='Arn',
         shape_name='String',
     ))
+
     id: str = _dc.field(metadata=_base.field_metadata(
         member_name='Id',
         shape_name='String',
@@ -1746,6 +1788,7 @@ class IamInstanceProfileSpecification(
         member_name='Arn',
         shape_name='String',
     ))
+
     name: str = _dc.field(metadata=_base.field_metadata(
         member_name='Name',
         shape_name='String',
@@ -1786,6 +1829,7 @@ class InstanceIpv6Address(
         member_name='Ipv6Address',
         shape_name='String',
     ))
+
     is_primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
         member_name='IsPrimaryIpv6',
         shape_name='Boolean',
@@ -1834,18 +1878,22 @@ class InstanceMetadataOptionsRequest(
         member_name='HttpTokens',
         shape_name='HttpTokensState',
     ))
+
     http_put_response_hop_limit: int = _dc.field(metadata=_base.field_metadata(
         member_name='HttpPutResponseHopLimit',
         shape_name='Integer',
     ))
+
     http_endpoint: InstanceMetadataEndpointState = _dc.field(metadata=_base.field_metadata(
         member_name='HttpEndpoint',
         shape_name='InstanceMetadataEndpointState',
     ))
+
     http_protocol_ipv6: InstanceMetadataProtocolState = _dc.field(metadata=_base.field_metadata(
         member_name='HttpProtocolIpv6',
         shape_name='InstanceMetadataProtocolState',
     ))
+
     instance_metadata_tags: InstanceMetadataTagsState = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceMetadataTags',
         shape_name='InstanceMetadataTagsState',
@@ -1861,22 +1909,27 @@ class InstanceMetadataOptionsResponse(
         member_name='State',
         shape_name='InstanceMetadataOptionsState',
     ))
+
     http_tokens: HttpTokensState = _dc.field(metadata=_base.field_metadata(
         member_name='HttpTokens',
         shape_name='HttpTokensState',
     ))
+
     http_put_response_hop_limit: int = _dc.field(metadata=_base.field_metadata(
         member_name='HttpPutResponseHopLimit',
         shape_name='Integer',
     ))
+
     http_endpoint: InstanceMetadataEndpointState = _dc.field(metadata=_base.field_metadata(
         member_name='HttpEndpoint',
         shape_name='InstanceMetadataEndpointState',
     ))
+
     http_protocol_ipv6: InstanceMetadataProtocolState = _dc.field(metadata=_base.field_metadata(
         member_name='HttpProtocolIpv6',
         shape_name='InstanceMetadataProtocolState',
     ))
+
     instance_metadata_tags: InstanceMetadataTagsState = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceMetadataTags',
         shape_name='InstanceMetadataTagsState',
@@ -1892,18 +1945,22 @@ class InstanceNetworkInterfaceAssociation(
         member_name='CarrierIp',
         shape_name='String',
     ))
+
     customer_owned_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CustomerOwnedIp',
         shape_name='String',
     ))
+
     ip_owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='IpOwnerId',
         shape_name='String',
     ))
+
     public_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicDnsName',
         shape_name='String',
     ))
+
     public_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicIp',
         shape_name='String',
@@ -1941,6 +1998,7 @@ class InstanceState(
         member_name='Code',
         shape_name='Integer',
     ))
+
     name: InstanceStateName = _dc.field(metadata=_base.field_metadata(
         member_name='Name',
         shape_name='InstanceStateName',
@@ -1956,6 +2014,7 @@ class InternetGatewayAttachment(
         member_name='State',
         shape_name='AttachmentStatus',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
@@ -1974,6 +2033,7 @@ class IpRange(
         member_name='Description',
         shape_name='String',
     ))
+
     cidr_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CidrIp',
         shape_name='String',
@@ -2033,6 +2093,7 @@ class Ipv6Range(
         member_name='Description',
         shape_name='String',
     ))
+
     cidr_ipv6: str = _dc.field(metadata=_base.field_metadata(
         member_name='CidrIpv6',
         shape_name='String',
@@ -2053,26 +2114,32 @@ class KeyPairInfo(
         member_name='KeyPairId',
         shape_name='String',
     ))
+
     key_type: KeyType = _dc.field(metadata=_base.field_metadata(
         member_name='KeyType',
         shape_name='KeyType',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     public_key: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicKey',
         shape_name='String',
     ))
+
     create_time: _base.MillisecondDateTime = _dc.field(metadata=_base.field_metadata(
         member_name='CreateTime',
         shape_name='MillisecondDateTime',
     ))
+
     key_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='KeyName',
         shape_name='String',
     ))
+
     key_fingerprint: str = _dc.field(metadata=_base.field_metadata(
         member_name='KeyFingerprint',
         shape_name='String',
@@ -2088,10 +2155,12 @@ class LaunchTemplateSpecification(
         member_name='LaunchTemplateId',
         shape_name='LaunchTemplateId',
     ))
+
     launch_template_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='LaunchTemplateName',
         shape_name='String',
     ))
+
     version: str = _dc.field(metadata=_base.field_metadata(
         member_name='Version',
         shape_name='String',
@@ -2140,26 +2209,32 @@ class NetworkInterfaceAssociation(
         member_name='AllocationId',
         shape_name='String',
     ))
+
     association_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='AssociationId',
         shape_name='String',
     ))
+
     ip_owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='IpOwnerId',
         shape_name='String',
     ))
+
     public_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicDnsName',
         shape_name='String',
     ))
+
     public_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicIp',
         shape_name='String',
     ))
+
     customer_owned_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CustomerOwnedIp',
         shape_name='String',
     ))
+
     carrier_ip: str = _dc.field(metadata=_base.field_metadata(
         member_name='CarrierIp',
         shape_name='String',
@@ -2178,6 +2253,7 @@ class NetworkInterfaceIpv6Address(
         member_name='Ipv6Address',
         shape_name='String',
     ))
+
     is_primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
         member_name='IsPrimaryIpv6',
         shape_name='Boolean',
@@ -2204,6 +2280,7 @@ class OperatorResponse(
         member_name='Managed',
         shape_name='Boolean',
     ))
+
     principal: str = _dc.field(metadata=_base.field_metadata(
         member_name='Principal',
         shape_name='String',
@@ -2219,34 +2296,42 @@ class Placement(
         member_name='Affinity',
         shape_name='String',
     ))
+
     group_name: PlacementGroupName = _dc.field(metadata=_base.field_metadata(
         member_name='GroupName',
         shape_name='PlacementGroupName',
     ))
+
     partition_number: int = _dc.field(metadata=_base.field_metadata(
         member_name='PartitionNumber',
         shape_name='Integer',
     ))
+
     host_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='HostId',
         shape_name='String',
     ))
+
     tenancy: Tenancy = _dc.field(metadata=_base.field_metadata(
         member_name='Tenancy',
         shape_name='Tenancy',
     ))
+
     spread_domain: str = _dc.field(metadata=_base.field_metadata(
         member_name='SpreadDomain',
         shape_name='String',
     ))
+
     host_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='HostResourceGroupArn',
         shape_name='String',
     ))
+
     group_id: PlacementGroupId = _dc.field(metadata=_base.field_metadata(
         member_name='GroupId',
         shape_name='PlacementGroupId',
     ))
+
     availability_zone: str = _dc.field(metadata=_base.field_metadata(
         member_name='AvailabilityZone',
         shape_name='String',
@@ -2262,6 +2347,7 @@ class PrefixListId(
         member_name='Description',
         shape_name='String',
     ))
+
     prefix_list_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrefixListId',
         shape_name='String',
@@ -2277,10 +2363,12 @@ class PrivateDnsNameOptionsOnLaunch(
         member_name='HostnameType',
         shape_name='HostnameType',
     ))
+
     enable_resource_name_dns_a_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsARecord',
         shape_name='Boolean',
     ))
+
     enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsAAAARecord',
         shape_name='Boolean',
@@ -2296,10 +2384,12 @@ class PrivateDnsNameOptionsRequest(
         member_name='HostnameType',
         shape_name='HostnameType',
     ))
+
     enable_resource_name_dns_a_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsARecord',
         shape_name='Boolean',
     ))
+
     enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsAAAARecord',
         shape_name='Boolean',
@@ -2315,10 +2405,12 @@ class PrivateDnsNameOptionsResponse(
         member_name='HostnameType',
         shape_name='HostnameType',
     ))
+
     enable_resource_name_dns_a_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsARecord',
         shape_name='Boolean',
     ))
+
     enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableResourceNameDnsAAAARecord',
         shape_name='Boolean',
@@ -2334,6 +2426,7 @@ class PrivateIpAddressSpecification(
         member_name='Primary',
         shape_name='Boolean',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
@@ -2349,6 +2442,7 @@ class ProductCode(
         member_name='ProductCodeId',
         shape_name='String',
     ))
+
     product_code_type: ProductCodeValues = _dc.field(metadata=_base.field_metadata(
         member_name='ProductCodeType',
         shape_name='ProductCodeValues',
@@ -2383,18 +2477,22 @@ class SpotMarketOptions(
         member_name='MaxPrice',
         shape_name='String',
     ))
+
     spot_instance_type: SpotInstanceType = _dc.field(metadata=_base.field_metadata(
         member_name='SpotInstanceType',
         shape_name='SpotInstanceType',
     ))
+
     block_duration_minutes: int = _dc.field(metadata=_base.field_metadata(
         member_name='BlockDurationMinutes',
         shape_name='Integer',
     ))
+
     valid_until: _base.DateTime = _dc.field(metadata=_base.field_metadata(
         member_name='ValidUntil',
         shape_name='DateTime',
     ))
+
     instance_interruption_behavior: InstanceInterruptionBehavior = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceInterruptionBehavior',
         shape_name='InstanceInterruptionBehavior',
@@ -2410,6 +2508,7 @@ class StateReason(
         member_name='Code',
         shape_name='String',
     ))
+
     message: str = _dc.field(metadata=_base.field_metadata(
         member_name='Message',
         shape_name='String',
@@ -2425,6 +2524,7 @@ class SubnetCidrBlockState(
         member_name='State',
         shape_name='SubnetCidrBlockStateCode',
     ))
+
     status_message: str = _dc.field(metadata=_base.field_metadata(
         member_name='StatusMessage',
         shape_name='String',
@@ -2443,6 +2543,7 @@ class TagSpecification(
         member_name='ResourceType',
         shape_name='ResourceType',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
@@ -2458,26 +2559,32 @@ class UserIdGroupPair(
         member_name='Description',
         shape_name='String',
     ))
+
     user_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='UserId',
         shape_name='String',
     ))
+
     group_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='GroupName',
         shape_name='String',
     ))
+
     group_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='GroupId',
         shape_name='String',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     vpc_peering_connection_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcPeeringConnectionId',
         shape_name='String',
     ))
+
     peering_status: str = _dc.field(metadata=_base.field_metadata(
         member_name='PeeringStatus',
         shape_name='String',
@@ -2496,6 +2603,7 @@ class VpcCidrBlockState(
         member_name='State',
         shape_name='VpcCidrBlockStateCode',
     ))
+
     status_message: str = _dc.field(metadata=_base.field_metadata(
         member_name='StatusMessage',
         shape_name='String',
@@ -2516,6 +2624,7 @@ class AttachmentEnaSrdSpecification(
         member_name='EnaSrdEnabled',
         shape_name='Boolean',
     ))
+
     ena_srd_udp_specification: AttachmentEnaSrdUdpSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdUdpSpecification',
         shape_name='AttachmentEnaSrdUdpSpecification',
@@ -2531,14 +2640,17 @@ class BlockDeviceMapping(
         member_name='Ebs',
         shape_name='EbsBlockDevice',
     ))
+
     no_device: str = _dc.field(metadata=_base.field_metadata(
         member_name='NoDevice',
         shape_name='String',
     ))
+
     device_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='DeviceName',
         shape_name='String',
     ))
+
     virtual_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='VirtualName',
         shape_name='String',
@@ -2554,6 +2666,7 @@ class CapacityReservationSpecification(
         member_name='CapacityReservationPreference',
         shape_name='CapacityReservationPreference',
     ))
+
     capacity_reservation_target: CapacityReservationTarget = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationTarget',
         shape_name='CapacityReservationTarget',
@@ -2569,6 +2682,7 @@ class CapacityReservationSpecificationResponse(
         member_name='CapacityReservationPreference',
         shape_name='CapacityReservationPreference',
     ))
+
     capacity_reservation_target: CapacityReservationTargetResponse = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationTarget',
         shape_name='CapacityReservationTargetResponse',
@@ -2584,26 +2698,32 @@ class EbsInstanceBlockDevice(
         member_name='AttachTime',
         shape_name='DateTime',
     ))
+
     delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteOnTermination',
         shape_name='Boolean',
     ))
+
     status: AttachmentStatus = _dc.field(metadata=_base.field_metadata(
         member_name='Status',
         shape_name='AttachmentStatus',
     ))
+
     volume_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VolumeId',
         shape_name='String',
     ))
+
     associated_resource: str = _dc.field(metadata=_base.field_metadata(
         member_name='AssociatedResource',
         shape_name='String',
     ))
+
     volume_owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VolumeOwnerId',
         shape_name='String',
     ))
+
     operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorResponse',
@@ -2628,6 +2748,7 @@ class EnaSrdSpecificationRequest(
         member_name='EnaSrdEnabled',
         shape_name='Boolean',
     ))
+
     ena_srd_udp_specification: EnaSrdUdpSpecificationRequest = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdUdpSpecification',
         shape_name='EnaSrdUdpSpecificationRequest',
@@ -2643,6 +2764,7 @@ class Filter(
         member_name='Name',
         shape_name='String',
     ))
+
     values: ValueStringList = _dc.field(metadata=_base.field_metadata(
         member_name='Values',
         shape_name='ValueStringList',
@@ -2661,6 +2783,7 @@ class InstanceAttachmentEnaSrdSpecification(
         member_name='EnaSrdEnabled',
         shape_name='Boolean',
     ))
+
     ena_srd_udp_specification: InstanceAttachmentEnaSrdUdpSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdUdpSpecification',
         shape_name='InstanceAttachmentEnaSrdUdpSpecification',
@@ -2683,6 +2806,7 @@ class InstanceMarketOptionsRequest(
         member_name='MarketType',
         shape_name='MarketType',
     ))
+
     spot_options: SpotMarketOptions = _dc.field(metadata=_base.field_metadata(
         member_name='SpotOptions',
         shape_name='SpotMarketOptions',
@@ -2698,14 +2822,17 @@ class InstancePrivateIpAddress(
         member_name='Association',
         shape_name='InstanceNetworkInterfaceAssociation',
     ))
+
     primary: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Primary',
         shape_name='Boolean',
     ))
+
     private_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsName',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
@@ -2721,10 +2848,12 @@ class InstanceStateChange(
         member_name='InstanceId',
         shape_name='String',
     ))
+
     current_state: InstanceState = _dc.field(metadata=_base.field_metadata(
         member_name='CurrentState',
         shape_name='InstanceState',
     ))
+
     previous_state: InstanceState = _dc.field(metadata=_base.field_metadata(
         member_name='PreviousState',
         shape_name='InstanceState',
@@ -2763,14 +2892,17 @@ class NetworkInterfacePrivateIpAddress(
         member_name='Association',
         shape_name='NetworkInterfaceAssociation',
     ))
+
     primary: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Primary',
         shape_name='Boolean',
     ))
+
     private_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsName',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
@@ -2793,6 +2925,7 @@ class RebootInstancesRequest(
         member_name='InstanceIds',
         shape_name='InstanceIdStringList',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
@@ -2808,10 +2941,12 @@ class StartInstancesRequest(
         member_name='InstanceIds',
         shape_name='InstanceIdStringList',
     ))
+
     additional_info: str = _dc.field(metadata=_base.field_metadata(
         member_name='AdditionalInfo',
         shape_name='String',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
@@ -2827,14 +2962,17 @@ class StopInstancesRequest(
         member_name='InstanceIds',
         shape_name='InstanceIdStringList',
     ))
+
     hibernate: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Hibernate',
         shape_name='Boolean',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     force: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Force',
         shape_name='Boolean',
@@ -2850,18 +2988,22 @@ class SubnetIpv6CidrBlockAssociation(
         member_name='AssociationId',
         shape_name='SubnetCidrAssociationId',
     ))
+
     ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlock',
         shape_name='String',
     ))
+
     ipv6_cidr_block_state: SubnetCidrBlockState = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlockState',
         shape_name='SubnetCidrBlockState',
     ))
+
     ipv6_address_attribute: Ipv6AddressAttribute = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6AddressAttribute',
         shape_name='Ipv6AddressAttribute',
     ))
+
     ip_source: IpSource = _dc.field(metadata=_base.field_metadata(
         member_name='IpSource',
         shape_name='IpSource',
@@ -2880,6 +3022,7 @@ class TerminateInstancesRequest(
         member_name='InstanceIds',
         shape_name='InstanceIdStringList',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
@@ -2898,10 +3041,12 @@ class VpcCidrBlockAssociation(
         member_name='AssociationId',
         shape_name='String',
     ))
+
     cidr_block: str = _dc.field(metadata=_base.field_metadata(
         member_name='CidrBlock',
         shape_name='String',
     ))
+
     cidr_block_state: VpcCidrBlockState = _dc.field(metadata=_base.field_metadata(
         member_name='CidrBlockState',
         shape_name='VpcCidrBlockState',
@@ -2917,26 +3062,32 @@ class VpcIpv6CidrBlockAssociation(
         member_name='AssociationId',
         shape_name='String',
     ))
+
     ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlock',
         shape_name='String',
     ))
+
     ipv6_cidr_block_state: VpcCidrBlockState = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlockState',
         shape_name='VpcCidrBlockState',
     ))
+
     network_border_group: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkBorderGroup',
         shape_name='String',
     ))
+
     ipv6_pool: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Pool',
         shape_name='String',
     ))
+
     ipv6_address_attribute: Ipv6AddressAttribute = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6AddressAttribute',
         shape_name='Ipv6AddressAttribute',
     ))
+
     ip_source: IpSource = _dc.field(metadata=_base.field_metadata(
         member_name='IpSource',
         shape_name='IpSource',
@@ -2980,6 +3131,7 @@ class InstanceBlockDeviceMapping(
         member_name='DeviceName',
         shape_name='String',
     ))
+
     ebs: EbsInstanceBlockDevice = _dc.field(metadata=_base.field_metadata(
         member_name='Ebs',
         shape_name='EbsInstanceBlockDevice',
@@ -2995,26 +3147,32 @@ class InstanceNetworkInterfaceAttachment(
         member_name='AttachTime',
         shape_name='DateTime',
     ))
+
     attachment_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='AttachmentId',
         shape_name='String',
     ))
+
     delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteOnTermination',
         shape_name='Boolean',
     ))
+
     device_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='DeviceIndex',
         shape_name='Integer',
     ))
+
     status: AttachmentStatus = _dc.field(metadata=_base.field_metadata(
         member_name='Status',
         shape_name='AttachmentStatus',
     ))
+
     network_card_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkCardIndex',
         shape_name='Integer',
     ))
+
     ena_srd_specification: InstanceAttachmentEnaSrdSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdSpecification',
         shape_name='InstanceAttachmentEnaSrdSpecification',
@@ -3030,86 +3188,107 @@ class InstanceNetworkInterfaceSpecification(
         member_name='AssociatePublicIpAddress',
         shape_name='Boolean',
     ))
+
     delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteOnTermination',
         shape_name='Boolean',
     ))
+
     description: str = _dc.field(metadata=_base.field_metadata(
         member_name='Description',
         shape_name='String',
     ))
+
     device_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='DeviceIndex',
         shape_name='Integer',
     ))
+
     groups: SecurityGroupIdStringList = _dc.field(metadata=_base.field_metadata(
         member_name='Groups',
         shape_name='SecurityGroupIdStringList',
     ))
+
     ipv6_address_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6AddressCount',
         shape_name='Integer',
     ))
+
     ipv6_addresses: InstanceIpv6AddressList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Addresses',
         shape_name='InstanceIpv6AddressList',
     ))
+
     network_interface_id: NetworkInterfaceId = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceId',
         shape_name='NetworkInterfaceId',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     private_ip_addresses: PrivateIpAddressSpecificationList = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddresses',
         shape_name='PrivateIpAddressSpecificationList',
     ))
+
     secondary_private_ip_address_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='SecondaryPrivateIpAddressCount',
         shape_name='Integer',
     ))
+
     subnet_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='String',
     ))
+
     associate_carrier_ip_address: bool = _dc.field(metadata=_base.field_metadata(
         member_name='AssociateCarrierIpAddress',
         shape_name='Boolean',
     ))
+
     interface_type: str = _dc.field(metadata=_base.field_metadata(
         member_name='InterfaceType',
         shape_name='String',
     ))
+
     network_card_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkCardIndex',
         shape_name='Integer',
     ))
+
     ipv4_prefixes: Ipv4PrefixList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv4Prefixes',
         shape_name='Ipv4PrefixList',
     ))
+
     ipv4_prefix_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv4PrefixCount',
         shape_name='Integer',
     ))
+
     ipv6_prefixes: Ipv6PrefixList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Prefixes',
         shape_name='Ipv6PrefixList',
     ))
+
     ipv6_prefix_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6PrefixCount',
         shape_name='Integer',
     ))
+
     primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
         member_name='PrimaryIpv6',
         shape_name='Boolean',
     ))
+
     ena_srd_specification: EnaSrdSpecificationRequest = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdSpecification',
         shape_name='EnaSrdSpecificationRequest',
     ))
+
     connection_tracking_specification: ConnectionTrackingSpecificationRequest = _dc.field(metadata=_base.field_metadata(
         member_name='ConnectionTrackingSpecification',
         shape_name='ConnectionTrackingSpecificationRequest',
@@ -3130,14 +3309,17 @@ class InternetGateway(
         member_name='Attachments',
         shape_name='InternetGatewayAttachmentList',
     ))
+
     internet_gateway_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='InternetGatewayId',
         shape_name='String',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
@@ -3153,26 +3335,32 @@ class IpPermission(
         member_name='IpProtocol',
         shape_name='String',
     ))
+
     from_port: int = _dc.field(metadata=_base.field_metadata(
         member_name='FromPort',
         shape_name='Integer',
     ))
+
     to_port: int = _dc.field(metadata=_base.field_metadata(
         member_name='ToPort',
         shape_name='Integer',
     ))
+
     user_id_group_pairs: UserIdGroupPairList = _dc.field(metadata=_base.field_metadata(
         member_name='UserIdGroupPairs',
         shape_name='UserIdGroupPairList',
     ))
+
     ip_ranges: IpRangeList = _dc.field(metadata=_base.field_metadata(
         member_name='IpRanges',
         shape_name='IpRangeList',
     ))
+
     ipv6_ranges: Ipv6RangeList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Ranges',
         shape_name='Ipv6RangeList',
     ))
+
     prefix_list_ids: PrefixListIdList = _dc.field(metadata=_base.field_metadata(
         member_name='PrefixListIds',
         shape_name='PrefixListIdList',
@@ -3188,34 +3376,42 @@ class NetworkInterfaceAttachment(
         member_name='AttachTime',
         shape_name='DateTime',
     ))
+
     attachment_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='AttachmentId',
         shape_name='String',
     ))
+
     delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteOnTermination',
         shape_name='Boolean',
     ))
+
     device_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='DeviceIndex',
         shape_name='Integer',
     ))
+
     network_card_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkCardIndex',
         shape_name='Integer',
     ))
+
     instance_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceId',
         shape_name='String',
     ))
+
     instance_owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceOwnerId',
         shape_name='String',
     ))
+
     status: AttachmentStatus = _dc.field(metadata=_base.field_metadata(
         member_name='Status',
         shape_name='AttachmentStatus',
     ))
+
     ena_srd_specification: AttachmentEnaSrdSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdSpecification',
         shape_name='AttachmentEnaSrdSpecification',
@@ -3240,14 +3436,17 @@ class DescribeAddressesRequest(
         member_name='PublicIps',
         shape_name='PublicIpStringList',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
     ))
+
     allocation_ids: AllocationIdList = _dc.field(metadata=_base.field_metadata(
         member_name='AllocationIds',
         shape_name='AllocationIdList',
@@ -3263,18 +3462,22 @@ class DescribeInstancesRequest(
         member_name='InstanceIds',
         shape_name='InstanceIdStringList',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: int = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='Integer',
@@ -3290,18 +3493,22 @@ class DescribeInternetGatewaysRequest(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: DescribeInternetGatewaysMaxResults = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeInternetGatewaysMaxResults',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     internet_gateway_ids: InternetGatewayIdList = _dc.field(metadata=_base.field_metadata(
         member_name='InternetGatewayIds',
         shape_name='InternetGatewayIdList',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
@@ -3317,18 +3524,22 @@ class DescribeKeyPairsRequest(
         member_name='KeyNames',
         shape_name='KeyNameStringList',
     ))
+
     key_pair_ids: KeyPairIdStringList = _dc.field(metadata=_base.field_metadata(
         member_name='KeyPairIds',
         shape_name='KeyPairIdStringList',
     ))
+
     include_public_key: bool = _dc.field(metadata=_base.field_metadata(
         member_name='IncludePublicKey',
         shape_name='Boolean',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
@@ -3344,18 +3555,22 @@ class DescribeNetworkInterfacesRequest(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: DescribeNetworkInterfacesMaxResults = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeNetworkInterfacesMaxResults',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     network_interface_ids: NetworkInterfaceIdList = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceIds',
         shape_name='NetworkInterfaceIdList',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
@@ -3371,22 +3586,27 @@ class DescribeSecurityGroupsRequest(
         member_name='GroupIds',
         shape_name='GroupIdStringList',
     ))
+
     group_names: GroupNameStringList = _dc.field(metadata=_base.field_metadata(
         member_name='GroupNames',
         shape_name='GroupNameStringList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: DescribeSecurityGroupsMaxResults = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeSecurityGroupsMaxResults',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         shape_name='FilterList',
@@ -3402,18 +3622,22 @@ class DescribeSubnetsRequest(
         member_name='Filters',
         shape_name='FilterList',
     ))
+
     subnet_ids: SubnetIdStringList = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetIds',
         shape_name='SubnetIdStringList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: DescribeSubnetsMaxResults = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeSubnetsMaxResults',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
@@ -3429,18 +3653,22 @@ class DescribeVpcsRequest(
         member_name='Filters',
         shape_name='FilterList',
     ))
+
     vpc_ids: VpcIdStringList = _dc.field(metadata=_base.field_metadata(
         member_name='VpcIds',
         shape_name='VpcIdStringList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
     ))
+
     max_results: DescribeVpcsMaxResults = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeVpcsMaxResults',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
@@ -3459,78 +3687,97 @@ class InstanceNetworkInterface(
         member_name='Association',
         shape_name='InstanceNetworkInterfaceAssociation',
     ))
+
     attachment: InstanceNetworkInterfaceAttachment = _dc.field(metadata=_base.field_metadata(
         member_name='Attachment',
         shape_name='InstanceNetworkInterfaceAttachment',
     ))
+
     description: str = _dc.field(metadata=_base.field_metadata(
         member_name='Description',
         shape_name='String',
     ))
+
     groups: GroupIdentifierList = _dc.field(metadata=_base.field_metadata(
         member_name='Groups',
         shape_name='GroupIdentifierList',
     ))
+
     ipv6_addresses: InstanceIpv6AddressList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Addresses',
         shape_name='InstanceIpv6AddressList',
     ))
+
     mac_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='MacAddress',
         shape_name='String',
     ))
+
     network_interface_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceId',
         shape_name='String',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     private_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsName',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     private_ip_addresses: InstancePrivateIpAddressList = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddresses',
         shape_name='InstancePrivateIpAddressList',
     ))
+
     source_dest_check: bool = _dc.field(metadata=_base.field_metadata(
         member_name='SourceDestCheck',
         shape_name='Boolean',
     ))
+
     status: NetworkInterfaceStatus = _dc.field(metadata=_base.field_metadata(
         member_name='Status',
         shape_name='NetworkInterfaceStatus',
     ))
+
     subnet_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='String',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     interface_type: str = _dc.field(metadata=_base.field_metadata(
         member_name='InterfaceType',
         shape_name='String',
     ))
+
     ipv4_prefixes: InstanceIpv4PrefixList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv4Prefixes',
         shape_name='InstanceIpv4PrefixList',
     ))
+
     ipv6_prefixes: InstanceIpv6PrefixList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Prefixes',
         shape_name='InstanceIpv6PrefixList',
     ))
+
     connection_tracking_configuration: ConnectionTrackingSpecificationResponse = _dc.field(metadata=_base.field_metadata(
         member_name='ConnectionTrackingConfiguration',
         shape_name='ConnectionTrackingSpecificationResponse',
     ))
+
     operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorResponse',
@@ -3553,110 +3800,137 @@ class NetworkInterface(
         member_name='Association',
         shape_name='NetworkInterfaceAssociation',
     ))
+
     attachment: NetworkInterfaceAttachment = _dc.field(metadata=_base.field_metadata(
         member_name='Attachment',
         shape_name='NetworkInterfaceAttachment',
     ))
+
     availability_zone: str = _dc.field(metadata=_base.field_metadata(
         member_name='AvailabilityZone',
         shape_name='String',
     ))
+
     connection_tracking_configuration: ConnectionTrackingConfiguration = _dc.field(metadata=_base.field_metadata(
         member_name='ConnectionTrackingConfiguration',
         shape_name='ConnectionTrackingConfiguration',
     ))
+
     description: str = _dc.field(metadata=_base.field_metadata(
         member_name='Description',
         shape_name='String',
     ))
+
     groups: GroupIdentifierList = _dc.field(metadata=_base.field_metadata(
         member_name='Groups',
         shape_name='GroupIdentifierList',
     ))
+
     interface_type: NetworkInterfaceType = _dc.field(metadata=_base.field_metadata(
         member_name='InterfaceType',
         shape_name='NetworkInterfaceType',
     ))
+
     ipv6_addresses: NetworkInterfaceIpv6AddressesList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Addresses',
         shape_name='NetworkInterfaceIpv6AddressesList',
     ))
+
     mac_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='MacAddress',
         shape_name='String',
     ))
+
     network_interface_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaceId',
         shape_name='String',
     ))
+
     outpost_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='OutpostArn',
         shape_name='String',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     private_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsName',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     private_ip_addresses: NetworkInterfacePrivateIpAddressList = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddresses',
         shape_name='NetworkInterfacePrivateIpAddressList',
     ))
+
     ipv4_prefixes: Ipv4PrefixesList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv4Prefixes',
         shape_name='Ipv4PrefixesList',
     ))
+
     ipv6_prefixes: Ipv6PrefixesList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Prefixes',
         shape_name='Ipv6PrefixesList',
     ))
+
     requester_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='RequesterId',
         shape_name='String',
     ))
+
     requester_managed: bool = _dc.field(metadata=_base.field_metadata(
         member_name='RequesterManaged',
         shape_name='Boolean',
     ))
+
     source_dest_check: bool = _dc.field(metadata=_base.field_metadata(
         member_name='SourceDestCheck',
         shape_name='Boolean',
     ))
+
     status: NetworkInterfaceStatus = _dc.field(metadata=_base.field_metadata(
         member_name='Status',
         shape_name='NetworkInterfaceStatus',
     ))
+
     subnet_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='String',
     ))
+
     tag_set: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='TagSet',
         shape_name='TagList',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     deny_all_igw_traffic: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DenyAllIgwTraffic',
         shape_name='Boolean',
     ))
+
     ipv6_native: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Native',
         shape_name='Boolean',
     ))
+
     ipv6_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Address',
         shape_name='String',
     ))
+
     operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorResponse',
@@ -3694,86 +3968,107 @@ class Subnet(
         member_name='AvailabilityZoneId',
         shape_name='String',
     ))
+
     enable_lni_at_device_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='EnableLniAtDeviceIndex',
         shape_name='Integer',
     ))
+
     map_customer_owned_ip_on_launch: bool = _dc.field(metadata=_base.field_metadata(
         member_name='MapCustomerOwnedIpOnLaunch',
         shape_name='Boolean',
     ))
+
     customer_owned_ipv4_pool: CoipPoolId = _dc.field(metadata=_base.field_metadata(
         member_name='CustomerOwnedIpv4Pool',
         shape_name='CoipPoolId',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     assign_ipv6_address_on_creation: bool = _dc.field(metadata=_base.field_metadata(
         member_name='AssignIpv6AddressOnCreation',
         shape_name='Boolean',
     ))
+
     ipv6_cidr_block_association_set: SubnetIpv6CidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlockAssociationSet',
         shape_name='SubnetIpv6CidrBlockAssociationSet',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     subnet_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetArn',
         shape_name='String',
     ))
+
     outpost_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='OutpostArn',
         shape_name='String',
     ))
+
     enable_dns64: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnableDns64',
         shape_name='Boolean',
     ))
+
     ipv6_native: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Native',
         shape_name='Boolean',
     ))
+
     private_dns_name_options_on_launch: PrivateDnsNameOptionsOnLaunch = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsNameOptionsOnLaunch',
         shape_name='PrivateDnsNameOptionsOnLaunch',
     ))
+
     block_public_access_states: BlockPublicAccessStates = _dc.field(metadata=_base.field_metadata(
         member_name='BlockPublicAccessStates',
         shape_name='BlockPublicAccessStates',
     ))
+
     subnet_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='String',
     ))
+
     state: SubnetState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='SubnetState',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     cidr_block: str = _dc.field(metadata=_base.field_metadata(
         member_name='CidrBlock',
         shape_name='String',
     ))
+
     available_ip_address_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='AvailableIpAddressCount',
         shape_name='Integer',
     ))
+
     availability_zone: str = _dc.field(metadata=_base.field_metadata(
         member_name='AvailabilityZone',
         shape_name='String',
     ))
+
     default_for_az: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DefaultForAz',
         shape_name='Boolean',
     ))
+
     map_public_ip_on_launch: bool = _dc.field(metadata=_base.field_metadata(
         member_name='MapPublicIpOnLaunch',
         shape_name='Boolean',
@@ -3800,42 +4095,52 @@ class Vpc(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     instance_tenancy: Tenancy = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceTenancy',
         shape_name='Tenancy',
     ))
+
     ipv6_cidr_block_association_set: VpcIpv6CidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6CidrBlockAssociationSet',
         shape_name='VpcIpv6CidrBlockAssociationSet',
     ))
+
     cidr_block_association_set: VpcCidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
         member_name='CidrBlockAssociationSet',
         shape_name='VpcCidrBlockAssociationSet',
     ))
+
     is_default: bool = _dc.field(metadata=_base.field_metadata(
         member_name='IsDefault',
         shape_name='Boolean',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     block_public_access_states: BlockPublicAccessStates = _dc.field(metadata=_base.field_metadata(
         member_name='BlockPublicAccessStates',
         shape_name='BlockPublicAccessStates',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     state: VpcState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='VpcState',
     ))
+
     cidr_block: str = _dc.field(metadata=_base.field_metadata(
         member_name='CidrBlock',
         shape_name='String',
     ))
+
     dhcp_options_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='DhcpOptionsId',
         shape_name='String',
@@ -3851,6 +4156,7 @@ class DescribeInternetGatewaysResult(
         member_name='InternetGateways',
         shape_name='InternetGatewayList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
@@ -3871,170 +4177,212 @@ class RunInstancesRequest(
         member_name='BlockDeviceMappings',
         shape_name='BlockDeviceMappingRequestList',
     ))
+
     image_id: ImageId = _dc.field(metadata=_base.field_metadata(
         member_name='ImageId',
         shape_name='ImageId',
     ))
+
     instance_type: InstanceType = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceType',
         shape_name='InstanceType',
     ))
+
     ipv6_address_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6AddressCount',
         shape_name='Integer',
     ))
+
     ipv6_addresses: InstanceIpv6AddressList = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Addresses',
         shape_name='InstanceIpv6AddressList',
     ))
+
     kernel_id: KernelId = _dc.field(metadata=_base.field_metadata(
         member_name='KernelId',
         shape_name='KernelId',
     ))
+
     key_name: KeyPairName = _dc.field(metadata=_base.field_metadata(
         member_name='KeyName',
         shape_name='KeyPairName',
     ))
+
     max_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='MaxCount',
         shape_name='Integer',
     ))
+
     min_count: int = _dc.field(metadata=_base.field_metadata(
         member_name='MinCount',
         shape_name='Integer',
     ))
+
     monitoring: RunInstancesMonitoringEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='Monitoring',
         shape_name='RunInstancesMonitoringEnabled',
     ))
+
     placement: Placement = _dc.field(metadata=_base.field_metadata(
         member_name='Placement',
         shape_name='Placement',
     ))
+
     ramdisk_id: RamdiskId = _dc.field(metadata=_base.field_metadata(
         member_name='RamdiskId',
         shape_name='RamdiskId',
     ))
+
     security_group_ids: SecurityGroupIdStringList = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroupIds',
         shape_name='SecurityGroupIdStringList',
     ))
+
     security_groups: SecurityGroupStringList = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroups',
         shape_name='SecurityGroupStringList',
     ))
+
     subnet_id: SubnetId = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='SubnetId',
     ))
+
     user_data: RunInstancesUserData = _dc.field(metadata=_base.field_metadata(
         member_name='UserData',
         shape_name='RunInstancesUserData',
     ))
+
     elastic_gpu_specification: ElasticGpuSpecifications = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuSpecification',
         shape_name='ElasticGpuSpecifications',
     ))
+
     elastic_inference_accelerators: ElasticInferenceAccelerators = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticInferenceAccelerators',
         shape_name='ElasticInferenceAccelerators',
     ))
+
     tag_specifications: TagSpecificationList = _dc.field(metadata=_base.field_metadata(
         member_name='TagSpecifications',
         shape_name='TagSpecificationList',
     ))
+
     launch_template: LaunchTemplateSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='LaunchTemplate',
         shape_name='LaunchTemplateSpecification',
     ))
+
     instance_market_options: InstanceMarketOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceMarketOptions',
         shape_name='InstanceMarketOptionsRequest',
     ))
+
     credit_specification: CreditSpecificationRequest = _dc.field(metadata=_base.field_metadata(
         member_name='CreditSpecification',
         shape_name='CreditSpecificationRequest',
     ))
+
     cpu_options: CpuOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='CpuOptions',
         shape_name='CpuOptionsRequest',
     ))
+
     capacity_reservation_specification: CapacityReservationSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationSpecification',
         shape_name='CapacityReservationSpecification',
     ))
+
     hibernation_options: HibernationOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='HibernationOptions',
         shape_name='HibernationOptionsRequest',
     ))
+
     license_specifications: LicenseSpecificationListRequest = _dc.field(metadata=_base.field_metadata(
         member_name='LicenseSpecifications',
         shape_name='LicenseSpecificationListRequest',
     ))
+
     metadata_options: InstanceMetadataOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='MetadataOptions',
         shape_name='InstanceMetadataOptionsRequest',
     ))
+
     enclave_options: EnclaveOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='EnclaveOptions',
         shape_name='EnclaveOptionsRequest',
     ))
+
     private_dns_name_options: PrivateDnsNameOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsNameOptions',
         shape_name='PrivateDnsNameOptionsRequest',
     ))
+
     maintenance_options: InstanceMaintenanceOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='MaintenanceOptions',
         shape_name='InstanceMaintenanceOptionsRequest',
     ))
+
     disable_api_stop: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DisableApiStop',
         shape_name='Boolean',
     ))
+
     enable_primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnablePrimaryIpv6',
         shape_name='Boolean',
     ))
+
     network_performance_options: InstanceNetworkPerformanceOptionsRequest = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkPerformanceOptions',
         shape_name='InstanceNetworkPerformanceOptionsRequest',
     ))
+
     operator: OperatorRequest = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorRequest',
     ))
+
     dry_run: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DryRun',
         shape_name='Boolean',
     ))
+
     disable_api_termination: bool = _dc.field(metadata=_base.field_metadata(
         member_name='DisableApiTermination',
         shape_name='Boolean',
     ))
+
     instance_initiated_shutdown_behavior: ShutdownBehavior = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceInitiatedShutdownBehavior',
         shape_name='ShutdownBehavior',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     client_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='ClientToken',
         shape_name='String',
     ))
+
     additional_info: str = _dc.field(metadata=_base.field_metadata(
         member_name='AdditionalInfo',
         shape_name='String',
     ))
+
     network_interfaces: InstanceNetworkInterfaceSpecificationList = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaces',
         shape_name='InstanceNetworkInterfaceSpecificationList',
     ))
+
     iam_instance_profile: IamInstanceProfileSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='IamInstanceProfile',
         shape_name='IamInstanceProfileSpecification',
     ))
+
     ebs_optimized: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EbsOptimized',
         shape_name='Boolean',
@@ -4050,34 +4398,42 @@ class SecurityGroup(
         member_name='GroupId',
         shape_name='String',
     ))
+
     ip_permissions_egress: IpPermissionList = _dc.field(metadata=_base.field_metadata(
         member_name='IpPermissionsEgress',
         shape_name='IpPermissionList',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     security_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroupArn',
         shape_name='String',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     group_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='GroupName',
         shape_name='String',
     ))
+
     description: str = _dc.field(metadata=_base.field_metadata(
         member_name='Description',
         shape_name='String',
     ))
+
     ip_permissions: IpPermissionList = _dc.field(metadata=_base.field_metadata(
         member_name='IpPermissions',
         shape_name='IpPermissionList',
@@ -4098,6 +4454,7 @@ class DescribeNetworkInterfacesResult(
         member_name='NetworkInterfaces',
         shape_name='NetworkInterfaceList',
     ))
+
     next_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='NextToken',
         shape_name='String',
@@ -4113,6 +4470,7 @@ class DescribeSubnetsResult(
         member_name='NextToken',
         shape_name='String',
     ))
+
     subnets: SubnetList = _dc.field(metadata=_base.field_metadata(
         member_name='Subnets',
         shape_name='SubnetList',
@@ -4128,6 +4486,7 @@ class DescribeVpcsResult(
         member_name='NextToken',
         shape_name='String',
     ))
+
     vpcs: VpcList = _dc.field(metadata=_base.field_metadata(
         member_name='Vpcs',
         shape_name='VpcList',
@@ -4143,234 +4502,292 @@ class Instance(
         member_name='Architecture',
         shape_name='ArchitectureValues',
     ))
+
     block_device_mappings: InstanceBlockDeviceMappingList = _dc.field(metadata=_base.field_metadata(
         member_name='BlockDeviceMappings',
         shape_name='InstanceBlockDeviceMappingList',
     ))
+
     client_token: str = _dc.field(metadata=_base.field_metadata(
         member_name='ClientToken',
         shape_name='String',
     ))
+
     ebs_optimized: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EbsOptimized',
         shape_name='Boolean',
     ))
+
     ena_support: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSupport',
         shape_name='Boolean',
     ))
+
     hypervisor: HypervisorType = _dc.field(metadata=_base.field_metadata(
         member_name='Hypervisor',
         shape_name='HypervisorType',
     ))
+
     iam_instance_profile: IamInstanceProfile = _dc.field(metadata=_base.field_metadata(
         member_name='IamInstanceProfile',
         shape_name='IamInstanceProfile',
     ))
+
     instance_lifecycle: InstanceLifecycleType = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceLifecycle',
         shape_name='InstanceLifecycleType',
     ))
+
     elastic_gpu_associations: ElasticGpuAssociationList = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuAssociations',
         shape_name='ElasticGpuAssociationList',
     ))
+
     elastic_inference_accelerator_associations: ElasticInferenceAcceleratorAssociationList = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticInferenceAcceleratorAssociations',
         shape_name='ElasticInferenceAcceleratorAssociationList',
     ))
+
     network_interfaces: InstanceNetworkInterfaceList = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkInterfaces',
         shape_name='InstanceNetworkInterfaceList',
     ))
+
     outpost_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='OutpostArn',
         shape_name='String',
     ))
+
     root_device_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='RootDeviceName',
         shape_name='String',
     ))
+
     root_device_type: DeviceType = _dc.field(metadata=_base.field_metadata(
         member_name='RootDeviceType',
         shape_name='DeviceType',
     ))
+
     security_groups: GroupIdentifierList = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroups',
         shape_name='GroupIdentifierList',
     ))
+
     source_dest_check: bool = _dc.field(metadata=_base.field_metadata(
         member_name='SourceDestCheck',
         shape_name='Boolean',
     ))
+
     spot_instance_request_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SpotInstanceRequestId',
         shape_name='String',
     ))
+
     sriov_net_support: str = _dc.field(metadata=_base.field_metadata(
         member_name='SriovNetSupport',
         shape_name='String',
     ))
+
     state_reason: StateReason = _dc.field(metadata=_base.field_metadata(
         member_name='StateReason',
         shape_name='StateReason',
     ))
+
     tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
         member_name='Tags',
         shape_name='TagList',
     ))
+
     virtualization_type: VirtualizationType = _dc.field(metadata=_base.field_metadata(
         member_name='VirtualizationType',
         shape_name='VirtualizationType',
     ))
+
     cpu_options: CpuOptions = _dc.field(metadata=_base.field_metadata(
         member_name='CpuOptions',
         shape_name='CpuOptions',
     ))
+
     capacity_reservation_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationId',
         shape_name='String',
     ))
+
     capacity_reservation_specification: CapacityReservationSpecificationResponse = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationSpecification',
         shape_name='CapacityReservationSpecificationResponse',
     ))
+
     hibernation_options: HibernationOptions = _dc.field(metadata=_base.field_metadata(
         member_name='HibernationOptions',
         shape_name='HibernationOptions',
     ))
+
     licenses: LicenseList = _dc.field(metadata=_base.field_metadata(
         member_name='Licenses',
         shape_name='LicenseList',
     ))
+
     metadata_options: InstanceMetadataOptionsResponse = _dc.field(metadata=_base.field_metadata(
         member_name='MetadataOptions',
         shape_name='InstanceMetadataOptionsResponse',
     ))
+
     enclave_options: EnclaveOptions = _dc.field(metadata=_base.field_metadata(
         member_name='EnclaveOptions',
         shape_name='EnclaveOptions',
     ))
+
     boot_mode: BootModeValues = _dc.field(metadata=_base.field_metadata(
         member_name='BootMode',
         shape_name='BootModeValues',
     ))
+
     platform_details: str = _dc.field(metadata=_base.field_metadata(
         member_name='PlatformDetails',
         shape_name='String',
     ))
+
     usage_operation: str = _dc.field(metadata=_base.field_metadata(
         member_name='UsageOperation',
         shape_name='String',
     ))
+
     usage_operation_update_time: _base.MillisecondDateTime = _dc.field(metadata=_base.field_metadata(
         member_name='UsageOperationUpdateTime',
         shape_name='MillisecondDateTime',
     ))
+
     private_dns_name_options: PrivateDnsNameOptionsResponse = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsNameOptions',
         shape_name='PrivateDnsNameOptionsResponse',
     ))
+
     ipv6_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6Address',
         shape_name='String',
     ))
+
     tpm_support: str = _dc.field(metadata=_base.field_metadata(
         member_name='TpmSupport',
         shape_name='String',
     ))
+
     maintenance_options: InstanceMaintenanceOptions = _dc.field(metadata=_base.field_metadata(
         member_name='MaintenanceOptions',
         shape_name='InstanceMaintenanceOptions',
     ))
+
     current_instance_boot_mode: InstanceBootModeValues = _dc.field(metadata=_base.field_metadata(
         member_name='CurrentInstanceBootMode',
         shape_name='InstanceBootModeValues',
     ))
+
     network_performance_options: InstanceNetworkPerformanceOptions = _dc.field(metadata=_base.field_metadata(
         member_name='NetworkPerformanceOptions',
         shape_name='InstanceNetworkPerformanceOptions',
     ))
+
     operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorResponse',
     ))
+
     instance_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceId',
         shape_name='String',
     ))
+
     image_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='ImageId',
         shape_name='String',
     ))
+
     state: InstanceState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='InstanceState',
     ))
+
     private_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateDnsName',
         shape_name='String',
     ))
+
     public_dns_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicDnsName',
         shape_name='String',
     ))
+
     state_transition_reason: str = _dc.field(metadata=_base.field_metadata(
         member_name='StateTransitionReason',
         shape_name='String',
     ))
+
     key_name: str = _dc.field(metadata=_base.field_metadata(
         member_name='KeyName',
         shape_name='String',
     ))
+
     ami_launch_index: int = _dc.field(metadata=_base.field_metadata(
         member_name='AmiLaunchIndex',
         shape_name='Integer',
     ))
+
     product_codes: ProductCodeList = _dc.field(metadata=_base.field_metadata(
         member_name='ProductCodes',
         shape_name='ProductCodeList',
     ))
+
     instance_type: InstanceType = _dc.field(metadata=_base.field_metadata(
         member_name='InstanceType',
         shape_name='InstanceType',
     ))
+
     launch_time: _base.DateTime = _dc.field(metadata=_base.field_metadata(
         member_name='LaunchTime',
         shape_name='DateTime',
     ))
+
     placement: Placement = _dc.field(metadata=_base.field_metadata(
         member_name='Placement',
         shape_name='Placement',
     ))
+
     kernel_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='KernelId',
         shape_name='String',
     ))
+
     ramdisk_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='RamdiskId',
         shape_name='String',
     ))
+
     platform: PlatformValues = _dc.field(metadata=_base.field_metadata(
         member_name='Platform',
         shape_name='PlatformValues',
     ))
+
     monitoring: Monitoring = _dc.field(metadata=_base.field_metadata(
         member_name='Monitoring',
         shape_name='Monitoring',
     ))
+
     subnet_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='SubnetId',
         shape_name='String',
     ))
+
     vpc_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='String',
     ))
+
     private_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         shape_name='String',
     ))
+
     public_ip_address: str = _dc.field(metadata=_base.field_metadata(
         member_name='PublicIpAddress',
         shape_name='String',
@@ -4389,6 +4806,7 @@ class DescribeSecurityGroupsResult(
         member_name='NextToken',
         shape_name='String',
     ))
+
     security_groups: SecurityGroupList = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroups',
         shape_name='SecurityGroupList',
@@ -4407,18 +4825,22 @@ class Reservation(
         member_name='ReservationId',
         shape_name='String',
     ))
+
     owner_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='OwnerId',
         shape_name='String',
     ))
+
     requester_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='RequesterId',
         shape_name='String',
     ))
+
     groups: GroupIdentifierList = _dc.field(metadata=_base.field_metadata(
         member_name='Groups',
         shape_name='GroupIdentifierList',
     ))
+
     instances: InstanceList = _dc.field(metadata=_base.field_metadata(
         member_name='Instances',
         shape_name='InstanceList',
@@ -4437,6 +4859,7 @@ class DescribeInstancesResult(
         member_name='NextToken',
         shape_name='String',
     ))
+
     reservations: ReservationList = _dc.field(metadata=_base.field_metadata(
         member_name='Reservations',
         shape_name='ReservationList',

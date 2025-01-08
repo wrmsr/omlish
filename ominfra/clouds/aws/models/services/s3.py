@@ -327,10 +327,12 @@ class Bucket(
         member_name='Name',
         shape_name='BucketName',
     ))
+
     creation_date: CreationDate = _dc.field(metadata=_base.field_metadata(
         member_name='CreationDate',
         shape_name='CreationDate',
     ))
+
     bucket_region: BucketRegion = _dc.field(metadata=_base.field_metadata(
         member_name='BucketRegion',
         shape_name='BucketRegion',
@@ -360,10 +362,12 @@ class DeleteObjectOutput(
         member_name='DeleteMarker',
         shape_name='DeleteMarker',
     ))
+
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
+
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
         shape_name='RequestCharged',
@@ -379,38 +383,47 @@ class DeleteObjectRequest(
         member_name='Bucket',
         shape_name='BucketName',
     ))
+
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
         shape_name='ObjectKey',
     ))
+
     mfa: MFA = _dc.field(metadata=_base.field_metadata(
         member_name='MFA',
         shape_name='MFA',
     ))
+
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
+
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
         shape_name='RequestPayer',
     ))
+
     bypass_governance_retention: BypassGovernanceRetention = _dc.field(metadata=_base.field_metadata(
         member_name='BypassGovernanceRetention',
         shape_name='BypassGovernanceRetention',
     ))
+
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
         shape_name='AccountId',
     ))
+
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
         shape_name='IfMatch',
     ))
+
     if_match_last_modified_time: IfMatchLastModifiedTime = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatchLastModifiedTime',
         shape_name='IfMatchLastModifiedTime',
     ))
+
     if_match_size: IfMatchSize = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatchSize',
         shape_name='IfMatchSize',
@@ -426,82 +439,102 @@ class GetObjectRequest(
         member_name='Bucket',
         shape_name='BucketName',
     ))
+
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
         shape_name='IfMatch',
     ))
+
     if_modified_since: IfModifiedSince = _dc.field(metadata=_base.field_metadata(
         member_name='IfModifiedSince',
         shape_name='IfModifiedSince',
     ))
+
     if_none_match: IfNoneMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfNoneMatch',
         shape_name='IfNoneMatch',
     ))
+
     if_unmodified_since: IfUnmodifiedSince = _dc.field(metadata=_base.field_metadata(
         member_name='IfUnmodifiedSince',
         shape_name='IfUnmodifiedSince',
     ))
+
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
         shape_name='ObjectKey',
     ))
+
     range: Range = _dc.field(metadata=_base.field_metadata(
         member_name='Range',
         shape_name='Range',
     ))
+
     response_cache_control: ResponseCacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseCacheControl',
         shape_name='ResponseCacheControl',
     ))
+
     response_content_disposition: ResponseContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentDisposition',
         shape_name='ResponseContentDisposition',
     ))
+
     response_content_encoding: ResponseContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentEncoding',
         shape_name='ResponseContentEncoding',
     ))
+
     response_content_language: ResponseContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentLanguage',
         shape_name='ResponseContentLanguage',
     ))
+
     response_content_type: ResponseContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentType',
         shape_name='ResponseContentType',
     ))
+
     response_expires: ResponseExpires = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseExpires',
         shape_name='ResponseExpires',
     ))
+
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
+
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
+
     sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
+
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
+
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
         shape_name='RequestPayer',
     ))
+
     part_number: PartNumber = _dc.field(metadata=_base.field_metadata(
         member_name='PartNumber',
         shape_name='PartNumber',
     ))
+
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
         shape_name='AccountId',
     ))
+
     checksum_mode: ChecksumMode = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumMode',
         shape_name='ChecksumMode',
@@ -517,6 +550,7 @@ class InvalidObjectState(
         member_name='StorageClass',
         shape_name='StorageClass',
     ))
+
     access_tier: IntelligentTieringAccessTier = _dc.field(metadata=_base.field_metadata(
         member_name='AccessTier',
         shape_name='IntelligentTieringAccessTier',
@@ -532,14 +566,17 @@ class ListBucketsRequest(
         member_name='MaxBuckets',
         shape_name='MaxBuckets',
     ))
+
     continuation_token: Token = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
         shape_name='Token',
     ))
+
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
         shape_name='Prefix',
     ))
+
     bucket_region: BucketRegion = _dc.field(metadata=_base.field_metadata(
         member_name='BucketRegion',
         shape_name='BucketRegion',
@@ -560,6 +597,7 @@ class Owner(
         member_name='DisplayName',
         shape_name='DisplayName',
     ))
+
     i_d: ID = _dc.field(metadata=_base.field_metadata(
         member_name='ID',
         shape_name='ID',
@@ -575,58 +613,72 @@ class PutObjectOutput(
         member_name='Expiration',
         shape_name='Expiration',
     ))
+
     etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
         shape_name='ETag',
     ))
+
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
+
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
+
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
+
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
+
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
         shape_name='ServerSideEncryption',
     ))
+
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
+
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
+
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
+
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
+
     sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
         shape_name='SSEKMSEncryptionContext',
     ))
+
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
         shape_name='BucketKeyEnabled',
     ))
+
     size: Size = _dc.field(metadata=_base.field_metadata(
         member_name='Size',
         shape_name='Size',
     ))
+
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
         shape_name='RequestCharged',
@@ -642,6 +694,7 @@ class RestoreStatus(
         member_name='IsRestoreInProgress',
         shape_name='IsRestoreInProgress',
     ))
+
     restore_expiry_date: RestoreExpiryDate = _dc.field(metadata=_base.field_metadata(
         member_name='RestoreExpiryDate',
         shape_name='RestoreExpiryDate',
@@ -662,142 +715,177 @@ class GetObjectOutput(
         member_name='Body',
         shape_name='Body',
     ))
+
     delete_marker: DeleteMarker = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteMarker',
         shape_name='DeleteMarker',
     ))
+
     accept_ranges: AcceptRanges = _dc.field(metadata=_base.field_metadata(
         member_name='AcceptRanges',
         shape_name='AcceptRanges',
     ))
+
     expiration: Expiration = _dc.field(metadata=_base.field_metadata(
         member_name='Expiration',
         shape_name='Expiration',
     ))
+
     restore: Restore = _dc.field(metadata=_base.field_metadata(
         member_name='Restore',
         shape_name='Restore',
     ))
+
     last_modified: LastModified = _dc.field(metadata=_base.field_metadata(
         member_name='LastModified',
         shape_name='LastModified',
     ))
+
     content_length: ContentLength = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLength',
         shape_name='ContentLength',
     ))
+
     etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
         shape_name='ETag',
     ))
+
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
+
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
+
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
+
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
+
     missing_meta: MissingMeta = _dc.field(metadata=_base.field_metadata(
         member_name='MissingMeta',
         shape_name='MissingMeta',
     ))
+
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
         shape_name='ObjectVersionId',
     ))
+
     cache_control: CacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='CacheControl',
         shape_name='CacheControl',
     ))
+
     content_disposition: ContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ContentDisposition',
         shape_name='ContentDisposition',
     ))
+
     content_encoding: ContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ContentEncoding',
         shape_name='ContentEncoding',
     ))
+
     content_language: ContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLanguage',
         shape_name='ContentLanguage',
     ))
+
     content_range: ContentRange = _dc.field(metadata=_base.field_metadata(
         member_name='ContentRange',
         shape_name='ContentRange',
     ))
+
     content_type: ContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ContentType',
         shape_name='ContentType',
     ))
+
     expires: Expires = _dc.field(metadata=_base.field_metadata(
         member_name='Expires',
         shape_name='Expires',
     ))
+
     website_redirect_location: WebsiteRedirectLocation = _dc.field(metadata=_base.field_metadata(
         member_name='WebsiteRedirectLocation',
         shape_name='WebsiteRedirectLocation',
     ))
+
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
         shape_name='ServerSideEncryption',
     ))
+
     metadata: Metadata = _dc.field(metadata=_base.field_metadata(
         member_name='Metadata',
         shape_name='Metadata',
     ))
+
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
+
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
+
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
+
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
         shape_name='BucketKeyEnabled',
     ))
+
     storage_class: StorageClass = _dc.field(metadata=_base.field_metadata(
         member_name='StorageClass',
         shape_name='StorageClass',
     ))
+
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
         shape_name='RequestCharged',
     ))
+
     replication_status: ReplicationStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ReplicationStatus',
         shape_name='ReplicationStatus',
     ))
+
     parts_count: PartsCount = _dc.field(metadata=_base.field_metadata(
         member_name='PartsCount',
         shape_name='PartsCount',
     ))
+
     tag_count: TagCount = _dc.field(metadata=_base.field_metadata(
         member_name='TagCount',
         shape_name='TagCount',
     ))
+
     object_lock_mode: ObjectLockMode = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockMode',
         shape_name='ObjectLockMode',
     ))
+
     object_lock_retain_until_date: ObjectLockRetainUntilDate = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockRetainUntilDate',
         shape_name='ObjectLockRetainUntilDate',
     ))
+
     object_lock_legal_hold_status: ObjectLockLegalHoldStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockLegalHoldStatus',
         shape_name='ObjectLockLegalHoldStatus',
@@ -813,42 +901,52 @@ class ListObjectsV2Request(
         member_name='Bucket',
         shape_name='BucketName',
     ))
+
     delimiter: Delimiter = _dc.field(metadata=_base.field_metadata(
         member_name='Delimiter',
         shape_name='Delimiter',
     ))
+
     encoding_type: EncodingType = _dc.field(metadata=_base.field_metadata(
         member_name='EncodingType',
         shape_name='EncodingType',
     ))
+
     max_keys: MaxKeys = _dc.field(metadata=_base.field_metadata(
         member_name='MaxKeys',
         shape_name='MaxKeys',
     ))
+
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
         shape_name='Prefix',
     ))
+
     continuation_token: Token = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
         shape_name='Token',
     ))
+
     fetch_owner: FetchOwner = _dc.field(metadata=_base.field_metadata(
         member_name='FetchOwner',
         shape_name='FetchOwner',
     ))
+
     start_after: StartAfter = _dc.field(metadata=_base.field_metadata(
         member_name='StartAfter',
         shape_name='StartAfter',
     ))
+
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
         shape_name='RequestPayer',
     ))
+
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
         shape_name='AccountId',
     ))
+
     optional_object_attributes: OptionalObjectAttributesList = _dc.field(metadata=_base.field_metadata(
         member_name='OptionalObjectAttributes',
         shape_name='OptionalObjectAttributesList',
@@ -864,30 +962,37 @@ class Object(
         member_name='Key',
         shape_name='ObjectKey',
     ))
+
     last_modified: LastModified = _dc.field(metadata=_base.field_metadata(
         member_name='LastModified',
         shape_name='LastModified',
     ))
+
     etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
         shape_name='ETag',
     ))
+
     checksum_algorithm: ChecksumAlgorithmList = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumAlgorithm',
         shape_name='ChecksumAlgorithmList',
     ))
+
     size: Size = _dc.field(metadata=_base.field_metadata(
         member_name='Size',
         shape_name='Size',
     ))
+
     storage_class: ObjectStorageClass = _dc.field(metadata=_base.field_metadata(
         member_name='StorageClass',
         shape_name='ObjectStorageClass',
     ))
+
     owner: Owner = _dc.field(metadata=_base.field_metadata(
         member_name='Owner',
         shape_name='Owner',
     ))
+
     restore_status: RestoreStatus = _dc.field(metadata=_base.field_metadata(
         member_name='RestoreStatus',
         shape_name='RestoreStatus',
@@ -903,158 +1008,197 @@ class PutObjectRequest(
         member_name='ACL',
         shape_name='ObjectCannedACL',
     ))
+
     body: Body = _dc.field(metadata=_base.field_metadata(
         member_name='Body',
         shape_name='Body',
     ))
+
     bucket: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Bucket',
         shape_name='BucketName',
     ))
+
     cache_control: CacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='CacheControl',
         shape_name='CacheControl',
     ))
+
     content_disposition: ContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ContentDisposition',
         shape_name='ContentDisposition',
     ))
+
     content_encoding: ContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ContentEncoding',
         shape_name='ContentEncoding',
     ))
+
     content_language: ContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLanguage',
         shape_name='ContentLanguage',
     ))
+
     content_length: ContentLength = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLength',
         shape_name='ContentLength',
     ))
+
     content_md5: ContentMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='ContentMD5',
         shape_name='ContentMD5',
     ))
+
     content_type: ContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ContentType',
         shape_name='ContentType',
     ))
+
     checksum_algorithm: ChecksumAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumAlgorithm',
         shape_name='ChecksumAlgorithm',
     ))
+
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
         shape_name='ChecksumCRC32',
     ))
+
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
         shape_name='ChecksumCRC32C',
     ))
+
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         shape_name='ChecksumSHA1',
     ))
+
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
         shape_name='ChecksumSHA256',
     ))
+
     expires: Expires = _dc.field(metadata=_base.field_metadata(
         member_name='Expires',
         shape_name='Expires',
     ))
+
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
         shape_name='IfMatch',
     ))
+
     if_none_match: IfNoneMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfNoneMatch',
         shape_name='IfNoneMatch',
     ))
+
     grant_full_control: GrantFullControl = _dc.field(metadata=_base.field_metadata(
         member_name='GrantFullControl',
         shape_name='GrantFullControl',
     ))
+
     grant_read: GrantRead = _dc.field(metadata=_base.field_metadata(
         member_name='GrantRead',
         shape_name='GrantRead',
     ))
+
     grant_read_acp: GrantReadACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantReadACP',
         shape_name='GrantReadACP',
     ))
+
     grant_write_acp: GrantWriteACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantWriteACP',
         shape_name='GrantWriteACP',
     ))
+
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
         shape_name='ObjectKey',
     ))
+
     write_offset_bytes: WriteOffsetBytes = _dc.field(metadata=_base.field_metadata(
         member_name='WriteOffsetBytes',
         shape_name='WriteOffsetBytes',
     ))
+
     metadata: Metadata = _dc.field(metadata=_base.field_metadata(
         member_name='Metadata',
         shape_name='Metadata',
     ))
+
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
         shape_name='ServerSideEncryption',
     ))
+
     storage_class: StorageClass = _dc.field(metadata=_base.field_metadata(
         member_name='StorageClass',
         shape_name='StorageClass',
     ))
+
     website_redirect_location: WebsiteRedirectLocation = _dc.field(metadata=_base.field_metadata(
         member_name='WebsiteRedirectLocation',
         shape_name='WebsiteRedirectLocation',
     ))
+
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
         shape_name='SSECustomerAlgorithm',
     ))
+
     sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
         shape_name='SSECustomerKey',
     ))
+
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
         shape_name='SSECustomerKeyMD5',
     ))
+
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
         shape_name='SSEKMSKeyId',
     ))
+
     sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
         shape_name='SSEKMSEncryptionContext',
     ))
+
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
         shape_name='BucketKeyEnabled',
     ))
+
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
         shape_name='RequestPayer',
     ))
+
     tagging: TaggingHeader = _dc.field(metadata=_base.field_metadata(
         member_name='Tagging',
         shape_name='TaggingHeader',
     ))
+
     object_lock_mode: ObjectLockMode = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockMode',
         shape_name='ObjectLockMode',
     ))
+
     object_lock_retain_until_date: ObjectLockRetainUntilDate = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockRetainUntilDate',
         shape_name='ObjectLockRetainUntilDate',
     ))
+
     object_lock_legal_hold_status: ObjectLockLegalHoldStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockLegalHoldStatus',
         shape_name='ObjectLockLegalHoldStatus',
     ))
+
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
         shape_name='AccountId',
@@ -1070,14 +1214,17 @@ class ListBucketsOutput(
         member_name='Buckets',
         shape_name='Buckets',
     ))
+
     owner: Owner = _dc.field(metadata=_base.field_metadata(
         member_name='Owner',
         shape_name='Owner',
     ))
+
     continuation_token: NextToken = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
         shape_name='NextToken',
     ))
+
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
         shape_name='Prefix',
@@ -1096,50 +1243,62 @@ class ListObjectsV2Output(
         member_name='IsTruncated',
         shape_name='IsTruncated',
     ))
+
     contents: ObjectList = _dc.field(metadata=_base.field_metadata(
         member_name='Contents',
         shape_name='ObjectList',
     ))
+
     name: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Name',
         shape_name='BucketName',
     ))
+
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
         shape_name='Prefix',
     ))
+
     delimiter: Delimiter = _dc.field(metadata=_base.field_metadata(
         member_name='Delimiter',
         shape_name='Delimiter',
     ))
+
     max_keys: MaxKeys = _dc.field(metadata=_base.field_metadata(
         member_name='MaxKeys',
         shape_name='MaxKeys',
     ))
+
     common_prefixes: CommonPrefixList = _dc.field(metadata=_base.field_metadata(
         member_name='CommonPrefixes',
         shape_name='CommonPrefixList',
     ))
+
     encoding_type: EncodingType = _dc.field(metadata=_base.field_metadata(
         member_name='EncodingType',
         shape_name='EncodingType',
     ))
+
     key_count: KeyCount = _dc.field(metadata=_base.field_metadata(
         member_name='KeyCount',
         shape_name='KeyCount',
     ))
+
     continuation_token: Token = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
         shape_name='Token',
     ))
+
     next_continuation_token: NextToken = _dc.field(metadata=_base.field_metadata(
         member_name='NextContinuationToken',
         shape_name='NextToken',
     ))
+
     start_after: StartAfter = _dc.field(metadata=_base.field_metadata(
         member_name='StartAfter',
         shape_name='StartAfter',
     ))
+
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
         shape_name='RequestCharged',

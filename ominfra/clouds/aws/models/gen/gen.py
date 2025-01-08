@@ -298,7 +298,9 @@ class ModelGen:
             if not shape.members:
                 lines.append('    pass')
 
-            for mn, ms in shape.members.items():
+            for i, (mn, ms) in enumerate(shape.members.items()):
+                if i:
+                    lines.append('')
                 fn = self.demangle_name(mn)
                 mds = [
                     f'member_name={mn!r}',

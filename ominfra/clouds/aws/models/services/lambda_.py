@@ -273,6 +273,7 @@ class EnvironmentError_(
         member_name='ErrorCode',
         shape_name='String',
     ))
+
     message: SensitiveString = _dc.field(metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
@@ -302,6 +303,7 @@ class FileSystemConfig(
         member_name='Arn',
         shape_name='FileSystemArn',
     ))
+
     local_mount_path: LocalMountPath = _dc.field(metadata=_base.field_metadata(
         member_name='LocalMountPath',
         shape_name='LocalMountPath',
@@ -317,6 +319,7 @@ class ImageConfigError(
         member_name='ErrorCode',
         shape_name='String',
     ))
+
     message: SensitiveString = _dc.field(metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
@@ -332,6 +335,7 @@ class InvalidParameterValueException(
         member_name='Type',
         shape_name='String',
     ))
+
     message: str = _dc.field(metadata=_base.field_metadata(
         member_name='message',
         shape_name='String',
@@ -347,14 +351,17 @@ class Layer(
         member_name='Arn',
         shape_name='LayerVersionArn',
     ))
+
     code_size: Long = _dc.field(metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))
+
     signing_profile_version_arn: Arn = _dc.field(metadata=_base.field_metadata(
         member_name='SigningProfileVersionArn',
         shape_name='Arn',
     ))
+
     signing_job_arn: Arn = _dc.field(metadata=_base.field_metadata(
         member_name='SigningJobArn',
         shape_name='Arn',
@@ -370,14 +377,17 @@ class ListFunctionsRequest(
         member_name='MasterRegion',
         shape_name='MasterRegion',
     ))
+
     function_version: FunctionVersion = _dc.field(metadata=_base.field_metadata(
         member_name='FunctionVersion',
         shape_name='FunctionVersion',
     ))
+
     marker: str = _dc.field(metadata=_base.field_metadata(
         member_name='Marker',
         shape_name='String',
     ))
+
     max_items: MaxListItems = _dc.field(metadata=_base.field_metadata(
         member_name='MaxItems',
         shape_name='MaxListItems',
@@ -393,14 +403,17 @@ class LoggingConfig(
         member_name='LogFormat',
         shape_name='LogFormat',
     ))
+
     application_log_level: ApplicationLogLevel = _dc.field(metadata=_base.field_metadata(
         member_name='ApplicationLogLevel',
         shape_name='ApplicationLogLevel',
     ))
+
     system_log_level: SystemLogLevel = _dc.field(metadata=_base.field_metadata(
         member_name='SystemLogLevel',
         shape_name='SystemLogLevel',
     ))
+
     log_group: LogGroup = _dc.field(metadata=_base.field_metadata(
         member_name='LogGroup',
         shape_name='LogGroup',
@@ -416,6 +429,7 @@ class RuntimeVersionError(
         member_name='ErrorCode',
         shape_name='String',
     ))
+
     message: SensitiveString = _dc.field(metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
@@ -434,6 +448,7 @@ class ServiceException(
         member_name='Type',
         shape_name='String',
     ))
+
     message: str = _dc.field(metadata=_base.field_metadata(
         member_name='Message',
         shape_name='String',
@@ -449,6 +464,7 @@ class SnapStartResponse(
         member_name='ApplyOn',
         shape_name='SnapStartApplyOn',
     ))
+
     optimization_status: SnapStartOptimizationStatus = _dc.field(metadata=_base.field_metadata(
         member_name='OptimizationStatus',
         shape_name='SnapStartOptimizationStatus',
@@ -469,14 +485,17 @@ class TooManyRequestsException(
         member_name='retryAfterSeconds',
         shape_name='String',
     ))
+
     type: str = _dc.field(metadata=_base.field_metadata(
         member_name='Type',
         shape_name='String',
     ))
+
     message: str = _dc.field(metadata=_base.field_metadata(
         member_name='message',
         shape_name='String',
     ))
+
     reason: ThrottleReason = _dc.field(metadata=_base.field_metadata(
         member_name='Reason',
         shape_name='ThrottleReason',
@@ -503,6 +522,7 @@ class EnvironmentResponse(
         member_name='Variables',
         shape_name='EnvironmentVariables',
     ))
+
     error: EnvironmentError_ = _dc.field(metadata=_base.field_metadata(
         member_name='Error',
         shape_name='EnvironmentError',
@@ -521,10 +541,12 @@ class ImageConfig(
         member_name='EntryPoint',
         shape_name='StringList',
     ))
+
     command: StringList = _dc.field(metadata=_base.field_metadata(
         member_name='Command',
         shape_name='StringList',
     ))
+
     working_directory: WorkingDirectory = _dc.field(metadata=_base.field_metadata(
         member_name='WorkingDirectory',
         shape_name='WorkingDirectory',
@@ -543,6 +565,7 @@ class RuntimeVersionConfig(
         member_name='RuntimeVersionArn',
         shape_name='RuntimeVersionArn',
     ))
+
     error: RuntimeVersionError = _dc.field(metadata=_base.field_metadata(
         member_name='Error',
         shape_name='RuntimeVersionError',
@@ -558,14 +581,17 @@ class VpcConfigResponse(
         member_name='SubnetIds',
         shape_name='SubnetIds',
     ))
+
     security_group_ids: SecurityGroupIds = _dc.field(metadata=_base.field_metadata(
         member_name='SecurityGroupIds',
         shape_name='SecurityGroupIds',
     ))
+
     vpc_id: VpcId = _dc.field(metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='VpcId',
     ))
+
     ipv6_allowed_for_dual_stack: NullableBoolean = _dc.field(metadata=_base.field_metadata(
         member_name='Ipv6AllowedForDualStack',
         shape_name='NullableBoolean',
@@ -581,6 +607,7 @@ class ImageConfigResponse(
         member_name='ImageConfig',
         shape_name='ImageConfig',
     ))
+
     error: ImageConfigError = _dc.field(metadata=_base.field_metadata(
         member_name='Error',
         shape_name='ImageConfigError',
@@ -596,142 +623,177 @@ class FunctionConfiguration(
         member_name='FunctionName',
         shape_name='NamespacedFunctionName',
     ))
+
     function_arn: NameSpacedFunctionArn = _dc.field(metadata=_base.field_metadata(
         member_name='FunctionArn',
         shape_name='NameSpacedFunctionArn',
     ))
+
     runtime: Runtime = _dc.field(metadata=_base.field_metadata(
         member_name='Runtime',
         shape_name='Runtime',
     ))
+
     role: RoleArn = _dc.field(metadata=_base.field_metadata(
         member_name='Role',
         shape_name='RoleArn',
     ))
+
     handler: Handler = _dc.field(metadata=_base.field_metadata(
         member_name='Handler',
         shape_name='Handler',
     ))
+
     code_size: Long = _dc.field(metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))
+
     description: Description = _dc.field(metadata=_base.field_metadata(
         member_name='Description',
         shape_name='Description',
     ))
+
     timeout: Timeout = _dc.field(metadata=_base.field_metadata(
         member_name='Timeout',
         shape_name='Timeout',
     ))
+
     memory_size: MemorySize = _dc.field(metadata=_base.field_metadata(
         member_name='MemorySize',
         shape_name='MemorySize',
     ))
+
     last_modified: Timestamp = _dc.field(metadata=_base.field_metadata(
         member_name='LastModified',
         shape_name='Timestamp',
     ))
+
     code_sha256: str = _dc.field(metadata=_base.field_metadata(
         member_name='CodeSha256',
         shape_name='String',
     ))
+
     version: Version = _dc.field(metadata=_base.field_metadata(
         member_name='Version',
         shape_name='Version',
     ))
+
     vpc_config: VpcConfigResponse = _dc.field(metadata=_base.field_metadata(
         member_name='VpcConfig',
         shape_name='VpcConfigResponse',
     ))
+
     dead_letter_config: DeadLetterConfig = _dc.field(metadata=_base.field_metadata(
         member_name='DeadLetterConfig',
         shape_name='DeadLetterConfig',
     ))
+
     environment: EnvironmentResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Environment',
         shape_name='EnvironmentResponse',
     ))
+
     kms_key_arn: KMSKeyArn = _dc.field(metadata=_base.field_metadata(
         member_name='KMSKeyArn',
         shape_name='KMSKeyArn',
     ))
+
     tracing_config: TracingConfigResponse = _dc.field(metadata=_base.field_metadata(
         member_name='TracingConfig',
         shape_name='TracingConfigResponse',
     ))
+
     master_arn: FunctionArn = _dc.field(metadata=_base.field_metadata(
         member_name='MasterArn',
         shape_name='FunctionArn',
     ))
+
     revision_id: str = _dc.field(metadata=_base.field_metadata(
         member_name='RevisionId',
         shape_name='String',
     ))
+
     layers: LayersReferenceList = _dc.field(metadata=_base.field_metadata(
         member_name='Layers',
         shape_name='LayersReferenceList',
     ))
+
     state: State = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='State',
     ))
+
     state_reason: StateReason = _dc.field(metadata=_base.field_metadata(
         member_name='StateReason',
         shape_name='StateReason',
     ))
+
     state_reason_code: StateReasonCode = _dc.field(metadata=_base.field_metadata(
         member_name='StateReasonCode',
         shape_name='StateReasonCode',
     ))
+
     last_update_status: LastUpdateStatus = _dc.field(metadata=_base.field_metadata(
         member_name='LastUpdateStatus',
         shape_name='LastUpdateStatus',
     ))
+
     last_update_status_reason: LastUpdateStatusReason = _dc.field(metadata=_base.field_metadata(
         member_name='LastUpdateStatusReason',
         shape_name='LastUpdateStatusReason',
     ))
+
     last_update_status_reason_code: LastUpdateStatusReasonCode = _dc.field(metadata=_base.field_metadata(
         member_name='LastUpdateStatusReasonCode',
         shape_name='LastUpdateStatusReasonCode',
     ))
+
     file_system_configs: FileSystemConfigList = _dc.field(metadata=_base.field_metadata(
         member_name='FileSystemConfigs',
         shape_name='FileSystemConfigList',
     ))
+
     package_type: PackageType = _dc.field(metadata=_base.field_metadata(
         member_name='PackageType',
         shape_name='PackageType',
     ))
+
     image_config_response: ImageConfigResponse = _dc.field(metadata=_base.field_metadata(
         member_name='ImageConfigResponse',
         shape_name='ImageConfigResponse',
     ))
+
     signing_profile_version_arn: Arn = _dc.field(metadata=_base.field_metadata(
         member_name='SigningProfileVersionArn',
         shape_name='Arn',
     ))
+
     signing_job_arn: Arn = _dc.field(metadata=_base.field_metadata(
         member_name='SigningJobArn',
         shape_name='Arn',
     ))
+
     architectures: ArchitecturesList = _dc.field(metadata=_base.field_metadata(
         member_name='Architectures',
         shape_name='ArchitecturesList',
     ))
+
     ephemeral_storage: EphemeralStorage = _dc.field(metadata=_base.field_metadata(
         member_name='EphemeralStorage',
         shape_name='EphemeralStorage',
     ))
+
     snap_start: SnapStartResponse = _dc.field(metadata=_base.field_metadata(
         member_name='SnapStart',
         shape_name='SnapStartResponse',
     ))
+
     runtime_version_config: RuntimeVersionConfig = _dc.field(metadata=_base.field_metadata(
         member_name='RuntimeVersionConfig',
         shape_name='RuntimeVersionConfig',
     ))
+
     logging_config: LoggingConfig = _dc.field(metadata=_base.field_metadata(
         member_name='LoggingConfig',
         shape_name='LoggingConfig',
@@ -750,6 +812,7 @@ class ListFunctionsResponse(
         member_name='NextMarker',
         shape_name='String',
     ))
+
     functions: FunctionList = _dc.field(metadata=_base.field_metadata(
         member_name='Functions',
         shape_name='FunctionList',
