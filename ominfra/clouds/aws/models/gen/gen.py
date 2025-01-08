@@ -161,6 +161,7 @@ class ModelGen:
         'SHA1',
         'SHA256',
         'SSE',
+        'TTL',
     ]
 
     def demangle_name(self, n: str) -> str:
