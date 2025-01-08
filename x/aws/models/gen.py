@@ -319,7 +319,7 @@ class ModelGen:
 
         if operation.error_shapes:
             fls.append('errors=[')
-            for osn in sorted(es.name for es in operation.error_shapes):
+            for osn in [es.name for es in operation.error_shapes]:
                 fls.append(f'    {osn},')
             fls.append('],')
 

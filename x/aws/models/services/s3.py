@@ -1,3 +1,4 @@
+# flake8: noqa: E501
 # fmt: off
 import dataclasses as _dc  # noqa
 import typing as _ta  # noqa
@@ -829,8 +830,8 @@ GET_OBJECT = _base.Operation(
     input=GetObjectRequest,
     output=GetObjectOutput,
     errors=[
-        InvalidObjectState,
         NoSuchKey,
+        InvalidObjectState,
     ],
 )
 
@@ -839,10 +840,10 @@ PUT_OBJECT = _base.Operation(
     input=PutObjectRequest,
     output=PutObjectOutput,
     errors=[
-        EncryptionTypeMismatch,
         InvalidRequest,
         InvalidWriteOffset,
         TooManyParts,
+        EncryptionTypeMismatch,
     ],
 )
 
