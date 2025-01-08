@@ -23,8 +23,8 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .cmds import CommandRunner
-from .cmds import LocalCommandRunner
+from .runners import CommandRunner
+from .runners import LocalCommandRunner
 
 
 if ta.TYPE_CHECKING:
