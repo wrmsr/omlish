@@ -31,6 +31,12 @@ class AttachmentStatus(_enum.Enum):
     DETACHED = 'detached'
 
 
+class BlockPublicAccessMode(_enum.Enum):
+    OFF = 'off'
+    BLOCK_BIDIRECTIONAL = 'block-bidirectional'
+    BLOCK_INGRESS = 'block-ingress'
+
+
 class BootModeValues(_enum.Enum):
     LEGACY_BIOS = 'legacy-bios'
     UEFI = 'uefi'
@@ -44,6 +50,9 @@ class CapacityReservationPreference(_enum.Enum):
     CAPACITY_RESERVATIONS_ONLY = 'capacity-reservations-only'
     OPEN = 'open'
     NONE = 'none'
+
+
+DescribeVpcsMaxResults = _ta.NewType('DescribeVpcsMaxResults', int)
 
 
 class DeviceType(_enum.Enum):
@@ -1019,6 +1028,17 @@ class InstanceType(_enum.Enum):
     I8G_METAL_24XL = 'i8g.metal-24xl'
 
 
+class IpSource(_enum.Enum):
+    AMAZON = 'amazon'
+    BYOIP = 'byoip'
+    NONE = 'none'
+
+
+class Ipv6AddressAttribute(_enum.Enum):
+    PUBLIC = 'public'
+    PRIVATE = 'private'
+
+
 KernelId = _ta.NewType('KernelId', str)
 
 KeyPairName = _ta.NewType('KeyPairName', str)
@@ -1200,6 +1220,34 @@ class VolumeType(_enum.Enum):
     SC1 = 'sc1'
     ST1 = 'st1'
     GP3 = 'gp3'
+
+
+class VpcCidrBlockStateCode(_enum.Enum):
+    ASSOCIATING = 'associating'
+    ASSOCIATED = 'associated'
+    DISASSOCIATING = 'disassociating'
+    DISASSOCIATED = 'disassociated'
+    FAILING = 'failing'
+    FAILED = 'failed'
+
+
+VpcId = _ta.NewType('VpcId', str)
+
+
+class VpcState(_enum.Enum):
+    PENDING = 'pending'
+    AVAILABLE = 'available'
+
+
+@_dc.dataclass(frozen=True)
+class BlockPublicAccessStates(
+    _base.Shape,
+    shape_name='BlockPublicAccessStates',
+):
+    internet_gateway_block_mode: BlockPublicAccessMode = _dc.field(metadata=_base.field_metadata(
+        member_name='InternetGatewayBlockMode',
+        shape_name='BlockPublicAccessMode',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -2017,6 +2065,24 @@ ValueStringList: _ta.TypeAlias = _ta.Sequence[str]
 
 
 @_dc.dataclass(frozen=True)
+class VpcCidrBlockState(
+    _base.Shape,
+    shape_name='VpcCidrBlockState',
+):
+    state: VpcCidrBlockStateCode = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        shape_name='VpcCidrBlockStateCode',
+    ))
+    status_message: str = _dc.field(metadata=_base.field_metadata(
+        member_name='StatusMessage',
+        shape_name='String',
+    ))
+
+
+VpcIdStringList: _ta.TypeAlias = _ta.Sequence[VpcId]
+
+
+@_dc.dataclass(frozen=True)
 class BlockDeviceMapping(
     _base.Shape,
     shape_name='BlockDeviceMapping',
@@ -2313,6 +2379,60 @@ class TerminateInstancesRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class VpcCidrBlockAssociation(
+    _base.Shape,
+    shape_name='VpcCidrBlockAssociation',
+):
+    association_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationId',
+        shape_name='String',
+    ))
+    cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrBlock',
+        shape_name='String',
+    ))
+    cidr_block_state: VpcCidrBlockState = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrBlockState',
+        shape_name='VpcCidrBlockState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class VpcIpv6CidrBlockAssociation(
+    _base.Shape,
+    shape_name='VpcIpv6CidrBlockAssociation',
+):
+    association_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationId',
+        shape_name='String',
+    ))
+    ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlock',
+        shape_name='String',
+    ))
+    ipv6_cidr_block_state: VpcCidrBlockState = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlockState',
+        shape_name='VpcCidrBlockState',
+    ))
+    network_border_group: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkBorderGroup',
+        shape_name='String',
+    ))
+    ipv6_pool: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Pool',
+        shape_name='String',
+    ))
+    ipv6_address_attribute: Ipv6AddressAttribute = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6AddressAttribute',
+        shape_name='Ipv6AddressAttribute',
+    ))
+    ip_source: IpSource = _dc.field(metadata=_base.field_metadata(
+        member_name='IpSource',
+        shape_name='IpSource',
+    ))
+
+
 BlockDeviceMappingRequestList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
 
 FilterList: _ta.TypeAlias = _ta.Sequence[Filter]
@@ -2467,6 +2587,10 @@ InstancePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[InstancePrivateIpAddr
 
 InstanceStateChangeList: _ta.TypeAlias = _ta.Sequence[InstanceStateChange]
 
+VpcCidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcCidrBlockAssociation]
+
+VpcIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcIpv6CidrBlockAssociation]
+
 
 @_dc.dataclass(frozen=True)
 class DescribeInstancesRequest(
@@ -2492,6 +2616,33 @@ class DescribeInstancesRequest(
     max_results: int = _dc.field(metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='Integer',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeVpcsRequest(
+    _base.Shape,
+    shape_name='DescribeVpcsRequest',
+):
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+    vpc_ids: VpcIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcIds',
+        shape_name='VpcIdStringList',
+    ))
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    max_results: DescribeVpcsMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeVpcsMaxResults',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
     ))
 
 
@@ -2618,6 +2769,57 @@ class TerminateInstancesResult(
     terminating_instances: InstanceStateChangeList = _dc.field(metadata=_base.field_metadata(
         member_name='TerminatingInstances',
         shape_name='InstanceStateChangeList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Vpc(
+    _base.Shape,
+    shape_name='Vpc',
+):
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        shape_name='String',
+    ))
+    instance_tenancy: Tenancy = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceTenancy',
+        shape_name='Tenancy',
+    ))
+    ipv6_cidr_block_association_set: VpcIpv6CidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6CidrBlockAssociationSet',
+        shape_name='VpcIpv6CidrBlockAssociationSet',
+    ))
+    cidr_block_association_set: VpcCidrBlockAssociationSet = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrBlockAssociationSet',
+        shape_name='VpcCidrBlockAssociationSet',
+    ))
+    is_default: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='IsDefault',
+        shape_name='Boolean',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+    block_public_access_states: BlockPublicAccessStates = _dc.field(metadata=_base.field_metadata(
+        member_name='BlockPublicAccessStates',
+        shape_name='BlockPublicAccessStates',
+    ))
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='String',
+    ))
+    state: VpcState = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        shape_name='VpcState',
+    ))
+    cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CidrBlock',
+        shape_name='String',
+    ))
+    dhcp_options_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DhcpOptionsId',
+        shape_name='String',
     ))
 
 
@@ -2800,6 +3002,24 @@ class RunInstancesRequest(
     ebs_optimized: bool = _dc.field(metadata=_base.field_metadata(
         member_name='EbsOptimized',
         shape_name='Boolean',
+    ))
+
+
+VpcList: _ta.TypeAlias = _ta.Sequence[Vpc]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeVpcsResult(
+    _base.Shape,
+    shape_name='DescribeVpcsResult',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+    vpcs: VpcList = _dc.field(metadata=_base.field_metadata(
+        member_name='Vpcs',
+        shape_name='VpcList',
     ))
 
 
@@ -3095,6 +3315,7 @@ class DescribeInstancesResult(
 
 
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
+    BlockPublicAccessStates,
     CapacityReservationTarget,
     CapacityReservationTargetResponse,
     ConnectionTrackingSpecificationRequest,
@@ -3144,6 +3365,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     SpotMarketOptions,
     StateReason,
     TagSpecification,
+    VpcCidrBlockState,
     BlockDeviceMapping,
     CapacityReservationSpecification,
     CapacityReservationSpecificationResponse,
@@ -3158,15 +3380,20 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     StartInstancesRequest,
     StopInstancesRequest,
     TerminateInstancesRequest,
+    VpcCidrBlockAssociation,
+    VpcIpv6CidrBlockAssociation,
     InstanceBlockDeviceMapping,
     InstanceNetworkInterfaceAttachment,
     InstanceNetworkInterfaceSpecification,
     DescribeInstancesRequest,
+    DescribeVpcsRequest,
     InstanceNetworkInterface,
     StartInstancesResult,
     StopInstancesResult,
     TerminateInstancesResult,
+    Vpc,
     RunInstancesRequest,
+    DescribeVpcsResult,
     Instance,
     Reservation,
     DescribeInstancesResult,
@@ -3180,6 +3407,12 @@ DESCRIBE_INSTANCES = _base.Operation(
     name='DescribeInstances',
     input=DescribeInstancesRequest,
     output=DescribeInstancesResult,
+)
+
+DESCRIBE_VPCS = _base.Operation(
+    name='DescribeVpcs',
+    input=DescribeVpcsRequest,
+    output=DescribeVpcsResult,
 )
 
 REBOOT_INSTANCES = _base.Operation(
@@ -3214,6 +3447,7 @@ TERMINATE_INSTANCES = _base.Operation(
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_INSTANCES,
+    DESCRIBE_VPCS,
     REBOOT_INSTANCES,
     RUN_INSTANCES,
     START_INSTANCES,

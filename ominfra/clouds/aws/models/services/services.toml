@@ -1,6 +1,7 @@
 [services.ec2]
 operations = [
   'DescribeInstances',
+  'DescribeVpcs',
   'RebootInstances',
   'RunInstances',
   'StartInstances',
@@ -12,5 +13,7 @@ operations = [
 operations = [
   'DeleteObject',
   'GetObject',
+  'ListBuckets',
+  'ListObjectsV2',
   'PutObject',
 ]

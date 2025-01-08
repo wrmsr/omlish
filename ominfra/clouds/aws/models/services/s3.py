@@ -21,6 +21,8 @@ BucketKeyEnabled = _ta.NewType('BucketKeyEnabled', bool)
 
 BucketName = _ta.NewType('BucketName', str)
 
+BucketRegion = _ta.NewType('BucketRegion', str)
+
 BypassGovernanceRetention = _ta.NewType('BypassGovernanceRetention', bool)
 
 CacheControl = _ta.NewType('CacheControl', str)
@@ -60,9 +62,19 @@ ContentRange = _ta.NewType('ContentRange', str)
 
 ContentType = _ta.NewType('ContentType', str)
 
+CreationDate = _ta.NewType('CreationDate', _base.Timestamp)
+
 DeleteMarker = _ta.NewType('DeleteMarker', bool)
 
+Delimiter = _ta.NewType('Delimiter', str)
+
+DisplayName = _ta.NewType('DisplayName', str)
+
 ETag = _ta.NewType('ETag', str)
+
+
+class EncodingType(_enum.Enum):
+    URL = 'url'
 
 
 @_dc.dataclass(frozen=True)
@@ -77,6 +89,8 @@ Expiration = _ta.NewType('Expiration', str)
 
 Expires = _ta.NewType('Expires', _base.Timestamp)
 
+FetchOwner = _ta.NewType('FetchOwner', bool)
+
 GrantFullControl = _ta.NewType('GrantFullControl', str)
 
 GrantRead = _ta.NewType('GrantRead', str)
@@ -84,6 +98,8 @@ GrantRead = _ta.NewType('GrantRead', str)
 GrantReadACP = _ta.NewType('GrantReadACP', str)
 
 GrantWriteACP = _ta.NewType('GrantWriteACP', str)
+
+ID = _ta.NewType('ID', str)
 
 IfMatch = _ta.NewType('IfMatch', str)
 
@@ -119,15 +135,35 @@ class InvalidWriteOffset(
     pass
 
 
+IsRestoreInProgress = _ta.NewType('IsRestoreInProgress', bool)
+
+IsTruncated = _ta.NewType('IsTruncated', bool)
+
+KeyCount = _ta.NewType('KeyCount', int)
+
 LastModified = _ta.NewType('LastModified', _base.Timestamp)
 
 MFA = _ta.NewType('MFA', str)
+
+MaxBuckets = _ta.NewType('MaxBuckets', int)
+
+MaxKeys = _ta.NewType('MaxKeys', int)
 
 MetadataKey = _ta.NewType('MetadataKey', str)
 
 MetadataValue = _ta.NewType('MetadataValue', str)
 
 MissingMeta = _ta.NewType('MissingMeta', int)
+
+NextToken = _ta.NewType('NextToken', str)
+
+
+@_dc.dataclass(frozen=True)
+class NoSuchBucket(
+    _base.Shape,
+    shape_name='NoSuchBucket',
+):
+    pass
 
 
 @_dc.dataclass(frozen=True)
@@ -163,11 +199,33 @@ class ObjectLockMode(_enum.Enum):
 
 ObjectLockRetainUntilDate = _ta.NewType('ObjectLockRetainUntilDate', _base.Timestamp)
 
+
+class ObjectStorageClass(_enum.Enum):
+    STANDARD = 'STANDARD'
+    REDUCED_REDUNDANCY = 'REDUCED_REDUNDANCY'
+    GLACIER = 'GLACIER'
+    STANDARD_IA = 'STANDARD_IA'
+    ONEZONE_IA = 'ONEZONE_IA'
+    INTELLIGENT_TIERING = 'INTELLIGENT_TIERING'
+    DEEP_ARCHIVE = 'DEEP_ARCHIVE'
+    OUTPOSTS = 'OUTPOSTS'
+    GLACIER_IR = 'GLACIER_IR'
+    SNOW = 'SNOW'
+    EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
+
+
 ObjectVersionId = _ta.NewType('ObjectVersionId', str)
+
+
+class OptionalObjectAttributes(_enum.Enum):
+    RESTORESTATUS = 'RestoreStatus'
+
 
 PartNumber = _ta.NewType('PartNumber', int)
 
 PartsCount = _ta.NewType('PartsCount', int)
+
+Prefix = _ta.NewType('Prefix', str)
 
 Range = _ta.NewType('Range', str)
 
@@ -202,6 +260,8 @@ ResponseExpires = _ta.NewType('ResponseExpires', _base.Timestamp)
 
 Restore = _ta.NewType('Restore', str)
 
+RestoreExpiryDate = _ta.NewType('RestoreExpiryDate', _base.Timestamp)
+
 SSECustomerAlgorithm = _ta.NewType('SSECustomerAlgorithm', str)
 
 SSECustomerKey = _ta.NewType('SSECustomerKey', str)
@@ -220,6 +280,8 @@ class ServerSideEncryption(_enum.Enum):
 
 
 Size = _ta.NewType('Size', int)
+
+StartAfter = _ta.NewType('StartAfter', str)
 
 
 class StorageClass(_enum.Enum):
@@ -240,6 +302,8 @@ TagCount = _ta.NewType('TagCount', int)
 
 TaggingHeader = _ta.NewType('TaggingHeader', str)
 
+Token = _ta.NewType('Token', str)
+
 
 @_dc.dataclass(frozen=True)
 class TooManyParts(
@@ -252,6 +316,39 @@ class TooManyParts(
 WebsiteRedirectLocation = _ta.NewType('WebsiteRedirectLocation', str)
 
 WriteOffsetBytes = _ta.NewType('WriteOffsetBytes', int)
+
+
+@_dc.dataclass(frozen=True)
+class Bucket(
+    _base.Shape,
+    shape_name='Bucket',
+):
+    name: BucketName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='BucketName',
+    ))
+    creation_date: CreationDate = _dc.field(metadata=_base.field_metadata(
+        member_name='CreationDate',
+        shape_name='CreationDate',
+    ))
+    bucket_region: BucketRegion = _dc.field(metadata=_base.field_metadata(
+        member_name='BucketRegion',
+        shape_name='BucketRegion',
+    ))
+
+
+ChecksumAlgorithmList: _ta.TypeAlias = _ta.Sequence[ChecksumAlgorithm]
+
+
+@_dc.dataclass(frozen=True)
+class CommonPrefix(
+    _base.Shape,
+    shape_name='CommonPrefix',
+):
+    prefix: Prefix = _dc.field(metadata=_base.field_metadata(
+        member_name='Prefix',
+        shape_name='Prefix',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -426,7 +523,47 @@ class InvalidObjectState(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class ListBucketsRequest(
+    _base.Shape,
+    shape_name='ListBucketsRequest',
+):
+    max_buckets: MaxBuckets = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxBuckets',
+        shape_name='MaxBuckets',
+    ))
+    continuation_token: Token = _dc.field(metadata=_base.field_metadata(
+        member_name='ContinuationToken',
+        shape_name='Token',
+    ))
+    prefix: Prefix = _dc.field(metadata=_base.field_metadata(
+        member_name='Prefix',
+        shape_name='Prefix',
+    ))
+    bucket_region: BucketRegion = _dc.field(metadata=_base.field_metadata(
+        member_name='BucketRegion',
+        shape_name='BucketRegion',
+    ))
+
+
 Metadata: _ta.TypeAlias = _ta.Mapping[MetadataKey, MetadataKey]
+
+OptionalObjectAttributesList: _ta.TypeAlias = _ta.Sequence[OptionalObjectAttributes]
+
+
+@_dc.dataclass(frozen=True)
+class Owner(
+    _base.Shape,
+    shape_name='Owner',
+):
+    display_name: DisplayName = _dc.field(metadata=_base.field_metadata(
+        member_name='DisplayName',
+        shape_name='DisplayName',
+    ))
+    i_d: ID = _dc.field(metadata=_base.field_metadata(
+        member_name='ID',
+        shape_name='ID',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -494,6 +631,26 @@ class PutObjectOutput(
         member_name='RequestCharged',
         shape_name='RequestCharged',
     ))
+
+
+@_dc.dataclass(frozen=True)
+class RestoreStatus(
+    _base.Shape,
+    shape_name='RestoreStatus',
+):
+    is_restore_in_progress: IsRestoreInProgress = _dc.field(metadata=_base.field_metadata(
+        member_name='IsRestoreInProgress',
+        shape_name='IsRestoreInProgress',
+    ))
+    restore_expiry_date: RestoreExpiryDate = _dc.field(metadata=_base.field_metadata(
+        member_name='RestoreExpiryDate',
+        shape_name='RestoreExpiryDate',
+    ))
+
+
+Buckets: _ta.TypeAlias = _ta.Sequence[Bucket]
+
+CommonPrefixList: _ta.TypeAlias = _ta.Sequence[CommonPrefix]
 
 
 @_dc.dataclass(frozen=True)
@@ -644,6 +801,96 @@ class GetObjectOutput(
     object_lock_legal_hold_status: ObjectLockLegalHoldStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockLegalHoldStatus',
         shape_name='ObjectLockLegalHoldStatus',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class ListObjectsV2Request(
+    _base.Shape,
+    shape_name='ListObjectsV2Request',
+):
+    bucket: BucketName = _dc.field(metadata=_base.field_metadata(
+        member_name='Bucket',
+        shape_name='BucketName',
+    ))
+    delimiter: Delimiter = _dc.field(metadata=_base.field_metadata(
+        member_name='Delimiter',
+        shape_name='Delimiter',
+    ))
+    encoding_type: EncodingType = _dc.field(metadata=_base.field_metadata(
+        member_name='EncodingType',
+        shape_name='EncodingType',
+    ))
+    max_keys: MaxKeys = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxKeys',
+        shape_name='MaxKeys',
+    ))
+    prefix: Prefix = _dc.field(metadata=_base.field_metadata(
+        member_name='Prefix',
+        shape_name='Prefix',
+    ))
+    continuation_token: Token = _dc.field(metadata=_base.field_metadata(
+        member_name='ContinuationToken',
+        shape_name='Token',
+    ))
+    fetch_owner: FetchOwner = _dc.field(metadata=_base.field_metadata(
+        member_name='FetchOwner',
+        shape_name='FetchOwner',
+    ))
+    start_after: StartAfter = _dc.field(metadata=_base.field_metadata(
+        member_name='StartAfter',
+        shape_name='StartAfter',
+    ))
+    request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
+        member_name='RequestPayer',
+        shape_name='RequestPayer',
+    ))
+    expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
+        member_name='ExpectedBucketOwner',
+        shape_name='AccountId',
+    ))
+    optional_object_attributes: OptionalObjectAttributesList = _dc.field(metadata=_base.field_metadata(
+        member_name='OptionalObjectAttributes',
+        shape_name='OptionalObjectAttributesList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Object(
+    _base.Shape,
+    shape_name='Object',
+):
+    key: ObjectKey = _dc.field(metadata=_base.field_metadata(
+        member_name='Key',
+        shape_name='ObjectKey',
+    ))
+    last_modified: LastModified = _dc.field(metadata=_base.field_metadata(
+        member_name='LastModified',
+        shape_name='LastModified',
+    ))
+    etag: ETag = _dc.field(metadata=_base.field_metadata(
+        member_name='ETag',
+        shape_name='ETag',
+    ))
+    checksum_algorithm: ChecksumAlgorithmList = _dc.field(metadata=_base.field_metadata(
+        member_name='ChecksumAlgorithm',
+        shape_name='ChecksumAlgorithmList',
+    ))
+    size: Size = _dc.field(metadata=_base.field_metadata(
+        member_name='Size',
+        shape_name='Size',
+    ))
+    storage_class: ObjectStorageClass = _dc.field(metadata=_base.field_metadata(
+        member_name='StorageClass',
+        shape_name='ObjectStorageClass',
+    ))
+    owner: Owner = _dc.field(metadata=_base.field_metadata(
+        member_name='Owner',
+        shape_name='Owner',
+    ))
+    restore_status: RestoreStatus = _dc.field(metadata=_base.field_metadata(
+        member_name='RestoreStatus',
+        shape_name='RestoreStatus',
     ))
 
 
@@ -814,19 +1061,114 @@ class PutObjectRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class ListBucketsOutput(
+    _base.Shape,
+    shape_name='ListBucketsOutput',
+):
+    buckets: Buckets = _dc.field(metadata=_base.field_metadata(
+        member_name='Buckets',
+        shape_name='Buckets',
+    ))
+    owner: Owner = _dc.field(metadata=_base.field_metadata(
+        member_name='Owner',
+        shape_name='Owner',
+    ))
+    continuation_token: NextToken = _dc.field(metadata=_base.field_metadata(
+        member_name='ContinuationToken',
+        shape_name='NextToken',
+    ))
+    prefix: Prefix = _dc.field(metadata=_base.field_metadata(
+        member_name='Prefix',
+        shape_name='Prefix',
+    ))
+
+
+ObjectList: _ta.TypeAlias = _ta.Sequence[Object]
+
+
+@_dc.dataclass(frozen=True)
+class ListObjectsV2Output(
+    _base.Shape,
+    shape_name='ListObjectsV2Output',
+):
+    is_truncated: IsTruncated = _dc.field(metadata=_base.field_metadata(
+        member_name='IsTruncated',
+        shape_name='IsTruncated',
+    ))
+    contents: ObjectList = _dc.field(metadata=_base.field_metadata(
+        member_name='Contents',
+        shape_name='ObjectList',
+    ))
+    name: BucketName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='BucketName',
+    ))
+    prefix: Prefix = _dc.field(metadata=_base.field_metadata(
+        member_name='Prefix',
+        shape_name='Prefix',
+    ))
+    delimiter: Delimiter = _dc.field(metadata=_base.field_metadata(
+        member_name='Delimiter',
+        shape_name='Delimiter',
+    ))
+    max_keys: MaxKeys = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxKeys',
+        shape_name='MaxKeys',
+    ))
+    common_prefixes: CommonPrefixList = _dc.field(metadata=_base.field_metadata(
+        member_name='CommonPrefixes',
+        shape_name='CommonPrefixList',
+    ))
+    encoding_type: EncodingType = _dc.field(metadata=_base.field_metadata(
+        member_name='EncodingType',
+        shape_name='EncodingType',
+    ))
+    key_count: KeyCount = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyCount',
+        shape_name='KeyCount',
+    ))
+    continuation_token: Token = _dc.field(metadata=_base.field_metadata(
+        member_name='ContinuationToken',
+        shape_name='Token',
+    ))
+    next_continuation_token: NextToken = _dc.field(metadata=_base.field_metadata(
+        member_name='NextContinuationToken',
+        shape_name='NextToken',
+    ))
+    start_after: StartAfter = _dc.field(metadata=_base.field_metadata(
+        member_name='StartAfter',
+        shape_name='StartAfter',
+    ))
+    request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
+        member_name='RequestCharged',
+        shape_name='RequestCharged',
+    ))
+
+
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     EncryptionTypeMismatch,
     InvalidRequest,
     InvalidWriteOffset,
+    NoSuchBucket,
     NoSuchKey,
     TooManyParts,
+    Bucket,
+    CommonPrefix,
     DeleteObjectOutput,
     DeleteObjectRequest,
     GetObjectRequest,
     InvalidObjectState,
+    ListBucketsRequest,
+    Owner,
     PutObjectOutput,
+    RestoreStatus,
     GetObjectOutput,
+    ListObjectsV2Request,
+    Object,
     PutObjectRequest,
+    ListBucketsOutput,
+    ListObjectsV2Output,
 ])
 
 
@@ -849,6 +1191,21 @@ GET_OBJECT = _base.Operation(
     ],
 )
 
+LIST_BUCKETS = _base.Operation(
+    name='ListBuckets',
+    input=ListBucketsRequest,
+    output=ListBucketsOutput,
+)
+
+LIST_OBJECTS_V2 = _base.Operation(
+    name='ListObjectsV2',
+    input=ListObjectsV2Request,
+    output=ListObjectsV2Output,
+    errors=[
+        NoSuchBucket,
+    ],
+)
+
 PUT_OBJECT = _base.Operation(
     name='PutObject',
     input=PutObjectRequest,
@@ -865,5 +1222,7 @@ PUT_OBJECT = _base.Operation(
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DELETE_OBJECT,
     GET_OBJECT,
+    LIST_BUCKETS,
+    LIST_OBJECTS_V2,
     PUT_OBJECT,
 ])
