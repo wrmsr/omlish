@@ -1,4 +1,5 @@
 # flake8: noqa: E501
+# ruff: noqa: S105
 # fmt: off
 import dataclasses as _dc  # noqa
 import enum as _enum  # noqa
@@ -285,7 +286,7 @@ class DeleteObjectRequest(
         member_name='Key',
         shape_name='ObjectKey',
     ))
-    m_f_a: MFA = _dc.field(metadata=_base.field_metadata(
+    mfa: MFA = _dc.field(metadata=_base.field_metadata(
         member_name='MFA',
         shape_name='MFA',
     ))
@@ -651,7 +652,7 @@ class PutObjectRequest(
     _base.Shape,
     shape_name='PutObjectRequest',
 ):
-    a_c_l: ObjectCannedACL = _dc.field(metadata=_base.field_metadata(
+    acl: ObjectCannedACL = _dc.field(metadata=_base.field_metadata(
         member_name='ACL',
         shape_name='ObjectCannedACL',
     ))

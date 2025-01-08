@@ -131,7 +131,7 @@ dep-refresh: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-cmake gen-manifest gen-pkg
+gen: gen-amalg gen-cmake gen-aws gen-manifest gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -145,6 +145,10 @@ gen-amalg: venv
 .PHONY: gen-cmake
 gen-cmake:
 	${PYTHON} -m omdev.cexts.cmake gen ${SRCS}
+
+.PHONY: gen-aws
+gen-aws:
+	${PYTHON} -m ominfra.clouds.aws.models.gen gen-services
 
 .PHONY: gen-manifest
 gen-manifest:

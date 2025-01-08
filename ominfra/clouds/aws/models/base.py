@@ -95,7 +95,7 @@ def field_metadata(
 class Operation:
     name: str
 
-    input: type[Shape]
-    output: type[Shape]
+    input: type[Shape] | None = None
+    output: type[Shape] | None = None
 
     errors: ta.Sequence[type[Shape]] | None = None

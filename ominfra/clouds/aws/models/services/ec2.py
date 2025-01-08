@@ -1,4 +1,5 @@
 # flake8: noqa: E501
+# ruff: noqa: S105
 # fmt: off
 import dataclasses as _dc  # noqa
 import enum as _enum  # noqa
@@ -36,6 +37,9 @@ class BootModeValues(_enum.Enum):
     UEFI_PREFERRED = 'uefi-preferred'
 
 
+CapacityReservationId = _ta.NewType('CapacityReservationId', str)
+
+
 class CapacityReservationPreference(_enum.Enum):
     CAPACITY_RESERVATIONS_ONLY = 'capacity-reservations-only'
     OPEN = 'open'
@@ -48,6 +52,8 @@ class DeviceType(_enum.Enum):
 
 
 ElasticGpuId = _ta.NewType('ElasticGpuId', str)
+
+ElasticInferenceAcceleratorCount = _ta.NewType('ElasticInferenceAcceleratorCount', int)
 
 
 class HostnameType(_enum.Enum):
@@ -63,6 +69,9 @@ class HttpTokensState(_enum.Enum):
 class HypervisorType(_enum.Enum):
     OVM = 'ovm'
     XEN = 'xen'
+
+
+ImageId = _ta.NewType('ImageId', str)
 
 
 class InstanceAutoRecoveryState(_enum.Enum):
@@ -82,6 +91,12 @@ class InstanceBootModeValues(_enum.Enum):
 
 
 InstanceId = _ta.NewType('InstanceId', str)
+
+
+class InstanceInterruptionBehavior(_enum.Enum):
+    HIBERNATE = 'hibernate'
+    STOP = 'stop'
+    TERMINATE = 'terminate'
 
 
 class InstanceLifecycleType(_enum.Enum):
@@ -1004,11 +1019,26 @@ class InstanceType(_enum.Enum):
     I8G_METAL_24XL = 'i8g.metal-24xl'
 
 
+KernelId = _ta.NewType('KernelId', str)
+
+KeyPairName = _ta.NewType('KeyPairName', str)
+
+LaunchTemplateId = _ta.NewType('LaunchTemplateId', str)
+
+
+class MarketType(_enum.Enum):
+    SPOT = 'spot'
+    CAPACITY_BLOCK = 'capacity-block'
+
+
 class MonitoringState(_enum.Enum):
     DISABLED = 'disabled'
     DISABLING = 'disabling'
     ENABLED = 'enabled'
     PENDING = 'pending'
+
+
+NetworkInterfaceId = _ta.NewType('NetworkInterfaceId', str)
 
 
 class NetworkInterfaceStatus(_enum.Enum):
@@ -1033,6 +1063,124 @@ class ProductCodeValues(_enum.Enum):
     MARKETPLACE = 'marketplace'
 
 
+RamdiskId = _ta.NewType('RamdiskId', str)
+
+
+class ResourceType(_enum.Enum):
+    CAPACITY_RESERVATION = 'capacity-reservation'
+    CLIENT_VPN_ENDPOINT = 'client-vpn-endpoint'
+    CUSTOMER_GATEWAY = 'customer-gateway'
+    CARRIER_GATEWAY = 'carrier-gateway'
+    COIP_POOL = 'coip-pool'
+    DECLARATIVE_POLICIES_REPORT = 'declarative-policies-report'
+    DEDICATED_HOST = 'dedicated-host'
+    DHCP_OPTIONS = 'dhcp-options'
+    EGRESS_ONLY_INTERNET_GATEWAY = 'egress-only-internet-gateway'
+    ELASTIC_IP = 'elastic-ip'
+    ELASTIC_GPU = 'elastic-gpu'
+    EXPORT_IMAGE_TASK = 'export-image-task'
+    EXPORT_INSTANCE_TASK = 'export-instance-task'
+    FLEET = 'fleet'
+    FPGA_IMAGE = 'fpga-image'
+    HOST_RESERVATION = 'host-reservation'
+    IMAGE = 'image'
+    IMPORT_IMAGE_TASK = 'import-image-task'
+    IMPORT_SNAPSHOT_TASK = 'import-snapshot-task'
+    INSTANCE = 'instance'
+    INSTANCE_EVENT_WINDOW = 'instance-event-window'
+    INTERNET_GATEWAY = 'internet-gateway'
+    IPAM = 'ipam'
+    IPAM_POOL = 'ipam-pool'
+    IPAM_SCOPE = 'ipam-scope'
+    IPV4POOL_EC2 = 'ipv4pool-ec2'
+    IPV6POOL_EC2 = 'ipv6pool-ec2'
+    KEY_PAIR = 'key-pair'
+    LAUNCH_TEMPLATE = 'launch-template'
+    LOCAL_GATEWAY = 'local-gateway'
+    LOCAL_GATEWAY_ROUTE_TABLE = 'local-gateway-route-table'
+    LOCAL_GATEWAY_VIRTUAL_INTERFACE = 'local-gateway-virtual-interface'
+    LOCAL_GATEWAY_VIRTUAL_INTERFACE_GROUP = 'local-gateway-virtual-interface-group'
+    LOCAL_GATEWAY_ROUTE_TABLE_VPC_ASSOCIATION = 'local-gateway-route-table-vpc-association'
+    LOCAL_GATEWAY_ROUTE_TABLE_VIRTUAL_INTERFACE_GROUP_ASSOCIATION = 'local-gateway-route-table-virtual-interface-group-association'
+    NATGATEWAY = 'natgateway'
+    NETWORK_ACL = 'network-acl'
+    NETWORK_INTERFACE = 'network-interface'
+    NETWORK_INSIGHTS_ANALYSIS = 'network-insights-analysis'
+    NETWORK_INSIGHTS_PATH = 'network-insights-path'
+    NETWORK_INSIGHTS_ACCESS_SCOPE = 'network-insights-access-scope'
+    NETWORK_INSIGHTS_ACCESS_SCOPE_ANALYSIS = 'network-insights-access-scope-analysis'
+    PLACEMENT_GROUP = 'placement-group'
+    PREFIX_LIST = 'prefix-list'
+    REPLACE_ROOT_VOLUME_TASK = 'replace-root-volume-task'
+    RESERVED_INSTANCES = 'reserved-instances'
+    ROUTE_TABLE = 'route-table'
+    SECURITY_GROUP = 'security-group'
+    SECURITY_GROUP_RULE = 'security-group-rule'
+    SNAPSHOT = 'snapshot'
+    SPOT_FLEET_REQUEST = 'spot-fleet-request'
+    SPOT_INSTANCES_REQUEST = 'spot-instances-request'
+    SUBNET = 'subnet'
+    SUBNET_CIDR_RESERVATION = 'subnet-cidr-reservation'
+    TRAFFIC_MIRROR_FILTER = 'traffic-mirror-filter'
+    TRAFFIC_MIRROR_SESSION = 'traffic-mirror-session'
+    TRAFFIC_MIRROR_TARGET = 'traffic-mirror-target'
+    TRANSIT_GATEWAY = 'transit-gateway'
+    TRANSIT_GATEWAY_ATTACHMENT = 'transit-gateway-attachment'
+    TRANSIT_GATEWAY_CONNECT_PEER = 'transit-gateway-connect-peer'
+    TRANSIT_GATEWAY_MULTICAST_DOMAIN = 'transit-gateway-multicast-domain'
+    TRANSIT_GATEWAY_POLICY_TABLE = 'transit-gateway-policy-table'
+    TRANSIT_GATEWAY_ROUTE_TABLE = 'transit-gateway-route-table'
+    TRANSIT_GATEWAY_ROUTE_TABLE_ANNOUNCEMENT = 'transit-gateway-route-table-announcement'
+    VOLUME = 'volume'
+    VPC = 'vpc'
+    VPC_ENDPOINT = 'vpc-endpoint'
+    VPC_ENDPOINT_CONNECTION = 'vpc-endpoint-connection'
+    VPC_ENDPOINT_SERVICE = 'vpc-endpoint-service'
+    VPC_ENDPOINT_SERVICE_PERMISSION = 'vpc-endpoint-service-permission'
+    VPC_PEERING_CONNECTION = 'vpc-peering-connection'
+    VPN_CONNECTION = 'vpn-connection'
+    VPN_GATEWAY = 'vpn-gateway'
+    VPC_FLOW_LOG = 'vpc-flow-log'
+    CAPACITY_RESERVATION_FLEET = 'capacity-reservation-fleet'
+    TRAFFIC_MIRROR_FILTER_RULE = 'traffic-mirror-filter-rule'
+    VPC_ENDPOINT_CONNECTION_DEVICE_TYPE = 'vpc-endpoint-connection-device-type'
+    VERIFIED_ACCESS_INSTANCE = 'verified-access-instance'
+    VERIFIED_ACCESS_GROUP = 'verified-access-group'
+    VERIFIED_ACCESS_ENDPOINT = 'verified-access-endpoint'
+    VERIFIED_ACCESS_POLICY = 'verified-access-policy'
+    VERIFIED_ACCESS_TRUST_PROVIDER = 'verified-access-trust-provider'
+    VPN_CONNECTION_DEVICE_TYPE = 'vpn-connection-device-type'
+    VPC_BLOCK_PUBLIC_ACCESS_EXCLUSION = 'vpc-block-public-access-exclusion'
+    IPAM_RESOURCE_DISCOVERY = 'ipam-resource-discovery'
+    IPAM_RESOURCE_DISCOVERY_ASSOCIATION = 'ipam-resource-discovery-association'
+    INSTANCE_CONNECT_ENDPOINT = 'instance-connect-endpoint'
+    VERIFIED_ACCESS_ENDPOINT_TARGET = 'verified-access-endpoint-target'
+    IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
+
+
+RunInstancesUserData = _ta.NewType('RunInstancesUserData', str)
+
+SecurityGroupId = _ta.NewType('SecurityGroupId', str)
+
+SecurityGroupName = _ta.NewType('SecurityGroupName', str)
+
+
+class ShutdownBehavior(_enum.Enum):
+    STOP = 'stop'
+    TERMINATE = 'terminate'
+
+
+SnapshotId = _ta.NewType('SnapshotId', str)
+
+
+class SpotInstanceType(_enum.Enum):
+    ONE_TIME = 'one-time'
+    PERSISTENT = 'persistent'
+
+
+SubnetId = _ta.NewType('SubnetId', str)
+
+
 class Tenancy(_enum.Enum):
     DEFAULT = 'default'
     DEDICATED = 'dedicated'
@@ -1042,6 +1190,31 @@ class Tenancy(_enum.Enum):
 class VirtualizationType(_enum.Enum):
     HVM = 'hvm'
     PARAVIRTUAL = 'paravirtual'
+
+
+class VolumeType(_enum.Enum):
+    STANDARD = 'standard'
+    IO1 = 'io1'
+    IO2 = 'io2'
+    GP2 = 'gp2'
+    SC1 = 'sc1'
+    ST1 = 'st1'
+    GP3 = 'gp3'
+
+
+@_dc.dataclass(frozen=True)
+class CapacityReservationTarget(
+    _base.Shape,
+    shape_name='CapacityReservationTarget',
+):
+    capacity_reservation_id: CapacityReservationId = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityReservationId',
+        shape_name='CapacityReservationId',
+    ))
+    capacity_reservation_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityReservationResourceGroupArn',
+        shape_name='String',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -1056,6 +1229,25 @@ class CapacityReservationTargetResponse(
     capacity_reservation_resource_group_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='CapacityReservationResourceGroupArn',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class ConnectionTrackingSpecificationRequest(
+    _base.Shape,
+    shape_name='ConnectionTrackingSpecificationRequest',
+):
+    tcp_established_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='TcpEstablishedTimeout',
+        shape_name='Integer',
+    ))
+    udp_stream_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='UdpStreamTimeout',
+        shape_name='Integer',
+    ))
+    udp_timeout: int = _dc.field(metadata=_base.field_metadata(
+        member_name='UdpTimeout',
+        shape_name='Integer',
     ))
 
 
@@ -1098,6 +1290,79 @@ class CpuOptions(
 
 
 @_dc.dataclass(frozen=True)
+class CpuOptionsRequest(
+    _base.Shape,
+    shape_name='CpuOptionsRequest',
+):
+    core_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='CoreCount',
+        shape_name='Integer',
+    ))
+    threads_per_core: int = _dc.field(metadata=_base.field_metadata(
+        member_name='ThreadsPerCore',
+        shape_name='Integer',
+    ))
+    amd_sev_snp: AmdSevSnpSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='AmdSevSnp',
+        shape_name='AmdSevSnpSpecification',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class CreditSpecificationRequest(
+    _base.Shape,
+    shape_name='CreditSpecificationRequest',
+):
+    cpu_credits: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CpuCredits',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class EbsBlockDevice(
+    _base.Shape,
+    shape_name='EbsBlockDevice',
+):
+    delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DeleteOnTermination',
+        shape_name='Boolean',
+    ))
+    iops: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Iops',
+        shape_name='Integer',
+    ))
+    snapshot_id: SnapshotId = _dc.field(metadata=_base.field_metadata(
+        member_name='SnapshotId',
+        shape_name='SnapshotId',
+    ))
+    volume_size: int = _dc.field(metadata=_base.field_metadata(
+        member_name='VolumeSize',
+        shape_name='Integer',
+    ))
+    volume_type: VolumeType = _dc.field(metadata=_base.field_metadata(
+        member_name='VolumeType',
+        shape_name='VolumeType',
+    ))
+    kms_key_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='KmsKeyId',
+        shape_name='String',
+    ))
+    throughput: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Throughput',
+        shape_name='Integer',
+    ))
+    outpost_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OutpostArn',
+        shape_name='String',
+    ))
+    encrypted: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Encrypted',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class ElasticGpuAssociation(
     _base.Shape,
     shape_name='ElasticGpuAssociation',
@@ -1117,6 +1382,32 @@ class ElasticGpuAssociation(
     elastic_gpu_association_time: str = _dc.field(metadata=_base.field_metadata(
         member_name='ElasticGpuAssociationTime',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class ElasticGpuSpecification(
+    _base.Shape,
+    shape_name='ElasticGpuSpecification',
+):
+    type: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Type',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class ElasticInferenceAccelerator(
+    _base.Shape,
+    shape_name='ElasticInferenceAccelerator',
+):
+    type: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Type',
+        shape_name='String',
+    ))
+    count: ElasticInferenceAcceleratorCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='ElasticInferenceAcceleratorCount',
     ))
 
 
@@ -1144,9 +1435,31 @@ class ElasticInferenceAcceleratorAssociation(
 
 
 @_dc.dataclass(frozen=True)
+class EnaSrdUdpSpecificationRequest(
+    _base.Shape,
+    shape_name='EnaSrdUdpSpecificationRequest',
+):
+    ena_srd_udp_enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdUdpEnabled',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class EnclaveOptions(
     _base.Shape,
     shape_name='EnclaveOptions',
+):
+    enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Enabled',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class EnclaveOptionsRequest(
+    _base.Shape,
+    shape_name='EnclaveOptionsRequest',
 ):
     enabled: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Enabled',
@@ -1181,6 +1494,17 @@ class HibernationOptions(
 
 
 @_dc.dataclass(frozen=True)
+class HibernationOptionsRequest(
+    _base.Shape,
+    shape_name='HibernationOptionsRequest',
+):
+    configured: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Configured',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class IamInstanceProfile(
     _base.Shape,
     shape_name='IamInstanceProfile',
@@ -1191,6 +1515,21 @@ class IamInstanceProfile(
     ))
     id: str = _dc.field(metadata=_base.field_metadata(
         member_name='Id',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class IamInstanceProfileSpecification(
+    _base.Shape,
+    shape_name='IamInstanceProfileSpecification',
+):
+    arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Arn',
+        shape_name='String',
+    ))
+    name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
         shape_name='String',
     ))
 
@@ -1254,6 +1593,44 @@ class InstanceMaintenanceOptions(
     auto_recovery: InstanceAutoRecoveryState = _dc.field(metadata=_base.field_metadata(
         member_name='AutoRecovery',
         shape_name='InstanceAutoRecoveryState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class InstanceMaintenanceOptionsRequest(
+    _base.Shape,
+    shape_name='InstanceMaintenanceOptionsRequest',
+):
+    auto_recovery: InstanceAutoRecoveryState = _dc.field(metadata=_base.field_metadata(
+        member_name='AutoRecovery',
+        shape_name='InstanceAutoRecoveryState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class InstanceMetadataOptionsRequest(
+    _base.Shape,
+    shape_name='InstanceMetadataOptionsRequest',
+):
+    http_tokens: HttpTokensState = _dc.field(metadata=_base.field_metadata(
+        member_name='HttpTokens',
+        shape_name='HttpTokensState',
+    ))
+    http_put_response_hop_limit: int = _dc.field(metadata=_base.field_metadata(
+        member_name='HttpPutResponseHopLimit',
+        shape_name='Integer',
+    ))
+    http_endpoint: InstanceMetadataEndpointState = _dc.field(metadata=_base.field_metadata(
+        member_name='HttpEndpoint',
+        shape_name='InstanceMetadataEndpointState',
+    ))
+    http_protocol_ipv6: InstanceMetadataProtocolState = _dc.field(metadata=_base.field_metadata(
+        member_name='HttpProtocolIpv6',
+        shape_name='InstanceMetadataProtocolState',
+    ))
+    instance_metadata_tags: InstanceMetadataTagsState = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceMetadataTags',
+        shape_name='InstanceMetadataTagsState',
     ))
 
 
@@ -1327,6 +1704,17 @@ class InstanceNetworkPerformanceOptions(
 
 
 @_dc.dataclass(frozen=True)
+class InstanceNetworkPerformanceOptionsRequest(
+    _base.Shape,
+    shape_name='InstanceNetworkPerformanceOptionsRequest',
+):
+    bandwidth_weighting: InstanceBandwidthWeighting = _dc.field(metadata=_base.field_metadata(
+        member_name='BandwidthWeighting',
+        shape_name='InstanceBandwidthWeighting',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class InstanceState(
     _base.Shape,
     shape_name='InstanceState',
@@ -1342,9 +1730,61 @@ class InstanceState(
 
 
 @_dc.dataclass(frozen=True)
+class Ipv4PrefixSpecificationRequest(
+    _base.Shape,
+    shape_name='Ipv4PrefixSpecificationRequest',
+):
+    ipv4_prefix: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4Prefix',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Ipv6PrefixSpecificationRequest(
+    _base.Shape,
+    shape_name='Ipv6PrefixSpecificationRequest',
+):
+    ipv6_prefix: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Prefix',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class LaunchTemplateSpecification(
+    _base.Shape,
+    shape_name='LaunchTemplateSpecification',
+):
+    launch_template_id: LaunchTemplateId = _dc.field(metadata=_base.field_metadata(
+        member_name='LaunchTemplateId',
+        shape_name='LaunchTemplateId',
+    ))
+    launch_template_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='LaunchTemplateName',
+        shape_name='String',
+    ))
+    version: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Version',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class LicenseConfiguration(
     _base.Shape,
     shape_name='LicenseConfiguration',
+):
+    license_configuration_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='LicenseConfigurationArn',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class LicenseConfigurationRequest(
+    _base.Shape,
+    shape_name='LicenseConfigurationRequest',
 ):
     license_configuration_arn: str = _dc.field(metadata=_base.field_metadata(
         member_name='LicenseConfigurationArn',
@@ -1360,6 +1800,17 @@ class Monitoring(
     state: MonitoringState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='MonitoringState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class OperatorRequest(
+    _base.Shape,
+    shape_name='OperatorRequest',
+):
+    principal: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Principal',
+        shape_name='String',
     ))
 
 
@@ -1422,6 +1873,25 @@ class Placement(
 
 
 @_dc.dataclass(frozen=True)
+class PrivateDnsNameOptionsRequest(
+    _base.Shape,
+    shape_name='PrivateDnsNameOptionsRequest',
+):
+    hostname_type: HostnameType = _dc.field(metadata=_base.field_metadata(
+        member_name='HostnameType',
+        shape_name='HostnameType',
+    ))
+    enable_resource_name_dns_a_record: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableResourceNameDnsARecord',
+        shape_name='Boolean',
+    ))
+    enable_resource_name_dns_aaaa_record: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnableResourceNameDnsAAAARecord',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class PrivateDnsNameOptionsResponse(
     _base.Shape,
     shape_name='PrivateDnsNameOptionsResponse',
@@ -1441,6 +1911,21 @@ class PrivateDnsNameOptionsResponse(
 
 
 @_dc.dataclass(frozen=True)
+class PrivateIpAddressSpecification(
+    _base.Shape,
+    shape_name='PrivateIpAddressSpecification',
+):
+    primary: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Primary',
+        shape_name='Boolean',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class ProductCode(
     _base.Shape,
     shape_name='ProductCode',
@@ -1452,6 +1937,49 @@ class ProductCode(
     product_code_type: ProductCodeValues = _dc.field(metadata=_base.field_metadata(
         member_name='ProductCodeType',
         shape_name='ProductCodeValues',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class RunInstancesMonitoringEnabled(
+    _base.Shape,
+    shape_name='RunInstancesMonitoringEnabled',
+):
+    enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Enabled',
+        shape_name='Boolean',
+    ))
+
+
+SecurityGroupIdStringList: _ta.TypeAlias = _ta.Sequence[SecurityGroupId]
+
+SecurityGroupStringList: _ta.TypeAlias = _ta.Sequence[SecurityGroupName]
+
+
+@_dc.dataclass(frozen=True)
+class SpotMarketOptions(
+    _base.Shape,
+    shape_name='SpotMarketOptions',
+):
+    max_price: str = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxPrice',
+        shape_name='String',
+    ))
+    spot_instance_type: SpotInstanceType = _dc.field(metadata=_base.field_metadata(
+        member_name='SpotInstanceType',
+        shape_name='SpotInstanceType',
+    ))
+    block_duration_minutes: int = _dc.field(metadata=_base.field_metadata(
+        member_name='BlockDurationMinutes',
+        shape_name='Integer',
+    ))
+    valid_until: _base.DateTime = _dc.field(metadata=_base.field_metadata(
+        member_name='ValidUntil',
+        shape_name='DateTime',
+    ))
+    instance_interruption_behavior: InstanceInterruptionBehavior = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceInterruptionBehavior',
+        shape_name='InstanceInterruptionBehavior',
     ))
 
 
@@ -1470,7 +1998,60 @@ class StateReason(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class TagSpecification(
+    _base.Shape,
+    shape_name='TagSpecification',
+):
+    resource_type: ResourceType = _dc.field(metadata=_base.field_metadata(
+        member_name='ResourceType',
+        shape_name='ResourceType',
+    ))
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        shape_name='TagList',
+    ))
+
+
 ValueStringList: _ta.TypeAlias = _ta.Sequence[str]
+
+
+@_dc.dataclass(frozen=True)
+class BlockDeviceMapping(
+    _base.Shape,
+    shape_name='BlockDeviceMapping',
+):
+    ebs: EbsBlockDevice = _dc.field(metadata=_base.field_metadata(
+        member_name='Ebs',
+        shape_name='EbsBlockDevice',
+    ))
+    no_device: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NoDevice',
+        shape_name='String',
+    ))
+    device_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DeviceName',
+        shape_name='String',
+    ))
+    virtual_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VirtualName',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class CapacityReservationSpecification(
+    _base.Shape,
+    shape_name='CapacityReservationSpecification',
+):
+    capacity_reservation_preference: CapacityReservationPreference = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityReservationPreference',
+        shape_name='CapacityReservationPreference',
+    ))
+    capacity_reservation_target: CapacityReservationTarget = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityReservationTarget',
+        shape_name='CapacityReservationTarget',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -1525,7 +2106,26 @@ class EbsInstanceBlockDevice(
 
 ElasticGpuAssociationList: _ta.TypeAlias = _ta.Sequence[ElasticGpuAssociation]
 
+ElasticGpuSpecifications: _ta.TypeAlias = _ta.Sequence[ElasticGpuSpecification]
+
 ElasticInferenceAcceleratorAssociationList: _ta.TypeAlias = _ta.Sequence[ElasticInferenceAcceleratorAssociation]
+
+ElasticInferenceAccelerators: _ta.TypeAlias = _ta.Sequence[ElasticInferenceAccelerator]
+
+
+@_dc.dataclass(frozen=True)
+class EnaSrdSpecificationRequest(
+    _base.Shape,
+    shape_name='EnaSrdSpecificationRequest',
+):
+    ena_srd_enabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdEnabled',
+        shape_name='Boolean',
+    ))
+    ena_srd_udp_specification: EnaSrdUdpSpecificationRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdUdpSpecification',
+        shape_name='EnaSrdUdpSpecificationRequest',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -1566,6 +2166,21 @@ InstanceIpv4PrefixList: _ta.TypeAlias = _ta.Sequence[InstanceIpv4Prefix]
 InstanceIpv6AddressList: _ta.TypeAlias = _ta.Sequence[InstanceIpv6Address]
 
 InstanceIpv6PrefixList: _ta.TypeAlias = _ta.Sequence[InstanceIpv6Prefix]
+
+
+@_dc.dataclass(frozen=True)
+class InstanceMarketOptionsRequest(
+    _base.Shape,
+    shape_name='InstanceMarketOptionsRequest',
+):
+    market_type: MarketType = _dc.field(metadata=_base.field_metadata(
+        member_name='MarketType',
+        shape_name='MarketType',
+    ))
+    spot_options: SpotMarketOptions = _dc.field(metadata=_base.field_metadata(
+        member_name='SpotOptions',
+        shape_name='SpotMarketOptions',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -1610,9 +2225,32 @@ class InstanceStateChange(
     ))
 
 
+Ipv4PrefixList: _ta.TypeAlias = _ta.Sequence[Ipv4PrefixSpecificationRequest]
+
+Ipv6PrefixList: _ta.TypeAlias = _ta.Sequence[Ipv6PrefixSpecificationRequest]
+
 LicenseList: _ta.TypeAlias = _ta.Sequence[LicenseConfiguration]
 
+LicenseSpecificationListRequest: _ta.TypeAlias = _ta.Sequence[LicenseConfigurationRequest]
+
+PrivateIpAddressSpecificationList: _ta.TypeAlias = _ta.Sequence[PrivateIpAddressSpecification]
+
 ProductCodeList: _ta.TypeAlias = _ta.Sequence[ProductCode]
+
+
+@_dc.dataclass(frozen=True)
+class RebootInstancesRequest(
+    _base.Shape,
+    shape_name='RebootInstancesRequest',
+):
+    instance_ids: InstanceIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceIds',
+        shape_name='InstanceIdStringList',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -1656,6 +2294,26 @@ class StopInstancesRequest(
         shape_name='Boolean',
     ))
 
+
+TagSpecificationList: _ta.TypeAlias = _ta.Sequence[TagSpecification]
+
+
+@_dc.dataclass(frozen=True)
+class TerminateInstancesRequest(
+    _base.Shape,
+    shape_name='TerminateInstancesRequest',
+):
+    instance_ids: InstanceIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceIds',
+        shape_name='InstanceIdStringList',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+
+
+BlockDeviceMappingRequestList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
 
 FilterList: _ta.TypeAlias = _ta.Sequence[Filter]
 
@@ -1707,6 +2365,101 @@ class InstanceNetworkInterfaceAttachment(
     ena_srd_specification: InstanceAttachmentEnaSrdSpecification = _dc.field(metadata=_base.field_metadata(
         member_name='EnaSrdSpecification',
         shape_name='InstanceAttachmentEnaSrdSpecification',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class InstanceNetworkInterfaceSpecification(
+    _base.Shape,
+    shape_name='InstanceNetworkInterfaceSpecification',
+):
+    associate_public_ip_address: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociatePublicIpAddress',
+        shape_name='Boolean',
+    ))
+    delete_on_termination: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DeleteOnTermination',
+        shape_name='Boolean',
+    ))
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        shape_name='String',
+    ))
+    device_index: int = _dc.field(metadata=_base.field_metadata(
+        member_name='DeviceIndex',
+        shape_name='Integer',
+    ))
+    groups: SecurityGroupIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='Groups',
+        shape_name='SecurityGroupIdStringList',
+    ))
+    ipv6_address_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6AddressCount',
+        shape_name='Integer',
+    ))
+    ipv6_addresses: InstanceIpv6AddressList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Addresses',
+        shape_name='InstanceIpv6AddressList',
+    ))
+    network_interface_id: NetworkInterfaceId = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceId',
+        shape_name='NetworkInterfaceId',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+    private_ip_addresses: PrivateIpAddressSpecificationList = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddresses',
+        shape_name='PrivateIpAddressSpecificationList',
+    ))
+    secondary_private_ip_address_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='SecondaryPrivateIpAddressCount',
+        shape_name='Integer',
+    ))
+    subnet_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetId',
+        shape_name='String',
+    ))
+    associate_carrier_ip_address: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociateCarrierIpAddress',
+        shape_name='Boolean',
+    ))
+    interface_type: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InterfaceType',
+        shape_name='String',
+    ))
+    network_card_index: int = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkCardIndex',
+        shape_name='Integer',
+    ))
+    ipv4_prefixes: Ipv4PrefixList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4Prefixes',
+        shape_name='Ipv4PrefixList',
+    ))
+    ipv4_prefix_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4PrefixCount',
+        shape_name='Integer',
+    ))
+    ipv6_prefixes: Ipv6PrefixList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Prefixes',
+        shape_name='Ipv6PrefixList',
+    ))
+    ipv6_prefix_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6PrefixCount',
+        shape_name='Integer',
+    ))
+    primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='PrimaryIpv6',
+        shape_name='Boolean',
+    ))
+    ena_srd_specification: EnaSrdSpecificationRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdSpecification',
+        shape_name='EnaSrdSpecificationRequest',
+    ))
+    connection_tracking_specification: ConnectionTrackingSpecificationRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='ConnectionTrackingSpecification',
+        shape_name='ConnectionTrackingSpecificationRequest',
     ))
 
 
@@ -1832,6 +2585,9 @@ class InstanceNetworkInterface(
     ))
 
 
+InstanceNetworkInterfaceSpecificationList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterfaceSpecification]
+
+
 @_dc.dataclass(frozen=True)
 class StartInstancesResult(
     _base.Shape,
@@ -1854,7 +2610,197 @@ class StopInstancesResult(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class TerminateInstancesResult(
+    _base.Shape,
+    shape_name='TerminateInstancesResult',
+):
+    terminating_instances: InstanceStateChangeList = _dc.field(metadata=_base.field_metadata(
+        member_name='TerminatingInstances',
+        shape_name='InstanceStateChangeList',
+    ))
+
+
 InstanceNetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterface]
+
+
+@_dc.dataclass(frozen=True)
+class RunInstancesRequest(
+    _base.Shape,
+    shape_name='RunInstancesRequest',
+):
+    block_device_mappings: BlockDeviceMappingRequestList = _dc.field(metadata=_base.field_metadata(
+        member_name='BlockDeviceMappings',
+        shape_name='BlockDeviceMappingRequestList',
+    ))
+    image_id: ImageId = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageId',
+        shape_name='ImageId',
+    ))
+    instance_type: InstanceType = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceType',
+        shape_name='InstanceType',
+    ))
+    ipv6_address_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6AddressCount',
+        shape_name='Integer',
+    ))
+    ipv6_addresses: InstanceIpv6AddressList = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Addresses',
+        shape_name='InstanceIpv6AddressList',
+    ))
+    kernel_id: KernelId = _dc.field(metadata=_base.field_metadata(
+        member_name='KernelId',
+        shape_name='KernelId',
+    ))
+    key_name: KeyPairName = _dc.field(metadata=_base.field_metadata(
+        member_name='KeyName',
+        shape_name='KeyPairName',
+    ))
+    max_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxCount',
+        shape_name='Integer',
+    ))
+    min_count: int = _dc.field(metadata=_base.field_metadata(
+        member_name='MinCount',
+        shape_name='Integer',
+    ))
+    monitoring: RunInstancesMonitoringEnabled = _dc.field(metadata=_base.field_metadata(
+        member_name='Monitoring',
+        shape_name='RunInstancesMonitoringEnabled',
+    ))
+    placement: Placement = _dc.field(metadata=_base.field_metadata(
+        member_name='Placement',
+        shape_name='Placement',
+    ))
+    ramdisk_id: RamdiskId = _dc.field(metadata=_base.field_metadata(
+        member_name='RamdiskId',
+        shape_name='RamdiskId',
+    ))
+    security_group_ids: SecurityGroupIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='SecurityGroupIds',
+        shape_name='SecurityGroupIdStringList',
+    ))
+    security_groups: SecurityGroupStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='SecurityGroups',
+        shape_name='SecurityGroupStringList',
+    ))
+    subnet_id: SubnetId = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetId',
+        shape_name='SubnetId',
+    ))
+    user_data: RunInstancesUserData = _dc.field(metadata=_base.field_metadata(
+        member_name='UserData',
+        shape_name='RunInstancesUserData',
+    ))
+    elastic_gpu_specification: ElasticGpuSpecifications = _dc.field(metadata=_base.field_metadata(
+        member_name='ElasticGpuSpecification',
+        shape_name='ElasticGpuSpecifications',
+    ))
+    elastic_inference_accelerators: ElasticInferenceAccelerators = _dc.field(metadata=_base.field_metadata(
+        member_name='ElasticInferenceAccelerators',
+        shape_name='ElasticInferenceAccelerators',
+    ))
+    tag_specifications: TagSpecificationList = _dc.field(metadata=_base.field_metadata(
+        member_name='TagSpecifications',
+        shape_name='TagSpecificationList',
+    ))
+    launch_template: LaunchTemplateSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='LaunchTemplate',
+        shape_name='LaunchTemplateSpecification',
+    ))
+    instance_market_options: InstanceMarketOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceMarketOptions',
+        shape_name='InstanceMarketOptionsRequest',
+    ))
+    credit_specification: CreditSpecificationRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='CreditSpecification',
+        shape_name='CreditSpecificationRequest',
+    ))
+    cpu_options: CpuOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='CpuOptions',
+        shape_name='CpuOptionsRequest',
+    ))
+    capacity_reservation_specification: CapacityReservationSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityReservationSpecification',
+        shape_name='CapacityReservationSpecification',
+    ))
+    hibernation_options: HibernationOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='HibernationOptions',
+        shape_name='HibernationOptionsRequest',
+    ))
+    license_specifications: LicenseSpecificationListRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='LicenseSpecifications',
+        shape_name='LicenseSpecificationListRequest',
+    ))
+    metadata_options: InstanceMetadataOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='MetadataOptions',
+        shape_name='InstanceMetadataOptionsRequest',
+    ))
+    enclave_options: EnclaveOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='EnclaveOptions',
+        shape_name='EnclaveOptionsRequest',
+    ))
+    private_dns_name_options: PrivateDnsNameOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateDnsNameOptions',
+        shape_name='PrivateDnsNameOptionsRequest',
+    ))
+    maintenance_options: InstanceMaintenanceOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='MaintenanceOptions',
+        shape_name='InstanceMaintenanceOptionsRequest',
+    ))
+    disable_api_stop: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DisableApiStop',
+        shape_name='Boolean',
+    ))
+    enable_primary_ipv6: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnablePrimaryIpv6',
+        shape_name='Boolean',
+    ))
+    network_performance_options: InstanceNetworkPerformanceOptionsRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkPerformanceOptions',
+        shape_name='InstanceNetworkPerformanceOptionsRequest',
+    ))
+    operator: OperatorRequest = _dc.field(metadata=_base.field_metadata(
+        member_name='Operator',
+        shape_name='OperatorRequest',
+    ))
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+    disable_api_termination: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DisableApiTermination',
+        shape_name='Boolean',
+    ))
+    instance_initiated_shutdown_behavior: ShutdownBehavior = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceInitiatedShutdownBehavior',
+        shape_name='ShutdownBehavior',
+    ))
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
+    ))
+    client_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ClientToken',
+        shape_name='String',
+    ))
+    additional_info: str = _dc.field(metadata=_base.field_metadata(
+        member_name='AdditionalInfo',
+        shape_name='String',
+    ))
+    network_interfaces: InstanceNetworkInterfaceSpecificationList = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaces',
+        shape_name='InstanceNetworkInterfaceSpecificationList',
+    ))
+    iam_instance_profile: IamInstanceProfileSpecification = _dc.field(metadata=_base.field_metadata(
+        member_name='IamInstanceProfile',
+        shape_name='IamInstanceProfileSpecification',
+    ))
+    ebs_optimized: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EbsOptimized',
+        shape_name='Boolean',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -2149,45 +3095,78 @@ class DescribeInstancesResult(
 
 
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
+    CapacityReservationTarget,
     CapacityReservationTargetResponse,
+    ConnectionTrackingSpecificationRequest,
     ConnectionTrackingSpecificationResponse,
     CpuOptions,
+    CpuOptionsRequest,
+    CreditSpecificationRequest,
+    EbsBlockDevice,
     ElasticGpuAssociation,
+    ElasticGpuSpecification,
+    ElasticInferenceAccelerator,
     ElasticInferenceAcceleratorAssociation,
+    EnaSrdUdpSpecificationRequest,
     EnclaveOptions,
+    EnclaveOptionsRequest,
     GroupIdentifier,
     HibernationOptions,
+    HibernationOptionsRequest,
     IamInstanceProfile,
+    IamInstanceProfileSpecification,
     InstanceAttachmentEnaSrdUdpSpecification,
     InstanceIpv4Prefix,
     InstanceIpv6Address,
     InstanceIpv6Prefix,
     InstanceMaintenanceOptions,
+    InstanceMaintenanceOptionsRequest,
+    InstanceMetadataOptionsRequest,
     InstanceMetadataOptionsResponse,
     InstanceNetworkInterfaceAssociation,
     InstanceNetworkPerformanceOptions,
+    InstanceNetworkPerformanceOptionsRequest,
     InstanceState,
+    Ipv4PrefixSpecificationRequest,
+    Ipv6PrefixSpecificationRequest,
+    LaunchTemplateSpecification,
     LicenseConfiguration,
+    LicenseConfigurationRequest,
     Monitoring,
+    OperatorRequest,
     OperatorResponse,
     Placement,
+    PrivateDnsNameOptionsRequest,
     PrivateDnsNameOptionsResponse,
+    PrivateIpAddressSpecification,
     ProductCode,
+    RunInstancesMonitoringEnabled,
+    SpotMarketOptions,
     StateReason,
+    TagSpecification,
+    BlockDeviceMapping,
+    CapacityReservationSpecification,
     CapacityReservationSpecificationResponse,
     EbsInstanceBlockDevice,
+    EnaSrdSpecificationRequest,
     Filter,
     InstanceAttachmentEnaSrdSpecification,
+    InstanceMarketOptionsRequest,
     InstancePrivateIpAddress,
     InstanceStateChange,
+    RebootInstancesRequest,
     StartInstancesRequest,
     StopInstancesRequest,
+    TerminateInstancesRequest,
     InstanceBlockDeviceMapping,
     InstanceNetworkInterfaceAttachment,
+    InstanceNetworkInterfaceSpecification,
     DescribeInstancesRequest,
     InstanceNetworkInterface,
     StartInstancesResult,
     StopInstancesResult,
+    TerminateInstancesResult,
+    RunInstancesRequest,
     Instance,
     Reservation,
     DescribeInstancesResult,
@@ -2203,6 +3182,17 @@ DESCRIBE_INSTANCES = _base.Operation(
     output=DescribeInstancesResult,
 )
 
+REBOOT_INSTANCES = _base.Operation(
+    name='RebootInstances',
+    input=RebootInstancesRequest,
+)
+
+RUN_INSTANCES = _base.Operation(
+    name='RunInstances',
+    input=RunInstancesRequest,
+    output=Reservation,
+)
+
 START_INSTANCES = _base.Operation(
     name='StartInstances',
     input=StartInstancesRequest,
@@ -2215,9 +3205,18 @@ STOP_INSTANCES = _base.Operation(
     output=StopInstancesResult,
 )
 
+TERMINATE_INSTANCES = _base.Operation(
+    name='TerminateInstances',
+    input=TerminateInstancesRequest,
+    output=TerminateInstancesResult,
+)
+
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_INSTANCES,
+    REBOOT_INSTANCES,
+    RUN_INSTANCES,
     START_INSTANCES,
     STOP_INSTANCES,
+    TERMINATE_INSTANCES,
 ])

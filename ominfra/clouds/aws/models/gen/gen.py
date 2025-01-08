@@ -83,7 +83,8 @@ class ModelGen:
                 op.output_shape,
                 *op.error_shapes,
             ]:
-                todo.add(osh.name)
+                if osh is not None:
+                    todo.add(osh.name)
 
         seen = set(cls.BASE_TYPE_ANNS)
 
@@ -147,15 +148,17 @@ class ModelGen:
 
     DEMANGLE_PREFIXES: ta.ClassVar[ta.Sequence[str]] = [
         'AAAA',
+        'ACL',
         'ACP',
         'CRC32',
         'CRC32C',
+        'ETag',
         'KMS',
         'MD5',
+        'MFA',
         'SHA1',
         'SHA256',
         'SSE',
-        'ETag',
     ]
 
     def demangle_name(self, n: str) -> str:
@@ -184,6 +187,7 @@ class ModelGen:
 
     PREAMBLE_LINES: ta.Sequence[str] = [
         '# flake8: noqa: E501',
+        '# ruff: noqa: S105',
         '# fmt: off',
         'import dataclasses as _dc  # noqa',
         'import enum as _enum  # noqa',
@@ -371,9 +375,12 @@ class ModelGen:
 
         fls = [
             f'name={operation.name!r},',
-            f'input={operation.input_shape.name},',
-            f'output={operation.output_shape.name},',
         ]
+
+        if operation.input_shape is not None:
+            fls.append(f'input={operation.input_shape.name},')
+        if operation.output_shape is not None:
+            fls.append(f'output={operation.output_shape.name},')
 
         if operation.error_shapes:
             fls.append('errors=[')
