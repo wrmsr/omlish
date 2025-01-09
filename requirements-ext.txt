@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.123.9
+hypothesis==6.123.12
 
 hexdump==3.3
 
