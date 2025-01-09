@@ -37,7 +37,7 @@ class Cli(ap.Cli):
 
         tmp_dir = tempfile.mkdtemp()
         try:
-            subprocess.check_call(
+            proc = subprocess.run(
                 [
                     check.non_empty_str(shutil.which('clang++')),
                     '-std=c++20',
@@ -46,7 +46,11 @@ class Cli(ap.Cli):
                     src_file_name,
                 ],
                 cwd=tmp_dir,
+                check=False,
             )
+
+            if rc := proc.returncode:
+                return rc
 
             exe_file = os.path.join(tmp_dir, src_file_name)
             check.state(os.path.isfile(exe_file))
