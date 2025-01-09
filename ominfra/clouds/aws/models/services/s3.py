@@ -1345,8 +1345,8 @@ GET_OBJECT = _base.Operation(
     input=GetObjectRequest,
     output=GetObjectOutput,
     errors=[
-        NoSuchKey,
         InvalidObjectState,
+        NoSuchKey,
     ],
 )
 
@@ -1370,10 +1370,10 @@ PUT_OBJECT = _base.Operation(
     input=PutObjectRequest,
     output=PutObjectOutput,
     errors=[
+        EncryptionTypeMismatch,
         InvalidRequest,
         InvalidWriteOffset,
         TooManyParts,
-        EncryptionTypeMismatch,
     ],
 )
 

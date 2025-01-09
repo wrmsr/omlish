@@ -852,9 +852,9 @@ LIST_FUNCTIONS = _base.Operation(
     input=ListFunctionsRequest,
     output=ListFunctionsResponse,
     errors=[
+        InvalidParameterValueException,
         ServiceException,
         TooManyRequestsException,
-        InvalidParameterValueException,
     ],
 )
 
