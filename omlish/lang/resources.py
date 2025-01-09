@@ -6,7 +6,7 @@ import typing as ta
 
 
 @dc.dataclass(frozen=True)
-class RelativeResource:
+class ReadableResource:
     name: str
     is_file: bool
     read_bytes: ta.Callable[[], bytes]
@@ -15,13 +15,26 @@ class RelativeResource:
         return self.read_bytes().decode(encoding)
 
 
+def get_package_resources(anchor: str) -> ta.Mapping[str, ReadableResource]:
+    lst: list[ReadableResource] = []
+
+    for pf in importlib.resources.files(anchor).iterdir():
+        lst.append(ReadableResource(
+            name=pf.name,
+            is_file=pf.is_file(),
+            read_bytes=pf.read_bytes if pf.is_file() else None,  # type: ignore
+        ))
+
+    return {r.name: r for r in lst}
+
+
 def get_relative_resources(
         path: str = '',
         *,
         globals: ta.Mapping[str, ta.Any] | None = None,  # noqa
         package: str | None = None,
         file: str | None = None,
-) -> ta.Mapping[str, RelativeResource]:
+) -> ta.Mapping[str, ReadableResource]:
     if globals is not None:
         if not package:
             package = globals.get('__package__')
@@ -45,7 +58,7 @@ def get_relative_resources(
 
     #
 
-    lst: list[RelativeResource] = []
+    lst: list[ReadableResource] = []
 
     if package:
         pkg_parts = package.split('.')
@@ -53,7 +66,7 @@ def get_relative_resources(
             pkg_parts = pkg_parts[:-num_up]
         anchor = '.'.join([*pkg_parts, *path_parts])
         for pf in importlib.resources.files(anchor).iterdir():
-            lst.append(RelativeResource(
+            lst.append(ReadableResource(
                 name=pf.name,
                 is_file=pf.is_file(),
                 read_bytes=pf.read_bytes if pf.is_file() else None,  # type: ignore
@@ -73,7 +86,7 @@ def get_relative_resources(
 
         for ff in os.listdir(dst_dir):
             ff = os.path.join(dst_dir, ff)
-            lst.append(RelativeResource(
+            lst.append(ReadableResource(
                 name=os.path.basename(ff),
                 is_file=os.path.isfile(ff),
                 read_bytes=functools.partial(_read_file, ff),

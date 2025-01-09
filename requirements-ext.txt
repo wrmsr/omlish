@@ -195,7 +195,7 @@ customtkinter==5.2.2
 ##
 
 langchain-anthropic==0.3.1
-langchain-chroma==0.1.4
+langchain-chroma==0.2.0
 langchain-community==0.3.14
 langchain-core==0.3.29
 langchain-elasticsearch==0.3.0
@@ -280,7 +280,7 @@ docopt==0.6.2
 
 rapidocr_onnxruntime==1.4.3
 
-gguf==0.13.0
+gguf==0.14.0
 
 pytesseract==0.3.13
 

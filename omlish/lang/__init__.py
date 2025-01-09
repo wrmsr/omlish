@@ -189,7 +189,8 @@ from .resolving import (  # noqa
 )
 
 from .resources import (  # noqa
-    RelativeResource,
+    ReadableResource,
+    get_package_resources,
     get_relative_resources,
 )
 
