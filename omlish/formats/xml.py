@@ -79,27 +79,38 @@ class SimpleElement:
         return dct
 
 
-def build_simple_element(element: 'ET.Element') -> SimpleElement:
-    atts = {}
-    for name, value in element.attrib.items():
-        atts[name] = value  # noqa
+def build_simple_element(
+        element: 'ET.Element',
+        *,
+        strip_tag_ns: bool = False,
+) -> SimpleElement:
+    def rec(cur: 'ET.Element') -> SimpleElement:
+        atts = {}
+        for name, value in cur.attrib.items():
+            atts[name] = value  # noqa
 
-    body: list[SimpleElement | str] = []
+        body: list[SimpleElement | str] = []
 
-    if element.text and (s := element.text.strip()):
-        body.append(s)
-
-    for child in element:
-        body.append(build_simple_element(child))
-
-        if child.tail and (s := child.tail.strip()):
+        if cur.text and (s := cur.text.strip()):
             body.append(s)
 
-    return SimpleElement(
-        element.tag,
-        atts,
-        body,
-    )
+        for child in cur:
+            body.append(rec(child))
+
+            if child.tail and (s := child.tail.strip()):
+                body.append(s)
+
+        tag = cur.tag
+        if strip_tag_ns:
+            tag = strip_ns(tag)
+
+        return SimpleElement(
+            tag,
+            atts,
+            body,
+        )
+
+    return rec(element)
 
 
 def parse_tree(s: str) -> 'ET.ElementTree':
