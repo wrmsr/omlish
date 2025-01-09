@@ -1,3 +1,6 @@
+"""
+https://peps.python.org/pep-0249/
+"""
 import typing as ta
 
 
@@ -12,6 +15,16 @@ DbapiColumnDescription: ta.TypeAlias = tuple[
     int | None,  # scale
     bool | None,  # null_ok
 ]
+
+
+class DbapiColumnDescription_(ta.NamedTuple):  # noqa
+    name: str
+    type_code: DbapiTypeCode
+    display_size: int | None
+    internal_size: int | None
+    precision: int | None
+    scale: int | None
+    null_ok: bool | None
 
 
 class DbapiConnection(ta.Protocol):
