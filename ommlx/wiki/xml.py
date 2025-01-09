@@ -1,5 +1,7 @@
 import typing as ta
 
+from omlish import check
+
 from . import models as mdl
 from .utils import xml as xu
 
@@ -12,6 +14,10 @@ T = ta.TypeVar('T')
 
 def symm_dct(*ks: T) -> ta.Mapping[T, T]:
     return {k: k for k in ks}
+
+
+def parse_int(s: str | None) -> int:
+    return int(check.non_empty_str(s))
 
 
 ##
@@ -83,7 +89,7 @@ parse_contributor = xu.ElementToObj(
                 'username',
                 'ip',
             ),
-            'id': ('id', int),
+            'id': ('id', parse_int),
         },
     ),
 )
@@ -106,9 +112,9 @@ parse_revision = xu.ElementToObj(
     mdl.Revision,
     xu.ElementToKwargs(
         scalars={
-            'id': ('id', int),
-            'parentid': ('parentid', int),
-            'origin': ('origin', int),
+            'id': ('id', parse_int),
+            'parentid': ('parentid', parse_int),
+            'origin': ('origin', parse_int),
             'minor': ('minor', lambda _: True),
             **symm_dct(
                 'timestamp',
@@ -132,8 +138,8 @@ parse_page = xu.ElementToObj(
     mdl.Page,
     xu.ElementToKwargs(
         scalars={
-            'ns': ('ns', int),
-            'id': ('id', int),
+            'ns': ('ns', parse_int),
+            'id': ('id', parse_int),
             **symm_dct(
                 'title',
                 'restrictions',

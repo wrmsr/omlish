@@ -12,7 +12,6 @@ import dataclasses as dc
 import typing as ta
 import xml.etree.ElementTree as ET
 
-from omlish import check
 from omlish import lang
 from omlish.formats.xml import strip_ns
 
@@ -71,7 +70,7 @@ def yield_root_children(
 @dc.dataclass(frozen=True, kw_only=True)
 class ElementToKwargs:
     attrs: ta.Mapping[str, tuple[str, ta.Callable[[str], ta.Any]] | str | None] = dc.field(default_factory=dict)
-    scalars: ta.Mapping[str, tuple[str, ta.Callable[[str], ta.Any]] | str | None] = dc.field(default_factory=dict)
+    scalars: ta.Mapping[str, tuple[str, ta.Callable[[str | None], ta.Any]] | str | None] = dc.field(default_factory=dict)  # noqa
     single_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
     list_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
     text: str | None = None
@@ -109,8 +108,8 @@ class ElementToKwargs:
                     if isinstance(t, str):
                         set_kw(t, cel.text)
                     else:
-                        sk, fn = t
-                        set_kw(sk, fn(check.not_none(cel.text)))
+                        sk, sfn = t
+                        set_kw(sk, sfn(cel.text))
 
             elif k in self.single_children:
                 ck, fn = self.single_children[k]
