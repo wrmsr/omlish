@@ -228,6 +228,18 @@
     }
   },
   {
+    "module": ".tools.cc",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/cc.py",
+    "line": 72,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "cc",
+        "mod_name": "omdev.tools.cc"
+      }
+    }
+  },
+  {
     "module": ".tools.cloc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/cloc.py",
