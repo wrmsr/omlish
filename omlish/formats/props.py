@@ -306,8 +306,7 @@ class Properties(collections.abc.MutableMapping):
             if self._metadoc and self._prev_key:
                 prev_metadata = self._metadata.setdefault(self._prev_key, {})
                 prev_metadata.setdefault('_doc', '')
-                if docstr.startswith(' '):
-                    docstr = docstr[1:]
+                docstr = docstr.removeprefix(' ')
                 prev_metadata['_doc'] += docstr + '\n'
             return
 

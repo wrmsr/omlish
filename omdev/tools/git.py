@@ -127,8 +127,7 @@ class Cli(ap.Cli):
 
             if rm_url.startswith(git_pfx := 'git@github.com:'):
                 s = rm_url[len(git_pfx):]
-                if s.endswith('.git'):
-                    s = s[:-4]
+                s = s.removesuffix('.git')
                 user, repo = s.split('/')
 
             else:
