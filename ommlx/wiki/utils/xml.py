@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 
 from omlish import check
 from omlish import lang
+from omlish.formats.xml import strip_ns
 
 
 if ta.TYPE_CHECKING:
@@ -25,17 +26,6 @@ else:
 T = ta.TypeVar('T')
 
 Element: ta.TypeAlias = ta.Union[ET.Element, 'lxml_etree.Element']
-
-
-##
-
-
-def strip_ns(tag: str) -> str:
-    # It really do just be like this:
-    # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
-    if tag[:1] == '{':
-        _, tag = tag[1:].rsplit('}', 1)
-    return tag
 
 
 ##
