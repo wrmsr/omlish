@@ -303,6 +303,8 @@ class ModelGen:
         san_name = self.sanitize_global_name(shape.name, upper=True)
 
         if isinstance(shape, botocore.model.StructureShape):
+            rms = frozenset(shape.required_members or [])
+
             lines: list[str] = []
 
             mds = [
@@ -310,7 +312,7 @@ class ModelGen:
             ]
 
             lines.extend([
-                '@_dc.dataclass(frozen=True)',
+                '@_dc.dataclass(frozen=True, kw_only=True)',
                 f'class {san_name}(',
                 '    _base.Shape,',
                 *[f'    {dl},' for dl in mds],
@@ -323,7 +325,9 @@ class ModelGen:
             for i, (mn, ms) in enumerate(shape.members.items()):
                 if i:
                     lines.append('')
+
                 fn = self.sanitize_local_name(self.demangle_name(mn))
+
                 mds = [
                     f'member_name={mn!r}',
                 ]
@@ -334,13 +338,24 @@ class ModelGen:
                     ms.name,
                     unquoted_names=unquoted_names,
                 )
+
+                fr = mn in rms
+                fa = ma or ms.name
+                if fr:
+                    fd = ''
+                else:
+                    fa += ' | None'
+                    fd = 'default=None, '
+
                 fls = [
-                    f'{fn}: {ma or ms.name} = _dc.field(metadata=_base.field_metadata(',
+                    f'{fn}: {fa} = _dc.field({fd}metadata=_base.field_metadata(',
                     *[f'    {dl},' for dl in mds],
                     '))',
                 ]
+
                 if ma is None:
                     fls = ['# ' + fl for fl in fls]
+
                 lines.append('\n'.join('    ' + fl for fl in fls))
 
             return self.ShapeSrc(

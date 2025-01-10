@@ -99,7 +99,7 @@ class ShapeInfo:
         return col.make_map(l, strict=True)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class Shape:
     __shape__: ta.ClassVar[ShapeInfo]
 

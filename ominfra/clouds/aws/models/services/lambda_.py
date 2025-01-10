@@ -251,28 +251,28 @@ WorkingDirectory = _ta.NewType('WorkingDirectory', str)
 ArchitecturesList: _ta.TypeAlias = _ta.Sequence[Architecture]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class DeadLetterConfig(
     _base.Shape,
     shape_name='DeadLetterConfig',
 ):
-    target_arn: ResourceArn = _dc.field(metadata=_base.field_metadata(
+    target_arn: ResourceArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TargetArn',
         shape_name='ResourceArn',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class EnvironmentError_(
     _base.Shape,
     shape_name='EnvironmentError',
 ):
-    error_code: str = _dc.field(metadata=_base.field_metadata(
+    error_code: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ErrorCode',
         shape_name='String',
     ))
 
-    message: SensitiveString = _dc.field(metadata=_base.field_metadata(
+    message: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
     ))
@@ -281,7 +281,7 @@ class EnvironmentError_(
 EnvironmentVariables: _ta.TypeAlias = _ta.Mapping[EnvironmentVariableName, EnvironmentVariableName]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class EphemeralStorage(
     _base.Shape,
     shape_name='EphemeralStorage',
@@ -292,7 +292,7 @@ class EphemeralStorage(
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class FileSystemConfig(
     _base.Shape,
     shape_name='FileSystemConfig',
@@ -308,131 +308,131 @@ class FileSystemConfig(
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ImageConfigError(
     _base.Shape,
     shape_name='ImageConfigError',
 ):
-    error_code: str = _dc.field(metadata=_base.field_metadata(
+    error_code: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ErrorCode',
         shape_name='String',
     ))
 
-    message: SensitiveString = _dc.field(metadata=_base.field_metadata(
+    message: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class InvalidParameterValueException(
     _base.Shape,
     shape_name='InvalidParameterValueException',
 ):
-    type: str = _dc.field(metadata=_base.field_metadata(
+    type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Type',
         shape_name='String',
     ))
 
-    message: str = _dc.field(metadata=_base.field_metadata(
+    message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='message',
         shape_name='String',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class Layer(
     _base.Shape,
     shape_name='Layer',
 ):
-    arn: LayerVersionArn = _dc.field(metadata=_base.field_metadata(
+    arn: LayerVersionArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Arn',
         shape_name='LayerVersionArn',
     ))
 
-    code_size: int = _dc.field(metadata=_base.field_metadata(
+    code_size: int | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))
 
-    signing_profile_version_arn: Arn = _dc.field(metadata=_base.field_metadata(
+    signing_profile_version_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningProfileVersionArn',
         shape_name='Arn',
     ))
 
-    signing_job_arn: Arn = _dc.field(metadata=_base.field_metadata(
+    signing_job_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningJobArn',
         shape_name='Arn',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ListFunctionsRequest(
     _base.Shape,
     shape_name='ListFunctionsRequest',
 ):
-    master_region: MasterRegion = _dc.field(metadata=_base.field_metadata(
+    master_region: MasterRegion | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MasterRegion',
         serialization_name='MasterRegion',
         shape_name='MasterRegion',
     ))
 
-    function_version: FunctionVersion = _dc.field(metadata=_base.field_metadata(
+    function_version: FunctionVersion | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FunctionVersion',
         serialization_name='FunctionVersion',
         shape_name='FunctionVersion',
     ))
 
-    marker: str = _dc.field(metadata=_base.field_metadata(
+    marker: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Marker',
         serialization_name='Marker',
         shape_name='String',
     ))
 
-    max_items: MaxListItems = _dc.field(metadata=_base.field_metadata(
+    max_items: MaxListItems | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MaxItems',
         serialization_name='MaxItems',
         shape_name='MaxListItems',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class LoggingConfig(
     _base.Shape,
     shape_name='LoggingConfig',
 ):
-    log_format: LogFormat = _dc.field(metadata=_base.field_metadata(
+    log_format: LogFormat | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LogFormat',
         shape_name='LogFormat',
     ))
 
-    application_log_level: ApplicationLogLevel = _dc.field(metadata=_base.field_metadata(
+    application_log_level: ApplicationLogLevel | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ApplicationLogLevel',
         shape_name='ApplicationLogLevel',
     ))
 
-    system_log_level: SystemLogLevel = _dc.field(metadata=_base.field_metadata(
+    system_log_level: SystemLogLevel | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SystemLogLevel',
         shape_name='SystemLogLevel',
     ))
 
-    log_group: LogGroup = _dc.field(metadata=_base.field_metadata(
+    log_group: LogGroup | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LogGroup',
         shape_name='LogGroup',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class RuntimeVersionError(
     _base.Shape,
     shape_name='RuntimeVersionError',
 ):
-    error_code: str = _dc.field(metadata=_base.field_metadata(
+    error_code: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ErrorCode',
         shape_name='String',
     ))
 
-    message: SensitiveString = _dc.field(metadata=_base.field_metadata(
+    message: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Message',
         shape_name='SensitiveString',
     ))
@@ -441,33 +441,33 @@ class RuntimeVersionError(
 SecurityGroupIds: _ta.TypeAlias = _ta.Sequence[SecurityGroupId]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ServiceException(
     _base.Shape,
     shape_name='ServiceException',
 ):
-    type: str = _dc.field(metadata=_base.field_metadata(
+    type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Type',
         shape_name='String',
     ))
 
-    message: str = _dc.field(metadata=_base.field_metadata(
+    message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Message',
         shape_name='String',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class SnapStartResponse(
     _base.Shape,
     shape_name='SnapStartResponse',
 ):
-    apply_on: SnapStartApplyOn = _dc.field(metadata=_base.field_metadata(
+    apply_on: SnapStartApplyOn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ApplyOn',
         shape_name='SnapStartApplyOn',
     ))
 
-    optimization_status: SnapStartOptimizationStatus = _dc.field(metadata=_base.field_metadata(
+    optimization_status: SnapStartOptimizationStatus | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='OptimizationStatus',
         shape_name='SnapStartOptimizationStatus',
     ))
@@ -478,55 +478,55 @@ StringList: _ta.TypeAlias = _ta.Sequence[str]
 SubnetIds: _ta.TypeAlias = _ta.Sequence[SubnetId]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class TooManyRequestsException(
     _base.Shape,
     shape_name='TooManyRequestsException',
 ):
-    retry_after_seconds: str = _dc.field(metadata=_base.field_metadata(
+    retry_after_seconds: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='retryAfterSeconds',
         serialization_name='Retry-After',
         shape_name='String',
     ))
 
-    type: str = _dc.field(metadata=_base.field_metadata(
+    type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Type',
         shape_name='String',
     ))
 
-    message: str = _dc.field(metadata=_base.field_metadata(
+    message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='message',
         shape_name='String',
     ))
 
-    reason: ThrottleReason = _dc.field(metadata=_base.field_metadata(
+    reason: ThrottleReason | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Reason',
         shape_name='ThrottleReason',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class TracingConfigResponse(
     _base.Shape,
     shape_name='TracingConfigResponse',
 ):
-    mode: TracingMode = _dc.field(metadata=_base.field_metadata(
+    mode: TracingMode | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Mode',
         shape_name='TracingMode',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class EnvironmentResponse(
     _base.Shape,
     shape_name='EnvironmentResponse',
 ):
-    variables: EnvironmentVariables = _dc.field(metadata=_base.field_metadata(
+    variables: EnvironmentVariables | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Variables',
         shape_name='EnvironmentVariables',
     ))
 
-    error: EnvironmentError_ = _dc.field(metadata=_base.field_metadata(
+    error: EnvironmentError_ | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Error',
         shape_name='EnvironmentError',
     ))
@@ -535,22 +535,22 @@ class EnvironmentResponse(
 FileSystemConfigList: _ta.TypeAlias = _ta.Sequence[FileSystemConfig]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ImageConfig(
     _base.Shape,
     shape_name='ImageConfig',
 ):
-    entry_point: StringList = _dc.field(metadata=_base.field_metadata(
+    entry_point: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EntryPoint',
         shape_name='StringList',
     ))
 
-    command: StringList = _dc.field(metadata=_base.field_metadata(
+    command: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Command',
         shape_name='StringList',
     ))
 
-    working_directory: WorkingDirectory = _dc.field(metadata=_base.field_metadata(
+    working_directory: WorkingDirectory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='WorkingDirectory',
         shape_name='WorkingDirectory',
     ))
@@ -559,245 +559,245 @@ class ImageConfig(
 LayersReferenceList: _ta.TypeAlias = _ta.Sequence[Layer]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class RuntimeVersionConfig(
     _base.Shape,
     shape_name='RuntimeVersionConfig',
 ):
-    runtime_version_arn: RuntimeVersionArn = _dc.field(metadata=_base.field_metadata(
+    runtime_version_arn: RuntimeVersionArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='RuntimeVersionArn',
         shape_name='RuntimeVersionArn',
     ))
 
-    error: RuntimeVersionError = _dc.field(metadata=_base.field_metadata(
+    error: RuntimeVersionError | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Error',
         shape_name='RuntimeVersionError',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class VpcConfigResponse(
     _base.Shape,
     shape_name='VpcConfigResponse',
 ):
-    subnet_ids: SubnetIds = _dc.field(metadata=_base.field_metadata(
+    subnet_ids: SubnetIds | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SubnetIds',
         shape_name='SubnetIds',
     ))
 
-    security_group_ids: SecurityGroupIds = _dc.field(metadata=_base.field_metadata(
+    security_group_ids: SecurityGroupIds | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SecurityGroupIds',
         shape_name='SecurityGroupIds',
     ))
 
-    vpc_id: VpcId = _dc.field(metadata=_base.field_metadata(
+    vpc_id: VpcId | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VpcId',
         shape_name='VpcId',
     ))
 
-    ipv6_allowed_for_dual_stack: NullableBoolean = _dc.field(metadata=_base.field_metadata(
+    ipv6_allowed_for_dual_stack: NullableBoolean | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Ipv6AllowedForDualStack',
         shape_name='NullableBoolean',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ImageConfigResponse(
     _base.Shape,
     shape_name='ImageConfigResponse',
 ):
-    image_config: ImageConfig = _dc.field(metadata=_base.field_metadata(
+    image_config: ImageConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ImageConfig',
         shape_name='ImageConfig',
     ))
 
-    error: ImageConfigError = _dc.field(metadata=_base.field_metadata(
+    error: ImageConfigError | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Error',
         shape_name='ImageConfigError',
     ))
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class FunctionConfiguration(
     _base.Shape,
     shape_name='FunctionConfiguration',
 ):
-    function_name: NamespacedFunctionName = _dc.field(metadata=_base.field_metadata(
+    function_name: NamespacedFunctionName | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FunctionName',
         shape_name='NamespacedFunctionName',
     ))
 
-    function_arn: NameSpacedFunctionArn = _dc.field(metadata=_base.field_metadata(
+    function_arn: NameSpacedFunctionArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FunctionArn',
         shape_name='NameSpacedFunctionArn',
     ))
 
-    runtime: Runtime = _dc.field(metadata=_base.field_metadata(
+    runtime: Runtime | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Runtime',
         shape_name='Runtime',
     ))
 
-    role: RoleArn = _dc.field(metadata=_base.field_metadata(
+    role: RoleArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Role',
         shape_name='RoleArn',
     ))
 
-    handler: Handler = _dc.field(metadata=_base.field_metadata(
+    handler: Handler | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Handler',
         shape_name='Handler',
     ))
 
-    code_size: int = _dc.field(metadata=_base.field_metadata(
+    code_size: int | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))
 
-    description: Description = _dc.field(metadata=_base.field_metadata(
+    description: Description | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Description',
         shape_name='Description',
     ))
 
-    timeout: Timeout = _dc.field(metadata=_base.field_metadata(
+    timeout: Timeout | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Timeout',
         shape_name='Timeout',
     ))
 
-    memory_size: MemorySize = _dc.field(metadata=_base.field_metadata(
+    memory_size: MemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MemorySize',
         shape_name='MemorySize',
     ))
 
-    last_modified: Timestamp = _dc.field(metadata=_base.field_metadata(
+    last_modified: Timestamp | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LastModified',
         shape_name='Timestamp',
     ))
 
-    code_sha256: str = _dc.field(metadata=_base.field_metadata(
+    code_sha256: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='CodeSha256',
         shape_name='String',
     ))
 
-    version: Version = _dc.field(metadata=_base.field_metadata(
+    version: Version | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Version',
         shape_name='Version',
     ))
 
-    vpc_config: VpcConfigResponse = _dc.field(metadata=_base.field_metadata(
+    vpc_config: VpcConfigResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VpcConfig',
         shape_name='VpcConfigResponse',
     ))
 
-    dead_letter_config: DeadLetterConfig = _dc.field(metadata=_base.field_metadata(
+    dead_letter_config: DeadLetterConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DeadLetterConfig',
         shape_name='DeadLetterConfig',
     ))
 
-    environment: EnvironmentResponse = _dc.field(metadata=_base.field_metadata(
+    environment: EnvironmentResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Environment',
         shape_name='EnvironmentResponse',
     ))
 
-    kms_key_arn: KMSKeyArn = _dc.field(metadata=_base.field_metadata(
+    kms_key_arn: KMSKeyArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='KMSKeyArn',
         shape_name='KMSKeyArn',
     ))
 
-    tracing_config: TracingConfigResponse = _dc.field(metadata=_base.field_metadata(
+    tracing_config: TracingConfigResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TracingConfig',
         shape_name='TracingConfigResponse',
     ))
 
-    master_arn: FunctionArn = _dc.field(metadata=_base.field_metadata(
+    master_arn: FunctionArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MasterArn',
         shape_name='FunctionArn',
     ))
 
-    revision_id: str = _dc.field(metadata=_base.field_metadata(
+    revision_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='RevisionId',
         shape_name='String',
     ))
 
-    layers: LayersReferenceList = _dc.field(metadata=_base.field_metadata(
+    layers: LayersReferenceList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Layers',
         shape_name='LayersReferenceList',
     ))
 
-    state: State = _dc.field(metadata=_base.field_metadata(
+    state: State | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='State',
         shape_name='State',
     ))
 
-    state_reason: StateReason = _dc.field(metadata=_base.field_metadata(
+    state_reason: StateReason | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='StateReason',
         shape_name='StateReason',
     ))
 
-    state_reason_code: StateReasonCode = _dc.field(metadata=_base.field_metadata(
+    state_reason_code: StateReasonCode | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='StateReasonCode',
         shape_name='StateReasonCode',
     ))
 
-    last_update_status: LastUpdateStatus = _dc.field(metadata=_base.field_metadata(
+    last_update_status: LastUpdateStatus | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LastUpdateStatus',
         shape_name='LastUpdateStatus',
     ))
 
-    last_update_status_reason: LastUpdateStatusReason = _dc.field(metadata=_base.field_metadata(
+    last_update_status_reason: LastUpdateStatusReason | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LastUpdateStatusReason',
         shape_name='LastUpdateStatusReason',
     ))
 
-    last_update_status_reason_code: LastUpdateStatusReasonCode = _dc.field(metadata=_base.field_metadata(
+    last_update_status_reason_code: LastUpdateStatusReasonCode | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LastUpdateStatusReasonCode',
         shape_name='LastUpdateStatusReasonCode',
     ))
 
-    file_system_configs: FileSystemConfigList = _dc.field(metadata=_base.field_metadata(
+    file_system_configs: FileSystemConfigList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FileSystemConfigs',
         shape_name='FileSystemConfigList',
     ))
 
-    package_type: PackageType = _dc.field(metadata=_base.field_metadata(
+    package_type: PackageType | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='PackageType',
         shape_name='PackageType',
     ))
 
-    image_config_response: ImageConfigResponse = _dc.field(metadata=_base.field_metadata(
+    image_config_response: ImageConfigResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ImageConfigResponse',
         shape_name='ImageConfigResponse',
     ))
 
-    signing_profile_version_arn: Arn = _dc.field(metadata=_base.field_metadata(
+    signing_profile_version_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningProfileVersionArn',
         shape_name='Arn',
     ))
 
-    signing_job_arn: Arn = _dc.field(metadata=_base.field_metadata(
+    signing_job_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningJobArn',
         shape_name='Arn',
     ))
 
-    architectures: ArchitecturesList = _dc.field(metadata=_base.field_metadata(
+    architectures: ArchitecturesList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Architectures',
         shape_name='ArchitecturesList',
     ))
 
-    ephemeral_storage: EphemeralStorage = _dc.field(metadata=_base.field_metadata(
+    ephemeral_storage: EphemeralStorage | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EphemeralStorage',
         shape_name='EphemeralStorage',
     ))
 
-    snap_start: SnapStartResponse = _dc.field(metadata=_base.field_metadata(
+    snap_start: SnapStartResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SnapStart',
         shape_name='SnapStartResponse',
     ))
 
-    runtime_version_config: RuntimeVersionConfig = _dc.field(metadata=_base.field_metadata(
+    runtime_version_config: RuntimeVersionConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='RuntimeVersionConfig',
         shape_name='RuntimeVersionConfig',
     ))
 
-    logging_config: LoggingConfig = _dc.field(metadata=_base.field_metadata(
+    logging_config: LoggingConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LoggingConfig',
         shape_name='LoggingConfig',
     ))
@@ -806,17 +806,17 @@ class FunctionConfiguration(
 FunctionList: _ta.TypeAlias = _ta.Sequence[FunctionConfiguration]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(frozen=True, kw_only=True)
 class ListFunctionsResponse(
     _base.Shape,
     shape_name='ListFunctionsResponse',
 ):
-    next_marker: str = _dc.field(metadata=_base.field_metadata(
+    next_marker: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='NextMarker',
         shape_name='String',
     ))
 
-    functions: FunctionList = _dc.field(metadata=_base.field_metadata(
+    functions: FunctionList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Functions',
         shape_name='FunctionList',
     ))
