@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.1.0
-boto3==1.35.95
-botocore==1.35.95
+boto3==1.35.96
+botocore==1.35.96
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -65,7 +65,6 @@ colorlog==6.9.0
 comm==0.2.2
 confection==0.1.5
 configobj==5.0.9
-configparser==7.1.0
 contourpy==1.3.1
 courlan==1.3.2
 cramjam==2.9.1
@@ -132,7 +131,7 @@ gguf==0.14.0
 gitdb==4.0.12
 GitPython==3.1.44
 google-api-core==2.24.0
-google-api-python-client==2.157.0
+google-api-python-client==2.158.0
 google-auth==2.37.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.23.0
@@ -261,7 +260,7 @@ mdurl==0.1.2
 mistune==3.1.0
 mitogen==0.3.20
 ml-dtypes==0.4.1
-mlx==0.21.1
+mlx==0.22.0
 mlx-lm==0.20.6
 mmh3==5.0.1
 monotonic==1.6
@@ -276,7 +275,7 @@ mycli==1.29.2
 mypy==1.14.1
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
-mysqlclient==2.2.6
+mysqlclient==2.2.7
 namex==0.0.8
 nbclient==0.10.2
 nbconvert==7.16.4
@@ -298,7 +297,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.59.5
+openai==1.59.6
 opencv-python==4.10.0.84
 opentelemetry-api==1.29.0
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
@@ -368,7 +367,7 @@ pyflakes==3.2.0
 pyfzf==0.3.1
 pygls==1.3.1
 Pygments==2.19.1
-pyinfra==3.1.1
+pyinfra==3.2
 PyJWT==2.10.1
 PyMySQL==1.1.1
 PyNaCl==1.5.0
@@ -433,7 +432,7 @@ ruff==0.9.0
 s3transfer==0.10.4
 safetensors==0.5.2
 scikit-image==0.25.0
-scikit-learn==1.6.0
+scikit-learn==1.6.1
 scipy==1.15.0
 scramp==1.4.5
 segno==1.6.1
@@ -463,7 +462,7 @@ spacy==3.8.3
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
-SQLAlchemy==2.0.36
+SQLAlchemy==2.0.37
 sqlean.py==3.47.0
 sqlglot==26.1.3
 sqlite-vec==0.1.6
@@ -500,7 +499,7 @@ tornado==6.4.2
 tqdm==4.67.1
 trafilatura==1.12.2
 traitlets==5.14.3
-transformers==4.47.1
+transformers==4.48.0
 tree-sitter==0.23.2
 tree-sitter-python==0.23.6
 trio==0.28.0
@@ -533,7 +532,7 @@ uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
 wasabi==1.1.3
-watchfiles==1.0.3
+watchfiles==1.0.4
 wcwidth==0.2.13
 weasel==0.4.1
 webcolors==24.11.1

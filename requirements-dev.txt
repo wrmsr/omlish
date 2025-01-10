@@ -67,7 +67,7 @@ psycopg2==2.9.10
 psycopg==3.2.3
 
 mysql-connector-python==9.1.0
-mysqlclient==2.2.6; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
+mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
 ujson==5.10.0
 
@@ -111,7 +111,7 @@ datasets==3.2.0; python_version < "3.13"  # !! includes arrow and pandas and shi
 sentence-transformers==3.3.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
-transformers==4.47.1; python_version < "3.13"
+transformers==4.48.0; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
@@ -119,4 +119,4 @@ segno==1.6.1
 
 duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.35.95
+boto3>=1.35.96
