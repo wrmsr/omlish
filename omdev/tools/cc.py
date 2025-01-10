@@ -14,6 +14,7 @@ Freestanding options:
 //$(which true); clang++ -std=c++20 -o ${D=`mktemp -d`}/x ${0} && ${D}/x ${@:1}; R=${?}; rm -rf ${D}; exit ${R}
 """
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -21,6 +22,7 @@ import tempfile
 from omlish import check
 from omlish.argparse import all as ap
 
+from .. import magic
 from ..cli import CliModule
 
 
@@ -31,21 +33,47 @@ class Cli(ap.Cli):
     )
     def run(self) -> int:
         src_file = self.args.src_file
-        check.state(os.path.isfile(src_file))
+
+        #
+
+        with open(src_file) as f:
+            src = f.read()
+
+        src_magic = magic.find_magic(  # noqa
+            magic.C_MAGIC_STYLE,
+            src.splitlines(),
+            file=src_file,
+            preparer=magic.json_magic_preparer,
+        )
+
+        # print(src_magic)
+
+        #
 
         src_file_name = os.path.basename(src_file)
 
+        sh_parts: list[str] = [
+            'clang++',
+        ]
+
+        if cflags := os.environ.get('CFLAGS'):
+            sh_parts.append(cflags)  # Explicitly shell-unquoted
+
+        sh_parts.extend([
+            '-std=c++20',
+            shlex.quote(os.path.abspath(src_file)),
+            '-o',
+            shlex.quote(src_file_name),
+        ])
+
+        #
+
         tmp_dir = tempfile.mkdtemp()
         try:
-            proc = subprocess.run(
-                [
-                    check.non_empty_str(shutil.which('clang++')),
-                    '-std=c++20',
-                    os.path.abspath(src_file),
-                    '-o',
-                    src_file_name,
-                ],
+            proc = subprocess.run(  # noqa
+                ' '.join(sh_parts),
                 cwd=tmp_dir,
+                shell=True,
                 check=False,
             )
 
@@ -68,11 +96,12 @@ class Cli(ap.Cli):
 
         return proc.returncode
 
-    @ap.cmd(
-        ap.arg('src-file', nargs='+'),
-    )
-    def add_shebang(self) -> None:
-        print(self.args.src_file)
+    # @ap.cmd(
+    #     ap.arg('src-file', nargs='+'),
+    # )
+    # def add_shebang(self) -> None:
+    #     # //$(which true); exec om cc run "$0" "$@"
+    #     print(self.args.src_file)
 
 
 def _main() -> None:
