@@ -16,22 +16,48 @@ Freestanding options:
 ==
 
 TODO:
- - standard deps - cdeps.toml
  - cext interop
  - gen cmake
 """
+import dataclasses as dc
 import os
 import shlex
 import shutil
 import subprocess
 import tempfile
+import tomllib
 import typing as ta
 
+from omlish import cached
 from omlish import check
+from omlish import lang
+from omlish import marshal as msh
 from omlish.argparse import all as ap
+from omlish.formats import json
 
 from .. import magic
 from ..cache import data as dcache
+
+
+@dc.dataclass(frozen=True)
+class Cdep:
+    @dc.dataclass(frozen=True)
+    class Git:
+        url: str
+        rev: str
+
+        subtrees: ta.Sequence[str] | None = None
+
+    git: Git
+
+    include: ta.Sequence[str] | None = None
+
+
+@cached.function
+def load_cdeps() -> ta.Mapping[str, Cdep]:
+    src = lang.get_relative_resources(globals=globals())['cdeps.toml'].read_text()
+    dct = tomllib.loads(src)
+    return msh.unmarshal(dct.get('deps', {}), ta.Mapping[str, Cdep])  # type: ignore
 
 
 class Cli(ap.Cli):
@@ -60,14 +86,18 @@ class Cli(ap.Cli):
         for src_magic in src_magics:
             if src_magic.key == '@omlish-cdeps':
                 for dep in check.isinstance(src_magic.prepared, ta.Sequence):
-                    dep_git = dep['git']
+                    if isinstance(dep, ta.Mapping):
+                        dep = msh.unmarshal(dep, Cdep)  # type: ignore
+                    else:
+                        dep = load_cdeps()[check.isinstance(dep, str)]
+
                     dep_spec = dcache.GitSpec(
-                        url=dep_git['url'],
-                        rev=dep_git['rev'],
-                        subtrees=dep_git.get('subtrees'),
+                        url=dep.git.url,
+                        rev=dep.git.rev,
+                        subtrees=dep.git.subtrees,
                     )
                     dep_dir = dcache.default().get(dep_spec)
-                    for dep_inc in dep.get('include', []):
+                    for dep_inc in dep.include or []:
                         inc_dir = os.path.join(dep_dir, dep_inc)
                         check.state(os.path.isdir(inc_dir))
                         include_dirs.append(inc_dir)
@@ -133,6 +163,13 @@ class Cli(ap.Cli):
     # def add_shebang(self) -> None:
     #     # //$(which true); exec om cc run "$0" "$@"
     #     print(self.args.src_file)
+
+    #
+
+    @ap.cmd()
+    def list_deps(self) -> None:
+        cdeps = load_cdeps()
+        print(json.dumps_pretty(msh.marshal(cdeps)))
 
 
 def _main() -> None:

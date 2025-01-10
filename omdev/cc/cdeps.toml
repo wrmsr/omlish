@@ -1,0 +1,27 @@
+[deps.json]
+include = ['single_include']
+
+[deps.json.git]
+url = 'https://github.com/nlohmann/json'
+rev = '2d42229f4d68c6f86f37468b84ac65e86b815bbb'
+subtrees = ['single_include']
+
+#
+
+[deps.pybind11]
+include = ['include']
+
+[deps.pybind11.git]
+url = 'https://github.com/pybind/pybind11'
+rev = '945e251a6ce7273058b36214d94415e9c9530b8e'
+subtrees = ['include']
+
+#
+
+[deps.ut]
+include = ['include']
+
+[deps.ut.git]
+url = 'https://github.com/boost-ext/ut'
+rev = 'f83e15c7f1edb49b4ec20f866eec06940d18a47d'
+subtrees = ['include']
