@@ -45,7 +45,7 @@ exec {shlex.quote(os.path.abspath(sys.executable))} -m omdev.cc "$@"
 def test_hi(tmpdir):
     out = _compile_and_run(
         str(tmpdir),
-        os.path.join(os.path.dirname(__file__), 'hi.cc'),
+        os.path.join(os.path.dirname(__file__), 'src/hi.cc'),
         'foo bar',
         'baz',
     )
@@ -62,7 +62,7 @@ def test_hi(tmpdir):
 def test_json(tmpdir):
     out = _compile_and_run(
         str(tmpdir),
-        os.path.join(os.path.dirname(__file__), 'json.cc'),
+        os.path.join(os.path.dirname(__file__), 'src/json.cc'),
     )
 
     assert out.decode().strip() == (
