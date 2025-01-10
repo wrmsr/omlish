@@ -7,13 +7,21 @@ TODO:
  - symlink headers, included src files (hamt_impl, ...)
  - point / copy output to dst dirs
  - libs
-  - ..
-   - pybind
-   - catch2?
-   - json? https://github.com/nlohmann/json
   - FindPackages? FetchContent? built_ext won't have that
   - move omml git / data retriever stuff into omdev, get just the one header file from git via sha?
  - support local built pys 
+
+Libs:
+ - py
+  - pybind https://github.com/pybind/pybind11
+  - nanobind https://github.com/wjakob/nanobind
+ - test
+  - catch2 https://github.com/catchorg/Catch2
+  - ut https://github.com/boost-ext/ut
+ - json
+  - nlohmann https://github.com/nlohmann/json
+ - log
+  - spdlog https://github.com/gabime/spdlog
 
 ==
 

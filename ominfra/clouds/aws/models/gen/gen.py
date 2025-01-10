@@ -137,16 +137,37 @@ class ModelGen:
 
     #
 
+    PRIMITIVE_SHAPE_TYPES: ta.ClassVar[ta.Mapping[str, str]] = {
+        'boolean': 'bool',
+
+        'integer': 'int',
+        'long': 'int',
+
+        'double': 'float',
+
+        'blob': 'bytes',
+
+        'timestamp': '_base.Timestamp',
+    }
+
+    #
+
     BASE_TYPE_ANNS: ta.ClassVar[ta.Mapping[str, str]] = {
         'Boolean': 'bool',
+
         'Integer': 'int',
+
         'String': 'str',
+
         'DateTime': '_base.DateTime',
         'MillisecondDateTime': '_base.MillisecondDateTime',
+
         'TagList': '_base.TagList',
     }
 
     BASE_SHAPE_NAMES: ta.ClassVar[ta.AbstractSet[str]] = set(BASE_TYPE_ANNS)
+
+    #
 
     def get_type_ann(
             self,
@@ -230,7 +251,7 @@ class ModelGen:
     def sanitize_class_name(self, n: str) -> str:
         if hasattr(builtins, n):
             n += '_'
-        return n
+        return n[0].upper() + n[1:]
 
     #
 
@@ -254,14 +275,6 @@ class ModelGen:
         return '\n'.join(self.PREAMBLE_LINES)
 
     #
-
-    PRIMITIVE_SHAPE_TYPES: ta.ClassVar[ta.Mapping[str, str]] = {
-        'integer': 'int',
-        'long': 'int',
-        'blob': 'bytes',
-        'boolean': 'bool',
-        'timestamp': '_base.Timestamp',
-    }
 
     @dc.dataclass(frozen=True)
     class ShapeSrc:

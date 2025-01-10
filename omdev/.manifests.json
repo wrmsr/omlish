@@ -27,7 +27,7 @@
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",
-    "line": 323,
+    "line": 331,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cmake",
@@ -51,7 +51,7 @@
     "module": ".cli.clicli",
     "attr": "_CLI_MODULE",
     "file": "omdev/cli/clicli.py",
-    "line": 138,
+    "line": 156,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cli",

@@ -19,6 +19,14 @@ class AmdSevSnpSpecification(_enum.Enum):
     DISABLED = 'disabled'
 
 
+class ArchitectureType(_enum.Enum):
+    I386 = 'i386'
+    X86_64 = 'x86_64'
+    ARM64 = 'arm64'
+    X86_64_MAC = 'x86_64_mac'
+    ARM64_MAC = 'arm64_mac'
+
+
 class ArchitectureValues(_enum.Enum):
     I386 = 'i386'
     X86_64 = 'x86_64'
@@ -34,10 +42,35 @@ class AttachmentStatus(_enum.Enum):
     DETACHED = 'detached'
 
 
+AutoRecoveryFlag = _ta.NewType('AutoRecoveryFlag', bool)
+
+
+class BandwidthWeightingType(_enum.Enum):
+    DEFAULT = 'default'
+    VPC_1 = 'vpc-1'
+    EBS_1 = 'ebs-1'
+
+
+BareMetalFlag = _ta.NewType('BareMetalFlag', bool)
+
+BaselineBandwidthInGbps = _ta.NewType('BaselineBandwidthInGbps', float)
+
+BaselineBandwidthInMbps = _ta.NewType('BaselineBandwidthInMbps', int)
+
+BaselineIops = _ta.NewType('BaselineIops', int)
+
+BaselineThroughputInMBps = _ta.NewType('BaselineThroughputInMBps', float)
+
+
 class BlockPublicAccessMode(_enum.Enum):
     OFF = 'off'
     BLOCK_BIDIRECTIONAL = 'block-bidirectional'
     BLOCK_INGRESS = 'block-ingress'
+
+
+class BootModeType(_enum.Enum):
+    LEGACY_BIOS = 'legacy-bios'
+    UEFI = 'uefi'
 
 
 class BootModeValues(_enum.Enum):
@@ -45,6 +78,8 @@ class BootModeValues(_enum.Enum):
     UEFI = 'uefi'
     UEFI_PREFERRED = 'uefi-preferred'
 
+
+BurstablePerformanceFlag = _ta.NewType('BurstablePerformanceFlag', bool)
 
 CapacityReservationId = _ta.NewType('CapacityReservationId', str)
 
@@ -56,6 +91,18 @@ class CapacityReservationPreference(_enum.Enum):
 
 
 CoipPoolId = _ta.NewType('CoipPoolId', str)
+
+CoreCount = _ta.NewType('CoreCount', int)
+
+CpuManufacturerName = _ta.NewType('CpuManufacturerName', str)
+
+CurrentGenerationFlag = _ta.NewType('CurrentGenerationFlag', bool)
+
+DITMaxResults = _ta.NewType('DITMaxResults', int)
+
+DedicatedHostFlag = _ta.NewType('DedicatedHostFlag', bool)
+
+DefaultNetworkCardIndex = _ta.NewType('DefaultNetworkCardIndex', int)
 
 DescribeInternetGatewaysMaxResults = _ta.NewType('DescribeInternetGatewaysMaxResults', int)
 
@@ -73,14 +120,81 @@ class DeviceType(_enum.Enum):
     INSTANCE_STORE = 'instance-store'
 
 
+DiskCount = _ta.NewType('DiskCount', int)
+
+DiskSize = _ta.NewType('DiskSize', int)
+
+
+class DiskType(_enum.Enum):
+    HDD = 'hdd'
+    SSD = 'ssd'
+
+
 class DomainType(_enum.Enum):
     VPC = 'vpc'
     STANDARD = 'standard'
 
 
+class EbsEncryptionSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+
+
+class EbsNvmeSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+    REQUIRED = 'required'
+
+
+class EbsOptimizedSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+    DEFAULT = 'default'
+
+
+EfaSupportedFlag = _ta.NewType('EfaSupportedFlag', bool)
+
 ElasticGpuId = _ta.NewType('ElasticGpuId', str)
 
 ElasticInferenceAcceleratorCount = _ta.NewType('ElasticInferenceAcceleratorCount', int)
+
+EnaSrdSupported = _ta.NewType('EnaSrdSupported', bool)
+
+
+class EnaSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+    REQUIRED = 'required'
+
+
+EncryptionInTransitSupported = _ta.NewType('EncryptionInTransitSupported', bool)
+
+
+class EphemeralNvmeSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+    REQUIRED = 'required'
+
+
+FpgaDeviceCount = _ta.NewType('FpgaDeviceCount', int)
+
+FpgaDeviceManufacturerName = _ta.NewType('FpgaDeviceManufacturerName', str)
+
+FpgaDeviceMemorySize = _ta.NewType('FpgaDeviceMemorySize', int)
+
+FpgaDeviceName = _ta.NewType('FpgaDeviceName', str)
+
+FreeTierEligibleFlag = _ta.NewType('FreeTierEligibleFlag', bool)
+
+GpuDeviceCount = _ta.NewType('GpuDeviceCount', int)
+
+GpuDeviceManufacturerName = _ta.NewType('GpuDeviceManufacturerName', str)
+
+GpuDeviceMemorySize = _ta.NewType('GpuDeviceMemorySize', int)
+
+GpuDeviceName = _ta.NewType('GpuDeviceName', str)
+
+HibernationFlag = _ta.NewType('HibernationFlag', bool)
 
 
 class HostnameType(_enum.Enum):
@@ -99,6 +213,14 @@ class HypervisorType(_enum.Enum):
 
 
 ImageId = _ta.NewType('ImageId', str)
+
+InferenceDeviceCount = _ta.NewType('InferenceDeviceCount', int)
+
+InferenceDeviceManufacturerName = _ta.NewType('InferenceDeviceManufacturerName', str)
+
+InferenceDeviceMemorySize = _ta.NewType('InferenceDeviceMemorySize', int)
+
+InferenceDeviceName = _ta.NewType('InferenceDeviceName', str)
 
 
 class InstanceAutoRecoveryState(_enum.Enum):
@@ -159,6 +281,14 @@ class InstanceStateName(_enum.Enum):
     TERMINATED = 'terminated'
     STOPPING = 'stopping'
     STOPPED = 'stopped'
+
+
+class InstanceStorageEncryptionSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    REQUIRED = 'required'
+
+
+InstanceStorageFlag = _ta.NewType('InstanceStorageFlag', bool)
 
 
 class InstanceType(_enum.Enum):
@@ -1046,6 +1176,11 @@ class InstanceType(_enum.Enum):
     I8G_METAL_24XL = 'i8g.metal-24xl'
 
 
+class InstanceTypeHypervisor(_enum.Enum):
+    NITRO = 'nitro'
+    XEN = 'xen'
+
+
 InternetGatewayId = _ta.NewType('InternetGatewayId', str)
 
 
@@ -1059,6 +1194,8 @@ class Ipv6AddressAttribute(_enum.Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'
 
+
+Ipv6Flag = _ta.NewType('Ipv6Flag', bool)
 
 KernelId = _ta.NewType('KernelId', str)
 
@@ -1080,12 +1217,41 @@ class MarketType(_enum.Enum):
     CAPACITY_BLOCK = 'capacity-block'
 
 
+MaxIpv4AddrPerInterface = _ta.NewType('MaxIpv4AddrPerInterface', int)
+
+MaxIpv6AddrPerInterface = _ta.NewType('MaxIpv6AddrPerInterface', int)
+
+MaxNetworkInterfaces = _ta.NewType('MaxNetworkInterfaces', int)
+
+MaximumBandwidthInMbps = _ta.NewType('MaximumBandwidthInMbps', int)
+
+MaximumEfaInterfaces = _ta.NewType('MaximumEfaInterfaces', int)
+
+MaximumIops = _ta.NewType('MaximumIops', int)
+
+MaximumNetworkCards = _ta.NewType('MaximumNetworkCards', int)
+
+MaximumThroughputInMBps = _ta.NewType('MaximumThroughputInMBps', float)
+
+MediaDeviceCount = _ta.NewType('MediaDeviceCount', int)
+
+MediaDeviceManufacturerName = _ta.NewType('MediaDeviceManufacturerName', str)
+
+MediaDeviceMemorySize = _ta.NewType('MediaDeviceMemorySize', int)
+
+MediaDeviceName = _ta.NewType('MediaDeviceName', str)
+
+MemorySize = _ta.NewType('MemorySize', int)
+
+
 class MonitoringState(_enum.Enum):
     DISABLED = 'disabled'
     DISABLING = 'disabling'
     ENABLED = 'enabled'
     PENDING = 'pending'
 
+
+NetworkCardIndex = _ta.NewType('NetworkCardIndex', int)
 
 NetworkInterfaceId = _ta.NewType('NetworkInterfaceId', str)
 
@@ -1119,13 +1285,57 @@ class NetworkInterfaceType(_enum.Enum):
     AWS_CODESTAR_CONNECTIONS_MANAGED = 'aws_codestar_connections_managed'
 
 
+NetworkPerformance = _ta.NewType('NetworkPerformance', str)
+
+NeuronDeviceCoreCount = _ta.NewType('NeuronDeviceCoreCount', int)
+
+NeuronDeviceCoreVersion = _ta.NewType('NeuronDeviceCoreVersion', int)
+
+NeuronDeviceCount = _ta.NewType('NeuronDeviceCount', int)
+
+NeuronDeviceMemorySize = _ta.NewType('NeuronDeviceMemorySize', int)
+
+NeuronDeviceName = _ta.NewType('NeuronDeviceName', str)
+
+NextToken = _ta.NewType('NextToken', str)
+
+
+class NitroEnclavesSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+
+
+class NitroTpmSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+
+
+NitroTpmSupportedVersionType = _ta.NewType('NitroTpmSupportedVersionType', str)
+
+PeakBandwidthInGbps = _ta.NewType('PeakBandwidthInGbps', float)
+
+
+class PhcSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
+
+
 PlacementGroupId = _ta.NewType('PlacementGroupId', str)
 
 PlacementGroupName = _ta.NewType('PlacementGroupName', str)
 
 
+class PlacementGroupStrategy(_enum.Enum):
+    CLUSTER = 'cluster'
+    PARTITION = 'partition'
+    SPREAD = 'spread'
+
+
 class PlatformValues(_enum.Enum):
     WINDOWS = 'Windows'
+
+
+ProcessorSustainedClockSpeed = _ta.NewType('ProcessorSustainedClockSpeed', float)
 
 
 class ProductCodeValues(_enum.Enum):
@@ -1228,6 +1438,11 @@ class ResourceType(_enum.Enum):
     IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
 
 
+class RootDeviceType(_enum.Enum):
+    EBS = 'ebs'
+    INSTANCE_STORE = 'instance-store'
+
+
 RunInstancesUserData = _ta.NewType('RunInstancesUserData', str)
 
 SecurityGroupId = _ta.NewType('SecurityGroupId', str)
@@ -1269,10 +1484,30 @@ class SubnetState(_enum.Enum):
     UNAVAILABLE = 'unavailable'
 
 
+class SupportedAdditionalProcessorFeature(_enum.Enum):
+    AMD_SEV_SNP = 'amd-sev-snp'
+
+
 class Tenancy(_enum.Enum):
     DEFAULT = 'default'
     DEDICATED = 'dedicated'
     HOST = 'host'
+
+
+ThreadsPerCore = _ta.NewType('ThreadsPerCore', int)
+
+TotalMediaMemory = _ta.NewType('TotalMediaMemory', int)
+
+TotalNeuronMemory = _ta.NewType('TotalNeuronMemory', int)
+
+
+class UsageClassType(_enum.Enum):
+    SPOT = 'spot'
+    ON_DEMAND = 'on-demand'
+    CAPACITY_BLOCK = 'capacity-block'
+
+
+VCpuCount = _ta.NewType('VCpuCount', int)
 
 
 class VirtualizationType(_enum.Enum):
@@ -1305,6 +1540,13 @@ VpcId = _ta.NewType('VpcId', str)
 class VpcState(_enum.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
+
+
+TotalFpgaMemory = _ta.NewType('TotalFpgaMemory', int)
+
+TotalGpuMemory = _ta.NewType('TotalGpuMemory', int)
+
+TotalInferenceMemory = _ta.NewType('TotalInferenceMemory', int)
 
 
 @_dc.dataclass(frozen=True)
@@ -1385,6 +1627,8 @@ class Address(
 
 AllocationIdList: _ta.TypeAlias = _ta.Sequence[AllocationId]
 
+ArchitectureTypeList: _ta.TypeAlias = _ta.Sequence[ArchitectureType]
+
 
 @_dc.dataclass(frozen=True)
 class AttachmentEnaSrdUdpSpecification(
@@ -1397,6 +1641,9 @@ class AttachmentEnaSrdUdpSpecification(
     ))
 
 
+BandwidthWeightingTypeList: _ta.TypeAlias = _ta.Sequence[BandwidthWeightingType]
+
+
 @_dc.dataclass(frozen=True)
 class BlockPublicAccessStates(
     _base.Shape,
@@ -1406,6 +1653,9 @@ class BlockPublicAccessStates(
         member_name='InternetGatewayBlockMode',
         shape_name='BlockPublicAccessMode',
     ))
+
+
+BootModeTypeList: _ta.TypeAlias = _ta.Sequence[BootModeType]
 
 
 @_dc.dataclass(frozen=True)
@@ -1503,6 +1753,9 @@ class ConnectionTrackingSpecificationResponse(
     ))
 
 
+CoreCountList: _ta.TypeAlias = _ta.Sequence[CoreCount]
+
+
 @_dc.dataclass(frozen=True)
 class CpuOptions(
     _base.Shape,
@@ -1557,6 +1810,27 @@ class CreditSpecificationRequest(
 
 
 @_dc.dataclass(frozen=True)
+class DiskInfo(
+    _base.Shape,
+    shape_name='DiskInfo',
+):
+    size_in_g_b: DiskSize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInGB',
+        shape_name='DiskSize',
+    ))
+
+    count: DiskCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='DiskCount',
+    ))
+
+    type: DiskType = _dc.field(metadata=_base.field_metadata(
+        member_name='Type',
+        shape_name='DiskType',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class EbsBlockDevice(
     _base.Shape,
     shape_name='EbsBlockDevice',
@@ -1604,6 +1878,53 @@ class EbsBlockDevice(
     encrypted: bool = _dc.field(metadata=_base.field_metadata(
         member_name='Encrypted',
         shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class EbsOptimizedInfo(
+    _base.Shape,
+    shape_name='EbsOptimizedInfo',
+):
+    baseline_bandwidth_in_mbps: BaselineBandwidthInMbps = _dc.field(metadata=_base.field_metadata(
+        member_name='BaselineBandwidthInMbps',
+        shape_name='BaselineBandwidthInMbps',
+    ))
+
+    baseline_throughput_in_m_bps: BaselineThroughputInMBps = _dc.field(metadata=_base.field_metadata(
+        member_name='BaselineThroughputInMBps',
+        shape_name='BaselineThroughputInMBps',
+    ))
+
+    baseline_iops: BaselineIops = _dc.field(metadata=_base.field_metadata(
+        member_name='BaselineIops',
+        shape_name='BaselineIops',
+    ))
+
+    maximum_bandwidth_in_mbps: MaximumBandwidthInMbps = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumBandwidthInMbps',
+        shape_name='MaximumBandwidthInMbps',
+    ))
+
+    maximum_throughput_in_m_bps: MaximumThroughputInMBps = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumThroughputInMBps',
+        shape_name='MaximumThroughputInMBps',
+    ))
+
+    maximum_iops: MaximumIops = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumIops',
+        shape_name='MaximumIops',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class EfaInfo(
+    _base.Shape,
+    shape_name='EfaInfo',
+):
+    maximum_efa_interfaces: MaximumEfaInterfaces = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumEfaInterfaces',
+        shape_name='MaximumEfaInterfaces',
     ))
 
 
@@ -1719,6 +2040,28 @@ class EnclaveOptionsRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class FpgaDeviceMemoryInfo(
+    _base.Shape,
+    shape_name='FpgaDeviceMemoryInfo',
+):
+    size_in_mi_b: FpgaDeviceMemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='FpgaDeviceMemorySize',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class GpuDeviceMemoryInfo(
+    _base.Shape,
+    shape_name='GpuDeviceMemoryInfo',
+):
+    size_in_mi_b: GpuDeviceMemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='GpuDeviceMemorySize',
+    ))
+
+
 GroupIdStringList: _ta.TypeAlias = _ta.Sequence[SecurityGroupId]
 
 
@@ -1792,6 +2135,17 @@ class IamInstanceProfileSpecification(
     name: str = _dc.field(metadata=_base.field_metadata(
         member_name='Name',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class InferenceDeviceMemoryInfo(
+    _base.Shape,
+    shape_name='InferenceDeviceMemoryInfo',
+):
+    size_in_mi_b: InferenceDeviceMemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='InferenceDeviceMemorySize',
     ))
 
 
@@ -2190,6 +2544,28 @@ class LicenseConfigurationRequest(
 
 
 @_dc.dataclass(frozen=True)
+class MediaDeviceMemoryInfo(
+    _base.Shape,
+    shape_name='MediaDeviceMemoryInfo',
+):
+    size_in_mi_b: MediaDeviceMemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='MediaDeviceMemorySize',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class MemoryInfo(
+    _base.Shape,
+    shape_name='MemoryInfo',
+):
+    size_in_mi_b: MemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='MemorySize',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class Monitoring(
     _base.Shape,
     shape_name='Monitoring',
@@ -2197,6 +2573,37 @@ class Monitoring(
     state: MonitoringState = _dc.field(metadata=_base.field_metadata(
         member_name='State',
         shape_name='MonitoringState',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NetworkCardInfo(
+    _base.Shape,
+    shape_name='NetworkCardInfo',
+):
+    network_card_index: NetworkCardIndex = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkCardIndex',
+        shape_name='NetworkCardIndex',
+    ))
+
+    network_performance: NetworkPerformance = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkPerformance',
+        shape_name='NetworkPerformance',
+    ))
+
+    maximum_network_interfaces: MaxNetworkInterfaces = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumNetworkInterfaces',
+        shape_name='MaxNetworkInterfaces',
+    ))
+
+    baseline_bandwidth_in_gbps: BaselineBandwidthInGbps = _dc.field(metadata=_base.field_metadata(
+        member_name='BaselineBandwidthInGbps',
+        shape_name='BaselineBandwidthInGbps',
+    ))
+
+    peak_bandwidth_in_gbps: PeakBandwidthInGbps = _dc.field(metadata=_base.field_metadata(
+        member_name='PeakBandwidthInGbps',
+        shape_name='PeakBandwidthInGbps',
     ))
 
 
@@ -2258,6 +2665,36 @@ class NetworkInterfaceIpv6Address(
         member_name='IsPrimaryIpv6',
         shape_name='Boolean',
     ))
+
+
+@_dc.dataclass(frozen=True)
+class NeuronDeviceCoreInfo(
+    _base.Shape,
+    shape_name='NeuronDeviceCoreInfo',
+):
+    count: NeuronDeviceCoreCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='NeuronDeviceCoreCount',
+    ))
+
+    version: NeuronDeviceCoreVersion = _dc.field(metadata=_base.field_metadata(
+        member_name='Version',
+        shape_name='NeuronDeviceCoreVersion',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NeuronDeviceMemoryInfo(
+    _base.Shape,
+    shape_name='NeuronDeviceMemoryInfo',
+):
+    size_in_mi_b: NeuronDeviceMemorySize = _dc.field(metadata=_base.field_metadata(
+        member_name='SizeInMiB',
+        shape_name='NeuronDeviceMemorySize',
+    ))
+
+
+NitroTpmSupportedVersionsList: _ta.TypeAlias = _ta.Sequence[NitroTpmSupportedVersionType]
 
 
 @_dc.dataclass(frozen=True)
@@ -2336,6 +2773,9 @@ class Placement(
         member_name='AvailabilityZone',
         shape_name='String',
     ))
+
+
+PlacementGroupStrategyList: _ta.TypeAlias = _ta.Sequence[PlacementGroupStrategy]
 
 
 @_dc.dataclass(frozen=True)
@@ -2451,6 +2891,10 @@ class ProductCode(
 
 PublicIpStringList: _ta.TypeAlias = _ta.Sequence[str]
 
+RequestInstanceTypeList: _ta.TypeAlias = _ta.Sequence[InstanceType]
+
+RootDeviceTypeList: _ta.TypeAlias = _ta.Sequence[RootDeviceType]
+
 
 @_dc.dataclass(frozen=True)
 class RunInstancesMonitoringEnabled(
@@ -2533,6 +2977,8 @@ class SubnetCidrBlockState(
 
 SubnetIdStringList: _ta.TypeAlias = _ta.Sequence[SubnetId]
 
+SupportedAdditionalProcessorFeatureList: _ta.TypeAlias = _ta.Sequence[SupportedAdditionalProcessorFeature]
+
 
 @_dc.dataclass(frozen=True)
 class TagSpecification(
@@ -2548,6 +2994,11 @@ class TagSpecification(
         member_name='Tags',
         shape_name='TagList',
     ))
+
+
+ThreadsPerCoreList: _ta.TypeAlias = _ta.Sequence[ThreadsPerCore]
+
+UsageClassTypeList: _ta.TypeAlias = _ta.Sequence[UsageClassType]
 
 
 @_dc.dataclass(frozen=True)
@@ -2592,6 +3043,8 @@ class UserIdGroupPair(
 
 
 ValueStringList: _ta.TypeAlias = _ta.Sequence[str]
+
+VirtualizationTypeList: _ta.TypeAlias = _ta.Sequence[VirtualizationType]
 
 
 @_dc.dataclass(frozen=True)
@@ -2689,6 +3142,35 @@ class CapacityReservationSpecificationResponse(
     ))
 
 
+DiskInfoList: _ta.TypeAlias = _ta.Sequence[DiskInfo]
+
+
+@_dc.dataclass(frozen=True)
+class EbsInfo(
+    _base.Shape,
+    shape_name='EbsInfo',
+):
+    ebs_optimized_support: EbsOptimizedSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='EbsOptimizedSupport',
+        shape_name='EbsOptimizedSupport',
+    ))
+
+    encryption_support: EbsEncryptionSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='EncryptionSupport',
+        shape_name='EbsEncryptionSupport',
+    ))
+
+    ebs_optimized_info: EbsOptimizedInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='EbsOptimizedInfo',
+        shape_name='EbsOptimizedInfo',
+    ))
+
+    nvme_support: EbsNvmeSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='NvmeSupport',
+        shape_name='EbsNvmeSupport',
+    ))
+
+
 @_dc.dataclass(frozen=True)
 class EbsInstanceBlockDevice(
     _base.Shape,
@@ -2771,7 +3253,85 @@ class Filter(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class FpgaDeviceInfo(
+    _base.Shape,
+    shape_name='FpgaDeviceInfo',
+):
+    name: FpgaDeviceName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='FpgaDeviceName',
+    ))
+
+    manufacturer: FpgaDeviceManufacturerName = _dc.field(metadata=_base.field_metadata(
+        member_name='Manufacturer',
+        shape_name='FpgaDeviceManufacturerName',
+    ))
+
+    count: FpgaDeviceCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='FpgaDeviceCount',
+    ))
+
+    memory_info: FpgaDeviceMemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='FpgaDeviceMemoryInfo',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class GpuDeviceInfo(
+    _base.Shape,
+    shape_name='GpuDeviceInfo',
+):
+    name: GpuDeviceName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='GpuDeviceName',
+    ))
+
+    manufacturer: GpuDeviceManufacturerName = _dc.field(metadata=_base.field_metadata(
+        member_name='Manufacturer',
+        shape_name='GpuDeviceManufacturerName',
+    ))
+
+    count: GpuDeviceCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='GpuDeviceCount',
+    ))
+
+    memory_info: GpuDeviceMemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='GpuDeviceMemoryInfo',
+    ))
+
+
 GroupIdentifierList: _ta.TypeAlias = _ta.Sequence[GroupIdentifier]
+
+
+@_dc.dataclass(frozen=True)
+class InferenceDeviceInfo(
+    _base.Shape,
+    shape_name='InferenceDeviceInfo',
+):
+    count: InferenceDeviceCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='InferenceDeviceCount',
+    ))
+
+    name: InferenceDeviceName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='InferenceDeviceName',
+    ))
+
+    manufacturer: InferenceDeviceManufacturerName = _dc.field(metadata=_base.field_metadata(
+        member_name='Manufacturer',
+        shape_name='InferenceDeviceManufacturerName',
+    ))
+
+    memory_info: InferenceDeviceMemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='InferenceDeviceMemoryInfo',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -2880,6 +3440,35 @@ LicenseList: _ta.TypeAlias = _ta.Sequence[LicenseConfiguration]
 
 LicenseSpecificationListRequest: _ta.TypeAlias = _ta.Sequence[LicenseConfigurationRequest]
 
+
+@_dc.dataclass(frozen=True)
+class MediaDeviceInfo(
+    _base.Shape,
+    shape_name='MediaDeviceInfo',
+):
+    count: MediaDeviceCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='MediaDeviceCount',
+    ))
+
+    name: MediaDeviceName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='MediaDeviceName',
+    ))
+
+    manufacturer: MediaDeviceManufacturerName = _dc.field(metadata=_base.field_metadata(
+        member_name='Manufacturer',
+        shape_name='MediaDeviceManufacturerName',
+    ))
+
+    memory_info: MediaDeviceMemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='MediaDeviceMemoryInfo',
+    ))
+
+
+NetworkCardInfoList: _ta.TypeAlias = _ta.Sequence[NetworkCardInfo]
+
 NetworkInterfaceIpv6AddressesList: _ta.TypeAlias = _ta.Sequence[NetworkInterfaceIpv6Address]
 
 
@@ -2909,9 +3498,84 @@ class NetworkInterfacePrivateIpAddress(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class NeuronDeviceInfo(
+    _base.Shape,
+    shape_name='NeuronDeviceInfo',
+):
+    count: NeuronDeviceCount = _dc.field(metadata=_base.field_metadata(
+        member_name='Count',
+        shape_name='NeuronDeviceCount',
+    ))
+
+    name: NeuronDeviceName = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        shape_name='NeuronDeviceName',
+    ))
+
+    core_info: NeuronDeviceCoreInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='CoreInfo',
+        shape_name='NeuronDeviceCoreInfo',
+    ))
+
+    memory_info: NeuronDeviceMemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='NeuronDeviceMemoryInfo',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NitroTpmInfo(
+    _base.Shape,
+    shape_name='NitroTpmInfo',
+):
+    supported_versions: NitroTpmSupportedVersionsList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedVersions',
+        shape_name='NitroTpmSupportedVersionsList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class PlacementGroupInfo(
+    _base.Shape,
+    shape_name='PlacementGroupInfo',
+):
+    supported_strategies: PlacementGroupStrategyList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedStrategies',
+        shape_name='PlacementGroupStrategyList',
+    ))
+
+
 PrefixListIdList: _ta.TypeAlias = _ta.Sequence[PrefixListId]
 
 PrivateIpAddressSpecificationList: _ta.TypeAlias = _ta.Sequence[PrivateIpAddressSpecification]
+
+
+@_dc.dataclass(frozen=True)
+class ProcessorInfo(
+    _base.Shape,
+    shape_name='ProcessorInfo',
+):
+    supported_architectures: ArchitectureTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedArchitectures',
+        shape_name='ArchitectureTypeList',
+    ))
+
+    sustained_clock_speed_in_ghz: ProcessorSustainedClockSpeed = _dc.field(metadata=_base.field_metadata(
+        member_name='SustainedClockSpeedInGhz',
+        shape_name='ProcessorSustainedClockSpeed',
+    ))
+
+    supported_features: SupportedAdditionalProcessorFeatureList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedFeatures',
+        shape_name='SupportedAdditionalProcessorFeatureList',
+    ))
+
+    manufacturer: CpuManufacturerName = _dc.field(metadata=_base.field_metadata(
+        member_name='Manufacturer',
+        shape_name='CpuManufacturerName',
+    ))
+
 
 ProductCodeList: _ta.TypeAlias = _ta.Sequence[ProductCode]
 
@@ -3033,6 +3697,37 @@ UserIdGroupPairList: _ta.TypeAlias = _ta.Sequence[UserIdGroupPair]
 
 
 @_dc.dataclass(frozen=True)
+class VCpuInfo(
+    _base.Shape,
+    shape_name='VCpuInfo',
+):
+    default_v_cpus: VCpuCount = _dc.field(metadata=_base.field_metadata(
+        member_name='DefaultVCpus',
+        shape_name='VCpuCount',
+    ))
+
+    default_cores: CoreCount = _dc.field(metadata=_base.field_metadata(
+        member_name='DefaultCores',
+        shape_name='CoreCount',
+    ))
+
+    default_threads_per_core: ThreadsPerCore = _dc.field(metadata=_base.field_metadata(
+        member_name='DefaultThreadsPerCore',
+        shape_name='ThreadsPerCore',
+    ))
+
+    valid_cores: CoreCountList = _dc.field(metadata=_base.field_metadata(
+        member_name='ValidCores',
+        shape_name='CoreCountList',
+    ))
+
+    valid_threads_per_core: ThreadsPerCoreList = _dc.field(metadata=_base.field_metadata(
+        member_name='ValidThreadsPerCore',
+        shape_name='ThreadsPerCoreList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class VpcCidrBlockAssociation(
     _base.Shape,
     shape_name='VpcCidrBlockAssociation',
@@ -3120,6 +3815,12 @@ class DescribeKeyPairsResult(
 
 
 FilterList: _ta.TypeAlias = _ta.Sequence[Filter]
+
+FpgaDeviceInfoList: _ta.TypeAlias = _ta.Sequence[FpgaDeviceInfo]
+
+GpuDeviceInfoList: _ta.TypeAlias = _ta.Sequence[GpuDeviceInfo]
+
+InferenceDeviceInfoList: _ta.TypeAlias = _ta.Sequence[InferenceDeviceInfo]
 
 
 @_dc.dataclass(frozen=True)
@@ -3301,6 +4002,32 @@ InstanceStateChangeList: _ta.TypeAlias = _ta.Sequence[InstanceStateChange]
 
 
 @_dc.dataclass(frozen=True)
+class InstanceStorageInfo(
+    _base.Shape,
+    shape_name='InstanceStorageInfo',
+):
+    total_size_in_g_b: DiskSize = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalSizeInGB',
+        shape_name='DiskSize',
+    ))
+
+    disks: DiskInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='Disks',
+        shape_name='DiskInfoList',
+    ))
+
+    nvme_support: EphemeralNvmeSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='NvmeSupport',
+        shape_name='EphemeralNvmeSupport',
+    ))
+
+    encryption_support: InstanceStorageEncryptionSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='EncryptionSupport',
+        shape_name='InstanceStorageEncryptionSupport',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class InternetGateway(
     _base.Shape,
     shape_name='InternetGateway',
@@ -3367,6 +4094,85 @@ class IpPermission(
     ))
 
 
+MediaDeviceInfoList: _ta.TypeAlias = _ta.Sequence[MediaDeviceInfo]
+
+
+@_dc.dataclass(frozen=True)
+class NetworkInfo(
+    _base.Shape,
+    shape_name='NetworkInfo',
+):
+    network_performance: NetworkPerformance = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkPerformance',
+        shape_name='NetworkPerformance',
+    ))
+
+    maximum_network_interfaces: MaxNetworkInterfaces = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumNetworkInterfaces',
+        shape_name='MaxNetworkInterfaces',
+    ))
+
+    maximum_network_cards: MaximumNetworkCards = _dc.field(metadata=_base.field_metadata(
+        member_name='MaximumNetworkCards',
+        shape_name='MaximumNetworkCards',
+    ))
+
+    default_network_card_index: DefaultNetworkCardIndex = _dc.field(metadata=_base.field_metadata(
+        member_name='DefaultNetworkCardIndex',
+        shape_name='DefaultNetworkCardIndex',
+    ))
+
+    network_cards: NetworkCardInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkCards',
+        shape_name='NetworkCardInfoList',
+    ))
+
+    ipv4_addresses_per_interface: MaxIpv4AddrPerInterface = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv4AddressesPerInterface',
+        shape_name='MaxIpv4AddrPerInterface',
+    ))
+
+    ipv6_addresses_per_interface: MaxIpv6AddrPerInterface = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6AddressesPerInterface',
+        shape_name='MaxIpv6AddrPerInterface',
+    ))
+
+    ipv6_supported: Ipv6Flag = _dc.field(metadata=_base.field_metadata(
+        member_name='Ipv6Supported',
+        shape_name='Ipv6Flag',
+    ))
+
+    ena_support: EnaSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSupport',
+        shape_name='EnaSupport',
+    ))
+
+    efa_supported: EfaSupportedFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='EfaSupported',
+        shape_name='EfaSupportedFlag',
+    ))
+
+    efa_info: EfaInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='EfaInfo',
+        shape_name='EfaInfo',
+    ))
+
+    encryption_in_transit_supported: EncryptionInTransitSupported = _dc.field(metadata=_base.field_metadata(
+        member_name='EncryptionInTransitSupported',
+        shape_name='EncryptionInTransitSupported',
+    ))
+
+    ena_srd_supported: EnaSrdSupported = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSrdSupported',
+        shape_name='EnaSrdSupported',
+    ))
+
+    bandwidth_weightings: BandwidthWeightingTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='BandwidthWeightings',
+        shape_name='BandwidthWeightingTypeList',
+    ))
+
+
 @_dc.dataclass(frozen=True)
 class NetworkInterfaceAttachment(
     _base.Shape,
@@ -3420,6 +4226,8 @@ class NetworkInterfaceAttachment(
 
 NetworkInterfacePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[NetworkInterfacePrivateIpAddress]
 
+NeuronDeviceInfoList: _ta.TypeAlias = _ta.Sequence[NeuronDeviceInfo]
+
 SubnetIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[SubnetIpv6CidrBlockAssociation]
 
 VpcCidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcCidrBlockAssociation]
@@ -3450,6 +4258,37 @@ class DescribeAddressesRequest(
     allocation_ids: AllocationIdList = _dc.field(metadata=_base.field_metadata(
         member_name='AllocationIds',
         shape_name='AllocationIdList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeInstanceTypesRequest(
+    _base.Shape,
+    shape_name='DescribeInstanceTypesRequest',
+):
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        shape_name='Boolean',
+    ))
+
+    instance_types: RequestInstanceTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceTypes',
+        shape_name='RequestInstanceTypeList',
+    ))
+
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        shape_name='FilterList',
+    ))
+
+    max_results: DITMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DITMaxResults',
+    ))
+
+    next_token: NextToken = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='NextToken',
     ))
 
 
@@ -3675,6 +4514,54 @@ class DescribeVpcsRequest(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class FpgaInfo(
+    _base.Shape,
+    shape_name='FpgaInfo',
+):
+    fpgas: FpgaDeviceInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='Fpgas',
+        shape_name='FpgaDeviceInfoList',
+    ))
+
+    total_fpga_memory_in_mi_b: TotalFpgaMemory = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalFpgaMemoryInMiB',
+        shape_name='totalFpgaMemory',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class GpuInfo(
+    _base.Shape,
+    shape_name='GpuInfo',
+):
+    gpus: GpuDeviceInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='Gpus',
+        shape_name='GpuDeviceInfoList',
+    ))
+
+    total_gpu_memory_in_mi_b: TotalGpuMemory = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalGpuMemoryInMiB',
+        shape_name='totalGpuMemory',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class InferenceAcceleratorInfo(
+    _base.Shape,
+    shape_name='InferenceAcceleratorInfo',
+):
+    accelerators: InferenceDeviceInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='Accelerators',
+        shape_name='InferenceDeviceInfoList',
+    ))
+
+    total_inference_memory_in_mi_b: TotalInferenceMemory = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalInferenceMemoryInMiB',
+        shape_name='totalInferenceMemory',
+    ))
+
+
 InstanceBlockDeviceMappingList: _ta.TypeAlias = _ta.Sequence[InstanceBlockDeviceMapping]
 
 
@@ -3789,6 +4676,22 @@ InstanceNetworkInterfaceSpecificationList: _ta.TypeAlias = _ta.Sequence[Instance
 InternetGatewayList: _ta.TypeAlias = _ta.Sequence[InternetGateway]
 
 IpPermissionList: _ta.TypeAlias = _ta.Sequence[IpPermission]
+
+
+@_dc.dataclass(frozen=True)
+class MediaAcceleratorInfo(
+    _base.Shape,
+    shape_name='MediaAcceleratorInfo',
+):
+    accelerators: MediaDeviceInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='Accelerators',
+        shape_name='MediaDeviceInfoList',
+    ))
+
+    total_media_memory_in_mi_b: TotalMediaMemory = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalMediaMemoryInMiB',
+        shape_name='TotalMediaMemory',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -3934,6 +4837,22 @@ class NetworkInterface(
     operator: OperatorResponse = _dc.field(metadata=_base.field_metadata(
         member_name='Operator',
         shape_name='OperatorResponse',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class NeuronInfo(
+    _base.Shape,
+    shape_name='NeuronInfo',
+):
+    neuron_devices: NeuronDeviceInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='NeuronDevices',
+        shape_name='NeuronDeviceInfoList',
+    ))
+
+    total_neuron_device_memory_in_mi_b: TotalNeuronMemory = _dc.field(metadata=_base.field_metadata(
+        member_name='TotalNeuronDeviceMemoryInMiB',
+        shape_name='TotalNeuronMemory',
     ))
 
 
@@ -4164,6 +5083,163 @@ class DescribeInternetGatewaysResult(
 
 
 InstanceNetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterface]
+
+
+@_dc.dataclass(frozen=True)
+class InstanceTypeInfo(
+    _base.Shape,
+    shape_name='InstanceTypeInfo',
+):
+    instance_type: InstanceType = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceType',
+        shape_name='InstanceType',
+    ))
+
+    current_generation: CurrentGenerationFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='CurrentGeneration',
+        shape_name='CurrentGenerationFlag',
+    ))
+
+    free_tier_eligible: FreeTierEligibleFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='FreeTierEligible',
+        shape_name='FreeTierEligibleFlag',
+    ))
+
+    supported_usage_classes: UsageClassTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedUsageClasses',
+        shape_name='UsageClassTypeList',
+    ))
+
+    supported_root_device_types: RootDeviceTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedRootDeviceTypes',
+        shape_name='RootDeviceTypeList',
+    ))
+
+    supported_virtualization_types: VirtualizationTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedVirtualizationTypes',
+        shape_name='VirtualizationTypeList',
+    ))
+
+    bare_metal: BareMetalFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='BareMetal',
+        shape_name='BareMetalFlag',
+    ))
+
+    hypervisor: InstanceTypeHypervisor = _dc.field(metadata=_base.field_metadata(
+        member_name='Hypervisor',
+        shape_name='InstanceTypeHypervisor',
+    ))
+
+    processor_info: ProcessorInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='ProcessorInfo',
+        shape_name='ProcessorInfo',
+    ))
+
+    v_cpu_info: VCpuInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='VCpuInfo',
+        shape_name='VCpuInfo',
+    ))
+
+    memory_info: MemoryInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MemoryInfo',
+        shape_name='MemoryInfo',
+    ))
+
+    instance_storage_supported: InstanceStorageFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceStorageSupported',
+        shape_name='InstanceStorageFlag',
+    ))
+
+    instance_storage_info: InstanceStorageInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceStorageInfo',
+        shape_name='InstanceStorageInfo',
+    ))
+
+    ebs_info: EbsInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='EbsInfo',
+        shape_name='EbsInfo',
+    ))
+
+    network_info: NetworkInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInfo',
+        shape_name='NetworkInfo',
+    ))
+
+    gpu_info: GpuInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='GpuInfo',
+        shape_name='GpuInfo',
+    ))
+
+    fpga_info: FpgaInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='FpgaInfo',
+        shape_name='FpgaInfo',
+    ))
+
+    placement_group_info: PlacementGroupInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='PlacementGroupInfo',
+        shape_name='PlacementGroupInfo',
+    ))
+
+    inference_accelerator_info: InferenceAcceleratorInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='InferenceAcceleratorInfo',
+        shape_name='InferenceAcceleratorInfo',
+    ))
+
+    hibernation_supported: HibernationFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='HibernationSupported',
+        shape_name='HibernationFlag',
+    ))
+
+    burstable_performance_supported: BurstablePerformanceFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='BurstablePerformanceSupported',
+        shape_name='BurstablePerformanceFlag',
+    ))
+
+    dedicated_hosts_supported: DedicatedHostFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='DedicatedHostsSupported',
+        shape_name='DedicatedHostFlag',
+    ))
+
+    auto_recovery_supported: AutoRecoveryFlag = _dc.field(metadata=_base.field_metadata(
+        member_name='AutoRecoverySupported',
+        shape_name='AutoRecoveryFlag',
+    ))
+
+    supported_boot_modes: BootModeTypeList = _dc.field(metadata=_base.field_metadata(
+        member_name='SupportedBootModes',
+        shape_name='BootModeTypeList',
+    ))
+
+    nitro_enclaves_support: NitroEnclavesSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='NitroEnclavesSupport',
+        shape_name='NitroEnclavesSupport',
+    ))
+
+    nitro_tpm_support: NitroTpmSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='NitroTpmSupport',
+        shape_name='NitroTpmSupport',
+    ))
+
+    nitro_tpm_info: NitroTpmInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='NitroTpmInfo',
+        shape_name='NitroTpmInfo',
+    ))
+
+    media_accelerator_info: MediaAcceleratorInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='MediaAcceleratorInfo',
+        shape_name='MediaAcceleratorInfo',
+    ))
+
+    neuron_info: NeuronInfo = _dc.field(metadata=_base.field_metadata(
+        member_name='NeuronInfo',
+        shape_name='NeuronInfo',
+    ))
+
+    phc_support: PhcSupport = _dc.field(metadata=_base.field_metadata(
+        member_name='PhcSupport',
+        shape_name='PhcSupport',
+    ))
+
 
 NetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[NetworkInterface]
 
@@ -4794,7 +5870,25 @@ class Instance(
     ))
 
 
+InstanceTypeInfoList: _ta.TypeAlias = _ta.Sequence[InstanceTypeInfo]
+
 SecurityGroupList: _ta.TypeAlias = _ta.Sequence[SecurityGroup]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeInstanceTypesResult(
+    _base.Shape,
+    shape_name='DescribeInstanceTypesResult',
+):
+    instance_types: InstanceTypeInfoList = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceTypes',
+        shape_name='InstanceTypeInfoList',
+    ))
+
+    next_token: NextToken = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='NextToken',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -4884,6 +5978,8 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     CreditSpecificationRequest,
     DescribeAddressesRequest,
     DescribeAddressesResult,
+    DescribeInstanceTypesRequest,
+    DescribeInstanceTypesResult,
     DescribeInstancesRequest,
     DescribeInstancesResult,
     DescribeInternetGatewaysRequest,
@@ -4898,8 +5994,12 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     DescribeSubnetsResult,
     DescribeVpcsRequest,
     DescribeVpcsResult,
+    DiskInfo,
     EbsBlockDevice,
+    EbsInfo,
     EbsInstanceBlockDevice,
+    EbsOptimizedInfo,
+    EfaInfo,
     ElasticGpuAssociation,
     ElasticGpuSpecification,
     ElasticInferenceAccelerator,
@@ -4909,11 +6009,20 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     EnclaveOptions,
     EnclaveOptionsRequest,
     Filter,
+    FpgaDeviceInfo,
+    FpgaDeviceMemoryInfo,
+    FpgaInfo,
+    GpuDeviceInfo,
+    GpuDeviceMemoryInfo,
+    GpuInfo,
     GroupIdentifier,
     HibernationOptions,
     HibernationOptionsRequest,
     IamInstanceProfile,
     IamInstanceProfileSpecification,
+    InferenceAcceleratorInfo,
+    InferenceDeviceInfo,
+    InferenceDeviceMemoryInfo,
     Instance,
     InstanceAttachmentEnaSrdSpecification,
     InstanceAttachmentEnaSrdUdpSpecification,
@@ -4935,6 +6044,8 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     InstancePrivateIpAddress,
     InstanceState,
     InstanceStateChange,
+    InstanceStorageInfo,
+    InstanceTypeInfo,
     InternetGateway,
     InternetGatewayAttachment,
     IpPermission,
@@ -4948,20 +6059,33 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     LaunchTemplateSpecification,
     LicenseConfiguration,
     LicenseConfigurationRequest,
+    MediaAcceleratorInfo,
+    MediaDeviceInfo,
+    MediaDeviceMemoryInfo,
+    MemoryInfo,
     Monitoring,
+    NetworkCardInfo,
+    NetworkInfo,
     NetworkInterface,
     NetworkInterfaceAssociation,
     NetworkInterfaceAttachment,
     NetworkInterfaceIpv6Address,
     NetworkInterfacePrivateIpAddress,
+    NeuronDeviceCoreInfo,
+    NeuronDeviceInfo,
+    NeuronDeviceMemoryInfo,
+    NeuronInfo,
+    NitroTpmInfo,
     OperatorRequest,
     OperatorResponse,
     Placement,
+    PlacementGroupInfo,
     PrefixListId,
     PrivateDnsNameOptionsOnLaunch,
     PrivateDnsNameOptionsRequest,
     PrivateDnsNameOptionsResponse,
     PrivateIpAddressSpecification,
+    ProcessorInfo,
     ProductCode,
     RebootInstancesRequest,
     Reservation,
@@ -4981,6 +6105,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     TerminateInstancesRequest,
     TerminateInstancesResult,
     UserIdGroupPair,
+    VCpuInfo,
     Vpc,
     VpcCidrBlockAssociation,
     VpcCidrBlockState,
@@ -4995,6 +6120,12 @@ DESCRIBE_ADDRESSES = _base.Operation(
     name='DescribeAddresses',
     input=DescribeAddressesRequest,
     output=DescribeAddressesResult,
+)
+
+DESCRIBE_INSTANCE_TYPES = _base.Operation(
+    name='DescribeInstanceTypes',
+    input=DescribeInstanceTypesRequest,
+    output=DescribeInstanceTypesResult,
 )
 
 DESCRIBE_INSTANCES = _base.Operation(
@@ -5078,6 +6209,7 @@ TERMINATE_INSTANCES = _base.Operation(
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_ADDRESSES,
     DESCRIBE_INSTANCES,
+    DESCRIBE_INSTANCE_TYPES,
     DESCRIBE_INTERNET_GATEWAYS,
     DESCRIBE_KEY_PAIRS,
     DESCRIBE_NETWORK_INTERFACES,

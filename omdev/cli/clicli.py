@@ -1,11 +1,13 @@
 import inspect
 import os
+import subprocess
 import sys
 import typing as ta
 import urllib.parse
 import urllib.request
 
 from omlish import __about__
+from omlish import lang
 from omlish.argparse import all as ap
 
 from ..pip import get_root_dists
@@ -85,6 +87,22 @@ class CliCli(ap.Cli):
             (set(root_dists) | set(self.args.extra_deps or []))
             - {install.DEFAULT_CLI_PKG}  # noqa
         )
+
+        #
+
+        if lang.can_import('pip'):
+            print('Checking pip install')
+            subprocess.check_call([
+                sys.executable,
+                '-m',
+                'pip',
+                'install',
+                '--dry-run',
+                *deps,
+            ])
+            print('Pip install check successful')
+        else:
+            print('Pip not present, cannot check install')
 
         #
 
