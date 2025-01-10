@@ -96,5 +96,6 @@ exclude = [
     '.manifests.json',
     'LICENSE',
     'LICENSE.txt',
+    'cc/cdeps.toml',
     'pyproject/resources/*.sh',
 ]
