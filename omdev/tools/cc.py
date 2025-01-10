@@ -68,6 +68,12 @@ class Cli(ap.Cli):
 
         return proc.returncode
 
+    @ap.cmd(
+        ap.arg('src-file', nargs='+'),
+    )
+    def add_shebang(self) -> None:
+        print(self.args.src_file)
+
 
 def _main() -> None:
     Cli().cli_run_and_exit()

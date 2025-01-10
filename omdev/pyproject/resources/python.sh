@@ -9,7 +9,10 @@ if [ -z "${VENV}" ] ; then
     fi
 fi
 
-SCRIPT_DIR=$(dirname "$0")
+SCRIPT_PATH=$(cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_PATH="$SCRIPT_PATH/$(basename -- "$0")"
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+
 VENV_PYTHON_PATH="$SCRIPT_DIR/.venvs/$VENV/bin/python"
 if [ -f "$VENV_PYTHON_PATH" ] ; then
     PYTHON="$VENV_PYTHON_PATH"
@@ -19,7 +22,7 @@ else
     PYTHON=python
 fi
 
-export PYTHONPATH="$PYTHONPATH:."
+export PYTHONPATH="$PYTHONPATH:$SCRIPT_DIR:."
 
 if [ $# -eq 0 ] && "$PYTHON" -c "import IPython" 2> /dev/null ; then
     exec "$PYTHON" -m IPython

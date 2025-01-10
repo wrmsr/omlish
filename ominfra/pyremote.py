@@ -381,6 +381,7 @@ class PyremoteBootstrapDriver:
         self._payload_z = zlib.compress(self._prepared_payload_src.encode('utf-8'))
 
         self._options_json = json.dumps(dc.asdict(options), indent=None, separators=(',', ':')).encode('utf-8')  # noqa
+
     #
 
     @classmethod

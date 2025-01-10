@@ -1,4 +1,8 @@
 #!/bin/sh
 set -e
 
-exec ./python -m omdev.cli "$@"
+SCRIPT_PATH=$(cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_PATH="$SCRIPT_PATH/$(basename -- "$0")"
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+
+exec "$SCRIPT_DIR/python" -m omdev.cli --cli-pkg-root "$SCRIPT_DIR" "$@"
