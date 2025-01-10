@@ -1,9 +1,9 @@
-import dataclasses as dc
 import typing as ta
 
 from omlish import cached
 from omlish import check
 from omlish import collections as col
+from omlish import dataclasses as dc
 from omlish import lang
 
 
@@ -73,7 +73,7 @@ class ShapeInfo:
 
     @cached.function
     def fields(self) -> ta.Sequence[dc.Field]:
-        check.in_('__dataclass_fields__', self._cls.__dict__)
+        check.state(dc.is_immediate_dataclass(self._cls))
         fls = dc.fields(self._cls)
         return fls  # noqa
 

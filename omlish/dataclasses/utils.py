@@ -4,6 +4,7 @@ import types
 import typing as ta
 
 from .. import check
+from .impl.internals import FIELDS_ATTR
 from .impl.metadata import METADATA_ATTR
 from .impl.metadata import UserMetadata
 from .impl.params import DEFAULT_FIELD_EXTRAS
@@ -12,6 +13,14 @@ from .impl.params import get_field_extras
 
 
 T = ta.TypeVar('T')
+
+
+##
+
+
+def is_immediate_dataclass(cls: type) -> bool:
+    check.isinstance(cls, type)
+    return FIELDS_ATTR in cls.__dict__
 
 
 ##
