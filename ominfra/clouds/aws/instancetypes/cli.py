@@ -9,6 +9,8 @@ from omlish import secrets as sec
 from omlish.argparse import all as ap
 from omlish.formats import json
 
+from .cache import load_instance_types
+
 
 if ta.TYPE_CHECKING:
     import boto3
@@ -55,14 +57,19 @@ class Cli(ap.Cli):
 
         instance_types = get_ec2_instance_types(session)
 
-        cache_file = os.path.join(os.path.dirname(__file__), 'instancetypes.json.gz')
+        cache_file = os.path.join(os.path.dirname(__file__), 'cache.json.gz')
         with open(cache_file, 'wb') as f:
             with gzip.GzipFile(
                     fileobj=f,
                     mode='w',
                     mtime=FIXED_CACHE_TIMESTAMP,
             ) as gf:
-                gf.write(json.dumps_pretty(instance_types).encode('utf-8'))
+                gf.write(json.dumps_compact(instance_types).encode('utf-8'))
+
+    @ap.cmd()
+    def dump(self) -> None:
+        dct = load_instance_types()
+        print(json.dumps_pretty(dct))
 
 
 def _main() -> None:
