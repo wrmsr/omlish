@@ -36,3 +36,4 @@ def test_simple_element() -> None:
     print(el)
 
     print(el.se_dict())
+    print(el.multidict())

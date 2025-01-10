@@ -212,7 +212,7 @@ langchain==0.3.14
 
 langchainhub==0.1.21
 
-langgraph==0.2.61
+langgraph==0.2.62
 
 langsmith==0.2.10
 

@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.0.1
 wheel>=0.45.1
 
-uv>=0.5.16
+uv>=0.5.17
 
 pytest==8.3.4
 pytest-benchmark==5.1.0
@@ -119,4 +119,4 @@ segno==1.6.1
 
 duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.35.96
+boto3>=1.35.97
