@@ -71,6 +71,8 @@ from .impl.metaclass import (  # noqa
 )
 
 from .impl.metadata import (  # noqa
+    Metadata,
+
     get_merged_metadata,
 
     UserMetadata,
