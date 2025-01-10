@@ -71,27 +71,27 @@ class ShapeInfo:
 
     #
 
-    @cached.function
+    @cached.property
     def fields(self) -> ta.Sequence[dc.Field]:
         check.state(dc.is_immediate_dataclass(self._cls))
         fls = dc.fields(self._cls)
         return fls  # noqa
 
-    @cached.function
+    @cached.property
     def fields_by_name(self) -> ta.Mapping[str, dc.Field]:
-        return col.make_map_by(lambda fl: fl.name, self.fields(), strict=True)
+        return col.make_map_by(lambda fl: fl.name, self.fields, strict=True)
 
-    @cached.function
+    @cached.property
     def fields_by_member_name(self) -> ta.Mapping[str, dc.Field]:
         return col.make_map(
-            [(n, f) for f in self.fields() if (n := f.metadata.get(MEMBER_NAME)) is not None],
+            [(n, f) for f in self.fields if (n := f.metadata.get(MEMBER_NAME)) is not None],
             strict=True,
         )
 
-    @cached.function
+    @cached.property
     def fields_by_serialization_name(self) -> ta.Mapping[str, dc.Field]:
         l = []
-        for f in self.fields():
+        for f in self.fields:
             if sn := f.metadata.get(SERIALIZATION_NAME):
                 l.append((sn, f))
             elif mn := f.metadata.get(MEMBER_NAME):
@@ -101,7 +101,7 @@ class ShapeInfo:
 
 @dc.dataclass(frozen=True)
 class Shape:
-    __shape__: ShapeInfo
+    __shape__: ta.ClassVar[ShapeInfo]
 
     def __init_subclass__(
             cls,
