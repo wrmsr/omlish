@@ -8,7 +8,7 @@ from omlish.subprocesses import subprocesses
 
 
 @dc.dataclass(frozen=True)
-class GitSubtreeCloner:
+class GitShallowCloner:
     base_dir: str
     repo_url: str
     repo_dir: str
@@ -37,14 +37,14 @@ class GitSubtreeCloner:
             '-c', 'advice.detachedHead=false',
         ]
 
-        yield GitSubtreeCloner.Command(
+        yield GitShallowCloner.Command(
             cmd=(
                 'git',
                 *git_opts,
                 'clone',
                 '-n',
                 '--depth=1',
-                '--filter=tree:0',
+                *(['--filter=tree:0'] if self.repo_subtrees is not None else []),
                 *(['-b', self.branch] if self.branch else []),
                 '--single-branch',
                 self.repo_url,
@@ -54,19 +54,20 @@ class GitSubtreeCloner:
         )
 
         rd = os.path.join(self.base_dir, self.repo_dir)
-        yield GitSubtreeCloner.Command(
-            cmd=(
-                'git',
-                *git_opts,
-                'sparse-checkout',
-                'set',
-                '--no-cone',
-                *(self.repo_subtrees or []),
-            ),
-            cwd=rd,
-        )
+        if self.repo_subtrees is not None:
+            yield GitShallowCloner.Command(
+                cmd=(
+                    'git',
+                    *git_opts,
+                    'sparse-checkout',
+                    'set',
+                    '--no-cone',
+                    *self.repo_subtrees,
+                ),
+                cwd=rd,
+            )
 
-        yield GitSubtreeCloner.Command(
+        yield GitShallowCloner.Command(
             cmd=(
                 'git',
                 *git_opts,
@@ -77,7 +78,7 @@ class GitSubtreeCloner:
         )
 
 
-def git_clone_subtree(
+def git_shallow_clone(
         *,
         base_dir: str,
         repo_url: str,
@@ -86,7 +87,7 @@ def git_clone_subtree(
         rev: ta.Optional[str] = None,
         repo_subtrees: ta.Optional[ta.Sequence[str]] = None,
 ) -> None:
-    for cmd in GitSubtreeCloner(
+    for cmd in GitShallowCloner(
         base_dir=base_dir,
         repo_url=repo_url,
         repo_dir=repo_dir,

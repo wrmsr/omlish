@@ -27,7 +27,7 @@ from omlish import marshal as msh
 from omlish.formats import json
 from omlish.os.files import touch
 
-from ...git.subtrees import git_clone_subtree
+from ...git.shallow import git_shallow_clone
 from .actions import Action
 from .actions import ExtractAction
 from .manifests import Manifest
@@ -141,14 +141,11 @@ class Cache:
                 self._fetch_url(url, os.path.join(data_dir, out_file))
 
         elif isinstance(spec, GitSpec):
-            if not spec.subtrees:
-                raise NotImplementedError
-
             tmp_dir = tempfile.mkdtemp()
 
             log.info('Cloning git repo: %s -> %s', spec.url, tmp_dir)
 
-            git_clone_subtree(
+            git_shallow_clone(
                 base_dir=tmp_dir,
                 repo_url=spec.url,
                 repo_dir='data',

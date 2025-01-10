@@ -231,7 +231,7 @@
     "module": ".tools.cc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/cc.py",
-    "line": 76,
+    "line": 136,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cc",

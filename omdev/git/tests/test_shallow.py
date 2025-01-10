@@ -1,13 +1,13 @@
 import tempfile
 
-from ..subtrees import git_clone_subtree
+from ..shallow import git_shallow_clone
 
 
-def test_subtree():
+def test_shallow_subtree():
     td = tempfile.mkdtemp()
     print(td)
 
-    git_clone_subtree(
+    git_shallow_clone(
         base_dir=td,
         repo_url='https://github.com/wrmsr/flaskthing',
         repo_dir='flaskthing',
@@ -20,7 +20,7 @@ def test_subtree():
     td = tempfile.mkdtemp()
     print(td)
 
-    git_clone_subtree(
+    git_shallow_clone(
         base_dir=td,
         repo_url='https://github.com/wrmsr/flaskthing',
         repo_dir='flaskthing',

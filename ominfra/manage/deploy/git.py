@@ -10,7 +10,7 @@ import functools
 import os.path
 import typing as ta
 
-from omdev.git.subtrees import GitSubtreeCloner
+from omdev.git.shallow import GitShallowCloner
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
@@ -154,7 +154,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
         ) as dst_swap:
             tdn = '.omlish-git-shallow-clone'
 
-            for cmd in GitSubtreeCloner(
+            for cmd in GitShallowCloner(
                     base_dir=dst_swap.tmp_path,
                     repo_url=self.make_repo_url(spec.repo),
                     repo_dir=tdn,

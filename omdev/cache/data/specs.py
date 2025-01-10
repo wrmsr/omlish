@@ -50,7 +50,7 @@ class GitSpec(Spec):
     branch: str | None = dc.field(default=None, kw_only=True)
     rev: str | None = dc.field(default=None, kw_only=True)
 
-    subtrees: ta.Sequence[str] = dc.xfield(default=None, kw_only=True, coerce=_maybe_sorted_strs)
+    subtrees: ta.Sequence[str] | None = dc.xfield(default=None, kw_only=True, coerce=_maybe_sorted_strs)
 
 
 ##

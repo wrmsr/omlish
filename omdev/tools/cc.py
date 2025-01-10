@@ -18,11 +18,13 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+import typing as ta
 
 from omlish import check
 from omlish.argparse import all as ap
 
 from .. import magic
+from ..cache import data as dcache
 from ..cli import CliModule
 
 
@@ -40,14 +42,32 @@ class Cli(ap.Cli):
         with open(src_file) as f:
             src = f.read()
 
-        src_magic = magic.find_magic(  # noqa
+        src_magics = magic.find_magic(  # noqa
             magic.C_MAGIC_STYLE,
             src.splitlines(),
             file=src_file,
             preparer=magic.json_magic_preparer,
         )
 
-        # print(src_magic)
+        include_dirs: list[str] = []
+
+        for src_magic in src_magics:
+            if src_magic.key == '@omlish-cdeps':
+                for dep in check.isinstance(src_magic.prepared, ta.Sequence):
+                    dep_git = dep['git']
+                    dep_spec = dcache.GitSpec(
+                        url=dep_git['url'],
+                        rev=dep_git['rev'],
+                        subtrees=dep_git.get('subtrees'),
+                    )
+                    dep_dir = dcache.default().get(dep_spec)
+                    for dep_inc in dep.get('include', []):
+                        inc_dir = os.path.join(dep_dir, dep_inc)
+                        check.state(os.path.isdir(inc_dir))
+                        include_dirs.append(inc_dir)
+
+            else:
+                raise KeyError(src_magic.key)
 
         #
 
@@ -56,6 +76,9 @@ class Cli(ap.Cli):
         sh_parts: list[str] = [
             'clang++',
         ]
+
+        for inc_dir in include_dirs:
+            sh_parts.append(f'-I{shlex.quote(inc_dir)}')
 
         if cflags := os.environ.get('CFLAGS'):
             sh_parts.append(cflags)  # Explicitly shell-unquoted
