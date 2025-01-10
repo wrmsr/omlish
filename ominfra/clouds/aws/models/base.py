@@ -21,15 +21,8 @@ class TagList:
 ##
 
 
-class MEMBER_NAME(lang.Marker):  # noqa
-    pass
-
-
 class SHAPE_NAME(lang.Marker):  # noqa
     pass
-
-
-##
 
 
 def common_metadata(
@@ -75,15 +68,26 @@ class Shape:
 ##
 
 
+class MEMBER_NAME(lang.Marker):  # noqa
+    pass
+
+
+class SERIALIZATION_NAME(lang.Marker):  # noqa
+    pass
+
+
 def field_metadata(
         *,
         member_name: str | None = None,
+        serialization_name: str | None = None,
         **kwargs: ta.Any,
 ) -> dict[ta.Any, ta.Any]:
     md = {**common_metadata(**kwargs)}
 
     if member_name is not None:
         md[MEMBER_NAME] = member_name
+    if serialization_name is not None:
+        md[SERIALIZATION_NAME] = serialization_name
 
     return md
 

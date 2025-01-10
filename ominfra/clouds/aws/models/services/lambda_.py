@@ -375,21 +375,25 @@ class ListFunctionsRequest(
 ):
     master_region: MasterRegion = _dc.field(metadata=_base.field_metadata(
         member_name='MasterRegion',
+        serialization_name='MasterRegion',
         shape_name='MasterRegion',
     ))
 
     function_version: FunctionVersion = _dc.field(metadata=_base.field_metadata(
         member_name='FunctionVersion',
+        serialization_name='FunctionVersion',
         shape_name='FunctionVersion',
     ))
 
     marker: str = _dc.field(metadata=_base.field_metadata(
         member_name='Marker',
+        serialization_name='Marker',
         shape_name='String',
     ))
 
     max_items: MaxListItems = _dc.field(metadata=_base.field_metadata(
         member_name='MaxItems',
+        serialization_name='MaxItems',
         shape_name='MaxListItems',
     ))
 
@@ -483,6 +487,7 @@ class TooManyRequestsException(
 ):
     retry_after_seconds: str = _dc.field(metadata=_base.field_metadata(
         member_name='retryAfterSeconds',
+        serialization_name='Retry-After',
         shape_name='String',
     ))
 

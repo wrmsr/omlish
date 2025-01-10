@@ -317,8 +317,10 @@ class ModelGen:
                 fn = self.demangle_name(mn)
                 mds = [
                     f'member_name={mn!r}',
-                    f'shape_name={ms.name!r}',
                 ]
+                if msn := ms.serialization.get('name'):
+                    mds.append(f'serialization_name={msn!r}')
+                mds.append(f'shape_name={ms.name!r}')
                 ma = self.get_type_ann(
                     ms.name,
                     unquoted_names=unquoted_names,
@@ -508,3 +510,7 @@ class ModelGen:
             self.gen_all_operations(out)
 
         return out.getvalue()
+
+
+if __name__ == '__main__':
+    raise RuntimeError('Use cli')

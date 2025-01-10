@@ -360,16 +360,19 @@ class DeleteObjectOutput(
 ):
     delete_marker: DeleteMarker = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteMarker',
+        serialization_name='x-amz-delete-marker',
         shape_name='DeleteMarker',
     ))
 
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
+        serialization_name='x-amz-version-id',
         shape_name='ObjectVersionId',
     ))
 
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
+        serialization_name='x-amz-request-charged',
         shape_name='RequestCharged',
     ))
 
@@ -381,51 +384,61 @@ class DeleteObjectRequest(
 ):
     bucket: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Bucket',
+        serialization_name='Bucket',
         shape_name='BucketName',
     ))
 
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
+        serialization_name='Key',
         shape_name='ObjectKey',
     ))
 
     mfa: MFA = _dc.field(metadata=_base.field_metadata(
         member_name='MFA',
+        serialization_name='x-amz-mfa',
         shape_name='MFA',
     ))
 
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
+        serialization_name='versionId',
         shape_name='ObjectVersionId',
     ))
 
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
+        serialization_name='x-amz-request-payer',
         shape_name='RequestPayer',
     ))
 
     bypass_governance_retention: BypassGovernanceRetention = _dc.field(metadata=_base.field_metadata(
         member_name='BypassGovernanceRetention',
+        serialization_name='x-amz-bypass-governance-retention',
         shape_name='BypassGovernanceRetention',
     ))
 
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
+        serialization_name='x-amz-expected-bucket-owner',
         shape_name='AccountId',
     ))
 
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
+        serialization_name='If-Match',
         shape_name='IfMatch',
     ))
 
     if_match_last_modified_time: IfMatchLastModifiedTime = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatchLastModifiedTime',
+        serialization_name='x-amz-if-match-last-modified-time',
         shape_name='IfMatchLastModifiedTime',
     ))
 
     if_match_size: IfMatchSize = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatchSize',
+        serialization_name='x-amz-if-match-size',
         shape_name='IfMatchSize',
     ))
 
@@ -437,106 +450,127 @@ class GetObjectRequest(
 ):
     bucket: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Bucket',
+        serialization_name='Bucket',
         shape_name='BucketName',
     ))
 
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
+        serialization_name='If-Match',
         shape_name='IfMatch',
     ))
 
     if_modified_since: IfModifiedSince = _dc.field(metadata=_base.field_metadata(
         member_name='IfModifiedSince',
+        serialization_name='If-Modified-Since',
         shape_name='IfModifiedSince',
     ))
 
     if_none_match: IfNoneMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfNoneMatch',
+        serialization_name='If-None-Match',
         shape_name='IfNoneMatch',
     ))
 
     if_unmodified_since: IfUnmodifiedSince = _dc.field(metadata=_base.field_metadata(
         member_name='IfUnmodifiedSince',
+        serialization_name='If-Unmodified-Since',
         shape_name='IfUnmodifiedSince',
     ))
 
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
+        serialization_name='Key',
         shape_name='ObjectKey',
     ))
 
     range: Range = _dc.field(metadata=_base.field_metadata(
         member_name='Range',
+        serialization_name='Range',
         shape_name='Range',
     ))
 
     response_cache_control: ResponseCacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseCacheControl',
+        serialization_name='response-cache-control',
         shape_name='ResponseCacheControl',
     ))
 
     response_content_disposition: ResponseContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentDisposition',
+        serialization_name='response-content-disposition',
         shape_name='ResponseContentDisposition',
     ))
 
     response_content_encoding: ResponseContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentEncoding',
+        serialization_name='response-content-encoding',
         shape_name='ResponseContentEncoding',
     ))
 
     response_content_language: ResponseContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentLanguage',
+        serialization_name='response-content-language',
         shape_name='ResponseContentLanguage',
     ))
 
     response_content_type: ResponseContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseContentType',
+        serialization_name='response-content-type',
         shape_name='ResponseContentType',
     ))
 
     response_expires: ResponseExpires = _dc.field(metadata=_base.field_metadata(
         member_name='ResponseExpires',
+        serialization_name='response-expires',
         shape_name='ResponseExpires',
     ))
 
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
+        serialization_name='versionId',
         shape_name='ObjectVersionId',
     ))
 
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
+        serialization_name='x-amz-server-side-encryption-customer-algorithm',
         shape_name='SSECustomerAlgorithm',
     ))
 
     sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
+        serialization_name='x-amz-server-side-encryption-customer-key',
         shape_name='SSECustomerKey',
     ))
 
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
+        serialization_name='x-amz-server-side-encryption-customer-key-MD5',
         shape_name='SSECustomerKeyMD5',
     ))
 
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
+        serialization_name='x-amz-request-payer',
         shape_name='RequestPayer',
     ))
 
     part_number: PartNumber = _dc.field(metadata=_base.field_metadata(
         member_name='PartNumber',
+        serialization_name='partNumber',
         shape_name='PartNumber',
     ))
 
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
+        serialization_name='x-amz-expected-bucket-owner',
         shape_name='AccountId',
     ))
 
     checksum_mode: ChecksumMode = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumMode',
+        serialization_name='x-amz-checksum-mode',
         shape_name='ChecksumMode',
     ))
 
@@ -564,21 +598,25 @@ class ListBucketsRequest(
 ):
     max_buckets: MaxBuckets = _dc.field(metadata=_base.field_metadata(
         member_name='MaxBuckets',
+        serialization_name='max-buckets',
         shape_name='MaxBuckets',
     ))
 
     continuation_token: Token = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
+        serialization_name='continuation-token',
         shape_name='Token',
     ))
 
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
+        serialization_name='prefix',
         shape_name='Prefix',
     ))
 
     bucket_region: BucketRegion = _dc.field(metadata=_base.field_metadata(
         member_name='BucketRegion',
+        serialization_name='bucket-region',
         shape_name='BucketRegion',
     ))
 
@@ -611,76 +649,91 @@ class PutObjectOutput(
 ):
     expiration: Expiration = _dc.field(metadata=_base.field_metadata(
         member_name='Expiration',
+        serialization_name='x-amz-expiration',
         shape_name='Expiration',
     ))
 
     etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
+        serialization_name='ETag',
         shape_name='ETag',
     ))
 
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
+        serialization_name='x-amz-checksum-crc32',
         shape_name='ChecksumCRC32',
     ))
 
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
+        serialization_name='x-amz-checksum-crc32c',
         shape_name='ChecksumCRC32C',
     ))
 
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
+        serialization_name='x-amz-checksum-sha1',
         shape_name='ChecksumSHA1',
     ))
 
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
+        serialization_name='x-amz-checksum-sha256',
         shape_name='ChecksumSHA256',
     ))
 
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
+        serialization_name='x-amz-server-side-encryption',
         shape_name='ServerSideEncryption',
     ))
 
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
+        serialization_name='x-amz-version-id',
         shape_name='ObjectVersionId',
     ))
 
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
+        serialization_name='x-amz-server-side-encryption-customer-algorithm',
         shape_name='SSECustomerAlgorithm',
     ))
 
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
+        serialization_name='x-amz-server-side-encryption-customer-key-MD5',
         shape_name='SSECustomerKeyMD5',
     ))
 
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
+        serialization_name='x-amz-server-side-encryption-aws-kms-key-id',
         shape_name='SSEKMSKeyId',
     ))
 
     sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
+        serialization_name='x-amz-server-side-encryption-context',
         shape_name='SSEKMSEncryptionContext',
     ))
 
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
+        serialization_name='x-amz-server-side-encryption-bucket-key-enabled',
         shape_name='BucketKeyEnabled',
     ))
 
     size: Size = _dc.field(metadata=_base.field_metadata(
         member_name='Size',
+        serialization_name='x-amz-object-size',
         shape_name='Size',
     ))
 
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
+        serialization_name='x-amz-request-charged',
         shape_name='RequestCharged',
     ))
 
@@ -718,176 +771,211 @@ class GetObjectOutput(
 
     delete_marker: DeleteMarker = _dc.field(metadata=_base.field_metadata(
         member_name='DeleteMarker',
+        serialization_name='x-amz-delete-marker',
         shape_name='DeleteMarker',
     ))
 
     accept_ranges: AcceptRanges = _dc.field(metadata=_base.field_metadata(
         member_name='AcceptRanges',
+        serialization_name='accept-ranges',
         shape_name='AcceptRanges',
     ))
 
     expiration: Expiration = _dc.field(metadata=_base.field_metadata(
         member_name='Expiration',
+        serialization_name='x-amz-expiration',
         shape_name='Expiration',
     ))
 
     restore: Restore = _dc.field(metadata=_base.field_metadata(
         member_name='Restore',
+        serialization_name='x-amz-restore',
         shape_name='Restore',
     ))
 
     last_modified: LastModified = _dc.field(metadata=_base.field_metadata(
         member_name='LastModified',
+        serialization_name='Last-Modified',
         shape_name='LastModified',
     ))
 
     content_length: ContentLength = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLength',
+        serialization_name='Content-Length',
         shape_name='ContentLength',
     ))
 
     etag: ETag = _dc.field(metadata=_base.field_metadata(
         member_name='ETag',
+        serialization_name='ETag',
         shape_name='ETag',
     ))
 
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
+        serialization_name='x-amz-checksum-crc32',
         shape_name='ChecksumCRC32',
     ))
 
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
+        serialization_name='x-amz-checksum-crc32c',
         shape_name='ChecksumCRC32C',
     ))
 
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
+        serialization_name='x-amz-checksum-sha1',
         shape_name='ChecksumSHA1',
     ))
 
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
+        serialization_name='x-amz-checksum-sha256',
         shape_name='ChecksumSHA256',
     ))
 
     missing_meta: MissingMeta = _dc.field(metadata=_base.field_metadata(
         member_name='MissingMeta',
+        serialization_name='x-amz-missing-meta',
         shape_name='MissingMeta',
     ))
 
     version_id: ObjectVersionId = _dc.field(metadata=_base.field_metadata(
         member_name='VersionId',
+        serialization_name='x-amz-version-id',
         shape_name='ObjectVersionId',
     ))
 
     cache_control: CacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='CacheControl',
+        serialization_name='Cache-Control',
         shape_name='CacheControl',
     ))
 
     content_disposition: ContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ContentDisposition',
+        serialization_name='Content-Disposition',
         shape_name='ContentDisposition',
     ))
 
     content_encoding: ContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ContentEncoding',
+        serialization_name='Content-Encoding',
         shape_name='ContentEncoding',
     ))
 
     content_language: ContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLanguage',
+        serialization_name='Content-Language',
         shape_name='ContentLanguage',
     ))
 
     content_range: ContentRange = _dc.field(metadata=_base.field_metadata(
         member_name='ContentRange',
+        serialization_name='Content-Range',
         shape_name='ContentRange',
     ))
 
     content_type: ContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ContentType',
+        serialization_name='Content-Type',
         shape_name='ContentType',
     ))
 
     expires: Expires = _dc.field(metadata=_base.field_metadata(
         member_name='Expires',
+        serialization_name='Expires',
         shape_name='Expires',
     ))
 
     website_redirect_location: WebsiteRedirectLocation = _dc.field(metadata=_base.field_metadata(
         member_name='WebsiteRedirectLocation',
+        serialization_name='x-amz-website-redirect-location',
         shape_name='WebsiteRedirectLocation',
     ))
 
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
+        serialization_name='x-amz-server-side-encryption',
         shape_name='ServerSideEncryption',
     ))
 
     metadata: Metadata = _dc.field(metadata=_base.field_metadata(
         member_name='Metadata',
+        serialization_name='x-amz-meta-',
         shape_name='Metadata',
     ))
 
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
+        serialization_name='x-amz-server-side-encryption-customer-algorithm',
         shape_name='SSECustomerAlgorithm',
     ))
 
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
+        serialization_name='x-amz-server-side-encryption-customer-key-MD5',
         shape_name='SSECustomerKeyMD5',
     ))
 
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
+        serialization_name='x-amz-server-side-encryption-aws-kms-key-id',
         shape_name='SSEKMSKeyId',
     ))
 
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
+        serialization_name='x-amz-server-side-encryption-bucket-key-enabled',
         shape_name='BucketKeyEnabled',
     ))
 
     storage_class: StorageClass = _dc.field(metadata=_base.field_metadata(
         member_name='StorageClass',
+        serialization_name='x-amz-storage-class',
         shape_name='StorageClass',
     ))
 
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
+        serialization_name='x-amz-request-charged',
         shape_name='RequestCharged',
     ))
 
     replication_status: ReplicationStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ReplicationStatus',
+        serialization_name='x-amz-replication-status',
         shape_name='ReplicationStatus',
     ))
 
     parts_count: PartsCount = _dc.field(metadata=_base.field_metadata(
         member_name='PartsCount',
+        serialization_name='x-amz-mp-parts-count',
         shape_name='PartsCount',
     ))
 
     tag_count: TagCount = _dc.field(metadata=_base.field_metadata(
         member_name='TagCount',
+        serialization_name='x-amz-tagging-count',
         shape_name='TagCount',
     ))
 
     object_lock_mode: ObjectLockMode = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockMode',
+        serialization_name='x-amz-object-lock-mode',
         shape_name='ObjectLockMode',
     ))
 
     object_lock_retain_until_date: ObjectLockRetainUntilDate = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockRetainUntilDate',
+        serialization_name='x-amz-object-lock-retain-until-date',
         shape_name='ObjectLockRetainUntilDate',
     ))
 
     object_lock_legal_hold_status: ObjectLockLegalHoldStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockLegalHoldStatus',
+        serialization_name='x-amz-object-lock-legal-hold',
         shape_name='ObjectLockLegalHoldStatus',
     ))
 
@@ -899,56 +987,67 @@ class ListObjectsV2Request(
 ):
     bucket: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Bucket',
+        serialization_name='Bucket',
         shape_name='BucketName',
     ))
 
     delimiter: Delimiter = _dc.field(metadata=_base.field_metadata(
         member_name='Delimiter',
+        serialization_name='delimiter',
         shape_name='Delimiter',
     ))
 
     encoding_type: EncodingType = _dc.field(metadata=_base.field_metadata(
         member_name='EncodingType',
+        serialization_name='encoding-type',
         shape_name='EncodingType',
     ))
 
     max_keys: MaxKeys = _dc.field(metadata=_base.field_metadata(
         member_name='MaxKeys',
+        serialization_name='max-keys',
         shape_name='MaxKeys',
     ))
 
     prefix: Prefix = _dc.field(metadata=_base.field_metadata(
         member_name='Prefix',
+        serialization_name='prefix',
         shape_name='Prefix',
     ))
 
     continuation_token: Token = _dc.field(metadata=_base.field_metadata(
         member_name='ContinuationToken',
+        serialization_name='continuation-token',
         shape_name='Token',
     ))
 
     fetch_owner: FetchOwner = _dc.field(metadata=_base.field_metadata(
         member_name='FetchOwner',
+        serialization_name='fetch-owner',
         shape_name='FetchOwner',
     ))
 
     start_after: StartAfter = _dc.field(metadata=_base.field_metadata(
         member_name='StartAfter',
+        serialization_name='start-after',
         shape_name='StartAfter',
     ))
 
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
+        serialization_name='x-amz-request-payer',
         shape_name='RequestPayer',
     ))
 
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
+        serialization_name='x-amz-expected-bucket-owner',
         shape_name='AccountId',
     ))
 
     optional_object_attributes: OptionalObjectAttributesList = _dc.field(metadata=_base.field_metadata(
         member_name='OptionalObjectAttributes',
+        serialization_name='x-amz-optional-object-attributes',
         shape_name='OptionalObjectAttributesList',
     ))
 
@@ -1006,6 +1105,7 @@ class PutObjectRequest(
 ):
     acl: ObjectCannedACL = _dc.field(metadata=_base.field_metadata(
         member_name='ACL',
+        serialization_name='x-amz-acl',
         shape_name='ObjectCannedACL',
     ))
 
@@ -1016,191 +1116,229 @@ class PutObjectRequest(
 
     bucket: BucketName = _dc.field(metadata=_base.field_metadata(
         member_name='Bucket',
+        serialization_name='Bucket',
         shape_name='BucketName',
     ))
 
     cache_control: CacheControl = _dc.field(metadata=_base.field_metadata(
         member_name='CacheControl',
+        serialization_name='Cache-Control',
         shape_name='CacheControl',
     ))
 
     content_disposition: ContentDisposition = _dc.field(metadata=_base.field_metadata(
         member_name='ContentDisposition',
+        serialization_name='Content-Disposition',
         shape_name='ContentDisposition',
     ))
 
     content_encoding: ContentEncoding = _dc.field(metadata=_base.field_metadata(
         member_name='ContentEncoding',
+        serialization_name='Content-Encoding',
         shape_name='ContentEncoding',
     ))
 
     content_language: ContentLanguage = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLanguage',
+        serialization_name='Content-Language',
         shape_name='ContentLanguage',
     ))
 
     content_length: ContentLength = _dc.field(metadata=_base.field_metadata(
         member_name='ContentLength',
+        serialization_name='Content-Length',
         shape_name='ContentLength',
     ))
 
     content_md5: ContentMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='ContentMD5',
+        serialization_name='Content-MD5',
         shape_name='ContentMD5',
     ))
 
     content_type: ContentType = _dc.field(metadata=_base.field_metadata(
         member_name='ContentType',
+        serialization_name='Content-Type',
         shape_name='ContentType',
     ))
 
     checksum_algorithm: ChecksumAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumAlgorithm',
+        serialization_name='x-amz-sdk-checksum-algorithm',
         shape_name='ChecksumAlgorithm',
     ))
 
     checksum_crc32: ChecksumCRC32 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32',
+        serialization_name='x-amz-checksum-crc32',
         shape_name='ChecksumCRC32',
     ))
 
     checksum_crc32c: ChecksumCRC32C = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumCRC32C',
+        serialization_name='x-amz-checksum-crc32c',
         shape_name='ChecksumCRC32C',
     ))
 
     checksum_sha1: ChecksumSHA1 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
+        serialization_name='x-amz-checksum-sha1',
         shape_name='ChecksumSHA1',
     ))
 
     checksum_sha256: ChecksumSHA256 = _dc.field(metadata=_base.field_metadata(
         member_name='ChecksumSHA256',
+        serialization_name='x-amz-checksum-sha256',
         shape_name='ChecksumSHA256',
     ))
 
     expires: Expires = _dc.field(metadata=_base.field_metadata(
         member_name='Expires',
+        serialization_name='Expires',
         shape_name='Expires',
     ))
 
     if_match: IfMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfMatch',
+        serialization_name='If-Match',
         shape_name='IfMatch',
     ))
 
     if_none_match: IfNoneMatch = _dc.field(metadata=_base.field_metadata(
         member_name='IfNoneMatch',
+        serialization_name='If-None-Match',
         shape_name='IfNoneMatch',
     ))
 
     grant_full_control: GrantFullControl = _dc.field(metadata=_base.field_metadata(
         member_name='GrantFullControl',
+        serialization_name='x-amz-grant-full-control',
         shape_name='GrantFullControl',
     ))
 
     grant_read: GrantRead = _dc.field(metadata=_base.field_metadata(
         member_name='GrantRead',
+        serialization_name='x-amz-grant-read',
         shape_name='GrantRead',
     ))
 
     grant_read_acp: GrantReadACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantReadACP',
+        serialization_name='x-amz-grant-read-acp',
         shape_name='GrantReadACP',
     ))
 
     grant_write_acp: GrantWriteACP = _dc.field(metadata=_base.field_metadata(
         member_name='GrantWriteACP',
+        serialization_name='x-amz-grant-write-acp',
         shape_name='GrantWriteACP',
     ))
 
     key: ObjectKey = _dc.field(metadata=_base.field_metadata(
         member_name='Key',
+        serialization_name='Key',
         shape_name='ObjectKey',
     ))
 
     write_offset_bytes: WriteOffsetBytes = _dc.field(metadata=_base.field_metadata(
         member_name='WriteOffsetBytes',
+        serialization_name='x-amz-write-offset-bytes',
         shape_name='WriteOffsetBytes',
     ))
 
     metadata: Metadata = _dc.field(metadata=_base.field_metadata(
         member_name='Metadata',
+        serialization_name='x-amz-meta-',
         shape_name='Metadata',
     ))
 
     server_side_encryption: ServerSideEncryption = _dc.field(metadata=_base.field_metadata(
         member_name='ServerSideEncryption',
+        serialization_name='x-amz-server-side-encryption',
         shape_name='ServerSideEncryption',
     ))
 
     storage_class: StorageClass = _dc.field(metadata=_base.field_metadata(
         member_name='StorageClass',
+        serialization_name='x-amz-storage-class',
         shape_name='StorageClass',
     ))
 
     website_redirect_location: WebsiteRedirectLocation = _dc.field(metadata=_base.field_metadata(
         member_name='WebsiteRedirectLocation',
+        serialization_name='x-amz-website-redirect-location',
         shape_name='WebsiteRedirectLocation',
     ))
 
     sse_customer_algorithm: SSECustomerAlgorithm = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerAlgorithm',
+        serialization_name='x-amz-server-side-encryption-customer-algorithm',
         shape_name='SSECustomerAlgorithm',
     ))
 
     sse_customer_key: SSECustomerKey = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKey',
+        serialization_name='x-amz-server-side-encryption-customer-key',
         shape_name='SSECustomerKey',
     ))
 
     sse_customer_key_md5: SSECustomerKeyMD5 = _dc.field(metadata=_base.field_metadata(
         member_name='SSECustomerKeyMD5',
+        serialization_name='x-amz-server-side-encryption-customer-key-MD5',
         shape_name='SSECustomerKeyMD5',
     ))
 
     sse_kms_key_id: SSEKMSKeyId = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSKeyId',
+        serialization_name='x-amz-server-side-encryption-aws-kms-key-id',
         shape_name='SSEKMSKeyId',
     ))
 
     sse_kms_encryption_context: SSEKMSEncryptionContext = _dc.field(metadata=_base.field_metadata(
         member_name='SSEKMSEncryptionContext',
+        serialization_name='x-amz-server-side-encryption-context',
         shape_name='SSEKMSEncryptionContext',
     ))
 
     bucket_key_enabled: BucketKeyEnabled = _dc.field(metadata=_base.field_metadata(
         member_name='BucketKeyEnabled',
+        serialization_name='x-amz-server-side-encryption-bucket-key-enabled',
         shape_name='BucketKeyEnabled',
     ))
 
     request_payer: RequestPayer = _dc.field(metadata=_base.field_metadata(
         member_name='RequestPayer',
+        serialization_name='x-amz-request-payer',
         shape_name='RequestPayer',
     ))
 
     tagging: TaggingHeader = _dc.field(metadata=_base.field_metadata(
         member_name='Tagging',
+        serialization_name='x-amz-tagging',
         shape_name='TaggingHeader',
     ))
 
     object_lock_mode: ObjectLockMode = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockMode',
+        serialization_name='x-amz-object-lock-mode',
         shape_name='ObjectLockMode',
     ))
 
     object_lock_retain_until_date: ObjectLockRetainUntilDate = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockRetainUntilDate',
+        serialization_name='x-amz-object-lock-retain-until-date',
         shape_name='ObjectLockRetainUntilDate',
     ))
 
     object_lock_legal_hold_status: ObjectLockLegalHoldStatus = _dc.field(metadata=_base.field_metadata(
         member_name='ObjectLockLegalHoldStatus',
+        serialization_name='x-amz-object-lock-legal-hold',
         shape_name='ObjectLockLegalHoldStatus',
     ))
 
     expected_bucket_owner: AccountId = _dc.field(metadata=_base.field_metadata(
         member_name='ExpectedBucketOwner',
+        serialization_name='x-amz-expected-bucket-owner',
         shape_name='AccountId',
     ))
 
@@ -1301,6 +1439,7 @@ class ListObjectsV2Output(
 
     request_charged: RequestCharged = _dc.field(metadata=_base.field_metadata(
         member_name='RequestCharged',
+        serialization_name='x-amz-request-charged',
         shape_name='RequestCharged',
     ))
 
