@@ -214,6 +214,28 @@ class HypervisorType(_enum.Enum):
 
 ImageId = _ta.NewType('ImageId', str)
 
+
+class ImageState(_enum.Enum):
+    PENDING = 'pending'
+    AVAILABLE = 'available'
+    INVALID = 'invalid'
+    DEREGISTERED = 'deregistered'
+    TRANSIENT = 'transient'
+    FAILED = 'failed'
+    ERROR = 'error'
+    DISABLED = 'disabled'
+
+
+class ImageTypeValues(_enum.Enum):
+    MACHINE = 'machine'
+    KERNEL = 'kernel'
+    RAMDISK = 'ramdisk'
+
+
+class ImdsSupportValues(_enum.Enum):
+    V2_0 = 'v2.0'
+
+
 InferenceDeviceCount = _ta.NewType('InferenceDeviceCount', int)
 
 InferenceDeviceManufacturerName = _ta.NewType('InferenceDeviceManufacturerName', str)
@@ -1501,6 +1523,10 @@ TotalMediaMemory = _ta.NewType('TotalMediaMemory', int)
 TotalNeuronMemory = _ta.NewType('TotalNeuronMemory', int)
 
 
+class TpmSupportValues(_enum.Enum):
+    V2_0 = 'v2.0'
+
+
 class UsageClassType(_enum.Enum):
     SPOT = 'spot'
     ON_DEMAND = 'on-demand'
@@ -2095,6 +2121,9 @@ class EnclaveOptionsRequest(
     ))
 
 
+ExecutableByStringList: _ta.TypeAlias = _ta.Sequence[str]
+
+
 @_dc.dataclass(frozen=True)
 class FpgaDeviceMemoryInfo(
     _base.Shape,
@@ -2200,6 +2229,9 @@ class IamInstanceProfileSpecification(
         serialization_name='name',
         shape_name='String',
     ))
+
+
+ImageIdStringList: _ta.TypeAlias = _ta.Sequence[ImageId]
 
 
 @_dc.dataclass(frozen=True)
@@ -2845,6 +2877,9 @@ class OperatorResponse(
         serialization_name='principal',
         shape_name='String',
     ))
+
+
+OwnerStringList: _ta.TypeAlias = _ta.Sequence[str]
 
 
 @_dc.dataclass(frozen=True)
@@ -4038,6 +4073,8 @@ class VpcIpv6CidrBlockAssociation(
     ))
 
 
+BlockDeviceMappingList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
+
 BlockDeviceMappingRequestList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
 
 
@@ -4578,6 +4615,62 @@ class DescribeAddressesRequest(
 
 
 @_dc.dataclass(frozen=True)
+class DescribeImagesRequest(
+    _base.Shape,
+    shape_name='DescribeImagesRequest',
+):
+    executable_users: ExecutableByStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='ExecutableUsers',
+        serialization_name='ExecutableBy',
+        shape_name='ExecutableByStringList',
+    ))
+
+    image_ids: ImageIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageIds',
+        serialization_name='ImageId',
+        shape_name='ImageIdStringList',
+    ))
+
+    owners: OwnerStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='Owners',
+        serialization_name='Owner',
+        shape_name='OwnerStringList',
+    ))
+
+    include_deprecated: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='IncludeDeprecated',
+        shape_name='Boolean',
+    ))
+
+    include_disabled: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='IncludeDisabled',
+        shape_name='Boolean',
+    ))
+
+    max_results: int = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='Integer',
+    ))
+
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        serialization_name='Filter',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class DescribeInstanceTypesRequest(
     _base.Shape,
     shape_name='DescribeInstanceTypesRequest',
@@ -4890,6 +4983,228 @@ class GpuInfo(
         member_name='TotalGpuMemoryInMiB',
         serialization_name='totalGpuMemoryInMiB',
         shape_name='totalGpuMemory',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class Image(
+    _base.Shape,
+    shape_name='Image',
+):
+    platform_details: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PlatformDetails',
+        serialization_name='platformDetails',
+        shape_name='String',
+    ))
+
+    usage_operation: str = _dc.field(metadata=_base.field_metadata(
+        member_name='UsageOperation',
+        serialization_name='usageOperation',
+        shape_name='String',
+    ))
+
+    block_device_mappings: BlockDeviceMappingList = _dc.field(metadata=_base.field_metadata(
+        member_name='BlockDeviceMappings',
+        serialization_name='blockDeviceMapping',
+        shape_name='BlockDeviceMappingList',
+    ))
+
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        serialization_name='description',
+        shape_name='String',
+    ))
+
+    ena_support: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='EnaSupport',
+        serialization_name='enaSupport',
+        shape_name='Boolean',
+    ))
+
+    hypervisor: HypervisorType = _dc.field(metadata=_base.field_metadata(
+        member_name='Hypervisor',
+        serialization_name='hypervisor',
+        shape_name='HypervisorType',
+    ))
+
+    image_owner_alias: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageOwnerAlias',
+        serialization_name='imageOwnerAlias',
+        shape_name='String',
+    ))
+
+    name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Name',
+        serialization_name='name',
+        shape_name='String',
+    ))
+
+    root_device_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RootDeviceName',
+        serialization_name='rootDeviceName',
+        shape_name='String',
+    ))
+
+    root_device_type: DeviceType = _dc.field(metadata=_base.field_metadata(
+        member_name='RootDeviceType',
+        serialization_name='rootDeviceType',
+        shape_name='DeviceType',
+    ))
+
+    sriov_net_support: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SriovNetSupport',
+        serialization_name='sriovNetSupport',
+        shape_name='String',
+    ))
+
+    state_reason: StateReason = _dc.field(metadata=_base.field_metadata(
+        member_name='StateReason',
+        serialization_name='stateReason',
+        shape_name='StateReason',
+    ))
+
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        serialization_name='tagSet',
+        shape_name='TagList',
+    ))
+
+    virtualization_type: VirtualizationType = _dc.field(metadata=_base.field_metadata(
+        member_name='VirtualizationType',
+        serialization_name='virtualizationType',
+        shape_name='VirtualizationType',
+    ))
+
+    boot_mode: BootModeValues = _dc.field(metadata=_base.field_metadata(
+        member_name='BootMode',
+        serialization_name='bootMode',
+        shape_name='BootModeValues',
+    ))
+
+    tpm_support: TpmSupportValues = _dc.field(metadata=_base.field_metadata(
+        member_name='TpmSupport',
+        serialization_name='tpmSupport',
+        shape_name='TpmSupportValues',
+    ))
+
+    deprecation_time: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DeprecationTime',
+        serialization_name='deprecationTime',
+        shape_name='String',
+    ))
+
+    imds_support: ImdsSupportValues = _dc.field(metadata=_base.field_metadata(
+        member_name='ImdsSupport',
+        serialization_name='imdsSupport',
+        shape_name='ImdsSupportValues',
+    ))
+
+    source_instance_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SourceInstanceId',
+        serialization_name='sourceInstanceId',
+        shape_name='String',
+    ))
+
+    deregistration_protection: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DeregistrationProtection',
+        serialization_name='deregistrationProtection',
+        shape_name='String',
+    ))
+
+    last_launched_time: str = _dc.field(metadata=_base.field_metadata(
+        member_name='LastLaunchedTime',
+        serialization_name='lastLaunchedTime',
+        shape_name='String',
+    ))
+
+    image_allowed: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageAllowed',
+        serialization_name='imageAllowed',
+        shape_name='Boolean',
+    ))
+
+    source_image_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SourceImageId',
+        serialization_name='sourceImageId',
+        shape_name='String',
+    ))
+
+    source_image_region: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SourceImageRegion',
+        serialization_name='sourceImageRegion',
+        shape_name='String',
+    ))
+
+    image_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageId',
+        serialization_name='imageId',
+        shape_name='String',
+    ))
+
+    image_location: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageLocation',
+        serialization_name='imageLocation',
+        shape_name='String',
+    ))
+
+    state: ImageState = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        serialization_name='imageState',
+        shape_name='ImageState',
+    ))
+
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        serialization_name='imageOwnerId',
+        shape_name='String',
+    ))
+
+    creation_date: str = _dc.field(metadata=_base.field_metadata(
+        member_name='CreationDate',
+        serialization_name='creationDate',
+        shape_name='String',
+    ))
+
+    public: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Public',
+        serialization_name='isPublic',
+        shape_name='Boolean',
+    ))
+
+    product_codes: ProductCodeList = _dc.field(metadata=_base.field_metadata(
+        member_name='ProductCodes',
+        serialization_name='productCodes',
+        shape_name='ProductCodeList',
+    ))
+
+    architecture: ArchitectureValues = _dc.field(metadata=_base.field_metadata(
+        member_name='Architecture',
+        serialization_name='architecture',
+        shape_name='ArchitectureValues',
+    ))
+
+    image_type: ImageTypeValues = _dc.field(metadata=_base.field_metadata(
+        member_name='ImageType',
+        serialization_name='imageType',
+        shape_name='ImageTypeValues',
+    ))
+
+    kernel_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='KernelId',
+        serialization_name='kernelId',
+        shape_name='String',
+    ))
+
+    ramdisk_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RamdiskId',
+        serialization_name='ramdiskId',
+        shape_name='String',
+    ))
+
+    platform: PlatformValues = _dc.field(metadata=_base.field_metadata(
+        member_name='Platform',
+        serialization_name='platform',
+        shape_name='PlatformValues',
     ))
 
 
@@ -5521,6 +5836,8 @@ class DescribeInternetGatewaysResult(
     ))
 
 
+ImageList: _ta.TypeAlias = _ta.Sequence[Image]
+
 InstanceNetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterface]
 
 
@@ -6013,6 +6330,24 @@ class SecurityGroup(
 SubnetList: _ta.TypeAlias = _ta.Sequence[Subnet]
 
 VpcList: _ta.TypeAlias = _ta.Sequence[Vpc]
+
+
+@_dc.dataclass(frozen=True)
+class DescribeImagesResult(
+    _base.Shape,
+    shape_name='DescribeImagesResult',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        serialization_name='nextToken',
+        shape_name='String',
+    ))
+
+    images: ImageList = _dc.field(metadata=_base.field_metadata(
+        member_name='Images',
+        serialization_name='imagesSet',
+        shape_name='ImageList',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -6548,6 +6883,8 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     CreditSpecificationRequest,
     DescribeAddressesRequest,
     DescribeAddressesResult,
+    DescribeImagesRequest,
+    DescribeImagesResult,
     DescribeInstanceTypesRequest,
     DescribeInstanceTypesResult,
     DescribeInstancesRequest,
@@ -6590,6 +6927,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     HibernationOptionsRequest,
     IamInstanceProfile,
     IamInstanceProfileSpecification,
+    Image,
     InferenceAcceleratorInfo,
     InferenceDeviceInfo,
     InferenceDeviceMemoryInfo,
@@ -6692,6 +7030,12 @@ DESCRIBE_ADDRESSES = _base.Operation(
     output=DescribeAddressesResult,
 )
 
+DESCRIBE_IMAGES = _base.Operation(
+    name='DescribeImages',
+    input=DescribeImagesRequest,
+    output=DescribeImagesResult,
+)
+
 DESCRIBE_INSTANCE_TYPES = _base.Operation(
     name='DescribeInstanceTypes',
     input=DescribeInstanceTypesRequest,
@@ -6772,6 +7116,7 @@ TERMINATE_INSTANCES = _base.Operation(
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_ADDRESSES,
+    DESCRIBE_IMAGES,
     DESCRIBE_INSTANCES,
     DESCRIBE_INSTANCE_TYPES,
     DESCRIBE_INTERNET_GATEWAYS,

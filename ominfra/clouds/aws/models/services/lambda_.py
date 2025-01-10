@@ -94,8 +94,6 @@ class LogFormat(_enum.Enum):
 
 LogGroup = _ta.NewType('LogGroup', str)
 
-Long = _ta.NewType('Long', int)
-
 MasterRegion = _ta.NewType('MasterRegion', str)
 
 MaxListItems = _ta.NewType('MaxListItems', int)
@@ -352,7 +350,7 @@ class Layer(
         shape_name='LayerVersionArn',
     ))
 
-    code_size: Long = _dc.field(metadata=_base.field_metadata(
+    code_size: int = _dc.field(metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))
@@ -649,7 +647,7 @@ class FunctionConfiguration(
         shape_name='Handler',
     ))
 
-    code_size: Long = _dc.field(metadata=_base.field_metadata(
+    code_size: int = _dc.field(metadata=_base.field_metadata(
         member_name='CodeSize',
         shape_name='Long',
     ))

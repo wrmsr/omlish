@@ -156,6 +156,7 @@ class ModelGen:
         'Boolean': 'bool',
 
         'Integer': 'int',
+        'Long': 'int',
 
         'String': 'str',
 

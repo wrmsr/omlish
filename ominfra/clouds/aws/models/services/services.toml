@@ -1,6 +1,7 @@
 [services.ec2]
 operations = [
   'DescribeAddresses',
+  'DescribeImages',
   'DescribeInstanceTypes',
   'DescribeInstances',
   'DescribeInternetGateways',
