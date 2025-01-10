@@ -6740,12 +6740,6 @@ DESCRIBE_VPCS = _base.Operation(
     output=DescribeVpcsResult,
 )
 
-DESCRIBE_VPCS = _base.Operation(
-    name='DescribeVpcs',
-    input=DescribeVpcsRequest,
-    output=DescribeVpcsResult,
-)
-
 REBOOT_INSTANCES = _base.Operation(
     name='RebootInstances',
     input=RebootInstancesRequest,
@@ -6785,7 +6779,6 @@ ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_NETWORK_INTERFACES,
     DESCRIBE_SECURITY_GROUPS,
     DESCRIBE_SUBNETS,
-    DESCRIBE_VPCS,
     DESCRIBE_VPCS,
     REBOOT_INSTANCES,
     RUN_INSTANCES,

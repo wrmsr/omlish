@@ -9,7 +9,6 @@ operations = [
   'DescribeSecurityGroups',
   'DescribeSubnets',
   'DescribeVpcs',
-  'DescribeVpcs',
   'RebootInstances',
   'RunInstances',
   'StartInstances',
