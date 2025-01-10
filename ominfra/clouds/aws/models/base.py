@@ -1,7 +1,9 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish import cached
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 
 
@@ -48,9 +50,58 @@ def shape_metadata(
     return md
 
 
+class ShapeInfo:
+    def __init__(
+            self,
+            cls: type['Shape'],
+            metadata: ta.Mapping[ta.Any, ta.Any],
+    ) -> None:
+        super().__init__()
+
+        self._cls = check.issubclass(cls, Shape)
+        self._metadata = metadata
+
+    @property
+    def cls(self) -> type['Shape']:
+        return self._cls
+
+    @property
+    def metadata(self) -> ta.Mapping[ta.Any, ta.Any]:
+        return self._metadata
+
+    #
+
+    @cached.function
+    def fields(self) -> ta.Sequence[dc.Field]:
+        check.in_('__dataclass_fields__', self._cls.__dict__)
+        fls = dc.fields(self._cls)
+        return fls  # noqa
+
+    @cached.function
+    def fields_by_name(self) -> ta.Mapping[str, dc.Field]:
+        return col.make_map_by(lambda fl: fl.name, self.fields(), strict=True)
+
+    @cached.function
+    def fields_by_member_name(self) -> ta.Mapping[str, dc.Field]:
+        return col.make_map(
+            [(n, f) for f in self.fields() if (n := f.metadata.get(MEMBER_NAME)) is not None],
+            strict=True,
+        )
+
+    @cached.function
+    def fields_by_serialization_name(self) -> ta.Mapping[str, dc.Field]:
+        l = []
+        for f in self.fields():
+            if sn := f.metadata.get(SERIALIZATION_NAME):
+                l.append((sn, f))
+            elif mn := f.metadata.get(MEMBER_NAME):
+                l.append((mn, f))
+        return col.make_map(l, strict=True)
+
+
 @dc.dataclass(frozen=True)
 class Shape:
-    __shape_metadata__: ta.ClassVar[ta.Mapping[ta.Any, ta.Any]]
+    __shape__: ShapeInfo
 
     def __init_subclass__(
             cls,
@@ -60,9 +111,14 @@ class Shape:
     ) -> None:
         super().__init_subclass__(**kwargs)
 
-        check.state(not hasattr(cls, '__shape_metadata__'))
+        check.state(not hasattr(cls, '__shape__'))
 
-        cls.__shape_metadata__ = shape_metadata(**kwargs)
+        info = ShapeInfo(
+            cls,
+            shape_metadata(**kwargs),
+        )
+
+        cls.__shape__ = info
 
 
 ##
