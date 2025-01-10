@@ -12,7 +12,6 @@ fi
 SCRIPT_PATH=$(cd -- "$(dirname -- "$0")" && pwd)
 SCRIPT_PATH="$SCRIPT_PATH/$(basename -- "$0")"
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-echo "SCRIPT_DIR=$SCRIPT_DIR"
 
 VENV_PYTHON_PATH="$SCRIPT_DIR/.venvs/$VENV/bin/python"
 if [ -f "$VENV_PYTHON_PATH" ] ; then
