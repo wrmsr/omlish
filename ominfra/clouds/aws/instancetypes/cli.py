@@ -38,7 +38,7 @@ def get_ec2_instance_types(session: boto3.Session) -> dict[str, dict[str, ta.Any
         next_token = resp.get('NextToken')
         if not next_token:
             break
-    dct = {k: v for k, v in sorted(dct.items(), key=lambda t: t[0])}
+    dct = dict(sorted(dct.items(), key=lambda t: t[0]))
     return dct
 
 
