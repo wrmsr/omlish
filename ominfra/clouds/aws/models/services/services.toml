@@ -1,5 +1,11 @@
 [services.ec2]
 operations = [
+  'CreateRoute',
+  'CreateRouteTable',
+  'CreateSecurityGroup',
+  'DeleteRoute',
+  'DeleteRouteTable',
+  'DeleteSecurityGroup',
   'DescribeAddresses',
   'DescribeImages',
   'DescribeInstanceTypes',
@@ -7,6 +13,7 @@ operations = [
   'DescribeInternetGateways',
   'DescribeKeyPairs',
   'DescribeNetworkInterfaces',
+  'DescribeRouteTables',
   'DescribeSecurityGroups',
   'DescribeSubnets',
   'DescribeVpcs',

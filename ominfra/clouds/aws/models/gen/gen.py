@@ -6,6 +6,7 @@ TODO:
 import builtins
 import dataclasses as dc
 import io
+import keyword
 import typing as ta
 
 from omlish import check
@@ -182,7 +183,7 @@ class ModelGen:
             pass
 
         if name in self._shape_names:
-            name = self.sanitize_class_name(name)
+            name = self.sanitize_global_name(name, upper=True)
             if not unquoted_names:
                 return f"'{name}'"
             else:
@@ -249,10 +250,17 @@ class ModelGen:
 
     #
 
-    def sanitize_class_name(self, n: str) -> str:
+    def sanitize_local_name(self, n: str) -> str:
+        if n in keyword.kwlist:
+            n += '_'
+        return n
+
+    def sanitize_global_name(self, n: str, *, upper: bool = False) -> str:
         if hasattr(builtins, n):
             n += '_'
-        return n[0].upper() + n[1:]
+        if upper:
+            n = n[0].upper() + n[1:]
+        return n
 
     #
 
@@ -292,7 +300,7 @@ class ModelGen:
     ) -> ShapeSrc:
         shape: botocore.model.Shape = self._service_model.shape_for(name)
 
-        san_name = self.sanitize_class_name(shape.name)
+        san_name = self.sanitize_global_name(shape.name, upper=True)
 
         if isinstance(shape, botocore.model.StructureShape):
             lines: list[str] = []
@@ -315,7 +323,7 @@ class ModelGen:
             for i, (mn, ms) in enumerate(shape.members.items()):
                 if i:
                     lines.append('')
-                fn = self.demangle_name(mn)
+                fn = self.sanitize_local_name(self.demangle_name(mn))
                 mds = [
                     f'member_name={mn!r}',
                 ]

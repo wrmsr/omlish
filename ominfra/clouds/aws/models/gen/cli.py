@@ -4,6 +4,7 @@ import os.path
 import sys
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
@@ -30,14 +31,17 @@ class Cli(ap.Cli):
     ) -> str:
         service_model = ModelGen.load_service_model(service_name)
 
+        shape_names_seq = check.unique(shape_names or ())
+        operation_names_seq = check.unique(operation_names or ())
+
         bmg = ModelGen(
             service_model,
             shape_names=ModelGen.get_referenced_shape_names(
                 service_model,
-                shape_names=shape_names or (),
-                operation_names=operation_names or (),
+                shape_names=shape_names_seq,
+                operation_names=operation_names_seq,
             ),
-            operation_names=operation_names or (),
+            operation_names=operation_names_seq,
         )
 
         return bmg.gen_module()

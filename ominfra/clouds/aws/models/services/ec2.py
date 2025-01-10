@@ -90,9 +90,13 @@ class CapacityReservationPreference(_enum.Enum):
     NONE = 'none'
 
 
+CarrierGatewayId = _ta.NewType('CarrierGatewayId', str)
+
 CoipPoolId = _ta.NewType('CoipPoolId', str)
 
 CoreCount = _ta.NewType('CoreCount', int)
+
+CoreNetworkArn = _ta.NewType('CoreNetworkArn', str)
 
 CpuManufacturerName = _ta.NewType('CpuManufacturerName', str)
 
@@ -107,6 +111,8 @@ DefaultNetworkCardIndex = _ta.NewType('DefaultNetworkCardIndex', int)
 DescribeInternetGatewaysMaxResults = _ta.NewType('DescribeInternetGatewaysMaxResults', int)
 
 DescribeNetworkInterfacesMaxResults = _ta.NewType('DescribeNetworkInterfacesMaxResults', int)
+
+DescribeRouteTablesMaxResults = _ta.NewType('DescribeRouteTablesMaxResults', int)
 
 DescribeSecurityGroupsMaxResults = _ta.NewType('DescribeSecurityGroupsMaxResults', int)
 
@@ -153,6 +159,8 @@ class EbsOptimizedSupport(_enum.Enum):
 
 
 EfaSupportedFlag = _ta.NewType('EfaSupportedFlag', bool)
+
+EgressOnlyInternetGatewayId = _ta.NewType('EgressOnlyInternetGatewayId', str)
 
 ElasticGpuId = _ta.NewType('ElasticGpuId', str)
 
@@ -1233,6 +1241,8 @@ class KeyType(_enum.Enum):
 
 LaunchTemplateId = _ta.NewType('LaunchTemplateId', str)
 
+LocalGatewayId = _ta.NewType('LocalGatewayId', str)
+
 
 class MarketType(_enum.Enum):
     SPOT = 'spot'
@@ -1272,6 +1282,8 @@ class MonitoringState(_enum.Enum):
     ENABLED = 'enabled'
     PENDING = 'pending'
 
+
+NatGatewayId = _ta.NewType('NatGatewayId', str)
 
 NetworkCardIndex = _ta.NewType('NetworkCardIndex', int)
 
@@ -1356,6 +1368,8 @@ class PlacementGroupStrategy(_enum.Enum):
 class PlatformValues(_enum.Enum):
     WINDOWS = 'Windows'
 
+
+PrefixListResourceId = _ta.NewType('PrefixListResourceId', str)
 
 ProcessorSustainedClockSpeed = _ta.NewType('ProcessorSustainedClockSpeed', float)
 
@@ -1465,6 +1479,30 @@ class RootDeviceType(_enum.Enum):
     INSTANCE_STORE = 'instance-store'
 
 
+RouteGatewayId = _ta.NewType('RouteGatewayId', str)
+
+
+class RouteOrigin(_enum.Enum):
+    CREATE_ROUTE_TABLE = 'CreateRouteTable'
+    CREATE_ROUTE = 'CreateRoute'
+    ENABLE_VGW_ROUTE_PROPAGATION = 'EnableVgwRoutePropagation'
+
+
+class RouteState(_enum.Enum):
+    ACTIVE = 'active'
+    BLACKHOLE = 'blackhole'
+
+
+class RouteTableAssociationStateCode(_enum.Enum):
+    ASSOCIATING = 'associating'
+    ASSOCIATED = 'associated'
+    DISASSOCIATING = 'disassociating'
+    DISASSOCIATED = 'disassociated'
+    FAILED = 'failed'
+
+
+RouteTableId = _ta.NewType('RouteTableId', str)
+
 RunInstancesUserData = _ta.NewType('RunInstancesUserData', str)
 
 SecurityGroupId = _ta.NewType('SecurityGroupId', str)
@@ -1527,6 +1565,9 @@ class TpmSupportValues(_enum.Enum):
     V2_0 = 'v2.0'
 
 
+TransitGatewayId = _ta.NewType('TransitGatewayId', str)
+
+
 class UsageClassType(_enum.Enum):
     SPOT = 'spot'
     ON_DEMAND = 'on-demand'
@@ -1560,7 +1601,11 @@ class VpcCidrBlockStateCode(_enum.Enum):
     FAILED = 'failed'
 
 
+VpcEndpointId = _ta.NewType('VpcEndpointId', str)
+
 VpcId = _ta.NewType('VpcId', str)
+
+VpcPeeringConnectionId = _ta.NewType('VpcPeeringConnectionId', str)
 
 
 class VpcState(_enum.Enum):
@@ -1852,6 +1897,138 @@ class CpuOptionsRequest(
 
 
 @_dc.dataclass(frozen=True)
+class CreateRouteRequest(
+    _base.Shape,
+    shape_name='CreateRouteRequest',
+):
+    destination_prefix_list_id: PrefixListResourceId = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationPrefixListId',
+        shape_name='PrefixListResourceId',
+    ))
+
+    vpc_endpoint_id: VpcEndpointId = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcEndpointId',
+        shape_name='VpcEndpointId',
+    ))
+
+    transit_gateway_id: TransitGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='TransitGatewayId',
+        shape_name='TransitGatewayId',
+    ))
+
+    local_gateway_id: LocalGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='LocalGatewayId',
+        shape_name='LocalGatewayId',
+    ))
+
+    carrier_gateway_id: CarrierGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='CarrierGatewayId',
+        shape_name='CarrierGatewayId',
+    ))
+
+    core_network_arn: CoreNetworkArn = _dc.field(metadata=_base.field_metadata(
+        member_name='CoreNetworkArn',
+        shape_name='CoreNetworkArn',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    route_table_id: RouteTableId = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableId',
+        serialization_name='routeTableId',
+        shape_name='RouteTableId',
+    ))
+
+    destination_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationCidrBlock',
+        serialization_name='destinationCidrBlock',
+        shape_name='String',
+    ))
+
+    gateway_id: RouteGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='GatewayId',
+        serialization_name='gatewayId',
+        shape_name='RouteGatewayId',
+    ))
+
+    destination_ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationIpv6CidrBlock',
+        serialization_name='destinationIpv6CidrBlock',
+        shape_name='String',
+    ))
+
+    egress_only_internet_gateway_id: EgressOnlyInternetGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='EgressOnlyInternetGatewayId',
+        serialization_name='egressOnlyInternetGatewayId',
+        shape_name='EgressOnlyInternetGatewayId',
+    ))
+
+    instance_id: InstanceId = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceId',
+        serialization_name='instanceId',
+        shape_name='InstanceId',
+    ))
+
+    network_interface_id: NetworkInterfaceId = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceId',
+        serialization_name='networkInterfaceId',
+        shape_name='NetworkInterfaceId',
+    ))
+
+    vpc_peering_connection_id: VpcPeeringConnectionId = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcPeeringConnectionId',
+        serialization_name='vpcPeeringConnectionId',
+        shape_name='VpcPeeringConnectionId',
+    ))
+
+    nat_gateway_id: NatGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='NatGatewayId',
+        serialization_name='natGatewayId',
+        shape_name='NatGatewayId',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class CreateRouteResult(
+    _base.Shape,
+    shape_name='CreateRouteResult',
+):
+    return_: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Return',
+        serialization_name='return',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class CreateSecurityGroupResult(
+    _base.Shape,
+    shape_name='CreateSecurityGroupResult',
+):
+    group_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupId',
+        serialization_name='groupId',
+        shape_name='String',
+    ))
+
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        serialization_name='tagSet',
+        shape_name='TagList',
+    ))
+
+    security_group_arn: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SecurityGroupArn',
+        serialization_name='securityGroupArn',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class CreditSpecificationRequest(
     _base.Shape,
     shape_name='CreditSpecificationRequest',
@@ -1859,6 +2036,99 @@ class CreditSpecificationRequest(
     cpu_credits: str = _dc.field(metadata=_base.field_metadata(
         member_name='CpuCredits',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DeleteRouteRequest(
+    _base.Shape,
+    shape_name='DeleteRouteRequest',
+):
+    destination_prefix_list_id: PrefixListResourceId = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationPrefixListId',
+        shape_name='PrefixListResourceId',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    route_table_id: RouteTableId = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableId',
+        serialization_name='routeTableId',
+        shape_name='RouteTableId',
+    ))
+
+    destination_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationCidrBlock',
+        serialization_name='destinationCidrBlock',
+        shape_name='String',
+    ))
+
+    destination_ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationIpv6CidrBlock',
+        serialization_name='destinationIpv6CidrBlock',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DeleteRouteTableRequest(
+    _base.Shape,
+    shape_name='DeleteRouteTableRequest',
+):
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    route_table_id: RouteTableId = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableId',
+        serialization_name='routeTableId',
+        shape_name='RouteTableId',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DeleteSecurityGroupRequest(
+    _base.Shape,
+    shape_name='DeleteSecurityGroupRequest',
+):
+    group_id: SecurityGroupId = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupId',
+        shape_name='SecurityGroupId',
+    ))
+
+    group_name: SecurityGroupName = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupName',
+        shape_name='SecurityGroupName',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DeleteSecurityGroupResult(
+    _base.Shape,
+    shape_name='DeleteSecurityGroupResult',
+):
+    return_: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Return',
+        serialization_name='return',
+        shape_name='Boolean',
+    ))
+
+    group_id: SecurityGroupId = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupId',
+        serialization_name='groupId',
+        shape_name='SecurityGroupId',
     ))
 
 
@@ -3068,11 +3338,146 @@ class ProductCode(
     ))
 
 
+@_dc.dataclass(frozen=True)
+class PropagatingVgw(
+    _base.Shape,
+    shape_name='PropagatingVgw',
+):
+    gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GatewayId',
+        serialization_name='gatewayId',
+        shape_name='String',
+    ))
+
+
 PublicIpStringList: _ta.TypeAlias = _ta.Sequence[str]
 
 RequestInstanceTypeList: _ta.TypeAlias = _ta.Sequence[InstanceType]
 
 RootDeviceTypeList: _ta.TypeAlias = _ta.Sequence[RootDeviceType]
+
+
+@_dc.dataclass(frozen=True)
+class Route(
+    _base.Shape,
+    shape_name='Route',
+):
+    destination_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationCidrBlock',
+        serialization_name='destinationCidrBlock',
+        shape_name='String',
+    ))
+
+    destination_ipv6_cidr_block: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationIpv6CidrBlock',
+        serialization_name='destinationIpv6CidrBlock',
+        shape_name='String',
+    ))
+
+    destination_prefix_list_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='DestinationPrefixListId',
+        serialization_name='destinationPrefixListId',
+        shape_name='String',
+    ))
+
+    egress_only_internet_gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='EgressOnlyInternetGatewayId',
+        serialization_name='egressOnlyInternetGatewayId',
+        shape_name='String',
+    ))
+
+    gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GatewayId',
+        serialization_name='gatewayId',
+        shape_name='String',
+    ))
+
+    instance_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceId',
+        serialization_name='instanceId',
+        shape_name='String',
+    ))
+
+    instance_owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='InstanceOwnerId',
+        serialization_name='instanceOwnerId',
+        shape_name='String',
+    ))
+
+    nat_gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NatGatewayId',
+        serialization_name='natGatewayId',
+        shape_name='String',
+    ))
+
+    transit_gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='TransitGatewayId',
+        serialization_name='transitGatewayId',
+        shape_name='String',
+    ))
+
+    local_gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='LocalGatewayId',
+        serialization_name='localGatewayId',
+        shape_name='String',
+    ))
+
+    carrier_gateway_id: CarrierGatewayId = _dc.field(metadata=_base.field_metadata(
+        member_name='CarrierGatewayId',
+        serialization_name='carrierGatewayId',
+        shape_name='CarrierGatewayId',
+    ))
+
+    network_interface_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NetworkInterfaceId',
+        serialization_name='networkInterfaceId',
+        shape_name='String',
+    ))
+
+    origin: RouteOrigin = _dc.field(metadata=_base.field_metadata(
+        member_name='Origin',
+        serialization_name='origin',
+        shape_name='RouteOrigin',
+    ))
+
+    state: RouteState = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        serialization_name='state',
+        shape_name='RouteState',
+    ))
+
+    vpc_peering_connection_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcPeeringConnectionId',
+        serialization_name='vpcPeeringConnectionId',
+        shape_name='String',
+    ))
+
+    core_network_arn: CoreNetworkArn = _dc.field(metadata=_base.field_metadata(
+        member_name='CoreNetworkArn',
+        serialization_name='coreNetworkArn',
+        shape_name='CoreNetworkArn',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class RouteTableAssociationState(
+    _base.Shape,
+    shape_name='RouteTableAssociationState',
+):
+    state: RouteTableAssociationStateCode = _dc.field(metadata=_base.field_metadata(
+        member_name='State',
+        serialization_name='state',
+        shape_name='RouteTableAssociationStateCode',
+    ))
+
+    status_message: str = _dc.field(metadata=_base.field_metadata(
+        member_name='StatusMessage',
+        serialization_name='statusMessage',
+        shape_name='String',
+    ))
+
+
+RouteTableIdStringList: _ta.TypeAlias = _ta.Sequence[RouteTableId]
 
 
 @_dc.dataclass(frozen=True)
@@ -3833,6 +4238,8 @@ class ProcessorInfo(
 
 ProductCodeList: _ta.TypeAlias = _ta.Sequence[ProductCode]
 
+PropagatingVgwList: _ta.TypeAlias = _ta.Sequence[PropagatingVgw]
+
 
 @_dc.dataclass(frozen=True)
 class RebootInstancesRequest(
@@ -3849,6 +4256,51 @@ class RebootInstancesRequest(
         member_name='DryRun',
         serialization_name='dryRun',
         shape_name='Boolean',
+    ))
+
+
+RouteList: _ta.TypeAlias = _ta.Sequence[Route]
+
+
+@_dc.dataclass(frozen=True)
+class RouteTableAssociation(
+    _base.Shape,
+    shape_name='RouteTableAssociation',
+):
+    main: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='Main',
+        serialization_name='main',
+        shape_name='Boolean',
+    ))
+
+    route_table_association_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableAssociationId',
+        serialization_name='routeTableAssociationId',
+        shape_name='String',
+    ))
+
+    route_table_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableId',
+        serialization_name='routeTableId',
+        shape_name='String',
+    ))
+
+    subnet_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='SubnetId',
+        serialization_name='subnetId',
+        shape_name='String',
+    ))
+
+    gateway_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GatewayId',
+        serialization_name='gatewayId',
+        shape_name='String',
+    ))
+
+    association_state: RouteTableAssociationState = _dc.field(metadata=_base.field_metadata(
+        member_name='AssociationState',
+        serialization_name='associationState',
+        shape_name='RouteTableAssociationState',
     ))
 
 
@@ -4076,6 +4528,69 @@ class VpcIpv6CidrBlockAssociation(
 BlockDeviceMappingList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
 
 BlockDeviceMappingRequestList: _ta.TypeAlias = _ta.Sequence[BlockDeviceMapping]
+
+
+@_dc.dataclass(frozen=True)
+class CreateRouteTableRequest(
+    _base.Shape,
+    shape_name='CreateRouteTableRequest',
+):
+    tag_specifications: TagSpecificationList = _dc.field(metadata=_base.field_metadata(
+        member_name='TagSpecifications',
+        serialization_name='TagSpecification',
+        shape_name='TagSpecificationList',
+    ))
+
+    client_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ClientToken',
+        shape_name='String',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    vpc_id: VpcId = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        serialization_name='vpcId',
+        shape_name='VpcId',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class CreateSecurityGroupRequest(
+    _base.Shape,
+    shape_name='CreateSecurityGroupRequest',
+):
+    description: str = _dc.field(metadata=_base.field_metadata(
+        member_name='Description',
+        serialization_name='GroupDescription',
+        shape_name='String',
+    ))
+
+    group_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='GroupName',
+        shape_name='String',
+    ))
+
+    vpc_id: VpcId = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        shape_name='VpcId',
+    ))
+
+    tag_specifications: TagSpecificationList = _dc.field(metadata=_base.field_metadata(
+        member_name='TagSpecifications',
+        serialization_name='TagSpecification',
+        shape_name='TagSpecificationList',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
 
 
 @_dc.dataclass(frozen=True)
@@ -4577,6 +5092,8 @@ NetworkInterfacePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[NetworkInterf
 
 NeuronDeviceInfoList: _ta.TypeAlias = _ta.Sequence[NeuronDeviceInfo]
 
+RouteTableAssociationList: _ta.TypeAlias = _ta.Sequence[RouteTableAssociation]
+
 SubnetIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[SubnetIpv6CidrBlockAssociation]
 
 VpcCidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcCidrBlockAssociation]
@@ -4838,6 +5355,40 @@ class DescribeNetworkInterfacesRequest(
     filters: FilterList = _dc.field(metadata=_base.field_metadata(
         member_name='Filters',
         serialization_name='filter',
+        shape_name='FilterList',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeRouteTablesRequest(
+    _base.Shape,
+    shape_name='DescribeRouteTablesRequest',
+):
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        shape_name='String',
+    ))
+
+    max_results: DescribeRouteTablesMaxResults = _dc.field(metadata=_base.field_metadata(
+        member_name='MaxResults',
+        shape_name='DescribeRouteTablesMaxResults',
+    ))
+
+    dry_run: bool = _dc.field(metadata=_base.field_metadata(
+        member_name='DryRun',
+        serialization_name='dryRun',
+        shape_name='Boolean',
+    ))
+
+    route_table_ids: RouteTableIdStringList = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableIds',
+        serialization_name='RouteTableId',
+        shape_name='RouteTableIdStringList',
+    ))
+
+    filters: FilterList = _dc.field(metadata=_base.field_metadata(
+        member_name='Filters',
+        serialization_name='Filter',
         shape_name='FilterList',
     ))
 
@@ -5573,6 +6124,54 @@ class NeuronInfo(
 
 
 @_dc.dataclass(frozen=True)
+class RouteTable(
+    _base.Shape,
+    shape_name='RouteTable',
+):
+    associations: RouteTableAssociationList = _dc.field(metadata=_base.field_metadata(
+        member_name='Associations',
+        serialization_name='associationSet',
+        shape_name='RouteTableAssociationList',
+    ))
+
+    propagating_vgws: PropagatingVgwList = _dc.field(metadata=_base.field_metadata(
+        member_name='PropagatingVgws',
+        serialization_name='propagatingVgwSet',
+        shape_name='PropagatingVgwList',
+    ))
+
+    route_table_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTableId',
+        serialization_name='routeTableId',
+        shape_name='String',
+    ))
+
+    routes: RouteList = _dc.field(metadata=_base.field_metadata(
+        member_name='Routes',
+        serialization_name='routeSet',
+        shape_name='RouteList',
+    ))
+
+    tags: _base.TagList = _dc.field(metadata=_base.field_metadata(
+        member_name='Tags',
+        serialization_name='tagSet',
+        shape_name='TagList',
+    ))
+
+    vpc_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VpcId',
+        serialization_name='vpcId',
+        shape_name='String',
+    ))
+
+    owner_id: str = _dc.field(metadata=_base.field_metadata(
+        member_name='OwnerId',
+        serialization_name='ownerId',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class StartInstancesResult(
     _base.Shape,
     shape_name='StartInstancesResult',
@@ -5819,6 +6418,24 @@ class Vpc(
 
 
 @_dc.dataclass(frozen=True)
+class CreateRouteTableResult(
+    _base.Shape,
+    shape_name='CreateRouteTableResult',
+):
+    route_table: RouteTable = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTable',
+        serialization_name='routeTable',
+        shape_name='RouteTable',
+    ))
+
+    client_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='ClientToken',
+        serialization_name='clientToken',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
 class DescribeInternetGatewaysResult(
     _base.Shape,
     shape_name='DescribeInternetGatewaysResult',
@@ -6028,6 +6645,8 @@ class InstanceTypeInfo(
 
 
 NetworkInterfaceList: _ta.TypeAlias = _ta.Sequence[NetworkInterface]
+
+RouteTableList: _ta.TypeAlias = _ta.Sequence[RouteTable]
 
 
 @_dc.dataclass(frozen=True)
@@ -6359,6 +6978,24 @@ class DescribeNetworkInterfacesResult(
         member_name='NetworkInterfaces',
         serialization_name='networkInterfaceSet',
         shape_name='NetworkInterfaceList',
+    ))
+
+    next_token: str = _dc.field(metadata=_base.field_metadata(
+        member_name='NextToken',
+        serialization_name='nextToken',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True)
+class DescribeRouteTablesResult(
+    _base.Shape,
+    shape_name='DescribeRouteTablesResult',
+):
+    route_tables: RouteTableList = _dc.field(metadata=_base.field_metadata(
+        member_name='RouteTables',
+        serialization_name='routeTableSet',
+        shape_name='RouteTableList',
     ))
 
     next_token: str = _dc.field(metadata=_base.field_metadata(
@@ -6880,7 +7517,17 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     ConnectionTrackingSpecificationResponse,
     CpuOptions,
     CpuOptionsRequest,
+    CreateRouteRequest,
+    CreateRouteResult,
+    CreateRouteTableRequest,
+    CreateRouteTableResult,
+    CreateSecurityGroupRequest,
+    CreateSecurityGroupResult,
     CreditSpecificationRequest,
+    DeleteRouteRequest,
+    DeleteRouteTableRequest,
+    DeleteSecurityGroupRequest,
+    DeleteSecurityGroupResult,
     DescribeAddressesRequest,
     DescribeAddressesResult,
     DescribeImagesRequest,
@@ -6895,6 +7542,8 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     DescribeKeyPairsResult,
     DescribeNetworkInterfacesRequest,
     DescribeNetworkInterfacesResult,
+    DescribeRouteTablesRequest,
+    DescribeRouteTablesResult,
     DescribeSecurityGroupsRequest,
     DescribeSecurityGroupsResult,
     DescribeSubnetsRequest,
@@ -6995,8 +7644,13 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     PrivateIpAddressSpecification,
     ProcessorInfo,
     ProductCode,
+    PropagatingVgw,
     RebootInstancesRequest,
     Reservation,
+    Route,
+    RouteTable,
+    RouteTableAssociation,
+    RouteTableAssociationState,
     RunInstancesMonitoringEnabled,
     RunInstancesRequest,
     SecurityGroup,
@@ -7023,6 +7677,40 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
 
 ##
 
+
+CREATE_ROUTE = _base.Operation(
+    name='CreateRoute',
+    input=CreateRouteRequest,
+    output=CreateRouteResult,
+)
+
+CREATE_ROUTE_TABLE = _base.Operation(
+    name='CreateRouteTable',
+    input=CreateRouteTableRequest,
+    output=CreateRouteTableResult,
+)
+
+CREATE_SECURITY_GROUP = _base.Operation(
+    name='CreateSecurityGroup',
+    input=CreateSecurityGroupRequest,
+    output=CreateSecurityGroupResult,
+)
+
+DELETE_ROUTE = _base.Operation(
+    name='DeleteRoute',
+    input=DeleteRouteRequest,
+)
+
+DELETE_ROUTE_TABLE = _base.Operation(
+    name='DeleteRouteTable',
+    input=DeleteRouteTableRequest,
+)
+
+DELETE_SECURITY_GROUP = _base.Operation(
+    name='DeleteSecurityGroup',
+    input=DeleteSecurityGroupRequest,
+    output=DeleteSecurityGroupResult,
+)
 
 DESCRIBE_ADDRESSES = _base.Operation(
     name='DescribeAddresses',
@@ -7064,6 +7752,12 @@ DESCRIBE_NETWORK_INTERFACES = _base.Operation(
     name='DescribeNetworkInterfaces',
     input=DescribeNetworkInterfacesRequest,
     output=DescribeNetworkInterfacesResult,
+)
+
+DESCRIBE_ROUTE_TABLES = _base.Operation(
+    name='DescribeRouteTables',
+    input=DescribeRouteTablesRequest,
+    output=DescribeRouteTablesResult,
 )
 
 DESCRIBE_SECURITY_GROUPS = _base.Operation(
@@ -7115,6 +7809,12 @@ TERMINATE_INSTANCES = _base.Operation(
 
 
 ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
+    CREATE_ROUTE,
+    CREATE_ROUTE_TABLE,
+    CREATE_SECURITY_GROUP,
+    DELETE_ROUTE,
+    DELETE_ROUTE_TABLE,
+    DELETE_SECURITY_GROUP,
     DESCRIBE_ADDRESSES,
     DESCRIBE_IMAGES,
     DESCRIBE_INSTANCES,
@@ -7122,6 +7822,7 @@ ALL_OPERATIONS: frozenset[_base.Operation] = frozenset([
     DESCRIBE_INTERNET_GATEWAYS,
     DESCRIBE_KEY_PAIRS,
     DESCRIBE_NETWORK_INTERFACES,
+    DESCRIBE_ROUTE_TABLES,
     DESCRIBE_SECURITY_GROUPS,
     DESCRIBE_SUBNETS,
     DESCRIBE_VPCS,
