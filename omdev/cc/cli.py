@@ -12,6 +12,13 @@ Freestanding options:
 //usr/bin/env clang++ -std=c++20 -o ${X=`mktemp`} "$0" && exec -a "$0" "$X" "$@"
 //usr/bin/env clang++ -std=c++20 -o ${D=`mktemp -d`}/x "$0" && ${D}/x ${@:1}; R=$?; rm -rf ${D}; exit $R
 //$(which true); clang++ -std=c++20 -o ${D=`mktemp -d`}/x ${0} && ${D}/x ${@:1}; R=${?}; rm -rf ${D}; exit ${R}
+
+==
+
+TODO:
+ - toplevel cc dir
+ - cext interop
+ - gen cmake
 """
 import os
 import shlex
@@ -25,7 +32,6 @@ from omlish.argparse import all as ap
 
 from .. import magic
 from ..cache import data as dcache
-from ..cli import CliModule
 
 
 class Cli(ap.Cli):
@@ -131,10 +137,6 @@ class Cli(ap.Cli):
 
 def _main() -> None:
     Cli().cli_run_and_exit()
-
-
-# @omlish-manifest
-_CLI_MODULE = CliModule('cc', __name__)
 
 
 if __name__ == '__main__':

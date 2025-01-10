@@ -24,6 +24,18 @@
     }
   },
   {
+    "module": ".cc.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/cc/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "cc",
+        "mod_name": "omdev.cc.__main__"
+      }
+    }
+  },
+  {
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",
@@ -224,18 +236,6 @@
       "$.cli.types.CliModule": {
         "cmd_name": "tmpexec",
         "mod_name": "omdev.scripts.tmpexec"
-      }
-    }
-  },
-  {
-    "module": ".tools.cc",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/cc.py",
-    "line": 136,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "cc",
-        "mod_name": "omdev.tools.cc"
       }
     }
   },
