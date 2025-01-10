@@ -1,3 +1,4 @@
+import abc
 import typing as ta
 
 from omlish import cached
@@ -18,6 +19,29 @@ Timestamp = ta.NewType('Timestamp', str)
 
 class TagList:
     pass
+
+
+##
+
+
+class ValueType(abc.ABC):  # noqa
+    pass
+
+
+@dc.dataclass(frozen=True)
+class ScalarValueType(ValueType):
+    v: type
+
+
+@dc.dataclass(frozen=True)
+class ListValueType(ValueType):
+    e: type
+
+
+@dc.dataclass(frozen=True)
+class MapValueType(ValueType):
+    k: type
+    v: type
 
 
 ##
@@ -132,10 +156,18 @@ class SERIALIZATION_NAME(lang.Marker):  # noqa
     pass
 
 
+class VALUE_TYPE(lang.Marker):  # noqa
+    pass
+
+
+#
+
+
 def field_metadata(
         *,
         member_name: str | None = None,
         serialization_name: str | None = None,
+        value_type: ValueType | None = None,
         **kwargs: ta.Any,
 ) -> dict[ta.Any, ta.Any]:
     md = {**common_metadata(**kwargs)}
@@ -144,6 +176,8 @@ def field_metadata(
         md[MEMBER_NAME] = member_name
     if serialization_name is not None:
         md[SERIALIZATION_NAME] = serialization_name
+    if value_type is not None:
+        md[VALUE_TYPE] = value_type
 
     return md
 
