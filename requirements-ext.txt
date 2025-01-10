@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.123.12
+hypothesis==6.123.13
 
 hexdump==3.3
 
@@ -202,7 +202,7 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
-langchain-openai==0.2.14
+langchain-openai==0.3.0
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
 langchain==0.3.14
@@ -287,7 +287,7 @@ pytesseract==0.3.13
 dspy==2.5.42
 wikipedia==1.4.0
 trafilatura==1.12.2
-qdrant-client==1.12.1
+qdrant-client==1.12.2
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.20.6; sys_platform == "darwin"

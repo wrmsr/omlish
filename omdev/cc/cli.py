@@ -16,7 +16,7 @@ Freestanding options:
 ==
 
 TODO:
- - toplevel cc dir
+ - standard deps - cdeps.toml
  - cext interop
  - gen cmake
 """

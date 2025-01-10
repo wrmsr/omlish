@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.1
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.123.12
+hypothesis==6.123.13
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.1
@@ -217,7 +217,7 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
-langchain-openai==0.2.14
+langchain-openai==0.3.0
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
 langchainhub==0.1.21
@@ -322,7 +322,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@af637acc5bc7d6e38835771e2f9b37911875d7c3
+peft @ git+https://github.com/huggingface/peft.git@b345a6e41521b977793cbdcaf932280081b18141
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -406,7 +406,7 @@ pytz==2024.2
 pywinrm==0.5.0
 PyYAML==6.0.2
 pyzmq==26.2.0
-qdrant-client==1.12.1
+qdrant-client==1.12.2
 qtconsole==5.5.1
 QtPy==2.4.2
 RapidFuzz==3.11.0
@@ -428,7 +428,7 @@ rich==13.9.4
 rpds-py==0.22.3
 rsa==4.9
 rubicon-objc==0.5.0
-ruff==0.9.0
+ruff==0.9.1
 s3transfer==0.10.4
 safetensors==0.5.2
 scikit-image==0.25.0
