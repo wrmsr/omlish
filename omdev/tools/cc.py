@@ -28,6 +28,7 @@ from ..cli import CliModule
 
 class Cli(ap.Cli):
     @ap.cmd(
+        ap.arg('--cwd'),
         ap.arg('src-file'),
         ap.arg('args', nargs=ap.REMAINDER),
     )
@@ -88,6 +89,7 @@ class Cli(ap.Cli):
                     exe_file,
                     *self.args.args,
                 ],
+                cwd=self.args.cwd,
                 check=False,
             )
 
