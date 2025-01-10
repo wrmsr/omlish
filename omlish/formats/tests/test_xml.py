@@ -35,4 +35,4 @@ def test_simple_element() -> None:
     el = build_simple_element(tree.getroot())
     print(el)
 
-    print(el.as_dict())
+    print(el.se_dict())

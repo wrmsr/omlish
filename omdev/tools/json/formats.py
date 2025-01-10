@@ -55,7 +55,7 @@ class Formats(enum.Enum):
 
     PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
 
-    XML = Format(['xml'], lambda f: xml.build_simple_element(xml.parse_tree(f.read()).getroot()).as_dict())
+    XML = Format(['xml'], lambda f: xml.build_simple_element(xml.parse_tree(f.read()).getroot()).se_dict())
 
     CSV = Format(['csv'], lambda f: list(csv.DictReader(f)))
     TSV = Format(['tsv'], lambda f: list(csv.DictReader(f, delimiter='\t')))

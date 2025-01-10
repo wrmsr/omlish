@@ -5,6 +5,7 @@ TODO:
 """
 import typing as ta
 
+from .. import cached
 from .. import dataclasses as dc
 from .. import lang
 
@@ -67,15 +68,49 @@ class SimpleElement:
     attrs: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
     body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
 
-    def as_dict(self) -> dict[str, ta.Any]:
+    #
+
+    @cached.property
+    def has_children(self) -> bool:
+        return any(isinstance(c, SimpleElement) for c in self.body or ())
+
+    @cached.property
+    def children(self) -> ta.Sequence['SimpleElement']:
+        return [c for c in self.body or () if isinstance(c, SimpleElement)]
+
+    @cached.property
+    def text(self) -> str:
+        return ''.join(c for c in self.body or () if isinstance(c, str))
+
+    #
+
+    def se_dict(self) -> dict[str, ta.Any]:
         dct: dict[str, ta.Any] = {'tag': self.tag}
         if self.attrs:
             dct['attrs'] = self.attrs
         if self.body:
             dct['body'] = [
-                c.as_dict() if isinstance(c, SimpleElement) else c
+                c.se_dict() if isinstance(c, SimpleElement) else c
                 for c in self.body
             ]
+        return dct
+
+    #
+
+    def multidict(self) -> dict[str, list[ta.Any]]:
+        dct: dict[str, list[ta.Any]] = {}
+
+        for ce in self.children:
+            try:
+                cl = dct[ce.tag]
+            except KeyError:
+                dct[ce.tag] = cl = []
+
+            if ce.has_children:
+                cl.append(ce.multidict())
+            elif ce.body:
+                cl.append(ce.text)
+
         return dct
 
 
