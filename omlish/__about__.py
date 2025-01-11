@@ -77,7 +77,7 @@ class Project(ProjectBase):
         ],
 
         'misc': [
-            'wrapt ~= 1.14',
+            'wrapt ~= 1.17',
         ],
 
         'secrets': [

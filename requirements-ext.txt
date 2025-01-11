@@ -77,7 +77,7 @@ loralib==0.1.2
 # peft==0.5.0
 git+https://github.com/huggingface/peft.git
 
-scipy==1.15.0
+scipy==1.15.1
 scikit-learn==1.6.1
 scikit-image==0.25.0
 
@@ -151,7 +151,7 @@ cloudflare==3.1.0  # httpx
 
 ### hn
 
-selectolax==0.3.26
+selectolax==0.3.27
 
 soco==0.30.6
 
@@ -288,9 +288,6 @@ dspy==2.5.42
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.2
-
-mlx==0.22.0; sys_platform == "darwin"
-mlx-lm==0.20.6; sys_platform == "darwin"
 
 flask==3.1.0
 

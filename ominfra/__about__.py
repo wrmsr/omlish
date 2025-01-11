@@ -10,7 +10,6 @@ class Project(ProjectBase):
     dependencies = [
         f'omdev == {__version__}',
         f'omlish == {__version__}',
-        f'omserv == {__version__}',
     ]
 
     optional_dependencies = {

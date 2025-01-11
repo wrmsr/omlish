@@ -24,7 +24,6 @@ description = 'ominfra'
 dependencies = [
     'omdev == 0.0.0.dev210',
     'omlish == 0.0.0.dev210',
-    'omserv == 0.0.0.dev210',
 ]
 
 [project.optional-dependencies]
