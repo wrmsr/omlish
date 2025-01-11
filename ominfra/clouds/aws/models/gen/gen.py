@@ -322,22 +322,34 @@ class ModelGen:
             if not shape.members:
                 lines.append('    pass')
 
+            ms: botocore.model.Shape
             for i, (mn, ms) in enumerate(shape.members.items()):
-                if i:
-                    lines.append('')
-
-                fn = self.sanitize_local_name(self.demangle_name(mn))
-
                 mds = [
                     f'member_name={mn!r}',
                 ]
+
                 if msn := ms.serialization.get('name'):
                     mds.append(f'serialization_name={msn!r}')
+
+                # if isinstance(ms, botocore.model.MapShape):
+                #     mds.append(f'value_type=_base.MapValueType(...)')
+                #     raise NotImplementedError
+                #
+                # elif isinstance(ms, botocore.model.ListShape):
+                #     mds.append(f'value_type=_base.ListValueType(...)')
+                #     raise NotImplementedError
+
                 mds.append(f'shape_name={ms.name!r}')
+
                 ma = self.get_type_ann(
                     ms.name,
                     unquoted_names=unquoted_names,
                 )
+
+                #
+
+                if i:
+                    lines.append('')
 
                 fr = mn in rms
                 fa = ma or ms.name
@@ -346,6 +358,8 @@ class ModelGen:
                 else:
                     fa += ' | None'
                     fd = 'default=None, '
+
+                fn = self.sanitize_local_name(self.demangle_name(mn))
 
                 fls = [
                     f'{fn}: {fa} = _dc.field({fd}metadata=_base.field_metadata(',

@@ -29,11 +29,6 @@ class ValueType(abc.ABC):  # noqa
 
 
 @dc.dataclass(frozen=True)
-class ScalarValueType(ValueType):
-    v: type
-
-
-@dc.dataclass(frozen=True)
 class ListValueType(ValueType):
     e: type
 
