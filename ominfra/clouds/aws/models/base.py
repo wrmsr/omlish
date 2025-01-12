@@ -17,8 +17,13 @@ Timestamp = ta.NewType('Timestamp', str)
 ##
 
 
-class TagList:
-    pass
+@dc.dataclass(frozen=True)
+class Tag:
+    key: str
+    value: str
+
+
+TagList: ta.TypeAlias = ta.Sequence[Tag]
 
 
 ##

@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.1
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.123.13
+hypothesis==6.123.15
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.1
@@ -252,7 +252,7 @@ marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
-marshmallow==3.25.0
+marshmallow==3.25.1
 matplotlib==3.10.0
 matplotlib-inline==0.1.7
 mccabe==0.7.0
@@ -527,7 +527,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.17
+uv==0.5.18
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2

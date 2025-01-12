@@ -623,6 +623,7 @@ class DomainMembership(
 
     dns_ips: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DnsIps',
+        value_type=_base.ListValueType(str),
         shape_name='StringList',
     ))
 
@@ -639,6 +640,7 @@ class Filter(
 
     values: FilterValueList = _dc.field(metadata=_base.field_metadata(
         member_name='Values',
+        value_type=_base.ListValueType(str),
         shape_name='FilterValueList',
     ))
 
@@ -653,11 +655,13 @@ class PendingCloudwatchLogsExports(
 ):
     log_types_to_enable: LogTypeList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LogTypesToEnable',
+        value_type=_base.ListValueType(str),
         shape_name='LogTypeList',
     ))
 
     log_types_to_disable: LogTypeList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='LogTypesToDisable',
+        value_type=_base.ListValueType(str),
         shape_name='LogTypeList',
     ))
 
@@ -736,11 +740,13 @@ class CreateDBInstanceMessage(
 
     db_security_groups: DBSecurityGroupNameList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBSecurityGroups',
+        value_type=_base.ListValueType(str),
         shape_name='DBSecurityGroupNameList',
     ))
 
     vpc_security_group_ids: VpcSecurityGroupIdList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VpcSecurityGroupIds',
+        value_type=_base.ListValueType(str),
         shape_name='VpcSecurityGroupIdList',
     ))
 
@@ -826,6 +832,7 @@ class CreateDBInstanceMessage(
 
     tags: _base.TagList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Tags',
+        value_type=_base.ListValueType(_base.Tag),
         shape_name='TagList',
     ))
 
@@ -881,6 +888,7 @@ class CreateDBInstanceMessage(
 
     domain_dns_ips: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DomainDnsIps',
+        value_type=_base.ListValueType(str),
         shape_name='StringList',
     ))
 
@@ -941,11 +949,13 @@ class CreateDBInstanceMessage(
 
     enable_cloudwatch_logs_exports: LogTypeList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EnableCloudwatchLogsExports',
+        value_type=_base.ListValueType(str),
         shape_name='LogTypeList',
     ))
 
     processor_features: ProcessorFeatureList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ProcessorFeatures',
+        value_type=_base.ListValueType(ProcessorFeature),
         shape_name='ProcessorFeatureList',
     ))
 
@@ -1102,6 +1112,7 @@ class PendingModifiedValues(
 
     processor_features: ProcessorFeatureList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ProcessorFeatures',
+        value_type=_base.ListValueType(ProcessorFeature),
         shape_name='ProcessorFeatureList',
     ))
 
@@ -1171,6 +1182,7 @@ class DBSubnetGroup(
 
     subnets: SubnetList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Subnets',
+        value_type=_base.ListValueType(Subnet),
         shape_name='SubnetList',
     ))
 
@@ -1181,6 +1193,7 @@ class DBSubnetGroup(
 
     supported_network_types: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SupportedNetworkTypes',
+        value_type=_base.ListValueType(str),
         shape_name='StringList',
     ))
 
@@ -1197,6 +1210,7 @@ class DescribeDBInstancesMessage(
 
     filters: FilterList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Filters',
+        value_type=_base.ListValueType(Filter),
         shape_name='FilterList',
     ))
 
@@ -1278,16 +1292,19 @@ class DBInstance(
 
     db_security_groups: DBSecurityGroupMembershipList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBSecurityGroups',
+        value_type=_base.ListValueType(DBSecurityGroupMembership),
         shape_name='DBSecurityGroupMembershipList',
     ))
 
     vpc_security_groups: VpcSecurityGroupMembershipList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VpcSecurityGroups',
+        value_type=_base.ListValueType(VpcSecurityGroupMembership),
         shape_name='VpcSecurityGroupMembershipList',
     ))
 
     db_parameter_groups: DBParameterGroupStatusList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBParameterGroups',
+        value_type=_base.ListValueType(DBParameterGroupStatus),
         shape_name='DBParameterGroupStatusList',
     ))
 
@@ -1338,11 +1355,13 @@ class DBInstance(
 
     read_replica_db_instance_identifiers: ReadReplicaDBInstanceIdentifierList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ReadReplicaDBInstanceIdentifiers',
+        value_type=_base.ListValueType(str),
         shape_name='ReadReplicaDBInstanceIdentifierList',
     ))
 
     read_replica_db_cluster_identifiers: ReadReplicaDBClusterIdentifierList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ReadReplicaDBClusterIdentifiers',
+        value_type=_base.ListValueType(str),
         shape_name='ReadReplicaDBClusterIdentifierList',
     ))
 
@@ -1363,6 +1382,7 @@ class DBInstance(
 
     option_group_memberships: OptionGroupMembershipList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='OptionGroupMemberships',
+        value_type=_base.ListValueType(OptionGroupMembership),
         shape_name='OptionGroupMembershipList',
     ))
 
@@ -1388,6 +1408,7 @@ class DBInstance(
 
     status_infos: DBInstanceStatusInfoList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='StatusInfos',
+        value_type=_base.ListValueType(DBInstanceStatusInfo),
         shape_name='DBInstanceStatusInfoList',
     ))
 
@@ -1433,6 +1454,7 @@ class DBInstance(
 
     domain_memberships: DomainMembershipList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DomainMemberships',
+        value_type=_base.ListValueType(DomainMembership),
         shape_name='DomainMembershipList',
     ))
 
@@ -1498,11 +1520,13 @@ class DBInstance(
 
     enabled_cloudwatch_logs_exports: LogTypeList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EnabledCloudwatchLogsExports',
+        value_type=_base.ListValueType(str),
         shape_name='LogTypeList',
     ))
 
     processor_features: ProcessorFeatureList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ProcessorFeatures',
+        value_type=_base.ListValueType(ProcessorFeature),
         shape_name='ProcessorFeatureList',
     ))
 
@@ -1513,6 +1537,7 @@ class DBInstance(
 
     associated_roles: DBInstanceRoles | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='AssociatedRoles',
+        value_type=_base.ListValueType(DBInstanceRole),
         shape_name='DBInstanceRoles',
     ))
 
@@ -1528,11 +1553,13 @@ class DBInstance(
 
     tag_list: _base.TagList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TagList',
+        value_type=_base.ListValueType(_base.Tag),
         shape_name='TagList',
     ))
 
     db_instance_automated_backups_replications: DBInstanceAutomatedBackupsReplicationList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBInstanceAutomatedBackupsReplications',
+        value_type=_base.ListValueType(DBInstanceAutomatedBackupsReplication),
         shape_name='DBInstanceAutomatedBackupsReplicationList',
     ))
 
@@ -1722,6 +1749,7 @@ class DBInstanceMessage(
 
     db_instances: DBInstanceList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBInstances',
+        value_type=_base.ListValueType(DBInstance),
         shape_name='DBInstanceList',
     ))
 

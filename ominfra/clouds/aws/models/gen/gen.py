@@ -164,6 +164,7 @@ class ModelGen:
         'DateTime': '_base.DateTime',
         'MillisecondDateTime': '_base.MillisecondDateTime',
 
+        'Tag': '_base.Tag',
         'TagList': '_base.TagList',
     }
 
@@ -331,13 +332,23 @@ class ModelGen:
                 if msn := ms.serialization.get('name'):
                     mds.append(f'serialization_name={msn!r}')
 
-                # if isinstance(ms, botocore.model.MapShape):
-                #     mds.append(f'value_type=_base.MapValueType(...)')
-                #     raise NotImplementedError
-                #
-                # elif isinstance(ms, botocore.model.ListShape):
-                #     mds.append(f'value_type=_base.ListValueType(...)')
-                #     raise NotImplementedError
+                if isinstance(ms, botocore.model.MapShape):
+                    ka = self.get_type_ann(
+                        ms.key.name,
+                        unquoted_names=unquoted_names,
+                    ) or ms.key.name
+                    va = self.get_type_ann(
+                        ms.value.name,
+                        unquoted_names=unquoted_names,
+                    ) or ms.value.name
+                    mds.append(f'value_type=_base.MapValueType({ka}, {va})')
+
+                elif isinstance(ms, botocore.model.ListShape):
+                    ea = self.get_type_ann(
+                        ms.member.name,
+                        unquoted_names=unquoted_names,
+                    ) or ms.member.name
+                    mds.append(f'value_type=_base.ListValueType({ea})')
 
                 mds.append(f'shape_name={ms.name!r}')
 

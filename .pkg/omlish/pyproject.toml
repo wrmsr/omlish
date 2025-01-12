@@ -43,7 +43,7 @@ all = [
     'cbor2 ~= 5.6',
     'cloudpickle ~= 3.1',
     'httpx[http2] ~= 0.28',
-    'wrapt ~= 1.14',
+    'wrapt ~= 1.17',
     'cryptography ~= 43.0',
     'sqlalchemy[asyncio] ~= 2.0',
     'pg8000 ~= 1.31',
@@ -61,7 +61,7 @@ all = [
     'executing ~= 2.1',
     'orjson ~= 3.10',
     'pyyaml ~= 6.0',
-    'wrapt ~= 1.14',
+    'wrapt ~= 1.17',
 ]
 async = [
     'anyio ~= 4.8',
@@ -93,7 +93,7 @@ http = [
     'httpx[http2] ~= 0.28',
 ]
 misc = [
-    'wrapt ~= 1.14',
+    'wrapt ~= 1.17',
 ]
 secrets = [
     'cryptography ~= 43.0',
@@ -121,7 +121,7 @@ plus = [
     'executing ~= 2.1',
     'orjson ~= 3.10',
     'pyyaml ~= 6.0',
-    'wrapt ~= 1.14',
+    'wrapt ~= 1.17',
 ]
 
 [project.entry-points]

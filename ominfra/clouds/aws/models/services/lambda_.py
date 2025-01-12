@@ -523,6 +523,7 @@ class EnvironmentResponse(
 ):
     variables: EnvironmentVariables | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Variables',
+        value_type=_base.MapValueType(EnvironmentVariableName, EnvironmentVariableValue),
         shape_name='EnvironmentVariables',
     ))
 
@@ -542,11 +543,13 @@ class ImageConfig(
 ):
     entry_point: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EntryPoint',
+        value_type=_base.ListValueType(str),
         shape_name='StringList',
     ))
 
     command: StringList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Command',
+        value_type=_base.ListValueType(str),
         shape_name='StringList',
     ))
 
@@ -582,11 +585,13 @@ class VpcConfigResponse(
 ):
     subnet_ids: SubnetIds | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SubnetIds',
+        value_type=_base.ListValueType(SubnetId),
         shape_name='SubnetIds',
     ))
 
     security_group_ids: SecurityGroupIds | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SecurityGroupIds',
+        value_type=_base.ListValueType(SecurityGroupId),
         shape_name='SecurityGroupIds',
     ))
 
@@ -719,6 +724,7 @@ class FunctionConfiguration(
 
     layers: LayersReferenceList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Layers',
+        value_type=_base.ListValueType(Layer),
         shape_name='LayersReferenceList',
     ))
 
@@ -754,6 +760,7 @@ class FunctionConfiguration(
 
     file_system_configs: FileSystemConfigList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FileSystemConfigs',
+        value_type=_base.ListValueType(FileSystemConfig),
         shape_name='FileSystemConfigList',
     ))
 
@@ -779,6 +786,7 @@ class FunctionConfiguration(
 
     architectures: ArchitecturesList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Architectures',
+        value_type=_base.ListValueType(Architecture),
         shape_name='ArchitecturesList',
     ))
 
@@ -818,6 +826,7 @@ class ListFunctionsResponse(
 
     functions: FunctionList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Functions',
+        value_type=_base.ListValueType(FunctionConfiguration),
         shape_name='FunctionList',
     ))
 

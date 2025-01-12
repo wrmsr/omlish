@@ -904,6 +904,7 @@ class GetObjectOutput(
     metadata: Metadata | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Metadata',
         serialization_name='x-amz-meta-',
+        value_type=_base.MapValueType(MetadataKey, MetadataValue),
         shape_name='Metadata',
     ))
 
@@ -1048,6 +1049,7 @@ class ListObjectsV2Request(
     optional_object_attributes: OptionalObjectAttributesList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='OptionalObjectAttributes',
         serialization_name='x-amz-optional-object-attributes',
+        value_type=_base.ListValueType(OptionalObjectAttributes),
         shape_name='OptionalObjectAttributesList',
     ))
 
@@ -1074,6 +1076,7 @@ class Object(
 
     checksum_algorithm: ChecksumAlgorithmList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumAlgorithm',
+        value_type=_base.ListValueType(ChecksumAlgorithm),
         shape_name='ChecksumAlgorithmList',
     ))
 
@@ -1249,6 +1252,7 @@ class PutObjectRequest(
     metadata: Metadata | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Metadata',
         serialization_name='x-amz-meta-',
+        value_type=_base.MapValueType(MetadataKey, MetadataValue),
         shape_name='Metadata',
     ))
 
@@ -1350,6 +1354,7 @@ class ListBucketsOutput(
 ):
     buckets: Buckets | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Buckets',
+        value_type=_base.ListValueType(Bucket),
         shape_name='Buckets',
     ))
 
@@ -1384,6 +1389,7 @@ class ListObjectsV2Output(
 
     contents: ObjectList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Contents',
+        value_type=_base.ListValueType(Object),
         shape_name='ObjectList',
     ))
 
@@ -1409,6 +1415,7 @@ class ListObjectsV2Output(
 
     common_prefixes: CommonPrefixList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='CommonPrefixes',
+        value_type=_base.ListValueType(CommonPrefix),
         shape_name='CommonPrefixList',
     ))
 
