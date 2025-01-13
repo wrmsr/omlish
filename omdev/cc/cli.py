@@ -19,45 +19,22 @@ TODO:
  - cext interop
  - gen cmake
 """
-import dataclasses as dc
 import os
 import shlex
 import shutil
 import subprocess
 import tempfile
-import tomllib
 import typing as ta
 
-from omlish import cached
 from omlish import check
-from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.formats import json
 
 from .. import magic
 from ..cache import data as dcache
-
-
-@dc.dataclass(frozen=True)
-class Cdep:
-    @dc.dataclass(frozen=True)
-    class Git:
-        url: str
-        rev: str
-
-        subtrees: ta.Sequence[str] | None = None
-
-    git: Git
-
-    include: ta.Sequence[str] | None = None
-
-
-@cached.function
-def load_cdeps() -> ta.Mapping[str, Cdep]:
-    src = lang.get_relative_resources(globals=globals())['cdeps.toml'].read_text()
-    dct = tomllib.loads(src)
-    return msh.unmarshal(dct.get('deps', {}), ta.Mapping[str, Cdep])  # type: ignore
+from .cdeps import Cdep
+from .cdeps import load_cdeps
 
 
 class Cli(ap.Cli):

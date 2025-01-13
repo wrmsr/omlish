@@ -88,7 +88,7 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('dir', nargs='?'),
-        ap.arg('--clion', action='store_true'),
+        ap.arg('-c', '--clion', action='store_true'),
     )
     def open(self) -> None:
         dir = os.path.abspath(self.args.dir or '.')  # noqa
