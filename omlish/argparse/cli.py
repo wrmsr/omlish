@@ -10,6 +10,7 @@ TODO:
 import argparse
 import dataclasses as dc
 import functools
+import inspect
 import sys
 import typing as ta
 
@@ -280,8 +281,23 @@ class ArgparseCli:
 
     #
 
-    async def async_cli_run(self) -> ta.Optional[int]:
+    async def async_cli_run(
+            self,
+            *,
+            force_async: bool = False,
+    ) -> ta.Optional[int]:
         if (fn := self.prepare_cli_run()) is None:
             return 0
 
-        return await fn()
+        if force_async:
+            is_async = True
+        else:
+            tfn = fn
+            if isinstance(tfn, ArgparseCmd):
+                tfn = tfn.fn
+            is_async = inspect.iscoroutinefunction(tfn)
+
+        if is_async:
+            return await fn()
+        else:
+            return fn()
