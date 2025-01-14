@@ -50,7 +50,7 @@ jobs:
 
       ##
 
-      # - uses: 'mxschmitt/action-tmate@v3.18'
+      # - uses: 'mxschmitt/action-tmate@v3.19'
 
       - name: 'Build CI image'
         run: >
