@@ -25,9 +25,6 @@ from .requirements import build_requirements_hash
 from .requirements import download_requirements
 
 
-##
-
-
 class Ci(ExitStacked):
     FILE_NAME_HASH_LEN = 16
 
@@ -126,7 +123,10 @@ class Ci(ExitStacked):
 
     @cached_nullary
     def build_requirements_dir(self) -> str:
-        requirements_txts = check.not_none(self._cfg.requirements_txts)
+        requirements_txts = [
+            os.path.join(self._cfg.project_dir, rf)
+            for rf in check.not_none(self._cfg.requirements_txts)
+        ]
 
         requirements_hash = build_requirements_hash(requirements_txts)[:self.FILE_NAME_HASH_LEN]
 

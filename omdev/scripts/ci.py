@@ -1863,9 +1863,6 @@ def download_requirements(
 # ../ci.py
 
 
-##
-
-
 class Ci(ExitStacked):
     FILE_NAME_HASH_LEN = 16
 
@@ -1964,7 +1961,10 @@ class Ci(ExitStacked):
 
     @cached_nullary
     def build_requirements_dir(self) -> str:
-        requirements_txts = check.not_none(self._cfg.requirements_txts)
+        requirements_txts = [
+            os.path.join(self._cfg.project_dir, rf)
+            for rf in check.not_none(self._cfg.requirements_txts)
+        ]
 
         requirements_hash = build_requirements_hash(requirements_txts)[:self.FILE_NAME_HASH_LEN]
 
@@ -2056,9 +2056,6 @@ class Ci(ExitStacked):
 # cli.py
 
 
-##
-
-
 class CiCli(ArgparseCli):
     #
 
@@ -2113,7 +2110,7 @@ class CiCli(ArgparseCli):
 
         def find_alt_file(*alts: str) -> ta.Optional[str]:
             for alt in alts:
-                alt_file = os.path.join(project_dir, alt)
+                alt_file = os.path.abspath(os.path.join(project_dir, alt))
                 if os.path.isfile(alt_file):
                     return alt_file
             return None

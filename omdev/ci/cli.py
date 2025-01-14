@@ -28,9 +28,6 @@ from .compose import get_compose_service_dependencies
 from .requirements import build_requirements_hash
 
 
-##
-
-
 class CiCli(ArgparseCli):
     #
 
@@ -85,7 +82,7 @@ class CiCli(ArgparseCli):
 
         def find_alt_file(*alts: str) -> ta.Optional[str]:
             for alt in alts:
-                alt_file = os.path.join(project_dir, alt)
+                alt_file = os.path.abspath(os.path.join(project_dir, alt))
                 if os.path.isfile(alt_file):
                     return alt_file
             return None
