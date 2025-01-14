@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # @omlish-amalg ../scripts/interp.py
 # ruff: noqa: UP007
 """

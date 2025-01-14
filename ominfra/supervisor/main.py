@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
 # @omlish-amalg ../scripts/supervisor.py
 #

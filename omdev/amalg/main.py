@@ -28,6 +28,7 @@ Targets:
 import argparse
 import logging
 import os.path
+import stat
 import typing as ta
 
 from omlish import check
@@ -60,7 +61,15 @@ def _gen_one(
     if output_path is not None:
         with open(output_path, 'w') as f:
             f.write(src)
-        os.chmod(output_path, os.stat(input_path).st_mode)
+
+        src_mode = os.stat(input_path).st_mode
+        out_mode = (
+            src_mode
+            | (stat.S_IXUSR if src_mode & stat.S_IRUSR else 0)
+            | (stat.S_IXGRP if src_mode & stat.S_IRGRP else 0)
+            | (stat.S_IXOTH if src_mode & stat.S_IROTH else 0)
+        )
+        os.chmod(output_path, out_mode)
 
     else:
         print(src)

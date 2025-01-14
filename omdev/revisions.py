@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 TODO:
  - omlish-lite, move to pyproject/

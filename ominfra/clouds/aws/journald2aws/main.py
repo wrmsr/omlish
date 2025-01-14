@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # @omlish-amalg ../../../scripts/journald2aws.py
 import argparse
 import dataclasses as dc

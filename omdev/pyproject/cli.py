@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # @omlish-amalg ../scripts/pyproject.py
 # ruff: noqa: UP006 UP007
 """
