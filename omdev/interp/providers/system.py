@@ -104,7 +104,8 @@ class SystemInterpProvider(InterpProvider):
     async def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
         if not self._options.inspect:
             s = os.path.basename(exe)
-            s = s.removeprefix('python')
+            if s.startswith('python'):  # noqa
+                s = s[len('python'):]
             if '.' in s:
                 try:
                     return InterpVersion.parse(s)
