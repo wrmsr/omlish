@@ -154,7 +154,9 @@ class CiCli(ArgparseCli):
 
                     requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
+                    cmd=ShellCmd(
+                        'echo "BARF=$BARF" && cd /project && python3 -m pytest -svv test.py',
+                    ),
 
                     always_pull=always_pull,
                 ),

@@ -1,3 +1,4 @@
+# ruff: noqa: PT009
 import unittest
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses

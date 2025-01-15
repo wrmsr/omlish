@@ -43,7 +43,8 @@ import typing as ta
 class GithubCacheServiceV1:
     API_VERSION = '6.0-preview.1'
 
-    def get_service_url(self, base_url: str) -> str:
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
         return f'{base_url.rstrip("/")}/_apis/artifactcache'
 
     @dc.dataclass(frozen=True)

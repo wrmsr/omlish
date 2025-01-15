@@ -86,15 +86,30 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 class ShellCmd:
     s: str
 
-    @property
-    def run_kwargs(self) -> ta.Dict[str, ta.Any]:
-        return {}
+    env: ta.Optional[ta.Mapping[str, str]] = None
+
+    def build_run_kwargs(
+            self,
+            *,
+            env: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Dict[str, ta.Any]:
+        if env is None:
+            env = os.environ
+        if self.env:
+            if (ek := set(env) & set(self.env)):
+                raise KeyError(*ek)
+            env = {**env, **self.env}
+
+        return dict(
+            env=env,
+            **kwargs,
+        )
 
     def run(self, fn: ta.Callable[..., T], **kwargs) -> T:
         return fn(
             'sh', '-c', self.s,
-            **self.run_kwargs,
-            **kwargs,
+            **self.build_run_kwargs(**kwargs),
         )
 
 
@@ -903,6 +918,12 @@ class ShellCache(abc.ABC):
             super().__init__()
 
             self._state: ta.Literal['open', 'committed', 'aborted'] = 'open'
+
+        @property
+        def state(self) -> ta.Literal['open', 'committed', 'aborted']:
+            return self._state
+
+        #
 
         @property
         @abc.abstractmethod
@@ -2144,15 +2165,22 @@ class DockerComposeRun(ExitStacked):
             if not self._cfg.no_dependency_cleanup:
                 es.enter_context(defer(self._cleanup_dependencies))  # noqa
 
-            subprocesses.check_call(
+            sh_cmd = ' '.join([
                 'docker',
                 'compose',
                 '-f', compose_file,
                 'run',
                 '--rm',
-                *self._cfg.run_options or [],
+                *itertools.chain.from_iterable(['-e', k] for k in (self._cfg.cmd.env or [])),
+                *(self._cfg.run_options or []),
                 self._cfg.service,
-                'sh', '-c', self._cfg.cmd.s,
+                'sh', '-c', shlex.quote(self._cfg.cmd.s),
+            ])
+
+            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
+
+            run_cmd.run(
+                subprocesses.check_call,
                 **self._subprocess_kwargs,
             )
 
@@ -2716,7 +2744,9 @@ class CiCli(ArgparseCli):
 
                     requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
+                    cmd=ShellCmd(
+                        'echo "BARF=$BARF" && cd /project && python3 -m pytest -svv test.py',
+                    ),
 
                     always_pull=always_pull,
                 ),

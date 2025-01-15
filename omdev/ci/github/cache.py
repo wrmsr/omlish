@@ -6,7 +6,6 @@ import typing as ta
 from omlish.lite.check import check
 
 from ..cache import FileCache
-from ..shell import ShellCmd
 from .cacheapi import GithubCacheServiceV1
 
 
@@ -15,7 +14,7 @@ from .cacheapi import GithubCacheServiceV1
 
 class GithubV1CacheShellClient:
     BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
-    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'
+    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
 
     def __init__(
             self,
@@ -47,12 +46,12 @@ class GithubV1CacheShellClient:
         if self._auth_token:
             dct['Authorization'] = f'Bearer {self._auth_token}'
 
-        if  content_type is not None:
+        if content_type is not None:
             dct['Content-Type'] = content_type
 
         return dct
 
-    def get_cmd(self) -> GithubCacheServiceV1.ArtifactoryCmd:
+    def get_cmd(self) -> GithubCacheServiceV1.ArtifactCacheEntry:
         """
         curl \
           -X GET \
@@ -61,6 +60,7 @@ class GithubV1CacheShellClient:
           -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
           | jq .
         """
+        raise NotImplementedError
 
 
 ##
@@ -70,7 +70,7 @@ class GithubV1FileCache(FileCache):
     def __init__(self, client: GithubV1CacheShellClient) -> None:
         super().__init__()
 
-        self._client =  client
+        self._client = client
 
     def get_file(self, key: str) -> ta.Optional[str]:
         raise NotImplementedError
