@@ -18,10 +18,10 @@ from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
 from .docker import build_docker_file_hash
 from .docker import build_docker_image
-from .docker import save_docker_tar
 from .docker import is_docker_image_present
 from .docker import load_docker_tar
 from .docker import pull_docker_image
+from .docker import save_docker_tar
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
 from .shell import ShellCmd

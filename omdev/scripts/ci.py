@@ -858,7 +858,7 @@ class FileCache(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file(self, key: str) -> ta.Optional[str]:
+    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
         raise NotImplementedError
 
 
@@ -887,8 +887,7 @@ class DirectoryFileCache(FileCache):
             return None
         return cache_file_path
 
-    def put_file(self, file_path: str) -> None:
-        key = os.path.basename(file_path)
+    def put_file(self, key: str, file_path: str) -> None:
         cache_file_path = self.get_cache_file_path(key, make_dirs=True)
         shutil.copyfile(file_path, cache_file_path)
 
@@ -923,7 +922,7 @@ class DirectoryShellCache(ShellCache):
 
     def put_file_cmd(self, key: str) -> ShellCmd:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return ShellCmd(f'cat < {shlex.quote(f)}')
+        return ShellCmd(f'cat > {shlex.quote(f)}')
 
 
 ########################################
@@ -2206,7 +2205,7 @@ def save_docker_tar(
 ) -> None:
     return save_docker_tar_cmd(
         image,
-        ShellCmd(f'cat {shlex.quote(tar_file)}'),
+        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
     )
 
 
@@ -2348,9 +2347,10 @@ class Ci(ExitStacked):
         for c in '/:.-_':
             dep_suffix = dep_suffix.replace(c, '-')
 
-        tar_file_name = f'docker-{dep_suffix}.tar'
+        tar_file_key = f'docker-{dep_suffix}'
+        tar_file_name = f'{tar_file_key}.tar'
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_name)):
+        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
             load_docker_tar(cache_tar_file)
             return
 
@@ -2362,7 +2362,7 @@ class Ci(ExitStacked):
             save_docker_tar(image, temp_tar_file)
 
             if self._file_cache is not None:
-                self._file_cache.put_file(temp_tar_file)
+                self._file_cache.put_file(tar_file_key, temp_tar_file)
 
     def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
@@ -2383,9 +2383,10 @@ class Ci(ExitStacked):
     def _resolve_ci_image(self) -> str:
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
-        tar_file_name = f'ci-{docker_file_hash}.tar'
+        tar_file_key = f'ci-{docker_file_hash}'
+        tar_file_name = f'{tar_file_key}.tar'
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_name)):
+        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
             return load_docker_tar(cache_tar_file)
 
         temp_dir = tempfile.mkdtemp()
@@ -2399,7 +2400,7 @@ class Ci(ExitStacked):
             save_docker_tar(image_id, temp_tar_file)
 
             if self._file_cache is not None:
-                self._file_cache.put_file(temp_tar_file)
+                self._file_cache.put_file(tar_file_key, temp_tar_file)
 
             return image_id
 
@@ -2420,12 +2421,13 @@ class Ci(ExitStacked):
 
         requirements_hash = build_requirements_hash(requirements_txts)[:self.FILE_NAME_HASH_LEN]
 
-        tar_file_name = f'requirements-{requirements_hash}.tar'
+        tar_file_key = f'requirements-{requirements_hash}'
+        tar_file_name = f'{tar_file_key}.tar'
 
         temp_dir = tempfile.mkdtemp()
         self._enter_context(defer(lambda: shutil.rmtree(temp_dir)))  # noqa
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_name)):
+        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
             with tarfile.open(cache_tar_file) as tar:
                 tar.extractall(path=temp_dir)  # noqa
 
@@ -2450,7 +2452,7 @@ class Ci(ExitStacked):
                         arcname=requirement_file,
                     )
 
-            self._file_cache.put_file(temp_tar_file)
+            self._file_cache.put_file(os.path.basename(tar_file_key), temp_tar_file)
 
         return temp_requirements_dir
 
