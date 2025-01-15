@@ -2312,6 +2312,8 @@ class Ci(ExitStacked):
         compose_file: str
         service: str
 
+        cmd: ShellCmd
+
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
 
         def __post_init__(self) -> None:
@@ -2466,15 +2468,9 @@ class Ci(ExitStacked):
 
         #
 
-        test_cmds = [
-            '(cd /project && python3 -m pytest -svv test.py)',
-        ]
-
-        #
-
-        bash_src = ' && '.join([
+        sh_src = ' && '.join([
             *setup_cmds,
-            *test_cmds,
+            f'({self._cfg.cmd.s})',
         ])
 
         with DockerComposeRun(DockerComposeRun.Config(
@@ -2483,7 +2479,7 @@ class Ci(ExitStacked):
 
             image=self.resolve_ci_image(),
 
-            run_cmd=['bash', '-c', bash_src],
+            run_cmd=['sh', '-c', sh_src],
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
@@ -2628,6 +2624,8 @@ class CiCli(ArgparseCli):
                     compose_file=compose_file,
                     service=service,
                     requirements_txts=requirements_txts,
+
+                    cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
                 ),
                 file_cache=file_cache,
         ) as ci:

@@ -28,6 +28,7 @@ from .ci import Ci
 from .compose import get_compose_service_dependencies
 from .github.cli import GithubCli
 from .requirements import build_requirements_hash
+from .shell import ShellCmd
 
 
 class CiCli(ArgparseCli):
@@ -144,6 +145,8 @@ class CiCli(ArgparseCli):
                     compose_file=compose_file,
                     service=service,
                     requirements_txts=requirements_txts,
+
+                    cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
                 ),
                 file_cache=file_cache,
         ) as ci:
