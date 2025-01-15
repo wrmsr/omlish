@@ -1,0 +1,137 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
+import dataclasses as dc
+import typing as ta
+
+
+class GithubCacheServiceV1:
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheEntry:
+        cache_key: ta.Optional[str]
+        scope: ta.Optional[str]
+        cache_version: ta.Optional[str]
+        creation_time: ta.Optional[str]
+        archive_location: ta.Optional[str]
+
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheList:
+        total_count: int
+        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheRequest:
+        key: str
+        version: ta.Optional[str]
+        cache_size: ta.Optional[int]
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheResponse:
+        cache_id: int
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CommitCacheRequest:
+        size: int
+
+    #
+
+    class CompressionMethod:
+        GZIP = 'gzip',
+        ZSTD_WITHOUT_LONG = 'zstd-without-long',
+        ZSTD = 'zstd'
+
+    @dc.dataclass(frozen=True)
+    class InternalCacheOptions:
+        compression_method: ta.Optional[str]  # CompressionMethod
+        enable_cross_os_archive: ta.Optional[bool]
+        cache_size: ta.Optional[int]
+
+
+class GithubCacheServiceV2:
+    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
+
+    @dc.dataclass(frozen=True)
+    class Method:
+        name: str
+        request: type
+        response: type
+
+    #
+
+    class CacheScopePermission:
+        READ = 1
+        WRITE = 2
+        ALL = READ | WRITE
+
+    @dc.dataclass(frozen=True)
+    class CacheScope:
+        scope: str
+        permission: int  # CacheScopePermission
+
+    @dc.dataclass(frozen=True)
+    class CacheMetadata:
+        repository_id: int
+        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryRequest:
+        key: str
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryResponse:
+        ok: bool
+        signed_upload_url: str
+
+    CREATE_CACHE_ENTRY_METHOD = Method(
+        'CreateCacheEntry',
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadRequest:
+        key: str
+        size_bytes: int
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadResponse:
+        ok: bool
+        entry_id: str
+
+    FINALIZE_CACHE_ENTRY_METHOD = Method(
+        'FinalizeCacheEntryUpload',
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlRequest:
+        key: str
+        restore_keys: ta.Sequence[str]
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlResponse:
+        ok: bool
+        signed_download_url: str
+        matched_key: str
+
+    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD = Method(
+        'GetCacheEntryDownloadURL',
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    )

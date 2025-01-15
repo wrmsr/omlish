@@ -6,7 +6,6 @@ services:
     platform: 'linux/x86_64'
     restart: 'no'
     depends_on: &ci-deps
-      - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-s3'
     links: *ci-deps
@@ -21,18 +20,6 @@ services:
       - '5432'
     ports:
       - '35224:5432'
-
-  omlish-mysql:
-    image: 'mysql:9.1.0'
-    restart: 'unless-stopped'
-    environment:
-      MYSQL_USER: 'omlish'
-      MYSQL_PASSWORD: 'omlish'
-      MYSQL_ROOT_PASSWORD: 'omlish'
-    expose:
-      - '3306'
-    ports:
-      - '35225:3306'
 
   omlish-s3:
     image: 'adobe/s3mock:3.12.0'

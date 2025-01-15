@@ -25,6 +25,7 @@ from .cache import DirectoryFileCache
 from .cache import FileCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
+from .github.cli import GithubCli
 from .requirements import build_requirements_hash
 
 
@@ -53,6 +54,14 @@ class CiCli(ArgparseCli):
             compose_file,
             service,
         ))
+
+    #
+
+    @argparse_cmd(
+        accepts_unknown=True,
+    )
+    def github(self) -> ta.Optional[int]:
+        return GithubCli(self.unknown_args).cli_run()
 
     #
 
