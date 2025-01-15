@@ -61,8 +61,60 @@ class ShellCache(abc.ABC):
     def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
         raise NotImplementedError
 
+    class PutFileCmdContext(abc.ABC):
+        def __init__(self) -> None:
+            super().__init__()
+
+            self._state: ta.Literal['open', 'committed', 'aborted'] = 'open'
+
+        @property
+        @abc.abstractmethod
+        def cmd(self) -> ShellCmd:
+            raise NotImplementedError
+
+        #
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            if exc_val is None:
+                self.commit()
+            else:
+                self.abort()
+
+        #
+
+        @abc.abstractmethod
+        def _commit(self) -> None:
+            raise NotImplementedError
+
+        def commit(self) -> None:
+            if self._state == 'committed':
+                return
+            elif self._state == 'open':
+                self._commit()
+                self._state = 'committed'
+            else:
+                raise RuntimeError(self._state)
+
+        #
+
+        @abc.abstractmethod
+        def _abort(self) -> None:
+            raise NotImplementedError
+
+        def abort(self) -> None:
+            if self._state == 'aborted':
+                return
+            elif self._state == 'open':
+                self._abort()
+                self._state = 'committed'
+            else:
+                raise RuntimeError(self._state)
+
     @abc.abstractmethod
-    def put_file_cmd(self, key: str) -> ShellCmd:
+    def put_file_cmd(self, key: str) -> PutFileCmdContext:
         raise NotImplementedError
 
 
@@ -81,6 +133,23 @@ class DirectoryShellCache(ShellCache):
             return None
         return ShellCmd(f'cat {shlex.quote(f)}')
 
-    def put_file_cmd(self, key: str) -> ShellCmd:
+    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
+        def __init__(self, f: str) -> None:
+            super().__init__()
+
+            self._f = f
+            self._tf = os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+        @property
+        def cmd(self) -> ShellCmd:
+            return ShellCmd(f'cat > {shlex.quote(self._tf)}')
+
+        def _commit(self) -> None:
+            os.replace(self._tf, self._f)
+
+        def _abort(self) -> None:
+            os.unlink(self._tf)
+
+    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return ShellCmd(f'cat > {shlex.quote(f)}')
+        return self._PutFileCmdContext(f)

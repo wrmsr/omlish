@@ -80,11 +80,12 @@ class Ci(ExitStacked):
         if self._shell_cache is None:
             return
 
-        put_cache_cmd = self._shell_cache.put_file_cmd(key)
+        with self._shell_cache.put_file_cmd(key) as put_cache:
+            put_cache_cmd = put_cache.cmd
 
-        put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
+            put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
 
-        save_docker_tar_cmd(image, put_cache_cmd)
+            save_docker_tar_cmd(image, put_cache_cmd)
 
     #
 
