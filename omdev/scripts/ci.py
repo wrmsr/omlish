@@ -2385,15 +2385,7 @@ class Ci(ExitStacked):
 
     #
 
-    def run(self) -> None:
-        self.load_compose_service_dependencies()
-
-        ci_image = self.resolve_ci_image()
-
-        requirements_dir = self.build_requirements_dir()
-
-        #
-
+    def _run_compose_(self) -> None:
         setup_cmds = [
             'pip install --root-user-action ignore --find-links /requirements --no-index uv',
             (
@@ -2416,21 +2408,36 @@ class Ci(ExitStacked):
         ])
 
         with DockerComposeRun(DockerComposeRun.Config(
-                compose_file=self._cfg.compose_file,
-                service=self._cfg.service,
+            compose_file=self._cfg.compose_file,
+            service=self._cfg.service,
 
-                image=ci_image,
+            image=self.resolve_ci_image(),
 
-                run_cmd=['bash', '-c', bash_src],
+            run_cmd=['bash', '-c', bash_src],
 
-                run_options=[
-                    '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
-                    '-v', f'{os.path.abspath(requirements_dir)}:/requirements',
-                ],
+            run_options=[
+                '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
+                '-v', f'{os.path.abspath(self.build_requirements_dir())}:/requirements',
+            ],
 
-                cwd=self._cfg.project_dir,
+            cwd=self._cfg.project_dir,
         )) as ci_compose_run:
             ci_compose_run.run()
+
+    def _run_compose(self) -> None:
+        with log_timing_context('Run compose') as ltc:
+            self._run_compose_()
+
+    #
+
+    def run(self) -> None:
+        self.load_compose_service_dependencies()
+
+        self.resolve_ci_image()
+
+        self.build_requirements_dir()
+
+        self._run_compose()
 
 
 ########################################
