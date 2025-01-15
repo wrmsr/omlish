@@ -23,7 +23,8 @@ from omlish.lite.check import check
 from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
-from .cache import FileCache
+from .cache import DirectoryShellCache
+from .cache import ShellCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
 from .github.cli import GithubCli
@@ -76,8 +77,6 @@ class CiCli(ArgparseCli):
         argparse_arg('--cache-dir'),
     )
     async def run(self) -> None:
-        await asyncio.sleep(1)
-
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file
@@ -129,12 +128,13 @@ class CiCli(ArgparseCli):
 
         #
 
-        file_cache: ta.Optional[FileCache] = None
+        shell_cache: ta.Optional[ShellCache] = None
         if cache_dir is not None:
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
-            file_cache = DirectoryFileCache(cache_dir)
+            directory_file_cache = DirectoryFileCache(cache_dir)
+            shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 
@@ -148,7 +148,7 @@ class CiCli(ArgparseCli):
 
                     cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
                 ),
-                file_cache=file_cache,
+                shell_cache=shell_cache,
         ) as ci:
             ci.run()
 

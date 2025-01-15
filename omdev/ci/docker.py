@@ -76,9 +76,8 @@ def is_docker_image_present(image: str) -> bool:
 ##
 
 
-def pull_docker_tar(
+def pull_docker_image(
         image: str,
-        tar_file: str,
 ) -> None:
     subprocesses.check_call(
         'docker',
@@ -86,19 +85,11 @@ def pull_docker_tar(
         image,
     )
 
-    subprocesses.check_call(
-        'docker',
-        'save',
-        image,
-        '-o', tar_file,
-    )
 
-
-def build_docker_tar(
-    docker_file: str,
-    tar_file: str,
-    *,
-    cwd: ta.Optional[str] = None,
+def build_docker_image(
+        docker_file: str,
+        *,
+        cwd: ta.Optional[str] = None,
 ) -> str:
     id_file = make_temp_file()
     with defer(lambda: os.unlink(id_file)):
@@ -115,17 +106,22 @@ def build_docker_tar(
         with open(id_file) as f:
             image_id = check.single(f.read().strip().splitlines()).strip()
 
-        subprocesses.check_call(
-            'docker',
-            'save',
-            image_id,
-            '-o', tar_file,
-        )
-
-        return image_id
+    return image_id
 
 
 ##
+
+
+def save_docker_tar(
+        image: str,
+        tar_file: str,
+) -> None:
+    subprocesses.check_call(
+        'docker',
+        'save',
+        image,
+        '-o', tar_file,
+    )
 
 
 def load_docker_tar(

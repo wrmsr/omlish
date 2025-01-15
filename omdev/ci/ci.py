@@ -12,14 +12,15 @@ from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.contextmanagers import defer
 
-from .cache import FileCache
+from .cache import ShellCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
-from .dockertars import build_docker_file_hash
-from .dockertars import build_docker_tar
-from .dockertars import is_docker_image_present
-from .dockertars import load_docker_tar
-from .dockertars import pull_docker_tar
+from .docker import build_docker_file_hash
+from .docker import build_docker_image
+from .docker import save_docker_tar
+from .docker import is_docker_image_present
+from .docker import load_docker_tar
+from .docker import pull_docker_image
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
 from .shell import ShellCmd
@@ -49,12 +50,12 @@ class Ci(ExitStacked):
             self,
             cfg: Config,
             *,
-            file_cache: ta.Optional[FileCache] = None,
+            shell_cache: ta.Optional[ShellCache] = None,
     ) -> None:
         super().__init__()
 
         self._cfg = cfg
-        self._file_cache = file_cache
+        self._shell_cache = shell_cache
 
     #
 
@@ -76,10 +77,8 @@ class Ci(ExitStacked):
         with defer(lambda: shutil.rmtree(temp_dir)):
             temp_tar_file = os.path.join(temp_dir, tar_file_name)
 
-            pull_docker_tar(
-                image,
-                temp_tar_file,
-            )
+            pull_docker_image(image)
+            save_docker_tar(image, temp_tar_file)
 
             if self._file_cache is not None:
                 self._file_cache.put_file(temp_tar_file)
@@ -112,11 +111,11 @@ class Ci(ExitStacked):
         with defer(lambda: shutil.rmtree(temp_dir)):
             temp_tar_file = os.path.join(temp_dir, tar_file_name)
 
-            image_id = build_docker_tar(
+            image_id = build_docker_image(
                 self._cfg.docker_file,
-                temp_tar_file,
                 cwd=self._cfg.project_dir,
             )
+            save_docker_tar(image_id, temp_tar_file)
 
             if self._file_cache is not None:
                 self._file_cache.put_file(temp_tar_file)
