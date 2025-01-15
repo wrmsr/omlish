@@ -2583,12 +2583,28 @@ class GithubV1CacheShellClient:
             env=env,
         )
 
+    @dc.dataclass()
+    class CurlError(RuntimeError):
+        status_code: int
+        body: ta.Optional[bytes]
+
     @dc.dataclass(frozen=True)
     class CurlResult:
         status_code: int
         body: ta.Optional[bytes]
 
-    def run_curl_cmd(self, cmd: ShellCmd) -> CurlResult:
+        def as_error(self) -> 'GithubV1CacheShellClient.CurlError':
+            return GithubV1CacheShellClient.CurlError(
+                status_code=self.status_code,
+                body=self.body,
+            )
+
+    def run_curl_cmd(
+            self,
+            cmd: ShellCmd,
+            *,
+            raise_: bool = False,
+    ) -> CurlResult:
         out_file = make_temp_file()
         with defer(lambda: os.unlink(out_file)):
             run_cmd = dc.replace(cmd, s=f"{cmd.s} -o {out_file} -w '%{{json}}'")
@@ -2601,10 +2617,29 @@ class GithubV1CacheShellClient:
             with open(out_file, 'rb') as f:
                 body = f.read()
 
-            return self.CurlResult(
+            result = self.CurlResult(
                 status_code=status_code,
                 body=body,
             )
+
+        if raise_ and (500 <= status_code <= 600):
+            raise result.as_error()
+
+        return result
+
+    def run_json_curl_cmd(self, cmd: ShellCmd) -> ta.Optional[ta.Any]:
+        result = self.run_curl_cmd(cmd, raise_=True)
+
+        if 200 <= result.status_code < 300:
+            if (body := result.body) is None:
+                return None
+            return json.loads(body.decode('utf-8-sig'))
+
+        elif result.status_code == 404:
+            return None
+
+        else:
+            raise result.as_error()
 
     #
 
@@ -2616,7 +2651,7 @@ class GithubV1CacheShellClient:
 
     def run_get(self, key: str) -> ta.Any:
         get_curl_cmd = self.build_get_curl_cmd(key)
-        result = self.run_curl_cmd(get_curl_cmd)
+        result = self.run_json_curl_cmd(get_curl_cmd)
         return result
 
 
