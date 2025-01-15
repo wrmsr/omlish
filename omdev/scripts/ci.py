@@ -2329,7 +2329,7 @@ class Ci(ExitStacked):
     def resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
             image_id = self._resolve_ci_image()
-            ltc.set_description(f'Resolve ci image to {image_id}')
+            ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
 
     #
@@ -2380,7 +2380,7 @@ class Ci(ExitStacked):
     def build_requirements_dir(self) -> str:
         with log_timing_context('Resolve requirements dir') as ltc:
             requirements_dir = self._build_requirements_dir()
-            ltc.set_description(f'Resolve requirements dir to {requirements_dir}')
+            ltc.set_description(f'Resolve requirements dir: {requirements_dir}')
             return requirements_dir
 
     #
