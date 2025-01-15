@@ -93,7 +93,7 @@ class GithubV1CacheShellClient:
             content_type=content_type,
         )
 
-        url = f'{self._base_url}/{url}'
+        url = f'{self._service_url}/{url}'
 
         cmd = ' '.join([
             'curl',
