@@ -6,8 +6,10 @@ TODO:
   - doesn't change too much though
 """
 import contextlib
+import dataclasses as dc
 import json
 import os.path
+import shlex
 import tarfile
 import typing as ta
 
@@ -15,6 +17,7 @@ from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
 from omlish.subprocesses import subprocesses
 
+from .shell import ShellCmd
 from .utils import make_temp_file
 from .utils import sha256_str
 
@@ -73,9 +76,6 @@ def is_docker_image_present(image: str) -> bool:
     return True
 
 
-##
-
-
 def pull_docker_image(
         image: str,
 ) -> None:
@@ -112,27 +112,40 @@ def build_docker_image(
 ##
 
 
+def save_docker_tar_cmd(
+        image: str,
+        output_cmd: ShellCmd,
+) -> None:
+    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
+    cmd.run(subprocesses.check_call)
+
+
 def save_docker_tar(
         image: str,
         tar_file: str,
 ) -> None:
-    subprocesses.check_call(
-        'docker',
-        'save',
+    return save_docker_tar_cmd(
         image,
-        '-o', tar_file,
+        ShellCmd(f'cat {shlex.quote(tar_file)}'),
     )
+
+
+#
+
+
+def load_docker_tar_cmd(
+        input_cmd: ShellCmd,
+) -> str:
+    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
+
+    out = cmd.run(subprocesses.check_output).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded
 
 
 def load_docker_tar(
         tar_file: str,
 ) -> str:
-    out = subprocesses.check_output(
-        'docker',
-        'load',
-        '-i', tar_file,
-    ).decode()
-
-    line = check.single(out.strip().splitlines())
-    loaded = line.partition(':')[2].strip()
-    return loaded
+    return load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))

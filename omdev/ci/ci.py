@@ -12,6 +12,7 @@ from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.contextmanagers import defer
 
+from .cache import FileCache
 from .cache import ShellCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
@@ -51,11 +52,13 @@ class Ci(ExitStacked):
             cfg: Config,
             *,
             shell_cache: ta.Optional[ShellCache] = None,
+            file_cache: ta.Optional[FileCache] = None,
     ) -> None:
         super().__init__()
 
         self._cfg = cfg
         self._shell_cache = shell_cache
+        self._file_cache = file_cache
 
     #
 

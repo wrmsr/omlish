@@ -24,6 +24,7 @@ from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
 from .cache import DirectoryShellCache
+from .cache import FileCache
 from .cache import ShellCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
@@ -129,11 +130,13 @@ class CiCli(ArgparseCli):
         #
 
         shell_cache: ta.Optional[ShellCache] = None
+        file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
             directory_file_cache = DirectoryFileCache(cache_dir)
+            file_cache = directory_file_cache
             shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
@@ -148,6 +151,7 @@ class CiCli(ArgparseCli):
 
                     cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
                 ),
+                file_cache=file_cache,
                 shell_cache=shell_cache,
         ) as ci:
             ci.run()

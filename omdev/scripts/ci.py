@@ -2094,7 +2094,7 @@ class DockerComposeRun(ExitStacked):
 
 
 ########################################
-# ../dockertars.py
+# ../docker.py
 """
 TODO:
  - some less stupid Dockerfile hash
@@ -2156,12 +2156,8 @@ def is_docker_image_present(image: str) -> bool:
     return True
 
 
-##
-
-
-def pull_docker_tar(
+def pull_docker_image(
         image: str,
-        tar_file: str,
 ) -> None:
     subprocesses.check_call(
         'docker',
@@ -2169,19 +2165,11 @@ def pull_docker_tar(
         image,
     )
 
-    subprocesses.check_call(
-        'docker',
-        'save',
-        image,
-        '-o', tar_file,
-    )
 
-
-def build_docker_tar(
-    docker_file: str,
-    tar_file: str,
-    *,
-    cwd: ta.Optional[str] = None,
+def build_docker_image(
+        docker_file: str,
+        *,
+        cwd: ta.Optional[str] = None,
 ) -> str:
     id_file = make_temp_file()
     with defer(lambda: os.unlink(id_file)):
@@ -2198,31 +2186,49 @@ def build_docker_tar(
         with open(id_file) as f:
             image_id = check.single(f.read().strip().splitlines()).strip()
 
-        subprocesses.check_call(
-            'docker',
-            'save',
-            image_id,
-            '-o', tar_file,
-        )
-
-        return image_id
+    return image_id
 
 
 ##
 
 
-def load_docker_tar(
+def save_docker_tar_cmd(
+        image: str,
+        output_cmd: ShellCmd,
+) -> None:
+    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
+    cmd.run(subprocesses.check_call)
+
+
+def save_docker_tar(
+        image: str,
         tar_file: str,
+) -> None:
+    return save_docker_tar_cmd(
+        image,
+        ShellCmd(f'cat {shlex.quote(tar_file)}'),
+    )
+
+
+#
+
+
+def load_docker_tar_cmd(
+        input_cmd: ShellCmd,
 ) -> str:
-    out = subprocesses.check_output(
-        'docker',
-        'load',
-        '-i', tar_file,
-    ).decode()
+    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
+
+    out = cmd.run(subprocesses.check_output).decode()
 
     line = check.single(out.strip().splitlines())
     loaded = line.partition(':')[2].strip()
     return loaded
+
+
+def load_docker_tar(
+        tar_file: str,
+) -> str:
+    return load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
 
 
 ########################################
@@ -2323,11 +2329,13 @@ class Ci(ExitStacked):
             self,
             cfg: Config,
             *,
+            shell_cache: ta.Optional[ShellCache] = None,
             file_cache: ta.Optional[FileCache] = None,
     ) -> None:
         super().__init__()
 
         self._cfg = cfg
+        self._shell_cache = shell_cache
         self._file_cache = file_cache
 
     #
@@ -2350,10 +2358,8 @@ class Ci(ExitStacked):
         with defer(lambda: shutil.rmtree(temp_dir)):
             temp_tar_file = os.path.join(temp_dir, tar_file_name)
 
-            pull_docker_tar(
-                image,
-                temp_tar_file,
-            )
+            pull_docker_image(image)
+            save_docker_tar(image, temp_tar_file)
 
             if self._file_cache is not None:
                 self._file_cache.put_file(temp_tar_file)
@@ -2386,11 +2392,11 @@ class Ci(ExitStacked):
         with defer(lambda: shutil.rmtree(temp_dir)):
             temp_tar_file = os.path.join(temp_dir, tar_file_name)
 
-            image_id = build_docker_tar(
+            image_id = build_docker_image(
                 self._cfg.docker_file,
-                temp_tar_file,
                 cwd=self._cfg.project_dir,
             )
+            save_docker_tar(image_id, temp_tar_file)
 
             if self._file_cache is not None:
                 self._file_cache.put_file(temp_tar_file)
@@ -2555,8 +2561,6 @@ class CiCli(ArgparseCli):
         argparse_arg('--cache-dir'),
     )
     async def run(self) -> None:
-        await asyncio.sleep(1)
-
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file
@@ -2608,12 +2612,15 @@ class CiCli(ArgparseCli):
 
         #
 
+        shell_cache: ta.Optional[ShellCache] = None
         file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
-            file_cache = DirectoryFileCache(cache_dir)
+            directory_file_cache = DirectoryFileCache(cache_dir)
+            file_cache = directory_file_cache
+            shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 
@@ -2628,6 +2635,7 @@ class CiCli(ArgparseCli):
                     cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
                 ),
                 file_cache=file_cache,
+                shell_cache=shell_cache,
         ) as ci:
             ci.run()
 
