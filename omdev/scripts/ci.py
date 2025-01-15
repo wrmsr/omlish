@@ -2574,7 +2574,7 @@ class GithubV1CacheShellClient:
             'curl',
             '-X', method,
             url,
-            *[f'-H "{k}: {v}' for k, v in hdrs.items()],
+            *[f'-H "{k}: {v}"' for k, v in hdrs.items()],
         ])
 
         return ShellCmd(
