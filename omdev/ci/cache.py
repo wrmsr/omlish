@@ -68,6 +68,12 @@ class ShellCache(abc.ABC):
             self._state: ta.Literal['open', 'committed', 'aborted'] = 'open'
 
         @property
+        def state(self) -> ta.Literal['open', 'committed', 'aborted']:
+            return self._state
+
+        #
+
+        @property
         @abc.abstractmethod
         def cmd(self) -> ShellCmd:
             raise NotImplementedError

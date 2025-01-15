@@ -7,6 +7,7 @@ TODO:
 import contextlib
 import dataclasses as dc
 import os.path
+import shlex
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -192,14 +193,20 @@ class DockerComposeRun(ExitStacked):
             if not self._cfg.no_dependency_cleanup:
                 es.enter_context(defer(self._cleanup_dependencies))  # noqa
 
-            subprocesses.check_call(
+            sh_cmd = ' '.join([
                 'docker',
                 'compose',
                 '-f', compose_file,
                 'run',
                 '--rm',
-                *self._cfg.run_options or [],
+                *(self._cfg.run_options or []),
                 self._cfg.service,
-                'sh', '-c', self._cfg.cmd.s,
+                'sh', '-c', shlex.quote(self._cfg.cmd.s),
+            ])
+
+            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
+
+            run_cmd.run(
+                subprocesses.check_call,
                 **self._subprocess_kwargs,
             )

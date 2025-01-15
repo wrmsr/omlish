@@ -20,3 +20,11 @@ class TestShell(unittest.IsolatedAsyncioTestCase):
             asyncio_subprocesses.check_output,
         )
         print(o.decode())
+
+    def test_shell_cmd_env(self) -> None:
+        cmd = ShellCmd('echo "$BARF"')
+        o = cmd.run(
+            subprocesses.check_output,
+            env={'BARF': 'foo'},
+        )
+        self.assertEqual(o.decode().strip(), 'foo')

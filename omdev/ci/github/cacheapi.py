@@ -3,7 +3,7 @@
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
 
-export CACHE_ID=$(curl \
+export CACHE_ID=$(curl -s \
   -X POST \
   "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
   -H 'Content-Type: application/json' \
@@ -12,7 +12,7 @@ export CACHE_ID=$(curl \
   -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
   | jq .cacheId)
 
-curl \
+curl -s \
   -X PATCH \
   "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
   -H 'Content-Type: application/octet-stream' \
@@ -21,7 +21,7 @@ curl \
   -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
   --data-binary @"$FILE"
 
-curl \
+curl -s \
   -X POST \
   "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
   -H 'Content-Type: application/json' \
@@ -29,7 +29,7 @@ curl \
   -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
   -d '{"size": '"$(stat --format="%s" $FILE)"'}'
 
-curl \
+curl -s \
   -X GET \
   "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
   -H 'Content-Type: application/json' \
@@ -41,6 +41,8 @@ import typing as ta
 
 
 class GithubCacheServiceV1:
+    API_VERSION = '6.0-preview.1'
+
     def get_service_url(self, base_url: str) -> str:
         return f'{base_url.rstrip("/")}/_apis/artifactcache'
 
