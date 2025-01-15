@@ -130,9 +130,13 @@ def build_docker_tar(
 
 def load_docker_tar(
         tar_file: str,
-) -> None:
-    subprocesses.check_call(
+) -> str:
+    out = subprocesses.check_output(
         'docker',
         'load',
         '-i', tar_file,
-    )
+    ).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded

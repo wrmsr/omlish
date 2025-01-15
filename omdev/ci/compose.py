@@ -4,6 +4,7 @@
 TODO:
  - fix rmi - only when not referenced anymore
 """
+import contextlib
 import dataclasses as dc
 import os.path
 import typing as ta
@@ -57,6 +58,10 @@ class DockerComposeRun(ExitStacked):
         run_options: ta.Optional[ta.Sequence[str]] = None
 
         cwd: ta.Optional[str] = None
+
+        #
+
+        no_dependency_cleanup: bool = False
 
         #
 
@@ -171,12 +176,23 @@ class DockerComposeRun(ExitStacked):
 
     #
 
+    def _cleanup_dependencies(self) -> None:
+        subprocesses.check_call(
+            'docker',
+            'compose',
+            '-f', self.rewrite_compose_file(),
+            'down',
+        )
+
     def run(self) -> None:
         self.tag_image()
 
         compose_file = self.rewrite_compose_file()
 
-        try:
+        with contextlib.ExitStack() as es:
+            if not self._cfg.no_dependency_cleanup:
+                es.enter_context(defer(self._cleanup_dependencies))  # noqa
+
             subprocesses.check_call(
                 'docker',
                 'compose',
@@ -187,12 +203,4 @@ class DockerComposeRun(ExitStacked):
                 self._cfg.service,
                 *self._cfg.run_cmd,
                 **self._subprocess_kwargs,
-            )
-
-        finally:
-            subprocesses.check_call(
-                'docker',
-                'compose',
-                '-f', compose_file,
-                'down',
             )

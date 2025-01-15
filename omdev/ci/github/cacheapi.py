@@ -39,8 +39,8 @@ class GithubCacheServiceV1:
     #
 
     class CompressionMethod:
-        GZIP = 'gzip',
-        ZSTD_WITHOUT_LONG = 'zstd-without-long',
+        GZIP = 'gzip'
+        ZSTD_WITHOUT_LONG = 'zstd-without-long'
         ZSTD = 'zstd'
 
     @dc.dataclass(frozen=True)

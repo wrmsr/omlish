@@ -17,9 +17,8 @@ class GithubCli(ArgparseCli):
         raise NotImplementedError
 
 
-def _main() -> None:
-    GithubCli().cli_run_and_exit()
-
-
 if __name__ == '__main__':
+    def _main() -> None:
+        GithubCli().cli_run_and_exit()
+
     _main()

@@ -20,7 +20,6 @@ from .dockertars import build_docker_tar
 from .dockertars import is_docker_image_present
 from .dockertars import load_docker_tar
 from .dockertars import pull_docker_tar
-from .dockertars import read_docker_tar_image_id
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
 
@@ -100,9 +99,7 @@ class Ci(ExitStacked):
         tar_file_name = f'ci-{docker_file_hash}.tar'
 
         if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_name)):
-            image_id = read_docker_tar_image_id(cache_tar_file)
-            load_docker_tar(cache_tar_file)
-            return image_id
+            return load_docker_tar(cache_tar_file)
 
         temp_dir = tempfile.mkdtemp()
         with defer(lambda: shutil.rmtree(temp_dir)):

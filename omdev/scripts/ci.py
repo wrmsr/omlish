@@ -1147,6 +1147,22 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
 # ../../../omlish/subprocesses.py
 
 
@@ -1523,6 +1539,10 @@ class DockerComposeRun(ExitStacked):
 
         #
 
+        no_dependency_cleanup: bool = False
+
+        #
+
         def __post_init__(self) -> None:
             check.not_isinstance(self.run_cmd, str)
 
@@ -1634,12 +1654,23 @@ class DockerComposeRun(ExitStacked):
 
     #
 
+    def _cleanup_dependencies(self) -> None:
+        subprocesses.check_call(
+            'docker',
+            'compose',
+            '-f', self.rewrite_compose_file(),
+            'down',
+        )
+
     def run(self) -> None:
         self.tag_image()
 
         compose_file = self.rewrite_compose_file()
 
-        try:
+        with contextlib.ExitStack() as es:
+            if not self._cfg.no_dependency_cleanup:
+                es.enter_context(defer(self._cleanup_dependencies))  # noqa
+
             subprocesses.check_call(
                 'docker',
                 'compose',
@@ -1650,14 +1681,6 @@ class DockerComposeRun(ExitStacked):
                 self._cfg.service,
                 *self._cfg.run_cmd,
                 **self._subprocess_kwargs,
-            )
-
-        finally:
-            subprocesses.check_call(
-                'docker',
-                'compose',
-                '-f', compose_file,
-                'down',
             )
 
 
@@ -1781,12 +1804,16 @@ def build_docker_tar(
 
 def load_docker_tar(
         tar_file: str,
-) -> None:
-    subprocesses.check_call(
+) -> str:
+    out = subprocesses.check_output(
         'docker',
         'load',
         '-i', tar_file,
-    )
+    ).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded
 
 
 ########################################
@@ -1938,9 +1965,7 @@ class Ci(ExitStacked):
         tar_file_name = f'ci-{docker_file_hash}.tar'
 
         if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_name)):
-            image_id = read_docker_tar_image_id(cache_tar_file)
-            load_docker_tar(cache_tar_file)
-            return image_id
+            return load_docker_tar(cache_tar_file)
 
         temp_dir = tempfile.mkdtemp()
         with defer(lambda: shutil.rmtree(temp_dir)):
@@ -2081,6 +2106,14 @@ class CiCli(ArgparseCli):
             compose_file,
             service,
         ))
+
+    #
+
+    @argparse_cmd(
+        accepts_unknown=True,
+    )
+    def github(self) -> ta.Optional[int]:
+        return GithubCli(self.unknown_args).cli_run()
 
     #
 
