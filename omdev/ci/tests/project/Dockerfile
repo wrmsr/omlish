@@ -1,9 +1,6 @@
 FROM python:3.12.8-bookworm
 
-RUN \
-    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-( \
+RUN ( \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
 \
     export DEBIAN_FRONTEND=noninteractive && \
@@ -13,6 +10,17 @@ RUN \
 \
     apt-get install -y \
 \
+        build-essential \
+        clang \
+        cmake \
         curl \
+        gdb \
+        libdb-dev \
+        llvm \
 \
+    && \
+\
+    apt-get clean autoclean && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/{apt,dpkg,cache,log} \
 )
