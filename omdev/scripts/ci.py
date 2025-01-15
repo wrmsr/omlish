@@ -2492,7 +2492,7 @@ class Ci(ExitStacked):
 
     #
 
-    def _build_requirements_dir(self) -> str:
+    def _resolve_requirements_dir(self) -> str:
         requirements_txts = [
             os.path.join(self._cfg.project_dir, rf)
             for rf in check.not_none(self._cfg.requirements_txts)
@@ -2536,9 +2536,9 @@ class Ci(ExitStacked):
         return temp_requirements_dir
 
     @cached_nullary
-    def build_requirements_dir(self) -> str:
+    def resolve_requirements_dir(self) -> str:
         with log_timing_context('Resolve requirements dir') as ltc:
-            requirements_dir = self._build_requirements_dir()
+            requirements_dir = self._resolve_requirements_dir()
             ltc.set_description(f'Resolve requirements dir: {requirements_dir}')
             return requirements_dir
 
@@ -2570,7 +2570,7 @@ class Ci(ExitStacked):
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
-                '-v', f'{os.path.abspath(self.build_requirements_dir())}:/requirements',
+                '-v', f'{os.path.abspath(self.resolve_requirements_dir())}:/requirements',
             ],
 
             cwd=self._cfg.project_dir,
@@ -2588,7 +2588,7 @@ class Ci(ExitStacked):
 
         self.resolve_ci_image()
 
-        self.build_requirements_dir()
+        self.resolve_requirements_dir()
 
         self._run_compose()
 
