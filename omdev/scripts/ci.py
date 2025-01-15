@@ -897,11 +897,11 @@ class DirectoryFileCache(FileCache):
 
 class ShellCache(abc.ABC):
     @abc.abstractmethod
-    def get_file_cmd(self, name: str) -> ta.Optional[ShellCmd]:
+    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file_cmd(self, name: str) -> ShellCmd:
+    def put_file_cmd(self, key: str) -> ShellCmd:
         raise NotImplementedError
 
 
@@ -2384,25 +2384,25 @@ class Ci(ExitStacked):
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         tar_file_key = f'ci-{docker_file_hash}'
-        tar_file_name = f'{tar_file_key}.tar'
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
-            return load_docker_tar(cache_tar_file)
+        if (
+                self._shell_cache is not None and
+                (get_cache_cmd := self._shell_cache.get_file_cmd(tar_file_key)) is not None
+        ):
+            get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')
+            return load_docker_tar_cmd(get_cache_cmd)
 
-        temp_dir = tempfile.mkdtemp()
-        with defer(lambda: shutil.rmtree(temp_dir)):
-            temp_tar_file = os.path.join(temp_dir, tar_file_name)
+        image_id = build_docker_image(
+            self._cfg.docker_file,
+            cwd=self._cfg.project_dir,
+        )
 
-            image_id = build_docker_image(
-                self._cfg.docker_file,
-                cwd=self._cfg.project_dir,
-            )
-            save_docker_tar(image_id, temp_tar_file)
+        if self._shell_cache is not None:
+            put_cache_cmd = self._shell_cache.put_file_cmd(tar_file_key)
+            put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
+            save_docker_tar_cmd(image_id, put_cache_cmd)
 
-            if self._file_cache is not None:
-                self._file_cache.put_file(tar_file_key, temp_tar_file)
-
-            return image_id
+        return image_id
 
     @cached_nullary
     def resolve_ci_image(self) -> str:
