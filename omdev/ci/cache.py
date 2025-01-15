@@ -19,7 +19,7 @@ class FileCache(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file(self, key: str) -> ta.Optional[str]:
+    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
         raise NotImplementedError
 
 
@@ -48,8 +48,7 @@ class DirectoryFileCache(FileCache):
             return None
         return cache_file_path
 
-    def put_file(self, file_path: str) -> None:
-        key = os.path.basename(file_path)
+    def put_file(self, key: str, file_path: str) -> None:
         cache_file_path = self.get_cache_file_path(key, make_dirs=True)
         shutil.copyfile(file_path, cache_file_path)
 
@@ -84,4 +83,4 @@ class DirectoryShellCache(ShellCache):
 
     def put_file_cmd(self, key: str) -> ShellCmd:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return ShellCmd(f'cat < {shlex.quote(f)}')
+        return ShellCmd(f'cat > {shlex.quote(f)}')

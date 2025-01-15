@@ -126,7 +126,7 @@ def save_docker_tar(
 ) -> None:
     return save_docker_tar_cmd(
         image,
-        ShellCmd(f'cat {shlex.quote(tar_file)}'),
+        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
     )
 
 

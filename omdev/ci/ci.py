@@ -84,7 +84,7 @@ class Ci(ExitStacked):
             save_docker_tar(image, temp_tar_file)
 
             if self._file_cache is not None:
-                self._file_cache.put_file(temp_tar_file)
+                self._file_cache.put_file(os.path.basename(tar_file_name), temp_tar_file)
 
     def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
@@ -121,7 +121,7 @@ class Ci(ExitStacked):
             save_docker_tar(image_id, temp_tar_file)
 
             if self._file_cache is not None:
-                self._file_cache.put_file(temp_tar_file)
+                self._file_cache.put_file(os.path.basename(temp_tar_file), temp_tar_file)
 
             return image_id
 
@@ -172,7 +172,7 @@ class Ci(ExitStacked):
                         arcname=requirement_file,
                     )
 
-            self._file_cache.put_file(temp_tar_file)
+            self._file_cache.put_file(os.path.basename(temp_tar_file), temp_tar_file)
 
         return temp_requirements_dir
 
