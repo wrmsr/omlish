@@ -66,7 +66,7 @@ class GithubV1CacheShellClient:
 
     #
 
-    AUTH_TOKEN_ENV_KEY = '_GITHUB_CACHE_AUTH_TOKEN'  # noqa
+    HEADER_AUTH_TOKEN_ENV_KEY = '_GITHUB_CACHE_AUTH_TOKEN'  # noqa
 
     def build_curl_cmd(
             self,
@@ -83,8 +83,8 @@ class GithubV1CacheShellClient:
 
         header_auth_token: ta.Optional[str]
         if self._auth_token:
-            env[self.AUTH_TOKEN_ENV_KEY] = self._auth_token
-            header_auth_token = f'${self.AUTH_TOKEN_ENV_KEY}'
+            env[self.HEADER_AUTH_TOKEN_ENV_KEY] = self._auth_token
+            header_auth_token = f'${self.HEADER_AUTH_TOKEN_ENV_KEY}'
         else:
             header_auth_token = None
 
