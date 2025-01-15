@@ -24,9 +24,9 @@ llvmlite==0.43.0
 
 # pycuda==2023.1; sys_platform != "darwin"
 
-pyobjc-core==10.3.2; sys_platform == "darwin"
-pyobjc-framework-libdispatch==10.3.2; sys_platform == "darwin"
-pyobjc-framework-metal==10.3.2; sys_platform == "darwin"
+pyobjc-core==11.0.0; sys_platform == "darwin"
+pyobjc-framework-libdispatch==11.0.0; sys_platform == "darwin"
+pyobjc-framework-metal==11.0.0; sys_platform == "darwin"
 
 ##
 
@@ -257,7 +257,7 @@ libtmux==0.40.1
 
 sqlite-vec==0.1.6
 
-anthropic==0.42.0
+anthropic==0.43.0
 
 apsw==3.47.2.0
 
@@ -285,6 +285,7 @@ gguf==0.14.0
 pytesseract==0.3.13
 
 # dspy==2.5.43  # FIXME: httpx, litellm, cryptography, oh my
+dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
 trafilatura==1.12.2

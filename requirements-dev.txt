@@ -100,7 +100,7 @@ numpy>=1.20
 prompt-toolkit>=3.0.0
 
 snowflake-connector-python[secure-local-storage]==3.12.4; python_version < "3.13"
-snowflake-sqlalchemy==1.7.2; python_version < "3.13"
+snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
 huggingface-hub==0.27.1
 
@@ -119,7 +119,7 @@ segno==1.6.1
 
 duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.35.98
+boto3>=1.35.99
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.21.0; sys_platform == "darwin"

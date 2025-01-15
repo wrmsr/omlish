@@ -3,7 +3,7 @@
 # git+https://github.com/vstinner/greenlet@py313
 greenlet==3.1.1
 
-wrapt>=1.17.1
+wrapt>=1.17.2
 
 pyyaml==6.0.2
 
