@@ -2982,7 +2982,7 @@ class GithubCli(ArgparseCli):
     def get_cache_key(self) -> None:
         shell_client = GithubV1CacheShellClient()
         result = shell_client.run_get(self.args.key)
-        print(result)
+        print(json_dumps_pretty(dc.asdict(result)))
 
     @argparse_cmd(
         argparse_arg('repository-id'),
