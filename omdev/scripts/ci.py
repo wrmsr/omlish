@@ -2339,6 +2339,30 @@ class Ci(ExitStacked):
 
     #
 
+    def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        if self._shell_cache is None:
+            return None
+
+        get_cache_cmd = self._shell_cache.get_file_cmd(key)
+        if get_cache_cmd is None:
+            return None
+
+        get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')  # noqa
+
+        return load_docker_tar_cmd(get_cache_cmd)
+
+    def _save_cache_docker_image(self, key: str, image: str) -> None:
+        if self._shell_cache is None:
+            return
+
+        put_cache_cmd = self._shell_cache.put_file_cmd(key)
+
+        put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
+
+        save_docker_tar_cmd(image, put_cache_cmd)
+
+    #
+
     def _load_docker_image(self, image: str) -> None:
         if is_docker_image_present(image):
             return
@@ -2347,22 +2371,18 @@ class Ci(ExitStacked):
         for c in '/:.-_':
             dep_suffix = dep_suffix.replace(c, '-')
 
-        tar_file_key = f'docker-{dep_suffix}'
-        tar_file_name = f'{tar_file_key}.tar'
-
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
-            load_docker_tar(cache_tar_file)
+        cache_key = f'docker-{dep_suffix}'
+        if self._load_cache_docker_image(cache_key) is not None:
             return
 
         temp_dir = tempfile.mkdtemp()
         with defer(lambda: shutil.rmtree(temp_dir)):
-            temp_tar_file = os.path.join(temp_dir, tar_file_name)
+            temp_tar_file = os.path.join(temp_dir, f'{cache_key}.tar')
 
             pull_docker_image(image)
             save_docker_tar(image, temp_tar_file)
 
-            if self._file_cache is not None:
-                self._file_cache.put_file(tar_file_key, temp_tar_file)
+            self._save_cache_docker_image(cache_key, temp_tar_file)
 
     def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
@@ -2383,24 +2403,16 @@ class Ci(ExitStacked):
     def _resolve_ci_image(self) -> str:
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
-        tar_file_key = f'ci-{docker_file_hash}'
-
-        if (
-                self._shell_cache is not None and
-                (get_cache_cmd := self._shell_cache.get_file_cmd(tar_file_key)) is not None
-        ):
-            get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')
-            return load_docker_tar_cmd(get_cache_cmd)
+        cache_key = f'ci-{docker_file_hash}'
+        if (cache_image_id := self._load_cache_docker_image(cache_key)) is not None:
+            return cache_image_id
 
         image_id = build_docker_image(
             self._cfg.docker_file,
             cwd=self._cfg.project_dir,
         )
 
-        if self._shell_cache is not None:
-            put_cache_cmd = self._shell_cache.put_file_cmd(tar_file_key)
-            put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
-            save_docker_tar_cmd(image_id, put_cache_cmd)
+        self._save_cache_docker_image(cache_key, image_id)
 
         return image_id
 
