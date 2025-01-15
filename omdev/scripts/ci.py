@@ -2572,6 +2572,7 @@ class GithubV1CacheShellClient:
 
         cmd = ' '.join([
             'curl',
+            '-s',
             '-X', method,
             url,
             *[f'-H "{k}: {v}"' for k, v in hdrs.items()],
