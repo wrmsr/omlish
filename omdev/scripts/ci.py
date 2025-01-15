@@ -2425,7 +2425,7 @@ class Ci(ExitStacked):
             ci_compose_run.run()
 
     def _run_compose(self) -> None:
-        with log_timing_context('Run compose') as ltc:
+        with log_timing_context('Run compose'):
             self._run_compose_()
 
     #

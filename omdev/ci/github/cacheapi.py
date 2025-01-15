@@ -1,5 +1,41 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+export FILE_SIZE=$(stat --format="%s" $FILE)
+
+export CACHE_ID=$(curl \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
+  | jq .cacheId)
+
+curl \
+  -X PATCH \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/octet-stream' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
+  --data-binary @"$FILE"
+
+curl \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
+
+curl \
+  -X GET \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  | jq .
+"""
 import dataclasses as dc
 import typing as ta
 
