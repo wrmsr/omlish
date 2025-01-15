@@ -34,8 +34,26 @@ def _main() -> None:
             k, p = item.split('=')
             v = jmespath.search(p, obj)
 
-        check.isinstance(v, VALUE_TYPES)
-        print(f'{k}={v}')
+        #
+
+        if isinstance(v, str):
+            s = v
+
+        elif isinstance(v, bool):
+            s = 'true' if v else 'false'
+
+        else:
+            check.isinstance(v, VALUE_TYPES)
+            s = str(v)
+
+        #
+
+        check.equal(s.strip(), s)
+        for c in '\t\n':
+            check.not_in(c, s)
+        #
+
+        print(f'{k}={s}')
 
 
 if __name__ == '__main__':
