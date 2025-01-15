@@ -21,7 +21,6 @@ from .docker import build_docker_image
 from .docker import is_docker_image_present
 from .docker import load_docker_tar_cmd
 from .docker import pull_docker_image
-from .docker import save_docker_tar
 from .docker import save_docker_tar_cmd
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
@@ -44,6 +43,8 @@ class Ci(ExitStacked):
         cmd: ShellCmd
 
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
+
+        always_pull: bool = False
 
         def __post_init__(self) -> None:
             check.not_isinstance(self.requirements_txts, str)
@@ -88,7 +89,7 @@ class Ci(ExitStacked):
     #
 
     def _load_docker_image(self, image: str) -> None:
-        if is_docker_image_present(image):
+        if not self._cfg.always_pull and is_docker_image_present(image):
             return
 
         dep_suffix = image
@@ -99,14 +100,9 @@ class Ci(ExitStacked):
         if self._load_cache_docker_image(cache_key) is not None:
             return
 
-        temp_dir = tempfile.mkdtemp()
-        with defer(lambda: shutil.rmtree(temp_dir)):
-            temp_tar_file = os.path.join(temp_dir, f'{cache_key}.tar')
+        pull_docker_image(image)
 
-            pull_docker_image(image)
-            save_docker_tar(image, temp_tar_file)
-
-            self._save_cache_docker_image(cache_key, temp_tar_file)
+        self._save_cache_docker_image(cache_key, image)
 
     def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):

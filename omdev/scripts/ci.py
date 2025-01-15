@@ -2321,6 +2321,8 @@ class Ci(ExitStacked):
 
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
 
+        always_pull: bool = False
+
         def __post_init__(self) -> None:
             check.not_isinstance(self.requirements_txts, str)
 
@@ -2364,7 +2366,7 @@ class Ci(ExitStacked):
     #
 
     def _load_docker_image(self, image: str) -> None:
-        if is_docker_image_present(image):
+        if not self._cfg.always_pull and is_docker_image_present(image):
             return
 
         dep_suffix = image
@@ -2375,14 +2377,9 @@ class Ci(ExitStacked):
         if self._load_cache_docker_image(cache_key) is not None:
             return
 
-        temp_dir = tempfile.mkdtemp()
-        with defer(lambda: shutil.rmtree(temp_dir)):
-            temp_tar_file = os.path.join(temp_dir, f'{cache_key}.tar')
+        pull_docker_image(image)
 
-            pull_docker_image(image)
-            save_docker_tar(image, temp_tar_file)
-
-            self._save_cache_docker_image(cache_key, temp_tar_file)
+        self._save_cache_docker_image(cache_key, image)
 
     def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
@@ -2573,6 +2570,7 @@ class CiCli(ArgparseCli):
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
         argparse_arg('--cache-dir'),
+        argparse_arg('--always-pull', action='store_true'),
     )
     async def run(self) -> None:
         project_dir = self.args.project_dir
@@ -2581,6 +2579,7 @@ class CiCli(ArgparseCli):
         service = self.args.service
         requirements_txts = self.args.requirements_txt
         cache_dir = self.args.cache_dir
+        always_pull = self.args.always_pull
 
         #
 
@@ -2641,12 +2640,17 @@ class CiCli(ArgparseCli):
         with Ci(
                 Ci.Config(
                     project_dir=project_dir,
+
                     docker_file=docker_file,
+
                     compose_file=compose_file,
                     service=service,
+
                     requirements_txts=requirements_txts,
 
                     cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
+
+                    always_pull=always_pull,
                 ),
                 file_cache=file_cache,
                 shell_cache=shell_cache,

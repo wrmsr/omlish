@@ -76,6 +76,7 @@ class CiCli(ArgparseCli):
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
         argparse_arg('--cache-dir'),
+        argparse_arg('--always-pull', action='store_true'),
     )
     async def run(self) -> None:
         project_dir = self.args.project_dir
@@ -84,6 +85,7 @@ class CiCli(ArgparseCli):
         service = self.args.service
         requirements_txts = self.args.requirements_txt
         cache_dir = self.args.cache_dir
+        always_pull = self.args.always_pull
 
         #
 
@@ -144,12 +146,17 @@ class CiCli(ArgparseCli):
         with Ci(
                 Ci.Config(
                     project_dir=project_dir,
+
                     docker_file=docker_file,
+
                     compose_file=compose_file,
                     service=service,
+
                     requirements_txts=requirements_txts,
 
                     cmd=ShellCmd('cd /project && python3 -m pytest -svv test.py'),
+
+                    always_pull=always_pull,
                 ),
                 file_cache=file_cache,
                 shell_cache=shell_cache,
