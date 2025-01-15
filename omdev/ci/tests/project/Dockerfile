@@ -22,5 +22,5 @@ RUN ( \
 \
     apt-get clean autoclean && \
     apt-get autoremove --yes && \
-    rm -rf /var/lib/{apt,dpkg,cache,log} \
+    rm -rf /var/lib/{apt,cache,dpkg,log} \
 )
