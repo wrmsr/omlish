@@ -16,6 +16,7 @@ from omlish.lite.contextmanagers import defer
 from omlish.lite.json import json_dumps_pretty
 from omlish.subprocesses import subprocesses
 
+from .shell import ShellCmd
 from .utils import make_temp_file
 from .utils import read_yaml_file
 
@@ -51,7 +52,7 @@ class DockerComposeRun(ExitStacked):
 
         image: str
 
-        run_cmd: ta.Sequence[str]
+        cmd: ShellCmd
 
         #
 
@@ -66,8 +67,6 @@ class DockerComposeRun(ExitStacked):
         #
 
         def __post_init__(self) -> None:
-            check.not_isinstance(self.run_cmd, str)
-
             check.not_isinstance(self.run_options, str)
 
     def __init__(self, cfg: Config) -> None:
@@ -201,6 +200,6 @@ class DockerComposeRun(ExitStacked):
                 '--rm',
                 *self._cfg.run_options or [],
                 self._cfg.service,
-                *self._cfg.run_cmd,
+                'sh', '-c', self._cfg.cmd.s,
                 **self._subprocess_kwargs,
             )

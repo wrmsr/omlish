@@ -209,10 +209,12 @@ class Ci(ExitStacked):
 
         #
 
-        sh_src = ' && '.join([
+        ci_cmd = dc.replace(self._cfg.cmd, s=' && '.join([
             *setup_cmds,
             f'({self._cfg.cmd.s})',
-        ])
+        ]))
+
+        #
 
         with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
@@ -220,7 +222,7 @@ class Ci(ExitStacked):
 
             image=self.resolve_ci_image(),
 
-            run_cmd=['sh', '-c', sh_src],
+            cmd=ci_cmd,
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',

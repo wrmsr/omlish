@@ -92,9 +92,7 @@ class ShellCmd:
 
     def run(self, fn: ta.Callable[..., T], **kwargs) -> T:
         return fn(
-            'sh',
-            '-c',
-            self.s,
+            'sh', '-c', self.s,
             **self.run_kwargs,
             **kwargs,
         )
@@ -2006,7 +2004,7 @@ class DockerComposeRun(ExitStacked):
 
         image: str
 
-        run_cmd: ta.Sequence[str]
+        cmd: ShellCmd
 
         #
 
@@ -2021,8 +2019,6 @@ class DockerComposeRun(ExitStacked):
         #
 
         def __post_init__(self) -> None:
-            check.not_isinstance(self.run_cmd, str)
-
             check.not_isinstance(self.run_options, str)
 
     def __init__(self, cfg: Config) -> None:
@@ -2156,7 +2152,7 @@ class DockerComposeRun(ExitStacked):
                 '--rm',
                 *self._cfg.run_options or [],
                 self._cfg.service,
-                *self._cfg.run_cmd,
+                'sh', '-c', self._cfg.cmd.s,
                 **self._subprocess_kwargs,
             )
 
@@ -2555,10 +2551,12 @@ class Ci(ExitStacked):
 
         #
 
-        sh_src = ' && '.join([
+        ci_cmd = dc.replace(self._cfg.cmd, s=' && '.join([
             *setup_cmds,
             f'({self._cfg.cmd.s})',
-        ])
+        ]))
+
+        #
 
         with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
@@ -2566,7 +2564,7 @@ class Ci(ExitStacked):
 
             image=self.resolve_ci_image(),
 
-            run_cmd=['sh', '-c', sh_src],
+            cmd=ci_cmd,
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',

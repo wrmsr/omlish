@@ -20,9 +20,7 @@ class ShellCmd:
 
     def run(self, fn: ta.Callable[..., T], **kwargs) -> T:
         return fn(
-            'sh',
-            '-c',
-            self.s,
+            'sh', '-c', self.s,
             **self.run_kwargs,
             **kwargs,
         )

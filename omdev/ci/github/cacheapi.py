@@ -41,6 +41,9 @@ import typing as ta
 
 
 class GithubCacheServiceV1:
+    def get_service_url(self, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/_apis/artifactcache'
+
     @dc.dataclass(frozen=True)
     class ArtifactCacheEntry:
         cache_key: ta.Optional[str]
