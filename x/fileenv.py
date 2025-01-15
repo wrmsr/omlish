@@ -1,3 +1,6 @@
+"""
+export $(./python fileenv.py secrets.yml foo_access_token | xargs)
+"""
 import argparse
 
 import yaml
