@@ -20,8 +20,10 @@ from .docker import build_docker_file_hash
 from .docker import build_docker_image
 from .docker import is_docker_image_present
 from .docker import load_docker_tar
+from .docker import load_docker_tar_cmd
 from .docker import pull_docker_image
 from .docker import save_docker_tar
+from .docker import save_docker_tar_cmd
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
 from .shell import ShellCmd
@@ -107,25 +109,20 @@ class Ci(ExitStacked):
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         tar_file_key = f'ci-{docker_file_hash}'
-        tar_file_name = f'{tar_file_key}.tar'
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
-            return load_docker_tar(cache_tar_file)
+        if self._shell_cache is not None and (cache_tar_cmd := self._shell_cache.get_file_cmd(tar_file_key)):
+            return load_docker_tar_cmd(cache_tar_cmd)
 
-        temp_dir = tempfile.mkdtemp()
-        with defer(lambda: shutil.rmtree(temp_dir)):
-            temp_tar_file = os.path.join(temp_dir, tar_file_name)
+        image_id = build_docker_image(
+            self._cfg.docker_file,
+            cwd=self._cfg.project_dir,
+        )
 
-            image_id = build_docker_image(
-                self._cfg.docker_file,
-                cwd=self._cfg.project_dir,
-            )
-            save_docker_tar(image_id, temp_tar_file)
+        if self._shell_cache is not None:
+            put_cmd = self._shell_cache.put_file_cmd(tar_file_key)
+            save_docker_tar_cmd(image_id, put_cmd)
 
-            if self._file_cache is not None:
-                self._file_cache.put_file(tar_file_key, temp_tar_file)
-
-            return image_id
+        return image_id
 
     @cached_nullary
     def resolve_ci_image(self) -> str:

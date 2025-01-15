@@ -58,11 +58,11 @@ class DirectoryFileCache(FileCache):
 
 class ShellCache(abc.ABC):
     @abc.abstractmethod
-    def get_file_cmd(self, name: str) -> ta.Optional[ShellCmd]:
+    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file_cmd(self, name: str) -> ShellCmd:
+    def put_file_cmd(self, key: str) -> ShellCmd:
         raise NotImplementedError
 
 
