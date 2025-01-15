@@ -20,6 +20,7 @@ from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.check import check
+from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
 from .cache import FileCache
@@ -154,6 +155,8 @@ async def _async_main() -> ta.Optional[int]:
 
 
 def _main() -> None:
+    configure_standard_logging('DEBUG')
+
     sys.exit(rc if isinstance(rc := asyncio.run(_async_main()), int) else 0)
 
 

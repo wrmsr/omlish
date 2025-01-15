@@ -65,6 +65,7 @@ def download_requirements(
         subprocesses.check_call(
             'docker',
             'run',
+            '--rm',
             '-i',
             '-v', f'{os.path.abspath(requirements_dir)}:/requirements',
             '-v', f'{requirements_txt_dir}:/requirements_txt',

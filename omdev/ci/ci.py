@@ -22,6 +22,7 @@ from .dockertars import load_docker_tar
 from .dockertars import pull_docker_tar
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
+from .utils import log_timing_context
 
 
 class Ci(ExitStacked):
@@ -54,7 +55,7 @@ class Ci(ExitStacked):
 
     #
 
-    def load_docker_image(self, image: str) -> None:
+    def _load_docker_image(self, image: str) -> None:
         if is_docker_image_present(image):
             return
 
@@ -80,6 +81,10 @@ class Ci(ExitStacked):
             if self._file_cache is not None:
                 self._file_cache.put_file(temp_tar_file)
 
+    def load_docker_image(self, image: str) -> None:
+        with log_timing_context(f'Load docker image: {image}'):
+            self._load_docker_image(image)
+
     @cached_nullary
     def load_compose_service_dependencies(self) -> None:
         deps = get_compose_service_dependencies(
@@ -92,8 +97,7 @@ class Ci(ExitStacked):
 
     #
 
-    @cached_nullary
-    def build_ci_image(self) -> str:
+    def _resolve_ci_image(self) -> str:
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         tar_file_name = f'ci-{docker_file_hash}.tar'
@@ -116,10 +120,16 @@ class Ci(ExitStacked):
 
             return image_id
 
+    @cached_nullary
+    def resolve_ci_image(self) -> str:
+        with log_timing_context('Resolve ci image') as ltc:
+            image_id = self._resolve_ci_image()
+            ltc.set_description(f'Resolve ci image to {image_id}')
+            return image_id
+
     #
 
-    @cached_nullary
-    def build_requirements_dir(self) -> str:
+    def _build_requirements_dir(self) -> str:
         requirements_txts = [
             os.path.join(self._cfg.project_dir, rf)
             for rf in check.not_none(self._cfg.requirements_txts)
@@ -142,7 +152,7 @@ class Ci(ExitStacked):
         os.makedirs(temp_requirements_dir)
 
         download_requirements(
-            self.build_ci_image(),
+            self.resolve_ci_image(),
             temp_requirements_dir,
             requirements_txts,
         )
@@ -161,12 +171,19 @@ class Ci(ExitStacked):
 
         return temp_requirements_dir
 
+    @cached_nullary
+    def build_requirements_dir(self) -> str:
+        with log_timing_context('Resolve requirements dir') as ltc:
+            requirements_dir = self._build_requirements_dir()
+            ltc.set_description(f'Resolve requirements dir to {requirements_dir}')
+            return requirements_dir
+
     #
 
     def run(self) -> None:
         self.load_compose_service_dependencies()
 
-        ci_image = self.build_ci_image()
+        ci_image = self.resolve_ci_image()
 
         requirements_dir = self.build_requirements_dir()
 
