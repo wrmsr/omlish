@@ -1,11 +1,17 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+import dataclasses as dc
+import json
 import os
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.contextmanagers import defer
+from omlish.subprocesses import subprocesses
 
 from ..cache import FileCache
+from ..shell import ShellCmd
+from ..utils import make_temp_file
 from .cacheapi import GithubCacheServiceV1
 
 
@@ -34,33 +40,108 @@ class GithubV1CacheShellClient:
 
         self._service_url = GithubCacheServiceV1.get_service_url(self._base_url)
 
+    #
+
+    _MISSING = object()
+
     def build_headers(
             self,
             *,
+            auth_token: ta.Any = _MISSING,
             content_type: ta.Optional[str] = None,
     ) -> ta.Dict[str, str]:
         dct = {
             'Accept': f'application/json;{GithubCacheServiceV1.API_VERSION}',
         }
 
-        if self._auth_token:
-            dct['Authorization'] = f'Bearer {self._auth_token}'
+        if auth_token is self._MISSING:
+            auth_token = self._auth_token
+        if auth_token:
+            dct['Authorization'] = f'Bearer {auth_token}'
 
         if content_type is not None:
             dct['Content-Type'] = content_type
 
         return dct
 
-    def get_cmd(self) -> GithubCacheServiceV1.ArtifactCacheEntry:
-        """
-        curl \
-          -X GET \
-          "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
-          -H 'Content-Type: application/json' \
-          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-          | jq .
-        """
-        raise NotImplementedError
+    #
+
+    AUTH_TOKEN_ENV_KEY = '_GITHUB_CACHE_AUTH_TOKEN'  # noqa
+
+    def build_curl_cmd(
+            self,
+            method: str,
+            url: str,
+            *,
+            json: bool = False,
+            content_type: ta.Optional[str] = None,
+    ) -> ShellCmd:
+        if content_type is None and json:
+            content_type = 'application/json'
+
+        env = {}
+
+        header_auth_token: ta.Optional[str]
+        if self._auth_token:
+            env[self.AUTH_TOKEN_ENV_KEY] = self._auth_token
+            header_auth_token = f'${self.AUTH_TOKEN_ENV_KEY}'
+        else:
+            header_auth_token = None
+
+        hdrs = self.build_headers(
+            auth_token=header_auth_token,
+            content_type=content_type,
+        )
+
+        url = f'{self._base_url}/{url}'
+
+        cmd = ' '.join([
+            'curl',
+            '-X', method,
+            url,
+            *[f'-H "{k}: {v}' for k, v in hdrs.items()],
+        ])
+
+        return ShellCmd(
+            cmd,
+            env=env,
+        )
+
+    @dc.dataclass(frozen=True)
+    class CurlResult:
+        status_code: int
+        body: ta.Optional[bytes]
+
+    def run_curl_cmd(self, cmd: ShellCmd) -> CurlResult:
+        out_file = make_temp_file()
+        with defer(lambda: os.unlink(out_file)):
+            run_cmd = dc.replace(cmd, s=f"{cmd.s} -o {out_file} -w '%{{json}}'")
+
+            out_json_bytes = run_cmd.run(subprocesses.check_output)
+
+            out_json = json.loads(out_json_bytes.decode())
+            status_code = check.isinstance(out_json['response_code'], int)
+
+            with open(out_file, 'rb') as f:
+                body = f.read()
+
+            return self.CurlResult(
+                status_code=status_code,
+                body=body,
+            )
+
+    #
+
+    def build_get_curl_cmd(self, key: str) -> ShellCmd:
+        return self.build_curl_cmd(
+            'GET',
+            f'cache?keys={key}',
+        )
+
+    def run_get(self, key: str) -> ta.Any:
+        get_curl_cmd = self.build_get_curl_cmd(key)
+        result = self.run_curl_cmd(get_curl_cmd)
+        return result
 
 
 ##

@@ -76,6 +76,185 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 
 
 ########################################
+# ../github/cacheapi.py
+"""
+export FILE_SIZE=$(stat --format="%s" $FILE)
+
+export CACHE_ID=$(curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
+  | jq .cacheId)
+
+curl -s \
+  -X PATCH \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/octet-stream' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
+  --data-binary @"$FILE"
+
+curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
+
+curl -s \
+  -X GET \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  | jq .
+"""
+
+
+class GithubCacheServiceV1:
+    API_VERSION = '6.0-preview.1'
+
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/_apis/artifactcache'
+
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheEntry:
+        cache_key: ta.Optional[str]
+        scope: ta.Optional[str]
+        cache_version: ta.Optional[str]
+        creation_time: ta.Optional[str]
+        archive_location: ta.Optional[str]
+
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheList:
+        total_count: int
+        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheRequest:
+        key: str
+        version: ta.Optional[str]
+        cache_size: ta.Optional[int]
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheResponse:
+        cache_id: int
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CommitCacheRequest:
+        size: int
+
+    #
+
+    class CompressionMethod:
+        GZIP = 'gzip'
+        ZSTD_WITHOUT_LONG = 'zstd-without-long'
+        ZSTD = 'zstd'
+
+    @dc.dataclass(frozen=True)
+    class InternalCacheOptions:
+        compression_method: ta.Optional[str]  # CompressionMethod
+        enable_cross_os_archive: ta.Optional[bool]
+        cache_size: ta.Optional[int]
+
+
+class GithubCacheServiceV2:
+    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
+
+    @dc.dataclass(frozen=True)
+    class Method:
+        name: str
+        request: type
+        response: type
+
+    #
+
+    class CacheScopePermission:
+        READ = 1
+        WRITE = 2
+        ALL = READ | WRITE
+
+    @dc.dataclass(frozen=True)
+    class CacheScope:
+        scope: str
+        permission: int  # CacheScopePermission
+
+    @dc.dataclass(frozen=True)
+    class CacheMetadata:
+        repository_id: int
+        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryRequest:
+        key: str
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryResponse:
+        ok: bool
+        signed_upload_url: str
+
+    CREATE_CACHE_ENTRY_METHOD = Method(
+        'CreateCacheEntry',
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadRequest:
+        key: str
+        size_bytes: int
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadResponse:
+        ok: bool
+        entry_id: str
+
+    FINALIZE_CACHE_ENTRY_METHOD = Method(
+        'FinalizeCacheEntryUpload',
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlRequest:
+        key: str
+        restore_keys: ta.Sequence[str]
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlResponse:
+        ok: bool
+        signed_download_url: str
+        matched_key: str
+
+    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD = Method(
+        'GetCacheEntryDownloadURL',
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    )
+
+
+########################################
 # ../shell.py
 
 
@@ -1521,22 +1700,6 @@ class JsonLogFormatter(logging.Formatter):
 
 
 ########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
-
-
-class GithubCli(ArgparseCli):
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
-
-
-########################################
 # ../../../omlish/logs/standard.py
 """
 TODO:
@@ -2324,6 +2487,155 @@ def load_docker_tar(
 
 
 ########################################
+# ../github/cache.py
+
+
+##
+
+
+class GithubV1CacheShellClient:
+    BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
+    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+            auth_token: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        if base_url is None:
+            base_url = os.environ[self.BASE_URL_ENV_KEY]
+        self._base_url = check.non_empty_str(base_url)
+
+        if auth_token is None:
+            auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
+        self._auth_token = auth_token
+
+        self._service_url = GithubCacheServiceV1.get_service_url(self._base_url)
+
+    #
+
+    _MISSING = object()
+
+    def build_headers(
+            self,
+            *,
+            auth_token: ta.Any = _MISSING,
+            content_type: ta.Optional[str] = None,
+    ) -> ta.Dict[str, str]:
+        dct = {
+            'Accept': f'application/json;{GithubCacheServiceV1.API_VERSION}',
+        }
+
+        if auth_token is self._MISSING:
+            auth_token = self._auth_token
+        if auth_token:
+            dct['Authorization'] = f'Bearer {auth_token}'
+
+        if content_type is not None:
+            dct['Content-Type'] = content_type
+
+        return dct
+
+    #
+
+    AUTH_TOKEN_ENV_KEY = '_GITHUB_CACHE_AUTH_TOKEN'  # noqa
+
+    def build_curl_cmd(
+            self,
+            method: str,
+            url: str,
+            *,
+            json: bool = False,
+            content_type: ta.Optional[str] = None,
+    ) -> ShellCmd:
+        if content_type is None and json:
+            content_type = 'application/json'
+
+        env = {}
+
+        header_auth_token: ta.Optional[str]
+        if self._auth_token:
+            env[self.AUTH_TOKEN_ENV_KEY] = self._auth_token
+            header_auth_token = f'${self.AUTH_TOKEN_ENV_KEY}'
+        else:
+            header_auth_token = None
+
+        hdrs = self.build_headers(
+            auth_token=header_auth_token,
+            content_type=content_type,
+        )
+
+        url = f'{self._base_url}/{url}'
+
+        cmd = ' '.join([
+            'curl',
+            '-X', method,
+            url,
+            *[f'-H "{k}: {v}' for k, v in hdrs.items()],
+        ])
+
+        return ShellCmd(
+            cmd,
+            env=env,
+        )
+
+    @dc.dataclass(frozen=True)
+    class CurlResult:
+        status_code: int
+        body: ta.Optional[bytes]
+
+    def run_curl_cmd(self, cmd: ShellCmd) -> CurlResult:
+        out_file = make_temp_file()
+        with defer(lambda: os.unlink(out_file)):
+            run_cmd = dc.replace(cmd, s=f"{cmd.s} -o {out_file} -w '%{{json}}'")
+
+            out_json_bytes = run_cmd.run(subprocesses.check_output)
+
+            out_json = json.loads(out_json_bytes.decode())
+            status_code = check.isinstance(out_json['response_code'], int)
+
+            with open(out_file, 'rb') as f:
+                body = f.read()
+
+            return self.CurlResult(
+                status_code=status_code,
+                body=body,
+            )
+
+    #
+
+    def build_get_curl_cmd(self, key: str) -> ShellCmd:
+        return self.build_curl_cmd(
+            'GET',
+            f'cache?keys={key}',
+        )
+
+    def run_get(self, key: str) -> ta.Any:
+        get_curl_cmd = self.build_get_curl_cmd(key)
+        result = self.run_curl_cmd(get_curl_cmd)
+        return result
+
+
+##
+
+
+class GithubV1FileCache(FileCache):
+    def __init__(self, client: GithubV1CacheShellClient) -> None:
+        super().__init__()
+
+        self._client = client
+
+    def get_file(self, key: str) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
+        raise NotImplementedError
+
+
+########################################
 # ../requirements.py
 """
 TODO:
@@ -2617,6 +2929,30 @@ class Ci(ExitStacked):
         self.resolve_requirements_dir()
 
         self._run_compose()
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    def get_cache_key(self) -> None:
+        shell_client = GithubV1CacheShellClient()
+        result = shell_client.run_get(self.args.key)
+        print(result)
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
 
 
 ########################################

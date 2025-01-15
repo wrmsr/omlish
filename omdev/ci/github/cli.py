@@ -8,8 +8,18 @@ from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 
+from .cache import GithubV1CacheShellClient
+
 
 class GithubCli(ArgparseCli):
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    def get_cache_key(self) -> None:
+        shell_client = GithubV1CacheShellClient()
+        result = shell_client.run_get(self.args.key)
+        print(result)
+
     @argparse_cmd(
         argparse_arg('repository-id'),
     )
