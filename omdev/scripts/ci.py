@@ -2652,7 +2652,7 @@ class GithubV1CacheShellClient:
             content_type: ta.Optional[str] = None,
     ) -> ta.Dict[str, str]:
         dct = {
-            'Accept': f'application/json;{GithubCacheServiceV1.API_VERSION}',
+            'Accept': f'application/json;api-version={GithubCacheServiceV1.API_VERSION}',
         }
 
         if auth_token is self._MISSING:
