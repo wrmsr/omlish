@@ -20,7 +20,7 @@ class GithubCli(ArgparseCli):
     )
     def get_cache_entry(self) -> None:
         shell_client = GithubV1CacheShellClient()
-        entry = shell_client.run_get(self.args.key)
+        entry = shell_client.run_get_entry(self.args.key)
         if entry is None:
             return
         print(json_dumps_pretty(dc.asdict(entry)))  # noqa

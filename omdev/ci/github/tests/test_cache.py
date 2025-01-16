@@ -11,6 +11,6 @@ class TestClient(unittest.TestCase):
             auth_token='DUMMY_AUTH_TOKEN',  # noqa
         )
 
-        get_curl_cmd = client.build_get_curl_cmd('foo')
+        curl_cmd = client.build_get_entry_curl_cmd('foo')
 
-        print(get_curl_cmd)
+        print(curl_cmd)

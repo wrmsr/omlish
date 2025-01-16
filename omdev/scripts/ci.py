@@ -2765,17 +2765,17 @@ class GithubV1CacheShellClient:
 
     #
 
-    def build_get_curl_cmd(self, key: str) -> ShellCmd:
+    def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
         return self.build_curl_cmd(
             'GET',
             f'cache?keys={key}',
         )
 
-    def run_get(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
-        get_curl_cmd = self.build_get_curl_cmd(key)
+    def run_get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
+        curl_cmd = self.build_get_entry_curl_cmd(key)
 
         obj = self.run_json_curl_cmd(
-            get_curl_cmd,
+            curl_cmd,
             success_status_codes=[200],
         )
         if obj is None:
@@ -2786,20 +2786,65 @@ class GithubV1CacheShellClient:
             obj,
         )
 
+    #
+
+    def build_download_get_entry_cmd(
+            self,
+            entry: GithubCacheServiceV1.ArtifactCacheEntry,
+            out_file: str,
+    ) -> ShellCmd:
+        return ShellCmd(' '.join([
+            'aria2c',
+            '-x', '4',
+            '-o', out_file,
+            check.non_empty_str(entry.archive_location),
+        ]))
+
+    def download_get_entry(
+            self,
+            entry: GithubCacheServiceV1.ArtifactCacheEntry,
+            out_file: str,
+    ) -> None:
+        dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
+        dl_cmd.run(subprocesses.check_call)
+
 
 ##
 
 
-class GithubV1FileCache(FileCache):
-    def __init__(self, client: GithubV1CacheShellClient) -> None:
+class GithubShellCache(ShellCache):
+    def __init__(
+            self,
+            local: ShellCache,
+            *,
+            client: ta.Optional[GithubV1CacheShellClient] = None,
+    ) -> None:
         super().__init__()
 
+        self._local = local
+
+        if client is None:
+            client = GithubV1CacheShellClient()
         self._client = client
 
-    def get_file(self, key: str) -> ta.Optional[str]:
-        raise NotImplementedError
+    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
+        if (local_cmd := self._local.get_file_cmd(key)) is not None:
+            return local_cmd
 
-    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
+        if (entry := self._client.run_get_entry(key)) is None:
+            return None
+
+        tmp_file = make_temp_file()
+        with defer(lambda: os.unlink(tmp_file)):
+            self._client.download_get_entry(entry, tmp_file)
+
+            with self._local.put_file_cmd(key) as put:
+                put_cmd = dc.replace(put.cmd, s=f'cat {tmp_file} | {put.cmd.s}')
+                put_cmd.run(subprocesses.check_call)
+
+        return check.not_none(self._local.get_file_cmd(key))
+
+    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
         raise NotImplementedError
 
 
@@ -3113,7 +3158,7 @@ class GithubCli(ArgparseCli):
     )
     def get_cache_entry(self) -> None:
         shell_client = GithubV1CacheShellClient()
-        entry = shell_client.run_get(self.args.key)
+        entry = shell_client.run_get_entry(self.args.key)
         if entry is None:
             return
         print(json_dumps_pretty(dc.asdict(entry)))  # noqa
@@ -3171,6 +3216,7 @@ class CiCli(ArgparseCli):
         argparse_arg('--docker-file'),
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
+        argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
         argparse_arg('--always-pull', action='store_true'),
     )
@@ -3237,6 +3283,9 @@ class CiCli(ArgparseCli):
             file_cache = directory_file_cache
             shell_cache = DirectoryShellCache(directory_file_cache)
 
+        if shell_cache is not None and self.args.github_cache:
+            shell_cache = GithubShellCache(shell_cache)
+
         #
 
         with Ci(
@@ -3250,9 +3299,10 @@ class CiCli(ArgparseCli):
 
                     requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd(
-                        'echo "BARF=$BARF" && cd /project && python3 -m pytest -svv test.py',
-                    ),
+                    cmd=ShellCmd(' && '.join([
+                        'cd /project',
+                        'python3 -m pytest -svv test.py',
+                    ])),
 
                     always_pull=always_pull,
                 ),

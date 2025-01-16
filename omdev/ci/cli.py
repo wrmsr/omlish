@@ -28,6 +28,7 @@ from .cache import FileCache
 from .cache import ShellCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
+from .github.cache import GithubShellCache
 from .github.cli import GithubCli
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
@@ -75,6 +76,7 @@ class CiCli(ArgparseCli):
         argparse_arg('--docker-file'),
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
+        argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
         argparse_arg('--always-pull', action='store_true'),
     )
@@ -141,6 +143,9 @@ class CiCli(ArgparseCli):
             file_cache = directory_file_cache
             shell_cache = DirectoryShellCache(directory_file_cache)
 
+        if shell_cache is not None and self.args.github_cache:
+            shell_cache = GithubShellCache(shell_cache)
+
         #
 
         with Ci(
@@ -154,9 +159,10 @@ class CiCli(ArgparseCli):
 
                     requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd(
-                        'echo "BARF=$BARF" && cd /project && python3 -m pytest -svv test.py',
-                    ),
+                    cmd=ShellCmd(' && '.join([
+                        'cd /project',
+                        'python3 -m pytest -svv test.py',
+                    ])),
 
                     always_pull=always_pull,
                 ),
