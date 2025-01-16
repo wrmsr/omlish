@@ -327,10 +327,24 @@
     }
   },
   {
+    "module": ".tools.mkenv",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/mkenv.py",
+    "line": 123,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "mkenv"
+        ],
+        "mod_name": "omdev.tools.mkenv"
+      }
+    }
+  },
+  {
     "module": ".tools.mkrelimp",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/mkrelimp.py",
-    "line": 148,
+    "line": 146,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/mkrelimp",

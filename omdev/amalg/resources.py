@@ -4,10 +4,7 @@ import itertools
 import os.path
 import typing as ta
 
-import tokenize_rt as trt
-
 from ..tokens import all as tks
-from .types import Tokens
 
 
 ##
@@ -19,7 +16,7 @@ class RootLevelResourcesRead(ta.NamedTuple):
     resource: str
 
 
-def is_root_level_resources_read(lts: Tokens) -> RootLevelResourcesRead | None:
+def is_root_level_resources_read(lts: tks.Tokens) -> RootLevelResourcesRead | None:
     wts = list(tks.ignore_ws(lts, keep=['INDENT']))
 
     if not tks.match_toks(wts, [
@@ -47,36 +44,36 @@ def is_root_level_resources_read(lts: Tokens) -> RootLevelResourcesRead | None:
 def build_resource_lines(
         rsrc: RootLevelResourcesRead,
         path: str,
-) -> list[Tokens]:
+) -> list[tks.Tokens]:
     rf = os.path.join(os.path.dirname(path), rsrc.resource)
 
     if rsrc.kind == 'binary':
         with open(rf, 'rb') as bf:
             rb = bf.read()  # noqa
 
-        out: list[Tokens] = [[
-            trt.Token(name='NAME', src=rsrc.variable),
-            trt.Token(name='UNIMPORTANT_WS', src=' '),
-            trt.Token(name='OP', src='='),
-            trt.Token(name='UNIMPORTANT_WS', src=' '),
-            trt.Token(name='NAME', src='base64'),
-            trt.Token(name='OP', src='.'),
-            trt.Token(name='NAME', src='b64decode'),
-            trt.Token(name='OP', src='('),
-            trt.Token(name='NL', src='\n'),
+        out: list[tks.Tokens] = [[
+            tks.Token(name='NAME', src=rsrc.variable),
+            tks.Token(name='UNIMPORTANT_WS', src=' '),
+            tks.Token(name='OP', src='='),
+            tks.Token(name='UNIMPORTANT_WS', src=' '),
+            tks.Token(name='NAME', src='base64'),
+            tks.Token(name='OP', src='.'),
+            tks.Token(name='NAME', src='b64decode'),
+            tks.Token(name='OP', src='('),
+            tks.Token(name='NL', src='\n'),
         ]]
 
         rb64 = base64.b64encode(rb).decode('ascii')
         for chunk in itertools.batched(rb64, 96):
             out.append([
-                trt.Token(name='UNIMPORTANT_WS', src='    '),
-                trt.Token(name='STRING', src=f"'{''.join(chunk)}'"),
-                trt.Token(name='NL', src='\n'),
+                tks.Token(name='UNIMPORTANT_WS', src='    '),
+                tks.Token(name='STRING', src=f"'{''.join(chunk)}'"),
+                tks.Token(name='NL', src='\n'),
             ])
 
         out.append([
-            trt.Token(name='OP', src=')'),
-            trt.Token(name='NEWLINE', src='\n'),
+            tks.Token(name='OP', src=')'),
+            tks.Token(name='NEWLINE', src='\n'),
         ])
 
         return out
@@ -87,12 +84,12 @@ def build_resource_lines(
         rt = rt.replace('\\', '\\\\')  # Escape backslashes
         rt = rt.replace('"""', r'\"\"\"')
         return [[
-            trt.Token(name='NAME', src=rsrc.variable),
-            trt.Token(name='UNIMPORTANT_WS', src=' '),
-            trt.Token(name='OP', src='='),
-            trt.Token(name='UNIMPORTANT_WS', src=' '),
-            trt.Token(name='STRING', src=f'"""\\\n{rt}"""  # noqa\n'),
-            trt.Token(name='NEWLINE', src=''),
+            tks.Token(name='NAME', src=rsrc.variable),
+            tks.Token(name='UNIMPORTANT_WS', src=' '),
+            tks.Token(name='OP', src='='),
+            tks.Token(name='UNIMPORTANT_WS', src=' '),
+            tks.Token(name='STRING', src=f'"""\\\n{rt}"""  # noqa\n'),
+            tks.Token(name='NEWLINE', src=''),
         ]]
 
     else:

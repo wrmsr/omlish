@@ -5,7 +5,6 @@ import typing as ta
 from omlish import check
 
 from ..tokens import all as tks
-from .types import Tokens
 
 
 ##
@@ -22,11 +21,11 @@ class Import:
 
     mod_path: str | None
 
-    toks: Tokens = dc.field(repr=False)
+    toks: tks.Tokens = dc.field(repr=False)
 
 
 def make_import(
-        lts: Tokens,
+        lts: tks.Tokens,
         *,
         src_path: str,
         mounts: ta.Mapping[str, str],
@@ -90,7 +89,7 @@ def make_import(
         as_=as_,
 
         src_path=src_path,
-        line=ft.line,
+        line=check.not_none(ft.line),
 
         mod_path=mod_path,
 

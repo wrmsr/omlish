@@ -2461,7 +2461,10 @@ class DockerComposeRun(ExitStacked):
                 '-f', compose_file,
                 'run',
                 '--rm',
-                *itertools.chain.from_iterable(['-e', k] for k in (self._cfg.cmd.env or [])),
+                *itertools.chain.from_iterable(
+                    ['-e', k]
+                    for k in (self._cfg.cmd.env or [])
+                ),
                 *(self._cfg.run_options or []),
                 self._cfg.service,
                 'sh', '-c', shlex.quote(self._cfg.cmd.s),
@@ -3018,10 +3021,10 @@ def download_requirements(
             'pip',
             'download',
             '-d', '/requirements',
-            *itertools.chain.from_iterable([
+            *itertools.chain.from_iterable(
                 ['-r', f'/requirements_txt/{os.path.basename(rt)}']
                 for rt in requirements_txts
-            ]),
+            ),
         )
 
 

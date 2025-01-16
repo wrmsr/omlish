@@ -4,8 +4,6 @@ import logging
 import os.path
 import typing as ta
 
-import tokenize_rt as trt
-
 from omlish.logs import all as logs
 
 from ..cli import CliModule
@@ -91,8 +89,8 @@ class Processor:
         ##
 
         new_tks = list(interleave(
-            trt.Token(name='OP', src='.'),
-            [trt.Token(name='NAME', src=p) for p in rel_imp_name_parts],
+            tks.Token(name='OP', src='.'),
+            [tks.Token(name='NAME', src=p) for p in rel_imp_name_parts],
         ))
         out_tks = [
             *pfx,
@@ -111,7 +109,7 @@ class Processor:
         with open(src_file) as f:
             src = f.read()
 
-        ts = trt.src_to_tokens(src)
+        ts = tks.src_to_tokens(src)
         in_ls = tks.split_lines(ts)
         out_ls = [
             self.process_line_tks(

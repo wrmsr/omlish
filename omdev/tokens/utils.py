@@ -1,16 +1,10 @@
 import itertools
 import typing as ta
 
-from omlish import lang
+from .tokenizert import Token
 
 
-if ta.TYPE_CHECKING:
-    import tokenize_rt as trt
-else:
-    trt = lang.proxy_import('tokenize_rt')
-
-
-Tokens: ta.TypeAlias = ta.Sequence['trt.Token']
+Tokens: ta.TypeAlias = ta.Sequence[Token]
 
 
 ##
@@ -25,15 +19,15 @@ WS_NAMES = (
 )
 
 
-def is_ws(tok: 'trt.Token') -> bool:
+def is_ws(tok: Token) -> bool:
     return tok.name in WS_NAMES
 
 
 def ignore_ws(
-        toks: ta.Iterable['trt.Token'],
+        toks: ta.Iterable[Token],
         *,
         keep: ta.Container[str] = (),
-) -> ta.Iterable['trt.Token']:
+) -> ta.Iterable[Token]:
     return (
         t
         for t in toks
@@ -60,7 +54,7 @@ def join_lines(ls: ta.Iterable[Tokens]) -> str:
 
 
 def match_toks(
-        ts: ta.Iterable['trt.Token'],
+        ts: ta.Iterable[Token],
         pat: ta.Sequence[tuple[str | None, str | tuple[str, ...] | None]],
 ) -> bool:
     it = iter(ts)

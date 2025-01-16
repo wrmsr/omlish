@@ -1,8 +1,6 @@
 import dataclasses as dc
 import typing as ta
 
-import tokenize_rt as trt
-
 from omlish import collections as col
 from omlish import lang
 
@@ -15,7 +13,6 @@ from .resources import build_resource_lines
 from .resources import is_root_level_resources_read
 from .strip import split_header_lines
 from .strip import strip_header_lines
-from .types import Tokens
 from .typing import Typing
 from .typing import is_root_level_if_type_checking_block
 from .typing import make_typing
@@ -30,13 +27,13 @@ class SrcFile:
     path: str
 
     src: str = dc.field(repr=False)
-    tokens: Tokens = dc.field(repr=False)
-    lines: ta.Sequence[Tokens] = dc.field(repr=False)
+    tokens: tks.Tokens = dc.field(repr=False)
+    lines: ta.Sequence[tks.Tokens] = dc.field(repr=False)
 
-    header_lines: ta.Sequence[Tokens] = dc.field(repr=False)
+    header_lines: ta.Sequence[tks.Tokens] = dc.field(repr=False)
     imports: ta.Sequence[Import] = dc.field(repr=False)
     typings: ta.Sequence[Typing] = dc.field(repr=False)
-    content_lines: ta.Sequence[Tokens] = dc.field(repr=False)
+    content_lines: ta.Sequence[tks.Tokens] = dc.field(repr=False)
 
     ruff_noqa: ta.AbstractSet[str] = dc.field(repr=False)
 
@@ -51,7 +48,7 @@ def make_src_file(
     with open(path) as f:
         src = f.read().strip()
 
-    tokens = trt.src_to_tokens(src)
+    tokens = tks.src_to_tokens(src)
     lines = tks.split_lines(tokens)
 
     header_lines, cls = split_header_lines(lines)
@@ -61,7 +58,7 @@ def make_src_file(
 
     imps: list[Import] = []
     tys: list[Typing] = []
-    ctls: list[Tokens] = []
+    ctls: list[tks.Tokens] = []
 
     has_binary_resources = False
 

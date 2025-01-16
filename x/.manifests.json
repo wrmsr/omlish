@@ -1,16 +1,1 @@
-[
-  {
-    "module": ".mkenv",
-    "attr": "_CLI_MODULE",
-    "file": "x/mkenv.py",
-    "line": 129,
-    "value": {
-      "$omdev.cli.types.CliModule": {
-        "cmd_name": [
-          "mkenv"
-        ],
-        "mod_name": "x.mkenv"
-      }
-    }
-  }
-]
+[]

@@ -1,7 +1,6 @@
 """
 TODO:
  - detect file extension
- - quote values / handle newlines and such
 
 ==
 
@@ -10,24 +9,19 @@ eval $(om mkenv -e secrets.yml foo_access_token)
 """
 import argparse
 import json
+import shlex
 import sys
 import typing as ta
 
 from omlish import check
-from omlish import lang
+from omlish.configs.formats import DEFAULT_CONFIG_FILE_LOADER
 from omlish.specs import jmespath
-
-
-if ta.TYPE_CHECKING:
-    import yaml
-else:
-    yaml = lang.proxy_import('yaml')
 
 
 ##
 
 
-VALUE_TYPES = (
+VALUE_TYPES: tuple[type, ...] = (
     str,
     int,
     float,
@@ -89,7 +83,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file')
-    parser.add_argument('-e', '--eval', action='store_true')
+    parser.add_argument('-e', '--for-eval', action='store_true')
     parser.add_argument('-u', '--uppercase', action='store_true')
     parser.add_argument('item', nargs='*')
 
@@ -101,8 +95,8 @@ def _main() -> None:
         obj = json.loads(sys.stdin.read())
 
     else:
-        with open(args.file, 'r') as f:
-            obj = yaml.safe_load(f)
+        data = DEFAULT_CONFIG_FILE_LOADER.load_file(args.file)
+        obj = data.as_map()
 
     #
 
@@ -114,10 +108,10 @@ def _main() -> None:
 
     #
 
-    if args.eval:
+    if args.for_eval:
         cmd = ' '.join([
             'export',
-            *[f'{k}={v}' for k, v in items.items()],
+            *[f'{k}={qv if (qv := shlex.quote(v)) != v else v}' for k, v in items.items()],
         ])
         print(cmd)
 

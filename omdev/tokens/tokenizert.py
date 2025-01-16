@@ -1,3 +1,4 @@
+# @omlish-lite
 # ruff: noqa: UP006 UP007
 # Copyright (c) 2017 Anthony Sottile
 #
@@ -73,7 +74,7 @@ class Tokenization:
         )
 
     @classmethod
-    def _re_partition(cls, regex: re.Pattern[str], s: str) -> ta.Tuple[str, str, str]:
+    def _re_partition(cls, regex: ta.Pattern[str], s: str) -> ta.Tuple[str, str, str]:
         match = regex.search(s)
         if match:
             return s[:match.start()], s[slice(*match.span())], s[match.end():]

@@ -73,8 +73,8 @@ def download_requirements(
             'pip',
             'download',
             '-d', '/requirements',
-            *itertools.chain.from_iterable([
+            *itertools.chain.from_iterable(
                 ['-r', f'/requirements_txt/{os.path.basename(rt)}']
                 for rt in requirements_txts
-            ]),
+            ),
         )

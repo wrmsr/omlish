@@ -1,3 +1,4 @@
+# @omlish-lite
 # ruff: noqa: PT009 UP006 UP007
 # Copyright (c) 2017 Anthony Sottile
 #
@@ -31,26 +32,26 @@ class TestTokenizert(unittest.TestCase):
 
     def test_re_partition_match(self):
         ret = Tokenization._re_partition(re.compile('b'), 'abc')  # noqa
-        assert ret == ('a', 'b', 'c')
+        self.assertEqual(ret, ('a', 'b', 'c'))
 
     def test_offset_default_values(self):
-        assert TokenOffset() == TokenOffset(line=None, utf8_byte_offset=None)
+        self.assertEqual(TokenOffset(), TokenOffset(line=None, utf8_byte_offset=None))
 
     def test_token_offset(self):
         token = Token('NAME', 'x', line=1, utf8_byte_offset=2)
-        assert token.offset == TokenOffset(line=1, utf8_byte_offset=2)
+        self.assertEqual(token.offset, TokenOffset(line=1, utf8_byte_offset=2))
 
     def test_token_matches(self):
         token = Token('NAME', 'x', line=1, utf8_byte_offset=2)
-        assert token.matches(name='NAME', src='x')
-        assert not token.matches(name='OP', src='x')
-        assert not token.matches(name='NAME', src='y')
-        assert not token.matches(name='OP', src=':')
+        self.assertTrue(token.matches(name='NAME', src='x'))
+        self.assertFalse(token.matches(name='OP', src='x'))
+        self.assertFalse(token.matches(name='NAME', src='y'))
+        self.assertFalse(token.matches(name='OP', src=':'))
 
     def test_src_to_tokens_simple(self):
         src = 'x = 5\n'
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token('NAME', 'x', line=1, utf8_byte_offset=0),
             Token(TokenNames.UNIMPORTANT_WS, ' ', line=1, utf8_byte_offset=1),
             Token('OP', '=', line=1, utf8_byte_offset=2),
@@ -58,7 +59,7 @@ class TestTokenizert(unittest.TestCase):
             Token('NUMBER', '5', line=1, utf8_byte_offset=4),
             Token('NEWLINE', '\n', line=1, utf8_byte_offset=5),
             Token('ENDMARKER', '', line=2, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_escaped_nl(self):
         src = (
@@ -66,7 +67,7 @@ class TestTokenizert(unittest.TestCase):
             '    5\n'
         )
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token('NAME', 'x', line=1, utf8_byte_offset=0),
             Token(TokenNames.UNIMPORTANT_WS, ' ', line=1, utf8_byte_offset=1),
             Token('OP', '=', line=1, utf8_byte_offset=2),
@@ -76,7 +77,7 @@ class TestTokenizert(unittest.TestCase):
             Token('NUMBER', '5', line=2, utf8_byte_offset=4),
             Token('NEWLINE', '\n', line=2, utf8_byte_offset=5),
             Token('ENDMARKER', '', line=3, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_escaped_nl_no_left_ws(self):
         src = (
@@ -84,7 +85,7 @@ class TestTokenizert(unittest.TestCase):
             '    5\n'
         )
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token('NAME', 'x', line=1, utf8_byte_offset=0),
             Token(TokenNames.UNIMPORTANT_WS, ' ', line=1, utf8_byte_offset=1),
             Token('OP', '=', line=1, utf8_byte_offset=2),
@@ -93,7 +94,7 @@ class TestTokenizert(unittest.TestCase):
             Token('NUMBER', '5', line=2, utf8_byte_offset=4),
             Token('NEWLINE', '\n', line=2, utf8_byte_offset=5),
             Token('ENDMARKER', '', line=3, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_escaped_nl_windows(self):
         src = (
@@ -101,7 +102,7 @@ class TestTokenizert(unittest.TestCase):
             '    5\r\n'
         )
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token('NAME', 'x', line=1, utf8_byte_offset=0),
             Token(TokenNames.UNIMPORTANT_WS, ' ', line=1, utf8_byte_offset=1),
             Token('OP', '=', line=1, utf8_byte_offset=2),
@@ -111,7 +112,7 @@ class TestTokenizert(unittest.TestCase):
             Token('NUMBER', '5', line=2, utf8_byte_offset=4),
             Token('NEWLINE', '\r\n', line=2, utf8_byte_offset=5),
             Token('ENDMARKER', '', line=3, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_implicit_continue(self):
         src = (
@@ -121,7 +122,7 @@ class TestTokenizert(unittest.TestCase):
             ')\n'
         )
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token(name='NAME', src='x', line=1, utf8_byte_offset=0),
             Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=1),
             Token(name='OP', src='=', line=1, utf8_byte_offset=2),
@@ -139,15 +140,15 @@ class TestTokenizert(unittest.TestCase):
             Token(name='OP', src=')', line=4, utf8_byte_offset=0),
             Token(name='NEWLINE', src='\n', line=4, utf8_byte_offset=1),
             Token(name='ENDMARKER', src='', line=5, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_no_eol_eof(self):
         ret = Tokenization.src_to_tokens('1')
-        assert ret == [
+        self.assertEqual(ret, [
             Token('NUMBER', '1', line=1, utf8_byte_offset=0),
             Token('NEWLINE', '', line=1, utf8_byte_offset=1),
             Token('ENDMARKER', '', line=2, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_multiline_string(self):
         src = (
@@ -156,7 +157,7 @@ class TestTokenizert(unittest.TestCase):
             '""".format(1)\n'
         )
         ret = Tokenization.src_to_tokens(src)
-        assert ret == [
+        self.assertEqual(ret, [
             Token(name='NAME', src='x', line=1, utf8_byte_offset=0),
             Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=1),
             Token(name='OP', src='=', line=1, utf8_byte_offset=2),
@@ -169,13 +170,13 @@ class TestTokenizert(unittest.TestCase):
             Token(name='OP', src=')', line=3, utf8_byte_offset=12),
             Token(name='NEWLINE', src='\n', line=3, utf8_byte_offset=13),
             Token(name='ENDMARKER', src='', line=4, utf8_byte_offset=0),
-        ]
+        ])
 
     def test_src_to_tokens_fstring_with_escapes(self):
         src = 'f" a {{ {b} }} c"'
         ret = Tokenization.src_to_tokens(src)
         if sys.version_info >= (3, 12):  # noqa
-            assert ret == [
+            self.assertEqual(ret, [
                 Token(name='FSTRING_START', src='f"', line=1, utf8_byte_offset=0),
                 Token(name='FSTRING_MIDDLE', src=' a {{', line=1, utf8_byte_offset=2),  # noqa: E501
                 Token(name='FSTRING_MIDDLE', src=' ', line=1, utf8_byte_offset=7),
@@ -187,32 +188,32 @@ class TestTokenizert(unittest.TestCase):
                 Token(name='FSTRING_END', src='"', line=1, utf8_byte_offset=16),
                 Token(name='NEWLINE', src='', line=1, utf8_byte_offset=17),
                 Token(name='ENDMARKER', src='', line=2, utf8_byte_offset=0),
-            ]
+            ])
         else:
-            assert ret == [
+            self.assertEqual(ret, [
                 Token(name='STRING', src='f" a {{ {b} }} c"', line=1, utf8_byte_offset=0),  # noqa: E501
                 Token(name='NEWLINE', src='', line=1, utf8_byte_offset=17),
                 Token(name='ENDMARKER', src='', line=2, utf8_byte_offset=0),
-            ]
+            ])
 
     def test_src_to_tokens_fstring_with_named_escapes(self):
         src = r'f" \N{SNOWMAN} "'
         ret = Tokenization.src_to_tokens(src)
         if sys.version_info >= (3, 12):  # noqa
-            assert ret == [
+            self.assertEqual(ret, [
                 Token(name='FSTRING_START', src='f"', line=1, utf8_byte_offset=0),
                 Token(name='FSTRING_MIDDLE', src=' \\N{SNOWMAN}', line=1, utf8_byte_offset=2),  # noqa: E501
                 Token(name='FSTRING_MIDDLE', src=' ', line=1, utf8_byte_offset=14),
                 Token(name='FSTRING_END', src='"', line=1, utf8_byte_offset=15),
                 Token(name='NEWLINE', src='', line=1, utf8_byte_offset=16),
                 Token(name='ENDMARKER', src='', line=2, utf8_byte_offset=0),
-            ]
-        else:  # pragma: <3.12 cover
-            assert ret == [
+            ])
+        else:
+            self.assertEqual(ret, [
                 Token(name='STRING', src='f" \\N{SNOWMAN} "', line=1, utf8_byte_offset=0),  # noqa: E501
                 Token(name='NEWLINE', src='', line=1, utf8_byte_offset=16),
                 Token(name='ENDMARKER', src='', line=2, utf8_byte_offset=0),
-            ]
+            ])
 
     def test_roundtrip_tokenize(self):
         for contents in (
@@ -235,7 +236,7 @@ class TestTokenizert(unittest.TestCase):
             ),
         ):
             ret = Tokenization.tokens_to_src(Tokenization.src_to_tokens(contents))
-            assert ret == contents
+            self.assertEqual(ret, contents)
 
     def test_parse_string_literal(self):
         for s, expected in (
@@ -244,20 +245,20 @@ class TestTokenizert(unittest.TestCase):
             ('F"hi"', ('F', '"hi"')),
             ('r"""x"""', ('r', '"""x"""')),
         ):
-            assert Tokenization.parse_string_literal(s) == expected
+            self.assertEqual(Tokenization.parse_string_literal(s), expected)
 
     def test_rfind_string_parts_only_literal(self):
         for src in ('""', "b''", "r'''.'''"):
             tokens = Tokenization.src_to_tokens(src)
-            assert Tokenization.rfind_string_parts(tokens, 0) == (0,)
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, 0), (0,))
 
     def test_rfind_string_parts_py312_plus(self):
         # in 3.12 this was changed to have its own tokenization (not as a string)
         tokens = Tokenization.src_to_tokens("f''")
         if sys.version_info >= (3, 12):  # noqa
-            assert Tokenization.rfind_string_parts(tokens, 0) == ()
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, 0), ())
         else:
-            assert Tokenization.rfind_string_parts(tokens, 0) == (0,)
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, 0), (0,))
 
     def test_rfind_string_parts_multiple_tokens(self):
         for src, n, expected in (
@@ -281,11 +282,11 @@ class TestTokenizert(unittest.TestCase):
             ),
         ):
             tokens = Tokenization.src_to_tokens(src)
-            assert Tokenization.rfind_string_parts(tokens, n) == expected
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, n), expected)
 
     def test_rfind_string_parts_not_a_string(self):
         tokens = Tokenization.src_to_tokens('print')
-        assert Tokenization.rfind_string_parts(tokens, 0) == ()
+        self.assertEqual(Tokenization.rfind_string_parts(tokens, 0), ())
 
     def test_rfind_string_parts_end_of_call_looks_like_string(self):
         for src, n in (
@@ -299,7 +300,7 @@ class TestTokenizert(unittest.TestCase):
             ('x(0)("foo")', 6),
         ):
             tokens = Tokenization.src_to_tokens(src)
-            assert Tokenization.rfind_string_parts(tokens, n) == ()
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, n), ())
 
     def test_rfind_string_parts_parenthesized(self):
         for src, n, expected_i in (
@@ -313,14 +314,14 @@ class TestTokenizert(unittest.TestCase):
             ('a or ("foo")', 6, 5),
         ):
             tokens = Tokenization.src_to_tokens(src)
-            assert Tokenization.rfind_string_parts(tokens, n) == (expected_i,)
+            self.assertEqual(Tokenization.rfind_string_parts(tokens, n), (expected_i,))
 
     # def test_main(self, capsys, tmp_path):
     #     f = tmp_path.joinpath('simple.py')
     #     f.write_text('x = 5\n')
     #     main((str(f),))
     #     out, _ = capsys.readouterr()
-    #     assert out == (
+    #     self.assertEqual(out, (
     #         "1:0 NAME 'x'\n"
     #         "1:1 UNIMPORTANT_WS ' '\n"
     #         "1:2 OP '='\n"
@@ -328,7 +329,7 @@ class TestTokenizert(unittest.TestCase):
     #         "1:4 NUMBER '5'\n"
     #         "1:5 NEWLINE '\\n'\n"
     #         "2:0 ENDMARKER ''\n"
-    #     )
+    #     ))
 
     def test_curly_escape(self):
         for s, expected in (
@@ -337,4 +338,4 @@ class TestTokenizert(unittest.TestCase):
             (r'\N{SNOWMAN}', r'\N{SNOWMAN}'),
             (r'\N{SNOWMAN} {bar}', r'\N{SNOWMAN} {{bar}}'),
         ):
-            assert Tokenization.curly_escape(s) == expected
+            self.assertEqual(Tokenization.curly_escape(s), expected)

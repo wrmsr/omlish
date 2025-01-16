@@ -1,7 +1,8 @@
 import dataclasses as dc
 
+from omlish import check
+
 from ..tokens import all as tks
-from .types import Tokens
 
 
 ##
@@ -18,11 +19,11 @@ class Typing:
     src_path: str
     line: int
 
-    toks: Tokens = dc.field(repr=False)
+    toks: tks.Tokens = dc.field(repr=False)
 
 
 def _is_typing(
-        lts: Tokens,
+        lts: tks.Tokens,
         *,
         exclude_newtypes: bool = False,
 ) -> bool:
@@ -48,7 +49,7 @@ def _is_typing(
 
 
 def make_typing(
-        lts: Tokens,
+        lts: tks.Tokens,
         *,
         src_path: str,
 ) -> Typing | None:
@@ -63,7 +64,7 @@ def make_typing(
         src=tks.join_toks(lts),
 
         src_path=src_path,
-        line=ft.line,
+        line=check.not_none(ft.line),
 
         toks=lts,
     )
@@ -72,7 +73,7 @@ def make_typing(
 ##
 
 
-def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
+def is_root_level_if_type_checking_block(lts: tks.Tokens) -> bool:
     return tks.match_toks(tks.ignore_ws(lts, keep=['INDENT']), [
         ('NAME', 'if'),
         ('NAME', 'ta'),
@@ -83,7 +84,7 @@ def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
 
 
 def skip_root_level_if_type_checking_block(
-        cls: list[Tokens],
+        cls: list[tks.Tokens],
         i: int,
 ) -> int:
     def skip_block():

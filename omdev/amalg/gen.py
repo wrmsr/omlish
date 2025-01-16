@@ -12,7 +12,6 @@ from ..tokens import all as tks
 from .srcfiles import SrcFile
 from .srcfiles import make_src_file
 from .strip import strip_main_lines
-from .types import Tokens
 from .typing import Typing
 
 
@@ -71,7 +70,7 @@ class AmalgGenerator:
         return self._src_files()[self._main_path]
 
     @cached.function
-    def _header_lines(self) -> list[Tokens]:
+    def _header_lines(self) -> list[str]:
         header_lines = []
 
         if self._main_file().header_lines:

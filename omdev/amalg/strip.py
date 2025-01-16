@@ -3,7 +3,6 @@ import typing as ta
 
 from .. import magic
 from ..tokens import all as tks
-from .types import Tokens
 
 
 ##
@@ -12,7 +11,7 @@ from .types import Tokens
 HEADER_NAMES = (*tks.WS_NAMES, 'COMMENT', 'STRING')
 
 
-def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[Tokens]]:
+def split_header_lines(lines: ta.Iterable[tks.Tokens]) -> tuple[list[tks.Tokens], list[tks.Tokens]]:
     ws = []
     nws = []
     for line in (it := iter(lines)):
@@ -31,7 +30,7 @@ def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[T
 IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
 
 
-def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
+def strip_main_lines(cls: ta.Sequence[tks.Tokens]) -> list[tks.Tokens]:
     out = []
 
     for l in (it := iter(cls)):
@@ -59,7 +58,7 @@ STRIPPED_HEADER_PAT = magic.compile_magic_style_pat(
 )
 
 
-def strip_header_lines(hls: ta.Sequence[Tokens]) -> list[Tokens]:
+def strip_header_lines(hls: ta.Sequence[tks.Tokens]) -> list[tks.Tokens]:
     if hls and tks.join_toks(hls[0]).startswith('#!'):
         hls = hls[1:]
     out = []

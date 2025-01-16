@@ -1,17 +1,14 @@
 import ast
 
-import tokenize_rt as trt
-
 from omlish import check
 
 from ..tokens import all as tks
-from .types import Tokens
 
 
 ##
 
 
-def is_manifest_comment(line: Tokens) -> bool:
+def is_manifest_comment(line: tks.Tokens) -> bool:
     if not line:
         return False
 
@@ -22,10 +19,10 @@ def is_manifest_comment(line: Tokens) -> bool:
 
 
 def comment_out_manifest_comment(
-        line: Tokens,
-        cls: list[Tokens],
+        line: tks.Tokens,
+        cls: list[tks.Tokens],
         i: int,
-) -> tuple[list[Tokens], int]:
+) -> tuple[list[tks.Tokens], int]:
     mls = [line]
     while True:
         mls.append(cls[i])
@@ -41,8 +38,8 @@ def comment_out_manifest_comment(
         check.isinstance(check.single(mmod.body), ast.Assign)
         break
 
-    out: list[Tokens] = [
-        [trt.Token('COMMENT', '# ' + tks.join_toks(ml))]
+    out: list[tks.Tokens] = [
+        [tks.Token('COMMENT', '# ' + tks.join_toks(ml))]
         for ml in mls
     ]
 
