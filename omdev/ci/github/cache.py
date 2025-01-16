@@ -126,7 +126,7 @@ class GithubV1CacheShellClient:
 
         obj_json = json_dumps_compact(obj)
 
-        return dc.replace(curl_cmd, s=f'echo {shlex.quote(obj_json)} | {curl_cmd.s} -d -')
+        return dc.replace(curl_cmd, s=f'{curl_cmd.s} -d {shlex.quote(obj_json)}')
 
     #
 
@@ -253,37 +253,6 @@ class GithubV1CacheShellClient:
             key: str,
             in_file: str,
     ) -> None:
-        """
-        export CACHE_ID=$(curl \
-          -v \
-          -X POST \
-          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
-          -H 'Content-Type: application/json' \
-          -H 'Accept: application/json;api-version=6.0-preview.1' \
-          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-          -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
-          | jq .cacheId)
-
-        curl \
-          -v \
-          -X PATCH \
-          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-          -H 'Content-Type: application/octet-stream' \
-          -H 'Accept: application/json;api-version=6.0-preview.1' \
-          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-          -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
-          --data-binary @"$FILE"
-
-        curl \
-          -v \
-          -X POST \
-          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-          -H 'Content-Type: application/json' \
-          -H 'Accept: application/json;api-version=6.0-preview.1' \
-          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-          -d '{"size": '"$(stat --format="%s" $FILE)"'}'
-        """
-
         check.state(os.path.isfile(in_file))
 
         file_size = os.stat(in_file).st_size
@@ -301,8 +270,8 @@ class GithubV1CacheShellClient:
             success_status_codes=[201],
         ))
         reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
-            reserve_resp_obj,
             GithubCacheServiceV1.ReserveCacheResponse,
+            reserve_resp_obj,
         )
 
         raise NotImplementedError
