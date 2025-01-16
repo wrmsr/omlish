@@ -39,6 +39,7 @@ curl -s \
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.strings import camel_case
 from omlish.lite.strings import snake_case
 
 
@@ -58,7 +59,14 @@ class GithubCacheServiceV1:
     #
 
     @classmethod
-    def load_dataclass(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
+    def dataclass_to_json(cls, obj: ta.Any) -> ta.Any:
+        return {
+            camel_case(k, lower=True): v
+            for k, v in dc.asdict(obj).items()
+        }
+
+    @classmethod
+    def dataclass_from_json(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
         return dcls(**{
             snake_case(k): v
             for k, v in obj.items()
@@ -84,8 +92,8 @@ class GithubCacheServiceV1:
     @dc.dataclass(frozen=True)
     class ReserveCacheRequest:
         key: str
-        version: ta.Optional[str]
         cache_size: ta.Optional[int]
+        version: ta.Optional[str] = None
 
     @dc.dataclass(frozen=True)
     class ReserveCacheResponse:

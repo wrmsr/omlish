@@ -3,10 +3,12 @@
 import dataclasses as dc
 import json
 import os
+import shlex
 import typing as ta
 
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
+from omlish.lite.json import json_dumps_compact
 from omlish.subprocesses import subprocesses
 
 from ..cache import ShellCache
@@ -73,10 +75,10 @@ class GithubV1CacheShellClient:
             method: str,
             url: str,
             *,
-            json: bool = False,
+            json_content: bool = False,
             content_type: ta.Optional[str] = None,
     ) -> ShellCmd:
-        if content_type is None and json:
+        if content_type is None and json_content:
             content_type = 'application/json'
 
         env = {}
@@ -107,6 +109,25 @@ class GithubV1CacheShellClient:
             cmd,
             env=env,
         )
+
+    def build_post_json_curl_cmd(
+            self,
+            url: str,
+            obj: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ShellCmd:
+        curl_cmd = self.build_curl_cmd(
+            'POST',
+            url,
+            json_content=True,
+            **kwargs,
+        )
+
+        obj_json = json_dumps_compact(obj)
+
+        return dc.replace(curl_cmd, s=f'echo {shlex.quote(obj_json)} | {curl_cmd.s}')
+
+    #
 
     @dc.dataclass()
     class CurlError(RuntimeError):
@@ -194,7 +215,7 @@ class GithubV1CacheShellClient:
         if obj is None:
             return None
 
-        return GithubCacheServiceV1.load_dataclass(
+        return GithubCacheServiceV1.dataclass_from_json(
             GithubCacheServiceV1.ArtifactCacheEntry,
             obj,
         )
@@ -220,6 +241,67 @@ class GithubV1CacheShellClient:
     ) -> None:
         dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
         dl_cmd.run(subprocesses.check_call)
+
+    #
+
+    def upload_cache_entry(
+            self,
+            key: str,
+            in_file: str,
+    ) -> None:
+        """
+        export CACHE_ID=$(curl \
+          -v \
+          -X POST \
+          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
+          -H 'Content-Type: application/json' \
+          -H 'Accept: application/json;api-version=6.0-preview.1' \
+          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+          -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
+          | jq .cacheId)
+
+        curl \
+          -v \
+          -X PATCH \
+          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+          -H 'Content-Type: application/octet-stream' \
+          -H 'Accept: application/json;api-version=6.0-preview.1' \
+          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+          -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
+          --data-binary @"$FILE"
+
+        curl \
+          -v \
+          -X POST \
+          "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+          -H 'Content-Type: application/json' \
+          -H 'Accept: application/json;api-version=6.0-preview.1' \
+          -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+          -d '{"size": '"$(stat --format="%s" $FILE)"'}'
+        """
+
+        check.state(os.path.isfile(in_file))
+
+        file_size = os.stat(in_file).st_size
+
+        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
+            key=key,
+            cache_size=file_size,
+        )
+        reserve_cmd = self.build_post_json_curl_cmd(
+            'caches',
+            GithubCacheServiceV1.dataclass_to_json(reserve_req),
+        )
+        reserve_resp_obj: ta.Any = check.not_none(self.run_json_curl_cmd(
+            reserve_cmd,
+            success_status_codes=[201],
+        ))
+        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
+            reserve_resp_obj,
+            GithubCacheServiceV1.ReserveCacheResponse,
+        )
+
+        raise NotImplementedError
 
 
 ##
