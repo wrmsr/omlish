@@ -139,12 +139,15 @@ class CiCli(ArgparseCli):
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
-            directory_file_cache = DirectoryFileCache(cache_dir)
-            file_cache = directory_file_cache
-            shell_cache = DirectoryShellCache(directory_file_cache)
 
-        if shell_cache is not None and self.args.github_cache:
-            shell_cache = GithubShellCache(shell_cache)
+            directory_file_cache = DirectoryFileCache(cache_dir)
+
+            file_cache = directory_file_cache
+
+            if self.args.github_cache:
+                shell_cache = GithubShellCache(cache_dir)
+            else:
+                shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 

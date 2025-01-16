@@ -982,6 +982,8 @@ class DirectoryFileCache(FileCache):
 
         self._dir = dir
 
+    #
+
     def get_cache_file_path(
             self,
             key: str,
@@ -991,6 +993,11 @@ class DirectoryFileCache(FileCache):
         if make_dirs:
             os.makedirs(self._dir, exist_ok=True)
         return os.path.join(self._dir, key)
+
+    def format_incomplete_file(self, f: str) -> str:
+        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+    #
 
     def get_file(self, key: str) -> ta.Optional[str]:
         cache_file_path = self.get_cache_file_path(key)
@@ -1090,11 +1097,11 @@ class DirectoryShellCache(ShellCache):
         return ShellCmd(f'cat {shlex.quote(f)}')
 
     class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(self, f: str) -> None:
+        def __init__(self, tf: str, f: str) -> None:
             super().__init__()
 
+            self._tf = tf
             self._f = f
-            self._tf = os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
 
         @property
         def cmd(self) -> ShellCmd:
@@ -1108,7 +1115,7 @@ class DirectoryShellCache(ShellCache):
 
     def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return self._PutFileCmdContext(f)
+        return self._PutFileCmdContext(self._dfc.format_incomplete_file(f), f)
 
 
 ########################################
@@ -2902,57 +2909,75 @@ class GithubV1CacheShellClient:
 class GithubShellCache(ShellCache):
     def __init__(
             self,
-            local: ShellCache,
+            dir: str,  # noqa
             *,
             client: ta.Optional[GithubV1CacheShellClient] = None,
     ) -> None:
         super().__init__()
 
-        self._local = local
+        self._dir = check.not_none(dir)
 
         if client is None:
             client = GithubV1CacheShellClient()
         self._client = client
 
+        self._local = DirectoryFileCache(self._dir)
+
     def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
-        if (local_cmd := self._local.get_file_cmd(key)) is not None:
-            return local_cmd
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return ShellCmd(f'cat {shlex.quote(local_file)}')
 
         if (entry := self._client.run_get_entry(key)) is None:
             return None
 
-        tmp_file = make_temp_file()
-        with defer(lambda: os.unlink(tmp_file)):
+        tmp_file = self._local.format_incomplete_file(local_file)
+        try:
             self._client.download_get_entry(entry, tmp_file)
 
-            with self._local.put_file_cmd(key) as put:
-                put_cmd = dc.replace(put.cmd, s=f'cat {tmp_file} | {put.cmd.s}')
-                put_cmd.run(subprocesses.check_call)
+            os.replace(tmp_file, local_file)
 
-        return check.not_none(self._local.get_file_cmd(key))
+        except BaseException:  # noqa
+            os.unlink(tmp_file)
+
+            raise
+
+        return ShellCmd(f'cat {shlex.quote(local_file)}')
 
     class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(self, key: str, lp: ShellCache.PutFileCmdContext) -> None:
+        def __init__(
+                self,
+                owner: 'GithubShellCache',
+                key: str,
+                tmp_file: str,
+                local_file: str,
+        ) -> None:
             super().__init__()
 
+            self._owner = owner
             self._key = key
-            self._lp = lp
+            self._tmp_file = tmp_file
+            self._local_file = local_file
 
         @property
         def cmd(self) -> ShellCmd:
-            return self._lp.cmd
+            return ShellCmd(f'cat > {shlex.quote(self._tmp_file)}')
 
         def _commit(self) -> None:
-            self._lp.commit()
+            os.replace(self._tmp_file, self._local_file)
+
             raise NotImplementedError
 
         def _abort(self) -> None:
-            self._lp.abort()
+            os.unlink(self._tmp_file)
 
     def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
+        local_file = self._local.get_cache_file_path(key, make_dirs=True)
         return self._PutFileCmdContext(
+            self,
             key,
-            self._local.put_file_cmd(key),
+            self._local.format_incomplete_file(local_file),
+            local_file,
         )
 
 
@@ -3387,12 +3412,15 @@ class CiCli(ArgparseCli):
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
-            directory_file_cache = DirectoryFileCache(cache_dir)
-            file_cache = directory_file_cache
-            shell_cache = DirectoryShellCache(directory_file_cache)
 
-        if shell_cache is not None and self.args.github_cache:
-            shell_cache = GithubShellCache(shell_cache)
+            directory_file_cache = DirectoryFileCache(cache_dir)
+
+            file_cache = directory_file_cache
+
+            if self.args.github_cache:
+                shell_cache = GithubShellCache(cache_dir)
+            else:
+                shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 

@@ -32,6 +32,8 @@ class DirectoryFileCache(FileCache):
 
         self._dir = dir
 
+    #
+
     def get_cache_file_path(
             self,
             key: str,
@@ -41,6 +43,11 @@ class DirectoryFileCache(FileCache):
         if make_dirs:
             os.makedirs(self._dir, exist_ok=True)
         return os.path.join(self._dir, key)
+
+    def format_incomplete_file(self, f: str) -> str:
+        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+    #
 
     def get_file(self, key: str) -> ta.Optional[str]:
         cache_file_path = self.get_cache_file_path(key)
@@ -140,11 +147,11 @@ class DirectoryShellCache(ShellCache):
         return ShellCmd(f'cat {shlex.quote(f)}')
 
     class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(self, f: str) -> None:
+        def __init__(self, tf: str, f: str) -> None:
             super().__init__()
 
+            self._tf = tf
             self._f = f
-            self._tf = os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
 
         @property
         def cmd(self) -> ShellCmd:
@@ -158,4 +165,4 @@ class DirectoryShellCache(ShellCache):
 
     def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return self._PutFileCmdContext(f)
+        return self._PutFileCmdContext(self._dfc.format_incomplete_file(f), f)
