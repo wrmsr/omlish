@@ -6,6 +6,7 @@ TODO:
  - ** class @dataclass Raise - user message should be able to be an exception type or instance or factory
 """
 import collections
+import os
 import threading
 import typing as ta
 
@@ -46,6 +47,15 @@ class Checks:
     def unregister_on_raise(self, fn: CheckOnRaiseFn) -> None:
         with self._config_lock:
             self._on_raise_fns = [e for e in self._on_raise_fns if e != fn]
+
+    #
+
+    def register_on_raise_breakpoint_if_env_var_set(self, key: str) -> None:
+        def on_raise(exc: Exception) -> None:  # noqa
+            if key in os.environ:
+                breakpoint()  # noqa
+
+        self.register_on_raise(on_raise)
 
     #
 

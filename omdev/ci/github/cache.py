@@ -187,6 +187,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         #
 
+        print(f'{file_size=}')
         max_chunk_size = 32 * 1024 * 1024
         ofs = 0
         while ofs < file_size:
@@ -203,6 +204,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
                 f'dd if={in_file} bs=1 iseek={ofs} count={sz} status=none',
                 f'{patch_cmd.s} --data-binary -',
             ]))
+            print(f'{patch_data_cmd.s=}')
             patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
             check.equal(patch_result.status_code, 204)
             ofs += sz

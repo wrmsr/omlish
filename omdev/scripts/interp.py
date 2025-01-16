@@ -606,6 +606,15 @@ class Checks:
 
     #
 
+    def register_on_raise_breakpoint_if_env_var_set(self, key: str) -> None:
+        def on_raise(exc: Exception) -> None:  # noqa
+            if key in os.environ:
+                breakpoint()  # noqa
+
+        self.register_on_raise(on_raise)
+
+    #
+
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory
 
