@@ -3339,7 +3339,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
                 },
             )
             patch_data_cmd = dc.replace(patch_cmd, s=' | '.join([
-                f'dd if={in_file} bs=1 ofs={ofs} count={sz} status=none',
+                f'dd if={in_file} bs=1 ifs={ofs} count={sz} status=none',
                 f'{patch_cmd.s} --data-binary -',
             ]))
             patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
