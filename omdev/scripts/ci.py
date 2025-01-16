@@ -76,185 +76,6 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 
 
 ########################################
-# ../github/cacheapi.py
-"""
-export FILE_SIZE=$(stat --format="%s" $FILE)
-
-export CACHE_ID=$(curl -s \
-  -X POST \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
-  | jq .cacheId)
-
-curl -s \
-  -X PATCH \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-  -H 'Content-Type: application/octet-stream' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
-  --data-binary @"$FILE"
-
-curl -s \
-  -X POST \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
-
-curl -s \
-  -X GET \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  | jq .
-"""
-
-
-class GithubCacheServiceV1:
-    API_VERSION = '6.0-preview.1'
-
-    @classmethod
-    def get_service_url(cls, base_url: str) -> str:
-        return f'{base_url.rstrip("/")}/_apis/artifactcache'
-
-    @dc.dataclass(frozen=True)
-    class ArtifactCacheEntry:
-        cache_key: ta.Optional[str]
-        scope: ta.Optional[str]
-        cache_version: ta.Optional[str]
-        creation_time: ta.Optional[str]
-        archive_location: ta.Optional[str]
-
-    @dc.dataclass(frozen=True)
-    class ArtifactCacheList:
-        total_count: int
-        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class ReserveCacheRequest:
-        key: str
-        version: ta.Optional[str]
-        cache_size: ta.Optional[int]
-
-    @dc.dataclass(frozen=True)
-    class ReserveCacheResponse:
-        cache_id: int
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CommitCacheRequest:
-        size: int
-
-    #
-
-    class CompressionMethod:
-        GZIP = 'gzip'
-        ZSTD_WITHOUT_LONG = 'zstd-without-long'
-        ZSTD = 'zstd'
-
-    @dc.dataclass(frozen=True)
-    class InternalCacheOptions:
-        compression_method: ta.Optional[str]  # CompressionMethod
-        enable_cross_os_archive: ta.Optional[bool]
-        cache_size: ta.Optional[int]
-
-
-class GithubCacheServiceV2:
-    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
-
-    @dc.dataclass(frozen=True)
-    class Method:
-        name: str
-        request: type
-        response: type
-
-    #
-
-    class CacheScopePermission:
-        READ = 1
-        WRITE = 2
-        ALL = READ | WRITE
-
-    @dc.dataclass(frozen=True)
-    class CacheScope:
-        scope: str
-        permission: int  # CacheScopePermission
-
-    @dc.dataclass(frozen=True)
-    class CacheMetadata:
-        repository_id: int
-        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryRequest:
-        key: str
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryResponse:
-        ok: bool
-        signed_upload_url: str
-
-    CREATE_CACHE_ENTRY_METHOD = Method(
-        'CreateCacheEntry',
-        CreateCacheEntryRequest,
-        CreateCacheEntryResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadRequest:
-        key: str
-        size_bytes: int
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadResponse:
-        ok: bool
-        entry_id: str
-
-    FINALIZE_CACHE_ENTRY_METHOD = Method(
-        'FinalizeCacheEntryUpload',
-        FinalizeCacheEntryUploadRequest,
-        FinalizeCacheEntryUploadResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlRequest:
-        key: str
-        restore_keys: ta.Sequence[str]
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlResponse:
-        ok: bool
-        signed_download_url: str
-        matched_key: str
-
-    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD = Method(
-        'GetCacheEntryDownloadURL',
-        GetCacheEntryDownloadUrlRequest,
-        GetCacheEntryDownloadUrlResponse,
-    )
-
-
-########################################
 # ../shell.py
 
 
@@ -927,6 +748,104 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
+# ../../../omlish/lite/strings.py
+
+
+##
+
+
+def camel_case(name: str, *, lower: bool = False) -> str:
+    if not name:
+        return ''
+    s = ''.join(map(str.capitalize, name.split('_')))  # noqa
+    if lower:
+        s = s[0].lower() + s[1:]
+    return s
+
+
+def snake_case(name: str) -> str:
+    uppers: list[int | None] = [i for i, c in enumerate(name) if c.isupper()]
+    return '_'.join([name[l:r].lower() for l, r in zip([None, *uppers], [*uppers, None])]).strip('_')
+
+
+##
+
+
+def is_dunder(name: str) -> bool:
+    return (
+        name[:2] == name[-2:] == '__' and
+        name[2:3] != '_' and
+        name[-3:-2] != '_' and
+        len(name) > 4
+    )
+
+
+def is_sunder(name: str) -> bool:
+    return (
+        name[0] == name[-1] == '_' and
+        name[1:2] != '_' and
+        name[-2:-1] != '_' and
+        len(name) > 2
+    )
+
+
+##
+
+
+def strip_with_newline(s: str) -> str:
+    if not s:
+        return ''
+    return s.strip() + '\n'
+
+
+@ta.overload
+def split_keep_delimiter(s: str, d: str) -> str:
+    ...
+
+
+@ta.overload
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
+    ...
+
+
+def split_keep_delimiter(s, d):
+    ps = []
+    i = 0
+    while i < len(s):
+        if (n := s.find(d, i)) < i:
+            ps.append(s[i:])
+            break
+        ps.append(s[i:n + 1])
+        i = n + 1
+    return ps
+
+
+##
+
+
+def attr_repr(obj: ta.Any, *attrs: str) -> str:
+    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
+
+
+##
+
+
+FORMAT_NUM_BYTES_SUFFIXES: ta.Sequence[str] = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB']
+
+
+def format_num_bytes(num_bytes: int) -> str:
+    for i, suffix in enumerate(FORMAT_NUM_BYTES_SUFFIXES):
+        value = num_bytes / 1024 ** i
+        if num_bytes < 1024 ** (i + 1):
+            if value.is_integer():
+                return f'{int(value)}{suffix}'
+            else:
+                return f'{value:.2f}{suffix}'
+
+    return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
 # ../../../omlish/logs/filters.py
 
 
@@ -1190,6 +1109,199 @@ class DirectoryShellCache(ShellCache):
     def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
         f = self._dfc.get_cache_file_path(key, make_dirs=True)
         return self._PutFileCmdContext(f)
+
+
+########################################
+# ../github/cacheapi.py
+"""
+export FILE_SIZE=$(stat --format="%s" $FILE)
+
+export CACHE_ID=$(curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
+  | jq .cacheId)
+
+curl -s \
+  -X PATCH \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/octet-stream' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
+  --data-binary @"$FILE"
+
+curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
+
+curl -s \
+  -X GET \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  | jq .
+"""
+
+
+##
+
+
+class GithubCacheServiceV1:
+    API_VERSION = '6.0-preview.1'
+
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/_apis/artifactcache'
+
+    #
+
+    @classmethod
+    def load_dataclass(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
+        return dcls(**{
+            camel_case(k, lower=True): v
+            for k, v in obj.items()
+        })
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheEntry:
+        cache_key: ta.Optional[str]
+        scope: ta.Optional[str]
+        cache_version: ta.Optional[str]
+        creation_time: ta.Optional[str]
+        archive_location: ta.Optional[str]
+
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheList:
+        total_count: int
+        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheRequest:
+        key: str
+        version: ta.Optional[str]
+        cache_size: ta.Optional[int]
+
+    @dc.dataclass(frozen=True)
+    class ReserveCacheResponse:
+        cache_id: int
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CommitCacheRequest:
+        size: int
+
+    #
+
+    class CompressionMethod:
+        GZIP = 'gzip'
+        ZSTD_WITHOUT_LONG = 'zstd-without-long'
+        ZSTD = 'zstd'
+
+    @dc.dataclass(frozen=True)
+    class InternalCacheOptions:
+        compression_method: ta.Optional[str]  # CompressionMethod
+        enable_cross_os_archive: ta.Optional[bool]
+        cache_size: ta.Optional[int]
+
+
+class GithubCacheServiceV2:
+    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
+
+    @dc.dataclass(frozen=True)
+    class Method:
+        name: str
+        request: type
+        response: type
+
+    #
+
+    class CacheScopePermission:
+        READ = 1
+        WRITE = 2
+        ALL = READ | WRITE
+
+    @dc.dataclass(frozen=True)
+    class CacheScope:
+        scope: str
+        permission: int  # CacheScopePermission
+
+    @dc.dataclass(frozen=True)
+    class CacheMetadata:
+        repository_id: int
+        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryRequest:
+        key: str
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryResponse:
+        ok: bool
+        signed_upload_url: str
+
+    CREATE_CACHE_ENTRY_METHOD = Method(
+        'CreateCacheEntry',
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadRequest:
+        key: str
+        size_bytes: int
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadResponse:
+        ok: bool
+        entry_id: str
+
+    FINALIZE_CACHE_ENTRY_METHOD = Method(
+        'FinalizeCacheEntryUpload',
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlRequest:
+        key: str
+        restore_keys: ta.Sequence[str]
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlResponse:
+        ok: bool
+        signed_download_url: str
+        matched_key: str
+
+    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD = Method(
+        'GetCacheEntryDownloadURL',
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    )
 
 
 ########################################
@@ -2649,10 +2761,17 @@ class GithubV1CacheShellClient:
             f'cache?keys={key}',
         )
 
-    def run_get(self, key: str) -> ta.Any:
+    def run_get(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
         get_curl_cmd = self.build_get_curl_cmd(key)
-        result = self.run_json_curl_cmd(get_curl_cmd)
-        return result
+
+        obj = self.run_json_curl_cmd(get_curl_cmd)
+        if obj is None:
+            return None
+
+        return GithubCacheServiceV1.load_dataclass(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        )
 
 
 ##
@@ -2979,10 +3098,12 @@ class GithubCli(ArgparseCli):
     @argparse_cmd(
         argparse_arg('key'),
     )
-    def get_cache_key(self) -> None:
+    def get_cache_entry(self) -> None:
         shell_client = GithubV1CacheShellClient()
-        result = shell_client.run_get(self.args.key)
-        print(json_dumps_pretty(result))
+        entry = shell_client.run_get(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
 
     @argparse_cmd(
         argparse_arg('repository-id'),

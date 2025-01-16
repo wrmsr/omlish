@@ -4,6 +4,8 @@
 See:
  - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
 """
+import dataclasses as dc
+
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
@@ -16,10 +18,12 @@ class GithubCli(ArgparseCli):
     @argparse_cmd(
         argparse_arg('key'),
     )
-    def get_cache_key(self) -> None:
+    def get_cache_entry(self) -> None:
         shell_client = GithubV1CacheShellClient()
-        result = shell_client.run_get(self.args.key)
-        print(json_dumps_pretty(result))
+        entry = shell_client.run_get(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
 
     @argparse_cmd(
         argparse_arg('repository-id'),

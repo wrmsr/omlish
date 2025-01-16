@@ -174,10 +174,17 @@ class GithubV1CacheShellClient:
             f'cache?keys={key}',
         )
 
-    def run_get(self, key: str) -> ta.Any:
+    def run_get(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
         get_curl_cmd = self.build_get_curl_cmd(key)
-        result = self.run_json_curl_cmd(get_curl_cmd)
-        return result
+
+        obj = self.run_json_curl_cmd(get_curl_cmd)
+        if obj is None:
+            return None
+
+        return GithubCacheServiceV1.load_dataclass(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        )
 
 
 ##

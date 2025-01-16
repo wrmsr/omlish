@@ -39,6 +39,14 @@ curl -s \
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.strings import camel_case
+
+
+T = ta.TypeVar('T')
+
+
+##
+
 
 class GithubCacheServiceV1:
     API_VERSION = '6.0-preview.1'
@@ -46,6 +54,17 @@ class GithubCacheServiceV1:
     @classmethod
     def get_service_url(cls, base_url: str) -> str:
         return f'{base_url.rstrip("/")}/_apis/artifactcache'
+
+    #
+
+    @classmethod
+    def load_dataclass(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
+        return dcls(**{
+            camel_case(k, lower=True): v
+            for k, v in obj.items()
+        })
+
+    #
 
     @dc.dataclass(frozen=True)
     class ArtifactCacheEntry:
