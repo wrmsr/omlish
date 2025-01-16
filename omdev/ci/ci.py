@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.contextmanagers import ExitStacked
+from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.contextmanagers import defer
 
 from .cache import FileCache
@@ -29,7 +29,7 @@ from .shell import ShellCmd
 from .utils import log_timing_context
 
 
-class Ci(ExitStacked):
+class Ci(AsyncExitStacked):
     FILE_NAME_HASH_LEN = 16
 
     @dc.dataclass(frozen=True)
@@ -212,7 +212,7 @@ class Ci(ExitStacked):
 
     #
 
-    def _run_compose_(self) -> None:
+    async def _run_compose_(self) -> None:
         setup_cmds = [
             'pip install --root-user-action ignore --find-links /requirements --no-index uv',
             (
@@ -230,7 +230,7 @@ class Ci(ExitStacked):
 
         #
 
-        with DockerComposeRun(DockerComposeRun.Config(
+        async with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
             service=self._cfg.service,
 
@@ -247,19 +247,19 @@ class Ci(ExitStacked):
 
             no_dependencies=self._cfg.no_dependencies,
         )) as ci_compose_run:
-            ci_compose_run.run()
+            await ci_compose_run.run()
 
-    def _run_compose(self) -> None:
+    async def _run_compose(self) -> None:
         with log_timing_context('Run compose'):
-            self._run_compose_()
+            await self._run_compose_()
 
     #
 
-    def run(self) -> None:
+    async def run(self) -> None:
         self.load_compose_service_dependencies()
 
         self.resolve_ci_image()
 
         self.resolve_requirements_dir()
 
-        self._run_compose()
+        await self._run_compose()

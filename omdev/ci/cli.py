@@ -156,7 +156,7 @@ class CiCli(ArgparseCli):
 
         #
 
-        with Ci(
+        async with Ci(
                 Ci.Config(
                     project_dir=project_dir,
 
@@ -179,7 +179,7 @@ class CiCli(ArgparseCli):
                 file_cache=file_cache,
                 shell_cache=shell_cache,
         ) as ci:
-            ci.run()
+            await ci.run()
 
 
 async def _async_main() -> ta.Optional[int]:

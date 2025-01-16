@@ -11,12 +11,13 @@ import os.path
 import shlex
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.contextmanagers import ExitStacked
+from omlish.lite.contextmanagers import AsyncExitStacked
+from omlish.lite.contextmanagers import adefer
 from omlish.lite.contextmanagers import defer
 from omlish.lite.json import json_dumps_pretty
-from omlish.subprocesses import subprocesses
 
 from .shell import ShellCmd
 from .utils import make_temp_file
@@ -46,7 +47,7 @@ def get_compose_service_dependencies(
 ##
 
 
-class DockerComposeRun(ExitStacked):
+class DockerComposeRun(AsyncExitStacked):
     @dc.dataclass(frozen=True)
     class Config:
         compose_file: str
@@ -149,20 +150,20 @@ class DockerComposeRun(ExitStacked):
 
     #
 
-    def _cleanup_dependencies(self) -> None:
-        subprocesses.check_call(
+    async def _cleanup_dependencies(self) -> None:
+        await asyncio_subprocesses.check_call(
             'docker',
             'compose',
             '-f', self.rewrite_compose_file(),
             'down',
         )
 
-    def run(self) -> None:
+    async def run(self) -> None:
         compose_file = self.rewrite_compose_file()
 
-        with contextlib.ExitStack() as es:
+        async with contextlib.AsyncExitStack() as es:
             if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
-                es.enter_context(defer(self._cleanup_dependencies))  # noqa
+                await es.enter_async_context(adefer(self._cleanup_dependencies))  # noqa
 
             sh_cmd = ' '.join([
                 'docker',
@@ -181,7 +182,7 @@ class DockerComposeRun(ExitStacked):
 
             run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
 
-            run_cmd.run(
-                subprocesses.check_call,
+            await run_cmd.run(
+                asyncio_subprocesses.check_call,
                 **self._subprocess_kwargs,
             )

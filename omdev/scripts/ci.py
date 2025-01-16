@@ -17,6 +17,8 @@ Inputs:
 import abc
 import argparse
 import asyncio
+import asyncio.base_subprocess
+import asyncio.subprocess
 import collections
 import contextlib
 import dataclasses as dc
@@ -54,6 +56,9 @@ if sys.version_info < (3, 8):
 # shell.py
 T = ta.TypeVar('T')
 
+# ../../omlish/asyncs/asyncio/timeouts.py
+AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
+
 # ../../omlish/lite/cached.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
@@ -70,6 +75,7 @@ ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
 # ../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
+AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
 # ../../omlish/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -111,6 +117,19 @@ class ShellCmd:
             'sh', '-c', self.s,
             **self.build_run_kwargs(**kwargs),
         )
+
+
+########################################
+# ../../../omlish/asyncs/asyncio/timeouts.py
+
+
+def asyncio_maybe_timeout(
+        fut: AwaitableT,
+        timeout: ta.Optional[float] = None,
+) -> AwaitableT:
+    if timeout is not None:
+        fut = asyncio.wait_for(fut, timeout)  # type: ignore
+    return fut
 
 
 ########################################
@@ -1713,6 +1732,33 @@ class ExitStacked:
         return es.enter_context(cm)
 
 
+class AsyncExitStacked:
+    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
+
+    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
+        check.state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.AsyncExitStack()
+        await es.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        await self._async_exit_contexts()
+        return await es.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def _async_exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check.not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+        es = check.not_none(self._exit_stack)
+        return await es.enter_async_context(cm)
+
+
 ##
 
 
@@ -1722,6 +1768,17 @@ def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
         yield fn
     finally:
         fn()
+
+
+@contextlib.asynccontextmanager
+async def adefer(fn: ta.Callable) -> ta.AsyncGenerator[ta.Callable, None]:
+    try:
+        yield fn
+    finally:
+        await fn()
+
+
+##
 
 
 @contextlib.contextmanager
@@ -2274,178 +2331,6 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
-
-
-########################################
-# ../compose.py
-"""
-TODO:
- - fix rmi - only when not referenced anymore
-"""
-
-
-##
-
-
-def get_compose_service_dependencies(
-        compose_file: str,
-        service: str,
-) -> ta.Dict[str, str]:
-    compose_dct = read_yaml_file(compose_file)
-
-    services = compose_dct['services']
-    service_dct = services[service]
-
-    out = {}
-    for dep_service in service_dct.get('depends_on', []):
-        dep_service_dct = services[dep_service]
-        out[dep_service] = dep_service_dct['image']
-
-    return out
-
-
-##
-
-
-class DockerComposeRun(ExitStacked):
-    @dc.dataclass(frozen=True)
-    class Config:
-        compose_file: str
-        service: str
-
-        image: str
-
-        cmd: ShellCmd
-
-        #
-
-        run_options: ta.Optional[ta.Sequence[str]] = None
-
-        cwd: ta.Optional[str] = None
-
-        #
-
-        no_dependencies: bool = False
-        no_dependency_cleanup: bool = False
-
-        #
-
-        def __post_init__(self) -> None:
-            check.not_isinstance(self.run_options, str)
-
-    def __init__(self, cfg: Config) -> None:
-        super().__init__()
-
-        self._cfg = cfg
-
-        self._subprocess_kwargs = {
-            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
-        }
-
-    #
-
-    def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
-        out = dict(in_dct)
-
-        #
-
-        in_services = in_dct['services']
-        out['services'] = out_services = {}
-
-        #
-
-        in_service: dict = in_services[self._cfg.service]
-        out_services[self._cfg.service] = out_service = dict(in_service)
-
-        out_service['image'] = self._cfg.image
-
-        for k in ['build', 'platform']:
-            if k in out_service:
-                del out_service[k]
-
-        out_service['links'] = [
-            f'{l}:{l}' if ':' not in l else l
-            for l in out_service.get('links', [])
-        ]
-
-        #
-
-        if not self._cfg.no_dependencies:
-            depends_on = in_service.get('depends_on', [])
-
-            for dep_service, in_dep_service_dct in list(in_services.items()):
-                if dep_service not in depends_on:
-                    continue
-
-                out_dep_service: dict = dict(in_dep_service_dct)
-                out_services[dep_service] = out_dep_service
-
-                out_dep_service['ports'] = []
-
-        else:
-            out_service['depends_on'] = []
-            out_service['links'] = []
-
-        #
-
-        return out
-
-    @cached_nullary
-    def rewrite_compose_file(self) -> str:
-        in_dct = read_yaml_file(self._cfg.compose_file)
-
-        out_dct = self._rewrite_compose_dct(in_dct)
-
-        #
-
-        out_compose_file = make_temp_file()
-        self._enter_context(defer(lambda: os.unlink(out_compose_file)))  # noqa
-
-        compose_json = json_dumps_pretty(out_dct)
-
-        with open(out_compose_file, 'w') as f:
-            f.write(compose_json)
-
-        return out_compose_file
-
-    #
-
-    def _cleanup_dependencies(self) -> None:
-        subprocesses.check_call(
-            'docker',
-            'compose',
-            '-f', self.rewrite_compose_file(),
-            'down',
-        )
-
-    def run(self) -> None:
-        compose_file = self.rewrite_compose_file()
-
-        with contextlib.ExitStack() as es:
-            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
-                es.enter_context(defer(self._cleanup_dependencies))  # noqa
-
-            sh_cmd = ' '.join([
-                'docker',
-                'compose',
-                '-f', compose_file,
-                'run',
-                '--rm',
-                *itertools.chain.from_iterable(
-                    ['-e', k]
-                    for k in (self._cfg.cmd.env or [])
-                ),
-                *(self._cfg.run_options or []),
-                self._cfg.service,
-                'sh', '-c', shlex.quote(self._cfg.cmd.s),
-            ])
-
-            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
-
-            run_cmd.run(
-                subprocesses.check_call,
-                **self._subprocess_kwargs,
-            )
 
 
 ########################################
@@ -3018,10 +2903,432 @@ def download_requirements(
 
 
 ########################################
+# ../../../omlish/asyncs/asyncio/subprocesses.py
+
+
+##
+
+
+class AsyncioProcessCommunicator:
+    def __init__(
+            self,
+            proc: asyncio.subprocess.Process,
+            loop: ta.Optional[ta.Any] = None,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        self._proc = proc
+        self._loop = loop
+        self._log = log
+
+        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
+            proc._transport,  # type: ignore  # noqa
+            asyncio.base_subprocess.BaseSubprocessTransport,
+        )
+
+    @property
+    def _debug(self) -> bool:
+        return self._loop.get_debug()
+
+    async def _feed_stdin(self, input: bytes) -> None:  # noqa
+        stdin = check.not_none(self._proc.stdin)
+        try:
+            if input is not None:
+                stdin.write(input)
+                if self._debug and self._log is not None:
+                    self._log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
+
+            await stdin.drain()
+
+        except (BrokenPipeError, ConnectionResetError) as exc:
+            # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
+            # exceptions.
+            if self._debug and self._log is not None:
+                self._log.debug('%r communicate: stdin got %r', self, exc)
+
+        if self._debug and self._log is not None:
+            self._log.debug('%r communicate: close stdin', self)
+
+        stdin.close()
+
+    async def _noop(self) -> None:
+        return None
+
+    async def _read_stream(self, fd: int) -> bytes:
+        transport: ta.Any = check.not_none(self._transport.get_pipe_transport(fd))
+
+        if fd == 2:
+            stream = check.not_none(self._proc.stderr)
+        else:
+            check.equal(fd, 1)
+            stream = check.not_none(self._proc.stdout)
+
+        if self._debug and self._log is not None:
+            name = 'stdout' if fd == 1 else 'stderr'
+            self._log.debug('%r communicate: read %s', self, name)
+
+        output = await stream.read()
+
+        if self._debug and self._log is not None:
+            name = 'stdout' if fd == 1 else 'stderr'
+            self._log.debug('%r communicate: close %s', self, name)
+
+        transport.close()
+
+        return output
+
+    class Communication(ta.NamedTuple):
+        stdout: ta.Optional[bytes]
+        stderr: ta.Optional[bytes]
+
+    async def _communicate(
+            self,
+            input: ta.Any = None,  # noqa
+    ) -> Communication:
+        stdin_fut: ta.Any
+        if self._proc.stdin is not None:
+            stdin_fut = self._feed_stdin(input)
+        else:
+            stdin_fut = self._noop()
+
+        stdout_fut: ta.Any
+        if self._proc.stdout is not None:
+            stdout_fut = self._read_stream(1)
+        else:
+            stdout_fut = self._noop()
+
+        stderr_fut: ta.Any
+        if self._proc.stderr is not None:
+            stderr_fut = self._read_stream(2)
+        else:
+            stderr_fut = self._noop()
+
+        stdin_res, stdout_res, stderr_res = await asyncio.gather(stdin_fut, stdout_fut, stderr_fut)
+
+        await self._proc.wait()
+
+        return AsyncioProcessCommunicator.Communication(stdout_res, stderr_res)
+
+    async def communicate(
+            self,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+    ) -> Communication:
+        return await asyncio_maybe_timeout(self._communicate(input), timeout)
+
+
+##
+
+
+class AsyncioSubprocesses(AbstractAsyncSubprocesses):
+    async def communicate(
+            self,
+            proc: asyncio.subprocess.Process,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+    ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+        return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def popen(
+            self,
+            *cmd: str,
+            shell: bool = False,
+            timeout: ta.Optional[float] = None,
+            **kwargs: ta.Any,
+    ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
+        fac: ta.Any
+        if shell:
+            fac = functools.partial(
+                asyncio.create_subprocess_shell,
+                check.single(cmd),
+            )
+        else:
+            fac = functools.partial(
+                asyncio.create_subprocess_exec,
+                *cmd,
+            )
+
+        with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
+            proc: asyncio.subprocess.Process = await fac(**kwargs)
+            try:
+                yield proc
+
+            finally:
+                await asyncio_maybe_timeout(proc.wait(), timeout)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class RunOutput:
+        proc: asyncio.subprocess.Process
+        stdout: ta.Optional[bytes]
+        stderr: ta.Optional[bytes]
+
+    async def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,  # noqa
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> RunOutput:
+        if capture_output:
+            kwargs.setdefault('stdout', subprocess.PIPE)
+            kwargs.setdefault('stderr', subprocess.PIPE)
+
+        proc: asyncio.subprocess.Process
+        async with self.popen(*cmd, **kwargs) as proc:
+            stdout, stderr = await self.communicate(proc, input, timeout)
+
+        if check and proc.returncode:
+            raise subprocess.CalledProcessError(
+                proc.returncode,
+                cmd,
+                output=stdout,
+                stderr=stderr,
+            )
+
+        return self.RunOutput(
+            proc,
+            stdout,
+            stderr,
+        )
+
+    #
+
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, check=True, **kwargs) as (cmd, kwargs):  # noqa
+            await self.run(*cmd, **kwargs)
+
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
+            return check.not_none((await self.run(*cmd, **kwargs)).stdout)
+
+
+asyncio_subprocesses = AsyncioSubprocesses()
+
+
+########################################
+# ../compose.py
+"""
+TODO:
+ - fix rmi - only when not referenced anymore
+"""
+
+
+##
+
+
+def get_compose_service_dependencies(
+        compose_file: str,
+        service: str,
+) -> ta.Dict[str, str]:
+    compose_dct = read_yaml_file(compose_file)
+
+    services = compose_dct['services']
+    service_dct = services[service]
+
+    out = {}
+    for dep_service in service_dct.get('depends_on', []):
+        dep_service_dct = services[dep_service]
+        out[dep_service] = dep_service_dct['image']
+
+    return out
+
+
+##
+
+
+class DockerComposeRun(AsyncExitStacked):
+    @dc.dataclass(frozen=True)
+    class Config:
+        compose_file: str
+        service: str
+
+        image: str
+
+        cmd: ShellCmd
+
+        #
+
+        run_options: ta.Optional[ta.Sequence[str]] = None
+
+        cwd: ta.Optional[str] = None
+
+        #
+
+        no_dependencies: bool = False
+        no_dependency_cleanup: bool = False
+
+        #
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.run_options, str)
+
+    def __init__(self, cfg: Config) -> None:
+        super().__init__()
+
+        self._cfg = cfg
+
+        self._subprocess_kwargs = {
+            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
+        }
+
+    #
+
+    def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
+        out = dict(in_dct)
+
+        #
+
+        in_services = in_dct['services']
+        out['services'] = out_services = {}
+
+        #
+
+        in_service: dict = in_services[self._cfg.service]
+        out_services[self._cfg.service] = out_service = dict(in_service)
+
+        out_service['image'] = self._cfg.image
+
+        for k in ['build', 'platform']:
+            if k in out_service:
+                del out_service[k]
+
+        out_service['links'] = [
+            f'{l}:{l}' if ':' not in l else l
+            for l in out_service.get('links', [])
+        ]
+
+        #
+
+        if not self._cfg.no_dependencies:
+            depends_on = in_service.get('depends_on', [])
+
+            for dep_service, in_dep_service_dct in list(in_services.items()):
+                if dep_service not in depends_on:
+                    continue
+
+                out_dep_service: dict = dict(in_dep_service_dct)
+                out_services[dep_service] = out_dep_service
+
+                out_dep_service['ports'] = []
+
+        else:
+            out_service['depends_on'] = []
+            out_service['links'] = []
+
+        #
+
+        return out
+
+    @cached_nullary
+    def rewrite_compose_file(self) -> str:
+        in_dct = read_yaml_file(self._cfg.compose_file)
+
+        out_dct = self._rewrite_compose_dct(in_dct)
+
+        #
+
+        out_compose_file = make_temp_file()
+        self._enter_context(defer(lambda: os.unlink(out_compose_file)))  # noqa
+
+        compose_json = json_dumps_pretty(out_dct)
+
+        with open(out_compose_file, 'w') as f:
+            f.write(compose_json)
+
+        return out_compose_file
+
+    #
+
+    async def _cleanup_dependencies(self) -> None:
+        await asyncio_subprocesses.check_call(
+            'docker',
+            'compose',
+            '-f', self.rewrite_compose_file(),
+            'down',
+        )
+
+    async def run(self) -> None:
+        compose_file = self.rewrite_compose_file()
+
+        async with contextlib.AsyncExitStack() as es:
+            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
+                await es.enter_async_context(adefer(self._cleanup_dependencies))  # noqa
+
+            sh_cmd = ' '.join([
+                'docker',
+                'compose',
+                '-f', compose_file,
+                'run',
+                '--rm',
+                *itertools.chain.from_iterable(
+                    ['-e', k]
+                    for k in (self._cfg.cmd.env or [])
+                ),
+                *(self._cfg.run_options or []),
+                self._cfg.service,
+                'sh', '-c', shlex.quote(self._cfg.cmd.s),
+            ])
+
+            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
+
+            await run_cmd.run(
+                asyncio_subprocesses.check_call,
+                **self._subprocess_kwargs,
+            )
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    def get_cache_entry(self) -> None:
+        shell_client = GithubV1CacheShellClient()
+        entry = shell_client.run_get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
 # ../ci.py
 
 
-class Ci(ExitStacked):
+class Ci(AsyncExitStacked):
     FILE_NAME_HASH_LEN = 16
 
     @dc.dataclass(frozen=True)
@@ -3204,7 +3511,7 @@ class Ci(ExitStacked):
 
     #
 
-    def _run_compose_(self) -> None:
+    async def _run_compose_(self) -> None:
         setup_cmds = [
             'pip install --root-user-action ignore --find-links /requirements --no-index uv',
             (
@@ -3222,7 +3529,7 @@ class Ci(ExitStacked):
 
         #
 
-        with DockerComposeRun(DockerComposeRun.Config(
+        async with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
             service=self._cfg.service,
 
@@ -3239,48 +3546,22 @@ class Ci(ExitStacked):
 
             no_dependencies=self._cfg.no_dependencies,
         )) as ci_compose_run:
-            ci_compose_run.run()
+            await ci_compose_run.run()
 
-    def _run_compose(self) -> None:
+    async def _run_compose(self) -> None:
         with log_timing_context('Run compose'):
-            self._run_compose_()
+            await self._run_compose_()
 
     #
 
-    def run(self) -> None:
+    async def run(self) -> None:
         self.load_compose_service_dependencies()
 
         self.resolve_ci_image()
 
         self.resolve_requirements_dir()
 
-        self._run_compose()
-
-
-########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
-
-
-class GithubCli(ArgparseCli):
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    def get_cache_entry(self) -> None:
-        shell_client = GithubV1CacheShellClient()
-        entry = shell_client.run_get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
-
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
+        await self._run_compose()
 
 
 ########################################
@@ -3409,7 +3690,7 @@ class CiCli(ArgparseCli):
 
         #
 
-        with Ci(
+        async with Ci(
                 Ci.Config(
                     project_dir=project_dir,
 
@@ -3432,7 +3713,7 @@ class CiCli(ArgparseCli):
                 file_cache=file_cache,
                 shell_cache=shell_cache,
         ) as ci:
-            ci.run()
+            await ci.run()
 
 
 async def _async_main() -> ta.Optional[int]:

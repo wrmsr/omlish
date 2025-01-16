@@ -144,6 +144,7 @@ HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
 # ../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
+AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
 # ../../omlish/lite/inject.py
 U = ta.TypeVar('U')
@@ -4432,6 +4433,33 @@ class ExitStacked:
         return es.enter_context(cm)
 
 
+class AsyncExitStacked:
+    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
+
+    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
+        check.state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.AsyncExitStack()
+        await es.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        await self._async_exit_contexts()
+        return await es.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def _async_exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check.not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+        es = check.not_none(self._exit_stack)
+        return await es.enter_async_context(cm)
+
+
 ##
 
 
@@ -4441,6 +4469,17 @@ def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
         yield fn
     finally:
         fn()
+
+
+@contextlib.asynccontextmanager
+async def adefer(fn: ta.Callable) -> ta.AsyncGenerator[ta.Callable, None]:
+    try:
+        yield fn
+    finally:
+        await fn()
+
+
+##
 
 
 @contextlib.contextmanager
