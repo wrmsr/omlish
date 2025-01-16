@@ -192,7 +192,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             f'caches/{cache_id}',
             content_type='application/octet-stream',
             headers={
-                'Content-Range': f'bytes 0-{file_size - 1}',
+                'Content-Range': f'bytes 0-{file_size - 1}/*',
             },
         )
         patch_data_cmd = dc.replace(patch_cmd, s=f'{patch_cmd.s} --data-binary @{in_file}')
