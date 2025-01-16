@@ -1166,7 +1166,7 @@ class GithubCacheServiceV1:
     @classmethod
     def load_dataclass(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
         return dcls(**{
-            camel_case(k, lower=True): v
+            snake_case(k): v
             for k, v in obj.items()
         })
 
