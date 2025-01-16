@@ -13,9 +13,9 @@ import shlex
 import tarfile
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.lite.contextmanagers import defer
-from omlish.subprocesses import subprocesses
+from omlish.lite.contextmanagers import adefer
 
 from .shell import ShellCmd
 from .utils import make_temp_file
@@ -60,8 +60,8 @@ def read_docker_tar_image_id(tar_file: str) -> str:
 ##
 
 
-def is_docker_image_present(image: str) -> bool:
-    out = subprocesses.check_output(
+async def is_docker_image_present(image: str) -> bool:
+    out = await asyncio_subprocesses.check_output(
         'docker',
         'images',
         '--format', 'json',
@@ -76,25 +76,25 @@ def is_docker_image_present(image: str) -> bool:
     return True
 
 
-def pull_docker_image(
+async def pull_docker_image(
         image: str,
 ) -> None:
-    subprocesses.check_call(
+    await asyncio_subprocesses.check_call(
         'docker',
         'pull',
         image,
     )
 
 
-def build_docker_image(
+async def build_docker_image(
         docker_file: str,
         *,
         tag: ta.Optional[str] = None,
         cwd: ta.Optional[str] = None,
 ) -> str:
     id_file = make_temp_file()
-    with defer(lambda: os.unlink(id_file)):
-        subprocesses.check_call(
+    async with adefer(lambda: os.unlink(id_file)):
+        await asyncio_subprocesses.check_call(
             'docker',
             'build',
             '-f', os.path.abspath(docker_file),
@@ -105,14 +105,14 @@ def build_docker_image(
             **(dict(cwd=cwd) if cwd is not None else {}),
         )
 
-        with open(id_file) as f:
+        with open(id_file) as f:  # noqa
             image_id = check.single(f.read().strip().splitlines()).strip()
 
     return image_id
 
 
-def tag_docker_image(image: str, tag: str) -> None:
-    subprocesses.check_call(
+async def tag_docker_image(image: str, tag: str) -> None:
+    await asyncio_subprocesses.check_call(
         'docker',
         'tag',
         image,
@@ -120,8 +120,8 @@ def tag_docker_image(image: str, tag: str) -> None:
     )
 
 
-def delete_docker_tag(tag: str) -> None:
-    subprocesses.check_call(
+async def delete_docker_tag(tag: str) -> None:
+    await asyncio_subprocesses.check_call(
         'docker',
         'rmi',
         tag,
@@ -131,19 +131,19 @@ def delete_docker_tag(tag: str) -> None:
 ##
 
 
-def save_docker_tar_cmd(
+async def save_docker_tar_cmd(
         image: str,
         output_cmd: ShellCmd,
 ) -> None:
     cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
-    cmd.run(subprocesses.check_call)
+    await cmd.run(asyncio_subprocesses.check_call)
 
 
-def save_docker_tar(
+async def save_docker_tar(
         image: str,
         tar_file: str,
 ) -> None:
-    return save_docker_tar_cmd(
+    return await save_docker_tar_cmd(
         image,
         ShellCmd(f'cat > {shlex.quote(tar_file)}'),
     )
@@ -152,19 +152,19 @@ def save_docker_tar(
 #
 
 
-def load_docker_tar_cmd(
+async def load_docker_tar_cmd(
         input_cmd: ShellCmd,
 ) -> str:
     cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
 
-    out = cmd.run(subprocesses.check_output).decode()
+    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
 
     line = check.single(out.strip().splitlines())
     loaded = line.partition(':')[2].strip()
     return loaded
 
 
-def load_docker_tar(
+async def load_docker_tar(
         tar_file: str,
 ) -> str:
-    return load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
+    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))

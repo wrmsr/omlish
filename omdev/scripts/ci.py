@@ -2334,163 +2334,6 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
 
 ########################################
-# ../docker.py
-"""
-TODO:
- - some less stupid Dockerfile hash
-  - doesn't change too much though
-"""
-
-
-##
-
-
-def build_docker_file_hash(docker_file: str) -> str:
-    with open(docker_file) as f:
-        contents = f.read()
-
-    return sha256_str(contents)
-
-
-##
-
-
-def read_docker_tar_image_tag(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
-            m = mf.read()
-
-    manifests = json.loads(m.decode('utf-8'))
-    manifest = check.single(manifests)
-    tag = check.non_empty_str(check.single(manifest['RepoTags']))
-    return tag
-
-
-def read_docker_tar_image_id(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
-            i = mf.read()
-
-    index = json.loads(i.decode('utf-8'))
-    manifest = check.single(index['manifests'])
-    image_id = check.non_empty_str(manifest['digest'])
-    return image_id
-
-
-##
-
-
-def is_docker_image_present(image: str) -> bool:
-    out = subprocesses.check_output(
-        'docker',
-        'images',
-        '--format', 'json',
-        image,
-    )
-
-    out_s = out.decode('utf-8').strip()
-    if not out_s:
-        return False
-
-    json.loads(out_s)  # noqa
-    return True
-
-
-def pull_docker_image(
-        image: str,
-) -> None:
-    subprocesses.check_call(
-        'docker',
-        'pull',
-        image,
-    )
-
-
-def build_docker_image(
-        docker_file: str,
-        *,
-        tag: ta.Optional[str] = None,
-        cwd: ta.Optional[str] = None,
-) -> str:
-    id_file = make_temp_file()
-    with defer(lambda: os.unlink(id_file)):
-        subprocesses.check_call(
-            'docker',
-            'build',
-            '-f', os.path.abspath(docker_file),
-            '--iidfile', id_file,
-            '--squash',
-            *(['--tag', tag] if tag is not None else []),
-            '.',
-            **(dict(cwd=cwd) if cwd is not None else {}),
-        )
-
-        with open(id_file) as f:
-            image_id = check.single(f.read().strip().splitlines()).strip()
-
-    return image_id
-
-
-def tag_docker_image(image: str, tag: str) -> None:
-    subprocesses.check_call(
-        'docker',
-        'tag',
-        image,
-        tag,
-    )
-
-
-def delete_docker_tag(tag: str) -> None:
-    subprocesses.check_call(
-        'docker',
-        'rmi',
-        tag,
-    )
-
-
-##
-
-
-def save_docker_tar_cmd(
-        image: str,
-        output_cmd: ShellCmd,
-) -> None:
-    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
-    cmd.run(subprocesses.check_call)
-
-
-def save_docker_tar(
-        image: str,
-        tar_file: str,
-) -> None:
-    return save_docker_tar_cmd(
-        image,
-        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
-    )
-
-
-#
-
-
-def load_docker_tar_cmd(
-        input_cmd: ShellCmd,
-) -> str:
-    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
-
-    out = cmd.run(subprocesses.check_output).decode()
-
-    line = check.single(out.strip().splitlines())
-    loaded = line.partition(':')[2].strip()
-    return loaded
-
-
-def load_docker_tar(
-        tar_file: str,
-) -> str:
-    return load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
-
-
-########################################
 # ../github/cache.py
 
 
@@ -3299,6 +3142,163 @@ class DockerComposeRun(AsyncExitStacked):
 
 
 ########################################
+# ../docker.py
+"""
+TODO:
+ - some less stupid Dockerfile hash
+  - doesn't change too much though
+"""
+
+
+##
+
+
+def build_docker_file_hash(docker_file: str) -> str:
+    with open(docker_file) as f:
+        contents = f.read()
+
+    return sha256_str(contents)
+
+
+##
+
+
+def read_docker_tar_image_tag(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
+            m = mf.read()
+
+    manifests = json.loads(m.decode('utf-8'))
+    manifest = check.single(manifests)
+    tag = check.non_empty_str(check.single(manifest['RepoTags']))
+    return tag
+
+
+def read_docker_tar_image_id(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
+            i = mf.read()
+
+    index = json.loads(i.decode('utf-8'))
+    manifest = check.single(index['manifests'])
+    image_id = check.non_empty_str(manifest['digest'])
+    return image_id
+
+
+##
+
+
+async def is_docker_image_present(image: str) -> bool:
+    out = await asyncio_subprocesses.check_output(
+        'docker',
+        'images',
+        '--format', 'json',
+        image,
+    )
+
+    out_s = out.decode('utf-8').strip()
+    if not out_s:
+        return False
+
+    json.loads(out_s)  # noqa
+    return True
+
+
+async def pull_docker_image(
+        image: str,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'pull',
+        image,
+    )
+
+
+async def build_docker_image(
+        docker_file: str,
+        *,
+        tag: ta.Optional[str] = None,
+        cwd: ta.Optional[str] = None,
+) -> str:
+    id_file = make_temp_file()
+    async with adefer(lambda: os.unlink(id_file)):
+        await asyncio_subprocesses.check_call(
+            'docker',
+            'build',
+            '-f', os.path.abspath(docker_file),
+            '--iidfile', id_file,
+            '--squash',
+            *(['--tag', tag] if tag is not None else []),
+            '.',
+            **(dict(cwd=cwd) if cwd is not None else {}),
+        )
+
+        with open(id_file) as f:  # noqa
+            image_id = check.single(f.read().strip().splitlines()).strip()
+
+    return image_id
+
+
+async def tag_docker_image(image: str, tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'tag',
+        image,
+        tag,
+    )
+
+
+async def delete_docker_tag(tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'rmi',
+        tag,
+    )
+
+
+##
+
+
+async def save_docker_tar_cmd(
+        image: str,
+        output_cmd: ShellCmd,
+) -> None:
+    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
+    await cmd.run(asyncio_subprocesses.check_call)
+
+
+async def save_docker_tar(
+        image: str,
+        tar_file: str,
+) -> None:
+    return await save_docker_tar_cmd(
+        image,
+        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
+    )
+
+
+#
+
+
+async def load_docker_tar_cmd(
+        input_cmd: ShellCmd,
+) -> str:
+    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
+
+    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded
+
+
+async def load_docker_tar(
+        tar_file: str,
+) -> str:
+    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
+
+
+########################################
 # ../github/cli.py
 """
 See:
@@ -3367,7 +3367,7 @@ class Ci(AsyncExitStacked):
 
     #
 
-    def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+    async def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
         if self._shell_cache is None:
             return None
 
@@ -3377,9 +3377,9 @@ class Ci(AsyncExitStacked):
 
         get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')  # noqa
 
-        return load_docker_tar_cmd(get_cache_cmd)
+        return await load_docker_tar_cmd(get_cache_cmd)
 
-    def _save_cache_docker_image(self, key: str, image: str) -> None:
+    async def _save_cache_docker_image(self, key: str, image: str) -> None:
         if self._shell_cache is None:
             return
 
@@ -3388,12 +3388,12 @@ class Ci(AsyncExitStacked):
 
             put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
 
-            save_docker_tar_cmd(image, put_cache_cmd)
+            await save_docker_tar_cmd(image, put_cache_cmd)
 
     #
 
-    def _load_docker_image(self, image: str) -> None:
-        if not self._cfg.always_pull and is_docker_image_present(image):
+    async def _load_docker_image(self, image: str) -> None:
+        if not self._cfg.always_pull and (await is_docker_image_present(image)):
             return
 
         dep_suffix = image
@@ -3401,65 +3401,65 @@ class Ci(AsyncExitStacked):
             dep_suffix = dep_suffix.replace(c, '-')
 
         cache_key = f'docker-{dep_suffix}'
-        if self._load_cache_docker_image(cache_key) is not None:
+        if (await self._load_cache_docker_image(cache_key)) is not None:
             return
 
-        pull_docker_image(image)
+        await pull_docker_image(image)
 
-        self._save_cache_docker_image(cache_key, image)
+        await self._save_cache_docker_image(cache_key, image)
 
-    def load_docker_image(self, image: str) -> None:
+    async def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
-            self._load_docker_image(image)
+            await self._load_docker_image(image)
 
-    @cached_nullary
-    def load_compose_service_dependencies(self) -> None:
+    @async_cached_nullary
+    async def load_compose_service_dependencies(self) -> None:
         deps = get_compose_service_dependencies(
             self._cfg.compose_file,
             self._cfg.service,
         )
 
         for dep_image in deps.values():
-            self.load_docker_image(dep_image)
+            await self.load_docker_image(dep_image)
 
     #
 
-    def _resolve_ci_image(self) -> str:
+    async def _resolve_ci_image(self) -> str:
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         cache_key = f'ci-{docker_file_hash}'
         image_tag = f'{self._cfg.service}:{cache_key}'
 
-        if not self._cfg.always_build and is_docker_image_present(image_tag):
+        if not self._cfg.always_build and (await is_docker_image_present(image_tag)):
             return image_tag
 
-        if (cache_image_id := self._load_cache_docker_image(cache_key)) is not None:
-            tag_docker_image(
+        if (cache_image_id := await self._load_cache_docker_image(cache_key)) is not None:
+            await tag_docker_image(
                 cache_image_id,
                 image_tag,
             )
             return image_tag
 
-        image_id = build_docker_image(
+        image_id = await build_docker_image(
             self._cfg.docker_file,
             tag=image_tag,
             cwd=self._cfg.project_dir,
         )
 
-        self._save_cache_docker_image(cache_key, image_id)
+        await self._save_cache_docker_image(cache_key, image_id)
 
         return image_tag
 
-    @cached_nullary
-    def resolve_ci_image(self) -> str:
+    @async_cached_nullary
+    async def resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
-            image_id = self._resolve_ci_image()
+            image_id = await self._resolve_ci_image()
             ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
 
     #
 
-    def _resolve_requirements_dir(self) -> str:
+    async def _resolve_requirements_dir(self) -> str:
         requirements_txts = [
             os.path.join(self._cfg.project_dir, rf)
             for rf in check.not_none(self._cfg.requirements_txts)
@@ -3483,7 +3483,7 @@ class Ci(AsyncExitStacked):
         os.makedirs(temp_requirements_dir)
 
         download_requirements(
-            self.resolve_ci_image(),
+            await self.resolve_ci_image(),
             temp_requirements_dir,
             requirements_txts,
         )
@@ -3502,10 +3502,10 @@ class Ci(AsyncExitStacked):
 
         return temp_requirements_dir
 
-    @cached_nullary
-    def resolve_requirements_dir(self) -> str:
+    @async_cached_nullary
+    async def resolve_requirements_dir(self) -> str:
         with log_timing_context('Resolve requirements dir') as ltc:
-            requirements_dir = self._resolve_requirements_dir()
+            requirements_dir = await self._resolve_requirements_dir()
             ltc.set_description(f'Resolve requirements dir: {requirements_dir}')
             return requirements_dir
 
@@ -3533,13 +3533,13 @@ class Ci(AsyncExitStacked):
             compose_file=self._cfg.compose_file,
             service=self._cfg.service,
 
-            image=self.resolve_ci_image(),
+            image=await self.resolve_ci_image(),
 
             cmd=ci_cmd,
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
-                '-v', f'{os.path.abspath(self.resolve_requirements_dir())}:/requirements',
+                '-v', f'{os.path.abspath(await self.resolve_requirements_dir())}:/requirements',
             ],
 
             cwd=self._cfg.project_dir,
@@ -3555,11 +3555,11 @@ class Ci(AsyncExitStacked):
     #
 
     async def run(self) -> None:
-        self.load_compose_service_dependencies()
+        await self.load_compose_service_dependencies()
 
-        self.resolve_ci_image()
+        await self.resolve_ci_image()
 
-        self.resolve_requirements_dir()
+        await self.resolve_requirements_dir()
 
         await self._run_compose()
 

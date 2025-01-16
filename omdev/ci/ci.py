@@ -7,7 +7,7 @@ import tarfile
 import tempfile
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
+from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.contextmanagers import defer
@@ -68,7 +68,7 @@ class Ci(AsyncExitStacked):
 
     #
 
-    def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+    async def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
         if self._shell_cache is None:
             return None
 
@@ -78,9 +78,9 @@ class Ci(AsyncExitStacked):
 
         get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')  # noqa
 
-        return load_docker_tar_cmd(get_cache_cmd)
+        return await load_docker_tar_cmd(get_cache_cmd)
 
-    def _save_cache_docker_image(self, key: str, image: str) -> None:
+    async def _save_cache_docker_image(self, key: str, image: str) -> None:
         if self._shell_cache is None:
             return
 
@@ -89,12 +89,12 @@ class Ci(AsyncExitStacked):
 
             put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
 
-            save_docker_tar_cmd(image, put_cache_cmd)
+            await save_docker_tar_cmd(image, put_cache_cmd)
 
     #
 
-    def _load_docker_image(self, image: str) -> None:
-        if not self._cfg.always_pull and is_docker_image_present(image):
+    async def _load_docker_image(self, image: str) -> None:
+        if not self._cfg.always_pull and (await is_docker_image_present(image)):
             return
 
         dep_suffix = image
@@ -102,65 +102,65 @@ class Ci(AsyncExitStacked):
             dep_suffix = dep_suffix.replace(c, '-')
 
         cache_key = f'docker-{dep_suffix}'
-        if self._load_cache_docker_image(cache_key) is not None:
+        if (await self._load_cache_docker_image(cache_key)) is not None:
             return
 
-        pull_docker_image(image)
+        await pull_docker_image(image)
 
-        self._save_cache_docker_image(cache_key, image)
+        await self._save_cache_docker_image(cache_key, image)
 
-    def load_docker_image(self, image: str) -> None:
+    async def load_docker_image(self, image: str) -> None:
         with log_timing_context(f'Load docker image: {image}'):
-            self._load_docker_image(image)
+            await self._load_docker_image(image)
 
-    @cached_nullary
-    def load_compose_service_dependencies(self) -> None:
+    @async_cached_nullary
+    async def load_compose_service_dependencies(self) -> None:
         deps = get_compose_service_dependencies(
             self._cfg.compose_file,
             self._cfg.service,
         )
 
         for dep_image in deps.values():
-            self.load_docker_image(dep_image)
+            await self.load_docker_image(dep_image)
 
     #
 
-    def _resolve_ci_image(self) -> str:
+    async def _resolve_ci_image(self) -> str:
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         cache_key = f'ci-{docker_file_hash}'
         image_tag = f'{self._cfg.service}:{cache_key}'
 
-        if not self._cfg.always_build and is_docker_image_present(image_tag):
+        if not self._cfg.always_build and (await is_docker_image_present(image_tag)):
             return image_tag
 
-        if (cache_image_id := self._load_cache_docker_image(cache_key)) is not None:
-            tag_docker_image(
+        if (cache_image_id := await self._load_cache_docker_image(cache_key)) is not None:
+            await tag_docker_image(
                 cache_image_id,
                 image_tag,
             )
             return image_tag
 
-        image_id = build_docker_image(
+        image_id = await build_docker_image(
             self._cfg.docker_file,
             tag=image_tag,
             cwd=self._cfg.project_dir,
         )
 
-        self._save_cache_docker_image(cache_key, image_id)
+        await self._save_cache_docker_image(cache_key, image_id)
 
         return image_tag
 
-    @cached_nullary
-    def resolve_ci_image(self) -> str:
+    @async_cached_nullary
+    async def resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
-            image_id = self._resolve_ci_image()
+            image_id = await self._resolve_ci_image()
             ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
 
     #
 
-    def _resolve_requirements_dir(self) -> str:
+    async def _resolve_requirements_dir(self) -> str:
         requirements_txts = [
             os.path.join(self._cfg.project_dir, rf)
             for rf in check.not_none(self._cfg.requirements_txts)
@@ -184,7 +184,7 @@ class Ci(AsyncExitStacked):
         os.makedirs(temp_requirements_dir)
 
         download_requirements(
-            self.resolve_ci_image(),
+            await self.resolve_ci_image(),
             temp_requirements_dir,
             requirements_txts,
         )
@@ -203,10 +203,10 @@ class Ci(AsyncExitStacked):
 
         return temp_requirements_dir
 
-    @cached_nullary
-    def resolve_requirements_dir(self) -> str:
+    @async_cached_nullary
+    async def resolve_requirements_dir(self) -> str:
         with log_timing_context('Resolve requirements dir') as ltc:
-            requirements_dir = self._resolve_requirements_dir()
+            requirements_dir = await self._resolve_requirements_dir()
             ltc.set_description(f'Resolve requirements dir: {requirements_dir}')
             return requirements_dir
 
@@ -234,13 +234,13 @@ class Ci(AsyncExitStacked):
             compose_file=self._cfg.compose_file,
             service=self._cfg.service,
 
-            image=self.resolve_ci_image(),
+            image=await self.resolve_ci_image(),
 
             cmd=ci_cmd,
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
-                '-v', f'{os.path.abspath(self.resolve_requirements_dir())}:/requirements',
+                '-v', f'{os.path.abspath(await self.resolve_requirements_dir())}:/requirements',
             ],
 
             cwd=self._cfg.project_dir,
@@ -256,10 +256,10 @@ class Ci(AsyncExitStacked):
     #
 
     async def run(self) -> None:
-        self.load_compose_service_dependencies()
+        await self.load_compose_service_dependencies()
 
-        self.resolve_ci_image()
+        await self.resolve_ci_image()
 
-        self.resolve_requirements_dir()
+        await self.resolve_requirements_dir()
 
         await self._run_compose()
