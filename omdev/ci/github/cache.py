@@ -164,6 +164,8 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         file_size = os.stat(in_file).st_size
 
+        #
+
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
             key=fixed_key,
             cache_size=file_size,
@@ -181,8 +183,33 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             GithubCacheServiceV1.ReserveCacheResponse,
             reserve_resp_obj,
         )
+        cache_id = check.isinstance(reserve_resp.cache_id, int)
 
-        raise NotImplementedError
+        #
+
+        patch_cmd = self._curl.build_cmd(
+            'PATCH',
+            f'caches/{cache_id}',
+            content_type='application/octet-stream',
+            headers={
+                'Content-Range': f'bytes 0-{file_size - 1}',
+            },
+        )
+        patch_data_cmd = dc.replace(patch_cmd, s=f'{patch_cmd.s} --data-binary @{in_file}')
+        patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+        check.equal(patch_result.status_code, 204)
+
+        #
+
+        commit_req = GithubCacheServiceV1.CommitCacheRequest(
+            size=file_size,
+        )
+        commit_cmd = self._curl.build_post_json_cmd(
+            f'caches/{cache_id}',
+            GithubCacheServiceV1.dataclass_to_json(commit_req),
+        )
+        commit_result = self._curl.run_cmd(commit_cmd, raise_=True)
+        check.equal(commit_result.status_code, 204)
 
 
 ##

@@ -38,6 +38,7 @@ class GithubServiceCurlClient:
 
     def build_headers(
             self,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
             auth_token: ta.Any = _MISSING,
             content_type: ta.Optional[str] = None,
@@ -57,6 +58,9 @@ class GithubServiceCurlClient:
         if content_type is not None:
             dct['Content-Type'] = content_type
 
+        if headers:
+            dct.update(headers)
+
         return dct
 
     #
@@ -74,6 +78,7 @@ class GithubServiceCurlClient:
             *,
             json_content: bool = False,
             content_type: ta.Optional[str] = None,
+            headers: ta.Optional[ta.Dict[str, str]] = None,
     ) -> ShellCmd:
         if content_type is None and json_content:
             content_type = 'application/json'
@@ -88,7 +93,8 @@ class GithubServiceCurlClient:
         else:
             header_auth_token = None
 
-        hdrs = self.build_headers(
+        built_hdrs = self.build_headers(
+            headers,
             auth_token=header_auth_token,
             content_type=content_type,
         )
@@ -100,7 +106,7 @@ class GithubServiceCurlClient:
             '-s',
             '-X', method,
             url,
-            *[f'-H "{k}: {v}"' for k, v in hdrs.items()],
+            *[f'-H "{k}: {v}"' for k, v in built_hdrs.items()],
         ])
 
         return ShellCmd(
