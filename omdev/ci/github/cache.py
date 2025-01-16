@@ -135,8 +135,11 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             check.non_empty_str(entry.artifact.archive_location),
         ]))
 
-    def download_get_entry(self, entry: Entry, out_file: str) -> None:
-        dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
+    def download_get_entry(self, entry: GithubCacheShellClient.Entry, out_file: str) -> None:
+        dl_cmd = self.build_download_get_entry_cmd(
+            check.isinstance(entry, GithubCacheServiceV1ShellClient.Entry),
+            out_file,
+        )
         dl_cmd.run(subprocesses.check_call)
 
     #
