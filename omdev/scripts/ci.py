@@ -41,6 +41,7 @@ import threading
 import time
 import types
 import typing as ta
+import urllib.parse
 
 
 ########################################
@@ -3221,7 +3222,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
     KEY_PART_SEPARATOR = '--'
 
     def fix_key(self, s: str) -> str:
-        return self.KEY_SUFFIX_ENV_KEY.join([
+        return self.KEY_PART_SEPARATOR.join([
             *([self._key_prefix] if self._key_prefix else []),
             s,
             self._key_suffix,
@@ -3237,9 +3238,21 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
     def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
         fixed_key = self.fix_key(key)
+
+        qp = dict(
+            keys=fixed_key,
+            version=str(self.CACHE_VERSION),
+        )
+
         return self._curl.build_cmd(
             'GET',
-            f'cache?keys={fixed_key}',
+            '?'.join([
+                'cache',
+                '&'.join([
+                    f'{k}={urllib.parse.quote_plus(v)}'
+                    for k, v in qp.items()
+                ]),
+            ]),
         )
 
     def run_get_entry(self, key: str) -> ta.Optional[Entry]:
@@ -3268,8 +3281,11 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             check.non_empty_str(entry.artifact.archive_location),
         ]))
 
-    def download_get_entry(self, entry: Entry, out_file: str) -> None:
-        dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
+    def download_get_entry(self, entry: GithubCacheShellClient.Entry, out_file: str) -> None:
+        dl_cmd = self.build_download_get_entry_cmd(
+            check.isinstance(entry, GithubCacheServiceV1ShellClient.Entry),
+            out_file,
+        )
         dl_cmd.run(subprocesses.check_call)
 
     #
@@ -3284,6 +3300,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
             key=fixed_key,
             cache_size=file_size,
+            version=str(self.CACHE_VERSION),
         )
         reserve_cmd = self._curl.build_post_json_cmd(
             'caches',
