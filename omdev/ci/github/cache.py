@@ -13,6 +13,7 @@ from omlish.subprocesses import subprocesses
 from ..cache import DirectoryFileCache
 from ..cache import ShellCache
 from ..shell import ShellCmd
+from ..utils import make_temp_file
 from .cacheapi import GithubCacheServiceV1
 from .curl import GithubServiceCurlClient
 
@@ -187,11 +188,15 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         #
 
+        tmp_file = make_temp_file()
+
         print(f'{file_size=}')
+        num_written = 0
         chunk_size = 32 * 1024 * 1024
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             ofs = i * chunk_size
             sz = min(chunk_size, file_size - ofs)
+
             patch_cmd = self._curl.build_cmd(
                 'PATCH',
                 f'caches/{cache_id}',
@@ -200,12 +205,31 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
                     'Content-Range': f'bytes {ofs}-{ofs + sz - 1}/*',
                 },
             )
-            patch_data_cmd = dc.replace(patch_cmd, s=' | '.join([
-                f'dd if={in_file} bs={chunk_size} skip={i} count=1 status=none',
-                f'{patch_cmd.s} --data-binary -',
-            ]))
+
+            #
+
+            # patch_data_cmd = dc.replace(patch_cmd, s=' | '.join([
+            #     f'dd if={in_file} bs={chunk_size} skip={i} count=1 status=none',
+            #     f'{patch_cmd.s} --data-binary -',
+            # ]))
+            # print(f'{patch_data_cmd.s=}')
+            # patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+
+            #
+
+            with open(in_file, 'rb') as f:
+                f.seek(ofs)
+                buf = f.read(sz)
+            with open(tmp_file, 'wb') as f:
+                f.write(buf)
+            num_written += len(buf)
+            print(f'{num_written=}')
+            patch_data_cmd = dc.replace(patch_cmd, s=f'{patch_cmd.s} --data-binary @{tmp_file}')
             print(f'{patch_data_cmd.s=}')
             patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+
+            #
+
             check.equal(patch_result.status_code, 204)
             ofs += sz
 

@@ -157,12 +157,16 @@ class GithubServiceCurlClient:
             cmd: ShellCmd,
             *,
             raise_: bool = False,
+            **subprocess_kwargs: ta.Any,
     ) -> Result:
         out_file = make_temp_file()
         with defer(lambda: os.unlink(out_file)):
             run_cmd = dc.replace(cmd, s=f"{cmd.s} -o {out_file} -w '%{{json}}'")
 
-            out_json_bytes = run_cmd.run(subprocesses.check_output)
+            out_json_bytes = run_cmd.run(
+                subprocesses.check_output,
+                **subprocess_kwargs,
+            )
 
             out_json = json.loads(out_json_bytes.decode())
             status_code = check.isinstance(out_json['response_code'], int)
