@@ -113,13 +113,13 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         return self._curl.build_cmd(
             'GET',
-            '?'.join([
+            shlex.quote('?'.join([
                 'cache',
                 '&'.join([
                     f'{k}={urllib.parse.quote_plus(v)}'
                     for k, v in qp.items()
                 ]),
-            ]),
+            ])),
         )
 
     def run_get_entry(self, key: str) -> ta.Optional[Entry]:
