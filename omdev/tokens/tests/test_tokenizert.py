@@ -216,18 +216,18 @@ class TestTokenizert(unittest.TestCase):
 
     def test_roundtrip_tokenize(self):
         for contents in (
-            """\
-from __future__ import annotations
-x = \\
-    5
-
-# Also with multiple lines of backslashing
-x = \\
-    \\
-    \\
-    \\
-    5
-""",
+            (
+                'from __future__ import annotations\n'
+                'x = \\\n'
+                '    5\n'
+                '\n'
+                '# Also with multiple lines of backslashing\n'
+                'x = \\\n'
+                '    \\\n'
+                '    \\\n'
+                '    \\\n'
+                '    5\n'
+            ),
             '',
             (
                 'from __future__ import annotations\n'
