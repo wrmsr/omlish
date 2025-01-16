@@ -2844,8 +2844,29 @@ class GithubShellCache(ShellCache):
 
         return check.not_none(self._local.get_file_cmd(key))
 
+    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
+        def __init__(self, key: str, lp: ShellCache.PutFileCmdContext) -> None:
+            super().__init__()
+
+            self._key = key
+            self._lp = lp
+
+        @property
+        def cmd(self) -> ShellCmd:
+            return self._lp.cmd
+
+        def _commit(self) -> None:
+            self._lp.commit()
+            raise NotImplementedError
+
+        def _abort(self) -> None:
+            self._lp.abort()
+
     def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
-        raise NotImplementedError
+        return self._PutFileCmdContext(
+            key,
+            self._local.put_file_cmd(key),
+        )
 
 
 ########################################
