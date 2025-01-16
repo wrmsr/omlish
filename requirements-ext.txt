@@ -33,7 +33,7 @@ pyobjc-framework-metal==11.0.0; sys_platform == "darwin"
 pandas==2.2.3
 pyarrow==19.0.0
 
-opencv-python==4.10.0.84
+opencv-python==4.10.0.86
 pillow==11.1.0
 
 
@@ -197,7 +197,7 @@ customtkinter==5.2.2
 langchain-anthropic==0.3.1
 langchain-chroma==0.2.0
 langchain-community==0.3.14
-langchain-core==0.3.29
+langchain-core==0.3.30
 langchain-elasticsearch==0.3.1
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
