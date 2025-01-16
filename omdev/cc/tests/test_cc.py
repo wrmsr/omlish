@@ -69,3 +69,14 @@ def test_json(tmpdir):
         assert out.decode().strip() == (
             '{"answer":{"everything":42},"happy":true,"list":[1,0,2],"name":"Niels","nothing":null,"object":{"currency":"USD","value":42.99},"pi":3.141}'  # noqa
         )
+
+
+@pytest.mark.online
+def test_httplib(tmpdir):
+    for file in ['httplib.cc', 'httplib2.cc']:
+        out = _compile_and_run(
+            str(tmpdir),
+            os.path.join(os.path.dirname(__file__), 'src', file),
+        )
+
+        assert out.decode()

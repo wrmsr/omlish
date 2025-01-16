@@ -29,8 +29,16 @@ class MatchingConfigRewriter(ConfigRewriter):
         self._paths = frozenset(check.isinstance(p, tuple) for p in paths)
         self._recurse = recurse
 
+    def match_path(self, path: ConfigRewriterPath) -> bool:
+        for test in self._paths:
+            if len(test) != len(path):
+                continue
+            if all(t is None or p == t for p, t in zip(path, test)):
+                return True
+        return False
+
     def rewrite(self, ctx: ConfigRewriter.Context[T]) -> T:
-        if ctx.path in self._paths:
+        if self.match_path(ctx.path):
             no = self._fn(ctx.obj)
             if not self._recurse:
                 return no

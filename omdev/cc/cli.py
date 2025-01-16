@@ -35,6 +35,7 @@ from .. import magic
 from ..cache import data as dcache
 from .cdeps import Cdep
 from .cdeps import load_cdeps
+from .cdeps import process_marshaled_cdep
 
 
 class Cli(ap.Cli):
@@ -64,9 +65,14 @@ class Cli(ap.Cli):
             if src_magic.key == '@omlish-cdeps':
                 for dep in check.isinstance(src_magic.prepared, ta.Sequence):
                     if isinstance(dep, ta.Mapping):
-                        dep = msh.unmarshal(dep, Cdep)  # type: ignore
+                        dep = process_marshaled_cdep(dep)
+                        dep = msh.unmarshal(dep, Cdep)
                     else:
                         dep = load_cdeps()[check.isinstance(dep, str)]
+
+                    if dep.sources:
+                        # TODO
+                        raise NotImplementedError
 
                     dep_spec = dcache.GitSpec(
                         url=dep.git.url,
@@ -74,6 +80,7 @@ class Cli(ap.Cli):
                         subtrees=dep.git.subtrees,
                     )
                     dep_dir = dcache.default().get(dep_spec)
+
                     for dep_inc in dep.include or []:
                         inc_dir = os.path.join(dep_dir, dep_inc)
                         check.state(os.path.isdir(inc_dir))

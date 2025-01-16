@@ -44,7 +44,7 @@ class GitShallowCloner:
                 'clone',
                 '-n',
                 '--depth=1',
-                *(['--filter=tree:0'] if self.repo_subtrees is not None else []),
+                '--filter=tree:0',
                 *(['-b', self.branch] if self.branch else []),
                 '--single-branch',
                 self.repo_url,
