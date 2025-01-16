@@ -126,7 +126,7 @@ class GithubV1CacheShellClient:
 
         obj_json = json_dumps_compact(obj)
 
-        return dc.replace(curl_cmd, s=f'echo {shlex.quote(obj_json)} | {curl_cmd.s}')
+        return dc.replace(curl_cmd, s=f'echo {shlex.quote(obj_json)} | {curl_cmd.s} -d -')
 
     #
 
@@ -134,6 +134,9 @@ class GithubV1CacheShellClient:
     class CurlError(RuntimeError):
         status_code: int
         body: ta.Optional[bytes]
+
+        def __str__(self) -> str:
+            return repr(self)
 
     @dc.dataclass(frozen=True)
     class CurlResult:
@@ -188,7 +191,7 @@ class GithubV1CacheShellClient:
             is_success = 200 <= result.status_code < 300
 
         if is_success:
-            if (body := result.body) is None:
+            if not (body := result.body):
                 return None
             return json.loads(body.decode('utf-8-sig'))
 
@@ -211,7 +214,7 @@ class GithubV1CacheShellClient:
 
         obj = self.run_json_curl_cmd(
             curl_cmd,
-            success_status_codes=[200],
+            success_status_codes=[200, 204],
         )
         if obj is None:
             return None
