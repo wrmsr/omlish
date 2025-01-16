@@ -3335,7 +3335,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
                 f'caches/{cache_id}',
                 content_type='application/octet-stream',
                 headers={
-                    'Content-Range': f'bytes {ofs}-{sz - 1}/*',
+                    'Content-Range': f'bytes {ofs}-{ofs + sz - 1}/*',
                 },
             )
             patch_data_cmd = dc.replace(patch_cmd, s=' | '.join([
