@@ -2739,10 +2739,20 @@ class GithubV1CacheShellClient:
 
         return result
 
-    def run_json_curl_cmd(self, cmd: ShellCmd) -> ta.Optional[ta.Any]:
+    def run_json_curl_cmd(
+            self,
+            cmd: ShellCmd,
+            *,
+            success_status_codes: ta.Optional[ta.Container[int]] = None,
+    ) -> ta.Optional[ta.Any]:
         result = self.run_curl_cmd(cmd, raise_=True)
 
-        if 200 <= result.status_code < 300:
+        if success_status_codes is not None:
+            is_success = result.status_code in success_status_codes
+        else:
+            is_success = 200 <= result.status_code < 300
+
+        if is_success:
             if (body := result.body) is None:
                 return None
             return json.loads(body.decode('utf-8-sig'))
@@ -2764,7 +2774,10 @@ class GithubV1CacheShellClient:
     def run_get(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
         get_curl_cmd = self.build_get_curl_cmd(key)
 
-        obj = self.run_json_curl_cmd(get_curl_cmd)
+        obj = self.run_json_curl_cmd(
+            get_curl_cmd,
+            success_status_codes=[200],
+        )
         if obj is None:
             return None
 
