@@ -6,7 +6,6 @@ TODO:
  - ** class @dataclass Raise - user message should be able to be an exception type or instance or factory
 """
 import collections
-import os
 import threading
 import typing as ta
 
@@ -51,6 +50,8 @@ class Checks:
     #
 
     def register_on_raise_breakpoint_if_env_var_set(self, key: str) -> None:
+        import os
+
         def on_raise(exc: Exception) -> None:  # noqa
             if key in os.environ:
                 breakpoint()  # noqa
