@@ -368,7 +368,7 @@ class GithubShellCache(ShellCache):
         def _commit(self) -> None:
             os.replace(self._tmp_file, self._local_file)
 
-            raise NotImplementedError
+            self._owner._client.upload_cache_entry(self._key, self._local_file)
 
         def _abort(self) -> None:
             os.unlink(self._tmp_file)
