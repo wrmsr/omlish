@@ -29,7 +29,6 @@
 
 int main() {
     httplib::Client cli("http://www.google.com");
-    // httplib::Client cli("https://cpp-httplib-server.yhirose.repl.co");
 
     auto res = cli.Get("/");
     std::cout << res->status << std::endl;

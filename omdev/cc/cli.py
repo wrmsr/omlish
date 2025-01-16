@@ -18,6 +18,8 @@ Freestanding options:
 TODO:
  - cext interop
  - gen cmake
+ - fix CFLAGS/CCFLAGS/CPPFLAGS/CXXFLAGS
+ - jit-gen cmake mode? multi-src builds
 """
 import os
 import shlex
@@ -102,6 +104,9 @@ class Cli(ap.Cli):
 
         if cflags := os.environ.get('CFLAGS'):
             sh_parts.append(cflags)  # Explicitly shell-unquoted
+
+        if ldflags := os.environ.get('LDFLAGS'):
+            sh_parts.append(ldflags)  # Explicitly shell-unquoted
 
         sh_parts.extend([
             '-std=c++20',

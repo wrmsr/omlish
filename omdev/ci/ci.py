@@ -8,6 +8,7 @@ import tempfile
 import typing as ta
 
 from omlish.lite.cached import async_cached_nullary
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.contextmanagers import defer
@@ -125,10 +126,12 @@ class Ci(AsyncExitStacked):
 
     #
 
-    async def _resolve_ci_image(self) -> str:
-        docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
+    @cached_nullary
+    def docker_file_hash(self) -> str:
+        return build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
-        cache_key = f'ci-{docker_file_hash}'
+    async def _resolve_ci_image(self) -> str:
+        cache_key = f'ci-{self.docker_file_hash()}'
         image_tag = f'{self._cfg.service}:{cache_key}'
 
         if not self._cfg.always_build and (await is_docker_image_present(image_tag)):
@@ -160,15 +163,19 @@ class Ci(AsyncExitStacked):
 
     #
 
-    async def _resolve_requirements_dir(self) -> str:
-        requirements_txts = [
+    @cached_nullary
+    def requirements_txts(self) -> ta.Sequence[str]:
+        return [
             os.path.join(self._cfg.project_dir, rf)
             for rf in check.not_none(self._cfg.requirements_txts)
         ]
 
-        requirements_hash = build_requirements_hash(requirements_txts)[:self.FILE_NAME_HASH_LEN]
+    @cached_nullary
+    def requirements_hash(self) -> str:
+        return build_requirements_hash(self.requirements_txts())[:self.FILE_NAME_HASH_LEN]
 
-        tar_file_key = f'requirements-{requirements_hash}'
+    async def _resolve_requirements_dir(self) -> str:
+        tar_file_key = f'requirements-{self.docker_file_hash()}-{self.requirements_hash()}'
         tar_file_name = f'{tar_file_key}.tar'
 
         temp_dir = tempfile.mkdtemp()
@@ -186,7 +193,7 @@ class Ci(AsyncExitStacked):
         download_requirements(
             await self.resolve_ci_image(),
             temp_requirements_dir,
-            requirements_txts,
+            self.requirements_txts(),
         )
 
         if self._file_cache is not None:

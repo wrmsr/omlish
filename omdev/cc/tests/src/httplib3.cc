@@ -1,13 +1,13 @@
-//usr/bin/true; exec om cc run "$0" "$@"
+//usr/bin/true; CFLAGS=$(pkg-config --cflags --libs openssl) exec om cc run "$0" "$@"
 // @omlish-cdeps ["httplib"]
 #include <iostream>
 
-// #define CPPHTTPLIB_OPENSSL_SUPPORT
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
 
 int main() {
-    httplib::Client cli("http://www.google.com");
+    httplib::Client cli("https://www.google.com");
 
     auto res = cli.Get("/");
     std::cout << res->status << std::endl;

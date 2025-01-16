@@ -76,9 +76,13 @@ class CiCli(ArgparseCli):
         argparse_arg('--docker-file'),
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
+
         argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
+
         argparse_arg('--always-pull', action='store_true'),
+        argparse_arg('--always-build', action='store_true'),
+
         argparse_arg('--no-dependencies', action='store_true'),
     )
     async def run(self) -> None:
@@ -173,6 +177,7 @@ class CiCli(ArgparseCli):
                     ])),
 
                     always_pull=self.args.always_pull,
+                    always_build=self.args.always_build,
 
                     no_dependencies=self.args.no_dependencies,
                 ),
