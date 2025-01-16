@@ -1,6 +1,6 @@
 import typing as ta
 
-from .. import tokens as tks
+from ..tokens import all as tks
 
 
 Tokens: ta.TypeAlias = tks.Tokens

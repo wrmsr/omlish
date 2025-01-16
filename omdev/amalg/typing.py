@@ -1,6 +1,6 @@
 import dataclasses as dc
 
-from .. import tokens as tks
+from ..tokens import all as tks
 from .types import Tokens
 
 

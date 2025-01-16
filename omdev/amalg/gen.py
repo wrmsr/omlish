@@ -8,7 +8,7 @@ from omlish import collections as col
 from omlish import lang
 from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
-from .. import tokens as tks
+from ..tokens import all as tks
 from .srcfiles import SrcFile
 from .srcfiles import make_src_file
 from .strip import strip_main_lines

@@ -2,7 +2,7 @@ import re
 import typing as ta
 
 from .. import magic
-from .. import tokens as tks
+from ..tokens import all as tks
 from .types import Tokens
 
 

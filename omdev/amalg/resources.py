@@ -6,7 +6,7 @@ import typing as ta
 
 import tokenize_rt as trt
 
-from .. import tokens as tks
+from ..tokens import all as tks
 from .types import Tokens
 
 

@@ -6,7 +6,7 @@ import tokenize_rt as trt
 from omlish import collections as col
 from omlish import lang
 
-from .. import tokens as tks
+from ..tokens import all as tks
 from .imports import Import
 from .imports import make_import
 from .manifests import comment_out_manifest_comment

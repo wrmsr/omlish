@@ -4,7 +4,7 @@ import tokenize_rt as trt
 
 from omlish import check
 
-from .. import tokens as tks
+from ..tokens import all as tks
 from .types import Tokens
 
 

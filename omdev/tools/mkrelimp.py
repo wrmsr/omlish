@@ -8,8 +8,8 @@ import tokenize_rt as trt
 
 from omlish.logs import all as logs
 
-from .. import tokens as tks
 from ..cli import CliModule
+from ..tokens import all as tks
 
 
 T = ta.TypeVar('T')
