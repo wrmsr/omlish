@@ -3361,10 +3361,16 @@ class CiCli(ArgparseCli):
         check.state(os.path.isfile(docker_file))
 
         if compose_file is None:
-            compose_file = find_alt_file(
-                'docker/compose.yml',
-                'compose.yml',
-            )
+            compose_file = find_alt_file(*[
+                f'{f}.{x}'
+                for f in [
+                    'docker/docker-compose',
+                    'docker/compose',
+                    'docker-compose',
+                    'compose',
+                ]
+                for x in ['yaml', 'yml']
+            ])
         check.state(os.path.isfile(compose_file))
 
         if not requirements_txts:

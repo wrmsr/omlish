@@ -33,11 +33,14 @@ class ChecksumAlgorithm(_enum.Enum):
     CRC32C = 'CRC32C'
     SHA1 = 'SHA1'
     SHA256 = 'SHA256'
+    CRC64NVME = 'CRC64NVME'
 
 
 ChecksumCRC32 = _ta.NewType('ChecksumCRC32', str)
 
 ChecksumCRC32C = _ta.NewType('ChecksumCRC32C', str)
+
+ChecksumCRC64NVME = _ta.NewType('ChecksumCRC64NVME', str)
 
 
 class ChecksumMode(_enum.Enum):
@@ -47,6 +50,12 @@ class ChecksumMode(_enum.Enum):
 ChecksumSHA1 = _ta.NewType('ChecksumSHA1', str)
 
 ChecksumSHA256 = _ta.NewType('ChecksumSHA256', str)
+
+
+class ChecksumType(_enum.Enum):
+    COMPOSITE = 'COMPOSITE'
+    FULL_OBJECT = 'FULL_OBJECT'
+
 
 ContentDisposition = _ta.NewType('ContentDisposition', str)
 
@@ -671,6 +680,12 @@ class PutObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
+    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumCRC64NVME',
+        serialization_name='x-amz-checksum-crc64nvme',
+        shape_name='ChecksumCRC64NVME',
+    ))
+
     checksum_sha1: ChecksumSHA1 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         serialization_name='x-amz-checksum-sha1',
@@ -681,6 +696,12 @@ class PutObjectOutput(
         member_name='ChecksumSHA256',
         serialization_name='x-amz-checksum-sha256',
         shape_name='ChecksumSHA256',
+    ))
+
+    checksum_type: ChecksumType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumType',
+        serialization_name='x-amz-checksum-type',
+        shape_name='ChecksumType',
     ))
 
     server_side_encryption: ServerSideEncryption | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -823,6 +844,12 @@ class GetObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
+    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumCRC64NVME',
+        serialization_name='x-amz-checksum-crc64nvme',
+        shape_name='ChecksumCRC64NVME',
+    ))
+
     checksum_sha1: ChecksumSHA1 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumSHA1',
         serialization_name='x-amz-checksum-sha1',
@@ -833,6 +860,12 @@ class GetObjectOutput(
         member_name='ChecksumSHA256',
         serialization_name='x-amz-checksum-sha256',
         shape_name='ChecksumSHA256',
+    ))
+
+    checksum_type: ChecksumType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumType',
+        serialization_name='x-amz-checksum-type',
+        shape_name='ChecksumType',
     ))
 
     missing_meta: MissingMeta | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1080,6 +1113,11 @@ class Object(
         shape_name='ChecksumAlgorithmList',
     ))
 
+    checksum_type: ChecksumType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumType',
+        shape_name='ChecksumType',
+    ))
+
     size: Size | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Size',
         shape_name='Size',
@@ -1181,6 +1219,12 @@ class PutObjectRequest(
         member_name='ChecksumCRC32C',
         serialization_name='x-amz-checksum-crc32c',
         shape_name='ChecksumCRC32C',
+    ))
+
+    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ChecksumCRC64NVME',
+        serialization_name='x-amz-checksum-crc64nvme',
+        shape_name='ChecksumCRC64NVME',
     ))
 
     checksum_sha1: ChecksumSHA1 | None = _dc.field(default=None, metadata=_base.field_metadata(

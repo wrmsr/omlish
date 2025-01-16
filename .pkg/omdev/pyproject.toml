@@ -37,7 +37,6 @@ all = [
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
-    'tokenize-rt ~= 6.1',
     'wheel ~= 0.44',
 ]
 black = [
@@ -63,9 +62,6 @@ ptk = [
 ]
 qr = [
     'segno ~= 1.6',
-]
-tokens = [
-    'tokenize-rt ~= 6.1',
 ]
 wheel = [
     'wheel ~= 0.44',

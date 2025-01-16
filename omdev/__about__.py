@@ -45,10 +45,6 @@ class Project(ProjectBase):
             'segno ~= 1.6',
         ],
 
-        'tokens': [
-            'tokenize-rt ~= 6.1',
-        ],
-
         'wheel': [
             'wheel ~= 0.44',
         ],
