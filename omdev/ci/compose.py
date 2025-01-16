@@ -64,6 +64,7 @@ class DockerComposeRun(ExitStacked):
 
         #
 
+        no_dependencies: bool = False
         no_dependency_cleanup: bool = False
 
         #
@@ -82,40 +83,6 @@ class DockerComposeRun(ExitStacked):
 
     #
 
-    @property
-    def image_tag(self) -> str:
-        pfx = 'sha256:'
-        if (image := self._cfg.image).startswith(pfx):
-            image = image[len(pfx):]
-
-        return f'{self._cfg.service}:{image}'
-
-    @cached_nullary
-    def tag_image(self) -> str:
-        image_tag = self.image_tag
-
-        subprocesses.check_call(
-            'docker',
-            'tag',
-            self._cfg.image,
-            image_tag,
-            **self._subprocess_kwargs,
-        )
-
-        def delete_tag() -> None:
-            subprocesses.check_call(
-                'docker',
-                'rmi',
-                image_tag,
-                **self._subprocess_kwargs,
-            )
-
-        self._enter_context(defer(delete_tag))  # noqa
-
-        return image_tag
-
-    #
-
     def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
         out = dict(in_dct)
 
@@ -129,7 +96,7 @@ class DockerComposeRun(ExitStacked):
         in_service: dict = in_services[self._cfg.service]
         out_services[self._cfg.service] = out_service = dict(in_service)
 
-        out_service['image'] = self.image_tag
+        out_service['image'] = self._cfg.image
 
         for k in ['build', 'platform']:
             if k in out_service:
@@ -142,16 +109,21 @@ class DockerComposeRun(ExitStacked):
 
         #
 
-        depends_on = in_service.get('depends_on', [])
+        if not self._cfg.no_dependencies:
+            depends_on = in_service.get('depends_on', [])
 
-        for dep_service, in_dep_service_dct in list(in_services.items()):
-            if dep_service not in depends_on:
-                continue
+            for dep_service, in_dep_service_dct in list(in_services.items()):
+                if dep_service not in depends_on:
+                    continue
 
-            out_dep_service: dict = dict(in_dep_service_dct)
-            out_services[dep_service] = out_dep_service
+                out_dep_service: dict = dict(in_dep_service_dct)
+                out_services[dep_service] = out_dep_service
 
-            out_dep_service['ports'] = []
+                out_dep_service['ports'] = []
+
+        else:
+            out_service['depends_on'] = []
+            out_service['links'] = []
 
         #
 
@@ -186,12 +158,10 @@ class DockerComposeRun(ExitStacked):
         )
 
     def run(self) -> None:
-        self.tag_image()
-
         compose_file = self.rewrite_compose_file()
 
         with contextlib.ExitStack() as es:
-            if not self._cfg.no_dependency_cleanup:
+            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
                 es.enter_context(defer(self._cleanup_dependencies))  # noqa
 
             sh_cmd = ' '.join([

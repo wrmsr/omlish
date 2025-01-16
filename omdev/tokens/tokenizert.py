@@ -106,9 +106,7 @@ class Tokenization:
                 while cls._ESCAPED_NL_RE.search(newtok):
                     ws, nl, newtok = cls._re_partition(cls._ESCAPED_NL_RE, newtok)
                     if ws:
-                        tokens.append(
-                            Token(TokenNames.UNIMPORTANT_WS, ws, last_line, end_offset),
-                        )
+                        tokens.append(Token(TokenNames.UNIMPORTANT_WS, ws, last_line, end_offset))
                         end_offset += len(ws.encode())
                     tokens.append(Token(TokenNames.ESCAPED_NL, nl, last_line, end_offset))
                     end_offset = 0

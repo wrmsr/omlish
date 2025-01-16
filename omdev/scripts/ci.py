@@ -2325,6 +2325,7 @@ class DockerComposeRun(ExitStacked):
 
         #
 
+        no_dependencies: bool = False
         no_dependency_cleanup: bool = False
 
         #
@@ -2343,40 +2344,6 @@ class DockerComposeRun(ExitStacked):
 
     #
 
-    @property
-    def image_tag(self) -> str:
-        pfx = 'sha256:'
-        if (image := self._cfg.image).startswith(pfx):
-            image = image[len(pfx):]
-
-        return f'{self._cfg.service}:{image}'
-
-    @cached_nullary
-    def tag_image(self) -> str:
-        image_tag = self.image_tag
-
-        subprocesses.check_call(
-            'docker',
-            'tag',
-            self._cfg.image,
-            image_tag,
-            **self._subprocess_kwargs,
-        )
-
-        def delete_tag() -> None:
-            subprocesses.check_call(
-                'docker',
-                'rmi',
-                image_tag,
-                **self._subprocess_kwargs,
-            )
-
-        self._enter_context(defer(delete_tag))  # noqa
-
-        return image_tag
-
-    #
-
     def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
         out = dict(in_dct)
 
@@ -2390,7 +2357,7 @@ class DockerComposeRun(ExitStacked):
         in_service: dict = in_services[self._cfg.service]
         out_services[self._cfg.service] = out_service = dict(in_service)
 
-        out_service['image'] = self.image_tag
+        out_service['image'] = self._cfg.image
 
         for k in ['build', 'platform']:
             if k in out_service:
@@ -2403,16 +2370,21 @@ class DockerComposeRun(ExitStacked):
 
         #
 
-        depends_on = in_service.get('depends_on', [])
+        if not self._cfg.no_dependencies:
+            depends_on = in_service.get('depends_on', [])
 
-        for dep_service, in_dep_service_dct in list(in_services.items()):
-            if dep_service not in depends_on:
-                continue
+            for dep_service, in_dep_service_dct in list(in_services.items()):
+                if dep_service not in depends_on:
+                    continue
 
-            out_dep_service: dict = dict(in_dep_service_dct)
-            out_services[dep_service] = out_dep_service
+                out_dep_service: dict = dict(in_dep_service_dct)
+                out_services[dep_service] = out_dep_service
 
-            out_dep_service['ports'] = []
+                out_dep_service['ports'] = []
+
+        else:
+            out_service['depends_on'] = []
+            out_service['links'] = []
 
         #
 
@@ -2447,12 +2419,10 @@ class DockerComposeRun(ExitStacked):
         )
 
     def run(self) -> None:
-        self.tag_image()
-
         compose_file = self.rewrite_compose_file()
 
         with contextlib.ExitStack() as es:
-            if not self._cfg.no_dependency_cleanup:
+            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
                 es.enter_context(defer(self._cleanup_dependencies))  # noqa
 
             sh_cmd = ' '.join([
@@ -2554,6 +2524,7 @@ def pull_docker_image(
 def build_docker_image(
         docker_file: str,
         *,
+        tag: ta.Optional[str] = None,
         cwd: ta.Optional[str] = None,
 ) -> str:
     id_file = make_temp_file()
@@ -2564,6 +2535,7 @@ def build_docker_image(
             '-f', os.path.abspath(docker_file),
             '--iidfile', id_file,
             '--squash',
+            *(['--tag', tag] if tag is not None else []),
             '.',
             **(dict(cwd=cwd) if cwd is not None else {}),
         )
@@ -2572,6 +2544,23 @@ def build_docker_image(
             image_id = check.single(f.read().strip().splitlines()).strip()
 
     return image_id
+
+
+def tag_docker_image(image: str, tag: str) -> None:
+    subprocesses.check_call(
+        'docker',
+        'tag',
+        image,
+        tag,
+    )
+
+
+def delete_docker_tag(tag: str) -> None:
+    subprocesses.check_call(
+        'docker',
+        'rmi',
+        tag,
+    )
 
 
 ##
@@ -3049,6 +3038,9 @@ class Ci(ExitStacked):
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
 
         always_pull: bool = False
+        always_build: bool = False
+
+        no_dependencies: bool = False
 
         def __post_init__(self) -> None:
             check.not_isinstance(self.requirements_txts, str)
@@ -3129,17 +3121,27 @@ class Ci(ExitStacked):
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         cache_key = f'ci-{docker_file_hash}'
+        image_tag = f'{self._cfg.service}:{cache_key}'
+
+        if not self._cfg.always_build and is_docker_image_present(image_tag):
+            return image_tag
+
         if (cache_image_id := self._load_cache_docker_image(cache_key)) is not None:
-            return cache_image_id
+            tag_docker_image(
+                cache_image_id,
+                image_tag,
+            )
+            return image_tag
 
         image_id = build_docker_image(
             self._cfg.docker_file,
+            tag=image_tag,
             cwd=self._cfg.project_dir,
         )
 
         self._save_cache_docker_image(cache_key, image_id)
 
-        return image_id
+        return image_tag
 
     @cached_nullary
     def resolve_ci_image(self) -> str:
@@ -3234,6 +3236,8 @@ class Ci(ExitStacked):
             ],
 
             cwd=self._cfg.project_dir,
+
+            no_dependencies=self._cfg.no_dependencies,
         )) as ci_compose_run:
             ci_compose_run.run()
 
@@ -3328,15 +3332,14 @@ class CiCli(ArgparseCli):
         argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
         argparse_arg('--always-pull', action='store_true'),
+        argparse_arg('--no-dependencies', action='store_true'),
     )
     async def run(self) -> None:
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file
-        service = self.args.service
         requirements_txts = self.args.requirements_txt
         cache_dir = self.args.cache_dir
-        always_pull = self.args.always_pull
 
         #
 
@@ -3413,7 +3416,7 @@ class CiCli(ArgparseCli):
                     docker_file=docker_file,
 
                     compose_file=compose_file,
-                    service=service,
+                    service=self.args.service,
 
                     requirements_txts=requirements_txts,
 
@@ -3422,7 +3425,9 @@ class CiCli(ArgparseCli):
                         'python3 -m pytest -svv test.py',
                     ])),
 
-                    always_pull=always_pull,
+                    always_pull=self.args.always_pull,
+
+                    no_dependencies=self.args.no_dependencies,
                 ),
                 file_cache=file_cache,
                 shell_cache=shell_cache,

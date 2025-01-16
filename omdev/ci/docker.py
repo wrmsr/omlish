@@ -89,6 +89,7 @@ def pull_docker_image(
 def build_docker_image(
         docker_file: str,
         *,
+        tag: ta.Optional[str] = None,
         cwd: ta.Optional[str] = None,
 ) -> str:
     id_file = make_temp_file()
@@ -99,6 +100,7 @@ def build_docker_image(
             '-f', os.path.abspath(docker_file),
             '--iidfile', id_file,
             '--squash',
+            *(['--tag', tag] if tag is not None else []),
             '.',
             **(dict(cwd=cwd) if cwd is not None else {}),
         )
@@ -107,6 +109,23 @@ def build_docker_image(
             image_id = check.single(f.read().strip().splitlines()).strip()
 
     return image_id
+
+
+def tag_docker_image(image: str, tag: str) -> None:
+    subprocesses.check_call(
+        'docker',
+        'tag',
+        image,
+        tag,
+    )
+
+
+def delete_docker_tag(tag: str) -> None:
+    subprocesses.check_call(
+        'docker',
+        'rmi',
+        tag,
+    )
 
 
 ##

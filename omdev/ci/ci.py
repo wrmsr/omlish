@@ -22,6 +22,7 @@ from .docker import is_docker_image_present
 from .docker import load_docker_tar_cmd
 from .docker import pull_docker_image
 from .docker import save_docker_tar_cmd
+from .docker import tag_docker_image
 from .requirements import build_requirements_hash
 from .requirements import download_requirements
 from .shell import ShellCmd
@@ -45,6 +46,9 @@ class Ci(ExitStacked):
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
 
         always_pull: bool = False
+        always_build: bool = False
+
+        no_dependencies: bool = False
 
         def __post_init__(self) -> None:
             check.not_isinstance(self.requirements_txts, str)
@@ -125,17 +129,27 @@ class Ci(ExitStacked):
         docker_file_hash = build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
 
         cache_key = f'ci-{docker_file_hash}'
+        image_tag = f'{self._cfg.service}:{cache_key}'
+
+        if not self._cfg.always_build and is_docker_image_present(image_tag):
+            return image_tag
+
         if (cache_image_id := self._load_cache_docker_image(cache_key)) is not None:
-            return cache_image_id
+            tag_docker_image(
+                cache_image_id,
+                image_tag,
+            )
+            return image_tag
 
         image_id = build_docker_image(
             self._cfg.docker_file,
+            tag=image_tag,
             cwd=self._cfg.project_dir,
         )
 
         self._save_cache_docker_image(cache_key, image_id)
 
-        return image_id
+        return image_tag
 
     @cached_nullary
     def resolve_ci_image(self) -> str:
@@ -230,6 +244,8 @@ class Ci(ExitStacked):
             ],
 
             cwd=self._cfg.project_dir,
+
+            no_dependencies=self._cfg.no_dependencies,
         )) as ci_compose_run:
             ci_compose_run.run()
 

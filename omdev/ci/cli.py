@@ -79,15 +79,14 @@ class CiCli(ArgparseCli):
         argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
         argparse_arg('--always-pull', action='store_true'),
+        argparse_arg('--no-dependencies', action='store_true'),
     )
     async def run(self) -> None:
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file
-        service = self.args.service
         requirements_txts = self.args.requirements_txt
         cache_dir = self.args.cache_dir
-        always_pull = self.args.always_pull
 
         #
 
@@ -164,7 +163,7 @@ class CiCli(ArgparseCli):
                     docker_file=docker_file,
 
                     compose_file=compose_file,
-                    service=service,
+                    service=self.args.service,
 
                     requirements_txts=requirements_txts,
 
@@ -173,7 +172,9 @@ class CiCli(ArgparseCli):
                         'python3 -m pytest -svv test.py',
                     ])),
 
-                    always_pull=always_pull,
+                    always_pull=self.args.always_pull,
+
+                    no_dependencies=self.args.no_dependencies,
                 ),
                 file_cache=file_cache,
                 shell_cache=shell_cache,
