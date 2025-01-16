@@ -1234,7 +1234,7 @@ class GithubCacheServiceV1:
     @dc.dataclass(frozen=True)
     class ReserveCacheRequest:
         key: str
-        cache_size: ta.Optional[int]
+        cache_size: ta.Optional[int] = None
         version: ta.Optional[str] = None
 
     @dc.dataclass(frozen=True)
@@ -3316,7 +3316,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
             key=fixed_key,
-            cache_size=file_size,
+            # cache_size=file_size,
             version=str(self.CACHE_VERSION),
         )
         reserve_cmd = self._curl.build_post_json_cmd(

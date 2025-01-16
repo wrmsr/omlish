@@ -93,7 +93,7 @@ class GithubCacheServiceV1:
     @dc.dataclass(frozen=True)
     class ReserveCacheRequest:
         key: str
-        cache_size: ta.Optional[int]
+        cache_size: ta.Optional[int] = None
         version: ta.Optional[str] = None
 
     @dc.dataclass(frozen=True)
