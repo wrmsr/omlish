@@ -11,7 +11,7 @@ from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.json import json_dumps_pretty
 
-from .cache import GithubV1CacheShellClient
+from .cache import GithubCacheServiceV1ShellClient
 
 
 class GithubCli(ArgparseCli):
@@ -19,7 +19,7 @@ class GithubCli(ArgparseCli):
         argparse_arg('key'),
     )
     def get_cache_entry(self) -> None:
-        shell_client = GithubV1CacheShellClient()
+        shell_client = GithubCacheServiceV1ShellClient()
         entry = shell_client.run_get_entry(self.args.key)
         if entry is None:
             return

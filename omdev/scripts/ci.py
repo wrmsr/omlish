@@ -2334,63 +2334,25 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
 
 ########################################
-# ../github/cache.py
+# ../github/curl.py
 
 
 ##
 
 
-class GithubV1CacheShellClient:
-    BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
-    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
-
-    KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
-
-    #
-
+class GithubServiceCurlClient:
     def __init__(
             self,
-            *,
-            base_url: ta.Optional[str] = None,
+            service_url: str,
             auth_token: ta.Optional[str] = None,
-
-            key_prefix: ta.Optional[str] = None,
-            key_suffix: ta.Optional[str] = None,
+            *,
+            api_version: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
-        #
-
-        if base_url is None:
-            base_url = os.environ[self.BASE_URL_ENV_KEY]
-        self._base_url = check.non_empty_str(base_url)
-
-        if auth_token is None:
-            auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
+        self._service_url = check.non_empty_str(service_url)
         self._auth_token = auth_token
-
-        #
-
-        self._key_prefix = key_prefix
-
-        if key_suffix is None:
-            key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
-        self._key_suffix = check.non_empty_str(key_suffix)
-
-        #
-
-        self._service_url = GithubCacheServiceV1.get_service_url(self._base_url)
-
-    #
-
-    KEY_PART_SEPARATOR = '--'
-
-    def fix_key(self, s: str) -> str:
-        return self.KEY_SUFFIX_ENV_KEY.join([
-            *([self._key_prefix] if self._key_prefix else []),
-            s,
-            self._key_suffix,
-        ])
+        self._api_version = api_version
 
     #
 
@@ -2403,7 +2365,10 @@ class GithubV1CacheShellClient:
             content_type: ta.Optional[str] = None,
     ) -> ta.Dict[str, str]:
         dct = {
-            'Accept': f'application/json;api-version={GithubCacheServiceV1.API_VERSION}',
+            'Accept': ';'.join([
+                'application/json',
+                *([f'api-version={self._api_version}'] if self._api_version else []),
+            ]),
         }
 
         if auth_token is self._MISSING:
@@ -2418,9 +2383,13 @@ class GithubV1CacheShellClient:
 
     #
 
-    HEADER_AUTH_TOKEN_ENV_KEY = '_GITHUB_CACHE_AUTH_TOKEN'  # noqa
+    HEADER_AUTH_TOKEN_ENV_KEY_PREFIX = '_GITHUB_SERVICE_AUTH_TOKEN'  # noqa
 
-    def build_curl_cmd(
+    @property
+    def header_auth_token_env_key(self) -> str:
+        return f'{self.HEADER_AUTH_TOKEN_ENV_KEY_PREFIX}_{id(self)}'
+
+    def build_cmd(
             self,
             method: str,
             url: str,
@@ -2435,8 +2404,9 @@ class GithubV1CacheShellClient:
 
         header_auth_token: ta.Optional[str]
         if self._auth_token:
-            env[self.HEADER_AUTH_TOKEN_ENV_KEY] = self._auth_token
-            header_auth_token = f'${self.HEADER_AUTH_TOKEN_ENV_KEY}'
+            header_env_key = self.header_auth_token_env_key
+            env[header_env_key] = self._auth_token
+            header_auth_token = f'${header_env_key}'
         else:
             header_auth_token = None
 
@@ -2460,13 +2430,13 @@ class GithubV1CacheShellClient:
             env=env,
         )
 
-    def build_post_json_curl_cmd(
+    def build_post_json_cmd(
             self,
             url: str,
             obj: ta.Any,
             **kwargs: ta.Any,
     ) -> ShellCmd:
-        curl_cmd = self.build_curl_cmd(
+        curl_cmd = self.build_cmd(
             'POST',
             url,
             json_content=True,
@@ -2480,7 +2450,7 @@ class GithubV1CacheShellClient:
     #
 
     @dc.dataclass()
-    class CurlError(RuntimeError):
+    class Error(RuntimeError):
         status_code: int
         body: ta.Optional[bytes]
 
@@ -2488,22 +2458,22 @@ class GithubV1CacheShellClient:
             return repr(self)
 
     @dc.dataclass(frozen=True)
-    class CurlResult:
+    class Result:
         status_code: int
         body: ta.Optional[bytes]
 
-        def as_error(self) -> 'GithubV1CacheShellClient.CurlError':
-            return GithubV1CacheShellClient.CurlError(
+        def as_error(self) -> 'GithubServiceCurlClient.Error':
+            return GithubServiceCurlClient.Error(
                 status_code=self.status_code,
                 body=self.body,
             )
 
-    def run_curl_cmd(
+    def run_cmd(
             self,
             cmd: ShellCmd,
             *,
             raise_: bool = False,
-    ) -> CurlResult:
+    ) -> Result:
         out_file = make_temp_file()
         with defer(lambda: os.unlink(out_file)):
             run_cmd = dc.replace(cmd, s=f"{cmd.s} -o {out_file} -w '%{{json}}'")
@@ -2516,7 +2486,7 @@ class GithubV1CacheShellClient:
             with open(out_file, 'rb') as f:
                 body = f.read()
 
-            result = self.CurlResult(
+            result = self.Result(
                 status_code=status_code,
                 body=body,
             )
@@ -2526,13 +2496,13 @@ class GithubV1CacheShellClient:
 
         return result
 
-    def run_json_curl_cmd(
+    def run_json_cmd(
             self,
             cmd: ShellCmd,
             *,
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
-        result = self.run_curl_cmd(cmd, raise_=True)
+        result = self.run_cmd(cmd, raise_=True)
 
         if success_status_codes is not None:
             is_success = result.status_code in success_status_codes
@@ -2549,163 +2519,6 @@ class GithubV1CacheShellClient:
 
         else:
             raise result.as_error()
-
-    #
-
-    def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
-        fixed_key = self.fix_key(key)
-        return self.build_curl_cmd(
-            'GET',
-            f'cache?keys={fixed_key}',
-        )
-
-    def run_get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
-        fixed_key = self.fix_key(key)
-        curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
-
-        obj = self.run_json_curl_cmd(
-            curl_cmd,
-            success_status_codes=[200, 204],
-        )
-        if obj is None:
-            return None
-
-        return GithubCacheServiceV1.dataclass_from_json(
-            GithubCacheServiceV1.ArtifactCacheEntry,
-            obj,
-        )
-
-    #
-
-    def build_download_get_entry_cmd(
-            self,
-            entry: GithubCacheServiceV1.ArtifactCacheEntry,
-            out_file: str,
-    ) -> ShellCmd:
-        return ShellCmd(' '.join([
-            'aria2c',
-            '-x', '4',
-            '-o', out_file,
-            check.non_empty_str(entry.archive_location),
-        ]))
-
-    def download_get_entry(
-            self,
-            entry: GithubCacheServiceV1.ArtifactCacheEntry,
-            out_file: str,
-    ) -> None:
-        dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
-        dl_cmd.run(subprocesses.check_call)
-
-    #
-
-    def upload_cache_entry(
-            self,
-            key: str,
-            in_file: str,
-    ) -> None:
-        fixed_key = self.fix_key(key)
-
-        check.state(os.path.isfile(in_file))
-
-        file_size = os.stat(in_file).st_size
-
-        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
-            key=fixed_key,
-            cache_size=file_size,
-        )
-        reserve_cmd = self.build_post_json_curl_cmd(
-            'caches',
-            GithubCacheServiceV1.dataclass_to_json(reserve_req),
-        )
-        reserve_resp_obj: ta.Any = check.not_none(self.run_json_curl_cmd(
-            reserve_cmd,
-            success_status_codes=[201],
-        ))
-        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
-            GithubCacheServiceV1.ReserveCacheResponse,
-            reserve_resp_obj,
-        )
-
-        raise NotImplementedError
-
-
-##
-
-
-class GithubShellCache(ShellCache):
-    def __init__(
-            self,
-            dir: str,  # noqa
-            *,
-            client: ta.Optional[GithubV1CacheShellClient] = None,
-    ) -> None:
-        super().__init__()
-
-        self._dir = check.not_none(dir)
-
-        if client is None:
-            client = GithubV1CacheShellClient()
-        self._client = client
-
-        self._local = DirectoryFileCache(self._dir)
-
-    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return ShellCmd(f'cat {shlex.quote(local_file)}')
-
-        if (entry := self._client.run_get_entry(key)) is None:
-            return None
-
-        tmp_file = self._local.format_incomplete_file(local_file)
-        try:
-            self._client.download_get_entry(entry, tmp_file)
-
-            os.replace(tmp_file, local_file)
-
-        except BaseException:  # noqa
-            os.unlink(tmp_file)
-
-            raise
-
-        return ShellCmd(f'cat {shlex.quote(local_file)}')
-
-    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(
-                self,
-                owner: 'GithubShellCache',
-                key: str,
-                tmp_file: str,
-                local_file: str,
-        ) -> None:
-            super().__init__()
-
-            self._owner = owner
-            self._key = key
-            self._tmp_file = tmp_file
-            self._local_file = local_file
-
-        @property
-        def cmd(self) -> ShellCmd:
-            return ShellCmd(f'cat > {shlex.quote(self._tmp_file)}')
-
-        def _commit(self) -> None:
-            os.replace(self._tmp_file, self._local_file)
-
-            self._owner._client.upload_cache_entry(self._key, self._local_file)  # noqa
-
-        def _abort(self) -> None:
-            os.unlink(self._tmp_file)
-
-    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
-        local_file = self._local.get_cache_file_path(key, make_dirs=True)
-        return self._PutFileCmdContext(
-            self,
-            key,
-            self._local.format_incomplete_file(local_file),
-            local_file,
-        )
 
 
 ########################################
@@ -3333,29 +3146,237 @@ async def load_docker_tar(
 
 
 ########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
+# ../github/cache.py
 
 
-class GithubCli(ArgparseCli):
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    def get_cache_entry(self) -> None:
-        shell_client = GithubV1CacheShellClient()
-        entry = shell_client.run_get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+##
 
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
+
+class GithubCacheShellClient(abc.ABC):
+    class Entry(abc.ABC):  # noqa
+        pass
+
+    @abc.abstractmethod
+    def run_get_entry(self, key: str) -> ta.Optional[Entry]:
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def download_get_entry(self, entry: Entry, out_file: str) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_cache_entry(self, key: str, in_file: str) -> None:
+        raise NotImplementedError
+
+
+#
+
+
+class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
+    BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
+    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
+
+    KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
+
+    CACHE_VERSION: ta.ClassVar[int] = 1
+
+    #
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+            auth_token: ta.Optional[str] = None,
+
+            key_prefix: ta.Optional[str] = None,
+            key_suffix: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        #
+
+        if base_url is None:
+            base_url = os.environ[self.BASE_URL_ENV_KEY]
+        service_url = GithubCacheServiceV1.get_service_url(base_url)
+
+        if auth_token is None:
+            auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
+
+        self._curl = GithubServiceCurlClient(
+            service_url,
+            auth_token,
+            api_version=GithubCacheServiceV1.API_VERSION,
+        )
+
+        #
+
+        self._key_prefix = key_prefix
+
+        if key_suffix is None:
+            key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
+        self._key_suffix = check.non_empty_str(key_suffix)
+
+    #
+
+    KEY_PART_SEPARATOR = '--'
+
+    def fix_key(self, s: str) -> str:
+        return self.KEY_SUFFIX_ENV_KEY.join([
+            *([self._key_prefix] if self._key_prefix else []),
+            s,
+            self._key_suffix,
+        ])
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheShellClient.Entry):
+        artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    #
+
+    def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
+        fixed_key = self.fix_key(key)
+        return self._curl.build_cmd(
+            'GET',
+            f'cache?keys={fixed_key}',
+        )
+
+    def run_get_entry(self, key: str) -> ta.Optional[Entry]:
+        fixed_key = self.fix_key(key)
+        curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
+
+        obj = self._curl.run_json_cmd(
+            curl_cmd,
+            success_status_codes=[200, 204],
+        )
+        if obj is None:
+            return None
+
+        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        ))
+
+    #
+
+    def build_download_get_entry_cmd(self, entry: Entry, out_file: str) -> ShellCmd:
+        return ShellCmd(' '.join([
+            'aria2c',
+            '-x', '4',
+            '-o', out_file,
+            check.non_empty_str(entry.artifact.archive_location),
+        ]))
+
+    def download_get_entry(self, entry: Entry, out_file: str) -> None:
+        dl_cmd = self.build_download_get_entry_cmd(entry, out_file)
+        dl_cmd.run(subprocesses.check_call)
+
+    #
+
+    def upload_cache_entry(self, key: str, in_file: str) -> None:
+        fixed_key = self.fix_key(key)
+
+        check.state(os.path.isfile(in_file))
+
+        file_size = os.stat(in_file).st_size
+
+        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
+            key=fixed_key,
+            cache_size=file_size,
+        )
+        reserve_cmd = self._curl.build_post_json_cmd(
+            'caches',
+            GithubCacheServiceV1.dataclass_to_json(reserve_req),
+        )
+        reserve_resp_obj: ta.Any = check.not_none(self._curl.run_json_cmd(
+            reserve_cmd,
+            success_status_codes=[201],
+        ))
+        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
+            GithubCacheServiceV1.ReserveCacheResponse,
+            reserve_resp_obj,
+        )
+
+        raise NotImplementedError
+
+
+##
+
+
+class GithubShellCache(ShellCache):
+    def __init__(
+            self,
+            dir: str,  # noqa
+            *,
+            client: ta.Optional[GithubCacheShellClient] = None,
+    ) -> None:
+        super().__init__()
+
+        self._dir = check.not_none(dir)
+
+        if client is None:
+            client = GithubCacheServiceV1ShellClient()
+        self._client: GithubCacheShellClient = client
+
+        self._local = DirectoryFileCache(self._dir)
+
+    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return ShellCmd(f'cat {shlex.quote(local_file)}')
+
+        if (entry := self._client.run_get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        try:
+            self._client.download_get_entry(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        except BaseException:  # noqa
+            os.unlink(tmp_file)
+
+            raise
+
+        return ShellCmd(f'cat {shlex.quote(local_file)}')
+
+    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
+        def __init__(
+                self,
+                owner: 'GithubShellCache',
+                key: str,
+                tmp_file: str,
+                local_file: str,
+        ) -> None:
+            super().__init__()
+
+            self._owner = owner
+            self._key = key
+            self._tmp_file = tmp_file
+            self._local_file = local_file
+
+        @property
+        def cmd(self) -> ShellCmd:
+            return ShellCmd(f'cat > {shlex.quote(self._tmp_file)}')
+
+        def _commit(self) -> None:
+            os.replace(self._tmp_file, self._local_file)
+
+            self._owner._client.upload_cache_entry(self._key, self._local_file)  # noqa
+
+        def _abort(self) -> None:
+            os.unlink(self._tmp_file)
+
+    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
+        local_file = self._local.get_cache_file_path(key, make_dirs=True)
+        return self._PutFileCmdContext(
+            self,
+            key,
+            self._local.format_incomplete_file(local_file),
+            local_file,
+        )
 
 
 ########################################
@@ -3602,6 +3623,32 @@ class Ci(AsyncExitStacked):
         await self.resolve_requirements_dir()
 
         await self._run_compose()
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    def get_cache_entry(self) -> None:
+        shell_client = GithubCacheServiceV1ShellClient()
+        entry = shell_client.run_get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
 
 
 ########################################
