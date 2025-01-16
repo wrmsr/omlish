@@ -2344,13 +2344,22 @@ class GithubV1CacheShellClient:
     BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
     AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
 
+    KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
+
+    #
+
     def __init__(
             self,
             *,
             base_url: ta.Optional[str] = None,
             auth_token: ta.Optional[str] = None,
+
+            key_prefix: ta.Optional[str] = None,
+            key_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
+        #
 
         if base_url is None:
             base_url = os.environ[self.BASE_URL_ENV_KEY]
@@ -2360,7 +2369,28 @@ class GithubV1CacheShellClient:
             auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
         self._auth_token = auth_token
 
+        #
+
+        self._key_prefix = key_prefix
+
+        if key_suffix is None:
+            key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
+        self._key_suffix = check.non_empty_str(key_suffix)
+
+        #
+
         self._service_url = GithubCacheServiceV1.get_service_url(self._base_url)
+
+    #
+
+    KEY_PART_SEPARATOR = '--'
+
+    def fix_key(self, s: str) -> str:
+        return self.KEY_SUFFIX_ENV_KEY.join([
+            *([self._key_prefix] if self._key_prefix else []),
+            s,
+            self._key_suffix,
+        ])
 
     #
 
@@ -2523,13 +2553,15 @@ class GithubV1CacheShellClient:
     #
 
     def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
+        fixed_key = self.fix_key(key)
         return self.build_curl_cmd(
             'GET',
-            f'cache?keys={key}',
+            f'cache?keys={fixed_key}',
         )
 
     def run_get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1.ArtifactCacheEntry]:
-        curl_cmd = self.build_get_entry_curl_cmd(key)
+        fixed_key = self.fix_key(key)
+        curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
 
         obj = self.run_json_curl_cmd(
             curl_cmd,
@@ -2572,12 +2604,14 @@ class GithubV1CacheShellClient:
             key: str,
             in_file: str,
     ) -> None:
+        fixed_key = self.fix_key(key)
+
         check.state(os.path.isfile(in_file))
 
         file_size = os.stat(in_file).st_size
 
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
-            key=key,
+            key=fixed_key,
             cache_size=file_size,
         )
         reserve_cmd = self.build_post_json_curl_cmd(
