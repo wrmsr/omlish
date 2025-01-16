@@ -63,6 +63,7 @@ class GithubCacheServiceV1:
         return {
             camel_case(k, lower=True): v
             for k, v in dc.asdict(obj).items()
+            if v is not None
         }
 
     @classmethod

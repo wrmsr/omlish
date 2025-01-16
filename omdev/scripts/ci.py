@@ -1175,6 +1175,7 @@ class GithubCacheServiceV1:
         return {
             camel_case(k, lower=True): v
             for k, v in dc.asdict(obj).items()
+            if v is not None
         }
 
     @classmethod
@@ -2969,7 +2970,7 @@ class GithubShellCache(ShellCache):
         def _commit(self) -> None:
             os.replace(self._tmp_file, self._local_file)
 
-            self._owner._client.upload_cache_entry(self._key, self._local_file)
+            self._owner._client.upload_cache_entry(self._key, self._local_file)  # noqa
 
         def _abort(self) -> None:
             os.unlink(self._tmp_file)
