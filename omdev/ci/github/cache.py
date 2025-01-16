@@ -187,17 +187,25 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 
         #
 
-        patch_cmd = self._curl.build_cmd(
-            'PATCH',
-            f'caches/{cache_id}',
-            content_type='application/octet-stream',
-            headers={
-                'Content-Range': f'bytes 0-{file_size - 1}/*',
-            },
-        )
-        patch_data_cmd = dc.replace(patch_cmd, s=f'{patch_cmd.s} --data-binary @{in_file}')
-        patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
-        check.equal(patch_result.status_code, 204)
+        max_chunk_size = 32 * 1024 * 1024
+        ofs = 0
+        while ofs < file_size:
+            sz = min(max_chunk_size, file_size - ofs)
+            patch_cmd = self._curl.build_cmd(
+                'PATCH',
+                f'caches/{cache_id}',
+                content_type='application/octet-stream',
+                headers={
+                    'Content-Range': f'bytes {ofs}-{sz - 1}/*',
+                },
+            )
+            patch_data_cmd = dc.replace(patch_cmd, s=' | '.join([
+                f'dd if={in_file} bs=1 ofs={ofs} count={sz} status=none',
+                f'{patch_cmd.s} --data-binary -',
+            ]))
+            patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+            check.equal(patch_result.status_code, 204)
+            ofs += sz
 
         #
 
