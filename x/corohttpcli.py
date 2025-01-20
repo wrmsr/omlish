@@ -43,6 +43,7 @@ import http.client
 import io
 import re
 import socket
+import typing as ta
 import urllib.parse
 
 
@@ -56,25 +57,6 @@ _CS_REQ_SENT = 'Request-sent'
 _UNKNOWN = 'UNKNOWN'
 
 _METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
-
-# the patterns for both name and value are more lenient than RFC
-# definitions to allow for backwards compatibility
-_is_legal_header_name = re.compile(rb'[^:\s][^:\r\n]*').fullmatch
-_is_illegal_header_value = re.compile(rb'\n(?![ \t])|\r(?![ \t\n])').search
-
-# These characters are not allowed within HTTP URL paths.
-#  See https://tools.ietf.org/html/rfc3986#section-3.3 and the
-#  https://tools.ietf.org/html/rfc3986#appendix-A pchar definition.
-# Prevents CVE-2019-9740.  Includes control characters such as \r\n.
-# We don't restrict chars above \x7f as putrequest() limits us to ASCII.
-_contains_disallowed_url_pchar_re = re.compile('[\x00-\x20\x7f]')
-# Arguably only these _should_ allowed:
-#  _is_allowed_url_pchars_re = re.compile(r"^[/!$&'()*+,;=:@%a-zA-Z0-9._~-]+$")
-# We are more lenient for assumed real world compatibility purposes.
-
-# These characters are not allowed within HTTP method names
-# to prevent http header injection.
-_contains_disallowed_method_pchar_re = re.compile('[\x00-\x1f]')
 
 
 _MAXLINE = 65536
@@ -140,7 +122,130 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
     return enc_name
 
 
+class HttpClientValidation:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    # These characters are not allowed within HTTP method names to prevent http header injection.
+    _CONTAINS_DISALLOWED_METHOD_PCHAR_RE = re.compile('[\x00-\x1f]')
+
+    @classmethod
+    def validate_method(cls, method: str) -> None:
+        """Validate a method name for putrequest."""
+
+        # prevent http header injection
+        match = cls._CONTAINS_DISALLOWED_METHOD_PCHAR_RE.search(method)
+        if match:
+            raise ValueError(
+                f"method can't contain control characters. {method!r} "
+                f"(found at least {match.group()!r})",
+            )
+
+    #
+
+    # These characters are not allowed within HTTP URL paths. See https://tools.ietf.org/html/rfc3986#section-3.3 and
+    # the # https://tools.ietf.org/html/rfc3986#appendix-A pchar definition.
+    #  - Prevents CVE-2019-9740.  Includes control characters such as \r\n.
+    #  - We don't restrict chars above \x7f as putrequest() limits us to ASCII.
+    _CONTAINS_DISALLOWED_URL_PCHAR_RE = re.compile('[\x00-\x20\x7f]')
+
+    @classmethod
+    def validate_path(cls, url: str) -> None:
+        """Validate a url for putrequest."""
+
+        # Prevent CVE-2019-9740.
+        match = cls._CONTAINS_DISALLOWED_URL_PCHAR_RE.search(url)
+        if match:
+            raise http.client.InvalidURL(
+                f"URL can't contain control characters. {url!r} "
+                f"(found at least {match.group()!r})"
+            )
+
+    @classmethod
+    def validate_host(cls, host: str) -> None:
+        """Validate a host so it doesn't contain control characters."""
+
+        # Prevent CVE-2019-18348.
+        match = cls._CONTAINS_DISALLOWED_URL_PCHAR_RE.search(host)
+        if match:
+            raise http.client.InvalidURL(
+                f"URL can't contain control characters. {host!r} "
+                f"(found at least {match.group()!r})"
+            )
+
+    #
+
+    # The patterns for both name and value are more lenient than RFC definitions to allow for backwards compatibility.
+    _LEGAL_HEADER_NAME_RE = re.compile(rb'[^:\s][^:\r\n]*')
+    _ILLEGAL_HEADER_VALUE_RE = re.compile(rb'\n(?![ \t])|\r(?![ \t\n])')
+
+    @classmethod
+    def validate_header_name(cls, header: str) -> None:
+        if not cls._LEGAL_HEADER_NAME_RE.fullmatch(header):
+            raise ValueError('Invalid header name %r' % (header,))
+
+    @classmethod
+    def validate_header_value(cls, value: str) -> None:
+        if cls._ILLEGAL_HEADER_VALUE_RE.search(value):
+            raise ValueError('Invalid header value %r' % (value,))
+
+
 class HttpConnection:
+    """
+    HTTPConnection goes through a number of "states", which define when a client may legally make another request or
+    fetch the response for a particular request. This diagram details these state transitions:
+
+        (null)
+          |
+          | HTTPConnection()
+          v
+        Idle
+          |
+          | putrequest()
+          v
+        Request-started
+          |
+          | ( putheader() )*  endheaders()
+          v
+        Request-sent
+          |\_____________________________
+          |                              | getresponse() raises
+          | response = getresponse()     | ConnectionError
+          v                              v
+        Unread-response                Idle
+        [Response-headers-read]
+          |\____________________
+          |                     |
+          | response.read()     | putrequest()
+          v                     v
+        Idle                  Req-started-unread-response
+                         ______/|
+                       /        |
+       response.read() |        | ( putheader() )*  endheaders()
+                       v        v
+           Request-started    Req-sent-unread-response
+                                |
+                                | response.read()
+                                v
+                              Request-sent
+
+    This diagram presents the following rules:
+      -- a second request may not be started until {response-headers-read}
+      -- a response [object] cannot be retrieved until {request-sent}
+      -- there is no differentiation between an unread response body and a
+         partially read response body
+
+    Logical State                  __state            __response
+    -------------                  -------            ----------
+    Idle                           _CS_IDLE           None
+    Request-started                _CS_REQ_STARTED    None
+    Request-sent                   _CS_REQ_SENT       None
+    Unread-response                _CS_IDLE           <response_class>
+    Req-started-unread-response    _CS_REQ_STARTED    <response_class>
+    Req-sent-unread-response       _CS_REQ_SENT       <response_class>
+    """
     _http_vsn = 11
     _http_vsn_str = 'HTTP/1.1'
 
@@ -149,7 +254,7 @@ class HttpConnection:
     auto_open = 1
 
     @staticmethod
-    def _is_text_io(stream):
+    def _is_text_io(stream: ta.Any) -> bool:
         """Test whether a file-like object is a text or a binary stream."""
 
         return isinstance(stream, io.TextIOBase)
@@ -211,7 +316,7 @@ class HttpConnection:
 
         (self.host, self.port) = self._get_hostport(host, port)
 
-        self._validate_host(self.host)
+        HttpClientValidation.validate_host(self.host)
 
         # This is stored as an instance variable to allow unit
         # tests to replace it with a suitable mockup
@@ -317,7 +422,7 @@ class HttpConnection:
             else None
         )
 
-    def connect(self):
+    def connect(self) -> None:
         """Connect to the host and port specified in __init__."""
 
         self.sock = self._create_connection(
@@ -335,7 +440,7 @@ class HttpConnection:
         if self._tunnel_host:
             self._tunnel()
 
-    def close(self):
+    def close(self) -> None:
         """Close the connection to the HTTP server."""
 
         self.__state = _CS_IDLE
@@ -350,7 +455,7 @@ class HttpConnection:
                 self.__response = None
                 response.close()
 
-    def send(self, data):
+    def send(self, data) -> None:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
@@ -379,7 +484,7 @@ class HttpConnection:
             else:
                 raise TypeError('data should be a bytes-like object or an iterable, got %r' % type(data))
 
-    def _output(self, s):
+    def _output(self, s) -> None:
         """
         Add a line of output to the current request buffer.
 
@@ -443,7 +548,7 @@ class HttpConnection:
 
     def putrequest(
             self,
-            method,
+            method: str,
             url,
             skip_host=False,
             skip_accept_encoding=False,
@@ -482,13 +587,13 @@ class HttpConnection:
         else:
             raise http.client.CannotSendRequest(self.__state)
 
-        self._validate_method(method)
+        HttpClientValidation.validate_method(method)
 
         # Save the method for use later in the response phase
         self._method = method
 
         url = url or '/'
-        self._validate_path(url)
+        HttpClientValidation.validate_path(url)
 
         request = '%s %s %s' % (method, url, self._http_vsn_str)
 
@@ -539,9 +644,9 @@ class HttpConnection:
                         host_enc = host_enc.decode('ascii')
                         self.putheader('Host', '%s:%s' % (host_enc, port))
 
-            # note: we are assuming that clients will not attempt to set these headers since *this* library must deal
-            #       with the consequences. this also means that when the supporting libraries are updated to recognize
-            #       other forms, then this code should be changed (removed or updated).
+            # NOTE: we are assuming that clients will not attempt to set these headers since *this* library must deal
+            # with the consequences. this also means that when the supporting libraries are updated to recognize other
+            # forms, then this code should be changed (removed or updated).
 
             # we only want a Content-Encoding of "identity" since we don't support encodings such as x-gzip or
             # x-deflate.
@@ -563,38 +668,7 @@ class HttpConnection:
         # ASCII also helps prevent CVE-2019-9740.
         return request.encode('ascii')
 
-    def _validate_method(self, method):
-        """Validate a method name for putrequest."""
-
-        # prevent http header injection
-        match = _contains_disallowed_method_pchar_re.search(method)
-        if match:
-            raise ValueError(
-                f"method can't contain control characters. {method!r} "
-                f"(found at least {match.group()!r})",
-            )
-
-    def _validate_path(self, url):
-        """Validate a url for putrequest."""
-
-        # Prevent CVE-2019-9740.
-        match = _contains_disallowed_url_pchar_re.search(url)
-        if match:
-            raise http.client.InvalidURL(
-                f"URL can't contain control characters. {url!r} "
-                f"(found at least {match.group()!r})"
-            )
-
-    def _validate_host(self, host):
-        """Validate a host so it doesn't contain control characters."""
-
-        # Prevent CVE-2019-18348.
-        match = _contains_disallowed_url_pchar_re.search(host)
-        if match:
-            raise http.client.InvalidURL(
-                f"URL can't contain control characters. {host!r} "
-                f"(found at least {match.group()!r})"
-            )
+    #
 
     def putheader(self, header, *values):
         """
@@ -609,8 +683,7 @@ class HttpConnection:
         if hasattr(header, 'encode'):
             header = header.encode('ascii')
 
-        if not _is_legal_header_name(header):
-            raise ValueError('Invalid header name %r' % (header,))
+        HttpClientValidation.validate_header_name(header)
 
         values = list(values)
         for i, one_value in enumerate(values):
@@ -619,8 +692,7 @@ class HttpConnection:
             elif isinstance(one_value, int):
                 values[i] = str(one_value).encode('ascii')
 
-            if _is_illegal_header_value(values[i]):
-                raise ValueError('Invalid header value %r' % (values[i],))
+            HttpClientValidation.validate_header_value(values[i])
 
         value = b'\r\n\t'.join(values)
         header = header + b': ' + value
@@ -737,6 +809,7 @@ class HttpConnection:
 
 
 def _main() -> None:
+    # import urllib.request
     # req = urllib.request.Request('https://www.baidu.com')
     # with urllib.request.urlopen(req) as resp:
     #     print(resp.read())
