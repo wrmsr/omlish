@@ -54,8 +54,7 @@ class HttpClientValidation:
         match = cls._CONTAINS_DISALLOWED_METHOD_PCHAR_RE.search(method)
         if match:
             raise ValueError(
-                f"method can't contain control characters. {method!r} "
-                f"(found at least {match.group()!r})",
+                f"method can't contain control characters. {method!r} (found at least {match.group()!r})",
             )
 
     #
@@ -74,8 +73,7 @@ class HttpClientValidation:
         match = cls._CONTAINS_DISALLOWED_URL_PCHAR_RE.search(url)
         if match:
             raise http.client.InvalidURL(
-                f"URL can't contain control characters. {url!r} "
-                f"(found at least {match.group()!r})"
+                f"URL can't contain control characters. {url!r} (found at least {match.group()!r})",
             )
 
     @classmethod
@@ -86,8 +84,7 @@ class HttpClientValidation:
         match = cls._CONTAINS_DISALLOWED_URL_PCHAR_RE.search(host)
         if match:
             raise http.client.InvalidURL(
-                f"URL can't contain control characters. {host!r} "
-                f"(found at least {match.group()!r})"
+                f"URL can't contain control characters. {host!r} (found at least {match.group()!r})",
             )
 
     #
@@ -99,9 +96,9 @@ class HttpClientValidation:
     @classmethod
     def validate_header_name(cls, header: str) -> None:
         if not cls._LEGAL_HEADER_NAME_RE.fullmatch(header):
-            raise ValueError('Invalid header name %r' % (header,))
+            raise ValueError(f'Invalid header name {header!r}')
 
     @classmethod
     def validate_header_value(cls, value: str) -> None:
         if cls._ILLEGAL_HEADER_VALUE_RE.search(value):
-            raise ValueError('Invalid header value %r' % (value,))
+            raise ValueError(f'Invalid header value {value!r}')

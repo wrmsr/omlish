@@ -85,6 +85,7 @@ not_none = check.not_none
 #
 
 equal = check.equal
+not_equal = check.not_equal
 is_ = check.is_
 is_not = check.is_not
 callable = check.callable  # noqa

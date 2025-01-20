@@ -46,6 +46,8 @@ import socket
 import typing as ta
 import urllib.parse
 
+from omlish import check
+
 from .validation import HttpClientValidation
 
 
@@ -57,26 +59,26 @@ _UNKNOWN = 'UNKNOWN'
 _METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
 
 
-_MAXLINE = 65536
-_MAXHEADERS = 100
+_MAX_LINE = 65536
+_MAX_HEADERS = 100
 
 
 def _read_headers(fp: ta.IO) -> list[bytes]:
     """
     Reads potential header lines into a list from a file pointer.
 
-    Length of line is limited by _MAXLINE, and number of headers is limited by _MAXHEADERS.
+    Length of line is limited by _MAX_LINE, and number of headers is limited by _MAX_HEADERS.
     """
 
     headers = []
     while True:
-        line = fp.readline(_MAXLINE + 1)
-        if len(line) > _MAXLINE:
+        line = fp.readline(_MAX_LINE + 1)
+        if len(line) > _MAX_LINE:
             raise http.client.LineTooLong('header line')
 
         headers.append(line)
-        if len(headers) > _MAXHEADERS:
-            raise http.client.HTTPException('got more than %d headers' % _MAXHEADERS)
+        if len(headers) > _MAX_HEADERS:
+            raise http.client.HTTPException(f'got more than {_MAX_HEADERS} headers')
 
         if line in (b'\r\n', b'\n', b''):
             break
@@ -109,8 +111,11 @@ def _encode(data: str, name: str = 'data') -> bytes:
             err.object,
             err.start,
             err.end,
-            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') if you want to send it encoded in UTF-8." %
-            (name.title(), data[err.start:err.end], name),
+            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') if you want to send it encoded in UTF-8." % (  # noqa
+                name.title(),
+                data[err.start:err.end],
+                name,
+            ),
         ) from None
 
 
@@ -119,7 +124,7 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
 
     enc_name, percent, _ = enc_name.partition(b'%')
     if percent:
-        assert enc_name.startswith(b'['), enc_name
+        check.state(enc_name.startswith(b'['))
         enc_name += b']'
     return enc_name
 
@@ -296,8 +301,7 @@ class HttpConnection:
 
         if not any(header.lower() == 'host' for header in self._tunnel_headers):
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
-            self._tunnel_headers['Host'] = '%s:%d' % (
-                encoded_host, self._tunnel_port)
+            self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
     def _get_hostport(self, host: str, port: int | None) -> tuple[str, int]:
         if port is None:
@@ -310,7 +314,7 @@ class HttpConnection:
                     if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise http.client.InvalidURL("nonnumeric port: '%s'" % host[i+1:])
+                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -343,7 +347,7 @@ class HttpConnection:
 
         response = self.response_class(self._sock, method=self._method)
         try:
-            (version, code, message) = response._read_status()
+            (version, code, message) = response._read_status()  # noqa
 
             self._raw_proxy_headers = _read_headers(response.fp)
 
@@ -411,7 +415,7 @@ class HttpConnection:
             if self.auto_open:
                 self.connect()
             else:
-                raise http.client.NotConnected()
+                raise http.client.NotConnected
 
         if hasattr(data, 'read') :
             encode = self._is_text_io(data)
@@ -428,7 +432,7 @@ class HttpConnection:
                 for d in data:
                     self._sock.sendall(d)
             else:
-                raise TypeError('data should be a bytes-like object or an iterable, got %r' % type(data))
+                raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
 
     def _output(self, s: bytes) -> None:
         """
@@ -545,7 +549,7 @@ class HttpConnection:
         url = url or '/'
         HttpClientValidation.validate_path(url)
 
-        request = '%s %s %s' % (method, url, self._http_vsn_str)
+        request = f'{method} {url} {self._http_vsn_str}'
 
         self._output(self._encode_request(request))
 
@@ -562,7 +566,7 @@ class HttpConnection:
                 # the host of the actual URL, not the host of the proxy.
                 netloc = ''
                 if url.startswith('http'):
-                    nil, netloc, nil, nil, nil = urllib.parse.urlsplit(url)
+                    netloc = urllib.parse.urlsplit(url).netloc
 
                 if netloc:
                     try:
@@ -592,7 +596,7 @@ class HttpConnection:
                         self.put_header('Host', host_enc)
                     else:
                         host_enc = host_enc.decode('ascii')
-                        self.put_header('Host', '%s:%s' % (host_enc, port))
+                        self.put_header('Host', f'{host_enc}:{port}')
 
             # NOTE: we are assuming that clients will not attempt to set these headers since *this* library must deal
             # with the consequences. this also means that when the supporting libraries are updated to recognize other
@@ -628,7 +632,7 @@ class HttpConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise http.client.CannotSendHeader()
+            raise http.client.CannotSendHeader
 
         if hasattr(header, 'encode'):
             header = header.encode('ascii')
@@ -663,7 +667,7 @@ class HttpConnection:
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise http.client.CannotSendHeader()
+            raise http.client.CannotSendHeader
 
         self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -763,7 +767,7 @@ class HttpConnection:
             except ConnectionError:
                 self.close()
                 raise
-            assert response.will_close != _UNKNOWN
+            check.not_equal(response.will_close, _UNKNOWN)
             self._state = self._State.IDLE
 
             if response.will_close:
