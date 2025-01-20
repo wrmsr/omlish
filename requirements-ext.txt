@@ -246,7 +246,7 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.10.post1
+llama-index-core==0.12.12
 
 unstructured==0.16.14
 

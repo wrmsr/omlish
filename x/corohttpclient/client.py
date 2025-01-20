@@ -726,9 +726,11 @@ class HttpConnection:
 
         for hdr, value in headers.items():
             self.put_header(hdr, value)
+
         if isinstance(body, str):
             # RFC 2616 Section 3.7.1 says that text default has a default charset of iso-8859-1.
             body = _encode(body, 'body')
+
         self.end_headers(body, encode_chunked=encode_chunked)
 
     def get_response(self):
@@ -750,7 +752,7 @@ class HttpConnection:
         # if a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
         # determine the connection-close behavior)
         #
-        # note: if a prior response existed, but was connection-close, then the socket and response were made
+        # NOTE: if a prior response existed, but was connection-close, then the socket and response were made
         # independent of this HTTPConnection object since a new request requires that we open a whole new connection
         #
         # this means the prior response had one of two states:
@@ -767,6 +769,7 @@ class HttpConnection:
             except ConnectionError:
                 self.close()
                 raise
+
             check.not_equal(response.will_close, _UNKNOWN)
             self._state = self._State.IDLE
 

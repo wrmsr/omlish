@@ -124,4 +124,4 @@ mlx-lm==0.21.1; sys_platform == "darwin"
 
 apsw==3.48.0.0
 
-rapidocr_onnxruntime==1.4.3
+rapidocr_onnxruntime==1.4.4
