@@ -214,15 +214,15 @@ class HttpConnection:
         self._source_address = source_address
         self._block_size = block_size
         self._auto_open = auto_open
-        self._sock = None
+        self._sock: socket.socket | None = None
         self._buffer: list[bytes] = []
-        self._response = None
+        self._response: http.client.HTTPResponse | None = None
         self._state = self._State.IDLE
-        self._method = None
-        self._tunnel_host = None
-        self._tunnel_port = None
-        self._tunnel_headers = {}
-        self._raw_proxy_headers = None
+        self._method: str | None = None
+        self._tunnel_host: str | None = None
+        self._tunnel_port: int | None = None
+        self._tunnel_headers: dict[str, str] = {}
+        self._raw_proxy_headers: ta.Sequence[bytes] | None = None
 
         (self._host, self._port) = self._get_hostport(host, port)
 
@@ -262,7 +262,12 @@ class HttpConnection:
 
     #
 
-    def set_tunnel(self, host: str, port: int | None = None, headers=None) -> None:
+    def set_tunnel(
+            self,
+            host: str,
+            port: int | None = None,
+            headers: ta.Mapping[str, str] | None = None,
+    ) -> None:
         """
         Set up host and port for HTTP CONNECT tunnelling.
 
@@ -284,8 +289,9 @@ class HttpConnection:
             raise RuntimeError("Can't set up tunnel for established connection")
 
         self._tunnel_host, self._tunnel_port = self._get_hostport(host, port)
+
         if headers:
-            self._tunnel_headers = headers.copy()
+            self._tunnel_headers = dict(headers)
         else:
             self._tunnel_headers.clear()
 
@@ -295,8 +301,8 @@ class HttpConnection:
 
     def _tunnel(self) -> None:
         connect = b'CONNECT %s:%d %s\r\n' % (
-            self._wrap_ipv6(self._tunnel_host.encode('idna')),
-            self._tunnel_port,
+            self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
+            check.not_none(self._tunnel_port),
             self._http_vsn_str.encode('ascii'),
         )
         headers = [connect]
@@ -309,9 +315,10 @@ class HttpConnection:
         self.send(b''.join(headers))
         del headers
 
-        response = http.client.HTTPResponse(self._sock, method=self._method)
+        response = http.client.HTTPResponse(check.not_none(self._sock), method=self._method)
         try:
-            (version, code, message) = response._read_status()  # noqa
+            # FIXME
+            (version, code, message) = response._read_status()  # type: ignore  # noqa
 
             self._raw_proxy_headers = _read_headers(response.fp)
 
@@ -344,7 +351,7 @@ class HttpConnection:
         self._sock = self._create_connection(
             (self._host, self._port),
             source_address=self._source_address,
-            **(dict(timeout=self._timeout) if self._timeout is not self.NOT_SET else {}),
+            **(dict(timeout=self._timeout) if self._timeout is not self.NOT_SET else {}),  # type: ignore
         )
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
@@ -393,20 +400,22 @@ class HttpConnection:
             else:
                 raise http.client.NotConnected
 
+        sock = check.not_none(self._sock)
+
         if hasattr(data, 'read') :
             encode = self._is_text_io(data)
             while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                self._sock.sendall(data_block)
+                sock.sendall(data_block)
             return
 
         try:
-            self._sock.sendall(data)
+            sock.sendall(data)
         except TypeError:
             if isinstance(data, collections.abc.Iterable):
                 for d in data:
-                    self._sock.sendall(d)
+                    sock.sendall(d)
             else:
                 raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
 
@@ -420,11 +429,11 @@ class HttpConnection:
         self._buffer.append(s)
 
     def _read_readable(self, readable: ta.IO | ta.TextIO) -> ta.Iterator[bytes]:
-        encode = self._is_text_io(readable)
-        while data_block := readable.read(self._block_size):
-            if encode:
-                data_block = data_block.encode('iso-8859-1')
-            yield data_block
+        while data := readable.read(self._block_size):
+            if isinstance(data, str):
+                yield data.encode('iso-8859-1')
+            else:
+                yield data
 
     def _send_output(
             self,
@@ -442,6 +451,7 @@ class HttpConnection:
         del self._buffer[:]
         self.send(msg)
 
+        chunks: ta.Iterable[bytes]
         if message_body is not None:
             # create a consistent interface to message_body
             if hasattr(message_body, 'read'):
@@ -573,8 +583,7 @@ class HttpConnection:
                     if port == self.default_port:
                         self.put_header('Host', host_enc)
                     else:
-                        host_enc = host_enc.decode('ascii')
-                        self.put_header('Host', f'{host_enc}:{port}')
+                        self.put_header('Host', f"{host_enc.decode('ascii')}:{port}")
 
             # NOTE: we are assuming that clients will not attempt to set these headers since *this* library must deal
             # with the consequences. this also means that when the supporting libraries are updated to recognize other
@@ -602,7 +611,7 @@ class HttpConnection:
 
     #
 
-    def put_header(self, header: str, *values: bytes | str) -> None:
+    def put_header(self, header: str | bytes, *values: bytes | str | int) -> None:
         """
         Send a request header line to the server.
 
@@ -613,22 +622,27 @@ class HttpConnection:
             raise http.client.CannotSendHeader
 
         if hasattr(header, 'encode'):
-            header = header.encode('ascii')
+            bh = header.encode('ascii')
+        else:
+            bh = header
 
-        HttpClientValidation.validate_header_name(header)
+        HttpClientValidation.validate_header_name(bh)
 
-        values = list(values)
-        for i, one_value in enumerate(values):
+        bvs = []
+        for one_value in values:
             if hasattr(one_value, 'encode'):
-                values[i] = one_value.encode('latin-1')
+                bv = one_value.encode('latin-1')
             elif isinstance(one_value, int):
-                values[i] = str(one_value).encode('ascii')
+                bv = str(one_value).encode('ascii')
+            else:
+                bv = one_value
 
-            HttpClientValidation.validate_header_value(values[i])
+            HttpClientValidation.validate_header_value(bv)
+            bvs.append(bv)
 
-        value = b'\r\n\t'.join(values)
-        header = header + b': ' + value
-        self._output(header)
+        value = b'\r\n\t'.join(bvs)
+        bh = bh + b': ' + value
+        self._output(bh)
 
     def end_headers(
             self,
@@ -711,9 +725,9 @@ class HttpConnection:
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
         if 'host' in header_names:
-            skips['skip_host'] = 1
+            skips['skip_host'] = True
         if 'accept-encoding' in header_names:
-            skips['skip_accept_encoding'] = 1
+            skips['skip_accept_encoding'] = True
 
         self.put_request(method, url, **skips)
 
@@ -776,7 +790,7 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise http.client.ResponseNotReady(self._state)
 
-        response = http.client.HTTPResponse(self._sock, method=self._method)
+        response = http.client.HTTPResponse(check.not_none(self._sock), method=self._method)
 
         try:
             try:

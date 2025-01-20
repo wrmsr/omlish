@@ -94,11 +94,11 @@ class HttpClientValidation:
     _ILLEGAL_HEADER_VALUE_RE = re.compile(rb'\n(?![ \t])|\r(?![ \t\n])')
 
     @classmethod
-    def validate_header_name(cls, header: str) -> None:
+    def validate_header_name(cls, header: bytes) -> None:
         if not cls._LEGAL_HEADER_NAME_RE.fullmatch(header):
             raise ValueError(f'Invalid header name {header!r}')
 
     @classmethod
-    def validate_header_value(cls, value: str) -> None:
+    def validate_header_value(cls, value: bytes) -> None:
         if cls._ILLEGAL_HEADER_VALUE_RE.search(value):
             raise ValueError(f'Invalid header value {value!r}')
