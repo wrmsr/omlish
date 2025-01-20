@@ -189,7 +189,7 @@ class HttpConnection:
 
     default_port = HTTP_PORT
 
-    class NOT_SET:  # noqa
+    class _NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
             raise NotImplementedError
 
@@ -203,7 +203,7 @@ class HttpConnection:
             host: str,
             port: int | None = None,
             *,
-            timeout: float | None | type[NOT_SET] = NOT_SET,
+            timeout: float | None | type[_NOT_SET] = _NOT_SET,
             source_address: str | None = None,
             block_size: int = 8192,
             auto_open: bool = True,
@@ -351,7 +351,7 @@ class HttpConnection:
         self._sock = self._create_connection(
             (self._host, self._port),
             source_address=self._source_address,
-            **(dict(timeout=self._timeout) if self._timeout is not self.NOT_SET else {}),  # type: ignore
+            **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),  # type: ignore
         )
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
