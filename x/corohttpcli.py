@@ -36,15 +36,115 @@
 """
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
 """
+import collections.abc
+import email.parser
+import errno
 import http.client
-import urllib.request
+import io
+import re
+import socket
+import sys
+import urllib.parse
 
 
-class HTTPConnection:
+HTTP_PORT = 80
+HTTPS_PORT = 443
+
+_CS_IDLE = 'Idle'
+_CS_REQ_STARTED = 'Request-started'
+_CS_REQ_SENT = 'Request-sent'
+
+_UNKNOWN = 'UNKNOWN'
+
+_METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
+
+# the patterns for both name and value are more lenient than RFC
+# definitions to allow for backwards compatibility
+_is_legal_header_name = re.compile(rb'[^:\s][^:\r\n]*').fullmatch
+_is_illegal_header_value = re.compile(rb'\n(?![ \t])|\r(?![ \t\n])').search
+
+# These characters are not allowed within HTTP URL paths.
+#  See https://tools.ietf.org/html/rfc3986#section-3.3 and the
+#  https://tools.ietf.org/html/rfc3986#appendix-A pchar definition.
+# Prevents CVE-2019-9740.  Includes control characters such as \r\n.
+# We don't restrict chars above \x7f as putrequest() limits us to ASCII.
+_contains_disallowed_url_pchar_re = re.compile('[\x00-\x20\x7f]')
+# Arguably only these _should_ allowed:
+#  _is_allowed_url_pchars_re = re.compile(r"^[/!$&'()*+,;=:@%a-zA-Z0-9._~-]+$")
+# We are more lenient for assumed real world compatibility purposes.
+
+# These characters are not allowed within HTTP method names
+# to prevent http header injection.
+_contains_disallowed_method_pchar_re = re.compile('[\x00-\x1f]')
+
+
+_MAXLINE = 65536
+_MAXHEADERS = 100
+
+
+def _read_headers(fp):
+    """Reads potential header lines into a list from a file pointer.
+
+    Length of line is limited by _MAXLINE, and number of
+    headers is limited by _MAXHEADERS.
+    """
+    headers = []
+    while True:
+        line = fp.readline(_MAXLINE + 1)
+        if len(line) > _MAXLINE:
+            raise http.client.LineTooLong("header line")
+        headers.append(line)
+        if len(headers) > _MAXHEADERS:
+            raise http.client.HTTPException("got more than %d headers" % _MAXHEADERS)
+        if line in (b'\r\n', b'\n', b''):
+            break
+    return headers
+
+
+def _parse_header_lines(header_lines, _class=http.client.HTTPMessage):
+    """
+    Parses only RFC2822 headers from header lines.
+
+    email Parser wants to see strings rather than bytes.
+    But a TextIOWrapper around self.rfile would buffer too many bytes
+    from the stream, bytes which we later need to read as bytes.
+    So we read the correct bytes here, as bytes, for email Parser
+    to parse.
+
+    """
+    hstring = b''.join(header_lines).decode('iso-8859-1')
+    return email.parser.Parser(_class=_class).parsestr(hstring)
+
+
+def _encode(data, name='data'):
+    """Call data.encode("latin-1") but show a better error message."""
+    try:
+        return data.encode("latin-1")
+    except UnicodeEncodeError as err:
+        raise UnicodeEncodeError(
+            err.encoding,
+            err.object,
+            err.start,
+            err.end,
+            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') "
+            "if you want to send it encoded in UTF-8." %
+            (name.title(), data[err.start:err.end], name)) from None
+
+
+def _strip_ipv6_iface(enc_name: bytes) -> bytes:
+    """Remove interface scope from IPv6 address."""
+    enc_name, percent, _ = enc_name.partition(b"%")
+    if percent:
+        assert enc_name.startswith(b'['), enc_name
+        enc_name += b']'
+    return enc_name
+
+
+class HttpConnection:
     _http_vsn = 11
     _http_vsn_str = 'HTTP/1.1'
 
-    response_class = HTTPResponse
+    response_class = http.client.HTTPResponse
     default_port = HTTP_PORT
     auto_open = 1
     debuglevel = 0
@@ -87,8 +187,16 @@ class HTTPConnection:
 
         return None
 
-    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 source_address=None, blocksize=8192):
+    def __init__(
+            self,
+            host,
+            port=None,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+            source_address=None,
+            blocksize=8192,
+    ) -> None:
+        super().__init__()
+
         self.timeout = timeout
         self.source_address = source_address
         self.blocksize = blocksize
@@ -157,7 +265,7 @@ class HTTPConnection:
                     if host[i+1:] == "": # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise InvalidURL("nonnumeric port: '%s'" % host[i+1:])
+                        raise http.client.InvalidURL("nonnumeric port: '%s'" % host[i+1:])
                 host = host[:i]
             else:
                 port = self.default_port
@@ -259,7 +367,7 @@ class HTTPConnection:
             if self.auto_open:
                 self.connect()
             else:
-                raise NotConnected()
+                raise http.client.NotConnected()
 
         if self.debuglevel > 0:
             print("send:", repr(data))
@@ -395,7 +503,7 @@ class HTTPConnection:
         if self.__state == _CS_IDLE:
             self.__state = _CS_REQ_STARTED
         else:
-            raise CannotSendRequest(self.__state)
+            raise http.client.CannotSendRequest(self.__state)
 
         self._validate_method(method)
 
@@ -429,7 +537,7 @@ class HTTPConnection:
 
                 netloc = ''
                 if url.startswith('http'):
-                    nil, netloc, nil, nil, nil = urlsplit(url)
+                    nil, netloc, nil, nil, nil = urllib.parse.urlsplit(url)
 
                 if netloc:
                     try:
@@ -503,7 +611,7 @@ class HTTPConnection:
         # Prevent CVE-2019-9740.
         match = _contains_disallowed_url_pchar_re.search(url)
         if match:
-            raise InvalidURL(f"URL can't contain control characters. {url!r} "
+            raise http.client.InvalidURL(f"URL can't contain control characters. {url!r} "
                              f"(found at least {match.group()!r})")
 
     def _validate_host(self, host):
@@ -511,7 +619,7 @@ class HTTPConnection:
         # Prevent CVE-2019-18348.
         match = _contains_disallowed_url_pchar_re.search(host)
         if match:
-            raise InvalidURL(f"URL can't contain control characters. {host!r} "
+            raise http.client.InvalidURL(f"URL can't contain control characters. {host!r} "
                              f"(found at least {match.group()!r})")
 
     def putheader(self, header, *values):
@@ -520,7 +628,7 @@ class HTTPConnection:
         For example: h.putheader('Accept', 'text/html')
         """
         if self.__state != _CS_REQ_STARTED:
-            raise CannotSendHeader()
+            raise http.client.CannotSendHeader()
 
         if hasattr(header, 'encode'):
             header = header.encode('ascii')
@@ -552,7 +660,7 @@ class HTTPConnection:
         if self.__state == _CS_REQ_STARTED:
             self.__state = _CS_REQ_SENT
         else:
-            raise CannotSendHeader()
+            raise http.client.CannotSendHeader()
         self._send_output(message_body, encode_chunked=encode_chunked)
 
     def request(self, method, url, body=None, headers={}, *,
@@ -640,7 +748,7 @@ class HTTPConnection:
         #                  isclosed() status to become true.
         #
         if self.__state != _CS_REQ_SENT or self.__response:
-            raise ResponseNotReady(self.__state)
+            raise http.client.ResponseNotReady(self.__state)
 
         if self.debuglevel > 0:
             response = self.response_class(self.sock, self.debuglevel,
@@ -675,7 +783,7 @@ def _main() -> None:
     # with urllib.request.urlopen(req) as resp:
     #     print(resp.read())
 
-    conn = http.client.HTTPConnection('www.example.com')
+    conn = HttpConnection('www.example.com')
 
     conn.request('GET', '/')
     r1 = conn.getresponse()
