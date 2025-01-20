@@ -38,6 +38,7 @@ https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/
 """
 import collections.abc
 import email.parser
+import enum
 import errno
 import http.client
 import io
@@ -50,10 +51,6 @@ from .validation import HttpClientValidation
 
 HTTP_PORT = 80
 HTTPS_PORT = 443
-
-_CS_IDLE = 'Idle'
-_CS_REQ_STARTED = 'Request-started'
-_CS_REQ_SENT = 'Request-sent'
 
 _UNKNOWN = 'UNKNOWN'
 
@@ -172,14 +169,14 @@ class HttpConnection:
       -- there is no differentiation between an unread response body and a
          partially read response body
 
-    Logical State                  __state            __response
-    -------------                  -------            ----------
-    Idle                           _CS_IDLE           None
-    Request-started                _CS_REQ_STARTED    None
-    Request-sent                   _CS_REQ_SENT       None
-    Unread-response                _CS_IDLE           <response_class>
-    Req-started-unread-response    _CS_REQ_STARTED    <response_class>
-    Req-sent-unread-response       _CS_REQ_SENT       <response_class>
+    Logical State                _state       _response
+    -------------                -------      ----------
+    Idle                         IDLE         None
+    Request-started              REQ_STARTED  None
+    Request-sent                 REQ_SENT     None
+    Unread-response              IDLE         <response_class>
+    Req-started-unread-response  REQ_STARTED  <response_class>
+    Req-sent-unread-response     REQ_SENT     <response_class>
     """
 
     _http_vsn = 11
@@ -234,6 +231,11 @@ class HttpConnection:
         def __new__(cls, *args, **kwargs):  # noqa
             raise NotImplementedError
 
+    class _State(enum.Enum):
+        IDLE = 'Idle'
+        REQ_STARTED = 'Request-started'
+        REQ_SENT = 'Request-sent'
+
     def __init__(
             self,
             host: str,
@@ -249,8 +251,8 @@ class HttpConnection:
         self.block_size = block_size
         self.sock = None
         self._buffer: list[bytes] = []
-        self.__response = None
-        self.__state = _CS_IDLE
+        self._response = None
+        self._state = self._State.IDLE
         self._method = None
         self._tunnel_host = None
         self._tunnel_port = None
@@ -387,16 +389,16 @@ class HttpConnection:
     def close(self) -> None:
         """Close the connection to the HTTP server."""
 
-        self.__state = _CS_IDLE
+        self._state = self._State.IDLE
         try:
             sock = self.sock
             if sock:
                 self.sock = None
                 sock.close()   # close it manually... there may be other refs
         finally:
-            response = self.__response
+            response = self._response
             if response:
-                self.__response = None
+                self._response = None
                 response.close()
 
     def send(self, data: ta.Any) -> None:
@@ -511,8 +513,8 @@ class HttpConnection:
         """
 
         # if a prior response has been completed, then forget about it.
-        if self.__response and self.__response.isclosed():
-            self.__response = None
+        if self._response and self._response.isclosed():
+            self._response = None
 
 
         # in certain cases, we cannot issue another request on this connection.
@@ -530,10 +532,10 @@ class HttpConnection:
         # Note: if a prior response exists, then we *can* start a new request. We are not allowed to begin fetching the
         #       response to this new request, however, until that prior response is complete.
         #
-        if self.__state == _CS_IDLE:
-            self.__state = _CS_REQ_STARTED
+        if self._state == self._State.IDLE:
+            self._state = self._State.REQ_STARTED
         else:
-            raise http.client.CannotSendRequest(self.__state)
+            raise http.client.CannotSendRequest(self._state)
 
         HttpClientValidation.validate_method(method)
 
@@ -625,7 +627,7 @@ class HttpConnection:
         For example: h.putheader('Accept', 'text/html')
         """
 
-        if self.__state != _CS_REQ_STARTED:
+        if self._state != self._State.REQ_STARTED:
             raise http.client.CannotSendHeader()
 
         if hasattr(header, 'encode'):
@@ -658,8 +660,8 @@ class HttpConnection:
         body associated with the request.
         """
 
-        if self.__state == _CS_REQ_STARTED:
-            self.__state = _CS_REQ_SENT
+        if self._state == self._State.REQ_STARTED:
+            self._state = self._State.REQ_SENT
         else:
             raise http.client.CannotSendHeader()
 
@@ -738,8 +740,8 @@ class HttpConnection:
         """
 
         # if a prior response has been completed, then forget about it.
-        if self.__response and self.__response.isclosed():
-            self.__response = None
+        if self._response and self._response.isclosed():
+            self._response = None
 
         # if a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
         # determine the connection-close behavior)
@@ -750,8 +752,8 @@ class HttpConnection:
         # this means the prior response had one of two states:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
         #   2) persistent: the response was retained and we await its isclosed() status to become true.
-        if self.__state != _CS_REQ_SENT or self.__response:
-            raise http.client.ResponseNotReady(self.__state)
+        if self._state != self._State.REQ_SENT or self._response:
+            raise http.client.ResponseNotReady(self._state)
 
         response = self.response_class(self.sock, method=self._method)
 
@@ -762,14 +764,14 @@ class HttpConnection:
                 self.close()
                 raise
             assert response.will_close != _UNKNOWN
-            self.__state = _CS_IDLE
+            self._state = self._State.IDLE
 
             if response.will_close:
                 # this effectively passes the connection to the response
                 self.close()
             else:
                 # remember this, so we can tell when it is complete
-                self.__response = response
+                self._response = response
 
             return response
 
