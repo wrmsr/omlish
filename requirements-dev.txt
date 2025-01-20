@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.0.1
 wheel>=0.45.1
 
-uv>=0.5.20
+uv>=0.5.21
 
 pytest==8.3.4
 pytest-benchmark==5.1.0
@@ -109,7 +109,7 @@ datasets==3.2.0; python_version < "3.13"  # !! includes arrow and pandas and shi
 sentence-transformers==3.3.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
-transformers==4.48.0; python_version < "3.13"
+transformers==4.48.1; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
@@ -117,10 +117,11 @@ segno==1.6.1
 
 duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.1
+boto3>=1.36.2
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.21.1; sys_platform == "darwin"
 
 apsw==3.48.0.0
 
+rapidocr_onnxruntime==1.4.3
