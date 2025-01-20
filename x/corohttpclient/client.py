@@ -64,7 +64,7 @@ _MAXLINE = 65536
 _MAXHEADERS = 100
 
 
-def _read_headers(fp):
+def _read_headers(fp: ta.IO) -> list[bytes]:
     """
     Reads potential header lines into a list from a file pointer.
 
@@ -76,15 +76,21 @@ def _read_headers(fp):
         line = fp.readline(_MAXLINE + 1)
         if len(line) > _MAXLINE:
             raise http.client.LineTooLong('header line')
+
         headers.append(line)
         if len(headers) > _MAXHEADERS:
             raise http.client.HTTPException('got more than %d headers' % _MAXHEADERS)
+
         if line in (b'\r\n', b'\n', b''):
             break
+
     return headers
 
 
-def _parse_header_lines(header_lines, _class=http.client.HTTPMessage):
+def _parse_header_lines(
+        header_lines: ta.Sequence[bytes],
+        _class=http.client.HTTPMessage,
+):
     """
     Parses only RFC2822 headers from header lines.
 
@@ -97,11 +103,12 @@ def _parse_header_lines(header_lines, _class=http.client.HTTPMessage):
     return email.parser.Parser(_class=_class).parsestr(hstring)
 
 
-def _encode(data, name='data'):
+def _encode(data: str, name: str = 'data') -> bytes:
     """Call data.encode("latin-1") but show a better error message."""
 
     try:
         return data.encode('latin-1')
+
     except UnicodeEncodeError as err:
         raise UnicodeEncodeError(
             err.encoding,
@@ -110,7 +117,8 @@ def _encode(data, name='data'):
             err.end,
             "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') "
             "if you want to send it encoded in UTF-8." %
-            (name.title(), data[err.start:err.end], name)) from None
+            (name.title(), data[err.start:err.end], name),
+        ) from None
 
 
 def _strip_ipv6_iface(enc_name: bytes) -> bytes:
@@ -192,7 +200,10 @@ class HttpConnection:
         return isinstance(stream, io.TextIOBase)
 
     @staticmethod
-    def _get_content_length(body, method):
+    def _get_content_length(
+            body: ta.Any | None,
+            method: str,
+    ) -> int | None:
         """
         Get the content-length based on the body.
 
@@ -223,19 +234,23 @@ class HttpConnection:
 
         return None
 
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise NotImplementedError
+
     def __init__(
             self,
-            host,
-            port=None,
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            source_address=None,
-            blocksize=8192,
+            host: str,
+            port: int | None = None,
+            timeout: float | None | type[NOT_SET] = NOT_SET,
+            source_address: str | None = None,
+            block_size: int = 8192,
     ) -> None:
         super().__init__()
 
         self.timeout = timeout
         self.source_address = source_address
-        self.blocksize = blocksize
+        self.block_size = block_size
         self.sock = None
         self._buffer = []
         self.__response = None
@@ -286,7 +301,7 @@ class HttpConnection:
             self._tunnel_headers['Host'] = '%s:%d' % (
                 encoded_host, self._tunnel_port)
 
-    def _get_hostport(self, host, port):
+    def _get_hostport(self, host: str, port: int | None) -> tuple[str, int]:
         if port is None:
             i = host.rfind(':')
             j = host.rfind(']')         # ipv6 addresses have [...]
@@ -301,17 +316,18 @@ class HttpConnection:
                 host = host[:i]
             else:
                 port = self.default_port
+
         if host and host[0] == '[' and host[-1] == ']':
             host = host[1:-1]
 
         return (host, port)
 
-    def _wrap_ipv6(self, ip):
+    def _wrap_ipv6(self, ip: bytes) -> bytes:
         if b':' in ip and ip[0] != b'['[0]:
             return b'[' + ip + b']'
         return ip
 
-    def _tunnel(self):
+    def _tunnel(self) -> None:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(self._tunnel_host.encode('idna')),
             self._tunnel_port,
@@ -359,8 +375,8 @@ class HttpConnection:
 
         self.sock = self._create_connection(
             (self.host,self.port),
-            self.timeout,
-            self.source_address,
+            source_address=self.source_address,
+            **(dict(timeout=self.timeout) if self.timeout is not self.NOT_SET else {}),
         )
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
@@ -401,10 +417,10 @@ class HttpConnection:
 
         if hasattr(data, 'read') :
             encode = self._is_text_io(data)
-            while datablock := data.read(self.blocksize):
+            while data_block := data.read(self.block_size):
                 if encode:
-                    datablock = datablock.encode('iso-8859-1')
-                self.sock.sendall(datablock)
+                    data_block = data_block.encode('iso-8859-1')
+                self.sock.sendall(data_block)
             return
 
         try:
@@ -427,10 +443,10 @@ class HttpConnection:
 
     def _read_readable(self, readable):
         encode = self._is_text_io(readable)
-        while datablock := readable.read(self.blocksize):
+        while data_block := readable.read(self.block_size):
             if encode:
-                datablock = datablock.encode('iso-8859-1')
-            yield datablock
+                data_block = data_block.encode('iso-8859-1')
+            yield data_block
 
     def _send_output(self, message_body=None, encode_chunked=False):
         """
@@ -445,7 +461,6 @@ class HttpConnection:
         self.send(msg)
 
         if message_body is not None:
-
             # create a consistent interface to message_body
             if hasattr(message_body, 'read'):
                 # Let file-like take precedence over byte-like.  This is needed to allow the current position of mmap'ed
@@ -481,10 +496,11 @@ class HttpConnection:
     def putrequest(
             self,
             method: str,
-            url,
-            skip_host=False,
-            skip_accept_encoding=False,
-    ):
+            url: str,
+            *,
+            skip_host: bool = False,
+            skip_accept_encoding: bool = False,
+    ) -> None:
         """
         Send a request to the server.
 
@@ -596,13 +612,13 @@ class HttpConnection:
             # For HTTP/1.0, the server will assume "not chunked"
             pass
 
-    def _encode_request(self, request):
+    def _encode_request(self, request: str) -> bytes:
         # ASCII also helps prevent CVE-2019-9740.
         return request.encode('ascii')
 
     #
 
-    def putheader(self, header, *values):
+    def putheader(self, header: str, *values: bytes | str) -> None:
         """
         Send a request header line to the server.
 
@@ -630,7 +646,12 @@ class HttpConnection:
         header = header + b': ' + value
         self._output(header)
 
-    def endheaders(self, message_body=None, *, encode_chunked=False):
+    def endheaders(
+            self,
+            message_body: ta.Any | None = None,
+            *,
+            encode_chunked: bool = False,
+    ) -> None:
         """Indicate that the last header line has been sent to the server.
 
         This method sends the request to the server.  The optional message_body argument can be used to pass a message
@@ -641,14 +662,30 @@ class HttpConnection:
             self.__state = _CS_REQ_SENT
         else:
             raise http.client.CannotSendHeader()
+
         self._send_output(message_body, encode_chunked=encode_chunked)
 
-    def request(self, method, url, body=None, headers={}, *, encode_chunked=False):
+    def request(
+            self,
+            method: str,
+            url: str,
+            body: ta.Any | None = None,
+            headers: ta.Mapping[str, str] | None = None,
+            *,
+            encode_chunked: bool = False,
+    ) -> None:
         """Send a complete request to the server."""
 
-        self._send_request(method, url, body, headers, encode_chunked)
+        self._send_request(method, url, body, dict(headers or {}), encode_chunked)
 
-    def _send_request(self, method, url, body, headers, encode_chunked):
+    def _send_request(
+            self,
+            method: str,
+            url: str,
+            body: ta.Any | None,
+            headers: ta.Mapping[str, str],
+            encode_chunked: bool,
+    ) -> None:
         # Honor explicitly requested Host: and Accept-Encoding: headers.
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
@@ -735,6 +772,7 @@ class HttpConnection:
                 self.__response = response
 
             return response
+
         except:
             response.close()
             raise
