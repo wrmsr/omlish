@@ -2272,6 +2272,18 @@ class Checks:
 
         return v
 
+    def not_equal(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+        if o == v:
+            self._raise(
+                ValueError,
+                'Must not be equal',
+                msg,
+                Checks._ArgsKwargs(v, o),
+                render_fmt='%s == %s',
+            )
+
+        return v
+
     def is_(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
         if o is not v:
             self._raise(

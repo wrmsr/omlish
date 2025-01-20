@@ -1204,6 +1204,14 @@ class InstanceType(_enum.Enum):
     I8G_16XLARGE = 'i8g.16xlarge'
     I8G_24XLARGE = 'i8g.24xlarge'
     I8G_METAL_24XL = 'i8g.metal-24xl'
+    U7I_6TB_112XLARGE = 'u7i-6tb.112xlarge'
+    U7I_8TB_112XLARGE = 'u7i-8tb.112xlarge'
+    U7INH_32TB_480XLARGE = 'u7inh-32tb.480xlarge'
+    P5E_48XLARGE = 'p5e.48xlarge'
+    P5EN_48XLARGE = 'p5en.48xlarge'
+    F2_12XLARGE = 'f2.12xlarge'
+    F2_48XLARGE = 'f2.48xlarge'
+    TRN2_48XLARGE = 'trn2.48xlarge'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
