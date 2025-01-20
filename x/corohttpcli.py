@@ -210,13 +210,13 @@ class HttpConnection:
           | ( putheader() )*  endheaders()
           v
         Request-sent
-          |\_____________________________
+          |______________________________
           |                              | getresponse() raises
           | response = getresponse()     | ConnectionError
           v                              v
         Unread-response                Idle
         [Response-headers-read]
-          |\____________________
+          |_____________________
           |                     |
           | response.read()     | putrequest()
           v                     v
