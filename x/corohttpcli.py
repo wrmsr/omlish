@@ -43,7 +43,6 @@ import http.client
 import io
 import re
 import socket
-import sys
 import urllib.parse
 
 
@@ -148,7 +147,6 @@ class HttpConnection:
     response_class = http.client.HTTPResponse
     default_port = HTTP_PORT
     auto_open = 1
-    debuglevel = 0
 
     @staticmethod
     def _is_text_io(stream):
@@ -271,9 +269,6 @@ class HttpConnection:
 
         return (host, port)
 
-    def set_debuglevel(self, level):
-        self.debuglevel = level
-
     def _wrap_ipv6(self, ip):
         if b':' in ip and ip[0] != b'['[0]:
             return b'[' + ip + b']'
@@ -301,10 +296,6 @@ class HttpConnection:
 
             self._raw_proxy_headers = _read_headers(response.fp)
 
-            if self.debuglevel > 0:
-                for header in self._raw_proxy_headers:
-                    print('header:', header.decode())
-
             if code != http.HTTPStatus.OK:
                 self.close()
                 raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
@@ -329,9 +320,11 @@ class HttpConnection:
     def connect(self):
         """Connect to the host and port specified in __init__."""
 
-        sys.audit('http.client.connect', self, self.host, self.port)
         self.sock = self._create_connection(
-            (self.host,self.port), self.timeout, self.source_address)
+            (self.host,self.port),
+            self.timeout,
+            self.source_address,
+        )
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
             self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -369,21 +362,14 @@ class HttpConnection:
             else:
                 raise http.client.NotConnected()
 
-        if self.debuglevel > 0:
-            print('send:', repr(data))
         if hasattr(data, 'read') :
-            if self.debuglevel > 0:
-                print('sending a readable')
             encode = self._is_text_io(data)
-            if encode and self.debuglevel > 0:
-                print('encoding file using iso-8859-1')
             while datablock := data.read(self.blocksize):
                 if encode:
                     datablock = datablock.encode('iso-8859-1')
-                sys.audit('http.client.send', self, datablock)
                 self.sock.sendall(datablock)
             return
-        sys.audit('http.client.send', self, data)
+
         try:
             self.sock.sendall(data)
         except TypeError:
@@ -403,11 +389,7 @@ class HttpConnection:
         self._buffer.append(s)
 
     def _read_readable(self, readable):
-        if self.debuglevel > 0:
-            print('reading a readable')
         encode = self._is_text_io(readable)
-        if encode and self.debuglevel > 0:
-            print('encoding file using iso-8859-1')
         while datablock := readable.read(self.blocksize):
             if encode:
                 datablock = datablock.encode('iso-8859-1')
@@ -448,8 +430,6 @@ class HttpConnection:
 
             for chunk in chunks:
                 if not chunk:
-                    if self.debuglevel > 0:
-                        print('Zero length chunk ignored')
                     continue
 
                 if encode_chunked and self._http_vsn == 11:
@@ -690,8 +670,6 @@ class HttpConnection:
                 content_length = self._get_content_length(body, method)
                 if content_length is None:
                     if body is not None:
-                        if self.debuglevel > 0:
-                            print('Unable to determine size of %r' % body)
                         encode_chunked = True
                         self.putheader('Transfer-Encoding', 'chunked')
                 else:
@@ -734,10 +712,7 @@ class HttpConnection:
         if self.__state != _CS_REQ_SENT or self.__response:
             raise http.client.ResponseNotReady(self.__state)
 
-        if self.debuglevel > 0:
-            response = self.response_class(self.sock, self.debuglevel, method=self._method)
-        else:
-            response = self.response_class(self.sock, method=self._method)
+        response = self.response_class(self.sock, method=self._method)
 
         try:
             try:
