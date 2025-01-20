@@ -252,7 +252,7 @@ class HttpConnection:
         self.source_address = source_address
         self.block_size = block_size
         self.sock = None
-        self._buffer = []
+        self._buffer: list[bytes] = []
         self.__response = None
         self.__state = _CS_IDLE
         self._method = None
@@ -269,7 +269,7 @@ class HttpConnection:
         # tests to replace it with a suitable mockup
         self._create_connection = socket.create_connection
 
-    def set_tunnel(self, host, port=None, headers=None):
+    def set_tunnel(self, host: str, port: int | None = None, headers=None) -> None:
         """
         Set up host and port for HTTP CONNECT tunnelling.
 
@@ -403,7 +403,7 @@ class HttpConnection:
                 self.__response = None
                 response.close()
 
-    def send(self, data) -> None:
+    def send(self, data: ta.Any) -> None:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
@@ -432,7 +432,7 @@ class HttpConnection:
             else:
                 raise TypeError('data should be a bytes-like object or an iterable, got %r' % type(data))
 
-    def _output(self, s) -> None:
+    def _output(self, s: bytes) -> None:
         """
         Add a line of output to the current request buffer.
 
@@ -441,14 +441,18 @@ class HttpConnection:
 
         self._buffer.append(s)
 
-    def _read_readable(self, readable):
+    def _read_readable(self, readable: ta.IO | ta.TextIO) -> ta.Iterator[bytes]:
         encode = self._is_text_io(readable)
         while data_block := readable.read(self.block_size):
             if encode:
                 data_block = data_block.encode('iso-8859-1')
             yield data_block
 
-    def _send_output(self, message_body=None, encode_chunked=False):
+    def _send_output(
+            self,
+            message_body: ta.Any | None = None,
+            encode_chunked: bool = False,
+    ) -> None:
         """
         Send the currently buffered request and clear the buffer.
 
