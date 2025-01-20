@@ -184,8 +184,8 @@ class HttpConnection:
     Req-sent-unread-response     REQ_SENT     <response_class>
     """
 
-    _http_vsn = 11
-    _http_vsn_str = 'HTTP/1.1'
+    _http_version = 11
+    _http_version_str = 'HTTP/1.1'
 
     default_port = HTTP_PORT
 
@@ -214,11 +214,13 @@ class HttpConnection:
         self._source_address = source_address
         self._block_size = block_size
         self._auto_open = auto_open
+
         self._sock: socket.socket | None = None
         self._buffer: list[bytes] = []
         self._response: http.client.HTTPResponse | None = None
         self._state = self._State.IDLE
         self._method: str | None = None
+
         self._tunnel_host: str | None = None
         self._tunnel_port: int | None = None
         self._tunnel_headers: dict[str, str] = {}
@@ -228,8 +230,7 @@ class HttpConnection:
 
         HttpClientValidation.validate_host(self._host)
 
-        # This is stored as an instance variable to allow unit
-        # tests to replace it with a suitable mockup
+        # This is stored as an instance variable to allow unit tests to replace it with a suitable mockup
         self._create_connection = socket.create_connection
 
     #
@@ -303,7 +304,7 @@ class HttpConnection:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
             check.not_none(self._tunnel_port),
-            self._http_vsn_str.encode('ascii'),
+            self._http_version_str.encode('ascii'),
         )
         headers = [connect]
         for header, value in self._tunnel_headers.items():
@@ -476,12 +477,12 @@ class HttpConnection:
                 if not chunk:
                     continue
 
-                if encode_chunked and self._http_vsn == 11:
+                if encode_chunked and self._http_version == 11:
                     # chunked encoding
                     chunk = f'{len(chunk):X}\r\n'.encode('ascii') + chunk + b'\r\n'
                 self.send(chunk)
 
-            if encode_chunked and self._http_vsn == 11:
+            if encode_chunked and self._http_version == 11:
                 # end chunked transfer
                 self.send(b'0\r\n\r\n')
 
@@ -537,11 +538,11 @@ class HttpConnection:
         url = url or '/'
         HttpClientValidation.validate_path(url)
 
-        request = f'{method} {url} {self._http_vsn_str}'
+        request = f'{method} {url} {self._http_version_str}'
 
         self._output(self._encode_request(request))
 
-        if self._http_vsn == 11:
+        if self._http_version == 11:
             # Issue some standard headers for better HTTP/1.1 compliance
 
             if not skip_host:
