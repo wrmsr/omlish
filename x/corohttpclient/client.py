@@ -187,50 +187,7 @@ class HttpConnection:
     _http_vsn = 11
     _http_vsn_str = 'HTTP/1.1'
 
-    response_class = http.client.HTTPResponse
     default_port = HTTP_PORT
-    auto_open = True
-
-    @staticmethod
-    def _is_text_io(stream: ta.Any) -> bool:
-        """Test whether a file-like object is a text or a binary stream."""
-
-        return isinstance(stream, io.TextIOBase)
-
-    @staticmethod
-    def _get_content_length(
-            body: ta.Any | None,
-            method: str,
-    ) -> int | None:
-        """
-        Get the content-length based on the body.
-
-        If the body is None, we set Content-Length: 0 for methods that expect a body (RFC 7230, Section 3.3.2). We also
-        set the Content-Length for any method if the body is a str or bytes-like object and not a file.
-        """
-
-        if body is None:
-            # do an explicit check for not None here to distinguish between unset and set but empty
-            if method.upper() in _METHODS_EXPECTING_BODY:
-                return 0
-            else:
-                return None
-
-        if hasattr(body, 'read'):
-            # file-like object.
-            return None
-
-        try:
-            # does it implement the buffer protocol (bytes, bytearray, array)?
-            mv = memoryview(body)
-            return mv.nbytes
-        except TypeError:
-            pass
-
-        if isinstance(body, str):
-            return len(body)
-
-        return None
 
     class NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
@@ -245,15 +202,18 @@ class HttpConnection:
             self,
             host: str,
             port: int | None = None,
+            *,
             timeout: float | None | type[NOT_SET] = NOT_SET,
             source_address: str | None = None,
             block_size: int = 8192,
+            auto_open: bool = True,
     ) -> None:
         super().__init__()
 
         self._timeout = timeout
         self._source_address = source_address
         self._block_size = block_size
+        self._auto_open = auto_open
         self._sock = None
         self._buffer: list[bytes] = []
         self._response = None
@@ -271,6 +231,36 @@ class HttpConnection:
         # This is stored as an instance variable to allow unit
         # tests to replace it with a suitable mockup
         self._create_connection = socket.create_connection
+
+    #
+
+    def _get_hostport(self, host: str, port: int | None) -> tuple[str, int]:
+        if port is None:
+            i = host.rfind(':')
+            j = host.rfind(']')         # ipv6 addresses have [...]
+            if i > j:
+                try:
+                    port = int(host[i+1:])
+                except ValueError:
+                    if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
+                        port = self.default_port
+                    else:
+                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
+                host = host[:i]
+            else:
+                port = self.default_port
+
+        if host and host[0] == '[' and host[-1] == ']':
+            host = host[1:-1]
+
+        return (host, port)
+
+    def _wrap_ipv6(self, ip: bytes) -> bytes:
+        if b':' in ip and ip[0] != b'['[0]:
+            return b'[' + ip + b']'
+        return ip
+
+    #
 
     def set_tunnel(self, host: str, port: int | None = None, headers=None) -> None:
         """
@@ -303,32 +293,6 @@ class HttpConnection:
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
             self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
-    def _get_hostport(self, host: str, port: int | None) -> tuple[str, int]:
-        if port is None:
-            i = host.rfind(':')
-            j = host.rfind(']')         # ipv6 addresses have [...]
-            if i > j:
-                try:
-                    port = int(host[i+1:])
-                except ValueError:
-                    if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
-                        port = self.default_port
-                    else:
-                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
-                host = host[:i]
-            else:
-                port = self.default_port
-
-        if host and host[0] == '[' and host[-1] == ']':
-            host = host[1:-1]
-
-        return (host, port)
-
-    def _wrap_ipv6(self, ip: bytes) -> bytes:
-        if b':' in ip and ip[0] != b'['[0]:
-            return b'[' + ip + b']'
-        return ip
-
     def _tunnel(self) -> None:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(self._tunnel_host.encode('idna')),
@@ -345,7 +309,7 @@ class HttpConnection:
         self.send(b''.join(headers))
         del headers
 
-        response = self.response_class(self._sock, method=self._method)
+        response = http.client.HTTPResponse(self._sock, method=self._method)
         try:
             (version, code, message) = response._read_status()  # noqa
 
@@ -372,6 +336,8 @@ class HttpConnection:
             else None
         )
 
+    #
+
     def connect(self) -> None:
         """Connect to the host and port specified in __init__."""
 
@@ -390,6 +356,8 @@ class HttpConnection:
         if self._tunnel_host:
             self._tunnel()
 
+    #
+
     def close(self) -> None:
         """Close the connection to the HTTP server."""
 
@@ -405,6 +373,14 @@ class HttpConnection:
                 self._response = None
                 response.close()
 
+    #
+
+    @staticmethod
+    def _is_text_io(stream: ta.Any) -> bool:
+        """Test whether a file-like object is a text or a binary stream."""
+
+        return isinstance(stream, io.TextIOBase)
+
     def send(self, data: ta.Any) -> None:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
@@ -412,7 +388,7 @@ class HttpConnection:
         """
 
         if self._sock is None:
-            if self.auto_open:
+            if self._auto_open:
                 self.connect()
             else:
                 raise http.client.NotConnected
@@ -498,6 +474,8 @@ class HttpConnection:
             if encode_chunked and self._http_vsn == 11:
                 # end chunked transfer
                 self.send(b'0\r\n\r\n')
+
+    #
 
     def put_request(
             self,
@@ -671,6 +649,8 @@ class HttpConnection:
 
         self._send_output(message_body, encode_chunked=encode_chunked)
 
+    #
+
     def request(
             self,
             method: str,
@@ -683,6 +663,41 @@ class HttpConnection:
         """Send a complete request to the server."""
 
         self._send_request(method, url, body, dict(headers or {}), encode_chunked)
+
+    @staticmethod
+    def _get_content_length(
+            body: ta.Any | None,
+            method: str,
+    ) -> int | None:
+        """
+        Get the content-length based on the body.
+
+        If the body is None, we set Content-Length: 0 for methods that expect a body (RFC 7230, Section 3.3.2). We also
+        set the Content-Length for any method if the body is a str or bytes-like object and not a file.
+        """
+
+        if body is None:
+            # do an explicit check for not None here to distinguish between unset and set but empty
+            if method.upper() in _METHODS_EXPECTING_BODY:
+                return 0
+            else:
+                return None
+
+        if hasattr(body, 'read'):
+            # file-like object.
+            return None
+
+        try:
+            # does it implement the buffer protocol (bytes, bytearray, array)?
+            mv = memoryview(body)
+            return mv.nbytes
+        except TypeError:
+            pass
+
+        if isinstance(body, str):
+            return len(body)
+
+        return None
 
     def _send_request(
             self,
@@ -733,7 +748,7 @@ class HttpConnection:
 
         self.end_headers(body, encode_chunked=encode_chunked)
 
-    def get_response(self):
+    def get_response(self) -> http.client.HTTPResponse:
         """
         Get the response from the server.
 
@@ -761,7 +776,7 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise http.client.ResponseNotReady(self._state)
 
-        response = self.response_class(self._sock, method=self._method)
+        response = http.client.HTTPResponse(self._sock, method=self._method)
 
         try:
             try:
