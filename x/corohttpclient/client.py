@@ -135,27 +135,27 @@ class HttpConnection:
           v
         Idle
           |
-          | putrequest()
+          | put_request()
           v
         Request-started
           |
-          | ( putheader() )*  endheaders()
+          | ( put_header() )*  end_headers()
           v
         Request-sent
           |______________________________
-          |                              | getresponse() raises
-          | response = getresponse()     | ConnectionError
+          |                              | get_response() raises
+          | response = get_response()     | ConnectionError
           v                              v
         Unread-response                Idle
         [Response-headers-read]
           |_____________________
           |                     |
-          | response.read()     | putrequest()
+          | response.read()     | put_request()
           v                     v
         Idle                  Req-started-unread-response
                          ______/|
                        /        |
-       response.read() |        | ( putheader() )*  endheaders()
+       response.read() |        | ( put_header() )*  end_headers()
                        v        v
            Request-started    Req-sent-unread-response
                                 |
@@ -246,10 +246,10 @@ class HttpConnection:
     ) -> None:
         super().__init__()
 
-        self.timeout = timeout
-        self.source_address = source_address
-        self.block_size = block_size
-        self.sock = None
+        self._timeout = timeout
+        self._source_address = source_address
+        self._block_size = block_size
+        self._sock = None
         self._buffer: list[bytes] = []
         self._response = None
         self._state = self._State.IDLE
@@ -259,9 +259,9 @@ class HttpConnection:
         self._tunnel_headers = {}
         self._raw_proxy_headers = None
 
-        (self.host, self.port) = self._get_hostport(host, port)
+        (self._host, self._port) = self._get_hostport(host, port)
 
-        HttpClientValidation.validate_host(self.host)
+        HttpClientValidation.validate_host(self._host)
 
         # This is stored as an instance variable to allow unit
         # tests to replace it with a suitable mockup
@@ -285,7 +285,7 @@ class HttpConnection:
         is not provided via the headers argument, one is generated and transmitted automatically.
         """
 
-        if self.sock:
+        if self._sock:
             raise RuntimeError("Can't set up tunnel for established connection")
 
         self._tunnel_host, self._tunnel_port = self._get_hostport(host, port)
@@ -341,7 +341,7 @@ class HttpConnection:
         self.send(b''.join(headers))
         del headers
 
-        response = self.response_class(self.sock, method=self._method)
+        response = self.response_class(self._sock, method=self._method)
         try:
             (version, code, message) = response._read_status()
 
@@ -371,14 +371,14 @@ class HttpConnection:
     def connect(self) -> None:
         """Connect to the host and port specified in __init__."""
 
-        self.sock = self._create_connection(
-            (self.host,self.port),
-            source_address=self.source_address,
-            **(dict(timeout=self.timeout) if self.timeout is not self.NOT_SET else {}),
+        self._sock = self._create_connection(
+            (self._host, self._port),
+            source_address=self._source_address,
+            **(dict(timeout=self._timeout) if self._timeout is not self.NOT_SET else {}),
         )
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
-            self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self._sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         except OSError as e:
             if e.errno != errno.ENOPROTOOPT:
                 raise
@@ -391,9 +391,9 @@ class HttpConnection:
 
         self._state = self._State.IDLE
         try:
-            sock = self.sock
+            sock = self._sock
             if sock:
-                self.sock = None
+                self._sock = None
                 sock.close()   # close it manually... there may be other refs
         finally:
             response = self._response
@@ -407,7 +407,7 @@ class HttpConnection:
         that supports a .read() method, or an iterable object.
         """
 
-        if self.sock is None:
+        if self._sock is None:
             if self.auto_open:
                 self.connect()
             else:
@@ -415,18 +415,18 @@ class HttpConnection:
 
         if hasattr(data, 'read') :
             encode = self._is_text_io(data)
-            while data_block := data.read(self.block_size):
+            while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                self.sock.sendall(data_block)
+                self._sock.sendall(data_block)
             return
 
         try:
-            self.sock.sendall(data)
+            self._sock.sendall(data)
         except TypeError:
             if isinstance(data, collections.abc.Iterable):
                 for d in data:
-                    self.sock.sendall(d)
+                    self._sock.sendall(d)
             else:
                 raise TypeError('data should be a bytes-like object or an iterable, got %r' % type(data))
 
@@ -441,7 +441,7 @@ class HttpConnection:
 
     def _read_readable(self, readable: ta.IO | ta.TextIO) -> ta.Iterator[bytes]:
         encode = self._is_text_io(readable)
-        while data_block := readable.read(self.block_size):
+        while data_block := readable.read(self._block_size):
             if encode:
                 data_block = data_block.encode('iso-8859-1')
             yield data_block
@@ -495,7 +495,7 @@ class HttpConnection:
                 # end chunked transfer
                 self.send(b'0\r\n\r\n')
 
-    def putrequest(
+    def put_request(
             self,
             method: str,
             url: str,
@@ -569,14 +569,14 @@ class HttpConnection:
                         netloc_enc = netloc.encode('ascii')
                     except UnicodeEncodeError:
                         netloc_enc = netloc.encode('idna')
-                    self.putheader('Host', _strip_ipv6_iface(netloc_enc))
+                    self.put_header('Host', _strip_ipv6_iface(netloc_enc))
                 else:
                     if self._tunnel_host:
                         host = self._tunnel_host
                         port = self._tunnel_port
                     else:
-                        host = self.host
-                        port = self.port
+                        host = self._host
+                        port = self._port
 
                     try:
                         host_enc = host.encode('ascii')
@@ -589,10 +589,10 @@ class HttpConnection:
                         host_enc = _strip_ipv6_iface(host_enc)
 
                     if port == self.default_port:
-                        self.putheader('Host', host_enc)
+                        self.put_header('Host', host_enc)
                     else:
                         host_enc = host_enc.decode('ascii')
-                        self.putheader('Host', '%s:%s' % (host_enc, port))
+                        self.put_header('Host', '%s:%s' % (host_enc, port))
 
             # NOTE: we are assuming that clients will not attempt to set these headers since *this* library must deal
             # with the consequences. this also means that when the supporting libraries are updated to recognize other
@@ -601,14 +601,14 @@ class HttpConnection:
             # we only want a Content-Encoding of "identity" since we don't support encodings such as x-gzip or
             # x-deflate.
             if not skip_accept_encoding:
-                self.putheader('Accept-Encoding', 'identity')
+                self.put_header('Accept-Encoding', 'identity')
 
             # we can accept "chunked" Transfer-Encodings, but no others
             # NOTE: no TE header implies *only* "chunked"
-            #self.putheader('TE', 'chunked')
+            #self.put_header('TE', 'chunked')
 
             # if TE is supplied in the header, then it must appear in a Connection header.
-            #self.putheader('Connection', 'TE')
+            #self.put_header('Connection', 'TE')
 
         else:
             # For HTTP/1.0, the server will assume "not chunked"
@@ -620,11 +620,11 @@ class HttpConnection:
 
     #
 
-    def putheader(self, header: str, *values: bytes | str) -> None:
+    def put_header(self, header: str, *values: bytes | str) -> None:
         """
         Send a request header line to the server.
 
-        For example: h.putheader('Accept', 'text/html')
+        For example: h.put_header('Accept', 'text/html')
         """
 
         if self._state != self._State.REQ_STARTED:
@@ -648,7 +648,7 @@ class HttpConnection:
         header = header + b': ' + value
         self._output(header)
 
-    def endheaders(
+    def end_headers(
             self,
             message_body: ta.Any | None = None,
             *,
@@ -696,7 +696,7 @@ class HttpConnection:
         if 'accept-encoding' in header_names:
             skips['skip_accept_encoding'] = 1
 
-        self.putrequest(method, url, **skips)
+        self.put_request(method, url, **skips)
 
         # chunked encoding will happen if HTTP/1.1 is used and either the caller passes encode_chunked=True or the
         # following conditions hold:
@@ -714,20 +714,20 @@ class HttpConnection:
                 if content_length is None:
                     if body is not None:
                         encode_chunked = True
-                        self.putheader('Transfer-Encoding', 'chunked')
+                        self.put_header('Transfer-Encoding', 'chunked')
                 else:
-                    self.putheader('Content-Length', str(content_length))
+                    self.put_header('Content-Length', str(content_length))
         else:
             encode_chunked = False
 
         for hdr, value in headers.items():
-            self.putheader(hdr, value)
+            self.put_header(hdr, value)
         if isinstance(body, str):
             # RFC 2616 Section 3.7.1 says that text default has a default charset of iso-8859-1.
             body = _encode(body, 'body')
-        self.endheaders(body, encode_chunked=encode_chunked)
+        self.end_headers(body, encode_chunked=encode_chunked)
 
-    def getresponse(self):
+    def get_response(self):
         """
         Get the response from the server.
 
@@ -755,7 +755,7 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise http.client.ResponseNotReady(self._state)
 
-        response = self.response_class(self.sock, method=self._method)
+        response = self.response_class(self._sock, method=self._method)
 
         try:
             try:
@@ -789,7 +789,7 @@ def _main() -> None:
     conn = HttpConnection('www.example.com')
 
     conn.request('GET', '/')
-    r1 = conn.getresponse()
+    r1 = conn.get_response()
     print((r1.status, r1.reason))
 
     # data1 = r1.read()
