@@ -83,19 +83,20 @@ _MAXHEADERS = 100
 
 
 def _read_headers(fp):
-    """Reads potential header lines into a list from a file pointer.
-
-    Length of line is limited by _MAXLINE, and number of
-    headers is limited by _MAXHEADERS.
     """
+    Reads potential header lines into a list from a file pointer.
+
+    Length of line is limited by _MAXLINE, and number of headers is limited by _MAXHEADERS.
+    """
+
     headers = []
     while True:
         line = fp.readline(_MAXLINE + 1)
         if len(line) > _MAXLINE:
-            raise http.client.LineTooLong("header line")
+            raise http.client.LineTooLong('header line')
         headers.append(line)
         if len(headers) > _MAXHEADERS:
-            raise http.client.HTTPException("got more than %d headers" % _MAXHEADERS)
+            raise http.client.HTTPException('got more than %d headers' % _MAXHEADERS)
         if line in (b'\r\n', b'\n', b''):
             break
     return headers
@@ -105,21 +106,20 @@ def _parse_header_lines(header_lines, _class=http.client.HTTPMessage):
     """
     Parses only RFC2822 headers from header lines.
 
-    email Parser wants to see strings rather than bytes.
-    But a TextIOWrapper around self.rfile would buffer too many bytes
-    from the stream, bytes which we later need to read as bytes.
-    So we read the correct bytes here, as bytes, for email Parser
-    to parse.
-
+    email Parser wants to see strings rather than bytes. But a TextIOWrapper around self.rfile would buffer too many
+    bytes from the stream, bytes which we later need to read as bytes. So we read the correct bytes here, as bytes, for
+    email Parser to parse.
     """
+
     hstring = b''.join(header_lines).decode('iso-8859-1')
     return email.parser.Parser(_class=_class).parsestr(hstring)
 
 
 def _encode(data, name='data'):
     """Call data.encode("latin-1") but show a better error message."""
+
     try:
-        return data.encode("latin-1")
+        return data.encode('latin-1')
     except UnicodeEncodeError as err:
         raise UnicodeEncodeError(
             err.encoding,
@@ -133,7 +133,8 @@ def _encode(data, name='data'):
 
 def _strip_ipv6_iface(enc_name: bytes) -> bytes:
     """Remove interface scope from IPv6 address."""
-    enc_name, percent, _ = enc_name.partition(b"%")
+
+    enc_name, percent, _ = enc_name.partition(b'%')
     if percent:
         assert enc_name.startswith(b'['), enc_name
         enc_name += b']'
@@ -150,22 +151,22 @@ class HttpConnection:
     debuglevel = 0
 
     @staticmethod
-    def _is_textIO(stream):
-        """Test whether a file-like object is a text or a binary stream.
-        """
+    def _is_text_io(stream):
+        """Test whether a file-like object is a text or a binary stream."""
+
         return isinstance(stream, io.TextIOBase)
 
     @staticmethod
     def _get_content_length(body, method):
-        """Get the content-length based on the body.
-
-        If the body is None, we set Content-Length: 0 for methods that expect
-        a body (RFC 7230, Section 3.3.2). We also set the Content-Length for
-        any method if the body is a str or bytes-like object and not a file.
         """
+        Get the content-length based on the body.
+
+        If the body is None, we set Content-Length: 0 for methods that expect a body (RFC 7230, Section 3.3.2). We also
+        set the Content-Length for any method if the body is a str or bytes-like object and not a file.
+        """
+
         if body is None:
-            # do an explicit check for not None here to distinguish
-            # between unset and set but empty
+            # do an explicit check for not None here to distinguish between unset and set but empty
             if method.upper() in _METHODS_EXPECTING_BODY:
                 return 0
             else:
@@ -219,25 +220,21 @@ class HttpConnection:
         self._create_connection = socket.create_connection
 
     def set_tunnel(self, host, port=None, headers=None):
-        """Set up host and port for HTTP CONNECT tunnelling.
+        """
+        Set up host and port for HTTP CONNECT tunnelling.
 
-        In a connection that uses HTTP CONNECT tunnelling, the host passed to
-        the constructor is used as a proxy server that relays all communication
-        to the endpoint passed to `set_tunnel`. This done by sending an HTTP
-        CONNECT request to the proxy server when the connection is established.
+        In a connection that uses HTTP CONNECT tunnelling, the host passed to the constructor is used as a proxy server
+        that relays all communication to the endpoint passed to `set_tunnel`. This done by sending an HTTP CONNECT
+        request to the proxy server when the connection is established.
 
-        This method must be called before the HTTP connection has been
-        established.
+        This method must be called before the HTTP connection has been established.
 
-        The headers argument should be a mapping of extra HTTP headers to send
-        with the CONNECT request.
+        The headers argument should be a mapping of extra HTTP headers to send with the CONNECT request.
 
         As HTTP/1.1 is used for HTTP CONNECT tunnelling request, as per the RFC
-        (https://tools.ietf.org/html/rfc7231#section-4.3.6), a HTTP Host:
-        header must be provided, matching the authority-form of the request
-        target provided as the destination for the CONNECT request. If a
-        HTTP Host: header is not provided via the headers argument, one
-        is generated and transmitted automatically.
+        (https://tools.ietf.org/html/rfc7231#section-4.3.6), a HTTP Host: header must be provided, matching the
+        authority-form of the request target provided as the destination for the CONNECT request. If a HTTP Host: header
+        is not provided via the headers argument, one is generated and transmitted automatically.
         """
 
         if self.sock:
@@ -249,9 +246,9 @@ class HttpConnection:
         else:
             self._tunnel_headers.clear()
 
-        if not any(header.lower() == "host" for header in self._tunnel_headers):
-            encoded_host = self._tunnel_host.encode("idna").decode("ascii")
-            self._tunnel_headers["Host"] = "%s:%d" % (
+        if not any(header.lower() == 'host' for header in self._tunnel_headers):
+            encoded_host = self._tunnel_host.encode('idna').decode('ascii')
+            self._tunnel_headers['Host'] = '%s:%d' % (
                 encoded_host, self._tunnel_port)
 
     def _get_hostport(self, host, port):
@@ -262,7 +259,7 @@ class HttpConnection:
                 try:
                     port = int(host[i+1:])
                 except ValueError:
-                    if host[i+1:] == "": # http://foo.com:/ == http://foo.com/
+                    if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
                         raise http.client.InvalidURL("nonnumeric port: '%s'" % host[i+1:])
@@ -279,22 +276,23 @@ class HttpConnection:
 
     def _wrap_ipv6(self, ip):
         if b':' in ip and ip[0] != b'['[0]:
-            return b"[" + ip + b"]"
+            return b'[' + ip + b']'
         return ip
 
     def _tunnel(self):
-        connect = b"CONNECT %s:%d %s\r\n" % (
-            self._wrap_ipv6(self._tunnel_host.encode("idna")),
+        connect = b'CONNECT %s:%d %s\r\n' % (
+            self._wrap_ipv6(self._tunnel_host.encode('idna')),
             self._tunnel_port,
-            self._http_vsn_str.encode("ascii"))
+            self._http_vsn_str.encode('ascii'),
+        )
         headers = [connect]
         for header, value in self._tunnel_headers.items():
-            headers.append(f"{header}: {value}\r\n".encode("latin-1"))
-        headers.append(b"\r\n")
-        # Making a single send() call instead of one per line encourages
-        # the host OS to use a more optimal packet size instead of
-        # potentially emitting a series of small packets.
-        self.send(b"".join(headers))
+            headers.append(f'{header}: {value}\r\n'.encode('latin-1'))
+        headers.append(b'\r\n')
+
+        # Making a single send() call instead of one per line encourages the host OS to use a more optimal packet size
+        # instead of potentially emitting a series of small packets.
+        self.send(b''.join(headers))
         del headers
 
         response = self.response_class(self.sock, method=self._method)
@@ -309,19 +307,19 @@ class HttpConnection:
 
             if code != http.HTTPStatus.OK:
                 self.close()
-                raise OSError(f"Tunnel connection failed: {code} {message.strip()}")
+                raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
         finally:
             response.close()
 
     def get_proxy_response_headers(self):
         """
-        Returns a dictionary with the headers of the response
-        received from the proxy server to the CONNECT request
-        sent to set the tunnel.
+        Returns a dictionary with the headers of the response received from the proxy server to the CONNECT request sent
+        to set the tunnel.
 
         If the CONNECT request was not sent, the method returns None.
         """
+
         return (
             _parse_header_lines(self._raw_proxy_headers)
             if self._raw_proxy_headers is not None
@@ -330,7 +328,8 @@ class HttpConnection:
 
     def connect(self):
         """Connect to the host and port specified in __init__."""
-        sys.audit("http.client.connect", self, self.host, self.port)
+
+        sys.audit('http.client.connect', self, self.host, self.port)
         self.sock = self._create_connection(
             (self.host,self.port), self.timeout, self.source_address)
         # Might fail in OSs that don't implement TCP_NODELAY
@@ -345,6 +344,7 @@ class HttpConnection:
 
     def close(self):
         """Close the connection to the HTTP server."""
+
         self.__state = _CS_IDLE
         try:
             sock = self.sock
@@ -358,9 +358,9 @@ class HttpConnection:
                 response.close()
 
     def send(self, data):
-        """Send `data' to the server.
-        ``data`` can be a string object, a bytes object, an array object, a
-        file-like object that supports a .read() method, or an iterable object.
+        """
+        Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
+        that supports a .read() method, or an iterable object.
         """
 
         if self.sock is None:
@@ -370,20 +370,20 @@ class HttpConnection:
                 raise http.client.NotConnected()
 
         if self.debuglevel > 0:
-            print("send:", repr(data))
-        if hasattr(data, "read") :
+            print('send:', repr(data))
+        if hasattr(data, 'read') :
             if self.debuglevel > 0:
-                print("sending a readable")
-            encode = self._is_textIO(data)
+                print('sending a readable')
+            encode = self._is_text_io(data)
             if encode and self.debuglevel > 0:
-                print("encoding file using iso-8859-1")
+                print('encoding file using iso-8859-1')
             while datablock := data.read(self.blocksize):
                 if encode:
-                    datablock = datablock.encode("iso-8859-1")
-                sys.audit("http.client.send", self, datablock)
+                    datablock = datablock.encode('iso-8859-1')
+                sys.audit('http.client.send', self, datablock)
                 self.sock.sendall(datablock)
             return
-        sys.audit("http.client.send", self, data)
+        sys.audit('http.client.send', self, data)
         try:
             self.sock.sendall(data)
         except TypeError:
@@ -391,35 +391,37 @@ class HttpConnection:
                 for d in data:
                     self.sock.sendall(d)
             else:
-                raise TypeError("data should be a bytes-like object "
-                                "or an iterable, got %r" % type(data))
+                raise TypeError('data should be a bytes-like object or an iterable, got %r' % type(data))
 
     def _output(self, s):
-        """Add a line of output to the current request buffer.
+        """
+        Add a line of output to the current request buffer.
 
         Assumes that the line does *not* end with \\r\\n.
         """
+
         self._buffer.append(s)
 
     def _read_readable(self, readable):
         if self.debuglevel > 0:
-            print("reading a readable")
-        encode = self._is_textIO(readable)
+            print('reading a readable')
+        encode = self._is_text_io(readable)
         if encode and self.debuglevel > 0:
-            print("encoding file using iso-8859-1")
+            print('encoding file using iso-8859-1')
         while datablock := readable.read(self.blocksize):
             if encode:
-                datablock = datablock.encode("iso-8859-1")
+                datablock = datablock.encode('iso-8859-1')
             yield datablock
 
     def _send_output(self, message_body=None, encode_chunked=False):
-        """Send the currently buffered request and clear the buffer.
-
-        Appends an extra \\r\\n to the buffer.
-        A message_body may be specified, to be appended to the request.
         """
-        self._buffer.extend((b"", b""))
-        msg = b"\r\n".join(self._buffer)
+        Send the currently buffered request and clear the buffer.
+
+        Appends an extra \\r\\n to the buffer. A message_body may be specified, to be appended to the request.
+        """
+
+        self._buffer.extend((b'', b''))
+        msg = b'\r\n'.join(self._buffer)
         del self._buffer[:]
         self.send(msg)
 
@@ -427,27 +429,21 @@ class HttpConnection:
 
             # create a consistent interface to message_body
             if hasattr(message_body, 'read'):
-                # Let file-like take precedence over byte-like.  This
-                # is needed to allow the current position of mmap'ed
+                # Let file-like take precedence over byte-like.  This is needed to allow the current position of mmap'ed
                 # files to be taken into account.
                 chunks = self._read_readable(message_body)
             else:
                 try:
-                    # this is solely to check to see if message_body
-                    # implements the buffer API.  it /would/ be easier
-                    # to capture if PyObject_CheckBuffer was exposed
-                    # to Python.
+                    # this is solely to check to see if message_body implements the buffer API.  it /would/ be easier to
+                    # capture if PyObject_CheckBuffer was exposed to Python.
                     memoryview(message_body)
                 except TypeError:
                     try:
                         chunks = iter(message_body)
                     except TypeError:
-                        raise TypeError("message_body should be a bytes-like "
-                                        "object or an iterable, got %r"
-                                        % type(message_body))
+                        raise TypeError('message_body should be a bytes-like object or an iterable, got %r' % type(message_body))  # noqa
                 else:
-                    # the object implements the buffer interface and
-                    # can be passed directly into socket methods
+                    # the object implements the buffer interface and can be passed directly into socket methods
                     chunks = (message_body,)
 
             for chunk in chunks:
@@ -458,23 +454,27 @@ class HttpConnection:
 
                 if encode_chunked and self._http_vsn == 11:
                     # chunked encoding
-                    chunk = f'{len(chunk):X}\r\n'.encode('ascii') + chunk \
-                            + b'\r\n'
+                    chunk = f'{len(chunk):X}\r\n'.encode('ascii') + chunk + b'\r\n'
                 self.send(chunk)
 
             if encode_chunked and self._http_vsn == 11:
                 # end chunked transfer
                 self.send(b'0\r\n\r\n')
 
-    def putrequest(self, method, url, skip_host=False,
-                   skip_accept_encoding=False):
-        """Send a request to the server.
+    def putrequest(
+            self,
+            method,
+            url,
+            skip_host=False,
+            skip_accept_encoding=False,
+    ):
+        """
+        Send a request to the server.
 
         `method' specifies an HTTP request method, e.g. 'GET'.
         `url' specifies the object being requested, e.g. '/index.html'.
         `skip_host' if True does not add automatically a 'Host:' header
-        `skip_accept_encoding' if True does not add automatically an
-           'Accept-Encoding:' header
+        `skip_accept_encoding' if True does not add automatically an 'Accept-Encoding:' header
         """
 
         # if a prior response has been completed, then forget about it.
@@ -485,20 +485,17 @@ class HttpConnection:
         # in certain cases, we cannot issue another request on this connection.
         # this occurs when:
         #   1) we are in the process of sending a request.   (_CS_REQ_STARTED)
-        #   2) a response to a previous request has signalled that it is going
-        #      to close the connection upon completion.
-        #   3) the headers for the previous response have not been read, thus
-        #      we cannot determine whether point (2) is true.   (_CS_REQ_SENT)
+        #   2) a response to a previous request has signalled that it is going to close the connection upon completion.
+        #   3) the headers for the previous response have not been read, thus we cannot determine whether point (2) is
+        #      true.   (_CS_REQ_SENT)
         #
         # if there is no prior response, then we can request at will.
         #
-        # if point (2) is true, then we will have passed the socket to the
-        # response (effectively meaning, "there is no prior response"), and
-        # will open a new one when a new request is made.
+        # if point (2) is true, then we will have passed the socket to the response (effectively meaning, "there is no
+        # prior response"), and will open a new one when a new request is made.
         #
-        # Note: if a prior response exists, then we *can* start a new request.
-        #       We are not allowed to begin fetching the response to this new
-        #       request, however, until that prior response is complete.
+        # Note: if a prior response exists, then we *can* start a new request. We are not allowed to begin fetching the
+        #       response to this new request, however, until that prior response is complete.
         #
         if self.__state == _CS_IDLE:
             self.__state = _CS_REQ_STARTED
@@ -521,29 +518,22 @@ class HttpConnection:
             # Issue some standard headers for better HTTP/1.1 compliance
 
             if not skip_host:
-                # this header is issued *only* for HTTP/1.1
-                # connections. more specifically, this means it is
-                # only issued when the client uses the new
-                # HTTPConnection() class. backwards-compat clients
-                # will be using HTTP/1.0 and those clients may be
-                # issuing this header themselves. we should NOT issue
-                # it twice; some web servers (such as Apache) barf
-                # when they see two Host: headers
+                # this header is issued *only* for HTTP/1.1 connections. more specifically, this means it is only issued
+                # when the client uses the new HTTPConnection() class. backwards-compat clients will be using HTTP/1.0
+                # and those clients may be issuing this header themselves. we should NOT issue it twice; some web
+                # servers (such as Apache) barf when they see two Host: headers
 
-                # If we need a non-standard port,include it in the
-                # header.  If the request is going through a proxy,
-                # but the host of the actual URL, not the host of the
-                # proxy.
-
+                # If we need a non-standard port,include it in the header.  If the request is going through a proxy, but
+                # the host of the actual URL, not the host of the proxy.
                 netloc = ''
                 if url.startswith('http'):
                     nil, netloc, nil, nil, nil = urllib.parse.urlsplit(url)
 
                 if netloc:
                     try:
-                        netloc_enc = netloc.encode("ascii")
+                        netloc_enc = netloc.encode('ascii')
                     except UnicodeEncodeError:
-                        netloc_enc = netloc.encode("idna")
+                        netloc_enc = netloc.encode('idna')
                     self.putheader('Host', _strip_ipv6_iface(netloc_enc))
                 else:
                     if self._tunnel_host:
@@ -554,30 +544,27 @@ class HttpConnection:
                         port = self.port
 
                     try:
-                        host_enc = host.encode("ascii")
+                        host_enc = host.encode('ascii')
                     except UnicodeEncodeError:
-                        host_enc = host.encode("idna")
+                        host_enc = host.encode('idna')
 
-                    # As per RFC 273, IPv6 address should be wrapped with []
-                    # when used as Host header
+                    # As per RFC 273, IPv6 address should be wrapped with [] when used as Host header
                     host_enc = self._wrap_ipv6(host_enc)
-                    if ":" in host:
+                    if ':' in host:
                         host_enc = _strip_ipv6_iface(host_enc)
 
                     if port == self.default_port:
                         self.putheader('Host', host_enc)
                     else:
-                        host_enc = host_enc.decode("ascii")
-                        self.putheader('Host', "%s:%s" % (host_enc, port))
+                        host_enc = host_enc.decode('ascii')
+                        self.putheader('Host', '%s:%s' % (host_enc, port))
 
-            # note: we are assuming that clients will not attempt to set these
-            #       headers since *this* library must deal with the
-            #       consequences. this also means that when the supporting
-            #       libraries are updated to recognize other forms, then this
-            #       code should be changed (removed or updated).
+            # note: we are assuming that clients will not attempt to set these headers since *this* library must deal
+            #       with the consequences. this also means that when the supporting libraries are updated to recognize
+            #       other forms, then this code should be changed (removed or updated).
 
-            # we only want a Content-Encoding of "identity" since we don't
-            # support encodings such as x-gzip or x-deflate.
+            # we only want a Content-Encoding of "identity" since we don't support encodings such as x-gzip or
+            # x-deflate.
             if not skip_accept_encoding:
                 self.putheader('Accept-Encoding', 'identity')
 
@@ -585,8 +572,7 @@ class HttpConnection:
             # NOTE: no TE header implies *only* "chunked"
             #self.putheader('TE', 'chunked')
 
-            # if TE is supplied in the header, then it must appear in a
-            # Connection header.
+            # if TE is supplied in the header, then it must appear in a Connection header.
             #self.putheader('Connection', 'TE')
 
         else:
@@ -599,34 +585,44 @@ class HttpConnection:
 
     def _validate_method(self, method):
         """Validate a method name for putrequest."""
+
         # prevent http header injection
         match = _contains_disallowed_method_pchar_re.search(method)
         if match:
             raise ValueError(
                 f"method can't contain control characters. {method!r} "
-                f"(found at least {match.group()!r})")
+                f"(found at least {match.group()!r})",
+            )
 
     def _validate_path(self, url):
         """Validate a url for putrequest."""
+
         # Prevent CVE-2019-9740.
         match = _contains_disallowed_url_pchar_re.search(url)
         if match:
-            raise http.client.InvalidURL(f"URL can't contain control characters. {url!r} "
-                             f"(found at least {match.group()!r})")
+            raise http.client.InvalidURL(
+                f"URL can't contain control characters. {url!r} "
+                f"(found at least {match.group()!r})"
+            )
 
     def _validate_host(self, host):
         """Validate a host so it doesn't contain control characters."""
+
         # Prevent CVE-2019-18348.
         match = _contains_disallowed_url_pchar_re.search(host)
         if match:
-            raise http.client.InvalidURL(f"URL can't contain control characters. {host!r} "
-                             f"(found at least {match.group()!r})")
+            raise http.client.InvalidURL(
+                f"URL can't contain control characters. {host!r} "
+                f"(found at least {match.group()!r})"
+            )
 
     def putheader(self, header, *values):
-        """Send a request header line to the server.
+        """
+        Send a request header line to the server.
 
         For example: h.putheader('Accept', 'text/html')
         """
+
         if self.__state != _CS_REQ_STARTED:
             raise http.client.CannotSendHeader()
 
@@ -653,19 +649,19 @@ class HttpConnection:
     def endheaders(self, message_body=None, *, encode_chunked=False):
         """Indicate that the last header line has been sent to the server.
 
-        This method sends the request to the server.  The optional message_body
-        argument can be used to pass a message body associated with the
-        request.
+        This method sends the request to the server.  The optional message_body argument can be used to pass a message
+        body associated with the request.
         """
+
         if self.__state == _CS_REQ_STARTED:
             self.__state = _CS_REQ_SENT
         else:
             raise http.client.CannotSendHeader()
         self._send_output(message_body, encode_chunked=encode_chunked)
 
-    def request(self, method, url, body=None, headers={}, *,
-                encode_chunked=False):
+    def request(self, method, url, body=None, headers={}, *, encode_chunked=False):
         """Send a complete request to the server."""
+
         self._send_request(method, url, body, headers, encode_chunked)
 
     def _send_request(self, method, url, body, headers, encode_chunked):
@@ -679,20 +675,17 @@ class HttpConnection:
 
         self.putrequest(method, url, **skips)
 
-        # chunked encoding will happen if HTTP/1.1 is used and either
-        # the caller passes encode_chunked=True or the following
-        # conditions hold:
+        # chunked encoding will happen if HTTP/1.1 is used and either the caller passes encode_chunked=True or the
+        # following conditions hold:
         # 1. content-length has not been explicitly set
         # 2. the body is a file or iterable, but not a str or bytes-like
         # 3. Transfer-Encoding has NOT been explicitly set by the caller
 
         if 'content-length' not in header_names:
-            # only chunk body if not explicitly set for backwards
-            # compatibility, assuming the client code is already handling the
-            # chunking
+            # only chunk body if not explicitly set for backwards compatibility, assuming the client code is already
+            # handling the chunking
             if 'transfer-encoding' not in header_names:
-                # if content-length cannot be automatically determined, fall
-                # back to chunked encoding
+                # if content-length cannot be automatically determined, fall back to chunked encoding
                 encode_chunked = False
                 content_length = self._get_content_length(body, method)
                 if content_length is None:
@@ -709,50 +702,40 @@ class HttpConnection:
         for hdr, value in headers.items():
             self.putheader(hdr, value)
         if isinstance(body, str):
-            # RFC 2616 Section 3.7.1 says that text default has a
-            # default charset of iso-8859-1.
+            # RFC 2616 Section 3.7.1 says that text default has a default charset of iso-8859-1.
             body = _encode(body, 'body')
         self.endheaders(body, encode_chunked=encode_chunked)
 
     def getresponse(self):
-        """Get the response from the server.
+        """
+        Get the response from the server.
 
-        If the HTTPConnection is in the correct state, returns an
-        instance of HTTPResponse or of whatever object is returned by
-        the response_class variable.
+        If the HTTPConnection is in the correct state, returns an instance of HTTPResponse or of whatever object is
+        returned by the response_class variable.
 
-        If a request has not been sent or if a previous response has
-        not be handled, ResponseNotReady is raised.  If the HTTP
-        response indicates that the connection should be closed, then
-        it will be closed before the response is returned.  When the
-        connection is closed, the underlying socket is closed.
+        If a request has not been sent or if a previous response has not be handled, ResponseNotReady is raised.  If the
+        HTTP response indicates that the connection should be closed, then it will be closed before the response is
+        returned.  When the connection is closed, the underlying socket is closed.
         """
 
         # if a prior response has been completed, then forget about it.
         if self.__response and self.__response.isclosed():
             self.__response = None
 
-        # if a prior response exists, then it must be completed (otherwise, we
-        # cannot read this response's header to determine the connection-close
-        # behavior)
+        # if a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
+        # determine the connection-close behavior)
         #
-        # note: if a prior response existed, but was connection-close, then the
-        # socket and response were made independent of this HTTPConnection
-        # object since a new request requires that we open a whole new
-        # connection
+        # note: if a prior response existed, but was connection-close, then the socket and response were made
+        # independent of this HTTPConnection object since a new request requires that we open a whole new connection
         #
         # this means the prior response had one of two states:
-        #   1) will_close: this connection was reset and the prior socket and
-        #                  response operate independently
-        #   2) persistent: the response was retained and we await its
-        #                  isclosed() status to become true.
-        #
+        #   1) will_close: this connection was reset and the prior socket and response operate independently
+        #   2) persistent: the response was retained and we await its isclosed() status to become true.
         if self.__state != _CS_REQ_SENT or self.__response:
             raise http.client.ResponseNotReady(self.__state)
 
         if self.debuglevel > 0:
-            response = self.response_class(self.sock, self.debuglevel,
-                                           method=self._method)
+            response = self.response_class(self.sock, self.debuglevel, method=self._method)
         else:
             response = self.response_class(self.sock, method=self._method)
 
