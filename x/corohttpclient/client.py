@@ -87,10 +87,7 @@ def _read_headers(fp: ta.IO) -> list[bytes]:
     return headers
 
 
-def _parse_header_lines(
-        header_lines: ta.Sequence[bytes],
-        _class=http.client.HTTPMessage,
-):
+def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> http.client.HTTPMessage:
     """
     Parses only RFC2822 headers from header lines.
 
@@ -100,7 +97,7 @@ def _parse_header_lines(
     """
 
     hstring = b''.join(header_lines).decode('iso-8859-1')
-    return email.parser.Parser(_class=_class).parsestr(hstring)
+    return email.parser.Parser(_class=http.client.HTTPMessage).parsestr(hstring)
 
 
 def _encode(data: str, name: str = 'data') -> bytes:
@@ -115,8 +112,7 @@ def _encode(data: str, name: str = 'data') -> bytes:
             err.object,
             err.start,
             err.end,
-            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') "
-            "if you want to send it encoded in UTF-8." %
+            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') if you want to send it encoded in UTF-8." %
             (name.title(), data[err.start:err.end], name),
         ) from None
 
@@ -356,7 +352,7 @@ class HttpConnection:
         finally:
             response.close()
 
-    def get_proxy_response_headers(self):
+    def get_proxy_response_headers(self) -> http.client.HTTPMessage | None:
         """
         Returns a dictionary with the headers of the response received from the proxy server to the CONNECT request sent
         to set the tunnel.
