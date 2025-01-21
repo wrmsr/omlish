@@ -202,7 +202,6 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
                 ),
                 data=content,
         )) as resp:
-            check.in_(resp.status, self.GET_ENTRY_SUCCESS_STATUS_CODES)
             body = resp.read()
 
         if success_status_codes is not None:
