@@ -26,6 +26,7 @@ from .cache import DirectoryFileCache
 from .cache import FileCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
+from .github.cache import GithubFileCache
 from .github.cli import GithubCli
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
@@ -145,9 +146,10 @@ class CiCli(ArgparseCli):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
 
-            directory_file_cache = DirectoryFileCache(cache_dir)
-
-            file_cache = directory_file_cache
+            if self.args.github_cache:
+                file_cache = GithubFileCache(cache_dir)
+            else:
+                file_cache = DirectoryFileCache(cache_dir)
 
         #
 

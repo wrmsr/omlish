@@ -3702,6 +3702,64 @@ class Ci(AsyncExitStacked):
 
 
 ########################################
+# ../github/cache.py
+
+
+##
+
+
+class GithubFileCache(FileCache):
+    def __init__(
+            self,
+            dir: str,  # noqa
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+    ) -> None:
+        super().__init__()
+
+        self._dir = check.not_none(dir)
+
+        if client is None:
+            client = GithubCacheServiceV1CurlClient()
+        self._client: GithubCacheClient = client
+
+        self._local = DirectoryFileCache(self._dir)
+
+    def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with defer(lambda: unlink_if_exists(tmp_file)):
+            self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+
+########################################
 # ../github/cli.py
 """
 See:
@@ -3845,9 +3903,10 @@ class CiCli(ArgparseCli):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
 
-            directory_file_cache = DirectoryFileCache(cache_dir)
-
-            file_cache = directory_file_cache
+            if self.args.github_cache:
+                file_cache = GithubFileCache(cache_dir)
+            else:
+                file_cache = DirectoryFileCache(cache_dir)
 
         #
 
