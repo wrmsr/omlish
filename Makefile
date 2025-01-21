@@ -457,6 +457,24 @@ ci-bash: ci-image
 	${DOCKER_COMPOSE} run --rm -e CI=1 omlish-ci bash
 
 
+### CI2
+
+
+.PHONY: ci2
+ci2:
+	${PYTHON} omdev/scripts/ci.py run \
+		--cache-dir ~/.cache/omlish/ci \
+		. \
+		omlish-ci \
+		-- \
+	\
+	python3 \
+		-m pytest \
+		${PYTEST_OPTS} \
+		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
+		${SRCS}
+
+
 ### Package
 
 .PHONY: package
