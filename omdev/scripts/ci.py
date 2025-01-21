@@ -3182,22 +3182,25 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             offset: int,
             size: int,
     ) -> None:
-        with open(in_file, 'rb') as f:  # noqa
-            f.seek(offset)
-            buf = f.read(size)
+        with log_timing_context(
+                f'Uploading cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
+        ):
+            with open(in_file, 'rb') as f:  # noqa
+                f.seek(offset)
+                buf = f.read(size)
 
-        check.equal(len(buf), size)
+            check.equal(len(buf), size)
 
-        await self.send_request(
-            f'caches/{cache_id}',
-            method='PATCH',
-            content_type='application/octet-stream',
-            headers={
-                'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
-            },
-            content=buf,
-            success_status_codes=[204],
-        )
+            await self.send_request(
+                f'caches/{cache_id}',
+                method='PATCH',
+                content_type='application/octet-stream',
+                headers={
+                    'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
+                },
+                content=buf,
+                success_status_codes=[204],
+            )
 
     async def upload_file(self, key: str, in_file: str) -> None:
         fixed_key = self.fix_key(key)
