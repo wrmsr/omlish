@@ -5,9 +5,9 @@ import unittest
 
 from ..proxier import AsyncIoProxier
 from ..proxy import AsyncIoProxyRunner
-from ..typing import TypingBinaryIOAsyncIoProxy
-from ..typing import TypingIOAsyncIoProxy
-from ..typing import TypingTextIOAsyncIoProxy
+from ..typing import TypingBinaryIO_AsyncIoProxy
+from ..typing import TypingIO_AsyncIoProxy
+from ..typing import TypingTextIO_AsyncIoProxy
 
 
 ##
@@ -35,7 +35,7 @@ def asyncio_open(
         mode: str = 'r',
         *args: ta.Any,
         **kwargs: ta.Any,
-) -> ta.Awaitable[TypingIOAsyncIoProxy[ta.Any]]:
+) -> ta.Awaitable[TypingIO_AsyncIoProxy[ta.Any]]:
     return _asyncio_open(file, mode, *args, **kwargs)
 
 
@@ -44,7 +44,7 @@ def asyncio_open_binary(
         mode: str = 'r',
         *args: ta.Any,
         **kwargs: ta.Any,
-) -> ta.Awaitable[TypingBinaryIOAsyncIoProxy]:
+) -> ta.Awaitable[TypingBinaryIO_AsyncIoProxy]:
     return _asyncio_open(file, mode, *args, **kwargs)
 
 
@@ -53,7 +53,7 @@ def asyncio_open_text(
         mode: str = 'rb',
         *args: ta.Any,
         **kwargs: ta.Any,
-) -> ta.Awaitable[TypingTextIOAsyncIoProxy]:
+) -> ta.Awaitable[TypingTextIO_AsyncIoProxy]:
     return _asyncio_open(file, mode, *args, **kwargs)
 
 

@@ -13,7 +13,7 @@ SelfT = ta.TypeVar('SelfT')
 
 
 @_register_async_io_proxy_cls
-class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
+class IOBase_AsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):  # noqa
     # https://github.com/python/cpython/blob/e65a1eb93ae35f9fbab1508606e3fbc89123629f/Lib/_pyio.py#L305
 
     ##
@@ -91,7 +91,7 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
 
 
 @_register_async_io_proxy_cls
-class RawIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.RawIOBase):
+class RawIOBase_AsyncIoProxy(IOBase_AsyncIoProxy, proxied_cls=io.RawIOBase):  # noqa
     async def read(self, size=-1):
         raise TypeError
 
@@ -106,7 +106,7 @@ class RawIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.RawIOBase):
 
 
 @_register_async_io_proxy_cls
-class BufferedIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.BufferedIOBase):
+class BufferedIOBase_AsyncIoProxy(IOBase_AsyncIoProxy, proxied_cls=io.BufferedIOBase):  # noqa
     async def read(self, size=-1):
         raise TypeError
 
@@ -126,7 +126,7 @@ class BufferedIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.BufferedIOBa
         raise TypeError
 
 
-class BufferedIOMixinAsyncIoProxy(BufferedIOBaseAsyncIoProxy):
+class BufferedIOMixin_AsyncIoProxy(BufferedIOBase_AsyncIoProxy):  # noqa
     @property
     def raw(self):
         raise TypeError
@@ -141,7 +141,7 @@ class BufferedIOMixinAsyncIoProxy(BufferedIOBaseAsyncIoProxy):
 
 
 @_register_async_io_proxy_cls
-class BytesIOAsyncIoProxy(BufferedIOBaseAsyncIoProxy, proxied_cls=io.BytesIO):
+class BytesIO_AsyncIoProxy(BufferedIOBase_AsyncIoProxy, proxied_cls=io.BytesIO):  # noqa
     async def getvalue(self):
         raise TypeError
 
@@ -150,29 +150,29 @@ class BytesIOAsyncIoProxy(BufferedIOBaseAsyncIoProxy, proxied_cls=io.BytesIO):
 
 
 @_register_async_io_proxy_cls
-class BufferedReaderAsyncIoProxy(BufferedIOMixinAsyncIoProxy, proxied_cls=io.BufferedReader):
+class BufferedReader_AsyncIoProxy(BufferedIOMixin_AsyncIoProxy, proxied_cls=io.BufferedReader):  # noqa
     async def peek(self, size=0):
         raise TypeError
 
 
 @_register_async_io_proxy_cls
-class BufferedWriterAsyncIoProxy(BufferedIOMixinAsyncIoProxy, proxied_cls=io.BufferedWriter):
+class BufferedWriter_AsyncIoProxy(BufferedIOMixin_AsyncIoProxy, proxied_cls=io.BufferedWriter):  # noqa
     pass
 
 
 @_register_async_io_proxy_cls
-class BufferedRWPairAsyncIoProxy(BufferedIOBaseAsyncIoProxy, proxied_cls=io.BufferedRWPair):
+class BufferedRWPair_AsyncIoProxy(BufferedIOBase_AsyncIoProxy, proxied_cls=io.BufferedRWPair):  # noqa
     async def peek(self, size=0):
         raise TypeError
 
 
 @_register_async_io_proxy_cls
-class BufferedRandomAsyncIoProxy(BufferedWriterAsyncIoProxy, BufferedReaderAsyncIoProxy, proxied_cls=io.BufferedRandom):
+class BufferedRandom_AsyncIoProxy(BufferedWriter_AsyncIoProxy, BufferedReader_AsyncIoProxy, proxied_cls=io.BufferedRandom):  # noqa
     pass
 
 
 @_register_async_io_proxy_cls
-class FileIOAsyncIoProxy(RawIOBaseAsyncIoProxy, proxied_cls=io.FileIO):
+class FileIO_AsyncIoProxy(RawIOBase_AsyncIoProxy, proxied_cls=io.FileIO):  # noqa
     @property
     def closefd(self):
         raise TypeError
@@ -183,7 +183,7 @@ class FileIOAsyncIoProxy(RawIOBaseAsyncIoProxy, proxied_cls=io.FileIO):
 
 
 @_register_async_io_proxy_cls
-class TextIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.TextIOBase):
+class TextIOBase_AsyncIoProxy(IOBase_AsyncIoProxy, proxied_cls=io.TextIOBase):  # noqa
     async def read(self, size=-1):
         raise TypeError
 
@@ -207,7 +207,7 @@ class TextIOBaseAsyncIoProxy(IOBaseAsyncIoProxy, proxied_cls=io.TextIOBase):
 
 
 @_register_async_io_proxy_cls
-class TextIOWrapperAsyncIoProxy(TextIOBaseAsyncIoProxy, proxied_cls=io.TextIOWrapper):
+class TextIOWrapper_AsyncIoProxy(TextIOBase_AsyncIoProxy, proxied_cls=io.TextIOWrapper):  # noqa
     @property
     def line_buffering(self):
         raise TypeError
@@ -237,6 +237,6 @@ class TextIOWrapperAsyncIoProxy(TextIOBaseAsyncIoProxy, proxied_cls=io.TextIOWra
 
 
 @_register_async_io_proxy_cls
-class StringIOAsyncIoProxy(TextIOWrapperAsyncIoProxy, proxied_cls=io.StringIO):
+class StringIO_AsyncIoProxy(TextIOWrapper_AsyncIoProxy, proxied_cls=io.StringIO):  # noqa
     async def getvalue(self):
         raise TypeError

@@ -14,7 +14,7 @@ AnyStrT = ta.TypeVar('AnyStrT', bytes, str)
 
 
 @_register_async_io_proxy_cls
-class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO):
+class TypingIO_AsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO):  # noqa
     @property
     def mode(self) -> str:
         raise TypeError
@@ -80,13 +80,13 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
 
 
 @_register_async_io_proxy_cls
-class TypingBinaryIOAsyncIoProxy(TypingIOAsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):
+class TypingBinaryIO_AsyncIoProxy(TypingIO_AsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):  # noqa
     def write(self, s: ta.Union[bytes, bytearray]) -> int:  # type: ignore[override]
         raise TypeError
 
 
 @_register_async_io_proxy_cls
-class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO):
+class TypingTextIO_AsyncIoProxy(TypingIO_AsyncIoProxy[str], proxied_cls=ta.TextIO):  # noqa
     # @property
     # def buffer(self) -> BinaryIO:
     #     pass
