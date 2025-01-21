@@ -3759,6 +3759,8 @@ class CiCli(ArgparseCli):
         argparse_arg('--always-build', action='store_true'),
 
         argparse_arg('--no-dependencies', action='store_true'),
+
+        argparse_arg('cmd', nargs=argparse.REMAINDER),
     )
     async def run(self) -> None:
         project_dir = self.args.project_dir
@@ -3766,6 +3768,11 @@ class CiCli(ArgparseCli):
         compose_file = self.args.compose_file
         requirements_txts = self.args.requirements_txt
         cache_dir = self.args.cache_dir
+
+        #
+
+        cmd = ' '.join(self.args.cmd)
+        check.non_empty_str(cmd)
 
         #
 
@@ -3841,9 +3848,7 @@ class CiCli(ArgparseCli):
 
                     requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd(' && '.join([
-                        'python3 -m pytest -svv tests',
-                    ])),
+                    cmd=ShellCmd(cmd),
 
                     always_pull=self.args.always_pull,
                     always_build=self.args.always_build,
