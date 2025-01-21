@@ -4,11 +4,11 @@ RUN ( \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
 \
     export DEBIAN_FRONTEND=noninteractive && \
-    apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y apt-utils && \
+    apt update && \
+    apt upgrade -y && \
+    apt install -y apt-utils && \
 \
-    apt-get install -y \
+    apt install -o Acquire::http::No-Cache=true -y \
 \
         build-essential \
         clang \
@@ -20,7 +20,7 @@ RUN ( \
 \
     && \
 \
-    apt-get clean autoclean && \
-    apt-get autoremove --yes && \
+    apt clean autoclean && \
+    apt autoremove --yes && \
     rm -rf /var/lib/{apt,cache,dpkg,log} \
 )

@@ -12,7 +12,7 @@ Inputs:
 
 ==
 
-./python -m ci run --cache-dir ci/cache ci/project omlish-ci
+./python -m omdev.ci run --cache-dir omdev/ci/tests/cache omdev/ci/tests/project omlish-ci
 """
 import abc
 import argparse
@@ -996,6 +996,62 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../../omlish/os/files.py
+
+
+@contextlib.contextmanager
+def tmp_dir(
+        root_dir: ta.Optional[str] = None,
+        cleanup: bool = True,
+        **kwargs: ta.Any,
+) -> ta.Iterator[str]:
+    path = tempfile.mkdtemp(dir=root_dir, **kwargs)
+    try:
+        yield path
+    finally:
+        if cleanup:
+            shutil.rmtree(path, ignore_errors=True)
+
+
+@contextlib.contextmanager
+def tmp_file(
+        root_dir: ta.Optional[str] = None,
+        cleanup: bool = True,
+        **kwargs: ta.Any,
+) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
+    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
+        try:
+            yield f
+        finally:
+            if cleanup:
+                shutil.rmtree(f.name, ignore_errors=True)
+
+
+def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
+    if exist_ok:
+        # First try to bump modification time
+        # Implementation note: GNU touch uses the UTIME_NOW option of the utimensat() / futimens() functions.
+        try:
+            os.utime(self, None)
+        except OSError:
+            pass
+        else:
+            return
+    flags = os.O_CREAT | os.O_WRONLY
+    if not exist_ok:
+        flags |= os.O_EXCL
+    fd = os.open(self, flags, mode)
+    os.close(fd)
+
+
+def unlink_if_exists(path: str) -> None:
+    try:
+        os.unlink(path)
+    except FileNotFoundError:
+        pass
 
 
 ########################################
@@ -3100,9 +3156,10 @@ async def build_docker_image(
         *,
         tag: ta.Optional[str] = None,
         cwd: ta.Optional[str] = None,
+        run_options: ta.Optional[ta.Sequence[str]] = None,
 ) -> str:
     id_file = make_temp_file()
-    with defer(lambda: os.unlink(id_file)):
+    with defer(lambda: unlink_if_exists(id_file)):
         await asyncio_subprocesses.check_call(
             'docker',
             'build',
@@ -3110,6 +3167,7 @@ async def build_docker_image(
             '--iidfile', id_file,
             '--squash',
             *(['--tag', tag] if tag is not None else []),
+            *(run_options or []),
             '.',
             **(dict(cwd=cwd) if cwd is not None else {}),
         )
@@ -3589,12 +3647,11 @@ class Ci(AsyncExitStacked):
 
     #
 
-    @cached_nullary
-    def docker_file_hash(self) -> str:
-        return build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
-
-    async def _resolve_ci_image(self) -> str:
-        cache_key = f'ci-{self.docker_file_hash()}'
+    async def _resolve_docker_image(
+            self,
+            cache_key: str,
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+    ) -> str:
         image_tag = f'{self._cfg.service}:{cache_key}'
 
         if not self._cfg.always_build and (await is_docker_image_present(image_tag)):
@@ -3607,21 +3664,35 @@ class Ci(AsyncExitStacked):
             )
             return image_tag
 
-        image_id = await build_docker_image(
-            self._cfg.docker_file,
-            tag=image_tag,
-            cwd=self._cfg.project_dir,
-        )
+        image_id = await build_and_tag(image_tag)
 
         await self._save_cache_docker_image(cache_key, image_id)
 
         return image_tag
 
+    #
+
+    @cached_nullary
+    def docker_file_hash(self) -> str:
+        return build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
+
+    async def _resolve_ci_base_image(self) -> str:
+        async def build_and_tag(image_tag: str) -> str:
+            return await build_docker_image(
+                self._cfg.docker_file,
+                tag=image_tag,
+                cwd=self._cfg.project_dir,
+            )
+
+        cache_key = f'ci-base-{self.docker_file_hash()}'
+
+        return await self._resolve_docker_image(cache_key, build_and_tag)
+
     @async_cached_nullary
-    async def resolve_ci_image(self) -> str:
-        with log_timing_context('Resolve ci image') as ltc:
-            image_id = await self._resolve_ci_image()
-            ltc.set_description(f'Resolve ci image: {image_id}')
+    async def resolve_ci_base_image(self) -> str:
+        with log_timing_context('Resolve ci base image') as ltc:
+            image_id = await self._resolve_ci_base_image()
+            ltc.set_description(f'Resolve ci base image: {image_id}')
             return image_id
 
     #
@@ -3637,80 +3708,62 @@ class Ci(AsyncExitStacked):
     def requirements_hash(self) -> str:
         return build_requirements_hash(self.requirements_txts())[:self.FILE_NAME_HASH_LEN]
 
-    async def _resolve_requirements_dir(self) -> str:
-        tar_file_key = f'requirements-{self.docker_file_hash()}-{self.requirements_hash()}'
-        tar_file_name = f'{tar_file_key}.tar'
+    async def _resolve_ci_image(self) -> str:
+        async def build_and_tag(image_tag: str) -> str:
+            base_image = await self.resolve_ci_base_image()
 
-        temp_dir = tempfile.mkdtemp()
-        self._enter_context(defer(lambda: shutil.rmtree(temp_dir)))  # noqa
+            setup_cmds = [
+                'pip install --no-cache-dir --root-user-action ignore uv',
+                (
+                    'uv pip install --no-cache --system ' +
+                    ' '.join(f'-r /project/{rf}' for rf in self._cfg.requirements_txts or [])
+                ),
+            ]
+            setup_cmd = ' && '.join(setup_cmds)
 
-        if self._file_cache is not None and (cache_tar_file := self._file_cache.get_file(tar_file_key)):
-            with tarfile.open(cache_tar_file) as tar:
-                tar.extractall(path=temp_dir)  # noqa
+            docker_file_lines = [
+                f'FROM {base_image}',
+                'RUN mkdir /project',
+                *[f'COPY {rf} /project/{rf}' for rf in self._cfg.requirements_txts or []],
+                f'RUN {setup_cmd}',
+                'RUN rm -rf /project',
+            ]
 
-            return temp_dir
+            docker_file = make_temp_file()
+            with defer(lambda: os.unlink(docker_file)):
+                with open(docker_file, 'w') as f:  # noqa
+                    f.write('\n'.join(docker_file_lines))
 
-        temp_requirements_dir = os.path.join(temp_dir, 'requirements')
-        os.makedirs(temp_requirements_dir)
+                return await build_docker_image(
+                    docker_file,
+                    tag=image_tag,
+                    cwd=self._cfg.project_dir,
+                )
 
-        download_requirements(
-            await self.resolve_ci_image(),
-            temp_requirements_dir,
-            self.requirements_txts(),
-        )
+        cache_key = f'ci-{self.docker_file_hash()}-{self.requirements_hash()}'
 
-        if self._file_cache is not None:
-            temp_tar_file = os.path.join(temp_dir, tar_file_name)
-
-            with tarfile.open(temp_tar_file, 'w') as tar:
-                for requirement_file in os.listdir(temp_requirements_dir):
-                    tar.add(
-                        os.path.join(temp_requirements_dir, requirement_file),
-                        arcname=requirement_file,
-                    )
-
-            self._file_cache.put_file(os.path.basename(tar_file_key), temp_tar_file)
-
-        return temp_requirements_dir
+        return await self._resolve_docker_image(cache_key, build_and_tag)
 
     @async_cached_nullary
-    async def resolve_requirements_dir(self) -> str:
-        with log_timing_context('Resolve requirements dir') as ltc:
-            requirements_dir = await self._resolve_requirements_dir()
-            ltc.set_description(f'Resolve requirements dir: {requirements_dir}')
-            return requirements_dir
+    async def resolve_ci_image(self) -> str:
+        with log_timing_context('Resolve ci image') as ltc:
+            image_id = await self._resolve_ci_image()
+            ltc.set_description(f'Resolve ci image: {image_id}')
+            return image_id
 
     #
 
     async def _run_compose_(self) -> None:
-        setup_cmds = [
-            'pip install --root-user-action ignore --find-links /requirements --no-index uv',
-            (
-                'uv pip install --system --find-links /requirements ' +
-                ' '.join(f'-r /project/{rf}' for rf in self._cfg.requirements_txts or [])
-            ),
-        ]
-
-        #
-
-        ci_cmd = dc.replace(self._cfg.cmd, s=' && '.join([
-            *setup_cmds,
-            f'({self._cfg.cmd.s})',
-        ]))
-
-        #
-
         async with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
             service=self._cfg.service,
 
             image=await self.resolve_ci_image(),
 
-            cmd=ci_cmd,
+            cmd=self._cfg.cmd,
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
-                '-v', f'{os.path.abspath(await self.resolve_requirements_dir())}:/requirements',
             ],
 
             cwd=self._cfg.project_dir,
@@ -3729,8 +3782,6 @@ class Ci(AsyncExitStacked):
         await self.load_compose_service_dependencies()
 
         await self.resolve_ci_image()
-
-        await self.resolve_requirements_dir()
 
         await self._run_compose()
 

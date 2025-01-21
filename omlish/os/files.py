@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import contextlib
 import os
 import shutil
@@ -7,7 +9,7 @@ import typing as ta
 
 @contextlib.contextmanager
 def tmp_dir(
-        root_dir: str | None = None,
+        root_dir: ta.Optional[str] = None,
         cleanup: bool = True,
         **kwargs: ta.Any,
 ) -> ta.Iterator[str]:
@@ -21,7 +23,7 @@ def tmp_dir(
 
 @contextlib.contextmanager
 def tmp_file(
-        root_dir: str | None = None,
+        root_dir: ta.Optional[str] = None,
         cleanup: bool = True,
         **kwargs: ta.Any,
 ) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
@@ -48,3 +50,10 @@ def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
         flags |= os.O_EXCL
     fd = os.open(self, flags, mode)
     os.close(fd)
+
+
+def unlink_if_exists(path: str) -> None:
+    try:
+        os.unlink(path)
+    except FileNotFoundError:
+        pass
