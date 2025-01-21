@@ -9,7 +9,7 @@ Inputs:
 
 ==
 
-./python -m ci run --cache-dir ci/cache ci/project omlish-ci
+./python -m omdev.ci run --cache-dir omdev/ci/tests/cache omdev/ci/tests/project omlish-ci
 """
 import asyncio
 import os.path
