@@ -19,7 +19,13 @@ class FileCache(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> ta.Optional[str]:
         raise NotImplementedError
 
 
@@ -55,9 +61,18 @@ class DirectoryFileCache(FileCache):
             return None
         return cache_file_path
 
-    def put_file(self, key: str, file_path: str) -> None:
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> None:
         cache_file_path = self.get_cache_file_path(key, make_dirs=True)
-        shutil.copyfile(file_path, cache_file_path)
+        if steal:
+            shutil.move(file_path, cache_file_path)
+        else:
+            shutil.copyfile(file_path, cache_file_path)
 
 
 ##

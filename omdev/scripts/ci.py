@@ -1068,7 +1068,13 @@ class FileCache(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put_file(self, key: str, file_path: str) -> ta.Optional[str]:
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> ta.Optional[str]:
         raise NotImplementedError
 
 
@@ -1104,9 +1110,18 @@ class DirectoryFileCache(FileCache):
             return None
         return cache_file_path
 
-    def put_file(self, key: str, file_path: str) -> None:
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> None:
         cache_file_path = self.get_cache_file_path(key, make_dirs=True)
-        shutil.copyfile(file_path, cache_file_path)
+        if steal:
+            shutil.move(file_path, cache_file_path)
+        else:
+            shutil.copyfile(file_path, cache_file_path)
 
 
 ##
@@ -3579,39 +3594,12 @@ class Ci(AsyncExitStacked):
             self,
             cfg: Config,
             *,
-            shell_cache: ta.Optional[ShellCache] = None,
             file_cache: ta.Optional[FileCache] = None,
     ) -> None:
         super().__init__()
 
         self._cfg = cfg
-        self._shell_cache = shell_cache
         self._file_cache = file_cache
-
-    #
-
-    async def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
-        if self._shell_cache is None:
-            return None
-
-        get_cache_cmd = self._shell_cache.get_file_cmd(key)
-        if get_cache_cmd is None:
-            return None
-
-        get_cache_cmd = dc.replace(get_cache_cmd, s=f'{get_cache_cmd.s} | zstd -cd --long')  # noqa
-
-        return await load_docker_tar_cmd(get_cache_cmd)
-
-    async def _save_cache_docker_image(self, key: str, image: str) -> None:
-        if self._shell_cache is None:
-            return
-
-        with self._shell_cache.put_file_cmd(key) as put_cache:
-            put_cache_cmd = put_cache.cmd
-
-            put_cache_cmd = dc.replace(put_cache_cmd, s=f'zstd | {put_cache_cmd.s}')
-
-            await save_docker_tar_cmd(image, put_cache_cmd)
 
     #
 
@@ -3635,15 +3623,31 @@ class Ci(AsyncExitStacked):
         with log_timing_context(f'Load docker image: {image}'):
             await self._load_docker_image(image)
 
-    @async_cached_nullary
-    async def load_compose_service_dependencies(self) -> None:
-        deps = get_compose_service_dependencies(
-            self._cfg.compose_file,
-            self._cfg.service,
-        )
+    #
 
-        for dep_image in deps.values():
-            await self.load_docker_image(dep_image)
+    async def _load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        if self._file_cache is None:
+            return None
+
+        cache_file = self._file_cache.get_file(key)
+        if cache_file is None:
+            return None
+
+        get_cache_cmd = ShellCmd(f'cat {cache_file} | zstd -cd --long')
+
+        return await load_docker_tar_cmd(get_cache_cmd)
+
+    async def _save_cache_docker_image(self, key: str, image: str) -> None:
+        if self._file_cache is None:
+            return
+
+        tmp_file = make_temp_file()
+        with defer(lambda: unlink_if_exists(tmp_file)):
+            write_tmp_cmd = ShellCmd(f'zstd > {tmp_file}')
+
+            await save_docker_tar_cmd(image, write_tmp_cmd)
+
+            self._file_cache.put_file(key, tmp_file, steal=True)
 
     #
 
@@ -3753,6 +3757,18 @@ class Ci(AsyncExitStacked):
 
     #
 
+    @async_cached_nullary
+    async def load_dependencies(self) -> None:
+        deps = get_compose_service_dependencies(
+            self._cfg.compose_file,
+            self._cfg.service,
+        )
+
+        for dep_image in deps.values():
+            await self.load_docker_image(dep_image)
+
+    #
+
     async def _run_compose_(self) -> None:
         async with DockerComposeRun(DockerComposeRun.Config(
             compose_file=self._cfg.compose_file,
@@ -3779,9 +3795,9 @@ class Ci(AsyncExitStacked):
     #
 
     async def run(self) -> None:
-        await self.load_compose_service_dependencies()
-
         await self.resolve_ci_image()
+
+        await self.load_dependencies()
 
         await self._run_compose()
 
@@ -3924,7 +3940,6 @@ class CiCli(ArgparseCli):
 
         #
 
-        shell_cache: ta.Optional[ShellCache] = None
         file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
             if not os.path.exists(cache_dir):
@@ -3934,11 +3949,6 @@ class CiCli(ArgparseCli):
             directory_file_cache = DirectoryFileCache(cache_dir)
 
             file_cache = directory_file_cache
-
-            if self.args.github_cache:
-                shell_cache = GithubShellCache(cache_dir)
-            else:
-                shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 
@@ -3964,7 +3974,6 @@ class CiCli(ArgparseCli):
                     no_dependencies=self.args.no_dependencies,
                 ),
                 file_cache=file_cache,
-                shell_cache=shell_cache,
         ) as ci:
             await ci.run()
 

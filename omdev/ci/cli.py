@@ -23,12 +23,9 @@ from omlish.lite.check import check
 from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
-from .cache import DirectoryShellCache
 from .cache import FileCache
-from .cache import ShellCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
-from .github.cache import GithubShellCache
 from .github.cli import GithubCli
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
@@ -142,7 +139,6 @@ class CiCli(ArgparseCli):
 
         #
 
-        shell_cache: ta.Optional[ShellCache] = None
         file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
             if not os.path.exists(cache_dir):
@@ -152,11 +148,6 @@ class CiCli(ArgparseCli):
             directory_file_cache = DirectoryFileCache(cache_dir)
 
             file_cache = directory_file_cache
-
-            if self.args.github_cache:
-                shell_cache = GithubShellCache(cache_dir)
-            else:
-                shell_cache = DirectoryShellCache(directory_file_cache)
 
         #
 
@@ -182,7 +173,6 @@ class CiCli(ArgparseCli):
                     no_dependencies=self.args.no_dependencies,
                 ),
                 file_cache=file_cache,
-                shell_cache=shell_cache,
         ) as ci:
             await ci.run()
 
