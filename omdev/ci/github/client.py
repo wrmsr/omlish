@@ -122,11 +122,11 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     KEY_PART_SEPARATOR = '--'
 
-    def fix_key(self, s: str) -> str:
+    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
         return self.KEY_PART_SEPARATOR.join([
             *([self._key_prefix] if self._key_prefix else []),
             s,
-            self._key_suffix,
+            ('' if partial_suffix else self._key_suffix),
         ])
 
     #
@@ -137,18 +137,16 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
-    def build_get_entry_url_path(self, key: str) -> str:
-        fixed_key = self.fix_key(key)
-
+    def build_get_entry_url_path(self, *keys: str) -> str:
         qp = dict(
-            keys=fixed_key,
+            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
             version=str(self.CACHE_VERSION),
         )
 
         return '?'.join([
             'cache',
             '&'.join([
-                f'{k}={urllib.parse.quote_plus(v)}'
+                f'{k}={v}'
                 for k, v in qp.items()
             ]),
         ])
@@ -161,7 +159,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
 class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        url = f'{self._service_url}/{self.build_get_entry_url_path(key)}'
+        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key))}'
 
         resp: http.client.HTTPResponse
         with urllib.request.urlopen(urllib.request.Request(  # noqa
@@ -205,7 +203,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
     def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
         return self._curl().build_cmd(
             'GET',
-            shlex.quote(self.build_get_entry_url_path(key)),
+            shlex.quote(self.build_get_entry_url_path(self.fix_key(key))),
         )
 
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:

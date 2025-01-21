@@ -63,8 +63,8 @@ class CiCli(ArgparseCli):
     @argparse_cmd(
         accepts_unknown=True,
     )
-    def github(self) -> ta.Optional[int]:
-        return GithubCli(self.unknown_args).cli_run()
+    async def github(self) -> ta.Optional[int]:
+        return await GithubCli(self.unknown_args).async_cli_run()
 
     #
 
