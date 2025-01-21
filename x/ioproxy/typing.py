@@ -1,7 +1,7 @@
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 from .proxy import AsyncIoProxy
-from .proxy import _register_async_io_proxy_cls
 
 
 AnyStrT = ta.TypeVar('AnyStrT', bytes, str)
@@ -44,7 +44,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
     async def readline(self, limit: int = -1) -> AnyStrT:
         raise TypeError
 
-    async def readlines(self, hint: int = -1) -> list[AnyStrT]:
+    async def readlines(self, hint: int = -1) -> ta.List[AnyStrT]:
         raise TypeError
 
     async def seek(self, offset: int, whence: int = 0) -> int:
@@ -65,7 +65,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
     async def write(self, s: AnyStrT) -> int:
         raise TypeError
 
-    async def writelines(self, lines: list[AnyStrT]) -> None:
+    async def writelines(self, lines: ta.List[AnyStrT]) -> None:
         raise TypeError
 
     # def __enter__(self) -> 'IO[AnyStrT]':
@@ -76,7 +76,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
 
 
 class TypingBinaryIOAsyncIoProxy(TypingIOAsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):
-    def write(self, s: bytes | bytearray) -> int:
+    def write(self, s: ta.Union[bytes, bytearray]) -> int:
         raise TypeError
 
     # def __enter__(self) -> 'BinaryIO':
@@ -93,7 +93,7 @@ class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO)
         raise TypeError
 
     @property
-    def errors(self) -> str | str:
+    def errors(self) -> ta.Optional[str]:
         raise TypeError
 
     @property

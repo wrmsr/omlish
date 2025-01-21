@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import io
 
 from .proxy import AsyncIoProxy

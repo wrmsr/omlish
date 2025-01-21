@@ -1,11 +1,10 @@
-import asyncio
-import contextlib
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import functools
 import inspect
 import typing as ta
 
-from omlish import check
+from omlish.lite.check import check
 
 
 AsyncIoProxyRunner: ta.TypeAlias = ta.Callable[[ta.Callable], ta.Any]
@@ -103,7 +102,7 @@ class AsyncIoProxy:
 
 
 @functools.singledispatch
-def async_io_proxy_cls_for(obj: ta.Any) -> type[AsyncIoProxy]:
+def async_io_proxy_cls_for(obj: ta.Any) -> ta.Type[AsyncIoProxy]:
     raise TypeError(obj)
 
 

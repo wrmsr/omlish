@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import abc
 import io
 import typing as ta
