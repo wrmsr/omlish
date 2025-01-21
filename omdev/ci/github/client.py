@@ -217,10 +217,8 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
     #
 
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))}'
-
         obj = self.send_request(
-            url,
+            self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
         )
         if obj is None:
             return None
