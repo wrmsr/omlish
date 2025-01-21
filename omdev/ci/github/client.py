@@ -10,9 +10,9 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
-from omlish.subprocesses import subprocesses
 
 from ..shell import ShellCmd
 from .api import GithubCacheServiceV1
@@ -26,15 +26,15 @@ class GithubCacheClient(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Optional[Entry]:
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def download_file(self, entry: Entry, out_file: str) -> None:
+    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_file(self, key: str, in_file: str) -> None:
+    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
@@ -164,7 +164,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
         def __str__(self) -> str:
             return repr(self)
 
-    def send_request(
+    async def send_request(
             self,
             path: str,
             *,
@@ -212,8 +212,8 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
 
     #
 
-    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        obj = self.send_request(
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
+        obj = await self.send_request(
             self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
         )
         if obj is None:
@@ -224,7 +224,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             obj,
         ))
 
-    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         dl_url = check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)
 
         dl_cmd = ShellCmd(' '.join([
@@ -234,9 +234,9 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             shlex.quote(dl_url),
         ]))
 
-        dl_cmd.run(subprocesses.check_call)
+        await dl_cmd.run(asyncio_subprocesses.check_call)
 
-    def upload_file(self, key: str, in_file: str) -> None:
+    async def upload_file(self, key: str, in_file: str) -> None:
         fixed_key = self.fix_key(key)
 
         check.state(os.path.isfile(in_file))
@@ -250,7 +250,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             cache_size=file_size,
             version=str(self.CACHE_VERSION),
         )
-        reserve_resp_obj = self.send_request(
+        reserve_resp_obj = await self.send_request(
             'caches',
             json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
             success_status_codes=[201],
@@ -270,11 +270,11 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             ofs = i * chunk_size
             sz = min(chunk_size, file_size - ofs)
 
-            with open(in_file, 'rb') as f:
+            with open(in_file, 'rb') as f:  # noqa
                 f.seek(ofs)
                 buf = f.read(sz)
 
-            self.send_request(
+            await self.send_request(
                 f'caches/{cache_id}',
                 method='PATCH',
                 content_type='application/octet-stream',
@@ -295,7 +295,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
         commit_req = GithubCacheServiceV1.CommitCacheRequest(
             size=file_size,
         )
-        self.send_request(
+        await self.send_request(
             f'caches/{cache_id}',
             json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
             success_status_codes=[204],

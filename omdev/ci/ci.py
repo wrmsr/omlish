@@ -90,7 +90,7 @@ class Ci(AsyncExitStacked):
         if self._file_cache is None:
             return None
 
-        cache_file = self._file_cache.get_file(key)
+        cache_file = await self._file_cache.get_file(key)
         if cache_file is None:
             return None
 
@@ -108,7 +108,7 @@ class Ci(AsyncExitStacked):
 
             await save_docker_tar_cmd(image, write_tmp_cmd)
 
-            self._file_cache.put_file(key, tmp_file, steal=True)
+            await self._file_cache.put_file(key, tmp_file, steal=True)
 
     #
 

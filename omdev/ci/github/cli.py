@@ -18,9 +18,9 @@ class GithubCli(ArgparseCli):
     @argparse_cmd(
         argparse_arg('key'),
     )
-    def get_cache_entry(self) -> None:
+    async def get_cache_entry(self) -> None:
         client = GithubCacheServiceV1UrllibClient()
-        entry = client.get_entry(self.args.key)
+        entry = await client.get_entry(self.args.key)
         if entry is None:
             return
         print(json_dumps_pretty(dc.asdict(entry)))  # noqa

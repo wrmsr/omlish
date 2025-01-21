@@ -12,7 +12,7 @@ import typing as ta
 @abc.abstractmethod
 class FileCache(abc.ABC):
     @abc.abstractmethod
-    def get_file(self, key: str) -> ta.Optional[str]:
+    def get_file(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -22,7 +22,7 @@ class FileCache(abc.ABC):
             file_path: str,
             *,
             steal: bool = False,
-    ) -> str:
+    ) -> ta.Awaitable[str]:
         raise NotImplementedError
 
 
@@ -52,13 +52,13 @@ class DirectoryFileCache(FileCache):
 
     #
 
-    def get_file(self, key: str) -> ta.Optional[str]:
+    async def get_file(self, key: str) -> ta.Optional[str]:
         cache_file_path = self.get_cache_file_path(key)
         if not os.path.exists(cache_file_path):
             return None
         return cache_file_path
 
-    def put_file(
+    async def put_file(
             self,
             key: str,
             file_path: str,
