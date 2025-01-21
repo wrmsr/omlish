@@ -221,7 +221,7 @@ async def asyncio_run_with_limited_concurrency(tasks, max_concurrent):
         async with semaphore:
             return await task
 
-    tasks = [limited_task(task) for task in tasks]
+    tasks = [asyncio.create_task(limited_task(task)) for task in tasks]
     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
 
     for task in pending:
@@ -327,12 +327,12 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
-            upload_tasks.append(asyncio.create_task(self._upload_file_chunk(
+            upload_tasks.append(self._upload_file_chunk(
                 cache_id,
                 in_file,
                 offset,
                 size,
-            )))
+            ))
 
         # for upload_task in upload_tasks:
         #     await upload_task
