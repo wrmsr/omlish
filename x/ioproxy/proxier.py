@@ -140,6 +140,8 @@ class AsyncIoProxier(abc.ABC):
     ##
 
     FN_TYPES: ta.Tuple[type, ...] = (
+        types.BuiltinFunctionType,
+        types.BuiltinMethodType,
         types.FunctionType,
         types.MethodType,
     )

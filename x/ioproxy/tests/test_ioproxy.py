@@ -46,6 +46,10 @@ async def test_io_proxy():
         print(p.fileno())
         print(await p.read())
 
+    async with await asyncio_io_proxy(open)('pyproject.toml') as af:  # noqa
+        print(af.fileno())
+        print(await af.read())
+
     async with await asyncio_open('pyproject.toml') as af:
         print(af.fileno())
         print(await af.read())
