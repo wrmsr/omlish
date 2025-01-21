@@ -3299,18 +3299,27 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
 
     def send_request(
             self,
-            method: str,
             path: str,
             *,
+            method: ta.Optional[str] = None,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             content_type: ta.Optional[str] = None,
-            json_content: bool = False,
-
             content: ta.Optional[bytes] = None,
-
+            json_content: ta.Optional[ta.Any] = None,
             success_status_codes: ta.Optional[ta.Container[int]] = (200,),
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
+
+        if content is not None and json_content is not None:
+            raise RuntimeError('Must not pass both content and json_content')
+        elif json_content is not None:
+            content = json_dumps_compact(json_content).encode('utf-8')
+            header_json_content = True
+        else:
+            header_json_content = False
+
+        if method is None:
+            method = 'POST' if content is not None else 'GET'
 
         resp: http.client.HTTPResponse
         with urllib.request.urlopen(urllib.request.Request(  # noqa
@@ -3319,14 +3328,18 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
                 headers=self.build_request_headers(
                     headers,
                     content_type=content_type,
-                    json_content=json_content,
+                    json_content=header_json_content,
                 ),
                 data=content,
         )) as resp:
             check.in_(resp.status, self.GET_ENTRY_SUCCESS_STATUS_CODES)
             body = resp.read()
 
-        if success_status_codes is not None and resp.status not in success_status_codes:
+        if success_status_codes is not None:
+            is_success = resp.status not in success_status_codes
+        else:
+            is_success = (200 <= resp.status <= 300)
+        if not is_success:
             raise self.RequestError(resp.status, body)
 
         return self.load_json_bytes(body)
@@ -3336,7 +3349,9 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
         url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))}'
 
-        obj = self.send_request('GET', url)
+        obj = self.send_request(
+            url,
+        )
         if obj is None:
             return None
 
@@ -3358,7 +3373,69 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
         dl_cmd.run(subprocesses.check_call)
 
     def upload_file(self, key: str, in_file: str) -> None:
-        raise NotImplementedError
+        fixed_key = self.fix_key(key)
+
+        check.state(os.path.isfile(in_file))
+
+        file_size = os.stat(in_file).st_size
+
+        #
+
+        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
+            key=fixed_key,
+            cache_size=file_size,
+            version=str(self.CACHE_VERSION),
+        )
+        reserve_resp_obj = self.send_request(
+            'caches',
+            json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
+            success_status_codes=[201],
+        )
+        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
+            GithubCacheServiceV1.ReserveCacheResponse,
+            reserve_resp_obj,
+        )
+        cache_id = check.isinstance(reserve_resp.cache_id, int)
+
+        #
+
+        print(f'{file_size=}')
+        num_written = 0
+        chunk_size = 32 * 1024 * 1024
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            ofs = i * chunk_size
+            sz = min(chunk_size, file_size - ofs)
+
+            with open(in_file, 'rb') as f:
+                f.seek(ofs)
+                buf = f.read(sz)
+
+            self.send_request(
+                f'caches/{cache_id}',
+                method='PATCH',
+                content_type='application/octet-stream',
+                headers={
+                    'Content-Range': f'bytes {ofs}-{ofs + sz - 1}/*',
+                },
+                content=buf,
+                success_status_codes=[204],
+            )
+
+            num_written += len(buf)
+            print(f'{num_written=}')
+
+            ofs += sz
+
+        #
+
+        commit_req = GithubCacheServiceV1.CommitCacheRequest(
+            size=file_size,
+        )
+        self.send_request(
+            f'caches/{cache_id}',
+            json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
+            success_status_codes=[204],
+        )
 
 
 ##
@@ -3762,7 +3839,7 @@ class GithubFileCache(FileCache):
         self._dir = check.not_none(dir)
 
         if client is None:
-            client = GithubCacheServiceV1CurlClient()
+            client = GithubCacheServiceV1UrllibClient()
         self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(self._dir)

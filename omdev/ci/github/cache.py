@@ -10,7 +10,7 @@ from omlish.os.files import unlink_if_exists
 from ..cache import DirectoryFileCache
 from ..cache import FileCache
 from .client import GithubCacheClient
-from .client import GithubCacheServiceV1CurlClient
+from .client import GithubCacheServiceV1UrllibClient
 
 
 ##
@@ -28,7 +28,7 @@ class GithubFileCache(FileCache):
         self._dir = check.not_none(dir)
 
         if client is None:
-            client = GithubCacheServiceV1CurlClient()
+            client = GithubCacheServiceV1UrllibClient()
         self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(self._dir)
