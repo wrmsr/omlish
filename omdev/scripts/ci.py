@@ -83,6 +83,77 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 
 
 ########################################
+# ../cache.py
+
+
+##
+
+
+@abc.abstractmethod
+class FileCache(abc.ABC):
+    @abc.abstractmethod
+    def get_file(self, key: str) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        raise NotImplementedError
+
+
+#
+
+
+class DirectoryFileCache(FileCache):
+    def __init__(self, dir: str) -> None:  # noqa
+        super().__init__()
+
+        self._dir = dir
+
+    #
+
+    def get_cache_file_path(
+            self,
+            key: str,
+            *,
+            make_dirs: bool = False,
+    ) -> str:
+        if make_dirs:
+            os.makedirs(self._dir, exist_ok=True)
+        return os.path.join(self._dir, key)
+
+    def format_incomplete_file(self, f: str) -> str:
+        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+    #
+
+    def get_file(self, key: str) -> ta.Optional[str]:
+        cache_file_path = self.get_cache_file_path(key)
+        if not os.path.exists(cache_file_path):
+            return None
+        return cache_file_path
+
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = self.get_cache_file_path(key, make_dirs=True)
+        if steal:
+            shutil.move(file_path, cache_file_path)
+        else:
+            shutil.copyfile(file_path, cache_file_path)
+        return cache_file_path
+
+
+########################################
 # ../shell.py
 
 
@@ -1052,184 +1123,6 @@ def unlink_if_exists(path: str) -> None:
         os.unlink(path)
     except FileNotFoundError:
         pass
-
-
-########################################
-# ../cache.py
-
-
-##
-
-
-@abc.abstractmethod
-class FileCache(abc.ABC):
-    @abc.abstractmethod
-    def get_file(self, key: str) -> ta.Optional[str]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> ta.Optional[str]:
-        raise NotImplementedError
-
-
-#
-
-
-class DirectoryFileCache(FileCache):
-    def __init__(self, dir: str) -> None:  # noqa
-        super().__init__()
-
-        self._dir = dir
-
-    #
-
-    def get_cache_file_path(
-            self,
-            key: str,
-            *,
-            make_dirs: bool = False,
-    ) -> str:
-        if make_dirs:
-            os.makedirs(self._dir, exist_ok=True)
-        return os.path.join(self._dir, key)
-
-    def format_incomplete_file(self, f: str) -> str:
-        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
-
-    #
-
-    def get_file(self, key: str) -> ta.Optional[str]:
-        cache_file_path = self.get_cache_file_path(key)
-        if not os.path.exists(cache_file_path):
-            return None
-        return cache_file_path
-
-    def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> None:
-        cache_file_path = self.get_cache_file_path(key, make_dirs=True)
-        if steal:
-            shutil.move(file_path, cache_file_path)
-        else:
-            shutil.copyfile(file_path, cache_file_path)
-
-
-##
-
-
-class ShellCache(abc.ABC):
-    @abc.abstractmethod
-    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
-        raise NotImplementedError
-
-    class PutFileCmdContext(abc.ABC):
-        def __init__(self) -> None:
-            super().__init__()
-
-            self._state: ta.Literal['open', 'committed', 'aborted'] = 'open'
-
-        @property
-        def state(self) -> ta.Literal['open', 'committed', 'aborted']:
-            return self._state
-
-        #
-
-        @property
-        @abc.abstractmethod
-        def cmd(self) -> ShellCmd:
-            raise NotImplementedError
-
-        #
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            if exc_val is None:
-                self.commit()
-            else:
-                self.abort()
-
-        #
-
-        @abc.abstractmethod
-        def _commit(self) -> None:
-            raise NotImplementedError
-
-        def commit(self) -> None:
-            if self._state == 'committed':
-                return
-            elif self._state == 'open':
-                self._commit()
-                self._state = 'committed'
-            else:
-                raise RuntimeError(self._state)
-
-        #
-
-        @abc.abstractmethod
-        def _abort(self) -> None:
-            raise NotImplementedError
-
-        def abort(self) -> None:
-            if self._state == 'aborted':
-                return
-            elif self._state == 'open':
-                self._abort()
-                self._state = 'committed'
-            else:
-                raise RuntimeError(self._state)
-
-    @abc.abstractmethod
-    def put_file_cmd(self, key: str) -> PutFileCmdContext:
-        raise NotImplementedError
-
-
-#
-
-
-class DirectoryShellCache(ShellCache):
-    def __init__(self, dfc: DirectoryFileCache) -> None:
-        super().__init__()
-
-        self._dfc = dfc
-
-    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
-        f = self._dfc.get_file(key)
-        if f is None:
-            return None
-        return ShellCmd(f'cat {shlex.quote(f)}')
-
-    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(self, tf: str, f: str) -> None:
-            super().__init__()
-
-            self._tf = tf
-            self._f = f
-
-        @property
-        def cmd(self) -> ShellCmd:
-            return ShellCmd(f'cat > {shlex.quote(self._tf)}')
-
-        def _commit(self) -> None:
-            os.replace(self._tf, self._f)
-
-        def _abort(self) -> None:
-            os.unlink(self._tf)
-
-    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
-        f = self._dfc.get_cache_file_path(key, make_dirs=True)
-        return self._PutFileCmdContext(self._dfc.format_incomplete_file(f), f)
 
 
 ########################################
@@ -3259,27 +3152,27 @@ async def load_docker_tar(
 ##
 
 
-class GithubCacheShellClient(abc.ABC):
+class GithubCacheClient(abc.ABC):
     class Entry(abc.ABC):  # noqa
         pass
 
     @abc.abstractmethod
-    def run_get_entry(self, key: str) -> ta.Optional[Entry]:
+    def get_entry(self, key: str) -> ta.Optional[Entry]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def download_get_entry(self, entry: Entry, out_file: str) -> None:
+    def download_file(self, entry: Entry, out_file: str) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_cache_entry(self, key: str, in_file: str) -> None:
+    def upload_file(self, key: str, in_file: str) -> None:
         raise NotImplementedError
 
 
 #
 
 
-class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
+class GithubCacheServiceV1Client(GithubCacheClient):
     BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
     AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
 
@@ -3337,7 +3230,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
     #
 
     @dc.dataclass(frozen=True)
-    class Entry(GithubCacheShellClient.Entry):
+    class Entry(GithubCacheClient.Entry):
         artifact: GithubCacheServiceV1.ArtifactCacheEntry
 
     #
@@ -3361,7 +3254,7 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             ])),
         )
 
-    def run_get_entry(self, key: str) -> ta.Optional[Entry]:
+    def get_entry(self, key: str) -> ta.Optional[Entry]:
         fixed_key = self.fix_key(key)
         curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
 
@@ -3387,16 +3280,16 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
             check.non_empty_str(entry.artifact.archive_location),
         ]))
 
-    def download_get_entry(self, entry: GithubCacheShellClient.Entry, out_file: str) -> None:
+    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         dl_cmd = self.build_download_get_entry_cmd(
-            check.isinstance(entry, GithubCacheServiceV1ShellClient.Entry),
+            check.isinstance(entry, GithubCacheServiceV1Client.Entry),
             out_file,
         )
         dl_cmd.run(subprocesses.check_call)
 
     #
 
-    def upload_cache_entry(self, key: str, in_file: str) -> None:
+    def upload_file(self, key: str, in_file: str) -> None:
         fixed_key = self.fix_key(key)
 
         check.state(os.path.isfile(in_file))
@@ -3487,79 +3380,55 @@ class GithubCacheServiceV1ShellClient(GithubCacheShellClient):
 ##
 
 
-class GithubShellCache(ShellCache):
+class GithubFileCache(FileCache):
     def __init__(
             self,
             dir: str,  # noqa
             *,
-            client: ta.Optional[GithubCacheShellClient] = None,
+            client: ta.Optional[GithubCacheClient] = None,
     ) -> None:
         super().__init__()
 
         self._dir = check.not_none(dir)
 
         if client is None:
-            client = GithubCacheServiceV1ShellClient()
-        self._client: GithubCacheShellClient = client
+            client = GithubCacheServiceV1Client()
+        self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(self._dir)
 
-    def get_file_cmd(self, key: str) -> ta.Optional[ShellCmd]:
+    def get_file(self, key: str) -> ta.Optional[str]:
         local_file = self._local.get_cache_file_path(key)
         if os.path.exists(local_file):
-            return ShellCmd(f'cat {shlex.quote(local_file)}')
+            return local_file
 
-        if (entry := self._client.run_get_entry(key)) is None:
+        if (entry := self._client.get_entry(key)) is None:
             return None
 
         tmp_file = self._local.format_incomplete_file(local_file)
-        try:
-            self._client.download_get_entry(entry, tmp_file)
+        with defer(lambda: unlink_if_exists(tmp_file)):
+            self._client.download_file(entry, tmp_file)
 
             os.replace(tmp_file, local_file)
 
-        except BaseException:  # noqa
-            os.unlink(tmp_file)
+        return local_file
 
-            raise
-
-        return ShellCmd(f'cat {shlex.quote(local_file)}')
-
-    class _PutFileCmdContext(ShellCache.PutFileCmdContext):  # noqa
-        def __init__(
-                self,
-                owner: 'GithubShellCache',
-                key: str,
-                tmp_file: str,
-                local_file: str,
-        ) -> None:
-            super().__init__()
-
-            self._owner = owner
-            self._key = key
-            self._tmp_file = tmp_file
-            self._local_file = local_file
-
-        @property
-        def cmd(self) -> ShellCmd:
-            return ShellCmd(f'cat > {shlex.quote(self._tmp_file)}')
-
-        def _commit(self) -> None:
-            os.replace(self._tmp_file, self._local_file)
-
-            self._owner._client.upload_cache_entry(self._key, self._local_file)  # noqa
-
-        def _abort(self) -> None:
-            os.unlink(self._tmp_file)
-
-    def put_file_cmd(self, key: str) -> ShellCache.PutFileCmdContext:
-        local_file = self._local.get_cache_file_path(key, make_dirs=True)
-        return self._PutFileCmdContext(
+    def put_file(
             self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = self._local.put_file(
             key,
-            self._local.format_incomplete_file(local_file),
-            local_file,
+            file_path,
+            steal=steal,
         )
+
+        self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
 
 
 ########################################
@@ -3815,8 +3684,8 @@ class GithubCli(ArgparseCli):
         argparse_arg('key'),
     )
     def get_cache_entry(self) -> None:
-        shell_client = GithubCacheServiceV1ShellClient()
-        entry = shell_client.run_get_entry(self.args.key)
+        client = GithubCacheServiceV1Client()
+        entry = client.get_entry(self.args.key)
         if entry is None:
             return
         print(json_dumps_pretty(dc.asdict(entry)))  # noqa
