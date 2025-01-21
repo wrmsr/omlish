@@ -127,8 +127,8 @@ class AsyncIoProxy:
 
 
 @functools.singledispatch
-def async_io_proxy_cls_for(obj: ta.Any) -> ta.Type[AsyncIoProxy]:
-    raise TypeError(obj)
+def async_io_proxy_cls_for(obj: ta.Any) -> ta.Optional[ta.Type[AsyncIoProxy]]:
+    return None
 
 
 def _register_async_io_proxy_cls(cls):

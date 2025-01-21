@@ -105,16 +105,29 @@ class AsyncIoProxier(abc.ABC):
     @ta.final
     def proxy_obj(self, obj):
         target = self.target_obj(obj)
-        proxy_cls = async_io_proxy_cls_for(obj)
+        if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
+            raise TypeError(obj)
+        proxy = proxy_cls(target)
+        return proxy
+
+    @ta.final
+    def maybe_proxy_obj(self, obj):
+        target = self.target_obj(obj)
+        if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
+            return obj
         proxy = proxy_cls(target)
         return proxy
 
     ##
 
     def proxy_fn(self, fn, *, wrap_result=False):
-        runner = self.get_runner()
-        if wrap_result:
+        if wrap_result == 'auto':
+            result_wrapper = self.maybe_proxy_obj
+        elif wrap_result is True:
             result_wrapper = self.proxy_obj
-        else:
+        elif wrap_result is False:
             result_wrapper = None
+        else:
+            raise TypeError(wrap_result)
+        runner = self.get_runner()
         return async_io_proxy_fn(fn, runner, result_wrapper=result_wrapper)

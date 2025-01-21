@@ -17,15 +17,13 @@ class AsyncioAsyncIoProxier(AsyncIoProxier):
 
         self._loop = loop
 
-    def get_loop(self) -> asyncio.AbstractEventLoop:
-        if (l := self._loop) is not None:
-            return l
-        return asyncio.get_running_loop()
-
     def get_runner(self) -> AsyncIoProxyRunner:
-        loop = self.get_loop()
-        runner = functools.partial(loop.run_in_executor, None)
-        return runner
+        if (loop := self._loop) is not None:
+            return functools.partial(loop.run_in_executor, None)
+        else:
+            def run(fn, *args, **kwargs):
+                return asyncio.get_running_loop().run_in_executor(None, fn, *args, **kwargs)
+            return run
 
 
 ASYNCIO_ASYNC_IO_PROXIER = AsyncioAsyncIoProxier()
@@ -36,11 +34,7 @@ asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj
 ##
 
 
-# asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)
-
-
-def async_open(*args, **kwargs):
-    return ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)(*args, **kwargs)
+asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)
 
 
 ##
@@ -53,6 +47,6 @@ async def test_io_proxy():
         print(p.fileno())
         print(await p.read())
 
-    async with await async_open('pyproject.toml') as af:
+    async with await asyncio_open('pyproject.toml') as af:
         print(af.fileno())
         print(await af.read())
