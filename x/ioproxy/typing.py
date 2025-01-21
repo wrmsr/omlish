@@ -56,7 +56,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
     async def tell(self) -> int:
         raise TypeError
 
-    async def truncate(self, size: int = None) -> int:
+    async def truncate(self, size: ta.Optional[int] = None) -> int:
         raise TypeError
 
     def writable(self) -> bool:
@@ -76,7 +76,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
 
 
 class TypingBinaryIOAsyncIoProxy(TypingIOAsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):
-    def write(self, s: ta.Union[bytes, bytearray]) -> int:
+    def write(self, s: ta.Union[bytes, bytearray]) -> int:  # type: ignore[override]
         raise TypeError
 
 

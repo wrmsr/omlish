@@ -101,6 +101,8 @@ class AsyncIoProxy:
 
     #
 
+    __proxied_cls__: ta.ClassVar[type]
+
     def __init_subclass__(cls, *, proxied_cls=None, **kwargs):  # noqa
         super().__init_subclass__()
 
