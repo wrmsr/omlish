@@ -21,10 +21,13 @@ _ASYNC_IO_PROXY_WRAPPER_ASSIGNMENTS = tuple(
 )
 
 
-def async_io_proxy_fn(fn, runner):
+def async_io_proxy_fn(fn, runner, *, result_wrapper=None):
     @functools.wraps(fn, assigned=_ASYNC_IO_PROXY_WRAPPER_ASSIGNMENTS)
     async def run(*args, **kwargs):
-        return await runner(functools.partial(fn, *args, **kwargs))
+        ret = await runner(functools.partial(fn, *args, **kwargs))
+        if result_wrapper is not None:
+            ret = result_wrapper(ret)
+        return ret
 
     for na in _ASYNC_IO_PROXY_WRAPPER_NAME_ATTRS:
         setattr(run, na, f'{getattr(run, na)}:{getattr(fn, na)}')
