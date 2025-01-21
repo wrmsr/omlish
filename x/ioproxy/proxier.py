@@ -34,6 +34,12 @@ class AsyncIoProxier(abc.ABC):
 
     ##
 
+    def target_obj(self, obj: ta.Any) -> AsyncIoProxyTarget:
+        runner = self.get_runner()
+        return AsyncIoProxyTarget(obj, runner)
+
+    #
+
     @ta.overload
     def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
         ...
@@ -96,12 +102,6 @@ class AsyncIoProxier(abc.ABC):
     def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
         ...
 
-    #
-
-    def target_obj(self, obj: ta.Any) -> AsyncIoProxyTarget:
-        runner = self.get_runner()
-        return AsyncIoProxyTarget(obj, runner)
-
     @ta.final
     def proxy_obj(self, obj):
         target = self.target_obj(obj)
@@ -109,6 +109,8 @@ class AsyncIoProxier(abc.ABC):
             raise TypeError(obj)
         proxy = proxy_cls(target)
         return proxy
+
+    #
 
     @ta.final
     def maybe_proxy_obj(self, obj):
