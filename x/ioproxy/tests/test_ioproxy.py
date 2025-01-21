@@ -91,14 +91,23 @@ async def test_io_proxy():
         af1 = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj(sf)
         reveal_type(af1)
         print(af1.fileno())
-        print(await af1.read())
+        print(len(await af1.read()))
 
     async with await asyncio_io_proxy(open)('pyproject.toml') as af2:  # noqa
         reveal_type(af2)
         print(af2.fileno())
-        print(await af2.read())
+        print(len(await af2.read()))
 
     async with await asyncio_open_text('pyproject.toml') as af3:
         reveal_type(af3)
         print(af3.fileno())
-        print(await af3.read())
+        print(len(await af3.read()))
+
+    af4 = await asyncio_open_text('pyproject.toml')
+    try:
+        reveal_type(af4)
+        print(af4.fileno())
+        print(len(await af4.read()))
+    finally:
+        await af4.close()
+
