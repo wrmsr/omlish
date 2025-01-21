@@ -1,4 +1,3 @@
-# ruff: noqa: I001
 from .io import (  # noqa
     BufferedIOBase_AsyncIoProxy as BufferedIOBase,
     BufferedRandom_AsyncIoProxy as BufferedRandom,
