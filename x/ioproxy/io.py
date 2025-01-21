@@ -1,8 +1,12 @@
 # ruff: noqa: UP006 UP007
 import io
+import typing as ta
 
 from .proxy import AsyncIoProxy
 from .proxy import _register_async_io_proxy_cls
+
+
+SelfT = ta.TypeVar('SelfT')
 
 
 ##
@@ -48,7 +52,7 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
 
     ### Context manager ###
 
-    async def __aenter__(self):
+    async def __aenter__(self: SelfT) -> SelfT:
         raise TypeError
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):

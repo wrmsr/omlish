@@ -5,6 +5,8 @@ from .proxy import AsyncIoProxy
 from .proxy import _register_async_io_proxy_cls
 
 
+SelfT = ta.TypeVar('SelfT')
+
 AnyStrT = ta.TypeVar('AnyStrT', bytes, str)
 
 
@@ -70,7 +72,7 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
     async def writelines(self, lines: ta.List[AnyStrT]) -> None:
         raise TypeError
 
-    async def __aenter__(self):
+    async def __aenter__(self: SelfT) -> SelfT:
         raise TypeError
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
