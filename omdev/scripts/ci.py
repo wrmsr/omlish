@@ -3172,7 +3172,7 @@ class GithubCacheClient(abc.ABC):
 ##
 
 
-class GithubCacheServiceV1CurlClient(GithubCacheClient):
+class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
     AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
 
@@ -3197,16 +3197,11 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
 
         if base_url is None:
             base_url = os.environ[self.BASE_URL_ENV_KEY]
-        service_url = GithubCacheServiceV1.get_service_url(base_url)
+        self._service_url = GithubCacheServiceV1.get_service_url(base_url)
 
         if auth_token is None:
             auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
-
-        self._curl = GithubServiceCurlClient(
-            service_url,
-            auth_token,
-            api_version=GithubCacheServiceV1.API_VERSION,
-        )
+        self._auth_token = auth_token
 
         #
 
@@ -3235,7 +3230,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
 
     #
 
-    def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
+    def build_get_entry_url(self, key: str) -> str:
         fixed_key = self.fix_key(key)
 
         qp = dict(
@@ -3243,36 +3238,56 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
             version=str(self.CACHE_VERSION),
         )
 
-        return self._curl.build_cmd(
-            'GET',
-            shlex.quote('?'.join([
-                'cache',
-                '&'.join([
-                    f'{k}={urllib.parse.quote_plus(v)}'
-                    for k, v in qp.items()
-                ]),
-            ])),
+        return '?'.join([
+            'cache',
+            '&'.join([
+                f'{k}={urllib.parse.quote_plus(v)}'
+                for k, v in qp.items()
+            ]),
+        ])
+
+    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
+
+
+##
+
+
+class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
+    @cached_nullary
+    def _curl(self) -> GithubServiceCurlClient:
+        return GithubServiceCurlClient(
+            self._service_url,
+            self._auth_token,
+            api_version=GithubCacheServiceV1.API_VERSION,
         )
 
-    def get_entry(self, key: str) -> ta.Optional[Entry]:
+    #
+
+    def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
+        return self._curl().build_cmd(
+            'GET',
+            shlex.quote(self.build_get_entry_url(key)),
+        )
+
+    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
         fixed_key = self.fix_key(key)
         curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
 
-        obj = self._curl.run_json_cmd(
+        obj = self._curl().run_json_cmd(
             curl_cmd,
-            success_status_codes=[200, 204],
+            success_status_codes=self.GET_ENTRY_SUCCESS_STATUS_CODES,
         )
         if obj is None:
             return None
 
-        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
+        return GithubCacheServiceV1BaseClient.Entry(GithubCacheServiceV1.dataclass_from_json(
             GithubCacheServiceV1.ArtifactCacheEntry,
             obj,
         ))
 
     #
 
-    def build_download_get_entry_cmd(self, entry: Entry, out_file: str) -> ShellCmd:
+    def build_download_get_entry_cmd(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> ShellCmd:
         return ShellCmd(' '.join([
             'aria2c',
             '-x', '4',
@@ -3303,11 +3318,11 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
             cache_size=file_size,
             version=str(self.CACHE_VERSION),
         )
-        reserve_cmd = self._curl.build_post_json_cmd(
+        reserve_cmd = self._curl().build_post_json_cmd(
             'caches',
             GithubCacheServiceV1.dataclass_to_json(reserve_req),
         )
-        reserve_resp_obj: ta.Any = check.not_none(self._curl.run_json_cmd(
+        reserve_resp_obj: ta.Any = check.not_none(self._curl().run_json_cmd(
             reserve_cmd,
             success_status_codes=[201],
         ))
@@ -3328,7 +3343,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
             ofs = i * chunk_size
             sz = min(chunk_size, file_size - ofs)
 
-            patch_cmd = self._curl.build_cmd(
+            patch_cmd = self._curl().build_cmd(
                 'PATCH',
                 f'caches/{cache_id}',
                 content_type='application/octet-stream',
@@ -3344,7 +3359,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
             #     f'{patch_cmd.s} --data-binary -',
             # ]))
             # print(f'{patch_data_cmd.s=}')
-            # patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+            # patch_result = self._curl().run_cmd(patch_data_cmd, raise_=True)
 
             #
 
@@ -3357,7 +3372,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
             print(f'{num_written=}')
             patch_data_cmd = dc.replace(patch_cmd, s=f'{patch_cmd.s} --data-binary @{tmp_file}')
             print(f'{patch_data_cmd.s=}')
-            patch_result = self._curl.run_cmd(patch_data_cmd, raise_=True)
+            patch_result = self._curl().run_cmd(patch_data_cmd, raise_=True)
 
             #
 
@@ -3369,11 +3384,11 @@ class GithubCacheServiceV1CurlClient(GithubCacheClient):
         commit_req = GithubCacheServiceV1.CommitCacheRequest(
             size=file_size,
         )
-        commit_cmd = self._curl.build_post_json_cmd(
+        commit_cmd = self._curl().build_post_json_cmd(
             f'caches/{cache_id}',
             GithubCacheServiceV1.dataclass_to_json(commit_req),
         )
-        commit_result = self._curl.run_cmd(commit_cmd, raise_=True)
+        commit_result = self._curl().run_cmd(commit_cmd, raise_=True)
         check.equal(commit_result.status_code, 204)
 
 
