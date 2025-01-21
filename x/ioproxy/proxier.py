@@ -101,3 +101,8 @@ class AsyncIoProxier(abc.ABC):
         proxy_cls = async_io_proxy_cls_for(obj)
         proxy = proxy_cls(target)
         return proxy
+
+    ##
+
+    # def proxy_fn(self, fn, *, wrap_result=False):
+

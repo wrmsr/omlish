@@ -37,19 +37,6 @@ asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj
 ##
 
 
-class AsyncIoProxyContextManager:
-    def __init__(self, target: AsyncIoProxyTarget) -> None:
-        super().__init__()
-
-        self._target = target
-
-    async def __aenter__(self):
-        await self._target.runner(self._target.obj.__enter__)
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._target.runner(functools.partial(self._target.obj.__exit__, exc_type, exc_val, exc_tb))
-
-
 @contextlib.asynccontextmanager
 async def async_open(*args, **kwargs):
     loop = asyncio.get_running_loop()

@@ -13,6 +13,28 @@ AsyncIoProxyRunner: ta.TypeAlias = ta.Callable[[ta.Callable], ta.Any]
 ##
 
 
+_ASYNC_IO_PROXY_WRAPPER_NAME_ATTRS = ('__name__', '__qualname__')
+_ASYNC_IO_PROXY_WRAPPER_ASSIGNMENTS = tuple(
+    a
+    for a in functools.WRAPPER_ASSIGNMENTS
+    if a not in _ASYNC_IO_PROXY_WRAPPER_NAME_ATTRS
+)
+
+
+def async_io_proxy_fn(fn, runner):
+    @functools.wraps(fn, assigned=_ASYNC_IO_PROXY_WRAPPER_ASSIGNMENTS)
+    async def run(*args, **kwargs):
+        return await runner(functools.partial(fn, *args, **kwargs))
+
+    for na in _ASYNC_IO_PROXY_WRAPPER_NAME_ATTRS:
+        setattr(run, na, f'{getattr(run, na)}:{getattr(fn, na)}')
+
+    return run
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class AsyncIoProxyTarget:
     obj: ta.Any
@@ -70,14 +92,7 @@ class AsyncIoProxy:
         def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
             fa = self.SPECIAL_METHOD_NAMES.get(self._name, self._name)
             fn = getattr(target.obj, fa)
-
-            @functools.wraps(fn, assigned=self._WRAPPER_ASSIGNMENTS)
-            async def run(*args, **kwargs):
-                return await target.runner(functools.partial(fn, *args, **kwargs))
-
-            for na in self._WRAPPER_NAME_ATTRS:
-                setattr(run, na, f'{getattr(run, na)}:{getattr(fn, na)}')
-
+            run = async_io_proxy_fn(fn, target.runner)
             return run
 
     #
