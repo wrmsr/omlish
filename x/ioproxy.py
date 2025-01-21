@@ -1,5 +1,6 @@
 import abc
 import asyncio
+import contextlib
 import dataclasses as dc
 import functools
 import inspect
@@ -451,76 +452,79 @@ class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO)
 
 class AsyncIoProxier(abc.ABC):
     @ta.overload
-    def async_io_proxy(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.FileIO) -> FileIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.FileIO) -> FileIOAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.TextIOWrapper) -> TextIOWrapperAsyncIoProxy:
+    def proxy_obj(self, obj: io.TextIOWrapper) -> TextIOWrapperAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: io.StringIO) -> StringIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:
         ...
 
     #
 
     @ta.overload
-    def async_io_proxy(self, obj: ta.IO) -> TypingIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.IO) -> TypingIOAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: ta.BinaryIO) -> TypingBinaryIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.BinaryIO) -> TypingBinaryIOAsyncIoProxy:
         ...
 
     @ta.overload
-    def async_io_proxy(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
         ...
 
     #
-
-    @ta.final
-    def async_io_proxy(self, obj):
-        return self._async_io_proxy(obj)
 
     @abc.abstractmethod
-    def _async_io_proxy(self, obj: ta.Any) -> AsyncIoProxy:
+    def target_obj(self, obj: ta.Any) -> AsyncIoProxyTarget:
         raise NotImplementedError
+
+    @ta.final
+    def proxy_obj(self, obj):
+        target = self.target_obj(obj)
+        proxy_cls = async_io_proxy_cls_for(obj)
+        proxy = proxy_cls(target)
+        return proxy
 
 
 ##
@@ -532,31 +536,48 @@ class AsyncioAsyncIoProxier(AsyncIoProxier):
 
         self._loop = loop
 
-    def _get_loop(self) -> asyncio.AbstractEventLoop:
+    def get_loop(self) -> asyncio.AbstractEventLoop:
         if (l := self._loop) is not None:
             return l
-
         return asyncio.get_running_loop()
 
-    def _async_io_proxy(self, obj):
-        loop = self._get_loop()
+    def target_obj(self, obj: ta.Any) -> AsyncIoProxyTarget:
+        loop = self.get_loop()
         runner = functools.partial(loop.run_in_executor, None)
-
-        target = AsyncIoProxyTarget(obj, runner)
-
-        proxy_cls = async_io_proxy_cls_for(obj)
-        proxy = proxy_cls(target)
-
-        return proxy
+        return AsyncIoProxyTarget(obj, runner)
 
 
-asyncio_io_proxy = AsyncioAsyncIoProxier().async_io_proxy
+ASYNCIO_ASYNC_IO_PROXIER = AsyncioAsyncIoProxier()
+
+asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj
 
 
 ##
 
 
-# async def async_open(*args, **kwargs):
+class AsyncIoProxyContextManager:
+    def __init__(self, target: AsyncIoProxyTarget) -> None:
+        super().__init__()
+
+        self._target = target
+
+    async def __aenter__(self):
+        await self._target.runner(self._target.obj.__enter__)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self._target.runner(functools.partial(self._target.obj.__exit__, exc_type, exc_val, exc_tb))
+
+
+@contextlib.asynccontextmanager
+async def async_open(*args, **kwargs):
+    loop = asyncio.get_running_loop()
+    f = await loop.run_in_executor(None, functools.partial(open, *args, **kwargs))
+    af = asyncio_io_proxy(f)
+    # async with AsyncIoProxyContextManager(Async):
+    try:
+        yield af
+    finally:
+        await af.close()
 
 
 async def _a_main() -> None:
@@ -564,6 +585,10 @@ async def _a_main() -> None:
         p = asyncio_io_proxy(f)
         print(p.fileno())
         print(await p.read())
+
+    async with async_open('pyproject.toml') as af:
+        print(af.fileno())
+        print(await af.read())
 
 
 if __name__ == '__main__':
