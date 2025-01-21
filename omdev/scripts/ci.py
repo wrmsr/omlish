@@ -1126,7 +1126,7 @@ def unlink_if_exists(path: str) -> None:
 
 
 ########################################
-# ../github/cacheapi.py
+# ../github/api.py
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
 
@@ -3146,7 +3146,7 @@ async def load_docker_tar(
 
 
 ########################################
-# ../github/cache.py
+# ../github/client.py
 
 
 ##
@@ -3169,10 +3169,10 @@ class GithubCacheClient(abc.ABC):
         raise NotImplementedError
 
 
-#
+##
 
 
-class GithubCacheServiceV1Client(GithubCacheClient):
+class GithubCacheServiceV1CurlClient(GithubCacheClient):
     BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
     AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
 
@@ -3282,7 +3282,7 @@ class GithubCacheServiceV1Client(GithubCacheClient):
 
     def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         dl_cmd = self.build_download_get_entry_cmd(
-            check.isinstance(entry, GithubCacheServiceV1Client.Entry),
+            check.isinstance(entry, self.Entry),
             out_file,
         )
         dl_cmd.run(subprocesses.check_call)
@@ -3375,60 +3375,6 @@ class GithubCacheServiceV1Client(GithubCacheClient):
         )
         commit_result = self._curl.run_cmd(commit_cmd, raise_=True)
         check.equal(commit_result.status_code, 204)
-
-
-##
-
-
-class GithubFileCache(FileCache):
-    def __init__(
-            self,
-            dir: str,  # noqa
-            *,
-            client: ta.Optional[GithubCacheClient] = None,
-    ) -> None:
-        super().__init__()
-
-        self._dir = check.not_none(dir)
-
-        if client is None:
-            client = GithubCacheServiceV1Client()
-        self._client: GithubCacheClient = client
-
-        self._local = DirectoryFileCache(self._dir)
-
-    def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
-
-        if (entry := self._client.get_entry(key)) is None:
-            return None
-
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with defer(lambda: unlink_if_exists(tmp_file)):
-            self._client.download_file(entry, tmp_file)
-
-            os.replace(tmp_file, local_file)
-
-        return local_file
-
-    def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
-
-        self._client.upload_file(key, cache_file_path)
-
-        return cache_file_path
 
 
 ########################################
@@ -3684,7 +3630,7 @@ class GithubCli(ArgparseCli):
         argparse_arg('key'),
     )
     def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
+        client = GithubCacheServiceV1CurlClient()
         entry = client.get_entry(self.args.key)
         if entry is None:
             return

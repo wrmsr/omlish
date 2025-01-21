@@ -1,12 +1,12 @@
 # ruff: noqa: PT009
 import unittest
 
-from ..cache import GithubCacheServiceV1Client
+from ..client import GithubCacheServiceV1CurlClient
 
 
 class TestClient(unittest.TestCase):
     def test_client(self) -> None:
-        client = GithubCacheServiceV1Client(
+        client = GithubCacheServiceV1CurlClient(
             base_url='https://githubcache/',
             auth_token='DUMMY_AUTH_TOKEN',  # noqa
             key_suffix='test-suffix',
