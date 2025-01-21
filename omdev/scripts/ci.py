@@ -3311,11 +3311,13 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
         ))
 
     def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        dl_url = check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)
+
         dl_cmd = ShellCmd(' '.join([
             'aria2c',
             '-x', '4',
             '-o', out_file,
-            shlex.quote(check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)),
+            shlex.quote(dl_url),
         ]))
 
         dl_cmd.run(subprocesses.check_call)
