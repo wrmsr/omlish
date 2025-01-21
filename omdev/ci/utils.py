@@ -65,7 +65,7 @@ class LogTimingContext:
     def __enter__(self) -> 'LogTimingContext':
         self._begin_time = time.time()
 
-        self._log.log(self._level, f'Begin {self._description}')  # noqa
+        self._log.log(self._level, f'Begin : {self._description}')  # noqa
 
         return self
 
@@ -74,7 +74,7 @@ class LogTimingContext:
 
         self._log.log(
             self._level,
-            f'End {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
+            f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
         )
 
 

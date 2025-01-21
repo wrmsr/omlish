@@ -1387,7 +1387,7 @@ class LogTimingContext:
     def __enter__(self) -> 'LogTimingContext':
         self._begin_time = time.time()
 
-        self._log.log(self._level, f'Begin {self._description}')  # noqa
+        self._log.log(self._level, f'Begin : {self._description}')  # noqa
 
         return self
 
@@ -1396,7 +1396,7 @@ class LogTimingContext:
 
         self._log.log(
             self._level,
-            f'End {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
+            f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
         )
 
 
@@ -3183,7 +3183,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             size: int,
     ) -> None:
         with log_timing_context(
-                f'Uploading cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
+                f'Uploading github cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
         ):
             with open(in_file, 'rb') as f:  # noqa
                 f.seek(offset)
@@ -3209,6 +3209,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         file_size = os.stat(in_file).st_size
 
+        log.debug(f'Uploading github cache file {os.path.basename(in_file)} size {file_size}')  # noqa
+
         #
 
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
@@ -3226,6 +3228,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             reserve_resp_obj,
         )
         cache_id = check.isinstance(reserve_resp.cache_id, int)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
 
         #
 

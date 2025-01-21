@@ -13,6 +13,7 @@ import urllib.request
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.logs import log
 
 from ..shell import ShellCmd
 from ..utils import log_timing_context
@@ -249,7 +250,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             size: int,
     ) -> None:
         with log_timing_context(
-                f'Uploading cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
+                f'Uploading github cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
         ):
             with open(in_file, 'rb') as f:  # noqa
                 f.seek(offset)
@@ -275,6 +276,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         file_size = os.stat(in_file).st_size
 
+        log.debug(f'Uploading github cache file {os.path.basename(in_file)} size {file_size}')  # noqa
+
         #
 
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
@@ -292,6 +295,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             reserve_resp_obj,
         )
         cache_id = check.isinstance(reserve_resp.cache_id, int)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
 
         #
 
