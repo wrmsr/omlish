@@ -84,9 +84,6 @@ class AsyncIoProxy:
             return getattr(target.obj, self._name)
 
     class _AsyncMethod(_Method):
-        _WRAPPER_NAME_ATTRS = ('__name__', '__qualname__')
-        _WRAPPER_ASSIGNMENTS = tuple(a for a in functools.WRAPPER_ASSIGNMENTS if a not in ('__name__', '__qualname__'))
-
         SPECIAL_METHOD_NAMES: ta.ClassVar[ta.Mapping[str, str]] = {
             '__aenter__': '__enter__',
             '__aexit__': '__exit__',
