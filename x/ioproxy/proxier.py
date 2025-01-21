@@ -41,43 +41,7 @@ class AsyncIoProxier(abc.ABC):
     #
 
     @ta.overload
-    def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.FileIO) -> FileIOAsyncIoProxy:
-        ...
-
-    @ta.overload
-    def proxy_obj(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:
         ...
 
     @ta.overload
@@ -85,13 +49,49 @@ class AsyncIoProxier(abc.ABC):
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.FileIO) -> FileIOAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:
+        ...
+
+    @ta.overload
+    def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
         ...
 
     #
 
     @ta.overload
-    def proxy_obj(self, obj: ta.IO) -> TypingIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
         ...
 
     @ta.overload
@@ -99,8 +99,10 @@ class AsyncIoProxier(abc.ABC):
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.IO) -> TypingIOAsyncIoProxy:
         ...
+
+    #
 
     @ta.final
     def proxy_obj(self, obj):
