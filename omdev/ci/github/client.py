@@ -327,12 +327,12 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
-            upload_tasks.append(self._upload_file_chunk(
+            upload_tasks.append(asyncio.create_task(self._upload_file_chunk(
                 cache_id,
                 in_file,
                 offset,
                 size,
-            ))
+            )))
 
         # for upload_task in upload_tasks:
         #     await upload_task
