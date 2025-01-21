@@ -7,7 +7,7 @@ import typing as ta
 from omlish.lite.check import check
 
 
-AsyncIoProxyRunner: ta.TypeAlias = ta.Callable[[ta.Callable], ta.Any]
+AsyncIoProxyRunner: ta.TypeAlias = ta.Callable[[ta.Callable], ta.Awaitable]
 
 
 ##
