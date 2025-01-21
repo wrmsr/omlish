@@ -48,11 +48,11 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
 
     ### Context manager ###
 
-    # def __enter__(self):  # That's a forward reference
-    #     raise TypeError
+    async def __aenter__(self):
+        raise TypeError
 
-    # def __exit__(self, *args):
-    #     raise TypeError
+    async def __aexit__(self, exc_type, exc_value, exc_tb):
+        raise TypeError
 
     ### Lower-level APIs ###
 

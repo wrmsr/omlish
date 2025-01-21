@@ -55,11 +55,8 @@ async def async_open(*args, **kwargs):
     loop = asyncio.get_running_loop()
     f = await loop.run_in_executor(None, functools.partial(open, *args, **kwargs))
     af = asyncio_io_proxy(f)
-    # async with AsyncIoProxyContextManager(Async):
-    try:
+    async with af:
         yield af
-    finally:
-        await af.close()
 
 
 ##

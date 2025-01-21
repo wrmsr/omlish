@@ -68,19 +68,16 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
     async def writelines(self, lines: ta.List[AnyStrT]) -> None:
         raise TypeError
 
-    # def __enter__(self) -> 'IO[AnyStrT]':
-    #     pass
+    async def __aenter__(self):
+        raise TypeError
 
-    # def __exit__(self, type, value, traceback) -> None:
-    #     pass
+    async def __aexit__(self, exc_type, exc_value, exc_tb):
+        raise TypeError
 
 
 class TypingBinaryIOAsyncIoProxy(TypingIOAsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):
     def write(self, s: ta.Union[bytes, bytearray]) -> int:
         raise TypeError
-
-    # def __enter__(self) -> 'BinaryIO':
-    #     pass
 
 
 class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO):
@@ -103,6 +100,3 @@ class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO)
     @property
     def newlines(self) -> ta.Any:
         raise TypeError
-
-    # def __enter__(self) -> 'TextIO':
-    #     pass

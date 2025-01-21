@@ -62,8 +62,14 @@ class AsyncIoProxy:
         _WRAPPER_NAME_ATTRS = ('__name__', '__qualname__')
         _WRAPPER_ASSIGNMENTS = tuple(a for a in functools.WRAPPER_ASSIGNMENTS if a not in ('__name__', '__qualname__'))
 
+        SPECIAL_METHOD_NAMES: ta.ClassVar[ta.Mapping[str, str]] = {
+            '__aenter__': '__enter__',
+            '__aexit__': '__exit__',
+        }
+
         def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
-            fn = getattr(target.obj, self._name)
+            fa = self.SPECIAL_METHOD_NAMES.get(self._name, self._name)
+            fn = getattr(target.obj, fa)
 
             @functools.wraps(fn, assigned=self._WRAPPER_ASSIGNMENTS)
             async def run(*args, **kwargs):
@@ -82,7 +88,7 @@ class AsyncIoProxy:
         cls.__proxied_cls__ = check.isinstance(proxied_cls, (type, None))
 
         for n, v in dict(cls.__dict__).items():
-            if n.startswith('_'):
+            if n.startswith('_') and n not in cls._AsyncMethod.SPECIAL_METHOD_NAMES:
                 continue
 
             if isinstance(v, property):
