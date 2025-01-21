@@ -8,7 +8,7 @@ aiosignal==1.3.2
 aiosqlite==0.20.0
 alembic==1.14.1
 annotated-types==0.7.0
-anthropic==0.43.1
+anthropic==0.44.0
 anyio==4.8.0
 appdirs==1.4.4
 appnope==0.1.4
@@ -117,7 +117,7 @@ flake8==7.1.1
 Flake8-pyproject==1.2.3
 Flask==3.1.0
 flatbuffers==24.12.23
-fonttools==4.55.3
+fonttools==4.55.4
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -209,11 +209,11 @@ keras==3.8.0
 keyring==25.6.0
 kiwisolver==1.4.8
 kubernetes==31.0.0
-langchain==0.3.14
+langchain==0.3.15
 langchain-anthropic==0.3.3
 langchain-chroma==0.2.0
-langchain-community==0.3.14
-langchain-core==0.3.30
+langchain-community==0.3.15
+langchain-core==0.3.31
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
@@ -224,7 +224,7 @@ langchain-text-splitters==0.3.5
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.64
+langgraph==0.2.65
 langgraph-checkpoint==2.0.10
 langgraph-sdk==0.1.51
 langsmith==0.2.11
@@ -236,7 +236,7 @@ libtmux==0.40.1
 lightning-utilities==0.11.9
 litecli==1.13.2
 litellm==1.51.0
-llama-index-core==0.12.10.post1
+llama-index-core==0.12.12
 llama_cpp_python==0.3.6
 llvmlite==0.44.0
 Logbook==1.8.0
@@ -275,7 +275,7 @@ mwparserfromhell==0.6.6
 mycli==1.29.2
 mypy==1.14.1
 mypy-extensions==1.0.0
-mysql-connector-python==9.1.0
+mysql-connector-python==9.2.0
 mysqlclient==2.2.7
 namex==0.0.8
 nbclient==0.10.2
@@ -407,11 +407,11 @@ pytz==2024.2
 pywinrm==0.5.0
 PyYAML==6.0.2
 pyzmq==26.2.0
-qdrant-client==1.12.2
+qdrant-client==1.13.0
 qtconsole==5.5.1
 QtPy==2.4.2
 RapidFuzz==3.11.0
-rapidocr-onnxruntime==1.4.3
+rapidocr-onnxruntime==1.4.4
 rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==44.0
@@ -500,7 +500,7 @@ tqdm==4.67.1
 trafilatura==1.12.2
 traitlets==5.14.3
 transformers==4.48.1
-tree-sitter==0.23.2
+tree-sitter==0.24.0
 tree-sitter-python==0.23.6
 trio==0.28.0
 trio_asyncio==0.15.0

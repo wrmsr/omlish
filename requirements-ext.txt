@@ -196,8 +196,8 @@ customtkinter==5.2.2
 
 langchain-anthropic==0.3.3
 langchain-chroma==0.2.0
-langchain-community==0.3.14
-langchain-core==0.3.30
+langchain-community==0.3.15
+langchain-core==0.3.31
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
@@ -205,14 +205,14 @@ langchain-mistralai==0.2.4
 langchain-openai==0.3.1
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
-langchain==0.3.14
+langchain==0.3.15
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.64
+langgraph==0.2.65
 
 langsmith==0.2.11
 
@@ -257,12 +257,12 @@ libtmux==0.40.1
 
 sqlite-vec==0.1.6
 
-anthropic==0.43.1
+anthropic==0.44.0
 
 jedi==0.19.2
 jedi-language-server==0.43.1
 
-tree-sitter==0.23.2
+tree-sitter==0.24.0
 tree-sitter-python==0.23.6
 
 gitpython==3.1.44
@@ -285,7 +285,7 @@ dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
 trafilatura==1.12.2
-qdrant-client==1.12.2
+qdrant-client==1.13.0
 
 flask==3.1.0
 

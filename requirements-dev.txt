@@ -66,7 +66,7 @@ json5==0.10.0
 psycopg2==2.9.10
 psycopg==3.2.4
 
-mysql-connector-python==9.1.0
+mysql-connector-python==9.2.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
 ujson==5.10.0
