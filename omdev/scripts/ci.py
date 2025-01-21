@@ -230,11 +230,16 @@ def draining_asyncio_tasks() -> ta.Iterator[None]:
 
 async def asyncio_wait_concurrent(
         coros: ta.Iterable[ta.Awaitable[T]],
-        max_concurrent: int,
+        concurrency: ta.Union[int, asyncio.Semaphore],
         *,
         return_when: ta.Any = asyncio.FIRST_EXCEPTION,
 ) -> ta.List[T]:
-    semaphore = asyncio.Semaphore(max_concurrent)
+    if isinstance(concurrency, asyncio.Semaphore):
+        semaphore = concurrency
+    elif isinstance(concurrency, int):
+        semaphore = asyncio.Semaphore(concurrency)
+    else:
+        raise TypeError(concurrency)
 
     async def limited_task(coro):
         async with semaphore:
