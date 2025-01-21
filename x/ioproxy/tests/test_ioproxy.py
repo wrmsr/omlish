@@ -36,11 +36,11 @@ asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj
 ##
 
 
-@contextlib.asynccontextmanager
-async def async_open(*args, **kwargs):
-    proxier = ASYNCIO_ASYNC_IO_PROXIER
-    async with (af := await proxier.proxy_fn(open, wrap_result=True)(*args, **kwargs)):
-        yield af
+# asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)
+
+
+def async_open(*args, **kwargs):
+    return ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)(*args, **kwargs)
 
 
 ##
@@ -53,6 +53,6 @@ async def test_io_proxy():
         print(p.fileno())
         print(await p.read())
 
-    async with async_open('pyproject.toml') as af:
+    async with await async_open('pyproject.toml') as af:
         print(af.fileno())
         print(await af.read())

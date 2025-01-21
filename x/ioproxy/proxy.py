@@ -63,16 +63,16 @@ class AsyncIoProxy:
                 return self
 
             target: AsyncIoProxyTarget = instance._target  # noqa
-            v = self._get(target)
+            v = self._get(target, instance)
 
             setattr(instance, self._name, v)
             return v
 
-        def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
+        def _get(self, target: AsyncIoProxyTarget, instance: ta.Any) -> ta.Any:
             raise NotImplementedError
 
     class _Property(_Descriptor):
-        def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
+        def _get(self, target: AsyncIoProxyTarget, instance: ta.Any) -> ta.Any:
             return getattr(target.obj, self._name)
 
     class _Method(_Descriptor):
@@ -80,7 +80,7 @@ class AsyncIoProxy:
             return self.__get__(instance)(*args, **kwargs)
 
     class _SyncMethod(_Method):
-        def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
+        def _get(self, target: AsyncIoProxyTarget, instance: ta.Any) -> ta.Any:
             return getattr(target.obj, self._name)
 
     class _AsyncMethod(_Method):
@@ -89,10 +89,14 @@ class AsyncIoProxy:
             '__aexit__': '__exit__',
         }
 
-        def _get(self, target: AsyncIoProxyTarget) -> ta.Any:
+        def _get(self, target: AsyncIoProxyTarget, instance: ta.Any) -> ta.Any:
             fa = self.SPECIAL_METHOD_NAMES.get(self._name, self._name)
             fn = getattr(target.obj, fa)
-            run = async_io_proxy_fn(fn, target.runner)
+            if fa == '__enter__':
+                result_wrapper = lambda _: instance
+            else:
+                result_wrapper = None
+            run = async_io_proxy_fn(fn, target.runner, result_wrapper=result_wrapper)
             return run
 
     #
