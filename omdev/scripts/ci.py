@@ -3359,7 +3359,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
             'aria2c',
             '-x', '4',
             '-o', out_file,
-            check.non_empty_str(entry.artifact.archive_location),
+            shlex.quote(check.non_empty_str(entry.artifact.archive_location)),
         ]))
 
     def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
