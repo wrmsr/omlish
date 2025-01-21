@@ -101,7 +101,6 @@ async def build_docker_image(
             'build',
             '-f', os.path.abspath(docker_file),
             '--iidfile', id_file,
-            '--squash',
             *(['--tag', tag] if tag is not None else []),
             *(run_options or []),
             '.',
