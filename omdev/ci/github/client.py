@@ -11,6 +11,7 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
+from omlish.asyncs.asyncio.asyncio import asyncio_wait_concurrent
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
@@ -227,28 +228,28 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 ##
 
 
-async def asyncio_run_with_limited_concurrency(tasks, max_concurrent):
-    semaphore = asyncio.Semaphore(max_concurrent)
-
-    async def limited_task(task):
-        async with semaphore:
-            return await task
-
-    tasks = [asyncio.create_task(limited_task(task)) for task in tasks]
-    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
-
-    for task in pending:
-        task.cancel()  # Cancel remaining tasks
-
-    # Raise the first encountered exception
-    for task in done:
-        if task.exception():
-            raise task.exception()
-
-    return [task.result() for task in done]
-
-
 class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
+    DEFAULT_CONCURRENCY = 4
+
+    DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
+
+    def __init__(
+            self,
+            *,
+            concurrency: int = DEFAULT_CONCURRENCY,
+            chunk_size: int = DEFAULT_CHUNK_SIZE,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        check.arg(concurrency > 0)
+        self._concurrency = concurrency
+
+        check.arg(chunk_size > 0)
+        self._chunk_size = chunk_size
+
+    #
+
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
         obj = await self.send_request(
             self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
@@ -268,7 +269,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         dl_cmd = ShellCmd(' '.join([
             'aria2c',
-            '-x', '4',
+            '-x', str(self._concurrency),
             '-o', out_file,
             shlex.quote(dl_url),
         ]))
@@ -336,7 +337,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         #
 
         upload_tasks = []
-        chunk_size = 32 * 1024 * 1024
+        chunk_size = self._chunk_size
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
@@ -347,10 +348,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 size,
             ))
 
-        # for upload_task in upload_tasks:
-        #     await upload_task
-
-        await asyncio_run_with_limited_concurrency(upload_tasks, 4)
+        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
 
         #
 
