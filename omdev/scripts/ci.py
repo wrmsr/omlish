@@ -156,6 +156,13 @@ class DirectoryFileCache(FileCache):
 
 
 ########################################
+# ../consts.py
+
+
+CI_CACHE_VERSION = 1
+
+
+########################################
 # ../shell.py
 
 
@@ -3046,8 +3053,6 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
 
-    CACHE_VERSION: ta.ClassVar[int] = 1
-
     #
 
     def __init__(
@@ -3058,6 +3063,8 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
             key_prefix: ta.Optional[str] = None,
             key_suffix: ta.Optional[str] = None,
+
+            cache_version: int = CI_CACHE_VERSION,
     ) -> None:
         super().__init__()
 
@@ -3078,6 +3085,10 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         if key_suffix is None:
             key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
         self._key_suffix = check.non_empty_str(key_suffix)
+
+        #
+
+        self._cache_version = check.isinstance(cache_version, int)
 
     #
 
@@ -3206,7 +3217,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     def build_get_entry_url_path(self, *keys: str) -> str:
         qp = dict(
             keys=','.join(urllib.parse.quote_plus(k) for k in keys),
-            version=str(self.CACHE_VERSION),
+            version=str(self._cache_version),
         )
 
         return '?'.join([
@@ -3322,7 +3333,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
             key=fixed_key,
             cache_size=file_size,
-            version=str(self.CACHE_VERSION),
+            version=str(self._cache_version),
         )
         reserve_resp_obj = await self.send_request(
             'caches',
@@ -3537,7 +3548,8 @@ class Ci(AsyncExitStacked):
                 'RUN mkdir /project',
                 *[f'COPY {rf} /project/{rf}' for rf in self._cfg.requirements_txts or []],
                 f'RUN {setup_cmd}',
-                'RUN rm -rf /project',
+                'RUN rm /project/*',
+                'WORKDIR /project',
             ]
 
             docker_file = make_temp_file()
@@ -3830,8 +3842,7 @@ class CiCli(ArgparseCli):
                     requirements_txts=requirements_txts,
 
                     cmd=ShellCmd(' && '.join([
-                        'cd /project',
-                        'python3 -m pytest -svv test.py',
+                        'python3 -m pytest -svv tests',
                     ])),
 
                     always_pull=self.args.always_pull,

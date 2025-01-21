@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 import hashlib
 import logging
 import os.path

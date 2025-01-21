@@ -1,6 +1,5 @@
 # @omlish-amalg ../scripts/ci.py
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 """
 Inputs:
  - requirements.txt
@@ -165,8 +164,7 @@ class CiCli(ArgparseCli):
                     requirements_txts=requirements_txts,
 
                     cmd=ShellCmd(' && '.join([
-                        'cd /project',
-                        'python3 -m pytest -svv test.py',
+                        'python3 -m pytest -svv tests',
                     ])),
 
                     always_pull=self.args.always_pull,

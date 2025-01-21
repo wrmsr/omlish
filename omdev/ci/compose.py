@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 """
 TODO:
  - fix rmi - only when not referenced anymore

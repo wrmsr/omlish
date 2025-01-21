@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 import dataclasses as dc
 import os.path
 import typing as ta
@@ -191,7 +190,8 @@ class Ci(AsyncExitStacked):
                 'RUN mkdir /project',
                 *[f'COPY {rf} /project/{rf}' for rf in self._cfg.requirements_txts or []],
                 f'RUN {setup_cmd}',
-                'RUN rm -rf /project',
+                'RUN rm /project/*',
+                'WORKDIR /project',
             ]
 
             docker_file = make_temp_file()

@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 """
 sudo rm -rf \
     /usr/local/.ghcup \

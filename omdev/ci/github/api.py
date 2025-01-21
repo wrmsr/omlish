@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
 

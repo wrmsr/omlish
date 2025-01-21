@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 """
 See:
  - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
