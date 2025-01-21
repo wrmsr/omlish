@@ -3289,19 +3289,54 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
 
 class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
-    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))}'
+    @dc.dataclass()
+    class RequestError(RuntimeError):
+        status_code: int
+        body: ta.Optional[bytes]
+
+        def __str__(self) -> str:
+            return repr(self)
+
+    def send_request(
+            self,
+            method: str,
+            path: str,
+            *,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            content_type: ta.Optional[str] = None,
+            json_content: bool = False,
+
+            content: ta.Optional[bytes] = None,
+
+            success_status_codes: ta.Optional[ta.Container[int]] = (200,),
+    ) -> ta.Optional[ta.Any]:
+        url = f'{self._service_url}/{path}'
 
         resp: http.client.HTTPResponse
         with urllib.request.urlopen(urllib.request.Request(  # noqa
-            url,
-            method='GET',
-            headers=self.build_request_headers(),
+                url,
+                method=method,
+                headers=self.build_request_headers(
+                    headers,
+                    content_type=content_type,
+                    json_content=json_content,
+                ),
+                data=content,
         )) as resp:
             check.in_(resp.status, self.GET_ENTRY_SUCCESS_STATUS_CODES)
-            data = resp.read()
+            body = resp.read()
 
-        obj = self.load_json_bytes(data)
+        if success_status_codes is not None and resp.status not in success_status_codes:
+            raise self.RequestError(resp.status, body)
+
+        return self.load_json_bytes(body)
+
+    #
+
+    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
+        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))}'
+
+        obj = self.send_request('GET', url)
         if obj is None:
             return None
 
