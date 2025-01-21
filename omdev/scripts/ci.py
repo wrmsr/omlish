@@ -3336,7 +3336,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             body = resp.read()
 
         if success_status_codes is not None:
-            is_success = resp.status not in success_status_codes
+            is_success = resp.status in success_status_codes
         else:
             is_success = (200 <= resp.status <= 300)
         if not is_success:
