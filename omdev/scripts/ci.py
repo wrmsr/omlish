@@ -3290,7 +3290,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
 class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key))}'
+        url = f'{self._service_url}/{self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))}'
 
         resp: http.client.HTTPResponse
         with urllib.request.urlopen(urllib.request.Request(  # noqa
@@ -3334,7 +3334,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
     def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
         return self._curl().build_cmd(
             'GET',
-            shlex.quote(self.build_get_entry_url_path(self.fix_key(key))),
+            shlex.quote(self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True))),
         )
 
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
