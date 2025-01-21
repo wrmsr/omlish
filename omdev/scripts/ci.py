@@ -3053,44 +3053,6 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
-    KEY_PART_SEPARATOR = '--'
-
-    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
-        return self.KEY_PART_SEPARATOR.join([
-            *([self._key_prefix] if self._key_prefix else []),
-            s,
-            ('' if partial_suffix else self._key_suffix),
-        ])
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        artifact: GithubCacheServiceV1.ArtifactCacheEntry
-
-    #
-
-    def build_get_entry_url_path(self, *keys: str) -> str:
-        qp = dict(
-            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
-            version=str(self.CACHE_VERSION),
-        )
-
-        return '?'.join([
-            'cache',
-            '&'.join([
-                f'{k}={v}'
-                for k, v in qp.items()
-            ]),
-        ])
-
-    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
-
-
-##
-
-
-class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
     @dc.dataclass()
     class RequestError(RuntimeError):
         status_code: int
@@ -3147,6 +3109,44 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
 
     #
 
+    KEY_PART_SEPARATOR = '--'
+
+    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
+        return self.KEY_PART_SEPARATOR.join([
+            *([self._key_prefix] if self._key_prefix else []),
+            s,
+            ('' if partial_suffix else self._key_suffix),
+        ])
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    #
+
+    def build_get_entry_url_path(self, *keys: str) -> str:
+        qp = dict(
+            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
+            version=str(self.CACHE_VERSION),
+        )
+
+        return '?'.join([
+            'cache',
+            '&'.join([
+                f'{k}={v}'
+                for k, v in qp.items()
+            ]),
+        ])
+
+    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
+
+
+##
+
+
+class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
         obj = await self.send_request(
             self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
@@ -3159,6 +3159,8 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             obj,
         ))
 
+    #
+
     async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         dl_url = check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)
 
@@ -3170,6 +3172,32 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
         ]))
 
         await dl_cmd.run(asyncio_subprocesses.check_call)
+
+    #
+
+    async def _upload_file_chunk(
+            self,
+            cache_id: int,
+            in_file: str,
+            offset: int,
+            size: int,
+    ) -> None:
+        with open(in_file, 'rb') as f:  # noqa
+            f.seek(offset)
+            buf = f.read(size)
+
+        check.equal(len(buf), size)
+
+        await self.send_request(
+            f'caches/{cache_id}',
+            method='PATCH',
+            content_type='application/octet-stream',
+            headers={
+                'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
+            },
+            content=buf,
+            success_status_codes=[204],
+        )
 
     async def upload_file(self, key: str, in_file: str) -> None:
         fixed_key = self.fix_key(key)
@@ -3198,32 +3226,17 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
 
         #
 
-        print(f'{file_size=}')
-        num_written = 0
         chunk_size = 32 * 1024 * 1024
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            ofs = i * chunk_size
-            sz = min(chunk_size, file_size - ofs)
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
 
-            with open(in_file, 'rb') as f:  # noqa
-                f.seek(ofs)
-                buf = f.read(sz)
-
-            await self.send_request(
-                f'caches/{cache_id}',
-                method='PATCH',
-                content_type='application/octet-stream',
-                headers={
-                    'Content-Range': f'bytes {ofs}-{ofs + sz - 1}/*',
-                },
-                content=buf,
-                success_status_codes=[204],
+            await self._upload_file_chunk(
+                cache_id,
+                in_file,
+                offset,
+                size,
             )
-
-            num_written += len(buf)
-            print(f'{num_written=}')
-
-            ofs += sz
 
         #
 
@@ -3496,7 +3509,7 @@ class GithubFileCache(FileCache):
         self._dir = check.not_none(dir)
 
         if client is None:
-            client = GithubCacheServiceV1UrllibClient()
+            client = GithubCacheServiceV1Client()
         self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(self._dir)
@@ -3548,7 +3561,7 @@ class GithubCli(ArgparseCli):
         argparse_arg('key'),
     )
     async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1UrllibClient()
+        client = GithubCacheServiceV1Client()
         entry = await client.get_entry(self.args.key)
         if entry is None:
             return
