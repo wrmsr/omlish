@@ -74,7 +74,7 @@ class GithubServiceCurlClient:
     def build_cmd(
             self,
             method: str,
-            url: str,
+            path: str,
             *,
             json_content: bool = False,
             content_type: ta.Optional[str] = None,
@@ -99,7 +99,7 @@ class GithubServiceCurlClient:
             content_type=content_type,
         )
 
-        url = f'{self._service_url}/{url}'
+        url = f'{self._service_url}/{path}'
 
         cmd = ' '.join([
             'curl',

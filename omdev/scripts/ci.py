@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../ci/cli.py
-# ruff: noqa: N802 UP006 UP007 UP036
+# ruff: noqa: N802 TC003 UP006 UP007 UP036
 """
 Inputs:
  - requirements.txt
@@ -25,6 +25,7 @@ import dataclasses as dc
 import datetime
 import functools
 import hashlib
+import http.client
 import inspect
 import itertools
 import json
@@ -42,6 +43,7 @@ import time
 import types
 import typing as ta
 import urllib.parse
+import urllib.request
 
 
 ########################################
@@ -2384,7 +2386,7 @@ class GithubServiceCurlClient:
     def build_cmd(
             self,
             method: str,
-            url: str,
+            path: str,
             *,
             json_content: bool = False,
             content_type: ta.Optional[str] = None,
@@ -2409,7 +2411,7 @@ class GithubServiceCurlClient:
             content_type=content_type,
         )
 
-        url = f'{self._service_url}/{url}'
+        url = f'{self._service_url}/{path}'
 
         cmd = ' '.join([
             'curl',
@@ -3213,6 +3215,42 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
+    def build_request_headers(
+            self,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            *,
+            content_type: ta.Optional[str] = None,
+            json_content: bool = False,
+    ) -> ta.Dict[str, str]:
+        dct = {
+            'Accept': ';'.join([
+                'application/json',
+                f'api-version={GithubCacheServiceV1.API_VERSION}',
+            ]),
+        }
+
+        if (auth_token := self._auth_token):
+            dct['Authorization'] = f'Bearer {auth_token}'
+
+        if content_type is None and json_content:
+            content_type = 'application/json'
+        if content_type is not None:
+            dct['Content-Type'] = content_type
+
+        if headers:
+            dct.update(headers)
+
+        return dct
+
+    #
+
+    def load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
+        if not b:
+            return None
+        return json.loads(b.decode('utf-8-sig'))
+
+    #
+
     KEY_PART_SEPARATOR = '--'
 
     def fix_key(self, s: str) -> str:
@@ -3230,7 +3268,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
-    def build_get_entry_url(self, key: str) -> str:
+    def build_get_entry_url_path(self, key: str) -> str:
         fixed_key = self.fix_key(key)
 
         qp = dict(
@@ -3252,6 +3290,38 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 ##
 
 
+class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
+    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
+        url = f'{self._service_url}/{self.build_get_entry_url_path(key)}'
+
+        resp: http.client.HTTPResponse
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+            url,
+            method='GET',
+            headers=self.build_request_headers(),
+        )) as resp:
+            check.in_(resp.status, self.GET_ENTRY_SUCCESS_STATUS_CODES)
+            data = resp.read()
+
+        obj = self.load_json_bytes(data)
+        if obj is None:
+            return None
+
+        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        ))
+
+    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        raise NotImplementedError
+
+    def upload_file(self, key: str, in_file: str) -> None:
+        raise NotImplementedError
+
+
+##
+
+
 class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
     @cached_nullary
     def _curl(self) -> GithubServiceCurlClient:
@@ -3266,12 +3336,11 @@ class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
     def build_get_entry_curl_cmd(self, key: str) -> ShellCmd:
         return self._curl().build_cmd(
             'GET',
-            shlex.quote(self.build_get_entry_url(key)),
+            shlex.quote(self.build_get_entry_url_path(key)),
         )
 
     def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        fixed_key = self.fix_key(key)
-        curl_cmd = self.build_get_entry_curl_cmd(fixed_key)
+        curl_cmd = self.build_get_entry_curl_cmd(key)
 
         obj = self._curl().run_json_cmd(
             curl_cmd,
@@ -3280,7 +3349,7 @@ class GithubCacheServiceV1CurlClient(GithubCacheServiceV1BaseClient):
         if obj is None:
             return None
 
-        return GithubCacheServiceV1BaseClient.Entry(GithubCacheServiceV1.dataclass_from_json(
+        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
             GithubCacheServiceV1.ArtifactCacheEntry,
             obj,
         ))
