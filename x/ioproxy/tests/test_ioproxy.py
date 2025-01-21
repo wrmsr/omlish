@@ -40,16 +40,16 @@ asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy
 _asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open)
 
 
-async def asyncio_open(file, mode='r', *args, **kwargs) -> TypingIOAsyncIoProxy[ta.Any]:
-    return await _asyncio_open(file, mode, *args, **kwargs)
+def asyncio_open(file: ta.Any, mode: str = 'r', *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[TypingIOAsyncIoProxy[ta.Any]]:
+    return _asyncio_open(file, mode, *args, **kwargs)
 
 
-async def asyncio_open_binary(file, mode='r', *args, **kwargs) -> TypingBinaryIOAsyncIoProxy:
-    return await _asyncio_open(file, mode, *args, **kwargs)
+def asyncio_open_binary(file: ta.Any, mode: str = 'r', *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[TypingBinaryIOAsyncIoProxy]:
+    return _asyncio_open(file, mode, *args, **kwargs)
 
 
-async def asyncio_open_text(file, mode='rb', *args, **kwargs) -> TypingTextIOAsyncIoProxy:
-    return await _asyncio_open(file, mode, *args, **kwargs)
+def asyncio_open_text(file: ta.Any, mode: str = 'rb', *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[TypingTextIOAsyncIoProxy]:
+    return _asyncio_open(file, mode, *args, **kwargs)
 
 
 ##
@@ -57,15 +57,27 @@ async def asyncio_open_text(file, mode='rb', *args, **kwargs) -> TypingTextIOAsy
 
 @pytest.mark.asyncs('asyncio')
 async def test_io_proxy():
+    # def barf() -> ta.Awaitable[int]:
+    #     async def f():
+    #         return 1
+    #
+    #     return f()
+    #
+    # b = barf()
+    # reveal_type(b)
+
     with open('pyproject.toml') as sf:  # noqa
         af1 = asyncio_io_proxy(sf)
+        # reveal_type(af1)
         print(af1.fileno())
         print(await af1.read())
 
     async with await asyncio_io_proxy(open)('pyproject.toml') as af2:  # noqa
+        # reveal_type(af2)
         print(af2.fileno())
         print(await af2.read())
 
     async with await asyncio_open('pyproject.toml') as af3:
+        # reveal_type(af3)
         print(af3.fileno())
         print(await af3.read())

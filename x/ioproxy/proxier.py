@@ -5,9 +5,9 @@ import types
 import typing as ta
 
 from .io import BufferedIOBaseAsyncIoProxy
+from .io import BufferedRWPairAsyncIoProxy
 from .io import BufferedRandomAsyncIoProxy
 from .io import BufferedReaderAsyncIoProxy
-from .io import BufferedRWPairAsyncIoProxy
 from .io import BufferedWriterAsyncIoProxy
 from .io import BytesIOAsyncIoProxy
 from .io import FileIOAsyncIoProxy

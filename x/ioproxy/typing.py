@@ -2,6 +2,7 @@
 import typing as ta
 
 from .proxy import AsyncIoProxy
+from .proxy import _register_async_io_proxy_cls
 
 
 AnyStrT = ta.TypeVar('AnyStrT', bytes, str)
@@ -10,6 +11,7 @@ AnyStrT = ta.TypeVar('AnyStrT', bytes, str)
 ##
 
 
+@_register_async_io_proxy_cls
 class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO):
     @property
     def mode(self) -> str:
@@ -75,11 +77,13 @@ class TypingIOAsyncIoProxy(AsyncIoProxy, ta.Generic[AnyStrT], proxied_cls=ta.IO)
         raise TypeError
 
 
+@_register_async_io_proxy_cls
 class TypingBinaryIOAsyncIoProxy(TypingIOAsyncIoProxy[bytes], proxied_cls=ta.BinaryIO):
     def write(self, s: ta.Union[bytes, bytearray]) -> int:  # type: ignore[override]
         raise TypeError
 
 
+@_register_async_io_proxy_cls
 class TypingTextIOAsyncIoProxy(TypingIOAsyncIoProxy[str], proxied_cls=ta.TextIO):
     # @property
     # def buffer(self) -> BinaryIO:
