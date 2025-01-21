@@ -1,7 +1,7 @@
+# ruff: noqa: UP006 UP007
 import asyncio
 import typing as ta
-
-import pytest
+import unittest
 
 from ..proxier import AsyncIoProxier
 from ..proxy import AsyncIoProxyRunner
@@ -60,39 +60,39 @@ def asyncio_open_text(
 ##
 
 
-@pytest.mark.asyncs('asyncio')
-async def test_io_proxy():
-    # def barf() -> ta.Awaitable[int]:
-    #     async def f():
-    #         return 1
-    #
-    #     return f()
-    #
-    # b = barf()
-    # reveal_type(b)
+class TestIoProxy(unittest.IsolatedAsyncioTestCase):
+    async def test_io_proxy(self):
+        # def barf() -> ta.Awaitable[int]:
+        #     async def f():
+        #         return 1
+        #
+        #     return f()
+        #
+        # b = barf()
+        # reveal_type(b)
 
-    async def poke(af):
-        print(af.fileno())
-        print(len(await af.read()))
+        async def poke(af):
+            print(af.fileno())
+            print(len(await af.read()))
 
-    with open('pyproject.toml') as sf:  # noqa
-        # reveal_type(sf)
-        # af1 = asyncio_io_proxy(sf)
-        af1 = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj(sf)
-        # reveal_type(af1)
-        await poke(af1)
+        with open('pyproject.toml') as sf:  # noqa
+            # reveal_type(sf)
+            # af1 = asyncio_io_proxy(sf)
+            af1 = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj(sf)
+            # reveal_type(af1)
+            await poke(af1)
 
-    async with await asyncio_io_proxy(open)('pyproject.toml') as af2:  # noqa
-        # reveal_type(af2)
-        await poke(af2)
+        async with await asyncio_io_proxy(open)('pyproject.toml') as af2:  # noqa
+            # reveal_type(af2)
+            await poke(af2)
 
-    async with await asyncio_open_text('pyproject.toml') as af3:
-        # reveal_type(af3)
-        await poke(af3)
+        async with await asyncio_open_text('pyproject.toml') as af3:
+            # reveal_type(af3)
+            await poke(af3)
 
-    af4 = await asyncio_open_text('pyproject.toml')
-    try:
-        # reveal_type(af4)
-        await poke(af4)
-    finally:
-        await af4.close()
+        af4 = await asyncio_open_text('pyproject.toml')
+        try:
+            # reveal_type(af4)
+            await poke(af4)
+        finally:
+            await af4.close()

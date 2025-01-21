@@ -4,10 +4,10 @@ import functools
 import inspect
 import typing as ta
 
-from omlish.lite.check import check
+from ...lite.check import check
 
 
-AsyncIoProxyRunner: ta.TypeAlias = ta.Callable[[ta.Callable], ta.Awaitable]
+AsyncIoProxyRunner = ta.Callable[[ta.Callable], ta.Awaitable]  # ta.TypeAlias
 
 
 ##

@@ -16,7 +16,8 @@ SelfT = ta.TypeVar('SelfT')
 class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     # https://github.com/python/cpython/blob/e65a1eb93ae35f9fbab1508606e3fbc89123629f/Lib/_pyio.py#L305
 
-    ### Positioning ###
+    ##
+    # Positioning
 
     async def seek(self, pos, whence=0):
         raise TypeError
@@ -27,7 +28,8 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     async def truncate(self, pos=None):
         raise TypeError
 
-    ### Flush and close ###
+    ##
+    # Flush and close
 
     async def flush(self):
         raise TypeError
@@ -35,7 +37,8 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     async def close(self):
         raise TypeError
 
-    ### Inquiries ###
+    ##
+    # Inquiries
 
     def seekable(self):
         raise TypeError
@@ -50,7 +53,8 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     def closed(self):
         raise TypeError
 
-    ### Context manager ###
+    ##
+    # Context manager
 
     async def __aenter__(self: SelfT) -> SelfT:
         raise TypeError
@@ -58,7 +62,8 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     async def __aexit__(self, exc_type, exc_value, exc_tb):
         raise TypeError
 
-    ### Lower-level APIs ###
+    ##
+    # Lower-level APIs
 
     def fileno(self):
         raise TypeError
@@ -66,7 +71,8 @@ class IOBaseAsyncIoProxy(AsyncIoProxy, proxied_cls=io.IOBase):
     def isatty(self):
         raise TypeError
 
-    ### Readline[s] and writelines ###
+    ##
+    # Readline[s] and writelines
 
     async def readline(self, size=-1):
         raise TypeError
