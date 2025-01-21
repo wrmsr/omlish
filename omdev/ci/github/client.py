@@ -6,6 +6,7 @@ import os
 import shlex
 import typing as ta
 import urllib.parse
+import urllib.request
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -115,6 +116,20 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         ])
 
     GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
+
+
+##
+
+
+class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
+    def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
+        raise NotImplementedError
+
+    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        raise NotImplementedError
+
+    def upload_file(self, key: str, in_file: str) -> None:
+        raise NotImplementedError
 
 
 ##
