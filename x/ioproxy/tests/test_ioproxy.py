@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import functools
 
 import pytest
@@ -42,7 +41,7 @@ asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)
 
 @pytest.mark.asyncs('asyncio')
 async def test_io_proxy():
-    with open('pyproject.toml') as f:
+    with open('pyproject.toml') as f:  # noqa
         p = asyncio_io_proxy(f)
         print(p.fileno())
         print(await p.read())
