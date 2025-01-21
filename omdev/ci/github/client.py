@@ -139,6 +139,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
             success_status_codes: ta.Optional[ta.Container[int]] = None,
+            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
 
@@ -153,18 +154,30 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         if method is None:
             method = 'POST' if content is not None else 'GET'
 
-        resp: http.client.HTTPResponse
-        with urllib.request.urlopen(urllib.request.Request(  # noqa
-                url,
-                method=method,
-                headers=self.build_request_headers(
-                    headers,
-                    content_type=content_type,
-                    json_content=header_json_content,
-                ),
-                data=content,
-        )) as resp:
-            body = resp.read()
+        #
+
+        def run_sync() -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
+            resp: http.client.HTTPResponse
+            with urllib.request.urlopen(urllib.request.Request(  # noqa
+                    url,
+                    method=method,
+                    headers=self.build_request_headers(
+                        headers,
+                        content_type=content_type,
+                        json_content=header_json_content,
+                    ),
+                    data=content,
+            )) as resp:
+                body = resp.read()
+
+            return (resp, body)
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        resp, body = await loop.run_in_executor(None, run_sync)
+
+        #
 
         if success_status_codes is not None:
             is_success = resp.status in success_status_codes
