@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import abc
 import io
+import types
 import typing as ta
 
 from .io import BufferedIOBaseAsyncIoProxy
@@ -41,65 +42,65 @@ class AsyncIoProxier(abc.ABC):
     #
 
     @ta.overload
-    def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:  # type: ignore[overload-overlap]  # 1
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.TextIOWrapper) -> TextIOWrapperAsyncIoProxy:
+    def proxy_obj(self, obj: io.TextIOWrapper) -> TextIOWrapperAsyncIoProxy:  # type: ignore[overload-overlap]  # 2
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.TextIOBase) -> TextIOBaseAsyncIoProxy:  # 3
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.FileIO) -> FileIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.FileIO) -> FileIOAsyncIoProxy:  # type: ignore[overload-overlap]  # 4
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedRandom) -> BufferedRandomAsyncIoProxy:  # type: ignore[overload-overlap]  # 5
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedRWPair) -> BufferedRWPairAsyncIoProxy:  # 6
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedWriter) -> BufferedWriterAsyncIoProxy:  # type: ignore[overload-overlap]  # 7
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedReader) -> BufferedReaderAsyncIoProxy:  # type: ignore[overload-overlap]  # 8
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:
+    def proxy_obj(self, obj: io.BytesIO) -> BytesIOAsyncIoProxy:  # type: ignore[overload-overlap]  # 9
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.BufferedIOBase) -> BufferedIOBaseAsyncIoProxy:  # 10
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.RawIOBase) -> RawIOBaseAsyncIoProxy:  # 11
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:
+    def proxy_obj(self, obj: io.IOBase) -> IOBaseAsyncIoProxy:  # 12
         ...
 
     #
 
     @ta.overload
-    def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.TextIO) -> TypingTextIOAsyncIoProxy:  # 13
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: ta.BinaryIO) -> TypingBinaryIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.BinaryIO) -> TypingBinaryIOAsyncIoProxy:  # 14
         ...
 
     @ta.overload
-    def proxy_obj(self, obj: ta.IO) -> TypingIOAsyncIoProxy:
+    def proxy_obj(self, obj: ta.IO) -> TypingIOAsyncIoProxy:  # 15
         ...
 
     #
@@ -124,7 +125,7 @@ class AsyncIoProxier(abc.ABC):
 
     ##
 
-    def proxy_fn(self, fn, *, wrap_result=False):
+    def proxy_fn(self, fn, *, wrap_result='auto'):
         if wrap_result == 'auto':
             result_wrapper = self.maybe_proxy_obj
         elif wrap_result is True:
@@ -135,3 +136,16 @@ class AsyncIoProxier(abc.ABC):
             raise TypeError(wrap_result)
         runner = self.get_runner()
         return async_io_proxy_fn(fn, runner, result_wrapper=result_wrapper)
+
+    ##
+
+    FN_TYPES: ta.Tuple[type, ...] = (
+        types.FunctionType,
+        types.MethodType,
+    )
+
+    def proxy(self, obj):
+        if isinstance(obj, self.FN_TYPES):
+            return self.proxy_fn(obj)
+        else:
+            return self.proxy_obj(obj)

@@ -27,13 +27,13 @@ class AsyncioAsyncIoProxier(AsyncIoProxier):
 
 ASYNCIO_ASYNC_IO_PROXIER = AsyncioAsyncIoProxier()
 
-asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj
+asyncio_io_proxy = ASYNCIO_ASYNC_IO_PROXIER.proxy
 
 
 ##
 
 
-asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open, wrap_result=True)
+asyncio_open = ASYNCIO_ASYNC_IO_PROXIER.proxy_fn(open)
 
 
 ##
