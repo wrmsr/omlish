@@ -85,29 +85,28 @@ async def test_io_proxy():
     # b = barf()
     # reveal_type(b)
 
+    async def poke(af):
+        print(af.fileno())
+        print(len(await af.read()))
+
     with open('pyproject.toml') as sf:  # noqa
         reveal_type(sf)
         # af1 = asyncio_io_proxy(sf)
         af1 = ASYNCIO_ASYNC_IO_PROXIER.proxy_obj(sf)
         reveal_type(af1)
-        print(af1.fileno())
-        print(len(await af1.read()))
+        await poke(af1)
 
     async with await asyncio_io_proxy(open)('pyproject.toml') as af2:  # noqa
         reveal_type(af2)
-        print(af2.fileno())
-        print(len(await af2.read()))
+        await poke(af2)
 
     async with await asyncio_open_text('pyproject.toml') as af3:
         reveal_type(af3)
-        print(af3.fileno())
-        print(len(await af3.read()))
+        await poke(af3)
 
     af4 = await asyncio_open_text('pyproject.toml')
     try:
         reveal_type(af4)
-        print(af4.fileno())
-        print(len(await af4.read()))
+        await poke(af4)
     finally:
         await af4.close()
-
