@@ -1,6 +1,7 @@
 # ruff: noqa: TC003 UP006 UP007
 # @omlish-lite
 import abc
+import asyncio
 import dataclasses as dc
 import http.client
 import json
@@ -213,6 +214,27 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 ##
 
 
+async def asyncio_run_with_limited_concurrency(tasks, max_concurrent):
+    semaphore = asyncio.Semaphore(max_concurrent)
+
+    async def limited_task(task):
+        async with semaphore:
+            return await task
+
+    tasks = [limited_task(task) for task in tasks]
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+
+    for task in pending:
+        task.cancel()  # Cancel remaining tasks
+
+    # Raise the first encountered exception
+    for task in done:
+        if task.exception():
+            raise task.exception()
+
+    return [task.result() for task in done]
+
+
 class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
         obj = await self.send_request(
@@ -300,17 +322,22 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         #
 
+        upload_tasks = []
         chunk_size = 32 * 1024 * 1024
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
-
-            await self._upload_file_chunk(
+            upload_tasks.append(self._upload_file_chunk(
                 cache_id,
                 in_file,
                 offset,
                 size,
-            )
+            ))
+
+        # for upload_task in upload_tasks:
+        #     await upload_task
+
+        await asyncio_run_with_limited_concurrency(upload_tasks, 4)
 
         #
 
