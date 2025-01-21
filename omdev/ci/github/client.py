@@ -176,7 +176,7 @@ class GithubCacheServiceV1UrllibClient(GithubCacheServiceV1BaseClient):
             content_type: ta.Optional[str] = None,
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
-            success_status_codes: ta.Optional[ta.Container[int]] = (200,),
+            success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
 
