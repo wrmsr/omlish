@@ -43,7 +43,17 @@ class AsyncIoProxier:
         runner = self.get_runner(obj)
         return AsyncIoProxyTarget(obj, runner)
 
-    #
+    def proxy_obj_with_cls(self, obj, proxy_cls):
+        target = self.target_obj(obj)
+        proxy = proxy_cls(target)
+        return proxy
+
+    def maybe_proxy_obj(self, obj):
+        if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
+            return obj
+        return self.proxy_obj_with_cls(obj, proxy_cls)
+
+    ##
 
     @ta.overload
     def proxy_obj(self, obj: io.StringIO) -> StringIOAsyncIoProxy:  # type: ignore[overload-overlap]  # 1
@@ -110,20 +120,9 @@ class AsyncIoProxier:
     #
 
     def proxy_obj(self, obj):
-        target = self.target_obj(obj)
         if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
             raise TypeError(obj)
-        proxy = proxy_cls(target)
-        return proxy
-
-    #
-
-    def maybe_proxy_obj(self, obj):
-        target = self.target_obj(obj)
-        if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
-            return obj
-        proxy = proxy_cls(target)
-        return proxy
+        return self.proxy_obj_with_cls(obj, proxy_cls)
 
     ##
 
