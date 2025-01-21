@@ -1,13 +1,12 @@
 # ruff: noqa: UP006 UP007
-import abc
 import io
 import types
 import typing as ta
 
 from .io import BufferedIOBaseAsyncIoProxy
-from .io import BufferedRWPairAsyncIoProxy
 from .io import BufferedRandomAsyncIoProxy
 from .io import BufferedReaderAsyncIoProxy
+from .io import BufferedRWPairAsyncIoProxy
 from .io import BufferedWriterAsyncIoProxy
 from .io import BytesIOAsyncIoProxy
 from .io import FileIOAsyncIoProxy
@@ -28,15 +27,20 @@ from .typing import TypingTextIOAsyncIoProxy
 ##
 
 
-class AsyncIoProxier(abc.ABC):
-    @abc.abstractmethod
-    def get_runner(self) -> AsyncIoProxyRunner:
-        raise NotImplementedError
+@ta.final
+class AsyncIoProxier:
+    def __init__(self, runner_policy: ta.Callable[[ta.Any], AsyncIoProxyRunner]) -> None:
+        super().__init__()
+
+        self._runner_policy = runner_policy
+
+    def get_runner(self, obj: ta.Any) -> AsyncIoProxyRunner:
+        return self._runner_policy(obj)
 
     ##
 
     def target_obj(self, obj: ta.Any) -> AsyncIoProxyTarget:
-        runner = self.get_runner()
+        runner = self.get_runner(obj)
         return AsyncIoProxyTarget(obj, runner)
 
     #
@@ -105,7 +109,6 @@ class AsyncIoProxier(abc.ABC):
 
     #
 
-    @ta.final
     def proxy_obj(self, obj):
         target = self.target_obj(obj)
         if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
@@ -115,7 +118,6 @@ class AsyncIoProxier(abc.ABC):
 
     #
 
-    @ta.final
     def maybe_proxy_obj(self, obj):
         target = self.target_obj(obj)
         if (proxy_cls := async_io_proxy_cls_for(obj)) is None:
@@ -134,7 +136,7 @@ class AsyncIoProxier(abc.ABC):
             result_wrapper = None
         else:
             raise TypeError(wrap_result)
-        runner = self.get_runner()
+        runner = self.get_runner(fn)
         return async_io_proxy_fn(fn, runner, result_wrapper=result_wrapper)
 
     ##
