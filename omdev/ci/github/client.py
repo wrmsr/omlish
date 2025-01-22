@@ -287,7 +287,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 'Downloading github cache '
                 f'key {entry1.artifact.cache_key} '
                 f'version {entry1.artifact.cache_version} '
-                f'to {os.path.basename(out_file)}',
+                f'to {out_file}',
         ):
             await self._download_file(entry1, out_file)
 
@@ -301,7 +301,9 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             size: int,
     ) -> None:
         with log_timing_context(
-                f'Uploading github cache {cache_id} file {os.path.basename(in_file)} chunk {offset} - {offset + size}',
+                f'Uploading github cache {cache_id} '
+                f'file {in_file} '
+                f'chunk {offset} - {offset + size}',
         ):
             with open(in_file, 'rb') as f:  # noqa
                 f.seek(offset)
