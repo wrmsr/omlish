@@ -2,7 +2,7 @@
 # - https://docs.docker.com/build/cache/backends/inline/
 # - https://stackoverflow.com/a/73750495
 
-name: 'Ci'
+name: 'CI'
 
 permissions:
   contents: 'read'
@@ -17,7 +17,7 @@ env:
   IMAGE_NAME: 'omlish-ci'
 
 jobs:
-  Ci:
+  CI:
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout repository'
