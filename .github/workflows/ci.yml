@@ -2,11 +2,11 @@
 # - https://docs.docker.com/build/cache/backends/inline/
 # - https://stackoverflow.com/a/73750495
 
-name: Ci
+name: 'Ci'
 
 permissions:
-  contents: read
-  checks: write
+  contents: 'read'
+  checks: 'write'
 
 on:
   push:
@@ -17,21 +17,21 @@ env:
   IMAGE_NAME: 'omlish-ci'
 
 jobs:
-  test:
+  Ci:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v4.2.2'
+      - name: 'Checkout repository'
+        uses: 'actions/checkout@v4.2.2'
 
-      - uses: 'styfle/cancel-workflow-action@0.12.1'
+      - name: 'Cancel previous workflows'
+        uses: 'styfle/cancel-workflow-action@0.12.1'
         with:
           access_token: '${{ github.token }}'
 
       # - uses: 'mxschmitt/action-tmate@v3.19'
 
-      ##
-
-      - name: Adding required env vars for caching Docker build
-        uses: actions/github-script@v7
+      - name: 'Export CI vars'
+        uses: 'actions/github-script@v7'
         env:
           export-vars: >
             ACTIONS_CACHE_URL
@@ -47,7 +47,8 @@ jobs:
           PYTEST_JUNIT_XML_PATH=/github/workspace/test-results.xml
           make ci2
 
-      - uses: 'mikepenz/action-junit-report@v5.2.0'
+      - name: 'Report JUnit results'
+        uses: 'mikepenz/action-junit-report@v5.2.0'
         if: 'always()'
         with:
           report_paths: '${{ github.workspace }}/test-results.xml'
