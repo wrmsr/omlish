@@ -6,7 +6,6 @@ from ._antlr.ChatVisitor import ChatVisitor  # type: ignore
 
 
 class ChatVisitorImpl(ChatVisitor):
-
     def visitChildren(self, node):  # noqa
         print(node)
         return super().visitChildren(node)
