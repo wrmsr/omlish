@@ -183,11 +183,19 @@ class Ci(AsyncExitStacked):
             base_image = await self.resolve_ci_base_image()
 
             setup_cmds = [
-                'pip install --no-cache-dir --root-user-action ignore uv',
-                (
-                    'uv pip install --no-cache --system ' +
-                    ' '.join(f'-r /project/{rf}' for rf in self._cfg.requirements_txts or [])
-                ),
+                ' '.join([
+                    'pip install',
+                    '--no-cache-dir',
+                    '--root-user-action ignore',
+                    'uv',
+                ]),
+                ' '.join([
+                    'uv pip install',
+                    '--no-cache',
+                    '--index-strategy unsafe-best-match',
+                    '--system',
+                    *[f'-r /project/{rf}' for rf in self._cfg.requirements_txts or []],
+                ]),
             ]
             setup_cmd = ' && '.join(setup_cmds)
 

@@ -1,6 +1,12 @@
 """
 TODO:
  - https://github.com/zeromake/docker-debug
+ - prune
+  - docker container prune --force
+  - docker system prune --all --force --filter "until=720h"
+  - docker container prune --force --filter "until=720h"
+  - docker image prune --all --force --filter "until=720h"
+  - docker builder prune --all --force --filter "until=720h"
 """
 import os
 import re
