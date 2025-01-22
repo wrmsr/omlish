@@ -158,8 +158,10 @@ class CiCli(ArgparseCli):
         #
 
         github = self.args.github
-        if github is None and self.args.github_detect:
+        if not github and self.args.github_detect:
             github = is_in_github_actions()
+            if github:
+                log.debug('Github detected')
 
         #
 
