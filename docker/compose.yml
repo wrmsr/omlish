@@ -14,7 +14,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - '..:/omlish'
-    depends_on: &dev-deps
+    depends_on:
       - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-s3'
@@ -23,7 +23,6 @@ services:
       # - 'omlish-neo4j'
       - 'omlish-pgvector'
       - 'omlish-redis'
-    links: *dev-deps
     expose:
       - '22'
       - '8000'
@@ -48,11 +47,10 @@ services:
     image: 'wrmsr/omlish-ci:latest'
     platform: 'linux/x86_64'
     restart: 'no'
-    depends_on: &ci-deps
+    depends_on:
       - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-s3'
-    links: *ci-deps
 
   # main
 

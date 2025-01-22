@@ -461,7 +461,7 @@ ci-bash: ci-image
 
 .PHONY: ci2
 ci2:
-	python3 omdev/scripts/ci.py run \
+	./python omdev/scripts/ci.py run \
 		--cache-dir ~/.cache/omlish/ci \
 		--github-detect \
 		-e CI=1 \

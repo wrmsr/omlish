@@ -26,7 +26,7 @@ jobs:
         with:
           access_token: '${{ github.token }}'
 
-      - uses: 'mxschmitt/action-tmate@v3.19'
+      # - uses: 'mxschmitt/action-tmate@v3.19'
 
       ##
 
@@ -49,3 +49,4 @@ jobs:
         if: 'always()'
         with:
           report_paths: ${{ github.workspace }}/test-results.xml
+          include_passed: true

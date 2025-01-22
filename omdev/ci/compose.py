@@ -102,11 +102,6 @@ class DockerComposeRun(AsyncExitStacked):
             if k in out_service:
                 del out_service[k]
 
-        out_service['links'] = [
-            f'{l}:{l}' if ':' not in l else l
-            for l in out_service.get('links', [])
-        ]
-
         #
 
         if not self._cfg.no_dependencies:
@@ -123,7 +118,6 @@ class DockerComposeRun(AsyncExitStacked):
 
         else:
             out_service['depends_on'] = []
-            out_service['links'] = []
 
         #
 

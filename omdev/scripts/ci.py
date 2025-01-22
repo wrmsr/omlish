@@ -2344,8 +2344,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             buf = check.not_none(buf_)
             check.equal(len(buf), size)
 
-            with open(out_file, 'wb+') as f:  # noqa
-                f.seek(offset)
+            with open(out_file, 'r+b') as f:  # noqa
+                f.seek(offset, os.SEEK_SET)
                 f.write(buf)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
@@ -2360,7 +2360,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         #
 
-        with open(out_file, 'wb') as f:  # noqa
+        with open(out_file, 'xb') as f:  # noqa
             f.truncate(file_size)
 
         #
@@ -3411,11 +3411,6 @@ class DockerComposeRun(AsyncExitStacked):
             if k in out_service:
                 del out_service[k]
 
-        out_service['links'] = [
-            f'{l}:{l}' if ':' not in l else l
-            for l in out_service.get('links', [])
-        ]
-
         #
 
         if not self._cfg.no_dependencies:
@@ -3432,7 +3427,6 @@ class DockerComposeRun(AsyncExitStacked):
 
         else:
             out_service['depends_on'] = []
-            out_service['links'] = []
 
         #
 

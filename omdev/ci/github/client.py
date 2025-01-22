@@ -305,8 +305,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             buf = check.not_none(buf_)
             check.equal(len(buf), size)
 
-            with open(out_file, 'wb+') as f:  # noqa
-                f.seek(offset)
+            with open(out_file, 'r+b') as f:  # noqa
+                f.seek(offset, os.SEEK_SET)
                 f.write(buf)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
@@ -321,7 +321,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         #
 
-        with open(out_file, 'wb') as f:  # noqa
+        with open(out_file, 'xb') as f:  # noqa
             f.truncate(file_size)
 
         #
