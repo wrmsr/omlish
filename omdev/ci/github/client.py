@@ -283,40 +283,44 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
     #
 
-    async def _download_file_chunk(
-            self,
-            key: str,
-            url: str,
-            out_file: str,
-            offset: int,
-            size: int,
-    ) -> None:
+    @dc.dataclass(frozen=True)
+    class _DownloadChunk:
+        key: str
+        url: str
+        out_file: str
+        offset: int
+        size: int
+
+    async def _download_file_chunk_urllib(self, chunk: _DownloadChunk) -> None:
+        req = urllib.request.Request(  # noqa
+            chunk.url,
+            headers={
+                'Range': f'bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+            },
+        )
+
+        _, buf_ = await self.send_url_request(req)
+
+        buf = check.not_none(buf_)
+        check.equal(len(buf), chunk.size)
+
+        #
+
+        def write_sync():
+            with open(chunk.out_file, 'r+b') as f:  # noqa
+                f.seek(chunk.offset, os.SEEK_SET)
+                f.write(buf)
+
+        await self._get_loop().run_in_executor(None, write_sync)  # noqa
+
+    async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
         with log_timing_context(
                 'Downloading github cache '
-                f'key {key} '
-                f'file {out_file} '
-                f'chunk {offset} - {offset + size}',
+                f'key {chunk.key} '
+                f'file {chunk.out_file} '
+                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
         ):
-            req = urllib.request.Request(  # noqa
-                url,
-                headers={
-                    'Range': f'bytes={offset}-{offset + size - 1}',
-                },
-            )
-
-            _, buf_ = await self.send_url_request(req)
-
-            buf = check.not_none(buf_)
-            check.equal(len(buf), size)
-
-            #
-
-            def write_sync():
-                with open(out_file, 'r+b') as f:  # noqa
-                    f.seek(offset, os.SEEK_SET)
-                    f.write(buf)
-
-            await self._get_loop().run_in_executor(None, write_sync)  # noqa
+            await self._download_file_chunk_urllib(chunk)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)
@@ -340,13 +344,14 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
-            download_tasks.append(self._download_file_chunk(
+            chunk = self._DownloadChunk(
                 key,
                 url,
                 out_file,
                 offset,
                 size,
-            ))
+            )
+            download_tasks.append(self._download_file_chunk(chunk))
 
         await asyncio_wait_concurrent(download_tasks, self._concurrency)
 
