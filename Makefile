@@ -464,6 +464,9 @@ ci-bash: ci-image
 ci2:
 	${PYTHON} omdev/scripts/ci.py run \
 		--cache-dir ~/.cache/omlish/ci \
+		--github-detect \
+		-e CI=1 \
+		$$CI_RUN_OPTS \
 		. \
 		omlish-ci \
 		-- \

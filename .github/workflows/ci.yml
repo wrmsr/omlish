@@ -30,15 +30,11 @@ jobs:
 
       ##
 
-      - name: 'Build CI image'
+      - name: 'Run CI'
         run: >
-          make ci-image
-
-      - name: 'Run CI tests'
-        run: >
-          CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace -e PYTEST_JUNIT_XML_PATH'
+          CI_RUN_OPTS='-v ${{ github.workspace }}:/github/workspace -e PYTEST_JUNIT_XML_PATH'
           PYTEST_JUNIT_XML_PATH=/github/workspace/test-results.xml
-          make ci
+          make ci2
 
       - uses: 'mikepenz/action-junit-report@v4.3.1'
         if: 'always()'
