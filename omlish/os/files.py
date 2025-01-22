@@ -2,37 +2,7 @@
 # @omlish-lite
 import contextlib
 import os
-import shutil
-import tempfile
 import typing as ta
-
-
-@contextlib.contextmanager
-def tmp_dir(
-        root_dir: ta.Optional[str] = None,
-        cleanup: bool = True,
-        **kwargs: ta.Any,
-) -> ta.Iterator[str]:
-    path = tempfile.mkdtemp(dir=root_dir, **kwargs)
-    try:
-        yield path
-    finally:
-        if cleanup:
-            shutil.rmtree(path, ignore_errors=True)
-
-
-@contextlib.contextmanager
-def tmp_file(
-        root_dir: ta.Optional[str] = None,
-        cleanup: bool = True,
-        **kwargs: ta.Any,
-) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
-    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
-        try:
-            yield f
-        finally:
-            if cleanup:
-                shutil.rmtree(f.name, ignore_errors=True)
 
 
 def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
@@ -57,3 +27,11 @@ def unlink_if_exists(path: str) -> None:
         os.unlink(path)
     except FileNotFoundError:
         pass
+
+
+@contextlib.contextmanager
+def unlinking_if_exists(path: str) -> ta.Iterator[None]:
+    try:
+        yield
+    finally:
+        unlink_if_exists(path)

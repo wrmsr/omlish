@@ -1,10 +1,12 @@
 # ruff: noqa: TC003 UP006 UP007
 import abc
 import asyncio
+import contextlib
 import dataclasses as dc
 import http.client
 import json
 import os
+import subprocess
 import typing as ta
 import urllib.parse
 import urllib.request
@@ -14,6 +16,7 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
+from omlish.os.temp import temp_file_context
 
 from ..consts import CI_CACHE_VERSION
 from ..utils import log_timing_context
@@ -315,21 +318,32 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         await self._get_loop().run_in_executor(None, write_sync)  # noqa
 
     async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
-        with open(chunk.out_file, 'r+b') as f:  # noqa
+        async with contextlib.AsyncExitStack() as es:
+            f = open(chunk.out_file, 'r+b')
             f.seek(chunk.offset, os.SEEK_SET)
-            out_fd = f.fileno()
 
-            curl_json = await asyncio_subprocesses.check_output(
+            tmp_file = es.enter_context(temp_file_context())  # noqa
+
+            proc = await es.enter_async_context(asyncio_subprocesses.popen(
                 'curl',
                 '-s',
                 '-w', '%{json}',
                 '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
-                '-o', f'/dev/fd/{out_fd}',
                 chunk.url,
-                pass_fds=[out_fd],
+                output=subprocess.PIPE,
+            ))
+
+            futs = asyncio.gather(
+
             )
 
+            await proc.wait()
+
+            with open(tmp_file, 'r') as f:  # noqa
+                curl_json = tmp_file.read()
+
         curl_res = json.loads(curl_json.decode().strip())
+
         status_code = check.isinstance(curl_res['response_code'], int)
 
         if not (200 <= status_code <= 300):
