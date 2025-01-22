@@ -1,3 +1,7 @@
+"""
+TODO:
+ - proxy_init 'as' alias support - attrs of (src, dst)
+"""
 import contextlib
 import importlib.util
 import sys

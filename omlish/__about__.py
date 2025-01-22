@@ -54,7 +54,7 @@ class Project(ProjectBase):
 
         'diag': [
             'asttokens ~= 3.0',
-            'executing ~= 2.1',
+            'executing ~= 2.2',
 
             'psutil ~= 6.0',
         ],
@@ -62,8 +62,6 @@ class Project(ProjectBase):
         'formats': [
             'orjson ~= 3.10',
             'ujson ~= 5.10',
-
-            'json5 ~= 0.9',
 
             'pyyaml ~= 6.0',
 

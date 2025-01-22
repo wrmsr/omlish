@@ -1,10 +1,10 @@
 -r requirements.txt
 
 build>=1.2.2
-twine>=6.0.1
+twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.5.21
+uv>=0.5.22
 
 pytest==8.3.4
 pytest-benchmark==5.1.0
@@ -90,7 +90,7 @@ markdown==3.7
 mwparserfromhell==0.6.6  # @omlish-venv !13t
 wikitextparser==0.56.3  # !! GPL
 
-executing==2.1.0
+executing==2.2.0
 asttokens==3.0.0
 
 numpy>=1.20
@@ -117,7 +117,7 @@ segno==1.6.1
 
 duckduckgo_search==7.2.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.2
+boto3>=1.36.4
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.21.1; sys_platform == "darwin"

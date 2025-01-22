@@ -61,7 +61,7 @@ def find_any(
 ) -> int:
     r = -1
     for sub in subs:
-        if (p := string.find(sub, start, end)) >= 0:
+        if (p := string.find(sub, start, end)) >= 0:  # type: ignore
             if r < 0 or p < r:
                 r = p
     return r
@@ -75,7 +75,7 @@ def rfind_any(
 ) -> int:
     r = -1
     for sub in subs:
-        if (p := string.rfind(sub, start, end)) >= 0:
+        if (p := string.rfind(sub, start, end)) >= 0:  # type: ignore
             if r < 0 or p > r:
                 r = p
     return r

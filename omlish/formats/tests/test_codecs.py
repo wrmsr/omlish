@@ -17,6 +17,7 @@ def _test_object(name: str) -> None:
     'json',
     'json-pretty',
     'json-compact',
+    'json5',
 ])
 def test_object(name: str) -> None:
     _test_object(name)

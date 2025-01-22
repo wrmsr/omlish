@@ -1,13 +1,17 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from . import runtime as antlr4
 from .. import check
+from . import runtime as antlr4
 from .errors import SilentRaisingErrorListener
 
 
 LexerT = ta.TypeVar('LexerT', bound=antlr4.Lexer)
 ParserT = ta.TypeVar('ParserT', bound=antlr4.Parser)
+
+
+def is_eof_context(ctx: antlr4.ParserRuleContext) -> bool:
+    return ctx.getChildCount() == 1 and ctx.getChild(0).getSymbol().type == antlr4.Token.EOF
 
 
 class StandardParseTreeVisitor(antlr4.ParseTreeVisitor):

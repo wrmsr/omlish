@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.124.1
+hypothesis==6.124.2
 
 hexdump==3.3
 
@@ -179,7 +179,7 @@ mitogen==0.3.21
 
 ##
 
-openai==1.59.9
+openai==1.60.0
 
 trl==0.13.0
 tf-keras==2.17.0
@@ -212,9 +212,9 @@ langchain==0.3.15
 
 langchainhub==0.1.21
 
-langgraph==0.2.65
+langgraph==0.2.66
 
-langsmith==0.2.11
+langsmith==0.3.1
 
 tavily-python==0.5.0
 
@@ -285,7 +285,7 @@ dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
 trafilatura==1.12.2
-qdrant-client==1.13.0
+qdrant-client==1.13.2
 
 flask==3.1.0
 
