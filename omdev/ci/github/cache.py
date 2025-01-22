@@ -4,7 +4,6 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
-from omlish.lite.logs import log
 from omlish.os.files import unlink_if_exists
 
 from ..cache import DirectoryFileCache
@@ -40,9 +39,7 @@ class GithubFileCache(FileCache):
         )
 
     async def get_file(self, key: str) -> ta.Optional[str]:
-        log.debug(f'{self._dir=}')
         local_file = self._local.get_cache_file_path(key)
-        log.debug(f'{local_file=}')
         if os.path.exists(local_file):
             return local_file
 
@@ -50,7 +47,6 @@ class GithubFileCache(FileCache):
             return None
 
         tmp_file = self._local.format_incomplete_file(local_file)
-        log.debug(f'{tmp_file=}')
         with defer(lambda: unlink_if_exists(tmp_file)):
             await self._client.download_file(entry, tmp_file)
 

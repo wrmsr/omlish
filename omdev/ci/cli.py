@@ -167,6 +167,8 @@ class CiCli(ArgparseCli):
 
         file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
+            cache_dir = os.path.abspath(cache_dir)
+            log.debug('Using cache dir %s', cache_dir)
             if github:
                 file_cache = GithubFileCache(cache_dir)
             else:
