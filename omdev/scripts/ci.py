@@ -2100,6 +2100,8 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             key_suffix: ta.Optional[str] = None,
 
             cache_version: int = CI_CACHE_VERSION,
+
+            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         super().__init__()
 
@@ -2124,6 +2126,12 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         #
 
         self._cache_version = check.isinstance(cache_version, int)
+
+        #
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+        self._loop = check.not_none(loop)
 
     #
 
@@ -2166,18 +2174,13 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     async def send_url_request(
             self,
             req: urllib.request.Request,
-            *,
-            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
     ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
         def run_sync():
             with urllib.request.urlopen(req) as resp:  # noqa
                 body = resp.read()
             return (resp, body)
 
-        if loop is None:
-            loop = asyncio.get_running_loop()
-
-        return await loop.run_in_executor(None, run_sync)  # noqa
+        return await self._loop.run_in_executor(None, run_sync)
 
     #
 
@@ -2199,7 +2202,6 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
             success_status_codes: ta.Optional[ta.Container[int]] = None,
-            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
 
@@ -2227,10 +2229,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             data=content,
         )
 
-        resp, body = await self.send_url_request(
-            req,
-            loop=loop,
-        )
+        resp, body = await self.send_url_request(req)
 
         #
 
@@ -2344,9 +2343,14 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             buf = check.not_none(buf_)
             check.equal(len(buf), size)
 
-            with open(out_file, 'r+b') as f:  # noqa
-                f.seek(offset, os.SEEK_SET)
-                f.write(buf)
+            #
+
+            def write_sync():
+                with open(out_file, 'r+b') as f:  # noqa
+                    f.seek(offset, os.SEEK_SET)
+                    f.write(buf)
+
+            await self._loop.run_in_executor(None, write_sync)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)
