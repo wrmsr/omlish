@@ -5,19 +5,16 @@ import dataclasses as dc
 import http.client
 import json
 import os
-import shlex
 import typing as ta
 import urllib.parse
 import urllib.request
 
 from omlish.asyncs.asyncio.asyncio import asyncio_wait_concurrent
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
 
 from ..consts import CI_CACHE_VERSION
-from ..shell import ShellCmd
 from ..utils import log_timing_context
 from .api import GithubCacheServiceV1
 from .env import register_github_env_var
@@ -127,15 +124,33 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
+    async def send_url_request(
+            self,
+            req: urllib.request.Request,
+            *,
+            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
+    ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
+        def run_sync():
+            with urllib.request.urlopen(req) as resp:  # noqa
+                body = resp.read()
+            return (resp, body)
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        return await loop.run_in_executor(None, run_sync)  # noqa
+
+    #
+
     @dc.dataclass()
-    class RequestError(RuntimeError):
+    class ServiceRequestError(RuntimeError):
         status_code: int
         body: ta.Optional[bytes]
 
         def __str__(self) -> str:
             return repr(self)
 
-    async def send_request(
+    async def send_service_request(
             self,
             path: str,
             *,
@@ -162,26 +177,21 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
         #
 
-        def run_sync() -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
-            resp: http.client.HTTPResponse
-            with urllib.request.urlopen(urllib.request.Request(  # noqa
-                    url,
-                    method=method,
-                    headers=self.build_request_headers(
-                        headers,
-                        content_type=content_type,
-                        json_content=header_json_content,
-                    ),
-                    data=content,
-            )) as resp:
-                body = resp.read()
+        req = urllib.request.Request(  # noqa
+            url,
+            method=method,
+            headers=self.build_request_headers(
+                headers,
+                content_type=content_type,
+                json_content=header_json_content,
+            ),
+            data=content,
+        )
 
-            return (resp, body)
-
-        if loop is None:
-            loop = asyncio.get_running_loop()
-
-        resp, body = await loop.run_in_executor(None, run_sync)
+        resp, body = await self.send_url_request(
+            req,
+            loop=loop,
+        )
 
         #
 
@@ -190,7 +200,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         else:
             is_success = (200 <= resp.status <= 300)
         if not is_success:
-            raise self.RequestError(resp.status, body)
+            raise self.ServiceRequestError(resp.status, body)
 
         return self.load_json_bytes(body)
 
@@ -256,7 +266,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
     #
 
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheServiceV1BaseClient.Entry]:
-        obj = await self.send_request(
+        obj = await self.send_service_request(
             self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
         )
         if obj is None:
@@ -269,18 +279,67 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
     #
 
+    async def _download_file_chunk(
+            self,
+            key: str,
+            url: str,
+            out_file: str,
+            offset: int,
+            size: int,
+    ) -> None:
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {key} '
+                f'file {out_file} '
+                f'chunk {offset} - {offset + size}',
+        ):
+            req = urllib.request.Request(  # noqa
+                url,
+                headers={
+                    'Range': f'bytes={offset}-{offset + size - 1}',
+                },
+            )
+
+            _, buf_ = await self.send_url_request(req)
+
+            buf = check.not_none(buf_)
+            check.equal(len(buf), size)
+
+            with open(out_file, 'wb+') as f:  # noqa
+                f.seek(offset)
+                f.write(buf)
+
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
-        dl_url = check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)
+        key = check.non_empty_str(entry.artifact.cache_key)
+        url = check.non_empty_str(entry.artifact.archive_location)
 
-        dl_cmd = ShellCmd(' '.join([
-            'aria2c',
-            '-x', str(self._concurrency),
-            '-o', out_file,
-            '-d', '/',  # https://github.com/aria2/aria2/issues/684#issuecomment-226989462
-            shlex.quote(dl_url),
-        ]))
+        head_resp, _ = await self.send_url_request(urllib.request.Request(  # noqa
+            url,
+            method='HEAD',
+        ))
+        file_size = int(head_resp.headers['Content-Length'])
 
-        await dl_cmd.run(asyncio_subprocesses.check_call)
+        #
+
+        with open(out_file, 'wb') as f:  # noqa
+            f.truncate(file_size)
+
+        #
+
+        download_tasks = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            download_tasks.append(self._download_file_chunk(
+                key,
+                url,
+                out_file,
+                offset,
+                size,
+            ))
+
+        await asyncio_wait_concurrent(download_tasks, self._concurrency)
 
     async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         entry1 = check.isinstance(entry, self.Entry)
@@ -296,13 +355,14 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
     async def _upload_file_chunk(
             self,
+            key: str,
             cache_id: int,
             in_file: str,
             offset: int,
             size: int,
     ) -> None:
         with log_timing_context(
-                f'Uploading github cache {cache_id} '
+                f'Uploading github cache {key} '
                 f'file {in_file} '
                 f'chunk {offset} - {offset + size}',
         ):
@@ -312,7 +372,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
             check.equal(len(buf), size)
 
-            await self.send_request(
+            await self.send_service_request(
                 f'caches/{cache_id}',
                 method='PATCH',
                 content_type='application/octet-stream',
@@ -337,7 +397,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             cache_size=file_size,
             version=str(self._cache_version),
         )
-        reserve_resp_obj = await self.send_request(
+        reserve_resp_obj = await self.send_service_request(
             'caches',
             json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
             success_status_codes=[201],
@@ -358,6 +418,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
             offset = i * chunk_size
             size = min(chunk_size, file_size - offset)
             upload_tasks.append(self._upload_file_chunk(
+                fixed_key,
                 cache_id,
                 in_file,
                 offset,
@@ -371,12 +432,15 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
         commit_req = GithubCacheServiceV1.CommitCacheRequest(
             size=file_size,
         )
-        await self.send_request(
+        await self.send_service_request(
             f'caches/{cache_id}',
             json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
             success_status_codes=[204],
         )
 
     async def upload_file(self, key: str, in_file: str) -> None:
-        with log_timing_context(f'Uploading github cache file {os.path.basename(in_file)}'):
+        with log_timing_context(
+                f'Uploading github cache file {os.path.basename(in_file)} '
+                f'key {key}',
+        ):
             await self._upload_file(key, in_file)
