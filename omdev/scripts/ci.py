@@ -92,23 +92,24 @@ CI_CACHE_VERSION = 1
 
 
 ########################################
-# ../github/bootstrap.py
-"""
-sudo rm -rf \
-    /usr/local/.ghcup \
-    /opt/hostedtoolcache \
-
-/usr/local/.ghcup       6.4G, 3391250 files
-/opt/hostedtoolcache    8.0G, 14843980 files
-/usr/local/lib/android  6.4G, 17251667 files
-"""
+# ../github/env.py
 
 
-GITHUB_ACTIONS_ENV_KEY = 'GITHUB_ACTIONS'
+@dc.dataclass(frozen=True)
+class GithubEnvVar:
+    k: str
+
+    def __call__(self) -> ta.Optional[str]:
+        return os.environ.get(self.k)
 
 
-def is_in_github_actions() -> bool:
-    return GITHUB_ACTIONS_ENV_KEY in os.environ
+GITHUB_ENV_VARS: ta.Set[GithubEnvVar] = set()
+
+
+def register_github_env_var(k: str) -> GithubEnvVar:
+    ev = GithubEnvVar(k)
+    GITHUB_ENV_VARS.add(ev)
+    return ev
 
 
 ########################################
@@ -1487,6 +1488,26 @@ class GithubCacheServiceV2:
         GetCacheEntryDownloadUrlRequest,
         GetCacheEntryDownloadUrlResponse,
     )
+
+
+########################################
+# ../github/bootstrap.py
+"""
+sudo rm -rf \
+    /usr/local/.ghcup \
+    /opt/hostedtoolcache \
+
+/usr/local/.ghcup       6.4G, 3391250 files
+/opt/hostedtoolcache    8.0G, 14843980 files
+/usr/local/lib/android  6.4G, 17251667 files
+"""
+
+
+GITHUB_ACTIONS_ENV_VAR = register_github_env_var('GITHUB_ACTIONS')
+
+
+def is_in_github_actions() -> bool:
+    return GITHUB_ACTIONS_ENV_VAR() is not None
 
 
 ########################################
@@ -3137,10 +3158,10 @@ class GithubCacheClient(abc.ABC):
 
 
 class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
-    BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
-    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
+    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
 
-    KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
+    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
 
     #
 
@@ -3160,11 +3181,11 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         #
 
         if base_url is None:
-            base_url = os.environ[self.BASE_URL_ENV_KEY]
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
         self._service_url = GithubCacheServiceV1.get_service_url(base_url)
 
         if auth_token is None:
-            auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
+            auth_token = self.AUTH_TOKEN_ENV_VAR()
         self._auth_token = auth_token
 
         #
@@ -3172,7 +3193,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         self._key_prefix = key_prefix
 
         if key_suffix is None:
-            key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
+            key_suffix = self.KEY_SUFFIX_ENV_VAR()
         self._key_suffix = check.non_empty_str(key_suffix)
 
         #
@@ -3790,6 +3811,10 @@ See:
 
 
 class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
     @argparse_cmd(
         argparse_arg('key'),
     )

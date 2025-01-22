@@ -20,6 +20,7 @@ from ..consts import CI_CACHE_VERSION
 from ..shell import ShellCmd
 from ..utils import log_timing_context
 from .api import GithubCacheServiceV1
+from .env import register_github_env_var
 
 
 ##
@@ -46,10 +47,10 @@ class GithubCacheClient(abc.ABC):
 
 
 class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
-    BASE_URL_ENV_KEY = 'ACTIONS_CACHE_URL'
-    AUTH_TOKEN_ENV_KEY = 'ACTIONS_RUNTIME_TOKEN'  # noqa
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
+    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
 
-    KEY_SUFFIX_ENV_KEY = 'GITHUB_RUN_ID'
+    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
 
     #
 
@@ -69,11 +70,11 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         #
 
         if base_url is None:
-            base_url = os.environ[self.BASE_URL_ENV_KEY]
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
         self._service_url = GithubCacheServiceV1.get_service_url(base_url)
 
         if auth_token is None:
-            auth_token = os.environ.get(self.AUTH_TOKEN_ENV_KEY)
+            auth_token = self.AUTH_TOKEN_ENV_VAR()
         self._auth_token = auth_token
 
         #
@@ -81,7 +82,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
         self._key_prefix = key_prefix
 
         if key_suffix is None:
-            key_suffix = os.environ[self.KEY_SUFFIX_ENV_KEY]
+            key_suffix = self.KEY_SUFFIX_ENV_VAR()
         self._key_suffix = check.non_empty_str(key_suffix)
 
         #
