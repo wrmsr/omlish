@@ -26,31 +26,9 @@ jobs:
         with:
           access_token: '${{ github.token }}'
 
-      ##
-
-      # - name: 'Cache'
-      #   uses: 'actions/cache@v2'
-      #   id: 'cache'
-      #   with:
-      #     path: '~/.cache'
-      #     key:
-      #       ci-${{ github.ref }}-${{ hashFiles(
-      #         'docker/.timestamp',
-      #         'docker/ci/Dockerfile',
-      #         'docker/compose.yml'
-      #       ) }}
-      #     restore-keys: |
-      #       ci-${{ github.ref }}-
-      #       ci-
-
-      # - name: 'Docker cache load'
-      #   run: >
-      #     tar -tvf ~/.cache/docker/ci.tar ||: ;
-      #     docker load -i ~/.cache/docker/ci.tar ||: ;
-
-      ##
-
       # - uses: 'mxschmitt/action-tmate@v3.19'
+
+      ##
 
       - name: 'Build CI image'
         run: >
@@ -66,21 +44,3 @@ jobs:
         if: 'always()'
         with:
           report_paths: ${{ github.workspace }}/test-results.xml
-
-      ##
-
-      # - name: 'Docker cache save'
-      #   if: "steps.cache.outputs.cache-hit != 'true'"
-      #   run: >
-      #     docker images -a &&
-      #     mkdir -p ~/.cache/docker/ &&
-      #     (
-      #       for IMG in $(
-      #         egrep '^\s*image:' docker/compose.yml | cut -d"'" -f2 | egrep -v 'wrmsr/omlish-ci'
-      #       ) ; do
-      #         if ( docker history "$IMG" >/dev/null 2>/dev/null ) ; then
-      #           echo "$IMG" ;
-      #           docker history "$IMG" | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' ;
-      #         fi ;
-      #       done
-      #     ) | xargs docker save -o ~/.cache/docker/ci.tar

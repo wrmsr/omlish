@@ -40,12 +40,18 @@ class Ci(AsyncExitStacked):
 
         cmd: ShellCmd
 
+        #
+
         requirements_txts: ta.Optional[ta.Sequence[str]] = None
 
         always_pull: bool = False
         always_build: bool = False
 
         no_dependencies: bool = False
+
+        run_options: ta.Optional[ta.Sequence[str]] = None
+
+        #
 
         def __post_init__(self) -> None:
             check.not_isinstance(self.requirements_txts, str)
@@ -241,6 +247,7 @@ class Ci(AsyncExitStacked):
 
             run_options=[
                 '-v', f'{os.path.abspath(self._cfg.project_dir)}:/project',
+                *(self._cfg.run_options or []),
             ],
 
             cwd=self._cfg.project_dir,

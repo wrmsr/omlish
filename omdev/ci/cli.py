@@ -12,6 +12,7 @@ Inputs:
 """
 import argparse
 import asyncio
+import itertools
 import os.path
 import sys
 import typing as ta
@@ -20,6 +21,7 @@ from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.check import check
+from omlish.lite.logs import log
 from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
@@ -83,6 +85,9 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--no-dependencies', action='store_true'),
 
+        argparse_arg('-e', '--env', action='append'),
+        argparse_arg('-v', '--volume', action='append'),
+
         argparse_arg('cmd', nargs=argparse.REMAINDER),
     )
     async def run(self) -> None:
@@ -107,6 +112,7 @@ class CiCli(ArgparseCli):
             for alt in alts:
                 alt_file = os.path.abspath(os.path.join(project_dir, alt))
                 if os.path.isfile(alt_file):
+                    log.debug('Using %s', alt_file)
                     return alt_file
             return None
 
@@ -160,6 +166,18 @@ class CiCli(ArgparseCli):
 
         #
 
+        run_options: ta.List[str] = []
+        for run_arg, run_arg_vals in [
+            ('-e', self.args.env or []),
+            ('-v', self.args.volume or []),
+        ]:
+            run_options.extend(itertools.chain.from_iterable(
+                [run_arg, run_arg_val]
+                for run_arg_val in run_arg_vals
+            ))
+
+        #
+
         async with Ci(
                 Ci.Config(
                     project_dir=project_dir,
@@ -177,6 +195,8 @@ class CiCli(ArgparseCli):
                     always_build=self.args.always_build,
 
                     no_dependencies=self.args.no_dependencies,
+
+                    run_options=run_options,
                 ),
                 file_cache=file_cache,
         ) as ci:
