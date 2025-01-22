@@ -10,6 +10,7 @@ import urllib.parse
 import urllib.request
 
 from omlish.asyncs.asyncio.asyncio import asyncio_wait_concurrent
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
@@ -313,6 +314,27 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         await self._get_loop().run_in_executor(None, write_sync)  # noqa
 
+    async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
+        with open(chunk.out_file, 'r+b') as f:  # noqa
+            f.seek(chunk.offset, os.SEEK_SET)
+            out_fd = f.fileno()
+
+            curl_json = await asyncio_subprocesses.check_output(
+                'curl',
+                '-s',
+                '-w', '%{json}',
+                '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+                '-o', f'/dev/fd/{out_fd}',
+                chunk.url,
+                pass_fds=[out_fd],
+            )
+
+        curl_res = json.loads(curl_json.decode().strip())
+        status_code = check.isinstance(curl_res['response_code'], int)
+
+        if not (200 <= status_code <= 300):
+            raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
+
     async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
         with log_timing_context(
                 'Downloading github cache '
@@ -320,7 +342,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 f'file {chunk.out_file} '
                 f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
         ):
-            await self._download_file_chunk_urllib(chunk)
+            await self._download_file_chunk_curl(chunk)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)
