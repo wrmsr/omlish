@@ -20,7 +20,7 @@ jobs:
   test:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v4.1.7'
+      - uses: 'actions/checkout@v4.2.2'
 
       - uses: 'styfle/cancel-workflow-action@0.12.1'
         with:
@@ -45,7 +45,7 @@ jobs:
           PYTEST_JUNIT_XML_PATH=/github/workspace/test-results.xml
           make ci2
 
-      - uses: 'mikepenz/action-junit-report@v4.3.1'
+      - uses: 'mikepenz/action-junit-report@v5.2.0'
         if: 'always()'
         with:
           report_paths: ${{ github.workspace }}/test-results.xml
