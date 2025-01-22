@@ -3383,6 +3383,8 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         dl_url = check.non_empty_str(check.isinstance(entry, self.Entry).artifact.archive_location)
 
+        log.debug(f'{out_file=}')
+
         dl_cmd = ShellCmd(' '.join([
             'aria2c',
             '-x', str(self._concurrency),
