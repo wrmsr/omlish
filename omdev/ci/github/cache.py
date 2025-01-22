@@ -21,16 +21,22 @@ class GithubFileCache(FileCache):
             dir: str,  # noqa
             *,
             client: ta.Optional[GithubCacheClient] = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
         self._dir = check.not_none(dir)
 
         if client is None:
-            client = GithubCacheServiceV1Client()
+            client = GithubCacheServiceV1Client(
+                cache_version=self._version,
+            )
         self._client: GithubCacheClient = client
 
-        self._local = DirectoryFileCache(self._dir)
+        self._local = DirectoryFileCache(
+            self._dir,
+            version=self._version,
+        )
 
     async def get_file(self, key: str) -> ta.Optional[str]:
         local_file = self._local.get_cache_file_path(key)
