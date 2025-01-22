@@ -28,6 +28,7 @@ from .cache import DirectoryFileCache
 from .cache import FileCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
+from .github.bootstrap import is_in_github_actions
 from .github.cache import GithubFileCache
 from .github.cli import GithubCli
 from .requirements import build_requirements_hash
@@ -77,8 +78,10 @@ class CiCli(ArgparseCli):
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
 
-        argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
+
+        argparse_arg('--github', action='store_true'),
+        argparse_arg('--github-detect', action='store_true'),
 
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
@@ -146,10 +149,17 @@ class CiCli(ArgparseCli):
                 'requirements-ci.txt',
             ]:
                 if os.path.exists(os.path.join(project_dir, rf)):
+                    log.debug('Using %s', rf)
                     requirements_txts.append(rf)
         else:
             for rf in requirements_txts:
                 check.state(os.path.isfile(rf))
+
+        #
+
+        github = self.args.github
+        if github is None and self.args.github_detect:
+            github = is_in_github_actions()
 
         #
 
@@ -159,7 +169,7 @@ class CiCli(ArgparseCli):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
 
-            if self.args.github_cache:
+            if github:
                 file_cache = GithubFileCache(cache_dir)
             else:
                 file_cache = DirectoryFileCache(cache_dir)

@@ -8,3 +8,11 @@ sudo rm -rf \
 /opt/hostedtoolcache    8.0G, 14843980 files
 /usr/local/lib/android  6.4G, 17251667 files
 """
+import os
+
+
+GITHUB_ACTIONS_ENV_KEY = 'GITHUB_ACTIONS'
+
+
+def is_in_github_actions() -> bool:
+    return GITHUB_ACTIONS_ENV_KEY in os.environ

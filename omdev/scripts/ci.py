@@ -163,6 +163,26 @@ CI_CACHE_VERSION = 1
 
 
 ########################################
+# ../github/bootstrap.py
+"""
+sudo rm -rf \
+    /usr/local/.ghcup \
+    /opt/hostedtoolcache \
+
+/usr/local/.ghcup       6.4G, 3391250 files
+/opt/hostedtoolcache    8.0G, 14843980 files
+/usr/local/lib/android  6.4G, 17251667 files
+"""
+
+
+GITHUB_ACTIONS_ENV_KEY = 'GITHUB_ACTIONS'
+
+
+def is_in_github_actions() -> bool:
+    return GITHUB_ACTIONS_ENV_KEY in os.environ
+
+
+########################################
 # ../shell.py
 
 
@@ -3759,8 +3779,10 @@ class CiCli(ArgparseCli):
         argparse_arg('--compose-file'),
         argparse_arg('-r', '--requirements-txt', action='append'),
 
-        argparse_arg('--github-cache', action='store_true'),
         argparse_arg('--cache-dir'),
+
+        argparse_arg('--github', action='store_true'),
+        argparse_arg('--github-detect', action='store_true'),
 
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
@@ -3828,10 +3850,17 @@ class CiCli(ArgparseCli):
                 'requirements-ci.txt',
             ]:
                 if os.path.exists(os.path.join(project_dir, rf)):
+                    log.debug('Using %s', rf)
                     requirements_txts.append(rf)
         else:
             for rf in requirements_txts:
                 check.state(os.path.isfile(rf))
+
+        #
+
+        github = self.args.github
+        if github is None and self.args.github_detect:
+            github = is_in_github_actions()
 
         #
 
@@ -3841,7 +3870,7 @@ class CiCli(ArgparseCli):
                 os.makedirs(cache_dir)
             check.state(os.path.isdir(cache_dir))
 
-            if self.args.github_cache:
+            if github:
                 file_cache = GithubFileCache(cache_dir)
             else:
                 file_cache = DirectoryFileCache(cache_dir)
