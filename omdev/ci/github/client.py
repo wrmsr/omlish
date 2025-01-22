@@ -90,9 +90,14 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
         #
 
-        if loop is None:
-            loop = asyncio.get_running_loop()
-        self._loop = check.not_none(loop)
+        self._given_loop = loop
+
+    #
+
+    def _get_loop(self) -> asyncio.AbstractEventLoop:
+        if (loop := self._given_loop) is not None:
+            return loop
+        return asyncio.get_event_loop()
 
     #
 
@@ -141,7 +146,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
                 body = resp.read()
             return (resp, body)
 
-        return await self._loop.run_in_executor(None, run_sync)
+        return await self._get_loop().run_in_executor(None, run_sync)  # noqa
 
     #
 
@@ -311,7 +316,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                     f.seek(offset, os.SEEK_SET)
                     f.write(buf)
 
-            await self._loop.run_in_executor(None, write_sync)
+            await self._get_loop().run_in_executor(None, write_sync)  # noqa
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)

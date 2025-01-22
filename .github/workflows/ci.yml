@@ -33,11 +33,13 @@ jobs:
       - name: Adding required env vars for caching Docker build
         uses: actions/github-script@v7
         env:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          export-vars: >
+            ACTIONS_CACHE_URL
+            ACTIONS_RUNTIME_TOKEN
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
         with:
           script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env['ACTIONS_CACHE_URL'])
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
+            process.env['export-vars'].trim().split(/\s+/).forEach((k) => core.exportVariable(k, process.env[k]))
 
       - name: 'Run CI'
         run: >
@@ -48,5 +50,5 @@ jobs:
       - uses: 'mikepenz/action-junit-report@v5.2.0'
         if: 'always()'
         with:
-          report_paths: ${{ github.workspace }}/test-results.xml
+          report_paths: '${{ github.workspace }}/test-results.xml'
           include_passed: true
