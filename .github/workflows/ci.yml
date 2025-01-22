@@ -26,7 +26,7 @@ jobs:
         with:
           access_token: '${{ github.token }}'
 
-      # - uses: 'mxschmitt/action-tmate@v3.19'
+      - uses: 'mxschmitt/action-tmate@v3.19'
 
       ##
 
