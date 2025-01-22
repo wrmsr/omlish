@@ -42,11 +42,43 @@ def strip_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
 def replace_many(
         s: StrOrBytesT,
         old: ta.Iterable[StrOrBytesT],
-        new: StrOrBytesT, count_each: int = -1,
+        new: StrOrBytesT,
+        count_each: int = -1,
 ) -> StrOrBytesT:
     for o in old:
         s = s.replace(o, new, count_each)  # type: ignore
     return s
+
+
+##
+
+
+def find_any(
+        string: StrOrBytesT,
+        subs: ta.Iterable[StrOrBytesT],
+        start: int | None = None,
+        end: int | None = None,
+) -> int:
+    r = -1
+    for sub in subs:
+        if (p := string.find(sub, start, end)) >= 0:
+            if r < 0 or p < r:
+                r = p
+    return r
+
+
+def rfind_any(
+        string: StrOrBytesT,
+        subs: ta.Iterable[StrOrBytesT],
+        start: int | None = None,
+        end: int | None = None,
+) -> int:
+    r = -1
+    for sub in subs:
+        if (p := string.rfind(sub, start, end)) >= 0:
+            if r < 0 or p > r:
+                r = p
+    return r
 
 
 ##
