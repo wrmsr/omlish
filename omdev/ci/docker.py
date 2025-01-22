@@ -14,11 +14,9 @@ import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.lite.contextmanagers import defer
-from omlish.os.files import unlink_if_exists
+from omlish.os.temp import temp_file_context
 
 from .shell import ShellCmd
-from .utils import make_temp_file
 from .utils import sha256_str
 
 
@@ -93,8 +91,7 @@ async def build_docker_image(
         cwd: ta.Optional[str] = None,
         run_options: ta.Optional[ta.Sequence[str]] = None,
 ) -> str:
-    id_file = make_temp_file()
-    with defer(lambda: unlink_if_exists(id_file)):
+    with temp_file_context() as id_file:
         await asyncio_subprocesses.check_call(
             'docker',
             'build',

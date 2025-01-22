@@ -17,9 +17,9 @@ from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.contextmanagers import adefer
 from omlish.lite.contextmanagers import defer
 from omlish.lite.json import json_dumps_pretty
+from omlish.os.temp import make_temp_file
 
 from .shell import ShellCmd
-from .utils import make_temp_file
 from .utils import read_yaml_file
 
 

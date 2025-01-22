@@ -317,37 +317,37 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         await self._get_loop().run_in_executor(None, write_sync)  # noqa
 
-    async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
-        async with contextlib.AsyncExitStack() as es:
-            f = open(chunk.out_file, 'r+b')
-            f.seek(chunk.offset, os.SEEK_SET)
-
-            tmp_file = es.enter_context(temp_file_context())  # noqa
-
-            proc = await es.enter_async_context(asyncio_subprocesses.popen(
-                'curl',
-                '-s',
-                '-w', '%{json}',
-                '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
-                chunk.url,
-                output=subprocess.PIPE,
-            ))
-
-            futs = asyncio.gather(
-
-            )
-
-            await proc.wait()
-
-            with open(tmp_file, 'r') as f:  # noqa
-                curl_json = tmp_file.read()
-
-        curl_res = json.loads(curl_json.decode().strip())
-
-        status_code = check.isinstance(curl_res['response_code'], int)
-
-        if not (200 <= status_code <= 300):
-            raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
+    # async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
+    #     async with contextlib.AsyncExitStack() as es:
+    #         f = open(chunk.out_file, 'r+b')
+    #         f.seek(chunk.offset, os.SEEK_SET)
+    #
+    #         tmp_file = es.enter_context(temp_file_context())  # noqa
+    #
+    #         proc = await es.enter_async_context(asyncio_subprocesses.popen(
+    #             'curl',
+    #             '-s',
+    #             '-w', '%{json}',
+    #             '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+    #             chunk.url,
+    #             output=subprocess.PIPE,
+    #         ))
+    #
+    #         futs = asyncio.gather(
+    #
+    #         )
+    #
+    #         await proc.wait()
+    #
+    #         with open(tmp_file, 'r') as f:  # noqa
+    #             curl_json = tmp_file.read()
+    #
+    #     curl_res = json.loads(curl_json.decode().strip())
+    #
+    #     status_code = check.isinstance(curl_res['response_code'], int)
+    #
+    #     if not (200 <= status_code <= 300):
+    #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
 
     async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
         with log_timing_context(
@@ -356,7 +356,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 f'file {chunk.out_file} '
                 f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
         ):
-            await self._download_file_chunk_curl(chunk)
+            await self._download_file_chunk_urllib(chunk)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)

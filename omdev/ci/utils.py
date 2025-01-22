@@ -1,21 +1,10 @@
 # ruff: noqa: UP006 UP007
 import hashlib
 import logging
-import os.path
-import tempfile
 import time
 import typing as ta
 
 from omlish.lite.logs import log
-
-
-##
-
-
-def make_temp_file() -> str:
-    file_fd, file = tempfile.mkstemp()
-    os.close(file_fd)
-    return file
 
 
 ##

@@ -1097,34 +1097,6 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 # ../../../omlish/os/files.py
 
 
-@contextlib.contextmanager
-def tmp_dir(
-        root_dir: ta.Optional[str] = None,
-        cleanup: bool = True,
-        **kwargs: ta.Any,
-) -> ta.Iterator[str]:
-    path = tempfile.mkdtemp(dir=root_dir, **kwargs)
-    try:
-        yield path
-    finally:
-        if cleanup:
-            shutil.rmtree(path, ignore_errors=True)
-
-
-@contextlib.contextmanager
-def tmp_file(
-        root_dir: ta.Optional[str] = None,
-        cleanup: bool = True,
-        **kwargs: ta.Any,
-) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
-    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
-        try:
-            yield f
-        finally:
-            if cleanup:
-                shutil.rmtree(f.name, ignore_errors=True)
-
-
 def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
     if exist_ok:
         # First try to bump modification time
@@ -1147,6 +1119,14 @@ def unlink_if_exists(path: str) -> None:
         os.unlink(path)
     except FileNotFoundError:
         pass
+
+
+@contextlib.contextmanager
+def unlinking_if_exists(path: str) -> ta.Iterator[None]:
+    try:
+        yield
+    finally:
+        unlink_if_exists(path)
 
 
 ########################################
@@ -1512,15 +1492,6 @@ def is_in_github_actions() -> bool:
 
 ########################################
 # ../utils.py
-
-
-##
-
-
-def make_temp_file() -> str:
-    file_fd, file = tempfile.mkstemp()
-    os.close(file_fd)
-    return file
 
 
 ##
@@ -2053,6 +2024,51 @@ class JsonLogFormatter(logging.Formatter):
             if not (o and v is None)
         }
         return self._json_dumps(dct)
+
+
+########################################
+# ../../../omlish/os/temp.py
+
+
+def make_temp_file(**kwargs: ta.Any) -> str:
+    file_fd, file = tempfile.mkstemp(**kwargs)
+    os.close(file_fd)
+    return file
+
+
+@contextlib.contextmanager
+def temp_file_context(**kwargs: ta.Any) -> ta.Iterator[str]:
+    path = make_temp_file(**kwargs)
+    try:
+        yield path
+    finally:
+        unlink_if_exists(path)
+
+
+@contextlib.contextmanager
+def temp_dir_context(
+        root_dir: ta.Optional[str] = None,
+        **kwargs: ta.Any,
+) -> ta.Iterator[str]:
+    path = tempfile.mkdtemp(dir=root_dir, **kwargs)
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
+
+
+@contextlib.contextmanager
+def temp_named_file_context(
+        root_dir: ta.Optional[str] = None,
+        cleanup: bool = True,
+        **kwargs: ta.Any,
+) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
+    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
+        try:
+            yield f
+        finally:
+            if cleanup:
+                shutil.rmtree(f.name, ignore_errors=True)
 
 
 ########################################
@@ -3046,8 +3062,7 @@ async def build_docker_image(
         cwd: ta.Optional[str] = None,
         run_options: ta.Optional[ta.Sequence[str]] = None,
 ) -> str:
-    id_file = make_temp_file()
-    with defer(lambda: unlink_if_exists(id_file)):
+    with temp_file_context() as id_file:
         await asyncio_subprocesses.check_call(
             'docker',
             'build',
@@ -3421,26 +3436,37 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
         await self._get_loop().run_in_executor(None, write_sync)  # noqa
 
-    async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
-        with open(chunk.out_file, 'r+b') as f:  # noqa
-            f.seek(chunk.offset, os.SEEK_SET)
-            out_fd = f.fileno()
-
-            curl_json = await asyncio_subprocesses.check_output(
-                'curl',
-                '-s',
-                '-w', '%{json}',
-                '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
-                '-o', f'/dev/fd/{out_fd}',
-                chunk.url,
-                pass_fds=[out_fd],
-            )
-
-        curl_res = json.loads(curl_json.decode().strip())
-        status_code = check.isinstance(curl_res['response_code'], int)
-
-        if not (200 <= status_code <= 300):
-            raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
+    # async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
+    #     async with contextlib.AsyncExitStack() as es:
+    #         f = open(chunk.out_file, 'r+b')
+    #         f.seek(chunk.offset, os.SEEK_SET)
+    #
+    #         tmp_file = es.enter_context(temp_file_context())  # noqa
+    #
+    #         proc = await es.enter_async_context(asyncio_subprocesses.popen(
+    #             'curl',
+    #             '-s',
+    #             '-w', '%{json}',
+    #             '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+    #             chunk.url,
+    #             output=subprocess.PIPE,
+    #         ))
+    #
+    #         futs = asyncio.gather(
+    #
+    #         )
+    #
+    #         await proc.wait()
+    #
+    #         with open(tmp_file, 'r') as f:  # noqa
+    #             curl_json = tmp_file.read()
+    #
+    #     curl_res = json.loads(curl_json.decode().strip())
+    #
+    #     status_code = check.isinstance(curl_res['response_code'], int)
+    #
+    #     if not (200 <= status_code <= 300):
+    #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
 
     async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
         with log_timing_context(
@@ -3449,7 +3475,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 f'file {chunk.out_file} '
                 f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
         ):
-            await self._download_file_chunk_curl(chunk)
+            await self._download_file_chunk_urllib(chunk)
 
     async def _download_file(self, entry: GithubCacheServiceV1BaseClient.Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)
@@ -3594,7 +3620,7 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
 
 
 class Ci(AsyncExitStacked):
-    FILE_NAME_HASH_LEN = 16
+    KEY_HASH_LEN = 16
 
     @dc.dataclass(frozen=True)
     class Config:
@@ -3674,8 +3700,7 @@ class Ci(AsyncExitStacked):
         if self._file_cache is None:
             return
 
-        tmp_file = make_temp_file()
-        with defer(lambda: unlink_if_exists(tmp_file)):
+        with temp_file_context() as tmp_file:
             write_tmp_cmd = ShellCmd(f'zstd > {tmp_file}')
 
             await save_docker_tar_cmd(image, write_tmp_cmd)
@@ -3711,7 +3736,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def docker_file_hash(self) -> str:
-        return build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
+        return build_docker_file_hash(self._cfg.docker_file)[:self.KEY_HASH_LEN]
 
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -3743,7 +3768,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def requirements_hash(self) -> str:
-        return build_requirements_hash(self.requirements_txts())[:self.FILE_NAME_HASH_LEN]
+        return build_requirements_hash(self.requirements_txts())[:self.KEY_HASH_LEN]
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -3775,8 +3800,7 @@ class Ci(AsyncExitStacked):
                 'WORKDIR /project',
             ]
 
-            docker_file = make_temp_file()
-            with defer(lambda: os.unlink(docker_file)):
+            with temp_file_context() as docker_file:
                 with open(docker_file, 'w') as f:  # noqa
                     f.write('\n'.join(docker_file_lines))
 
@@ -3884,7 +3908,7 @@ class GithubFileCache(FileCache):
             return None
 
         tmp_file = self._local.format_incomplete_file(local_file)
-        with defer(lambda: unlink_if_exists(tmp_file)):
+        with unlinking_if_exists(tmp_file):
             await self._client.download_file(entry, tmp_file)
 
             os.replace(tmp_file, local_file)

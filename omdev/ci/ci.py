@@ -7,8 +7,7 @@ from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.lite.contextmanagers import defer
-from omlish.os.files import unlink_if_exists
+from omlish.os.temp import temp_file_context
 
 from .cache import FileCache
 from .compose import DockerComposeRun
@@ -23,11 +22,10 @@ from .docker import tag_docker_image
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
 from .utils import log_timing_context
-from .utils import make_temp_file
 
 
 class Ci(AsyncExitStacked):
-    FILE_NAME_HASH_LEN = 16
+    KEY_HASH_LEN = 16
 
     @dc.dataclass(frozen=True)
     class Config:
@@ -107,8 +105,7 @@ class Ci(AsyncExitStacked):
         if self._file_cache is None:
             return
 
-        tmp_file = make_temp_file()
-        with defer(lambda: unlink_if_exists(tmp_file)):
+        with temp_file_context() as tmp_file:
             write_tmp_cmd = ShellCmd(f'zstd > {tmp_file}')
 
             await save_docker_tar_cmd(image, write_tmp_cmd)
@@ -144,7 +141,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def docker_file_hash(self) -> str:
-        return build_docker_file_hash(self._cfg.docker_file)[:self.FILE_NAME_HASH_LEN]
+        return build_docker_file_hash(self._cfg.docker_file)[:self.KEY_HASH_LEN]
 
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -176,7 +173,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def requirements_hash(self) -> str:
-        return build_requirements_hash(self.requirements_txts())[:self.FILE_NAME_HASH_LEN]
+        return build_requirements_hash(self.requirements_txts())[:self.KEY_HASH_LEN]
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -208,8 +205,7 @@ class Ci(AsyncExitStacked):
                 'WORKDIR /project',
             ]
 
-            docker_file = make_temp_file()
-            with defer(lambda: os.unlink(docker_file)):
+            with temp_file_context() as docker_file:
                 with open(docker_file, 'w') as f:  # noqa
                     f.write('\n'.join(docker_file_lines))
 
