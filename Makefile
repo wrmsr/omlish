@@ -459,7 +459,6 @@ ci-bash: ci-image
 
 ### CI2
 
-
 .PHONY: ci2
 ci2:
 	python3 omdev/scripts/ci.py run \
