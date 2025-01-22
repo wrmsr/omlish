@@ -1,9 +1,10 @@
 # ruff: noqa: UP006 UP007
-import os
+import os.path
 import typing as ta
 
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
+from omlish.lite.logs import log
 from omlish.os.files import unlink_if_exists
 
 from ..cache import DirectoryFileCache
@@ -49,6 +50,9 @@ class GithubFileCache(FileCache):
         tmp_file = self._local.format_incomplete_file(local_file)
         with defer(lambda: unlink_if_exists(tmp_file)):
             await self._client.download_file(entry, tmp_file)
+
+            for fp in [tmp_file, local_file]:
+                log.debug(f'{fp=} {os.path.exists(fp)=}')
 
             os.replace(tmp_file, local_file)
 

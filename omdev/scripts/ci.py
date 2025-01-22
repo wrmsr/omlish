@@ -3780,6 +3780,9 @@ class GithubFileCache(FileCache):
         with defer(lambda: unlink_if_exists(tmp_file)):
             await self._client.download_file(entry, tmp_file)
 
+            for fp in [tmp_file, local_file]:
+                log.debug(f'{fp=} {os.path.exists(fp)=}')
+
             os.replace(tmp_file, local_file)
 
         return local_file
