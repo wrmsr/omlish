@@ -6626,7 +6626,7 @@ class FieldsObjMarshaler(ObjMarshaler):
         kw = {}
         for k, v in o.items():
             if (f := self._fs_by_key.get(k)) is None:
-                if self.non_strict or ctx.options.non_strict_fields:
+                if not (self.non_strict or ctx.options.non_strict_fields):
                     raise KeyError(k)
                 continue
             kw[f.att] = f.m.unmarshal(v, ctx)
