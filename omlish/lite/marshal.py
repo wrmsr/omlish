@@ -2,6 +2,7 @@
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - literals
+ - Options.sequence_cls = list, mapping_cls = dict, ... - def with_mutable_containers() -> Options
 """
 # ruff: noqa: UP006 UP007
 import abc
