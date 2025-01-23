@@ -20,6 +20,12 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 ##
 
 
+# Valid channel type kwarg values:
+#  - A special flag negative int
+#  - A positive fd int
+#  - A file-like object
+#  - None
+
 SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
     'pipe': subprocess.PIPE,
     'stdout': subprocess.STDOUT,
@@ -65,6 +71,25 @@ def subprocess_close(
 ##
 
 
+class VerboseCalledProcessError(subprocess.CalledProcessError):
+    @classmethod
+    def from_std(cls, e: subprocess.CalledProcessError) -> 'VerboseCalledProcessError':
+        return cls(
+            e.returncode,
+            e.cmd,
+            output=e.output,
+            stderr=e.stderr,
+        )
+
+    def __str__(self) -> str:
+        msg = super().__str__()
+        if self.output is not None:
+            msg += f' Output: {self.output!r}'
+        if self.stderr is not None:
+            msg += f' Stderr: {self.stderr!r}'
+        return msg
+
+
 class BaseSubprocesses(abc.ABC):  # noqa
     DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
 
@@ -98,15 +123,30 @@ class BaseSubprocesses(abc.ABC):  # noqa
             if extra_env:
                 self._log.debug('Subprocesses.prepare_args: extra_env=%r', extra_env)
 
+        #
+
         if extra_env:
             env = {**(env if env is not None else os.environ), **extra_env}
+
+        #
 
         if quiet and 'stderr' not in kwargs:
             if self._log and not self._log.isEnabledFor(logging.DEBUG):
                 kwargs['stderr'] = subprocess.DEVNULL
 
+        for chk in ('stdout', 'stderr'):
+            try:
+                chv = kwargs[chk]
+            except KeyError:
+                continue
+            kwargs[chk] = SUBPROCESS_CHANNEL_OPTION_VALUES.get(chv, chv)
+
+        #
+
         if not shell:
             cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
+        #
 
         return cmd, dict(
             env=env,
@@ -115,35 +155,57 @@ class BaseSubprocesses(abc.ABC):  # noqa
         )
 
     @contextlib.contextmanager
-    def wrap_call(self, *cmd: ta.Any, **kwargs: ta.Any) -> ta.Iterator[None]:
+    def wrap_call(
+            self,
+            *cmd: ta.Any,
+            raise_verbose: bool = False,
+            **kwargs: ta.Any,
+    ) -> ta.Iterator[None]:
         start_time = time.time()
         try:
             if self._log:
                 self._log.debug('Subprocesses.wrap_call.try: cmd=%r', cmd)
+
             yield
 
         except Exception as exc:  # noqa
             if self._log:
                 self._log.debug('Subprocesses.wrap_call.except: exc=%r', exc)
+
+            if (
+                    raise_verbose and
+                    isinstance(exc, subprocess.CalledProcessError) and
+                    not isinstance(exc, VerboseCalledProcessError) and
+                    (exc.output is not None or exc.stderr is not None)
+            ):
+                raise VerboseCalledProcessError.from_std(exc) from exc
+
             raise
 
         finally:
             end_time = time.time()
             elapsed_s = end_time - start_time
+
             if self._log:
-                self._log.debug('sSubprocesses.wrap_call.finally: elapsed_s=%f cmd=%r', elapsed_s, cmd)
+                self._log.debug('Subprocesses.wrap_call.finally: elapsed_s=%f cmd=%r', elapsed_s, cmd)
 
     @contextlib.contextmanager
     def prepare_and_wrap(
             self,
             *cmd: ta.Any,
+            raise_verbose: bool = False,
             **kwargs: ta.Any,
     ) -> ta.Iterator[ta.Tuple[
         ta.Tuple[ta.Any, ...],
         ta.Dict[str, ta.Any],
     ]]:
         cmd, kwargs = self.prepare_args(*cmd, **kwargs)
-        with self.wrap_call(*cmd, **kwargs):
+
+        with self.wrap_call(
+                *cmd,
+                raise_verbose=raise_verbose,
+                **kwargs,
+        ):
             yield cmd, kwargs
 
     #

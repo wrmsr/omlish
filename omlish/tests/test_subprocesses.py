@@ -4,6 +4,7 @@ import subprocess
 import unittest
 
 from ..lite.check import check
+from ..subprocesses import VerboseCalledProcessError
 from ..subprocesses import subprocesses
 
 
@@ -26,3 +27,29 @@ class TestSubprocesses(unittest.TestCase):
             raise Exception('Expected exception')
         self.assertEqual(check.not_none(subprocesses.try_output('echo', 'hi')).decode(), 'hi\n')
         self.assertIsNone(subprocesses.try_output('xcho', 'hi'))
+
+    def test_raise_verbose(self):
+        try:
+            subprocesses.check_output(
+                'echo foo && false',
+                shell=True,
+            )
+        except subprocess.CalledProcessError as e:
+            self.assertFalse(isinstance(e, VerboseCalledProcessError))
+        else:
+            self.fail('Expected CalledProcessError')
+
+        try:
+            subprocesses.check_output(
+                'echo foo && false',
+                shell=True,
+                raise_verbose=True,
+            )
+        except subprocess.CalledProcessError as e:
+            self.assertTrue(isinstance(e, VerboseCalledProcessError))
+            self.assertEqual(
+                str(e),
+                "Command '('echo foo && false',)' returned non-zero exit status 1. Output: b'foo\\n'",
+            )
+        else:
+            self.fail('Expected CalledProcessError')
