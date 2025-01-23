@@ -281,6 +281,10 @@ class NamePackage(ta.NamedTuple):
 
 
 class _ProxyInit:
+    class _Import(ta.NamedTuple):
+        pkg: str
+        attr: str
+
     def __init__(
             self,
             name_package: NamePackage,
@@ -294,31 +298,35 @@ class _ProxyInit:
         self._globals = globals
         self._update_globals = update_globals
 
-        self._pkgs_by_attr: dict[str, str] = {}
+        self._imps_by_attr: dict[str, _ProxyInit._Import] = {}
         self._mods_by_pkgs: dict[str, ta.Any] = {}
 
     @property
     def name_package(self) -> NamePackage:
         return self._name_package
 
-    def add(self, package: str, attrs: ta.Iterable[str]) -> None:
+    def add(self, package: str, attrs: ta.Iterable[str | tuple[str, str]]) -> None:
         if isinstance(attrs, str):
             raise TypeError(attrs)
         for attr in attrs:
-            self._pkgs_by_attr[attr] = package
+            if isinstance(attr, tuple):
+                imp_attr, attr = attr
+            else:
+                imp_attr = attr
+            self._imps_by_attr[attr] = self._Import(package, imp_attr)
 
     def get(self, attr: str) -> ta.Any:
         try:
-            pkg = self._pkgs_by_attr[attr]
+            imp = self._imps_by_attr[attr]
         except KeyError:
             raise AttributeError(attr)  # noqa
 
         try:
-            mod = self._mods_by_pkgs[pkg]
+            mod = self._mods_by_pkgs[imp.pkg]
         except KeyError:
-            mod = importlib.import_module(pkg, package=self._name_package.package)
+            mod = importlib.import_module(imp.pkg, package=self._name_package.package)
 
-        val = getattr(mod, attr)
+        val = getattr(mod, imp.attr)
 
         if self._update_globals and self._globals is not None:
             self._globals[attr] = val
@@ -329,7 +337,7 @@ class _ProxyInit:
 def proxy_init(
         globals: ta.MutableMapping[str, ta.Any],  # noqa
         package: str,
-        attrs: ta.Iterable[str],
+        attrs: ta.Iterable[str | tuple[str, str]],
 ) -> None:
     if isinstance(attrs, str):
         raise TypeError(attrs)
