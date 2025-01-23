@@ -34,8 +34,10 @@ def dataclass_cache_hash(
 
 
 def dataclass_maybe_post_init(sup: ta.Any) -> bool:
+    if not isinstance(sup, super):
+        raise TypeError(sup)
     try:
-        fn = sup.__post_init__
+        fn = sup.__post_init__  # type: ignore
     except AttributeError:
         return False
     fn()

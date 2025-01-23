@@ -26,18 +26,6 @@ def is_immediate_dataclass(cls: type) -> bool:
 ##
 
 
-def maybe_post_init(sup: ta.Any) -> bool:
-    try:
-        fn = sup.__post_init__
-    except AttributeError:
-        return False
-    fn()
-    return True
-
-
-##
-
-
 def opt_repr(o: ta.Any) -> str | None:
     return repr(o) if o is not None else None
 

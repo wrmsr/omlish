@@ -93,8 +93,6 @@ from .impl.reflect import (  # noqa
 from .utils import (  # noqa
     is_immediate_dataclass,
 
-    maybe_post_init,
-
     opt_repr,
     truthy_repr,
 
@@ -112,4 +110,10 @@ from .utils import (  # noqa
     iter_items,
     iter_keys,
     iter_values,
+)
+
+##
+
+from ..lite.dataclasses import (  # noqa
+    dataclass_maybe_post_init as maybe_post_init,
 )
