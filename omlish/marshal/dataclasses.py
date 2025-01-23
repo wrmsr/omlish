@@ -9,6 +9,7 @@ from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
+from ..lite import marshal as lm
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -95,6 +96,31 @@ def get_field_infos(
                     marshal_name=fmd.name,
                     unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
                 )
+
+        else:
+            try:
+                lfk = field.metadata[lm.OBJ_MARSHALER_FIELD_KEY]
+            except KeyError:
+                pass
+            else:
+                if lfk is not None:
+                    check.non_empty_str(lfk)
+                    has_set_name = True
+                    fi_kw.update(
+                        marshal_name=lfk,
+                        unmarshal_names=[lfk],
+                    )
+                else:
+                    fo_kw.update(
+                        no_marshal=True,
+                        no_unmarshal=True,
+                    )
+
+            if (lon := field.metadata.get(lm.OBJ_MARSHALER_OMIT_IF_NONE)) is not None:
+                if check.isinstance(lon, bool):
+                    fo_kw.update(
+                        omit_if=lang.is_none,
+                    )
 
         if fo_kw.get('embed') and not has_set_name:
             fi_kw.update(

@@ -232,6 +232,7 @@ test:
 	${PYPROJECT_VENV} \
 		test \
 		-- \
+		-n 4 \
 		${PYTEST_OPTS} \
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
 		--no-slow \

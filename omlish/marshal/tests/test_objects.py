@@ -1,6 +1,8 @@
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 from ... import dataclasses as dc
+from ...lite import marshal as lmsh
 from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..global_ import marshal
@@ -139,3 +141,32 @@ class Pt(ta.NamedTuple):
 def test_namedtuples():
     assert (d := marshal(p := Pt(1, 2.))) == {'i': 1, 'f': 2., 's': 'foo'}
     assert unmarshal(d, Pt) == p
+
+
+##
+
+
+def test_lite_name_overrides():
+    @dc.dataclass
+    class Junk:
+        a: str
+        b: str = dc.field(metadata={lmsh.OBJ_MARSHALER_FIELD_KEY: 'b!'})
+        c: str = dc.field(default='default c', metadata={lmsh.OBJ_MARSHALER_FIELD_KEY: None})
+
+    j = Junk('a', 'b', 'c')
+    m = marshal(j)
+    assert m == {'a': 'a', 'b!': 'b'}
+
+    u: Junk = unmarshal(m, Junk)
+    assert u == Junk('a', 'b', 'default c')
+
+
+def test_lite_omit_if_none():
+    @dc.dataclass
+    class Junk:
+        a: str
+        b: ta.Optional[str]
+        c: ta.Optional[str] = dc.field(metadata={lmsh.OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    assert marshal(Junk('a', 'b', 'c')) == {'a': 'a', 'b': 'b', 'c': 'c'}
+    assert marshal(Junk('a', None, None)) == {'a': 'a', 'b': None}
