@@ -25,10 +25,42 @@ log = logging.getLogger(__name__)
 class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
     @dc.dataclass(frozen=True)
     class Config(Precheck.Config):
-        pass
+        python: str = '.venvs/8/bin/python'
 
     def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
         super().__init__(context, config)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class _Target:
+        path: str
+        kind: ta.Literal['script', 'module']
+
+    async def _collect_targets(self) -> list[_Target]:
+        lst = []
+
+        for fp in magic.find_magic_files(
+                magic.PY_MAGIC_STYLE,
+                self._context.src_roots,
+                keys=['@omlish-lite'],
+        ):
+            with open(fp) as f:  # noqa  # FIXME
+                src = f.read()
+
+            is_script = '# @omlish-script' in src.splitlines()
+
+            if is_script:
+                lst.append(self._Target(fp, 'script'))
+
+            elif fp.endswith('__init__.py'):
+                for g in glob.glob(os.path.join(os.path.dirname(fp), '**/*.py'), recursive=True):
+                    lst.append(self._Target(g, 'module'))
+
+            else:
+                lst.append(self._Target(fp, 'module'))
+
+        return lst
 
     #
 
@@ -71,7 +103,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
 
         proc = await asyncio.create_subprocess_exec(
             *subprocess_maybe_shell_wrap_exec(
-                '.venvs/8/bin/python',
+                self._config.python,
                 '-c',
                 self._load_file_module_payload(),
                 fp,
@@ -85,7 +117,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
 
         return vs
 
-    async def _run_one_module(self, fp: str) -> list[Precheck.Violation]:
+    async def _run_module(self, fp: str) -> list[Precheck.Violation]:
         vs: list[Precheck.Violation] = []
 
         mod = fp.rpartition('.')[0].replace(os.sep, '.')
@@ -94,7 +126,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
 
         proc = await asyncio.create_subprocess_exec(
             *subprocess_maybe_shell_wrap_exec(
-                '.venvs/8/bin/python',
+                self._config.python,
                 '-c',
                 f'import {mod}',
             ),
@@ -107,34 +139,17 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
 
         return vs
 
-    async def _run_module(self, fp: str) -> list[Precheck.Violation]:
-        vs: list[Precheck.Violation] = []
-
-        if fp.endswith('__init__.py'):
-            pfps = glob.glob(os.path.join(os.path.dirname(fp), '**/*.py'), recursive=True)
-        else:
-            pfps = [fp]
-
-        for pfp in pfps:
-            vs.extend(await self._run_one_module(pfp))
-
-        return vs
-
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
-        for fp in magic.find_magic_files(
-                magic.PY_MAGIC_STYLE,
-                self._context.src_roots,
-                keys=['@omlish-lite'],
-        ):
-            with open(fp) as f:  # noqa  # FIXME
-                src = f.read()
+        tgts = await self._collect_targets()
 
-            is_script = '# @omlish-script' in src.splitlines()
+        for tgt in tgts:
+            if tgt.kind == 'script':
+                for v in await self._run_script(tgt.path):
+                    yield v
 
-            if is_script:
-                for v in await self._run_script(fp):
+            elif tgt.kind == 'module':
+                for v in await self._run_module(tgt.path):
                     yield v
 
             else:
-                for v in await self._run_module(fp):
-                    yield v
+                raise RuntimeError(f'Unknown target kind: {tgt.kind}')

@@ -60,6 +60,7 @@ def _check_cmd(args) -> None:
         vs: list[Precheck.Violation] = []
 
         for pc in pcs:
+            log.info('Running precheck: %s', type(pc).__name__)
             async for v in pc.run():
                 vs.append(v)
                 print('*** VIOLATION ***')
