@@ -26,6 +26,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
     @dc.dataclass(frozen=True)
     class Config(Precheck.Config):
         python: str = '.venvs/8/bin/python'
+        concurrency: int = 4
 
     def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
         super().__init__(context, config)
@@ -139,17 +140,29 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
 
         return vs
 
+    #
+
+    async def _run_one(self, tgt: _Target) -> list[Precheck.Violation]:
+        if tgt.kind == 'script':
+            return await self._run_script(tgt.path)
+
+        elif tgt.kind == 'module':
+            return await self._run_module(tgt.path)
+
+        else:
+            raise RuntimeError(f'Unknown target kind: {tgt.kind}')
+
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
         tgts = await self._collect_targets()
 
-        for tgt in tgts:
-            if tgt.kind == 'script':
-                for v in await self._run_script(tgt.path):
-                    yield v
+        sem = asyncio.Semaphore(self._config.concurrency)
 
-            elif tgt.kind == 'module':
-                for v in await self._run_module(tgt.path):
-                    yield v
+        async def run(tgt):
+            async with sem:
+                return await self._run_one(tgt)
 
-            else:
-                raise RuntimeError(f'Unknown target kind: {tgt.kind}')
+        tasks = [asyncio.create_task(run(tgt)) for tgt in tgts]
+
+        for coro in asyncio.as_completed(tasks):
+            for v in await coro:
+                yield v
