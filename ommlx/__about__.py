@@ -16,7 +16,7 @@ class Project(ProjectBase):
         'backends': [
             'mlx-lm ~= 0.21; sys_platform == "darwin"',
 
-            'sentence-transformers ~= 3.2',
+            'sentence-transformers ~= 3.4',
 
             'transformers ~= 4.45',
         ],

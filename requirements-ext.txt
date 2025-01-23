@@ -158,8 +158,8 @@ soco==0.30.6
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.42.6
-zigpy==0.74.0
+bellows==0.43.0
+zigpy==0.75.1
 
 # python-openzwave
 zwave-js-server-python==0.60.0
@@ -202,7 +202,7 @@ langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
-langchain-openai==0.3.1
+langchain-openai==0.3.2
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
 langchain==0.3.15
@@ -248,7 +248,7 @@ usearch==2.16.9
 
 llama-index-core==0.12.12
 
-unstructured==0.16.14
+unstructured==0.16.15
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -257,7 +257,7 @@ libtmux==0.40.1
 
 sqlite-vec==0.1.6
 
-anthropic==0.44.0
+anthropic==0.45.0
 
 jedi==0.19.2
 jedi-language-server==0.43.1
