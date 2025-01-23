@@ -190,6 +190,8 @@ class FieldsObjMarshaler(ObjMarshaler):
         key: str
         m: ObjMarshaler
 
+        omit_if_none: bool = False
+
     fs: ta.Sequence[Field]
 
     non_strict: bool = False
@@ -213,10 +215,13 @@ class FieldsObjMarshaler(ObjMarshaler):
     #
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return {
-            f.key: f.m.marshal(getattr(o, f.att), ctx)
-            for f in self.fs
-        }
+        d = {}
+        for f in self.fs:
+            mv = f.m.marshal(getattr(o, f.att), ctx)
+            if mv is None and f.omit_if_none:
+                continue
+            d[f.key] = mv
+        return d
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         kw = {}
@@ -361,9 +366,20 @@ def register_single_field_type_obj_marshaler(fld, ty=None):
 ##
 
 
-class OBJ_MARSHALER_FIELD_KEY:  # noqa
+class ObjMarshalerFieldMetadata:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
+
+
+class OBJ_MARSHALER_FIELD_KEY(ObjMarshalerFieldMetadata):  # noqa
+    pass
+
+
+class OBJ_MARSHALER_OMIT_IF_NONE(ObjMarshalerFieldMetadata):  # noqa
+    pass
+
+
+##
 
 
 class ObjMarshalerManager:
@@ -430,6 +446,7 @@ class ObjMarshalerManager:
                             att=f.name,
                             key=check.non_empty_str(fk),
                             m=rec(f.type),
+                            omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
                         )
                         for f in dc.fields(ty)
                         if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None

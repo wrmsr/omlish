@@ -138,6 +138,16 @@ class TestMarshalDataclasses(AbstractTestMarshal):
         u: Junk = msh.unmarshal_obj(m, Junk)
         self.assertEqual(u, Junk('a', 'b', 'default c'))
 
+    def test_omit_if_none(self):
+        @dc.dataclass
+        class Junk:
+            a: str
+            b: ta.Optional[str]
+            c: ta.Optional[str] = dc.field(metadata={msh.OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+        self.assertEqual(msh.marshal_obj(Junk('a', 'b', 'c')), {'a': 'a', 'b': 'b', 'c': 'c'})
+        self.assertEqual(msh.marshal_obj(Junk('a', None, None)), {'a': 'a', 'b': None})
+
 
 ##
 
