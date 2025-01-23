@@ -18,6 +18,7 @@ if ta.TYPE_CHECKING:
     import yaml
 
     from omlish.formats import dotenv
+    from omlish.formats import json5
     from omlish.formats import props
     from omlish.formats import xml
 
@@ -29,6 +30,7 @@ else:
     yaml = lang.proxy_import('yaml')
 
     dotenv = lang.proxy_import('omlish.formats.dotenv')
+    json5 = lang.proxy_import('omlish.formats.json5')
     props = lang.proxy_import('omlish.formats.props')
     xml = lang.proxy_import('omlish.formats.xml')
 
@@ -44,6 +46,8 @@ class Format:
 
 class Formats(enum.Enum):
     JSON = Format(['json'], json.load)
+
+    JSON5 = Format(['json5'], lambda f: json5.loads(f.read()))
 
     YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
 

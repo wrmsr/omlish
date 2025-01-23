@@ -167,7 +167,7 @@ def asyncio_once(fn: CallableT) -> CallableT:
     return ta.cast(CallableT, inner)
 
 
-def drain_tasks(loop=None):
+def drain_asyncio_tasks(loop=None):
     if loop is None:
         loop = asyncio.get_running_loop()
 
@@ -182,7 +182,7 @@ def draining_asyncio_tasks() -> ta.Iterator[None]:
         yield
     finally:
         if loop is not None:
-            drain_tasks(loop)  # noqa
+            drain_asyncio_tasks(loop)  # noqa
 
 
 async def asyncio_wait_concurrent(
@@ -2563,7 +2563,7 @@ TODO:
 
 STANDARD_LOG_FORMAT_PARTS = [
     ('asctime', '%(asctime)-15s'),
-    ('process', 'pid=%(process)-6s'),
+    ('process', 'pid=%(process)s'),
     ('thread', 'tid=%(thread)x'),
     ('levelname', '%(levelname)s'),
     ('name', '%(name)s'),

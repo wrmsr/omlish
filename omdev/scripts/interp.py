@@ -3500,7 +3500,7 @@ TODO:
 
 STANDARD_LOG_FORMAT_PARTS = [
     ('asctime', '%(asctime)-15s'),
-    ('process', 'pid=%(process)-6s'),
+    ('process', 'pid=%(process)s'),
     ('thread', 'tid=%(thread)x'),
     ('levelname', '%(levelname)s'),
     ('name', '%(name)s'),

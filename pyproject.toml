@@ -125,7 +125,6 @@ addopts = [
     '--durations-min=2',
     # '--log=info',
 ]
-asyncio_mode = 'strict'
 junit_family = 'xunit2'
 junit_duration_report = 'call'
 timeout = 60

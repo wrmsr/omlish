@@ -404,63 +404,7 @@ docker-updates: venv
 
 ### CI
 
-CI_BASE_FILES=\
-	docker \
-
-.PHONY: ci-image
-ci-image:
-	tar ch \
-		${CI_BASE_FILES} \
-	| \
-		docker build \
-			--platform linux/x86_64 \
-			--tag "${DOCKER_USER}/omlish-ci-base" \
-			-f "docker/ci/Dockerfile" \
-			--target omlish-ci-base \
-			-
-
-	tar ch \
-		--exclude "__pycache__" \
-		${CI_BASE_FILES} \
-		${SRCS} \
-		.versions \
-		LICENSE \
-		Makefile \
-		pyproject.toml \
-		requirements-dev.txt \
-		requirements.txt \
-	| \
-		docker build \
-			--platform linux/x86_64 \
-			--tag "${DOCKER_USER}/omlish-ci" \
-			-f "docker/ci/Dockerfile" \
-			-
-
-.PHONY: ci
-ci: ci-image
-	${DOCKER_COMPOSE} run --quiet-pull --rm $$CI_DOCKER_OPTS -e CI=1 omlish-ci
-
-.PHONY: _ci
-_ci:
-	if [ ! -z "${PYTEST_JUNIT_XML_PATH}" ] && [ -f "${PYTEST_JUNIT_XML_PATH}" ] ; then \
-		rm "${PYTEST_JUNIT_XML_PATH}" ; \
-	fi
-
-	python \
-		-m pytest \
-		${PYTEST_OPTS} \
-		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
-		${SRCS}
-
-.PHONY: ci-bash
-ci-bash: ci-image
-	${DOCKER_COMPOSE} run --rm -e CI=1 omlish-ci bash
-
-
-### CI2
-
-.PHONY: ci2
-ci2:
+CI_RUN:=\
 	./python omdev/scripts/ci.py run \
 		--cache-dir ~/.cache/omlish/ci \
 		--github-detect \
@@ -468,9 +412,11 @@ ci2:
 		$$CI_RUN_OPTS \
 		. \
 		omlish-ci \
-		-- \
-	\
-	python3 \
+		--
+
+.PHONY: ci
+ci:
+	${CI_RUN} python3 \
 		-m pytest \
 		${PYTEST_OPTS} \
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \

@@ -41,7 +41,7 @@ jobs:
         run: >
           CI_RUN_OPTS='-v ${{ github.workspace }}:/github/workspace -e PYTEST_JUNIT_XML_PATH'
           PYTEST_JUNIT_XML_PATH=/github/workspace/test-results.xml
-          make ci2
+          make ci
 
       - name: 'Report JUnit results'
         uses: 'mikepenz/action-junit-report@v5.2.0'
