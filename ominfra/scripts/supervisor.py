@@ -5768,21 +5768,50 @@ class IterableObjMarshaler(ObjMarshaler):
 @dc.dataclass(frozen=True)
 class FieldsObjMarshaler(ObjMarshaler):
     ty: type
-    fs: ta.Mapping[str, ObjMarshaler]
+
+    @dc.dataclass(frozen=True)
+    class Field:
+        att: str
+        key: str
+        m: ObjMarshaler
+
+    fs: ta.Sequence[Field]
+
     non_strict: bool = False
+
+    #
+
+    _fs_by_att: ta.ClassVar[ta.Mapping[str, Field]]
+    _fs_by_key: ta.ClassVar[ta.Mapping[str, Field]]
+
+    def __post_init__(self) -> None:
+        fs_by_att: dict = {}
+        fs_by_key: dict = {}
+        for f in self.fs:
+            check.not_in(check.non_empty_str(f.att), fs_by_att)
+            check.not_in(check.non_empty_str(f.key), fs_by_key)
+            fs_by_att[f.att] = f
+            fs_by_key[f.key] = f
+        self.__dict__['_fs_by_att'] = fs_by_att
+        self.__dict__['_fs_by_key'] = fs_by_key
+
+    #
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return {
-            k: m.marshal(getattr(o, k), ctx)
-            for k, m in self.fs.items()
+            f.key: f.m.marshal(getattr(o, f.att), ctx)
+            for f in self.fs
         }
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(**{
-            k: self.fs[k].unmarshal(v, ctx)
-            for k, v in o.items()
-            if not (self.non_strict or ctx.options.non_strict_fields) or k in self.fs
-        })
+        kw = {}
+        for k, v in o.items():
+            if (f := self._fs_by_key.get(k)) is None:
+                if self.non_strict or ctx.options.non_strict_fields:
+                    raise KeyError(k)
+                continue
+            kw[f.att] = f.m.unmarshal(v, ctx)
+        return self.ty(**kw)
 
 
 @dc.dataclass(frozen=True)
@@ -5917,6 +5946,11 @@ def register_single_field_type_obj_marshaler(fld, ty=None):
 ##
 
 
+class OBJ_MARSHALER_FIELD_KEY:  # noqa
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+
 class ObjMarshalerManager:
     def __init__(
             self,
@@ -5976,14 +6010,29 @@ class ObjMarshalerManager:
             if dc.is_dataclass(ty):
                 return FieldsObjMarshaler(
                     ty,
-                    {f.name: rec(f.type) for f in dc.fields(ty)},
+                    [
+                        FieldsObjMarshaler.Field(
+                            att=f.name,
+                            key=check.non_empty_str(fk),
+                            m=rec(f.type),
+                        )
+                        for f in dc.fields(ty)
+                        if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None
+                    ],
                     non_strict=non_strict_fields,
                 )
 
             if issubclass(ty, tuple) and hasattr(ty, '_fields'):
                 return FieldsObjMarshaler(
                     ty,
-                    {p.name: rec(p.annotation) for p in inspect.signature(ty).parameters.values()},
+                    [
+                        FieldsObjMarshaler.Field(
+                            att=p.name,
+                            key=p.name,
+                            m=rec(p.annotation),
+                        )
+                        for p in inspect.signature(ty).parameters.values()
+                    ],
                     non_strict=non_strict_fields,
                 )
 

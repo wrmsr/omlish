@@ -124,6 +124,20 @@ class TestMarshalDataclasses(AbstractTestMarshal):
         assert isinstance(u, Foo)
         assert u.i == 24
 
+    def test_name_overrides(self):
+        @dc.dataclass
+        class Junk:
+            a: str
+            b: str = dc.field(metadata={msh.OBJ_MARSHALER_FIELD_KEY: 'b!'})
+            c: str = dc.field(default='default c', metadata={msh.OBJ_MARSHALER_FIELD_KEY: None})
+
+        j = Junk('a', 'b', 'c')
+        m = msh.marshal_obj(j)
+        self.assertEqual(m, {'a': 'a', 'b!': 'b'})
+
+        u: Junk = msh.unmarshal_obj(m, Junk)
+        self.assertEqual(u, Junk('a', 'b', 'default c'))
+
 
 ##
 
