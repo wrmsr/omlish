@@ -5,15 +5,13 @@ Todo:
 socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 """
 import functools
-import os
-import socket
-import socketserver
-import sys
 import typing as ta
 
 from ... import check
-from ...sockets.addresses import get_best_socket_family
-from ...sockets.server import SocketHandlerSocketServerStreamRequestHandler
+from ...sockets.bind import SocketBinder
+from ...sockets.server.handlers import SocketHandlerSocketServerHandler
+from ...sockets.server.handlers import StandardSocketServerHandler
+from ...sockets.server.server import SocketServer
 from ..coro.server import CoroHttpServer
 from ..coro.server import CoroHttpServerSocketHandler
 from ..coro.server import UnsupportedMethodHttpHandlerError
@@ -59,61 +57,36 @@ def _main() -> None:
 
     #
 
-    unix_socket: str | None = None
-    port: int | None = None
-    bind: str | None = None
-
     port_or_unix_socket = check.non_empty_str(args.port_or_unix_socket)
+    bind: ta.Any
     try:
         port = int(port_or_unix_socket)
     except ValueError:
-        unix_socket = check.non_empty_str(port_or_unix_socket)
+        bind = check.non_empty_str(port_or_unix_socket)
+    else:
+        bind = port
 
     #
 
-    server_class = ThreadingHttpServer
+    http_server_factory = functools.partial(
+        CoroHttpServer,
+        handler=say_hi_handler,
+        parser=HttpRequestParser(
+            server_version=HttpProtocolVersions.HTTP_1_1,
+        ),
+    )
 
-    if unix_socket is not None:
-        check.arg(unix_socket.endswith('.sock'))
-        if os.path.exists(unix_socket):
-            os.unlink(unix_socket)
-        addr = unix_socket
-        address_family = socket.AF_UNIX
-    elif port is not None:
-        address_family, addr = get_best_socket_family(bind, port)
-    else:
-        raise RuntimeError
-
-    with server_class(
-            addr,
-            functools.partial(
-                SocketHandlerSocketServerStreamRequestHandler,
-                socket_handler_factory=functools.partial(
-                    CoroHttpServerSocketHandler,
-                    server_factory=functools.partial(
-                        CoroHttpServer,
-                        handler=say_hi_handler,
-                        parser=HttpRequestParser(
-                            server_version=HttpProtocolVersions.HTTP_1_1,
-                        ),
+    with SocketServer(
+            SocketBinder.new(bind),
+            StandardSocketServerHandler(
+                SocketHandlerSocketServerHandler(
+                    CoroHttpServerSocketHandler(
+                        http_server_factory,
                     ),
-                    log_handler=lambda s, l: print(repr((s.client_address, l)), file=sys.stderr),
                 ),
             ),
-            address_family=address_family,
-    ) as httpd:
-        if unix_socket:
-            print(f'Serving HTTP on unix socket {httpd.socket.getsockname()} ...')  # noqa
-        else:
-            host, port = httpd.socket.getsockname()[:2]
-            url_host = f'[{host}]' if ':' in host else host
-            print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')  # noqa
-
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print('\nKeyboard interrupt received, exiting.')
-            sys.exit(0)
+    ) as server:
+        server.run()
 
 
 if __name__ == '__main__':

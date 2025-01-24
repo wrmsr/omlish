@@ -6,7 +6,7 @@ from .addresses import SocketAddress
 from .io import SocketIoPair  # noqa
 
 
-SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], 'SocketHandler']  # ta.TypeAlias
+SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], None]  # ta.TypeAlias
 
 
 ##

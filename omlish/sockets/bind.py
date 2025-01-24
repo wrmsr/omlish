@@ -41,11 +41,17 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
         def new(
                 cls,
                 target: ta.Union[
+                    int,
                     ta.Tuple[str, int],
                     str,
                 ],
         ) -> 'SocketBinder.Config':
-            if isinstance(target, tuple):
+            if isinstance(target, int):
+                return TcpSocketBinder.Config(
+                    port=target,
+                )
+
+            elif isinstance(target, tuple):
                 host, port = target
                 return TcpSocketBinder.Config(
                     host=host,
@@ -223,7 +229,9 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
 class TcpSocketBinder(SocketBinder):
     @dc.dataclass(frozen=True)
     class Config(SocketBinder.Config):
-        host: str = ''
+        DEFAULT_HOST: ta.ClassVar[str] = 'localhost'
+        host: str = DEFAULT_HOST
+
         port: int = 0
 
         def __post_init__(self) -> None:

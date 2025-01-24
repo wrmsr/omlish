@@ -535,6 +535,7 @@ class CoroHttpServerSocketHandler:  # SocketHandler
     def __init__(
             self,
             server_factory: CoroHttpServerFactory,
+            *,
             log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__()
