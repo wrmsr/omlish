@@ -2808,8 +2808,7 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 # ../../../omlish/sockets/addresses.py
 """
 TODO:
- - SocketClientAddress family / tuple pairs
-  + codification of https://docs.python.org/3/library/socket.html#socket-families
+ - codification of https://docs.python.org/3/library/socket.html#socket-families
 """
 
 
@@ -2835,11 +2834,16 @@ class SocketAddressInfo:
     sockaddr: SocketAddress
 
 
+class SocketFamilyAndAddress(ta.NamedTuple):
+    family: socket.AddressFamily
+    address: SocketAddress
+
+
 def get_best_socket_family(
         host: ta.Optional[str],
         port: ta.Union[str, int, None],
         family: ta.Union[int, socket.AddressFamily] = socket.AddressFamily.AF_UNSPEC,
-) -> ta.Tuple[socket.AddressFamily, SocketAddress]:
+) -> SocketFamilyAndAddress:
     """https://github.com/python/cpython/commit/f289084c83190cc72db4a70c58f007ec62e75247"""
 
     infos = socket.getaddrinfo(
@@ -2850,7 +2854,12 @@ def get_best_socket_family(
         flags=socket.AI_PASSIVE,
     )
     ai = SocketAddressInfo(*next(iter(infos)))
-    return ai.family, ai.sockaddr
+    return SocketFamilyAndAddress(ai.family, ai.sockaddr)
+
+
+class SocketAndAddress(ta.NamedTuple):
+    socket: socket.socket
+    address: SocketAddress
 
 
 ########################################
