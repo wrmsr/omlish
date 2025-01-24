@@ -43,9 +43,14 @@ def get_registered_oci_media_type_dataclass(media_type: str) -> ta.Optional[ta.T
     return _REGISTERED_OCI_MEDIA_TYPE_DATACLASSES.get(media_type)
 
 
-def unmarshal_oci_media_type_dataclass(dct: ta.Mapping[str, ta.Any]) -> ta.Any:
-    mt = check.non_empty_str(dct['mediaType'])
-    cls = _REGISTERED_OCI_MEDIA_TYPE_DATACLASSES[mt]
+def unmarshal_oci_media_type_dataclass(
+        dct: ta.Mapping[str, ta.Any],
+        *,
+        media_type: ta.Optional[str] = None,
+) -> ta.Any:
+    if media_type is None:
+        media_type = check.non_empty_str(dct['mediaType'])
+    cls = _REGISTERED_OCI_MEDIA_TYPE_DATACLASSES[media_type]
     return unmarshal_obj(dct, cls)
 
 
@@ -121,14 +126,25 @@ class OciImageManifest(OciMediaTypeDataclass):
 class OciImageConfig(OciMediaTypeDataclass):
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/config.md"""
 
+    architecture: str
+    os: str
+
+    @dc.dataclass(frozen=True)
+    class RootFs:
+        type: str
+        diff_ids: ta.Sequence[str]
+
+    rootfs: RootFs
+
+    #
+
+    created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    os_version: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.version', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    os_features: ta.Optional[ta.Sequence[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.features', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    variant: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
     """
-    created string, OPTIONAL
-    author string, OPTIONAL
-    architecture string, REQUIRED
-    os string, REQUIRED
-    os.version string, OPTIONAL
-    os.features array of strings, OPTIONAL
-    variant string, OPTIONAL
     config object, OPTIONAL
         User string, OPTIONAL
         ExposedPorts object, OPTIONAL
@@ -144,16 +160,18 @@ class OciImageConfig(OciMediaTypeDataclass):
         MemorySwap integer, OPTIONAL
         CpuShares integer, OPTIONAL
         Healthcheck object, OPTIONAL
-    rootfs object, REQUIRED
-        type string, REQUIRED
-        diff_ids array of strings, REQUIRED
-    history array of objects, OPTIONAL
-        created string, OPTIONAL
-        author string, OPTIONAL
-        created_by string, OPTIONAL
-        comment string, OPTIONAL
-        empty_layer boolean, OPTIONAL
     """
+    config: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    @dc.dataclass(frozen=True)
+    class History:
+        created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        created_by: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        comment: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        empty_layer: ta.Optional[bool] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    history: ta.Optional[ta.Sequence[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
     #
 
