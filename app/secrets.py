@@ -4,7 +4,7 @@ import os
 from omdev.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
-from omlish import secrets as sec
+from omlish.secrets import all as sec
 
 
 log = logging.getLogger(__name__)

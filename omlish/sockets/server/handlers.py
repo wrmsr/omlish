@@ -97,3 +97,16 @@ class SocketHandlerSocketServerHandler:
         )
 
         self.handler(conn.address, fp)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SocketWrappingSocketServerHandler:
+    handler: SocketServerHandler
+    wrapper: ta.Callable[[SocketAndAddress], SocketAndAddress]
+
+    def __call__(self, conn: SocketAndAddress) -> None:
+        wrapped_conn = self.wrapper(conn)
+        self.handler(wrapped_conn)

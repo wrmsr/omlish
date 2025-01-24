@@ -11,7 +11,7 @@ import typing as ta
 from omlish import check
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.secrets import Secret
+from omlish.secrets.secrets import Secret
 
 from ...chat import AiChoice
 from ...chat import AiMessage

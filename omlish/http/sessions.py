@@ -9,8 +9,8 @@ import typing as ta
 import zlib
 
 from .. import lang
-from .. import secrets as sec
 from ..funcs import pairs as fpa
+from ..secrets import all as sec
 from .cookies import dump_cookie
 from .cookies import parse_cookie
 from .json import JSON_TAGGER

@@ -3,7 +3,7 @@ import urllib.parse
 
 from .. import dataclasses as dc
 from .. import lang
-from .. import secrets as sec
+from ..secrets import all as sec
 
 
 ##

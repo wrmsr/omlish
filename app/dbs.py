@@ -7,7 +7,7 @@ import sqlalchemy.ext.asyncio as saa
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
-from omlish import secrets as sec
+from omlish.secrets import all as sec
 from omlish.sql import alchemy as sau
 from omlish.sql import dbs
 

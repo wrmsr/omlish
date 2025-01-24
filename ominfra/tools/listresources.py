@@ -19,7 +19,7 @@ from omdev.secrets import load_secrets
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import secrets as sec
+from omlish.secrets import all as sec
 
 
 ##

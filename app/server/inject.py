@@ -12,9 +12,9 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 import datetime
 
 from omlish import inject as inj
-from omlish import secrets as sec
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
+from omlish.secrets import all as sec
 from omserv.apps.routes import RouteHandlerApp
 from omserv.apps.templates import JinjaTemplates
 

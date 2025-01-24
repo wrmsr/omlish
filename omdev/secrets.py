@@ -2,7 +2,7 @@ import os.path
 import typing as ta
 
 from omlish import lang
-from omlish import secrets as sec
+from omlish.secrets import all as sec
 
 
 if ta.TYPE_CHECKING:

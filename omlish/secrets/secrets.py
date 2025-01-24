@@ -335,3 +335,9 @@ class EnvVarSecrets(Secrets):
             return dct.pop(ekey)
         else:
             return dct[ekey]
+
+
+##
+
+
+lang.imports._register_conditional_import('..marshal', '.marshal', __package__)  # noqa
