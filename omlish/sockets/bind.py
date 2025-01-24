@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - DupSocketBinder
+"""
 import abc
 import dataclasses as dc
 import errno
