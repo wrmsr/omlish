@@ -3,8 +3,8 @@
 import unittest
 
 from ....lite import marshal as msh
-from ..oci import OciMediaImageIndex
-from ..oci import OciMediaImageManifest
+from ..media import OciMediaImageIndex
+from ..media import OciMediaImageManifest
 
 
 INDEX = {
