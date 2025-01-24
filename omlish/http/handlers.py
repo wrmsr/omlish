@@ -9,7 +9,7 @@ from .parsing import HttpHeaders
 
 
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
-HttpHandlerResponseData = ta.Union[bytes, bytearray, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 
 ##
@@ -35,7 +35,7 @@ class HttpHandlerResponse:
 
 @dc.dataclass(frozen=True)
 class HttpHandlerResponseStreamedData:
-    iter: ta.Iterable[ta.Union[bytes, bytearray]]
+    iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
 
 

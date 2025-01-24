@@ -207,7 +207,7 @@ class CoroHttpServer:
 
     #
 
-    def _build_response_bytes(self, a: _Response) -> bytes:
+    def _build_response_head_bytes(self, a: _Response) -> bytes:
         out = io.BytesIO()
 
         if a.version >= HttpProtocolVersions.HTTP_1_0:
@@ -222,15 +222,21 @@ class CoroHttpServer:
 
             out.write(b'\r\n')
 
-        if a.data is not None:
-            if isinstance(a.data, (bytes, bytearray)):
-                out.write(a.data)
-            elif isinstance(a.data, HttpHandlerResponseStreamedData):
-                raise NotImplementedError
-            else:
-                raise TypeError(a.data)
-
         return out.getvalue()
+
+    def _yield_response_data(self, a: _Response) -> ta.Iterator[bytes]:
+        if a.data is None:
+            return
+
+        elif isinstance(a.data, bytes):
+            yield a.data
+            return
+
+        elif isinstance(a.data, HttpHandlerResponseStreamedData):
+            raise NotImplementedError
+
+        else:
+            raise TypeError(a.data)
 
     #
 
@@ -242,9 +248,10 @@ class CoroHttpServer:
 
         if resp.get_header('Content-Type') is None:
             nh.append(self._Header('Content-Type', self._default_content_type))
+
         if resp.data is not None and resp.get_header('Content-Length') is None:
-            cl: ta.Optional[int] = None
-            if isinstance(resp.data, (bytes, bytearray)):
+            cl: ta.Optional[int]
+            if isinstance(resp.data, bytes):
                 cl = len(resp.data)
             elif isinstance(resp.data, HttpHandlerResponseStreamedData):
                 cl = resp.data.length
@@ -425,9 +432,13 @@ class CoroHttpServer:
 
                 elif isinstance(o, self._Response):
                     i = None
+
                     r = self._preprocess_response(o)
-                    b = self._build_response_bytes(r)
-                    check.none((yield self.WriteIo(b)))
+                    hb = self._build_response_head_bytes(r)
+                    check.none((yield self.WriteIo(hb)))
+
+                    for b in self._yield_response_data(r):
+                        yield self.WriteIo(b)
 
                 else:
                     raise TypeError(o)
