@@ -69,6 +69,8 @@ from ...sockets.handlers import SocketHandler  # noqa
 from ...sockets.io import SocketIoPair
 from ..handlers import HttpHandler
 from ..handlers import HttpHandlerRequest
+from ..handlers import HttpHandlerResponseData
+from ..handlers import HttpHandlerResponseStreamedData
 from ..handlers import UnsupportedMethodHttpHandlerError
 from ..parsing import EmptyParsedHttpResult
 from ..parsing import HttpRequestParser
@@ -194,7 +196,7 @@ class CoroHttpServer:
 
         message: ta.Optional[str] = None
         headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
-        data: ta.Optional[bytes] = None
+        data: ta.Optional[HttpHandlerResponseData] = None
         close_connection: ta.Optional[bool] = False
 
         def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
@@ -221,7 +223,12 @@ class CoroHttpServer:
             out.write(b'\r\n')
 
         if a.data is not None:
-            out.write(a.data)
+            if isinstance(a.data, (bytes, bytearray)):
+                out.write(a.data)
+            elif isinstance(a.data, HttpHandlerResponseStreamedData):
+                raise NotImplementedError
+            else:
+                raise TypeError(a.data)
 
         return out.getvalue()
 
@@ -236,7 +243,15 @@ class CoroHttpServer:
         if resp.get_header('Content-Type') is None:
             nh.append(self._Header('Content-Type', self._default_content_type))
         if resp.data is not None and resp.get_header('Content-Length') is None:
-            nh.append(self._Header('Content-Length', str(len(resp.data))))
+            cl: ta.Optional[int] = None
+            if isinstance(resp.data, (bytes, bytearray)):
+                cl = len(resp.data)
+            elif isinstance(resp.data, HttpHandlerResponseStreamedData):
+                cl = resp.data.length
+            else:
+                raise TypeError(resp.data)
+            if cl is not None:
+                nh.append(self._Header('Content-Length', str(cl)))
 
         if nh:
             kw.update(headers=[*(resp.headers or []), *nh])

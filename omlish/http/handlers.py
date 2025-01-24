@@ -9,6 +9,10 @@ from .parsing import HttpHeaders
 
 
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
+HttpHandlerResponseData = ta.Union[bytes, bytearray, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -25,8 +29,14 @@ class HttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
 
     headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[bytes] = None
+    data: ta.Optional[HttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
+
+
+@dc.dataclass(frozen=True)
+class HttpHandlerResponseStreamedData:
+    iter: ta.Iterable[ta.Union[bytes, bytearray]]
+    length: ta.Optional[int] = None
 
 
 class HttpHandlerError(Exception):
