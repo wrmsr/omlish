@@ -9,7 +9,9 @@ import os
 import socket
 import socketserver
 import sys
+import typing as ta
 
+from ... import check
 from ...sockets.addresses import get_best_socket_family
 from ...sockets.server import SocketHandlerSocketServerStreamRequestHandler
 from ..coro.server import CoroHttpServer
@@ -44,18 +46,43 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 ##
 
 
-class HTTPServer(socketserver.TCPServer):
-
+class HttpServer(socketserver.TCPServer):
     allow_reuse_address = True  # Seems to make sense in testing environment
+
+    def __init__(
+            self,
+            server_address: ta.Any,
+            RequestHandlerClass: ta.Callable,  # noqa
+            bind_and_activate: bool = True,
+            *,
+            address_family: int = socket.AF_INET,
+            socket_type: int = socket.SOCK_STREAM,
+            request_queue_size: int = 5,
+            allow_reuse_address: bool = False,
+            allow_reuse_port: bool = False,
+    ) -> None:
+        self.address_family = address_family
+        self.socket_type = socket_type
+        self.request_queue_size = request_queue_size
+        self.allow_reuse_address = allow_reuse_address
+        self.allow_reuse_port = allow_reuse_port
+
+        super().__init__(
+            server_address,
+            RequestHandlerClass,
+            bind_and_activate=bind_and_activate,
+        )
 
     def server_bind(self):
         super().server_bind()
+
         host, port = self.server_address[:2]
-        self.server_name = socket.getfqdn(host)  # type: ignore
-        self.server_port = port
+
+        self.server_name = socket.getfqdn(host)  # type: ignore  # noqa
+        self.server_port = port  # noqa
 
 
-class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
+class ThreadingHttpServer(socketserver.ThreadingMixIn, HttpServer):
     daemon_threads = True
 
 
@@ -63,24 +90,45 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
 
 
 def _main() -> None:
-    unix_socket = 'foo.sock'
+    default_port = 8000
 
-    port = 8000
-    bind = None
+    #
 
-    server_class = ThreadingHTTPServer
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('port_or_unix_socket', default=str(default_port), nargs='?')
+    args = parser.parse_args()
+
+    #
+
+    unix_socket: str | None = None
+    port: int | None = None
+    bind: str | None = None
+
+    port_or_unix_socket = check.non_empty_str(args.port_or_unix_socket)
+    try:
+        port = int(port_or_unix_socket)
+    except ValueError:
+        unix_socket = check.non_empty_str(port_or_unix_socket)
+
+    #
+
+    server_class = ThreadingHttpServer
+
     if unix_socket is not None:
-        if not unix_socket.endswith('.sock'):
-            raise ValueError(unix_socket)
+        check.arg(unix_socket.endswith('.sock'))
         if os.path.exists(unix_socket):
             os.unlink(unix_socket)
         addr = unix_socket
-        server_class.address_family = socket.AF_UNIX
+        address_family = socket.AF_UNIX
+    elif port is not None:
+        address_family, addr = get_best_socket_family(bind, port)
     else:
-        server_class.address_family, addr = get_best_socket_family(bind, port)  # type: ignore
+        raise RuntimeError
 
     with server_class(
-            addr,  # type: ignore
+            addr,
             functools.partial(
                 SocketHandlerSocketServerStreamRequestHandler,
                 socket_handler_factory=functools.partial(
@@ -95,6 +143,7 @@ def _main() -> None:
                     log_handler=lambda s, l: print(repr((s.client_address, l)), file=sys.stderr),
                 ),
             ),
+            address_family=address_family,
     ) as httpd:
         if unix_socket:
             print(f'Serving HTTP on unix socket {httpd.socket.getsockname()} ...')  # noqa
