@@ -65,7 +65,8 @@ import typing as ta
 
 from ...lite.check import check
 from ...sockets.addresses import SocketAddress
-from ...sockets.handlers import SocketHandler
+from ...sockets.handlers import SocketHandler  # noqa
+from ...sockets.io import SocketIoPair
 from ..handlers import HttpHandler
 from ..handlers import HttpHandlerRequest
 from ..handlers import UnsupportedMethodHttpHandlerError
@@ -530,27 +531,19 @@ class CoroHttpServer:
 ##
 
 
-class CoroHttpServerSocketHandler(SocketHandler):
+class CoroHttpServerSocketHandler:  # SocketHandler
     def __init__(
             self,
-            client_address: SocketAddress,
-            rfile: ta.BinaryIO,
-            wfile: ta.BinaryIO,
-            *,
             server_factory: CoroHttpServerFactory,
             log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
-        super().__init__(
-            client_address,
-            rfile,
-            wfile,
-        )
+        super().__init__()
 
         self._server_factory = server_factory
         self._log_handler = log_handler
 
-    def handle(self) -> None:
-        server = self._server_factory(self._client_address)
+    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
+        server = self._server_factory(client_address)
 
         gen = server.coro_handle()
 
@@ -562,15 +555,15 @@ class CoroHttpServerSocketHandler(SocketHandler):
                     self._log_handler(server, o)
 
             elif isinstance(o, CoroHttpServer.ReadIo):
-                i = self._rfile.read(o.sz)
+                i = fp.r.read(o.sz)
 
             elif isinstance(o, CoroHttpServer.ReadLineIo):
-                i = self._rfile.readline(o.sz)
+                i = fp.r.readline(o.sz)
 
             elif isinstance(o, CoroHttpServer.WriteIo):
                 i = None
-                self._wfile.write(o.data)
-                self._wfile.flush()
+                fp.w.write(o.data)
+                fp.w.flush()
 
             else:
                 raise TypeError(o)

@@ -46,49 +46,6 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 ##
 
 
-class HttpServer(socketserver.TCPServer):
-    allow_reuse_address = True  # Seems to make sense in testing environment
-
-    def __init__(
-            self,
-            server_address: ta.Any,
-            RequestHandlerClass: ta.Callable,  # noqa
-            bind_and_activate: bool = True,
-            *,
-            address_family: int = socket.AF_INET,
-            socket_type: int = socket.SOCK_STREAM,
-            request_queue_size: int = 5,
-            allow_reuse_address: bool = False,
-            allow_reuse_port: bool = False,
-    ) -> None:
-        self.address_family = address_family
-        self.socket_type = socket_type
-        self.request_queue_size = request_queue_size
-        self.allow_reuse_address = allow_reuse_address
-        self.allow_reuse_port = allow_reuse_port
-
-        super().__init__(
-            server_address,
-            RequestHandlerClass,
-            bind_and_activate=bind_and_activate,
-        )
-
-    def server_bind(self):
-        super().server_bind()
-
-        host, port = self.server_address[:2]
-
-        self.server_name = socket.getfqdn(host)  # type: ignore  # noqa
-        self.server_port = port  # noqa
-
-
-class ThreadingHttpServer(socketserver.ThreadingMixIn, HttpServer):
-    daemon_threads = True
-
-
-##
-
-
 def _main() -> None:
     default_port = 8000
 
