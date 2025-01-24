@@ -4,8 +4,8 @@ import unittest
 
 from omlish.lite import marshal as msh
 
-from ..oci import OciImageIndex
-from ..oci import OciImageManifest
+from ..oci import OciMediaImageIndex
+from ..oci import OciMediaImageManifest
 
 
 INDEX = {
@@ -88,8 +88,8 @@ MANIFEST = {
 
 class TestOci(unittest.TestCase):
     def test_marshal(self):
-        index: OciImageIndex = msh.unmarshal_obj(INDEX, OciImageIndex)
+        index: OciMediaImageIndex = msh.unmarshal_obj(INDEX, OciMediaImageIndex)
         print(index)
 
-        manifest: OciImageManifest = msh.unmarshal_obj(MANIFEST, OciImageManifest)
+        manifest: OciMediaImageManifest = msh.unmarshal_obj(MANIFEST, OciMediaImageManifest)
         print(manifest)
