@@ -6,9 +6,6 @@
 // See https://json5.org/
 // Derived from ../json/JSON.g4 which original derived from http://json.org
 
-// $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
-// $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
-
 grammar Json5;
 
 json5
