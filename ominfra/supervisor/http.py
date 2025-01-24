@@ -10,7 +10,6 @@ from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.io.fdio.handlers import SocketFdioHandler
 from omlish.lite.check import check
-from omlish.lite.contextmanagers import defer
 from omlish.lite.json import JSON_PRETTY_KWARGS
 from omlish.sockets.addresses import SocketAddress
 
@@ -73,7 +72,7 @@ class HttpServer(HasDispatchers):
 
         self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
 
-        exit_stack.enter_context(defer(self._server.close))  # noqa
+        exit_stack.callback(self._server.close)
 
     def get_dispatchers(self) -> Dispatchers:
         l = []

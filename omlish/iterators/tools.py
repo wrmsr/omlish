@@ -45,6 +45,7 @@ def take(n: int, iterable: ta.Iterable[T]) -> list[T]:
 
 
 def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator[list[T]]:
+    # TODO: remove with 3.13 - 3.12 doesn't support strict
     iterator = iter(functools.partial(take, n, iter(iterable)), [])
     if strict:
         def ret():
