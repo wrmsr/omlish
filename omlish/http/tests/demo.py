@@ -17,6 +17,7 @@ from ..coro.server import CoroHttpServerSocketHandler
 from ..coro.server import UnsupportedMethodHttpHandlerError
 from ..handlers import HttpHandlerRequest
 from ..handlers import HttpHandlerResponse
+from ..handlers import HttpHandlerResponseStreamedData
 from ..parsing import HttpRequestParser
 from ..versions import HttpProtocolVersions
 
@@ -34,10 +35,14 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
         f'data: {len(req.data or b"")}',
         '',
     ])
+    data = resp.encode('utf-8')
 
     return HttpHandlerResponse(
         200,
-        data=resp.encode('utf-8'),
+        data=HttpHandlerResponseStreamedData(
+            (bytes([b]) for b in data),
+            len(data),
+        ),
     )
 
 

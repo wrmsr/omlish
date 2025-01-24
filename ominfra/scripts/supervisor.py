@@ -7386,7 +7386,7 @@ class CoroHttpServer:
             return
 
         elif isinstance(a.data, HttpHandlerResponseStreamedData):
-            raise NotImplementedError
+            yield from a.data.iter
 
         else:
             raise TypeError(a.data)
