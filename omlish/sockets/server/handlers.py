@@ -1,5 +1,7 @@
-# @omlish-lite
 # ruff: noqa: UP006 UP007
+# @omlish-lite
+import abc
+import concurrent.futures as cf
 import dataclasses as dc
 import socket
 import typing as ta
@@ -16,8 +18,17 @@ SocketServerHandler = ta.Callable[[SocketAndAddress], None]  # ta.TypeAlias
 ##
 
 
+class SocketServerHandler_(abc.ABC):  # noqa
+    @abc.abstractmethod
+    def __call__(self, conn: SocketAndAddress) -> None:
+        raise NotImplementedError
+
+
+##
+
+
 @dc.dataclass(frozen=True)
-class StandardSocketServerHandler:
+class StandardSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
 
     timeout: ta.Optional[float] = None
@@ -46,7 +57,7 @@ class StandardSocketServerHandler:
 
 
 @dc.dataclass(frozen=True)
-class CallbackWrappedSocketServerHandler:
+class CallbackWrappedSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
 
     before_handle: ta.Optional[SocketServerHandler] = None
@@ -83,7 +94,7 @@ class CallbackWrappedSocketServerHandler:
 
 
 @dc.dataclass(frozen=True)
-class SocketHandlerSocketServerHandler:
+class SocketHandlerSocketServerHandler(SocketServerHandler_):
     handler: SocketHandler
 
     r_buf_size: int = -1
@@ -103,10 +114,18 @@ class SocketHandlerSocketServerHandler:
 
 
 @dc.dataclass(frozen=True)
-class SocketWrappingSocketServerHandler:
+class SocketWrappingSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
     wrapper: ta.Callable[[SocketAndAddress], SocketAndAddress]
 
     def __call__(self, conn: SocketAndAddress) -> None:
         wrapped_conn = self.wrapper(conn)
         self.handler(wrapped_conn)
+
+
+#
+
+@dc.dataclass(frozen=True)
+class ExecutorSocketServerHandler:
+    handler: SocketServerHandler
+    executor: cf.Executor

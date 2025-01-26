@@ -6391,6 +6391,12 @@ def journald_log_handler_factory(
 ##
 
 
+class SocketHandler_(abc.ABC):  # noqa
+    @abc.abstractmethod
+    def __call__(self, addr: SocketAddress, f: SocketIoPair) -> None:
+        raise NotImplementedError
+
+
 ########################################
 # ../configs.py
 
@@ -6844,6 +6850,12 @@ class HttpHandlerError(Exception):
 
 class UnsupportedMethodHttpHandlerError(Exception):
     pass
+
+
+class HttpHandler_(abc.ABC):  # noqa
+    @abc.abstractmethod
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        raise NotImplementedError
 
 
 ########################################
@@ -7710,7 +7722,7 @@ class CoroHttpServer:
 ##
 
 
-class CoroHttpServerSocketHandler:  # SocketHandler
+class CoroHttpServerSocketHandler(SocketHandler_):
     def __init__(
             self,
             server_factory: CoroHttpServerFactory,

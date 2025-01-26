@@ -65,7 +65,7 @@ import typing as ta
 
 from ...lite.check import check
 from ...sockets.addresses import SocketAddress
-from ...sockets.handlers import SocketHandler  # noqa
+from ...sockets.handlers import SocketHandler_
 from ...sockets.io import SocketIoPair
 from ..handlers import HttpHandler
 from ..handlers import HttpHandlerRequest
@@ -557,7 +557,7 @@ class CoroHttpServer:
 ##
 
 
-class CoroHttpServerSocketHandler:  # SocketHandler
+class CoroHttpServerSocketHandler(SocketHandler_):
     def __init__(
             self,
             server_factory: CoroHttpServerFactory,

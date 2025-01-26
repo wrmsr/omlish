@@ -20,6 +20,8 @@ from omlish.sockets.addresses import SocketAndAddress
 
 SocketBinderT = ta.TypeVar('SocketBinderT', bound='SocketBinder')
 SocketBinderConfigT = ta.TypeVar('SocketBinderConfigT', bound='SocketBinder.Config')
+CanSocketBinderConfig = ta.Union['SocketBinder.Config', int, ta.Tuple[str, int], str]  # ta.TypeAlias
+CanSocketBinder = ta.Union['SocketBinder', CanSocketBinderConfig]  # ta.TypeAlias
 
 
 ##
@@ -38,33 +40,29 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
         #
 
         @classmethod
-        def new(
-                cls,
-                target: ta.Union[
-                    int,
-                    ta.Tuple[str, int],
-                    str,
-                ],
-        ) -> 'SocketBinder.Config':
-            if isinstance(target, int):
+        def of(cls, obj: CanSocketBinderConfig) -> 'SocketBinder.Config':
+            if isinstance(obj, SocketBinder.Config):
+                return obj
+
+            elif isinstance(obj, int):
                 return TcpSocketBinder.Config(
-                    port=target,
+                    port=obj,
                 )
 
-            elif isinstance(target, tuple):
-                host, port = target
+            elif isinstance(obj, tuple):
+                host, port = obj
                 return TcpSocketBinder.Config(
                     host=host,
                     port=port,
                 )
 
-            elif isinstance(target, str):
+            elif isinstance(obj, str):
                 return UnixSocketBinder.Config(
-                    file=target,
+                    file=obj,
                 )
 
             else:
-                raise TypeError(target)
+                raise TypeError(obj)
 
     #
 
@@ -76,13 +74,16 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
     #
 
     @classmethod
-    def new(cls, target: ta.Any) -> 'SocketBinder':
+    def of(cls, obj: CanSocketBinder) -> 'SocketBinder':
+        if isinstance(obj, SocketBinder):
+            return obj
+
         config: SocketBinder.Config
-        if isinstance(target, SocketBinder.Config):
-            config = target
+        if isinstance(obj, SocketBinder.Config):
+            config = obj
 
         else:
-            config = SocketBinder.Config.new(target)
+            config = SocketBinder.Config.of(obj)
 
         if isinstance(config, TcpSocketBinder.Config):
             return TcpSocketBinder(config)

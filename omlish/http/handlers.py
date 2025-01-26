@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+import abc
 import dataclasses as dc
 import http.server
 import typing as ta
@@ -45,3 +46,9 @@ class HttpHandlerError(Exception):
 
 class UnsupportedMethodHttpHandlerError(Exception):
     pass
+
+
+class HttpHandler_(abc.ABC):  # noqa
+    @abc.abstractmethod
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        raise NotImplementedError

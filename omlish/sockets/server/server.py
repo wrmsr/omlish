@@ -7,6 +7,7 @@ import threading
 import typing as ta
 
 from ..bind import SocketBinder
+from ..io import close_socket_immediately
 from .handlers import SocketServerHandler
 
 
@@ -104,7 +105,14 @@ class SocketServer(abc.ABC):
 
                             return
 
-                        self._handler(conn)
+                        try:
+                            self._handler(conn)
+
+                        except Exception as exc:  # noqa
+                            if (on_error := self._on_error) is not None:
+                                on_error(exc)
+
+                            close_socket_immediately(conn.socket)
 
                     yield bool(ready)
 
