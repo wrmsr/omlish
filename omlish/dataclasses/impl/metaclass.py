@@ -9,6 +9,7 @@ import dataclasses as dc
 import typing as ta
 
 from ... import lang
+from .api import MISSING
 from .api import dataclass
 from .api import field  # noqa
 from .params import MetaclassParams
@@ -54,6 +55,7 @@ def confer_kwargs(
                     'cache_hash',
                     'generic_init',
                     'reorder',
+                    'override',
             ):
                 confer_kwarg(out, ck, getattr(get_params_extras(base), ck))
 
@@ -78,16 +80,33 @@ class DataMeta(abc.ABCMeta):
 
             # confer=frozenset(),
 
+            abstract=False,
+            sealed=False,
+            final=False,
+
             metadata=None,
             **kwargs,
     ):
-        cls = lang.super_meta(
-            super(),
-            mcls,
-            name,
-            bases,
-            namespace,
-        )
+        xbs: list[type] = []
+
+        if abstract:
+            xbs.append(lang.Abstract)
+        if sealed:
+            xbs.append(lang.Sealed)
+        if final:
+            xbs.append(lang.Final)
+
+        if xbs:
+            if bases and bases[-1] is ta.Generic:
+                bases = (*bases[:-1], *xbs, bases[-1])
+            else:
+                bases = (*bases, *xbs)
+            if (ob := namespace.get('__orig_bases__')) and getattr(ob[-1], '__origin__', None) is ta.Generic:
+                namespace['__orig_bases__'] = (*ob[:-1], *xbs, ob[-1])
+            else:
+                namespace['__orig_bases__'] = (*ob, *xbs)
+
+        #
 
         ckw = confer_kwargs(bases, kwargs)
         nkw = {**kwargs, **ckw}
@@ -103,6 +122,30 @@ class DataMeta(abc.ABCMeta):
             metadata = collections.ChainMap(mmd, metadata)
         else:
             metadata = mmd
+
+        #
+
+        ofs: set[str] = set()
+        if any(issubclass(b, lang.Abstract) for b in bases) and ckw.get('override'):
+            ofs.update(a for a in namespace.get('__annotations__', []) if a not in namespace)
+            namespace.update((a, MISSING) for a in ofs)
+
+        #
+
+        cls = lang.super_meta(
+            super(),
+            mcls,
+            name,
+            bases,
+            namespace,
+        )
+
+        #
+
+        for a in ofs:
+            delattr(cls, a)
+
+        #
 
         return dataclass(cls, metadata=metadata, **nkw)
 
@@ -136,6 +179,7 @@ class Frozen(
         'cache_hash',
         'confer',
         'reorder',
+        'override',
     ]),
 ):
     pass

@@ -74,7 +74,6 @@ def init_param(f: dc.Field) -> str:
 
 
 class InitBuilder:
-
     def __init__(
             self,
             info: ClassInfo,
@@ -128,6 +127,7 @@ class InitBuilder:
                 locals,
                 self._self_name,
                 self._info.params.slots,
+                self._info.params_extras.override,
             )
 
             if f_lines:

@@ -1,3 +1,7 @@
+"""
+TODO:
+ - fix code redundancy
+"""
 import collections.abc
 import contextlib
 import dataclasses as dc
@@ -91,6 +95,7 @@ def dataclass(  # noqa
         reorder=MISSING,
         cache_hash=MISSING,
         generic_init=MISSING,
+        override=MISSING,
 ):
     def wrap(cls):
         pkw = dict(
@@ -113,6 +118,7 @@ def dataclass(  # noqa
             reorder=reorder,
             cache_hash=cache_hash,
             generic_init=generic_init,
+            override=override,
         )))
         pex = ParamsExtras(**epk)
 
@@ -161,6 +167,7 @@ def make_dataclass(  # noqa
         reorder=MISSING,
         cache_hash=MISSING,
         generic_init=MISSING,
+        override=MISSING,
 ):
     if namespace is None:
         namespace = {}
@@ -221,6 +228,7 @@ def make_dataclass(  # noqa
         reorder=reorder,
         cache_hash=cache_hash,
         generic_init=generic_init,
+        override=override,
     )
 
 
@@ -233,6 +241,7 @@ def extra_params(  # noqa
         reorder=MISSING,
         cache_hash=MISSING,
         generic_init=MISSING,
+        override=MISSING,
 ):
     def inner(cls):
         if PARAMS_ATTR in cls.__dict__:
@@ -249,6 +258,7 @@ def extra_params(  # noqa
             reorder=reorder,
             cache_hash=cache_hash,
             generic_init=generic_init,
+            override=override,
         ))
 
         return cls

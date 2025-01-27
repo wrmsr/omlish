@@ -91,6 +91,7 @@ class ParamsExtras(lang.Final):
     reorder: bool = False
     cache_hash: bool = False
     generic_init: bool = False
+    override: bool = False
 
 
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()

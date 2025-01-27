@@ -165,6 +165,7 @@ def field_init(
         locals: dict[str, ta.Any],  # noqa
         self_name: str,
         slots: bool,
+        cls_override: bool,
 ) -> ta.Sequence[str]:
     default_name = f'__dataclass_dflt_{f.name}__'
     fx = get_field_extras(f)
@@ -235,6 +236,12 @@ def field_init(
         )
 
     if value is not None and field_type(f) is not FieldType.INIT:
-        lines.append(field_assign(frozen, f.name, value, self_name, fx.override))  # noqa
+        lines.append(field_assign(
+            frozen,
+            f.name,
+            value,
+            self_name,
+            fx.override or cls_override,
+        ))
 
     return lines

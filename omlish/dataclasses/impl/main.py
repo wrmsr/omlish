@@ -13,6 +13,7 @@ from .internals import FIELDS_ATTR
 from .internals import PARAMS_ATTR
 from .internals import Params
 from .order import OrderProcessor
+from .overrides import OverridesProcessor
 from .params import ParamsExtras
 from .processing import Processor
 from .reflect import ClassInfo
@@ -21,7 +22,6 @@ from .repr import ReprProcessor
 from .simple import DocProcessor
 from .simple import EqProcessor
 from .simple import MatchArgsProcessor
-from .simple import OverridesProcessor
 from .slots import add_slots
 
 
