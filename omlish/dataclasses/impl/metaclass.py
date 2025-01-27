@@ -101,10 +101,11 @@ class DataMeta(abc.ABCMeta):
                 bases = (*bases[:-1], *xbs, bases[-1])
             else:
                 bases = (*bases, *xbs)
-            if (ob := namespace.get('__orig_bases__')) and getattr(ob[-1], '__origin__', None) is ta.Generic:
-                namespace['__orig_bases__'] = (*ob[:-1], *xbs, ob[-1])
-            else:
-                namespace['__orig_bases__'] = (*ob, *xbs)
+            if ob := namespace.get('__orig_bases__'):
+                if getattr(ob[-1], '__origin__', None) is ta.Generic:
+                    namespace['__orig_bases__'] = (*ob[:-1], *xbs, ob[-1])
+                else:
+                    namespace['__orig_bases__'] = (*ob, *xbs)
 
         #
 
