@@ -24,7 +24,7 @@ async-lru==2.0.4
 asyncer==0.0.8
 asyncpg==0.30.0
 asyncssh==2.19.0
-attrs==24.3.0
+attrs==25.1.0
 audioread==3.0.1
 babel==2.16.0
 backoff==2.2.1
@@ -37,8 +37,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.36.5
-botocore==1.36.5
+boto3==1.36.6
+botocore==1.36.6
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -82,7 +82,7 @@ dateparser==1.2.0
 debugpy==1.8.12
 decorator==5.1.1
 defusedxml==0.7.1
-Deprecated==1.2.15
+Deprecated==1.2.17
 dill==0.3.8
 directsearch==1.0
 dirtyjson==1.0.8
@@ -96,7 +96,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==7.2.1
+duckduckgo_search==7.3.0
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.17.0
@@ -116,8 +116,8 @@ fire==0.6.0
 flake8==7.1.1
 Flake8-pyproject==1.2.3
 Flask==3.1.0
-flatbuffers==25.1.21
-fonttools==4.55.5
+flatbuffers==25.1.24
+fonttools==4.55.6
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.27.1
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.124.2
+hypothesis==6.124.7
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -211,7 +211,7 @@ keyring==25.6.0
 kiwisolver==1.4.8
 kubernetes==32.0.0
 langchain==0.3.15
-langchain-anthropic==0.3.3
+langchain-anthropic==0.3.4
 langchain-chroma==0.2.0
 langchain-community==0.3.15
 langchain-core==0.3.31
@@ -225,7 +225,7 @@ langchain-text-splitters==0.3.5
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.66
+langgraph==0.2.67
 langgraph-checkpoint==2.0.10
 langgraph-sdk==0.1.51
 langsmith==0.3.1
@@ -235,7 +235,7 @@ libclang==18.1.1
 librosa==0.10.2.post1
 libtmux==0.40.1
 lightning-utilities==0.11.9
-litecli==1.14.0
+litecli==1.14.2
 litellm==1.51.0
 llama-index-core==0.12.12
 llama_cpp_python==0.3.6
@@ -247,7 +247,7 @@ lsprotocol==2023.0.1
 lupa==2.4
 lxml==5.3.0
 lxml_html_clean==0.4.1
-lz4==4.3.3
+lz4==4.4.3
 magicattr==0.1.6
 Mako==1.3.8
 marisa-trie==1.2.1
@@ -264,7 +264,7 @@ mitogen==0.3.21
 ml-dtypes==0.4.1
 mlx==0.22.0
 mlx-lm==0.21.1
-mmh3==5.0.1
+mmh3==5.1.0
 monotonic==1.6
 more-itertools==10.6.0
 mpmath==1.3.0
@@ -299,7 +299,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.60.0
+openai==1.60.1
 opencv-python==4.11.0.86
 opendal==0.45.14
 opentelemetry-api==1.29.0
@@ -324,28 +324,28 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@6e30991e97ba5403c21442296052023e3edf7315
+peft @ git+https://github.com/huggingface/peft.git@9c25d9411a3db1ce9599cc5270cd07ec81ccd4c9
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
 pgspecial==2.1.3
 pillow==11.1.0
-pipdeptree==2.24.0
+pipdeptree==2.25.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.20.0
+polars==1.21.0
 pooch==1.8.2
 portalocker==2.8.2
-posthog==3.9.3
+posthog==3.10.0
 pprintpp==0.4.0
 preshed==3.0.9
-primp==0.10.1
+primp==0.11.0
 priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 propcache==0.2.1
 proto-plus==1.25.0
-protobuf==4.25.5
+protobuf==4.25.6
 psutil==6.1.1
 psycopg==3.2.4
 psycopg2==2.9.10
@@ -361,7 +361,7 @@ pyasn1_modules==0.4.1
 pyclipper==1.3.0.post6
 pycodestyle==2.12.1
 pycparser==2.22
-pydantic==2.10.5
+pydantic==2.10.6
 pydantic-settings==2.7.1
 pydantic_core==2.27.2
 pyflakes==3.2.0
@@ -379,7 +379,7 @@ pyobjc-framework-Metal==11.0
 pyogrio==0.10.0
 pyOpenSSL==24.3.0
 pyparsing==2.4.7
-pypdf==5.1.0
+pypdf==5.2.0
 pyperclip==1.9.0
 PyPika==0.48.9
 pyproj==3.7.0
@@ -416,7 +416,7 @@ rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==44.0
 redis==5.2.1
-referencing==0.36.1
+referencing==0.36.2
 regex==2024.11.6
 requests==2.32.3
 requests-oauthlib==2.0.0
@@ -432,7 +432,7 @@ rubicon-objc==0.5.0
 ruff==0.9.3
 s3transfer==0.11.2
 safetensors==0.5.2
-scikit-image==0.25.0
+scikit-image==0.25.1
 scikit-learn==1.6.1
 scipy==1.15.1
 scramp==1.4.5
@@ -451,12 +451,12 @@ six==1.17.0
 smart-open==7.1.0
 smmap==5.0.2
 sniffio==1.3.1
-snowflake-connector-python==3.12.4
+snowflake-connector-python==3.13.0
 snowflake-sqlalchemy==1.7.3
-soco==0.30.6
+soco==0.30.8
 sortedcontainers==2.4.0
 sounddevice==0.5.1
-soundfile==0.13.0
+soundfile==0.13.1
 soupsieve==2.6
 soxr==0.5.0.post1
 spacy==3.8.3
@@ -465,12 +465,12 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.37
 sqlean.py==3.47.0
-sqlglot==26.3.2
+sqlglot==26.3.8
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.5.1
 stack-data==0.6.3
-starlette==0.45.2
+starlette==0.45.3
 sympy==1.13.1
 tabulate==0.9.0
 tantivy==0.22.0
@@ -497,7 +497,7 @@ torchsummary==1.5.1
 torchvision==0.20.1
 tornado==6.4.2
 tqdm==4.67.1
-trafilatura==1.12.2
+trafilatura==2.0.0
 traitlets==5.14.3
 transformers==4.48.1
 tree-sitter==0.24.0
@@ -527,7 +527,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.23
+uv==0.5.24
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2

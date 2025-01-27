@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.124.2
+hypothesis==6.124.7
 
 hexdump==3.3
 
@@ -79,7 +79,7 @@ git+https://github.com/huggingface/peft.git
 
 scipy==1.15.1
 scikit-learn==1.6.1
-scikit-image==0.25.0
+scikit-image==0.25.1
 
 simsimd>=5.9.11
 
@@ -153,7 +153,7 @@ cloudflare==3.1.0  # httpx
 
 selectolax==0.3.27
 
-soco==0.30.6
+soco==0.30.8
 
 sounddevice==0.5.1
 # vosk==0.3.45
@@ -179,12 +179,12 @@ mitogen==0.3.21
 
 ##
 
-openai==1.60.0
+openai==1.60.1
 
 trl==0.13.0
 tf-keras==2.17.0
 
-polars==1.20.0
+polars==1.21.0
 
 pyzmq==26.2.0
 
@@ -194,7 +194,7 @@ customtkinter==5.2.2
 
 ##
 
-langchain-anthropic==0.3.3
+langchain-anthropic==0.3.4
 langchain-chroma==0.2.0
 langchain-community==0.3.15
 langchain-core==0.3.31
@@ -212,7 +212,7 @@ langchain==0.3.15
 
 langchainhub==0.1.21
 
-langgraph==0.2.66
+langgraph==0.2.67
 
 langsmith==0.3.1
 
@@ -238,7 +238,7 @@ tantivy==0.22
 
 neo4j==5.27.0
 
-pypdf==5.1.0
+pypdf==5.2.0
 
 fparser==0.1.4
 
@@ -284,7 +284,7 @@ pytesseract==0.3.13
 dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
-trafilatura==1.12.2
+trafilatura==2.0.0
 qdrant-client==1.13.2
 
 flask==3.1.0

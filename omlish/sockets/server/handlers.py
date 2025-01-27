@@ -126,6 +126,9 @@ class SocketWrappingSocketServerHandler(SocketServerHandler_):
 #
 
 @dc.dataclass(frozen=True)
-class ExecutorSocketServerHandler:
+class ExecutorSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
     executor: cf.Executor
+
+    def __call__(self, conn: SocketAndAddress) -> None:
+        self.executor.submit(self.handler, conn)
