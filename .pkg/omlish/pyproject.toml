@@ -29,7 +29,7 @@ all = [
     'greenlet ~= 3.1',
     'trio ~= 0.27',
     'trio-asyncio ~= 0.15',
-    'lz4 ~= 4.3',
+    'lz4 ~= 4.4',
     'python-snappy ~= 0.7',
     'zstandard ~= 0.23',
     'brotli ~= 1.1',
@@ -70,7 +70,7 @@ async = [
     'trio-asyncio ~= 0.15',
 ]
 compress = [
-    'lz4 ~= 4.3',
+    'lz4 ~= 4.4',
     'python-snappy ~= 0.7',
     'zstandard ~= 0.23',
     'brotli ~= 1.1',

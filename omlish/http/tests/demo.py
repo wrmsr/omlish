@@ -42,8 +42,6 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 ##
 
 
-
-
 def _main() -> None:
     default_port = 8000
 

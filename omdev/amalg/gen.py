@@ -126,7 +126,10 @@ class AmalgGenerator:
             dct[('base64', None, None)] = ['import base64\n']
         for imp in gl_imps:
             dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
-        for _, l in sorted(dct.items()):
+        for _, l in sorted(
+                dct.items(),
+                key=lambda t: (t[0][0], t[0][1] or '', t[0][2] or ''),
+        ):
             il = l[0]
             out.write(il if isinstance(il, str) else tks.join_toks(il.toks))
         if dct:

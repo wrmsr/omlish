@@ -42,7 +42,7 @@ class Project(ProjectBase):
         ],
 
         'compress': [
-            'lz4 ~= 4.3',
+            'lz4 ~= 4.4',
             # 'lz4 @ git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED'
 
             'python-snappy ~= 0.7',
