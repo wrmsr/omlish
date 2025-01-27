@@ -2,7 +2,10 @@
 # @omlish-lite
 """
 TODO:
+ - def parse: (<bind>)?:<port>, unix://, fd://
+ - unix chown/chgrp
  - DupSocketBinder
+ - udp
 """
 import abc
 import dataclasses as dc
@@ -20,6 +23,7 @@ from omlish.sockets.addresses import SocketAndAddress
 
 SocketBinderT = ta.TypeVar('SocketBinderT', bound='SocketBinder')
 SocketBinderConfigT = ta.TypeVar('SocketBinderConfigT', bound='SocketBinder.Config')
+
 CanSocketBinderConfig = ta.Union['SocketBinder.Config', int, ta.Tuple[str, int], str]  # ta.TypeAlias
 CanSocketBinder = ta.Union['SocketBinder', CanSocketBinderConfig]  # ta.TypeAlias
 
@@ -308,7 +312,8 @@ class UnixSocketBinder(SocketBinder):
 
         if self._config.unlink:
             try:
-                os.unlink(self._config.file)
+                if stat.S_ISSOCK(os.stat(self._config.file).st_mode):
+                    os.unlink(self._config.file)
             except FileNotFoundError:
                 pass
 
