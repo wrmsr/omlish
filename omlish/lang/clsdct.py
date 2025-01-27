@@ -36,7 +36,6 @@ def get_caller_cls_dct(offset: int = 0) -> ta.MutableMapping[str, ta.Any]:
 
 
 class ClassDctFn:
-
     def __init__(self, fn: ta.Callable, offset: int | None = None, *, wrap=True) -> None:
         super().__init__()
 

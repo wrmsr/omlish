@@ -11,7 +11,6 @@ class ValueNotPresentException(BaseException):
 
 
 class Maybe(abc.ABC, ta.Generic[T]):
-
     @property
     @abc.abstractmethod
     def present(self) -> bool:

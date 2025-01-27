@@ -28,7 +28,6 @@ def _make_not_instantiable():
 
 
 class _VirtualMeta(abc.ABCMeta):
-
     def __new__(mcls, name, bases, namespace):
         if 'Virtual' not in globals():
             return super().__new__(mcls, name, bases, namespace)

@@ -158,7 +158,6 @@ class _CachedFunction(ta.Generic[T]):
 
 
 class _CachedFunctionDescriptor(_CachedFunction[T]):
-
     def __init__(
             self,
             fn: ta.Callable[P, T],

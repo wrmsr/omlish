@@ -140,9 +140,7 @@ def dir_dict(o: ta.Any) -> dict[str, ta.Any]:
 
 
 class SimpleProxy(ta.Generic[T]):
-
     class Descriptor:
-
         def __init__(self, attr: str) -> None:
             super().__init__()
             self._attr = attr

@@ -19,7 +19,6 @@ T = ta.TypeVar('T')
 
 
 class ContextManaged:
-
     def __enter__(self) -> ta.Self:
         return self
 
@@ -33,7 +32,6 @@ class ContextManaged:
 
 
 class NopContextManaged(ContextManaged):
-
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise TypeError
 
@@ -42,7 +40,6 @@ NOP_CONTEXT_MANAGED = NopContextManaged()
 
 
 class NopContextManager:
-
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise TypeError
 
@@ -57,7 +54,6 @@ NOP_CONTEXT_MANAGER = NopContextManager()
 
 
 class ContextManager(abc.ABC, ta.Generic[T]):
-
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -87,7 +83,6 @@ class ContextManager(abc.ABC, ta.Generic[T]):
 
 
 class AsyncContextManager(abc.ABC, ta.Generic[T]):
-
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -191,7 +186,6 @@ def attr_setting(obj, attr, val, *, default=None):  # noqa
 
 
 class ExitStacked:
-
     @property
     def _exit_stack(self) -> contextlib.ExitStack:
         try:
@@ -229,7 +223,6 @@ class ExitStacked:
 
 
 class AsyncExitStacked:
-
     @property
     def _exit_stack(self) -> contextlib.AsyncExitStack:
         try:
@@ -276,7 +269,6 @@ ContextWrappable: ta.TypeAlias = ta.ContextManager | str | ta.Callable[..., ta.C
 
 
 class ContextWrapped:
-
     def __init__(self, fn: ta.Callable, cm: str | ContextWrappable) -> None:
         super().__init__()
 
