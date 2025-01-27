@@ -2,10 +2,12 @@
 # ruff: noqa: UP006 UP007
 import abc
 import contextlib
+import logging
 import selectors
 import threading
 import typing as ta
 
+from ..addresses import SocketAndAddress
 from ..bind import SocketBinder
 from ..io import close_socket_immediately
 from .handlers import SocketServerHandler
@@ -15,12 +17,15 @@ from .handlers import SocketServerHandler
 
 
 class SocketServer(abc.ABC):
+    _DEFAULT_LOGGER = logging.getLogger('.'.join([__name__, 'SocketServer']))
+
     def __init__(
             self,
             binder: SocketBinder,
             handler: SocketServerHandler,
             *,
-            on_error: ta.Optional[ta.Callable[[BaseException], None]] = None,
+            on_error: ta.Optional[ta.Callable[[BaseException, ta.Optional[SocketAndAddress]], None]] = None,
+            error_logger: ta.Optional[logging.Logger] = _DEFAULT_LOGGER,
             poll_interval: float = .5,
             shutdown_timeout: ta.Optional[float] = None,
     ) -> None:
@@ -29,6 +34,7 @@ class SocketServer(abc.ABC):
         self._binder = binder
         self._handler = handler
         self._on_error = on_error
+        self._error_logger = error_logger
         self._poll_interval = poll_interval
         self._shutdown_timeout = shutdown_timeout
 
@@ -43,6 +49,15 @@ class SocketServer(abc.ABC):
     @property
     def handler(self) -> SocketServerHandler:
         return self._handler
+
+    #
+
+    def _handle_error(self, exc: BaseException, conn: ta.Optional[SocketAndAddress] = None) -> None:
+        if (error_logger := self._error_logger) is not None:
+            error_logger.exception('Error in socket server: %r', conn)
+
+        if (on_error := self._on_error) is not None:
+            on_error(exc, conn)
 
     #
 
@@ -100,8 +115,7 @@ class SocketServer(abc.ABC):
                             conn = self._binder.accept()
 
                         except OSError as exc:
-                            if (on_error := self._on_error) is not None:
-                                on_error(exc)
+                            self._handle_error(exc)
 
                             return
 
@@ -109,8 +123,7 @@ class SocketServer(abc.ABC):
                             self._handler(conn)
 
                         except Exception as exc:  # noqa
-                            if (on_error := self._on_error) is not None:
-                                on_error(exc)
+                            self._handle_error(exc, conn)
 
                             close_socket_immediately(conn.socket)
 

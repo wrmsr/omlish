@@ -49,7 +49,7 @@ async def _run_handler(
         await anyio.aclose_forcefully(stream)
 
 
-SLEEP_TIME = 0.100
+SLEEP_TIME = .1
 
 
 async def _serve_one_listener(
