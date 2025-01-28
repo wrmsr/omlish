@@ -112,6 +112,7 @@ def get_params_extras(obj: ta.Any) -> ParamsExtras:
 class MetaclassParams:
     confer: frozenset[str] = frozenset()
     final_subclasses: bool = False
+    abstract_immediate_subclasses: bool = False
 
 
 DEFAULT_METACLASS_PARAMS = MetaclassParams()

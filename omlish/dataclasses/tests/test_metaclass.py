@@ -146,3 +146,17 @@ def test_final_subclasses():
 
     assert_non_abstract_class(E)
     assert_final_class(E)
+
+
+def test_case():
+    class A(dc.Case):
+        pass
+
+    assert_abstract_class(A)
+    assert_non_final_class(A)
+
+    class B(A):
+        pass
+
+    assert_non_abstract_class(B)
+    assert_final_class(B)

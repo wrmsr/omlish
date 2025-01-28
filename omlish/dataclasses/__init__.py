@@ -67,6 +67,7 @@ from .impl.metaclass import (  # noqa
     DataMeta,
     Data,
     Frozen,
+    Case,
     Box,
 )
 

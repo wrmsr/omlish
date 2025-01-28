@@ -30,15 +30,16 @@ _CONFER_PARAMS: tuple[str, ...] = (
 )
 
 _CONFER_PARAMS_EXTRAS: tuple[str, ...] = (
+    'reorder',
     'cache_hash',
     'generic_init',
-    'reorder',
     'override',
 )
 
 _CONFER_METACLASS_PARAMS: tuple[str, ...] = (
     'confer',
     'final_subclasses',
+    'abstract_immediate_subclasses',
 )
 
 
@@ -81,6 +82,9 @@ def confer_kwargs(
     return out
 
 
+##
+
+
 class DataMeta(abc.ABCMeta):
     def __new__(
             mcls,
@@ -117,11 +121,19 @@ class DataMeta(abc.ABCMeta):
 
         xbs: list[type] = []
 
+        if any(get_metaclass_params(b).abstract_immediate_subclasses for b in bases if dc.is_dataclass(b)):
+            abstract = True
+
+        final |= (mcp.final_subclasses and not abstract)
+
+        if final and abstract:
+            raise TypeError(f'Class cannot be abstract and final: {name!r}')
+
         if abstract:
             xbs.append(lang.Abstract)
         if sealed:
             xbs.append(lang.Sealed)
-        if final or (mcp.final_subclasses and not abstract):
+        if final:
             xbs.append(lang.Final)
 
         if xbs:
@@ -162,11 +174,15 @@ class DataMeta(abc.ABCMeta):
         return dataclass(cls, metadata=metadata, **nkw)
 
 
+##
+
+
 # @ta.dataclass_transform(field_specifiers=(field,))  # FIXME: ctor
 class Data(
     eq=False,
     order=False,
     confer=frozenset([
+        'confer',
         'final_subclasses',
     ]),
     metaclass=DataMeta,
@@ -192,11 +208,20 @@ class Frozen(
     confer=frozenset([
         *get_metaclass_params(Data).confer,
         'frozen',
-        'cache_hash',
         'reorder',
+        'cache_hash',
         'override',
-        'confer',
     ]),
+):
+    pass
+
+
+class Case(
+    Frozen,
+    abstract=True,
+    override=True,
+    final_subclasses=True,
+    abstract_immediate_subclasses=True,
 ):
     pass
 
