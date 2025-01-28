@@ -6850,11 +6850,19 @@ class HttpHandlerResponse:
     data: ta.Optional[HttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
 
+    def close(self) -> None:
+        if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+            d.close()
+
 
 @dc.dataclass(frozen=True)
 class HttpHandlerResponseStreamedData:
     iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
+
+    def close(self) -> None:
+        if hasattr(d := self.iter, 'close'):
+            d.close()  # noqa
 
 
 class HttpHandlerError(Exception):
@@ -7383,6 +7391,10 @@ class CoroHttpServer:
                     return h
             return None
 
+        def close(self) -> None:
+            if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+                d.close()
+
     #
 
     def _build_response_head_bytes(self, a: _Response) -> bytes:
@@ -7598,35 +7610,45 @@ class CoroHttpServer:
         while True:
             gen = self.coro_handle_one()
 
-            o = next(gen)
             i: ta.Optional[bytes]
+            o = next(gen)
             while True:
-                if isinstance(o, self.AnyLogIo):
-                    i = None
-                    yield o
-
-                elif isinstance(o, self.AnyReadIo):
-                    i = check.isinstance((yield o), bytes)
-
-                elif isinstance(o, self._Response):
-                    i = None
-
-                    r = self._preprocess_response(o)
-                    hb = self._build_response_head_bytes(r)
-                    check.none((yield self.WriteIo(hb)))
-
-                    for b in self._yield_response_data(r):
-                        yield self.WriteIo(b)
-
-                else:
-                    raise TypeError(o)
-
                 try:
-                    o = gen.send(i)
-                except EOFError:
-                    return
-                except StopIteration:
-                    break
+                    if isinstance(o, self.AnyLogIo):
+                        i = None
+                        yield o
+
+                    elif isinstance(o, self.AnyReadIo):
+                        i = check.isinstance((yield o), bytes)
+
+                    elif isinstance(o, self._Response):
+                        i = None
+
+                        r = self._preprocess_response(o)
+                        hb = self._build_response_head_bytes(r)
+                        check.none((yield self.WriteIo(hb)))
+
+                        for b in self._yield_response_data(r):
+                            yield self.WriteIo(b)
+
+                        o.close()
+                        o = None
+
+                    else:
+                        raise TypeError(o)  # noqa
+
+                    try:
+                        o = gen.send(i)
+                    except EOFError:
+                        return
+                    except StopIteration:
+                        break
+
+                except Exception:  # noqa
+                    if hasattr(o, 'close'):
+                        o.close()
+
+                    raise
 
     def coro_handle_one(self) -> ta.Generator[
         ta.Union[AnyLogIo, AnyReadIo, _Response],
@@ -7708,28 +7730,34 @@ class CoroHttpServer:
             yield self._build_error_response(err)
             return
 
-        # Build internal response
+        try:
+            # Build internal response
 
-        response_headers = handler_response.headers or {}
-        response_data = handler_response.data
+            response_headers = handler_response.headers or {}
+            response_data = handler_response.data
 
-        headers: ta.List[CoroHttpServer._Header] = [
-            *self._make_default_headers(),
-        ]
+            headers: ta.List[CoroHttpServer._Header] = [
+                *self._make_default_headers(),
+            ]
 
-        for k, v in response_headers.items():
-            headers.append(self._Header(k, v))
+            for k, v in response_headers.items():
+                headers.append(self._Header(k, v))
 
-        if handler_response.close_connection and 'Connection' not in headers:
-            headers.append(self._Header('Connection', 'close'))
+            if handler_response.close_connection and 'Connection' not in headers:
+                headers.append(self._Header('Connection', 'close'))
 
-        yield self._Response(
-            version=parsed.version,
-            code=http.HTTPStatus(handler_response.status),
-            headers=headers,
-            data=response_data,
-            close_connection=handler_response.close_connection,
-        )
+            yield self._Response(
+                version=parsed.version,
+                code=http.HTTPStatus(handler_response.status),
+                headers=headers,
+                data=response_data,
+                close_connection=handler_response.close_connection,
+            )
+
+        except Exception:  # noqa
+            handler_response.close()
+
+            raise
 
 
 ##

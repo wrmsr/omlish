@@ -1,5 +1,7 @@
 from .abstract import (  # noqa
     Abstract,
+    AbstractTypeError,
+    get_abstract_methods,
     is_abstract,
     is_abstract_class,
     is_abstract_method,

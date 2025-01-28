@@ -1,12 +1,19 @@
+import typing as ta
+
 from ..graphs import dot
 from . import runtime as antlr4
 from .utils import yield_contexts
 
 
-def dot_ctx(root: antlr4.ParserRuleContext) -> dot.Graph:
-    stmts: list[dot.Stmt] = [
-        dot.RawStmt('rankdir=LR;'),
-    ]
+def dot_ctx(
+        root: antlr4.ParserRuleContext,
+        *,
+        left_to_right: bool = False,
+) -> dot.Graph:
+    stmts: list[dot.Stmt] = []
+
+    if left_to_right:
+        stmts.append(dot.RawStmt('rankdir=LR;'))
 
     for c in yield_contexts(root):
         if isinstance(c, antlr4.TerminalNode):
@@ -27,5 +34,5 @@ def dot_ctx(root: antlr4.ParserRuleContext) -> dot.Graph:
     return dot.Graph(stmts)
 
 
-def open_dot_ctx(root: antlr4.ParserRuleContext) -> None:
-    dot.open_dot(dot.render(dot_ctx(root)))
+def open_dot_ctx(root: antlr4.ParserRuleContext, **kwargs: ta.Any) -> None:
+    dot.open_dot(dot.render(dot_ctx(root)), **kwargs)

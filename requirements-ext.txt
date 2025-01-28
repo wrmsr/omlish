@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-google-api-python-client==2.159.0
+google-api-python-client==2.160.0
 google-cloud-compute==1.24.0
 
 cloudflare==3.1.0  # httpx
@@ -179,7 +179,7 @@ mitogen==0.3.21
 
 ##
 
-openai==1.60.1
+openai==1.60.2
 
 trl==0.13.0
 tf-keras==2.17.0
@@ -195,9 +195,9 @@ customtkinter==5.2.2
 ##
 
 langchain-anthropic==0.3.4
-langchain-chroma==0.2.0
-langchain-community==0.3.15
-langchain-core==0.3.31
+langchain-chroma==0.2.1
+langchain-community==0.3.16
+langchain-core==0.3.32
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
@@ -205,7 +205,7 @@ langchain-mistralai==0.2.4
 langchain-openai==0.3.2
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
-langchain==0.3.15
+langchain==0.3.16
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
@@ -248,7 +248,7 @@ usearch==2.16.9
 
 llama-index-core==0.12.12
 
-unstructured==0.16.15
+unstructured==0.16.16
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -257,7 +257,7 @@ libtmux==0.40.1
 
 sqlite-vec==0.1.6
 
-anthropic==0.45.1
+anthropic==0.45.2
 
 jedi==0.19.2
 jedi-language-server==0.43.1

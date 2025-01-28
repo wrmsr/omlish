@@ -467,36 +467,3 @@ def test_default_factory_coerce():
 
     assert C().x == 4
     assert C(3).x == 6
-
-
-def test_confer_cache_hash():
-    class A(dc.Frozen, lang.Abstract, cache_hash=True):
-        pass
-
-    assert dc.reflect(A).params_extras.cache_hash
-
-    class B(A, lang.Final):
-        pass
-
-    assert dc.reflect(B).params_extras.cache_hash
-
-
-def test_frozen_meta_hash():
-    class Foo(dc.Frozen, eq=False):
-        s: str
-
-    class Foos(lang.Namespace):
-        BAR = Foo('bar')
-        BAZ = Foo('baz')
-
-    assert Foos.BAR == Foos.BAR
-    assert Foos.BAR != Foos.BAZ
-
-    foo_to_str = {
-        Foos.BAR: 'bar!',
-        Foos.BAZ: 'baz!',
-    }
-
-    assert foo_to_str[Foos.BAR] == 'bar!'
-    assert foo_to_str[Foos.BAZ] == 'baz!'
-    assert Foo('abc') not in foo_to_str

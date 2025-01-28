@@ -6,6 +6,7 @@ from .cached import (  # noqa
 
 from .classes import (  # noqa
     Abstract,
+    AbstractTypeError,
     AnySensitive,
     Callable,
     Descriptor,
@@ -26,6 +27,7 @@ from .classes import (  # noqa
     SimpleMetaDict,
     Singleton,
     Virtual,
+    get_abstract_methods,
     is_abstract,
     is_abstract_class,
     is_abstract_method,

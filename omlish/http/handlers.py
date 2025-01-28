@@ -33,11 +33,19 @@ class HttpHandlerResponse:
     data: ta.Optional[HttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
 
+    def close(self) -> None:
+        if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+            d.close()
+
 
 @dc.dataclass(frozen=True)
 class HttpHandlerResponseStreamedData:
     iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
+
+    def close(self) -> None:
+        if hasattr(d := self.iter, 'close'):
+            d.close()  # noqa
 
 
 class HttpHandlerError(Exception):

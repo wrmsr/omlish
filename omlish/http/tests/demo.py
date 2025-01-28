@@ -30,12 +30,23 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
     ])
     data = resp.encode('utf-8')
 
+    resp_data: ta.Any
+    if 'stream' in req.headers:
+        def stream_data():
+            for b in data:
+                yield bytes([b])
+
+        resp_data = HttpHandlerResponseStreamedData(
+            stream_data(),
+            len(data),
+        )
+
+    else:
+        resp_data = data
+
     return HttpHandlerResponse(
         200,
-        data=HttpHandlerResponseStreamedData(
-            (bytes([b]) for b in data),
-            len(data),
-        ),
+        data=resp_data,
     )
 
 

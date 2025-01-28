@@ -11,6 +11,8 @@ _ABSTRACT_METHODS_ATTR = '__abstractmethods__'
 _IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
 _FORCE_ABSTRACT_ATTR = '__forceabstract__'
 
+_INTERNAL_ABSTRACT_ATTRS = frozenset([_FORCE_ABSTRACT_ATTR])
+
 
 def make_abstract(obj: T) -> T:
     if callable(obj):
@@ -25,6 +27,10 @@ def make_abstract(obj: T) -> T:
         return ta.cast(T, type(obj)(abc.abstractmethod(obj.__func__)))
     else:
         return obj
+
+
+class AbstractTypeError(TypeError):
+    pass
 
 
 class Abstract(abc.ABC):  # noqa
@@ -50,7 +56,7 @@ class Abstract(abc.ABC):  # noqa
                 ams.update(set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen)
                 seen.update(dir(b))
             if ams:
-                raise TypeError(
+                raise AbstractTypeError(
                     f'Cannot subclass abstract class {cls.__name__} with abstract methods: '
                     f'{", ".join(map(str, sorted(ams)))}',
                 )
@@ -76,6 +82,13 @@ def is_abstract_class(obj: ta.Any) -> bool:
 
 def is_abstract(obj: ta.Any) -> bool:
     return is_abstract_method(obj) or is_abstract_class(obj)
+
+
+def get_abstract_methods(cls: type, *, include_internal: bool = False) -> frozenset[str]:
+    ms = frozenset(getattr(cls, _ABSTRACT_METHODS_ATTR))
+    if not include_internal:
+        ms -= _INTERNAL_ABSTRACT_ATTRS
+    return ms
 
 
 def unabstract_class(

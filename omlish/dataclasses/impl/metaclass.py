@@ -127,7 +127,7 @@ class DataMeta(abc.ABCMeta):
         #
 
         ofs: set[str] = set()
-        if any(issubclass(b, lang.Abstract) for b in bases) and ckw.get('override'):
+        if any(issubclass(b, lang.Abstract) for b in bases) and nkw.get('override'):
             ofs.update(a for a in namespace.get('__annotations__', []) if a not in namespace)
             namespace.update((a, MISSING) for a in ofs)
 
