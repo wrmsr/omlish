@@ -11,7 +11,7 @@ from .classes import (  # noqa
     Callable,
     Descriptor,
     Final,
-    FinalError,
+    FinalTypeError,
     LazySingleton,
     Marker,
     Namespace,

@@ -1,8 +1,13 @@
 import abc
 import typing as ta
 
+import pytest
+
 from ... import dataclasses as dc
 from ... import lang
+
+
+##
 
 
 def test_confer_cache_hash():
@@ -54,7 +59,7 @@ def test_overrides():
         class B(A):
             pass
     except lang.AbstractTypeError as te:
-        assert str(te) == 'Cannot subclass abstract class B with abstract methods: x'
+        assert str(te) == 'Cannot subclass abstract class B with abstract methods: x'  # noqa
 
     #
 
@@ -76,3 +81,68 @@ def test_overrides():
 
     assert not lang.is_abstract(E)
     assert E('q').x == 'q'
+
+
+##
+
+
+def assert_non_abstract_class(cls, *args, **kwargs):
+    assert isinstance(cls, type)
+    assert not lang.is_abstract(cls)
+
+    cls(*args, **kwargs)
+
+
+def assert_abstract_class(cls):
+    assert isinstance(cls, type)
+    assert lang.is_abstract_class(cls)
+
+    with pytest.raises(TypeError):
+        cls()
+
+
+def assert_non_final_class(cls):
+    class Sub(cls):  # type: ignore
+        pass
+
+
+def assert_final_class(cls):
+    with pytest.raises(lang.FinalTypeError):
+        class Sub(cls):  # type: ignore
+            pass
+
+
+def test_final_subclasses():
+    class A(dc.Frozen, final=True):
+        pass
+
+    assert_non_abstract_class(A)
+    assert_final_class(A)
+
+    #
+
+    class B(dc.Frozen, abstract=True, final_subclasses=True):
+        pass
+
+    assert_abstract_class(B)
+    assert_non_final_class(B)
+
+    class C(B):
+        pass
+
+    assert_non_abstract_class(C)
+    assert_final_class(C)
+
+    #
+
+    class D(B, abstract=True):
+        pass
+
+    assert_abstract_class(D)
+    assert_non_final_class(D)
+
+    class E(D):
+        pass
+
+    assert_non_abstract_class(E)
+    assert_final_class(E)

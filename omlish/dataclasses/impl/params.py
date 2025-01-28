@@ -111,6 +111,7 @@ def get_params_extras(obj: ta.Any) -> ParamsExtras:
 @dc.dataclass(frozen=True)
 class MetaclassParams:
     confer: frozenset[str] = frozenset()
+    final_subclasses: bool = False
 
 
 DEFAULT_METACLASS_PARAMS = MetaclassParams()

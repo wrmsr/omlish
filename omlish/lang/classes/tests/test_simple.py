@@ -1,6 +1,6 @@
 import pytest
 
-from ..restrict import FinalError
+from ..restrict import FinalTypeError
 from ..simple import LazySingleton
 from ..simple import Marker
 from ..simple import Namespace
@@ -11,7 +11,7 @@ def test_marker():
     class M(Marker):
         pass
 
-    with pytest.raises(FinalError):
+    with pytest.raises(FinalTypeError):
         class N(M):
             pass
     with pytest.raises(TypeError):

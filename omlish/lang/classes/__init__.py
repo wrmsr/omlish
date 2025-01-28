@@ -12,7 +12,7 @@ from .abstract import (  # noqa
 from .restrict import (  # noqa
     AnySensitive,
     Final,
-    FinalError,
+    FinalTypeError,
     NoBool,
     NotInstantiable,
     NotPicklable,

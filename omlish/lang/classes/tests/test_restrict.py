@@ -4,7 +4,7 @@ import pytest
 
 from ..restrict import AnySensitive
 from ..restrict import Final
-from ..restrict import FinalError
+from ..restrict import FinalTypeError
 from ..restrict import NoBool
 from ..restrict import Sealed
 from ..restrict import SealedError
@@ -23,7 +23,7 @@ def test_final():
 
     B()
 
-    with pytest.raises(FinalError):
+    with pytest.raises(FinalTypeError):
         class C(B):
             pass
 
@@ -35,7 +35,7 @@ def test_final():
     D()
     D[int]  # noqa
 
-    with pytest.raises(FinalError):
+    with pytest.raises(FinalTypeError):
         class E(D[int]):
             pass
 

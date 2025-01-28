@@ -21,6 +21,27 @@ from .params import get_params_extras
 T = ta.TypeVar('T')
 
 
+##
+
+
+_CONFER_PARAMS: tuple[str, ...] = (
+    'frozen',
+    'kw_only',
+)
+
+_CONFER_PARAMS_EXTRAS: tuple[str, ...] = (
+    'cache_hash',
+    'generic_init',
+    'reorder',
+    'override',
+)
+
+_CONFER_METACLASS_PARAMS: tuple[str, ...] = (
+    'confer',
+    'final_subclasses',
+)
+
+
 def confer_kwarg(out: dict[str, ta.Any], k: str, v: ta.Any) -> None:
     if k in out:
         if out[k] != v:
@@ -45,23 +66,13 @@ def confer_kwargs(
             if ck in kwargs:
                 continue
 
-            if ck in (
-                    'frozen',
-                    'kw_only',
-            ):
+            if ck in _CONFER_PARAMS:
                 confer_kwarg(out, ck, getattr(get_params(base), ck))
 
-            elif ck in (
-                    'cache_hash',
-                    'generic_init',
-                    'reorder',
-                    'override',
-            ):
+            elif ck in _CONFER_PARAMS_EXTRAS:
                 confer_kwarg(out, ck, getattr(get_params_extras(base), ck))
 
-            elif ck in (
-                    'confer',
-            ):
+            elif ck in _CONFER_METACLASS_PARAMS:
                 confer_kwarg(out, ck, getattr(bmp, ck))
 
             else:
@@ -78,8 +89,6 @@ class DataMeta(abc.ABCMeta):
             namespace,
             *,
 
-            # confer=frozenset(),
-
             abstract=False,
             sealed=False,
             final=False,
@@ -87,13 +96,32 @@ class DataMeta(abc.ABCMeta):
             metadata=None,
             **kwargs,
     ):
+        ckw = confer_kwargs(bases, kwargs)
+        nkw = {**kwargs, **ckw}
+
+        mcp = MetaclassParams(**{
+            mpa: nkw.pop(mpa)
+            for mpa in _CONFER_METACLASS_PARAMS
+            if mpa in nkw
+        })
+
+        mmd = {
+            MetaclassParams: mcp,
+        }
+        if metadata is not None:
+            metadata = collections.ChainMap(mmd, metadata)
+        else:
+            metadata = mmd
+
+        #
+
         xbs: list[type] = []
 
         if abstract:
             xbs.append(lang.Abstract)
         if sealed:
             xbs.append(lang.Sealed)
-        if final:
+        if final or (mcp.final_subclasses and not abstract):
             xbs.append(lang.Final)
 
         if xbs:
@@ -106,23 +134,6 @@ class DataMeta(abc.ABCMeta):
                     namespace['__orig_bases__'] = (*ob[:-1], *xbs, ob[-1])
                 else:
                     namespace['__orig_bases__'] = (*ob, *xbs)
-
-        #
-
-        ckw = confer_kwargs(bases, kwargs)
-        nkw = {**kwargs, **ckw}
-
-        mcp = MetaclassParams(
-            confer=nkw.pop('confer', frozenset()),
-        )
-
-        mmd = {
-            MetaclassParams: mcp,
-        }
-        if metadata is not None:
-            metadata = collections.ChainMap(mmd, metadata)
-        else:
-            metadata = mmd
 
         #
 
@@ -155,6 +166,9 @@ class DataMeta(abc.ABCMeta):
 class Data(
     eq=False,
     order=False,
+    confer=frozenset([
+        'final_subclasses',
+    ]),
     metaclass=DataMeta,
 ):
     def __init__(self, *args, **kwargs):
@@ -176,11 +190,12 @@ class Frozen(
     eq=False,
     order=False,
     confer=frozenset([
+        *get_metaclass_params(Data).confer,
         'frozen',
         'cache_hash',
-        'confer',
         'reorder',
         'override',
+        'confer',
     ]),
 ):
     pass
@@ -191,10 +206,8 @@ class Box(
     ta.Generic[T],
     generic_init=True,
     confer=frozenset([
-        'frozen',
-        'cache_hash',
+        *get_metaclass_params(Frozen).confer,
         'generic_init',
-        'confer',
     ]),
 ):
     v: T

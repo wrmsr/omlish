@@ -9,7 +9,7 @@ from .abstract import is_abstract
 ##
 
 
-class FinalError(TypeError):
+class FinalTypeError(TypeError):
     def __init__(self, _type: type) -> None:
         super().__init__()
 
@@ -28,11 +28,11 @@ class Final(Abstract):
         abstracts: set[ta.Any] = set()
         for base in cls.__bases__:
             if base is Abstract:
-                raise FinalError(base)
+                raise FinalTypeError(base)
             elif base is Final:
                 continue
             elif Final in base.__mro__:
-                raise FinalError(base)
+                raise FinalTypeError(base)
             else:
                 abstracts.update(getattr(base, '__abstractmethods__', []))
 
@@ -40,9 +40,9 @@ class Final(Abstract):
             try:
                 v = cls.__dict__[a]
             except KeyError:
-                raise FinalError(a) from None
+                raise FinalTypeError(a) from None
             if is_abstract(v):
-                raise FinalError(a)
+                raise FinalTypeError(a)
 
 
 ##

@@ -425,7 +425,7 @@ class CoroHttpServer:
             gen = self.coro_handle_one()
 
             i: ta.Optional[bytes]
-            o = next(gen)
+            o: ta.Any = next(gen)
             while True:
                 try:
                     if isinstance(o, self.AnyLogIo):
