@@ -32,6 +32,9 @@ class OciRepositoryBuilder:
 
         self._blobs: ta.Dict[str, OciDataRef] = {}
 
+    def get_blobs(self) -> ta.Dict[str, OciDataRef]:
+        return dict(self._blobs)
+
     def add_blob(
             self,
             r: OciDataRef,
