@@ -10,8 +10,8 @@ import keyword
 import typing as ta
 
 from omlish import check
-from omlish import collections as col
 from omlish import lang
+from omlish.algorithm import all as alg
 
 
 if ta.TYPE_CHECKING:
@@ -134,7 +134,7 @@ class ModelGen:
             dct[shape.name] = deps
             todo.update(deps - seen)
 
-        return list(lang.flatten(sorted(s - cls.BASE_SHAPE_NAMES) for s in col.mut_toposort(dct)))
+        return list(lang.flatten(sorted(s - cls.BASE_SHAPE_NAMES) for s in alg.mut_toposort(dct)))
 
     #
 

@@ -10,6 +10,7 @@ from .. import cached
 from .. import check
 from .. import collections as col
 from .. import lang
+from ..algorithm import all as alg
 
 
 T = ta.TypeVar('T')
@@ -194,7 +195,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         else:
             e, d = lang.identity, lang.identity
         tsd = {e(n): {e(p)} for n, p in parents_by_node.items()}
-        ts = list(col.mut_toposort(tsd))
+        ts = list(alg.mut_toposort(tsd))
         root = d(check.single(ts[0]))
 
         return cls(

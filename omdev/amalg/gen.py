@@ -4,8 +4,8 @@ import textwrap
 import typing as ta
 
 from omlish import cached
-from omlish import collections as col
 from omlish import lang
+from omlish.algorithm import all as alg
 from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
 from ..tokens import all as tks
@@ -152,7 +152,7 @@ class AmalgGenerator:
 
         ##
 
-        ts = list(col.toposort({  # noqa
+        ts = list(alg.toposort({  # noqa
             f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
             for f in src_files.values()
         }))

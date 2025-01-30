@@ -126,8 +126,6 @@ from .utils import (  # noqa
     make_map_by,
     multi_map,
     multi_map_by,
-    mut_toposort,
     partition,
-    toposort,
     unique,
 )
