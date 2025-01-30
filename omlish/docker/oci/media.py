@@ -64,7 +64,7 @@ def unmarshal_oci_media_dataclass(
 
 
 @dc.dataclass(frozen=True)
-class OciMediaDescriptor(OciDataclass):
+class OciMediaDescriptor:
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties"""  # noqa
 
     media_type: str = dc.field(metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
