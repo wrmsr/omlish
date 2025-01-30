@@ -33,6 +33,10 @@ class OciDataRefInfo(ta.NamedTuple):
     sha256: str
     size: int
 
+    @property
+    def digest(self) -> str:
+        return f'sha256:{self.sha256}'
+
 
 def get_oci_data_ref_info(data: OciDataRef) -> OciDataRefInfo:
     if isinstance(data, FileOciDataRef):

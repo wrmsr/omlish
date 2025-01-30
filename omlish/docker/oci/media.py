@@ -16,16 +16,21 @@ from .data import OciImageLayer
 ##
 
 
+OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
+    'schema_version',
+    'media_type',
+])
+
+
 @dc.dataclass(frozen=True)
 class OciMediaDataclass(OciDataclass, abc.ABC):  # noqa
     SCHEMA_VERSION: ta.ClassVar[int]
     MEDIA_TYPE: ta.ClassVar[str]
 
-
-OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
-    'schema_version',
-    'media_type',
-])
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        for a in OCI_MEDIA_FIELDS:
+            check.in_(a, cls.__dict__)
 
 
 _REGISTERED_OCI_MEDIA_DATACLASSES: ta.Dict[str, ta.Type[OciMediaDataclass]] = {}
