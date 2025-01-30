@@ -7,24 +7,7 @@ import typing as ta
 
 from ...lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from ...lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class OciDataRef(abc.ABC):  # noqa
-    pass
-
-
-@dc.dataclass(frozen=True)
-class BytesOciDataRef(OciDataRef):
-    data: bytes
-
-
-@dc.dataclass(frozen=True)
-class FileOciDataRef(OciDataRef):
-    path: str
+from .datarefs import OciDataRef
 
 
 ##
@@ -123,3 +106,20 @@ class OciImageConfig(OciDataclass):
         empty_layer: ta.Optional[bool] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
     history: ta.Optional[ta.Sequence[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+
+##
+
+
+def is_empty_oci_dataclass(obj: OciDataclass) -> bool:
+    if not isinstance(obj, OciDataclass):
+        raise TypeError(obj)
+
+    elif isinstance(obj, OciImageIndex):
+        return not obj.manifests
+
+    elif isinstance(obj, OciImageManifest):
+        return not obj.layers
+
+    else:
+        return False
