@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import functools
 import typing as ta
 
@@ -5,7 +7,7 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
+def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
     for k, v in data.items():
         v.discard(k)
     extra_items_in_deps = functools.reduce(set.union, data.values()) - set(data.keys())
@@ -20,5 +22,5 @@ def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
         raise ValueError('Cyclic dependencies exist among these items: ' + ' '.join(repr(x) for x in data.items()))
 
 
-def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[set[T]]:
+def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[ta.Set[T]]:
     return mut_toposort({k: set(v) for k, v in data.items()})

@@ -1,7 +1,10 @@
+import unittest
+
 from ..toposort import toposort
 
 
-def test_toposort():
-    toposort({
-        0: frozenset(),
-    })
+class TestToposort(unittest.TestCase):
+    def test_toposort(self):
+        toposort({
+            0: frozenset(),
+        })

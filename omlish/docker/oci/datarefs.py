@@ -3,9 +3,12 @@
 import abc
 import dataclasses as dc
 import hashlib
+import io
 import os.path
 import shutil
 import typing as ta
+
+from omlish.lite.cached import cached_nullary
 
 
 ##
@@ -29,36 +32,36 @@ class FileOciDataRef(OciDataRef):
 ##
 
 
-class OciDataRefInfo(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class OciDataRefInfo:
     data: OciDataRef
-    sha256: str
-    size: int
 
-    @property
+    @cached_nullary
+    def sha256(self) -> str:
+        if isinstance(self.data, FileOciDataRef):
+            with open(self.data.path, 'rb') as f:
+                return hashlib.file_digest(f, 'sha256').hexdigest()  # noqa
+
+        elif isinstance(self.data, BytesOciDataRef):
+            return hashlib.sha256(self.data.data).hexdigest()
+
+        else:
+            raise TypeError(self.data)
+
+    @cached_nullary
     def digest(self) -> str:
-        return f'sha256:{self.sha256}'
+        return f'sha256:{self.sha256()}'
 
+    @cached_nullary
+    def size(self) -> int:
+        if isinstance(self.data, FileOciDataRef):
+            return os.path.getsize(self.data.path)
 
-def get_oci_data_ref_info(data: OciDataRef) -> OciDataRefInfo:
-    if isinstance(data, FileOciDataRef):
-        with open(data.path, 'rb') as f:
-            hx = hashlib.file_digest(f, 'sha256').hexdigest()  # noqa
-        sz = os.path.getsize(data.path)
-        return OciDataRefInfo(
-            data=data,
-            sha256=hx,
-            size=sz,
-        )
+        elif isinstance(self.data, BytesOciDataRef):
+            return len(self.data.data)
 
-    elif isinstance(data, BytesOciDataRef):
-        return OciDataRefInfo(
-            data=data,
-            sha256=hashlib.sha256(data.data).hexdigest(),
-            size=len(data.data),
-        )
-
-    else:
-        raise TypeError(data)
+        else:
+            raise TypeError(self.data)
 
 
 def write_oci_data_ref_to_file(
@@ -79,6 +82,17 @@ def write_oci_data_ref_to_file(
     elif isinstance(data, BytesOciDataRef):
         with open(dst, 'wb') as f:
             f.write(data.data)
+
+    else:
+        raise TypeError(data)
+
+
+def open_oci_data_ref(data: OciDataRef) -> ta.BinaryIO:
+    if isinstance(data, FileOciDataRef):
+        return open(data.path, 'rb')
+
+    elif isinstance(data, BytesOciDataRef):
+        return io.BytesIO(data.data)
 
     else:
         raise TypeError(data)
