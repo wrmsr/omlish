@@ -13,6 +13,24 @@ from ...lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
 
 @dc.dataclass(frozen=True)
+class OciDataRef(abc.ABC):  # noqa
+    pass
+
+
+@dc.dataclass(frozen=True)
+class BytesOciDataRef(OciDataRef):
+    data: bytes
+
+
+@dc.dataclass(frozen=True)
+class FileOciDataRef(OciDataRef):
+    path: str
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class OciDataclass(abc.ABC):  # noqa
     pass
 
@@ -49,7 +67,7 @@ class OciImageLayer:
 
     kind: Kind
 
-    data: str
+    data: OciDataRef
 
 
 #
