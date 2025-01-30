@@ -41,5 +41,4 @@ def distribute_evenly(
         # Update bin load and push back to heap
         heapq.heappush(bins, (bin_size + size, bin_index))  # type: ignore
 
-    # Convert defaultdict to list
     return [bin_contents[i] for i in range(n_bins)]
