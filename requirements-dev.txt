@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.5.24
+uv>=0.5.25
 
 pytest==8.3.4
 pytest-benchmark==5.1.0
@@ -15,7 +15,7 @@ pytest-xdist==3.6.1
 
 flake8==7.1.1
 flake8-pyproject==1.2.3
-ruff==0.9.3
+ruff==0.9.4
 
 docutils-stubs==0.0.22
 types-markdown==3.7.0.20241204
@@ -23,7 +23,7 @@ types-paramiko==3.5.0.20240928  # @omlish-venv !13t
 types-pyyaml==6.0.12.20241230
 types-ujson==5.10.0.20240515
 
-black==24.10.0
+black==25.1.0
 mypy==1.14.1
 pipdeptree==2.25.0
 
@@ -36,7 +36,7 @@ ipython==8.31.0
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.14.2  # @omlish-venv !13t
+litecli==1.14.3  # @omlish-venv !13t
 mycli==1.29.2  # @omlish-venv !13t
 pgcli==4.1.0  # @omlish-venv !13t
 
@@ -97,19 +97,19 @@ numpy>=1.20
 
 prompt-toolkit>=3.0.0
 
-snowflake-connector-python[secure-local-storage]==3.13.0; python_version < "3.13"
+snowflake-connector-python[secure-local-storage]==3.13.2; python_version < "3.13"
 snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
-huggingface-hub==0.28.0
+huggingface-hub==0.28.1
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
 datasets==3.2.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-sentence-transformers==3.4.0; python_version < "3.13"
+sentence-transformers==3.4.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
-transformers==4.48.1; python_version < "3.13"
+transformers==4.48.2; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
@@ -117,7 +117,7 @@ segno==1.6.1
 
 duckduckgo_search==7.3.0  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.7
+boto3>=1.36.9
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.21.1; sys_platform == "darwin"

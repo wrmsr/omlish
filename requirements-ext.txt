@@ -159,7 +159,7 @@ sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.43.0
-zigpy==0.75.1
+zigpy==0.76.1
 
 # python-openzwave
 zwave-js-server-python==0.60.0
@@ -181,12 +181,12 @@ mitogen==0.3.21
 
 openai==1.60.2
 
-trl==0.13.0
+trl==0.14.0
 tf-keras==2.17.0
 
 polars==1.21.0
 
-pyzmq==26.2.0
+pyzmq==26.2.1
 
 safetensors==0.5.2
 
@@ -194,27 +194,27 @@ customtkinter==5.2.2
 
 ##
 
-langchain-anthropic==0.3.4
+langchain==0.3.17
+langchain-anthropic==0.3.5
 langchain-chroma==0.2.1
 langchain-community==0.3.16
-langchain-core==0.3.32
+langchain-core==0.3.33
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
-langchain-mistralai==0.2.4
-langchain-openai==0.3.2
+langchain-mistralai==0.2.6
+langchain-openai==0.3.3
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.5
-langchain==0.3.16
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.67
+langgraph==0.2.68
 
-langsmith==0.3.2
+langsmith==0.3.3
 
 tavily-python==0.5.0
 
@@ -246,9 +246,9 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.12
+llama-index-core==0.12.14
 
-unstructured==0.16.16
+unstructured==0.16.17
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
