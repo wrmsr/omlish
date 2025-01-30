@@ -59,7 +59,7 @@ class OciImageManifest(OciDataclass):
 
 
 @dc.dataclass(frozen=True)
-class OciImageLayer:
+class OciImageLayer(OciDataclass):
     class Kind(enum.Enum):
         TAR = enum.auto()
         TAR_GZIP = enum.auto()
