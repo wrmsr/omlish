@@ -40,7 +40,7 @@ all = [
     'pillow ~= 11.0',
     'duckduckgo-search ~= 6.3',
     'tinygrad ~= 0.9',
-    'torch ~= 2.5',
+    'torch ~= 2.6',
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
     'lxml ~= 5.3; python_version < "3.13"',
@@ -74,7 +74,7 @@ tinygrad = [
     'tinygrad ~= 0.9',
 ]
 torch = [
-    'torch ~= 2.5',
+    'torch ~= 2.6',
 ]
 wiki = [
     'mwparserfromhell ~= 0.6',
