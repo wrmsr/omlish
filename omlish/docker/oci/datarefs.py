@@ -4,6 +4,7 @@ import abc
 import dataclasses as dc
 import hashlib
 import os.path
+import shutil
 import typing as ta
 
 
@@ -55,6 +56,29 @@ def get_oci_data_ref_info(data: OciDataRef) -> OciDataRefInfo:
             sha256=hashlib.sha256(data.data).hexdigest(),
             size=len(data.data),
         )
+
+    else:
+        raise TypeError(data)
+
+
+def write_oci_data_ref_to_file(
+        data: OciDataRef,
+        dst: str,
+        *,
+        symlink: bool = False,
+) -> None:
+    if isinstance(data, FileOciDataRef):
+        if symlink:
+            os.symlink(
+                os.path.relpath(data.path, os.path.dirname(dst)),
+                dst,
+            )
+        else:
+            shutil.copyfile(data.path, dst)
+
+    elif isinstance(data, BytesOciDataRef):
+        with open(dst, 'wb') as f:
+            f.write(data.data)
 
     else:
         raise TypeError(data)
