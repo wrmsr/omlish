@@ -20,6 +20,26 @@ class OciDataclass(abc.ABC):  # noqa
 
 
 @dc.dataclass(frozen=True)
+class OciImageIndex(OciDataclass):
+    manifests: ta.Sequence[ta.Union['OciImageIndex', 'OciImageManifest']]
+
+    annotations: ta.Optional[ta.Mapping[str, str]] = None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class OciImageManifest(OciDataclass):
+    config: 'OciImageConfig'
+
+    layers: ta.Sequence[ta.Any]
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class OciImageConfig(OciDataclass):
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/config.md"""
 
