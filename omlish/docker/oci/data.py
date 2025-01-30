@@ -2,6 +2,7 @@
 # @omlish-lite
 import abc
 import dataclasses as dc
+import enum
 import typing as ta
 
 from ...lite.marshal import OBJ_MARSHALER_FIELD_KEY
@@ -33,7 +34,22 @@ class OciImageIndex(OciDataclass):
 class OciImageManifest(OciDataclass):
     config: 'OciImageConfig'
 
-    layers: ta.Sequence[ta.Any]
+    layers: ta.Sequence['OciImageLayer']
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class OciImageLayer:
+    class Kind(enum.Enum):
+        TAR = enum.auto()
+        TAR_GZIP = enum.auto()
+        TAR_ZSTD = enum.auto()
+
+    kind: Kind
+
+    data: str
 
 
 #
