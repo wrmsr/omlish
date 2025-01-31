@@ -16,6 +16,10 @@ from .datarefs import OciDataRef
 
 class OciRepository(abc.ABC):
     @abc.abstractmethod
+    def contains_blob(self, digest: str) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def read_blob(self, digest: str) -> bytes:
         raise NotImplementedError
 
@@ -49,6 +53,9 @@ class DirectoryOciRepository(OciRepository):
         check.arg(is_path_in_dir(self._data_dir, full_path))
         return full_path
 
+    def contains_blob(self, digest: str) -> bool:
+        return os.path.isfile(self.blob_full_path(digest))
+
     def read_blob(self, digest: str) -> bytes:
         return self.read_file(self.blob_path(digest))
 
@@ -64,6 +71,9 @@ class DictionaryOciRepository(OciRepository):
         super().__init__()
 
         self._blobs = blobs
+
+    def contains_blob(self, digest: str) -> bool:
+        return digest in self._blobs
 
     def read_blob(self, digest: str) -> bytes:
         return self._blobs[digest]

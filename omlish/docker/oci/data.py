@@ -37,6 +37,7 @@ class OciImageManifest(OciDataclass):
 
     layers: ta.List['OciImageLayer']
 
+    annotations: ta.Optional[ta.Dict[str, str]] = None
 
 #
 

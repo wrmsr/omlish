@@ -119,6 +119,10 @@ class OciMediaImageManifest(OciMediaDataclass):
 
     #
 
+    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+
+    #
+
     SCHEMA_VERSION: ta.ClassVar[int] = 2
     schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
 

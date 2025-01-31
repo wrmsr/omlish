@@ -111,6 +111,7 @@ class OciRepositoryLoader:
                 manifests=[
                     fm
                     for m in obj.manifests
+                    if self._repo.contains_blob(m.digest)
                     for fm in [self.from_media(self.read_descriptor(m))]
                     if not is_empty_oci_dataclass(fm)
                 ],
