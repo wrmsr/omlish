@@ -9,10 +9,10 @@ import typing as ta
 
 from ... import check
 from ..coro.server import UnsupportedMethodHttpHandlerError
+from ..coro.simple import make_simple_http_server
 from ..handlers import HttpHandlerRequest
 from ..handlers import HttpHandlerResponse
 from ..handlers import HttpHandlerResponseStreamedData
-from ..simple import make_simple_http_server
 
 
 ##
