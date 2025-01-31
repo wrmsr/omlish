@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 import dataclasses as dc
+import json
 import typing as ta
 
 from omlish.lite.check import check
@@ -15,12 +16,17 @@ from .data import OciImageManifest
 from .datarefs import BytesOciDataRef
 from .datarefs import OciDataRef
 from .datarefs import OciDataRefInfo
+from .datarefs import open_oci_data_ref
 from .media import OCI_IMAGE_LAYER_KIND_MEDIA_TYPES
 from .media import OciMediaDataclass
 from .media import OciMediaDescriptor
 from .media import OciMediaImageConfig
 from .media import OciMediaImageIndex
 from .media import OciMediaImageManifest
+from .media import unmarshal_oci_media_dataclass
+
+
+OciMediaDataclassT = ta.TypeVar('OciMediaDataclassT', bound='OciMediaDataclass')
 
 
 ##
@@ -35,6 +41,27 @@ class OciRepositoryBuilder:
         info: OciDataRefInfo
 
         media_type: ta.Optional[str] = None
+
+        #
+
+        def read(self) -> bytes:
+            with open_oci_data_ref(self.data) as f:
+                return f.read()
+
+        def read_json(self) -> ta.Any:
+            return json.loads(self.read().decode('utf-8'))
+
+        def read_media(
+                self,
+                cls: ta.Type[OciMediaDataclassT] = OciMediaDataclass,  # type: ignore[assignment]
+        ) -> OciMediaDataclassT:
+            mt = check.non_empty_str(self.media_type)
+            dct = self.read_json()
+            obj = unmarshal_oci_media_dataclass(
+                dct,
+                media_type=mt,
+            )
+            return check.isinstance(obj, cls)
 
     def __init__(self) -> None:
         super().__init__()
