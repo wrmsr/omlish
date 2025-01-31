@@ -46,7 +46,7 @@ def write_oci_data_ref_to_file(
         src_data: OciDataRef,
         dst_file: str,
         *,
-        symlink: bool = False,
+        symlink: bool = False,  # noqa
 ) -> None:
     with open_oci_data_ref(src_data) as f_src:
         with open(dst_file, 'wb') as f_dst:

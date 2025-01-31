@@ -157,3 +157,12 @@ class OciMediaImageConfig(OciImageConfig, OciMediaDataclass):
 
     MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.config.v1+json'
     media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
+
+
+##
+
+
+OCI_MANIFEST_MEDIA_TYPES: ta.AbstractSet[str] = frozenset([
+    OciMediaImageIndex.MEDIA_TYPE,
+    OciMediaImageManifest.MEDIA_TYPE,
+])

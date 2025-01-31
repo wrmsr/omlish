@@ -27,24 +27,52 @@ from .media import OciMediaImageManifest
 
 
 class OciRepositoryBuilder:
+    @dc.dataclass(frozen=True)
+    class Blob:
+        digest: str
+
+        data: OciDataRef
+        info: OciDataRefInfo
+
+        media_type: ta.Optional[str] = None
+
     def __init__(self) -> None:
         super().__init__()
 
-        self._blobs: ta.Dict[str, OciDataRef] = {}
+        self._blobs: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
 
-    def get_blobs(self) -> ta.Dict[str, OciDataRef]:
+    #
+
+    def get_blobs(self) -> ta.Dict[str, Blob]:
         return dict(self._blobs)
 
     def add_blob(
             self,
             r: OciDataRef,
             ri: ta.Optional[OciDataRefInfo] = None,
-    ) -> None:
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> Blob:
         if ri is None:
             ri = OciDataRefInfo(r)
-        if ri.digest() in self._blobs:
+
+        if (dg := ri.digest()) in self._blobs:
             raise KeyError(ri.digest())
-        self._blobs[ri.digest()] = r
+
+        blob = self.Blob(
+            digest=dg,
+
+            data=r,
+            info=ri,
+
+            media_type=media_type,
+        )
+
+        self._blobs[dg] = blob
+
+        return blob
+
+    #
 
     def marshal_media(self, obj: OciMediaDataclass) -> bytes:
         check.isinstance(obj, OciMediaDataclass)
@@ -58,13 +86,19 @@ class OciRepositoryBuilder:
 
         r = BytesOciDataRef(b)
         ri = OciDataRefInfo(r)
-        self.add_blob(r, ri)
+        self.add_blob(
+            r,
+            ri,
+            media_type=getattr(obj, 'media_type'),
+        )
 
         return OciMediaDescriptor(
             media_type=getattr(obj, 'media_type'),
             digest=ri.digest(),
             size=ri.size(),
         )
+
+    #
 
     def to_media(self, obj: OciDataclass) -> ta.Union[OciMediaDataclass, OciMediaDescriptor]:
         def make_kw(*exclude):
@@ -97,9 +131,14 @@ class OciRepositoryBuilder:
 
         elif isinstance(obj, OciImageLayer):
             ri = OciDataRefInfo(obj.data)
-            self.add_blob(obj.data, ri)
+            mt = OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind]
+            self.add_blob(
+                obj.data,
+                ri,
+                media_type=mt,
+            )
             return OciMediaDescriptor(
-                media_type=OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind],
+                media_type=mt,
                 digest=ri.digest(),
                 size=ri.size(),
             )
