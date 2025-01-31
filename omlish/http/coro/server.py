@@ -421,50 +421,59 @@ class CoroHttpServer:
     #
 
     def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+        return self._coro_run_handler(self._coro_handle_one())
+
+    def _coro_run_handler(
+            self,
+            gen: ta.Generator[
+                ta.Union[AnyLogIo, AnyReadIo, _Response],
+                ta.Optional[bytes],
+                None,
+            ],
+    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+        i: ta.Optional[bytes]
+        o: ta.Any = next(gen)
         while True:
-            gen = self.coro_handle_one()
+            try:
+                if isinstance(o, self.AnyLogIo):
+                    i = None
+                    yield o
 
-            i: ta.Optional[bytes]
-            o: ta.Any = next(gen)
-            while True:
-                try:
-                    if isinstance(o, self.AnyLogIo):
-                        i = None
-                        yield o
+                elif isinstance(o, self.AnyReadIo):
+                    i = check.isinstance((yield o), bytes)
 
-                    elif isinstance(o, self.AnyReadIo):
-                        i = check.isinstance((yield o), bytes)
+                elif isinstance(o, self._Response):
+                    i = None
 
-                    elif isinstance(o, self._Response):
-                        i = None
+                    r = self._preprocess_response(o)
+                    hb = self._build_response_head_bytes(r)
+                    check.none((yield self.WriteIo(hb)))
 
-                        r = self._preprocess_response(o)
-                        hb = self._build_response_head_bytes(r)
-                        check.none((yield self.WriteIo(hb)))
+                    for b in self._yield_response_data(r):
+                        yield self.WriteIo(b)
 
-                        for b in self._yield_response_data(r):
-                            yield self.WriteIo(b)
-
-                        o.close()
-                        o = None
-
-                    else:
-                        raise TypeError(o)  # noqa
-
-                    try:
-                        o = gen.send(i)
-                    except EOFError:
-                        return
-                    except StopIteration:
+                    o.close()
+                    if o.close_connection:
                         break
+                    o = None
 
-                except Exception:  # noqa
-                    if hasattr(o, 'close'):
-                        o.close()
+                else:
+                    raise TypeError(o)  # noqa
 
-                    raise
+                try:
+                    o = gen.send(i)
+                except EOFError:
+                    return
+                except StopIteration:
+                    break
 
-    def coro_handle_one(self) -> ta.Generator[
+            except Exception:  # noqa
+                if hasattr(o, 'close'):
+                    o.close()
+
+                raise
+
+    def _coro_handle_one(self) -> ta.Generator[
         ta.Union[AnyLogIo, AnyReadIo, _Response],
         ta.Optional[bytes],
         None,
