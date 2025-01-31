@@ -246,6 +246,8 @@ class HttpRequestParser:
 
     #
 
+    _TLS_HANDSHAKE_PREFIX = b'\x16'
+
     def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
         raw_request_line = yield self._max_line + 1
 
@@ -283,6 +285,17 @@ class HttpRequestParser:
 
         if not raw_request_line:
             return EmptyParsedHttpResult(**result_kwargs())
+
+        # Detect TLS
+
+        if raw_request_line.startswith(self._TLS_HANDSHAKE_PREFIX):
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.BAD_REQUEST,
+                message='Bad request version (probable TLS handshake)',
+                **result_kwargs(),
+            )
+
+        # Decode line
 
         request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
 

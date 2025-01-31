@@ -3,6 +3,7 @@
 import abc
 import dataclasses as dc
 import http.server
+import logging
 import typing as ta
 
 from ..sockets.addresses import SocketAddress
@@ -60,3 +61,16 @@ class HttpHandler_(abc.ABC):  # noqa
     @abc.abstractmethod
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class LoggingHttpHandler(HttpHandler_):
+    handler: HttpHandler
+    log: logging.Logger
+    level: int = logging.INFO
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        self.log.log(self.level, '%r', req)
+        resp = self.handler(req)
+        self.log.log(self.level, '%r', resp)
+        return resp

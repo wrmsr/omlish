@@ -3929,6 +3929,8 @@ class HttpRequestParser:
 
     #
 
+    _TLS_HANDSHAKE_PREFIX = b'\x16'
+
     def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
         raw_request_line = yield self._max_line + 1
 
@@ -3966,6 +3968,17 @@ class HttpRequestParser:
 
         if not raw_request_line:
             return EmptyParsedHttpResult(**result_kwargs())
+
+        # Detect TLS
+
+        if raw_request_line.startswith(self._TLS_HANDSHAKE_PREFIX):
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.BAD_REQUEST,
+                message='Bad request version (probable TLS handshake)',
+                **result_kwargs(),
+            )
+
+        # Decode line
 
         request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
 
@@ -6879,6 +6892,19 @@ class HttpHandler_(abc.ABC):  # noqa
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+class LoggingHttpHandler(HttpHandler_):
+    handler: HttpHandler
+    log: logging.Logger
+    level: int = logging.INFO
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        self.log.log(self.level, '%r', req)
+        resp = self.handler(req)
+        self.log.log(self.level, '%r', resp)
+        return resp
+
+
 ########################################
 # ../../../omlish/lite/configs.py
 
@@ -7682,7 +7708,7 @@ class CoroHttpServer:
         if isinstance(parsed, ParseHttpRequestError):
             err = self._build_error(
                 parsed.code,
-                *parsed.message,
+                *([parsed.message] if isinstance(parsed.message, str) else parsed.message),
                 version=parsed.version,
             )
             yield self.ErrorLogIo(err)
