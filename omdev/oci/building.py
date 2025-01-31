@@ -89,11 +89,11 @@ class OciRepositoryBuilder:
         self.add_blob(
             r,
             ri,
-            media_type=getattr(obj, 'media_type'),
+            media_type=obj.media_type,
         )
 
         return OciMediaDescriptor(
-            media_type=getattr(obj, 'media_type'),
+            media_type=obj.media_type,
             digest=ri.digest(),
             size=ri.size(),
         )

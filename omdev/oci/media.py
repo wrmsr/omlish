@@ -25,7 +25,18 @@ OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
 @dc.dataclass()
 class OciMediaDataclass(abc.ABC):  # noqa
     SCHEMA_VERSION: ta.ClassVar[int]
+
+    @property
+    def schema_version(self) -> int:
+        raise TypeError
+
     MEDIA_TYPE: ta.ClassVar[str]
+
+    @property
+    def media_type(self) -> str:
+        raise TypeError
+
+    #
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
