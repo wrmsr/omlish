@@ -47,6 +47,7 @@ RPL_MYINFO = _register_numeric_reply(
     'RPL_MYINFO',
     4,
     '<client> <servername> <version> <available user modes> <available channel modes> [<channel modes with a parameter>]',  # noqa
+    # noqa
 )
 
 RPL_ISUPPORT = _register_numeric_reply(
@@ -61,11 +62,29 @@ RPL_BOUNCE = _register_numeric_reply(
     '<client> <hostname> <port> :<info>',
 )
 
+RPL_STATSLINKINFO = _register_numeric_reply(
+    'RPL_STATSLINKINFO',
+    211,
+    '<linkname> <sendq> <sent messages> <sent Kbytes> <received messages> <received Kbytes> <time open>',
+)
+
 RPL_STATSCOMMANDS = _register_numeric_reply(
     'RPL_STATSCOMMANDS',
     212,
     '<client> <command> <count> [<byte count> <remote count>]',
 )
+
+RPL_STATSCLINE = _register_numeric_reply('RPL_STATSCLINE', 213)
+
+RPL_STATSNLINE = _register_numeric_reply('RPL_STATSNLINE', 214)
+
+RPL_STATSILINE = _register_numeric_reply('RPL_STATSILINE', 215)
+
+RPL_STATSKLINE = _register_numeric_reply('RPL_STATSKLINE', 216)
+
+RPL_STATSQLINE = _register_numeric_reply('RPL_STATSQLINE', 217)
+
+RPL_STATSYLINE = _register_numeric_reply('RPL_STATSYLINE', 218)
 
 RPL_ENDOFSTATS = _register_numeric_reply(
     'RPL_ENDOFSTATS',
@@ -79,11 +98,29 @@ RPL_UMODEIS = _register_numeric_reply(
     '<client> <user modes>',
 )
 
+RPL_STATSVLINE = _register_numeric_reply('RPL_STATSVLINE', 240)
+
+RPL_STATSLLINE = _register_numeric_reply('RPL_STATSLLINE', 241)
+
 RPL_STATSUPTIME = _register_numeric_reply(
     'RPL_STATSUPTIME',
     242,
     '<client> :Server Up <days> days <hours>:<minutes>:<seconds>',
 )
+
+RPL_STATSOLINE = _register_numeric_reply(
+    'RPL_STATSOLINE',
+    243,
+    'O <hostmask> * <name>',
+)
+
+RPL_STATSHLINE = _register_numeric_reply('RPL_STATSHLINE', 244)
+
+RPL_STATSPING = _register_numeric_reply('RPL_STATSPING', 246)
+
+RPL_STATSBLINE = _register_numeric_reply('RPL_STATSBLINE', 247)
+
+RPL_STATSDLINE = _register_numeric_reply('RPL_STATSDLINE', 250)
 
 RPL_LUSERCLIENT = _register_numeric_reply(
     'RPL_LUSERCLIENT',
@@ -512,6 +549,12 @@ ERR_WASNOSUCHNICK = _register_numeric_reply(
     '<client> <nickname> :There was no such nickname',
 )
 
+ERR_TOOMANYTARGETS = _register_numeric_reply(
+    'ERR_TOOMANYTARGETS',
+    407,
+    '<target> :<error code> recipients. <abort message>',
+)
+
 ERR_NOORIGIN = _register_numeric_reply(
     'ERR_NOORIGIN',
     409,
@@ -528,6 +571,18 @@ ERR_NOTEXTTOSEND = _register_numeric_reply(
     'ERR_NOTEXTTOSEND',
     412,
     '<client> :No text to send',
+)
+
+ERR_NOTOPLEVEL = _register_numeric_reply(
+    'ERR_NOTOPLEVEL',
+    413,
+    '<mask> :No toplevel domain specified',
+)
+
+ERR_WILDTOPLEVEL = _register_numeric_reply(
+    'ERR_WILDTOPLEVEL',
+    414,
+    '<mask> :Wildcard in toplevel domain',
 )
 
 ERR_INPUTTOOLONG = _register_numeric_reply(
@@ -679,6 +734,8 @@ ERR_NOOPERHOST = _register_numeric_reply(
     491,
     '<client> :No O-lines for your host',
 )
+
+ERR_NOSERVICEHOST = _register_numeric_reply('ERR_NOSERVICEHOST', 492)
 
 ERR_UMODEUNKNOWNFLAG = _register_numeric_reply(
     'ERR_UMODEUNKNOWNFLAG',
