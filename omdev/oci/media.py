@@ -4,10 +4,11 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ...lite.check import check
-from ...lite.marshal import OBJ_MARSHALER_FIELD_KEY
-from ...lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
-from ...lite.marshal import unmarshal_obj
+from omlish.lite.check import check
+from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
+from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
+from omlish.lite.marshal import unmarshal_obj
+
 from .data import OciImageConfig
 from .data import OciImageLayer
 

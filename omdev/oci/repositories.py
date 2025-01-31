@@ -4,8 +4,9 @@ import abc
 import os.path
 import typing as ta
 
-from ...lite.check import check
-from ...os.paths import is_path_in_dir
+from omlish.lite.check import check
+from omlish.os.paths import is_path_in_dir
+
 from .datarefs import BytesOciDataRef
 from .datarefs import FileOciDataRef
 from .datarefs import OciDataRef

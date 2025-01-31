@@ -5,8 +5,9 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from ...lite.marshal import OBJ_MARSHALER_FIELD_KEY
-from ...lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
+from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
+from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
+
 from .datarefs import OciDataRef
 
 

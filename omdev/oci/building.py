@@ -3,9 +3,10 @@
 import dataclasses as dc
 import typing as ta
 
-from ...lite.check import check
-from ...lite.json import json_dumps_compact
-from ...lite.marshal import marshal_obj
+from omlish.lite.check import check
+from omlish.lite.json import json_dumps_compact
+from omlish.lite.marshal import marshal_obj
+
 from .data import OciDataclass
 from .data import OciImageConfig
 from .data import OciImageIndex

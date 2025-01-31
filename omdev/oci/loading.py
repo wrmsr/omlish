@@ -4,7 +4,8 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from ...lite.check import check
+from omlish.lite.check import check
+
 from .data import OciImageConfig
 from .data import OciImageIndex
 from .data import OciImageLayer
