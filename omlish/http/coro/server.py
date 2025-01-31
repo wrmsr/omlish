@@ -496,7 +496,7 @@ class CoroHttpServer:
         if isinstance(parsed, ParseHttpRequestError):
             err = self._build_error(
                 parsed.code,
-                *parsed.message,
+                parsed.message,
                 version=parsed.version,
             )
             yield self.ErrorLogIo(err)
