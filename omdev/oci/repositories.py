@@ -11,6 +11,7 @@ from omlish.os.paths import is_path_in_dir
 from .datarefs import BytesOciDataRef
 from .datarefs import FileOciDataRef
 from .datarefs import OciDataRef
+from .datarefs import TarFileOciDataRef
 
 
 ##
@@ -30,7 +31,15 @@ class OciRepository(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def of(cls, obj: 'OciRepository') -> 'OciRepository':
+    def of(
+            cls,
+            obj: ta.Union[
+                'OciRepository',
+                str,
+                tarfile.TarFile,
+                ta.Mapping[str, bytes],
+            ],
+    ) -> 'OciRepository':
         if isinstance(obj, OciRepository):
             return obj
 
@@ -101,7 +110,9 @@ class TarFileOciRepository(FileOciRepository):
         self._tar_file = tar_file
 
     def read_file(self, path: str) -> bytes:
-        with self._tar_file.extractfile(path) as f:
+        if (ti := self._tar_file.getmember(path)) is None:
+            raise FileNotFoundError(path)
+        with check.not_none(self._tar_file.extractfile(ti)) as f:
             return f.read()
 
     def blob_name(self, digest: str) -> str:
@@ -117,11 +128,16 @@ class TarFileOciRepository(FileOciRepository):
             return True
 
     def read_blob(self, digest: str) -> bytes:
-        with self._tar_file.extractfile(self.blob_name(digest)) as f:
+        if (ti := self._tar_file.getmember(self.blob_name(digest))) is None:
+            raise KeyError(digest)
+        with check.not_none(self._tar_file.extractfile(ti)) as f:
             return f.read()
 
     def ref_blob(self, digest: str) -> OciDataRef:
-        raise TypeError
+        return TarFileOciDataRef(
+            tar_file=self._tar_file,
+            tar_info=self._tar_file.getmember(self.blob_name(digest)),
+        )
 
 
 #
