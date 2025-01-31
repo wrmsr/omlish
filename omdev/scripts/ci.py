@@ -4096,7 +4096,7 @@ class Ci(AsyncExitStacked):
     #
 
     @async_cached_nullary
-    async def load_dependencies(self) -> None:
+    async def pull_dependencies(self) -> None:
         deps = get_compose_service_dependencies(
             self._config.compose_file,
             self._config.service,
@@ -4136,7 +4136,7 @@ class Ci(AsyncExitStacked):
     async def run(self) -> None:
         await self.resolve_ci_image()
 
-        await self.load_dependencies()
+        await self.pull_dependencies()
 
         await self._run_compose()
 
