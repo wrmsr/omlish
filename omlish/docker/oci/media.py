@@ -8,7 +8,6 @@ from ...lite.check import check
 from ...lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from ...lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 from ...lite.marshal import unmarshal_obj
-from .data import OciDataclass
 from .data import OciImageConfig
 from .data import OciImageLayer
 
@@ -22,8 +21,8 @@ OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
 ])
 
 
-@dc.dataclass(frozen=True)
-class OciMediaDataclass(OciDataclass, abc.ABC):  # noqa
+@dc.dataclass()
+class OciMediaDataclass(abc.ABC):  # noqa
     SCHEMA_VERSION: ta.ClassVar[int]
     MEDIA_TYPE: ta.ClassVar[str]
 
@@ -63,7 +62,7 @@ def unmarshal_oci_media_dataclass(
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciMediaDescriptor:
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties"""  # noqa
 
@@ -87,7 +86,7 @@ class OciMediaDescriptor:
 
 
 @_register_oci_media_dataclass
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciMediaImageIndex(OciMediaDataclass):
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/image-index.md"""
 
@@ -110,7 +109,7 @@ class OciMediaImageIndex(OciMediaDataclass):
 
 
 @_register_oci_media_dataclass
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciMediaImageManifest(OciMediaDataclass):
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/manifest.md"""
 
@@ -146,7 +145,7 @@ OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_: ta.Mapping[str, OciImageLayer.Kind] = {
 
 
 @_register_oci_media_dataclass
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciMediaImageConfig(OciImageConfig, OciMediaDataclass):
     SCHEMA_VERSION: ta.ClassVar[int] = 2
     schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})

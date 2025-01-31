@@ -13,7 +13,7 @@ from .datarefs import OciDataRef
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciDataclass(abc.ABC):  # noqa
     pass
 
@@ -21,27 +21,27 @@ class OciDataclass(abc.ABC):  # noqa
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciImageIndex(OciDataclass):
-    manifests: ta.Sequence[ta.Union['OciImageIndex', 'OciImageManifest']]
+    manifests: ta.List[ta.Union['OciImageIndex', 'OciImageManifest']]
 
-    annotations: ta.Optional[ta.Mapping[str, str]] = None
+    annotations: ta.Optional[ta.Dict[str, str]] = None
 
 
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciImageManifest(OciDataclass):
     config: 'OciImageConfig'
 
-    layers: ta.Sequence['OciImageLayer']
+    layers: ta.List['OciImageLayer']
 
 
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciImageLayer(OciDataclass):
     class Kind(enum.Enum):
         TAR = enum.auto()
@@ -56,17 +56,17 @@ class OciImageLayer(OciDataclass):
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class OciImageConfig(OciDataclass):
     """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/config.md"""
 
     architecture: str
     os: str
 
-    @dc.dataclass(frozen=True)
+    @dc.dataclass()
     class RootFs:
         type: str
-        diff_ids: ta.Sequence[str]
+        diff_ids: ta.List[str]
 
     rootfs: RootFs
 
@@ -75,7 +75,7 @@ class OciImageConfig(OciDataclass):
     created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     os_version: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.version', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-    os_features: ta.Optional[ta.Sequence[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.features', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    os_features: ta.Optional[ta.List[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.features', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
     variant: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
     """
@@ -95,9 +95,9 @@ class OciImageConfig(OciDataclass):
         CpuShares integer, OPTIONAL
         Healthcheck object, OPTIONAL
     """
-    config: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    config: ta.Optional[ta.Dict[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
-    @dc.dataclass(frozen=True)
+    @dc.dataclass()
     class History:
         created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
         author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
@@ -105,7 +105,7 @@ class OciImageConfig(OciDataclass):
         comment: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
         empty_layer: ta.Optional[bool] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
-    history: ta.Optional[ta.Sequence[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    history: ta.Optional[ta.List[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
 
 ##
