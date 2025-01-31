@@ -2,6 +2,7 @@
 # @omlish-lite
 import abc
 import os.path
+import tarfile
 import typing as ta
 
 from omlish.lite.check import check
@@ -28,11 +29,35 @@ class OciRepository(abc.ABC):
     def ref_blob(self, digest: str) -> OciDataRef:
         raise NotImplementedError
 
+    @classmethod
+    def of(cls, obj: 'OciRepository') -> 'OciRepository':
+        if isinstance(obj, OciRepository):
+            return obj
+
+        elif isinstance(obj, str):
+            check.arg(os.path.isdir(obj))
+            return DirectoryOciRepository(obj)
+
+        elif isinstance(obj, tarfile.TarFile):
+            return TarFileOciRepository(obj)
+
+        elif isinstance(obj, ta.Mapping):
+            return DictOciRepository(obj)
+
+        else:
+            raise TypeError(obj)
+
+
+class FileOciRepository(OciRepository, abc.ABC):
+    @abc.abstractmethod
+    def read_file(self, path: str) -> bytes:
+        raise NotImplementedError
+
 
 #
 
 
-class DirectoryOciRepository(OciRepository):
+class DirectoryOciRepository(FileOciRepository):
     def __init__(self, data_dir: str) -> None:
         super().__init__()
 
@@ -67,7 +92,42 @@ class DirectoryOciRepository(OciRepository):
 #
 
 
-class DictionaryOciRepository(OciRepository):
+class TarFileOciRepository(FileOciRepository):
+    def __init__(self, tar_file: tarfile.TarFile) -> None:
+        super().__init__()
+
+        check.arg('r' in tar_file.mode)
+
+        self._tar_file = tar_file
+
+    def read_file(self, path: str) -> bytes:
+        with self._tar_file.extractfile(path) as f:
+            return f.read()
+
+    def blob_name(self, digest: str) -> str:
+        scheme, value = digest.split(':')
+        return os.path.join('blobs', scheme, value)
+
+    def contains_blob(self, digest: str) -> bool:
+        try:
+            self._tar_file.getmember(self.blob_name(digest))
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def read_blob(self, digest: str) -> bytes:
+        with self._tar_file.extractfile(self.blob_name(digest)) as f:
+            return f.read()
+
+    def ref_blob(self, digest: str) -> OciDataRef:
+        raise TypeError
+
+
+#
+
+
+class DictOciRepository(OciRepository):
     def __init__(self, blobs: ta.Mapping[str, bytes]) -> None:
         super().__init__()
 
