@@ -40,6 +40,7 @@ class OciImageManifest(OciDataclass):
 
     annotations: ta.Optional[ta.Dict[str, str]] = None
 
+
 #
 
 
