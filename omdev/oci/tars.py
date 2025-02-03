@@ -90,7 +90,8 @@ class OciDataTarWriter(ExitStacked):
             )
 
         elif self._compression is OciCompression.ZSTD:
-            raise NotImplementedError
+            zc = __import__('zstandard').ZstdCompressor(level=10)
+            self._cf = self._enter_context(zc.stream_writer(self._cw))
 
         elif self._compression is None:
             self._cf = self._cw  # type: ignore
