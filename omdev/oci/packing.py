@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+import contextlib
 import heapq
 import tarfile
 import typing as ta
@@ -18,12 +19,12 @@ from .tars import WrittenOciDataTarGzFileInfo
 class OciLayerUnpacker(ExitStacked):
     def __init__(
             self,
-            input_file_paths: ta.Sequence[str],
+            input_files: ta.Sequence[ta.Union[str, tarfile.TarFile]],
             output_file_path: str,
     ) -> None:
         super().__init__()
 
-        self._input_file_paths = list(input_file_paths)
+        self._input_files = list(input_files)
         self._output_file_path = output_file_path
 
         self._seen: ta.Set[str] = set()
@@ -51,17 +52,23 @@ class OciLayerUnpacker(ExitStacked):
 
     def _unpack_file(
             self,
-            input_file_path: str,
+            input_file: ta.Union[str, tarfile.TarFile],
     ) -> None:
-        with tarfile.open(input_file_path) as input_tar_file:
+        with contextlib.ExitStack() as es:
+            input_tar_file: tarfile.TarFile
+            if isinstance(input_file, str):
+                input_tar_file = es.enter_context(tarfile.open(input_file))
+            else:
+                input_tar_file = check.isinstance(input_file, tarfile.TarFile)
+
             info: tarfile.TarInfo
             for info in input_tar_file.getmembers():
                 self._unpack_entry(input_tar_file, info)
 
     @cached_nullary
     def write(self) -> None:
-        for input_file_path in reversed(self._input_file_paths):
-            self._unpack_file(input_file_path)
+        for input_file in reversed(self._input_files):
+            self._unpack_file(input_file)
 
 
 #
@@ -78,10 +85,13 @@ class OciLayerPacker(ExitStacked):
         self._input_file_path = input_file_path
         self._output_file_paths = list(output_file_paths)
 
+        self._output_file_indexes_by_name: ta.Dict[str, int] = {}
+
     #
 
     @cached_nullary
     def _input_tar_file(self) -> tarfile.TarFile:
+        # FIXME: check uncompressed
         return self._enter_context(tarfile.open(self._input_file_path))
 
     #
@@ -98,35 +108,40 @@ class OciLayerPacker(ExitStacked):
     class _CategorizedEntries(ta.NamedTuple):
         files_by_name: ta.Mapping[str, tarfile.TarInfo]
         non_files_by_name: ta.Mapping[str, tarfile.TarInfo]
+        links_by_name: ta.Mapping[str, tarfile.TarInfo]
 
     @cached_nullary
     def _categorized_entries(self) -> _CategorizedEntries:
         files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
         non_files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+        links_by_name: ta.Dict[str, tarfile.TarInfo] = {}
         for name, info in self._entries_by_name().items():
             if info.type in tarfile.REGULAR_TYPES:
                 files_by_name[name] = info
+            elif info.type in (tarfile.LNKTYPE, tarfile.GNUTYPE_LONGLINK):
+                links_by_name[name] = info
             else:
                 non_files_by_name[name] = info
         return self._CategorizedEntries(
             files_by_name=files_by_name,
             non_files_by_name=non_files_by_name,
+            links_by_name=links_by_name,
         )
 
     #
-
-    @cached_nullary
-    def _files_descending_by_size(self) -> ta.Sequence[tarfile.TarInfo]:
-        return sorted(
-            self._categorized_entries().files_by_name.values(),
-            key=lambda info: -check.isinstance(info.size, int),
-        )
 
     @cached_nullary
     def _non_files_sorted_by_name(self) -> ta.Sequence[tarfile.TarInfo]:
         return sorted(
             self._categorized_entries().non_files_by_name.values(),
             key=lambda info: info.name,
+        )
+
+    @cached_nullary
+    def _files_descending_by_size(self) -> ta.Sequence[tarfile.TarInfo]:
+        return sorted(
+            self._categorized_entries().files_by_name.values(),
+            key=lambda info: -check.isinstance(info.size, int),
         )
 
     #
@@ -147,19 +162,35 @@ class OciLayerPacker(ExitStacked):
 
     #
 
+    def _write_entry(
+            self,
+            info: tarfile.TarInfo,
+            output_file_idx: int,
+    ) -> None:
+        check.not_in(info.name, self._output_file_indexes_by_name)
+
+        writer = self._output_tar_writers()[output_file_idx]
+
+        if info.type in tarfile.REGULAR_TYPES:
+            with check.not_none(self._input_tar_file().extractfile(info)) as f:
+                writer.add_file(info, f)  # type: ignore
+
+        else:
+            writer.add_file(info)
+
+        self._output_file_indexes_by_name[info.name] = output_file_idx
+
     @cached_nullary
     def _write_non_files(self) -> None:
-        writer = self._output_tar_writers()[0]
-
         for non_file in self._non_files_sorted_by_name():
-            writer.add_file(non_file)
+            self._write_entry(non_file, 0)
 
     @cached_nullary
     def _write_files(self) -> None:
         writers = self._output_tar_writers()
 
         bins = [
-            (writer.info().tar_sz, i)
+            (writer.info().gz_sz, i)
             for i, writer in enumerate(writers)
         ]
 
@@ -170,12 +201,20 @@ class OciLayerPacker(ExitStacked):
 
             writer = writers[bin_index]
 
-            with check.not_none(self._input_tar_file().extractfile(file)) as f:
-                writer.add_file(file, f)  # type: ignore
+            self._write_entry(file, bin_index)
 
-            bin_size = writer.info().tar_sz
+            bin_size = writer.info().gz_sz
 
             heapq.heappush(bins, (bin_size, bin_index))
+
+    @cached_nullary
+    def _write_links(self) -> None:
+        for link in self._categorized_entries().links_by_name.values():
+            link_name = check.non_empty_str(link.linkname)
+
+            output_file_idx = self._output_file_indexes_by_name[link_name]
+
+            self._write_entry(link, output_file_idx)
 
     @cached_nullary
     def write(self) -> ta.Mapping[str, WrittenOciDataTarGzFileInfo]:
@@ -183,6 +222,7 @@ class OciLayerPacker(ExitStacked):
 
         self._write_non_files()
         self._write_files()
+        self._write_links()
 
         for output_tar_writer in writers:
             output_tar_writer.tar_file().close()
