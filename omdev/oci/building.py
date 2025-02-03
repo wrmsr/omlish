@@ -187,3 +187,35 @@ class OciRepositoryBuilder:
 
         else:
             raise TypeError(ret)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BuiltOciImageIndexRepository:
+    index: OciImageIndex
+
+    media_index_descriptor: OciMediaDescriptor
+    media_index: OciMediaImageIndex
+
+    blobs: ta.Mapping[str, OciRepositoryBuilder.Blob]
+
+
+def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexRepository:
+    builder = OciRepositoryBuilder()
+
+    media_index_descriptor = builder.add_data(index)
+
+    blobs = builder.get_blobs()
+
+    media_index = blobs[media_index_descriptor.digest].read_media(OciMediaImageIndex)
+
+    return BuiltOciImageIndexRepository(
+        index=index,
+
+        media_index_descriptor=media_index_descriptor,
+        media_index=media_index,
+
+        blobs=blobs,
+    )

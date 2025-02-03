@@ -132,7 +132,9 @@ class H2Protocol(Protocol):
         return len(self.streams) == 0 or all(stream.idle for stream in self.streams.values())
 
     async def initiate(
-        self, headers: list[tuple[bytes, bytes]] | None = None, settings: str | None = None,
+        self,
+            headers: list[tuple[bytes, bytes]] | None = None,
+            settings: str | None = None,
     ) -> None:
         if settings is not None:
             self.connection.initiate_upgrade_connection(settings)

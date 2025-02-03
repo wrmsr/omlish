@@ -18,6 +18,7 @@ from .media import OciMediaImageConfig
 from .media import OciMediaImageIndex
 from .media import OciMediaImageManifest
 from .media import unmarshal_oci_media_dataclass
+from .repositories import FileOciRepository
 from .repositories import OciRepository
 
 
@@ -120,3 +121,22 @@ class OciRepositoryLoader:
 
         else:
             raise TypeError(obj)
+
+
+##
+
+
+def read_oci_repository_root_index(
+        obj: ta.Any,
+        *,
+        file_name: str = 'index.json',
+) -> OciImageIndex:
+    file_repo = check.isinstance(OciRepository.of(obj), FileOciRepository)
+
+    repo_ldr = OciRepositoryLoader(file_repo)
+
+    media_image_idx = repo_ldr.load_object(file_repo.read_file(file_name), OciMediaImageIndex)
+
+    image_idx = repo_ldr.from_media(media_image_idx)
+
+    return check.isinstance(image_idx, OciImageIndex)
