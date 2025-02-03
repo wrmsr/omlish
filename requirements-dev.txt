@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.5.25
+uv>=0.5.26
 
 pytest==8.3.4
 pytest-benchmark==5.1.0
@@ -31,12 +31,12 @@ gprof2dot==2024.6.6
 guppy3==3.1.5; python_version < "3.13"
 objgraph==3.6.2
 
-ipython==8.31.0
+ipython==8.32.0
 
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.14.3  # @omlish-venv !13t
+litecli==1.14.4  # @omlish-venv !13t
 mycli==1.29.2  # @omlish-venv !13t
 pgcli==4.1.0  # @omlish-venv !13t
 
@@ -117,7 +117,7 @@ segno==1.6.1
 
 duckduckgo_search==7.3.0  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.9
+boto3>=1.36.11
 
 mlx==0.22.0; sys_platform == "darwin"
 mlx-lm==0.21.1; sys_platform == "darwin"

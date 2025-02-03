@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.124.7
+hypothesis==6.125.1
 
 hexdump==3.3
 
@@ -114,7 +114,7 @@ fire==0.6.0
 ## BERKELEYDB_DIR=$(brew --prefix "berkeley-db@4") .venv/bin/pip install bsddb3
 
 bs4==0.0.2
-beautifulsoup4==4.12.3
+beautifulsoup4==4.13.1
 
 # gensim==4.3.2
 
@@ -179,7 +179,7 @@ mitogen==0.3.21
 
 ##
 
-openai==1.60.2
+openai==1.61.0
 
 trl==0.14.0
 tf-keras==2.17.0
@@ -212,9 +212,9 @@ langchain-text-splitters==0.3.5
 
 langchainhub==0.1.21
 
-langgraph==0.2.68
+langgraph==0.2.69
 
-langsmith==0.3.3
+langsmith==0.3.4
 
 tavily-python==0.5.0
 
@@ -230,7 +230,7 @@ gym==0.26.2
 
 ##
 
-faiss-cpu==1.9.0.post1
+faiss-cpu==1.10.0
 
 ##
 
@@ -246,14 +246,14 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.14
+llama-index-core==0.12.15
 
 unstructured==0.16.17
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
 
-libtmux==0.40.1
+libtmux==0.42.0
 
 sqlite-vec==0.1.6
 

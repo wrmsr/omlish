@@ -5,7 +5,7 @@ aiohappyeyeballs==2.4.4
 aiohttp==3.11.11
 aiomysql==0.2.0
 aiosignal==1.3.2
-aiosqlite==0.20.0
+aiosqlite==0.21.0
 alembic==1.14.1
 annotated-types==0.7.0
 anthropic==0.45.2
@@ -26,19 +26,19 @@ asyncpg==0.30.0
 asyncssh==2.19.0
 attrs==25.1.0
 audioread==3.0.1
-babel==2.16.0
+babel==2.17.0
 backoff==2.2.1
 bayesian-optimization==1.4.0
 bcrypt==4.2.1
-beautifulsoup4==4.12.3
+beautifulsoup4==4.13.1
 bellows==0.43.0
 bitsandbytes==0.42.0
 black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.36.9
-botocore==1.36.9
+boto3==1.36.11
+botocore==1.36.11
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -47,7 +47,7 @@ cachetools==5.5.1
 catalogue==2.0.10
 cattrs==24.1.2
 cbor2==5.6.5
-certifi==2024.12.14
+certifi==2025.1.31
 cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.1
@@ -106,7 +106,7 @@ evaluate==0.4.3
 execnet==2.1.1
 executing==2.2.0
 fairscale==0.4.13
-faiss-cpu==1.9.0.post1
+faiss-cpu==1.10.0
 fastapi==0.115.8
 fastjsonschema==2.21.1
 filelock==3.17.0
@@ -148,7 +148,7 @@ Gutenberg==0.8.2
 gym==0.26.2
 gym-notices==0.0.8
 h11==0.14.0
-h2==4.1.0
+h2==4.2.0
 h5py==3.12.1
 hexdump==3.3
 hpack==4.1.0
@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.28.1
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.124.7
+hypothesis==6.125.1
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -172,7 +172,7 @@ importlib_resources==6.5.2
 iniconfig==2.0.0
 instructor==1.7.2
 ipykernel==6.29.4
-ipython==8.31.0
+ipython==8.32.0
 ipywidgets==8.1.2
 isodate==0.7.2
 isoduration==20.11.0
@@ -194,7 +194,7 @@ jsonpointer==3.0.0
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 jupyter-console==6.6.3
-jupyter-events==0.11.0
+jupyter-events==0.12.0
 jupyter-lsp==2.2.5
 jupyter_client==8.6.3
 jupyter_core==5.7.2
@@ -224,19 +224,19 @@ langchain-text-splitters==0.3.5
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.68
+langgraph==0.2.69
 langgraph-checkpoint==2.0.10
 langgraph-sdk==0.1.51
-langsmith==0.3.3
+langsmith==0.3.4
 language_data==1.3.0
 lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
-libtmux==0.40.1
-lightning-utilities==0.11.9
-litecli==1.14.3
+libtmux==0.42.0
+lightning-utilities==0.12.0
+litecli==1.14.4
 litellm==1.51.0
-llama-index-core==0.12.14
+llama-index-core==0.12.15
 llama_cpp_python==0.3.7
 llvmlite==0.44.0
 Logbook==1.8.0
@@ -253,7 +253,7 @@ marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
-marshmallow==3.26.0
+marshmallow==3.26.1
 matplotlib==3.10.0
 matplotlib-inline==0.1.7
 mccabe==0.7.0
@@ -297,7 +297,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.60.2
+openai==1.61.0
 opencv-python==4.11.0.86
 opendal==0.45.14
 opentelemetry-api==1.29.0
@@ -322,7 +322,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@0facdebf6208139cbd8f3586875acb378813dd97
+peft @ git+https://github.com/huggingface/peft.git@2825774d2de1c8bd0604ac685867edd79d608a9e
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -397,11 +397,11 @@ python-dotenv==1.0.1
 python-iso639==2025.1.28
 python-json-logger==3.2.1
 python-magic==0.4.27
-python-oxmsg==0.0.1
+python-oxmsg==0.0.2
 python-snappy==0.7.3
 python-telegram-bot==21.10
 pytorch-lightning==2.5.0.post0
-pytz==2024.2
+pytz==2025.1
 pywinrm==0.5.0
 PyYAML==6.0.2
 pyzmq==26.2.1
@@ -442,7 +442,7 @@ sentencepiece==0.2.0
 setproctitle==1.3.4
 setuptools==75.8.0
 setuptools-scm==8.1.0
-shapely==2.0.6
+shapely==2.0.7
 shellingham==1.5.4
 simsimd==6.2.1
 six==1.17.0
@@ -463,7 +463,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.37
 sqlean.py==3.47.0
-sqlglot==26.3.9
+sqlglot==26.4.1
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.5.1
@@ -525,7 +525,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.25
+uv==0.5.26
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2

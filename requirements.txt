@@ -85,7 +85,7 @@ cbor2==5.6.5
 ### web
 
 h11==0.14.0
-h2==4.1.0
+h2==4.2.0
 priority==2.0.0
 wsproto==1.2.0
 
@@ -98,7 +98,7 @@ trio==0.28.0
 trio-asyncio==0.15.0
 
 aiomysql==0.2.0
-aiosqlite==0.20.0
+aiosqlite==0.21.0
 asyncpg==0.30.0  # @omlish-venv !13t  # won't build
 
 asyncssh==2.19.0  # @omlish-venv !13t  # cffi

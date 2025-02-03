@@ -96,7 +96,7 @@ class Project(ProjectBase):
             # 'mysqlclient ~= 2.2',
 
             'aiomysql ~= 0.2',
-            'aiosqlite ~= 0.20',
+            'aiosqlite ~= 0.21',
             'asyncpg ~= 0.30',
 
             'apsw ~= 3.47',
