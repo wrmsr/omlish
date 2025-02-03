@@ -29,11 +29,17 @@ class OciDataTarWriter(ExitStacked):
             self,
             f: ta.BinaryIO,
             compression: ta.Optional[OciCompression] = None,
+            *,
+            gzip_level: int = 1,
+            zstd_level: int = 10,
     ) -> None:
         super().__init__()
 
         self._f = f
         self._compression = compression
+
+        self._gzip_level = gzip_level
+        self._zstd_level = zstd_level
 
     class _FileWrapper:
         def __init__(self, f):
@@ -85,12 +91,14 @@ class OciDataTarWriter(ExitStacked):
                 gzip.GzipFile(  # type: ignore
                     fileobj=self._cw,
                     mode='wb',
-                    compresslevel=1,
+                    compresslevel=self._gzip_level,
                 ),
             )
 
         elif self._compression is OciCompression.ZSTD:
-            zc = __import__('zstandard').ZstdCompressor(level=10)
+            zc = __import__('zstandard').ZstdCompressor(
+                level=self._zstd_level,
+            )
             self._cf = self._enter_context(zc.stream_writer(self._cw))
 
         elif self._compression is None:
