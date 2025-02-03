@@ -9,8 +9,9 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
 
-from .tars import OciDataTarGzWriter
-from .tars import WrittenOciDataTarGzFileInfo
+from .compression import OciCompression
+from .tars import OciDataTarWriter
+from .tars import WrittenOciDataTarFileInfo
 
 
 ##
@@ -79,11 +80,14 @@ class OciLayerPacker(ExitStacked):
             self,
             input_file_path: str,
             output_file_paths: ta.Sequence[str],
+            *,
+            compression: ta.Optional[OciCompression] = None,
     ) -> None:
         super().__init__()
 
         self._input_file_path = input_file_path
         self._output_file_paths = list(output_file_paths)
+        self._compression = compression
 
         self._output_file_indexes_by_name: ta.Dict[str, int] = {}
 
@@ -154,9 +158,14 @@ class OciLayerPacker(ExitStacked):
         ]
 
     @cached_nullary
-    def _output_tar_writers(self) -> ta.Sequence[OciDataTarGzWriter]:
+    def _output_tar_writers(self) -> ta.Sequence[OciDataTarWriter]:
         return [
-            self._enter_context(OciDataTarGzWriter(output_file))
+            self._enter_context(
+                OciDataTarWriter(
+                    output_file,
+                    compression=self._compression,
+                ),
+            )
             for output_file in self._output_files()
         ]
 
@@ -190,7 +199,7 @@ class OciLayerPacker(ExitStacked):
         writers = self._output_tar_writers()
 
         bins = [
-            (writer.info().gz_sz, i)
+            (writer.info().compressed_sz, i)
             for i, writer in enumerate(writers)
         ]
 
@@ -203,7 +212,7 @@ class OciLayerPacker(ExitStacked):
 
             self._write_entry(file, bin_index)
 
-            bin_size = writer.info().gz_sz
+            bin_size = writer.info().compressed_sz
 
             heapq.heappush(bins, (bin_size, bin_index))
 
@@ -217,7 +226,7 @@ class OciLayerPacker(ExitStacked):
             self._write_entry(link, output_file_idx)
 
     @cached_nullary
-    def write(self) -> ta.Mapping[str, WrittenOciDataTarGzFileInfo]:
+    def write(self) -> ta.Mapping[str, WrittenOciDataTarFileInfo]:
         writers = self._output_tar_writers()
 
         self._write_non_files()

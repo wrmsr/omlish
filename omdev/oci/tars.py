@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish.lite.contextmanagers import ExitStacked
 
+from .compression import OciCompression
 from .datarefs import OciDataRef
 from .datarefs import OciDataRefInfo
 from .datarefs import open_oci_data_ref
@@ -15,19 +16,24 @@ from .datarefs import open_oci_data_ref
 ##
 
 
-class WrittenOciDataTarGzFileInfo(ta.NamedTuple):
+class WrittenOciDataTarFileInfo(ta.NamedTuple):
+    compressed_sz: int
+    compressed_sha256: str
+
     tar_sz: int
     tar_sha256: str
 
-    gz_sz: int
-    gz_sha256: str
 
-
-class OciDataTarGzWriter(ExitStacked):
-    def __init__(self, f: ta.BinaryIO) -> None:
+class OciDataTarWriter(ExitStacked):
+    def __init__(
+            self,
+            f: ta.BinaryIO,
+            compression: ta.Optional[OciCompression] = None,
+    ) -> None:
         super().__init__()
 
         self._f = f
+        self._compression = compression
 
     class _FileWrapper:
         def __init__(self, f):
@@ -52,29 +58,58 @@ class OciDataTarGzWriter(ExitStacked):
         def tell(self) -> int:
             return self._f.tell()
 
-    _gw: _FileWrapper
-    _gf: gzip.GzipFile
+    _cw: _FileWrapper
+    _cf: gzip.GzipFile
 
     _tw: _FileWrapper
     _tf: tarfile.TarFile
 
-    def info(self) -> WrittenOciDataTarGzFileInfo:
-        return WrittenOciDataTarGzFileInfo(
+    def info(self) -> WrittenOciDataTarFileInfo:
+        return WrittenOciDataTarFileInfo(
+            compressed_sz=self._cw.size,
+            compressed_sha256=self._cw.sha256(),
+
             tar_sz=self._tw.size,
             tar_sha256=self._tw.sha256(),
-
-            gz_sz=self._gw.size,
-            gz_sha256=self._gw.sha256(),
         )
 
-    def __enter__(self) -> 'OciDataTarGzWriter':
+    def __enter__(self) -> 'OciDataTarWriter':
         super().__enter__()
 
-        self._gw = self._FileWrapper(self._f)
-        self._gf = self._enter_context(gzip.GzipFile(fileobj=self._gw, mode='wb'))  # type: ignore
+        #
 
-        self._tw = self._FileWrapper(self._gf)
-        self._tf = self._enter_context(tarfile.open(fileobj=self._tw, mode='w'))  # type: ignore
+        self._cw = self._FileWrapper(self._f)
+
+        if self._compression is OciCompression.GZIP:
+            self._cf = self._enter_context(
+                gzip.GzipFile(  # type: ignore
+                    fileobj=self._cw,
+                    mode='wb',
+                    compresslevel=1,
+                ),
+            )
+
+        elif self._compression is OciCompression.ZSTD:
+            raise NotImplementedError
+
+        elif self._compression is None:
+            self._cf = self._cw  # type: ignore
+
+        else:
+            raise ValueError(self._compression)
+
+        #
+
+        self._tw = self._FileWrapper(self._cf)
+
+        self._tf = self._enter_context(
+            tarfile.open(  # type: ignore
+                fileobj=self._tw,
+                mode='w',
+            ),
+        )
+
+        #
 
         return self
 
@@ -88,8 +123,8 @@ class OciDataTarGzWriter(ExitStacked):
 def write_oci_data_tar_gz_file(
         f: ta.BinaryIO,
         data: ta.Mapping[str, OciDataRef],
-) -> WrittenOciDataTarGzFileInfo:
-    with OciDataTarGzWriter(f) as tgw:
+) -> WrittenOciDataTarFileInfo:
+    with OciDataTarWriter(f) as tgw:
         for n, dr in data.items():
             ti = tarfile.TarInfo(name=n)
             ri = OciDataRefInfo(dr)

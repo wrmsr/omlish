@@ -8,6 +8,7 @@ import typing as ta
 from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
+from .compression import OciCompression
 from .datarefs import OciDataRef
 
 
@@ -50,6 +51,28 @@ class OciImageLayer(OciDataclass):
         TAR = enum.auto()
         TAR_GZIP = enum.auto()
         TAR_ZSTD = enum.auto()
+
+        @property
+        def compression(self) -> ta.Optional[OciCompression]:
+            if self is self.TAR:
+                return None
+            elif self is self.TAR_GZIP:
+                return OciCompression.GZIP
+            elif self is self.TAR_ZSTD:
+                return OciCompression.ZSTD
+            else:
+                raise ValueError(self)
+
+        @classmethod
+        def from_compression(cls, compression: ta.Optional[OciCompression]) -> 'OciImageLayer.Kind':
+            if compression is None:
+                return cls.TAR
+            elif compression == OciCompression.GZIP:
+                return cls.TAR_GZIP
+            elif compression == OciCompression.ZSTD:
+                return cls.TAR_ZSTD
+            else:
+                raise ValueError(compression)
 
     kind: Kind
 
