@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import abc
 import dataclasses as dc
 import os.path
 import typing as ta
@@ -13,135 +12,17 @@ from omlish.os.temp import temp_file_context
 from .cache import FileCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
-from .docker import build_docker_file_hash
-from .docker import build_docker_image
-from .docker import is_docker_image_present
-from .docker import load_docker_tar_cmd
-from .docker import pull_docker_image
-from .docker import save_docker_tar_cmd
-from .docker import tag_docker_image
+from .docker.buildcaching import DockerImageBuildCaching
+from .docker.buildcaching import DockerImageBuildCachingImpl
+from .docker.cache import DockerCache
+from .docker.cache import DockerCacheImpl
+from .docker.cmds import build_docker_image
+from .docker.imagepulling import DockerImagePulling
+from .docker.imagepulling import DockerImagePullingImpl
+from .docker.utils import build_docker_file_hash
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
 from .utils import log_timing_context
-
-
-##
-
-
-
-##
-
-
-class CiDockerImagePulling(abc.ABC):
-    @abc.abstractmethod
-    def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-class CiDockerImagePullingImpl(CiDockerImagePulling):
-    @dc.dataclass(frozen=True)
-    class Config:
-        always_pull: bool = False
-
-    def __init__(
-            self,
-            *,
-            config: Config = Config(),
-
-            file_cache: ta.Optional[FileCache] = None,
-            docker_cache: ta.Optional[CiDockerCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._file_cache = file_cache
-        self._docker_cache = docker_cache
-
-    async def _pull_docker_image(self, image: str) -> None:
-        if not self._config.always_pull and (await is_docker_image_present(image)):
-            return
-
-        dep_suffix = image
-        for c in '/:.-_':
-            dep_suffix = dep_suffix.replace(c, '-')
-
-        cache_key = f'docker-{dep_suffix}'
-        if (
-                self._docker_cache is not None and
-                (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
-        ):
-            return
-
-        await pull_docker_image(image)
-
-        if self._docker_cache is not None:
-            await self._docker_cache.save_cache_docker_image(cache_key, image)
-
-    async def pull_docker_image(self, image: str) -> None:
-        with log_timing_context(f'Load docker image: {image}'):
-            await self._pull_docker_image(image)
-
-
-##
-
-
-class CiDockerImageBuildCaching(abc.ABC):
-    @abc.abstractmethod
-    def cached_build_docker_image(
-            self,
-            cache_key: str,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
-    ) -> ta.Awaitable[str]:
-        raise NotImplementedError
-
-
-class CiDockerImageBuildCachingImpl(CiDockerImageBuildCaching):
-    @dc.dataclass(frozen=True)
-    class Config:
-        service: str
-
-        always_build: bool = False
-
-    def __init__(
-            self,
-            *,
-            config: Config,
-
-            docker_cache: ta.Optional[CiDockerCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._docker_cache = docker_cache
-
-    async def cached_build_docker_image(
-            self,
-            cache_key: str,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
-    ) -> str:
-        image_tag = f'{self._config.service}:{cache_key}'
-
-        if not self._config.always_build and (await is_docker_image_present(image_tag)):
-            return image_tag
-
-        if (
-                self._docker_cache is not None and
-                (cache_image_id := await self._docker_cache.load_cache_docker_image(cache_key)) is not None
-        ):
-            await tag_docker_image(
-                cache_image_id,
-                image_tag,
-            )
-            return image_tag
-
-        image_id = await build_and_tag(image_tag)
-
-        if self._docker_cache is not None:
-            await self._docker_cache.save_cache_docker_image(cache_key, image_id)
-
-        return image_tag
 
 
 ##
@@ -188,12 +69,12 @@ class Ci(AsyncExitStacked):
         self._config = config
         self._file_cache = file_cache
 
-        self._docker_cache: CiDockerCacheImpl = CiDockerCacheImpl(
+        self._docker_cache: DockerCache = DockerCacheImpl(
             file_cache=file_cache,
         )
 
-        self._docker_image_pulling: CiDockerImagePulling = CiDockerImagePullingImpl(
-            config=CiDockerImagePullingImpl.Config(
+        self._docker_image_pulling: DockerImagePulling = DockerImagePullingImpl(
+            config=DockerImagePullingImpl.Config(
                 always_pull=self._config.always_pull,
             ),
 
@@ -201,8 +82,8 @@ class Ci(AsyncExitStacked):
             docker_cache=self._docker_cache,
         )
 
-        self._docker_image_build_caching: CiDockerImageBuildCaching = CiDockerImageBuildCachingImpl(
-            config=CiDockerImageBuildCachingImpl.Config(
+        self._docker_image_build_caching: DockerImageBuildCaching = DockerImageBuildCachingImpl(
+            config=DockerImageBuildCachingImpl.Config(
                 service=self._config.service,
 
                 always_build=self._config.always_build,

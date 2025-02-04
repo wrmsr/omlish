@@ -1,34 +1,19 @@
 # ruff: noqa: UP006 UP007
 import abc
-import dataclasses as dc
-import os.path
 import typing as ta
 
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.os.temp import temp_file_context
 
 from ..cache import FileCache
-from ..compose import DockerComposeRun
-from ..compose import get_compose_service_dependencies
-from .utils import build_docker_file_hash
-from .utils import build_docker_image
-from .utils import is_docker_image_present
-from .utils import load_docker_tar_cmd
-from .utils import pull_docker_image
-from .utils import save_docker_tar_cmd
-from .utils import tag_docker_image
-from ..requirements import build_requirements_hash
 from ..shell import ShellCmd
-from ..utils import log_timing_context
+from .cmds import load_docker_tar_cmd
+from .cmds import save_docker_tar_cmd
 
 
 ##
 
 
-class CiDockerCache(abc.ABC):
+class DockerCache(abc.ABC):
     @abc.abstractmethod
     def load_cache_docker_image(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
         raise NotImplementedError
@@ -38,7 +23,7 @@ class CiDockerCache(abc.ABC):
         raise NotImplementedError
 
 
-class CiDockerCacheImpl(CiDockerCache):
+class DockerCacheImpl(DockerCache):
     def __init__(
             self,
             *,
@@ -70,4 +55,3 @@ class CiDockerCacheImpl(CiDockerCache):
             await save_docker_tar_cmd(image, write_tmp_cmd)
 
             await self._file_cache.put_file(key, tmp_file, steal=True)
-

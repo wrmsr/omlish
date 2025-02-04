@@ -2072,6 +2072,50 @@ def temp_named_file_context(
 
 
 ########################################
+# ../docker/utils.py
+"""
+TODO:
+ - some less stupid Dockerfile hash
+  - doesn't change too much though
+"""
+
+
+##
+
+
+def build_docker_file_hash(docker_file: str) -> str:
+    with open(docker_file) as f:
+        contents = f.read()
+
+    return sha256_str(contents)
+
+
+##
+
+
+def read_docker_tar_image_tag(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
+            m = mf.read()
+
+    manifests = json.loads(m.decode('utf-8'))
+    manifest = check.single(manifests)
+    tag = check.non_empty_str(check.single(manifest['RepoTags']))
+    return tag
+
+
+def read_docker_tar_image_id(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
+            i = mf.read()
+
+    index = json.loads(i.decode('utf-8'))
+    manifest = check.single(index['manifests'])
+    image_id = check.non_empty_str(manifest['digest'])
+    return image_id
+
+
+########################################
 # ../github/client.py
 
 
@@ -3615,47 +3659,7 @@ class DockerComposeRun(AsyncExitStacked):
 
 
 ########################################
-# ../docker.py
-"""
-TODO:
- - some less stupid Dockerfile hash
-  - doesn't change too much though
-"""
-
-
-##
-
-
-def build_docker_file_hash(docker_file: str) -> str:
-    with open(docker_file) as f:
-        contents = f.read()
-
-    return sha256_str(contents)
-
-
-##
-
-
-def read_docker_tar_image_tag(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
-            m = mf.read()
-
-    manifests = json.loads(m.decode('utf-8'))
-    manifest = check.single(manifests)
-    tag = check.non_empty_str(check.single(manifest['RepoTags']))
-    return tag
-
-
-def read_docker_tar_image_id(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
-            i = mf.read()
-
-    index = json.loads(i.decode('utf-8'))
-    manifest = check.single(index['manifests'])
-    image_id = check.non_empty_str(manifest['digest'])
-    return image_id
+# ../docker/cmds.py
 
 
 ##
@@ -3772,13 +3776,13 @@ async def load_docker_tar(
 
 
 ########################################
-# ../ci.py
+# ../docker/cache.py
 
 
 ##
 
 
-class CiDockerCache(abc.ABC):
+class DockerCache(abc.ABC):
     @abc.abstractmethod
     def load_cache_docker_image(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
         raise NotImplementedError
@@ -3788,7 +3792,7 @@ class CiDockerCache(abc.ABC):
         raise NotImplementedError
 
 
-class CiDockerCacheImpl(CiDockerCache):
+class DockerCacheImpl(DockerCache):
     def __init__(
             self,
             *,
@@ -3822,64 +3826,14 @@ class CiDockerCacheImpl(CiDockerCache):
             await self._file_cache.put_file(key, tmp_file, steal=True)
 
 
-##
-
-
-class CiDockerImagePulling(abc.ABC):
-    @abc.abstractmethod
-    def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-class CiDockerImagePullingImpl(CiDockerImagePulling):
-    @dc.dataclass(frozen=True)
-    class Config:
-        always_pull: bool = False
-
-    def __init__(
-            self,
-            *,
-            config: Config = Config(),
-
-            file_cache: ta.Optional[FileCache] = None,
-            docker_cache: ta.Optional[CiDockerCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._file_cache = file_cache
-        self._docker_cache = docker_cache
-
-    async def _pull_docker_image(self, image: str) -> None:
-        if not self._config.always_pull and (await is_docker_image_present(image)):
-            return
-
-        dep_suffix = image
-        for c in '/:.-_':
-            dep_suffix = dep_suffix.replace(c, '-')
-
-        cache_key = f'docker-{dep_suffix}'
-        if (
-                self._docker_cache is not None and
-                (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
-        ):
-            return
-
-        await pull_docker_image(image)
-
-        if self._docker_cache is not None:
-            await self._docker_cache.save_cache_docker_image(cache_key, image)
-
-    async def pull_docker_image(self, image: str) -> None:
-        with log_timing_context(f'Load docker image: {image}'):
-            await self._pull_docker_image(image)
+########################################
+# ../docker/buildcaching.py
 
 
 ##
 
 
-class CiDockerImageBuildCaching(abc.ABC):
+class DockerImageBuildCaching(abc.ABC):
     @abc.abstractmethod
     def cached_build_docker_image(
             self,
@@ -3889,7 +3843,7 @@ class CiDockerImageBuildCaching(abc.ABC):
         raise NotImplementedError
 
 
-class CiDockerImageBuildCachingImpl(CiDockerImageBuildCaching):
+class DockerImageBuildCachingImpl(DockerImageBuildCaching):
     @dc.dataclass(frozen=True)
     class Config:
         service: str
@@ -3901,7 +3855,7 @@ class CiDockerImageBuildCachingImpl(CiDockerImageBuildCaching):
             *,
             config: Config,
 
-            docker_cache: ta.Optional[CiDockerCache] = None,
+            docker_cache: ta.Optional[DockerCache] = None,
     ) -> None:
         super().__init__()
 
@@ -3935,6 +3889,68 @@ class CiDockerImageBuildCachingImpl(CiDockerImageBuildCaching):
             await self._docker_cache.save_cache_docker_image(cache_key, image_id)
 
         return image_tag
+
+
+########################################
+# ../docker/imagepulling.py
+
+
+##
+
+
+class DockerImagePulling(abc.ABC):
+    @abc.abstractmethod
+    def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+class DockerImagePullingImpl(DockerImagePulling):
+    @dc.dataclass(frozen=True)
+    class Config:
+        always_pull: bool = False
+
+    def __init__(
+            self,
+            *,
+            config: Config = Config(),
+
+            file_cache: ta.Optional[FileCache] = None,
+            docker_cache: ta.Optional[DockerCache] = None,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._file_cache = file_cache
+        self._docker_cache = docker_cache
+
+    async def _pull_docker_image(self, image: str) -> None:
+        if not self._config.always_pull and (await is_docker_image_present(image)):
+            return
+
+        dep_suffix = image
+        for c in '/:.-_':
+            dep_suffix = dep_suffix.replace(c, '-')
+
+        cache_key = f'docker-{dep_suffix}'
+        if (
+                self._docker_cache is not None and
+                (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
+        ):
+            return
+
+        await pull_docker_image(image)
+
+        if self._docker_cache is not None:
+            await self._docker_cache.save_cache_docker_image(cache_key, image)
+
+    async def pull_docker_image(self, image: str) -> None:
+        with log_timing_context(f'Load docker image: {image}'):
+            await self._pull_docker_image(image)
+
+
+########################################
+# ../ci.py
 
 
 ##
@@ -3981,12 +3997,12 @@ class Ci(AsyncExitStacked):
         self._config = config
         self._file_cache = file_cache
 
-        self._docker_cache: CiDockerCacheImpl = CiDockerCacheImpl(
+        self._docker_cache: DockerCache = DockerCacheImpl(
             file_cache=file_cache,
         )
 
-        self._docker_image_pulling: CiDockerImagePulling = CiDockerImagePullingImpl(
-            config=CiDockerImagePullingImpl.Config(
+        self._docker_image_pulling: DockerImagePulling = DockerImagePullingImpl(
+            config=DockerImagePullingImpl.Config(
                 always_pull=self._config.always_pull,
             ),
 
@@ -3994,8 +4010,8 @@ class Ci(AsyncExitStacked):
             docker_cache=self._docker_cache,
         )
 
-        self._docker_image_build_caching: CiDockerImageBuildCaching = CiDockerImageBuildCachingImpl(
-            config=CiDockerImageBuildCachingImpl.Config(
+        self._docker_image_build_caching: DockerImageBuildCaching = DockerImageBuildCachingImpl(
+            config=DockerImageBuildCachingImpl.Config(
                 service=self._config.service,
 
                 always_build=self._config.always_build,
