@@ -2,6 +2,7 @@
 # @omlish-lite
 import contextlib
 import heapq
+import os.path
 import tarfile
 import typing as ta
 
@@ -28,21 +29,132 @@ class OciLayerUnpacker(ExitStacked):
         self._input_files = list(input_files)
         self._output_file_path = output_file_path
 
-        self._seen: ta.Set[str] = set()
+    #
+
+    @contextlib.contextmanager
+    def _open_input_file(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Iterator[tarfile.TarFile]:
+        if isinstance(input_file, tarfile.TarFile):
+            yield input_file
+
+        elif isinstance(input_file, str):
+            with tarfile.open(input_file) as tar_file:
+                yield tar_file
+
+        else:
+            raise TypeError(input_file)
+
+    #
+
+    class _Entry(ta.NamedTuple):
+        file: ta.Union[str, tarfile.TarFile]
+        info: tarfile.TarInfo
+
+    def _build_input_file_sorted_entries(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Sequence[_Entry]:
+        dct: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        with self._open_input_file(input_file) as input_tar_file:
+            for info in input_tar_file.getmembers():
+                check.not_in(info.name, dct)
+                dct[info.name] = self._Entry(
+                    file=input_file,
+                    info=info,
+                )
+
+        return sorted(dct.values(), key=lambda entry: entry.info.name)
+
+    @cached_nullary
+    def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
+        root: dict = {}
+
+        for input_file in self._input_files:
+            sorted_entries = self._build_input_file_sorted_entries(input_file)
+
+            opaques = set()
+
+            for entry in sorted_entries:
+                info = entry.info
+                name = check.non_empty_str(info.name)
+                base_name = os.path.basename(name)
+                dir_name = os.path.dirname(name)
+
+                if base_name == '.wh..wh..opq':
+                    opaques.add(dir_name)
+                    continue
+
+                if dir_name:
+                    dir_parts = dir_name.split('/')
+                else:
+                    dir_parts = []
+
+                cur = root
+                for dir_part in dir_parts:
+                    cur = cur[dir_part]
+
+                if base_name.startswith('.wh.'):
+                    rm_base_name = base_name[4:]
+                    rm = cur[rm_base_name]
+
+                    if isinstance(rm, dict):
+                        check.equal(set(rm), '')
+                        del cur[rm_base_name]
+
+                    elif isinstance(rm, self._Entry):
+                        del cur[rm_base_name]
+
+                    else:
+                        raise TypeError(rm)
+
+                    continue
+
+                if info.type == tarfile.DIRTYPE:
+                    try:
+                        ex = cur[base_name]
+                    except KeyError:
+                        cur[base_name] = {'': entry}
+                    else:
+                        ex[''] = entry
+
+                else:
+                    cur[base_name] = entry
+
+            if opaques:
+                raise NotImplementedError
+
+        #
+
+        out: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        def rec(cur):  # noqa
+            for _, child in sorted(cur.items(), key=lambda t: t[0]):
+                if isinstance(child, dict):
+                    rec(child)
+
+                elif isinstance(child, self._Entry):
+                    check.not_in(child.info.name, out)
+                    out[child.info.name] = child
+
+                else:
+                    raise TypeError(child)
+
+        rec(root)
+
+        return out
+
+    #
 
     @cached_nullary
     def _output_tar_file(self) -> tarfile.TarFile:
         return self._enter_context(tarfile.open(self._output_file_path, 'w'))
 
-    def _unpack_entry(
+    #
+
+    def _add_unpacked_entry(
             self,
             input_tar_file: tarfile.TarFile,
             info: tarfile.TarInfo,
     ) -> None:
-        if info.name in self._seen:
-            return
-
-        self._seen.add(info.name)
+        base_name = os.path.basename(info.name)
+        check.state(not base_name.startswith('.wh.'))
 
         if info.type in tarfile.REGULAR_TYPES:
             with check.not_none(input_tar_file.extractfile(info)) as f:
@@ -55,20 +167,24 @@ class OciLayerUnpacker(ExitStacked):
             self,
             input_file: ta.Union[str, tarfile.TarFile],
     ) -> None:
-        with contextlib.ExitStack() as es:
-            input_tar_file: tarfile.TarFile
-            if isinstance(input_file, str):
-                input_tar_file = es.enter_context(tarfile.open(input_file))
-            else:
-                input_tar_file = check.isinstance(input_file, tarfile.TarFile)
+        entries_by_name = self._entries_by_name()
 
+        with self._open_input_file(input_file) as input_tar_file:
             info: tarfile.TarInfo
             for info in input_tar_file.getmembers():
-                self._unpack_entry(input_tar_file, info)
+                try:
+                    entry = entries_by_name[info.name]
+                except KeyError:
+                    continue
+
+                if entry.file != input_file:
+                    continue
+
+                self._add_unpacked_entry(input_tar_file, info)
 
     @cached_nullary
     def write(self) -> None:
-        for input_file in reversed(self._input_files):
+        for input_file in self._input_files:
             self._unpack_file(input_file)
 
 
@@ -119,6 +235,7 @@ class OciLayerPacker(ExitStacked):
         files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
         non_files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
         links_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+
         for name, info in self._entries_by_name().items():
             if info.type in tarfile.REGULAR_TYPES:
                 files_by_name[name] = info
@@ -126,6 +243,7 @@ class OciLayerPacker(ExitStacked):
                 links_by_name[name] = info
             else:
                 non_files_by_name[name] = info
+
         return self._CategorizedEntries(
             files_by_name=files_by_name,
             non_files_by_name=non_files_by_name,
