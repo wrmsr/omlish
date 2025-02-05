@@ -1,4 +1,5 @@
 # ruff: noqa: PT009 UP006 UP007
+import abc
 import dataclasses as dc
 import os.path
 import shlex
@@ -12,19 +13,17 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 
 from ...dataserver.routes import DataServerRoute
-from ...dataserver.targets import DataServerTarget
-from ...oci.building import BuiltOciImageIndexRepository
-from ...oci.building import OciRepositoryBuilder
+from ...dataserver.targets import BytesDataServerTarget
+from ...dataserver.targets import FileDataServerTarget
 from ...oci.building import build_oci_index_repository
 from ...oci.compression import OciCompression
 from ...oci.data import OciImageIndex
 from ...oci.data import OciImageLayer
 from ...oci.data import OciImageManifest
-from ...oci.datarefs import BytesOciDataRef
 from ...oci.datarefs import FileOciDataRef
 from ...oci.datarefs import open_oci_data_ref
+from ...oci.dataserver import build_oci_repository_data_server_routes
 from ...oci.loading import read_oci_repository_root_index
-from ...oci.media import OCI_MANIFEST_MEDIA_TYPES
 from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
@@ -33,49 +32,65 @@ from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
 
 
-def build_oci_repository_data_server_routes(
-        repo_name: str,
-        built_repo: BuiltOciImageIndexRepository,
-) -> ta.List[DataServerRoute]:
-    base_url_path = f'/v2/{repo_name}'
+@dc.dataclass(frozen=True)
+class NewCiManifest:
+    @dc.dataclass(frozen=True)
+    class Route:
+        paths: ta.Sequence[str]
 
-    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
+        content_type: str
+        content_length: int
 
-    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
+        @dc.dataclass(frozen=True)
+        class Target(abc.ABC):  # noqa
+            pass
 
-    for blob in built_repo.blobs.values():
-        repo_contents['/'.join([
-            base_url_path,
-            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
-            blob.digest,
-        ])] = blob
+        @dc.dataclass(frozen=True)
+        class BytesTarget(Target):
+            data: bytes
 
-    #
+        @dc.dataclass(frozen=True)
+        class CacheKeyTarget(Target):
+            key: str
 
-    def build_dst(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
-        kw: dict = dict(
-            content_type=check.non_empty_str(blob.media_type),
-        )
+        target: Target
 
-        if isinstance(blob.data, BytesOciDataRef):
-            return DataServerTarget.of(blob.data.data, **kw)
+    routes: ta.Sequence[Route]
 
-        elif isinstance(blob.data, FileOciDataRef):
-            return DataServerTarget.of(file_path=blob.data.path, **kw)
+
+def translate_data_server_routes(data_server_routes: ta.Iterable[DataServerRoute]) -> NewCiManifest:
+    routes: ta.List[NewCiManifest.Route] = []
+
+    for data_server_route in data_server_routes:
+        content_length: int
+
+        data_server_target = data_server_route.target
+        target: NewCiManifest.Route.Target
+        if isinstance(data_server_target, BytesDataServerTarget):
+            bytes_data = check.isinstance(data_server_target.data, bytes)
+            content_length = len(bytes_data)
+            target = NewCiManifest.Route.BytesTarget(bytes_data)
+
+        elif isinstance(data_server_target, FileDataServerTarget):
+            file_path = check.non_empty_str(data_server_target.file_path)
+            content_length = os.path.getsize(file_path)
+            target = NewCiManifest.Route.CacheKeyTarget(f'cache-key:{os.path.basename(file_path)}')
 
         else:
-            with open_oci_data_ref(blob.data) as f:
-                data = f.read()
+            raise TypeError(data_server_target)
 
-            return DataServerTarget.of(data, **kw)
+        routes.append(NewCiManifest.Route(
+            paths=data_server_route.paths,
 
-    rts = [
-        (p, dst)
-        for p, blob in repo_contents.items()
-        if (dst := build_dst(blob)) is not None
-    ]
+            content_type=check.non_empty_str(data_server_target.content_type),
+            content_length=content_length,
 
-    return DataServerRoute.of_(*rts)
+            target=target,
+        ))
+
+    return NewCiManifest(
+        routes=routes,
+    )
 
 
 @dc.dataclass()
@@ -205,6 +220,12 @@ class NewDockerBuildCaching(DockerBuildCaching):
         )
 
         print(json_dumps_pretty(marshal_obj(data_server_routes, ta.List[DataServerRoute])))
+
+        #
+
+        new_ci_manifest = translate_data_server_routes(data_server_routes)
+
+        print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
 
         #
 
