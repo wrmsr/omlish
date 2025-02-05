@@ -99,6 +99,7 @@ class DirectoryFileCache(FileCache):
                 f.write(str(self._version))
             return
 
+        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
         with open(version_file) as f:
             dir_version = int(f.read().strip())
 

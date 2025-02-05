@@ -13,12 +13,8 @@ from .cache import FileCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
 from .docker.buildcaching import DockerBuildCaching
-from .docker.buildcaching import DockerBuildCachingImpl
-from .docker.cache import DockerCache
-from .docker.cache import DockerCacheImpl
 from .docker.cmds import build_docker_image
 from .docker.imagepulling import DockerImagePulling
-from .docker.imagepulling import DockerImagePullingImpl
 from .docker.utils import build_docker_file_hash
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
@@ -63,34 +59,17 @@ class Ci(AsyncExitStacked):
             config: Config,
             *,
             file_cache: ta.Optional[FileCache] = None,
+
+            docker_build_caching: DockerBuildCaching,
+            docker_image_pulling: DockerImagePulling,
     ) -> None:
         super().__init__()
 
         self._config = config
         self._file_cache = file_cache
 
-        self._docker_cache: DockerCache = DockerCacheImpl(
-            file_cache=file_cache,
-        )
-
-        self._docker_image_pulling: DockerImagePulling = DockerImagePullingImpl(
-            config=DockerImagePullingImpl.Config(
-                always_pull=self._config.always_pull,
-            ),
-
-            file_cache=file_cache,
-            docker_cache=self._docker_cache,
-        )
-
-        self._docker_build_caching: DockerBuildCaching = DockerBuildCachingImpl(
-            config=DockerBuildCachingImpl.Config(
-                service=self._config.service,
-
-                always_build=self._config.always_build,
-            ),
-
-            docker_cache=self._docker_cache,
-        )
+        self._docker_build_caching = docker_build_caching
+        self._docker_image_pulling = docker_image_pulling
 
     #
 

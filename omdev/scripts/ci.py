@@ -1273,6 +1273,7 @@ class DirectoryFileCache(FileCache):
                 f.write(str(self._version))
             return
 
+        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
         with open(version_file) as f:
             dir_version = int(f.read().strip())
 
@@ -5166,34 +5167,17 @@ class Ci(AsyncExitStacked):
             config: Config,
             *,
             file_cache: ta.Optional[FileCache] = None,
+
+            docker_build_caching: DockerBuildCaching,
+            docker_image_pulling: DockerImagePulling,
     ) -> None:
         super().__init__()
 
         self._config = config
         self._file_cache = file_cache
 
-        self._docker_cache: DockerCache = DockerCacheImpl(
-            file_cache=file_cache,
-        )
-
-        self._docker_image_pulling: DockerImagePulling = DockerImagePullingImpl(
-            config=DockerImagePullingImpl.Config(
-                always_pull=self._config.always_pull,
-            ),
-
-            file_cache=file_cache,
-            docker_cache=self._docker_cache,
-        )
-
-        self._docker_build_caching: DockerBuildCaching = DockerBuildCachingImpl(
-            config=DockerBuildCachingImpl.Config(
-                service=self._config.service,
-
-                always_build=self._config.always_build,
-            ),
-
-            docker_cache=self._docker_cache,
-        )
+        self._docker_build_caching = docker_build_caching
+        self._docker_image_pulling = docker_image_pulling
 
     #
 
