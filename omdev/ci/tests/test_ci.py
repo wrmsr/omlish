@@ -1,11 +1,12 @@
 # ruff: noqa: PT009
-import contextlib
 import datetime
 import os.path
 import shlex
 import shutil
 import unittest
 
+from omlish.lite.cached import cached_nullary
+from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.os.temp import temp_dir_context
 
 from ..cache import DirectoryFileCache
@@ -16,75 +17,125 @@ from ..docker.imagepulling import DockerImagePullingImpl
 from ..shell import ShellCmd
 
 
+class CiHarness(AsyncExitStacked):
+    @cached_nullary
+    def self_dir(self) -> str:
+        return os.path.dirname(__file__)
+
+    @cached_nullary
+    def self_project_dir(self) -> str:
+        return os.path.join(self.self_dir(), 'project')
+
+    #
+
+    @cached_nullary
+    def temp_dir(self) -> str:
+        return self._enter_context(temp_dir_context())  # noqa
+
+    @cached_nullary
+    def temp_project_dir(self) -> str:
+        temp_project_dir = os.path.join(self.temp_dir(), 'project')
+        shutil.copytree(self.self_project_dir(), temp_project_dir)
+        return temp_project_dir
+
+    #
+
+    @cached_nullary
+    def now_str(self) -> str:
+        return datetime.datetime.now(tz=datetime.timezone.utc).isoformat()  # noqa
+
+    #
+
+    @cached_nullary
+    def docker_file(self) -> str:
+        docker_file = os.path.join(self.temp_project_dir(), 'Dockerfile')
+        with open(docker_file) as f:  # noqa
+            docker_file_src = f.read()
+        docker_file_src += f'\nRUN echo {shlex.quote(self.now_str())} > /.timestamp\n'
+        with open(docker_file, 'w') as f:  # noqa
+            f.write(docker_file_src)
+        return docker_file
+
+    #
+
+    @cached_nullary
+    def cache_dir(self) -> str:
+        return os.path.join(self.temp_dir(), 'cache')
+
+    #
+
+    @cached_nullary
+    def ci_config(self) -> Ci.Config:
+        return Ci.Config(
+            project_dir=self.temp_project_dir(),
+
+            docker_file=self.docker_file(),
+
+            compose_file=os.path.join(self.temp_project_dir(), 'compose.yml'),
+            service='omlish-ci',
+
+            cmd=ShellCmd('true'),
+
+            requirements_txts=[
+                'requirements-dev.txt',
+                'requirements.txt',
+            ],
+        )
+
+    #
+
+    @cached_nullary
+    def directory_file_cache(self) -> DirectoryFileCache:
+        return DirectoryFileCache(DirectoryFileCache.Config(
+            dir=self.cache_dir(),
+        ))
+
+    #
+
+    @cached_nullary
+    def docker_cache_impl(self) -> DockerCacheImpl:
+        return DockerCacheImpl(
+            file_cache=self.directory_file_cache(),
+        )
+
+    @cached_nullary
+    def docker_image_pulling_impl(self) -> DockerImagePullingImpl:
+        return DockerImagePullingImpl(
+            config=DockerImagePullingImpl.Config(
+                always_pull=self.ci_config().always_pull,
+            ),
+
+            file_cache=self.directory_file_cache(),
+            docker_cache=self.docker_cache_impl(),
+        )
+
+    @cached_nullary
+    def docker_build_caching_impl(self) -> DockerBuildCachingImpl:
+        return DockerBuildCachingImpl(
+            config=DockerBuildCachingImpl.Config(
+                service=self.ci_config().service,
+
+                always_build=self.ci_config().always_build,
+            ),
+
+            docker_cache=self.docker_cache_impl(),
+        )
+
+    #
+
+    def make_ci(self) -> Ci:
+        return Ci(
+            self.ci_config(),
+
+            file_cache=self.directory_file_cache(),
+
+            docker_build_caching=self.docker_build_caching_impl(),
+            docker_image_pulling=self.docker_image_pulling_impl(),
+        )
+
+
 class TestCi(unittest.IsolatedAsyncioTestCase):
     async def test_ci(self):
-        async with contextlib.AsyncExitStack() as es:
-            self_dir = os.path.dirname(__file__)
-            self_project_dir = os.path.join(self_dir, 'project')
-
-            temp_dir: str = es.enter_context(temp_dir_context())  # noqa
-            temp_project_dir = os.path.join(temp_dir, 'project')
-            shutil.copytree(self_project_dir, temp_project_dir)
-
-            now_str = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
-            docker_file = os.path.join(temp_project_dir, 'Dockerfile')
-            with open(docker_file) as f:  # noqa
-                docker_file_src = f.read()
-            docker_file_src += f'\nRUN echo {shlex.quote(now_str)} > /.timestamp\n'
-            with open(docker_file, 'w') as f:  # noqa
-                f.write(docker_file_src)
-
-            cache_dir = os.path.join(temp_dir, 'cache')
-
-            config = Ci.Config(
-                project_dir=temp_project_dir,
-
-                docker_file=os.path.join(temp_project_dir, 'Dockerfile'),
-
-                compose_file=os.path.join(temp_project_dir, 'compose.yml'),
-                service='omlish-ci',
-
-                cmd=ShellCmd('true'),
-
-                requirements_txts=[
-                    'requirements-dev.txt',
-                    'requirements.txt',
-                ],
-            )
-
-            file_cache = DirectoryFileCache(DirectoryFileCache.Config(
-                dir=cache_dir,
-            ))
-
-            docker_cache = DockerCacheImpl(
-                file_cache=file_cache,
-            )
-
-            docker_image_pulling = DockerImagePullingImpl(
-                config=DockerImagePullingImpl.Config(
-                    always_pull=config.always_pull,
-                ),
-
-                file_cache=file_cache,
-                docker_cache=docker_cache,
-            )
-
-            docker_build_caching = DockerBuildCachingImpl(
-                config=DockerBuildCachingImpl.Config(
-                    service=config.service,
-
-                    always_build=config.always_build,
-                ),
-
-                docker_cache=docker_cache,
-            )
-
-            async with Ci(
-                    config,
-
-                    file_cache=file_cache,
-
-                    docker_build_caching=docker_build_caching,
-                    docker_image_pulling=docker_image_pulling,
-            ) as ci:
+        async with CiHarness() as ci_harness:
+            async with ci_harness.make_ci() as ci:
                 await ci.run()
