@@ -34,10 +34,10 @@ from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
 
 
-def build_oci_repository_data_server_routes(
+def build_oci_repository_data_server_targets(
         repo_name: str,
         built_repo: BuiltOciImageIndexRepository,
-) -> ta.List[DataServer.Route]:
+) -> ta.List[DataServerTarget]:
     base_url_path = f'/v2/{repo_name}'
 
     repo_contents: dict[str, OciRepositoryBuilder.Blob] = {}
