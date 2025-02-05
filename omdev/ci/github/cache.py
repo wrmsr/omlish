@@ -6,6 +6,7 @@ import typing as ta
 from omlish.lite.check import check
 from omlish.os.files import unlinking_if_exists
 
+from ..cache import CacheVersion
 from ..cache import DirectoryFileCache
 from ..cache import FileCache
 from .client import GithubCacheClient
@@ -25,9 +26,11 @@ class GithubFileCache(FileCache):
             config: Config,
             *,
             client: ta.Optional[GithubCacheClient] = None,
-            **kwargs: ta.Any,
+            version: ta.Optional[CacheVersion] = None,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(
+            version=version,
+        )
 
         self._config = config
 

@@ -4262,9 +4262,11 @@ class GithubFileCache(FileCache):
             config: Config,
             *,
             client: ta.Optional[GithubCacheClient] = None,
-            **kwargs: ta.Any,
+            version: ta.Optional[CacheVersion] = None,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(
+            version=version,
+        )
 
         self._config = config
 
