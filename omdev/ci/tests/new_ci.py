@@ -12,7 +12,9 @@ from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 
+from ...dataserver.http import DataServerHttpHandler
 from ...dataserver.routes import DataServerRoute
+from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import FileDataServerTarget
 from ...oci.building import build_oci_index_repository
@@ -30,6 +32,7 @@ from ...oci.repositories import DirectoryOciRepository
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
+from .serving import serve_for_docker
 
 
 @dc.dataclass(frozen=True)
@@ -61,7 +64,7 @@ class NewCiManifest:
     routes: ta.Sequence[Route]
 
 
-def translate_data_server_routes(data_server_routes: ta.Iterable[DataServerRoute]) -> NewCiManifest:
+def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> NewCiManifest:
     routes: ta.List[NewCiManifest.Route] = []
 
     for data_server_route in data_server_routes:
@@ -227,11 +230,24 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
         #
 
-        new_ci_manifest = translate_data_server_routes(data_server_routes)
+        new_ci_manifest = build_new_ci_manifest(data_server_routes)
 
         print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
 
         #
+
+        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
+
+        #
+
+        port = 5021
+
+        print(f'localhost:{port}/{cache_key}')
+
+        serve_for_docker(
+            port,
+            DataServerHttpHandler(data_server),
+        )
 
         raise NotImplementedError
 
@@ -245,6 +261,7 @@ async def a_main() -> None:
                 docker_image_pulling=ci_harness.docker_image_pulling_impl(),
         ) as ci:
             image_id = await ci.resolve_ci_image()
+
             print(image_id)
 
 
