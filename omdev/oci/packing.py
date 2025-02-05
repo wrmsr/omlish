@@ -66,10 +66,27 @@ class OciLayerUnpacker(ExitStacked):
     def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
         root: dict = {}
 
+        def find_dir(dir_name: str) -> dict:  # noqa
+            if dir_name:
+                dir_parts = dir_name.split('/')
+            else:
+                dir_parts = []
+
+            cur = root  # noqa
+            for dir_part in dir_parts:
+                cur = cur[dir_part]  # noqa
+
+            return check.isinstance(cur, dict)
+
+        #
+
         for input_file in self._input_files:
             sorted_entries = self._build_input_file_sorted_entries(input_file)
 
-            opaques = set()
+            wh_names = set()
+            wh_opaques = set()
+
+            #
 
             for entry in sorted_entries:
                 info = entry.info
@@ -78,33 +95,16 @@ class OciLayerUnpacker(ExitStacked):
                 dir_name = os.path.dirname(name)
 
                 if base_name == '.wh..wh..opq':
-                    opaques.add(dir_name)
+                    wh_opaques.add(dir_name)
                     continue
-
-                if dir_name:
-                    dir_parts = dir_name.split('/')
-                else:
-                    dir_parts = []
-
-                cur = root
-                for dir_part in dir_parts:
-                    cur = cur[dir_part]
 
                 if base_name.startswith('.wh.'):
-                    rm_base_name = base_name[4:]
-                    rm = cur[rm_base_name]
-
-                    if isinstance(rm, dict):
-                        check.equal(set(rm), '')
-                        del cur[rm_base_name]
-
-                    elif isinstance(rm, self._Entry):
-                        del cur[rm_base_name]
-
-                    else:
-                        raise TypeError(rm)
-
+                    wh_base_name = os.path.basename(base_name[4:])
+                    wh_name = os.path.join(dir_name, wh_base_name)
+                    wh_names.add(wh_name)
                     continue
+
+                cur = find_dir(dir_name)
 
                 if info.type == tarfile.DIRTYPE:
                     try:
@@ -117,7 +117,28 @@ class OciLayerUnpacker(ExitStacked):
                 else:
                     cur[base_name] = entry
 
-            if opaques:
+            #
+
+            for wh_name in reversed(sorted(wh_names)):  # noqa
+                wh_dir_name = os.path.dirname(wh_name)
+                wh_base_name = os.path.basename(wh_name)
+
+                cur = find_dir(wh_dir_name)
+                rm = cur[wh_base_name]
+
+                if isinstance(rm, dict):
+                    # Whiteouts wipe out whole directory:
+                    # https://github.com/containerd/containerd/blob/59c8cf6ea5f4175ad512914dd5ce554942bf144f/pkg/archive/tar_test.go#L648
+                    # check.equal(set(rm), '')
+                    del cur[wh_base_name]
+
+                elif isinstance(rm, self._Entry):
+                    del cur[wh_base_name]
+
+                else:
+                    raise TypeError(rm)
+
+            if wh_opaques:
                 raise NotImplementedError
 
         #

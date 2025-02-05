@@ -16,7 +16,7 @@ class DockerBuildCaching(abc.ABC):
     def cached_build_docker_image(
             self,
             cache_key: str,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
     ) -> ta.Awaitable[str]:
         raise NotImplementedError
 

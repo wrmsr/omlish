@@ -9,7 +9,6 @@ from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.os.temp import temp_file_context
 
-from .cache import FileCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
 from .docker.buildcaching import DockerBuildCaching
@@ -58,15 +57,12 @@ class Ci(AsyncExitStacked):
             self,
             config: Config,
             *,
-            file_cache: ta.Optional[FileCache] = None,
-
             docker_build_caching: DockerBuildCaching,
             docker_image_pulling: DockerImagePulling,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._file_cache = file_cache
 
         self._docker_build_caching = docker_build_caching
         self._docker_image_pulling = docker_image_pulling
