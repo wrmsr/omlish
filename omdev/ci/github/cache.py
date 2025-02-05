@@ -38,7 +38,9 @@ class GithubFileCache(FileCache):
         self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(
-            check.not_none(config.dir),
+            DirectoryFileCache.Config(
+                dir=check.non_empty_str(config.dir),
+            ),
             version=self._version,
         )
 

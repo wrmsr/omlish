@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 import abc
+import dataclasses as dc
 import os.path
 import shutil
 import typing as ta
@@ -11,24 +12,30 @@ from omlish.lite.logs import log
 from .consts import CI_CACHE_VERSION
 
 
+CacheVersion = ta.NewType('CacheVersion', int)
+
+
 ##
 
 
-@abc.abstractmethod
 class FileCache(abc.ABC):
+    DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
+
     def __init__(
             self,
             *,
-            version: int = CI_CACHE_VERSION,
+            version: ta.Optional[CacheVersion] = None,
     ) -> None:
         super().__init__()
 
+        if version is None:
+            version = self.DEFAULT_CACHE_VERSION
         check.isinstance(version, int)
         check.arg(version >= 0)
-        self._version = version
+        self._version: CacheVersion = version
 
     @property
-    def version(self) -> int:
+    def version(self) -> CacheVersion:
         return self._version
 
     #
@@ -52,19 +59,28 @@ class FileCache(abc.ABC):
 
 
 class DirectoryFileCache(FileCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        dir: str
+
+        no_create: bool = False
+        no_purge: bool = False
+
     def __init__(
             self,
-            dir: str,  # noqa
+            config: Config,
             *,
-            no_create: bool = False,
-            no_purge: bool = False,
-            **kwargs: ta.Any,
+            version: ta.Optional[CacheVersion] = None,
     ) -> None:  # noqa
-        super().__init__(**kwargs)
+        super().__init__(
+            version=version,
+        )
 
-        self._dir = dir
-        self._no_create = no_create
-        self._no_purge = no_purge
+        self._config = config
+
+    @property
+    def dir(self) -> str:
+        return self._config.dir
 
     #
 
@@ -72,13 +88,13 @@ class DirectoryFileCache(FileCache):
 
     @cached_nullary
     def setup_dir(self) -> None:
-        version_file = os.path.join(self._dir, self.VERSION_FILE_NAME)
+        version_file = os.path.join(self.dir, self.VERSION_FILE_NAME)
 
-        if self._no_create:
-            check.state(os.path.isdir(self._dir))
+        if self._config.no_create:
+            check.state(os.path.isdir(self.dir))
 
-        elif not os.path.isdir(self._dir):
-            os.makedirs(self._dir)
+        elif not os.path.isdir(self.dir):
+            os.makedirs(self.dir)
             with open(version_file, 'w') as f:
                 f.write(str(self._version))
             return
@@ -89,20 +105,20 @@ class DirectoryFileCache(FileCache):
         if dir_version == self._version:
             return
 
-        if self._no_purge:
+        if self._config.no_purge:
             raise RuntimeError(f'{dir_version=} != {self._version=}')
 
-        dirs = [n for n in sorted(os.listdir(self._dir)) if os.path.isdir(os.path.join(self._dir, n))]
+        dirs = [n for n in sorted(os.listdir(self.dir)) if os.path.isdir(os.path.join(self.dir, n))]
         if dirs:
             raise RuntimeError(
-                f'Refusing to remove stale cache dir {self._dir!r} '
+                f'Refusing to remove stale cache dir {self.dir!r} '
                 f'due to present directories: {", ".join(dirs)}',
             )
 
-        for n in sorted(os.listdir(self._dir)):
+        for n in sorted(os.listdir(self.dir)):
             if n.startswith('.'):
                 continue
-            fp = os.path.join(self._dir, n)
+            fp = os.path.join(self.dir, n)
             check.state(os.path.isfile(fp))
             log.debug('Purging stale cache file: %s', fp)
             os.unlink(fp)
@@ -119,7 +135,7 @@ class DirectoryFileCache(FileCache):
             key: str,
     ) -> str:
         self.setup_dir()
-        return os.path.join(self._dir, key)
+        return os.path.join(self.dir, key)
 
     def format_incomplete_file(self, f: str) -> str:
         return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')

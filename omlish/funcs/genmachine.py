@@ -49,7 +49,7 @@ class GenMachine(ta.Generic[I, O]):
     @property
     def state(self) -> str | None:
         if self._gen is not None:
-            return self._gen.gi_code.co_qualname
+            return self._gen.gi_code.co_qualname  # type: ignore[attr-defined]
         return None
 
     #

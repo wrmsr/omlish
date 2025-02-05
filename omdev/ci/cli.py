@@ -21,16 +21,15 @@ from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.check import check
+from omlish.lite.inject import inj
 from omlish.lite.logs import log
 from omlish.logs.standard import configure_standard_logging
 
-from .cache import DirectoryFileCache
-from .cache import FileCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
 from .github.bootstrap import is_in_github_actions
-from .github.cache import GithubFileCache
 from .github.cli import GithubCli
+from .inject import bind_ci
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
 
@@ -165,14 +164,9 @@ class CiCli(ArgparseCli):
 
         #
 
-        file_cache: ta.Optional[FileCache] = None
         if cache_dir is not None:
             cache_dir = os.path.abspath(cache_dir)
             log.debug('Using cache dir %s', cache_dir)
-            if github:
-                file_cache = GithubFileCache(cache_dir)
-            else:
-                file_cache = DirectoryFileCache(cache_dir)
 
         #
 
@@ -188,28 +182,35 @@ class CiCli(ArgparseCli):
 
         #
 
-        async with Ci(
-                Ci.Config(
-                    project_dir=project_dir,
+        config = Ci.Config(
+            project_dir=project_dir,
 
-                    docker_file=docker_file,
+            docker_file=docker_file,
 
-                    compose_file=compose_file,
-                    service=self.args.service,
+            compose_file=compose_file,
+            service=self.args.service,
 
-                    requirements_txts=requirements_txts,
+            requirements_txts=requirements_txts,
 
-                    cmd=ShellCmd(cmd),
+            cmd=ShellCmd(cmd),
 
-                    always_pull=self.args.always_pull,
-                    always_build=self.args.always_build,
+            always_pull=self.args.always_pull,
+            always_build=self.args.always_build,
 
-                    no_dependencies=self.args.no_dependencies,
+            no_dependencies=self.args.no_dependencies,
 
-                    run_options=run_options,
-                ),
-                file_cache=file_cache,
-        ) as ci:
+            run_options=run_options,
+        )
+
+        injector = inj.create_injector(bind_ci(
+            config=config,
+
+            github=github,
+
+            cache_dir=cache_dir,
+        ))
+
+        async with injector[Ci] as ci:
             await ci.run()
 
 

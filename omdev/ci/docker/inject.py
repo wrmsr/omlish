@@ -13,17 +13,16 @@ from .imagepulling import DockerImagePulling
 from .imagepulling import DockerImagePullingImpl
 
 
-
 ##
 
 
 def bind_docker(
     *,
-    build_caching_config: DockerBuildCachingImpl.Config = DockerBuildCachingImpl.Config(),
+    build_caching_config: DockerBuildCachingImpl.Config,
     image_pulling_config: DockerImagePullingImpl.Config = DockerImagePullingImpl.Config(),
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bin(build_caching_config),
+        inj.bind(build_caching_config),
         inj.bind(DockerBuildCachingImpl, singleton=True),
         inj.bind(DockerBuildCaching, to_key=DockerBuildCachingImpl),
 

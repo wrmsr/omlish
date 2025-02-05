@@ -73,7 +73,7 @@ class SuffixMultiplier:
         for k in d:
             if self._keysz is None:
                 self._keysz = len(k)
-            elif self._keysz != len(k):  # type: ignore
+            elif self._keysz != len(k):
                 raise ValueError(k)
 
     def __call__(self, v: ta.Union[str, int]) -> int:

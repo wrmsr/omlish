@@ -170,7 +170,7 @@ class Binding(ta.Generic[T]):
         while lag_frame is not None:
             for cur_depth in range(_MAX_HOIST_DEPTH + 1):
                 if lag_frame is None:
-                    break  # type: ignore
+                    break
                 try:
                     lag_hoist = _HOISTED_CODE_DEPTH[lag_frame.f_code]
                 except KeyError:
