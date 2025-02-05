@@ -103,7 +103,7 @@ class Project(ProjectBase):
 
             'sqlean.py ~= 3.45',
 
-            'duckdb ~= 1.1',
+            'duckdb ~= 1.2',
         ],
 
         'testing': [

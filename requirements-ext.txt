@@ -114,7 +114,7 @@ fire==0.6.0
 ## BERKELEYDB_DIR=$(brew --prefix "berkeley-db@4") .venv/bin/pip install bsddb3
 
 bs4==0.0.2
-beautifulsoup4==4.13.2
+beautifulsoup4==4.13.3
 
 # gensim==4.3.2
 
@@ -179,10 +179,10 @@ mitogen==0.3.22
 
 ##
 
-openai==1.61.0
+openai==1.61.1
 
 trl==0.14.0
-tf-keras==2.17.0
+tf-keras==2.17.0  # @omlish-venv !13
 
 polars==1.21.0
 
@@ -195,8 +195,8 @@ customtkinter==5.2.2
 ##
 
 langchain==0.3.17
-langchain-anthropic==0.3.5
-langchain-chroma==0.2.1
+langchain-anthropic==0.3.6
+langchain-chroma==0.2.1  # @omlish-venv !13
 langchain-community==0.3.16
 langchain-core==0.3.33
 langchain-elasticsearch==0.3.2
@@ -204,7 +204,7 @@ langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.6
 langchain-openai==0.3.3
-langchain-qdrant==0.2.0
+langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.5
 
 # langchain-nomic==0.2.0
@@ -214,13 +214,13 @@ langchainhub==0.1.21
 
 langgraph==0.2.69
 
-langsmith==0.3.5
+langsmith==0.3.6
 
 tavily-python==0.5.0
 
 gpt4all==2.8.2
 
-chromadb==0.5.20
+chromadb==0.6.3
 
 ##
 
@@ -236,7 +236,7 @@ faiss-cpu==1.10.0
 
 tantivy==0.22
 
-neo4j==5.27.0
+neo4j==5.28.0
 
 pypdf==5.2.0
 
@@ -283,7 +283,7 @@ dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
 trafilatura==2.0.0
-qdrant-client==1.13.2
+qdrant-client==1.13.2  # @omlish-venv !13
 
 flask==3.1.0
 
