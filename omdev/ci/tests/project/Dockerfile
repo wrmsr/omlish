@@ -1,4 +1,4 @@
-FROM python:3.12.8-bookworm AS build
+FROM python:3.12.8-bookworm
 
 RUN ( \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
@@ -28,5 +28,3 @@ RUN ( \
         /var/lib/{apt,cache,dpkg,log} \
 \
 )
-
-FROM build

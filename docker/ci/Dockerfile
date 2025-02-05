@@ -15,6 +15,7 @@ RUN ( \
         cmake \
         curl \
         gdb \
+        iputils-ping \
         libdb-dev \
         llvm \
 \
