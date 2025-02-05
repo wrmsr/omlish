@@ -65,7 +65,7 @@ class OciDataTarWriter(ExitStacked):
             return self._f.tell()
 
     _cw: _FileWrapper
-    _cf: gzip.GzipFile
+    _cf: ta.BinaryIO
 
     _tw: _FileWrapper
     _tf: tarfile.TarFile
@@ -129,7 +129,7 @@ class OciDataTarWriter(ExitStacked):
         self._tf.addfile(ti, f)
 
 
-def write_oci_data_tar_gz_file(
+def write_oci_data_tar_file(
         f: ta.BinaryIO,
         data: ta.Mapping[str, OciDataRef],
 ) -> WrittenOciDataTarFileInfo:

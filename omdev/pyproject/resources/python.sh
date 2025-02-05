@@ -2,7 +2,7 @@
 set -e
 
 if [ -z "${VENV}" ] ; then
-    if [ $(uname) = "Linux" ] && (cat /proc/mounts | grep -E '^overlay / .*/(docker|desktop-containerd)/' > /dev/null) ; then
+    if [ $(uname) = "Linux" ] && grep -E '^overlay / .*/(docker|desktop-containerd)/' /proc/mounts > /dev/null ; then
         VENV=docker
     else
         VENV=default
