@@ -19,6 +19,8 @@ class DataServerTarget(abc.ABC):  # noqa
     def of(
             cls,
             obj: ta.Union[
+                'DataServerTarget',
+                bytes,
                 None,
             ] = None,
             *,
@@ -28,7 +30,36 @@ class DataServerTarget(abc.ABC):  # noqa
 
             **kwargs: ta.Any,
     ) -> 'DataServerTarget':
-        raise NotImplementedError
+        if isinstance(obj, DataServerTarget):
+            check.none(file_path)
+            check.none(url)
+            check.empty(kwargs)
+            return obj
+
+        elif isinstance(obj, bytes):
+            return BytesDataServerTarget(
+                data=obj,
+                **kwargs,
+            )
+
+        elif file_path is not None:
+            check.none(obj)
+            check.none(url)
+            return FileDataServerTarget(
+                file_path=file_path,
+                **kwargs,
+            )
+
+        elif url is not None:
+            check.none(obj)
+            check.none(file_path)
+            return UrlDataServerTarget(
+                url=url,
+                **kwargs,
+            )
+
+        else:
+            raise TypeError('No target type provided')
 
 
 @dc.dataclass(frozen=True)

@@ -15,7 +15,6 @@ from .targets import FileDataServerTarget
 from .targets import UrlDataServerTarget
 
 
-
 DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
 
 

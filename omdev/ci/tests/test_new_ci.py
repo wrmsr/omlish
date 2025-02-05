@@ -11,9 +11,9 @@ from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 
-from ...dataserver import BytesDataServerTarget
-from ...dataserver import DataServer
-from ...dataserver import DataServerTarget
+from ...dataserver.routes import DataServerRoute
+from ...dataserver.targets import BytesDataServerTarget
+from ...dataserver.targets import DataServerTarget
 from ...oci.building import BuiltOciImageIndexRepository
 from ...oci.building import OciRepositoryBuilder
 from ...oci.building import build_oci_index_repository
@@ -34,10 +34,10 @@ from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
 
 
-def build_oci_repository_data_server_targets(
+def build_oci_repository_data_server_routes(
         repo_name: str,
         built_repo: BuiltOciImageIndexRepository,
-) -> ta.List[DataServerTarget]:
+) -> ta.List[DataServerRoute]:
     base_url_path = f'/v2/{repo_name}'
 
     repo_contents: dict[str, OciRepositoryBuilder.Blob] = {}
@@ -75,7 +75,7 @@ def build_oci_repository_data_server_targets(
         if (dst := build_dst(blob)) is not None
     ]
 
-    return DataServer.build_routes(*rts)
+    return DataServerRoute.of_(*rts)
 
 
 @dc.dataclass()
