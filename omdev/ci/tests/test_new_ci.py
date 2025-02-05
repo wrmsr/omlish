@@ -11,20 +11,71 @@ from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 
+from ...dataserver import BytesDataServerTarget
+from ...dataserver import DataServer
+from ...dataserver import DataServerTarget
+from ...oci.building import BuiltOciImageIndexRepository
+from ...oci.building import OciRepositoryBuilder
 from ...oci.building import build_oci_index_repository
 from ...oci.compression import OciCompression
 from ...oci.data import OciImageIndex
 from ...oci.data import OciImageLayer
 from ...oci.data import OciImageManifest
+from ...oci.datarefs import BytesOciDataRef
 from ...oci.datarefs import FileOciDataRef
 from ...oci.datarefs import open_oci_data_ref
 from ...oci.loading import read_oci_repository_root_index
+from ...oci.media import OCI_MANIFEST_MEDIA_TYPES
 from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
+
+
+def build_oci_repository_data_server_routes(
+        repo_name: str,
+        built_repo: BuiltOciImageIndexRepository,
+) -> ta.List[DataServer.Route]:
+    base_url_path = f'/v2/{repo_name}'
+
+    repo_contents: dict[str, OciRepositoryBuilder.Blob] = {}
+
+    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
+
+    for blob in built_repo.blobs.values():
+        repo_contents['/'.join([
+            base_url_path,
+            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
+            blob.digest,
+        ])] = blob
+
+    #
+
+    def build_dst(blob: OciRepositoryBuilder.Blob) -> DataServerTarget | None:
+        if isinstance(blob.data, BytesOciDataRef):
+            return BytesDataServerTarget(
+                data=blob.data.data,
+                content_type=check.non_empty_str(blob.media_type),
+            )
+
+        else:
+            with open_oci_data_ref(blob.data) as f:
+                data = f.read()
+
+            return BytesDataServerTarget(
+                data=data,
+                content_type=check.non_empty_str(blob.media_type),
+            )
+
+    rts = [
+        (p, dst)
+        for p, blob in repo_contents.items()
+        if (dst := build_dst(blob)) is not None
+    ]
+
+    return DataServer.build_routes(*rts)
 
 
 @dc.dataclass()
@@ -44,6 +95,8 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
         temp_dir = os.path.join(self.ci_harness.temp_dir(), 'new_docker')
         os.mkdir(temp_dir)
+
+        print(temp_dir)
 
         #
 
@@ -92,7 +145,8 @@ class NewDockerBuildCaching(DockerBuildCaching):
         #
 
         unpacked_file_path = os.path.join(temp_dir, 'unpacked.tar')
-        print()
+
+        print(unpacked_file_path)
 
         with OciLayerUnpacker(
                 input_files,
@@ -108,6 +162,8 @@ class NewDockerBuildCaching(DockerBuildCaching):
             os.path.join(temp_dir, f'packed-{i}.tar')
             for i in range(num_output_files)
         ]
+
+        print('\n'.join(output_file_paths))
 
         #
 
@@ -140,7 +196,17 @@ class NewDockerBuildCaching(DockerBuildCaching):
         built_repo = build_oci_index_repository(image_index)
 
         print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
-        print()
+
+        #
+
+        data_server_routes = build_oci_repository_data_server_routes(
+            cache_key,
+            built_repo,
+        )
+
+        print(data_server_routes)
+
+        #
 
         raise NotImplementedError
 
