@@ -5353,18 +5353,34 @@ class ObjMarshalerManager:
                 return reg
 
             if abc.ABC in ty.__bases__:
-                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]  # type: ignore
-                if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
-                    ins = {ity: snake_case(ity.__qualname__[:-len(ty.__name__)]) for ity in impls}
-                else:
-                    ins = {ity: ity.__qualname__ for ity in impls}
+                tn = ty.__name__
+                impls: ta.List[ta.Tuple[type, str]] = [  # type: ignore[var-annotated]
+                    (ity, ity.__name__)
+                    for ity in deep_subclasses(ty)
+                    if abc.ABC not in ity.__bases__
+                ]
+
+                if all(itn.endswith(tn) for _, itn in impls):
+                    impls = [
+                        (ity, snake_case(itn[:-len(tn)]))
+                        for ity, itn in impls
+                    ]
+
+                dupe_tns = sorted(
+                    dn
+                    for dn, dc in collections.Counter(itn for _, itn in impls).items()
+                    if dc > 1
+                )
+                if dupe_tns:
+                    raise KeyError(f'Duplicate impl names for {ty}: {dupe_tns}')
+
                 return PolymorphicObjMarshaler.of([
                     PolymorphicObjMarshaler.Impl(
                         ity,
                         itn,
                         rec(ity),
                     )
-                    for ity, itn in ins.items()
+                    for ity, itn in impls
                 ])
 
             if issubclass(ty, enum.Enum):

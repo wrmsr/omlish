@@ -55,6 +55,9 @@ class NewCiManifest:
 
         target: Target
 
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.paths, str)
+
     routes: ta.Sequence[Route]
 
 

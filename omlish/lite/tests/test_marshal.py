@@ -254,3 +254,72 @@ FooLiteral = ta.Literal['a', 'b', 'c']
 class TestMarshalLiterals(AbstractTestMarshal):
     def test_literal(self):
         self._assert_marshal(('b', FooLiteral))
+
+
+##
+
+
+class TestInnerClassPoly(AbstractTestMarshal):
+    @dc.dataclass(frozen=True)
+    class NewCiManifest:
+        @dc.dataclass(frozen=True)
+        class Route:
+            paths: ta.Sequence[str]
+
+            content_type: str
+            content_length: int
+
+            @dc.dataclass(frozen=True)
+            class Target(abc.ABC):  # noqa
+                pass
+
+            @dc.dataclass(frozen=True)
+            class BytesTarget(Target):
+                data: bytes
+
+            @dc.dataclass(frozen=True)
+            class CacheKeyTarget(Target):
+                key: str
+
+            target: Target
+
+        routes: ta.Sequence[Route]
+
+    def test_inner_class_ply(self):
+        manifest = self.NewCiManifest(
+            routes=[
+                self.NewCiManifest.Route(
+                    paths=['a', 'b'],
+                    content_type='text/plain',
+                    content_length=4,
+                    target=self.NewCiManifest.Route.BytesTarget(b'abcd'),
+                ),
+                self.NewCiManifest.Route(
+                    paths=['c', 'd'],
+                    content_type='text/plain',
+                    content_length=4,
+                    target=self.NewCiManifest.Route.CacheKeyTarget('efgh'),
+                ),
+            ],
+        )
+
+        m = msh.marshal_obj(manifest)
+
+        x = {
+            'routes': [
+                {
+                    'content_length': 4,
+                    'content_type': 'text/plain',
+                    'paths': ['a', 'b'],
+                    'target': {'bytes': {'data': 'YWJjZA=='}},
+                },
+                {
+                    'content_length': 4,
+                    'content_type': 'text/plain',
+                    'paths': ['c', 'd'],
+                    'target': {'cache_key': {'key': 'efgh'}},
+                },
+            ],
+        }
+
+        self.assertEqual(m, x)
