@@ -29,8 +29,6 @@ from ...oci.loading import read_oci_repository_root_index
 from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
-from ..ci import Ci
-from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
 from .serving import serve_for_docker
 
@@ -100,169 +98,184 @@ def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> N
     )
 
 
-@dc.dataclass()
-class NewDockerBuildCaching(DockerBuildCaching):
-    ci_harness: CiHarness
+async def run_new_ci(
+        *,
+        image_id: str,
+        cache_key: str,
+        temp_dir: str,
+) -> None:
+    new_temp_dir = os.path.join(temp_dir, 'new')
+    os.mkdir(new_temp_dir)
 
-    async def cached_build_docker_image(
-            self,
-            cache_key: str,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
-    ) -> str:
-        image_tag = f'{self.ci_harness.ci_config().service}:{cache_key}'
-        image_id = await build_and_tag(image_tag)
-        print(image_id)
+    print(new_temp_dir)
 
-        #
+    #
 
-        temp_dir = os.path.join(self.ci_harness.temp_dir(), 'new_docker')
-        os.mkdir(temp_dir)
+    built_image_dir = os.path.join(new_temp_dir, 'built-image')
+    os.mkdir(built_image_dir)
 
-        print(temp_dir)
+    await asyncio_subprocesses.check_call(
+        ' | '.join([
+            f'docker save {shlex.quote(image_id)}',
+            f'tar x -C {shlex.quote(built_image_dir)}',
+        ]),
+        shell=True,
+    )
 
-        #
+    #
 
-        built_image_dir = os.path.join(temp_dir, 'built-image')
-        os.mkdir(built_image_dir)
+    image_index = read_oci_repository_root_index(DirectoryOciRepository(built_image_dir))
 
-        await asyncio_subprocesses.check_call(
-            ' | '.join([
-                f'docker save {shlex.quote(image_id)}',
-                f'tar x -C {shlex.quote(built_image_dir)}',
-            ]),
-            shell=True,
+    while True:
+        child_manifest = check.single(image_index.manifests)
+        if isinstance(child_manifest, OciImageManifest):
+            image = child_manifest
+            break
+        image_index = check.isinstance(child_manifest, OciImageIndex)
+
+    #
+
+    image.config.history = None
+
+    #
+
+    input_files = []
+
+    for i, layer in enumerate(image.layers):
+        if isinstance(layer.data, FileOciDataRef):
+            input_file_path = layer.data.path
+
+        else:
+            input_file_path = os.path.join(new_temp_dir, f'built-layer-{i}.tar')
+            with open(input_file_path, 'wb') as input_file:  # noqa
+                with open_oci_data_ref(layer.data) as layer_file:
+                    shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
+
+        input_files.append(input_file_path)
+
+    #
+
+    unpacked_file_path = os.path.join(new_temp_dir, 'unpacked.tar')
+
+    print(unpacked_file_path)
+
+    with OciLayerUnpacker(
+            input_files,
+            unpacked_file_path,
+    ) as lu:
+        lu.write()
+
+    #
+
+    num_output_files = 3  # GH actions have this set to 3, the default
+
+    output_file_paths = [
+        os.path.join(new_temp_dir, f'packed-{i}.tar')
+        for i in range(num_output_files)
+    ]
+
+    print('\n'.join(output_file_paths))
+
+    #
+
+    compression: ta.Optional[OciCompression] = OciCompression.ZSTD
+
+    with OciLayerPacker(
+            unpacked_file_path,
+            output_file_paths,
+            compression=compression,
+    ) as lp:
+        written = lp.write()
+
+    #
+
+    # FIXME: use prebuilt sha256
+    image.layers = [
+        OciImageLayer(
+            kind=OciImageLayer.Kind.from_compression(compression),
+            data=FileOciDataRef(output_file),
         )
+        for output_file, output_file_info in written.items()
+    ]
+    image.config.rootfs.diff_ids = [
+        f'sha256:{output_file_info.tar_sha256}'
+        for output_file_info in written.values()
+    ]
 
-        #
+    #
 
-        image_index = read_oci_repository_root_index(DirectoryOciRepository(built_image_dir))
+    built_repo = build_oci_index_repository(image_index)
 
-        while True:
-            child_manifest = check.single(image_index.manifests)
-            if isinstance(child_manifest, OciImageManifest):
-                image = child_manifest
-                break
-            image_index = check.isinstance(child_manifest, OciImageIndex)
+    print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
 
-        #
+    #
 
-        image.config.history = None
+    data_server_routes = build_oci_repository_data_server_routes(
+        cache_key,
+        built_repo,
+    )
 
-        #
+    print(json_dumps_pretty(marshal_obj(data_server_routes, ta.List[DataServerRoute])))
 
-        input_files = []
+    #
 
-        for i, layer in enumerate(image.layers):
-            if isinstance(layer.data, FileOciDataRef):
-                input_file_path = layer.data.path
+    new_ci_manifest = build_new_ci_manifest(data_server_routes)
 
-            else:
-                input_file_path = os.path.join(temp_dir, f'built-layer-{i}.tar')
-                with open(input_file_path, 'wb') as input_file:  # noqa
-                    with open_oci_data_ref(layer.data) as layer_file:
-                        shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
+    print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
 
-            input_files.append(input_file_path)
+    #
 
-        #
+    data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
 
-        unpacked_file_path = os.path.join(temp_dir, 'unpacked.tar')
+    #
 
-        print(unpacked_file_path)
+    port = 5021
 
-        with OciLayerUnpacker(
-                input_files,
-                unpacked_file_path,
-        ) as lu:
-            lu.write()
+    image_url = f'localhost:{port}/{cache_key}'
 
-        #
+    print(f'docker run --rm --pull always {image_url} uname -a')
 
-        num_output_files = 3  # GH actions have this set to 3, the default
+    serve_for_docker(
+        port,
+        DataServerHttpHandler(data_server),
+    )
 
-        output_file_paths = [
-            os.path.join(temp_dir, f'packed-{i}.tar')
-            for i in range(num_output_files)
-        ]
 
-        print('\n'.join(output_file_paths))
-
-        #
-
-        compression: ta.Optional[OciCompression] = OciCompression.ZSTD
-
-        with OciLayerPacker(
-                unpacked_file_path,
-                output_file_paths,
-                compression=compression,
-        ) as lp:
-            written = lp.write()
-
-        #
-
-        # FIXME: use prebuilt sha256
-        image.layers = [
-            OciImageLayer(
-                kind=OciImageLayer.Kind.from_compression(compression),
-                data=FileOciDataRef(output_file),
-            )
-            for output_file, output_file_info in written.items()
-        ]
-        image.config.rootfs.diff_ids = [
-            f'sha256:{output_file_info.tar_sha256}'
-            for output_file_info in written.values()
-        ]
-
-        #
-
-        built_repo = build_oci_index_repository(image_index)
-
-        print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
-
-        #
-
-        data_server_routes = build_oci_repository_data_server_routes(
-            cache_key,
-            built_repo,
-        )
-
-        print(json_dumps_pretty(marshal_obj(data_server_routes, ta.List[DataServerRoute])))
-
-        #
-
-        new_ci_manifest = build_new_ci_manifest(data_server_routes)
-
-        print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
-
-        #
-
-        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
-
-        #
-
-        port = 5021
-
-        print(f'localhost:{port}/{cache_key}')
-
-        serve_for_docker(
-            port,
-            DataServerHttpHandler(data_server),
-        )
-
-        raise NotImplementedError
+# @dc.dataclass()
+# class NewDockerBuildCaching(DockerBuildCaching):
+#     ci_harness: CiHarness
+#
+#     async def cached_build_docker_image(
+#             self,
+#             cache_key: str,
+#             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+#     ) -> str:
+#         image_tag = f'{self.ci_harness.ci_config().service}:{cache_key}'
+#         image_id = await build_and_tag(image_tag)
+#         print(image_id)
+#         raise NotImplementedError
 
 
 async def a_main() -> None:
     async with CiHarness() as ci_harness:
-        async with Ci(
-                config=ci_harness.ci_config(),
+        # async with Ci(
+        #         config=ci_harness.ci_config(),
+        #
+        #         docker_build_caching=NewDockerBuildCaching(ci_harness),
+        #         docker_image_pulling=ci_harness.docker_image_pulling_impl(),
+        # ) as ci:
+        #     image_id = await ci.resolve_ci_image()
+        #
+        #     print(image_id)
 
-                docker_build_caching=NewDockerBuildCaching(ci_harness),
-                docker_image_pulling=ci_harness.docker_image_pulling_impl(),
-        ) as ci:
+        async with ci_harness.make_ci() as ci:
             image_id = await ci.resolve_ci_image()
 
-            print(image_id)
+            await run_new_ci(
+                image_id=image_id,
+                cache_key=ci.ci_image_cache_key(),
+                temp_dir=ci_harness.temp_dir(),
+            )
 
 
 if __name__ == '__main__':

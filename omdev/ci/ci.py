@@ -73,6 +73,10 @@ class Ci(AsyncExitStacked):
     def docker_file_hash(self) -> str:
         return build_docker_file_hash(self._config.docker_file)[:self.KEY_HASH_LEN]
 
+    @cached_nullary
+    def ci_base_image_cache_key(self) -> str:
+        return f'ci-base-{self.docker_file_hash()}'
+
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
             return await build_docker_image(
@@ -81,9 +85,10 @@ class Ci(AsyncExitStacked):
                 cwd=self._config.project_dir,
             )
 
-        cache_key = f'ci-base-{self.docker_file_hash()}'
-
-        return await self._docker_build_caching.cached_build_docker_image(cache_key, build_and_tag)
+        return await self._docker_build_caching.cached_build_docker_image(
+            self.ci_base_image_cache_key(),
+            build_and_tag,
+        )
 
     @async_cached_nullary
     async def resolve_ci_base_image(self) -> str:
@@ -104,6 +109,10 @@ class Ci(AsyncExitStacked):
     @cached_nullary
     def requirements_hash(self) -> str:
         return build_requirements_hash(self.requirements_txts())[:self.KEY_HASH_LEN]
+
+    @cached_nullary
+    def ci_image_cache_key(self) -> str:
+        return f'ci-{self.docker_file_hash()}-{self.requirements_hash()}'
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -145,9 +154,10 @@ class Ci(AsyncExitStacked):
                     cwd=self._config.project_dir,
                 )
 
-        cache_key = f'ci-{self.docker_file_hash()}-{self.requirements_hash()}'
-
-        return await self._docker_build_caching.cached_build_docker_image(cache_key, build_and_tag)
+        return await self._docker_build_caching.cached_build_docker_image(
+            self.ci_image_cache_key(),
+            build_and_tag,
+        )
 
     @async_cached_nullary
     async def resolve_ci_image(self) -> str:
