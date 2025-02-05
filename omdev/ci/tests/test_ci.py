@@ -21,10 +21,10 @@ class TestCi(unittest.IsolatedAsyncioTestCase):
             shutil.copytree(self_project_dir, temp_project_dir)
 
             docker_file = os.path.join(temp_project_dir, 'Dockerfile')
-            with open(docker_file) as f:
+            with open(docker_file) as f:  # noqa
                 docker_file_src = f.read()
             docker_file_src += f'\nRUN date > /.timestamp\n'
-            with open(docker_file, 'w') as f:
+            with open(docker_file, 'w') as f:  # noqa
                 f.write(docker_file_src)
 
             async with Ci(Ci.Config(
