@@ -1,6 +1,7 @@
 # ruff: noqa: PT009
 import contextlib
 import os.path
+import shutil
 import unittest
 
 from omlish.os.temp import temp_dir_context
@@ -13,15 +14,25 @@ class TestCi(unittest.IsolatedAsyncioTestCase):
     async def test_ci(self):
         async with contextlib.AsyncExitStack() as es:
             self_dir = os.path.dirname(__file__)
-            project_dir = os.path.join(self_dir, 'project')
+            self_project_dir = os.path.join(self_dir, 'project')
+
             temp_dir: str = es.enter_context(temp_dir_context())  # noqa
+            temp_project_dir = os.path.join(temp_dir, 'project')
+            shutil.copytree(self_project_dir, temp_project_dir)
+
+            docker_file = os.path.join(temp_project_dir, 'Dockerfile')
+            with open(docker_file) as f:
+                docker_file_src = f.read()
+            docker_file_src += f'\nRUN date > /.timestamp\n'
+            with open(docker_file, 'w') as f:
+                f.write(docker_file_src)
 
             async with Ci(Ci.Config(
-                    project_dir=project_dir,
+                    project_dir=temp_project_dir,
 
-                    docker_file=os.path.join(project_dir, 'Dockerfile'),
+                    docker_file=os.path.join(temp_project_dir, 'Dockerfile'),
 
-                    compose_file=os.path.join(project_dir, 'compose.yml'),
+                    compose_file=os.path.join(temp_project_dir, 'compose.yml'),
                     service='omlish-ci',
 
                     cmd=ShellCmd('true'),
