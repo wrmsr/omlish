@@ -1,11 +1,11 @@
 # ruff: noqa: PT009 UP006 UP007
 import abc
+import asyncio
 import dataclasses as dc
 import os.path
 import shlex
 import shutil
 import typing as ta
-import unittest
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
@@ -77,7 +77,8 @@ def translate_data_server_routes(data_server_routes: ta.Iterable[DataServerRoute
         elif isinstance(data_server_target, FileDataServerTarget):
             file_path = check.non_empty_str(data_server_target.file_path)
             content_length = os.path.getsize(file_path)
-            target = NewCiManifest.Route.CacheKeyTarget(f'cache-key:{os.path.basename(file_path)}')
+            # FIXME:
+            target = NewCiManifest.Route.CacheKeyTarget(file_path)
 
         else:
             raise TypeError(data_server_target)
@@ -235,17 +236,17 @@ class NewDockerBuildCaching(DockerBuildCaching):
         raise NotImplementedError
 
 
-class TestNewCi(unittest.IsolatedAsyncioTestCase):
-    async def test_new_ci(self):
-        if not shutil.which('docker'):
-            self.skipTest('no docker')
-
-        async with CiHarness() as ci_harness:
-            async with Ci(
+async def a_main() -> None:
+    async with CiHarness() as ci_harness:
+        async with Ci(
                 config=ci_harness.ci_config(),
 
                 docker_build_caching=NewDockerBuildCaching(ci_harness),
                 docker_image_pulling=ci_harness.docker_image_pulling_impl(),
-            ) as ci:
-                image_id = await ci.resolve_ci_image()
-                print(image_id)
+        ) as ci:
+            image_id = await ci.resolve_ci_image()
+            print(image_id)
+
+
+if __name__ == '__main__':
+    asyncio.run(a_main())
