@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import os.path
 import typing as ta
 
@@ -15,16 +16,20 @@ from .client import GithubCacheServiceV1Client
 
 
 class GithubFileCache(FileCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        dir: str
+
     def __init__(
             self,
-            dir: str,  # noqa
+            config: Config,
             *,
             client: ta.Optional[GithubCacheClient] = None,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self._dir = check.not_none(dir)
+        self._config = config
 
         if client is None:
             client = GithubCacheServiceV1Client(
@@ -33,7 +38,7 @@ class GithubFileCache(FileCache):
         self._client: GithubCacheClient = client
 
         self._local = DirectoryFileCache(
-            self._dir,
+            check.not_none(config.dir),
             version=self._version,
         )
 

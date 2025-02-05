@@ -1,14 +1,12 @@
 services:
-
   omlish-ci:
     build: '.'
     image: 'wrmsr/omlish-ci:latest'
     platform: 'linux/x86_64'
     restart: 'no'
-    depends_on: &ci-deps
+    depends_on:
       - 'omlish-postgres'
       - 'omlish-s3'
-    links: *ci-deps
 
   omlish-postgres:
     image: 'postgres:17.2'

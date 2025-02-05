@@ -11,7 +11,7 @@ from .cmds import tag_docker_image
 ##
 
 
-class DockerImageBuildCaching(abc.ABC):
+class DockerBuildCaching(abc.ABC):
     @abc.abstractmethod
     def cached_build_docker_image(
             self,
@@ -21,7 +21,7 @@ class DockerImageBuildCaching(abc.ABC):
         raise NotImplementedError
 
 
-class DockerImageBuildCachingImpl(DockerImageBuildCaching):
+class DockerBuildCachingImpl(DockerBuildCaching):
     @dc.dataclass(frozen=True)
     class Config:
         service: str

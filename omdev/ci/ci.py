@@ -12,8 +12,8 @@ from omlish.os.temp import temp_file_context
 from .cache import FileCache
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
-from .docker.buildcaching import DockerImageBuildCaching
-from .docker.buildcaching import DockerImageBuildCachingImpl
+from .docker.buildcaching import DockerBuildCaching
+from .docker.buildcaching import DockerBuildCachingImpl
 from .docker.cache import DockerCache
 from .docker.cache import DockerCacheImpl
 from .docker.cmds import build_docker_image
@@ -82,8 +82,8 @@ class Ci(AsyncExitStacked):
             docker_cache=self._docker_cache,
         )
 
-        self._docker_image_build_caching: DockerImageBuildCaching = DockerImageBuildCachingImpl(
-            config=DockerImageBuildCachingImpl.Config(
+        self._docker_build_caching: DockerBuildCaching = DockerBuildCachingImpl(
+            config=DockerBuildCachingImpl.Config(
                 service=self._config.service,
 
                 always_build=self._config.always_build,
@@ -108,7 +108,7 @@ class Ci(AsyncExitStacked):
 
         cache_key = f'ci-base-{self.docker_file_hash()}'
 
-        return await self._docker_image_build_caching.cached_build_docker_image(cache_key, build_and_tag)
+        return await self._docker_build_caching.cached_build_docker_image(cache_key, build_and_tag)
 
     @async_cached_nullary
     async def resolve_ci_base_image(self) -> str:
@@ -172,7 +172,7 @@ class Ci(AsyncExitStacked):
 
         cache_key = f'ci-{self.docker_file_hash()}-{self.requirements_hash()}'
 
-        return await self._docker_image_build_caching.cached_build_docker_image(cache_key, build_and_tag)
+        return await self._docker_build_caching.cached_build_docker_image(cache_key, build_and_tag)
 
     @async_cached_nullary
     async def resolve_ci_image(self) -> str:
