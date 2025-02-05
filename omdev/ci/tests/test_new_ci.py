@@ -12,7 +12,6 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 
 from ...dataserver.routes import DataServerRoute
-from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...oci.building import BuiltOciImageIndexRepository
 from ...oci.building import OciRepositoryBuilder
@@ -40,7 +39,7 @@ def build_oci_repository_data_server_routes(
 ) -> ta.List[DataServerRoute]:
     base_url_path = f'/v2/{repo_name}'
 
-    repo_contents: dict[str, OciRepositoryBuilder.Blob] = {}
+    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
 
     repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
 
@@ -53,21 +52,22 @@ def build_oci_repository_data_server_routes(
 
     #
 
-    def build_dst(blob: OciRepositoryBuilder.Blob) -> DataServerTarget | None:
+    def build_dst(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
+        kw: dict = dict(
+            content_type=check.non_empty_str(blob.media_type),
+        )
+
         if isinstance(blob.data, BytesOciDataRef):
-            return BytesDataServerTarget(
-                data=blob.data.data,
-                content_type=check.non_empty_str(blob.media_type),
-            )
+            return DataServerTarget.of(blob.data.data, **kw)
+
+        elif isinstance(blob.data, FileOciDataRef):
+            return DataServerTarget.of(file_path=blob.data.path, **kw)
 
         else:
             with open_oci_data_ref(blob.data) as f:
                 data = f.read()
 
-            return BytesDataServerTarget(
-                data=data,
-                content_type=check.non_empty_str(blob.media_type),
-            )
+            return DataServerTarget.of(data, **kw)
 
     rts = [
         (p, dst)
@@ -204,7 +204,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
             built_repo,
         )
 
-        print(data_server_routes)
+        print(json_dumps_pretty(marshal_obj(data_server_routes, ta.List[DataServerRoute])))
 
         #
 

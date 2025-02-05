@@ -5014,7 +5014,7 @@ class DockerBuildCaching(abc.ABC):
     def cached_build_docker_image(
             self,
             cache_key: str,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
     ) -> ta.Awaitable[str]:
         raise NotImplementedError
 
@@ -5166,15 +5166,12 @@ class Ci(AsyncExitStacked):
             self,
             config: Config,
             *,
-            file_cache: ta.Optional[FileCache] = None,
-
             docker_build_caching: DockerBuildCaching,
             docker_image_pulling: DockerImagePulling,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._file_cache = file_cache
 
         self._docker_build_caching = docker_build_caching
         self._docker_image_pulling = docker_image_pulling

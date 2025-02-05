@@ -47,10 +47,11 @@ def write_oci_data_ref_to_file(
         dst_file: str,
         *,
         symlink: bool = False,  # noqa
+        chunk_size: int = 1024 * 1024,
 ) -> None:
     with open_oci_data_ref(src_data) as f_src:
         with open(dst_file, 'wb') as f_dst:
-            shutil.copyfileobj(f_src, f_dst)  # noqa
+            shutil.copyfileobj(f_src, f_dst, length=chunk_size)  # noqa
 
 
 @write_oci_data_ref_to_file.register
@@ -59,6 +60,7 @@ def _(
         dst_file: str,
         *,
         symlink: bool = False,
+        **kwargs: ta.Any,
 ) -> None:
     if symlink:
         os.symlink(

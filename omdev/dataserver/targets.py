@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.lite.dataclasses import dataclass_maybe_post_init
+from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
 
 ##
@@ -12,8 +13,8 @@ from omlish.lite.dataclasses import dataclass_maybe_post_init
 
 @dc.dataclass(frozen=True)
 class DataServerTarget(abc.ABC):  # noqa
-    content_type: ta.Optional[str] = None
-    content_length: ta.Optional[int] = None
+    content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
     @classmethod
     def of(
@@ -64,12 +65,12 @@ class DataServerTarget(abc.ABC):  # noqa
 
 @dc.dataclass(frozen=True)
 class BytesDataServerTarget(DataServerTarget):
-    data: ta.Optional[bytes] = None
+    data: ta.Optional[bytes] = None  # required
 
 
 @dc.dataclass(frozen=True)
 class FileDataServerTarget(DataServerTarget):
-    file_path: ta.Optional[str] = None
+    file_path: ta.Optional[str] = None  # required
 
     def __post_init__(self) -> None:
         dataclass_maybe_post_init(super())
@@ -78,8 +79,8 @@ class FileDataServerTarget(DataServerTarget):
 
 @dc.dataclass(frozen=True)
 class UrlDataServerTarget(DataServerTarget):
-    url: ta.Optional[str] = None
-    methods: ta.Optional[ta.Container[str]] = None
+    url: ta.Optional[str] = None  # required
+    methods: ta.Optional[ta.Sequence[str]] = None  # required
 
     def __post_init__(self) -> None:
         dataclass_maybe_post_init(super())
