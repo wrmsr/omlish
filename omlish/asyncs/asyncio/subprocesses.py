@@ -3,7 +3,6 @@
 import asyncio.base_subprocess
 import asyncio.subprocess
 import contextlib
-import dataclasses as dc
 import functools
 import logging
 import subprocess
@@ -12,6 +11,8 @@ import typing as ta
 
 from ...lite.check import check
 from ...subprocesses import AbstractAsyncSubprocesses
+from ...subprocesses import SubprocessRun
+from ...subprocesses import SubprocessRunOutput
 from .timeouts import asyncio_maybe_timeout
 
 
@@ -178,41 +179,32 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
 
     #
 
-    @dc.dataclass(frozen=True)
-    class RunOutput:
-        proc: asyncio.subprocess.Process
-        stdout: ta.Optional[bytes]
-        stderr: ta.Optional[bytes]
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput[asyncio.subprocess.Process]:
+        kwargs = dict(run.kwargs or {})
 
-    async def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,  # noqa
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> RunOutput:
-        if capture_output:
+        if run.capture_output:
             kwargs.setdefault('stdout', subprocess.PIPE)
             kwargs.setdefault('stderr', subprocess.PIPE)
 
         proc: asyncio.subprocess.Process
-        async with self.popen(*cmd, **kwargs) as proc:
-            stdout, stderr = await self.communicate(proc, input, timeout)
+        async with self.popen(*run.cmd, **kwargs) as proc:
+            stdout, stderr = await self.communicate(proc, run.input, run.timeout)
 
         if check and proc.returncode:
             raise subprocess.CalledProcessError(
                 proc.returncode,
-                cmd,
+                run.cmd,
                 output=stdout,
                 stderr=stderr,
             )
 
-        return self.RunOutput(
-            proc,
-            stdout,
-            stderr,
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=check.isinstance(proc.returncode, int),
+
+            stdout=stdout,
+            stderr=stderr,
         )
 
     #

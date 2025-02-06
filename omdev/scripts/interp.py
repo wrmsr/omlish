@@ -3848,7 +3848,51 @@ class BaseSubprocesses(abc.ABC):  # noqa
 ##
 
 
+@dc.dataclass(frozen=True)
+class SubprocessRun:
+    cmd: ta.Sequence[str]
+    input: ta.Any = None
+    timeout: ta.Optional[float] = None
+    check: bool = False
+    capture_output: ta.Optional[bool] = None
+    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRunOutput(ta.Generic[T]):
+    proc: T
+
+    returncode: int  # noqa
+
+    stdout: ta.Optional[bytes] = None
+    stderr: ta.Optional[bytes] = None
+
+
 class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+    @abc.abstractmethod
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> SubprocessRunOutput:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
     @abc.abstractmethod
     def check_call(
             self,
@@ -3912,6 +3956,25 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
 
 
 class Subprocesses(AbstractSubprocesses):
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
+        proc = subprocess.run(
+            run.cmd,
+            input=run.input,
+            timeout=run.timeout,
+            check=run.check,
+            capture_output=run.capture_output or False,
+            **(run.kwargs or {}),
+        )
+
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=proc.returncode,
+
+            stdout=proc.stdout,  # noqa
+            stderr=proc.stderr,  # noqa
+        )
+
     def check_call(
             self,
             *cmd: str,
@@ -3937,6 +4000,30 @@ subprocesses = Subprocesses()
 
 
 class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[SubprocessRunOutput]:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
     @abc.abstractmethod
     async def check_call(
             self,
@@ -4204,41 +4291,32 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
 
     #
 
-    @dc.dataclass(frozen=True)
-    class RunOutput:
-        proc: asyncio.subprocess.Process
-        stdout: ta.Optional[bytes]
-        stderr: ta.Optional[bytes]
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput[asyncio.subprocess.Process]:
+        kwargs = dict(run.kwargs or {})
 
-    async def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,  # noqa
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> RunOutput:
-        if capture_output:
+        if run.capture_output:
             kwargs.setdefault('stdout', subprocess.PIPE)
             kwargs.setdefault('stderr', subprocess.PIPE)
 
         proc: asyncio.subprocess.Process
-        async with self.popen(*cmd, **kwargs) as proc:
-            stdout, stderr = await self.communicate(proc, input, timeout)
+        async with self.popen(*run.cmd, **kwargs) as proc:
+            stdout, stderr = await self.communicate(proc, run.input, run.timeout)
 
         if check and proc.returncode:
             raise subprocess.CalledProcessError(
                 proc.returncode,
-                cmd,
+                run.cmd,
                 output=stdout,
                 stderr=stderr,
             )
 
-        return self.RunOutput(
-            proc,
-            stdout,
-            stderr,
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=check.isinstance(proc.returncode, int),
+
+            stdout=stdout,
+            stderr=stderr,
         )
 
     #

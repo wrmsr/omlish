@@ -2,6 +2,7 @@
 # @omlish-lite
 import abc
 import contextlib
+import dataclasses as dc
 import logging
 import os
 import shlex
@@ -255,7 +256,51 @@ class BaseSubprocesses(abc.ABC):  # noqa
 ##
 
 
+@dc.dataclass(frozen=True)
+class SubprocessRun:
+    cmd: ta.Sequence[str]
+    input: ta.Any = None
+    timeout: ta.Optional[float] = None
+    check: bool = False
+    capture_output: ta.Optional[bool] = None
+    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRunOutput(ta.Generic[T]):
+    proc: T
+
+    returncode: int  # noqa
+
+    stdout: ta.Optional[bytes] = None
+    stderr: ta.Optional[bytes] = None
+
+
 class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+    @abc.abstractmethod
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> SubprocessRunOutput:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
     @abc.abstractmethod
     def check_call(
             self,
@@ -319,6 +364,25 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
 
 
 class Subprocesses(AbstractSubprocesses):
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
+        proc = subprocess.run(
+            run.cmd,
+            input=run.input,
+            timeout=run.timeout,
+            check=run.check,
+            capture_output=run.capture_output or False,
+            **(run.kwargs or {}),
+        )
+
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=proc.returncode,
+
+            stdout=proc.stdout,  # noqa
+            stderr=proc.stderr,  # noqa
+        )
+
     def check_call(
             self,
             *cmd: str,
@@ -344,6 +408,30 @@ subprocesses = Subprocesses()
 
 
 class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[SubprocessRunOutput]:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
     @abc.abstractmethod
     async def check_call(
             self,
