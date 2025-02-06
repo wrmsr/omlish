@@ -8586,7 +8586,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
         self._log_handler = log_handler
 
         self._read_buf = ReadableListBuffer()
-        self._write_buf: IncrementalWriteBuffer | None = None
+        self._write_buf: ta.Optional[IncrementalWriteBuffer] = None
 
         self._coro_srv = CoroHttpServer(
             addr,
@@ -8594,7 +8594,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
         )
         self._srv_coro: ta.Optional[ta.Generator[CoroHttpServer.Io, ta.Optional[bytes], None]] = self._coro_srv.coro_handle()  # noqa
 
-        self._cur_io: CoroHttpServer.Io | None = None
+        self._cur_io: ta.Optional[CoroHttpServer.Io] = None
         self._next_io()
 
     #
@@ -8602,7 +8602,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     def _next_io(self) -> None:  # noqa
         coro = check.not_none(self._srv_coro)
 
-        d: bytes | None = None
+        d: ta.Optional[bytes] = None
         o = self._cur_io
         while True:
             if o is None:
