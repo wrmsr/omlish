@@ -1,8 +1,10 @@
 # ruff: noqa: UP006 UP007
+import asyncio
 import contextlib
 import ssl
 import subprocess
 import sys
+import threading
 import typing as ta
 
 from omlish.docker.portrelay import DockerPortRelay
@@ -10,6 +12,7 @@ from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import LoggingHttpHandler
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.logs import log
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
@@ -80,7 +83,7 @@ def serve_for_docker(
 ##
 
 
-class AsyncManagedSimpleHttpServer(AsyncExitStacked):
+class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
     def __init__(
             self,
             port: int,
@@ -94,6 +97,12 @@ class AsyncManagedSimpleHttpServer(AsyncExitStacked):
         self._handler = handler
 
         self._temp_ssl = temp_ssl
+
+        self._lock = threading.RLock()
+
+        self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
+        self._thread: ta.Optional[threading.Thread] = None
+        self._thread_exit_event = asyncio.Event()
 
     @cached_nullary
     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
@@ -119,3 +128,33 @@ class AsyncManagedSimpleHttpServer(AsyncExitStacked):
             use_threads=True,
         ) as server:
             yield server
+
+    def _thread_main(self) -> None:
+        try:
+            raise NotImplementedError
+        finally:
+            check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
+
+    async def run(self) -> None:
+        with self._lock:
+            check.none(self._loop)
+            check.none(self._thread)
+            check.state(not self._thread_exit_event.is_set())
+
+            self._loop = check.not_none(asyncio.get_running_loop())
+            self._thread = threading.Thread(target=self._thread_main)
+            self._thread.start()
+
+        await self._thread_exit_event.wait()
+
+
+async def _a_main() -> None:
+    async with AsyncioManagedSimpleHttpServer(
+            5021,
+            None,
+    ) as server:
+        await server.run()
+
+
+if __name__ == '__main__':
+    asyncio.run(_a_main())
