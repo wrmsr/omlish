@@ -9,6 +9,8 @@ from omlish.docker.portrelay import DockerPortRelay
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import LoggingHttpHandler
+from omlish.lite.cached import cached_nullary
+from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.lite.logs import log
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
 from omlish.sockets.server.server import SocketServer
@@ -75,33 +77,45 @@ def serve_for_docker(
         server.run()
 
 
-# ##
+##
 
 
-# class AsyncManagedSimpleHttpServer(AsyncExitStacked):
-#     def __init__(
-#             self,
-#             port: int,
-#             handler: HttpHandler,
-#             *,
-#             temp_ssl: bool = False,
-#     ) -> None:
-#         super().__init__()
-#
-#         self._port = port
-#         self._handler = handler
-#
-#         self._temp_ssl = temp_ssl
-#
-#     @cached_nullary
-#     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
-#         if not self._temp_ssl:
-#             return None
-#
-#         ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: blocking
-#
-#         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-#         ssl_context.load_cert_chain(
-#             keyfile=ssl_cert.key_file,
-#             certfile=ssl_cert.cert_file,
-#         )
+class AsyncManagedSimpleHttpServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            handler: HttpHandler,
+            *,
+            temp_ssl: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._port = port
+        self._handler = handler
+
+        self._temp_ssl = temp_ssl
+
+    @cached_nullary
+    def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
+        if not self._temp_ssl:
+            return None
+
+        ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: async blocking
+
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(
+            keyfile=ssl_cert.key_file,
+            certfile=ssl_cert.cert_file,
+        )
+
+        return ssl_context
+
+    @contextlib.contextmanager
+    def _make_server(self) -> ta.Iterator[SocketServer]:
+        with make_simple_http_server(
+            self._port,
+            self._handler,
+            ssl_context=self._ssl_context(),
+            use_threads=True,
+        ) as server:
+            yield server
