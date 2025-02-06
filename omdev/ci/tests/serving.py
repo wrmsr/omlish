@@ -104,6 +104,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._thread_exit_event = asyncio.Event()
+        self._server: ta.Optional[SocketServer] = None
 
     @cached_nullary
     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
@@ -132,9 +133,21 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
 
     def _thread_main(self) -> None:
         try:
-            raise NotImplementedError
+            check.none(self._server)
+            with self._make_server() as server:
+                self._server = server
+
+                server.run()
+
         finally:
             check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
+
+    def is_running(self) -> bool:
+        return self._server is not None
+
+    def shutdown(self) -> None:
+        if (server := self._server) is not None:
+            server.shutdown(block=False)
 
     async def run(self) -> None:
         with self._lock:
@@ -143,7 +156,10 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
             check.state(not self._thread_exit_event.is_set())
 
             self._loop = check.not_none(asyncio.get_running_loop())
-            self._thread = threading.Thread(target=self._thread_main)
+            self._thread = threading.Thread(
+                target=self._thread_main,
+                daemon=True,
+            )
             self._thread.start()
 
         await self._thread_exit_event.wait()
@@ -153,6 +169,7 @@ async def _a_main() -> None:
     async with AsyncioManagedSimpleHttpServer(
             5021,
             StringResponseHttpHandler('hi'),
+            temp_ssl=True,
     ) as server:
         await server.run()
 
