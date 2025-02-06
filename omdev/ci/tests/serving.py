@@ -11,6 +11,7 @@ from omlish.docker.portrelay import DockerPortRelay
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import LoggingHttpHandler
+from omlish.http.handlers import StringResponseHttpHandler
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
@@ -151,7 +152,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
 async def _a_main() -> None:
     async with AsyncioManagedSimpleHttpServer(
             5021,
-            None,
+            StringResponseHttpHandler('hi'),
     ) as server:
         await server.run()
 
