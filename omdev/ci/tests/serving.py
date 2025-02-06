@@ -73,3 +73,35 @@ def serve_for_docker(
             ))
 
         server.run()
+
+
+# ##
+
+
+# class AsyncManagedSimpleHttpServer(AsyncExitStacked):
+#     def __init__(
+#             self,
+#             port: int,
+#             handler: HttpHandler,
+#             *,
+#             temp_ssl: bool = False,
+#     ) -> None:
+#         super().__init__()
+#
+#         self._port = port
+#         self._handler = handler
+#
+#         self._temp_ssl = temp_ssl
+#
+#     @cached_nullary
+#     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
+#         if not self._temp_ssl:
+#             return None
+#
+#         ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: blocking
+#
+#         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+#         ssl_context.load_cert_chain(
+#             keyfile=ssl_cert.key_file,
+#             certfile=ssl_cert.cert_file,
+#         )
