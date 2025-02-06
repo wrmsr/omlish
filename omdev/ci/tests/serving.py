@@ -23,18 +23,26 @@ from omlish.sockets.server.server import SocketServer
 ##
 
 
-@contextlib.contextmanager
-def start_docker_port_relay(
+@contextlib.asynccontextmanager
+async def start_docker_port_relay(
         docker_port: int,
         host_port: int,
         **kwargs: ta.Any,
 ) -> ta.Iterator[None]:
-    with subprocess.Popen(DockerPortRelay(
-            docker_port,
-            host_port,
-            **kwargs,
-    ).run_cmd()) as proc:  # noqa
+    proc = await asyncio.create_subprocess_exec(
+            *DockerPortRelay(
+                docker_port,
+                host_port,
+                **kwargs,
+            ).run_cmd()
+    )
+
+    try:
         yield
+
+    finally:
+        proc.kill()
+        await proc.wait()
 
 
 ##
@@ -72,11 +80,11 @@ def serve_for_docker(
         ))
 
         if relay_port is not None:
-            es.enter_context(start_docker_port_relay(  # noqa
+            es.enter_context(subprocess.Popen(DockerPortRelay(
                 relay_port,
                 server_port,
                 intermediate_port=server_port + 1,
-            ))
+            ).run_cmd()))
 
         server.run()
 
@@ -155,6 +163,10 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
             check.none(self._thread)
             check.state(not self._thread_exit_event.is_set())
 
+            if self._temp_ssl:
+                # Hit the ExitStack from this thread
+                self._ssl_context()
+
             self._loop = check.not_none(asyncio.get_running_loop())
             self._thread = threading.Thread(
                 target=self._thread_main,
@@ -166,12 +178,17 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
 
 
 async def _a_main() -> None:
-    async with AsyncioManagedSimpleHttpServer(
-            5021,
-            StringResponseHttpHandler('hi'),
-            temp_ssl=True,
-    ) as server:
-        await server.run()
+    async with start_docker_port_relay(
+            2000,
+            2001,
+            intermediate_port=2002,
+    ):
+        async with AsyncioManagedSimpleHttpServer(
+                5021,
+                StringResponseHttpHandler('hi'),
+                temp_ssl=True,
+        ) as server:
+            await server.run()
 
 
 if __name__ == '__main__':
