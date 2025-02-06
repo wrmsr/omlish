@@ -178,13 +178,22 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
 
 
 async def _a_main() -> None:
+    port = 5021
+
+    relay_port: ta.Optional[int] = None
+    if sys.platform == 'darwin':
+        relay_port = port
+        server_port = port + 1
+    else:
+        server_port = port
+
     async with start_docker_port_relay(
-            2000,
-            2001,
-            intermediate_port=2002,
+            relay_port,
+            server_port,
+            intermediate_port=server_port + 1,
     ):
         async with AsyncioManagedSimpleHttpServer(
-                5021,
+                server_port,
                 StringResponseHttpHandler('hi'),
                 temp_ssl=True,
         ) as server:

@@ -17,6 +17,7 @@ from ...dataserver.http import DataServerHttpHandler
 from ...dataserver.routes import DataServerRoute
 from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
+from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
 from ...oci.building import build_oci_index_repository
 from ...oci.compression import OciCompression
@@ -97,6 +98,31 @@ def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> N
     return NewCiManifest(
         routes=routes,
     )
+
+
+def build_new_ci_data_server_routes(manifest: NewCiManifest) -> ta.List[DataServerRoute]:
+    routes: ta.List[DataServerRoute] = []
+
+    for manifest_route in manifest.routes:
+        manifest_target = manifest_route.target
+        target: DataServerTarget
+
+        if isinstance(manifest_target, NewCiManifest.Route.BytesTarget):
+            target = DataServerTarget.of(manifest_target.data)
+
+        elif isinstance(manifest_target, NewCiManifest.Route.CacheKeyTarget):
+            # FIXME:
+            target = DataServerTarget.of(file_path=manifest_target.key)
+
+        else:
+            raise TypeError(manifest_target)
+
+        routes.append(DataServerRoute(
+            paths=manifest_route.paths,
+            target=target,
+        ))
+
+    return routes
 
 
 async def run_new_ci(
@@ -226,7 +252,9 @@ async def run_new_ci(
 
     #
 
-    data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
+    new_data_server_routes = build_new_ci_data_server_routes(new_ci_manifest)
+
+    data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
 
     #
 
