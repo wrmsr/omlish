@@ -11,6 +11,7 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
+from omlish.logs.standard import configure_standard_logging
 
 from ...dataserver.http import DataServerHttpHandler
 from ...dataserver.routes import DataServerRoute
@@ -257,6 +258,8 @@ async def run_new_ci(
 
 
 async def a_main() -> None:
+    configure_standard_logging()
+
     async with CiHarness() as ci_harness:
         # async with Ci(
         #         config=ci_harness.ci_config(),

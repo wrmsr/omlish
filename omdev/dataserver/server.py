@@ -56,20 +56,30 @@ class DataServer:
 
     def __init__(
             self,
-            routes: ta.Iterable[HandlerRoute],
+            routes: ta.Optional[ta.Iterable[HandlerRoute]] = None,
             config: Config = Config(),
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._routes = list(routes)
 
+        self.set_routes(routes)
+
+    #
+
+    _routes_by_path: ta.Dict[str, HandlerRoute]
+
+    def set_routes(self, routes: ta.Optional[ta.Iterable[HandlerRoute]]) -> None:
         routes_by_path: ta.Dict[str, DataServer.HandlerRoute] = {}
-        for r in self._routes:
+
+        for r in routes or []:
             for p in r.paths:
                 check.not_in(p, routes_by_path)
                 routes_by_path[p] = r
+
         self._routes_by_path = routes_by_path
+
+    #
 
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         try:
