@@ -6,6 +6,7 @@ import typing as ta
 
 from omlish.http.coro.fdio import CoroHttpServerConnectionFdioHandler
 from omlish.http.handlers import HttpHandler
+from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.io.fdio.handlers import SocketFdioHandler
@@ -98,7 +99,7 @@ class HttpServer(HasDispatchers):
 ##
 
 
-class SupervisorHttpHandler:
+class SupervisorHttpHandler(HttpHandler_):
     def __init__(
             self,
             *,
@@ -108,7 +109,7 @@ class SupervisorHttpHandler:
 
         self._groups = groups
 
-    def handle(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         dct = {
             'method': req.method,
             'path': req.path,

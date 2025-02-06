@@ -133,7 +133,7 @@ def bind_server(
 
     if config.http_port is not None:
         def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
-            return HttpServer.Handler(s.handle)
+            return HttpServer.Handler(s)
 
         lst.extend([
             inj.bind(HttpServer, singleton=True, eager=True),

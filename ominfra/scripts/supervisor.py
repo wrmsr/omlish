@@ -8979,7 +8979,7 @@ class HttpServer(HasDispatchers):
 ##
 
 
-class SupervisorHttpHandler:
+class SupervisorHttpHandler(HttpHandler_):
     def __init__(
             self,
             *,
@@ -8989,7 +8989,7 @@ class SupervisorHttpHandler:
 
         self._groups = groups
 
-    def handle(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         dct = {
             'method': req.method,
             'path': req.path,
@@ -10205,7 +10205,7 @@ def bind_server(
 
     if config.http_port is not None:
         def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
-            return HttpServer.Handler(s.handle)
+            return HttpServer.Handler(s)
 
         lst.extend([
             inj.bind(HttpServer, singleton=True, eager=True),
