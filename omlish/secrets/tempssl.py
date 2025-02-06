@@ -1,10 +1,14 @@
 # @omlish-lite
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import os.path
-import subprocess
 import tempfile
 import typing as ta
 
+from ..lite.cached import cached_nullary
+from ..subprocesses import SubprocessRun
+from ..subprocesses import SubprocessRunOutput
+from ..subprocesses import subprocesses
 from .ssl import SslCert
 
 
@@ -13,11 +17,15 @@ class TempSslCert(ta.NamedTuple):
     temp_dir: str
 
 
-def generate_temp_localhost_ssl_cert() -> TempSslCert:
-    temp_dir = tempfile.mkdtemp()
+@dc.dataclass(frozen=True)
+class TempSslCertGenerator:
+    @cached_nullary
+    def temp_dir(self) -> str:
+        return tempfile.mkdtemp()
 
-    proc = subprocess.run(
-        [
+    @cached_nullary
+    def make_run(self) -> SubprocessRun:
+        return SubprocessRun.of(
             'openssl',
             'req',
             '-x509',
@@ -32,19 +40,33 @@ def generate_temp_localhost_ssl_cert() -> TempSslCert:
 
             '-subj', '/CN=localhost',
             '-addext', 'subjectAltName = DNS:localhost,IP:127.0.0.1',
-        ],
-        cwd=temp_dir,
-        capture_output=True,
-        check=False,
-    )
 
-    if proc.returncode:
-        raise RuntimeError(f'Failed to generate temp ssl cert: {proc.stderr=}')
+            cwd=self.temp_dir(),
+            capture_output=True,
+            check=False,
+        )
 
-    return TempSslCert(
-        SslCert(
-            key_file=os.path.join(temp_dir, 'key.pem'),
-            cert_file=os.path.join(temp_dir, 'cert.pem'),
-        ),
-        temp_dir,
-    )
+    def handle_run_output(self, proc: SubprocessRunOutput) -> TempSslCert:
+        if proc.returncode:
+            raise RuntimeError(f'Failed to generate temp ssl cert: {proc.stderr=}')
+
+        key_file = os.path.join(self.temp_dir(), 'key.pem')
+        cert_file = os.path.join(self.temp_dir(), 'cert.pem')
+        for file in [key_file, cert_file]:
+            if not os.path.isfile(file):
+                raise RuntimeError(f'Failed to generate temp ssl cert (file not found): {file}')
+
+        return TempSslCert(
+            SslCert(
+                key_file=key_file,
+                cert_file=cert_file,
+            ),
+            temp_dir=self.temp_dir(),
+        )
+
+    def run(self) -> TempSslCert:
+        return self.handle_run_output(subprocesses.run_(self.make_run()))
+
+
+def generate_temp_localhost_ssl_cert() -> TempSslCert:
+    return TempSslCertGenerator().run()

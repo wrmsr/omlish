@@ -4107,6 +4107,25 @@ class SubprocessRun:
     capture_output: ta.Optional[bool] = None
     kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
 
+    @classmethod
+    def of(
+            cls,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> 'SubprocessRun':
+        return cls(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        )
+
 
 @dc.dataclass(frozen=True)
 class SubprocessRunOutput(ta.Generic[T]):
