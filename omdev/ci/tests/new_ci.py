@@ -1,6 +1,7 @@
 # ruff: noqa: PT009 UP006 UP007
 import asyncio
 import dataclasses as dc
+import os.path
 import typing as ta
 
 from omlish.lite.json import json_dumps_pretty
@@ -44,7 +45,12 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
             async def make_file_cache_key(file_path: str) -> str:
                 # FIXME: upload lol
-                return file_path
+                target_cache_key = f'{cache_key}--{os.path.basename(file_path)}'
+                await self.ci_harness.file_cache().put_file(
+                    target_cache_key,
+                    file_path,
+                )
+                return target_cache_key
 
             new_ci_manifest = await build_cache_served_docker_image_manifest(
                 data_server_routes,
@@ -63,8 +69,9 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
             async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
                 # FIXME: get cache url lol
+                file_path = await self.ci_harness.file_cache().get_file(target_cache_key)
                 return DataServerTarget.of(
-                    file_path=target_cache_key,
+                    file_path=file_path,
                     **target_kwargs,
                 )
 
