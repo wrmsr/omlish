@@ -172,7 +172,12 @@ class NewDockerBuildCaching(DockerBuildCaching):
         image_tag = f'{self.ci_harness.ci_config().service}:{cache_key}'
         image_id = await build_and_tag(image_tag)
 
-        print(image_id)
+        with PackedDockerImageIndexRepositoryBuilder(
+                image_id=image_id,
+        ) as drb:
+            built_repo = drb.packed_image_index_repository()
+
+            print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
 
         return image_tag
 

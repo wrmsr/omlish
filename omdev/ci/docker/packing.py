@@ -1,4 +1,8 @@
 # ruff: noqa: PT009 UP006 UP007
+"""
+TODO:
+ - logging
+"""
 import copy
 import os.path
 import shlex
@@ -24,6 +28,7 @@ from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
 from ...oci.tars import WrittenOciDataTarFileInfo
+from ..utils import log_timing_context
 
 
 class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
@@ -62,13 +67,14 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
         save_dir = os.path.join(self._temp_dir(), 'built-image')
         os.mkdir(save_dir)
 
-        subprocesses.check_call(
-            ' | '.join([
-                f'docker save {shlex.quote(self._image_id)}',
-                f'tar x -C {shlex.quote(save_dir)}',
-            ]),
-            shell=True,
-        )
+        with log_timing_context(f'Saving docker image {self._image_id}'):
+            subprocesses.check_call(
+                ' | '.join([
+                    f'docker save {shlex.quote(self._image_id)}',
+                    f'tar x -C {shlex.quote(save_dir)}',
+                ]),
+                shell=True,
+            )
 
         return save_dir
 
@@ -111,7 +117,6 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
                 input_file_path = os.path.join(self._temp_dir(), f'save-layer-{i}.tar')
                 with open(input_file_path, 'wb') as input_file:  # noqa
                     with open_oci_data_ref(layer.data) as layer_file:
-                        # FIXME: async
                         shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
 
             layer_tar_files.append(input_file_path)
@@ -125,12 +130,12 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
         layer_tar_files = self._extracted_layer_tar_files()
         unpacked_file = os.path.join(self._temp_dir(), 'unpacked.tar')
 
-        with OciLayerUnpacker(
-                layer_tar_files,
-                unpacked_file,
-        ) as lu:
-            # FIXME: async
-            lu.write()
+        with log_timing_context(f'Unacking docker image {self._image_id}'):
+            with OciLayerUnpacker(
+                    layer_tar_files,
+                    unpacked_file,
+            ) as lu:
+                lu.write()
 
         return unpacked_file
 
@@ -145,13 +150,13 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
             for i in range(self._num_packed_files)
         ]
 
-        with OciLayerPacker(
-                unpacked_tar_file,
-                packed_tar_files,
-                compression=self._packed_compression,
-        ) as lp:
-            # FIXME: async
-            return lp.write()
+        with log_timing_context(f'Packing docker image {self._image_id}'):
+            with OciLayerPacker(
+                    unpacked_tar_file,
+                    packed_tar_files,
+                    compression=self._packed_compression,
+            ) as lp:
+                return lp.write()
 
     #
 
