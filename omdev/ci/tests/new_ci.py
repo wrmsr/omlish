@@ -183,7 +183,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
 
 async def a_main() -> None:
-    configure_standard_logging()
+    configure_standard_logging('DEBUG')
 
     async with CiHarness() as ci_harness:
         for _ in range(2):
