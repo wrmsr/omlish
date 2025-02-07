@@ -70,7 +70,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
             async with DockerDataServer(
                     port,
                     data_server,
-                    log=log,
+                    handler_log=log,
             ) as dds:
                 dds_run_task = asyncio.create_task(dds.run())
                 try:

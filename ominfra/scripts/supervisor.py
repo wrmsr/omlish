@@ -6915,7 +6915,7 @@ class HttpHandler_(abc.ABC):  # noqa
 class LoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
     log: logging.Logger
-    level: int = logging.INFO
+    level: int = logging.DEBUG
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         self.log.log(self.level, '%r', req)
