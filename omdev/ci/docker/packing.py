@@ -14,6 +14,10 @@ from omlish.os.temp import temp_dir_context
 from ...oci.building import BuiltOciImageIndexRepository
 from ...oci.pack.repositories import OciPackedRepositoryBuilder
 from ...oci.repositories import DirectoryOciRepository
+from ..docker.cache import DockerCache
+
+
+##
 
 
 class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
@@ -67,3 +71,17 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
                 temp_dir=self._temp_dir(),
         ) as prb:
             return await asyncio.get_running_loop().run_in_executor(None, prb.build)
+
+
+##
+
+
+class PackedDockerCache(DockerCache):
+    def __init__(self) -> None:
+        super().__init__()
+
+    async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    async def save_cache_docker_image(self, key: str, image: str) -> None:
+        raise NotImplementedError
