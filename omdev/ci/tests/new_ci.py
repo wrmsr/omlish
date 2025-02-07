@@ -45,7 +45,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
             async def make_file_cache_key(file_path: str) -> str:
                 # FIXME: upload lol
-                target_cache_key = f'{cache_key}--{os.path.basename(file_path)}'
+                target_cache_key = f'{cache_key}--{os.path.basename(file_path).split(".")[0]}'
                 await self.ci_harness.file_cache().put_file(
                     target_cache_key,
                     file_path,
@@ -57,43 +57,43 @@ class NewDockerBuildCaching(DockerBuildCaching):
                 make_file_cache_key,
             )
 
-            print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
+        print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
 
-            ####
+        ####
 
-            port = 5021
+        port = 5021
 
-            image_url = f'localhost:{port}/{cache_key}'
+        image_url = f'localhost:{port}/{cache_key}'
 
-            print(f'docker run --rm --pull always {image_url} uname -a')
+        print(f'docker run --rm --pull always {image_url} uname -a')
 
-            async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
-                # FIXME: get cache url lol
-                file_path = await self.ci_harness.file_cache().get_file(target_cache_key)
-                return DataServerTarget.of(
-                    file_path=file_path,
-                    **target_kwargs,
-                )
-
-            new_data_server_routes = await build_cache_served_docker_image_data_server_routes(
-                new_ci_manifest,
-                make_cache_key_target,
+        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
+            # FIXME: get cache url lol
+            file_path = await self.ci_harness.file_cache().get_file(target_cache_key)
+            return DataServerTarget.of(
+                file_path=file_path,
+                **target_kwargs,
             )
 
-            data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
+        new_data_server_routes = await build_cache_served_docker_image_data_server_routes(
+            new_ci_manifest,
+            make_cache_key_target,
+        )
 
-            async with DockerDataServer(
-                    port,
-                    data_server,
-                    handler_log=log,
-            ) as dds:
-                dds_run_task = asyncio.create_task(dds.run())
-                try:
-                    await asyncio.sleep(600.)
+        data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
 
-                finally:
-                    dds.stop_event.set()
-                    await dds_run_task
+        async with DockerDataServer(
+                port,
+                data_server,
+                handler_log=log,
+        ) as dds:
+            dds_run_task = asyncio.create_task(dds.run())
+            try:
+                await asyncio.sleep(600.)
+
+            finally:
+                dds.stop_event.set()
+                await dds_run_task
 
         return image_tag
 
