@@ -72,6 +72,9 @@ class DirectoryOciRepository(FileOciRepository):
 
         self._data_dir = check.non_empty_str(data_dir)
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._data_dir!r})'
+
     def read_file(self, path: str) -> bytes:
         full_path = os.path.join(self._data_dir, path)
         check.arg(is_path_in_dir(self._data_dir, full_path))
@@ -108,6 +111,9 @@ class TarFileOciRepository(FileOciRepository):
         check.arg('r' in tar_file.mode)
 
         self._tar_file = tar_file
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._tar_file!r})'
 
     def read_file(self, path: str) -> bytes:
         if (ti := self._tar_file.getmember(path)) is None:

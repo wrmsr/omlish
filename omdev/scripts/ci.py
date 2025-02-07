@@ -160,6 +160,27 @@ class ShellCmd:
 
 
 ########################################
+# ../utils.py
+
+
+##
+
+
+def read_yaml_file(yaml_file: str) -> ta.Any:
+    yaml = __import__('yaml')
+
+    with open(yaml_file) as f:
+        return yaml.safe_load(f)
+
+
+##
+
+
+def sha256_str(s: str) -> str:
+    return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+
+########################################
 # ../../../omlish/asyncs/asyncio/asyncio.py
 
 
@@ -1147,6 +1168,63 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 
 
 ########################################
+# ../../../omlish/logs/timing.py
+
+
+##
+
+
+class LogTimingContext:
+    DEFAULT_LOG: ta.ClassVar[ta.Optional[logging.Logger]] = None
+
+    class _NOT_SPECIFIED:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    def __init__(
+            self,
+            description: str,
+            *,
+            log: ta.Union[logging.Logger, ta.Type[_NOT_SPECIFIED], None] = _NOT_SPECIFIED,  # noqa
+            level: int = logging.DEBUG,
+    ) -> None:
+        super().__init__()
+
+        self._description = description
+        if log is self._NOT_SPECIFIED:
+            log = self.DEFAULT_LOG  # noqa
+        self._log: ta.Optional[logging.Logger] = log  # type: ignore
+        self._level = level
+
+    def set_description(self, description: str) -> 'LogTimingContext':
+        self._description = description
+        return self
+
+    _begin_time: float
+    _end_time: float
+
+    def __enter__(self) -> 'LogTimingContext':
+        self._begin_time = time.time()
+
+        if self._log is not None:
+            self._log.log(self._level, f'Begin : {self._description}')  # noqa
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._end_time = time.time()
+
+        if self._log is not None:
+            self._log.log(
+                self._level,
+                f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
+            )
+
+
+log_timing_context = LogTimingContext
+
+
+########################################
 # ../../../omlish/os/files.py
 
 
@@ -1336,6 +1414,50 @@ class DirectoryFileCache(FileCache):
         else:
             shutil.copyfile(file_path, cache_file_path)
         return cache_file_path
+
+
+########################################
+# ../docker/utils.py
+"""
+TODO:
+ - some less stupid Dockerfile hash
+  - doesn't change too much though
+"""
+
+
+##
+
+
+def build_docker_file_hash(docker_file: str) -> str:
+    with open(docker_file) as f:
+        contents = f.read()
+
+    return sha256_str(contents)
+
+
+##
+
+
+def read_docker_tar_image_tag(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
+            m = mf.read()
+
+    manifests = json.loads(m.decode('utf-8'))
+    manifest = check.single(manifests)
+    tag = check.non_empty_str(check.single(manifest['RepoTags']))
+    return tag
+
+
+def read_docker_tar_image_id(tar_file: str) -> str:
+    with tarfile.open(tar_file) as tf:
+        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
+            i = mf.read()
+
+    index = json.loads(i.decode('utf-8'))
+    manifest = check.single(index['manifests'])
+    image_id = check.non_empty_str(manifest['digest'])
+    return image_id
 
 
 ########################################
@@ -1557,80 +1679,6 @@ GITHUB_ACTIONS_ENV_VAR = register_github_env_var('GITHUB_ACTIONS')
 
 def is_in_github_actions() -> bool:
     return GITHUB_ACTIONS_ENV_VAR() is not None
-
-
-########################################
-# ../utils.py
-
-
-##
-
-
-def read_yaml_file(yaml_file: str) -> ta.Any:
-    yaml = __import__('yaml')
-
-    with open(yaml_file) as f:
-        return yaml.safe_load(f)
-
-
-##
-
-
-def sha256_str(s: str) -> str:
-    return hashlib.sha256(s.encode('utf-8')).hexdigest()
-
-
-##
-
-
-class LogTimingContext:
-    DEFAULT_LOG: ta.ClassVar[ta.Optional[logging.Logger]] = log
-
-    class _NOT_SPECIFIED:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    def __init__(
-            self,
-            description: str,
-            *,
-            log: ta.Union[logging.Logger, ta.Type[_NOT_SPECIFIED], None] = _NOT_SPECIFIED,  # noqa
-            level: int = logging.DEBUG,
-    ) -> None:
-        super().__init__()
-
-        self._description = description
-        if log is self._NOT_SPECIFIED:
-            log = self.DEFAULT_LOG  # noqa
-        self._log: ta.Optional[logging.Logger] = log  # type: ignore
-        self._level = level
-
-    def set_description(self, description: str) -> 'LogTimingContext':
-        self._description = description
-        return self
-
-    _begin_time: float
-    _end_time: float
-
-    def __enter__(self) -> 'LogTimingContext':
-        self._begin_time = time.time()
-
-        if self._log is not None:
-            self._log.log(self._level, f'Begin : {self._description}')  # noqa
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._end_time = time.time()
-
-        if self._log is not None:
-            self._log.log(
-                self._level,
-                f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
-            )
-
-
-log_timing_context = LogTimingContext
 
 
 ########################################
@@ -3124,6 +3172,15 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
+# ../../../omlish/lite/timing.py
+
+
+LogTimingContext.DEFAULT_LOG = log
+
+log_timing_context = log_timing_context  # noqa
+
+
+########################################
 # ../../../omlish/logs/json.py
 """
 TODO:
@@ -3220,50 +3277,6 @@ def temp_named_file_context(
         finally:
             if cleanup:
                 shutil.rmtree(f.name, ignore_errors=True)
-
-
-########################################
-# ../docker/utils.py
-"""
-TODO:
- - some less stupid Dockerfile hash
-  - doesn't change too much though
-"""
-
-
-##
-
-
-def build_docker_file_hash(docker_file: str) -> str:
-    with open(docker_file) as f:
-        contents = f.read()
-
-    return sha256_str(contents)
-
-
-##
-
-
-def read_docker_tar_image_tag(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('manifest.json'))) as mf:
-            m = mf.read()
-
-    manifests = json.loads(m.decode('utf-8'))
-    manifest = check.single(manifests)
-    tag = check.non_empty_str(check.single(manifest['RepoTags']))
-    return tag
-
-
-def read_docker_tar_image_id(tar_file: str) -> str:
-    with tarfile.open(tar_file) as tf:
-        with contextlib.closing(check.not_none(tf.extractfile('index.json'))) as mf:
-            i = mf.read()
-
-    index = json.loads(i.decode('utf-8'))
-    manifest = check.single(index['manifests'])
-    image_id = check.non_empty_str(manifest['digest'])
-    return image_id
 
 
 ########################################

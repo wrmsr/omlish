@@ -13,9 +13,9 @@ from omlish.asyncs.asyncio.asyncio import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
+from omlish.lite.timing import log_timing_context
 
 from ..consts import CI_CACHE_VERSION
-from ..utils import log_timing_context
 from .api import GithubCacheServiceV1
 from .env import register_github_env_var
 

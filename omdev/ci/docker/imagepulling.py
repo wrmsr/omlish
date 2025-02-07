@@ -3,8 +3,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.timing import log_timing_context
+
 from ..cache import FileCache
-from ..utils import log_timing_context
 from .cache import DockerCache
 from .cmds import is_docker_image_present
 from .cmds import pull_docker_image
