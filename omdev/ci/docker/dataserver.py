@@ -18,9 +18,7 @@ from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
 from omlish.sockets.server.server import SocketServer
 
 from ...dataserver.http import DataServerHttpHandler
-from ...dataserver.routes import DataServerRoute
 from ...dataserver.server import DataServer
-from ...dataserver.targets import DataServerTarget
 
 
 ##
@@ -89,10 +87,10 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
     @contextlib.contextmanager
     def _make_server(self) -> ta.Iterator[SocketServer]:
         with make_simple_http_server(
-            self._port,
-            self._handler,
-            ssl_context=self._ssl_context(),
-            use_threads=True,
+                self._port,
+                self._handler,
+                ssl_context=self._ssl_context(),
+                use_threads=True,
         ) as server:
             yield server
 
@@ -201,28 +199,3 @@ class DockerDataServer(AsyncExitStacked):
                 finally:
                     server.shutdown()
                     await server_run_task
-
-
-##
-
-
-async def _a_main() -> None:
-    ds = DataServer(DataServer.HandlerRoute.of_(*DataServerRoute.of_(
-        ('/hi', DataServerTarget.of_text('hi')),
-    )))
-
-    async with DockerDataServer(
-            5021,
-            ds,
-    ) as dds:
-        dds_run_task = asyncio.create_task(dds.run())
-        try:
-            await asyncio.sleep(10.)
-
-        finally:
-            dds.stop_event.set()
-            await dds_run_task
-
-
-if __name__ == '__main__':
-    asyncio.run(_a_main())

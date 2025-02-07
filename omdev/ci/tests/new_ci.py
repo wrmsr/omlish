@@ -18,9 +18,9 @@ from ...dataserver.targets import FileDataServerTarget
 from ...oci.dataserver import build_oci_repository_data_server_routes
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
+from ..docker.dataserver import DockerDataServer
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from .harness import CiHarness
-from .serving import DockerDataServer
 
 
 @dc.dataclass(frozen=True)
