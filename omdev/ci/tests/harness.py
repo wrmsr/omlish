@@ -74,7 +74,7 @@ class CiHarness(AsyncExitStacked):
             compose_file=os.path.join(self.temp_project_dir(), 'compose.yml'),
             service='omlish-ci',
 
-            cmd=ShellCmd('true'),
+            cmd=ShellCmd('cat /.timestamp'),
 
             requirements_txts=[
                 'requirements-dev.txt',

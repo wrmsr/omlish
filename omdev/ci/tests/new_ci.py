@@ -30,6 +30,8 @@ from ...oci.loading import read_oci_repository_root_index
 from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
+from ..ci import Ci
+from ..docker.buildcaching import DockerBuildCaching
 from .harness import CiHarness
 
 
@@ -269,43 +271,46 @@ async def run_new_ci(
     data_server  # noqa
 
 
-# @dc.dataclass()
-# class NewDockerBuildCaching(DockerBuildCaching):
-#     ci_harness: CiHarness
-#
-#     async def cached_build_docker_image(
-#             self,
-#             cache_key: str,
-#             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
-#     ) -> str:
-#         image_tag = f'{self.ci_harness.ci_config().service}:{cache_key}'
-#         image_id = await build_and_tag(image_tag)
-#         print(image_id)
-#         raise NotImplementedError
+@dc.dataclass()
+class NewDockerBuildCaching(DockerBuildCaching):
+    ci_harness: CiHarness
+
+    async def cached_build_docker_image(
+            self,
+            cache_key: str,
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+    ) -> str:
+        image_tag = f'{self.ci_harness.ci_config().service}:{cache_key}'
+        image_id = await build_and_tag(image_tag)
+
+        print(image_id)
+
+        return image_tag
 
 
 async def a_main() -> None:
     configure_standard_logging()
 
     async with CiHarness() as ci_harness:
-        # async with Ci(
-        #         config=ci_harness.ci_config(),
-        #
-        #         docker_build_caching=NewDockerBuildCaching(ci_harness),
-        #         docker_image_pulling=ci_harness.docker_image_pulling_impl(),
-        # ) as ci:
+        for _ in range(2):
+            async with Ci(
+                    config=ci_harness.ci_config(),
+
+                    docker_build_caching=NewDockerBuildCaching(ci_harness),
+                    docker_image_pulling=ci_harness.docker_image_pulling_impl(),
+            ) as ci:
+                image_id = await ci.resolve_ci_image()
+
+                print(image_id)
+
+        # async with ci_harness.make_ci() as ci:
         #     image_id = await ci.resolve_ci_image()
         #
-        #     print(image_id)
-
-        async with ci_harness.make_ci() as ci:
-            image_id = await ci.resolve_ci_image()
-
-            await run_new_ci(
-                image_id=image_id,
-                cache_key=ci.ci_image_cache_key(),
-                temp_dir=ci_harness.temp_dir(),
-            )
+        #     await run_new_ci(
+        #         image_id=image_id,
+        #         cache_key=ci.ci_image_cache_key(),
+        #         temp_dir=ci_harness.temp_dir(),
+        #     )
 
 
 if __name__ == '__main__':
