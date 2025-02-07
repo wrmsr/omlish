@@ -1,8 +1,8 @@
 absl-py==2.1.0
 accelerate==1.3.0
 aiofiles==24.1.0
-aiohappyeyeballs==2.4.4
-aiohttp==3.11.11
+aiohappyeyeballs==2.4.6
+aiohttp==3.11.12
 aiomysql==0.2.0
 aiosignal==1.3.2
 aiosqlite==0.21.0
@@ -12,7 +12,7 @@ anthropic==0.45.2
 anyio==4.8.0
 appdirs==1.4.4
 appnope==0.1.4
-apsw==3.48.0.0
+apsw==3.49.0.0
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 arrow==1.3.0
@@ -37,8 +37,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.36.13
-botocore==1.36.13
+boto3==1.36.16
+botocore==1.36.16
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -95,7 +95,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.2.0
-duckduckgo_search==7.3.0
+duckduckgo_search==7.3.2
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.17.0
@@ -116,7 +116,7 @@ flake8==7.1.1
 Flake8-pyproject==1.2.3
 Flask==3.1.0
 flatbuffers==25.1.24
-fonttools==4.55.8
+fonttools==4.56.0
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.28.1
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.125.1
+hypothesis==6.125.2
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -209,22 +209,22 @@ keras==3.8.0
 keyring==25.6.0
 kiwisolver==1.4.8
 kubernetes==32.0.0
-langchain==0.3.17
-langchain-anthropic==0.3.6
+langchain==0.3.18
+langchain-anthropic==0.3.7
 langchain-chroma==0.2.1
-langchain-community==0.3.16
-langchain-core==0.3.33
+langchain-community==0.3.17
+langchain-core==0.3.34
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.6
-langchain-openai==0.3.3
+langchain-openai==0.3.4
 langchain-qdrant==0.2.0
-langchain-text-splitters==0.3.5
+langchain-text-splitters==0.3.6
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.69
+langgraph==0.2.70
 langgraph-checkpoint==2.0.10
 langgraph-sdk==0.1.51
 langsmith==0.3.6
@@ -236,7 +236,7 @@ libtmux==0.42.0
 lightning-utilities==0.12.0
 litecli==1.14.4
 litellm==1.51.0
-llama-index-core==0.12.15
+llama-index-core==0.12.16.post1
 llama_cpp_python==0.3.7
 llvmlite==0.44.0
 Logbook==1.8.0
@@ -261,8 +261,8 @@ mdurl==0.1.2
 mistune==3.1.1
 mitogen==0.3.22
 ml-dtypes==0.4.1
-mlx==0.22.0
-mlx-lm==0.21.1
+mlx==0.22.1
+mlx-lm==0.21.3
 mmh3==5.1.0
 monotonic==1.6
 more-itertools==10.6.0
@@ -322,7 +322,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@eaab05e18d51fb4cce20a73c9acd82a00c013b83
+peft @ git+https://github.com/huggingface/peft.git@40fe16644697564c8d0b3996830d682630469e70
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -337,7 +337,7 @@ portalocker==2.8.2
 posthog==3.11.0
 pprintpp==0.4.0
 preshed==3.0.9
-primp==0.11.0
+primp==0.12.0
 priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
@@ -427,7 +427,7 @@ rich==13.9.4
 rpds-py==0.22.3
 rsa==4.9
 rubicon-objc==0.5.0
-ruff==0.9.4
+ruff==0.9.5
 s3transfer==0.11.2
 safetensors==0.5.2
 scikit-image==0.25.1
@@ -461,7 +461,7 @@ spacy==3.8.3
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
-SQLAlchemy==2.0.37
+SQLAlchemy==2.0.38
 sqlean.py==3.47.0
 sqlglot==26.4.1
 sqlite-vec==0.1.6
@@ -472,7 +472,7 @@ starlette==0.45.3
 sympy==1.13.1
 tabulate==0.9.0
 tantivy==0.22.0
-tavily-python==0.5.0
+tavily-python==0.5.1
 tenacity==9.0.0
 tensorboard==2.17.1
 tensorboard-data-server==0.7.2
@@ -497,7 +497,7 @@ tornado==6.4.2
 tqdm==4.67.1
 trafilatura==2.0.0
 traitlets==5.14.3
-transformers==4.48.2
+transformers==4.48.3
 tree-sitter==0.24.0
 tree-sitter-python==0.23.6
 trio==0.28.0
@@ -525,7 +525,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.28
+uv==0.5.29
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
