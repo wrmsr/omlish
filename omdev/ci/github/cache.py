@@ -87,7 +87,14 @@ class GithubCache(FileCache, DataCache):
     #
 
     async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        raise NotImplementedError
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
 
     async def put_data(self, key: str, data: DataCache.Data) -> None:
-        return await FileCacheDataCache(self).put_data(key, data)
+        await FileCacheDataCache(self).put_data(key, data)

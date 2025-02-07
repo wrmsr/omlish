@@ -31,6 +31,9 @@ class GithubCacheClient(abc.ABC):
     def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
         raise NotImplementedError
 
+    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+        return None
+
     @abc.abstractmethod
     def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
@@ -224,6 +227,10 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     @dc.dataclass(frozen=True)
     class Entry(GithubCacheClient.Entry):
         artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry1 = check.isinstance(entry, self.Entry)
+        return entry1.artifact.cache_key
 
     #
 
