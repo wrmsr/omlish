@@ -8,6 +8,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
+from omlish.os.temp import make_temp_file
 
 from .consts import CI_CACHE_VERSION
 
@@ -162,3 +163,76 @@ class DirectoryFileCache(FileCache):
         else:
             shutil.copyfile(file_path, cache_file_path)
         return cache_file_path
+
+
+##
+
+
+class DataCache:
+    @dc.dataclass(frozen=True)
+    class Data(abc.ABC):  # noqa
+        pass
+
+    @dc.dataclass(frozen=True)
+    class BytesData(Data):
+        data: bytes
+
+    @dc.dataclass(frozen=True)
+    class FileData(Data):
+        file_path: str
+
+    @dc.dataclass(frozen=True)
+    class UrlData(Data):
+        url: str
+
+    #
+
+    @abc.abstractmethod
+    def get_data(self, key: str) -> ta.Awaitable[ta.Optional[Data]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+#
+
+
+class FileCacheDataCache(DataCache):
+    def __init__(
+            self,
+            file_cache: FileCache,
+    ) -> None:
+        super().__init__()
+
+        self._file_cache = file_cache
+
+    async def get_data(self, key: str) -> ta.Optional['DataCache.Data']:
+        if (file_path := await self._file_cache.get_file(key)) is None:
+            return None
+
+        return DataCache.FileData(file_path)
+
+    async def put_data(self, key: str, data: 'DataCache.Data') -> None:
+        steal = False
+
+        if isinstance(data, DataCache.BytesData):
+            file_path = make_temp_file()
+            with open(file_path, 'wb') as f:  # noqa
+                f.write(data.data)
+
+        elif isinstance(data, DataCache.FileData):
+            file_path = data.file_path
+
+        elif isinstance(data, DataCache.UrlData):
+            raise NotImplementedError
+
+        else:
+            raise TypeError(data)
+
+        await self._file_cache.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )

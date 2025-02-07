@@ -49,15 +49,16 @@ class NewDockerBuildCaching(DockerBuildCaching):
                 await self.ci_harness.file_cache().put_file(
                     target_cache_key,
                     file_path,
+                    steal=True,
                 )
                 return target_cache_key
 
-            new_ci_manifest = await build_cache_served_docker_image_manifest(
+            cache_served_manifest = await build_cache_served_docker_image_manifest(
                 data_server_routes,
                 make_file_cache_key,
             )
 
-        print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
+        print(json_dumps_pretty(marshal_obj(cache_served_manifest)))
 
         ####
 
@@ -75,12 +76,12 @@ class NewDockerBuildCaching(DockerBuildCaching):
                 **target_kwargs,
             )
 
-        new_data_server_routes = await build_cache_served_docker_image_data_server_routes(
-            new_ci_manifest,
+        cached_served_data_server_routes = await build_cache_served_docker_image_data_server_routes(
+            cache_served_manifest,
             make_cache_key_target,
         )
 
-        data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
+        data_server = DataServer(DataServer.HandlerRoute.of_(*cached_served_data_server_routes))
 
         async with DockerDataServer(
                 port,
