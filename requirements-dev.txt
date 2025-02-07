@@ -15,7 +15,7 @@ pytest-xdist==3.6.1
 
 flake8==7.1.1
 flake8-pyproject==1.2.3
-ruff==0.9.4
+ruff==0.9.5
 
 docutils-stubs==0.0.22
 types-markdown==3.7.0.20241204
@@ -109,19 +109,19 @@ datasets==3.2.0; python_version < "3.13"  # !! includes arrow and pandas and shi
 sentence-transformers==3.4.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
-transformers==4.48.2; python_version < "3.13"
+transformers==4.48.3; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.1
 
-duckduckgo_search==7.3.0  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==7.3.2  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.14
+boto3>=1.36.15
 
-mlx==0.22.0; sys_platform == "darwin"
-mlx-lm==0.21.2; sys_platform == "darwin"
+mlx==0.22.1; sys_platform == "darwin"
+mlx-lm==0.21.3; sys_platform == "darwin"
 
-apsw==3.48.0.0
+apsw==3.49.0.0
 
 rapidocr_onnxruntime==1.4.4
