@@ -3322,19 +3322,20 @@ class FileCacheDataCache(DataCache):
 
         self._file_cache = file_cache
 
-    async def get_data(self, key: str) -> ta.Optional['DataCache.Data']:
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
         if (file_path := await self._file_cache.get_file(key)) is None:
             return None
 
         return DataCache.FileData(file_path)
 
-    async def put_data(self, key: str, data: 'DataCache.Data') -> None:
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
         steal = False
 
         if isinstance(data, DataCache.BytesData):
             file_path = make_temp_file()
             with open(file_path, 'wb') as f:  # noqa
                 f.write(data.data)
+            steal = True
 
         elif isinstance(data, DataCache.FileData):
             file_path = data.file_path
@@ -4453,7 +4454,7 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 ##
 
 
-class GithubFileCache(FileCache):
+class GithubCache(FileCache, DataCache):
     @dc.dataclass(frozen=True)
     class Config:
         dir: str
@@ -4483,6 +4484,8 @@ class GithubFileCache(FileCache):
             ),
             version=self._version,
         )
+
+    #
 
     async def get_file(self, key: str) -> ta.Optional[str]:
         local_file = self._local.get_cache_file_path(key)
@@ -4516,6 +4519,14 @@ class GithubFileCache(FileCache):
         await self._client.upload_file(key, cache_file_path)
 
         return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        raise NotImplementedError
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        return await FileCacheDataCache(self).put_data(key, data)
 
 
 ########################################
@@ -5132,11 +5143,11 @@ def bind_github(
 
     if cache_dir is not None:
         lst.extend([
-            inj.bind(GithubFileCache.Config(
+            inj.bind(GithubCache.Config(
                 dir=cache_dir,
             )),
-            inj.bind(GithubFileCache, singleton=True),
-            inj.bind(FileCache, to_key=GithubFileCache),
+            inj.bind(GithubCache, singleton=True),
+            inj.bind(FileCache, to_key=GithubCache),
         ])
 
     return inj.as_bindings(*lst)

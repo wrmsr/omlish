@@ -7,8 +7,10 @@ from omlish.lite.check import check
 from omlish.os.files import unlinking_if_exists
 
 from ..cache import CacheVersion
+from ..cache import DataCache
 from ..cache import DirectoryFileCache
 from ..cache import FileCache
+from ..cache import FileCacheDataCache
 from .client import GithubCacheClient
 from .client import GithubCacheServiceV1Client
 
@@ -16,7 +18,7 @@ from .client import GithubCacheServiceV1Client
 ##
 
 
-class GithubFileCache(FileCache):
+class GithubCache(FileCache, DataCache):
     @dc.dataclass(frozen=True)
     class Config:
         dir: str
@@ -46,6 +48,8 @@ class GithubFileCache(FileCache):
             ),
             version=self._version,
         )
+
+    #
 
     async def get_file(self, key: str) -> ta.Optional[str]:
         local_file = self._local.get_cache_file_path(key)
@@ -79,3 +83,11 @@ class GithubFileCache(FileCache):
         await self._client.upload_file(key, cache_file_path)
 
         return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        raise NotImplementedError
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        return await FileCacheDataCache(self).put_data(key, data)

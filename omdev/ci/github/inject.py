@@ -6,7 +6,7 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from ..cache import FileCache
-from .cache import GithubFileCache
+from .cache import GithubCache
 
 
 ##
@@ -20,11 +20,11 @@ def bind_github(
 
     if cache_dir is not None:
         lst.extend([
-            inj.bind(GithubFileCache.Config(
+            inj.bind(GithubCache.Config(
                 dir=cache_dir,
             )),
-            inj.bind(GithubFileCache, singleton=True),
-            inj.bind(FileCache, to_key=GithubFileCache),
+            inj.bind(GithubCache, singleton=True),
+            inj.bind(FileCache, to_key=GithubCache),
         ])
 
     return inj.as_bindings(*lst)

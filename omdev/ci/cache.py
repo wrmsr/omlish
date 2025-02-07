@@ -208,19 +208,20 @@ class FileCacheDataCache(DataCache):
 
         self._file_cache = file_cache
 
-    async def get_data(self, key: str) -> ta.Optional['DataCache.Data']:
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
         if (file_path := await self._file_cache.get_file(key)) is None:
             return None
 
         return DataCache.FileData(file_path)
 
-    async def put_data(self, key: str, data: 'DataCache.Data') -> None:
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
         steal = False
 
         if isinstance(data, DataCache.BytesData):
             file_path = make_temp_file()
             with open(file_path, 'wb') as f:  # noqa
                 f.write(data.data)
+            steal = True
 
         elif isinstance(data, DataCache.FileData):
             file_path = data.file_path
