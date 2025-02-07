@@ -197,7 +197,12 @@ async def _a_main() -> None:
                 StringResponseHttpHandler('hi'),
                 temp_ssl=True,
         ) as server:
-            await server.run()
+            server_run_task = asyncio.create_task(server.run())
+            try:
+                await asyncio.sleep(10.)
+            finally:
+                server.shutdown()
+                await server_run_task
 
 
 if __name__ == '__main__':
