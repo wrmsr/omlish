@@ -11,7 +11,6 @@ from omlish.lite.marshal import marshal_obj
 from omlish.logs.standard import configure_standard_logging
 
 from ...dataserver.routes import DataServerRoute
-from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
@@ -167,6 +166,8 @@ class NewDockerBuildCaching(DockerBuildCaching):
                 data_server_routes,
                 lambda file_path: file_path,  # FIXME: upload lol
             )
+
+            print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
 
         return image_tag
 
