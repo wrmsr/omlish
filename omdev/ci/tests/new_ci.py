@@ -3,11 +3,8 @@ import abc
 import asyncio
 import dataclasses as dc
 import os.path
-import shlex
-import shutil
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
@@ -18,20 +15,10 @@ from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
-from ...oci.building import build_oci_index_repository
-from ...oci.compression import OciCompression
-from ...oci.data import OciImageIndex
-from ...oci.data import OciImageLayer
-from ...oci.data import OciImageManifest
-from ...oci.datarefs import FileOciDataRef
-from ...oci.datarefs import open_oci_data_ref
 from ...oci.dataserver import build_oci_repository_data_server_routes
-from ...oci.loading import read_oci_repository_root_index
-from ...oci.packing import OciLayerPacker
-from ...oci.packing import OciLayerUnpacker
-from ...oci.repositories import DirectoryOciRepository
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
+from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from .harness import CiHarness
 
 
@@ -129,109 +116,11 @@ async def run_new_ci(
         *,
         image_id: str,
         cache_key: str,
-        temp_dir: str,
 ) -> None:
-    new_temp_dir = os.path.join(temp_dir, 'new')
-    os.mkdir(new_temp_dir)
-
-    print(new_temp_dir)
-
-    #
-
-    built_image_dir = os.path.join(new_temp_dir, 'built-image')
-    os.mkdir(built_image_dir)
-
-    await asyncio_subprocesses.check_call(
-        ' | '.join([
-            f'docker save {shlex.quote(image_id)}',
-            f'tar x -C {shlex.quote(built_image_dir)}',
-        ]),
-        shell=True,
-    )
-
-    #
-
-    image_index = read_oci_repository_root_index(DirectoryOciRepository(built_image_dir))
-
-    while True:
-        child_manifest = check.single(image_index.manifests)
-        if isinstance(child_manifest, OciImageManifest):
-            image = child_manifest
-            break
-        image_index = check.isinstance(child_manifest, OciImageIndex)
-
-    #
-
-    image.config.history = None
-
-    #
-
-    input_files = []
-
-    for i, layer in enumerate(image.layers):
-        if isinstance(layer.data, FileOciDataRef):
-            input_file_path = layer.data.path
-
-        else:
-            input_file_path = os.path.join(new_temp_dir, f'built-layer-{i}.tar')
-            with open(input_file_path, 'wb') as input_file:  # noqa
-                with open_oci_data_ref(layer.data) as layer_file:
-                    shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
-
-        input_files.append(input_file_path)
-
-    #
-
-    unpacked_file_path = os.path.join(new_temp_dir, 'unpacked.tar')
-
-    print(unpacked_file_path)
-
-    with OciLayerUnpacker(
-            input_files,
-            unpacked_file_path,
-    ) as lu:
-        lu.write()
-
-    #
-
-    num_output_files = 3  # GH actions have this set to 3, the default
-
-    output_file_paths = [
-        os.path.join(new_temp_dir, f'packed-{i}.tar')
-        for i in range(num_output_files)
-    ]
-
-    print('\n'.join(output_file_paths))
-
-    #
-
-    compression: ta.Optional[OciCompression] = OciCompression.ZSTD
-
-    with OciLayerPacker(
-            unpacked_file_path,
-            output_file_paths,
-            compression=compression,
-    ) as lp:
-        written = lp.write()
-
-    #
-
-    # FIXME: use prebuilt sha256
-    image.layers = [
-        OciImageLayer(
-            kind=OciImageLayer.Kind.from_compression(compression),
-            data=FileOciDataRef(output_file),
-        )
-        for output_file, output_file_info in written.items()
-    ]
-    image.config.rootfs.diff_ids = [
-        f'sha256:{output_file_info.tar_sha256}'
-        for output_file_info in written.values()
-    ]
-
-    #
-
-    built_repo = build_oci_index_repository(image_index)
+    with PackedDockerImageIndexRepositoryBuilder(
+        image_id=image_id,
+    ) as drb:
+        built_repo = drb.packed_image_index_repository()
 
     print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
 
