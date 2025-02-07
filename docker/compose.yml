@@ -66,7 +66,7 @@ services:
       - '35224:5432'
 
   omlish-mysql:
-    image: 'mysql:9.1.0'
+    image: 'mysql:9.2.0'
     restart: 'unless-stopped'
     environment:
       MYSQL_USER: 'omlish'
@@ -90,7 +90,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.17.0'
+    image: 'elasticsearch:8.17.1'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
@@ -102,7 +102,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.26.0-community'
+    image: 'neo4j:5.26.2-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
@@ -125,7 +125,7 @@ services:
       - '35231:5432'
 
   omlish-redis:
-    image: 'redis:7.4.1'
+    image: 'redis:7.4.2'
     restart: 'unless-stopped'
     expose:
       - '6379'

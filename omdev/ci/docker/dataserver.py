@@ -40,7 +40,10 @@ async def start_docker_port_relay(
         yield
 
     finally:
-        proc.kill()
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            pass
         await proc.wait()
 
 
