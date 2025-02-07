@@ -51,7 +51,10 @@ class NewCiManifest:
     routes: ta.Sequence[Route]
 
 
-def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> NewCiManifest:
+def build_new_ci_manifest(
+        data_server_routes: ta.Iterable[DataServerRoute],
+        make_file_cache_key: ta.Callable[[str], str],
+) -> NewCiManifest:
     routes: ta.List[NewCiManifest.Route] = []
 
     for data_server_route in data_server_routes:
@@ -67,8 +70,8 @@ def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> N
         elif isinstance(data_server_target, FileDataServerTarget):
             file_path = check.non_empty_str(data_server_target.file_path)
             content_length = os.path.getsize(file_path)
-            # FIXME:
-            target = NewCiManifest.Route.CacheKeyTarget(file_path)
+            cache_key = make_file_cache_key(file_path)
+            target = NewCiManifest.Route.CacheKeyTarget(cache_key)
 
         else:
             raise TypeError(data_server_target)
@@ -87,7 +90,10 @@ def build_new_ci_manifest(data_server_routes: ta.Iterable[DataServerRoute]) -> N
     )
 
 
-def build_new_ci_data_server_routes(manifest: NewCiManifest) -> ta.List[DataServerRoute]:
+def build_new_ci_data_server_routes(
+        manifest: NewCiManifest,
+        make_cache_key_target: ta.Callable[[str], DataServerTarget],
+) -> ta.List[DataServerRoute]:
     routes: ta.List[DataServerRoute] = []
 
     for manifest_route in manifest.routes:
@@ -98,8 +104,7 @@ def build_new_ci_data_server_routes(manifest: NewCiManifest) -> ta.List[DataServ
             target = DataServerTarget.of(manifest_target.data)
 
         elif isinstance(manifest_target, NewCiManifest.Route.CacheKeyTarget):
-            # FIXME:
-            target = DataServerTarget.of(file_path=manifest_target.key)
+            target = make_cache_key_target(manifest_target.key)
 
         else:
             raise TypeError(manifest_target)
@@ -112,52 +117,28 @@ def build_new_ci_data_server_routes(manifest: NewCiManifest) -> ta.List[DataServ
     return routes
 
 
-async def run_new_ci(
-        *,
-        image_id: str,
-        cache_key: str,
-) -> None:
-    with PackedDockerImageIndexRepositoryBuilder(
-        image_id=image_id,
-    ) as drb:
-        built_repo = drb.packed_image_index_repository()
-
-    print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
-
-    #
-
-    data_server_routes = build_oci_repository_data_server_routes(
-        cache_key,
-        built_repo,
-    )
-
-    print(json_dumps_pretty(marshal_obj(data_server_routes, ta.List[DataServerRoute])))
-
-    #
-
-    new_ci_manifest = build_new_ci_manifest(data_server_routes)
-
-    print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
-
-    #
-
-    new_data_server_routes = build_new_ci_data_server_routes(new_ci_manifest)
-
-    data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
-
-    #
-
-    port = 5021
-
-    image_url = f'localhost:{port}/{cache_key}'
-
-    print(f'docker run --rm --pull always {image_url} uname -a')
-
-    # serve_for_docker(
-    #     port,
-    #     DataServerHttpHandler(data_server),
-    # )
-    data_server  # noqa
+# async def run_new_ci(
+#         *,
+#         image_id: str,
+#         cache_key: str,
+# ) -> None:
+#     new_data_server_routes = build_new_ci_data_server_routes(new_ci_manifest)
+#
+#     data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
+#
+#     #
+#
+#     port = 5021
+#
+#     image_url = f'localhost:{port}/{cache_key}'
+#
+#     print(f'docker run --rm --pull always {image_url} uname -a')
+#
+#     # serve_for_docker(
+#     #     port,
+#     #     DataServerHttpHandler(data_server),
+#     # )
+#     data_server  # noqa
 
 
 @dc.dataclass()
@@ -177,7 +158,15 @@ class NewDockerBuildCaching(DockerBuildCaching):
         ) as drb:
             built_repo = drb.packed_image_index_repository()
 
-            print(json_dumps_pretty(marshal_obj(built_repo.media_index)))
+            data_server_routes = build_oci_repository_data_server_routes(
+                cache_key,
+                built_repo,
+            )
+
+            new_ci_manifest = build_new_ci_manifest(
+                data_server_routes,
+                lambda file_path: file_path,  # FIXME: upload lol
+            )
 
         return image_tag
 
@@ -196,15 +185,6 @@ async def a_main() -> None:
                 image_id = await ci.resolve_ci_image()
 
                 print(image_id)
-
-        # async with ci_harness.make_ci() as ci:
-        #     image_id = await ci.resolve_ci_image()
-        #
-        #     await run_new_ci(
-        #         image_id=image_id,
-        #         cache_key=ci.ci_image_cache_key(),
-        #         temp_dir=ci_harness.temp_dir(),
-        #     )
 
 
 if __name__ == '__main__':
