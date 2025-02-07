@@ -47,9 +47,9 @@ class CacheServedDockerImageManifest:
 ##
 
 
-def build_cache_served_docker_image_manifest(
+async def build_cache_served_docker_image_manifest(
         data_server_routes: ta.Iterable[DataServerRoute],
-        make_file_cache_key: ta.Callable[[str], str],
+        make_file_cache_key: ta.Callable[[str], ta.Awaitable[str]],
 ) -> CacheServedDockerImageManifest:
     routes: ta.List[CacheServedDockerImageManifest.Route] = []
 
@@ -66,7 +66,7 @@ def build_cache_served_docker_image_manifest(
         elif isinstance(data_server_target, FileDataServerTarget):
             file_path = check.non_empty_str(data_server_target.file_path)
             content_length = os.path.getsize(file_path)
-            cache_key = make_file_cache_key(file_path)
+            cache_key = await make_file_cache_key(file_path)
             target = CacheServedDockerImageManifest.Route.CacheKeyTarget(cache_key)
 
         else:
@@ -89,9 +89,9 @@ def build_cache_served_docker_image_manifest(
 ##
 
 
-def build_cache_served_docker_image_data_server_routes(
+async def build_cache_served_docker_image_data_server_routes(
         manifest: CacheServedDockerImageManifest,
-        make_cache_key_target: ta.Callable[..., DataServerTarget],
+        make_cache_key_target: ta.Callable[..., ta.Awaitable[DataServerTarget]],
 ) -> ta.List[DataServerRoute]:
     routes: ta.List[DataServerRoute] = []
 
@@ -109,7 +109,7 @@ def build_cache_served_docker_image_data_server_routes(
             target = DataServerTarget.of(manifest_target.data, **target_kwargs)
 
         elif isinstance(manifest_target, CacheServedDockerImageManifest.Route.CacheKeyTarget):
-            target = make_cache_key_target(manifest_target.key, **target_kwargs)
+            target = await make_cache_key_target(manifest_target.key, **target_kwargs)
 
         else:
             raise TypeError(manifest_target)

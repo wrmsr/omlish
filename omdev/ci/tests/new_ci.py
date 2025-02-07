@@ -42,9 +42,13 @@ class NewDockerBuildCaching(DockerBuildCaching):
                 built_repo,
             )
 
-            new_ci_manifest = build_cache_served_docker_image_manifest(
+            async def make_file_cache_key(file_path: str) -> str:
+                # FIXME: upload lol
+                return file_path
+
+            new_ci_manifest = await build_cache_served_docker_image_manifest(
                 data_server_routes,
-                lambda file_path: file_path,  # FIXME: upload lol
+                make_file_cache_key,
             )
 
             print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
@@ -57,12 +61,16 @@ class NewDockerBuildCaching(DockerBuildCaching):
 
             print(f'docker run --rm --pull always {image_url} uname -a')
 
-            new_data_server_routes = build_cache_served_docker_image_data_server_routes(
-                new_ci_manifest,
-                lambda new_ci_target_cache_key, **target_kwargs: DataServerTarget.of(
-                    file_path=new_ci_target_cache_key,
+            async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
+                # FIXME: get cache url lol
+                return DataServerTarget.of(
+                    file_path=target_cache_key,
                     **target_kwargs,
-                ),
+                )
+
+            new_data_server_routes = await build_cache_served_docker_image_data_server_routes(
+                new_ci_manifest,
+                make_cache_key_target,
             )
 
             data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
