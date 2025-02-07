@@ -199,7 +199,7 @@ async def _a_main() -> None:
         ) as server:
             server_run_task = asyncio.create_task(server.run())
             try:
-                await asyncio.sleep(10.)
+                await asyncio.sleep(600.)
             finally:
                 server.shutdown()
                 await server_run_task
