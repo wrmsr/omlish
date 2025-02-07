@@ -1,13 +1,15 @@
 # ruff: noqa: UP006 UP007
+import asyncio
 import os.path
 import shlex
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.logs.timing import log_timing_context
 from omlish.os.temp import temp_dir_context
-from omlish.subprocesses import subprocesses
 
 from ...oci.building import BuiltOciImageIndexRepository
 from ...oci.pack.repositories import OciPackedRepositoryBuilder
@@ -37,13 +39,13 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
 
     #
 
-    @cached_nullary
-    def _save_to_dir(self) -> str:
+    @async_cached_nullary
+    async def _save_to_dir(self) -> str:
         save_dir = os.path.join(self._temp_dir(), 'built-image')
         os.mkdir(save_dir)
 
         with log_timing_context(f'Saving docker image {self._image_id}'):
-            subprocesses.check_call(
+            await asyncio_subprocesses.check_call(
                 ' | '.join([
                     f'docker save {shlex.quote(self._image_id)}',
                     f'tar x -C {shlex.quote(save_dir)}',
@@ -55,11 +57,13 @@ class PackedDockerImageIndexRepositoryBuilder(ExitStacked):
 
     #
 
-    @cached_nullary
-    def packed_image_index_repository(self) -> BuiltOciImageIndexRepository:
+    @async_cached_nullary
+    async def build(self) -> BuiltOciImageIndexRepository:
+        saved_dir = await self._save_to_dir()
+
         with OciPackedRepositoryBuilder(
-                DirectoryOciRepository(self._save_to_dir()),
+                DirectoryOciRepository(saved_dir),
 
                 temp_dir=self._temp_dir(),
         ) as prb:
-            return prb.build()
+            return await asyncio.get_running_loop().run_in_executor(None, prb.build)

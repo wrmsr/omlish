@@ -4,6 +4,7 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.json import json_dumps_pretty
+from omlish.lite.logs import log
 from omlish.lite.marshal import marshal_obj
 from omlish.logs.standard import configure_standard_logging
 
@@ -34,7 +35,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
         with PackedDockerImageIndexRepositoryBuilder(
                 image_id=image_id,
         ) as drb:
-            built_repo = drb.packed_image_index_repository()
+            built_repo = await drb.build()
 
             data_server_routes = build_oci_repository_data_server_routes(
                 cache_key,
@@ -69,6 +70,7 @@ class NewDockerBuildCaching(DockerBuildCaching):
             async with DockerDataServer(
                     port,
                     data_server,
+                    log=log,
             ) as dds:
                 dds_run_task = asyncio.create_task(dds.run())
                 try:
