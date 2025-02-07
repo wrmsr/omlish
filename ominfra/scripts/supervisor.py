@@ -6908,6 +6908,9 @@ class HttpHandler_(abc.ABC):  # noqa
         raise NotImplementedError
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class LoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
@@ -6919,6 +6922,54 @@ class LoggingHttpHandler(HttpHandler_):
         resp = self.handler(req)
         self.log.log(self.level, '%r', resp)
         return resp
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BytesResponseHttpHandler(HttpHandler_):
+    data: bytes
+
+    status: ta.Union[http.HTTPStatus, int] = 200
+    content_type: ta.Optional[str] = 'application/octet-stream'
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    close_connection: bool = True
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        return HttpHandlerResponse(
+            status=self.status,
+            headers={
+                **({'Content-Type': self.content_type} if self.content_type else {}),
+                'Content-Length': str(len(self.data)),
+                **(self.headers or {}),
+            },
+            data=self.data,
+            close_connection=self.close_connection,
+        )
+
+
+@dc.dataclass(frozen=True)
+class StringResponseHttpHandler(HttpHandler_):
+    data: str
+
+    status: ta.Union[http.HTTPStatus, int] = 200
+    content_type: ta.Optional[str] = 'text/plain; charset=utf-8'
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    close_connection: bool = True
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        data = self.data.encode('utf-8')
+        return HttpHandlerResponse(
+            status=self.status,
+            headers={
+                **({'Content-Type': self.content_type} if self.content_type else {}),
+                'Content-Length': str(len(data)),
+                **(self.headers or {}),
+            },
+            data=data,
+            close_connection=self.close_connection,
+        )
 
 
 ########################################

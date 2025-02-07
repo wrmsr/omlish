@@ -13,7 +13,6 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.marshal import marshal_obj
 from omlish.logs.standard import configure_standard_logging
 
-from ...dataserver.http import DataServerHttpHandler
 from ...dataserver.routes import DataServerRoute
 from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
@@ -32,7 +31,6 @@ from ...oci.packing import OciLayerPacker
 from ...oci.packing import OciLayerUnpacker
 from ...oci.repositories import DirectoryOciRepository
 from .harness import CiHarness
-from .serving import serve_for_docker
 
 
 @dc.dataclass(frozen=True)
@@ -264,10 +262,11 @@ async def run_new_ci(
 
     print(f'docker run --rm --pull always {image_url} uname -a')
 
-    serve_for_docker(
-        port,
-        DataServerHttpHandler(data_server),
-    )
+    # serve_for_docker(
+    #     port,
+    #     DataServerHttpHandler(data_server),
+    # )
+    data_server  # noqa
 
 
 # @dc.dataclass()

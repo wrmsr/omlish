@@ -17,7 +17,7 @@ def _main() -> None:
         ('/google', DataServerTarget.of(url='https://www.google.com/', methods=['GET'])),
     ]
 
-    ps = DataServer(DataServer.HandlerRoute.of_(*DataServerRoute.of_(*rts)))
+    ds = DataServer(DataServer.HandlerRoute.of_(*DataServerRoute.of_(*rts)))
 
     for req in [
         DataServerRequest('HEAD', '/hi'),
@@ -26,14 +26,14 @@ def _main() -> None:
         DataServerRequest('GET', '/src'),
         DataServerRequest('GET', '/google'),
     ]:
-        with ps.handle(req) as resp:
+        with ds.handle(req) as resp:
             print(resp)
 
     #
 
     with make_simple_http_server(
             5021,
-            DataServerHttpHandler(ps),
+            DataServerHttpHandler(ds),
             use_threads=True,
     ) as server:
         server.run()

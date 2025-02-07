@@ -16,6 +16,8 @@ class DataServerTarget(abc.ABC):  # noqa
     content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
+    #
+
     @classmethod
     def of(
             cls,
@@ -61,6 +63,36 @@ class DataServerTarget(abc.ABC):  # noqa
 
         else:
             raise TypeError('No target type provided')
+
+    #
+
+    @classmethod
+    def of_bytes(cls, data: bytes) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data,
+            content_type='application/octet-stream',
+        )
+
+    @classmethod
+    def of_text(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='text/plain; charset=utf-8',
+        )
+
+    @classmethod
+    def of_json(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='application/json; charset=utf-8',
+        )
+
+    @classmethod
+    def of_html(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='text/html; charset=utf-8',
+        )
 
 
 @dc.dataclass(frozen=True)

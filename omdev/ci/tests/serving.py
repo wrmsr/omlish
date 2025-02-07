@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007
 import asyncio
 import contextlib
+import logging
 import ssl
-import subprocess
 import sys
 import threading
 import typing as ta
@@ -11,13 +11,16 @@ from omlish.docker.portrelay import DockerPortRelay
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import LoggingHttpHandler
-from omlish.http.handlers import StringResponseHttpHandler
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.lite.logs import log
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
 from omlish.sockets.server.server import SocketServer
+
+from ...dataserver.http import DataServerHttpHandler
+from ...dataserver.routes import DataServerRoute
+from ...dataserver.server import DataServer
+from ...dataserver.targets import DataServerTarget
 
 
 ##
@@ -28,14 +31,12 @@ async def start_docker_port_relay(
         docker_port: int,
         host_port: int,
         **kwargs: ta.Any,
-) -> ta.Iterator[None]:
-    proc = await asyncio.create_subprocess_exec(
-            *DockerPortRelay(
-                docker_port,
-                host_port,
-                **kwargs,
-            ).run_cmd()
-    )
+) -> ta.AsyncGenerator[None, None]:
+    proc = await asyncio.create_subprocess_exec(*DockerPortRelay(
+        docker_port,
+        host_port,
+        **kwargs,
+    ).run_cmd())
 
     try:
         yield
@@ -43,50 +44,6 @@ async def start_docker_port_relay(
     finally:
         proc.kill()
         await proc.wait()
-
-
-##
-
-
-def serve_for_docker(
-        port: int,
-        handler: HttpHandler,
-        *,
-        temp_ssl: bool = False,
-) -> None:
-    relay_port: ta.Optional[int] = None
-    if sys.platform == 'darwin':
-        relay_port = port
-        server_port = port + 1
-    else:
-        server_port = port
-
-    ssl_context: ta.Optional[ssl.SSLContext] = None
-    if temp_ssl:
-        ssl_cert = generate_temp_localhost_ssl_cert().cert
-
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            keyfile=ssl_cert.key_file,
-            certfile=ssl_cert.cert_file,
-        )
-
-    with contextlib.ExitStack() as es:
-        server: SocketServer = es.enter_context(make_simple_http_server(  # noqa
-            server_port,
-            LoggingHttpHandler(handler, log),
-            ssl_context=ssl_context,
-            use_threads=True,
-        ))
-
-        if relay_port is not None:
-            es.enter_context(subprocess.Popen(DockerPortRelay(
-                relay_port,
-                server_port,
-                intermediate_port=server_port + 1,
-            ).run_cmd()))
-
-        server.run()
 
 
 ##
@@ -177,32 +134,94 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         await self._thread_exit_event.wait()
 
 
+##
+
+
+class DockerDataServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            data_server: DataServer,
+            *,
+            handler_log: ta.Optional[logging.Logger] = None,
+            stop_event: ta.Optional[asyncio.Event] = None,
+    ) -> None:
+        super().__init__()
+
+        self._port = port
+        self._data_server = data_server
+
+        self._handler_log = handler_log
+
+        if stop_event is None:
+            stop_event = asyncio.Event()
+        self._stop_event = stop_event
+
+    @property
+    def stop_event(self) -> asyncio.Event:
+        return self._stop_event
+
+    async def run(self) -> None:
+        relay_port: ta.Optional[int] = None
+        if sys.platform == 'darwin':
+            relay_port = self._port
+            server_port = self._port + 1
+        else:
+            server_port = self._port
+
+        #
+
+        handler: HttpHandler = DataServerHttpHandler(self._data_server)
+
+        if self._handler_log is not None:
+            handler = LoggingHttpHandler(
+                handler,
+                self._handler_log,
+            )
+
+        #
+
+        async with contextlib.AsyncExitStack() as es:
+            if relay_port is not None:
+                await es.enter_async_context(start_docker_port_relay(  # noqa
+                    relay_port,
+                    server_port,
+                    intermediate_port=server_port + 1,
+                ))
+
+            async with AsyncioManagedSimpleHttpServer(
+                    server_port,
+                    handler,
+                    temp_ssl=True,
+            ) as server:
+                server_run_task = asyncio.create_task(server.run())
+                try:
+                    await self._stop_event.wait()
+
+                finally:
+                    server.shutdown()
+                    await server_run_task
+
+
+##
+
+
 async def _a_main() -> None:
-    port = 5021
+    ds = DataServer(DataServer.HandlerRoute.of_(*DataServerRoute.of_(
+        ('/hi', DataServerTarget.of_text('hi')),
+    )))
 
-    relay_port: ta.Optional[int] = None
-    if sys.platform == 'darwin':
-        relay_port = port
-        server_port = port + 1
-    else:
-        server_port = port
+    async with DockerDataServer(
+            5021,
+            ds,
+    ) as dds:
+        dds_run_task = asyncio.create_task(dds.run())
+        try:
+            await asyncio.sleep(10.)
 
-    async with start_docker_port_relay(
-            relay_port,
-            server_port,
-            intermediate_port=server_port + 1,
-    ):
-        async with AsyncioManagedSimpleHttpServer(
-                server_port,
-                StringResponseHttpHandler('hi'),
-                temp_ssl=True,
-        ) as server:
-            server_run_task = asyncio.create_task(server.run())
-            try:
-                await asyncio.sleep(600.)
-            finally:
-                server.shutdown()
-                await server_run_task
+        finally:
+            dds.stop_event.set()
+            await dds_run_task
 
 
 if __name__ == '__main__':
