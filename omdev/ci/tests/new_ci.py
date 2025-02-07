@@ -11,6 +11,7 @@ from omlish.lite.marshal import marshal_obj
 from omlish.logs.standard import configure_standard_logging
 
 from ...dataserver.routes import DataServerRoute
+from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
@@ -19,6 +20,7 @@ from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from .harness import CiHarness
+from .serving import DockerDataServer
 
 
 @dc.dataclass(frozen=True)
@@ -91,19 +93,25 @@ def build_new_ci_manifest(
 
 def build_new_ci_data_server_routes(
         manifest: NewCiManifest,
-        make_cache_key_target: ta.Callable[[str], DataServerTarget],
+        make_cache_key_target: ta.Callable[..., DataServerTarget],
 ) -> ta.List[DataServerRoute]:
     routes: ta.List[DataServerRoute] = []
 
     for manifest_route in manifest.routes:
         manifest_target = manifest_route.target
+
+        target_kwargs: dict = dict(
+            content_type=manifest_route.content_type,
+            content_length=manifest_route.content_length,
+        )
+
         target: DataServerTarget
 
         if isinstance(manifest_target, NewCiManifest.Route.BytesTarget):
-            target = DataServerTarget.of(manifest_target.data)
+            target = DataServerTarget.of(manifest_target.data, **target_kwargs)
 
         elif isinstance(manifest_target, NewCiManifest.Route.CacheKeyTarget):
-            target = make_cache_key_target(manifest_target.key)
+            target = make_cache_key_target(manifest_target.key, **target_kwargs)
 
         else:
             raise TypeError(manifest_target)
@@ -168,6 +176,36 @@ class NewDockerBuildCaching(DockerBuildCaching):
             )
 
             print(json_dumps_pretty(marshal_obj(new_ci_manifest)))
+
+            ####
+
+            port = 5021
+
+            image_url = f'localhost:{port}/{cache_key}'
+
+            print(f'docker run --rm --pull always {image_url} uname -a')
+
+            new_data_server_routes = build_new_ci_data_server_routes(
+                new_ci_manifest,
+                lambda new_ci_target_cache_key, **target_kwargs: DataServerTarget.of(
+                    file_path=new_ci_target_cache_key,
+                    **target_kwargs,
+                ),
+            )
+
+            data_server = DataServer(DataServer.HandlerRoute.of_(*new_data_server_routes))
+
+            async with DockerDataServer(
+                    port,
+                    data_server,
+            ) as dds:
+                dds_run_task = asyncio.create_task(dds.run())
+                try:
+                    await asyncio.sleep(600.)
+
+                finally:
+                    dds.stop_event.set()
+                    await dds_run_task
 
         return image_tag
 
