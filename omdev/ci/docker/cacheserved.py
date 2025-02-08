@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import abc
 import asyncio
+import contextlib
 import dataclasses as dc
 import json
 import os.path
@@ -22,6 +23,8 @@ from ...oci.building import build_oci_index_repository
 from ...oci.data import get_single_leaf_oci_image_index
 from ...oci.dataserver import build_oci_repository_data_server_routes
 from ...oci.loading import read_oci_repository_root_index
+from ...oci.pack.repositories import OciPackedRepositoryBuilder
+from ...oci.repositories import OciRepository
 from ..cache import DataCache
 from ..cache import read_data_cache_data
 from .cache import DockerCache
@@ -147,6 +150,8 @@ class CacheServedDockerCache(DockerCache):
     class Config:
         port: int = 5021
 
+        repack: bool = True
+
     def __init__(
             self,
             *,
@@ -214,11 +219,22 @@ class CacheServedDockerCache(DockerCache):
         return image_url
 
     async def save_cache_docker_image(self, key: str, image: str) -> None:
-        async with self._image_repo_opener.open_docker_image_repository(image) as image_repo:
+        async with contextlib.AsyncExitStack() as es:
+            image_repo: OciRepository = await es.enter_async_context(
+                self._image_repo_opener.open_docker_image_repository(image),
+            )
+
             root_image_index = read_oci_repository_root_index(image_repo)
             image_index = get_single_leaf_oci_image_index(root_image_index)
 
-            built_repo = build_oci_index_repository(image_index)
+            if self._config.repack:
+                prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
+                    image_repo,
+                ))
+                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)
+
+            else:
+                built_repo = build_oci_index_repository(image_index)
 
             data_server_routes = build_oci_repository_data_server_routes(
                 key,
