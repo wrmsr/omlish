@@ -198,6 +198,9 @@ class CacheServedDockerCache(DockerCache):
         ) as dds:
             dds_run_task = asyncio.create_task(dds.run())
             try:
+                # FIXME: lol
+                await asyncio.sleep(3.)
+
                 await asyncio_subprocesses.check_call(
                     'docker',
                     'pull',
