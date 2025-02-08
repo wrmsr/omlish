@@ -5,6 +5,8 @@ import os.path
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.json import json_dumps_compact
+from omlish.lite.marshal import marshal_obj
 
 from ...dataserver.routes import DataServerRoute
 from ...dataserver.targets import BytesDataServerTarget
@@ -145,6 +147,9 @@ class CacheServedDockerCache(DockerCache):
         self._data_cache = data_cache
 
     async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        if (manifest_data := await self._data_cache.get_data(key)) is None:
+            return None
+
         raise NotImplementedError
 
     async def save_cache_docker_image(self, key: str, image: str) -> None:
@@ -160,7 +165,6 @@ class CacheServedDockerCache(DockerCache):
             )
 
             async def make_file_cache_key(file_path: str) -> str:
-                # FIXME: upload lol
                 target_cache_key = f'{key}--{os.path.basename(file_path).split(".")[0]}'
                 await self._data_cache.put_data(
                     target_cache_key,
@@ -173,8 +177,9 @@ class CacheServedDockerCache(DockerCache):
                 make_file_cache_key,
             )
 
-            # print(json_dumps_pretty(marshal_obj(cache_served_manifest)))
+        manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
 
-            print(cache_served_manifest)
-
-            raise NotImplementedError
+        await self._data_cache.put_data(
+            key,
+            DataCache.BytesData(manifest_data),
+        )

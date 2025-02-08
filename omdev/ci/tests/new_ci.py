@@ -4,6 +4,7 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log
@@ -13,6 +14,7 @@ from omlish.logs.standard import configure_standard_logging
 from ...dataserver.server import DataServer
 from ...dataserver.targets import DataServerTarget
 from ...oci.dataserver import build_oci_repository_data_server_routes
+from ..docker.repositories import DockerImageRepositoryOpenerImpl
 from ..cache import DataCache
 from ..cache import FileCacheDataCache
 from ..ci import Ci
@@ -20,6 +22,7 @@ from ..docker.buildcaching import DockerBuildCaching
 from ..docker.cacheserved import CacheServedDockerCache
 from ..docker.cacheserved import build_cache_served_docker_image_data_server_routes
 from ..docker.cacheserved import build_cache_served_docker_image_manifest
+from ..docker.buildcaching import DockerBuildCachingImpl
 from ..docker.dataserver import DockerDataServer
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from ..docker.repositories import DockerImageRepositoryOpenerImpl
@@ -121,12 +124,26 @@ async def a_main() -> None:
             async with Ci(
                     config=ci_harness.ci_config(),
 
-                    docker_build_caching=NewDockerBuildCaching(ci_harness),
+                    docker_build_caching=DockerBuildCachingImpl(
+                        config=ci_harness.docker_build_caching_impl_config(),
+
+                        docker_cache=CacheServedDockerCache(
+                            image_repo_opener=DockerImageRepositoryOpenerImpl(),
+                            data_cache=FileCacheDataCache(ci_harness.file_cache()),
+                        ),
+                    ),
+
                     docker_image_pulling=ci_harness.docker_image_pulling_impl(),
             ) as ci:
                 image_id = await ci.resolve_ci_image()
 
                 print(image_id)
+
+                await asyncio_subprocesses.check_call(
+                    'docker',
+                    'rmi',
+                    image_id,
+                )
 
 
 if __name__ == '__main__':

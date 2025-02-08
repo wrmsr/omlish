@@ -114,13 +114,17 @@ class CiHarness(AsyncExitStacked):
         )
 
     @cached_nullary
+    def docker_build_caching_impl_config(self) -> DockerBuildCachingImpl.Config:
+        return DockerBuildCachingImpl.Config(
+            service=self.ci_config().service,
+
+            always_build=self.ci_config().always_build,
+        )
+
+    @cached_nullary
     def docker_build_caching_impl(self) -> DockerBuildCachingImpl:
         return DockerBuildCachingImpl(
-            config=DockerBuildCachingImpl.Config(
-                service=self.ci_config().service,
-
-                always_build=self.ci_config().always_build,
-            ),
+            config=self.docker_build_caching_impl_config(),
 
             docker_cache=self.docker_cache_impl(),
         )
