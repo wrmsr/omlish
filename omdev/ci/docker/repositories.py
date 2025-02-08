@@ -15,18 +15,18 @@ from ...oci.repositories import OciRepository
 ##
 
 
-class DockerRepositoryBuilder(abc.ABC):
+class DockerImageRepositoryOpener(abc.ABC):
     @abc.abstractmethod
-    def build_docker_repository(self, image: str) -> ta.AsyncContextManager[OciRepository]:
+    def open_docker_image_repository(self, image: str) -> ta.AsyncContextManager[OciRepository]:
         raise NotImplementedError
 
 
 #
 
 
-class DockerRepositoryBuilderImpl(DockerRepositoryBuilder):
+class DockerImageRepositoryOpenerImpl(DockerImageRepositoryOpener):
     @contextlib.asynccontextmanager
-    async def build_docker_repository(self, image: str) -> ta.AsyncGenerator[OciRepository, None]:
+    async def open_docker_image_repository(self, image: str) -> ta.AsyncGenerator[OciRepository, None]:
         with temp_dir_context() as save_dir:
             with log_timing_context(f'Saving docker image {image}'):
                 await asyncio_subprocesses.check_call(

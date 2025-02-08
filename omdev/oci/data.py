@@ -155,7 +155,7 @@ def is_empty_oci_dataclass(obj: OciDataclass) -> bool:
 ##
 
 
-def get_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex:
+def get_single_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex:
     while True:
         child_manifest = check.single(image_index.manifests)
         if isinstance(child_manifest, OciImageManifest):

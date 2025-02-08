@@ -17,10 +17,12 @@ from ..cache import DataCache
 from ..cache import FileCacheDataCache
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
+from ..docker.cacheserved import CacheServedDockerCache
 from ..docker.cacheserved import build_cache_served_docker_image_data_server_routes
 from ..docker.cacheserved import build_cache_served_docker_image_manifest
 from ..docker.dataserver import DockerDataServer
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
+from ..docker.repositories import DockerImageRepositoryOpenerImpl
 from .harness import CiHarness
 
 
@@ -37,6 +39,13 @@ class NewDockerBuildCaching(DockerBuildCaching):
         image_id = await build_and_tag(image_tag)
 
         data_cache = FileCacheDataCache(self.ci_harness.file_cache())
+
+        cs_dc = CacheServedDockerCache(
+            image_repo_opener=DockerImageRepositoryOpenerImpl(),
+            data_cache=data_cache,
+        )
+
+        await cs_dc.save_cache_docker_image(cache_key, image_id)
 
         with PackedDockerImageIndexRepositoryBuilder(
                 image_id=image_id,

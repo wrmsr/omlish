@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import abc
 import asyncio
 import os.path
 import shlex
@@ -15,8 +14,6 @@ from omlish.os.temp import temp_dir_context
 from ...oci.building import BuiltOciImageIndexRepository
 from ...oci.pack.repositories import OciPackedRepositoryBuilder
 from ...oci.repositories import DirectoryOciRepository
-from .cache import DockerCache
-from .cacheserved import build_cache_served_docker_image_manifest
 
 
 ##

@@ -18,7 +18,7 @@ from ..compression import OciCompression
 from ..data import OciImageIndex
 from ..data import OciImageLayer
 from ..data import OciImageManifest
-from ..data import get_leaf_oci_image_index
+from ..data import get_single_leaf_oci_image_index
 from ..data import get_single_oci_image_manifest
 from ..datarefs import FileOciDataRef
 from ..datarefs import open_oci_data_ref
@@ -64,7 +64,7 @@ class OciPackedRepositoryBuilder(ExitStacked):
     @cached_nullary
     def _source_image_index(self) -> OciImageIndex:
         image_index = read_oci_repository_root_index(self._source_repo)
-        return get_leaf_oci_image_index(image_index)
+        return get_single_leaf_oci_image_index(image_index)
 
     @cached_nullary
     def _source_image_manifest(self) -> OciImageManifest:

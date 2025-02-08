@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 UP006 UP007
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 from omlish.lite.check import check
@@ -11,6 +11,9 @@ from .datarefs import BytesOciDataRef
 from .datarefs import FileOciDataRef
 from .datarefs import open_oci_data_ref
 from .media import OCI_MANIFEST_MEDIA_TYPES
+
+
+##
 
 
 def build_oci_repository_data_server_routes(
