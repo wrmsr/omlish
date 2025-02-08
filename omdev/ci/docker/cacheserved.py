@@ -1,14 +1,20 @@
 # ruff: noqa: UP006 UP007
 import abc
+import asyncio
 import dataclasses as dc
+import json
 import os.path
 import typing as ta
 
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.logs import log
 from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import unmarshal_obj
 
 from ...dataserver.routes import DataServerRoute
+from ...dataserver.server import DataServer
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
@@ -17,7 +23,9 @@ from ...oci.data import get_single_leaf_oci_image_index
 from ...oci.dataserver import build_oci_repository_data_server_routes
 from ...oci.loading import read_oci_repository_root_index
 from ..cache import DataCache
+from ..cache import read_data_cache_data
 from .cache import DockerCache
+from .dataserver import DockerDataServer
 from .repositories import DockerImageRepositoryOpener
 
 
@@ -135,13 +143,21 @@ async def build_cache_served_docker_image_data_server_routes(
 
 
 class CacheServedDockerCache(DockerCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        port: int = 5021
+
     def __init__(
             self,
             *,
+            config: Config = Config(),
+
             image_repo_opener: DockerImageRepositoryOpener,
             data_cache: DataCache,
     ) -> None:
         super().__init__()
+
+        self._config = config
 
         self._image_repo_opener = image_repo_opener
         self._data_cache = data_cache
@@ -150,7 +166,49 @@ class CacheServedDockerCache(DockerCache):
         if (manifest_data := await self._data_cache.get_data(key)) is None:
             return None
 
-        raise NotImplementedError
+        manifest_bytes = await read_data_cache_data(manifest_data)
+
+        manifest: CacheServedDockerImageManifest = unmarshal_obj(
+            json.loads(manifest_bytes.decode('utf-8')),
+            CacheServedDockerImageManifest,
+        )
+
+        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
+            # FIXME: url
+            cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
+            file_path = check.isinstance(cache_data, DataCache.FileData).file_path
+            return DataServerTarget.of(
+                file_path=file_path,
+                **target_kwargs,
+            )
+
+        data_server_routes = await build_cache_served_docker_image_data_server_routes(
+            manifest,
+            make_cache_key_target,
+        )
+
+        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
+
+        image_url = f'localhost:{self._config.port}/{key}'
+
+        async with DockerDataServer(
+                self._config.port,
+                data_server,
+                handler_log=log,
+        ) as dds:
+            dds_run_task = asyncio.create_task(dds.run())
+            try:
+                await asyncio_subprocesses.check_call(
+                    'docker',
+                    'pull',
+                    image_url,
+                )
+
+            finally:
+                dds.stop_event.set()
+                await dds_run_task
+
+        return image_url
 
     async def save_cache_docker_image(self, key: str, image: str) -> None:
         async with self._image_repo_opener.open_docker_image_repository(image) as image_repo:

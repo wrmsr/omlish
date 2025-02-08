@@ -3313,6 +3313,36 @@ class DataCache:
 #
 
 
+@functools.singledispatch
+async def read_data_cache_data(data: DataCache.Data) -> bytes:
+    raise TypeError(data)
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.BytesData) -> bytes:
+    return data.data
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.FileData) -> bytes:
+    with open(data.file_path, 'rb') as f:  # noqa
+        return f.read()
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.UrlData) -> bytes:
+    def inner() -> bytes:
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+            data.url,
+        )) as resp:
+            return resp.read()
+
+    return await asyncio.get_running_loop().run_in_executor(None, inner)
+
+
+#
+
+
 class FileCacheDataCache(DataCache):
     def __init__(
             self,
@@ -3367,6 +3397,9 @@ class GithubCacheClient(abc.ABC):
     @abc.abstractmethod
     def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
         raise NotImplementedError
+
+    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+        return None
 
     @abc.abstractmethod
     def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
@@ -3434,7 +3467,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         if (loop := self._given_loop) is not None:
             return loop
-        return asyncio.get_event_loop()
+        return asyncio.get_running_loop()
 
     #
 
@@ -3561,6 +3594,10 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     @dc.dataclass(frozen=True)
     class Entry(GithubCacheClient.Entry):
         artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry1 = check.isinstance(entry, self.Entry)
+        return entry1.artifact.cache_key
 
     #
 
@@ -4523,10 +4560,17 @@ class GithubCache(FileCache, DataCache):
     #
 
     async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        raise NotImplementedError
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
 
     async def put_data(self, key: str, data: DataCache.Data) -> None:
-        return await FileCacheDataCache(self).put_data(key, data)
+        await FileCacheDataCache(self).put_data(key, data)
 
 
 ########################################

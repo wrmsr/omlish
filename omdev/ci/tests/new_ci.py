@@ -14,15 +14,14 @@ from omlish.logs.standard import configure_standard_logging
 from ...dataserver.server import DataServer
 from ...dataserver.targets import DataServerTarget
 from ...oci.dataserver import build_oci_repository_data_server_routes
-from ..docker.repositories import DockerImageRepositoryOpenerImpl
 from ..cache import DataCache
 from ..cache import FileCacheDataCache
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
+from ..docker.buildcaching import DockerBuildCachingImpl
 from ..docker.cacheserved import CacheServedDockerCache
 from ..docker.cacheserved import build_cache_served_docker_image_data_server_routes
 from ..docker.cacheserved import build_cache_served_docker_image_manifest
-from ..docker.buildcaching import DockerBuildCachingImpl
 from ..docker.dataserver import DockerDataServer
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from ..docker.repositories import DockerImageRepositoryOpenerImpl

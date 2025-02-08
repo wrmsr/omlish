@@ -100,7 +100,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         if (loop := self._given_loop) is not None:
             return loop
-        return asyncio.get_event_loop()
+        return asyncio.get_running_loop()
 
     #
 

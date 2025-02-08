@@ -1,9 +1,12 @@
 # ruff: noqa: UP006 UP007
 import abc
+import asyncio
 import dataclasses as dc
+import functools
 import os.path
 import shutil
 import typing as ta
+import urllib.request
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -194,6 +197,36 @@ class DataCache:
     @abc.abstractmethod
     def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
         raise NotImplementedError
+
+
+#
+
+
+@functools.singledispatch
+async def read_data_cache_data(data: DataCache.Data) -> bytes:
+    raise TypeError(data)
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.BytesData) -> bytes:
+    return data.data
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.FileData) -> bytes:
+    with open(data.file_path, 'rb') as f:  # noqa
+        return f.read()
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.UrlData) -> bytes:
+    def inner() -> bytes:
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+            data.url,
+        )) as resp:
+            return resp.read()
+
+    return await asyncio.get_running_loop().run_in_executor(None, inner)
 
 
 #
