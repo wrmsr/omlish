@@ -10,6 +10,11 @@ from ...dataserver.routes import DataServerRoute
 from ...dataserver.targets import BytesDataServerTarget
 from ...dataserver.targets import DataServerTarget
 from ...dataserver.targets import FileDataServerTarget
+from ...oci.building import build_oci_index_repository
+from ...oci.dataserver import build_oci_repository_data_server_routes
+from ..cache import DataCache
+from .cache import DockerCache
+from .repositories import DockerRepositoryBuilder
 
 
 ##
@@ -44,7 +49,7 @@ class CacheServedDockerImageManifest:
     routes: ta.Sequence[Route]
 
 
-##
+#
 
 
 async def build_cache_served_docker_image_manifest(
@@ -86,7 +91,7 @@ async def build_cache_served_docker_image_manifest(
     )
 
 
-##
+#
 
 
 async def build_cache_served_docker_image_data_server_routes(
@@ -120,3 +125,51 @@ async def build_cache_served_docker_image_data_server_routes(
         ))
 
     return routes
+
+
+##
+
+
+class CacheServedDockerCache(DockerCache):
+    def __init__(
+            self,
+            *,
+            repo_builder: DockerRepositoryBuilder,
+            data_cache: DataCache,
+    ) -> None:
+        super().__init__()
+
+        self._repo_builder = repo_builder
+        self._data_cache = data_cache
+
+    async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    async def save_cache_docker_image(self, key: str, image: str) -> None:
+        async with self._repo_builder.build_docker_repository(image) as repo_repo:
+            built_repo = build_oci_index_repository(self._packed_image_index())
+
+        data_server_routes = build_oci_repository_data_server_routes(
+            key,
+            built_repo,
+        )
+
+        async def make_file_cache_key(file_path: str) -> str:
+            # FIXME: upload lol
+            target_cache_key = f'{key}--{os.path.basename(file_path).split(".")[0]}'
+            await self._data_cache.put_data(
+                target_cache_key,
+                DataCache.FileData(file_path),
+            )
+            return target_cache_key
+
+        cache_served_manifest = await build_cache_served_docker_image_manifest(
+            data_server_routes,
+            make_file_cache_key,
+        )
+
+        # print(json_dumps_pretty(marshal_obj(cache_served_manifest)))
+
+        print(cache_served_manifest)
+
+        raise NotImplementedError

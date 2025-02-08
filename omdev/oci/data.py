@@ -5,6 +5,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.check import check
 from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
@@ -149,3 +150,21 @@ def is_empty_oci_dataclass(obj: OciDataclass) -> bool:
 
     else:
         return False
+
+
+##
+
+
+def get_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex:
+    while True:
+        child_manifest = check.single(image_index.manifests)
+        if isinstance(child_manifest, OciImageManifest):
+            break
+        image_index = check.isinstance(child_manifest, OciImageIndex)
+
+    return image_index
+
+
+def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifest:
+    child_index = check.single(image_index.manifests)
+    return check.isinstance(child_index, OciImageManifest)

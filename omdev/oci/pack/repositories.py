@@ -11,16 +11,18 @@ from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.timing import log_timing_context
 from omlish.os.temp import temp_dir_context
 
-from ...oci.building import BuiltOciImageIndexRepository
-from ...oci.building import build_oci_index_repository
-from ...oci.compression import OciCompression
-from ...oci.data import OciImageIndex
-from ...oci.data import OciImageLayer
-from ...oci.data import OciImageManifest
-from ...oci.datarefs import FileOciDataRef
-from ...oci.datarefs import open_oci_data_ref
-from ...oci.loading import read_oci_repository_root_index
 from ...oci.tars import WrittenOciDataTarFileInfo
+from ..building import BuiltOciImageIndexRepository
+from ..building import build_oci_index_repository
+from ..compression import OciCompression
+from ..data import OciImageIndex
+from ..data import OciImageLayer
+from ..data import OciImageManifest
+from ..data import get_leaf_oci_image_index
+from ..data import get_single_oci_image_manifest
+from ..datarefs import FileOciDataRef
+from ..datarefs import open_oci_data_ref
+from ..loading import read_oci_repository_root_index
 from ..repositories import OciRepository
 from .packing import OciLayerPacker
 from .unpacking import OciLayerUnpacker
@@ -62,23 +64,11 @@ class OciPackedRepositoryBuilder(ExitStacked):
     @cached_nullary
     def _source_image_index(self) -> OciImageIndex:
         image_index = read_oci_repository_root_index(self._source_repo)
-
-        while True:
-            child_manifest = check.single(image_index.manifests)
-            if isinstance(child_manifest, OciImageManifest):
-                break
-            image_index = check.isinstance(child_manifest, OciImageIndex)
-
-        return image_index
-
-    @staticmethod
-    def _get_index_image(image_index: OciImageIndex) -> OciImageManifest:
-        child_index = check.single(image_index.manifests)
-        return check.isinstance(child_index, OciImageManifest)
+        return get_leaf_oci_image_index(image_index)
 
     @cached_nullary
     def _source_image_manifest(self) -> OciImageManifest:
-        return self._get_index_image(self._source_image_index())
+        return get_single_oci_image_manifest(self._source_image_index())
 
     #
 
@@ -143,7 +133,7 @@ class OciPackedRepositoryBuilder(ExitStacked):
     def _packed_image_index(self) -> OciImageIndex:
         image_index = copy.deepcopy(self._source_image_index())
 
-        image = self._get_index_image(image_index)
+        image = get_single_oci_image_manifest(image_index)
 
         image.config.history = None
 
