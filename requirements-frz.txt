@@ -97,7 +97,7 @@ dspy==2.5.42
 duckdb==1.2.0
 duckduckgo_search==7.3.2
 durationpy==0.9
-einops==0.8.0
+einops==0.8.1
 elastic-transport==8.17.0
 elasticsearch==8.17.1
 emoji==2.14.1
@@ -225,9 +225,9 @@ langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
 langgraph==0.2.70
-langgraph-checkpoint==2.0.10
+langgraph-checkpoint==2.0.12
 langgraph-sdk==0.1.51
-langsmith==0.3.6
+langsmith==0.3.7
 language_data==1.3.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -262,7 +262,7 @@ mistune==3.1.1
 mitogen==0.3.22
 ml-dtypes==0.4.1
 mlx==0.22.1
-mlx-lm==0.21.3
+mlx-lm==0.21.4
 mmh3==5.1.0
 monotonic==1.6
 more-itertools==10.6.0
@@ -299,7 +299,7 @@ onnx2torch==1.5.15
 onnxruntime==1.20.1
 openai==1.61.1
 opencv-python==4.11.0.86
-opendal==0.45.14
+opendal==0.45.15
 opentelemetry-api==1.30.0
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
 opentelemetry-instrumentation==0.51b0
@@ -331,7 +331,7 @@ pillow==11.1.0
 pipdeptree==2.25.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.21.0
+polars==1.22.0
 pooch==1.8.2
 portalocker==2.8.2
 posthog==3.11.0
@@ -377,7 +377,7 @@ pyobjc-framework-Metal==11.0
 pyogrio==0.10.0
 pyOpenSSL==24.3.0
 pyparsing==2.4.7
-pypdf==5.2.0
+pypdf==5.3.0
 pyperclip==1.9.0
 PyPika==0.48.9
 pyproj==3.7.0
@@ -394,7 +394,7 @@ pytest-timeout==2.3.1
 pytest-xdist==3.6.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-python-iso639==2025.1.28
+python-iso639==2025.2.8
 python-json-logger==3.2.1
 python-magic==0.4.27
 python-oxmsg==0.0.2
