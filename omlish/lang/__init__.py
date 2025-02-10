@@ -138,6 +138,7 @@ from .generators import (  # noqa
 from .imports import (  # noqa
     can_import,
     import_all,
+    import_attr,
     import_module,
     import_module_attr,
     lazy_import,

@@ -108,6 +108,28 @@ def import_module_attr(dotted_path: str) -> ta.Any:
         raise AttributeError(f'Module {module_name!r} has no attr {class_name!r}') from None
 
 
+def import_attr(dotted_path: str) -> ta.Any:
+    parts = dotted_path.split('.')
+    mod: ta.Any = None
+    mod_pos = 0
+    while mod_pos < len(parts):
+        mod_name = '.'.join(parts[:mod_pos + 1])
+        try:
+            mod = importlib.import_module(mod_name)
+        except ImportError:
+            break
+        mod_pos += 1
+    if mod is None:
+        raise ImportError(dotted_path)
+    obj = mod
+    for att_pos in range(mod_pos, len(parts)):
+        obj = getattr(obj, parts[att_pos])
+    return obj
+
+
+##
+
+
 SPECIAL_IMPORTABLE: ta.AbstractSet[str] = frozenset([
     '__init__.py',
     '__main__.py',
