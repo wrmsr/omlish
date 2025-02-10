@@ -23,13 +23,13 @@ if ta.TYPE_CHECKING:
     from .. import libc
     from ..formats import dotenv
     from ..logs import all as logs
-    from ..os import pidfile
+    from ..os.pidfiles import pidfile
 
 else:
     libc = lang.proxy_import('..libc', __package__)
     logs = lang.proxy_import('..logs', __package__)
     dotenv = lang.proxy_import('..formats.dotenv', __package__)
-    pidfile = lang.proxy_import('..os.pidfile', __package__)
+    pidfile = lang.proxy_import('..os.pidfiles.pidfile', __package__)
 
 
 ##
