@@ -48,6 +48,7 @@ from omlish import marshal as msh
 from omlish import multiprocessing as mpu
 from omlish.formats import json
 from omlish.logs import all as logs
+from omlish.os import death
 
 from . import models as mdl
 from .text import mfh  # noqa
@@ -79,7 +80,7 @@ pages_table = sa.Table(
 class FileAnalyzer:
     @dc.dataclass(frozen=True, kw_only=True)
     class Context:
-        deathpact: mpu.Deathpact
+        deathpact: death.Deathpact
         lock: threading.Lock
         num_rows: mpu.ValueProxy[int]
 
@@ -307,7 +308,7 @@ def _main() -> None:
 
     with contextlib.ExitStack() as es:
         if default_workers:
-            deathpact: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
+            deathpact: death.PipeDeathpact = es.enter_context(death.PipeDeathpact())
 
             mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
                 pass_fds={deathpact.pass_fd},
@@ -331,7 +332,7 @@ def _main() -> None:
 
         else:
             ctx = FileAnalyzer.Context(
-                deathpact=mpu.NopDeathpact(),
+                deathpact=death.NopDeathpact(),
                 lock=threading.RLock(),  # type: ignore
                 num_rows=mpu.DummyValueProxy(0),
             )

@@ -4,13 +4,6 @@ import typing as _ta
 from .. import lang as _lang
 
 
-from .death import (  # noqa
-    BaseDeathpact,
-    Deathpact,
-    NopDeathpact,
-    PipeDeathpact,
-)
-
 from .proxies import (  # noqa
     DummyValueProxy,
     ValueProxy,
