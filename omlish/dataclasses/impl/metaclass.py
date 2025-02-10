@@ -188,7 +188,12 @@ class Data(
     metaclass=DataMeta,
 ):
     def __init__(self, *args, **kwargs):
+        # Typechecking barrier
         super().__init__(*args, **kwargs)
+
+    def __init_subclass__(cls, **kwargs):
+        # Typechecking barrier
+        super().__init_subclass__(**kwargs)
 
     def __post_init__(self, *args, **kwargs) -> None:
         try:

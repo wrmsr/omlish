@@ -39,9 +39,14 @@ class Pidfile:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if hasattr(self, '_f'):
-            self._f.close()
-            del self._f
+        self.close()
+
+    def close(self) -> bool:
+        if not hasattr(self, '_f'):
+            return False
+        self._f.close()
+        del self._f
+        return True
 
     def fileno(self) -> ta.Optional[int]:
         if hasattr(self, '_f'):
