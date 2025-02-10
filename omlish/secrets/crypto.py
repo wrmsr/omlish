@@ -76,7 +76,6 @@ class Crypto(abc.ABC):
 
 
 class FernetCrypto(Crypto):
-
     def generate_key(self) -> bytes:
         return cry_fernet.Fernet.generate_key()
 
@@ -98,7 +97,7 @@ class FernetCrypto(Crypto):
             raise DecryptionError from e
 
 
-class AesgsmCrypto(Crypto):
+class AesgcmCrypto(Crypto):
     """https://stackoverflow.com/a/59835994"""
 
     def generate_key(self) -> bytes:

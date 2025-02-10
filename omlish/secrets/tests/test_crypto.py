@@ -7,7 +7,7 @@ from .. import crypto
 @ptu.skip.if_cant_import('cryptography')
 @pytest.mark.parametrize('sec', [
     crypto.FernetCrypto(),
-    crypto.AesgsmCrypto(),
+    crypto.AesgcmCrypto(),
     crypto.Chacha20Poly1305Crypto(),
 ])
 def test_crypto_crypto(sec: crypto.Crypto) -> None:

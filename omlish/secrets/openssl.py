@@ -33,7 +33,7 @@ else:
 DEFAULT_KEY_SIZE = 64
 
 
-def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
+def generate_key(sz: int = DEFAULT_KEY_SIZE) -> bytes:
     # !! https://docs.openssl.org/3.0/man7/passphrase-encoding/
     # Must not contain null bytes!
     return secrets.token_hex(sz).encode('ascii')
