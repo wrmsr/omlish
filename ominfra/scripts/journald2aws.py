@@ -1949,9 +1949,16 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 
 
 class Pidfile:
-    def __init__(self, path: str) -> None:
+    def __init__(
+            self,
+            path: str,
+            *,
+            non_inheritable: bool = False,
+    ) -> None:
         super().__init__()
+
         self._path = path
+        self._non_inheritable = non_inheritable
 
     _f: ta.TextIO
 
@@ -1961,7 +1968,8 @@ class Pidfile:
     def __enter__(self) -> 'Pidfile':
         fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
         try:
-            os.set_inheritable(fd, True)
+            if not self._non_inheritable:
+                os.set_inheritable(fd, True)
             f = os.fdopen(fd, 'r+')
         except Exception:
             try:
@@ -1976,6 +1984,12 @@ class Pidfile:
         if hasattr(self, '_f'):
             self._f.close()
             del self._f
+
+    def fileno(self) -> ta.Optional[int]:
+        if hasattr(self, '_f'):
+            return self._f.fileno()
+        else:
+            return None
 
     def try_lock(self) -> bool:
         try:
@@ -2008,7 +2022,7 @@ class Pidfile:
 
     def kill(self, sig: int = signal.SIGTERM) -> None:
         pid = self.read()
-        os.kill(pid, sig)  # FIXME: Still racy
+        os.kill(pid, sig)  # FIXME: Still racy - pidfd_send_signal
 
 
 ########################################
