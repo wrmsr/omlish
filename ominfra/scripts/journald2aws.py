@@ -1953,23 +1953,33 @@ class Pidfile:
             self,
             path: str,
             *,
-            non_inheritable: bool = False,
+            inheritable: bool = True,
     ) -> None:
         super().__init__()
 
         self._path = path
-        self._non_inheritable = non_inheritable
-
-    _f: ta.TextIO
+        self._inheritable = inheritable
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._path!r})'
+
+    #
+
+    _f: ta.TextIO
+
+    def fileno(self) -> ta.Optional[int]:
+        if hasattr(self, '_f'):
+            return self._f.fileno()
+        else:
+            return None
+
+    #
 
     def __enter__(self) -> 'Pidfile':
         fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
 
         try:
-            if not self._non_inheritable:
+            if self._inheritable:
                 os.set_inheritable(fd, True)
 
             f = os.fdopen(fd, 'r+')
@@ -1987,6 +1997,25 @@ class Pidfile:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    #
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if '_f' in state:
+            if os.get_inheritable(fd := state['_f'].fileno()):
+                state['__fd'] = fd
+            del state['_f']
+        return state
+
+    def __setstate__(self, state):
+        if '_f' in state:
+            raise RuntimeError
+        if '__fd' in state:
+            state['_f'] = os.fdopen(state.pop('__fd'), 'r+')
+        self.__dict__.update(state)
+
+    #
+
     def close(self) -> bool:
         if not hasattr(self, '_f'):
             return False
@@ -1994,12 +2023,6 @@ class Pidfile:
         self._f.close()
         del self._f
         return True
-
-    def fileno(self) -> ta.Optional[int]:
-        if hasattr(self, '_f'):
-            return self._f.fileno()
-        else:
-            return None
 
     def try_lock(self) -> bool:
         try:
@@ -2012,12 +2035,16 @@ class Pidfile:
         if not self.try_lock():
             raise RuntimeError('Could not get lock')
 
+    #
+
     def write(self, pid: ta.Optional[int] = None) -> None:
         self.ensure_locked()
 
         if pid is None:
             pid = os.getpid()
 
+        self._f.seek(0)
+        self._f.truncate()
         self._f.write(f'{pid}\n')
         self._f.flush()
 
