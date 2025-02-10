@@ -392,6 +392,14 @@ if LINUX or DARWIN:
         return CMSG_ALIGN(ct.sizeof(cmsghdr)) + sz
 
     def sendfd(sock, fd, data='.'):
+        """
+        Note: stdlib as of 3.7:
+
+          https://github.com/python/cpython/blob/84ed9a68bd9a13252b376b21a9167dabae254325/Lib/multiprocessing/reduction.py#L141
+
+        But still kept around due to other use of cmsg machinery.
+        """  # noqa
+
         if not data:
             raise ValueError(data)
 
@@ -424,6 +432,8 @@ if LINUX or DARWIN:
         return libc.sendmsg(sock, msgh, 0)
 
     def recvfd(sock, buf_len=4096):
+        """See sendfd."""
+
         if buf_len < 1:
             raise ValueError(buf_len)
 
