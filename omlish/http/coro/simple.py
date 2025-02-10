@@ -21,7 +21,7 @@ from ..parsing import HttpRequestParser
 from ..versions import HttpProtocolVersion
 from ..versions import HttpProtocolVersions
 from .server import CoroHttpServer
-from .server import CoroHttpServerSocketHandler
+from .sockets import CoroHttpServerSocketHandler
 
 
 if ta.TYPE_CHECKING:

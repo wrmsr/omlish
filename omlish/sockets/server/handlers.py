@@ -3,6 +3,7 @@
 import abc
 import concurrent.futures as cf
 import dataclasses as dc
+import logging
 import socket
 import typing as ta
 
@@ -132,3 +133,24 @@ class ExecutorSocketServerHandler(SocketServerHandler_):
 
     def __call__(self, conn: SocketAndAddress) -> None:
         self.executor.submit(self.handler, conn)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
+    handler: SocketServerHandler
+    log: logging.Logger
+
+    ignored: ta.Optional[ta.Container[ta.Type[Exception]]] = None
+
+    def __call__(self, conn: SocketAndAddress) -> None:
+        try:
+            return self.handler(conn)
+
+        except Exception as e:  # noqa
+            if (ignored := self.ignored) is None or type(e) not in ignored:
+                self.log.exception('Error in handler %r for conn %r', self.handler, conn)
+
+            raise

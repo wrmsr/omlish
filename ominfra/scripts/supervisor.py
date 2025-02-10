@@ -150,9 +150,6 @@ InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
-# ../../omlish/sockets/handlers.py
-SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], None]  # ta.TypeAlias
-
 # ../../omlish/http/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
 HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
@@ -2874,74 +2871,6 @@ class SocketAndAddress(ta.NamedTuple):
         def inner(conn):
             return conn.wrap_socket(fn)
         return inner
-
-
-########################################
-# ../../../omlish/sockets/io.py
-
-
-##
-
-
-class SocketWriter(io.BufferedIOBase):
-    """
-    Simple writable BufferedIOBase implementation for a socket
-
-    Does not hold data in a buffer, avoiding any need to call flush().
-    """
-
-    def __init__(self, sock):
-        super().__init__()
-
-        self._sock = sock
-
-    def writable(self):
-        return True
-
-    def write(self, b):
-        self._sock.sendall(b)
-        with memoryview(b) as view:
-            return view.nbytes
-
-    def fileno(self):
-        return self._sock.fileno()
-
-
-class SocketIoPair(ta.NamedTuple):
-    r: ta.BinaryIO
-    w: ta.BinaryIO
-
-    @classmethod
-    def from_socket(
-            cls,
-            sock: socket.socket,
-            *,
-            r_buf_size: int = -1,
-            w_buf_size: int = 0,
-    ) -> 'SocketIoPair':
-        rf: ta.Any = sock.makefile('rb', r_buf_size)
-
-        if w_buf_size:
-            wf: ta.Any = SocketWriter(sock)
-        else:
-            wf = sock.makefile('wb', w_buf_size)
-
-        return cls(rf, wf)
-
-
-##
-
-
-def close_socket_immediately(sock: socket.socket) -> None:
-    try:
-        # Explicitly shutdown. socket.close() merely releases the socket and waits for GC to perform the actual close.
-        sock.shutdown(socket.SHUT_WR)
-
-    except OSError:
-        # Some platforms may raise ENOTCONN here
-        pass
-
-    sock.close()
 
 
 ########################################
@@ -6427,19 +6356,6 @@ def journald_log_handler_factory(
 
 
 ########################################
-# ../../../omlish/sockets/handlers.py
-
-
-##
-
-
-class SocketHandler_(abc.ABC):  # noqa
-    @abc.abstractmethod
-    def __call__(self, addr: SocketAddress, f: SocketIoPair) -> None:
-        raise NotImplementedError
-
-
-########################################
 # ../configs.py
 
 
@@ -7702,6 +7618,9 @@ class CoroHttpServer:
     def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         return self._coro_run_handler(self._coro_handle_one())
 
+    class Close(Exception):  # noqa
+        pass
+
     def _coro_run_handler(
             self,
             gen: ta.Generator[
@@ -7741,7 +7660,7 @@ class CoroHttpServer:
 
                 try:
                     o = gen.send(i)
-                except EOFError:
+                except self.Close:
                     return
                 except StopIteration:
                     break
@@ -7770,7 +7689,7 @@ class CoroHttpServer:
                 break
 
         if isinstance(parsed, EmptyParsedHttpResult):
-            raise EOFError  # noqa
+            raise self.Close
 
         if isinstance(parsed, ParseHttpRequestError):
             err = self._build_error(
@@ -7860,56 +7779,6 @@ class CoroHttpServer:
             handler_response.close()
 
             raise
-
-
-##
-
-
-class CoroHttpServerSocketHandler(SocketHandler_):
-    def __init__(
-            self,
-            server_factory: CoroHttpServerFactory,
-            *,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._server_factory = server_factory
-        self._log_handler = log_handler
-
-    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
-        server = self._server_factory(client_address)
-
-        gen = server.coro_handle()
-
-        o = next(gen)
-        while True:
-            if isinstance(o, CoroHttpServer.AnyLogIo):
-                i = None
-                if self._log_handler is not None:
-                    self._log_handler(server, o)
-
-            elif isinstance(o, CoroHttpServer.ReadIo):
-                i = fp.r.read(o.sz)
-
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
-                i = fp.r.readline(o.sz)
-
-            elif isinstance(o, CoroHttpServer.WriteIo):
-                i = None
-                fp.w.write(o.data)
-                fp.w.flush()
-
-            else:
-                raise TypeError(o)
-
-            try:
-                if i is not None:
-                    o = gen.send(i)
-                else:
-                    o = next(gen)
-            except StopIteration:
-                break
 
 
 ########################################
