@@ -5,6 +5,7 @@ import dataclasses as dc
 import typing as ta
 
 from ..lite.check import check
+from ..lite.timeouts import TimeoutLike
 
 
 T = ta.TypeVar('T')
@@ -30,7 +31,7 @@ class SubprocessRunOutput(ta.Generic[T]):
 class SubprocessRun:
     cmd: ta.Sequence[str]
     input: ta.Any = None
-    timeout: ta.Optional[float] = None
+    timeout: ta.Optional[TimeoutLike] = None
     check: bool = False
     capture_output: ta.Optional[bool] = None
     kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
@@ -40,7 +41,7 @@ class SubprocessRun:
             cls,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
+            timeout: ta.Optional[TimeoutLike] = None,
             check: bool = False,  # noqa
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,

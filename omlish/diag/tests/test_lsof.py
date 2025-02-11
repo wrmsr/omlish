@@ -3,6 +3,7 @@ import shutil
 
 import pytest
 
+from ...subprocesses.sync import subprocesses  # noqa
 from ..lsof import LsofCommand
 from ..lsof import LsofItem
 

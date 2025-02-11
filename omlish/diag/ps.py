@@ -33,7 +33,7 @@ class PsCommand(SubprocessRunnable):
 
             stdout='pipe',
             stderr='devnull',
-            timeout=Timeout.of(self.timeout).or_(None),
+            timeout=self.timeout,
         )
 
     def handle_run_output(self, output: SubprocessRunOutput) -> PsItem:

@@ -5,6 +5,7 @@ import subprocess
 import sys
 import typing as ta
 
+from ..lite.timeouts import TimeoutLike
 from .base import BaseSubprocesses
 from .run import SubprocessRun
 from .run import SubprocessRunOutput
@@ -22,7 +23,7 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
             self,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
+            timeout: ta.Optional[TimeoutLike] = None,
             check: bool = False,
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,

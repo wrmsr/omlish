@@ -8,6 +8,7 @@ import subprocess
 import time
 import typing as ta
 
+from ..lite.timeouts import Timeout
 from .wrap import subprocess_maybe_shell_wrap_exec
 
 
@@ -108,6 +109,11 @@ class BaseSubprocesses(abc.ABC):  # noqa
 
         if not shell:
             cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
+        #
+
+        if 'timeout' in kwargs:
+            kwargs['timeout'] = Timeout.of(kwargs['timeout']).or_(None)
 
         #
 
