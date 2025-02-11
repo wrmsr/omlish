@@ -102,14 +102,15 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
 
 class Subprocesses(AbstractSubprocesses):
     def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
-        proc = subprocess.run(
-            run.cmd,
-            input=run.input,
-            timeout=run.timeout,
-            check=run.check,
-            capture_output=run.capture_output or False,
-            **(run.kwargs or {}),
-        )
+        with self.prepare_and_wrap(
+                *run.cmd,
+                input=run.input,
+                timeout=run.timeout,
+                check=run.check,
+                capture_output=run.capture_output or False,
+                **(run.kwargs or {}),
+        ) as (cmd, kwargs):
+            proc = subprocess.run(cmd, **kwargs)  # noqa
 
         return SubprocessRunOutput(
             proc=proc,

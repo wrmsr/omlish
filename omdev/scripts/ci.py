@@ -4636,14 +4636,15 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
 
 class Subprocesses(AbstractSubprocesses):
     def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
-        proc = subprocess.run(
-            run.cmd,
-            input=run.input,
-            timeout=run.timeout,
-            check=run.check,
-            capture_output=run.capture_output or False,
-            **(run.kwargs or {}),
-        )
+        with self.prepare_and_wrap(
+                *run.cmd,
+                input=run.input,
+                timeout=run.timeout,
+                check=run.check,
+                capture_output=run.capture_output or False,
+                **(run.kwargs or {}),
+        ) as (cmd, kwargs):
+            proc = subprocess.run(cmd, **kwargs)  # noqa
 
         return SubprocessRunOutput(
             proc=proc,
@@ -4893,19 +4894,19 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             timeout: ta.Optional[float] = None,
             **kwargs: ta.Any,
     ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
-        fac: ta.Any
-        if shell:
-            fac = functools.partial(
-                asyncio.create_subprocess_shell,
-                check.single(cmd),
-            )
-        else:
-            fac = functools.partial(
-                asyncio.create_subprocess_exec,
-                *cmd,
-            )
-
         with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
+            fac: ta.Any
+            if shell:
+                fac = functools.partial(
+                    asyncio.create_subprocess_shell,
+                    check.single(cmd),
+                )
+            else:
+                fac = functools.partial(
+                    asyncio.create_subprocess_exec,
+                    *cmd,
+                )
+
             proc: asyncio.subprocess.Process = await fac(**kwargs)
             try:
                 yield proc

@@ -55,7 +55,6 @@ async def async_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs)
 
 
 class SyncableIterable(ta.Generic[T]):
-
     def __init__(self, obj) -> None:
         super().__init__()
         self._obj = obj

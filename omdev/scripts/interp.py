@@ -4288,19 +4288,19 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             timeout: ta.Optional[float] = None,
             **kwargs: ta.Any,
     ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
-        fac: ta.Any
-        if shell:
-            fac = functools.partial(
-                asyncio.create_subprocess_shell,
-                check.single(cmd),
-            )
-        else:
-            fac = functools.partial(
-                asyncio.create_subprocess_exec,
-                *cmd,
-            )
-
         with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
+            fac: ta.Any
+            if shell:
+                fac = functools.partial(
+                    asyncio.create_subprocess_shell,
+                    check.single(cmd),
+                )
+            else:
+                fac = functools.partial(
+                    asyncio.create_subprocess_exec,
+                    *cmd,
+                )
+
             proc: asyncio.subprocess.Process = await fac(**kwargs)
             try:
                 yield proc
