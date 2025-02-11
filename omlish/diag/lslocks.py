@@ -1,0 +1,61 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
+"""
+https://github.com/util-linux/util-linux/blob/a4436c7bf07f98a6381c7dfa2ab3f9a415f9c479/misc-utils/lslocks.c
+"""
+import dataclasses as dc
+import json
+import typing as ta
+
+from omlish.lite.check import check
+from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
+from omlish.lite.marshal import unmarshal_obj
+from omlish.subprocesses.run import SubprocessRun
+from omlish.subprocesses.run import SubprocessRunnable
+from omlish.subprocesses.run import SubprocessRunOutput
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LsLocksItem:
+    """https://manpages.ubuntu.com/manpages/lunar/man8/lslocks.8.html"""
+
+    command: str
+    pid: int
+    type: str  # POSIX | FLOCK | OFDLCK
+    size: ta.Optional[int]
+    mode: str  # READ | WRITE
+    mandatory: bool = dc.field(metadata={OBJ_MARSHALER_FIELD_KEY: 'm'})
+    start: int
+    end: int
+    path: str
+    blocker: ta.Optional[int] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LsLocksCommand(SubprocessRunnable):
+    pid: ta.Optional[int] = None
+    no_inaccessible: bool = False
+
+    def make_run(self) -> SubprocessRun:
+        return SubprocessRun.of(
+            'lslocks',
+            '--json',
+            '--bytes',
+            '--notruncate',
+            *(['--pid', str(self.pid)] if self.pid is not None else []),
+            *(['--noinaccessible'] if self.no_inaccessible else []),
+
+            check=True,
+            stdout='pipe',
+            stderr='devnull',
+        )
+
+    def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsLocksItem]:
+        obj = json.loads(check.not_none(output.stdout).decode())
+        return unmarshal_obj(obj, ta.List[LsLocksItem])

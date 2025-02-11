@@ -1,5 +1,10 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - popen
+ - route check_calls through run_?
+"""
 import abc
 import subprocess
 import sys

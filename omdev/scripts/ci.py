@@ -3354,6 +3354,17 @@ class SubprocessRun:
     capture_output: ta.Optional[bool] = None
     kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
 
+    #
+
+    _FIELD_NAMES: ta.ClassVar[ta.FrozenSet[str]]
+
+    def replace(self, **kwargs: ta.Any) -> 'SubprocessRun':
+        if not kwargs:
+            return self
+        raise NotImplementedError
+
+    #
+
     @classmethod
     def of(
             cls,
@@ -3380,20 +3391,25 @@ class SubprocessRun:
     def run(
             self,
             subprocesses: ta.Optional[ta.Any] = None,  # AbstractSubprocesses
+            **kwargs: ta.Any,
     ) -> SubprocessRunOutput:
         if subprocesses is None:
             subprocesses = self._DEFAULT_SUBPROCESSES
-        return check.not_none(subprocesses).run_(self)  # type: ignore[attr-defined]
+        return check.not_none(subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
 
     _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
 
     async def async_run(
             self,
             async_subprocesses: ta.Optional[ta.Any] = None,  # AbstractAsyncSubprocesses
+            **kwargs: ta.Any,
     ) -> SubprocessRunOutput:
         if async_subprocesses is None:
             async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
-        return await check.not_none(async_subprocesses).run_(self)  # type: ignore[attr-defined]
+        return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
+
+
+SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessRun))  # noqa
 
 
 ##
@@ -3410,11 +3426,19 @@ class SubprocessRunnable(abc.ABC, ta.Generic[T]):
 
     #
 
-    def run(self, subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractSubprocesses
-        return self.handle_run_output(self.make_run().run(subprocesses))
+    def run(
+            self,
+            subprocesses: ta.Optional[ta.Any] = None,  # AbstractSubprocesses
+            **kwargs: ta.Any,
+    ) -> T:
+        return self.handle_run_output(self.make_run().run(subprocesses, **kwargs))
 
-    async def async_run(self, async_subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractAsyncSubprocesses
-        return self.handle_run_output(await self.make_run().async_run(async_subprocesses))
+    async def async_run(
+            self,
+            async_subprocesses: ta.Optional[ta.Any] = None,  # AbstractAsyncSubprocesses
+            **kwargs: ta.Any,
+    ) -> T:
+        return self.handle_run_output(await self.make_run().async_run(async_subprocesses, **kwargs))
 
 
 ########################################
@@ -4749,6 +4773,11 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
 ########################################
 # ../../../omlish/subprocesses/sync.py
+"""
+TODO:
+ - popen
+ - route check_calls through run_?
+"""
 
 
 ##
