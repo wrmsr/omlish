@@ -14,6 +14,14 @@ from .pidfile import Pidfile
 
 
 class _PidfileManager:
+    """
+    Manager for controlled inheritance of Pidfiles across forks.
+
+    Not implemented as an instantiated class as there is no way to unregister at_fork listeners, and because Pidfiles
+    may be pickled and there must be no possibility of accidentally unpickling and instantiating a new instance of the
+    manager.
+    """
+
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
@@ -71,6 +79,11 @@ class _PidfileManager:
             inheritable: bool = True,
             **kwargs: ta.Any,
     ) -> ta.Iterator[Pidfile]:
+        """
+        A contextmanager for creating and managing a Pidfile which will only be inherited by forks of the calling /
+        creating thread.
+        """
+
         check.arg(inheritable)
 
         cls.install()
