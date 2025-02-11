@@ -1953,6 +1953,7 @@ TODO:
    - 3) recheck current pid of flock holder == that pid
   - racy as to if it's a different actual process as initial check, just with same pid, but due to 'identity' / semantic
     meaning of the named pidfile the processes are considered equivalent
+  - read_checked(), contextmanager
 """
 
 
@@ -2074,11 +2075,11 @@ class Pidfile:
             raise RuntimeError('Got lock')
 
         self._f.seek(0)
-        return int(self._f.read())  # FIXME: could be empty or hold old value, race w proc start
+        return int(self._f.read())
 
     def kill(self, sig: int = signal.SIGTERM) -> None:
         pid = self.read()
-        os.kill(pid, sig)  # FIXME: Still racy - pidfd_send_signal?
+        os.kill(pid, sig)
 
 
 ########################################
