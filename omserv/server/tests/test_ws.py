@@ -37,7 +37,7 @@ async def test_server_websocket():
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.timeout(get_timeout_s())
+            tt = lang.Timeout.of(get_timeout_s())
             while True:
                 tt()
                 try:

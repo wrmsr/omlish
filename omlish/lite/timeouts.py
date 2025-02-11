@@ -1,9 +1,13 @@
+# ruff: noqa: UP006 UP007
 import abc
 import time
 import typing as ta
 
 
-TimeoutLike: ta.TypeAlias = ta.Union['Timeout', float]
+TimeoutLike = ta.Union['Timeout', float]  # ta.TypeAlias
+
+
+##
 
 
 class Timeout(abc.ABC):
@@ -15,12 +19,26 @@ class Timeout(abc.ABC):
     def or_(self, o: ta.Any) -> ta.Any:
         raise NotImplementedError
 
+    @classmethod
+    def of(cls, t: ta.Optional[TimeoutLike]) -> 'Timeout':
+        if t is None:
+            return InfiniteTimeout()
+
+        elif isinstance(t, Timeout):
+            return t
+
+        elif isinstance(t, (float, int)):
+            return DeadlineTimeout(time.time() + t)
+
+        else:
+            raise TypeError(t)
+
 
 class DeadlineTimeout(Timeout):
     def __init__(
             self,
             deadline: float,
-            exc: type[BaseException] | BaseException = TimeoutError,
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
     ) -> None:
         super().__init__()
         self.deadline = deadline
@@ -41,13 +59,3 @@ class InfiniteTimeout(Timeout):
 
     def or_(self, o: ta.Any) -> ta.Any:
         return o
-
-
-def timeout(t: TimeoutLike | None) -> Timeout:
-    if t is None:
-        return InfiniteTimeout()
-    if isinstance(t, Timeout):
-        return t
-    if isinstance(t, (float, int)):
-        return DeadlineTimeout(time.time() + t)
-    raise TypeError(t)

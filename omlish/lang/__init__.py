@@ -226,14 +226,6 @@ from .sys import (  # noqa
     is_gil_enabled,
 )
 
-from .timeouts import (  # noqa
-    DeadlineTimeout,
-    InfiniteTimeout,
-    Timeout,
-    TimeoutLike,
-    timeout,
-)
-
 from .typing import (  # noqa
     BytesLike,
     SequenceNotStr,
@@ -243,6 +235,13 @@ from .typing import (  # noqa
 )
 
 ##
+
+from ..lite.timeouts import (  # noqa
+    DeadlineTimeout,
+    InfiniteTimeout,
+    Timeout,
+    TimeoutLike,
+)
 
 from ..lite.types import (  # noqa
     BUILTIN_SCALAR_ITERABLE_TYPES,

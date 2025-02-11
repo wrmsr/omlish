@@ -55,7 +55,7 @@ async def test_auth(harness):
 
             r: httpx.Response
             async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
-                tt = lang.timeout(get_timeout_s())
+                tt = lang.Timeout.of(get_timeout_s())
                 while True:
                     tt()
                     try:

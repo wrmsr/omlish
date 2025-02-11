@@ -13,7 +13,7 @@ class PsItem:
 
 
 def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
-    timeout = lang.timeout(timeout)
+    timeout = lang.Timeout.of(timeout)
     out = subprocess.check_output(
         ['ps', '-o', 'pid=,ppid=,command=', str(int(pid))],
         timeout=timeout.or_(None),
@@ -28,7 +28,7 @@ def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
 
 
 def get_ps_lineage(pid: int, timeout: lang.Timeout | None = None) -> list[PsItem]:
-    timeout = lang.timeout(timeout)
+    timeout = lang.Timeout.of(timeout)
     ret: list[PsItem] = []
     while True:
         cur = get_ps_item(pid, timeout)
