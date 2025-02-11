@@ -7,12 +7,12 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
-from omlish.lite.marshal import unmarshal_obj
-from omlish.subprocesses.run import SubprocessRun
-from omlish.subprocesses.run import SubprocessRunnable
-from omlish.subprocesses.run import SubprocessRunOutput
+from ..lite.check import check
+from ..lite.marshal import OBJ_MARSHALER_FIELD_KEY
+from ..lite.marshal import unmarshal_obj
+from ..subprocesses.run import SubprocessRun
+from ..subprocesses.run import SubprocessRunnable
+from ..subprocesses.run import SubprocessRunOutput
 
 
 ##
