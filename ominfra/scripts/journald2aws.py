@@ -1972,6 +1972,14 @@ class Pidfile:
         self._path = path
         self._inheritable = inheritable
 
+    @property
+    def path(self) -> str:
+        return self._path
+
+    @property
+    def inheritable(self) -> bool:
+        return self._inheritable
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._path!r})'
 
@@ -2015,6 +2023,7 @@ class Pidfile:
         state = self.__dict__.copy()
 
         if '_f' in state:
+            # self._inheritable may be decoupled from actual file inheritability - for example when using the manager.
             if os.get_inheritable(fd := state.pop('_f').fileno()):
                 state['__fd'] = fd
 

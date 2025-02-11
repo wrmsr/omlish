@@ -106,7 +106,7 @@ CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', 'Timeout.Default', float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', 'Timeout.Default', ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
 
 # ../../omlish/lite/typing.py
 A0 = ta.TypeVar('A0')
@@ -2603,6 +2603,10 @@ def format_num_bytes(num_bytes: int) -> str:
 
 ########################################
 # ../../../omlish/lite/timeouts.py
+"""
+TODO:
+ - Event (/ Predicate)
+"""
 
 
 ##
@@ -2617,14 +2621,14 @@ class Timeout(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def remaining(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires. May be negative."""
+    def expired(self) -> bool:
+        """Return whether or not this timeout has expired."""
 
         raise NotImplementedError
 
     @abc.abstractmethod
-    def expired(self) -> bool:
-        """Return whether or not this timeout has expired."""
+    def remaining(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
 
         raise NotImplementedError
 
@@ -2671,6 +2675,9 @@ class Timeout(abc.ABC):
         elif isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
+        elif isinstance(obj, ta.Iterable):
+            return CompositeTimeout(*[Timeout.of(c) for c in obj])
+
         elif obj is Timeout.Default:
             if default is Timeout._NOT_SPECIFIED or default is Timeout.Default:
                 raise RuntimeError('Must specify a default timeout')
@@ -2680,6 +2687,14 @@ class Timeout(abc.ABC):
 
         else:
             raise TypeError(obj)
+
+    @classmethod
+    def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':
+        return DeadlineTimeout(deadline)
+
+    @classmethod
+    def of_predicate(cls, expired_fn: ta.Callable[[], bool]) -> 'PredicateTimeout':
+        return PredicateTimeout(expired_fn)
 
 
 class DeadlineTimeout(Timeout):
@@ -2697,11 +2712,11 @@ class DeadlineTimeout(Timeout):
     def can_expire(self) -> bool:
         return True
 
-    def remaining(self) -> float:
-        return self.deadline - self._now()
-
     def expired(self) -> bool:
         return not (self.remaining() > 0)
+
+    def remaining(self) -> float:
+        return self.deadline - self._now()
 
     def __call__(self) -> float:
         if (rem := self.remaining()) > 0:
@@ -2717,17 +2732,72 @@ class InfiniteTimeout(Timeout):
     def can_expire(self) -> bool:
         return False
 
-    def remaining(self) -> float:
-        return float('inf')
-
     def expired(self) -> bool:
         return False
+
+    def remaining(self) -> float:
+        return float('inf')
 
     def __call__(self) -> float:
         return float('inf')
 
     def or_(self, o: ta.Any) -> ta.Any:
         return o
+
+
+class CompositeTimeout(Timeout):
+    def __init__(self, *children: Timeout) -> None:
+        super().__init__()
+
+        self.children = children
+
+    @property
+    def can_expire(self) -> bool:
+        return any(c.can_expire for c in self.children)
+
+    def expired(self) -> bool:
+        return any(c.expired() for c in self.children)
+
+    def remaining(self) -> float:
+        return min(c.remaining() for c in self.children)
+
+    def __call__(self) -> float:
+        return min(c() for c in self.children)
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        if self.can_expire:
+            return self()
+        return o
+
+
+class PredicateTimeout(Timeout):
+    def __init__(
+            self,
+            expired_fn: ta.Callable[[], bool],
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
+    ) -> None:
+        super().__init__()
+
+        self.expired_fn = expired_fn
+        self.exc = exc
+
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def expired(self) -> bool:
+        return self.expired_fn()
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def __call__(self) -> float:
+        if not self.expired_fn():
+            return float('inf')
+        raise self.exc
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
 
 
 ########################################
