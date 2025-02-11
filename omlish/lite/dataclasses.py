@@ -42,3 +42,26 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
         return False
     fn()
     return True
+
+
+def dataclass_repr_filtered(
+        obj: ta.Any,
+        fn: ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+) -> str:
+    return (
+        f'{obj.__class__.__qualname__}(' +
+        ', '.join([
+            f'{f.name}={v!r}'
+            for f in dc.fields(obj)
+            if fn(obj, f, v := getattr(obj, f.name))
+        ]) +
+        ')'
+    )
+
+
+def dataclass_repr_omit_none(obj: ta.Any) -> str:
+    return dataclass_repr_filtered(obj, lambda o, f, v: v is not None)
+
+
+def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
+    return dataclass_repr_filtered(obj, lambda o, f, v: bool(v))
