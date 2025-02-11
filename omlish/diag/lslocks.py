@@ -61,4 +61,4 @@ class LsLocksCommand(SubprocessRunnable):
         if not buf:
             return []
         obj = json.loads(buf)
-        return unmarshal_obj(obj, ta.List[LsLocksItem])
+        return unmarshal_obj(obj['locks'], ta.List[LsLocksItem])
