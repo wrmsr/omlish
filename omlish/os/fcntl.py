@@ -9,6 +9,8 @@ import typing as ta
 
 @dc.dataclass(frozen=True)
 class FcntlLockData:
+    # cmd = {F_SETLK, F_SETLKW, F_GETLK}
+
     type: int  # {F_RDLCK, F_WRLCK, F_UNLCK}
     whence: int = os.SEEK_SET
     start: int = 0
