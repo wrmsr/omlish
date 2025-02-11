@@ -19,14 +19,14 @@ class Timeout(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def remaining(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires. May be negative."""
+    def expired(self) -> bool:
+        """Return whether or not this timeout has expired."""
 
         raise NotImplementedError
 
     @abc.abstractmethod
-    def expired(self) -> bool:
-        """Return whether or not this timeout has expired."""
+    def remaining(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
 
         raise NotImplementedError
 
@@ -83,6 +83,10 @@ class Timeout(abc.ABC):
         else:
             raise TypeError(obj)
 
+    @classmethod
+    def of_deadline(cls, deadline: float) -> 'Timeout':
+        return DeadlineTimeout(deadline)
+
 
 class DeadlineTimeout(Timeout):
     def __init__(
@@ -99,11 +103,11 @@ class DeadlineTimeout(Timeout):
     def can_expire(self) -> bool:
         return True
 
-    def remaining(self) -> float:
-        return self.deadline - self._now()
-
     def expired(self) -> bool:
         return not (self.remaining() > 0)
+
+    def remaining(self) -> float:
+        return self.deadline - self._now()
 
     def __call__(self) -> float:
         if (rem := self.remaining()) > 0:
@@ -119,11 +123,11 @@ class InfiniteTimeout(Timeout):
     def can_expire(self) -> bool:
         return False
 
-    def remaining(self) -> float:
-        return float('inf')
-
     def expired(self) -> bool:
         return False
+
+    def remaining(self) -> float:
+        return float('inf')
 
     def __call__(self) -> float:
         return float('inf')
