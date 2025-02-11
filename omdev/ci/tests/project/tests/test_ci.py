@@ -1,9 +1,9 @@
+import os
 import subprocess
 
 
 def test_imports():
     import anyio  # noqa
-    import pytest  # noqa
     import yaml  # noqa
 
 
@@ -31,6 +31,10 @@ def test_imports():
 
 
 def test_pg_ping():
+    if 'CI' not in os.environ:
+        import pytest  # noqa
+        pytest.skip('not in CI')
+
     subprocess.check_call([
         'ping',
         '-c', '1',
