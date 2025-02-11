@@ -9,6 +9,7 @@ import time
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
+    parser.add_argument('--fork', action='store_true')
     args = parser.parse_args()
 
     if (file := args.file) is None:
@@ -19,14 +20,18 @@ def _main() -> None:
     print(f'file: {file}')
 
     print(f'parent: {os.getpid()}')
-    if not (pid := os.fork()):
+    child_pid = None
+    if args.fork and not (child_pid := os.fork()):
         while True:
             time.sleep(60 * 60)
+        raise RuntimeError  # noqa
     else:
-        print(f'child: {pid}')
+        if child_pid is not None:
+            print(f'child: {child_pid}')
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         input()
-        os.kill(pid, signal.SIGTERM)
+        if child_pid is not None:
+            os.kill(child_pid, signal.SIGTERM)
 
 
 if __name__ == '__main__':

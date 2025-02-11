@@ -151,6 +151,7 @@ class LsofItem:
 
     @classmethod
     def from_prefixes(cls, dct: ta.Mapping[str, ta.Any]) -> 'LsofItem':
+        print(dct)
         kw: ta.Dict[str, ta.Any] = {
             fld.name: val
             for pfx, val in dct.items()
@@ -178,7 +179,9 @@ class LsofItem:
             meta: _LsofFieldMeta = fld.metadata[_LsofFieldMeta]
 
             if pfx == 'p':
+                emit()
                 proc_dct = {}
+                file_dct = {}
             elif pfx == 'f':
                 emit()
                 file_dct = {}
@@ -215,6 +218,7 @@ LsofItem._DEFAULT_PREFIXES = ''.join(LsofItem._FIELDS_BY_PREFIX)  # noqa
 @dc.dataclass(frozen=True)
 class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
     pid: ta.Optional[int] = None
+    file: ta.Optional[str] = None
 
     prefixes: ta.Optional[ta.Sequence[str]] = None
 
@@ -226,6 +230,7 @@ class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
             'lsof',
             '-F', ''.join(prefixes),
             *(['-p', str(self.pid)] if self.pid is not None else []),
+            *([self.file] if self.file is not None else []),
 
             stdout='pipe',
             stderr='devnull',
@@ -235,3 +240,25 @@ class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
     def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsofItem]:
         lines = [s for l in check.not_none(output.stdout).decode().splitlines() if (s := l.strip())]
         return LsofItem.from_prefix_lines(lines)
+
+
+if __name__ == '__main__':
+    def _main() -> None:
+        argparse = __import__('argparse')
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--pid', '-p', type=int)
+        parser.add_argument('file', nargs='?')
+        args = parser.parse_args()
+
+        importlib = __import__('importlib')
+        subprocesses = importlib.import_module('..subprocesses.sync', package=__package__).subprocesses
+        items = LsofCommand(
+            pid=args.pid,
+            file=args.file,
+        ).run(subprocesses)
+
+        json = __import__('json')
+        marshal_obj = importlib.import_module('..lite.marshal', package=__package__).marshal_obj
+        print(json.dumps(marshal_obj(items), indent=2))
+
+    _main()
