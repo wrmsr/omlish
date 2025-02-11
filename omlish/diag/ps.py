@@ -1,8 +1,8 @@
 import dataclasses as dc
 import os
-import subprocess
 
 from .. import lang
+from ..subprocesses.sync import subprocesses
 
 
 @dc.dataclass(frozen=True)
@@ -14,8 +14,10 @@ class PsItem:
 
 def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
     timeout = lang.Timeout.of(timeout)
-    out = subprocess.check_output(
-        ['ps', '-o', 'pid=,ppid=,command=', str(int(pid))],
+    out = subprocesses.check_output(
+        'ps',
+        '-o', 'pid=,ppid=,command=',
+        str(int(pid)),
         timeout=timeout.or_(None),
     ).decode().strip()
     opid, _, rest = out.partition(' ')
