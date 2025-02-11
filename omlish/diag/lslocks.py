@@ -57,5 +57,8 @@ class LsLocksCommand(SubprocessRunnable):
         )
 
     def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsLocksItem]:
-        obj = json.loads(check.not_none(output.stdout).decode())
+        buf = check.not_none(output.stdout).decode().strip()
+        if not buf:
+            return []
+        obj = json.loads(buf)
         return unmarshal_obj(obj, ta.List[LsLocksItem])
