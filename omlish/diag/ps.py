@@ -1,7 +1,14 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import dataclasses as dc
 import os
+import typing as ta
 
-from .. import lang
+from ..lite.check import check
+from ..lite.timeouts import Timeout
+from ..subprocesses.run import SubprocessRun
+from ..subprocesses.run import SubprocessRunnable
+from ..subprocesses.run import SubprocessRunOutput
 from ..subprocesses.sync import subprocesses
 
 
@@ -12,25 +19,38 @@ class PsItem:
     cmd: str
 
 
-def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
-    timeout = lang.Timeout.of(timeout)
-    out = subprocesses.check_output(
-        'ps',
-        '-o', 'pid=,ppid=,command=',
-        str(int(pid)),
-        timeout=timeout.or_(None),
-    ).decode().strip()
-    opid, _, rest = out.partition(' ')
-    ppid, _, cmd = rest.strip().partition(' ')
-    return PsItem(
-        int(opid),
-        int(ppid),
-        cmd.strip(),
-    )
+@dc.dataclass(frozen=True)
+class PsCommand(SubprocessRunnable):
+    pid: ta.Optional[int] = None
+
+    timeout: ta.Optional[Timeout] = None
+
+    def make_run(self) -> SubprocessRun:
+        return SubprocessRun.of(
+            'ps',
+            '-o', 'pid=,ppid=,command=',
+            *([str(int(self.pid))] if self.pid is not None else []),
+
+            stdout='pipe',
+            stderr='devnull',
+            timeout=Timeout.of(self.timeout).or_(None),
+        )
+
+    def handle_run_output(self, output: SubprocessRunOutput) -> PsItem:
+        opid, ppid, cmd = check.not_none(output.stdout).decode().split(maxsplit=2)
+        return PsItem(
+            int(opid),
+            int(ppid),
+            cmd.strip(),
+        )
 
 
-def get_ps_lineage(pid: int, timeout: lang.Timeout | None = None) -> list[PsItem]:
-    timeout = lang.Timeout.of(timeout)
+def get_ps_item(pid: int, timeout: ta.Optional[Timeout] = None) -> PsItem:
+    return PsCommand(pid, timeout).run(subprocesses)
+
+
+def get_ps_lineage(pid: int, timeout: ta.Optional[Timeout] = None) -> ta.List[PsItem]:
+    timeout = Timeout.of(timeout)
     ret: list[PsItem] = []
     while True:
         cur = get_ps_item(pid, timeout)
@@ -41,9 +61,9 @@ def get_ps_lineage(pid: int, timeout: lang.Timeout | None = None) -> list[PsItem
     return ret
 
 
-def _main() -> None:
-    print(get_ps_lineage(os.getpid()))
-
-
 if __name__ == '__main__':
+    def _main() -> None:
+
+        print(get_ps_lineage(os.getpid()))
+
     _main()

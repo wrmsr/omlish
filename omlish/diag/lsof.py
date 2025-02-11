@@ -10,12 +10,12 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from ..lite.check import check
 from ..lite.dataclasses import dataclass_repr_omit_falsey
 from ..lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 from ..subprocesses.run import SubprocessRun
 from ..subprocesses.run import SubprocessRunnable
 from ..subprocesses.run import SubprocessRunOutput
-from ..subprocesses.sync import subprocesses  # noqa
 
 
 ##
@@ -233,5 +233,5 @@ class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
         )
 
     def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsofItem]:
-        lines = [s for l in output.stdout.decode().splitlines() if (s := l.strip())]
+        lines = [s for l in check.not_none(output.stdout).decode().splitlines() if (s := l.strip())]
         return LsofItem.from_prefix_lines(lines)
