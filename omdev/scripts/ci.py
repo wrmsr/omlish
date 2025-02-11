@@ -1055,6 +1055,25 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 class Timeout(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def can_expire(self) -> bool:
+        """Indicates whether or not this timeout will ever expire."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def remaining(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires. May be negative."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def expired(self) -> bool:
+        """Return whether or not this timeout has expired."""
+
+        raise NotImplementedError
+
     @abc.abstractmethod
     def __call__(self) -> float:
         """Returns the time (in seconds) remaining until the timeout expires, or raises if the timeout has expired."""
@@ -1063,7 +1082,7 @@ class Timeout(abc.ABC):
 
     @abc.abstractmethod
     def or_(self, o: ta.Any) -> ta.Any:
-        """Evaluates time remaining via __call__ if this is a meaningfully configured timeout, otherwise returns `o`."""
+        """Evaluates time remaining via remaining() if this timeout can expire, otherwise returns `o`."""
 
         raise NotImplementedError
 
@@ -1116,11 +1135,22 @@ class DeadlineTimeout(Timeout):
             exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
     ) -> None:
         super().__init__()
+
         self.deadline = deadline
         self.exc = exc
 
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def remaining(self) -> float:
+        return self.deadline - self._now()
+
+    def expired(self) -> bool:
+        return not (self.remaining() > 0)
+
     def __call__(self) -> float:
-        if (rem := self.deadline - self._now()) > 0:
+        if (rem := self.remaining()) > 0:
             return rem
         raise self.exc
 
@@ -1129,6 +1159,16 @@ class DeadlineTimeout(Timeout):
 
 
 class InfiniteTimeout(Timeout):
+    @property
+    def can_expire(self) -> bool:
+        return False
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def expired(self) -> bool:
+        return False
+
     def __call__(self) -> float:
         return float('inf')
 
