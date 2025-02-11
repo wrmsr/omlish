@@ -8451,6 +8451,12 @@ class SubprocessRun:
             kwargs=kwargs,
         )
 
+    def run(self, subprocesses: 'AbstractSubprocesses') -> 'SubprocessRunOutput':  # noqa
+        return subprocesses.run_(self)
+
+    async def async_run(self, async_subprocesses: 'AbstractAsyncSubprocesses') -> 'SubprocessRunOutput':  # noqa
+        return await async_subprocesses.run_(self)
+
 
 @dc.dataclass(frozen=True)
 class SubprocessRunOutput(ta.Generic[T]):

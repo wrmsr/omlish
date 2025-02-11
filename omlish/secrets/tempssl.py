@@ -7,8 +7,8 @@ import typing as ta
 
 from ..lite.cached import cached_nullary
 from ..subprocesses import SubprocessRun
+from ..subprocesses import SubprocessRunnable
 from ..subprocesses import SubprocessRunOutput
-from ..subprocesses import subprocesses
 from .ssl import SslCert
 
 
@@ -18,7 +18,7 @@ class TempSslCert(ta.NamedTuple):
 
 
 @dc.dataclass(frozen=True)
-class TempSslCertGenerator:
+class TempSslCertGenerator(SubprocessRunnable[TempSslCert]):
     @cached_nullary
     def temp_dir(self) -> str:
         return tempfile.mkdtemp()
@@ -63,9 +63,6 @@ class TempSslCertGenerator:
             ),
             temp_dir=self.temp_dir(),
         )
-
-    def run(self) -> TempSslCert:
-        return self.handle_run_output(subprocesses.run_(self.make_run()))
 
 
 def generate_temp_localhost_ssl_cert() -> TempSslCert:

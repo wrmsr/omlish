@@ -284,6 +284,12 @@ class SubprocessRun:
             kwargs=kwargs,
         )
 
+    def run(self, subprocesses: 'AbstractSubprocesses') -> 'SubprocessRunOutput':  # noqa
+        return subprocesses.run_(self)
+
+    async def async_run(self, async_subprocesses: 'AbstractAsyncSubprocesses') -> 'SubprocessRunOutput':  # noqa
+        return await async_subprocesses.run_(self)
+
 
 @dc.dataclass(frozen=True)
 class SubprocessRunOutput(ta.Generic[T]):
@@ -293,6 +299,9 @@ class SubprocessRunOutput(ta.Generic[T]):
 
     stdout: ta.Optional[bytes] = None
     stderr: ta.Optional[bytes] = None
+
+
+##
 
 
 class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
@@ -508,3 +517,24 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
+
+
+##
+
+
+class SubprocessRunnable(abc.ABC, ta.Generic[T]):
+    @abc.abstractmethod
+    def make_run(self) -> SubprocessRun:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_run_output(self, output: SubprocessRunOutput) -> T:
+        raise NotImplementedError
+
+    #
+
+    def run(self, subprocesses: AbstractSubprocesses = subprocesses) -> T:  # noqa
+        return self.handle_run_output(subprocesses.run_(self.make_run()))
+
+    async def async_run(self, async_subprocesses: AbstractAsyncSubprocesses) -> T:  # noqa
+        return self.handle_run_output(await async_subprocesses.run_(self.make_run()))

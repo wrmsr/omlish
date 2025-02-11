@@ -17,6 +17,9 @@ import signal
 import typing as ta
 
 
+##
+
+
 class Pidfile:
     def __init__(
             self,
@@ -70,17 +73,20 @@ class Pidfile:
 
     def __getstate__(self):
         state = self.__dict__.copy()
+
         if '_f' in state:
-            if os.get_inheritable(fd := state['_f'].fileno()):
+            if os.get_inheritable(fd := state.pop('_f').fileno()):
                 state['__fd'] = fd
-            del state['_f']
+
         return state
 
     def __setstate__(self, state):
         if '_f' in state:
             raise RuntimeError
+
         if '__fd' in state:
             state['_f'] = os.fdopen(state.pop('__fd'), 'r+')
+
         self.__dict__.update(state)
 
     #
@@ -97,6 +103,7 @@ class Pidfile:
         try:
             fcntl.flock(self._f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             return True
+
         except OSError:
             return False
 
