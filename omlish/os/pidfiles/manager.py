@@ -84,6 +84,7 @@ class _PidfileManager:
         with cls._lock:
             cls._pidfile_threads[pf] = threading.current_thread()
         try:
+
             with pf:
                 os.set_inheritable(check.not_none(pf.fileno()), True)
                 yield pf
