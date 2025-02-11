@@ -5863,7 +5863,22 @@ class SubprocessRun:
     def replace(self, **kwargs: ta.Any) -> 'SubprocessRun':
         if not kwargs:
             return self
-        raise NotImplementedError
+
+        field_kws = {}
+        extra_kws = {}
+        for k, v in kwargs.items():
+            if k in self._FIELD_NAMES:
+                field_kws[k] = v
+            else:
+                extra_kws[k] = v
+
+        return dc.replace(self, **{
+            **dict(kwargs={
+                **(self.kwargs or {}),
+                **extra_kws,
+            }),
+            **field_kws,  # passing a kwarg named 'kwargs' intentionally clobbers
+        })
 
     #
 
