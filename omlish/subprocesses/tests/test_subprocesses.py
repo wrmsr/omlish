@@ -3,13 +3,12 @@
 import subprocess
 import unittest
 
-from ..lite.check import check
-from ..subprocesses import VerboseCalledProcessError
-from ..subprocesses import subprocesses
+from ...lite.check import check
+from ..base import VerboseCalledProcessError
+from ..sync import subprocesses
 
 
 class TestSubprocesses(unittest.TestCase):
-
     def test_subprocesses_call(self):
         subprocesses.check_call('true')
         with self.assertRaises(subprocess.CalledProcessError):

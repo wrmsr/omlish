@@ -8,9 +8,9 @@ import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
-from omlish.subprocesses import SubprocessChannelOption
-from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses.base import SUBPROCESS_CHANNEL_OPTION_VALUES
+from omlish.subprocesses.base import SubprocessChannelOption
+from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from .base import Command
 from .base import CommandExecutor

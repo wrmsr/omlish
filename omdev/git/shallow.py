@@ -4,7 +4,7 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish.subprocesses import subprocesses
+from omlish.subprocesses.sync import subprocesses
 
 
 @dc.dataclass(frozen=True)

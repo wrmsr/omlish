@@ -10,9 +10,9 @@ import sys
 import typing as ta
 
 from ...lite.check import check
-from ...subprocesses import AbstractAsyncSubprocesses
-from ...subprocesses import SubprocessRun
-from ...subprocesses import SubprocessRunOutput
+from ...subprocesses.async_ import AbstractAsyncSubprocesses
+from ...subprocesses.run import SubprocessRun
+from ...subprocesses.run import SubprocessRunOutput
 from .timeouts import asyncio_maybe_timeout
 
 

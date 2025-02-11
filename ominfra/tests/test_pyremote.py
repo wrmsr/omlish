@@ -6,7 +6,7 @@ import sys
 import unittest
 
 from omlish.lite.check import check
-from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from .. import pyremote
 

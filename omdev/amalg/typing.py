@@ -89,9 +89,15 @@ def skip_root_level_if_type_checking_block(
 ) -> int:
     def skip_block():
         nonlocal i
+
+        nl = cls[i]
+        if nl[0].name != 'INDENT':
+            raise RuntimeError
+        i += 1
+
         while True:
             nl = cls[i]
-            if nl and nl[0].name != 'INDENT':
+            if nl and nl[0].name == 'DEDENT':
                 return nl
             i += 1
 

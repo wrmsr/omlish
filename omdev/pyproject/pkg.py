@@ -38,7 +38,7 @@ import typing as ta
 from omlish.formats.toml.writer import TomlWriter
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
-from omlish.subprocesses import subprocesses
+from omlish.subprocesses.sync import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files

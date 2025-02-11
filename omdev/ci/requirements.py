@@ -18,7 +18,7 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
-from omlish.subprocesses import subprocesses
+from omlish.subprocesses.sync import subprocesses
 
 from .utils import sha256_str
 

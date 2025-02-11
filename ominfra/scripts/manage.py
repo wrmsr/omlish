@@ -138,11 +138,11 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 AtomicPathSwapKind = ta.Literal['dir', 'file']
 AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
-# ../../omlish/subprocesses.py
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
-
 # deploy/specs.py
 KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound='KeyDeployTag')
+
+# ../../omlish/subprocesses/base.py
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 # system/packages.py
 SystemPackageOrStr = ta.Union['SystemPackage', str]
@@ -7300,6 +7300,98 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
 
 
 ########################################
+# ../../../omlish/subprocesses/run.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRunOutput(ta.Generic[T]):
+    proc: T
+
+    returncode: int  # noqa
+
+    stdout: ta.Optional[bytes] = None
+    stderr: ta.Optional[bytes] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRun:
+    cmd: ta.Sequence[str]
+    input: ta.Any = None
+    timeout: ta.Optional[float] = None
+    check: bool = False
+    capture_output: ta.Optional[bool] = None
+    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+    @classmethod
+    def of(
+            cls,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,  # noqa
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> 'SubprocessRun':
+        return cls(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        )
+
+    #
+
+    _DEFAULT_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractSubprocesses
+
+    def run(
+            self,
+            subprocesses: ta.Optional[ta.Any] = None,  # AbstractSubprocesses
+    ) -> SubprocessRunOutput:
+        if subprocesses is None:
+            subprocesses = self._DEFAULT_SUBPROCESSES
+        return check.not_none(subprocesses).run_(self)  # type: ignore[attr-defined]
+
+    _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
+
+    async def async_run(
+            self,
+            async_subprocesses: ta.Optional[ta.Any] = None,  # AbstractAsyncSubprocesses
+    ) -> SubprocessRunOutput:
+        if async_subprocesses is None:
+            async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
+        return await check.not_none(async_subprocesses).run_(self)  # type: ignore[attr-defined]
+
+
+##
+
+
+class SubprocessRunnable(abc.ABC, ta.Generic[T]):
+    @abc.abstractmethod
+    def make_run(self) -> SubprocessRun:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_run_output(self, output: SubprocessRunOutput) -> T:
+        raise NotImplementedError
+
+    #
+
+    def run(self, subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractSubprocesses
+        return self.handle_run_output(self.make_run().run(subprocesses))
+
+    async def async_run(self, async_subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractAsyncSubprocesses
+        return self.handle_run_output(await self.make_run().async_run(async_subprocesses))
+
+
+########################################
 # ../../../omlish/text/indent.py
 
 
@@ -8182,23 +8274,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/subprocesses.py
-
-
-##
-
-
-# Valid channel type kwarg values:
-#  - A special flag negative int
-#  - A positive fd int
-#  - A file-like object
-#  - None
-
-SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
-    'pipe': subprocess.PIPE,
-    'stdout': subprocess.STDOUT,
-    'devnull': subprocess.DEVNULL,
-}
+# ../../../omlish/subprocesses/wrap.py
 
 
 ##
@@ -8216,569 +8292,6 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return subprocess_shell_wrap_exec(*cmd)
     else:
         return cmd
-
-
-##
-
-
-def subprocess_close(
-        proc: subprocess.Popen,
-        timeout: ta.Optional[float] = None,
-) -> None:
-    # TODO: terminate, sleep, kill
-    if proc.stdout:
-        proc.stdout.close()
-    if proc.stderr:
-        proc.stderr.close()
-    if proc.stdin:
-        proc.stdin.close()
-
-    proc.wait(timeout)
-
-
-##
-
-
-class VerboseCalledProcessError(subprocess.CalledProcessError):
-    @classmethod
-    def from_std(cls, e: subprocess.CalledProcessError) -> 'VerboseCalledProcessError':
-        return cls(
-            e.returncode,
-            e.cmd,
-            output=e.output,
-            stderr=e.stderr,
-        )
-
-    def __str__(self) -> str:
-        msg = super().__str__()
-        if self.output is not None:
-            msg += f' Output: {self.output!r}'
-        if self.stderr is not None:
-            msg += f' Stderr: {self.stderr!r}'
-        return msg
-
-
-class BaseSubprocesses(abc.ABC):  # noqa
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
-
-    def __init__(
-            self,
-            *,
-            log: ta.Optional[logging.Logger] = None,
-            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._log = log if log is not None else self.DEFAULT_LOGGER
-        self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
-
-    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
-        self._log = log
-
-    #
-
-    def prepare_args(
-            self,
-            *cmd: str,
-            env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-            extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-            quiet: bool = False,
-            shell: bool = False,
-            **kwargs: ta.Any,
-    ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
-        if self._log:
-            self._log.debug('Subprocesses.prepare_args: cmd=%r', cmd)
-            if extra_env:
-                self._log.debug('Subprocesses.prepare_args: extra_env=%r', extra_env)
-
-        #
-
-        if extra_env:
-            env = {**(env if env is not None else os.environ), **extra_env}
-
-        #
-
-        if quiet and 'stderr' not in kwargs:
-            if self._log and not self._log.isEnabledFor(logging.DEBUG):
-                kwargs['stderr'] = subprocess.DEVNULL
-
-        for chk in ('stdout', 'stderr'):
-            try:
-                chv = kwargs[chk]
-            except KeyError:
-                continue
-            kwargs[chk] = SUBPROCESS_CHANNEL_OPTION_VALUES.get(chv, chv)
-
-        #
-
-        if not shell:
-            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
-
-        #
-
-        return cmd, dict(
-            env=env,
-            shell=shell,
-            **kwargs,
-        )
-
-    @contextlib.contextmanager
-    def wrap_call(
-            self,
-            *cmd: ta.Any,
-            raise_verbose: bool = False,
-            **kwargs: ta.Any,
-    ) -> ta.Iterator[None]:
-        start_time = time.time()
-        try:
-            if self._log:
-                self._log.debug('Subprocesses.wrap_call.try: cmd=%r', cmd)
-
-            yield
-
-        except Exception as exc:  # noqa
-            if self._log:
-                self._log.debug('Subprocesses.wrap_call.except: exc=%r', exc)
-
-            if (
-                    raise_verbose and
-                    isinstance(exc, subprocess.CalledProcessError) and
-                    not isinstance(exc, VerboseCalledProcessError) and
-                    (exc.output is not None or exc.stderr is not None)
-            ):
-                raise VerboseCalledProcessError.from_std(exc) from exc
-
-            raise
-
-        finally:
-            end_time = time.time()
-            elapsed_s = end_time - start_time
-
-            if self._log:
-                self._log.debug('Subprocesses.wrap_call.finally: elapsed_s=%f cmd=%r', elapsed_s, cmd)
-
-    @contextlib.contextmanager
-    def prepare_and_wrap(
-            self,
-            *cmd: ta.Any,
-            raise_verbose: bool = False,
-            **kwargs: ta.Any,
-    ) -> ta.Iterator[ta.Tuple[
-        ta.Tuple[ta.Any, ...],
-        ta.Dict[str, ta.Any],
-    ]]:
-        cmd, kwargs = self.prepare_args(*cmd, **kwargs)
-
-        with self.wrap_call(
-                *cmd,
-                raise_verbose=raise_verbose,
-                **kwargs,
-        ):
-            yield cmd, kwargs
-
-    #
-
-    DEFAULT_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
-        FileNotFoundError,
-        subprocess.CalledProcessError,
-    )
-
-    def try_fn(
-            self,
-            fn: ta.Callable[..., T],
-            *cmd: str,
-            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Union[T, Exception]:
-        if try_exceptions is None:
-            try_exceptions = self._try_exceptions
-
-        try:
-            return fn(*cmd, **kwargs)
-
-        except try_exceptions as e:  # noqa
-            if self._log and self._log.isEnabledFor(logging.DEBUG):
-                self._log.exception('command failed')
-            return e
-
-    async def async_try_fn(
-            self,
-            fn: ta.Callable[..., ta.Awaitable[T]],
-            *cmd: ta.Any,
-            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Union[T, Exception]:
-        if try_exceptions is None:
-            try_exceptions = self._try_exceptions
-
-        try:
-            return await fn(*cmd, **kwargs)
-
-        except try_exceptions as e:  # noqa
-            if self._log and self._log.isEnabledFor(logging.DEBUG):
-                self._log.exception('command failed')
-            return e
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SubprocessRun:
-    cmd: ta.Sequence[str]
-    input: ta.Any = None
-    timeout: ta.Optional[float] = None
-    check: bool = False
-    capture_output: ta.Optional[bool] = None
-    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
-
-    @classmethod
-    def of(
-            cls,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> 'SubprocessRun':
-        return cls(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        )
-
-    def run(self, subprocesses: 'AbstractSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return subprocesses.run_(self)
-
-    async def async_run(self, async_subprocesses: 'AbstractAsyncSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return await async_subprocesses.run_(self)
-
-
-@dc.dataclass(frozen=True)
-class SubprocessRunOutput(ta.Generic[T]):
-    proc: T
-
-    returncode: int  # noqa
-
-    stdout: ta.Optional[bytes] = None
-    stderr: ta.Optional[bytes] = None
-
-
-class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
-    @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
-
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> SubprocessRunOutput:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        raise NotImplementedError
-
-    #
-
-    def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return self.check_output(*cmd, **kwargs).decode().strip()
-
-    #
-
-    def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
-
-
-##
-
-
-class Subprocesses(AbstractSubprocesses):
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
-        proc = subprocess.run(
-            run.cmd,
-            input=run.input,
-            timeout=run.timeout,
-            check=run.check,
-            capture_output=run.capture_output or False,
-            **(run.kwargs or {}),
-        )
-
-        return SubprocessRunOutput(
-            proc=proc,
-
-            returncode=proc.returncode,
-
-            stdout=proc.stdout,  # noqa
-            stderr=proc.stderr,  # noqa
-        )
-
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
-            subprocess.check_call(cmd, **kwargs)
-
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
-            return subprocess.check_output(cmd, **kwargs)
-
-
-subprocesses = Subprocesses()
-
-
-##
-
-
-class AbstractAsyncSubprocesses(BaseSubprocesses):
-    @abc.abstractmethod
-    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
-
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[SubprocessRunOutput]:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    async def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        raise NotImplementedError
-
-    #
-
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
-
-    #
-
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
-
-
-########################################
-# ../../../omdev/git/shallow.py
-
-
-@dc.dataclass(frozen=True)
-class GitShallowCloner:
-    base_dir: str
-    repo_url: str
-    repo_dir: str
-
-    # _: dc.KW_ONLY
-
-    repo_subtrees: ta.Optional[ta.Sequence[str]] = None
-
-    branch: ta.Optional[str] = None
-    rev: ta.Optional[str] = None
-
-    def __post_init__(self) -> None:
-        if not bool(self.branch) ^ bool(self.rev):
-            raise ValueError('must set branch or rev')
-
-        if isinstance(self.repo_subtrees, str):
-            raise TypeError(self.repo_subtrees)
-
-    @dc.dataclass(frozen=True)
-    class Command:
-        cmd: ta.Sequence[str]
-        cwd: str
-
-    def build_commands(self) -> ta.Iterator[Command]:
-        git_opts = [
-            '-c', 'advice.detachedHead=false',
-        ]
-
-        yield GitShallowCloner.Command(
-            cmd=(
-                'git',
-                *git_opts,
-                'clone',
-                '-n',
-                '--depth=1',
-                '--filter=tree:0',
-                *(['-b', self.branch] if self.branch else []),
-                '--single-branch',
-                self.repo_url,
-                self.repo_dir,
-            ),
-            cwd=self.base_dir,
-        )
-
-        rd = os.path.join(self.base_dir, self.repo_dir)
-        if self.repo_subtrees is not None:
-            yield GitShallowCloner.Command(
-                cmd=(
-                    'git',
-                    *git_opts,
-                    'sparse-checkout',
-                    'set',
-                    '--no-cone',
-                    *self.repo_subtrees,
-                ),
-                cwd=rd,
-            )
-
-        yield GitShallowCloner.Command(
-            cmd=(
-                'git',
-                *git_opts,
-                'checkout',
-                *([self.rev] if self.rev else []),
-            ),
-            cwd=rd,
-        )
-
-
-def git_shallow_clone(
-        *,
-        base_dir: str,
-        repo_url: str,
-        repo_dir: str,
-        branch: ta.Optional[str] = None,
-        rev: ta.Optional[str] = None,
-        repo_subtrees: ta.Optional[ta.Sequence[str]] = None,
-) -> None:
-    for cmd in GitShallowCloner(
-        base_dir=base_dir,
-        repo_url=repo_url,
-        repo_dir=repo_dir,
-        branch=branch,
-        rev=rev,
-        repo_subtrees=repo_subtrees,
-    ).build_commands():
-        subprocesses.check_call(
-            *cmd.cmd,
-            cwd=cmd.cwd,
-        )
 
 
 ########################################
@@ -9582,6 +9095,1116 @@ class RemoteCommandExecutor(CommandExecutor):
 
 
 ########################################
+# ../../../omlish/subprocesses/base.py
+
+
+##
+
+
+# Valid channel type kwarg values:
+#  - A special flag negative int
+#  - A positive fd int
+#  - A file-like object
+#  - None
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
+
+
+##
+
+
+class VerboseCalledProcessError(subprocess.CalledProcessError):
+    @classmethod
+    def from_std(cls, e: subprocess.CalledProcessError) -> 'VerboseCalledProcessError':
+        return cls(
+            e.returncode,
+            e.cmd,
+            output=e.output,
+            stderr=e.stderr,
+        )
+
+    def __str__(self) -> str:
+        msg = super().__str__()
+        if self.output is not None:
+            msg += f' Output: {self.output!r}'
+        if self.stderr is not None:
+            msg += f' Stderr: {self.stderr!r}'
+        return msg
+
+
+class BaseSubprocesses(abc.ABC):  # noqa
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
+
+    def __init__(
+            self,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._log = log if log is not None else self.DEFAULT_LOGGER
+        self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
+
+    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+        self._log = log
+
+    #
+
+    def prepare_args(
+            self,
+            *cmd: str,
+            env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            quiet: bool = False,
+            shell: bool = False,
+            **kwargs: ta.Any,
+    ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+        if self._log:
+            self._log.debug('Subprocesses.prepare_args: cmd=%r', cmd)
+            if extra_env:
+                self._log.debug('Subprocesses.prepare_args: extra_env=%r', extra_env)
+
+        #
+
+        if extra_env:
+            env = {**(env if env is not None else os.environ), **extra_env}
+
+        #
+
+        if quiet and 'stderr' not in kwargs:
+            if self._log and not self._log.isEnabledFor(logging.DEBUG):
+                kwargs['stderr'] = subprocess.DEVNULL
+
+        for chk in ('stdout', 'stderr'):
+            try:
+                chv = kwargs[chk]
+            except KeyError:
+                continue
+            kwargs[chk] = SUBPROCESS_CHANNEL_OPTION_VALUES.get(chv, chv)
+
+        #
+
+        if not shell:
+            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
+        #
+
+        return cmd, dict(
+            env=env,
+            shell=shell,
+            **kwargs,
+        )
+
+    @contextlib.contextmanager
+    def wrap_call(
+            self,
+            *cmd: ta.Any,
+            raise_verbose: bool = False,
+            **kwargs: ta.Any,
+    ) -> ta.Iterator[None]:
+        start_time = time.time()
+        try:
+            if self._log:
+                self._log.debug('Subprocesses.wrap_call.try: cmd=%r', cmd)
+
+            yield
+
+        except Exception as exc:  # noqa
+            if self._log:
+                self._log.debug('Subprocesses.wrap_call.except: exc=%r', exc)
+
+            if (
+                    raise_verbose and
+                    isinstance(exc, subprocess.CalledProcessError) and
+                    not isinstance(exc, VerboseCalledProcessError) and
+                    (exc.output is not None or exc.stderr is not None)
+            ):
+                raise VerboseCalledProcessError.from_std(exc) from exc
+
+            raise
+
+        finally:
+            end_time = time.time()
+            elapsed_s = end_time - start_time
+
+            if self._log:
+                self._log.debug('Subprocesses.wrap_call.finally: elapsed_s=%f cmd=%r', elapsed_s, cmd)
+
+    @contextlib.contextmanager
+    def prepare_and_wrap(
+            self,
+            *cmd: ta.Any,
+            raise_verbose: bool = False,
+            **kwargs: ta.Any,
+    ) -> ta.Iterator[ta.Tuple[
+        ta.Tuple[ta.Any, ...],
+        ta.Dict[str, ta.Any],
+    ]]:
+        cmd, kwargs = self.prepare_args(*cmd, **kwargs)
+
+        with self.wrap_call(
+                *cmd,
+                raise_verbose=raise_verbose,
+                **kwargs,
+        ):
+            yield cmd, kwargs
+
+    #
+
+    DEFAULT_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+    )
+
+    def try_fn(
+            self,
+            fn: ta.Callable[..., T],
+            *cmd: str,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Union[T, Exception]:
+        if try_exceptions is None:
+            try_exceptions = self._try_exceptions
+
+        try:
+            return fn(*cmd, **kwargs)
+
+        except try_exceptions as e:  # noqa
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception('command failed')
+            return e
+
+    async def async_try_fn(
+            self,
+            fn: ta.Callable[..., ta.Awaitable[T]],
+            *cmd: ta.Any,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Union[T, Exception]:
+        if try_exceptions is None:
+            try_exceptions = self._try_exceptions
+
+        try:
+            return await fn(*cmd, **kwargs)
+
+        except try_exceptions as e:  # noqa
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception('command failed')
+            return e
+
+
+########################################
+# ../../../omdev/interp/resolvers.py
+
+
+@dc.dataclass(frozen=True)
+class InterpResolverProviders:
+    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
+
+
+class InterpResolver:
+    def __init__(
+            self,
+            providers: InterpResolverProviders,
+    ) -> None:
+        super().__init__()
+
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
+
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
+
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
+        )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return await tp.install_version(bv)
+
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+
+########################################
+# ../deploy/conf/manager.py
+"""
+TODO:
+ - @conf DeployPathPlaceholder? :|
+ - post-deploy: remove any dir_links not present in new spec
+  - * only if succeeded * - otherwise, remove any dir_links present in new spec but not previously present?
+   - no such thing as 'previously present'.. build a 'deploy state' and pass it back?
+ - ** whole thing can be atomic **
+  - 1) new atomic temp dir
+  - 2) for each subdir not needing modification, hardlink into temp dir
+  - 3) for each subdir needing modification, new subdir, hardlink all files not needing modification
+  - 4) write (or if deleting, omit) new files
+  - 5) swap top level
+ - ** whole deploy can be atomic(-ish) - do this for everything **
+  - just a '/deploy/current' dir
+  - some things (venvs) cannot be moved, thus the /deploy/venvs dir
+  - ** ensure (enforce) equivalent relpath nesting
+"""
+
+
+##
+
+
+class DeployConfManager:
+    def _process_conf_content(
+            self,
+            content: T,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
+    ) -> T:
+        def rec(o):
+            if isinstance(o, str):
+                if str_processor is not None:
+                    return type(o)(str_processor(o))
+
+            elif isinstance(o, collections.abc.Mapping):
+                return type(o)([  # type: ignore
+                    (rec(k), rec(v))
+                    for k, v in o.items()
+                ])
+
+            elif isinstance(o, collections.abc.Iterable):
+                return type(o)([  # type: ignore
+                    rec(e) for e in o
+                ])
+
+            return o
+
+        return rec(content)
+
+    #
+
+    def _render_app_conf_content(
+            self,
+            ac: DeployAppConfContent,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
+    ) -> str:
+        pcc = functools.partial(
+            self._process_conf_content,
+            str_processor=str_processor,
+        )
+
+        if isinstance(ac, RawDeployAppConfContent):
+            return pcc(ac.body)
+
+        elif isinstance(ac, JsonDeployAppConfContent):
+            json_obj = pcc(ac.obj)
+            return strip_with_newline(json_dumps_pretty(json_obj))
+
+        elif isinstance(ac, IniDeployAppConfContent):
+            ini_sections = pcc(ac.sections)
+            return strip_with_newline(render_ini_sections(ini_sections))
+
+        elif isinstance(ac, NginxDeployAppConfContent):
+            nginx_items = NginxConfigItems.of(pcc(ac.items))
+            return strip_with_newline(render_nginx_config_str(nginx_items))
+
+        else:
+            raise TypeError(ac)
+
+    async def _write_app_conf_file(
+            self,
+            acf: DeployAppConfFile,
+            app_conf_dir: str,
+            *,
+            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
+    ) -> None:
+        conf_file = os.path.join(app_conf_dir, acf.path)
+        check.arg(is_path_in_dir(app_conf_dir, conf_file))
+
+        body = self._render_app_conf_content(
+            acf.content,
+            str_processor=str_processor,
+        )
+
+        os.makedirs(os.path.dirname(conf_file), exist_ok=True)
+
+        with open(conf_file, 'w') as f:  # noqa
+            f.write(body)
+
+    async def write_app_conf(
+            self,
+            spec: DeployAppConfSpec,
+            app_conf_dir: str,
+            *,
+            string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> None:
+        process_str: ta.Any
+        if string_ns is not None:
+            def process_str(s: str) -> str:
+                return s.format(**string_ns)
+        else:
+            process_str = None
+
+        for acf in spec.files or []:
+            await self._write_app_conf_file(
+                acf,
+                app_conf_dir,
+                str_processor=process_str,
+            )
+
+    #
+
+    class _ComputedConfLink(ta.NamedTuple):
+        conf: DeployConf
+        is_dir: bool
+        link_src: str
+        link_dst: str
+
+    _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
+    _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
+
+    @classmethod
+    def _compute_app_conf_link_dst(
+            cls,
+            link: DeployAppConfLink,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
+    ) -> _ComputedConfLink:
+        link_src = os.path.join(app_conf_dir, link.src)
+        check.arg(is_path_in_dir(app_conf_dir, link_src))
+
+        #
+
+        if (is_dir := link.src.endswith('/')):
+            # @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
+            check.arg(link.src.count('/') == 1)
+            conf = DeployConf(link.src.split('/')[0])
+            link_dst_pfx = link.src
+            link_dst_sfx = ''
+
+        elif '/' in link.src:
+            # @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
+            d, f = os.path.split(link.src)
+            # TODO: check filename :|
+            conf = DeployConf(d)
+            link_dst_pfx = d + '/'
+            link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
+
+        else:  # noqa
+            # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
+            if '.' in link.src:
+                l, _, r = link.src.partition('.')
+                conf = DeployConf(l)
+                link_dst_pfx = l + '/'
+                link_dst_sfx = '.' + r
+            else:
+                conf = DeployConf(link.src)
+                link_dst_pfx = link.src + '/'
+                link_dst_sfx = ''
+
+        #
+
+        if link.kind == 'current_only':
+            link_dst_mid = str(tags[DeployApp].s)
+        elif link.kind == 'all_active':
+            link_dst_mid = cls._UNIQUE_LINK_NAME.render(tags)
+        else:
+            raise TypeError(link)
+
+        #
+
+        link_dst_name = ''.join([
+            link_dst_pfx,
+            link_dst_mid,
+            link_dst_sfx,
+        ])
+        link_dst = os.path.join(conf_link_dir, link_dst_name)
+
+        return DeployConfManager._ComputedConfLink(
+            conf=conf,
+            is_dir=is_dir,
+            link_src=link_src,
+            link_dst=link_dst,
+        )
+
+    async def _make_app_conf_link(
+            self,
+            link: DeployAppConfLink,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
+    ) -> None:
+        comp = self._compute_app_conf_link_dst(
+            link,
+            tags,
+            app_conf_dir,
+            conf_link_dir,
+        )
+
+        #
+
+        check.arg(is_path_in_dir(app_conf_dir, comp.link_src))
+        check.arg(is_path_in_dir(conf_link_dir, comp.link_dst))
+
+        if comp.is_dir:
+            check.arg(os.path.isdir(comp.link_src))
+        else:
+            check.arg(os.path.isfile(comp.link_src))
+
+        #
+
+        relative_symlink(  # noqa
+            comp.link_src,
+            comp.link_dst,
+            target_is_directory=comp.is_dir,
+            make_dirs=True,
+        )
+
+    async def link_app_conf(
+            self,
+            spec: DeployAppConfSpec,
+            tags: DeployTagMap,
+            app_conf_dir: str,
+            conf_link_dir: str,
+    ):
+        for link in spec.links or []:
+            await self._make_app_conf_link(
+                link,
+                tags,
+                app_conf_dir,
+                conf_link_dir,
+            )
+
+
+########################################
+# ../deploy/paths/owners.py
+
+
+class DeployPathOwner(abc.ABC):
+    @abc.abstractmethod
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        raise NotImplementedError
+
+
+DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
+
+
+class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
+    def __init__(
+            self,
+            *args: ta.Any,
+            owned_dir: str,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        check.not_in('/', owned_dir)
+        self._owned_dir: str = check.non_empty_str(owned_dir)
+
+        self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
+
+    def _dir(self, home: DeployHome) -> str:
+        return os.path.join(check.non_empty_str(home), self._owned_dir)
+
+    def _make_dir(self, home: DeployHome) -> str:
+        if not os.path.isdir(d := self._dir(home)):
+            os.makedirs(d, exist_ok=True)
+        return d
+
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return self._owned_deploy_paths
+
+
+########################################
+# ../remote/_main.py
+
+
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
+##
+
+
+class _RemoteExecutionMain:
+    def __init__(
+            self,
+            chan: RemoteChannel,
+    ) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+        self.__bootstrap: ta.Optional[MainBootstrap] = None
+        self.__injector: ta.Optional[Injector] = None
+
+    @property
+    def _bootstrap(self) -> MainBootstrap:
+        return check.not_none(self.__bootstrap)
+
+    @property
+    def _injector(self) -> Injector:
+        return check.not_none(self.__injector)
+
+    #
+
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        log.debug('Started timebomb thread: %r', thr)
+
+        return thr
+
+    #
+
+    @cached_nullary
+    def _log_handler(self) -> _RemoteLogHandler:
+        return _RemoteLogHandler(self._chan)
+
+    #
+
+    async def _setup(self) -> None:
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
+
+        # Bootstrap
+
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
+
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
+        self._timebomb_thread()
+
+        if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
+            logging.root.addHandler(self._log_handler())
+
+    #
+
+    async def run(self) -> None:
+        await self._setup()
+
+        executor = self._injector[LocalCommandExecutor]
+
+        handler = _RemoteCommandHandler(self._chan, executor)
+
+        await handler.run()
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        chan = RemoteChannelImpl(
+            input,
+            output,
+        )
+
+        await _RemoteExecutionMain(chan).run()
+
+    asyncio.run(inner())
+
+
+########################################
+# ../../../omlish/subprocesses/async_.py
+
+
+##
+
+
+class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[SubprocessRunOutput]:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
+    @abc.abstractmethod
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
+
+
+########################################
+# ../../../omlish/subprocesses/sync.py
+
+
+##
+
+
+class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+    @abc.abstractmethod
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> SubprocessRunOutput:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
+    @abc.abstractmethod
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return self.check_output(*cmd, **kwargs).decode().strip()
+
+    #
+
+    def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
+
+
+##
+
+
+class Subprocesses(AbstractSubprocesses):
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
+        proc = subprocess.run(
+            run.cmd,
+            input=run.input,
+            timeout=run.timeout,
+            check=run.check,
+            capture_output=run.capture_output or False,
+            **(run.kwargs or {}),
+        )
+
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=proc.returncode,
+
+            stdout=proc.stdout,  # noqa
+            stderr=proc.stderr,  # noqa
+        )
+
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
+            subprocess.check_call(cmd, **kwargs)
+
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
+            return subprocess.check_output(cmd, **kwargs)
+
+
+##
+
+
+subprocesses = Subprocesses()
+
+SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
+
+
+########################################
+# ../../../omdev/git/shallow.py
+
+
+@dc.dataclass(frozen=True)
+class GitShallowCloner:
+    base_dir: str
+    repo_url: str
+    repo_dir: str
+
+    # _: dc.KW_ONLY
+
+    repo_subtrees: ta.Optional[ta.Sequence[str]] = None
+
+    branch: ta.Optional[str] = None
+    rev: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if not bool(self.branch) ^ bool(self.rev):
+            raise ValueError('must set branch or rev')
+
+        if isinstance(self.repo_subtrees, str):
+            raise TypeError(self.repo_subtrees)
+
+    @dc.dataclass(frozen=True)
+    class Command:
+        cmd: ta.Sequence[str]
+        cwd: str
+
+    def build_commands(self) -> ta.Iterator[Command]:
+        git_opts = [
+            '-c', 'advice.detachedHead=false',
+        ]
+
+        yield GitShallowCloner.Command(
+            cmd=(
+                'git',
+                *git_opts,
+                'clone',
+                '-n',
+                '--depth=1',
+                '--filter=tree:0',
+                *(['-b', self.branch] if self.branch else []),
+                '--single-branch',
+                self.repo_url,
+                self.repo_dir,
+            ),
+            cwd=self.base_dir,
+        )
+
+        rd = os.path.join(self.base_dir, self.repo_dir)
+        if self.repo_subtrees is not None:
+            yield GitShallowCloner.Command(
+                cmd=(
+                    'git',
+                    *git_opts,
+                    'sparse-checkout',
+                    'set',
+                    '--no-cone',
+                    *self.repo_subtrees,
+                ),
+                cwd=rd,
+            )
+
+        yield GitShallowCloner.Command(
+            cmd=(
+                'git',
+                *git_opts,
+                'checkout',
+                *([self.rev] if self.rev else []),
+            ),
+            cwd=rd,
+        )
+
+
+def git_shallow_clone(
+        *,
+        base_dir: str,
+        repo_url: str,
+        repo_dir: str,
+        branch: ta.Optional[str] = None,
+        rev: ta.Optional[str] = None,
+        repo_subtrees: ta.Optional[ta.Sequence[str]] = None,
+) -> None:
+    for cmd in GitShallowCloner(
+        base_dir=base_dir,
+        repo_url=repo_url,
+        repo_dir=repo_dir,
+        branch=branch,
+        rev=rev,
+        repo_subtrees=repo_subtrees,
+    ).build_commands():
+        subprocesses.check_call(
+            *cmd.cmd,
+            cwd=cmd.cwd,
+        )
+
+
+########################################
+# ../deploy/injection.py
+
+
+def bind_deploy_manager(cls: type) -> InjectorBindings:
+    return inj.as_bindings(
+        inj.bind(cls, singleton=True),
+
+        *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
+    )
+
+
+########################################
+# ../deploy/paths/manager.py
+
+
+class DeployPathsManager:
+    def __init__(
+            self,
+            *,
+            deploy_path_owners: DeployPathOwners,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_path_owners = deploy_path_owners
+
+    @cached_nullary
+    def owners_by_path(self) -> ta.Mapping[DeployPath, DeployPathOwner]:
+        dct: ta.Dict[DeployPath, DeployPathOwner] = {}
+        for o in self._deploy_path_owners:
+            for p in o.get_owned_deploy_paths():
+                if p in dct:
+                    raise DeployPathError(f'Duplicate deploy path owner: {p}')
+                dct[p] = o
+        return dct
+
+    def validate_deploy_paths(self) -> None:
+        self.owners_by_path()
+
+
+########################################
+# ../deploy/tmp.py
+
+
+class DeployHomeAtomics(Func1[DeployHome, AtomicPathSwapping]):
+    pass
+
+
+class DeployTmpManager(
+    SingleDirDeployPathOwner,
+):
+    def __init__(self) -> None:
+        super().__init__(
+            owned_dir='tmp',
+        )
+
+    def get_swapping(self, home: DeployHome) -> AtomicPathSwapping:
+        return TempDirAtomicPathSwapping(
+            temp_dir=self._make_dir(home),
+            root_dir=check.non_empty_str(home),
+        )
+
+
+########################################
 # ../../../omlish/asyncs/asyncio/subprocesses.py
 
 
@@ -9977,94 +10600,6 @@ class Pyenv:
 
 
 ########################################
-# ../../../omdev/interp/resolvers.py
-
-
-@dc.dataclass(frozen=True)
-class InterpResolverProviders:
-    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
-
-
-class InterpResolver:
-    def __init__(
-            self,
-            providers: InterpResolverProviders,
-    ) -> None:
-        super().__init__()
-
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
-
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
-
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
-        )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-
-########################################
 # ../commands/subprocess.py
 
 
@@ -10135,432 +10670,340 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 
 ########################################
-# ../deploy/conf/manager.py
+# ../deploy/conf/inject.py
+
+
+def bind_deploy_conf() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        bind_deploy_manager(DeployConfManager),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../deploy/git.py
 """
 TODO:
- - @conf DeployPathPlaceholder? :|
- - post-deploy: remove any dir_links not present in new spec
-  - * only if succeeded * - otherwise, remove any dir_links present in new spec but not previously present?
-   - no such thing as 'previously present'.. build a 'deploy state' and pass it back?
- - ** whole thing can be atomic **
-  - 1) new atomic temp dir
-  - 2) for each subdir not needing modification, hardlink into temp dir
-  - 3) for each subdir needing modification, new subdir, hardlink all files not needing modification
-  - 4) write (or if deleting, omit) new files
-  - 5) swap top level
- - ** whole deploy can be atomic(-ish) - do this for everything **
-  - just a '/deploy/current' dir
-  - some things (venvs) cannot be moved, thus the /deploy/venvs dir
-  - ** ensure (enforce) equivalent relpath nesting
+ - parse refs, resolve revs
+ - non-subtree shallow clone
+
+github.com/wrmsr/omlish@rev
 """
 
 
 ##
 
 
-class DeployConfManager:
-    def _process_conf_content(
+class DeployGitManager(SingleDirDeployPathOwner):
+    def __init__(
             self,
-            content: T,
             *,
-            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
-    ) -> T:
-        def rec(o):
-            if isinstance(o, str):
-                if str_processor is not None:
-                    return type(o)(str_processor(o))
+            atomics: DeployHomeAtomics,
+    ) -> None:
+        super().__init__(
+            owned_dir='git',
+        )
 
-            elif isinstance(o, collections.abc.Mapping):
-                return type(o)([  # type: ignore
-                    (rec(k), rec(v))
-                    for k, v in o.items()
-                ])
+        self._atomics = atomics
 
-            elif isinstance(o, collections.abc.Iterable):
-                return type(o)([  # type: ignore
-                    rec(e) for e in o
-                ])
-
-            return o
-
-        return rec(content)
+        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
 
     #
 
-    def _render_app_conf_content(
-            self,
-            ac: DeployAppConfContent,
-            *,
-            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
-    ) -> str:
-        pcc = functools.partial(
-            self._process_conf_content,
-            str_processor=str_processor,
-        )
-
-        if isinstance(ac, RawDeployAppConfContent):
-            return pcc(ac.body)
-
-        elif isinstance(ac, JsonDeployAppConfContent):
-            json_obj = pcc(ac.obj)
-            return strip_with_newline(json_dumps_pretty(json_obj))
-
-        elif isinstance(ac, IniDeployAppConfContent):
-            ini_sections = pcc(ac.sections)
-            return strip_with_newline(render_ini_sections(ini_sections))
-
-        elif isinstance(ac, NginxDeployAppConfContent):
-            nginx_items = NginxConfigItems.of(pcc(ac.items))
-            return strip_with_newline(render_nginx_config_str(nginx_items))
-
+    def make_repo_url(self, repo: DeployGitRepo) -> str:
+        if repo.username is not None:
+            return f'{repo.username}@{repo.host}:{repo.path}'
         else:
-            raise TypeError(ac)
+            return f'https://{repo.host}/{repo.path}'
 
-    async def _write_app_conf_file(
-            self,
-            acf: DeployAppConfFile,
-            app_conf_dir: str,
-            *,
-            str_processor: ta.Optional[ta.Callable[[str], str]] = None,
-    ) -> None:
-        conf_file = os.path.join(app_conf_dir, acf.path)
-        check.arg(is_path_in_dir(app_conf_dir, conf_file))
+    #
 
-        body = self._render_app_conf_content(
-            acf.content,
-            str_processor=str_processor,
-        )
+    class RepoDir:
+        def __init__(
+                self,
+                git: 'DeployGitManager',
+                repo: DeployGitRepo,
+                home: DeployHome,
+        ) -> None:
+            super().__init__()
 
-        os.makedirs(os.path.dirname(conf_file), exist_ok=True)
-
-        with open(conf_file, 'w') as f:  # noqa
-            f.write(body)
-
-    async def write_app_conf(
-            self,
-            spec: DeployAppConfSpec,
-            app_conf_dir: str,
-            *,
-            string_ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> None:
-        process_str: ta.Any
-        if string_ns is not None:
-            def process_str(s: str) -> str:
-                return s.format(**string_ns)
-        else:
-            process_str = None
-
-        for acf in spec.files or []:
-            await self._write_app_conf_file(
-                acf,
-                app_conf_dir,
-                str_processor=process_str,
+            self._git = git
+            self._repo = repo
+            self._home = home
+            self._dir = os.path.join(
+                self._git._make_dir(home),  # noqa
+                check.non_empty_str(repo.host),
+                check.non_empty_str(repo.path),
             )
-
-    #
-
-    class _ComputedConfLink(ta.NamedTuple):
-        conf: DeployConf
-        is_dir: bool
-        link_src: str
-        link_dst: str
-
-    _UNIQUE_LINK_NAME_STR = '@app--@time--@app-key'
-    _UNIQUE_LINK_NAME = DeployPath.parse(_UNIQUE_LINK_NAME_STR)
-
-    @classmethod
-    def _compute_app_conf_link_dst(
-            cls,
-            link: DeployAppConfLink,
-            tags: DeployTagMap,
-            app_conf_dir: str,
-            conf_link_dir: str,
-    ) -> _ComputedConfLink:
-        link_src = os.path.join(app_conf_dir, link.src)
-        check.arg(is_path_in_dir(app_conf_dir, link_src))
 
         #
 
-        if (is_dir := link.src.endswith('/')):
-            # @conf/ - links a directory in root of app conf dir to conf/@conf/@dst/
-            check.arg(link.src.count('/') == 1)
-            conf = DeployConf(link.src.split('/')[0])
-            link_dst_pfx = link.src
-            link_dst_sfx = ''
+        @property
+        def repo(self) -> DeployGitRepo:
+            return self._repo
 
-        elif '/' in link.src:
-            # @conf/file - links a single file in a single subdir to conf/@conf/@dst--file
-            d, f = os.path.split(link.src)
-            # TODO: check filename :|
-            conf = DeployConf(d)
-            link_dst_pfx = d + '/'
-            link_dst_sfx = DEPLOY_TAG_SEPARATOR + f
+        @property
+        def url(self) -> str:
+            return self._git.make_repo_url(self._repo)
 
-        else:  # noqa
-            # @conf(.ext)* - links a single file in root of app conf dir to conf/@conf/@dst(.ext)*
-            if '.' in link.src:
-                l, _, r = link.src.partition('.')
-                conf = DeployConf(l)
-                link_dst_pfx = l + '/'
-                link_dst_sfx = '.' + r
+        #
+
+        async def _call(self, *cmd: str) -> None:
+            await asyncio_subprocesses.check_call(
+                *cmd,
+                cwd=self._dir,
+            )
+
+        #
+
+        @async_cached_nullary
+        async def init(self) -> None:
+            os.makedirs(self._dir, exist_ok=True)
+            if os.path.exists(os.path.join(self._dir, '.git')):
+                return
+
+            await self._call('git', 'init')
+            await self._call('git', 'remote', 'add', 'origin', self.url)
+
+        async def fetch(self, rev: DeployRev) -> None:
+            await self.init()
+
+            # This fetch shouldn't be depth=1 - git doesn't reuse local data with shallow fetches.
+            await self._call('git', 'fetch', 'origin', rev)
+
+        #
+
+        async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+            check.state(not os.path.exists(dst_dir))
+            with self._git._atomics(self._home).begin_atomic_path_swap(  # noqa
+                    'dir',
+                    dst_dir,
+                    auto_commit=True,
+                    make_dirs=True,
+            ) as dst_swap:
+                await self.fetch(spec.rev)
+
+                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
+                await dst_call('git', 'init')
+
+                await dst_call('git', 'remote', 'add', 'local', self._dir)
+                await dst_call('git', 'fetch', '--depth=1', 'local', spec.rev)
+                await dst_call('git', 'checkout', spec.rev, *(spec.subtrees or []))
+
+    def get_repo_dir(
+            self,
+            repo: DeployGitRepo,
+            home: DeployHome,
+    ) -> RepoDir:
+        try:
+            return self._repo_dirs[repo]
+        except KeyError:
+            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(
+                self,
+                repo,
+                home,
+            )
+            return repo_dir
+
+    #
+
+    async def shallow_clone(
+            self,
+            spec: DeployGitSpec,
+            home: DeployHome,
+            dst_dir: str,
+    ) -> None:
+        check.state(not os.path.exists(dst_dir))
+        with self._atomics(home).begin_atomic_path_swap(  # noqa
+                'dir',
+                dst_dir,
+                auto_commit=True,
+                make_dirs=True,
+        ) as dst_swap:
+            tdn = '.omlish-git-shallow-clone'
+
+            for cmd in GitShallowCloner(
+                    base_dir=dst_swap.tmp_path,
+                    repo_url=self.make_repo_url(spec.repo),
+                    repo_dir=tdn,
+                    rev=spec.rev,
+                    repo_subtrees=spec.subtrees,
+            ).build_commands():
+                await asyncio_subprocesses.check_call(
+                    *cmd.cmd,
+                    cwd=cmd.cwd,
+                )
+
+            td = os.path.join(dst_swap.tmp_path, tdn)
+            check.state(os.path.isdir(td))
+            for n in sorted(os.listdir(td)):
+                os.rename(
+                    os.path.join(td, n),
+                    os.path.join(dst_swap.tmp_path, n),
+                )
+            os.rmdir(td)
+
+    #
+
+    async def checkout(
+            self,
+            spec: DeployGitSpec,
+            home: DeployHome,
+            dst_dir: str,
+    ) -> None:
+        if spec.shallow:
+            await self.shallow_clone(
+                spec,
+                home,
+                dst_dir,
+            )
+
+        else:
+            await self.get_repo_dir(
+                spec.repo,
+                home,
+            ).checkout(
+                spec,
+                dst_dir,
+            )
+
+
+########################################
+# ../deploy/paths/inject.py
+
+
+def bind_deploy_paths() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind_array(DeployPathOwner),
+        inj.bind_array_type(DeployPathOwner, DeployPathOwners),
+
+        inj.bind(DeployPathsManager, singleton=True),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../deploy/systemd.py
+"""
+TODO:
+ - verify - systemd-analyze
+ - sudo loginctl enable-linger "$USER"
+ - idemp kill services that shouldn't be running, start ones that should
+  - ideally only those defined by links to deploy home
+  - ominfra.systemd / x.sd_orphans
+"""
+
+
+class DeploySystemdManager:
+    def __init__(
+            self,
+            *,
+            atomics: DeployHomeAtomics,
+    ) -> None:
+        super().__init__()
+
+        self._atomics = atomics
+
+    def _scan_link_dir(
+            self,
+            d: str,
+            *,
+            strict: bool = False,
+    ) -> ta.Dict[str, str]:
+        o: ta.Dict[str, str] = {}
+        for f in os.listdir(d):
+            fp = os.path.join(d, f)
+            if strict:
+                check.state(os.path.islink(fp))
+            o[f] = abs_real_path(fp)
+        return o
+
+    async def sync_systemd(
+            self,
+            spec: ta.Optional[DeploySystemdSpec],
+            home: DeployHome,
+            conf_dir: str,
+    ) -> None:
+        check.non_empty_str(home)
+
+        if not spec:
+            return
+
+        #
+
+        if not (ud := spec.unit_dir):
+            return
+
+        ud = abs_real_path(os.path.expanduser(ud))
+
+        os.makedirs(ud, exist_ok=True)
+
+        #
+
+        uld = {
+            n: p
+            for n, p in self._scan_link_dir(ud).items()
+            if is_path_in_dir(home, p)
+        }
+
+        if os.path.exists(conf_dir):
+            cld = self._scan_link_dir(conf_dir, strict=True)
+        else:
+            cld = {}
+
+        #
+
+        ns = sorted(set(uld) | set(cld))
+
+        for n in ns:
+            cl = cld.get(n)
+            if cl is None:
+                os.unlink(os.path.join(ud, n))
             else:
-                conf = DeployConf(link.src)
-                link_dst_pfx = link.src + '/'
-                link_dst_sfx = ''
+                with self._atomics(home).begin_atomic_path_swap(  # noqa
+                        'file',
+                        os.path.join(ud, n),
+                        auto_commit=True,
+                        skip_root_dir_check=True,
+                ) as dst_swap:
+                    os.unlink(dst_swap.tmp_path)
+                    os.symlink(
+                        os.path.relpath(cl, os.path.dirname(dst_swap.dst_path)),
+                        dst_swap.tmp_path,
+                    )
 
         #
 
-        if link.kind == 'current_only':
-            link_dst_mid = str(tags[DeployApp].s)
-        elif link.kind == 'all_active':
-            link_dst_mid = cls._UNIQUE_LINK_NAME.render(tags)
-        else:
-            raise TypeError(link)
-
-        #
-
-        link_dst_name = ''.join([
-            link_dst_pfx,
-            link_dst_mid,
-            link_dst_sfx,
-        ])
-        link_dst = os.path.join(conf_link_dir, link_dst_name)
-
-        return DeployConfManager._ComputedConfLink(
-            conf=conf,
-            is_dir=is_dir,
-            link_src=link_src,
-            link_dst=link_dst,
-        )
-
-    async def _make_app_conf_link(
-            self,
-            link: DeployAppConfLink,
-            tags: DeployTagMap,
-            app_conf_dir: str,
-            conf_link_dir: str,
-    ) -> None:
-        comp = self._compute_app_conf_link_dst(
-            link,
-            tags,
-            app_conf_dir,
-            conf_link_dir,
-        )
-
-        #
-
-        check.arg(is_path_in_dir(app_conf_dir, comp.link_src))
-        check.arg(is_path_in_dir(conf_link_dir, comp.link_dst))
-
-        if comp.is_dir:
-            check.arg(os.path.isdir(comp.link_src))
-        else:
-            check.arg(os.path.isfile(comp.link_src))
-
-        #
-
-        relative_symlink(  # noqa
-            comp.link_src,
-            comp.link_dst,
-            target_is_directory=comp.is_dir,
-            make_dirs=True,
-        )
-
-    async def link_app_conf(
-            self,
-            spec: DeployAppConfSpec,
-            tags: DeployTagMap,
-            app_conf_dir: str,
-            conf_link_dir: str,
-    ):
-        for link in spec.links or []:
-            await self._make_app_conf_link(
-                link,
-                tags,
-                app_conf_dir,
-                conf_link_dir,
-            )
-
-
-########################################
-# ../deploy/paths/owners.py
-
-
-class DeployPathOwner(abc.ABC):
-    @abc.abstractmethod
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        raise NotImplementedError
-
-
-DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
-
-
-class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
-    def __init__(
-            self,
-            *args: ta.Any,
-            owned_dir: str,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-
-        check.not_in('/', owned_dir)
-        self._owned_dir: str = check.non_empty_str(owned_dir)
-
-        self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
-
-    def _dir(self, home: DeployHome) -> str:
-        return os.path.join(check.non_empty_str(home), self._owned_dir)
-
-    def _make_dir(self, home: DeployHome) -> str:
-        if not os.path.isdir(d := self._dir(home)):
-            os.makedirs(d, exist_ok=True)
-        return d
-
-    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return self._owned_deploy_paths
-
-
-########################################
-# ../remote/_main.py
-
-
-##
-
-
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
-        self._fn = fn
-
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
-
-
-##
-
-
-class _RemoteExecutionMain:
-    def __init__(
-            self,
-            chan: RemoteChannel,
-    ) -> None:
-        super().__init__()
-
-        self._chan = chan
-
-        self.__bootstrap: ta.Optional[MainBootstrap] = None
-        self.__injector: ta.Optional[Injector] = None
-
-    @property
-    def _bootstrap(self) -> MainBootstrap:
-        return check.not_none(self.__bootstrap)
-
-    @property
-    def _injector(self) -> Injector:
-        return check.not_none(self.__injector)
-
-    #
-
-    def _timebomb_main(
-            self,
-            delay_s: float,
-            *,
-            sig: int = signal.SIGINT,
-            code: int = 1,
-    ) -> None:
-        time.sleep(delay_s)
-
-        if (pgid := os.getpgid(0)) == os.getpid():
-            os.killpg(pgid, sig)
-
-        os._exit(code)  # noqa
-
-    @cached_nullary
-    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
-        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
-            return None
-
-        thr = threading.Thread(
-            target=functools.partial(self._timebomb_main, tbd),
-            name=f'{self.__class__.__name__}.timebomb',
-            daemon=True,
-        )
-
-        thr.start()
-
-        log.debug('Started timebomb thread: %r', thr)
-
-        return thr
-
-    #
-
-    @cached_nullary
-    def _log_handler(self) -> _RemoteLogHandler:
-        return _RemoteLogHandler(self._chan)
-
-    #
-
-    async def _setup(self) -> None:
-        check.none(self.__bootstrap)
-        check.none(self.__injector)
-
-        # Bootstrap
-
-        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
-
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
-
-        # Post-bootstrap
-
-        if self._bootstrap.remote_config.set_pgid:
-            if os.getpgid(0) != os.getpid():
-                log.debug('Setting pgid')
-                os.setpgid(0, 0)
-
-        if (ds := self._bootstrap.remote_config.deathsig) is not None:
-            log.debug('Setting deathsig: %s', ds)
-            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
-
-        self._timebomb_thread()
-
-        if self._bootstrap.remote_config.forward_logging:
-            log.debug('Installing log forwarder')
-            logging.root.addHandler(self._log_handler())
-
-    #
-
-    async def run(self) -> None:
-        await self._setup()
-
-        executor = self._injector[LocalCommandExecutor]
-
-        handler = _RemoteCommandHandler(self._chan, executor)
-
-        await handler.run()
-
-
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    async def inner() -> None:
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)
-
-        chan = RemoteChannelImpl(
-            input,
-            output,
-        )
-
-        await _RemoteExecutionMain(chan).run()
-
-    asyncio.run(inner())
+        if sys.platform == 'linux' and shutil.which('systemctl') is not None:
+            async def reload() -> None:
+                await asyncio_subprocesses.check_call('systemctl', '--user', 'daemon-reload')
+
+            await reload()
+
+            num_deleted = 0
+            for n in ns:
+                if n.endswith('.service'):
+                    cl = cld.get(n)
+                    ul = uld.get(n)
+                    if cl is not None:
+                        if ul is None:
+                            cs = ['enable', 'start']
+                        else:
+                            cs = ['restart']
+                    else:  # noqa
+                        if ul is not None:
+                            cs = ['stop']
+                            num_deleted += 1
+                        else:
+                            cs = []
+
+                    for c in cs:
+                        await asyncio_subprocesses.check_call('systemctl', '--user', c, n)
+
+            if num_deleted:
+                await reload()
 
 
 ########################################
@@ -11261,69 +11704,6 @@ def bind_commands(
 
 
 ########################################
-# ../deploy/injection.py
-
-
-def bind_deploy_manager(cls: type) -> InjectorBindings:
-    return inj.as_bindings(
-        inj.bind(cls, singleton=True),
-
-        *([inj.bind(DeployPathOwner, to_key=cls, array=True)] if issubclass(cls, DeployPathOwner) else []),
-    )
-
-
-########################################
-# ../deploy/paths/manager.py
-
-
-class DeployPathsManager:
-    def __init__(
-            self,
-            *,
-            deploy_path_owners: DeployPathOwners,
-    ) -> None:
-        super().__init__()
-
-        self._deploy_path_owners = deploy_path_owners
-
-    @cached_nullary
-    def owners_by_path(self) -> ta.Mapping[DeployPath, DeployPathOwner]:
-        dct: ta.Dict[DeployPath, DeployPathOwner] = {}
-        for o in self._deploy_path_owners:
-            for p in o.get_owned_deploy_paths():
-                if p in dct:
-                    raise DeployPathError(f'Duplicate deploy path owner: {p}')
-                dct[p] = o
-        return dct
-
-    def validate_deploy_paths(self) -> None:
-        self.owners_by_path()
-
-
-########################################
-# ../deploy/tmp.py
-
-
-class DeployHomeAtomics(Func1[DeployHome, AtomicPathSwapping]):
-    pass
-
-
-class DeployTmpManager(
-    SingleDirDeployPathOwner,
-):
-    def __init__(self) -> None:
-        super().__init__(
-            owned_dir='tmp',
-        )
-
-    def get_swapping(self, home: DeployHome) -> AtomicPathSwapping:
-        return TempDirAtomicPathSwapping(
-            temp_dir=self._make_dir(home),
-            root_dir=check.non_empty_str(home),
-        )
-
-
-########################################
 # ../remote/connection.py
 
 
@@ -11627,343 +12007,6 @@ class PyenvInterpProvider(InterpProvider):
 
         exe = await installer.install()
         return Interp(exe, version)
-
-
-########################################
-# ../deploy/conf/inject.py
-
-
-def bind_deploy_conf() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        bind_deploy_manager(DeployConfManager),
-    ]
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../deploy/git.py
-"""
-TODO:
- - parse refs, resolve revs
- - non-subtree shallow clone
-
-github.com/wrmsr/omlish@rev
-"""
-
-
-##
-
-
-class DeployGitManager(SingleDirDeployPathOwner):
-    def __init__(
-            self,
-            *,
-            atomics: DeployHomeAtomics,
-    ) -> None:
-        super().__init__(
-            owned_dir='git',
-        )
-
-        self._atomics = atomics
-
-        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
-
-    #
-
-    def make_repo_url(self, repo: DeployGitRepo) -> str:
-        if repo.username is not None:
-            return f'{repo.username}@{repo.host}:{repo.path}'
-        else:
-            return f'https://{repo.host}/{repo.path}'
-
-    #
-
-    class RepoDir:
-        def __init__(
-                self,
-                git: 'DeployGitManager',
-                repo: DeployGitRepo,
-                home: DeployHome,
-        ) -> None:
-            super().__init__()
-
-            self._git = git
-            self._repo = repo
-            self._home = home
-            self._dir = os.path.join(
-                self._git._make_dir(home),  # noqa
-                check.non_empty_str(repo.host),
-                check.non_empty_str(repo.path),
-            )
-
-        #
-
-        @property
-        def repo(self) -> DeployGitRepo:
-            return self._repo
-
-        @property
-        def url(self) -> str:
-            return self._git.make_repo_url(self._repo)
-
-        #
-
-        async def _call(self, *cmd: str) -> None:
-            await asyncio_subprocesses.check_call(
-                *cmd,
-                cwd=self._dir,
-            )
-
-        #
-
-        @async_cached_nullary
-        async def init(self) -> None:
-            os.makedirs(self._dir, exist_ok=True)
-            if os.path.exists(os.path.join(self._dir, '.git')):
-                return
-
-            await self._call('git', 'init')
-            await self._call('git', 'remote', 'add', 'origin', self.url)
-
-        async def fetch(self, rev: DeployRev) -> None:
-            await self.init()
-
-            # This fetch shouldn't be depth=1 - git doesn't reuse local data with shallow fetches.
-            await self._call('git', 'fetch', 'origin', rev)
-
-        #
-
-        async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
-            check.state(not os.path.exists(dst_dir))
-            with self._git._atomics(self._home).begin_atomic_path_swap(  # noqa
-                    'dir',
-                    dst_dir,
-                    auto_commit=True,
-                    make_dirs=True,
-            ) as dst_swap:
-                await self.fetch(spec.rev)
-
-                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
-                await dst_call('git', 'init')
-
-                await dst_call('git', 'remote', 'add', 'local', self._dir)
-                await dst_call('git', 'fetch', '--depth=1', 'local', spec.rev)
-                await dst_call('git', 'checkout', spec.rev, *(spec.subtrees or []))
-
-    def get_repo_dir(
-            self,
-            repo: DeployGitRepo,
-            home: DeployHome,
-    ) -> RepoDir:
-        try:
-            return self._repo_dirs[repo]
-        except KeyError:
-            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(
-                self,
-                repo,
-                home,
-            )
-            return repo_dir
-
-    #
-
-    async def shallow_clone(
-            self,
-            spec: DeployGitSpec,
-            home: DeployHome,
-            dst_dir: str,
-    ) -> None:
-        check.state(not os.path.exists(dst_dir))
-        with self._atomics(home).begin_atomic_path_swap(  # noqa
-                'dir',
-                dst_dir,
-                auto_commit=True,
-                make_dirs=True,
-        ) as dst_swap:
-            tdn = '.omlish-git-shallow-clone'
-
-            for cmd in GitShallowCloner(
-                    base_dir=dst_swap.tmp_path,
-                    repo_url=self.make_repo_url(spec.repo),
-                    repo_dir=tdn,
-                    rev=spec.rev,
-                    repo_subtrees=spec.subtrees,
-            ).build_commands():
-                await asyncio_subprocesses.check_call(
-                    *cmd.cmd,
-                    cwd=cmd.cwd,
-                )
-
-            td = os.path.join(dst_swap.tmp_path, tdn)
-            check.state(os.path.isdir(td))
-            for n in sorted(os.listdir(td)):
-                os.rename(
-                    os.path.join(td, n),
-                    os.path.join(dst_swap.tmp_path, n),
-                )
-            os.rmdir(td)
-
-    #
-
-    async def checkout(
-            self,
-            spec: DeployGitSpec,
-            home: DeployHome,
-            dst_dir: str,
-    ) -> None:
-        if spec.shallow:
-            await self.shallow_clone(
-                spec,
-                home,
-                dst_dir,
-            )
-
-        else:
-            await self.get_repo_dir(
-                spec.repo,
-                home,
-            ).checkout(
-                spec,
-                dst_dir,
-            )
-
-
-########################################
-# ../deploy/paths/inject.py
-
-
-def bind_deploy_paths() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind_array(DeployPathOwner),
-        inj.bind_array_type(DeployPathOwner, DeployPathOwners),
-
-        inj.bind(DeployPathsManager, singleton=True),
-    ]
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../deploy/systemd.py
-"""
-TODO:
- - verify - systemd-analyze
- - sudo loginctl enable-linger "$USER"
- - idemp kill services that shouldn't be running, start ones that should
-  - ideally only those defined by links to deploy home
-  - ominfra.systemd / x.sd_orphans
-"""
-
-
-class DeploySystemdManager:
-    def __init__(
-            self,
-            *,
-            atomics: DeployHomeAtomics,
-    ) -> None:
-        super().__init__()
-
-        self._atomics = atomics
-
-    def _scan_link_dir(
-            self,
-            d: str,
-            *,
-            strict: bool = False,
-    ) -> ta.Dict[str, str]:
-        o: ta.Dict[str, str] = {}
-        for f in os.listdir(d):
-            fp = os.path.join(d, f)
-            if strict:
-                check.state(os.path.islink(fp))
-            o[f] = abs_real_path(fp)
-        return o
-
-    async def sync_systemd(
-            self,
-            spec: ta.Optional[DeploySystemdSpec],
-            home: DeployHome,
-            conf_dir: str,
-    ) -> None:
-        check.non_empty_str(home)
-
-        if not spec:
-            return
-
-        #
-
-        if not (ud := spec.unit_dir):
-            return
-
-        ud = abs_real_path(os.path.expanduser(ud))
-
-        os.makedirs(ud, exist_ok=True)
-
-        #
-
-        uld = {
-            n: p
-            for n, p in self._scan_link_dir(ud).items()
-            if is_path_in_dir(home, p)
-        }
-
-        if os.path.exists(conf_dir):
-            cld = self._scan_link_dir(conf_dir, strict=True)
-        else:
-            cld = {}
-
-        #
-
-        ns = sorted(set(uld) | set(cld))
-
-        for n in ns:
-            cl = cld.get(n)
-            if cl is None:
-                os.unlink(os.path.join(ud, n))
-            else:
-                with self._atomics(home).begin_atomic_path_swap(  # noqa
-                        'file',
-                        os.path.join(ud, n),
-                        auto_commit=True,
-                        skip_root_dir_check=True,
-                ) as dst_swap:
-                    os.unlink(dst_swap.tmp_path)
-                    os.symlink(
-                        os.path.relpath(cl, os.path.dirname(dst_swap.dst_path)),
-                        dst_swap.tmp_path,
-                    )
-
-        #
-
-        if sys.platform == 'linux' and shutil.which('systemctl') is not None:
-            async def reload() -> None:
-                await asyncio_subprocesses.check_call('systemctl', '--user', 'daemon-reload')
-
-            await reload()
-
-            num_deleted = 0
-            for n in ns:
-                if n.endswith('.service'):
-                    cl = cld.get(n)
-                    ul = uld.get(n)
-                    if cl is not None:
-                        if ul is None:
-                            cs = ['enable', 'start']
-                        else:
-                            cs = ['restart']
-                    else:  # noqa
-                        if ul is not None:
-                            cs = ['stop']
-                            num_deleted += 1
-                        else:
-                            cs = []
-
-                    for c in cs:
-                        await asyncio_subprocesses.check_call('systemctl', '--user', c, n)
-
-            if num_deleted:
-                await reload()
 
 
 ########################################

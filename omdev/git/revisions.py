@@ -4,8 +4,8 @@ import os.path
 import subprocess
 import typing as ta
 
-from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
-from omlish.subprocesses import subprocesses
+from omlish.subprocesses.sync import subprocesses
+from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 
 def get_git_revision(

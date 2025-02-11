@@ -10,8 +10,8 @@ import typing as ta
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.shlex import shlex_maybe_quote
-from omlish.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
-from omlish.subprocesses import SubprocessChannelOption
+from omlish.subprocesses.base import SUBPROCESS_CHANNEL_OPTION_VALUES
+from omlish.subprocesses.base import SubprocessChannelOption
 
 
 ##

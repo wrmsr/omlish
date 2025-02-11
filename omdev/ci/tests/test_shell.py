@@ -2,7 +2,7 @@
 import unittest
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.subprocesses import subprocesses
+from omlish.subprocesses.sync import subprocesses
 
 from ..shell import ShellCmd
 

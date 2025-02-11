@@ -89,7 +89,7 @@ InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
-# ../../omlish/subprocesses.py
+# ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
@@ -3124,6 +3124,98 @@ def temp_named_file_context(
 
 
 ########################################
+# ../../../omlish/subprocesses/run.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRunOutput(ta.Generic[T]):
+    proc: T
+
+    returncode: int  # noqa
+
+    stdout: ta.Optional[bytes] = None
+    stderr: ta.Optional[bytes] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRun:
+    cmd: ta.Sequence[str]
+    input: ta.Any = None
+    timeout: ta.Optional[float] = None
+    check: bool = False
+    capture_output: ta.Optional[bool] = None
+    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+    @classmethod
+    def of(
+            cls,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,  # noqa
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> 'SubprocessRun':
+        return cls(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        )
+
+    #
+
+    _DEFAULT_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractSubprocesses
+
+    def run(
+            self,
+            subprocesses: ta.Optional[ta.Any] = None,  # AbstractSubprocesses
+    ) -> SubprocessRunOutput:
+        if subprocesses is None:
+            subprocesses = self._DEFAULT_SUBPROCESSES
+        return check.not_none(subprocesses).run_(self)  # type: ignore[attr-defined]
+
+    _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
+
+    async def async_run(
+            self,
+            async_subprocesses: ta.Optional[ta.Any] = None,  # AbstractAsyncSubprocesses
+    ) -> SubprocessRunOutput:
+        if async_subprocesses is None:
+            async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
+        return await check.not_none(async_subprocesses).run_(self)  # type: ignore[attr-defined]
+
+
+##
+
+
+class SubprocessRunnable(abc.ABC, ta.Generic[T]):
+    @abc.abstractmethod
+    def make_run(self) -> SubprocessRun:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_run_output(self, output: SubprocessRunOutput) -> T:
+        raise NotImplementedError
+
+    #
+
+    def run(self, subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractSubprocesses
+        return self.handle_run_output(self.make_run().run(subprocesses))
+
+    async def async_run(self, async_subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractAsyncSubprocesses
+        return self.handle_run_output(await self.make_run().async_run(async_subprocesses))
+
+
+########################################
 # ../cache.py
 
 
@@ -3989,23 +4081,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/subprocesses.py
-
-
-##
-
-
-# Valid channel type kwarg values:
-#  - A special flag negative int
-#  - A positive fd int
-#  - A file-like object
-#  - None
-
-SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
-    'pipe': subprocess.PIPE,
-    'stdout': subprocess.STDOUT,
-    'devnull': subprocess.DEVNULL,
-}
+# ../../../omlish/subprocesses/wrap.py
 
 
 ##
@@ -4025,22 +4101,143 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return cmd
 
 
+########################################
+# ../github/cache.py
+
+
 ##
 
 
-def subprocess_close(
-        proc: subprocess.Popen,
-        timeout: ta.Optional[float] = None,
-) -> None:
-    # TODO: terminate, sleep, kill
-    if proc.stdout:
-        proc.stdout.close()
-    if proc.stderr:
-        proc.stderr.close()
-    if proc.stdin:
-        proc.stdin.close()
+class GithubCache(FileCache, DataCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        dir: str
 
-    proc.wait(timeout)
+    def __init__(
+            self,
+            config: Config,
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+            version: ta.Optional[CacheVersion] = None,
+    ) -> None:
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+        if client is None:
+            client = GithubCacheServiceV1Client(
+                cache_version=self._version,
+            )
+        self._client: GithubCacheClient = client
+
+        self._local = DirectoryFileCache(
+            DirectoryFileCache.Config(
+                dir=check.non_empty_str(config.dir),
+            ),
+            version=self._version,
+        )
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with unlinking_if_exists(tmp_file):
+            await self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = await self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        await self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        await FileCacheDataCache(self).put_data(key, data)
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    async def get_cache_entry(self) -> None:
+        client = GithubCacheServiceV1Client()
+        entry = await client.get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../../../omlish/subprocesses/base.py
+
+
+##
+
+
+# Valid channel type kwarg values:
+#  - A special flag negative int
+#  - A positive fd int
+#  - A file-like object
+#  - None
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
 
 
 ##
@@ -4227,52 +4424,127 @@ class BaseSubprocesses(abc.ABC):  # noqa
             return e
 
 
+########################################
+# ../github/inject.py
+
+
 ##
 
 
-@dc.dataclass(frozen=True)
-class SubprocessRun:
-    cmd: ta.Sequence[str]
-    input: ta.Any = None
-    timeout: ta.Optional[float] = None
-    check: bool = False
-    capture_output: ta.Optional[bool] = None
-    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+def bind_github(
+        *,
+        cache_dir: ta.Optional[str] = None,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = []
 
-    @classmethod
-    def of(
-            cls,
+    if cache_dir is not None:
+        lst.extend([
+            inj.bind(GithubCache.Config(
+                dir=cache_dir,
+            )),
+            inj.bind(GithubCache, singleton=True),
+            inj.bind(FileCache, to_key=GithubCache),
+        ])
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../../../omlish/subprocesses/async_.py
+
+
+##
+
+
+class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
             *cmd: str,
             input: ta.Any = None,  # noqa
             timeout: ta.Optional[float] = None,
             check: bool = False,
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,
-    ) -> 'SubprocessRun':
-        return cls(
+    ) -> ta.Awaitable[SubprocessRunOutput]:
+        return self.run_(SubprocessRun(
             cmd=cmd,
             input=input,
             timeout=timeout,
             check=check,
             capture_output=capture_output,
             kwargs=kwargs,
-        )
+        ))
 
-    def run(self, subprocesses: 'AbstractSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return subprocesses.run_(self)
+    #
 
-    async def async_run(self, async_subprocesses: 'AbstractAsyncSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return await async_subprocesses.run_(self)
+    @abc.abstractmethod
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
 
 
-@dc.dataclass(frozen=True)
-class SubprocessRunOutput(ta.Generic[T]):
-    proc: T
+########################################
+# ../../../omlish/subprocesses/sync.py
 
-    returncode: int  # noqa
 
-    stdout: ta.Optional[bytes] = None
-    stderr: ta.Optional[bytes] = None
+##
 
 
 class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
@@ -4400,213 +4672,12 @@ class Subprocesses(AbstractSubprocesses):
             return subprocess.check_output(cmd, **kwargs)
 
 
+##
+
+
 subprocesses = Subprocesses()
 
-
-##
-
-
-class AbstractAsyncSubprocesses(BaseSubprocesses):
-    @abc.abstractmethod
-    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
-
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[SubprocessRunOutput]:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    async def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        raise NotImplementedError
-
-    #
-
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
-
-    #
-
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
-
-
-########################################
-# ../github/cache.py
-
-
-##
-
-
-class GithubCache(FileCache, DataCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        dir: str
-
-    def __init__(
-            self,
-            config: Config,
-            *,
-            client: ta.Optional[GithubCacheClient] = None,
-            version: ta.Optional[CacheVersion] = None,
-    ) -> None:
-        super().__init__(
-            version=version,
-        )
-
-        self._config = config
-
-        if client is None:
-            client = GithubCacheServiceV1Client(
-                cache_version=self._version,
-            )
-        self._client: GithubCacheClient = client
-
-        self._local = DirectoryFileCache(
-            DirectoryFileCache.Config(
-                dir=check.non_empty_str(config.dir),
-            ),
-            version=self._version,
-        )
-
-    #
-
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with unlinking_if_exists(tmp_file):
-            await self._client.download_file(entry, tmp_file)
-
-            os.replace(tmp_file, local_file)
-
-        return local_file
-
-    async def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = await self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
-
-        await self._client.upload_file(key, cache_file_path)
-
-        return cache_file_path
-
-    #
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return DataCache.FileData(local_file)
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        await FileCacheDataCache(self).put_data(key, data)
-
-
-########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
-
-
-class GithubCli(ArgparseCli):
-    @argparse_cmd()
-    def list_referenced_env_vars(self) -> None:
-        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
-
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
-        entry = await client.get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
-
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
+SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 
 
 ########################################
@@ -5176,31 +5247,6 @@ async def load_docker_tar(
         tar_file: str,
 ) -> str:
     return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
-
-
-########################################
-# ../github/inject.py
-
-
-##
-
-
-def bind_github(
-        *,
-        cache_dir: ta.Optional[str] = None,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
-
-    if cache_dir is not None:
-        lst.extend([
-            inj.bind(GithubCache.Config(
-                dir=cache_dir,
-            )),
-            inj.bind(GithubCache, singleton=True),
-            inj.bind(FileCache, to_key=GithubCache),
-        ])
-
-    return inj.as_bindings(*lst)
 
 
 ########################################

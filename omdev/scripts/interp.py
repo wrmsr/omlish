@@ -87,7 +87,7 @@ InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
-# ../../omlish/subprocesses.py
+# ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
@@ -3370,6 +3370,98 @@ class JsonLogFormatter(logging.Formatter):
 
 
 ########################################
+# ../../../omlish/subprocesses/run.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRunOutput(ta.Generic[T]):
+    proc: T
+
+    returncode: int  # noqa
+
+    stdout: ta.Optional[bytes] = None
+    stderr: ta.Optional[bytes] = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessRun:
+    cmd: ta.Sequence[str]
+    input: ta.Any = None
+    timeout: ta.Optional[float] = None
+    check: bool = False
+    capture_output: ta.Optional[bool] = None
+    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+    @classmethod
+    def of(
+            cls,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,  # noqa
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> 'SubprocessRun':
+        return cls(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        )
+
+    #
+
+    _DEFAULT_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractSubprocesses
+
+    def run(
+            self,
+            subprocesses: ta.Optional[ta.Any] = None,  # AbstractSubprocesses
+    ) -> SubprocessRunOutput:
+        if subprocesses is None:
+            subprocesses = self._DEFAULT_SUBPROCESSES
+        return check.not_none(subprocesses).run_(self)  # type: ignore[attr-defined]
+
+    _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
+
+    async def async_run(
+            self,
+            async_subprocesses: ta.Optional[ta.Any] = None,  # AbstractAsyncSubprocesses
+    ) -> SubprocessRunOutput:
+        if async_subprocesses is None:
+            async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
+        return await check.not_none(async_subprocesses).run_(self)  # type: ignore[attr-defined]
+
+
+##
+
+
+class SubprocessRunnable(abc.ABC, ta.Generic[T]):
+    @abc.abstractmethod
+    def make_run(self) -> SubprocessRun:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_run_output(self, output: SubprocessRunOutput) -> T:
+        raise NotImplementedError
+
+    #
+
+    def run(self, subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractSubprocesses
+        return self.handle_run_output(self.make_run().run(subprocesses))
+
+    async def async_run(self, async_subprocesses: ta.Optional[ta.Any] = None) -> T:  # AbstractAsyncSubprocesses
+        return self.handle_run_output(await self.make_run().async_run(async_subprocesses))
+
+
+########################################
 # ../types.py
 
 
@@ -3607,23 +3699,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/subprocesses.py
-
-
-##
-
-
-# Valid channel type kwarg values:
-#  - A special flag negative int
-#  - A positive fd int
-#  - A file-like object
-#  - None
-
-SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
-    'pipe': subprocess.PIPE,
-    'stdout': subprocess.STDOUT,
-    'devnull': subprocess.DEVNULL,
-}
+# ../../../omlish/subprocesses/wrap.py
 
 
 ##
@@ -3643,22 +3719,68 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return cmd
 
 
+########################################
+# ../providers/base.py
+"""
+TODO:
+ - backends
+  - local builds
+  - deadsnakes?
+  - uv
+ - loose versions
+"""
+
+
 ##
 
 
-def subprocess_close(
-        proc: subprocess.Popen,
-        timeout: ta.Optional[float] = None,
-) -> None:
-    # TODO: terminate, sleep, kill
-    if proc.stdout:
-        proc.stdout.close()
-    if proc.stderr:
-        proc.stderr.close()
-    if proc.stdin:
-        proc.stdin.close()
+class InterpProvider(abc.ABC):
+    name: ta.ClassVar[str]
 
-    proc.wait(timeout)
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
+    @abc.abstractmethod
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
+        raise NotImplementedError
+
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def install_version(self, version: InterpVersion) -> Interp:
+        raise TypeError
+
+
+InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
+
+
+########################################
+# ../../../omlish/subprocesses/base.py
+
+
+##
+
+
+# Valid channel type kwarg values:
+#  - A special flag negative int
+#  - A positive fd int
+#  - A file-like object
+#  - None
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
 
 
 ##
@@ -3845,180 +3967,96 @@ class BaseSubprocesses(abc.ABC):  # noqa
             return e
 
 
-##
+########################################
+# ../resolvers.py
 
 
 @dc.dataclass(frozen=True)
-class SubprocessRun:
-    cmd: ta.Sequence[str]
-    input: ta.Any = None
-    timeout: ta.Optional[float] = None
-    check: bool = False
-    capture_output: ta.Optional[bool] = None
-    kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
-
-    @classmethod
-    def of(
-            cls,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> 'SubprocessRun':
-        return cls(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        )
-
-    def run(self, subprocesses: 'AbstractSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return subprocesses.run_(self)
-
-    async def async_run(self, async_subprocesses: 'AbstractAsyncSubprocesses') -> 'SubprocessRunOutput':  # noqa
-        return await async_subprocesses.run_(self)
+class InterpResolverProviders:
+    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
 
 
-@dc.dataclass(frozen=True)
-class SubprocessRunOutput(ta.Generic[T]):
-    proc: T
-
-    returncode: int  # noqa
-
-    stdout: ta.Optional[bytes] = None
-    stderr: ta.Optional[bytes] = None
-
-
-class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
-    @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
-
-    def run(
+class InterpResolver:
+    def __init__(
             self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: ta.Optional[float] = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> SubprocessRunOutput:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
+            providers: InterpResolverProviders,
     ) -> None:
-        raise NotImplementedError
+        super().__init__()
 
-    @abc.abstractmethod
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        raise NotImplementedError
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
 
-    #
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
 
-    def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return self.check_output(*cmd, **kwargs).decode().strip()
-
-    #
-
-    def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
             return None
-        else:
-            return ret
 
-    def try_output_str(
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
             self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := self.try_output(*cmd, **kwargs)) is None:
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
             return None
-        else:
-            return ret.decode().strip()
 
+        tp = list(self._providers.values())[0]  # noqa
 
-##
-
-
-class Subprocesses(AbstractSubprocesses):
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
-        proc = subprocess.run(
-            run.cmd,
-            input=run.input,
-            timeout=run.timeout,
-            check=run.check,
-            capture_output=run.capture_output or False,
-            **(run.kwargs or {}),
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
         )
+        if not sv:
+            return None
 
-        return SubprocessRunOutput(
-            proc=proc,
+        bv = sv[-1]
+        return await tp.install_version(bv)
 
-            returncode=proc.returncode,
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
 
-            stdout=proc.stdout,  # noqa
-            stderr=proc.stderr,  # noqa
-        )
+        print()
 
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
-            subprocess.check_call(cmd, **kwargs)
-
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
-            return subprocess.check_output(cmd, **kwargs)
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
 
 
-subprocesses = Subprocesses()
+########################################
+# ../../../omlish/subprocesses/async_.py
 
 
 ##
@@ -4106,50 +4144,6 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
-
-
-########################################
-# ../providers/base.py
-"""
-TODO:
- - backends
-  - local builds
-  - deadsnakes?
-  - uv
- - loose versions
-"""
-
-
-##
-
-
-class InterpProvider(abc.ABC):
-    name: ta.ClassVar[str]
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
-            sfx = 'InterpProvider'
-            if not cls.__name__.endswith(sfx):
-                raise NameError(cls)
-            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
-
-    @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
-        raise NotImplementedError
-
-    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    async def install_version(self, version: InterpVersion) -> Interp:
-        raise TypeError
-
-
-InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
@@ -4545,94 +4539,6 @@ class Pyenv:
             return False
         await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
         return True
-
-
-########################################
-# ../resolvers.py
-
-
-@dc.dataclass(frozen=True)
-class InterpResolverProviders:
-    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
-
-
-class InterpResolver:
-    def __init__(
-            self,
-            providers: InterpResolverProviders,
-    ) -> None:
-        super().__init__()
-
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
-
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
-
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
-        )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
 
 
 ########################################

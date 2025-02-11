@@ -2,7 +2,7 @@ import os.path
 import subprocess
 import tempfile
 
-from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from ..status import GitStatusItem
 from ..status import GitStatusState

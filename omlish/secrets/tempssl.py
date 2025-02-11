@@ -6,9 +6,9 @@ import tempfile
 import typing as ta
 
 from ..lite.cached import cached_nullary
-from ..subprocesses import SubprocessRun
-from ..subprocesses import SubprocessRunnable
-from ..subprocesses import SubprocessRunOutput
+from ..subprocesses.run import SubprocessRun
+from ..subprocesses.run import SubprocessRunnable
+from ..subprocesses.run import SubprocessRunOutput
 from .ssl import SslCert
 
 
