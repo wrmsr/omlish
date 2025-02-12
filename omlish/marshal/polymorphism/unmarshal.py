@@ -8,6 +8,11 @@ from ..base import UnmarshalContext
 from ..base import Unmarshaler
 from ..base import UnmarshalerFactory
 from ..values import Value
+from .metadata import FieldTypeTagging
+from .metadata import Impls
+from .metadata import Polymorphism
+from .metadata import TypeTagging
+from .metadata import WrapperTypeTagging
 
 
 ##

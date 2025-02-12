@@ -1,7 +1,6 @@
 import dataclasses as dc
 
 from ...funcs import match as mfs
-from .. import polymorphism as poly
 from ..base import MarshalContext
 from ..base import MarshalerFactory
 from ..base import RecursiveMarshalerFactory
@@ -12,13 +11,15 @@ from ..base import UnmarshalContext
 from ..base import UnmarshalerFactory
 from ..objects.dataclasses import DataclassMarshalerFactory
 from ..objects.dataclasses import DataclassUnmarshalerFactory
-from ..polymorphism import FieldTypeTagging
-from ..polymorphism import PolymorphismMarshalerFactory
-from ..polymorphism import PolymorphismUnmarshalerFactory
-from ..polymorphism import WrapperTypeTagging
-from ..primitives import PRIMITIVE_MARSHALER_FACTORY
-from ..primitives import PRIMITIVE_UNMARSHALER_FACTORY
+from ..polymorphism.marshal import PolymorphismMarshalerFactory
+from ..polymorphism.metadata import FieldTypeTagging
+from ..polymorphism.metadata import Impl
+from ..polymorphism.metadata import Polymorphism
+from ..polymorphism.metadata import WrapperTypeTagging
+from ..polymorphism.unmarshal import PolymorphismUnmarshalerFactory
 from ..registries import Registry
+from ..singular.primitives import PRIMITIVE_MARSHALER_FACTORY
+from ..singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 
 
 @dc.dataclass(frozen=True)
@@ -41,12 +42,12 @@ class PS2(PB):
     b: PB
 
 
-P_POLYMORPHISM = poly.Polymorphism(
+P_POLYMORPHISM = Polymorphism(
     PB,
     [
-        poly.Impl(PS0, 's0'),
-        poly.Impl(PS1, 's1'),
-        poly.Impl(PS2, 's2'),
+        Impl(PS0, 's0'),
+        Impl(PS1, 's1'),
+        Impl(PS2, 's2'),
     ],
 )
 

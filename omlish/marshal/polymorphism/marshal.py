@@ -7,6 +7,11 @@ from ..base import MarshalContext
 from ..base import Marshaler
 from ..base import MarshalerFactory
 from ..values import Value
+from .metadata import FieldTypeTagging
+from .metadata import Impls
+from .metadata import Polymorphism
+from .metadata import TypeTagging
+from .metadata import WrapperTypeTagging
 
 
 ##

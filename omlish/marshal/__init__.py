@@ -84,18 +84,34 @@ from .objects.unmarshal import (  # noqa
     SimpleObjectUnmarshalerFactory,
 )
 
-from .polymorphism import (  # noqa
+from .polymorphism.marshal import (  # noqa
+    PolymorphismMarshalerFactory,
+    make_polymorphism_marshaler,
+)
+
+from .polymorphism.metadata import (  # noqa
     Impl,
     Impls,
     Polymorphism,
-    PolymorphismMarshalerFactory,
-    PolymorphismUnmarshalerFactory,
-    make_polymorphism_marshaler,
-    make_polymorphism_unmarshaler,
     polymorphism_from_subclasses,
 )
 
-from .primitives import (  # noqa
+from .polymorphism.unions import (  # noqa
+    PRIMITIVE_UNION_TYPES,
+    PolymorphismUnionMarshalerFactory,
+    PolymorphismUnionUnmarshalerFactory,
+    PrimitiveUnionMarshaler,
+    PrimitiveUnionMarshalerFactory,
+    PrimitiveUnionUnmarshaler,
+    PrimitiveUnionUnmarshalerFactory,
+)
+
+from .polymorphism.unmarshal import (  # noqa
+    PolymorphismUnmarshalerFactory,
+    make_polymorphism_unmarshaler,
+)
+
+from .singular.primitives import (  # noqa
     PRIMITIVE_TYPES,
 )
 
@@ -109,16 +125,6 @@ from .standard import (  # noqa
 
     STANDARD_UNMARSHALER_FACTORIES,
     new_standard_unmarshaler_factory,
-)
-
-from .unions import (  # noqa
-    PRIMITIVE_UNION_TYPES,
-    PolymorphismUnionMarshalerFactory,
-    PolymorphismUnionUnmarshalerFactory,
-    PrimitiveUnionMarshaler,
-    PrimitiveUnionMarshalerFactory,
-    PrimitiveUnionUnmarshaler,
-    PrimitiveUnionUnmarshalerFactory,
 )
 
 from .values import (  # noqa
