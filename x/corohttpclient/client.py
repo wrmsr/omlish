@@ -48,18 +48,24 @@ import typing as ta
 import urllib.parse
 
 from http import HTTPStatus
-from http.client import BadStatusLine
-from http.client import CannotSendHeader
-from http.client import CannotSendRequest
-from http.client import HTTPException
+
 from http.client import HTTPMessage
-from http.client import IncompleteRead
-from http.client import InvalidURL
-from http.client import LineTooLong
-from http.client import NotConnected
-from http.client import RemoteDisconnected
-from http.client import ResponseNotReady
-from http.client import UnknownProtocol
+
+# Exceptions
+from http.client import (
+    HTTPException,
+
+    BadStatusLine,
+    CannotSendHeader,
+    CannotSendRequest,
+    IncompleteRead,
+    InvalidURL,
+    LineTooLong,
+    NotConnected,
+    RemoteDisconnected,
+    ResponseNotReady,
+    UnknownProtocol,
+)
 
 from omlish import check
 
