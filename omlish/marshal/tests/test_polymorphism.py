@@ -10,8 +10,8 @@ from ..base import TypeCacheMarshalerFactory
 from ..base import TypeCacheUnmarshalerFactory
 from ..base import UnmarshalContext
 from ..base import UnmarshalerFactory
-from ..dataclasses import DataclassMarshalerFactory
-from ..dataclasses import DataclassUnmarshalerFactory
+from ..objects.dataclasses import DataclassMarshalerFactory
+from ..objects.dataclasses import DataclassUnmarshalerFactory
 from ..polymorphism import FieldTypeTagging
 from ..polymorphism import PolymorphismMarshalerFactory
 from ..polymorphism import PolymorphismUnmarshalerFactory

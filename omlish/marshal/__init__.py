@@ -49,12 +49,6 @@ from .global_ import (  # noqa
     unmarshal,
 )
 
-from .helpers import (  # noqa
-    update_field_metadata,
-    update_fields_metadata,
-    update_object_metadata,
-)
-
 from .naming import (  # noqa
     Naming,
     translate_name,
@@ -65,16 +59,28 @@ from .nop import (  # noqa
     NopMarshalerUnmarshaler,
 )
 
-from .objects import (  # noqa
+from .objects.helpers import (  # noqa
+    update_field_metadata,
+    update_fields_metadata,
+    update_object_metadata,
+)
+
+from .objects.marshal import (  # noqa
+    ObjectMarshaler,
+    SimpleObjectMarshalerFactory,
+)
+
+from .objects.metadata import (  # noqa
     FieldInfo,
     FieldInfos,
     FieldMetadata,
     FieldOptions,
-    ObjectMarshaler,
     ObjectMetadata,
     ObjectSpecials,
+)
+
+from .objects.unmarshal import (  # noqa
     ObjectUnmarshaler,
-    SimpleObjectMarshalerFactory,
     SimpleObjectUnmarshalerFactory,
 )
 

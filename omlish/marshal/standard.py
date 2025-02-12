@@ -9,8 +9,6 @@ from .base import TypeCacheUnmarshalerFactory
 from .base import UnmarshalerFactory
 from .base64 import BASE64_MARSHALER_FACTORY
 from .base64 import BASE64_UNMARSHALER_FACTORY
-from .dataclasses import DataclassMarshalerFactory
-from .dataclasses import DataclassUnmarshalerFactory
 from .datetimes import DATETIME_MARSHALER_FACTORY
 from .datetimes import DATETIME_UNMARSHALER_FACTORY
 from .enums import EnumMarshalerFactory
@@ -23,12 +21,14 @@ from .mappings import MappingMarshalerFactory
 from .mappings import MappingUnmarshalerFactory
 from .maybes import MaybeMarshalerFactory
 from .maybes import MaybeUnmarshalerFactory
-from .namedtuples import NamedtupleMarshalerFactory
-from .namedtuples import NamedtupleUnmarshalerFactory
 from .newtypes import NewtypeMarshalerFactory
 from .newtypes import NewtypeUnmarshalerFactory
 from .numbers import NUMBERS_MARSHALER_FACTORY
 from .numbers import NUMBERS_UNMARSHALER_FACTORY
+from .objects.dataclasses import DataclassMarshalerFactory
+from .objects.dataclasses import DataclassUnmarshalerFactory
+from .objects.namedtuples import NamedtupleMarshalerFactory
+from .objects.namedtuples import NamedtupleUnmarshalerFactory
 from .optionals import OptionalMarshalerFactory
 from .optionals import OptionalUnmarshalerFactory
 from .primitives import PRIMITIVE_MARSHALER_FACTORY

@@ -7,12 +7,12 @@ from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..global_ import marshal
 from ..global_ import unmarshal
-from ..helpers import update_fields_metadata
 from ..nop import NOP_MARSHALER_UNMARSHALER
-from ..objects import FieldInfo
-from ..objects import ObjectMarshaler
-from ..objects import ObjectSpecials
-from ..objects import ObjectUnmarshaler
+from ..objects.helpers import update_fields_metadata
+from ..objects.marshal import ObjectMarshaler
+from ..objects.metadata import FieldInfo
+from ..objects.metadata import ObjectSpecials
+from ..objects.unmarshal import ObjectUnmarshaler
 from ..registries import Registry
 
 
