@@ -141,12 +141,14 @@ class PipeDeathpact(BaseDeathpact):
     #
 
     def __getstate__(self):
-        return dict(
+        return {
             **self.__dict__,
-            _wfd=None,
-            _cookie=None,
-            _fork_depth=None,
-        )
+            **dict(
+                _wfd=None,
+                _cookie=None,
+                _fork_depth=None,
+            ),
+        }
 
     def __setstate__(self, state):
         self.__dict__.update(state)
