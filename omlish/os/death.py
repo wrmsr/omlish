@@ -4,8 +4,10 @@ import signal
 import sys
 import time
 import typing as ta
+import weakref
 
 from .. import check
+from .forkhooks import ForkHook
 from .forkhooks import get_fork_depth
 
 
@@ -83,12 +85,6 @@ class BaseDeathpact(Deathpact, abc.ABC):
 
 
 class PipeDeathpact(BaseDeathpact):
-    """
-    TODO:
-     - while not a goal to futilely try to support threads+forks, still vulnerable to a case of a parent with active
-       pacts forking into child codepaths that never call _close_wfd_if_not_parent, thus leaving the wfd open.
-    """
-
     _COOKIE: ta.ClassVar[bytes] = os.urandom(16)
 
     def __init__(self, **kwargs: ta.Any) -> None:
@@ -124,7 +120,7 @@ class PipeDeathpact(BaseDeathpact):
 
     def _close_wfd_if_not_parent(self) -> None:
         if self._wfd is not None:
-            if self.is_parent():
+            if not self.is_parent():
                 os.close(check.not_none(self._wfd))
             self._wfd = None
 
@@ -163,3 +159,28 @@ class PipeDeathpact(BaseDeathpact):
             self.die()
 
         return True
+
+
+#
+
+
+class ForkAwarePipeDeathpact(PipeDeathpact):
+    """
+    TODO:
+     - audit thread-safety. is WeakSet threadsafe? probably not..
+    """
+
+    _PARENTS: ta.ClassVar[ta.MutableSet['ForkAwarePipeDeathpact']] = weakref.WeakSet()
+
+    def __init__(self, **kwargs: ta.Any) -> None:
+        super().__init__(**kwargs)
+
+        self._ForkHook.install()
+        self._PARENTS.add(self)
+
+    class _ForkHook(ForkHook):
+        @classmethod
+        def _after_fork_in_child(cls) -> None:
+            for pdp in ForkAwarePipeDeathpact._PARENTS:
+                pdp._close_wfd_if_not_parent()  # noqa
+            ForkAwarePipeDeathpact._PARENTS.clear()

@@ -156,7 +156,7 @@ class ForkHook(abc.ABC):  # noqa
 
     @classmethod
     @ta.final
-    def _install(cls) -> bool:
+    def install(cls) -> bool:
         if _ForkHookManager.contains_hook(cls):
             return False
 
@@ -173,7 +173,7 @@ class ForkHook(abc.ABC):  # noqa
         super().__init_subclass__(**kwargs)
 
         if install:
-            cls._install()
+            cls.install()
 
     #
 
@@ -206,7 +206,7 @@ class _ForkDepthTracker(ForkHook):
 
     @classmethod
     def get_fork_depth(cls) -> int:
-        cls._install()
+        cls.install()
 
         return cls._fork_depth
 
