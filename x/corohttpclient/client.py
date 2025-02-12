@@ -244,13 +244,13 @@ class HTTPResponse(io.BufferedIOBase):
 
         # The status code is a three-digit number
         try:
-            status = int(status)
-            if status < 100 or status > 999:
+            status_int = int(status)
+            if status_int < 100 or status_int > 999:
                 raise BadStatusLine(line)
         except ValueError:
             raise BadStatusLine(line) from None
 
-        return version, status, reason
+        return version, status_int, reason
 
     def begin(self):
         if self.headers is not None:
@@ -946,7 +946,7 @@ class HttpConnection:
         response = HTTPResponse(check.not_none(self._sock), method=self._method)
         try:
             # FIXME
-            (version, code, message) = response._read_status()  # type: ignore  # noqa
+            (version, code, message) = response._read_status()  # noqa
 
             self._raw_proxy_headers = _read_headers(response.fp)
 
