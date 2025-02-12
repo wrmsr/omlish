@@ -48,15 +48,18 @@ import typing as ta
 import urllib.parse
 
 from http import HTTPStatus
+from http.client import BadStatusLine
+from http.client import CannotSendHeader
+from http.client import CannotSendRequest
 from http.client import HTTPException
 from http.client import HTTPMessage
-from http.client import HTTPResponse
+from http.client import IncompleteRead
 from http.client import InvalidURL
 from http.client import LineTooLong
 from http.client import NotConnected
-from http.client import CannotSendRequest
-from http.client import CannotSendHeader
+from http.client import RemoteDisconnected
 from http.client import ResponseNotReady
+from http.client import UnknownProtocol
 
 from omlish import check
 
@@ -144,6 +147,13 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HTTPMessage:
     return email.parser.Parser(_class=HTTPMessage).parsestr(hstring)
 
 
+def parse_headers(fp):
+    """Parses only RFC2822 headers from a file pointer."""
+
+    headers = _read_headers(fp)
+    return _parse_header_lines(headers)
+
+
 def _encode(data: str, name: str = 'data') -> bytes:
     """Call data.encode("latin-1") but show a better error message."""
 
@@ -173,6 +183,557 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
         enc_name += b']'
     return enc_name
 
+
+class HTTPResponse(io.BufferedIOBase):
+
+    # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
+
+    # The bytes from the socket object are iso-8859-1 strings.
+    # See RFC 2616 sec 2.2 which notes an exception for MIME-encoded
+    # text following RFC 2047.  The basic status line parsing only
+    # accepts iso-8859-1.
+
+    def __init__(self, sock, debuglevel=0, method=None, url=None):
+        # If the response includes a content-length header, we need to
+        # make sure that the client doesn't read more than the
+        # specified number of bytes.  If it does, it will block until
+        # the server times out and closes the connection.  This will
+        # happen if a self.fp.read() is done (without a size) whether
+        # self.fp is buffered or not.  So, no self.fp.read() by
+        # clients unless they know what they are doing.
+        self.fp = sock.makefile("rb")
+        self.debuglevel = debuglevel
+        self._method = method
+
+        # The HTTPResponse object is returned via urllib.  The clients
+        # of http and urllib expect different attributes for the
+        # headers.  headers is used here and supports urllib.  msg is
+        # provided as a backwards compatibility layer for http
+        # clients.
+
+        self.headers = self.msg = None
+
+        # from the Status-Line of the response
+        self.version = _UNKNOWN # HTTP-Version
+        self.status = _UNKNOWN  # Status-Code
+        self.reason = _UNKNOWN  # Reason-Phrase
+
+        self.chunked = _UNKNOWN         # is "chunked" being used?
+        self.chunk_left = _UNKNOWN      # bytes left to read in current chunk
+        self.length = _UNKNOWN          # number of bytes left in response
+        self.will_close = _UNKNOWN      # conn will close at end of response
+
+    def _read_status(self):
+        line = str(self.fp.readline(_MAX_LINE + 1), "iso-8859-1")
+        if len(line) > _MAX_LINE:
+            raise LineTooLong("status line")
+        if self.debuglevel > 0:
+            print("reply:", repr(line))
+        if not line:
+            # Presumably, the server closed the connection before
+            # sending a valid response.
+            raise RemoteDisconnected("Remote end closed connection without"
+                                     " response")
+        try:
+            version, status, reason = line.split(None, 2)
+        except ValueError:
+            try:
+                version, status = line.split(None, 1)
+                reason = ""
+            except ValueError:
+                # empty version will cause next test to fail.
+                version = ""
+        if not version.startswith("HTTP/"):
+            self._close_conn()
+            raise BadStatusLine(line)
+
+        # The status code is a three-digit number
+        try:
+            status = int(status)
+            if status < 100 or status > 999:
+                raise BadStatusLine(line)
+        except ValueError:
+            raise BadStatusLine(line)
+        return version, status, reason
+
+    def begin(self):
+        if self.headers is not None:
+            # we've already started reading the response
+            return
+
+        # read until we get a non-100 response
+        while True:
+            version, status, reason = self._read_status()
+            if status != HTTPStatus.CONTINUE:
+                break
+            # skip the header from the 100 response
+            skipped_headers = _read_headers(self.fp)
+            if self.debuglevel > 0:
+                print("headers:", skipped_headers)
+            del skipped_headers
+
+        self.code = self.status = status
+        self.reason = reason.strip()
+        if version in ("HTTP/1.0", "HTTP/0.9"):
+            # Some servers might still return "0.9", treat it as 1.0 anyway
+            self.version = 10
+        elif version.startswith("HTTP/1."):
+            self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
+        else:
+            raise UnknownProtocol(version)
+
+        self.headers = self.msg = parse_headers(self.fp)
+
+        if self.debuglevel > 0:
+            for hdr, val in self.headers.items():
+                print("header:", hdr + ":", val)
+
+        # are we using the chunked-style of transfer encoding?
+        tr_enc = self.headers.get("transfer-encoding")
+        if tr_enc and tr_enc.lower() == "chunked":
+            self.chunked = True
+            self.chunk_left = None
+        else:
+            self.chunked = False
+
+        # will the connection close at the end of the response?
+        self.will_close = self._check_close()
+
+        # do we have a Content-Length?
+        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is "chunked"
+        self.length = None
+        length = self.headers.get("content-length")
+        if length and not self.chunked:
+            try:
+                self.length = int(length)
+            except ValueError:
+                self.length = None
+            else:
+                if self.length < 0:  # ignore nonsensical negative lengths
+                    self.length = None
+        else:
+            self.length = None
+
+        # does the body have a fixed length? (of zero)
+        if (status == HTTPStatus.NO_CONTENT or status == HTTPStatus.NOT_MODIFIED or
+                100 <= status < 200 or      # 1xx codes
+                self._method == "HEAD"):
+            self.length = 0
+
+        # if the connection remains open, and we aren't using chunked, and
+        # a content-length was not provided, then assume that the connection
+        # WILL close.
+        if (not self.will_close and
+                not self.chunked and
+                self.length is None):
+            self.will_close = True
+
+    def _check_close(self):
+        conn = self.headers.get("connection")
+        if self.version == 11:
+            # An HTTP/1.1 proxy is assumed to stay open unless
+            # explicitly closed.
+            if conn and "close" in conn.lower():
+                return True
+            return False
+
+        # Some HTTP/1.0 implementations have support for persistent
+        # connections, using rules different than HTTP/1.1.
+
+        # For older HTTP, Keep-Alive indicates persistent connection.
+        if self.headers.get("keep-alive"):
+            return False
+
+        # At least Akamai returns a "Connection: Keep-Alive" header,
+        # which was supposed to be sent by the client.
+        if conn and "keep-alive" in conn.lower():
+            return False
+
+        # Proxy-Connection is a netscape hack.
+        pconn = self.headers.get("proxy-connection")
+        if pconn and "keep-alive" in pconn.lower():
+            return False
+
+        # otherwise, assume it will close
+        return True
+
+    def _close_conn(self):
+        fp = self.fp
+        self.fp = None
+        fp.close()
+
+    def close(self):
+        try:
+            super().close() # set "closed" flag
+        finally:
+            if self.fp:
+                self._close_conn()
+
+    # These implementations are for the benefit of io.BufferedReader.
+
+    # XXX This class should probably be revised to act more like
+    # the "raw stream" that BufferedReader expects.
+
+    def flush(self):
+        super().flush()
+        if self.fp:
+            self.fp.flush()
+
+    def readable(self):
+        """Always returns True"""
+        return True
+
+    # End of "raw stream" methods
+
+    def isclosed(self):
+        """True if the connection is closed."""
+        # NOTE: it is possible that we will not ever call self.close(). This
+        #       case occurs when will_close is TRUE, length is None, and we
+        #       read up to the last byte, but NOT past it.
+        #
+        # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be
+        #          called, meaning self.isclosed() is meaningful.
+        return self.fp is None
+
+    def read(self, amt=None):
+        """Read and return the response body, or up to the next amt bytes."""
+        if self.fp is None:
+            return b""
+
+        if self._method == "HEAD":
+            self._close_conn()
+            return b""
+
+        if self.chunked:
+            return self._read_chunked(amt)
+
+        if amt is not None:
+            if self.length is not None and amt > self.length:
+                # clip the read to the "end of response"
+                amt = self.length
+            s = self.fp.read(amt)
+            if not s and amt:
+                # Ideally, we would raise IncompleteRead if the content-length
+                # wasn't satisfied, but it might break compatibility.
+                self._close_conn()
+            elif self.length is not None:
+                self.length -= len(s)
+                if not self.length:
+                    self._close_conn()
+            return s
+        else:
+            # Amount is not given (unbounded read) so we must check self.length
+            if self.length is None:
+                s = self.fp.read()
+            else:
+                try:
+                    s = self._safe_read(self.length)
+                except IncompleteRead:
+                    self._close_conn()
+                    raise
+                self.length = 0
+            self._close_conn()        # we read everything
+            return s
+
+    def readinto(self, b):
+        """Read up to len(b) bytes into bytearray b and return the number
+        of bytes read.
+        """
+
+        if self.fp is None:
+            return 0
+
+        if self._method == "HEAD":
+            self._close_conn()
+            return 0
+
+        if self.chunked:
+            return self._readinto_chunked(b)
+
+        if self.length is not None:
+            if len(b) > self.length:
+                # clip the read to the "end of response"
+                b = memoryview(b)[0:self.length]
+
+        # we do not use _safe_read() here because this may be a .will_close
+        # connection, and the user is reading more bytes than will be provided
+        # (for example, reading in 1k chunks)
+        n = self.fp.readinto(b)
+        if not n and b:
+            # Ideally, we would raise IncompleteRead if the content-length
+            # wasn't satisfied, but it might break compatibility.
+            self._close_conn()
+        elif self.length is not None:
+            self.length -= n
+            if not self.length:
+                self._close_conn()
+        return n
+
+    def _read_next_chunk_size(self):
+        # Read the next chunk size from the file
+        line = self.fp.readline(_MAX_LINE + 1)
+        if len(line) > _MAX_LINE:
+            raise LineTooLong("chunk size")
+        i = line.find(b";")
+        if i >= 0:
+            line = line[:i] # strip chunk-extensions
+        try:
+            return int(line, 16)
+        except ValueError:
+            # close the connection as protocol synchronisation is
+            # probably lost
+            self._close_conn()
+            raise
+
+    def _read_and_discard_trailer(self):
+        # read and discard trailer up to the CRLF terminator
+        ### note: we shouldn't have any trailers!
+        while True:
+            line = self.fp.readline(_MAX_LINE + 1)
+            if len(line) > _MAX_LINE:
+                raise LineTooLong("trailer line")
+            if not line:
+                # a vanishingly small number of sites EOF without
+                # sending the trailer
+                break
+            if line in (b'\r\n', b'\n', b''):
+                break
+
+    def _get_chunk_left(self):
+        # return self.chunk_left, reading a new chunk if necessary.
+        # chunk_left == 0: at the end of the current chunk, need to close it
+        # chunk_left == None: No current chunk, should read next.
+        # This function returns non-zero or None if the last chunk has
+        # been read.
+        chunk_left = self.chunk_left
+        if not chunk_left: # Can be 0 or None
+            if chunk_left is not None:
+                # We are at the end of chunk, discard chunk end
+                self._safe_read(2)  # toss the CRLF at the end of the chunk
+            try:
+                chunk_left = self._read_next_chunk_size()
+            except ValueError:
+                raise IncompleteRead(b'')
+            if chunk_left == 0:
+                # last chunk: 1*("0") [ chunk-extension ] CRLF
+                self._read_and_discard_trailer()
+                # we read everything; close the "file"
+                self._close_conn()
+                chunk_left = None
+            self.chunk_left = chunk_left
+        return chunk_left
+
+    def _read_chunked(self, amt=None):
+        assert self.chunked != _UNKNOWN
+        value = []
+        try:
+            while (chunk_left := self._get_chunk_left()) is not None:
+                if amt is not None and amt <= chunk_left:
+                    value.append(self._safe_read(amt))
+                    self.chunk_left = chunk_left - amt
+                    break
+
+                value.append(self._safe_read(chunk_left))
+                if amt is not None:
+                    amt -= chunk_left
+                self.chunk_left = 0
+            return b''.join(value)
+        except IncompleteRead as exc:
+            raise IncompleteRead(b''.join(value)) from exc
+
+    def _readinto_chunked(self, b):
+        assert self.chunked != _UNKNOWN
+        total_bytes = 0
+        mvb = memoryview(b)
+        try:
+            while True:
+                chunk_left = self._get_chunk_left()
+                if chunk_left is None:
+                    return total_bytes
+
+                if len(mvb) <= chunk_left:
+                    n = self._safe_readinto(mvb)
+                    self.chunk_left = chunk_left - n
+                    return total_bytes + n
+
+                temp_mvb = mvb[:chunk_left]
+                n = self._safe_readinto(temp_mvb)
+                mvb = mvb[n:]
+                total_bytes += n
+                self.chunk_left = 0
+
+        except IncompleteRead:
+            raise IncompleteRead(bytes(b[0:total_bytes]))
+
+    def _safe_read(self, amt):
+        """Read the number of bytes requested.
+
+        This function should be used when <amt> bytes "should" be present for
+        reading. If the bytes are truly not available (due to EOF), then the
+        IncompleteRead exception can be used to detect the problem.
+        """
+        data = self.fp.read(amt)
+        if len(data) < amt:
+            raise IncompleteRead(data, amt-len(data))
+        return data
+
+    def _safe_readinto(self, b):
+        """Same as _safe_read, but for reading into a buffer."""
+        amt = len(b)
+        n = self.fp.readinto(b)
+        if n < amt:
+            raise IncompleteRead(bytes(b[:n]), amt-n)
+        return n
+
+    def read1(self, n=-1):
+        """Read with at most one underlying system call.  If at least one
+        byte is buffered, return that instead.
+        """
+        if self.fp is None or self._method == "HEAD":
+            return b""
+        if self.chunked:
+            return self._read1_chunked(n)
+        if self.length is not None and (n < 0 or n > self.length):
+            n = self.length
+        result = self.fp.read1(n)
+        if not result and n:
+            self._close_conn()
+        elif self.length is not None:
+            self.length -= len(result)
+            if not self.length:
+                self._close_conn()
+        return result
+
+    def peek(self, n=-1):
+        # Having this enables IOBase.readline() to read more than one
+        # byte at a time
+        if self.fp is None or self._method == "HEAD":
+            return b""
+        if self.chunked:
+            return self._peek_chunked(n)
+        return self.fp.peek(n)
+
+    def readline(self, limit=-1):
+        if self.fp is None or self._method == "HEAD":
+            return b""
+        if self.chunked:
+            # Fallback to IOBase readline which uses peek() and read()
+            return super().readline(limit)
+        if self.length is not None and (limit < 0 or limit > self.length):
+            limit = self.length
+        result = self.fp.readline(limit)
+        if not result and limit:
+            self._close_conn()
+        elif self.length is not None:
+            self.length -= len(result)
+            if not self.length:
+                self._close_conn()
+        return result
+
+    def _read1_chunked(self, n):
+        # Strictly speaking, _get_chunk_left() may cause more than one read,
+        # but that is ok, since that is to satisfy the chunked protocol.
+        chunk_left = self._get_chunk_left()
+        if chunk_left is None or n == 0:
+            return b''
+        if not (0 <= n <= chunk_left):
+            n = chunk_left # if n is negative or larger than chunk_left
+        read = self.fp.read1(n)
+        self.chunk_left -= len(read)
+        if not read:
+            raise IncompleteRead(b"")
+        return read
+
+    def _peek_chunked(self, n):
+        # Strictly speaking, _get_chunk_left() may cause more than one read,
+        # but that is ok, since that is to satisfy the chunked protocol.
+        try:
+            chunk_left = self._get_chunk_left()
+        except IncompleteRead:
+            return b'' # peek doesn't worry about protocol
+        if chunk_left is None:
+            return b'' # eof
+        # peek is allowed to return more than requested.  Just request the
+        # entire chunk, and truncate what we get.
+        return self.fp.peek(chunk_left)[:chunk_left]
+
+    def fileno(self):
+        return self.fp.fileno()
+
+    def getheader(self, name, default=None):
+        '''Returns the value of the header matching *name*.
+
+        If there are multiple matching headers, the values are
+        combined into a single string separated by commas and spaces.
+
+        If no matching header is found, returns *default* or None if
+        the *default* is not specified.
+
+        If the headers are unknown, raises http.client.ResponseNotReady.
+
+        '''
+        if self.headers is None:
+            raise ResponseNotReady()
+        headers = self.headers.get_all(name) or default
+        if isinstance(headers, str) or not hasattr(headers, '__iter__'):
+            return headers
+        else:
+            return ', '.join(headers)
+
+    def getheaders(self):
+        """Return list of (header, value) tuples."""
+        if self.headers is None:
+            raise ResponseNotReady()
+        return list(self.headers.items())
+
+    # We override IOBase.__iter__ so that it doesn't check for closed-ness
+
+    def __iter__(self):
+        return self
+
+    # For compatibility with old-style urllib responses.
+
+    def info(self):
+        '''Returns an instance of the class mimetools.Message containing
+        meta-information associated with the URL.
+
+        When the method is HTTP, these headers are those returned by
+        the server at the head of the retrieved HTML page (including
+        Content-Length and Content-Type).
+
+        When the method is FTP, a Content-Length header will be
+        present if (as is now usual) the server passed back a file
+        length in response to the FTP retrieval request. A
+        Content-Type header will be present if the MIME type can be
+        guessed.
+
+        When the method is local-file, returned headers will include
+        a Date representing the file's last-modified time, a
+        Content-Length giving file size, and a Content-Type
+        containing a guess at the file's type. See also the
+        description of the mimetools module.
+
+        '''
+        return self.headers
+
+    def geturl(self):
+        '''Return the real URL of the page.
+
+        In some cases, the HTTP server redirects a client to another
+        URL. The urlopen() function handles this transparently, but in
+        some cases the caller needs to know which URL the client was
+        redirected to. The geturl() method can be used to get at this
+        redirected URL.
+
+        '''
+        return self.url
+
+    def getcode(self):
+        '''Return the HTTP status code that was sent with the response,
+        or None if the URL is not an HTTP URL.
+
+        '''
+        return self.status
 
 class HttpConnection:
     """
