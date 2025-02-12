@@ -12,7 +12,7 @@ sniffio==1.3.1
 
 jinja2==3.1.5
 
-cryptography==44.0.0  # @omlish-venv !13t
+cryptography==44.0.1  # @omlish-venv !13t
 
 
 ### compress:

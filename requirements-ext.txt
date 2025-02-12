@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.125.2
+hypothesis==6.125.3
 
 hexdump==3.3
 
@@ -203,7 +203,7 @@ langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.6
-langchain-openai==0.3.4
+langchain-openai==0.3.5
 langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.6
 
@@ -212,9 +212,9 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.2.70
+langgraph==0.2.71
 
-langsmith==0.3.7
+langsmith==0.3.8
 
 tavily-python==0.5.1
 
@@ -246,7 +246,7 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.16.post1
+llama-index-core==0.12.17
 
 unstructured==0.16.17
 
