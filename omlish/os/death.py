@@ -6,7 +6,7 @@ import time
 import typing as ta
 
 from .. import check
-from .forkdepth import get_fork_depth
+from .forkhooks import get_fork_depth
 
 
 ##

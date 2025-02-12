@@ -1,11 +1,9 @@
-import errno
-import fcntl
 import os
 import sys
 import time
 
 from ..death import PipeDeathpact
-from ..files import is_fd_open
+from ..files import is_fd_open  # noqa
 
 
 def _main() -> None:
@@ -13,14 +11,14 @@ def _main() -> None:
 
     try:
         with PipeDeathpact() as pdp:
-            print(is_fd_open(pdp._rfd))
-            print(is_fd_open(pdp._wfd))
-            print(is_fd_open(420))
+            # print(is_fd_open(pdp._rfd))
+            # print(is_fd_open(pdp._wfd))
+            # print(is_fd_open(420))
 
             if not (child_pid := os.fork()):  # noqa
-                print(is_fd_open(pdp._rfd))
-                print(is_fd_open(pdp._wfd))
-                print(is_fd_open(420))
+                # print(is_fd_open(pdp._rfd))
+                # print(is_fd_open(pdp._wfd))
+                # print(is_fd_open(420))
 
                 if reparent:
                     raise NotImplementedError
