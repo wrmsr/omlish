@@ -36,19 +36,64 @@
 """
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
 """
+import abc
 import collections.abc
+import dataclasses as dc
 import email.parser
 import enum
 import errno
-import http.client
 import io
 import socket
 import typing as ta
 import urllib.parse
 
+from http import HTTPStatus
+from http.client import HTTPException
+from http.client import HTTPMessage
+from http.client import HTTPResponse
+from http.client import InvalidURL
+from http.client import LineTooLong
+from http.client import NotConnected
+from http.client import CannotSendRequest
+from http.client import CannotSendHeader
+from http.client import ResponseNotReady
+
 from omlish import check
 
 from .validation import HttpClientValidation
+
+
+##
+
+
+class Io(abc.ABC):  # noqa
+    pass
+
+
+#
+
+class AnyReadIo(Io):  # noqa
+    pass
+
+
+@dc.dataclass(frozen=True)
+class ReadIo(AnyReadIo):
+    sz: int
+
+
+@dc.dataclass(frozen=True)
+class ReadLineIo(AnyReadIo):
+    sz: int
+
+
+#
+
+@dc.dataclass(frozen=True)
+class WriteIo(Io):
+    data: bytes
+
+
+##
 
 
 HTTP_PORT = 80
@@ -74,11 +119,11 @@ def _read_headers(fp: ta.IO) -> list[bytes]:
     while True:
         line = fp.readline(_MAX_LINE + 1)
         if len(line) > _MAX_LINE:
-            raise http.client.LineTooLong('header line')
+            raise LineTooLong('header line')
 
         headers.append(line)
         if len(headers) > _MAX_HEADERS:
-            raise http.client.HTTPException(f'got more than {_MAX_HEADERS} headers')
+            raise HTTPException(f'got more than {_MAX_HEADERS} headers')
 
         if line in (b'\r\n', b'\n', b''):
             break
@@ -86,7 +131,7 @@ def _read_headers(fp: ta.IO) -> list[bytes]:
     return headers
 
 
-def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> http.client.HTTPMessage:
+def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HTTPMessage:
     """
     Parses only RFC2822 headers from header lines.
 
@@ -96,7 +141,7 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> http.client.HTTPMes
     """
 
     hstring = b''.join(header_lines).decode('iso-8859-1')
-    return email.parser.Parser(_class=http.client.HTTPMessage).parsestr(hstring)
+    return email.parser.Parser(_class=HTTPMessage).parsestr(hstring)
 
 
 def _encode(data: str, name: str = 'data') -> bytes:
@@ -217,7 +262,7 @@ class HttpConnection:
 
         self._sock: socket.socket | None = None
         self._buffer: list[bytes] = []
-        self._response: http.client.HTTPResponse | None = None
+        self._response: HTTPResponse | None = None
         self._state = self._State.IDLE
         self._method: str | None = None
 
@@ -246,7 +291,7 @@ class HttpConnection:
                     if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -316,21 +361,21 @@ class HttpConnection:
         self.send(b''.join(headers))
         del headers
 
-        response = http.client.HTTPResponse(check.not_none(self._sock), method=self._method)
+        response = HTTPResponse(check.not_none(self._sock), method=self._method)
         try:
             # FIXME
             (version, code, message) = response._read_status()  # type: ignore  # noqa
 
             self._raw_proxy_headers = _read_headers(response.fp)
 
-            if code != http.HTTPStatus.OK:
+            if code != HTTPStatus.OK:
                 self.close()
                 raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
         finally:
             response.close()
 
-    def get_proxy_response_headers(self) -> http.client.HTTPMessage | None:
+    def get_proxy_response_headers(self) -> HTTPMessage | None:
         """
         Returns a dictionary with the headers of the response received from the proxy server to the CONNECT request sent
         to set the tunnel.
@@ -399,7 +444,7 @@ class HttpConnection:
             if self._auto_open:
                 self.connect()
             else:
-                raise http.client.NotConnected
+                raise NotConnected
 
         sock = check.not_none(self._sock)
 
@@ -528,7 +573,7 @@ class HttpConnection:
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise http.client.CannotSendRequest(self._state)
+            raise CannotSendRequest(self._state)
 
         HttpClientValidation.validate_method(method)
 
@@ -620,7 +665,7 @@ class HttpConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise http.client.CannotSendHeader
+            raise CannotSendHeader
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -660,7 +705,7 @@ class HttpConnection:
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise http.client.CannotSendHeader
+            raise CannotSendHeader
 
         self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -763,7 +808,7 @@ class HttpConnection:
 
         self.end_headers(body, encode_chunked=encode_chunked)
 
-    def get_response(self) -> http.client.HTTPResponse:
+    def get_response(self) -> HTTPResponse:
         """
         Get the response from the server.
 
@@ -789,9 +834,9 @@ class HttpConnection:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
         #   2) persistent: the response was retained and we await its isclosed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise http.client.ResponseNotReady(self._state)
+            raise ResponseNotReady(self._state)
 
-        response = http.client.HTTPResponse(check.not_none(self._sock), method=self._method)
+        response = HTTPResponse(check.not_none(self._sock), method=self._method)
 
         try:
             try:
