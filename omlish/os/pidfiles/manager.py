@@ -15,7 +15,10 @@ from .pidfile import Pidfile
 
 class _PidfileManager:
     """
-    Manager for controlled inheritance of Pidfiles across forks.
+    Manager for controlled inheritance of Pidfiles across forks in the presence of multiple threads. There is of course
+    no safe or correct way to mix the use of fork and multiple active threads, and one should never write code which
+    does so, but in the Real World one may still find oneself in such a situation outside of their control (such as when
+    running under Pycharm's debugger which forces the use of forked multiprocessing).
 
     Not implemented as an instantiated class as there is no way to unregister at_fork listeners, and because Pidfiles
     may be pickled and there must be no possibility of accidentally unpickling and instantiating a new instance of the

@@ -124,7 +124,7 @@ class RouteHandlerApp(AsgiApp_):
                         else:
                             ps = ''
                         bsu = BaseServerUrl(f'{sch}://{h}{ps}/')
-                    es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))
+                    es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))  # noqa
 
                     route = Route(scope['method'], scope['raw_path'].decode())
                     handler = self.route_handlers.get(route)

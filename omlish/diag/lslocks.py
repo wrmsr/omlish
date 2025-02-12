@@ -19,7 +19,7 @@ from ..subprocesses.run import SubprocessRunOutput
 
 
 @dc.dataclass(frozen=True)
-class LsLocksItem:
+class LslocksItem:
     """https://manpages.ubuntu.com/manpages/lunar/man8/lslocks.8.html"""
 
     command: str
@@ -38,7 +38,7 @@ class LsLocksItem:
 
 
 @dc.dataclass(frozen=True)
-class LsLocksCommand(SubprocessRunnable):
+class LslocksCommand(SubprocessRunnable[ta.List[LslocksItem]]):
     pid: ta.Optional[int] = None
     no_inaccessible: bool = False
 
@@ -56,9 +56,9 @@ class LsLocksCommand(SubprocessRunnable):
             stderr='devnull',
         )
 
-    def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsLocksItem]:
+    def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LslocksItem]:
         buf = check.not_none(output.stdout).decode().strip()
         if not buf:
             return []
         obj = json.loads(buf)
-        return unmarshal_obj(obj['locks'], ta.List[LsLocksItem])
+        return unmarshal_obj(obj['locks'], ta.List[LslocksItem])

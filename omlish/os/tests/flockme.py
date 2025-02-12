@@ -12,7 +12,8 @@ from ..fcntl import FcntlLockData
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
-    parser.add_argument('--fork', action='store_true')
+    parser.add_argument('--fork', '-k', action='store_true')
+    parser.add_argument('--writepid', '-w', action='store_true')
     args = parser.parse_args()
 
     if (file := args.file) is None:
@@ -23,6 +24,11 @@ def _main() -> None:
     print(f'file: {file}')
 
     print(f'parent: {os.getpid()}')
+
+    if args.writepid:
+        os.ftruncate(fd, 0)
+        os.write(fd, f'{os.getpid()}\n'.encode())
+        os.fsync(fd)
 
     ld = FcntlLockData.unpack(fcntl.fcntl(fd, fcntl.F_SETLK, FcntlLockData(fcntl.F_WRLCK).pack()))
     print(ld)

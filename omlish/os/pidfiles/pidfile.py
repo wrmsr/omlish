@@ -109,7 +109,7 @@ class Pidfile:
         del self._f
         return True
 
-    def try_lock(self) -> bool:
+    def try_acquire_lock(self) -> bool:
         try:
             fcntl.flock(self._f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             return True
@@ -117,14 +117,29 @@ class Pidfile:
         except OSError:
             return False
 
-    def ensure_locked(self) -> None:
-        if not self.try_lock():
-            raise RuntimeError('Could not get lock')
+    #
+
+    class Error(Exception):
+        pass
+
+    class LockedError(Error):
+        pass
+
+    def acquire_lock(self) -> None:
+        if not self.try_acquire_lock():
+            raise self.LockedError
+
+    class NotLockedError(Error):
+        pass
+
+    def ensure_cannot_lock(self) -> None:
+        if self.try_acquire_lock():
+            raise self.NotLockedError
 
     #
 
     def write(self, pid: ta.Optional[int] = None) -> None:
-        self.ensure_locked()
+        self.acquire_lock()
 
         if pid is None:
             pid = os.getpid()
@@ -135,18 +150,23 @@ class Pidfile:
         self._f.flush()
 
     def clear(self) -> None:
-        self.ensure_locked()
+        self.acquire_lock()
 
         self._f.seek(0)
         self._f.truncate()
 
-    def read(self) -> int:
-        if self.try_lock():
-            raise RuntimeError('Got lock')
+    #
+
+    def read(self) -> ta.Optional[int]:
+        self.ensure_cannot_lock()
 
         self._f.seek(0)
-        return int(self._f.read())
+        buf = self._f.read()
+        if not buf:
+            return None
+        return int(buf)
 
     def kill(self, sig: int = signal.SIGTERM) -> None:
-        pid = self.read()
+        if (pid := self.read()) is None:
+            raise self.Error(f'Pidfile locked but empty')
         os.kill(pid, sig)

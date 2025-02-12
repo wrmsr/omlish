@@ -151,7 +151,6 @@ class LsofItem:
 
     @classmethod
     def from_prefixes(cls, dct: ta.Mapping[str, ta.Any]) -> 'LsofItem':
-        print(dct)
         kw: ta.Dict[str, ta.Any] = {
             fld.name: val
             for pfx, val in dct.items()
@@ -216,7 +215,8 @@ LsofItem._DEFAULT_PREFIXES = ''.join(LsofItem._FIELDS_BY_PREFIX)  # noqa
 
 
 @dc.dataclass(frozen=True)
-class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
+class \
+        LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
     pid: ta.Optional[int] = None
     file: ta.Optional[str] = None
 

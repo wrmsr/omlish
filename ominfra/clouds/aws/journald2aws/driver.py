@@ -107,7 +107,7 @@ class JournalctlToAwsDriver(ExitStacked):
 
     def _ensure_locked(self) -> None:
         if (pf := self._pidfile()) is not None:
-            pf.ensure_locked()
+            pf.acquire_lock()
 
     #
 
