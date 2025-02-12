@@ -244,13 +244,13 @@ class HTTPResponse(io.BufferedIOBase):
 
         # The status code is a three-digit number
         try:
-            status_int = int(status)
-            if status_int < 100 or status_int > 999:
+            status = int(status)
+            if status < 100 or status > 999:
                 raise BadStatusLine(line)
         except ValueError:
             raise BadStatusLine(line) from None
 
-        return version, status_int, reason
+        return version, status, reason
 
     def begin(self):
         if self.headers is not None:
