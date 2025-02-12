@@ -63,7 +63,22 @@ class _ForkHookManager:
         after_fork_in_parent: ta.Optional[ta.Callable[[], None]] = None
         after_fork_in_child: ta.Optional[ta.Callable[[], None]] = None
 
-    _hooks_by_key: ta.ClassVar[ta.Dict[int, Hook]] = {}
+    #
+
+    _hooks_by_key: ta.ClassVar[ta.Dict[str, Hook]] = {}
+
+    _hook_keys: ta.ClassVar[ta.FrozenSet[str]] = frozenset()
+    _priority_ordered_hooks: ta.ClassVar[ta.List[Hook]] = []
+
+    @classmethod
+    def _rebuild_hook_collections(cls) -> None:
+        cls._hook_keys = frozenset(cls._hooks_by_key)
+
+        # Uses on dict order preservation for insertion-order of hooks of equal priority (although that shouldn't be
+        # depended upon for usecase correctness.
+        cls._priority_ordered_hooks = sorted(cls._hooks_by_key.values(), key=lambda h: h.priority)
+
+    #
 
     class HookAlreadyPresentError(Exception):
         pass
@@ -77,12 +92,15 @@ class _ForkHookManager:
             check.isinstance(hook.priority, int)
 
             cls._hooks_by_key[hook.key] = hook
-            cls._rebuild_priority_list()
+            cls._rebuild_hook_collections()
 
             cls._install()
 
     @classmethod
     def try_add_hook(cls, hook: Hook) -> bool:
+        if hook.key in cls._hook_keys:
+            return False
+
         try:
             cls.add_hook(hook)
         except cls.HookAlreadyPresentError:
@@ -92,25 +110,14 @@ class _ForkHookManager:
 
     @classmethod
     def contains_hook(cls, key: ta.Any) -> bool:
-        with cls._lock:
-            return key in cls._hooks_by_key
+        return key in cls._hook_keys
 
     @classmethod
     def remove_hook(cls, key: ta.Any) -> None:
         with cls._lock:
             del cls._hooks_by_key[key]
 
-            cls._rebuild_priority_list()
-
-    #
-
-    _priority_ordered_hooks: ta.ClassVar[ta.List[Hook]] = []
-
-    @classmethod
-    def _rebuild_priority_list(cls) -> None:
-        # Uses on dict order preservation for insertion-order of hooks of equal priority (although that shouldn't be
-        # depended upon for usecase correctness.
-        cls._priority_ordered_hooks = sorted(cls._hooks_by_key.values(), key=lambda h: h.priority)
+            cls._rebuild_hook_collections()
 
     #
 
@@ -189,6 +196,8 @@ class ForkHook(abc.ABC):  # noqa
 
 
 class _ForkDepthTracker(ForkHook):
+    _hook_priority = -1000
+
     _fork_depth: ta.ClassVar[int] = 0
 
     @classmethod

@@ -24,6 +24,8 @@ import contextlib
 import contextvars
 import dataclasses as dc
 import datetime
+import errno
+import fcntl
 import functools
 import hashlib
 import http.client
@@ -1417,20 +1419,33 @@ log_timing_context = LogTimingContext
 # ../../../omlish/os/files.py
 
 
-def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
+def is_fd_open(fd: int) -> bool:
+    try:
+        fcntl.fcntl(fd, fcntl.F_GETFD)
+    except OSError as e:
+        if e.errno == errno.EBADF:
+            return False
+        raise
+    else:
+        return True
+
+
+def touch(path: str, mode: int = 0o666, exist_ok: bool = True) -> None:
     if exist_ok:
         # First try to bump modification time
         # Implementation note: GNU touch uses the UTIME_NOW option of the utimensat() / futimens() functions.
         try:
-            os.utime(self, None)
+            os.utime(path, None)
         except OSError:
             pass
         else:
             return
+
     flags = os.O_CREAT | os.O_WRONLY
     if not exist_ok:
         flags |= os.O_EXCL
-    fd = os.open(self, flags, mode)
+
+    fd = os.open(path, flags, mode)
     os.close(fd)
 
 
