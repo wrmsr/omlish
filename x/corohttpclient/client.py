@@ -214,7 +214,8 @@ class HTTPResponse(io.BufferedIOBase):
         # The HTTPResponse object is returned via urllib.  The clients of http and urllib expect different attributes
         # for the headers.  headers is used here and supports urllib.  msg is provided as a backwards compatibility
         # layer for http clients.
-        self.headers = self.msg = None
+        self.headers: HTTPMessage | None = None
+        self.msg: HTTPMessage | None = None
 
         # from the Status-Line of the response
         self.version = _UNKNOWN  # HTTP-Version
@@ -698,7 +699,7 @@ class HTTPResponse(io.BufferedIOBase):
     def fileno(self) -> int:
         return self.fp.fileno()
 
-    def getheader(self, name, default=None):
+    def getheader(self, name: str, default: str | None = None) -> str:
         """
         Returns the value of the header matching *name*.
 
@@ -720,7 +721,7 @@ class HTTPResponse(io.BufferedIOBase):
         else:
             return ', '.join(headers)
 
-    def getheaders(self):
+    def getheaders(self) -> list[tuple[str, str]]:
         """Return list of (header, value) tuples."""
 
         if self.headers is None:
@@ -735,7 +736,7 @@ class HTTPResponse(io.BufferedIOBase):
 
     # For compatibility with old-style urllib responses.
 
-    def info(self):
+    def info(self) -> HTTPMessage:
         """
         Returns an instance of the class mimetools.Message containing meta-information associated with the URL.
 
@@ -753,7 +754,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return self.headers
 
-    def geturl(self):
+    def geturl(self) -> str:
         """
         Return the real URL of the page.
 
@@ -1464,10 +1465,14 @@ def _main() -> None:
     # with urllib.request.urlopen(req) as resp:
     #     print(resp.read())
 
-    conn = HttpConnection('www.example.com')
+    # conn_cls = HttpConnection
+    conn_cls =__import__('http.client').client.HTTPConnection
+
+    url = 'www.example.com'
+    conn = conn_cls(url)
 
     conn.request('GET', '/')
-    r1 = conn.get_response()
+    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()
     print((r1.status, r1.reason))
 
     # data1 = r1.read()
