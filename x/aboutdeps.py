@@ -17,10 +17,6 @@ def _main() -> None:
         canonicalize_name(dist.metadata['Name'], validate=True): dist
         for dist in importlib.metadata.distributions(paths=sys.path)
     }
-    for dist_cn, dist in sorted(dist_dct.items(), key=lambda t: t[0]):
-        print(f'{dist.name} {dist.version}')
-
-    print()
 
     #
 
@@ -30,8 +26,6 @@ def _main() -> None:
     pkgs = dct['tool']['omlish']['pyproject']['pkgs']
 
     for pkg in pkgs:
-        print(pkg)
-
         pkg_about = importlib.import_module('.'.join([pkg, '__about__']))
         pkg_prj = pkg_about.Project
         pkg_opt_deps = {d for ds in pkg_prj.optional_dependencies.values() for d in ds}
@@ -41,10 +35,7 @@ def _main() -> None:
             opt_dist = dist_dct[opt_cn]
             opt_spec = Specifier(opt_req.specifier)
 
-            print(opt_spec)
-            print(opt_dist)
-
-        print()
+            opt_spec.contains(opt_dist.version)
 
 
 if __name__ == '__main__':
