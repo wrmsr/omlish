@@ -107,7 +107,6 @@ class PipeDeathpact(BaseDeathpact):
     def pass_fd(self) -> int:
         return check.not_none(self._rfd)
 
-    @property
     def is_parent(self) -> bool:
         return (self._COOKIE, get_fork_depth()) == (self._cookie, self._fork_depth)
 
@@ -125,7 +124,7 @@ class PipeDeathpact(BaseDeathpact):
 
     def _close_wfd_if_not_parent(self) -> None:
         if self._wfd is not None:
-            if self.is_parent:
+            if self.is_parent():
                 os.close(check.not_none(self._wfd))
             self._wfd = None
 

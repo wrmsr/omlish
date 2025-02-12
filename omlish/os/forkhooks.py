@@ -58,6 +58,7 @@ class _ForkHookManager:
         key: ta.Any
         priority: int
 
+        # NOTE: these are called inside the global, non-reentrant manager lock
         before_fork: ta.Optional[ta.Callable[[], None]] = None
         after_fork_in_parent: ta.Optional[ta.Callable[[], None]] = None
         after_fork_in_child: ta.Optional[ta.Callable[[], None]] = None
