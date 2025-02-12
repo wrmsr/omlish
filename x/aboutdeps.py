@@ -13,10 +13,12 @@ from omdev.packaging.specifiers import Specifier
 
 
 def _main() -> None:
-    dist_dct = {
-        canonicalize_name(dist.metadata['Name'], validate=True): dist
-        for dist in importlib.metadata.distributions(paths=sys.path)
-    }
+    dist_dct = {}
+    for dist in importlib.metadata.distributions(paths=sys.path):
+        dist_cn = canonicalize_name(dist.metadata['Name'], validate=True)
+        if dist_cn in dist_dct:
+            continue
+        dist_dct[dist_cn] = dist
 
     #
 

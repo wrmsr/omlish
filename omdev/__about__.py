@@ -46,7 +46,7 @@ class Project(ProjectBase):
         ],
 
         'wheel': [
-            'wheel ~= 0.44',
+            'wheel ~= 0.45',
         ],
     }
 
