@@ -6,6 +6,7 @@ import time
 import typing as ta
 
 from .. import check
+from .forkdepth import get_fork_depth
 
 
 ##
@@ -88,6 +89,8 @@ class PipeDeathpact(BaseDeathpact):
         self._rfd: int | None = None
         self._wfd: int | None = None
 
+        self._fork_depth = get_fork_depth()
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(rfd={self._rfd}, wfd={self._wfd})'
 
@@ -108,11 +111,13 @@ class PipeDeathpact(BaseDeathpact):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._rfd is not None:
-            os.close(check.not_none(self._wfd))
-            self._wfd = None
-
             os.close(self._rfd)
             self._rfd = None
+
+        if self._wfd is not None:
+            if self._fork_depth == get_fork_depth():
+                os.close(check.not_none(self._wfd))
+            self._wfd = None
 
     def should_die(self) -> bool:
         try:

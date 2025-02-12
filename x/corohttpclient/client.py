@@ -1437,7 +1437,7 @@ def _main() -> None:
     conn = conn_cls(url)
 
     conn.request('GET', '/')
-    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()
+    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
     print((r1.status, r1.reason))
 
     # data1 = r1.read()
