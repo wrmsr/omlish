@@ -22,15 +22,18 @@ from .xml import parse_page
 ##
 
 
-BZ2_INDEX_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+WIKI_REV = '20241101'
+
+
+BZ2_INDEX_FILE_PATH = os.path.expanduser(f'~/data/enwiki/enwiki-{WIKI_REV}-pages-articles-multistream-index.txt.bz2')
 
 #  23_851_879_117 compressed
 # 103_090_295_026 uncompressed
-BZ2_XML_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream.xml.bz2')
+BZ2_XML_FILE_PATH = os.path.expanduser(f'~/data/enwiki/enwiki-{WIKI_REV}-pages-articles-multistream.xml.bz2')
 
 #  42_781_970_578 compressed
 # 103_090_295_026 uncompressed
-LZ4_XML_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream.xml.lz4')
+LZ4_XML_FILE_PATH = os.path.expanduser(f'~/data/enwiki/enwiki-{WIKI_REV}-pages-articles-multistream.xml.lz4')
 
 
 def _main() -> None:
@@ -58,7 +61,7 @@ def _main() -> None:
 
         mfw: iou.MultiFileWriter = es.enter_context(contextlib.closing(iou.MultiFileWriter(
             iou.Lz4MfwFile,
-            os.path.join(output_dir, 'enwiki-20240801-pages-articles-%02d.jsonl.lz4'),
+            os.path.join(output_dir, f'enwiki-{WIKI_REV}-pages-articles-%02d.jsonl.lz4'),
         )))
 
         if not use_lxml:

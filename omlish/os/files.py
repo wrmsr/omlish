@@ -1,8 +1,21 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 import contextlib
+import errno
+import fcntl
 import os
 import typing as ta
+
+
+def is_fd_open(fd: int) -> bool:
+    try:
+        fcntl.fcntl(fd, fcntl.F_GETFD)
+    except OSError as e:
+        if e.errno == errno.EBADF:
+            return False
+        raise
+    else:
+        return True
 
 
 def touch(path: str, mode: int = 0o666, exist_ok: bool = True) -> None:

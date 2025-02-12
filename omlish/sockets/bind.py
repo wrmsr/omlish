@@ -15,10 +15,10 @@ import socket as socket_
 import stat
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.dataclasses import dataclass_maybe_post_init
-from omlish.sockets.addresses import SocketAddress
-from omlish.sockets.addresses import SocketAndAddress
+from ..lite.check import check
+from ..lite.dataclasses import dataclass_maybe_post_init
+from .addresses import SocketAddress
+from .addresses import SocketAndAddress
 
 
 SocketBinderT = ta.TypeVar('SocketBinderT', bound='SocketBinder')

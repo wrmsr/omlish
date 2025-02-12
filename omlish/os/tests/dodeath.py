@@ -5,17 +5,7 @@ import sys
 import time
 
 from ..death import PipeDeathpact
-
-
-def is_fd_open(fd: int) -> bool:
-    try:
-        fcntl.fcntl(fd, fcntl.F_GETFD)
-    except OSError as e:
-        if e.errno == errno.EBADF:
-            return False
-        raise
-    else:
-        return True
+from ..files import is_fd_open
 
 
 def _main() -> None:
@@ -26,14 +16,17 @@ def _main() -> None:
             print(is_fd_open(pdp._rfd))
             print(is_fd_open(pdp._wfd))
             print(is_fd_open(420))
-            sys.exit(0)
 
             if not (child_pid := os.fork()):  # noqa
+                print(is_fd_open(pdp._rfd))
+                print(is_fd_open(pdp._wfd))
+                print(is_fd_open(420))
+
                 if reparent:
                     raise NotImplementedError
 
-                while True:
-                    print(f'child process {os.getpid()} polling', file=sys.stderr)
+                for i in range(10, 0, -1):
+                    print(f'child process {os.getpid()} polling {i}', file=sys.stderr)
                     pdp.poll()
                     time.sleep(1.)
 

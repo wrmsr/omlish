@@ -4,7 +4,7 @@ import os
 import threading
 import typing as ta
 
-from omlish.lite.check import check
+from ..lite.check import check
 
 
 ##
@@ -43,7 +43,6 @@ class _ForkDepthTracker:
 
             cls._install()
             return True
-
 
     #
 

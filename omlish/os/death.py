@@ -83,13 +83,22 @@ class BaseDeathpact(Deathpact, abc.ABC):
 
 
 class PipeDeathpact(BaseDeathpact):
+    """
+    TODO:
+     - while not a goal to futilely try to support threads+forks, still vulnerable to a case of a parent with active
+       pacts forking into child codepaths that never call _close_wfd_if_not_parent, thus leaving the wfd open.
+    """
+
+    _COOKIE: ta.ClassVar[bytes] = os.urandom(16)
+
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
         self._rfd: int | None = None
         self._wfd: int | None = None
 
-        self._fork_depth = get_fork_depth()
+        self._cookie: bytes | None = self._COOKIE
+        self._fork_depth: int | None = get_fork_depth()
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(rfd={self._rfd}, wfd={self._wfd})'
@@ -98,28 +107,53 @@ class PipeDeathpact(BaseDeathpact):
     def pass_fd(self) -> int:
         return check.not_none(self._rfd)
 
+    @property
+    def is_parent(self) -> bool:
+        return (self._COOKIE, get_fork_depth()) == (self._cookie, self._fork_depth)
+
+    #
+
     def __enter__(self) -> ta.Self:
         check.none(self._rfd)
         check.none(self._wfd)
 
         self._rfd, self._wfd = os.pipe()
 
-        os.set_inheritable(self._rfd, True)
         os.set_blocking(self._rfd, False)
 
         return self
+
+    def _close_wfd_if_not_parent(self) -> None:
+        if self._wfd is not None:
+            if self.is_parent:
+                os.close(check.not_none(self._wfd))
+            self._wfd = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._rfd is not None:
             os.close(self._rfd)
             self._rfd = None
 
-        if self._wfd is not None:
-            if self._fork_depth == get_fork_depth():
-                os.close(check.not_none(self._wfd))
-            self._wfd = None
+        self._close_wfd_if_not_parent()
+
+    #
+
+    def __getstate__(self):
+        return dict(
+            **self.__dict__,
+            _wfd=None,
+            _cookie=None,
+            _fork_depth=None,
+        )
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+    #
 
     def should_die(self) -> bool:
+        self._close_wfd_if_not_parent()
+
         try:
             buf = os.read(check.not_none(self._rfd), 1)
         except BlockingIOError:
