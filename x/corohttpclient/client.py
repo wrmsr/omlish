@@ -959,6 +959,7 @@ class HttpConnection:
             source_address=self._source_address,
             **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),  # type: ignore
         )
+
         # Might fail in OSs that don't implement TCP_NODELAY
         try:
             self._sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -1064,6 +1065,7 @@ class HttpConnection:
                 # Let file-like take precedence over byte-like.  This is needed to allow the current position of mmap'ed
                 # files to be taken into account.
                 chunks = self._read_readable(message_body)
+
             else:
                 try:
                     # this is solely to check to see if message_body implements the buffer API.  it /would/ be easier to
@@ -1428,8 +1430,8 @@ def _main() -> None:
     # with urllib.request.urlopen(req) as resp:
     #     print(resp.read())
 
-    # conn_cls = HttpConnection
-    conn_cls =__import__('http.client').client.HTTPConnection
+    conn_cls = HttpConnection
+    # conn_cls =__import__('http.client').client.HTTPConnection
 
     url = 'www.example.com'
     conn = conn_cls(url)
