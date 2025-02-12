@@ -154,7 +154,7 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HTTPMessage:
     return email.parser.Parser(_class=HTTPMessage).parsestr(hstring)
 
 
-def parse_headers(fp):
+def parse_headers(fp: ta.IO) -> HTTPMessage:
     """Parses only RFC2822 headers from a file pointer."""
 
     headers = _read_headers(fp)
@@ -197,7 +197,13 @@ class HTTPResponse(io.BufferedIOBase):
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
     # MIME-encoded text following RFC 2047.  The basic status line parsing only accepts iso-8859-1.
 
-    def __init__(self, sock, method=None, url=None):
+    def __init__(
+            self,
+            sock: socket.socket,
+            method: str | None = None,
+    ) -> None:
+        super().__init__()
+
         # If the response includes a content-length header, we need to make sure that the client doesn't read more than
         # the specified number of bytes.  If it does, it will block until the server times out and closes the
         # connection.  This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not.
@@ -220,7 +226,12 @@ class HTTPResponse(io.BufferedIOBase):
         self.length = _UNKNOWN      # number of bytes left in response
         self.will_close = _UNKNOWN  # conn will close at end of response
 
-    def _read_status(self):
+    class _StatusLine(ta.NamedTuple):
+        version: str
+        status: int
+        reason: str
+
+    def _read_status(self) -> _StatusLine:
         line = str(self.fp.readline(_MAX_LINE + 1), 'iso-8859-1')
         if len(line) > _MAX_LINE:
             raise LineTooLong('status line')
@@ -228,15 +239,17 @@ class HTTPResponse(io.BufferedIOBase):
             # Presumably, the server closed the connection before sending a valid response.
             raise RemoteDisconnected('Remote end closed connection without response')
 
+        version = ''
+        reason = ''
+        status_str = ''
         try:
-            version, status, reason = line.split(None, 2)
+            version, status_str, reason = line.split(None, 2)
         except ValueError:
             try:
-                version, status = line.split(None, 1)
-                reason = ''
+                version, status_str = line.split(None, 1)
             except ValueError:
                 # empty version will cause next test to fail.
-                version = ''
+                pass
 
         if not version.startswith('HTTP/'):
             self._close_conn()
@@ -244,15 +257,16 @@ class HTTPResponse(io.BufferedIOBase):
 
         # The status code is a three-digit number
         try:
-            status = int(status)
-            if status < 100 or status > 999:
-                raise BadStatusLine(line)
+            status = int(status_str)
         except ValueError:
             raise BadStatusLine(line) from None
 
-        return version, status, reason
+        if status < 100 or status > 999:
+            raise BadStatusLine(line)
 
-    def begin(self):
+        return self._StatusLine(version, status, reason)
+
+    def begin(self) -> None:
         if self.headers is not None:
             # we've already started reading the response
             return
@@ -319,7 +333,7 @@ class HTTPResponse(io.BufferedIOBase):
         if not self.will_close and not self.chunked and self.length is None:
             self.will_close = True
 
-    def _check_close(self):
+    def _check_close(self) -> bool
         conn = self.headers.get('connection')
         if self.version == 11:
             # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
@@ -346,12 +360,12 @@ class HTTPResponse(io.BufferedIOBase):
         # otherwise, assume it will close
         return True
 
-    def _close_conn(self):
+    def _close_conn(self) -> None:
         fp = self.fp
         self.fp = None
         fp.close()
 
-    def close(self):
+    def close(self) -> None:
         try:
             super().close() # set 'closed' flag
         finally:
@@ -362,19 +376,19 @@ class HTTPResponse(io.BufferedIOBase):
 
     # XXX This class should probably be revised to act more like the 'raw stream' that BufferedReader expects.
 
-    def flush(self):
+    def flush(self) -> None:
         super().flush()
         if self.fp:
             self.fp.flush()
 
-    def readable(self):
+    def readable(self) -> bool:
         """Always returns True"""
 
         return True
 
     # End of "raw stream" methods
 
-    def isclosed(self):
+    def isclosed(self) -> bool:
         """True if the connection is closed."""
 
         # NOTE: it is possible that we will not ever call self.close(). This case occurs when will_close is TRUE, length
