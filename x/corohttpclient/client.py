@@ -196,13 +196,12 @@ class HTTPResponse(io.BufferedIOBase):
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
     # MIME-encoded text following RFC 2047.  The basic status line parsing only accepts iso-8859-1.
 
-    def __init__(self, sock, debuglevel=0, method=None, url=None):
+    def __init__(self, sock, method=None, url=None):
         # If the response includes a content-length header, we need to make sure that the client doesn't read more than
         # the specified number of bytes.  If it does, it will block until the server times out and closes the
         # connection.  This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not.
-        #  So, no self.fp.read() by clients unless they know what they are doing.
-        self.fp = sock.makefile("rb")
-        self.debuglevel = debuglevel
+        # So, no self.fp.read() by clients unless they know what they are doing.
+        self.fp = sock.makefile('rb')
         self._method = method
 
         # The HTTPResponse object is returned via urllib.  The clients of http and urllib expect different attributes
@@ -221,24 +220,24 @@ class HTTPResponse(io.BufferedIOBase):
         self.will_close = _UNKNOWN      # conn will close at end of response
 
     def _read_status(self):
-        line = str(self.fp.readline(_MAX_LINE + 1), "iso-8859-1")
+        line = str(self.fp.readline(_MAX_LINE + 1), 'iso-8859-1')
         if len(line) > _MAX_LINE:
-            raise LineTooLong("status line")
-        if self.debuglevel > 0:
-            print("reply:", repr(line))
+            raise LineTooLong('status line')
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
-            raise RemoteDisconnected("Remote end closed connection without response")
+            raise RemoteDisconnected('Remote end closed connection without response')
+
         try:
             version, status, reason = line.split(None, 2)
         except ValueError:
             try:
                 version, status = line.split(None, 1)
-                reason = ""
+                reason = ''
             except ValueError:
                 # empty version will cause next test to fail.
-                version = ""
-        if not version.startswith("HTTP/"):
+                version = ''
+
+        if not version.startswith('HTTP/'):
             self._close_conn()
             raise BadStatusLine(line)
 
@@ -249,6 +248,7 @@ class HTTPResponse(io.BufferedIOBase):
                 raise BadStatusLine(line)
         except ValueError:
             raise BadStatusLine(line)
+
         return version, status, reason
 
     def begin(self):
@@ -261,31 +261,27 @@ class HTTPResponse(io.BufferedIOBase):
             version, status, reason = self._read_status()
             if status != HTTPStatus.CONTINUE:
                 break
+
             # skip the header from the 100 response
             skipped_headers = _read_headers(self.fp)
-            if self.debuglevel > 0:
-                print("headers:", skipped_headers)
+
             del skipped_headers
 
         self.code = self.status = status
         self.reason = reason.strip()
-        if version in ("HTTP/1.0", "HTTP/0.9"):
-            # Some servers might still return "0.9", treat it as 1.0 anyway
+        if version in ('HTTP/1.0', 'HTTP/0.9'):
+            # Some servers might still return '0.9', treat it as 1.0 anyway
             self.version = 10
-        elif version.startswith("HTTP/1."):
+        elif version.startswith('HTTP/1.'):
             self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
         else:
             raise UnknownProtocol(version)
 
         self.headers = self.msg = parse_headers(self.fp)
 
-        if self.debuglevel > 0:
-            for hdr, val in self.headers.items():
-                print("header:", hdr + ":", val)
-
         # are we using the chunked-style of transfer encoding?
-        tr_enc = self.headers.get("transfer-encoding")
-        if tr_enc and tr_enc.lower() == "chunked":
+        tr_enc = self.headers.get('transfer-encoding')
+        if tr_enc and tr_enc.lower() == 'chunked':
             self.chunked = True
             self.chunk_left = None
         else:
@@ -295,9 +291,9 @@ class HTTPResponse(io.BufferedIOBase):
         self.will_close = self._check_close()
 
         # do we have a Content-Length?
-        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is "chunked"
+        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
         self.length = None
-        length = self.headers.get("content-length")
+        length = self.headers.get('content-length')
         if length and not self.chunked:
             try:
                 self.length = int(length)
@@ -314,7 +310,7 @@ class HTTPResponse(io.BufferedIOBase):
                 status == HTTPStatus.NO_CONTENT or
                 status == HTTPStatus.NOT_MODIFIED or
                 100 <= status < 200 or # 1xx codes
-                self._method == "HEAD"
+                self._method == 'HEAD'
         ):
             self.length = 0
 
@@ -324,27 +320,27 @@ class HTTPResponse(io.BufferedIOBase):
             self.will_close = True
 
     def _check_close(self):
-        conn = self.headers.get("connection")
+        conn = self.headers.get('connection')
         if self.version == 11:
             # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
-            if conn and "close" in conn.lower():
+            if conn and 'close' in conn.lower():
                 return True
             return False
 
         # Some HTTP/1.0 implementations have support for persistent connections, using rules different than HTTP/1.1.
 
         # For older HTTP, Keep-Alive indicates persistent connection.
-        if self.headers.get("keep-alive"):
+        if self.headers.get('keep-alive'):
             return False
 
-        # At least Akamai returns a "Connection: Keep-Alive" header,
+        # At least Akamai returns a 'Connection: Keep-Alive' header,
         # which was supposed to be sent by the client.
-        if conn and "keep-alive" in conn.lower():
+        if conn and 'keep-alive' in conn.lower():
             return False
 
         # Proxy-Connection is a netscape hack.
-        pconn = self.headers.get("proxy-connection")
-        if pconn and "keep-alive" in pconn.lower():
+        pconn = self.headers.get('proxy-connection')
+        if pconn and 'keep-alive' in pconn.lower():
             return False
 
         # otherwise, assume it will close
@@ -357,14 +353,14 @@ class HTTPResponse(io.BufferedIOBase):
 
     def close(self):
         try:
-            super().close() # set "closed" flag
+            super().close() # set 'closed' flag
         finally:
             if self.fp:
                 self._close_conn()
 
     # These implementations are for the benefit of io.BufferedReader.
 
-    # XXX This class should probably be revised to act more like the "raw stream" that BufferedReader expects.
+    # XXX This class should probably be revised to act more like the 'raw stream' that BufferedReader expects.
 
     def flush(self):
         super().flush()
@@ -373,12 +369,14 @@ class HTTPResponse(io.BufferedIOBase):
 
     def readable(self):
         """Always returns True"""
+
         return True
 
     # End of "raw stream" methods
 
     def isclosed(self):
         """True if the connection is closed."""
+
         # NOTE: it is possible that we will not ever call self.close(). This case occurs when will_close is TRUE, length
         #       is None, and we read up to the last byte, but NOT past it.
         #
@@ -388,12 +386,13 @@ class HTTPResponse(io.BufferedIOBase):
 
     def read(self, amt=None):
         """Read and return the response body, or up to the next amt bytes."""
-        if self.fp is None:
-            return b""
 
-        if self._method == "HEAD":
+        if self.fp is None:
+            return b''
+
+        if self._method == 'HEAD':
             self._close_conn()
-            return b""
+            return b''
 
         if self.chunked:
             return self._read_chunked(amt)
@@ -432,7 +431,7 @@ class HTTPResponse(io.BufferedIOBase):
         if self.fp is None:
             return 0
 
-        if self._method == "HEAD":
+        if self._method == 'HEAD':
             self._close_conn()
             return 0
 
@@ -441,7 +440,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         if self.length is not None:
             if len(b) > self.length:
-                # clip the read to the "end of response"
+                # clip the read to the 'end of response'
                 b = memoryview(b)[0:self.length]
 
         # we do not use _safe_read() here because this may be a .will_close connection, and the user is reading more
@@ -461,8 +460,8 @@ class HTTPResponse(io.BufferedIOBase):
         # Read the next chunk size from the file
         line = self.fp.readline(_MAX_LINE + 1)
         if len(line) > _MAX_LINE:
-            raise LineTooLong("chunk size")
-        i = line.find(b";")
+            raise LineTooLong('chunk size')
+        i = line.find(b';')
         if i >= 0:
             line = line[:i] # strip chunk-extensions
         try:
@@ -478,11 +477,13 @@ class HTTPResponse(io.BufferedIOBase):
         while True:
             line = self.fp.readline(_MAX_LINE + 1)
             if len(line) > _MAX_LINE:
-                raise LineTooLong("trailer line")
+                raise LineTooLong('trailer line')
+
             if not line:
                 # a vanishingly small number of sites EOF without
                 # sending the trailer
                 break
+
             if line in (b'\r\n', b'\n', b''):
                 break
 
@@ -495,17 +496,21 @@ class HTTPResponse(io.BufferedIOBase):
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
                 self._safe_read(2)  # toss the CRLF at the end of the chunk
+
             try:
                 chunk_left = self._read_next_chunk_size()
             except ValueError:
                 raise IncompleteRead(b'')
+
             if chunk_left == 0:
-                # last chunk: 1*("0") [ chunk-extension ] CRLF
+                # last chunk: 1*('0') [ chunk-extension ] CRLF
                 self._read_and_discard_trailer()
-                # we read everything; close the "file"
+                # we read everything; close the 'file'
                 self._close_conn()
                 chunk_left = None
+
             self.chunk_left = chunk_left
+
         return chunk_left
 
     def _read_chunked(self, amt=None):
@@ -553,7 +558,8 @@ class HTTPResponse(io.BufferedIOBase):
             raise IncompleteRead(bytes(b[0:total_bytes]))
 
     def _safe_read(self, amt):
-        """Read the number of bytes requested.
+        """
+        Read the number of bytes requested.
 
         This function should be used when <amt> bytes "should" be present for reading. If the bytes are truly not
         available (due to EOF), then the IncompleteRead exception can be used to detect the problem.
@@ -576,44 +582,58 @@ class HTTPResponse(io.BufferedIOBase):
     def read1(self, n=-1):
         """Read with at most one underlying system call.  If at least one byte is buffered, return that instead."""
 
-        if self.fp is None or self._method == "HEAD":
-            return b""
+        if self.fp is None or self._method == 'HEAD':
+            return b''
+
         if self.chunked:
             return self._read1_chunked(n)
+
         if self.length is not None and (n < 0 or n > self.length):
             n = self.length
+
         result = self.fp.read1(n)
+
         if not result and n:
             self._close_conn()
+
         elif self.length is not None:
             self.length -= len(result)
             if not self.length:
                 self._close_conn()
+
         return result
 
     def peek(self, n=-1):
         # Having this enables IOBase.readline() to read more than one byte at a time
-        if self.fp is None or self._method == "HEAD":
-            return b""
+        if self.fp is None or self._method == 'HEAD':
+            return b''
+
         if self.chunked:
             return self._peek_chunked(n)
+
         return self.fp.peek(n)
 
     def readline(self, limit=-1):
-        if self.fp is None or self._method == "HEAD":
-            return b""
+        if self.fp is None or self._method == 'HEAD':
+            return b''
+
         if self.chunked:
             # Fallback to IOBase readline which uses peek() and read()
             return super().readline(limit)
+
         if self.length is not None and (limit < 0 or limit > self.length):
             limit = self.length
+
         result = self.fp.readline(limit)
+
         if not result and limit:
             self._close_conn()
+
         elif self.length is not None:
             self.length -= len(result)
             if not self.length:
                 self._close_conn()
+
         return result
 
     def _read1_chunked(self, n):
@@ -622,12 +642,15 @@ class HTTPResponse(io.BufferedIOBase):
         chunk_left = self._get_chunk_left()
         if chunk_left is None or n == 0:
             return b''
+
         if not (0 <= n <= chunk_left):
             n = chunk_left # if n is negative or larger than chunk_left
+
         read = self.fp.read1(n)
         self.chunk_left -= len(read)
         if not read:
-            raise IncompleteRead(b"")
+            raise IncompleteRead(b'')
+
         return read
 
     def _peek_chunked(self, n):
@@ -637,8 +660,10 @@ class HTTPResponse(io.BufferedIOBase):
             chunk_left = self._get_chunk_left()
         except IncompleteRead:
             return b'' # peek doesn't worry about protocol
+
         if chunk_left is None:
             return b'' # eof
+
         # peek is allowed to return more than requested.  Just request the entire chunk, and truncate what we get.
         return self.fp.peek(chunk_left)[:chunk_left]
 
@@ -646,7 +671,8 @@ class HTTPResponse(io.BufferedIOBase):
         return self.fp.fileno()
 
     def getheader(self, name, default=None):
-        """Returns the value of the header matching *name*.
+        """
+        Returns the value of the header matching *name*.
 
         If there are multiple matching headers, the values are combined into a single string separated by commas and
         spaces.
@@ -658,7 +684,9 @@ class HTTPResponse(io.BufferedIOBase):
 
         if self.headers is None:
             raise ResponseNotReady()
+
         headers = self.headers.get_all(name) or default
+
         if isinstance(headers, str) or not hasattr(headers, '__iter__'):
             return headers
         else:
@@ -668,7 +696,8 @@ class HTTPResponse(io.BufferedIOBase):
         """Return list of (header, value) tuples."""
 
         if self.headers is None:
-            raise ResponseNotReady()
+            raise ResponseNotReady
+
         return list(self.headers.items())
 
     # We override IOBase.__iter__ so that it doesn't check for closed-ness
