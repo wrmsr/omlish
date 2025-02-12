@@ -21,9 +21,9 @@ def bind_ci(
         *,
         config: Ci.Config,
 
-        github: bool = False,
+        directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None,
 
-        cache_dir: ta.Optional[str] = None,
+        github: bool = False,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [  # noqa
         inj.bind(config),
@@ -42,20 +42,15 @@ def bind_ci(
         ),
     ))
 
-    if cache_dir is not None:
+    if directory_file_cache_config is not None:
+        lst.extend([
+            inj.bind(directory_file_cache_config),
+            inj.bind(DirectoryFileCache, singleton=True),
+        ])
+
         if github:
-            lst.append(bind_github(
-                cache_dir=cache_dir,
-            ))
-
+            lst.append(bind_github())
         else:
-            lst.extend([
-                inj.bind(DirectoryFileCache.Config(
-                    dir=cache_dir,
-                )),
-                inj.bind(DirectoryFileCache, singleton=True),
-                inj.bind(FileCache, to_key=DirectoryFileCache),
-
-            ])
+            lst.append(inj.bind(FileCache, to_key=DirectoryFileCache))
 
     return inj.as_bindings(*lst)

@@ -12,19 +12,10 @@ from .cache import GithubCache
 ##
 
 
-def bind_github(
-        *,
-        cache_dir: ta.Optional[str] = None,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
-
-    if cache_dir is not None:
-        lst.extend([
-            inj.bind(GithubCache.Config(
-                dir=cache_dir,
-            )),
-            inj.bind(GithubCache, singleton=True),
-            inj.bind(FileCache, to_key=GithubCache),
-        ])
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
 
     return inj.as_bindings(*lst)

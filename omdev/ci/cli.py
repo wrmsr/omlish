@@ -25,6 +25,7 @@ from omlish.lite.inject import inj
 from omlish.lite.logs import log
 from omlish.logs.standard import configure_standard_logging
 
+from .cache import DirectoryFileCache
 from .ci import Ci
 from .compose import get_compose_service_dependencies
 from .github.bootstrap import is_in_github_actions
@@ -70,6 +71,9 @@ class CiCli(ArgparseCli):
 
     #
 
+    DEFAULT_PURGE_MAX_AGE_S = 60 * 60 * 24 * 30
+    DEFAULT_PURGE_MAX_SIZE_B = 1024 * 1024 * 1024 * 4
+
     @argparse_cmd(
         argparse_arg('project-dir'),
         argparse_arg('service'),
@@ -78,6 +82,8 @@ class CiCli(ArgparseCli):
         argparse_arg('-r', '--requirements-txt', action='append'),
 
         argparse_arg('--cache-dir'),
+
+        argparse_arg('--no-purge', action='store_true'),
 
         argparse_arg('--github', action='store_true'),
         argparse_arg('--github-detect', action='store_true'),
@@ -202,16 +208,31 @@ class CiCli(ArgparseCli):
             run_options=run_options,
         )
 
+        directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None
+        if cache_dir is not None:
+            directory_file_cache_config = DirectoryFileCache.Config(
+                dir=cache_dir,
+
+                no_purge=bool(self.args.no_purge),
+
+                purge_max_age_s=self.DEFAULT_PURGE_MAX_AGE_S,
+                purge_max_size_b=self.DEFAULT_PURGE_MAX_SIZE_B,
+            )
+
         injector = inj.create_injector(bind_ci(
             config=config,
 
-            github=github,
+            directory_file_cache_config=directory_file_cache_config,
 
-            cache_dir=cache_dir,
+            github=github,
         ))
 
         async with injector[Ci] as ci:
             await ci.run()
+
+        if directory_file_cache_config is not None and not directory_file_cache_config.no_purge:
+            dfc = injector[DirectoryFileCache]
+            dfc.purge()
 
 
 async def _async_main() -> ta.Optional[int]:

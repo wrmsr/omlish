@@ -3522,7 +3522,8 @@ class DirectoryFileCache(FileCache):
 
         no_update_mtime: bool = False
 
-        # purge_after_days: ta.Optional[int] = None
+        purge_max_age_s: ta.Optional[float] = None
+        purge_max_size_b: ta.Optional[int] = None
 
     def __init__(
             self,
@@ -3543,6 +3544,12 @@ class DirectoryFileCache(FileCache):
     #
 
     VERSION_FILE_NAME = '.ci-cache-version'
+
+    def _iter_dir_contents(self) -> ta.Iterator[str]:
+        for n in sorted(os.listdir(self.dir)):
+            if n.startswith('.'):
+                continue
+            yield os.path.join(self.dir, n)
 
     @cached_nullary
     def setup_dir(self) -> None:
@@ -3574,10 +3581,7 @@ class DirectoryFileCache(FileCache):
                 f'due to present directories: {", ".join(dirs)}',
             )
 
-        for n in sorted(os.listdir(self.dir)):
-            if n.startswith('.'):
-                continue
-            fp = os.path.join(self.dir, n)
+        for fp in self._iter_dir_contents():
             check.state(os.path.isfile(fp))
             log.debug('Purging stale cache file: %s', fp)
             os.unlink(fp)
@@ -3586,6 +3590,42 @@ class DirectoryFileCache(FileCache):
 
         with open(version_file, 'w') as f:
             f.write(str(self._version))
+
+    #
+
+    def purge(self, *, dry_run: bool = False) -> None:
+        purge_max_age_s = self._config.purge_max_age_s
+        purge_max_size_b = self._config.purge_max_size_b
+        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
+            return
+
+        self.setup_dir()
+
+        purge_min_mtime: ta.Optional[float] = None
+        if purge_max_age_s is not None:
+            purge_min_mtime = time.time() - purge_max_age_s
+
+        dct: ta.Dict[str, os.stat_result] = {}
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            dct[fp] = os.stat(fp)
+
+        total_size_b = 0
+        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
+            total_size_b += st.st_size
+
+            purge = False
+            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
+                purge = True
+            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
+                purge = True
+
+            if not purge:
+                continue
+
+            log.debug('Purging cache file: %s', fp)
+            if not dry_run:
+                os.unlink(fp)
 
     #
 
@@ -3608,9 +3648,7 @@ class DirectoryFileCache(FileCache):
 
         if not self._config.no_update_mtime:
             stat_info = os.stat(cache_file_path)
-            current_atime = stat_info.st_atime
-            current_mtime = time.time()
-            os.utime(cache_file_path, (current_atime, current_mtime))
+            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
 
         return cache_file_path
 
@@ -4369,14 +4407,16 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 class GithubCache(FileCache, DataCache):
     @dc.dataclass(frozen=True)
     class Config:
-        dir: str
+        pass
 
     def __init__(
             self,
-            config: Config,
+            config: Config = Config(),
             *,
             client: ta.Optional[GithubCacheClient] = None,
             version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
     ) -> None:
         super().__init__(
             version=version,
@@ -4390,12 +4430,7 @@ class GithubCache(FileCache, DataCache):
             )
         self._client: GithubCacheClient = client
 
-        self._local = DirectoryFileCache(
-            DirectoryFileCache.Config(
-                dir=check.non_empty_str(config.dir),
-            ),
-            version=self._version,
-        )
+        self._local = local
 
     #
 
@@ -4694,20 +4729,11 @@ class BaseSubprocesses(abc.ABC):  # noqa
 ##
 
 
-def bind_github(
-        *,
-        cache_dir: ta.Optional[str] = None,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
-
-    if cache_dir is not None:
-        lst.extend([
-            inj.bind(GithubCache.Config(
-                dir=cache_dir,
-            )),
-            inj.bind(GithubCache, singleton=True),
-            inj.bind(FileCache, to_key=GithubCache),
-        ])
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
 
     return inj.as_bindings(*lst)
 
@@ -5929,9 +5955,9 @@ def bind_ci(
         *,
         config: Ci.Config,
 
-        github: bool = False,
+        directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None,
 
-        cache_dir: ta.Optional[str] = None,
+        github: bool = False,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [  # noqa
         inj.bind(config),
@@ -5950,21 +5976,16 @@ def bind_ci(
         ),
     ))
 
-    if cache_dir is not None:
+    if directory_file_cache_config is not None:
+        lst.extend([
+            inj.bind(directory_file_cache_config),
+            inj.bind(DirectoryFileCache, singleton=True),
+        ])
+
         if github:
-            lst.append(bind_github(
-                cache_dir=cache_dir,
-            ))
-
+            lst.append(bind_github())
         else:
-            lst.extend([
-                inj.bind(DirectoryFileCache.Config(
-                    dir=cache_dir,
-                )),
-                inj.bind(DirectoryFileCache, singleton=True),
-                inj.bind(FileCache, to_key=DirectoryFileCache),
-
-            ])
+            lst.append(inj.bind(FileCache, to_key=DirectoryFileCache))
 
     return inj.as_bindings(*lst)
 
@@ -6009,6 +6030,9 @@ class CiCli(ArgparseCli):
 
     #
 
+    DEFAULT_PURGE_MAX_AGE_S = 60 * 60 * 24 * 30
+    DEFAULT_PURGE_MAX_SIZE_B = 1024 * 1024 * 1024 * 4
+
     @argparse_cmd(
         argparse_arg('project-dir'),
         argparse_arg('service'),
@@ -6017,6 +6041,8 @@ class CiCli(ArgparseCli):
         argparse_arg('-r', '--requirements-txt', action='append'),
 
         argparse_arg('--cache-dir'),
+
+        argparse_arg('--no-purge', action='store_true'),
 
         argparse_arg('--github', action='store_true'),
         argparse_arg('--github-detect', action='store_true'),
@@ -6141,16 +6167,31 @@ class CiCli(ArgparseCli):
             run_options=run_options,
         )
 
+        directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None
+        if cache_dir is not None:
+            directory_file_cache_config = DirectoryFileCache.Config(
+                dir=cache_dir,
+
+                no_purge=bool(self.args.no_purge),
+
+                purge_max_age_s=self.DEFAULT_PURGE_MAX_AGE_S,
+                purge_max_size_b=self.DEFAULT_PURGE_MAX_SIZE_B,
+            )
+
         injector = inj.create_injector(bind_ci(
             config=config,
 
-            github=github,
+            directory_file_cache_config=directory_file_cache_config,
 
-            cache_dir=cache_dir,
+            github=github,
         ))
 
         async with injector[Ci] as ci:
             await ci.run()
+
+        if directory_file_cache_config is not None and not directory_file_cache_config.no_purge:
+            dfc = injector[DirectoryFileCache]
+            dfc.purge()
 
 
 async def _async_main() -> ta.Optional[int]:

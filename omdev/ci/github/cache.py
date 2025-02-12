@@ -21,14 +21,16 @@ from .client import GithubCacheServiceV1Client
 class GithubCache(FileCache, DataCache):
     @dc.dataclass(frozen=True)
     class Config:
-        dir: str
+        pass
 
     def __init__(
             self,
-            config: Config,
+            config: Config = Config(),
             *,
             client: ta.Optional[GithubCacheClient] = None,
             version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
     ) -> None:
         super().__init__(
             version=version,
@@ -42,12 +44,7 @@ class GithubCache(FileCache, DataCache):
             )
         self._client: GithubCacheClient = client
 
-        self._local = DirectoryFileCache(
-            DirectoryFileCache.Config(
-                dir=check.non_empty_str(config.dir),
-            ),
-            version=self._version,
-        )
+        self._local = local
 
     #
 

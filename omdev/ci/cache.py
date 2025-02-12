@@ -79,7 +79,8 @@ class DirectoryFileCache(FileCache):
 
         no_update_mtime: bool = False
 
-        # purge_after_days: ta.Optional[int] = None
+        purge_max_age_s: ta.Optional[float] = None
+        purge_max_size_b: ta.Optional[int] = None
 
     def __init__(
             self,
@@ -100,6 +101,12 @@ class DirectoryFileCache(FileCache):
     #
 
     VERSION_FILE_NAME = '.ci-cache-version'
+
+    def _iter_dir_contents(self) -> ta.Iterator[str]:
+        for n in sorted(os.listdir(self.dir)):
+            if n.startswith('.'):
+                continue
+            yield os.path.join(self.dir, n)
 
     @cached_nullary
     def setup_dir(self) -> None:
@@ -131,10 +138,7 @@ class DirectoryFileCache(FileCache):
                 f'due to present directories: {", ".join(dirs)}',
             )
 
-        for n in sorted(os.listdir(self.dir)):
-            if n.startswith('.'):
-                continue
-            fp = os.path.join(self.dir, n)
+        for fp in self._iter_dir_contents():
             check.state(os.path.isfile(fp))
             log.debug('Purging stale cache file: %s', fp)
             os.unlink(fp)
@@ -143,6 +147,42 @@ class DirectoryFileCache(FileCache):
 
         with open(version_file, 'w') as f:
             f.write(str(self._version))
+
+    #
+
+    def purge(self, *, dry_run: bool = False) -> None:
+        purge_max_age_s = self._config.purge_max_age_s
+        purge_max_size_b = self._config.purge_max_size_b
+        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
+            return
+
+        self.setup_dir()
+
+        purge_min_mtime: ta.Optional[float] = None
+        if purge_max_age_s is not None:
+            purge_min_mtime = time.time() - purge_max_age_s
+
+        dct: ta.Dict[str, os.stat_result] = {}
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            dct[fp] = os.stat(fp)
+
+        total_size_b = 0
+        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
+            total_size_b += st.st_size
+
+            purge = False
+            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
+                purge = True
+            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
+                purge = True
+
+            if not purge:
+                continue
+
+            log.debug('Purging cache file: %s', fp)
+            if not dry_run:
+                os.unlink(fp)
 
     #
 
@@ -165,9 +205,7 @@ class DirectoryFileCache(FileCache):
 
         if not self._config.no_update_mtime:
             stat_info = os.stat(cache_file_path)
-            current_atime = stat_info.st_atime
-            current_mtime = time.time()
-            os.utime(cache_file_path, (current_atime, current_mtime))
+            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
 
         return cache_file_path
 
