@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
@@ -247,7 +248,7 @@ class HTTPResponse(io.BufferedIOBase):
             if status < 100 or status > 999:
                 raise BadStatusLine(line)
         except ValueError:
-            raise BadStatusLine(line)
+            raise BadStatusLine(line) from None
 
         return version, status, reason
 
@@ -307,8 +308,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         # does the body have a fixed length? (of zero)
         if (
-                status == HTTPStatus.NO_CONTENT or
-                status == HTTPStatus.NOT_MODIFIED or
+                status in (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED) or
                 100 <= status < 200 or # 1xx codes
                 self._method == 'HEAD'
         ):
@@ -512,7 +512,7 @@ class HTTPResponse(io.BufferedIOBase):
             try:
                 chunk_left = self._read_next_chunk_size()
             except ValueError:
-                raise IncompleteRead(b'')
+                raise IncompleteRead(b'') from None
 
             if chunk_left == 0:
                 # last chunk: 1*('0') [ chunk-extension ] CRLF
@@ -569,7 +569,7 @@ class HTTPResponse(io.BufferedIOBase):
                 self.chunk_left = 0
 
         except IncompleteRead:
-            raise IncompleteRead(bytes(b[0:total_bytes]))
+            raise IncompleteRead(bytes(b[0:total_bytes])) from None
 
     def _safe_read(self, amt):
         """
@@ -697,7 +697,7 @@ class HTTPResponse(io.BufferedIOBase):
         """
 
         if self.headers is None:
-            raise ResponseNotReady()
+            raise ResponseNotReady
 
         headers = self.headers.get_all(name) or default
 
