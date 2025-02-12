@@ -191,32 +191,23 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
 
 
 class HTTPResponse(io.BufferedIOBase):
-
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
-    # The bytes from the socket object are iso-8859-1 strings.
-    # See RFC 2616 sec 2.2 which notes an exception for MIME-encoded
-    # text following RFC 2047.  The basic status line parsing only
-    # accepts iso-8859-1.
+    # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
+    # MIME-encoded text following RFC 2047.  The basic status line parsing only accepts iso-8859-1.
 
     def __init__(self, sock, debuglevel=0, method=None, url=None):
-        # If the response includes a content-length header, we need to
-        # make sure that the client doesn't read more than the
-        # specified number of bytes.  If it does, it will block until
-        # the server times out and closes the connection.  This will
-        # happen if a self.fp.read() is done (without a size) whether
-        # self.fp is buffered or not.  So, no self.fp.read() by
-        # clients unless they know what they are doing.
+        # If the response includes a content-length header, we need to make sure that the client doesn't read more than
+        # the specified number of bytes.  If it does, it will block until the server times out and closes the
+        # connection.  This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not.
+        #  So, no self.fp.read() by clients unless they know what they are doing.
         self.fp = sock.makefile("rb")
         self.debuglevel = debuglevel
         self._method = method
 
-        # The HTTPResponse object is returned via urllib.  The clients
-        # of http and urllib expect different attributes for the
-        # headers.  headers is used here and supports urllib.  msg is
-        # provided as a backwards compatibility layer for http
-        # clients.
-
+        # The HTTPResponse object is returned via urllib.  The clients of http and urllib expect different attributes
+        # for the headers.  headers is used here and supports urllib.  msg is provided as a backwards compatibility
+        # layer for http clients.
         self.headers = self.msg = None
 
         # from the Status-Line of the response
@@ -236,10 +227,8 @@ class HTTPResponse(io.BufferedIOBase):
         if self.debuglevel > 0:
             print("reply:", repr(line))
         if not line:
-            # Presumably, the server closed the connection before
-            # sending a valid response.
-            raise RemoteDisconnected("Remote end closed connection without"
-                                     " response")
+            # Presumably, the server closed the connection before sending a valid response.
+            raise RemoteDisconnected("Remote end closed connection without response")
         try:
             version, status, reason = line.split(None, 2)
         except ValueError:
@@ -321,30 +310,28 @@ class HTTPResponse(io.BufferedIOBase):
             self.length = None
 
         # does the body have a fixed length? (of zero)
-        if (status == HTTPStatus.NO_CONTENT or status == HTTPStatus.NOT_MODIFIED or
-                100 <= status < 200 or      # 1xx codes
-                self._method == "HEAD"):
+        if (
+                status == HTTPStatus.NO_CONTENT or
+                status == HTTPStatus.NOT_MODIFIED or
+                100 <= status < 200 or # 1xx codes
+                self._method == "HEAD"
+        ):
             self.length = 0
 
-        # if the connection remains open, and we aren't using chunked, and
-        # a content-length was not provided, then assume that the connection
-        # WILL close.
-        if (not self.will_close and
-                not self.chunked and
-                self.length is None):
+        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
+        # assume that the connection WILL close.
+        if not self.will_close and not self.chunked and self.length is None:
             self.will_close = True
 
     def _check_close(self):
         conn = self.headers.get("connection")
         if self.version == 11:
-            # An HTTP/1.1 proxy is assumed to stay open unless
-            # explicitly closed.
+            # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
             if conn and "close" in conn.lower():
                 return True
             return False
 
-        # Some HTTP/1.0 implementations have support for persistent
-        # connections, using rules different than HTTP/1.1.
+        # Some HTTP/1.0 implementations have support for persistent connections, using rules different than HTTP/1.1.
 
         # For older HTTP, Keep-Alive indicates persistent connection.
         if self.headers.get("keep-alive"):
@@ -377,8 +364,7 @@ class HTTPResponse(io.BufferedIOBase):
 
     # These implementations are for the benefit of io.BufferedReader.
 
-    # XXX This class should probably be revised to act more like
-    # the "raw stream" that BufferedReader expects.
+    # XXX This class should probably be revised to act more like the "raw stream" that BufferedReader expects.
 
     def flush(self):
         super().flush()
@@ -393,12 +379,11 @@ class HTTPResponse(io.BufferedIOBase):
 
     def isclosed(self):
         """True if the connection is closed."""
-        # NOTE: it is possible that we will not ever call self.close(). This
-        #       case occurs when will_close is TRUE, length is None, and we
-        #       read up to the last byte, but NOT past it.
+        # NOTE: it is possible that we will not ever call self.close(). This case occurs when will_close is TRUE, length
+        #       is None, and we read up to the last byte, but NOT past it.
         #
-        # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be
-        #          called, meaning self.isclosed() is meaningful.
+        # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.isclosed() is
+        #          meaningful.
         return self.fp is None
 
     def read(self, amt=None):
@@ -419,8 +404,8 @@ class HTTPResponse(io.BufferedIOBase):
                 amt = self.length
             s = self.fp.read(amt)
             if not s and amt:
-                # Ideally, we would raise IncompleteRead if the content-length
-                # wasn't satisfied, but it might break compatibility.
+                # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
+                # compatibility.
                 self._close_conn()
             elif self.length is not None:
                 self.length -= len(s)
@@ -442,9 +427,7 @@ class HTTPResponse(io.BufferedIOBase):
             return s
 
     def readinto(self, b):
-        """Read up to len(b) bytes into bytearray b and return the number
-        of bytes read.
-        """
+        """Read up to len(b) bytes into bytearray b and return the number of bytes read."""
 
         if self.fp is None:
             return 0
@@ -461,13 +444,12 @@ class HTTPResponse(io.BufferedIOBase):
                 # clip the read to the "end of response"
                 b = memoryview(b)[0:self.length]
 
-        # we do not use _safe_read() here because this may be a .will_close
-        # connection, and the user is reading more bytes than will be provided
-        # (for example, reading in 1k chunks)
+        # we do not use _safe_read() here because this may be a .will_close connection, and the user is reading more
+        # bytes than will be provided (for example, reading in 1k chunks)
         n = self.fp.readinto(b)
         if not n and b:
-            # Ideally, we would raise IncompleteRead if the content-length
-            # wasn't satisfied, but it might break compatibility.
+            # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
+            # compatibility.
             self._close_conn()
         elif self.length is not None:
             self.length -= n
@@ -486,8 +468,7 @@ class HTTPResponse(io.BufferedIOBase):
         try:
             return int(line, 16)
         except ValueError:
-            # close the connection as protocol synchronisation is
-            # probably lost
+            # close the connection as protocol synchronisation is probably lost
             self._close_conn()
             raise
 
@@ -506,11 +487,9 @@ class HTTPResponse(io.BufferedIOBase):
                 break
 
     def _get_chunk_left(self):
-        # return self.chunk_left, reading a new chunk if necessary.
-        # chunk_left == 0: at the end of the current chunk, need to close it
-        # chunk_left == None: No current chunk, should read next.
-        # This function returns non-zero or None if the last chunk has
-        # been read.
+        # return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
+        # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
+        # None if the last chunk has been read.
         chunk_left = self.chunk_left
         if not chunk_left: # Can be 0 or None
             if chunk_left is not None:
@@ -530,7 +509,7 @@ class HTTPResponse(io.BufferedIOBase):
         return chunk_left
 
     def _read_chunked(self, amt=None):
-        assert self.chunked != _UNKNOWN
+        check.not_equal(self.chunked, _UNKNOWN)
         value = []
         try:
             while (chunk_left := self._get_chunk_left()) is not None:
@@ -543,12 +522,14 @@ class HTTPResponse(io.BufferedIOBase):
                 if amt is not None:
                     amt -= chunk_left
                 self.chunk_left = 0
+
             return b''.join(value)
+
         except IncompleteRead as exc:
             raise IncompleteRead(b''.join(value)) from exc
 
     def _readinto_chunked(self, b):
-        assert self.chunked != _UNKNOWN
+        check.not_equal(self.chunked, _UNKNOWN)
         total_bytes = 0
         mvb = memoryview(b)
         try:
@@ -574,10 +555,10 @@ class HTTPResponse(io.BufferedIOBase):
     def _safe_read(self, amt):
         """Read the number of bytes requested.
 
-        This function should be used when <amt> bytes "should" be present for
-        reading. If the bytes are truly not available (due to EOF), then the
-        IncompleteRead exception can be used to detect the problem.
+        This function should be used when <amt> bytes "should" be present for reading. If the bytes are truly not
+        available (due to EOF), then the IncompleteRead exception can be used to detect the problem.
         """
+
         data = self.fp.read(amt)
         if len(data) < amt:
             raise IncompleteRead(data, amt-len(data))
@@ -585,6 +566,7 @@ class HTTPResponse(io.BufferedIOBase):
 
     def _safe_readinto(self, b):
         """Same as _safe_read, but for reading into a buffer."""
+
         amt = len(b)
         n = self.fp.readinto(b)
         if n < amt:
@@ -592,9 +574,8 @@ class HTTPResponse(io.BufferedIOBase):
         return n
 
     def read1(self, n=-1):
-        """Read with at most one underlying system call.  If at least one
-        byte is buffered, return that instead.
-        """
+        """Read with at most one underlying system call.  If at least one byte is buffered, return that instead."""
+
         if self.fp is None or self._method == "HEAD":
             return b""
         if self.chunked:
@@ -611,8 +592,7 @@ class HTTPResponse(io.BufferedIOBase):
         return result
 
     def peek(self, n=-1):
-        # Having this enables IOBase.readline() to read more than one
-        # byte at a time
+        # Having this enables IOBase.readline() to read more than one byte at a time
         if self.fp is None or self._method == "HEAD":
             return b""
         if self.chunked:
@@ -637,8 +617,8 @@ class HTTPResponse(io.BufferedIOBase):
         return result
 
     def _read1_chunked(self, n):
-        # Strictly speaking, _get_chunk_left() may cause more than one read,
-        # but that is ok, since that is to satisfy the chunked protocol.
+        # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
+        # the chunked protocol.
         chunk_left = self._get_chunk_left()
         if chunk_left is None or n == 0:
             return b''
@@ -651,33 +631,31 @@ class HTTPResponse(io.BufferedIOBase):
         return read
 
     def _peek_chunked(self, n):
-        # Strictly speaking, _get_chunk_left() may cause more than one read,
-        # but that is ok, since that is to satisfy the chunked protocol.
+        # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
+        # the chunked protocol.
         try:
             chunk_left = self._get_chunk_left()
         except IncompleteRead:
             return b'' # peek doesn't worry about protocol
         if chunk_left is None:
             return b'' # eof
-        # peek is allowed to return more than requested.  Just request the
-        # entire chunk, and truncate what we get.
+        # peek is allowed to return more than requested.  Just request the entire chunk, and truncate what we get.
         return self.fp.peek(chunk_left)[:chunk_left]
 
     def fileno(self):
         return self.fp.fileno()
 
     def getheader(self, name, default=None):
-        '''Returns the value of the header matching *name*.
+        """Returns the value of the header matching *name*.
 
-        If there are multiple matching headers, the values are
-        combined into a single string separated by commas and spaces.
+        If there are multiple matching headers, the values are combined into a single string separated by commas and
+        spaces.
 
-        If no matching header is found, returns *default* or None if
-        the *default* is not specified.
+        If no matching header is found, returns *default* or None if the *default* is not specified.
 
         If the headers are unknown, raises http.client.ResponseNotReady.
+        """
 
-        '''
         if self.headers is None:
             raise ResponseNotReady()
         headers = self.headers.get_all(name) or default
@@ -688,6 +666,7 @@ class HTTPResponse(io.BufferedIOBase):
 
     def getheaders(self):
         """Return list of (header, value) tuples."""
+
         if self.headers is None:
             raise ResponseNotReady()
         return list(self.headers.items())
@@ -700,46 +679,39 @@ class HTTPResponse(io.BufferedIOBase):
     # For compatibility with old-style urllib responses.
 
     def info(self):
-        '''Returns an instance of the class mimetools.Message containing
-        meta-information associated with the URL.
+        """
+        Returns an instance of the class mimetools.Message containing meta-information associated with the URL.
 
-        When the method is HTTP, these headers are those returned by
-        the server at the head of the retrieved HTML page (including
-        Content-Length and Content-Type).
+        When the method is HTTP, these headers are those returned by the server at the head of the retrieved HTML page
+        (including Content-Length and Content-Type).
 
-        When the method is FTP, a Content-Length header will be
-        present if (as is now usual) the server passed back a file
-        length in response to the FTP retrieval request. A
-        Content-Type header will be present if the MIME type can be
-        guessed.
+        When the method is FTP, a Content-Length header will be present if (as is now usual) the server passed back a
+        file length in response to the FTP retrieval request. A Content-Type header will be present if the MIME type can
+        be guessed.
 
-        When the method is local-file, returned headers will include
-        a Date representing the file's last-modified time, a
-        Content-Length giving file size, and a Content-Type
-        containing a guess at the file's type. See also the
+        When the method is local-file, returned headers will include a Date representing the file's last-modified time,
+        a Content-Length giving file size, and a Content-Type containing a guess at the file's type. See also the
         description of the mimetools module.
+        """
 
-        '''
         return self.headers
 
     def geturl(self):
-        '''Return the real URL of the page.
+        """
+        Return the real URL of the page.
 
-        In some cases, the HTTP server redirects a client to another
-        URL. The urlopen() function handles this transparently, but in
-        some cases the caller needs to know which URL the client was
-        redirected to. The geturl() method can be used to get at this
-        redirected URL.
+        In some cases, the HTTP server redirects a client to another URL. The urlopen() function handles this
+        transparently, but in some cases the caller needs to know which URL the client was redirected to. The geturl()
+        method can be used to get at this redirected URL.
+        """
 
-        '''
         return self.url
 
     def getcode(self):
-        '''Return the HTTP status code that was sent with the response,
-        or None if the URL is not an HTTP URL.
+        """Return the HTTP status code that was sent with the response, or None if the URL is not an HTTP URL."""
 
-        '''
         return self.status
+
 
 class HttpConnection:
     """
