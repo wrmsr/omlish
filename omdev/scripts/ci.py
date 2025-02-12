@@ -3458,6 +3458,12 @@ class SubprocessRunnable(abc.ABC, ta.Generic[T]):
 
 ########################################
 # ../cache.py
+"""
+TODO:
+ - os.mtime, Config.purge_after_days
+  - nice to have: get a total set of might-need keys ahead of time and keep those
+  - okay: just purge after running
+"""
 
 
 CacheVersion = ta.NewType('CacheVersion', int)
@@ -3513,6 +3519,10 @@ class DirectoryFileCache(FileCache):
 
         no_create: bool = False
         no_purge: bool = False
+
+        no_update_mtime: bool = False
+
+        # purge_after_days: ta.Optional[int] = None
 
     def __init__(
             self,
@@ -3595,6 +3605,13 @@ class DirectoryFileCache(FileCache):
         cache_file_path = self.get_cache_file_path(key)
         if not os.path.exists(cache_file_path):
             return None
+
+        if not self._config.no_update_mtime:
+            stat_info = os.stat(cache_file_path)
+            current_atime = stat_info.st_atime
+            current_mtime = time.time()
+            os.utime(cache_file_path, (current_atime, current_mtime))
+
         return cache_file_path
 
     async def put_file(
