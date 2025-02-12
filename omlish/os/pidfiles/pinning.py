@@ -1,6 +1,10 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 """
+Notes:
+ - still racy as to if it's a different actual process as initial check, just with same pid, but due to 'identity' /
+   semantic meaning of the named pidfile the processes are considered equivalent
+
 Strategies:
  - linux
   - get pid of owner (lslocks or F_GETLK)

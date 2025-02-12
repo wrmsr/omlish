@@ -19,7 +19,7 @@ class FcntlLockData:
 
     #
 
-    _STRUCT_PACK_BY_PLATFORM: ta.ClassVar[ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]] = {
+    _STRUCT_PACKING_BY_PLATFORM: ta.ClassVar[ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]] = {
         'linux': [
             ('type', 'h'),
             ('whence', 'h'),
@@ -36,24 +36,23 @@ class FcntlLockData:
         ],
     }
 
-    def pack(self) -> bytes:
+    @classmethod
+    def _struct_packing(cls) -> ta.Sequence[ta.Tuple[str, str]]:
         try:
-            pack = self._STRUCT_PACK_BY_PLATFORM[sys.platform]
+            return cls._STRUCT_PACKING_BY_PLATFORM[sys.platform]
         except KeyError:
             raise OSError from None
 
-        fmt = ''.join(f for _, f in pack)
-        tup = [getattr(self, a) for a, _ in pack]
+    def pack(self) -> bytes:
+        packing = self._struct_packing()
+        fmt = ''.join(f for _, f in packing)
+        tup = [getattr(self, a) for a, _ in packing]
         return struct.pack(fmt, *tup)
 
     @classmethod
     def unpack(cls, data: bytes) -> 'FcntlLockData':
-        try:
-            pack = cls._STRUCT_PACK_BY_PLATFORM[sys.platform]
-        except KeyError:
-            raise OSError from None
-
-        fmt = ''.join(f for _, f in pack)
+        packing = cls._struct_packing()
+        fmt = ''.join(f for _, f in packing)
         tup = struct.unpack(fmt, data)
-        kw = {a: v for (a, _), v in zip(pack, tup)}
+        kw = {a: v for (a, _), v in zip(packing, tup)}
         return FcntlLockData(**kw)

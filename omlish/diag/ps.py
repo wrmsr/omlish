@@ -12,6 +12,9 @@ from ..subprocesses.run import SubprocessRunOutput
 from ..subprocesses.sync import subprocesses
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class PsItem:
     pid: int
@@ -43,6 +46,9 @@ class PsCommand(SubprocessRunnable):
         )
 
 
+##
+
+
 def get_ps_item(pid: int, timeout: ta.Optional[Timeout] = None) -> PsItem:
     return PsCommand(pid).run(subprocesses, timeout=timeout)
 
@@ -57,6 +63,9 @@ def get_ps_lineage(pid: int, timeout: ta.Optional[Timeout] = None) -> ta.List[Ps
         ret.append(cur)
         pid = cur.ppid
     return ret
+
+
+##
 
 
 if __name__ == '__main__':

@@ -2,9 +2,6 @@
 # @omlish-lite
 """
 https://man7.org/linux/man-pages/man8/lsof.8.html
-
-Included in the process set are fields that identify the command, the process group IDentification (PGID) number, the
-task (thread) ID (TID), and the user ID (UID) number or login name.
 """
 import dataclasses as dc
 import enum
@@ -215,8 +212,7 @@ LsofItem._DEFAULT_PREFIXES = ''.join(LsofItem._FIELDS_BY_PREFIX)  # noqa
 
 
 @dc.dataclass(frozen=True)
-class \
-        LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
+class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
     pid: ta.Optional[int] = None
     file: ta.Optional[str] = None
 
@@ -240,6 +236,9 @@ class \
     def handle_run_output(self, output: SubprocessRunOutput) -> ta.List[LsofItem]:
         lines = [s for l in check.not_none(output.stdout).decode().splitlines() if (s := l.strip())]
         return LsofItem.from_prefix_lines(lines)
+
+
+##
 
 
 if __name__ == '__main__':

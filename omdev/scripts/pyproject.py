@@ -2648,7 +2648,7 @@ class Timeout(abc.ABC):
 
     @classmethod
     def _now(cls) -> float:
-        return time.time()
+        return time.monotonic()
 
     #
 
