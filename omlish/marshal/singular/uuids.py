@@ -1,14 +1,14 @@
 import re
 import uuid
 
-from .. import check
-from .base import MarshalContext
-from .base import Marshaler
-from .base import TypeMapMarshalerFactory
-from .base import TypeMapUnmarshalerFactory
-from .base import UnmarshalContext
-from .base import Unmarshaler
-from .values import Value
+from ... import check
+from ..base import MarshalContext
+from ..base import Marshaler
+from ..base import TypeMapMarshalerFactory
+from ..base import TypeMapUnmarshalerFactory
+from ..base import UnmarshalContext
+from ..base import Unmarshaler
+from ..values import Value
 
 
 PATTERN = re.compile(r'([0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12})|([0-9A-Fa-f]{32})')

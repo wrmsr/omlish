@@ -1,23 +1,23 @@
 import typing as ta
 
-from .. import cached
-from .. import check
-from .. import dataclasses as dc
-from .. import lang
-from .. import reflect as rfl
-from ..funcs import match as mfs
-from .base import MarshalContext
-from .base import Marshaler
-from .base import MarshalerFactory
-from .base import UnmarshalContext
-from .base import Unmarshaler
-from .base import UnmarshalerFactory
-from .polymorphism import Impls
-from .polymorphism import TypeTagging
-from .polymorphism import WrapperTypeTagging
-from .polymorphism import make_polymorphism_marshaler
-from .polymorphism import make_polymorphism_unmarshaler
-from .values import Value
+from ... import cached
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
+from ... import reflect as rfl
+from ...funcs import match as mfs
+from ..base import MarshalContext
+from ..base import Marshaler
+from ..base import MarshalerFactory
+from ..base import UnmarshalContext
+from ..base import Unmarshaler
+from ..base import UnmarshalerFactory
+from ..values import Value
+from .metadata import Impls
+from .metadata import TypeTagging
+from .metadata import WrapperTypeTagging
+from .marshal import make_polymorphism_marshaler
+from .unmarshal import make_polymorphism_unmarshaler
 
 
 ##
