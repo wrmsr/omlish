@@ -333,7 +333,7 @@ class HTTPResponse(io.BufferedIOBase):
         if not self.will_close and not self.chunked and self.length is None:
             self.will_close = True
 
-    def _check_close(self) -> bool
+    def _check_close(self) -> bool:
         conn = self.headers.get('connection')
         if self.version == 11:
             # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
@@ -398,7 +398,7 @@ class HTTPResponse(io.BufferedIOBase):
         #          meaningful.
         return self.fp is None
 
-    def read(self, amt=None):
+    def read(self, amt: int | None = None) -> bytes:
         """Read and return the response body, or up to the next amt bytes."""
 
         if self.fp is None:
@@ -447,7 +447,7 @@ class HTTPResponse(io.BufferedIOBase):
             self._close_conn()        # we read everything
             return s
 
-    def readinto(self, b):
+    def readinto(self, b: bytearray) -> int:
         """Read up to len(b) bytes into bytearray b and return the number of bytes read."""
 
         if self.fp is None:
@@ -481,7 +481,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return n
 
-    def _read_next_chunk_size(self):
+    def _read_next_chunk_size(self) -> int:
         # Read the next chunk size from the file
         line = self.fp.readline(_MAX_LINE + 1)
         if len(line) > _MAX_LINE:
@@ -498,7 +498,7 @@ class HTTPResponse(io.BufferedIOBase):
             self._close_conn()
             raise
 
-    def _read_and_discard_trailer(self):
+    def _read_and_discard_trailer(self) -> None:
         # read and discard trailer up to the CRLF terminator
         ### note: we shouldn't have any trailers!
         while True:
@@ -541,7 +541,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return chunk_left
 
-    def _read_chunked(self, amt=None):
+    def _read_chunked(self, amt: int | None = None) -> bytes:
         check.not_equal(self.chunked, _UNKNOWN)
         value = []
         try:
@@ -561,7 +561,7 @@ class HTTPResponse(io.BufferedIOBase):
         except IncompleteRead as exc:
             raise IncompleteRead(b''.join(value)) from exc
 
-    def _readinto_chunked(self, b):
+    def _readinto_chunked(self, b: bytearray) -> int:
         check.not_equal(self.chunked, _UNKNOWN)
         total_bytes = 0
         mvb = memoryview(b)
@@ -585,7 +585,7 @@ class HTTPResponse(io.BufferedIOBase):
         except IncompleteRead:
             raise IncompleteRead(bytes(b[0:total_bytes])) from None
 
-    def _safe_read(self, amt):
+    def _safe_read(self, amt: int) -> bytes:
         """
         Read the number of bytes requested.
 
@@ -598,7 +598,7 @@ class HTTPResponse(io.BufferedIOBase):
             raise IncompleteRead(data, amt-len(data))
         return data
 
-    def _safe_readinto(self, b):
+    def _safe_readinto(self, b: bytearray) -> int:
         """Same as _safe_read, but for reading into a buffer."""
 
         amt = len(b)
@@ -607,7 +607,7 @@ class HTTPResponse(io.BufferedIOBase):
             raise IncompleteRead(bytes(b[:n]), amt-n)
         return n
 
-    def read1(self, n=-1):
+    def read1(self, n: int = -1) -> bytes:
         """Read with at most one underlying system call.  If at least one byte is buffered, return that instead."""
 
         if self.fp is None or self._method == 'HEAD':
@@ -631,7 +631,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return result
 
-    def peek(self, n=-1):
+    def peek(self, n: int = -1) -> bytes:
         # Having this enables IOBase.readline() to read more than one byte at a time
         if self.fp is None or self._method == 'HEAD':
             return b''
@@ -641,7 +641,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return self.fp.peek(n)
 
-    def readline(self, limit=-1):
+    def readline(self, limit: int = -1) -> bytes:
         if self.fp is None or self._method == 'HEAD':
             return b''
 
@@ -664,7 +664,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return result
 
-    def _read1_chunked(self, n):
+    def _read1_chunked(self, n: int) -> bytes:
         # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
         # the chunked protocol.
         chunk_left = self._get_chunk_left()
@@ -681,7 +681,7 @@ class HTTPResponse(io.BufferedIOBase):
 
         return read
 
-    def _peek_chunked(self, n):
+    def _peek_chunked(self, n: int) -> bytes:
         # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
         # the chunked protocol.
         try:
@@ -695,7 +695,7 @@ class HTTPResponse(io.BufferedIOBase):
         # peek is allowed to return more than requested.  Just request the entire chunk, and truncate what we get.
         return self.fp.peek(chunk_left)[:chunk_left]
 
-    def fileno(self):
+    def fileno(self) -> int:
         return self.fp.fileno()
 
     def getheader(self, name, default=None):
@@ -730,7 +730,7 @@ class HTTPResponse(io.BufferedIOBase):
 
     # We override IOBase.__iter__ so that it doesn't check for closed-ness
 
-    def __iter__(self):
+    def __iter__(self) -> 'HTTPResponse':
         return self
 
     # For compatibility with old-style urllib responses.
