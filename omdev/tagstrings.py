@@ -21,7 +21,10 @@ TAG_STRING_VALUE_TYPES: ta.Tuple = (
 )
 
 
-TAG_STRING_BOOL_STR_MAP: ta.Mapping[str, bool] = {'true': True, 'false': False}
+TAG_STRING_BOOL_STR_MAP: ta.Mapping[str, bool] = {
+    'true': True,
+    'false': False,
+}
 
 
 def check_tag_string_string(s: str) -> str:
@@ -31,7 +34,9 @@ def check_tag_string_string(s: str) -> str:
     return s
 
 
-def build_hierarchy_tag_string_values(m: ta.Mapping[str, ta.Any]) -> ta.FrozenSet[HierarchyTagStringValue]:
+def build_hierarchy_tag_string_values(
+        m: ta.Mapping[str, ta.Any],
+) -> ta.FrozenSet[HierarchyTagStringValue]:
     def rec(c):
         if isinstance(c, str):
             yield (c,)
@@ -98,7 +103,10 @@ class TagString(ta.Generic[TagStringValueT]):
         return cls(
             name=name,
             type=bool,  # type: ignore
-            valid_values=frozenset(valid_values) if valid_values is not None else None,  # type: ignore
+            valid_values=(
+                frozenset(valid_values)  # type: ignore
+                if valid_values is not None else None
+            ),
             **kwargs,
         )
 
@@ -112,7 +120,10 @@ class TagString(ta.Generic[TagStringValueT]):
         return cls(
             name=name,
             type=str,  # type: ignore
-            valid_values=frozenset(check.not_isinstance(valid_values, str)) if valid_values is not None else None,  # type: ignore  # noqa
+            valid_values=(
+                frozenset(check.not_isinstance(valid_values, str))  # type: ignore
+                if valid_values is not None else None
+            ),
             **kwargs,
         )
 
@@ -126,7 +137,10 @@ class TagString(ta.Generic[TagStringValueT]):
         return cls(
             name=name,
             type=HierarchyTagStringValue,  # type: ignore
-            valid_values=build_hierarchy_tag_string_values(valid_values) if valid_values is not None else None,  # type: ignore  # noqa
+            valid_values=(
+                build_hierarchy_tag_string_values(valid_values)  # type: ignore
+                if valid_values is not None else None
+            ),
             **kwargs,
         )
 

@@ -37,7 +37,7 @@ all = [
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
-    'wheel ~= 0.44',
+    'wheel ~= 0.45',
 ]
 black = [
     'black ~= 25.1',
@@ -64,7 +64,7 @@ qr = [
     'segno ~= 1.6',
 ]
 wheel = [
-    'wheel ~= 0.44',
+    'wheel ~= 0.45',
 ]
 
 [project.entry-points]
