@@ -45,7 +45,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'duckduckgo-search ~= 6.3',
+            'duckduckgo-search ~= 7.3',
         ],
 
         'tinygrad': [

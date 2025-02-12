@@ -38,7 +38,7 @@ all = [
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 11.0',
-    'duckduckgo-search ~= 6.3',
+    'duckduckgo-search ~= 7.3',
     'tinygrad ~= 0.9',
     'torch ~= 2.6',
     'mwparserfromhell ~= 0.6',
@@ -68,7 +68,7 @@ pillow = [
     'pillow ~= 11.0',
 ]
 search = [
-    'duckduckgo-search ~= 6.3',
+    'duckduckgo-search ~= 7.3',
 ]
 tinygrad = [
     'tinygrad ~= 0.9',
