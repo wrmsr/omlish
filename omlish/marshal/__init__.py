@@ -42,7 +42,10 @@ from .forbidden import (  # noqa
 from .global_ import (  # noqa
     GLOBAL_REGISTRY,
 
+    global_marshaler_factory,
     marshal,
+
+    global_unmarshaler_factory,
     unmarshal,
 )
 

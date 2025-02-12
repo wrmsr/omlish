@@ -12,7 +12,7 @@ class AppMarker(lang.Abstract):
     pass
 
 
-APP_MARKERS_ATTR = '__app_markers__'
+APP_MARKERS_ATTR = '__' + __name__.replace('.', '_') + '__'
 
 
 def append_app_marker(obj: T, *markers: AppMarker) -> T:

@@ -148,10 +148,15 @@ class ObjectMarshaler(Marshaler):
 
     specials: ObjectSpecials = ObjectSpecials()
 
+    attr_getter: ta.Callable[[ta.Any, str], ta.Any] | None = None
+
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        if (attr_getter := self.attr_getter) is None:
+            attr_getter = getattr
+
         ret: dict[str, ta.Any] = {}
         for fi, m in self.fields:
-            v = getattr(o, fi.name)
+            v = attr_getter(o, fi.name)
 
             if fi.options.omit_if is not None and fi.options.omit_if(v):
                 continue
@@ -173,13 +178,30 @@ class ObjectMarshaler(Marshaler):
                 ret[mn] = mv
 
         if self.specials.unknown is not None:
-            if (ukf := getattr(o, self.specials.unknown)):
+            if (ukf := attr_getter(o, self.specials.unknown)):
                 if (dks := set(ret) & set(ukf)):
                     raise KeyError(f'Unknown field keys duplicate fields: {dks!r}')
 
             ret.update(ukf)  # FIXME: marshal?
 
         return ret
+
+    @classmethod
+    def make(
+            cls,
+            ctx: MarshalContext,
+            fis: FieldInfos,
+            **kwargs: ta.Any,
+    ) -> Marshaler:
+        fields = [
+            (fi, ctx.make(fi.type))
+            for fi in fis
+        ]
+
+        return cls(
+            fields,
+            **kwargs,
+        )
 
 
 @dc.dataclass(frozen=True)
@@ -196,15 +218,11 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
 
-        flds = FieldInfos(self.dct[ty])
+        fis = FieldInfos(self.dct[ty])
 
-        fields = [
-            (fi, ctx.make(fi.type))
-            for fi in flds
-        ]
-
-        return ObjectMarshaler(
-            fields,
+        return ObjectMarshaler.make(
+            ctx,
+            fis,
             specials=self.specials,
         )
 
@@ -214,7 +232,7 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 
 @dc.dataclass(frozen=True)
 class ObjectUnmarshaler(Unmarshaler):
-    cls: type
+    factory: ta.Callable
     fields_by_unmarshal_name: ta.Mapping[str, tuple[FieldInfo, Unmarshaler]]
 
     _: dc.KW_ONLY
@@ -278,7 +296,34 @@ class ObjectUnmarshaler(Unmarshaler):
             for dk, dv in self.defaults.items():
                 kw.setdefault(dk, dv)
 
-        return self.cls(**kw)
+        return self.factory(**kw)
+
+    @classmethod
+    def make(
+            cls,
+            ctx: UnmarshalContext,
+            factory: ta.Callable,
+            fis: FieldInfos,
+            **kwargs: ta.Any,
+    ) -> Unmarshaler:
+        fields_by_unmarshal_name = {
+            n: (fi, ctx.make(fi.type))
+            for fi in fis
+            for n in fi.unmarshal_names
+        }
+
+        defaults = {
+            fi.name: fi.options.default.must()
+            for fi in fis
+            if fi.options.default.present
+        }
+
+        return cls(
+            factory,
+            fields_by_unmarshal_name,
+            defaults=defaults,
+            **kwargs,
+        )
 
 
 @dc.dataclass(frozen=True)
@@ -295,23 +340,11 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         ty = check.isinstance(rty, type)
 
-        flds = FieldInfos(self.dct[ty])
+        fis = FieldInfos(self.dct[ty])
 
-        fields_by_unmarshal_name = {
-            n: (fi, ctx.make(fi.type))
-            for fi in flds
-            for n in fi.unmarshal_names
-        }
-
-        defaults = {
-            fi.name: fi.options.default.must()
-            for fi in flds
-            if fi.options.default.present
-        }
-
-        return ObjectUnmarshaler(
+        return ObjectUnmarshaler.make(
+            ctx,
             ty,
-            fields_by_unmarshal_name,
+            fis,
             specials=self.specials,
-            defaults=defaults,
         )
