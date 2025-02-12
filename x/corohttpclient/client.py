@@ -210,14 +210,14 @@ class HTTPResponse(io.BufferedIOBase):
         self.headers = self.msg = None
 
         # from the Status-Line of the response
-        self.version = _UNKNOWN # HTTP-Version
-        self.status = _UNKNOWN  # Status-Code
-        self.reason = _UNKNOWN  # Reason-Phrase
+        self.version = _UNKNOWN  # HTTP-Version
+        self.status = _UNKNOWN   # Status-Code
+        self.reason = _UNKNOWN   # Reason-Phrase
 
-        self.chunked = _UNKNOWN         # is "chunked" being used?
-        self.chunk_left = _UNKNOWN      # bytes left to read in current chunk
-        self.length = _UNKNOWN          # number of bytes left in response
-        self.will_close = _UNKNOWN      # conn will close at end of response
+        self.chunked = _UNKNOWN     # is "chunked" being used?
+        self.chunk_left = _UNKNOWN  # bytes left to read in current chunk
+        self.length = _UNKNOWN      # number of bytes left in response
+        self.will_close = _UNKNOWN  # conn will close at end of response
 
     def _read_status(self):
         line = str(self.fp.readline(_MAX_LINE + 1), 'iso-8859-1')
@@ -401,27 +401,35 @@ class HTTPResponse(io.BufferedIOBase):
             if self.length is not None and amt > self.length:
                 # clip the read to the "end of response"
                 amt = self.length
+
             s = self.fp.read(amt)
+
             if not s and amt:
                 # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
                 # compatibility.
                 self._close_conn()
+
             elif self.length is not None:
                 self.length -= len(s)
                 if not self.length:
                     self._close_conn()
+
             return s
+
         else:
             # Amount is not given (unbounded read) so we must check self.length
             if self.length is None:
                 s = self.fp.read()
+
             else:
                 try:
                     s = self._safe_read(self.length)
                 except IncompleteRead:
                     self._close_conn()
                     raise
+
                 self.length = 0
+
             self._close_conn()        # we read everything
             return s
 
@@ -446,14 +454,17 @@ class HTTPResponse(io.BufferedIOBase):
         # we do not use _safe_read() here because this may be a .will_close connection, and the user is reading more
         # bytes than will be provided (for example, reading in 1k chunks)
         n = self.fp.readinto(b)
+
         if not n and b:
             # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
             # compatibility.
             self._close_conn()
+
         elif self.length is not None:
             self.length -= n
             if not self.length:
                 self._close_conn()
+
         return n
 
     def _read_next_chunk_size(self):
@@ -461,9 +472,11 @@ class HTTPResponse(io.BufferedIOBase):
         line = self.fp.readline(_MAX_LINE + 1)
         if len(line) > _MAX_LINE:
             raise LineTooLong('chunk size')
+
         i = line.find(b';')
         if i >= 0:
             line = line[:i] # strip chunk-extensions
+
         try:
             return int(line, 16)
         except ValueError:
@@ -480,8 +493,7 @@ class HTTPResponse(io.BufferedIOBase):
                 raise LineTooLong('trailer line')
 
             if not line:
-                # a vanishingly small number of sites EOF without
-                # sending the trailer
+                # a vanishingly small number of sites EOF without sending the trailer
                 break
 
             if line in (b'\r\n', b'\n', b''):
@@ -505,8 +517,10 @@ class HTTPResponse(io.BufferedIOBase):
             if chunk_left == 0:
                 # last chunk: 1*('0') [ chunk-extension ] CRLF
                 self._read_and_discard_trailer()
+
                 # we read everything; close the 'file'
                 self._close_conn()
+
                 chunk_left = None
 
             self.chunk_left = chunk_left
