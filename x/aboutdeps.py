@@ -9,6 +9,7 @@ import tomllib
 
 from omdev.packaging.names import canonicalize_name
 from omdev.packaging.requires import parse_requirement
+from omdev.packaging.specifiers import Specifier
 
 
 def _main() -> None:
@@ -36,7 +37,12 @@ def _main() -> None:
         pkg_opt_deps = {d for ds in pkg_prj.optional_dependencies.values() for d in ds}
         for opt_dep in sorted(pkg_opt_deps):
             opt_req = parse_requirement(opt_dep)
-            print(opt_req)
+            opt_cn = canonicalize_name(opt_req.name, validate=True)
+            opt_dist = dist_dct[opt_cn]
+            opt_spec = Specifier(opt_req.specifier)
+
+            print(opt_spec)
+            print(opt_dist)
 
         print()
 
