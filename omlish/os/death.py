@@ -85,6 +85,13 @@ class BaseDeathpact(Deathpact, abc.ABC):
 
 
 class PipeDeathpact(BaseDeathpact):
+    """
+    NOTE: Closes write side in children lazily on poll - does not proactively close write sides on fork. This means
+          parents which fork children into codepaths unaware of live PipeDeathpacts will leave write sides open in those
+          children, potentially leading to zombies (if those children outlast the parent). Use ForkAwarePipeDeathpact to
+          handle such cases.
+    """
+
     _COOKIE: ta.ClassVar[bytes] = os.urandom(16)
 
     def __init__(self, **kwargs: ta.Any) -> None:
@@ -167,7 +174,7 @@ class PipeDeathpact(BaseDeathpact):
 class ForkAwarePipeDeathpact(PipeDeathpact):
     """
     TODO:
-     - audit thread-safety. is WeakSet threadsafe? probably not..
+     - Despite no correct way to do threads+forks, still audit thread-safety. Is WeakSet threadsafe? Probably not..
     """
 
     _PARENTS: ta.ClassVar[ta.MutableSet['ForkAwarePipeDeathpact']] = weakref.WeakSet()
