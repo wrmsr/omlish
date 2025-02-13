@@ -8,7 +8,7 @@ import weakref
 
 from .. import check
 from .forkhooks import ForkHook
-from .forkhooks import get_fork_depth
+from .forkhooks import ProcessOriginTracker
 
 
 ##
@@ -33,7 +33,7 @@ class BaseDeathpact(Deathpact, abc.ABC):
             self,
             *,
             interval_s: float = .5,
-            signal: int | None = signal.SIGTERM,
+            signal: int | None = signal.SIGTERM,  # noqa
             output: ta.Literal['stdout', 'stderr'] | None = 'stderr',
             on_die: ta.Callable[[], None] | None = None,
     ) -> None:
@@ -84,6 +84,19 @@ class BaseDeathpact(Deathpact, abc.ABC):
 ##
 
 
+class HeartbeatFileDeathpact(BaseDeathpact):
+    def __init__(self, path: str, **kwargs: ta.Any) -> None:
+        super().__init__(**kwargs)
+
+        self._path = path
+
+    def should_die(self) -> bool:
+        raise NotImplementedError
+
+
+##
+
+
 class PipeDeathpact(BaseDeathpact):
     """
     NOTE: Closes write side in children lazily on poll - does not proactively close write sides on fork. This means
@@ -92,16 +105,13 @@ class PipeDeathpact(BaseDeathpact):
           handle such cases.
     """
 
-    _COOKIE: ta.ClassVar[bytes] = os.urandom(16)
-
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
         self._rfd: int | None = None
         self._wfd: int | None = None
 
-        self._cookie: bytes | None = self._COOKIE
-        self._fork_depth: int | None = get_fork_depth()
+        self._process_origin = ProcessOriginTracker()
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(rfd={self._rfd}, wfd={self._wfd})'
@@ -111,7 +121,7 @@ class PipeDeathpact(BaseDeathpact):
         return check.not_none(self._rfd)
 
     def is_parent(self) -> bool:
-        return (self._COOKIE, get_fork_depth()) == (self._cookie, self._fork_depth)
+        return self._process_origin.is_in_origin_process()
 
     #
 
@@ -125,18 +135,24 @@ class PipeDeathpact(BaseDeathpact):
 
         return self
 
+    def close(self) -> None:
+        if self._rfd is not None:
+            os.close(self._rfd)
+            self._rfd = None
+
+        if self._wfd is not None:
+            if self.is_parent():
+                os.close(check.not_none(self._wfd))
+            self._wfd = None
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def _close_wfd_if_not_parent(self) -> None:
         if self._wfd is not None:
             if not self.is_parent():
                 os.close(check.not_none(self._wfd))
             self._wfd = None
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._rfd is not None:
-            os.close(self._rfd)
-            self._rfd = None
-
-        self._close_wfd_if_not_parent()
 
     #
 
@@ -145,8 +161,6 @@ class PipeDeathpact(BaseDeathpact):
             **self.__dict__,
             **dict(
                 _wfd=None,
-                _cookie=None,
-                _fork_depth=None,
             ),
         }
 

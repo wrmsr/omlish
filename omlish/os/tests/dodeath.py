@@ -45,6 +45,15 @@ def _main() -> None:
 
                     time.sleep(1.)
 
+                print(f'parent process {os.getpid()} closing pact')
+                pdp.close()
+
+                for i in range(3, 0, -1):
+                    print(f'parent process {os.getpid()} sleeping {i}', file=sys.stderr)
+                    print_pdp_infp()
+
+                    time.sleep(1.)
+
     finally:
         print(f'process {os.getpid()} exiting', file=sys.stderr)
 

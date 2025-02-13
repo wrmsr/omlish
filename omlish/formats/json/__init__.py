@@ -1,4 +1,9 @@
 # ruff: noqa: I001
+"""
+TODO:
+ - delimited.py / jsonl
+  - + record separators ala https://en.wikipedia.org/wiki/JSON_streaming
+"""
 import typing as _ta
 
 from ... import lang as _lang

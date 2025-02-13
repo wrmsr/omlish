@@ -1,9 +1,5 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
-"""
-TODO:
- - ForkHook base class? all classmethods? prevents pickling
-"""
 import abc
 import os
 import threading
@@ -29,31 +25,6 @@ class _ForkHookManager:
 
     #
 
-    _installed: ta.ClassVar[bool] = False
-
-    @classmethod
-    def _install(cls) -> bool:
-        if cls._installed:
-            return False
-
-        check.state(not cls._installed)
-
-        os.register_at_fork(
-            before=cls._before_fork,
-            after_in_parent=cls._after_fork_in_parent,
-            after_in_child=cls._after_fork_in_child,
-        )
-
-        cls._installed = True
-        return True
-
-    @classmethod
-    def install(cls) -> bool:
-        with cls._lock:
-            return cls._install()
-
-    #
-
     class Hook(ta.NamedTuple):
         key: ta.Any
         priority: int
@@ -74,8 +45,8 @@ class _ForkHookManager:
     def _rebuild_hook_collections(cls) -> None:
         cls._hook_keys = frozenset(cls._hooks_by_key)
 
-        # Uses on dict order preservation for insertion-order of hooks of equal priority (although that shouldn't be
-        # depended upon for usecase correctness.
+        # Uses dict order preservation to retain insertion-order of hooks of equal priority (although that shouldn't be
+        # depended upon for usecase correctness).
         cls._priority_ordered_hooks = sorted(cls._hooks_by_key.values(), key=lambda h: h.priority)
 
     #
@@ -118,6 +89,31 @@ class _ForkHookManager:
             del cls._hooks_by_key[key]
 
             cls._rebuild_hook_collections()
+
+    #
+
+    _installed: ta.ClassVar[bool] = False
+
+    @classmethod
+    def _install(cls) -> bool:
+        if cls._installed:
+            return False
+
+        check.state(not cls._installed)
+
+        os.register_at_fork(
+            before=cls._before_fork,
+            after_in_parent=cls._after_fork_in_parent,
+            after_in_child=cls._after_fork_in_child,
+        )
+
+        cls._installed = True
+        return True
+
+    @classmethod
+    def install(cls) -> bool:
+        with cls._lock:
+            return cls._install()
 
     #
 
@@ -213,3 +209,31 @@ class _ForkDepthTracker(ForkHook):
 
 def get_fork_depth() -> int:
     return _ForkDepthTracker.get_fork_depth()
+
+
+##
+
+
+class ProcessOriginTracker:
+    _PROCESS_COOKIE: ta.ClassVar[bytes] = os.urandom(16)
+
+    def __init__(self, **kwargs: ta.Any) -> None:
+        super().__init__(**kwargs)
+
+        self._process_cookie: bytes | None = self._PROCESS_COOKIE
+        self._fork_depth: int | None = get_fork_depth()
+
+    def is_in_origin_process(self) -> bool:
+        return (self._PROCESS_COOKIE, get_fork_depth()) == (self._process_cookie, self._fork_depth)
+
+    def __getstate__(self):
+        return {
+            **self.__dict__,
+            **dict(
+                _cookie=None,
+                _fork_depth=None,
+            ),
+        }
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
