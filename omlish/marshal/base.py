@@ -95,9 +95,9 @@ from .exceptions import UnhandledTypeError
 from .factories import RecursiveTypeFactory
 from .factories import TypeCacheFactory
 from .factories import TypeMapFactory
+from .proxy import _Proxy
 from .registries import Registry
 from .registries import RegistryItem
-from .utils import _Proxy
 from .values import Value
 
 

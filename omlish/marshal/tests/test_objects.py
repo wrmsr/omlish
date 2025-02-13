@@ -7,13 +7,13 @@ from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..global_ import marshal
 from ..global_ import unmarshal
-from ..nop import NOP_MARSHALER_UNMARSHALER
 from ..objects.helpers import update_fields_metadata
 from ..objects.marshal import ObjectMarshaler
 from ..objects.metadata import FieldInfo
 from ..objects.metadata import ObjectSpecials
 from ..objects.unmarshal import ObjectUnmarshaler
 from ..registries import Registry
+from ..trivial.nop import NOP_MARSHALER_UNMARSHALER
 
 
 @dc.dataclass()

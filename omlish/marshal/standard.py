@@ -23,8 +23,6 @@ from .objects.namedtuples import NamedtupleMarshalerFactory
 from .objects.namedtuples import NamedtupleUnmarshalerFactory
 from .polymorphism.unions import PrimitiveUnionMarshalerFactory
 from .polymorphism.unions import PrimitiveUnionUnmarshalerFactory
-from .singular.any import ANY_MARSHALER_FACTORY
-from .singular.any import ANY_UNMARSHALER_FACTORY
 from .singular.base64 import BASE64_MARSHALER_FACTORY
 from .singular.base64 import BASE64_UNMARSHALER_FACTORY
 from .singular.datetimes import DATETIME_MARSHALER_FACTORY
@@ -37,6 +35,8 @@ from .singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from .singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from .singular.uuids import UUID_MARSHALER_FACTORY
 from .singular.uuids import UUID_UNMARSHALER_FACTORY
+from .trivial.any import ANY_MARSHALER_FACTORY
+from .trivial.any import ANY_UNMARSHALER_FACTORY
 
 
 ##
