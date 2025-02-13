@@ -31,7 +31,10 @@ def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
         else:
             return check.isinstance(a, type)
 
-    _, cls = next(iter(ta.get_type_hints(func).items()))
+    # Exclude 'return' to support difficult to handle return types - they are unimportant.
+    # TODO: only get hints for first arg - requires inspection, which requires chopping off `self`, which can be tricky.
+    _, cls = next(iter(rfl.get_filtered_type_hints(func, exclude=['return']).items()))
+
     rty = rfl.type_(cls)
     if isinstance(rty, rfl.Union):
         ret = frozenset(erase(arg) for arg in rty.args)
