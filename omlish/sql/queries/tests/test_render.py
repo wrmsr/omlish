@@ -1,5 +1,6 @@
 from .. import Q
 from ..rendering import render
+from ..rendering2 import StdRenderer as Renderer2
 
 
 def test_render():
@@ -42,3 +43,4 @@ def test_render():
         print(query)
         print(render(query))
         print()
+        print(Renderer2().render(query))

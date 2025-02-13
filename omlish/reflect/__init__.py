@@ -1,5 +1,6 @@
 from .inspect import (  # noqa
     get_annotations,
+    get_filtered_type_hints,
 )
 
 from .ops import (  # noqa

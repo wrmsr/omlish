@@ -17,21 +17,21 @@ PartT = ta.TypeVar('PartT', bound=Part)
 ##
 
 
-def _check_part(o: PartT) -> PartT:
+def check_part(o: PartT) -> PartT:
     if isinstance(o, (str, DataPart)):
         pass
     elif isinstance(o, ta.Sequence):
         for c in o:
-            _check_part(c)
+            check_part(c)
     else:
         raise TypeError(o)
     return o
 
 
-def _check_opt_part(o: PartT | None) -> PartT | None:
+def check_opt_part(o: PartT | None) -> PartT | None:
     if o is None:
         return None
-    return _check_part(o)
+    return check_part(o)
 
 
 ##
@@ -48,8 +48,8 @@ class Wrap(DataPart):
 
 class List(DataPart):
     parts: ta.Sequence[Part | None]
-    delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
-    trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
+    delimiter: str = ','  # FIXME: Part
+    trailer: bool = False
 
 
 class Concat(DataPart):

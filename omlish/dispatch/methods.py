@@ -81,6 +81,10 @@ class Method:
         mro_dct = lang.build_mro_dict(instance_cls, owner_cls)
         seen: ta.Mapping[ta.Any, str] = {}
         for nam, att in mro_dct.items():
+            try:
+                hash(att)
+            except TypeError:
+                continue
             if att in self._impls:
                 try:
                     ex_nam = seen[att]
