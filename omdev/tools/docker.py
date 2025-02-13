@@ -54,10 +54,12 @@ class Cli(ap.Cli):
         alt:
          - nc -U ~/Library/Containers/com.docker.docker/Data/debug-shell.sock
         """
+
         os.execl(
             exe := docker_exe(),
             exe,
             'run',
+            '--rm',
             '--platform', get_local_platform(),
             '--privileged',
             '--pid=host',
@@ -83,6 +85,7 @@ class Cli(ap.Cli):
         - https://github.com/docker/for-mac/issues/5191
         - https://forums.docker.com/t/sys-ptrace-capability-for-linux-amd64/138482/4
         """
+
         os.execl(
             exe := docker_exe(),
             exe,

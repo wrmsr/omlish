@@ -143,8 +143,8 @@ einops==0.8.1
 
 ### infra
 
-google-api-python-client==2.160.0
-google-cloud-compute==1.24.0
+google-api-python-client==2.161.0
+google-cloud-compute==1.25.0
 
 cloudflare==3.1.0  # httpx
 
@@ -179,7 +179,7 @@ mitogen==0.3.22
 
 ##
 
-openai==1.61.1
+openai==1.63.0
 
 trl==0.14.0
 tf-keras==2.17.0  # @omlish-venv !13
@@ -196,9 +196,9 @@ customtkinter==5.2.2
 
 langchain==0.3.18
 langchain-anthropic==0.3.7
-langchain-chroma==0.2.1  # @omlish-venv !13
+langchain-chroma==0.2.2  # @omlish-venv !13
 langchain-community==0.3.17
-langchain-core==0.3.34
+langchain-core==0.3.35
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
@@ -212,7 +212,7 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.2.71
+langgraph==0.2.72
 
 langsmith==0.3.8
 
