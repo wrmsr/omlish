@@ -27,9 +27,9 @@ class BrotliCompression(Compression):
         return brotli.compress(
             d,
             **(dict(mode=self.mode) if self.mode is not None else {}),
-            **(dict(mode=self.quality) if self.quality is not None else {}),
-            **(dict(mode=self.lgwin) if self.lgwin is not None else {}),
-            **(dict(mode=self.lgblock) if self.lgblock is not None else {}),
+            **(dict(quality=self.quality) if self.quality is not None else {}),
+            **(dict(lgwin=self.lgwin) if self.lgwin is not None else {}),
+            **(dict(lgblock=self.lgblock) if self.lgblock is not None else {}),
         )
 
     def decompress(self, d: bytes) -> bytes:

@@ -11,10 +11,6 @@ from .binary import (  # noqa
     BinaryOps,
 )
 
-from .building import (  # noqa
-    StdBuilder,
-)
-
 from .exprs import (  # noqa
     CanExpr,
     CanLiteral,
@@ -74,6 +70,10 @@ from .selects import (  # noqa
     Select,
     SelectBuilder,
     SelectItem,
+)
+
+from .std import (  # noqa
+    StdBuilder,
 )
 
 from .stmts import (  # noqa

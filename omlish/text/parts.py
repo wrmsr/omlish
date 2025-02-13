@@ -3,10 +3,8 @@ import io
 import typing as ta
 
 from .. import check
-from .. import collections as col
 from .. import dataclasses as dc
 from .. import dispatch
-from .. import lang
 
 
 T = ta.TypeVar('T')
@@ -39,34 +37,34 @@ def _check_opt_part(o: PartT | None) -> PartT | None:
 ##
 
 
-class DataPart(dc.Frozen, lang.Abstract):
+class DataPart(dc.Case):
     pass
 
 
-class Wrap(DataPart, lang.Final):
-    part: Part = dc.xfield(coerce=_check_part)
+class Wrap(DataPart):
+    part: Part
     wrapper: tuple[str, str] = ('(', ')')
 
 
-class List(DataPart, lang.Final):
-    parts: ta.Sequence[Part | None] = dc.xfield(coerce=col.seq_of(_check_opt_part))
+class List(DataPart):
+    parts: ta.Sequence[Part | None]
     delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
     trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
 
 
-class Concat(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
+class Concat(DataPart):
+    parts: ta.Sequence[Part]
 
 
-class Block(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
+class Block(DataPart):
+    parts: ta.Sequence[Part]
 
 
-class Section(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
+class Section(DataPart):
+    parts: ta.Sequence[Part]
 
 
-class Meta(DataPart, lang.Final):
+class Meta(DataPart):
     node: ta.Any
 
 
@@ -115,7 +113,6 @@ class PartTransform:
 
 
 class RemoveMetas(PartTransform):
-
     @PartTransform.__call__.register
     def __call__meta(self, part: Meta) -> Part:
         return []
@@ -140,7 +137,6 @@ def _drop_empties(it: ta.Iterable[T]) -> list[T]:
 
 
 class CompactPart(PartTransform):
-
     @PartTransform.__call__.register
     def __call__sequence(self, part: collections.abc.Sequence) -> Part:
         return _drop_empties(self(c) for c in part)
@@ -173,12 +169,19 @@ compact_part = CompactPart()
 
 
 class PartRenderer:
-    def __init__(self, buf: io.StringIO, *, indent: str = '    ') -> None:
+    def __init__(
+            self,
+            buf: io.StringIO,
+            *,
+            indent: int | str = 4,
+    ) -> None:
         super().__init__()
 
         self._buf = buf
 
         self._indents = 0
+        if isinstance(indent, int):
+            indent = ' ' * indent
         self._indent = indent
 
         self._blank_lines = 0
