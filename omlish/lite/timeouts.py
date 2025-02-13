@@ -8,7 +8,7 @@ import time
 import typing as ta
 
 
-TimeoutLike = ta.Union['Timeout', 'Timeout.Default', ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
 
 
 ##
