@@ -13,7 +13,6 @@ V = ta.TypeVar('V')
 
 
 class IdentityWrapper(ta.Generic[T]):
-
     def __init__(self, value: T) -> None:
         super().__init__()
         self._value = value
@@ -36,7 +35,6 @@ class IdentityWrapper(ta.Generic[T]):
 
 
 class IdentityKeyDict(ta.MutableMapping[K, V]):
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
         self._dict: dict[int, tuple[K, V]] = {}
@@ -70,7 +68,6 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
 
 
 class IdentitySet(ta.MutableSet[T]):
-
     def __init__(self, init: ta.Iterable[T] | None = None) -> None:
         super().__init__()
         self._dict: dict[int, T] = {}

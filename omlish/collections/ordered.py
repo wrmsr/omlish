@@ -5,7 +5,6 @@ T = ta.TypeVar('T')
 
 
 class OrderedSet(ta.MutableSet[T]):
-
     def __init__(self, iterable: ta.Iterable[T] | None = None) -> None:
         super().__init__()
         self._dct: dict[T, ta.Any] = {}
@@ -56,7 +55,6 @@ class OrderedSet(ta.MutableSet[T]):
 
 
 class OrderedFrozenSet(ta.FrozenSet[T]):  # noqa
-
     _list: ta.Sequence[T]
 
     def __new__(cls, items: ta.Iterable[T]) -> frozenset[T]:  # type: ignore

@@ -8,7 +8,6 @@ T = ta.TypeVar('T')
 
 
 class IndexedSeq(ta.Sequence[T]):
-
     def __init__(self, it: ta.Iterable[T], *, identity: bool = False) -> None:
         super().__init__()
 
@@ -42,7 +41,6 @@ class IndexedSeq(ta.Sequence[T]):
 
 
 class IndexedSetSeq(ta.Sequence[ta.AbstractSet[T]]):
-
     def __init__(self, it: ta.Iterable[ta.Iterable[T]], *, identity: bool = False) -> None:
         super().__init__()
 

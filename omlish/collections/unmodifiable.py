@@ -13,7 +13,6 @@ class Unmodifiable(lang.Abstract):
 
 
 class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
-
     def __init__(self, target: ta.Sequence[T]) -> None:
         super().__init__()
 
@@ -65,7 +64,6 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
 
 
 class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
-
     def __init__(self, target: ta.AbstractSet[T]) -> None:
         super().__init__()
 

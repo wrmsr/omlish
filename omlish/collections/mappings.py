@@ -49,7 +49,6 @@ def yield_dict_init(*args, **kwargs) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
 
 
 class TypeMap(ta.Generic[T]):
-
     def __init__(self, items: ta.Iterable[T] = ()) -> None:
         super().__init__()
 
@@ -79,7 +78,6 @@ class TypeMap(ta.Generic[T]):
 
 
 class DynamicTypeMap(ta.Generic[V]):
-
     def __init__(self, items: ta.Iterable[V] = (), *, weak: bool = False) -> None:
         super().__init__()
 
@@ -115,7 +113,6 @@ class DynamicTypeMap(ta.Generic[V]):
 
 
 class MissingDict(dict[K, V]):
-
     def __init__(self, missing_fn: ta.Callable[[K], V]) -> None:
         if not callable(missing_fn):
             raise TypeError(missing_fn)

@@ -16,7 +16,6 @@ class Frozen(ta.Hashable, abc.ABC):
 
 
 class FrozenDict(ta.Mapping[K, V], Frozen):
-
     def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':  # noqa
         if len(args) == 1 and Frozen in type(args[0]).__bases__:
             return args[0]
@@ -73,7 +72,6 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
 
 
 class FrozenList(ta.Sequence[T], Frozen):
-
     def __init__(self, it: ta.Iterable[T] | None = None) -> None:
         super().__init__()
 

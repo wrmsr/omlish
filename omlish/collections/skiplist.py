@@ -188,6 +188,5 @@ class SkipList(SortedCollection[T]):
 
 
 class SkipListDict(SortedListDict[K, V]):
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(SkipList(comparator=SortedListDict._item_comparator), *args, **kwargs)  # noqa

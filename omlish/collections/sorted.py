@@ -12,7 +12,6 @@ V = ta.TypeVar('V')
 
 
 class SortedCollection(lang.Abstract, ta.Collection[T]):
-
     Comparator = ta.Callable[[U, U], int]
 
     @staticmethod
@@ -55,7 +54,6 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
 
 
 class SortedMapping(ta.Mapping[K, V]):
-
     @abc.abstractmethod
     def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
         raise NotImplementedError
@@ -78,7 +76,6 @@ class SortedMutableMapping(ta.MutableMapping[K, V], SortedMapping[K, V]):
 
 
 class SortedListDict(SortedMutableMapping[K, V]):
-
     @staticmethod
     def _item_comparator(a: tuple[K, V], b: tuple[K, V]) -> int:
         return SortedCollection.default_comparator(a[0], b[0])
