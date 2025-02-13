@@ -76,38 +76,38 @@ from .ordered import (  # noqa
     OrderedSet,
 )
 
-from .persistent import (  # noqa
+from .persistent.persistent import (  # noqa
     PersistentMap,
 )
 
 if _ta.TYPE_CHECKING:
-    from .skiplist import (  # noqa
+    from .persistent.treapmap import (  # noqa
+        TreapMap,
+        new_treap_map,
+    )
+else:
+    _lang.proxy_init(globals(), '.persistent.treapmap', [
+        'TreapMap',
+        'new_treap_map',
+    ])
+
+if _ta.TYPE_CHECKING:
+    from .sorted.skiplist import (  # noqa
         SkipList,
         SkipListDict,
     )
 else:
-    _lang.proxy_init(globals(), '.skiplist', [
+    _lang.proxy_init(globals(), '.sorted.skiplist', [
         'SkipList',
         'SkipListDict',
     ])
 
-from .sorted import (  # noqa
+from .sorted.sorted import (  # noqa
     SortedCollection,
     SortedListDict,
     SortedMapping,
     SortedMutableMapping,
 )
-
-if _ta.TYPE_CHECKING:
-    from .treapmap import (  # noqa
-        TreapMap,
-        new_treap_map,
-    )
-else:
-    _lang.proxy_init(globals(), '.treapmap', [
-        'TreapMap',
-        'new_treap_map',
-    ])
 
 from .unmodifiable import (  # noqa
     Unmodifiable,

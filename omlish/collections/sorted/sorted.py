@@ -1,8 +1,8 @@
 import abc
 import typing as ta
 
-from .. import lang
-from .mappings import yield_dict_init
+from ... import lang
+from ..mappings import yield_dict_init
 
 
 T = ta.TypeVar('T')

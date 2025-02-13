@@ -1,7 +1,7 @@
 import pytest
 
+from ...utils import key_cmp
 from .. import treapmap as tm
-from ..utils import key_cmp
 
 
 def test_treapmap():
