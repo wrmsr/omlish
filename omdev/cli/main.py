@@ -185,23 +185,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def _build_cmd_set(args: ta.Any) -> CliCmdSet:
     ldr = ManifestLoader.from_entry_point(globals())
 
-    pkgs: list[str] = []
+    #
 
-    def scan_pkg_root(r: str) -> None:
-        r = os.path.expanduser(r)
-        for n in os.listdir(r):
-            if os.path.isdir(p := os.path.join(r, n)) and os.path.exists(os.path.join(p, '__init__.py')):
-                pkgs.append(n)
-
-    if args.cli_pkg_root:
-        for r in args.cli_pkg_root:
-            scan_pkg_root(r)
-
-    else:
-        pkgs.extend(ldr.discover())
-
-        if not pkgs:
-            scan_pkg_root(os.getcwd())
+    pkgs = ldr.scan_or_discover_pkgs(
+        specified_roots=args.cli_pkg_root,
+        fallback_root=os.getcwd(),
+    )
 
     #
 

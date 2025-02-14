@@ -16,7 +16,7 @@
   },
   {
     "module": ".tools.git",
-    "attr": "_MANIFEST",
+    "attr": "_AI_GIT_MESSAGE_GENERATOR_MANIFEST",
     "file": "ommlx/tools/git.py",
     "line": 16,
     "value": {

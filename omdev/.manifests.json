@@ -288,6 +288,22 @@
     }
   },
   {
+    "module": ".tools.git.messages",
+    "attr": "_TIMESTAMP_GIT_MESSAGE_GENERATOR_MANIFEST",
+    "file": "omdev/tools/git/messages.py",
+    "line": 54,
+    "value": {
+      "$.tools.git.messages.GitMessageGeneratorManifest": {
+        "mod_name": "omdev.tools.git.messages",
+        "attr_name": "TimestampGitMessageGenerator",
+        "name": "timestamp",
+        "aliases": [
+          "ts"
+        ]
+      }
+    }
+  },
+  {
     "module": ".tools.importscan",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/importscan.py",

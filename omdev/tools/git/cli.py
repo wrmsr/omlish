@@ -16,6 +16,10 @@ from omlish.logs import all as logs
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
 from .messages import TimestampGitMessageGenerator
+from .messages import load_message_generator_manifests
+
+
+##
 
 
 def rev_parse(rev: str) -> str:
@@ -225,6 +229,13 @@ class Cli(ap.Cli):
         else:
             for d in self.args.dir:
                 run(d)
+
+    #
+
+    @ap.cmd()
+    def list_message_generators(self) -> None:
+        for mgm in load_message_generator_manifests():
+            print(mgm.name)
 
 
 ##

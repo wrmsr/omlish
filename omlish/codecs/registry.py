@@ -105,7 +105,7 @@ def _install_standard_codecs(registry: CodecRegistry) -> None:
 @cached.function
 def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
     ldr = manifest_load.MANIFEST_LOADER
-    pkgs = {__package__.split('.')[0], *ldr.discover()}
+    pkgs = {__package__.split('.')[0], *ldr.discover_pkgs()}
     mns = ldr.load(*pkgs, only=[LazyLoadedCodec])
     return [m.value for m in mns]
 

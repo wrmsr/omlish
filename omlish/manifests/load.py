@@ -9,6 +9,7 @@ import dataclasses as dc
 import importlib.machinery
 import importlib.resources
 import json
+import os.path
 import threading
 import typing as ta
 
@@ -193,7 +194,7 @@ class ManifestLoader:
 
     ENTRY_POINT_GROUP = 'omlish.manifests'
 
-    def discover(self) -> ta.Sequence[str]:
+    def discover_pkgs(self) -> ta.Sequence[str]:
         # This is a fat dep so do it late.
         import importlib.metadata
 
@@ -201,6 +202,35 @@ class ManifestLoader:
             ep.value
             for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)
         ]
+
+    def scan_pkg_root(self, root: str) -> ta.Sequence[str]:
+        pkgs: ta.List[str] = []
+        for n in os.listdir(root):
+            if os.path.isdir(p := os.path.join(root, n)) and os.path.exists(os.path.join(p, '__init__.py')):
+                pkgs.append(n)
+        return pkgs
+
+    def scan_or_discover_pkgs(
+            self,
+            *,
+            specified_roots: ta.Optional[ta.Sequence[str]] = None,
+            fallback_root: ta.Optional[str] = None,
+    ) -> ta.Sequence[str]:
+        pkgs: list[str] = []
+
+        if specified_roots is not None:
+            if isinstance(specified_roots, str):
+                raise TypeError(specified_roots)
+            for r in specified_roots:
+                pkgs.extend(self.scan_pkg_root(r))
+
+        else:
+            pkgs.extend(self.discover_pkgs())
+
+            if not pkgs and fallback_root is not None:
+                pkgs.extend(self.scan_pkg_root(fallback_root))
+
+        return pkgs
 
 
 ##
