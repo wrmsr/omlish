@@ -27,6 +27,7 @@ import typing as ta
 
 from ...diag.lslocks import LslocksCommand
 from ...diag.lsof import LsofCommand
+from ...lite.check import check
 from ...lite.timeouts import Timeout
 from ...lite.timeouts import TimeoutLike
 from ...subprocesses.sync import subprocesses  # noqa
@@ -64,13 +65,21 @@ class PidfilePinner(abc.ABC):
             path: str,
             *,
             timeout: ta.Optional[TimeoutLike] = None,
+            inheritable: bool = False,  # Present to match Pidfile kwargs for convenience, but enforced to be False.
+            **kwargs: ta.Any,
     ) -> ta.Iterator[int]:
+        check.arg(not inheritable)
+
         timeout = Timeout.of(timeout)
 
         if not os.path.isfile(path):
             raise self.NoOwnerError
 
-        with Pidfile(path, inheritable=False) as pf:
+        with Pidfile(
+                path,
+                inheritable=False,
+                **kwargs,
+        ) as pf:
             try:
                 with self._pin_pidfile_owner(pf, timeout) as pid:
                     yield pid

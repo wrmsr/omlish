@@ -76,7 +76,7 @@ class Pidfile:
             fd = os.dup(self._fd_to_dup)
             del self._fd_to_dup
         else:
-            ofl = os.O_RDONLY
+            ofl = os.O_RDWR
             if not self._no_create:
                 ofl |= os.O_CREAT
             fd = os.open(self._path, ofl, 0o600)

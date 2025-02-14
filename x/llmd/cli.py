@@ -37,9 +37,9 @@ class Cli(ap.Cli):
         daemon = Daemon(Daemon.Config(
             target=FnTarget(llm_server_main),
 
-            # spawning=(spawning := ThreadSpawning()),
+            spawning=(spawning := ThreadSpawning()),
             # spawning=(spawning := MultiprocessingSpawning()),
-            spawning=(spawning := ForkSpawning()),
+            # spawning=(spawning := ForkSpawning()),
 
             reparent_process=not isinstance(spawning, ThreadSpawning),
 
