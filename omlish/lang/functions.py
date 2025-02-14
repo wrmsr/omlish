@@ -190,6 +190,16 @@ class Args:
         self.args = args
         self.kwargs = kwargs
 
+    def update(self, *args: ta.Any, **kwargs: ta.Any) -> 'Args':
+        return Args(
+            *self.args,
+            *args,
+            **{
+                **self.kwargs,
+                **kwargs,
+            },
+        )
+
     def __call__(self, fn: ta.Callable[..., T]) -> T:
         return fn(*self.args, **self.kwargs)
 
