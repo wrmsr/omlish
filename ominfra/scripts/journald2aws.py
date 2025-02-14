@@ -1995,8 +1995,25 @@ class Pidfile:
 
     #
 
+    _fd_to_dup: int
+
+    def dup(self) -> 'Pidfile':
+        fd = self._f.fileno()
+        dup = Pidfile(
+            self._path,
+            inheritable=self._inheritable,
+        )
+        dup._fd_to_dup = fd  # noqa
+        return dup
+
+    #
+
     def __enter__(self) -> 'Pidfile':
-        fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
+        if hasattr(self, '_fd_to_dup'):
+            fd = os.dup(self._fd_to_dup)
+            del self._fd_to_dup
+        else:
+            fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
 
         try:
             if self._inheritable:
