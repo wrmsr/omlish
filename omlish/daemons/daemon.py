@@ -48,7 +48,8 @@ log = logging.getLogger(__name__)
 
 
 class Daemon:
-    class Config(dc.Frozen, kw_only=True):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Config:
         target: Target
         spawning: Spawning
 
@@ -58,10 +59,6 @@ class Daemon:
 
         pid_file: str | None = None
 
-        @dc.init
-        def _check_pid_file(self) -> None:
-            check.isinstance(self.pid_file, (str, None))
-
         #
 
         wait: Wait | None = None
@@ -70,6 +67,11 @@ class Daemon:
         wait_sleep_s: float = .1
 
         launched_timeout_s: float = 5.
+
+        #
+
+        def __post_init__(self) -> None:
+            check.isinstance(self.pid_file, (str, None))
 
     def __init__(self, config: Config) -> None:
         super().__init__()

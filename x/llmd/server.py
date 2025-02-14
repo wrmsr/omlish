@@ -30,11 +30,15 @@ class LlmServerHandler(HttpHandler_):
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         prompt = req.data.decode('utf-8')
 
+        log.info(f'Server got prompt: %s', prompt)
+
         resp = self.llm(
             [UserMessage(prompt)],
             Temperature(.1),
         )
         resp_txt = resp.v[0].m.s
+
+        log.info('Server got response: %s', resp_txt)
 
         data = resp_txt.encode('utf-8')
         return HttpHandlerResponse(

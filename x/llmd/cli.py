@@ -34,14 +34,16 @@ class Cli(ap.Cli):
         daemon = Daemon(Daemon.Config(
             target=FnTarget(llm_server_main),
 
-            spawning=ThreadSpawning(),
-            # spawning=MultiprocessingSpawning(),
-            # spawning=ForkSpawning(),
+            # spawning=(spawning := ThreadSpawning()),
+            # spawning=(spawning := MultiprocessingSpawning()),
+            spawning=(spawning := ForkSpawning()),
 
-            # reparent_process=True,
+            reparent_process=not isinstance(spawning, ThreadSpawning),
 
             pid_file=PID_FILE,
             wait=ConnectWait(('localhost', PORT)),
+
+            wait_timeout=60 * 60.,
         ))
 
         daemon.launch()
@@ -51,14 +53,16 @@ class Cli(ap.Cli):
         if daemon.config.pid_file is not None:
             check.state(daemon.is_running())
 
+        log.info('Client continuing')
+
         with urllib.request.urlopen(urllib.request.Request(
             f'http://localhost:{PORT}/',
             data='Hi! How are you?'.encode('utf-8'),
         )) as resp:
-            print(resp.read().decode('utf-8'))
+            log.info('Parent got response: %s', resp.read().decode('utf-8'))
 
         for i in range(10, 0, -1):
-            print(f'parent process {os.getpid()} sleeping {i}', file=sys.stderr)
+            log.info(f'Parent process {os.getpid()} sleeping {i}')
             time.sleep(1.)
 
 
