@@ -55,9 +55,12 @@ class Daemon:
 
         #
 
-        reparent_process: bool = False
-
         pid_file: str | None = None
+
+        #
+
+        reparent_process: bool = False
+        launched_timeout_s: float = 5.
 
         #
 
@@ -65,8 +68,6 @@ class Daemon:
 
         wait_timeout: lang.TimeoutLike = 10.
         wait_sleep_s: float = .1
-
-        launched_timeout_s: float = 5.
 
         #
 
@@ -103,79 +104,6 @@ class Daemon:
 
         with self._non_inheritable_pidfile() as pf:
             return not pf.try_acquire_lock()
-
-    #
-
-    def _inner_launch(
-            self,
-            *,
-            pidfile_manager: ta.ContextManager | None,
-            launched_callback: ta.Callable[[], None] | None = None,
-    ) -> None:
-        try:
-            if self._config.reparent_process:
-                log.info('Reparenting')
-                reparent_process()
-
-            with contextlib.ExitStack() as es:
-                pidfile: Pidfile | None = None  # noqa
-                if pidfile_manager is not None:
-                    pidfile = check.isinstance(es.enter_context(pidfile_manager), Pidfile)
-                    pidfile.write()
-
-                if launched_callback is not None:
-                    launched_callback()
-
-                runner = target_runner_for(self._config.target)
-                runner.run()
-
-        finally:
-            if launched_callback is not None:
-                launched_callback()
-
-    def launch_no_wait(self) -> bool:
-        with contextlib.ExitStack() as es:
-            spawner: Spawner = es.enter_context(spawner_for(self._config.spawning))
-
-            #
-
-            inherit_fds: set[int] = set()
-            launched_event: threading.Event | None = None
-
-            pidfile: Pidfile | None = None  # noqa
-            pidfile_manager: ta.ContextManager | None = None
-
-            if (pid_file := self._config.pid_file) is not None:
-                if not isinstance(spawner, InProcessSpawner):
-                    pidfile = es.enter_context(open_inheritable_pidfile(pid_file))
-                    pidfile_manager = lang.NopContextManager(pidfile)
-
-                else:
-                    check.state(not self._config.reparent_process)
-                    pidfile = es.enter_context(Pidfile(pid_file))
-                    pidfile_manager = pidfile.dup()
-                    launched_event = threading.Event()
-
-                if not pidfile.try_acquire_lock():
-                    return False
-
-                inherit_fds.add(check.isinstance(pidfile.fileno(), int))
-
-            #
-
-            spawner.spawn(Spawn(
-                functools.partial(
-                    self._inner_launch,
-                    pidfile_manager=pidfile_manager,
-                    launched_callback=launched_event.set if launched_event is not None else None,
-                ),
-                inherit_fds=inherit_fds,
-            ))
-
-            if launched_event is not None:
-                check.state(launched_event.wait(timeout=self._config.launched_timeout_s))
-
-            return True
 
     #
 

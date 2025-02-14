@@ -37,7 +37,7 @@ class Project(ProjectBase):
 
             'greenlet ~= 3.1',
 
-            'trio ~= 0.27',
+            'trio ~= 0.29',
             'trio-asyncio ~= 0.15',
         ],
 
@@ -56,7 +56,7 @@ class Project(ProjectBase):
             'asttokens ~= 3.0',
             'executing ~= 2.2',
 
-            'psutil ~= 6.0',
+            'psutil ~= 7.0',
         ],
 
         'formats': [

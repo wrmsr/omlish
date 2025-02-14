@@ -37,8 +37,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.36.19
-botocore==1.36.19
+boto3==1.36.20
+botocore==1.36.20
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -77,7 +77,7 @@ cymem==2.0.11
 Cython==3.0.12
 darkdetect==0.8.0
 dataclasses-json==0.6.7
-datasets==3.2.0
+datasets==3.3.0
 dateparser==1.2.1
 debugpy==1.8.12
 decorator==5.1.1
@@ -121,7 +121,7 @@ fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
 frozenlist==1.5.0
-fsspec==2024.9.0
+fsspec==2024.12.0
 ftfy==6.3.1
 future==1.0.0
 gast==0.6.0
@@ -321,7 +321,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@94be64dd195f30770a81b5c41ed99c9b68376026
+peft @ git+https://github.com/huggingface/peft.git@1e2d6b5832401e07e917604dfb080ec474818f2b
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -343,7 +343,7 @@ prompt_toolkit==3.0.50
 propcache==0.2.1
 proto-plus==1.26.0
 protobuf==4.25.6
-psutil==6.1.1
+psutil==7.0.0
 psycopg==3.2.4
 psycopg2==2.9.10
 ptyprocess==0.7.0
@@ -482,7 +482,7 @@ tf_keras==2.17.0
 thinc==8.3.4
 threadpoolctl==3.5.0
 tifffile==2025.1.10
-tiktoken==0.8.0
+tiktoken==0.9.0
 tinycss2==1.4.0
 tld==0.13
 tokenizers==0.21.0
@@ -499,7 +499,7 @@ traitlets==5.14.3
 transformers==4.48.3
 tree-sitter==0.24.0
 tree-sitter-python==0.23.6
-trio==0.28.0
+trio==0.29.0
 trio_asyncio==0.15.0
 trl==0.14.0
 twine==6.1.0
@@ -516,7 +516,7 @@ typing_extensions==4.12.2
 tzdata==2025.1
 tzlocal==5.3
 ujson==5.10.0
-unstructured==0.16.17
+unstructured==0.16.20
 unstructured-client==0.30.0
 uri-template==1.3.0
 uritemplate==4.1.1
@@ -524,7 +524,7 @@ urllib3==2.3.0
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.9
-uv==0.5.31
+uv==0.6.0
 uvicorn==0.34.0
 uvloop==0.21.0
 voluptuous==0.15.2
