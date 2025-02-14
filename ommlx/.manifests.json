@@ -15,6 +15,20 @@
     }
   },
   {
+    "module": ".tools.git",
+    "attr": "_MANIFEST",
+    "file": "ommlx/tools/git.py",
+    "line": 16,
+    "value": {
+      "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
+        "mod_name": "ommlx.tools.git",
+        "attr_name": "AiGitMessageGenerator",
+        "name": "ai",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".tools.ocr",
     "attr": "_CLI_MODULE",
     "file": "ommlx/tools/ocr.py",

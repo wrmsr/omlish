@@ -9,13 +9,13 @@ import typing as ta
 import urllib.parse
 
 from omlish import check
-from omlish import lang
 from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.logs import all as logs
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
+from .messages import TimestampGitMessageGenerator
 
 
 def rev_parse(rev: str) -> str:
@@ -185,7 +185,7 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
-        ap.arg('--time-fmt', default='%Y-%m-%dT%H:%M:%SZ'),
+        ap.arg('--time-fmt', default=TimestampGitMessageGenerator.DEFAULT_TIME_FMT),
         ap.arg('dir', nargs='*'),
         aliases=['acp'],
     )
@@ -200,7 +200,7 @@ class Cli(ap.Cli):
                 if self.args.message is not None:
                     msg = self.args.message
                 else:
-                    msg = lang.utcnow().strftime(self.args.time_fmt)
+                    msg = TimestampGitMessageGenerator(self.args.time_fmt).generate_commit_message()
                 subprocess.check_call(['git', 'commit', '-m', msg], cwd=cwd)
 
             subprocess.check_call(['git', 'push'], cwd=cwd)
