@@ -55,7 +55,7 @@ services:
   # main
 
   omlish-postgres:
-    image: 'postgres:17.2'
+    image: 'postgres:17.3'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'
@@ -90,7 +90,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.17.1'
+    image: 'elasticsearch:8.17.2'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'

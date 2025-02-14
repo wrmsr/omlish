@@ -191,7 +191,7 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
     return enc_name
 
 
-class HTTPResponse(io.BufferedIOBase):
+class HTTPResponse:
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
@@ -366,18 +366,14 @@ class HTTPResponse(io.BufferedIOBase):
         fp.close()
 
     def close(self) -> None:
-        try:
-            super().close() # set 'closed' flag
-        finally:
-            if self.fp:
-                self._close_conn()
+        if self.fp:
+            self._close_conn()
 
     # These implementations are for the benefit of io.BufferedReader.
 
     # XXX This class should probably be revised to act more like the 'raw stream' that BufferedReader expects.
 
     def flush(self) -> None:
-        super().flush()
         if self.fp:
             self.fp.flush()
 
@@ -446,40 +442,6 @@ class HTTPResponse(io.BufferedIOBase):
 
             self._close_conn()        # we read everything
             return s
-
-    def readinto(self, b: bytearray) -> int:
-        """Read up to len(b) bytes into bytearray b and return the number of bytes read."""
-
-        if self.fp is None:
-            return 0
-
-        if self._method == 'HEAD':
-            self._close_conn()
-            return 0
-
-        if self.chunked:
-            return self._readinto_chunked(b)
-
-        if self.length is not None:
-            if len(b) > self.length:
-                # clip the read to the 'end of response'
-                b = memoryview(b)[0:self.length]
-
-        # we do not use _safe_read() here because this may be a .will_close connection, and the user is reading more
-        # bytes than will be provided (for example, reading in 1k chunks)
-        n = self.fp.readinto(b)
-
-        if not n and b:
-            # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
-            # compatibility.
-            self._close_conn()
-
-        elif self.length is not None:
-            self.length -= n
-            if not self.length:
-                self._close_conn()
-
-        return n
 
     def _read_next_chunk_size(self) -> int:
         # Read the next chunk size from the file
@@ -561,30 +523,6 @@ class HTTPResponse(io.BufferedIOBase):
         except IncompleteRead as exc:
             raise IncompleteRead(b''.join(value)) from exc
 
-    def _readinto_chunked(self, b: bytearray) -> int:
-        check.not_equal(self.chunked, _UNKNOWN)
-        total_bytes = 0
-        mvb = memoryview(b)
-        try:
-            while True:
-                chunk_left = self._get_chunk_left()
-                if chunk_left is None:
-                    return total_bytes
-
-                if len(mvb) <= chunk_left:
-                    n = self._safe_readinto(mvb)
-                    self.chunk_left = chunk_left - n
-                    return total_bytes + n
-
-                temp_mvb = mvb[:chunk_left]
-                n = self._safe_readinto(temp_mvb)
-                mvb = mvb[n:]
-                total_bytes += n
-                self.chunk_left = 0
-
-        except IncompleteRead:
-            raise IncompleteRead(bytes(b[0:total_bytes])) from None
-
     def _safe_read(self, amt: int) -> bytes:
         """
         Read the number of bytes requested.
@@ -598,39 +536,6 @@ class HTTPResponse(io.BufferedIOBase):
             raise IncompleteRead(data, amt-len(data))
         return data
 
-    def _safe_readinto(self, b: bytearray) -> int:
-        """Same as _safe_read, but for reading into a buffer."""
-
-        amt = len(b)
-        n = self.fp.readinto(b)
-        if n < amt:
-            raise IncompleteRead(bytes(b[:n]), amt-n)
-        return n
-
-    def read1(self, n: int = -1) -> bytes:
-        """Read with at most one underlying system call.  If at least one byte is buffered, return that instead."""
-
-        if self.fp is None or self._method == 'HEAD':
-            return b''
-
-        if self.chunked:
-            return self._read1_chunked(n)
-
-        if self.length is not None and (n < 0 or n > self.length):
-            n = self.length
-
-        result = self.fp.read1(n)
-
-        if not result and n:
-            self._close_conn()
-
-        elif self.length is not None:
-            self.length -= len(result)
-            if not self.length:
-                self._close_conn()
-
-        return result
-
     def peek(self, n: int = -1) -> bytes:
         # Having this enables IOBase.readline() to read more than one byte at a time
         if self.fp is None or self._method == 'HEAD':
@@ -641,13 +546,50 @@ class HTTPResponse(io.BufferedIOBase):
 
         return self.fp.peek(n)
 
+    def _readline(self, size=-1):
+        # For backwards compatibility, a (slowish) readline().
+        if hasattr(self, 'peek'):
+            def nreadahead():
+                readahead = self.peek(1)
+                if not readahead:
+                    return 1
+                n = (readahead.find(b'\n') + 1) or len(readahead)
+                if size >= 0:
+                    n = min(n, size)
+                return n
+
+        else:
+            def nreadahead():
+                return 1
+
+        if size is None:
+            size = -1
+        else:
+            try:
+                size_index = size.__index__
+            except AttributeError:
+                raise TypeError(f'{size!r} is not an integer')
+            else:
+                size = size_index()
+
+        res = bytearray()
+        while size < 0 or len(res) < size:
+            b = self.read(nreadahead())
+            if not b:
+                break
+            res += b
+            if res.endswith(b'\n'):
+                break
+
+        return bytes(res)
+
     def readline(self, limit: int = -1) -> bytes:
         if self.fp is None or self._method == 'HEAD':
             return b''
 
         if self.chunked:
             # Fallback to IOBase readline which uses peek() and read()
-            return super().readline(limit)
+            return self._readline(limit)
 
         if self.length is not None and (limit < 0 or limit > self.length):
             limit = self.length
@@ -663,23 +605,6 @@ class HTTPResponse(io.BufferedIOBase):
                 self._close_conn()
 
         return result
-
-    def _read1_chunked(self, n: int) -> bytes:
-        # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
-        # the chunked protocol.
-        chunk_left = self._get_chunk_left()
-        if chunk_left is None or n == 0:
-            return b''
-
-        if not (0 <= n <= chunk_left):
-            n = chunk_left # if n is negative or larger than chunk_left
-
-        read = self.fp.read1(n)
-        self.chunk_left -= len(read)
-        if not read:
-            raise IncompleteRead(b'')
-
-        return read
 
     def _peek_chunked(self, n: int) -> bytes:
         # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
@@ -697,36 +622,6 @@ class HTTPResponse(io.BufferedIOBase):
 
     def fileno(self) -> int:
         return self.fp.fileno()
-
-    def getheader(self, name: str, default: str | None = None) -> str:
-        """
-        Returns the value of the header matching *name*.
-
-        If there are multiple matching headers, the values are combined into a single string separated by commas and
-        spaces.
-
-        If no matching header is found, returns *default* or None if the *default* is not specified.
-
-        If the headers are unknown, raises http.client.ResponseNotReady.
-        """
-
-        if self.headers is None:
-            raise ResponseNotReady
-
-        headers = self.headers.get_all(name) or default
-
-        if isinstance(headers, str) or not hasattr(headers, '__iter__'):
-            return headers
-        else:
-            return ', '.join(headers)
-
-    def getheaders(self) -> list[tuple[str, str]]:
-        """Return list of (header, value) tuples."""
-
-        if self.headers is None:
-            raise ResponseNotReady
-
-        return list(self.headers.items())
 
     # We override IOBase.__iter__ so that it doesn't check for closed-ness
 
@@ -1431,7 +1326,7 @@ def _main() -> None:
     #     print(resp.read())
 
     conn_cls = HttpConnection
-    # conn_cls =__import__('http.client').client.HTTPConnection
+    # conn_cls = __import__('http.client').client.HTTPConnection
 
     url = 'www.example.com'
     conn = conn_cls(url)
