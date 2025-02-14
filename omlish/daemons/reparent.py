@@ -5,6 +5,7 @@ import sys
 def reparent_process() -> None:
     if (pid := os.fork()):  # noqa
         sys.exit(0)
+        raise RuntimeError('Unreachable')  # noqa
 
     os.setsid()
 

@@ -58,7 +58,7 @@ class Daemon:
 
         @dc.init
         def _check_pid_file(self) -> None:
-            check.isinstance(self.pid_file, (int, None))
+            check.isinstance(self.pid_file, (str, None))
 
         #
 
@@ -128,6 +128,7 @@ class Daemon:
                 if not isinstance(spawner, InProcessSpawner):
                     pidfile = es.enter_context(open_inheritable_pidfile(pid_file))
                 else:
+                    check.state(not self._config.reparent_process)
                     pidfile = es.enter_context(Pidfile(pid_file))
 
                 if not pidfile.try_acquire_lock():

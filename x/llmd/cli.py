@@ -1,8 +1,6 @@
-import dataclasses as dc
 import logging
 import os.path
 import sys
-import tempfile
 import time
 import urllib.request
 
@@ -27,15 +25,12 @@ log = logging.getLogger(__name__)
 ##
 
 
+PID_FILE = 'llmd.pid'
+
+
 class Cli(ap.Cli):
     @ap.cmd()
     def demo(self) -> None:
-        temp_dir = tempfile.mkdtemp()
-        pid_file = os.path.join(temp_dir, 'daemon_demo.pid')
-        print(f'{pid_file=}')
-
-        #
-
         daemon = Daemon(Daemon.Config(
             target=FnTarget(llm_server_main),
 
@@ -45,7 +40,7 @@ class Cli(ap.Cli):
 
             # reparent_process=True,
 
-            # pid_file=pid_file,
+            pid_file=PID_FILE,
             wait=ConnectWait(('localhost', PORT)),
         ))
 

@@ -130,6 +130,8 @@ class ForkSpawner(Spawner, dc.Frozen):
         else:
             sys.exit(0)
 
+        raise RuntimeError('Unreachable')  # noqa
+
 
 @spawner_for.register
 def _(spawning: ForkSpawning) -> ForkSpawner:
