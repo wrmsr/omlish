@@ -62,7 +62,7 @@ def llm_server_main() -> None:
                 LlmServerHandler(llm),
         ) as server:
 
-            deadline = time.time() + 10.
+            deadline = time.time() + 60.
             with server.loop_context(poll_interval=5.) as loop:
                 for _ in loop:
                     if time.time() >= deadline:

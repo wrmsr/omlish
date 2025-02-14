@@ -1,5 +1,6 @@
 import logging
 import os.path
+import signal
 import sys
 import time
 import urllib.request
@@ -13,6 +14,8 @@ from omlish.daemons.spawning import ThreadSpawning  # noqa
 from omlish.daemons.targets import FnTarget
 from omlish.daemons.waiting import ConnectWait
 from omlish.logs import all as logs
+from omlish.os.pidfiles.pidfile import Pidfile
+from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 
 from .server import PORT
@@ -43,7 +46,7 @@ class Cli(ap.Cli):
             pid_file=PID_FILE,
             wait=ConnectWait(('localhost', PORT)),
 
-            wait_timeout=60 * 60.,
+            wait_timeout=10.,
         ))
 
         daemon.launch()
@@ -61,9 +64,20 @@ class Cli(ap.Cli):
         )) as resp:
             log.info('Parent got response: %s', resp.read().decode('utf-8'))
 
-        for i in range(10, 0, -1):
+        for i in range(60, 0, -1):
             log.info(f'Parent process {os.getpid()} sleeping {i}')
             time.sleep(1.)
+
+    @ap.cmd()
+    def pid(self) -> None:
+        with PidfilePinner.default_impl()().pin_pidfile_owner(PID_FILE) as pid:
+            print(pid)
+
+    @ap.cmd()
+    def kill(self) -> None:
+        with PidfilePinner.default_impl()().pin_pidfile_owner(PID_FILE) as pid:
+            log.info('Killing pid: %d', pid)
+            os.kill(pid, signal.SIGTERM)
 
 
 ##
