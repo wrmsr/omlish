@@ -276,14 +276,14 @@
     }
   },
   {
-    "module": ".tools.git",
+    "module": ".tools.git.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/git.py",
-    "line": 231,
+    "file": "omdev/tools/git/__main__.py",
+    "line": 4,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "git",
-        "mod_name": "omdev.tools.git"
+        "mod_name": "omdev.tools.git.__main__"
       }
     }
   },

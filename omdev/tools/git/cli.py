@@ -14,9 +14,8 @@ from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.logs import all as logs
 
-from ..cli import CliModule
-from ..git.status import GitStatusItem
-from ..git.status import get_git_status
+from ...git.status import GitStatusItem
+from ...git.status import get_git_status
 
 
 def rev_parse(rev: str) -> str:
@@ -228,10 +227,13 @@ class Cli(ap.Cli):
                 run(d)
 
 
-# @omlish-manifest
-_CLI_MODULE = CliModule('git', __name__)
+##
+
+
+def _main() -> None:
+    logs.configure_standard_logging('INFO')
+    Cli()()
 
 
 if __name__ == '__main__':
-    logs.configure_standard_logging('INFO')
-    Cli()()
+    _main()
