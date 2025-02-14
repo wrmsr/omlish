@@ -18,6 +18,11 @@ T = ta.TypeVar('T')
 ##
 
 
+class _NOT_SET:  # noqa
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+
 class ContextManaged:
     def __enter__(self) -> ta.Self:
         return self
@@ -31,20 +36,20 @@ class ContextManaged:
         return None
 
 
-class NopContextManaged(ContextManaged):
+class NopContextManager(ContextManaged):
+    def __init__(self, /, value: ta.Any = _NOT_SET) -> None:
+        super().__init__()
+
+        self._value = value
+
+    def __enter__(self):
+        if (value := self._value) is _NOT_SET:
+            return self
+        else:
+            return value
+
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise TypeError
-
-
-NOP_CONTEXT_MANAGED = NopContextManaged()
-
-
-class NopContextManager:
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        raise TypeError
-
-    def __call__(self, *args, **kwargs):
-        return NOP_CONTEXT_MANAGED
 
 
 NOP_CONTEXT_MANAGER = NopContextManager()
@@ -350,7 +355,7 @@ def default_lock(value: DefaultLockable, default: DefaultLockable = None) -> Loc
         return lambda: lock
 
     elif value is False or value is None:
-        return NOP_CONTEXT_MANAGER
+        return lambda: NOP_CONTEXT_MANAGER
 
     elif callable(value):
         return value
