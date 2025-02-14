@@ -70,7 +70,7 @@ CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', 'Timeout.Default', ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
 
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]

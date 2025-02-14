@@ -41,6 +41,7 @@ def hi_server() -> None:
     finally:
         print(f'server exiting: {os.getpid()=}', file=sys.stderr)
 
+
 #
 
 

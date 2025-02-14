@@ -62,7 +62,6 @@ libc.free.argtypes = [ct.c_void_p]
 
 
 class Malloc:
-
     def __init__(self, sz: int) -> None:
         super().__init__()
 
@@ -174,7 +173,6 @@ if LINUX:
 
 
 class Mmap:
-
     def __init__(
             self,
             length: int,
@@ -537,14 +535,14 @@ elif DARWIN:
 
 
 if LINUX:
-    def gettid():
+    def gettid() -> int:
         syscalls = {
             'i386': 224,  # unistd_32.h: #define __NR_gettid 224
             'x86_64': 186,  # unistd_64.h: #define __NR_gettid 186
             'aarch64': 178,  # asm-generic/unistd.h: #define __NR_gettid 178
         }
         try:
-            tid = ct.CDLL('libc.so.6').syscall(syscalls[platform.machine()])
+            tid = libc.syscall(syscalls[platform.machine()])
         except Exception:  # noqa
             tid = -1
         return tid

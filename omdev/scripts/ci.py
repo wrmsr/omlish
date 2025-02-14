@@ -75,7 +75,7 @@ CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', 'Timeout.Default', ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
