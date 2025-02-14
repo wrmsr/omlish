@@ -19,6 +19,7 @@ from .spawning import Spawn
 from .spawning import Spawner
 from .spawning import Spawning
 from .spawning import spawner_for
+from .targets import Target
 from .targets import target_runner_for
 
 
@@ -36,8 +37,8 @@ class Launcher:
             spawning: Spawning,
 
             pid_file: str | None = None,
-            reparent_process: bool = False,
-            launched_timeout_s: float = 5.
+            reparent_process: bool = False,  # noqa
+            launched_timeout_s: float = 5.,
     ) -> None:
         super().__init__()
 

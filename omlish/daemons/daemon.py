@@ -15,28 +15,17 @@ TODO:
  - timebomb
  - pickle protocol, revision / venv check, multiprocessing manager support
 """
-import contextlib
-import functools
 import logging
 import os.path
-import threading
 import time
-import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from ..os.pidfiles.manager import _PidfileManager  # noqa
-from ..os.pidfiles.manager import open_inheritable_pidfile
 from ..os.pidfiles.pidfile import Pidfile
-from .reparent import reparent_process
-from .spawning import InProcessSpawner
-from .spawning import Spawn
-from .spawning import Spawner
+from .launching import Launcher
 from .spawning import Spawning
-from .spawning import spawner_for
 from .targets import Target
-from .targets import target_runner_for
 from .waiting import Wait
 from .waiting import waiter_for
 
@@ -119,8 +108,17 @@ class Daemon:
 
     #
 
-    class _NOT_SET(lang.Marker):  # noqa
-        pass
+    def launch_no_wait(self) -> None:
+        launcher = Launcher(
+            target=self._config.target,
+            spawning=self._config.spawning,
+
+            pid_file=self._config.pid_file,
+            reparent_process=self._config.reparent_process,
+            launched_timeout_s=self._config.launched_timeout_s,
+        )
+
+        launcher.launch()
 
     def launch(self, timeout: lang.TimeoutLike = lang.Timeout.Default) -> None:
         self.launch_no_wait()
