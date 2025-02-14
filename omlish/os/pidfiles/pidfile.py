@@ -27,11 +27,13 @@ class Pidfile:
             path: str,
             *,
             inheritable: bool = True,
+            no_create: bool = False,
     ) -> None:
         super().__init__()
 
         self._path = path
         self._inheritable = inheritable
+        self._no_create = no_create
 
     @property
     def path(self) -> str:
@@ -74,7 +76,10 @@ class Pidfile:
             fd = os.dup(self._fd_to_dup)
             del self._fd_to_dup
         else:
-            fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
+            ofl = os.O_RDONLY
+            if not self._no_create:
+                ofl |= os.O_CREAT
+            fd = os.open(self._path, ofl, 0o600)
 
         try:
             if self._inheritable:

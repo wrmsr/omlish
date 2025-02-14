@@ -308,6 +308,18 @@
     }
   },
   {
+    "module": ".os.pidfiles.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/os/pidfiles/__main__.py",
+    "line": 1,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "pidfiles",
+        "mod_name": "omlish.os.pidfiles.__main__"
+      }
+    }
+  },
+  {
     "module": ".secrets.pwgen",
     "attr": "_CLI_MODULE",
     "file": "omlish/secrets/pwgen.py",
