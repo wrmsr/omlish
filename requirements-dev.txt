@@ -117,9 +117,9 @@ segno==1.6.1
 
 duckduckgo_search==7.3.2  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.36.20
+boto3>=1.36.21
 
-mlx==0.22.1; sys_platform == "darwin"
+mlx==0.23.0; sys_platform == "darwin"
 mlx-lm==0.21.4; sys_platform == "darwin"
 
 apsw==3.49.0.0

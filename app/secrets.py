@@ -1,7 +1,7 @@
 import logging
 import os
 
-from omdev.secrets import load_secrets
+from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
 from omlish.secrets import all as sec

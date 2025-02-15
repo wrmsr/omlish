@@ -6,7 +6,7 @@ from ..secrets import SecretRef
 @dc.dataclass(frozen=True)
 class Cred:
     username: str
-    password: str | SecretRef = dc.field()
+    password: str | SecretRef
 
 
 def test_secrets():

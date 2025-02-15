@@ -3,7 +3,7 @@ import gzip
 import os.path
 import typing as ta
 
-from omdev.secrets import load_secrets
+from omdev.home.secrets import load_secrets
 from omlish import lang
 from omlish.argparse import all as ap
 from omlish.formats import json

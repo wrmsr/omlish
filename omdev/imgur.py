@@ -33,7 +33,7 @@ from omlish.http import all as hu
 from omlish.secrets.secrets import Secret
 
 from .cli import CliModule
-from .secrets import load_secrets
+from .home.secrets import load_secrets
 
 
 @dc.dataclass(frozen=True)

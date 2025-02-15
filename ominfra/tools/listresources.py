@@ -15,7 +15,7 @@ import pprint
 
 import urllib3
 
-from omdev.secrets import load_secrets
+from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang

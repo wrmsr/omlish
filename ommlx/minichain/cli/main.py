@@ -11,6 +11,7 @@ import os.path
 import sys
 import typing as ta
 
+from omdev.home.paths import get_home_dir
 from omlish import check
 from omlish import lang
 from omlish.diag import pycharm
@@ -84,7 +85,7 @@ def _run_chat(
 ) -> None:
     prompt = check.isinstance(content, str)
 
-    state_dir = os.path.expanduser('~/.omlish-llm')
+    state_dir = os.path.join(get_home_dir(), 'llm')
     if not os.path.exists(state_dir):
         os.mkdir(state_dir)
         os.chmod(state_dir, 0o770)  # noqa
@@ -204,7 +205,7 @@ def _main() -> None:
 
     #
 
-    with open(os.path.join(os.path.expanduser('~/.omlish-llm/.env'))) as f:
+    with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
         dotenv.Dotenv(stream=f).apply_to(os.environ)
 
     #
