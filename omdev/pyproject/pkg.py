@@ -42,7 +42,7 @@ from omlish.subprocesses.sync import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files
-from ..revisions import GitRevisionAdder
+from ..packaging.revisions import GitRevisionAdder
 
 
 #
