@@ -82,7 +82,7 @@ pycparser==2.22
 cffi==1.17.1
 pcpp==1.30
 
-paramiko==3.5.1  # @omlish-venv !13t  # !! LGPL
+paramiko==3.5.1  # @omlish-venv !13t
 
 docutils==0.21.2
 markdown==3.7
