@@ -45,7 +45,6 @@ class Target(abc.ABC):
 
 @dc.dataclass(frozen=True)
 class Library(Target):
-
     @property
     def command_name(self) -> str:
         return 'add_library'
@@ -53,7 +52,6 @@ class Library(Target):
 
 @dc.dataclass(frozen=True)
 class StaticLibrary(Library):
-
     @property
     def command_extra(self) -> ta.Sequence[str]:
         return ['STATIC']
@@ -61,7 +59,6 @@ class StaticLibrary(Library):
 
 @dc.dataclass(frozen=True)
 class ModuleLibrary(Library):
-
     @property
     def command_extra(self) -> ta.Sequence[str]:
         return ['MODULE']
@@ -69,14 +66,12 @@ class ModuleLibrary(Library):
 
 @dc.dataclass(frozen=True)
 class Executable(Target):
-
     @property
     def command_name(self) -> str:
         return 'add_executable'
 
 
 class CmakeGen:
-
     def __init__(
             self,
             out: ta.TextIO,
