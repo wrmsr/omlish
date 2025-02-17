@@ -260,9 +260,12 @@ class Cli(ap.Cli):
 
                 else:
                     mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
-                    if (mg_name := self.args.message_generator) is not None:
+                    if (mg_name := self.args.message_generator) is None:
+                        mg_name = self.load_config().default_message_generator
+                    if mg_name is not None:
                         mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
                     mg = mg_cls()
+
                     mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
                         cwd=cwd,
                         time_fmt=self.args.time_fmt,
