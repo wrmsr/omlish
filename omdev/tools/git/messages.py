@@ -21,8 +21,14 @@ class GitMessageGenerator(abc.ABC):
         DEFAULT_TIME_FMT: ta.ClassVar[str] = '%Y-%m-%dT%H:%M:%SZ'
         time_fmt: str = DEFAULT_TIME_FMT
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class GenerateCommitMessageResult:
+        msg: str
+
+        confirm: bool = False
+
     @abc.abstractmethod
-    def generate_commit_message(self, args: GenerateCommitMessageArgs) -> str:
+    def generate_commit_message(self, args: GenerateCommitMessageArgs) -> GenerateCommitMessageResult:
         raise NotImplementedError
 
 
@@ -64,8 +70,13 @@ def load_message_generator_manifests_map() -> ta.Mapping[str, GitMessageGenerato
 
 @dc.dataclass(frozen=True)
 class TimestampGitMessageGenerator(GitMessageGenerator):
-    def generate_commit_message(self, args: GitMessageGenerator.GenerateCommitMessageArgs) -> str:
-        return lang.utcnow().strftime(args.time_fmt)
+    def generate_commit_message(
+            self,
+            args: GitMessageGenerator.GenerateCommitMessageArgs,
+    ) -> GitMessageGenerator.GenerateCommitMessageResult:
+        return GitMessageGenerator.GenerateCommitMessageResult(
+            msg=lang.utcnow().strftime(args.time_fmt),
+        )
 
 
 #

@@ -199,30 +199,38 @@ class Cli(ap.Cli):
     )
     def add_commit_push(self) -> None:
         def run(cwd: str | None) -> None:
+            def check_call(*cmd: str) -> None:
+                if self.args.dry_run:
+                    print(cmd)
+                else:
+                    subprocesses.check_call(*cmd, cwd=cwd)
+
             st = get_git_status(cwd=cwd)
 
             if st.has_dirty:
-                if not self.args.dry_run:
-                    subprocesses.check_call('git', 'add', '.', cwd=cwd)
+                check_call('git', 'add', '.')
 
             if st.has_staged or st.has_dirty:
                 if self.args.message is not None:
                     msg = self.args.message
+
                 else:
                     mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
                     if (mg_name := self.args.message_generator) is not None:
                         mg_cls = load_message_generator_manifests_map()[mg_name].get_cls()
                     mg = mg_cls()
-                    msg = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
+                    mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
                         cwd=cwd,
                         time_fmt=self.args.time_fmt,
                     ))
+                    if mgr.confirm:
+                        print(mgr.msg)
+                        input()
+                    msg = mgr.msg
 
-                if not self.args.dry_run:
-                    subprocesses.check_call('git', 'commit', '-m', msg, cwd=cwd)
+                check_call('git', 'commit', '-m', msg)
 
-            if not self.args.dry_run:
-                subprocesses.check_call('git', 'push', cwd=cwd)
+            check_call('git', 'push')
 
         if not self.args.dir:
             run(None)
