@@ -18,7 +18,7 @@
     "module": ".tools.git",
     "attr": "_AI_GIT_MESSAGE_GENERATOR_MANIFEST",
     "file": "ommlx/tools/git.py",
-    "line": 60,
+    "line": 67,
     "value": {
       "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "ommlx.tools.git",

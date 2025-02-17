@@ -30,7 +30,14 @@ class AiGitMessageGenerator(GitMessageGenerator):
             self,
             args: GitMessageGenerator.GenerateCommitMessageArgs,
     ) -> GitMessageGenerator.GenerateCommitMessageResult:
-        diff = subprocesses.check_output('git', 'diff', 'HEAD', cwd=args.cwd).decode()
+        diff = subprocesses.check_output(
+            'git',
+            'diff',
+            'HEAD',
+            '--',
+            ':(exclude)**/.manifests.json',
+            cwd=args.cwd,
+        ).decode()
 
         prompt = '\n\n'.join([
             'Write a short git commit message for the following git diff:',
