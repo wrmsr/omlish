@@ -1,5 +1,7 @@
+import abc
 import dataclasses as dc
 import os.path
+import typing as ta
 
 from omdev.home.paths import get_home_dir
 from omdev.tools.git.messages import GitMessageGenerator
@@ -16,7 +18,7 @@ from ..minichain.generative import MaxTokens
 ##
 
 
-class AiGitMessageGenerator(GitMessageGenerator):
+class GitAiBackend(abc.ABC):
     @dc.dataclass(frozen=True)
     class Config:
         max_tokens: int | None = 128
@@ -25,6 +27,45 @@ class AiGitMessageGenerator(GitMessageGenerator):
         super().__init__()
 
         self._config = config
+
+    @abc.abstractmethod
+    def run_prompt(self, prompt: str) -> str:
+        raise NotImplementedError
+
+
+#
+
+
+class OpenaiGitAiBackend(GitAiBackend):
+    def run_prompt(self, prompt: str) -> str:
+        with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
+            dotenv.Dotenv(stream=f).apply_to(os.environ)
+
+        llm = OpenaiChatModel()
+
+        resp = llm(
+            [UserMessage(prompt)],
+            *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
+        )
+        return check.non_empty_str(resp.v[0].m.s)
+
+
+##
+
+
+class AiGitMessageGenerator(GitMessageGenerator):
+    def __init__(
+            self,
+            *,
+            backend: GitAiBackend | None = None,
+    ) -> None:
+        super().__init__()
+
+        if backend is None:
+            backend = self.DEFAULT_BACKEND
+        self._backend = backend
+
+    DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = OpenaiGitAiBackend()
 
     def generate_commit_message(
             self,
@@ -35,7 +76,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
             'diff',
             'HEAD',
             '--',
-            ':(exclude)**/.manifests.json',
+            ':(exclude)**/.manifests.json',  # TODO: configurable
             cwd=args.cwd,
         ).decode()
 
@@ -44,19 +85,10 @@ class AiGitMessageGenerator(GitMessageGenerator):
             f'```\n{diff}\n```',
         ])
 
-        with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
-            dotenv.Dotenv(stream=f).apply_to(os.environ)
-
-        llm = OpenaiChatModel()
-
-        resp = llm(
-            [UserMessage(prompt)],
-            *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
-        )
-        resp_str = check.non_empty_str(resp.v[0].m.s)
+        msg = self._backend.run_prompt(prompt)
 
         return GitMessageGenerator.GenerateCommitMessageResult(
-            msg=resp_str,
+            msg=msg,
             confirm=True,
         )
 
