@@ -18,7 +18,6 @@ from ..spawning import ForkSpawning  # noqa
 from ..spawning import MultiprocessingSpawning  # noqa
 from ..spawning import ThreadSpawning  # noqa
 from ..targets import FnTarget
-from ..waiting import ConnectWait
 
 
 log = logging.getLogger(__name__)
@@ -61,6 +60,15 @@ class HiServer:
         return cls(config).run()
 
 
+#
+
+
+@dc.dataclass(frozen=True)
+class Hi:
+    server: HiServer.Config = HiServer.Config()
+    daemon: Daemon.Config = Daemon.Config()
+
+
 ##
 
 
@@ -73,20 +81,17 @@ def _main() -> None:
 
     #
 
-    hi_config = HiServer.Config()
+    hi = Hi()
 
-    daemon = Daemon(Daemon.Config(
-        target=FnTarget(functools.partial(HiServer.run_config, hi_config)),
-
-        spawning=ThreadSpawning(),
-        # spawning=MultiprocessingSpawning(),
-        # spawning=ForkSpawning(),
-
-        # reparent_process=True,
-
-        # pid_file=pid_file,
-        wait=ConnectWait(('localhost', hi_config.port)),
-    ))
+    daemon = Daemon(
+        target=FnTarget(functools.partial(HiServer.run_config, hi.server)),
+        config=dc.replace(
+            hi.daemon,
+            spawning=ThreadSpawning(),
+            # spawning=MultiprocessingSpawning(),
+            # spawning=ForkSpawning(),
+        ),
+    )
 
     daemon.launch()
 
@@ -98,7 +103,7 @@ def _main() -> None:
     req_str = 'Hi! How are you?'
 
     with urllib.request.urlopen(urllib.request.Request(
-        f'http://localhost:{hi_config.port}/',
+        f'http://localhost:{hi.server.port}/',
         data=req_str.encode('utf-8'),
     )) as resp:
         resp_str = resp.read().decode('utf-8')

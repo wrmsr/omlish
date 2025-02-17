@@ -32,20 +32,21 @@ PID_FILE = 'llmd.pid'
 class Cli(ap.Cli):
     @ap.cmd()
     def demo(self) -> None:
-        daemon = Daemon(Daemon.Config(
-            target=FnTarget(llm_server_main),
+        daemon = Daemon(
+            FnTarget(llm_server_main),
+            Daemon.Config(
+                spawning=(spawning := ThreadSpawning()),
+                # spawning=(spawning := MultiprocessingSpawning()),
+                # spawning=(spawning := ForkSpawning()),
 
-            spawning=(spawning := ThreadSpawning()),
-            # spawning=(spawning := MultiprocessingSpawning()),
-            # spawning=(spawning := ForkSpawning()),
+                reparent_process=not isinstance(spawning, ThreadSpawning),
 
-            reparent_process=not isinstance(spawning, ThreadSpawning),
+                pid_file=PID_FILE,
+                wait=ConnectWait(('localhost', PORT)),
 
-            pid_file=PID_FILE,
-            wait=ConnectWait(('localhost', PORT)),
-
-            wait_timeout=10.,
-        ))
+                wait_timeout=10.,
+            ),
+        )
 
         if not daemon.is_pidfile_locked():
             daemon.launch()

@@ -38,14 +38,9 @@ log = logging.getLogger(__name__)
 
 
 class Daemon:
-    """
-    Instances of these should most likely be effectively singletons, but that's up to the user.
-    """
-
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:
-        target: Target
-        spawning: Spawning
+        spawning: Spawning | None = None
 
         #
 
@@ -68,10 +63,19 @@ class Daemon:
         def __post_init__(self) -> None:
             check.isinstance(self.pid_file, (str, None))
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            target: Target,
+            config: Config = Config(),
+    ) -> None:
         super().__init__()
 
+        self._target = target
         self._config = config
+
+    @property
+    def target(self) -> Target:
+        return self._target
 
     @property
     def config(self) -> Config:
@@ -124,8 +128,8 @@ class Daemon:
 
     def launch_no_wait(self) -> None:
         launcher = Launcher(
-            target=self._config.target,
-            spawning=self._config.spawning,
+            target=self._target,
+            spawning=check.not_none(self._config.spawning),
 
             pid_file=self._config.pid_file,
             reparent_process=self._config.reparent_process,
