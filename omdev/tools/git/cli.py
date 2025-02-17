@@ -4,7 +4,6 @@ TODO:
 """
 import os
 import re
-import subprocess
 import typing as ta
 import urllib.parse
 
@@ -12,6 +11,7 @@ from omlish import check
 from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.logs import all as logs
+from omlish.subprocesses.sync import subprocesses
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
@@ -25,20 +25,20 @@ from .messages import load_message_generator_manifests_map
 
 
 def rev_parse(rev: str) -> str:
-    return subprocess.check_output(['git', 'rev-parse', rev]).decode().strip()
+    return subprocesses.check_output('git', 'rev-parse', rev).decode().strip()
 
 
 def get_first_commit_of_day(rev: str) -> str | None:
-    commit_date = subprocess.check_output([
+    commit_date = subprocesses.check_output(
         'git', 'show', '-s', '--format=%ci', rev,
-    ]).decode().strip().split(' ')[0]
+    ).decode().strip().split(' ')[0]
 
-    first_commit = subprocess.check_output([
+    first_commit = subprocesses.check_output(
         'git', 'rev-list', '--reverse', '--max-parents=1',
         '--since', f'{commit_date} 00:00:00',
         '--until', f'{commit_date} 23:59:59',
         rev,
-    ]).decode().strip().splitlines()
+    ).decode().strip().splitlines()
 
     # Return the first commit (if there is any)
     if first_commit:
@@ -51,7 +51,7 @@ class Cli(ap.Cli):
     @ap.cmd()
     def blob_sizes(self) -> None:
         # https://stackoverflow.com/a/42544963
-        subprocess.check_call(  # noqa
+        subprocesses.check_call(  # noqa
             "git rev-list --objects --all | "
             "git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | "
             "sed -n 's/^blob //p' | "
@@ -63,7 +63,7 @@ class Cli(ap.Cli):
 
     @ap.cmd()
     def commits_by_date(self) -> None:
-        subprocess.check_call(['git log --date=short --pretty=format:%ad | sort | uniq -c'], shell=True)  # noqa
+        subprocesses.check_call('git log --date=short --pretty=format:%ad | sort | uniq -c', shell=True)  # noqa
 
     #
 
@@ -86,14 +86,14 @@ class Cli(ap.Cli):
 
                 os.makedirs(user, 0o755, exist_ok=True)
 
-                subprocess.check_call([
+                subprocesses.check_call(
                     'git',
                     'clone',
                     *self.unknown_args,
                     *self.args.args,
                     f'git@github.com:{user}/{repo}.git',
                     os.path.join(user, repo),
-                ])
+                )
 
                 out_dir = os.path.join(user, repo)
 
@@ -101,13 +101,13 @@ class Cli(ap.Cli):
                 parsed = urllib.parse.urlparse(self.args.repo)
                 out_dir = parsed.path.split('/')[-1]
 
-                subprocess.check_call([
+                subprocesses.check_call(
                     'git',
                     'clone',
                     *self.unknown_args,
                     *self.args.args,
                     self.args.repo,
-                ])
+                )
 
         finally:
             print(out_dir)
@@ -128,7 +128,7 @@ class Cli(ap.Cli):
             os.execvp('git', ['git', 'diff', *(['--stat'] if self.args.stat else []), base_rev, rev])
 
         elif self.args.github or self.args.open:
-            rm_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin']).decode('utf-8').strip()
+            rm_url = subprocesses.check_output('git', 'remote', 'get-url', 'origin').decode('utf-8').strip()
 
             if rm_url.startswith(git_pfx := 'git@github.com:'):
                 s = rm_url[len(git_pfx):]
@@ -144,7 +144,7 @@ class Cli(ap.Cli):
             gh_url = f'https://github.com/{user}/{repo}/compare/{base_rev}...{rev}#files_bucket'
 
             if self.args.open:
-                subprocess.check_call(['open', gh_url])
+                subprocesses.check_call('open', gh_url)
             else:
                 print(gh_url)
 
@@ -203,7 +203,7 @@ class Cli(ap.Cli):
 
             if st.has_dirty:
                 if not self.args.dry_run:
-                    subprocess.check_call(['git', 'add', '.'], cwd=cwd)
+                    subprocesses.check_call('git', 'add', '.', cwd=cwd)
 
             if st.has_staged or st.has_dirty:
                 if self.args.message is not None:
@@ -219,10 +219,10 @@ class Cli(ap.Cli):
                     ))
 
                 if not self.args.dry_run:
-                    subprocess.check_call(['git', 'commit', '-m', msg], cwd=cwd)
+                    subprocesses.check_call('git', 'commit', '-m', msg, cwd=cwd)
 
             if not self.args.dry_run:
-                subprocess.check_call(['git', 'push'], cwd=cwd)
+                subprocesses.check_call('git', 'push', cwd=cwd)
 
         if not self.args.dir:
             run(None)
@@ -236,8 +236,8 @@ class Cli(ap.Cli):
     )
     def pull_submodule_update(self) -> None:
         def run(cwd: str | None) -> None:
-            subprocess.check_call(['git', 'pull'], cwd=cwd)
-            subprocess.check_call(['git', 'submodule', 'update'], cwd=cwd)
+            subprocesses.check_call('git', 'pull', cwd=cwd)
+            subprocesses.check_call('git', 'submodule', 'update', cwd=cwd)
 
         if not self.args.dir:
             run(None)
