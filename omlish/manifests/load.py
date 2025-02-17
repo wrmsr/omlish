@@ -196,11 +196,11 @@ class ManifestLoader:
 
     def discover_pkgs(self) -> ta.Sequence[str]:
         # This is a fat dep so do it late.
-        import importlib.metadata
+        importlib_metadata = __import__('importlib.metadata').metadata
 
         return [
             ep.value
-            for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)
+            for ep in importlib_metadata.entry_points(group=self.ENTRY_POINT_GROUP)
         ]
 
     def scan_pkg_root(self, root: str) -> ta.Sequence[str]:
