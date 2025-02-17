@@ -18,7 +18,7 @@ class Project(ProjectBase):
 
             'sentence-transformers ~= 3.4',
 
-            'transformers ~= 4.45',
+            'transformers ~= 4.49',
         ],
 
         'huggingface': [
