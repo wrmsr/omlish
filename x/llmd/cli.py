@@ -1,3 +1,4 @@
+import functools
 import logging
 import os.path
 import signal
@@ -16,8 +17,7 @@ from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 
-from .server import PORT
-from .server import llm_server_main
+from .server import LlmServer
 
 
 log = logging.getLogger(__name__)
@@ -32,8 +32,10 @@ PID_FILE = 'llmd.pid'
 class Cli(ap.Cli):
     @ap.cmd()
     def demo(self) -> None:
+        server_config = LlmServer.Config()
+
         daemon = Daemon(
-            FnTarget(llm_server_main),
+            FnTarget(functools.partial(LlmServer.run_config, server_config)),
             Daemon.Config(
                 spawning=(spawning := ThreadSpawning()),
                 # spawning=(spawning := MultiprocessingSpawning()),
@@ -42,7 +44,7 @@ class Cli(ap.Cli):
                 reparent_process=not isinstance(spawning, ThreadSpawning),
 
                 pid_file=PID_FILE,
-                wait=ConnectWait(('localhost', PORT)),
+                wait=ConnectWait(('localhost', server_config.port)),
 
                 wait_timeout=10.,
             ),
@@ -59,7 +61,7 @@ class Cli(ap.Cli):
         log.info('Client continuing')
 
         with urllib.request.urlopen(urllib.request.Request(
-            f'http://localhost:{PORT}/',
+            f'http://localhost:{server_config.port}/',
             data='Hi! How are you?'.encode('utf-8'),
         )) as resp:
             log.info('Parent got response: %s', resp.read().decode('utf-8'))
