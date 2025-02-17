@@ -1,6 +1,9 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 """
+FIXME:
+ - exit_on_error lol
+
 TODO:
  - default command
  - auto match all underscores to hyphens
@@ -42,6 +45,10 @@ class ArgparseArg:
 
 def argparse_arg(*args, **kwargs) -> ArgparseArg:
     return ArgparseArg(args, kwargs)
+
+
+def argparse_arg_(*args, **kwargs) -> ta.Any:
+    return argparse_arg(*args, **kwargs)
 
 
 #

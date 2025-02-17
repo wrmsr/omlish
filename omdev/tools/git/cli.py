@@ -1,24 +1,36 @@
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - https://github.com/vegardit/bash-funk/blob/main/docs/git.md
 """
+import dataclasses as dc
 import os
 import re
 import typing as ta
 import urllib.parse
 
+from omlish import cached
 from omlish import check
+from omlish import lang
 from omlish.argparse import all as ap
 from omlish.formats import json
+from omlish.formats import yaml
 from omlish.logs import all as logs
 from omlish.subprocesses.sync import subprocesses
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
+from ...home.paths import get_home_dir
 from .messages import GitMessageGenerator
 from .messages import TimestampGitMessageGenerator
 from .messages import load_message_generator_manifests
 from .messages import load_message_generator_manifests_map
+
+
+if ta.TYPE_CHECKING:
+    from omlish import marshal as msh
+else:
+    msh = lang.proxy_import('omlish.marshal')
 
 
 ##
@@ -48,6 +60,37 @@ def get_first_commit_of_day(rev: str) -> str | None:
 
 
 class Cli(ap.Cli):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Config:
+        default_message_generator: str | None = None
+
+    _config_file_path_arg: ta.Optional[str] = ap.arg_('-c', '--config-file-path', nargs='?')
+
+    @cached.function
+    def config_file_path(self) -> str:
+        if (arg := self._config_file_path_arg) is not None:
+            return os.path.expanduser(arg)
+        else:
+            return os.path.join(get_home_dir(), 'tools', 'git.yml')
+
+    @cached.function
+    def load_config(self) -> Config:
+        try:
+            with open(self.config_file_path()) as f:
+                buf = f.read()
+        except FileNotFoundError:
+            return self.Config()
+
+        dct = yaml.safe_load(buf)
+        return msh.unmarshal(dct, self.Config)
+
+    @ap.cmd()
+    def print_cfg(self) -> None:
+        cfg = self.load_config()
+        print(yaml.dump(msh.marshal(cfg)))
+
+    #
+
     @ap.cmd()
     def blob_sizes(self) -> None:
         # https://stackoverflow.com/a/42544963
