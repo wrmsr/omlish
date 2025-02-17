@@ -15,8 +15,10 @@ from omlish.logs import all as logs
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
+from .messages import GitMessageGenerator
 from .messages import TimestampGitMessageGenerator
 from .messages import load_message_generator_manifests
+from .messages import load_message_generator_manifests_map
 
 
 ##
@@ -189,7 +191,9 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
-        ap.arg('--time-fmt', default=TimestampGitMessageGenerator.DEFAULT_TIME_FMT),
+        ap.arg('-g', '--message-generator', nargs='?'),
+        ap.arg('--time-fmt', default=GitMessageGenerator.GenerateCommitMessageArgs.DEFAULT_TIME_FMT),
+        ap.arg('--dry-run', action='store_true'),
         ap.arg('dir', nargs='*'),
         aliases=['acp'],
     )
@@ -198,16 +202,27 @@ class Cli(ap.Cli):
             st = get_git_status(cwd=cwd)
 
             if st.has_dirty:
-                subprocess.check_call(['git', 'add', '.'], cwd=cwd)
+                if not self.args.dry_run:
+                    subprocess.check_call(['git', 'add', '.'], cwd=cwd)
 
             if st.has_staged or st.has_dirty:
                 if self.args.message is not None:
                     msg = self.args.message
                 else:
-                    msg = TimestampGitMessageGenerator(self.args.time_fmt).generate_commit_message()
-                subprocess.check_call(['git', 'commit', '-m', msg], cwd=cwd)
+                    mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
+                    if (mg_name := self.args.message_generator) is not None:
+                        mg_cls = load_message_generator_manifests_map()[mg_name].get_cls()
+                    mg = mg_cls()
+                    msg = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
+                        cwd=cwd,
+                        time_fmt=self.args.time_fmt,
+                    ))
 
-            subprocess.check_call(['git', 'push'], cwd=cwd)
+                if not self.args.dry_run:
+                    subprocess.check_call(['git', 'commit', '-m', msg], cwd=cwd)
+
+            if not self.args.dry_run:
+                subprocess.check_call(['git', 'push'], cwd=cwd)
 
         if not self.args.dir:
             run(None)

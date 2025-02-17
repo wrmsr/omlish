@@ -6,7 +6,7 @@ from omdev.tools.git.messages import GitMessageGeneratorManifest
 
 
 class AiGitMessageGenerator(GitMessageGenerator):
-    def generate_commit_message(self) -> str:
+    def generate_commit_message(self, args: GitMessageGenerator.GenerateCommitMessageArgs) -> str:
         raise NotImplementedError
 
 

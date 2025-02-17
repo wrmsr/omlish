@@ -1,9 +1,11 @@
 import abc
 import dataclasses as dc
+import importlib
 import os
 import typing as ta
 
 from omlish import cached
+from omlish import check
 from omlish import lang
 from omlish.manifests import load as manifest_load
 
@@ -12,8 +14,15 @@ from omlish.manifests import load as manifest_load
 
 
 class GitMessageGenerator(abc.ABC):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class GenerateCommitMessageArgs:
+        cwd: str | None = None
+
+        DEFAULT_TIME_FMT: ta.ClassVar[str] = '%Y-%m-%dT%H:%M:%SZ'
+        time_fmt: str = DEFAULT_TIME_FMT
+
     @abc.abstractmethod
-    def generate_commit_message(self) -> str:
+    def generate_commit_message(self, args: GenerateCommitMessageArgs) -> str:
         raise NotImplementedError
 
 
@@ -27,6 +36,10 @@ class GitMessageGeneratorManifest:
     name: str
     aliases: ta.Collection[str] | None = None
 
+    def get_cls(self) -> type[GitMessageGenerator]:
+        mod = importlib.import_module(self.mod_name)
+        return check.issubclass(getattr(mod, self.attr_name), GitMessageGenerator)
+
 
 @cached.function
 def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifest]:
@@ -36,16 +49,23 @@ def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifes
     return [mf.value for mf in mfs]
 
 
+@cached.function
+def load_message_generator_manifests_map() -> ta.Mapping[str, GitMessageGeneratorManifest]:
+    dct: dict[str, GitMessageGeneratorManifest] = {}
+    for m in load_message_generator_manifests():
+        for n in (m.name, *(m.aliases or ())):
+            check.not_in(n, dct)
+            dct[n] = m
+    return dct
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
 class TimestampGitMessageGenerator(GitMessageGenerator):
-    DEFAULT_TIME_FMT: ta.ClassVar[str] = '%Y-%m-%d %H:%M:%S'
-    time_fmt: str = DEFAULT_TIME_FMT
-
-    def generate_commit_message(self) -> str:
-        return lang.utcnow().strftime(self.time_fmt)
+    def generate_commit_message(self, args: GitMessageGenerator.GenerateCommitMessageArgs) -> str:
+        return lang.utcnow().strftime(args.time_fmt)
 
 
 #
