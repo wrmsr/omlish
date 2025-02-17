@@ -8,6 +8,7 @@ from omlish import check
 from omlish import lang
 from omlish.manifests import load as manifest_load
 from omlish.manifests.base import ModAttrManifest
+from omlish.manifests.base import NameAliasesManifest
 
 
 ##
@@ -36,10 +37,7 @@ class GitMessageGenerator(abc.ABC):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class GitMessageGeneratorManifest(ModAttrManifest):
-    name: str
-    aliases: ta.Collection[str] | None = None
-
+class GitMessageGeneratorManifest(NameAliasesManifest, ModAttrManifest):
     def load_cls(self) -> type[GitMessageGenerator]:
         return check.issubclass(self.load(), GitMessageGenerator)
 
@@ -54,12 +52,7 @@ def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifes
 
 @cached.function
 def load_message_generator_manifests_map() -> ta.Mapping[str, GitMessageGeneratorManifest]:
-    dct: dict[str, GitMessageGeneratorManifest] = {}
-    for m in load_message_generator_manifests():
-        for n in (m.name, *(m.aliases or ())):
-            check.not_in(n, dct)
-            dct[n] = m
-    return dct
+    return GitMessageGeneratorManifest.build_name_dict(load_message_generator_manifests())
 
 
 ##
