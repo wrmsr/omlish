@@ -15,6 +15,7 @@ TODO:
  - timebomb
  - pickle protocol, revision / venv check, multiprocessing manager support
 """
+import itertools
 import logging
 import os.path
 import time
@@ -37,6 +38,10 @@ log = logging.getLogger(__name__)
 
 
 class Daemon:
+    """
+    Instances of these should most likely be effectively singletons, but that's up to the user.
+    """
+
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:
         target: Target
@@ -85,7 +90,7 @@ class Daemon:
             inheritable=False,
         )
 
-    def is_running(self) -> bool:
+    def is_pidfile_locked(self) -> bool:
         check.state(self.has_pidfile)
 
         if not os.path.isfile(check.non_empty_str(self._config.pid_file)):
@@ -96,14 +101,23 @@ class Daemon:
 
     #
 
-    def wait_sync(self, timeout: lang.TimeoutLike = lang.Timeout.Default) -> None:
+    def wait_sync(
+            self,
+            timeout: lang.TimeoutLike = lang.Timeout.Default,
+            *,
+            max_tries: int | None = None,
+    ) -> None:
         if self._config.wait is None:
             return
 
         timeout = lang.Timeout.of(timeout, self._config.wait_timeout)
         waiter = waiter_for(self._config.wait)
-        while not waiter.do_wait():
+        for i in itertools.count():
+            if max_tries is not None and i >= max_tries:
+                raise TimeoutError
             timeout()
+            if waiter.do_wait():
+                break
             time.sleep(self._config.wait_sleep_s or 0.)
 
     #

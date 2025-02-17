@@ -1,7 +1,6 @@
 import logging
 import os.path
 import signal
-import sys
 import time
 import urllib.request
 
@@ -14,7 +13,6 @@ from omlish.daemons.spawning import ThreadSpawning  # noqa
 from omlish.daemons.targets import FnTarget
 from omlish.daemons.waiting import ConnectWait
 from omlish.logs import all as logs
-from omlish.os.pidfiles.pidfile import Pidfile
 from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 
@@ -49,12 +47,13 @@ class Cli(ap.Cli):
             wait_timeout=10.,
         ))
 
-        daemon.launch()
+        if not daemon.is_pidfile_locked():
+            daemon.launch()
 
         #
 
         if daemon.config.pid_file is not None:
-            check.state(daemon.is_running())
+            check.state(daemon.is_pidfile_locked())
 
         log.info('Client continuing')
 

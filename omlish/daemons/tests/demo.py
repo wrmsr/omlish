@@ -72,7 +72,7 @@ def _main() -> None:
     #
 
     if daemon.config.pid_file is not None:
-        check.state(daemon.is_running())
+        check.state(daemon.is_pidfile_locked())
 
     req_str = 'Hi! How are you?'
 
