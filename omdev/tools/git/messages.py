@@ -7,7 +7,7 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.manifests import load as manifest_load
-from omlish.manifests.attrs import ModAttrManifest
+from omlish.manifests.base import ModAttrManifest
 
 
 ##

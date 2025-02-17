@@ -12,7 +12,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from ..funcs import pairs as fps
-from ..manifests.attrs import ModAttrManifest
+from ..manifests.base import ModAttrManifest
 
 
 I = ta.TypeVar('I')
