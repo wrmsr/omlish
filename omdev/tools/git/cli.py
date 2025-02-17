@@ -194,6 +194,7 @@ class Cli(ap.Cli):
         ap.arg('-g', '--message-generator', nargs='?'),
         ap.arg('--time-fmt', default=GitMessageGenerator.GenerateCommitMessageArgs.DEFAULT_TIME_FMT),
         ap.arg('--dry-run', action='store_true'),
+        ap.arg('-y', '--no-confirmation', action='store_true'),
         ap.arg('dir', nargs='*'),
         aliases=['acp'],
     )
@@ -223,7 +224,7 @@ class Cli(ap.Cli):
                         cwd=cwd,
                         time_fmt=self.args.time_fmt,
                     ))
-                    if mgr.confirm:
+                    if mgr.confirm and not self._args.no_confirmation:
                         print(mgr.msg)
                         input()
                     msg = mgr.msg
