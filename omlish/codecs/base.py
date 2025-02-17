@@ -12,6 +12,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from ..funcs import pairs as fps
+from ..manifests.attrs import ModAttrManifest
 
 
 I = ta.TypeVar('I')
@@ -87,9 +88,7 @@ class Codec:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class LazyLoadedCodec:
-    mod_name: str
-    attr_name: str
+class LazyLoadedCodec(ModAttrManifest):
     name: str
     aliases: ta.Collection[str] | None = None
 

@@ -1,5 +1,4 @@
 import contextlib
-import importlib
 import threading
 import typing as ta
 
@@ -74,8 +73,7 @@ class CodecRegistry:
             codec_or_lazy = self._by_name[name]
 
             if isinstance(codec_or_lazy, LazyLoadedCodec):
-                mod = importlib.import_module(codec_or_lazy.mod_name)
-                codec = check.isinstance(getattr(mod, codec_or_lazy.attr_name), Codec)
+                codec = check.isinstance(codec_or_lazy.load(), Codec)
                 self._by_name[name] = codec
                 self._post_load(codec)
             else:

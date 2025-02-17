@@ -1,6 +1,5 @@
 import abc
 import dataclasses as dc
-import importlib
 import os
 import typing as ta
 
@@ -8,6 +7,7 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.manifests import load as manifest_load
+from omlish.manifests.attrs import ModAttrManifest
 
 
 ##
@@ -36,15 +36,12 @@ class GitMessageGenerator(abc.ABC):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class GitMessageGeneratorManifest:
-    mod_name: str
-    attr_name: str
+class GitMessageGeneratorManifest(ModAttrManifest):
     name: str
     aliases: ta.Collection[str] | None = None
 
-    def get_cls(self) -> type[GitMessageGenerator]:
-        mod = importlib.import_module(self.mod_name)
-        return check.issubclass(getattr(mod, self.attr_name), GitMessageGenerator)
+    def load_cls(self) -> type[GitMessageGenerator]:
+        return check.issubclass(self.load(), GitMessageGenerator)
 
 
 @cached.function
