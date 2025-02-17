@@ -2,15 +2,7 @@
 # @omlish-lite
 """
 TODO:
- - reliable pid retrieval
-  - contents are *ignored*, just advisory
-  - check double-check:
-   - 1) get pid of flock holder
-   - 2) get pidfd to that
-   - 3) recheck current pid of flock holder == that pid
-  - racy as to if it's a different actual process as initial check, just with same pid, but due to 'identity' / semantic
-    meaning of the named pidfile the processes are considered equivalent
-  - read_checked(), contextmanager
+ - 'json pids', with code version? '.json.pid'? '.jpid'?
 """
 import fcntl
 import os
