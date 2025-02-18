@@ -384,3 +384,18 @@ def proxy_init(
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
 
     pi.add(package, attrs)
+
+
+##
+
+
+def get_real_module_name(globals: ta.Mapping[str, ta.Any]) -> str:  # noqa
+    module = sys.modules[globals['__name__']]
+
+    if module.__spec__ and module.__spec__.name:
+        return module.__spec__.name
+
+    if module.__package__:
+        return module.__package__
+
+    raise RuntimeError("Can't determine real module name")

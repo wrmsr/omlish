@@ -18,7 +18,19 @@ else:
 
 
 class Target(dc.Case):
-    pass
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'Target':
+        if isinstance(obj, Target):
+            return obj
+
+        elif isinstance(obj, str):
+            return NameTarget(obj)
+
+        elif callable(obj):
+            return FnTarget(obj)
+
+        else:
+            raise TypeError(obj)
 
 
 class TargetRunner(abc.ABC):
@@ -67,7 +79,9 @@ class NameTargetRunner(TargetRunner, dc.Frozen):
             runpy._run_module_as_main(name)  # type: ignore  # noqa
         else:
             obj = lang.import_attr(self.target.name)
-            obj()
+            tgt = Target.of(obj)
+            tr = target_runner_for(tgt)
+            return tr.run()
 
 
 ##

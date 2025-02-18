@@ -1,5 +1,5 @@
 import dataclasses as dc
-import functools
+import functools  # noqa
 import logging
 import os.path
 import tempfile
@@ -8,6 +8,7 @@ import typing as ta
 import urllib.request
 
 from ... import check
+from ... import lang  # noqa
 from ...http.coro.simple import make_simple_http_server
 from ...http.handlers import LoggingHttpHandler
 from ...http.handlers import StringResponseHttpHandler
@@ -17,7 +18,7 @@ from ..daemon import Daemon
 from ..spawning import ForkSpawning  # noqa
 from ..spawning import MultiprocessingSpawning  # noqa
 from ..spawning import ThreadSpawning  # noqa
-from ..targets import FnTarget
+from ..targets import Target
 
 
 log = logging.getLogger(__name__)
@@ -63,6 +64,13 @@ class HiServer:
 #
 
 
+def run_hi_sever() -> None:
+    HiServer.run_config(HiServer.Config())
+
+
+#
+
+
 @dc.dataclass(frozen=True)
 class Hi:
     server: HiServer.Config = HiServer.Config()
@@ -84,7 +92,9 @@ def _main() -> None:
     hi = Hi()
 
     daemon = Daemon(
-        target=FnTarget(functools.partial(HiServer.run_config, hi.server)),
+        target=Target.of(
+            functools.partial(HiServer.run_config, hi.server),
+        ),
         config=dc.replace(
             hi.daemon,
             spawning=ThreadSpawning(),
