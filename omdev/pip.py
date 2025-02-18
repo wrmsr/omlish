@@ -1,21 +1,14 @@
 import importlib.metadata
-import io
+import json
 import sys
 import typing as ta
 import urllib.request
 
 from omlish import check
-from omlish import lang
 
 from .packaging.names import canonicalize_name
 from .packaging.requires import RequiresVariable
 from .packaging.requires import parse_requirement
-
-
-if ta.TYPE_CHECKING:
-    import xml.etree.ElementTree as ET  # noqa
-else:
-    ET = lang.proxy_import('xml.etree.ElementTree')
 
 
 ##
@@ -30,11 +23,11 @@ def lookup_latest_package_version(
         pypi_url: str = DEFAULT_PYPI_URL,
 ) -> str:
     pkg_name = check.non_empty_str(package)
-    with urllib.request.urlopen(f'{pypi_url.rstrip("/")}/rss/project/{pkg_name}/releases.xml') as resp:  # noqa
-        rss = resp.read()
-    doc = ET.parse(io.BytesIO(rss))  # noqa
-    latest = check.not_none(doc.find('./channel/item/title')).text
-    return check.non_empty_str(latest)
+    with urllib.request.urlopen(f'{pypi_url.rstrip("/")}/pypi/{pkg_name}/json') as resp:  # noqa
+        buf = resp.read()
+    # https://github.com/python/cpython/blob/51d4bf1e0e5349090da72721c865b6c2b28277f3/Tools/scripts/checkpip.py
+    dct = json.loads(buf.decode('utf-8'))
+    return check.non_empty_str(dct['info']['version'])
 
 
 ##
