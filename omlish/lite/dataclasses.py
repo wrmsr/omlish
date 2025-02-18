@@ -3,6 +3,18 @@ import dataclasses as dc
 import typing as ta
 
 
+##
+
+
+def is_immediate_dataclass(cls: type) -> bool:
+    if not isinstance(cls, type):
+        raise TypeError(cls)
+    return dc._FIELDS in cls.__dict__  # type: ignore[attr-defined]  # noqa
+
+
+##
+
+
 def dataclass_cache_hash(
         *,
         cached_hash_attr: str = '__dataclass_hash__',
@@ -33,6 +45,9 @@ def dataclass_cache_hash(
     return inner
 
 
+##
+
+
 def dataclass_maybe_post_init(sup: ta.Any) -> bool:
     if not isinstance(sup, super):
         raise TypeError(sup)
@@ -42,6 +57,9 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
         return False
     fn()
     return True
+
+
+##
 
 
 def dataclass_repr_filtered(

@@ -4,6 +4,35 @@ import unittest
 
 from ..dataclasses import dataclass_cache_hash
 from ..dataclasses import dataclass_maybe_post_init
+from ..dataclasses import is_immediate_dataclass
+
+
+##
+
+
+class TestIsImmediate(unittest.TestCase):
+    class A:
+        pass
+
+    @dc.dataclass()
+    class B:
+        pass
+
+    class C(B):
+        pass
+
+    @dc.dataclass()
+    class D(B):
+        pass
+
+    def test_is_immediate(self):
+        self.assertFalse(is_immediate_dataclass(self.A))
+        self.assertTrue(is_immediate_dataclass(self.B))
+        self.assertFalse(is_immediate_dataclass(self.C))
+        self.assertTrue(is_immediate_dataclass(self.D))
+
+
+##
 
 
 @dc.dataclass()
@@ -16,7 +45,7 @@ class CountingHashThing:
         return self.hash
 
 
-class TestDataclasses(unittest.TestCase):
+class TestCacheHash(unittest.TestCase):
     def test_cache_hash(self):
         @dc.dataclass(frozen=True)
         class Foo:
@@ -38,6 +67,11 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual(f.thing.num_times_hashed, 1)
         self.assertEqual(h1, h2)
 
+
+##
+
+
+class TestMaybePostInit(unittest.TestCase):
     def test_maybe_post_init(self):
         @dc.dataclass
         class A:

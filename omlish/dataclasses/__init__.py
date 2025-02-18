@@ -92,8 +92,6 @@ from .impl.reflect import (  # noqa
 )
 
 from .utils import (  # noqa
-    is_immediate_dataclass,
-
     opt_repr,
     truthy_repr,
 
@@ -116,5 +114,7 @@ from .utils import (  # noqa
 ##
 
 from ..lite.dataclasses import (  # noqa
+    is_immediate_dataclass,
+
     dataclass_maybe_post_init as maybe_post_init,
 )
