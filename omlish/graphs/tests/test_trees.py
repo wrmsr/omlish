@@ -17,3 +17,4 @@ def test_basic():
     })
 
     assert a0.child_sets_by_node == a1.child_sets_by_node
+    assert a0.get_lineage('d').rank('b') == 1

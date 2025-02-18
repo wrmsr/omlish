@@ -57,11 +57,6 @@ from .identity import (  # noqa
     IdentityWeakSet,
 )
 
-from .indexed import (  # noqa
-    IndexedSeq,
-    IndexedSetSeq,
-)
-
 from .mappings import (  # noqa
     MissingDict,
     TypeMap,
@@ -90,6 +85,11 @@ else:
         'TreapMap',
         'new_treap_map',
     ])
+
+from .ranked import (  # noqa
+    RankedSeq,
+    RankedSetSeq,
+)
 
 if _ta.TYPE_CHECKING:
     from .sorted.skiplist import (  # noqa

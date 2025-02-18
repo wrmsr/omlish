@@ -56,7 +56,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._set_fac: ta.Callable[..., ta.MutableSet[NodeT]] = col.IdentitySet if identity else set
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
-        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # type: ignore  # noqa
+        self._rank_seq_fac: ta.Callable[..., col.RankedSeq[NodeT]] = functools.partial(col.RankedSeq, identity=identity)  # type: ignore  # noqa
 
         def walk(cur: NodeT, parent: NodeT | None) -> None:
             check.not_none(cur)
@@ -88,10 +88,10 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         walk(root, None)
 
-        self._nodes = self._idx_seq_fac(nodes)
+        self._nodes = self._rank_seq_fac(nodes)
         self._node_set: ta.AbstractSet[NodeT] = node_set
-        self._children_by_node: ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]] = self._dict_fac(
-            [(n, self._idx_seq_fac(cs)) for n, cs in children_by_node.items()])
+        self._children_by_node: ta.Mapping[NodeT | None, col.RankedSeq[NodeT]] = self._dict_fac(
+            [(n, self._rank_seq_fac(cs)) for n, cs in children_by_node.items()])
         self._child_sets_by_node: ta.Mapping[NodeT | None, ta.AbstractSet[NodeT]] = child_sets_by_node
         self._parents_by_node: ta.Mapping[NodeT, NodeT | None] = parents_by_node
 
@@ -100,7 +100,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         return self._root
 
     @property
-    def nodes(self) -> col.IndexedSeq[NodeT]:
+    def nodes(self) -> col.RankedSeq[NodeT]:
         return self._nodes
 
     @property
@@ -116,7 +116,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         return self._node_set
 
     @property
-    def children_by_node(self) -> ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]]:
+    def children_by_node(self) -> ta.Mapping[NodeT | None, col.RankedSeq[NodeT]]:
         return self._children_by_node
 
     @property
@@ -224,8 +224,8 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
                 break
             yield cur
 
-    def get_lineage(self, node: NodeT) -> col.IndexedSeq[NodeT]:
-        return self._idx_seq_fac(reversed([node, *self.iter_ancestors(node)]))
+    def get_lineage(self, node: NodeT) -> col.RankedSeq[NodeT]:
+        return self._rank_seq_fac(reversed([node, *self.iter_ancestors(node)]))
 
     def get_first_parent_of_type(self, node: NodeT, ty: type[T]) -> T | None:
         for cur in self.iter_ancestors(node):
