@@ -91,6 +91,10 @@ from .impl.reflect import (  # noqa
     reflect,
 )
 
+from .static import (  # noqa
+    Static,
+)
+
 from .utils import (  # noqa
     opt_repr,
     truthy_repr,
