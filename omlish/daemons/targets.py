@@ -6,6 +6,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .services import Service
 
 
 if ta.TYPE_CHECKING:
@@ -29,6 +30,9 @@ class Target(dc.Case):
         elif callable(obj):
             return FnTarget(obj)
 
+        elif isinstance(obj, Service.Config):
+            return ServiceConfigTarget(obj)
+
         else:
             raise TypeError(obj)
 
@@ -48,14 +52,18 @@ def target_runner_for(target: Target) -> TargetRunner:
 
 
 class FnTarget(Target):
-    fn: ta.Callable[[], None]
+    fn: ta.Callable[[], ta.Any]
 
 
 class FnTargetRunner(TargetRunner, dc.Frozen):
     target: FnTarget
 
     def run(self) -> None:
-        self.target.fn()
+        obj = self.target.fn()
+        if obj is not None:
+            tgt = Target.of(obj)
+            tr = target_runner_for(tgt)
+            tr.run()
 
 
 @target_runner_for.register
@@ -98,7 +106,7 @@ class NameTargetRunner(TargetRunner, dc.Frozen):
             obj = lang.import_attr(self.target.name)
             tgt = Target.of(obj)
             tr = target_runner_for(tgt)
-            return tr.run()
+            tr.run()
 
 
 @target_runner_for.register
@@ -123,3 +131,22 @@ class ExecTargetRunner(TargetRunner, dc.Frozen):
 @target_runner_for.register
 def _(target: ExecTarget) -> ExecTargetRunner:
     return ExecTargetRunner(target)
+
+
+##
+
+
+class ServiceConfigTarget(Target):
+    cfg: Service.Config
+
+
+class ServiceConfigTargetRunner(TargetRunner, dc.Frozen):
+    target: ServiceConfigTarget
+
+    def run(self) -> None:
+        Service.run_config(self.target.cfg)
+
+
+@target_runner_for.register
+def _(target: ServiceConfigTarget) -> ServiceConfigTargetRunner:
+    return ServiceConfigTargetRunner(target)

@@ -15,6 +15,7 @@ from ...http.handlers import StringResponseHttpHandler
 from ...logs import all as logs
 from ...sockets.bind import SocketBinder
 from ..daemon import Daemon
+from ..services import Service
 from ..spawning import ForkSpawning  # noqa
 from ..spawning import MultiprocessingSpawning  # noqa
 from ..spawning import ThreadSpawning  # noqa
@@ -62,14 +63,41 @@ class HiServer:
         return cls(config).run()
 
 
-#
+##
+
+
+class HiService(Service['HiService.Config']):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Config(Service.Config):
+        server: HiServer.Config = HiServer.Config()
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+        self._server = HiServer(config.server)
+
+    def _run(self) -> None:
+        self._server.run()
+
+
+##
+
+
+HI_SERVICE_CONFIG = HiService.Config()
+
+
+def hi_service_config() -> HiService.Config:
+    return HiService.Config()
+
+
+##
 
 
 def run_hi_server() -> None:
     HiServer.run_config(HiServer.Config())
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -97,7 +125,8 @@ def _main() -> None:
             # functools.partial(HiServer.run_config, hi.server),
             # '.'.join([lang.get_real_module_name(globals()), 'run_hi_server']),
             # NameTarget.for_obj(run_hi_server, no_module_name_lookup=True),
-            'omlish.daemons.tests.demo.run_hi_server',
+            # 'omlish.daemons.tests.demo.run_hi_server',
+            'omlish.daemons.tests.demo.hi_service_config',
         ),
         config=dc.replace(
             hi.daemon,
