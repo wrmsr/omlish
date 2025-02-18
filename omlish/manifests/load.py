@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 """
 Should be kept somewhat lightweight - used in cli entrypoints.
 

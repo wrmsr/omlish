@@ -169,6 +169,6 @@ class Static(lang.Abstract):
 
     @ta.final
     def __init__(self) -> None:
-        # This stub also serves to allow `StaticSubclass()` to typecheck by allowing it to accept zero arguments. Note
+        # This stub serves to allow `StaticSubclass()` to typecheck by allowing it to accept only zero arguments. Note
         # that this is only the case when `Static` is first in mro.
         raise TypeError('May not instantiate static dataclasses')
