@@ -120,11 +120,16 @@ def _(target: NameTarget) -> NameTargetRunner:
 class ExecTarget(Target):
     cmd: ta.Sequence[str] = dc.xfield(coerce=check.of_not_isinstance(str))
 
+    cwd: str | None = None
+
 
 class ExecTargetRunner(TargetRunner, dc.Frozen):
     target: ExecTarget
 
     def run(self) -> None:
+        if (cwd := self.target.cwd) is not None:
+            os.chdir(os.path.expanduser(cwd))
+
         os.execl(*self.target.cmd)
 
 
