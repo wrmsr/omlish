@@ -59,11 +59,15 @@ def _dump_module_manifests(spec: str, *attrs: str) -> None:
         manifest = getattr(mod, attr)
 
         if dc.is_dataclass(manifest):
+            # Support static dataclasses
+            if isinstance(manifest, type):
+                manifest = manifest()
+
             cls = type(manifest)
-            manifest_json = json.dumps(dc.asdict(manifest))  # type: ignore
+            manifest_json = json.dumps(dc.asdict(manifest))
             manifest_dct = json.loads(manifest_json)
 
-            rt_manifest = cls(**manifest_dct)  # type: ignore
+            rt_manifest = cls(**manifest_dct)
             if rt_manifest != manifest:
                 raise Exception(f'Manifest failed to roundtrip: {manifest} -> {manifest_dct} != {rt_manifest}')
 
