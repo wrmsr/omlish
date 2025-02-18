@@ -3,32 +3,34 @@ import typing as ta
 
 from omlish import lang
 from omlish.http.asgi import AsgiApp
+from omlish.metadata import ObjectMetadata
+from omlish.metadata import append_object_metadata
+from omlish.metadata import get_object_metadata
 
 
 T = ta.TypeVar('T')
 
 
-class AppMarker(lang.Abstract):
+##
+
+
+class AppMarker(ObjectMetadata, lang.Abstract):
     pass
 
 
-APP_MARKERS_ATTR = '__' + __name__.replace('.', '_') + '__'
+##
 
 
 def append_app_marker(obj: T, *markers: AppMarker) -> T:
-    tgt = lang.unwrap_func(obj)
-    tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).extend(markers)
+    append_object_metadata(obj, *markers)
     return obj
 
 
 def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
-    tgt = lang.unwrap_func(obj)
-    try:
-        dct = tgt.__dict__
-    except AttributeError:
-        return ()
-    lst = dct.get(APP_MARKERS_ATTR, ())
-    return lst
+    return [md for md in get_object_metadata(obj) if isinstance(md, AppMarker)]
+
+
+##
 
 
 class AppMarkerProcessor(lang.Abstract):

@@ -43,10 +43,17 @@ _VALID_OBJECT_METADATA_TARGET_TYPES: tuple[type, ...] = (
 )
 
 
+class ObjectMetadataTargetTypeError(TypeError):
+    pass
+
+
 def _unwrap_object_metadata_target(obj: ta.Any) -> ta.Any:
     tgt: ta.Any = obj
     tgt = lang.unwrap_func(tgt)
-    check.isinstance(tgt, _VALID_OBJECT_METADATA_TARGET_TYPES)
+
+    if not isinstance(tgt, _VALID_OBJECT_METADATA_TARGET_TYPES):
+        raise ObjectMetadataTargetTypeError(tgt)
+
     return tgt
 
 
@@ -57,8 +64,12 @@ _OBJECT_METADATA_ATTR = '__' + __name__.replace('.', '_') + '__metadata__'
 
 
 def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
+    for md in mds:
+        check.isinstance(md, ObjectMetadata)
+
     tgt = _unwrap_object_metadata_target(obj)
     dct = tgt.__dict__
+
     if isinstance(dct, types.MappingProxyType):
         for _ in range(2):
             try:
@@ -69,18 +80,27 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
                 break
         else:
             raise RuntimeError
+
     else:
         lst = dct.setdefault(_OBJECT_METADATA_ATTR, [])
+
     lst.extend(mds)
     return obj
 
 
-def get_object_metadata(obj: ta.Any) -> ta.Sequence[ObjectMetadata]:
-    tgt = _unwrap_object_metadata_target(obj)
+def get_object_metadata(obj: ta.Any, *, strict: bool = False) -> ta.Sequence[ObjectMetadata]:
+    try:
+        tgt = _unwrap_object_metadata_target(obj)
+    except ObjectMetadataTargetTypeError:
+        if not strict:
+            return ()
+        raise
+
     try:
         dct = tgt.__dict__
     except AttributeError:
         return ()
+
     return dct.get(_OBJECT_METADATA_ATTR, ())
 
 
@@ -109,6 +129,7 @@ class DecoratorObjectMetadata(ObjectMetadata, lang.Abstract):
         if (tts := type(self)._OBJECT_METADATA_TARGET_TYPES) is not None:  # noqa
             tgt = _unwrap_object_metadata_target(tgt)
             check.isinstance(tgt, tts)
+
         append_object_metadata(tgt, self)
         return obj
 
