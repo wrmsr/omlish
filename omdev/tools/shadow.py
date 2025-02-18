@@ -1,6 +1,7 @@
 """
 TODO:
  - 'edit', default cwd - use git's
+  - git var GIT_EDITOR
  - delete?
  - 'purge'?
  - 'validate' - at least formats
