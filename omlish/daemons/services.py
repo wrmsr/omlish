@@ -16,8 +16,6 @@ class Service(Configurable[ServiceConfigT], lang.Abstract):
     class Config(Configurable.Config):
         pass
 
-    #
-
     @classmethod
     def from_config(cls, config: Config) -> 'Service':
         return check.isinstance(config.configurable_cls(config), cls)
