@@ -18,6 +18,15 @@ class Static(lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
+        for a in ('__new__', '__init__'):
+            if a in cls.__dict__ and not (cls.__dict__[a] == getattr(Static, a)):
+                raise TypeError(f'Static base class {cls} must not implement {a}')
+
+        if cls.__init__ is not Static.__init__:
+            # This is necessary to make type-checking work (by allowing it to accept zero). This isn't strictly
+            # necessary, but since it's useful to do sometimes it might as well be done everywhere to prevent clashing.
+            raise TypeError(f'Static.__init__ should be first in mro of {cls}')
+
         #
 
         b_dc_lst = []
@@ -156,7 +165,10 @@ class Static(lang.Abstract):
 
             cls.__new__ = __new__  # type: ignore
 
-        def __init__(new_self):  # noqa
-            raise TypeError('May not instantiate static dataclasses')
+        cls.__init__ = Static.__init__  # type: ignore
 
-        cls.__init__ = __init__  # type: ignore[method-assign]
+    @ta.final
+    def __init__(self) -> None:
+        # This stub also serves to allow `StaticSubclass()` to typecheck by allowing it to accept zero arguments. Note
+        # that this is only the case when `Static` is first in mro.
+        raise TypeError('May not instantiate static dataclasses')
