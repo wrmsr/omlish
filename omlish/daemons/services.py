@@ -13,7 +13,7 @@ ServiceConfigT = ta.TypeVar('ServiceConfigT', bound='Service.Config')
 
 
 class Service(Configurable[ServiceConfigT], lang.Abstract):
-    class Config(Configurable.Config):
+    class Config(Configurable.Config, lang.Abstract):
         pass
 
     @classmethod
