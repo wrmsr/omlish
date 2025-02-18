@@ -69,6 +69,23 @@ def _(target: FnTarget) -> FnTargetRunner:
 class NameTarget(Target):
     name: str
 
+    @classmethod
+    def for_obj(
+            cls,
+            obj: ta.Any,
+            *,
+            globals: ta.Mapping[str, ta.Any] | None = None,  # noqa
+            no_module_name_lookup: bool = False,
+    ) -> 'NameTarget':
+        if globals is None:
+            globals = obj.__globals__  # noqa
+        if not no_module_name_lookup:
+            mn = lang.get_real_module_name(globals)
+        else:
+            mn = globals['__name__']
+        qn = obj.__qualname__
+        return NameTarget('.'.join([mn, qn]))
+
 
 class NameTargetRunner(TargetRunner, dc.Frozen):
     target: NameTarget
@@ -82,6 +99,11 @@ class NameTargetRunner(TargetRunner, dc.Frozen):
             tgt = Target.of(obj)
             tr = target_runner_for(tgt)
             return tr.run()
+
+
+@target_runner_for.register
+def _(target: NameTarget) -> NameTargetRunner:
+    return NameTargetRunner(target)
 
 
 ##

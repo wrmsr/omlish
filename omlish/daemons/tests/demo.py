@@ -18,6 +18,7 @@ from ..daemon import Daemon
 from ..spawning import ForkSpawning  # noqa
 from ..spawning import MultiprocessingSpawning  # noqa
 from ..spawning import ThreadSpawning  # noqa
+from ..targets import NameTarget  # noqa
 from ..targets import Target
 
 
@@ -64,7 +65,7 @@ class HiServer:
 #
 
 
-def run_hi_sever() -> None:
+def run_hi_server() -> None:
     HiServer.run_config(HiServer.Config())
 
 
@@ -93,7 +94,10 @@ def _main() -> None:
 
     daemon = Daemon(
         target=Target.of(
-            functools.partial(HiServer.run_config, hi.server),
+            # functools.partial(HiServer.run_config, hi.server),
+            # '.'.join([lang.get_real_module_name(globals()), 'run_hi_server']),
+            # NameTarget.for_obj(run_hi_server, no_module_name_lookup=True),
+            'omlish.daemons.tests.demo.run_hi_server',
         ),
         config=dc.replace(
             hi.daemon,
