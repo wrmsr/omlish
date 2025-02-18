@@ -2,16 +2,9 @@
 # @omlish-lite
 """
 TODO:
- - file format?? yaml?
  - cascading?
  - caching?
  - purging?
- - cli
-  - 'edit', default cwd
-  - 'show'
-  - delete
-  - 'purge'?
-  - 'validate' - at least formats
  - wishlist: piecewise config parts, unmarshal, registered via manifests
 """
 import abc

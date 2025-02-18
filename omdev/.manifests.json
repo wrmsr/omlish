@@ -432,6 +432,18 @@
     }
   },
   {
+    "module": ".tools.shadow",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/shadow.py",
+    "line": 63,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "shadow",
+        "mod_name": "omdev.tools.shadow"
+      }
+    }
+  },
+  {
     "module": ".tools.sqlrepl",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/sqlrepl.py",
