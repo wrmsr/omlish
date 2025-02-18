@@ -10,6 +10,8 @@ from omlish.manifests import load as manifest_load
 from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.base import NameAliasesManifest
 
+from . import consts
+
 
 ##
 
@@ -19,7 +21,7 @@ class GitMessageGenerator(abc.ABC):
     class GenerateCommitMessageArgs:
         cwd: str | None = None
 
-        DEFAULT_TIME_FMT: ta.ClassVar[str] = '%Y-%m-%dT%H:%M:%SZ'
+        DEFAULT_TIME_FMT: ta.ClassVar[str] = consts.DEFAULT_TIME_FMT
         time_fmt: str = DEFAULT_TIME_FMT
 
     @dc.dataclass(frozen=True, kw_only=True)

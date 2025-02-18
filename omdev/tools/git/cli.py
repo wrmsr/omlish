@@ -21,6 +21,7 @@ from omlish.subprocesses.sync import subprocesses
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
 from ...home.paths import get_home_dir
+from . import consts
 from .messages import GitMessageGenerator
 from .messages import TimestampGitMessageGenerator
 from .messages import load_message_generator_manifests
@@ -90,6 +91,10 @@ class Cli(ap.Cli):
         print(yaml.dump(msh.marshal(cfg)))
 
     #
+
+    _time_fmt: str = ap.arg_('--time-fmt', default=consts.DEFAULT_TIME_FMT)
+
+    # Commands
 
     @ap.cmd()
     def blob_sizes(self) -> None:
@@ -233,9 +238,39 @@ class Cli(ap.Cli):
     # Lazy helpers
 
     @ap.cmd(
+        ap.arg('-g', '--message-generator', nargs='?'),
+        ap.arg('dir', nargs='*'),
+        aliases=['gcm'],
+    )
+    def generate_commit_message(self) -> None:
+        def run(cwd: str | None) -> None:
+            st = get_git_status(cwd=cwd)
+
+            if not (st.has_staged or st.has_dirty):
+                return
+
+            mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
+            if (mg_name := self.args.message_generator) is None:
+                mg_name = self.load_config().default_message_generator
+            if mg_name is not None:
+                mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
+            mg = mg_cls()
+
+            mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
+                cwd=cwd,
+                time_fmt=self._time_fmt,
+            ))
+            print(mgr.msg)
+
+        if not self.args.dir:
+            run(None)
+        else:
+            for d in self.args.dir:
+                run(d)
+
+    @ap.cmd(
         ap.arg('-m', '--message', nargs='?'),
         ap.arg('-g', '--message-generator', nargs='?'),
-        ap.arg('--time-fmt', default=GitMessageGenerator.GenerateCommitMessageArgs.DEFAULT_TIME_FMT),
         ap.arg('--dry-run', action='store_true'),
         ap.arg('-y', '--no-confirmation', action='store_true'),
         ap.arg('dir', nargs='*'),
@@ -268,7 +303,7 @@ class Cli(ap.Cli):
 
                     mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
                         cwd=cwd,
-                        time_fmt=self.args.time_fmt,
+                        time_fmt=self._time_fmt,
                     ))
                     if mgr.confirm and not self._args.no_confirmation:
                         print(mgr.msg)
