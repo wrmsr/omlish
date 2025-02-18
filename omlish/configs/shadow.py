@@ -89,4 +89,4 @@ class MangledFilesShadowConfigs(FileShadowConfigs):
         except FileNotFoundError:
             return None
 
-        return check.isinstance(self._loader.load_str(content), ta.Mapping)
+        return self._loader.load_str(content).as_map()

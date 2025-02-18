@@ -13,6 +13,10 @@ from .matching import (  # noqa
     matched_config_rewrite as matched_rewrite,
 )
 
+from .merging import (  # noqa
+    merge_configs as merge,
+)
+
 from .names import (  # noqa
     build_config_named_children as build_named_children,
 )

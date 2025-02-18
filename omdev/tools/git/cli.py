@@ -13,6 +13,7 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.argparse import all as ap
+from omlish.configs.processing.merging import merge_configs
 from omlish.formats import json
 from omlish.formats import yaml
 from omlish.logs import all as logs
@@ -20,6 +21,7 @@ from omlish.subprocesses.sync import subprocesses
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
+from ...home.configs import get_shadow_configs
 from ...home.paths import get_home_dir
 from . import consts
 from .messages import GitMessageGenerator
@@ -75,19 +77,34 @@ class Cli(ap.Cli):
             return os.path.join(get_home_dir(), 'tools', 'git.yml')
 
     @cached.function
-    def load_config(self) -> Config:
+    def load_home_config_content(self) -> ta.Any:
         try:
             with open(self.config_file_path()) as f:
                 buf = f.read()
         except FileNotFoundError:
             return self.Config()
 
-        dct = yaml.safe_load(buf)
+        return yaml.safe_load(buf) or {}
+
+    class _NOT_SET(lang.Marker):  # noqa
+        pass
+
+    def load_config(self, path: str | type[_NOT_SET] | None = _NOT_SET) -> Config:
+        dct = self.load_home_config_content() or {}
+
+        if path is not self._NOT_SET:
+            if path is None:
+                path = os.getcwd()
+            shadow_cfg = get_shadow_configs().get_shadow_config(check.isinstance(path, str)) or {}
+            dct = merge_configs(dct, shadow_cfg.get('git', {}))
+
         return msh.unmarshal(dct, self.Config)
 
-    @ap.cmd()
+    @ap.cmd(
+        ap.arg('dir', nargs='?'),
+    )
     def print_cfg(self) -> None:
-        cfg = self.load_config()
+        cfg = self.load_config(self._args.dir)
         print(yaml.dump(msh.marshal(cfg)))
 
     #
@@ -251,7 +268,7 @@ class Cli(ap.Cli):
 
             mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
             if (mg_name := self.args.message_generator) is None:
-                mg_name = self.load_config().default_message_generator
+                mg_name = self.load_config(cwd).default_message_generator
             if mg_name is not None:
                 mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
             mg = mg_cls()
@@ -296,7 +313,7 @@ class Cli(ap.Cli):
                 else:
                     mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
                     if (mg_name := self.args.message_generator) is None:
-                        mg_name = self.load_config().default_message_generator
+                        mg_name = self.load_config(cwd).default_message_generator
                     if mg_name is not None:
                         mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
                     mg = mg_cls()
