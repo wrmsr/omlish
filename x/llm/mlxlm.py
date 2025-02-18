@@ -3,7 +3,8 @@ import mlx_lm
 
 def _main() -> None:
     model, tokenizer = mlx_lm.load(
-        'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
+        'mlx-community/DeepSeek-R1-Distill-Llama-70B-8bit',
+        # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-4bit',
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-8bit'

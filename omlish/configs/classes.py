@@ -1,53 +1,31 @@
 import typing as ta
-import weakref
 
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
 
 
-class Config(
-    dc.Data,
-    lang.Abstract,
-    frozen=True,
-    reorder=True,
-    confer=frozenset([
-        'frozen',
-        'reorder',
-        'confer',
-    ]),
-):
-    pass
+ConfigurableConfigT = ta.TypeVar('ConfigurableConfigT', bound='Configurable.Config')
 
 
-ConfigT = ta.TypeVar('ConfigT', bound='Config')
+class Configurable(ta.Generic[ConfigurableConfigT], lang.Abstract):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Config:
+        """Does not use any dc metaclasses to preserve typechecking."""
 
-_CONFIG_CLS_MAP: ta.MutableMapping[type[Config], type['Configurable']] = weakref.WeakValueDictionary()
-
-
-class Configurable(ta.Generic[ConfigT], lang.Abstract):
-
-    # FIXME: https://github.com/python/mypy/issues/5144
-    Config: ta.ClassVar[type[ConfigT]]  # type: ignore  # noqa
+        configurable_cls: ta.ClassVar[type['Configurable']]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        cfg_cls = check.issubclass(cls.__dict__['Config'], Config)
-        check.not_in(cfg_cls, _CONFIG_CLS_MAP)
-        _CONFIG_CLS_MAP[cfg_cls] = cls
+        if not lang.is_abstract_class(cls):
+            check.in_('Config', cls.__dict__)
+            cfg_cls = check.issubclass(cls.Config, Configurable.Config)
+            check.not_in('configurable_cls', cfg_cls.__dict__)
+            check.state(dc.is_immediate_dataclass(cfg_cls))
+            cfg_cls.configurable_cls = cls
 
-    def __init__(self, config: ConfigT) -> None:
+    def __init__(self, config: ConfigurableConfigT) -> None:
         super().__init__()
 
-        self._config: ConfigT = check.isinstance(config, self.Config)
-
-
-def get_impl(cfg: type[Config] | Config) -> type[Configurable]:
-    if isinstance(cfg, type):
-        cfg_cls = check.issubclass(cfg, Config)  # noqa
-    elif isinstance(cfg, Config):
-        cfg_cls = type(cfg)
-    else:
-        raise TypeError(cfg)
-    return _CONFIG_CLS_MAP[cfg_cls]
+        self._config: ConfigurableConfigT = check.isinstance(config, self.Config)  # type: ignore[assignment]

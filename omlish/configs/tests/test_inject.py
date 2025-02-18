@@ -3,7 +3,6 @@ import typing as ta
 
 from ... import inject as inj
 from ... import lang
-from ..classes import Config
 from ..classes import Configurable
 from .test_classes import AThing
 from .test_classes import BThing
@@ -26,7 +25,7 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
     )
 
 
-ConfigT = ta.TypeVar('ConfigT', bound=Config)
+ConfigT = ta.TypeVar('ConfigT', bound=Configurable.Config)
 ConfigurableT = ta.TypeVar('ConfigurableT', bound=Configurable)
 
 
