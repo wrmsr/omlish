@@ -77,6 +77,48 @@ class FileMode:
             )
         )
 
+    @classmethod
+    def from_flags(cls, i: int) -> 'FileMode':
+        if i & os.O_RDWR:
+            i &= ~os.O_RDWR
+            read = write = True
+        elif i & os.O_WRONLY:
+            i &= ~os.O_WRONLY
+            write = True
+            read = False
+        else:
+            read = True
+            write = False
+
+        create = False
+        if i & os.O_CREAT:
+            i &= ~os.O_CREAT
+            create = True
+
+        exists: str | None = None
+        if i & os.O_TRUNC:
+            i &= ~os.O_TRUNC
+            exists = check.replacing_none(exists, 'truncate')
+        if i & os.O_EXCL:
+            i &= ~os.O_EXCL
+            exists = check.replacing_none(exists, 'fail')
+        if i & os.O_APPEND:
+            i &= ~os.O_APPEND
+            exists = check.replacing_none(exists, 'append')
+        if exists is None:
+            exists = 'beginning'
+
+        if i:
+            raise ValueError(i)
+
+        return FileMode(
+            read=read,
+            write=write,
+            create=create,
+            exists=exists,  # type: ignore
+            binary=True,
+        )
+
     #
 
     def render(self) -> str:
