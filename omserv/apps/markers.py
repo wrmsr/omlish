@@ -16,7 +16,7 @@ APP_MARKERS_ATTR = '__' + __name__.replace('.', '_') + '__'
 
 
 def append_app_marker(obj: T, *markers: AppMarker) -> T:
-    tgt = lang.unwrap_func(obj)  # type: ignore
+    tgt = lang.unwrap_func(obj)
     tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).extend(markers)
     return obj
 
@@ -27,7 +27,8 @@ def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
         dct = tgt.__dict__
     except AttributeError:
         return ()
-    return dct.get(APP_MARKERS_ATTR, ())
+    lst = dct.get(APP_MARKERS_ATTR, ())
+    return lst
 
 
 class AppMarkerProcessor(lang.Abstract):

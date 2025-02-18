@@ -106,7 +106,7 @@ class RouteHandlerApp(AsgiApp_):
 
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         with contextlib.ExitStack() as es:
-            es.enter_context(lang.context_var_setting(SCOPE, scope))
+            es.enter_context(lang.context_var_setting(SCOPE, scope))  # noqa
 
             match scope_ty := scope['type']:
                 case 'lifespan':

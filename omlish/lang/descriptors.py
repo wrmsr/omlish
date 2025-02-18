@@ -48,25 +48,26 @@ def _has_method_descriptor(obj: ta.Any) -> bool:
                 return False
 
 
-def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
+def unwrap_method_descriptors(fn: ta.Any) -> ta.Any:
     while is_method_descriptor(fn):
-        fn = fn.__func__  # type: ignore  # noqa
+        fn = fn.__func__
     return fn
 
 
 ##
 
 
-def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
+def unwrap_func_with_partials(fn: ta.Any) -> tuple[ta.Any, list[functools.partial]]:
     ps = []
     while True:
         if is_method_descriptor(fn) or isinstance(fn, types.MethodType):
-            fn = fn.__func__  # type: ignore
+            fn = fn.__func__
 
         elif hasattr(fn, '__wrapped__'):
             nxt = fn.__wrapped__
-            if not callable(nxt):
-                raise TypeError(nxt)
+            # FIXME: ?
+            # if not callable(nxt):
+            #     raise TypeError(nxt)
             if nxt is fn:
                 raise TypeError(fn)
             fn = nxt
@@ -83,7 +84,7 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
     return fn, ps
 
 
-def unwrap_func(fn: ta.Callable) -> ta.Callable:
+def unwrap_func(fn: ta.Any) -> ta.Any:
     uw, _ = unwrap_func_with_partials(fn)
     return uw
 
