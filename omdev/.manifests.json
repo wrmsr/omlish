@@ -291,7 +291,7 @@
     "module": ".tools.git.messages",
     "attr": "_TIMESTAMP_GIT_MESSAGE_GENERATOR_MANIFEST",
     "file": "omdev/tools/git/messages.py",
-    "line": 77,
+    "line": 85,
     "value": {
       "$.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "omdev.tools.git.messages",

@@ -104,8 +104,10 @@ class Static(lang.Abstract):
                 else:
                     if isinstance(v, dc.Field):
                         raise TypeError(f'Static dataclass {cls} may not introduce new fields: {fld.name}: {v}')
-                    new_fld.default = v
-                    new_fld.default_factory = dc.MISSING
+
+                    new_fld.default = dc.MISSING
+                    # Use a default_factory to allow unsafe (mutable) values.
+                    new_fld.default_factory = (lambda v2: lambda: v2)(v)  # noqa
 
                 setattr(cls, fld.name, new_fld)
                 new_anns[fld.name] = fld.type

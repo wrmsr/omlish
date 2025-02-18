@@ -1,14 +1,15 @@
 import abc
-import dataclasses as dc
 import os
 import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish.manifests import load as manifest_load
 from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.base import NameAliasesManifest
+from omlish.manifests.static import StaticModAttrManifest
 
 from . import consts
 
@@ -44,6 +45,13 @@ class GitMessageGeneratorManifest(NameAliasesManifest, ModAttrManifest):
         return check.issubclass(self.load(), GitMessageGenerator)
 
 
+class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGeneratorManifest, abc.ABC):
+    pass
+
+
+#
+
+
 @cached.function
 def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifest]:
     ldr = manifest_load.MANIFEST_LOADER
@@ -75,9 +83,7 @@ class TimestampGitMessageGenerator(GitMessageGenerator):
 
 
 # @omlish-manifest
-_TIMESTAMP_GIT_MESSAGE_GENERATOR_MANIFEST = GitMessageGeneratorManifest(
-    mod_name=__name__,
-    attr_name='TimestampGitMessageGenerator',
-    name='timestamp',
-    aliases=['ts'],
-)
+class _TIMESTAMP_GIT_MESSAGE_GENERATOR_MANIFEST(StaticGitMessageGeneratorManifest):  # noqa
+    attr_name = 'TimestampGitMessageGenerator'
+    name = 'timestamp'
+    aliases = ['ts']  # noqa

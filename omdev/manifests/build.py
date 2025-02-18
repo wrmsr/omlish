@@ -3,6 +3,7 @@
 TODO:
  - verify classes instantiate
  - embed in pyproject
+ - roundtrip flexibility regarding json-ness - tuples vs lists vs sets vs frozensets etc
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -43,7 +44,13 @@ T = ta.TypeVar('T')
 
 MANIFEST_MAGIC_KEY = '@omlish-manifest'
 
-_MANIFEST_GLOBAL_PAT = re.compile(r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*')
+_MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
+    # _FOO_MANIFEST = FooManifest(...
+    r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*',
+
+    # class _FOO_MANIFEST(StaticFooManifest): ...
+    r'^class (?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(\(|$)',
+])
 
 
 def _dump_module_manifests(spec: str, *attrs: str) -> None:
@@ -69,7 +76,7 @@ def _dump_module_manifests(spec: str, *attrs: str) -> None:
 
             rt_manifest = cls(**manifest_dct)
             if rt_manifest != manifest:
-                raise Exception(f'Manifest failed to roundtrip: {manifest} -> {manifest_dct} != {rt_manifest}')
+                raise Exception(f'Manifest failed to roundtrip: {manifest} => {manifest_dct} != {rt_manifest}')
 
             key = f'${cls.__module__}.{cls.__qualname__}'
             out[attr] = {key: manifest_dct}
@@ -150,7 +157,11 @@ class ManifestBuilder:
         lines = src.splitlines(keepends=True)
         for i, l in enumerate(lines):
             if l.startswith('# ' + MANIFEST_MAGIC_KEY):
-                if (m := _MANIFEST_GLOBAL_PAT.match(nl := lines[i + 1])) is None:
+                nl = lines[i + 1]
+                for pat in _MANIFEST_GLOBAL_PATS:
+                    if (m := pat.match(nl)) is not None:
+                        break
+                else:
                     raise Exception(nl)
 
                 origins.append(ManifestOrigin(

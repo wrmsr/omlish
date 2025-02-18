@@ -5,7 +5,7 @@ import typing as ta
 
 from omdev.home.paths import get_home_dir
 from omdev.tools.git.messages import GitMessageGenerator
-from omdev.tools.git.messages import GitMessageGeneratorManifest
+from omdev.tools.git.messages import StaticGitMessageGeneratorManifest
 from omlish import check
 from omlish.formats import dotenv
 from omlish.subprocesses.sync import subprocesses
@@ -97,8 +97,6 @@ class AiGitMessageGenerator(GitMessageGenerator):
 
 
 # @omlish-manifest
-_AI_GIT_MESSAGE_GENERATOR_MANIFEST = GitMessageGeneratorManifest(
-    mod_name=__name__,
-    attr_name='AiGitMessageGenerator',
-    name='ai',
-)
+class _AI_GIT_MESSAGE_GENERATOR_MANIFEST(StaticGitMessageGeneratorManifest):  # noqa
+    attr_name = 'AiGitMessageGenerator'
+    name = 'ai'
