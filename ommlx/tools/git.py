@@ -2,11 +2,14 @@ import abc
 import dataclasses as dc
 import os.path
 import typing as ta
+import urllib.request
 
 from omdev.home.paths import get_home_dir
 from omdev.tools.git.messages import GitMessageGenerator
 from omdev.tools.git.messages import StaticGitMessageGeneratorManifest
 from omlish import check
+from omlish import lang
+from omlish.configs.classes import Configurable
 from omlish.formats import dotenv
 from omlish.subprocesses.sync import subprocesses
 
@@ -15,18 +18,16 @@ from ..minichain.chat import UserMessage
 from ..minichain.generative import MaxTokens
 
 
+GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')
+
+
 ##
 
 
-class GitAiBackend(abc.ABC):
+class GitAiBackend(Configurable[GitAiBackendConfigT], lang.Abstract):
     @dc.dataclass(frozen=True)
-    class Config:
+    class Config(Configurable.Config):
         max_tokens: int | None = 128
-
-    def __init__(self, config: Config = Config()) -> None:
-        super().__init__()
-
-        self._config = config
 
     @abc.abstractmethod
     def run_prompt(self, prompt: str) -> str:
@@ -36,7 +37,14 @@ class GitAiBackend(abc.ABC):
 #
 
 
-class OpenaiGitAiBackend(GitAiBackend):
+class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(GitAiBackend.Config):
+        pass
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
     def run_prompt(self, prompt: str) -> str:
         with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
             dotenv.Dotenv(stream=f).apply_to(os.environ)
@@ -48,6 +56,30 @@ class OpenaiGitAiBackend(GitAiBackend):
             *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         )
         return check.non_empty_str(resp.v[0].m.s)
+
+
+#
+
+
+class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(GitAiBackend.Config):
+        port: int = 5067
+        path: str = ''
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+    @property
+    def config(self) -> Config:
+        return self._config
+
+    def run_prompt(self, prompt: str) -> str:
+        with urllib.request.urlopen(urllib.request.Request(
+                f'http://localhost:{self._config.port}/{self._config.path}',
+                data=prompt.encode('utf-8'),
+        )) as resp:
+            return resp.read().decode('utf-8')
 
 
 ##
@@ -65,7 +97,10 @@ class AiGitMessageGenerator(GitMessageGenerator):
             backend = self.DEFAULT_BACKEND
         self._backend = backend
 
-    DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = OpenaiGitAiBackend()
+    DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = (
+        OpenaiGitAiBackend()
+        # LocalhostHttpPostGitAiBackend()
+    )
 
     def generate_commit_message(
             self,

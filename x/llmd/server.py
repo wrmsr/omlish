@@ -53,7 +53,7 @@ class LlmServerHandler(HttpHandler_):
 class LlmServer:
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT_PORT: ta.ClassVar[int] = 5066
+        DEFAULT_PORT: ta.ClassVar[int] = 5067
         port = DEFAULT_PORT
 
     def __init__(self, config: Config = Config()) -> None:
