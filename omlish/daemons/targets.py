@@ -6,13 +6,17 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .services import Service
 
 
 if ta.TYPE_CHECKING:
     import runpy
+
+    from . import services
+
 else:
     runpy = lang.proxy_import('runpy')
+
+    services = lang.proxy_import('.services', __package__)
 
 
 ##
@@ -30,8 +34,11 @@ class Target(dc.Case):
         elif callable(obj):
             return FnTarget(obj)
 
-        elif isinstance(obj, Service.Config):
-            return ServiceConfigTarget(obj)
+        elif isinstance(obj, services.Service):
+            return services.ServiceTarget(obj)
+
+        elif isinstance(obj, services.Service.Config):
+            return services.ServiceConfigTarget(obj)
 
         else:
             raise TypeError(obj)
@@ -136,22 +143,3 @@ class ExecTargetRunner(TargetRunner, dc.Frozen):
 @target_runner_for.register
 def _(target: ExecTarget) -> ExecTargetRunner:
     return ExecTargetRunner(target)
-
-
-##
-
-
-class ServiceConfigTarget(Target):
-    cfg: Service.Config
-
-
-class ServiceConfigTargetRunner(TargetRunner, dc.Frozen):
-    target: ServiceConfigTarget
-
-    def run(self) -> None:
-        Service.run_config(self.target.cfg)
-
-
-@target_runner_for.register
-def _(target: ServiceConfigTarget) -> ServiceConfigTargetRunner:
-    return ServiceConfigTargetRunner(target)

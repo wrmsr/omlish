@@ -29,3 +29,7 @@ class Configurable(ta.Generic[ConfigurableConfigT], lang.Abstract):
         super().__init__()
 
         self._config: ConfigurableConfigT = check.isinstance(config, self.Config)  # type: ignore[assignment]
+
+    @property
+    def config(self) -> ConfigurableConfigT:
+        return self._config
