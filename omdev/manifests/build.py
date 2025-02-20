@@ -64,7 +64,7 @@ def extract_manifest_target_name(line: str) -> str:
 ##
 
 
-def _dump_module_manifests(spec: str, *attrs: str) -> None:
+def _dump_module_manifests(spec: str, *targets: dict) -> None:
     import collections.abc
     import dataclasses as dc  # noqa
     import importlib
@@ -73,42 +73,47 @@ def _dump_module_manifests(spec: str, *attrs: str) -> None:
     mod = importlib.import_module(spec)
 
     out = {}
-    for attr in attrs:
-        manifest = getattr(mod, attr)
+    for target in targets:
+        if target['kind'] == 'attr':
+            attr = target['attr']
+            manifest = getattr(mod, attr)
 
-        if dc.is_dataclass(manifest):
-            # Support static dataclasses
-            if isinstance(manifest, type):
-                manifest = manifest()
+            if dc.is_dataclass(manifest):
+                # Support static dataclasses
+                if isinstance(manifest, type):
+                    manifest = manifest()
 
-            cls = type(manifest)
-            manifest_json = json.dumps(dc.asdict(manifest))
-            manifest_dct = json.loads(manifest_json)
+                cls = type(manifest)
+                manifest_json = json.dumps(dc.asdict(manifest))
+                manifest_dct = json.loads(manifest_json)
 
-            rt_manifest = cls(**manifest_dct)
-            if rt_manifest != manifest:
-                raise Exception(f'Manifest failed to roundtrip: {manifest} => {manifest_dct} != {rt_manifest}')
+                rt_manifest = cls(**manifest_dct)
+                if rt_manifest != manifest:
+                    raise Exception(f'Manifest failed to roundtrip: {manifest} => {manifest_dct} != {rt_manifest}')
 
-            key = f'${cls.__module__}.{cls.__qualname__}'
-            out[attr] = {key: manifest_dct}
+                key = f'${cls.__module__}.{cls.__qualname__}'
+                out[attr] = {key: manifest_dct}
 
-        elif isinstance(manifest, collections.abc.Mapping):
-            [(key, manifest_dct)] = manifest.items()
-            if not key.startswith('$'):  # noqa
-                raise Exception(f'Bad key: {key}')
+            elif isinstance(manifest, collections.abc.Mapping):
+                [(key, manifest_dct)] = manifest.items()
+                if not key.startswith('$'):  # noqa
+                    raise Exception(f'Bad key: {key}')
 
-            if not isinstance(manifest_dct, collections.abc.Mapping):
-                raise Exception(f'Bad value: {manifest_dct}')
+                if not isinstance(manifest_dct, collections.abc.Mapping):
+                    raise Exception(f'Bad value: {manifest_dct}')
 
-            manifest_json = json.dumps(manifest_dct)
-            rt_manifest_dct = json.loads(manifest_json)
-            if manifest_dct != rt_manifest_dct:
-                raise Exception(f'Manifest failed to roundtrip: {manifest_dct} != {rt_manifest_dct}')
+                manifest_json = json.dumps(manifest_dct)
+                rt_manifest_dct = json.loads(manifest_json)
+                if manifest_dct != rt_manifest_dct:
+                    raise Exception(f'Manifest failed to roundtrip: {manifest_dct} != {rt_manifest_dct}')
 
-            out[attr] = {key: manifest_dct}
+                out[attr] = {key: manifest_dct}
+
+            else:
+                raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
 
         else:
-            raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
+            raise ValueError(target)
 
     out_json = json.dumps(out, indent=None, separators=(',', ':'))
     print(out_json)
@@ -175,6 +180,9 @@ class ManifestBuilder:
 
         origins: ta.List[ManifestOrigin] = []
         for m in magics:
+            if m.body:
+                raise NotImplementedError(m.body)
+
             nl = lines[m.end_line]
             attr_name = extract_manifest_target_name(nl)
 
@@ -194,9 +202,11 @@ class ManifestBuilder:
 
         attrs = [o.attr for o in origins]
 
+        targets = [{'kind': 'attr', 'attr': a} for a in attrs]
+
         subproc_src = '\n\n'.join([
             _payload_src(),
-            f'_dump_module_manifests({mod_name!r}, {", ".join(repr(a) for a in attrs)})\n',
+            f'_dump_module_manifests({mod_name!r}, {", ".join(repr(tgt) for tgt in targets)})\n',
         ])
 
         args = [

@@ -3059,7 +3059,11 @@ def find_magic(
         *,
         file: ta.Optional[str] = None,
         preparer: ta.Callable[[str], ta.Any] = py_compile_magic_preparer,
+        keys: ta.Optional[ta.Container[str]] = None,
 ) -> ta.List[Magic]:
+    if keys is not None and isinstance(keys, str):
+        raise TypeError(keys)
+
     out: ta.List[Magic] = []
 
     start = 0
@@ -3123,7 +3127,9 @@ def find_magic(
         if magic is None:
             raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
-        out.append(magic)
+        if keys is None or key in keys:
+            out.append(magic)
+
         start = end + 1
 
     return out

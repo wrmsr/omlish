@@ -7,7 +7,7 @@ import typing as ta
 @dc.dataclass(frozen=True)
 class ManifestOrigin:
     module: str
-    attr: str
+    attr: ta.Optional[str]
 
     file: str
     line: int
