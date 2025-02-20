@@ -11,6 +11,7 @@ import os.path
 import sys
 import typing as ta
 
+from omdev.home.paths import get_config_dir
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
@@ -43,7 +44,7 @@ class MainCli(ArgparseCli):
     @cached_nullary
     def config(self) -> ManageConfig:
         if (cf := self.config_file) is None:
-            cf = os.path.expanduser('~/.omlish/manage.yml')
+            cf = os.path.join(get_config_dir(), 'manage', 'manage.yml')
             if not os.path.isfile(cf):
                 cf = None
 

@@ -70,3 +70,14 @@ from .services import (  # noqa
     ServiceRequest,
     ServiceResponse,
 )
+
+from .vectors import (  # noqa
+    EmbeddingModel,
+    EmbeddingOptions,
+    EmbeddingOutput,
+    EmbeddingRequest,
+    EmbeddingResponse,
+
+    Vector,
+    Vectorable,
+)

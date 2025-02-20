@@ -4,12 +4,11 @@ import os.path
 import typing as ta
 import urllib.request
 
-from omdev.home.paths import get_home_dir
+from omdev.home.secrets import load_secrets
 from omdev.tools.git.messages import GitMessageGenerator
 from omlish import check
 from omlish import lang
 from omlish.configs.classes import Configurable
-from omlish.formats import dotenv
 from omlish.subprocesses.sync import subprocesses
 
 from ..minichain.backends.openai import OpenaiChatModel
@@ -45,8 +44,10 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
         super().__init__(config)
 
     def run_prompt(self, prompt: str) -> str:
-        with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
-            dotenv.Dotenv(stream=f).apply_to(os.environ)
+        # FIXME:
+        for key in ['OPENAI_API_KEY']:
+            if (sec := load_secrets().try_get(key.lower())) is not None:
+                os.environ[key] = sec.reveal()
 
         llm = OpenaiChatModel()
 

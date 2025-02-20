@@ -152,6 +152,55 @@ SystemPackageOrStr = ta.Union['SystemPackage', str]
 
 
 ########################################
+# ../../../omdev/home/paths.py
+"""
+TODO:
+ - XDG cache root
+"""
+
+
+##
+
+
+HOME_DIR_ENV_VAR = 'OMLISH_HOME'
+DEFAULT_HOME_DIR = '~/.omlish'
+
+
+def get_home_dir() -> str:
+    return os.path.expanduser(os.getenv(HOME_DIR_ENV_VAR, DEFAULT_HOME_DIR))
+
+
+#
+
+
+def get_config_dir() -> str:
+    return os.path.join(get_home_dir(), 'config')
+
+
+def get_run_dir() -> str:
+    return os.path.join(get_home_dir(), 'run')
+
+
+def get_shadow_dir() -> str:
+    return os.path.join(get_home_dir(), 'shadow')
+
+
+def get_state_dir() -> str:
+    return os.path.join(get_home_dir(), 'state')
+
+
+##
+
+
+CACHE_DIR_ENV_VAR = 'OMLISH_CACHE'
+DEFAULT_CACHE_DIR = '~/.cache/omlish'
+
+
+def get_cache_dir() -> str:
+    return os.path.expanduser(os.getenv(DEFAULT_CACHE_DIR, DEFAULT_CACHE_DIR))
+
+
+########################################
 # ../../../omdev/packaging/versions.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
@@ -13390,7 +13439,7 @@ class MainCli(ArgparseCli):
     @cached_nullary
     def config(self) -> ManageConfig:
         if (cf := self.config_file) is None:
-            cf = os.path.expanduser('~/.omlish/manage.yml')
+            cf = os.path.join(get_config_dir(), 'manage', 'manage.yml')
             if not os.path.isfile(cf):
                 cf = None
 

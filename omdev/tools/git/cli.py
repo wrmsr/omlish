@@ -21,8 +21,8 @@ from omlish.subprocesses.sync import subprocesses
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status
-from ...home.configs import get_shadow_configs
-from ...home.paths import get_home_dir
+from ...home.paths import get_config_dir
+from ...home.shadow import get_shadow_configs
 from . import consts
 from .messages import GitMessageGenerator
 from .messages import TimestampGitMessageGenerator
@@ -74,7 +74,7 @@ class Cli(ap.Cli):
         if (arg := self._config_file_path_arg) is not None:
             return os.path.expanduser(arg)
         else:
-            return os.path.join(get_home_dir(), 'tools', 'git.yml')
+            return os.path.join(get_config_dir(), 'tools', 'git.yml')
 
     @cached.function
     def load_home_config_content(self) -> ta.Any:

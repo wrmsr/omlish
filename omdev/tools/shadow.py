@@ -14,7 +14,7 @@ from omlish.argparse import all as ap
 from omlish.configs.shadow import FileShadowConfigs
 
 from ..cli.types import CliModule
-from ..home.configs import get_shadow_configs
+from ..home.shadow import get_shadow_configs
 
 
 ##

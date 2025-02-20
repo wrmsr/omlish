@@ -4,7 +4,7 @@ import typing as ta
 from omlish import lang
 from omlish.secrets import all as sec
 
-from .paths import get_home_dir
+from .paths import get_config_dir
 
 
 if ta.TYPE_CHECKING:
@@ -13,12 +13,20 @@ else:
     yaml = lang.proxy_import('yaml')
 
 
+##
+
+
 SECRETS_FILE_ENV_VAR = 'OMLISH_SECRETS'
 DEFAULT_SECRETS_FILE_NAME = 'secrets.yml'
 
 
 def get_secrets_file() -> str:
-    return os.path.expanduser(os.getenv(SECRETS_FILE_ENV_VAR, os.path.join(get_home_dir(), DEFAULT_SECRETS_FILE_NAME)))
+    return os.path.expanduser(
+        os.getenv(
+            SECRETS_FILE_ENV_VAR,
+            os.path.join(get_config_dir(), DEFAULT_SECRETS_FILE_NAME),
+        ),
+    )
 
 
 def load_secrets() -> sec.Secrets:

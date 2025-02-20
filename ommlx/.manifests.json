@@ -1,8 +1,8 @@
 [
   {
-    "module": ".minichain.cli.__main__",
+    "module": ".cli.__main__",
     "attr": null,
-    "file": "ommlx/minichain/cli/__main__.py",
+    "file": "ommlx/cli/__main__.py",
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
@@ -10,7 +10,7 @@
           "minichain",
           "mc"
         ],
-        "mod_name": "ommlx.minichain.cli.__main__"
+        "mod_name": "ommlx.cli.__main__"
       }
     }
   },
@@ -18,7 +18,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlx/tools/git.py",
-    "line": 87,
+    "line": 88,
     "value": {
       "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "ommlx.tools.git",

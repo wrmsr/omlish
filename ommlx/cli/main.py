@@ -11,34 +11,25 @@ import os.path
 import sys
 import typing as ta
 
-from omdev.home.paths import get_home_dir
+from omdev.home.paths import get_state_dir
+from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import lang
 from omlish.diag import pycharm
-from omlish.formats import dotenv
 from omlish.formats import json
 from omlish.logs import all as logs
 
-from ..backends.anthropic import AnthropicChatModel
-from ..backends.google import GoogleChatModel
-from ..backends.llamacpp import LlamacppChatModel
-from ..backends.llamacpp import LlamacppPromptModel
-from ..backends.mistral import MistralChatModel
-from ..backends.openai import OpenaiChatModel
-from ..backends.openai import OpenaiEmbeddingModel
-from ..backends.openai import OpenaiPromptModel
-from ..backends.sentencetransformers import SentencetransformersEmbeddingModel
-from ..backends.transformers import TransformersPromptModel
-from ..chat import Chat
-from ..chat import ChatModel
-from ..chat import ChatRequest
-from ..chat import UserMessage
-from ..content import Content
-from ..content import Image
-from ..prompts import PromptModel
-from ..prompts import PromptRequest
-from ..vectors import EmbeddingModel
-from ..vectors import EmbeddingRequest
+from .. import minichain as mc
+from ..minichain.backends.anthropic import AnthropicChatModel
+from ..minichain.backends.google import GoogleChatModel
+from ..minichain.backends.llamacpp import LlamacppChatModel
+from ..minichain.backends.llamacpp import LlamacppPromptModel
+from ..minichain.backends.mistral import MistralChatModel
+from ..minichain.backends.openai import OpenaiChatModel
+from ..minichain.backends.openai import OpenaiEmbeddingModel
+from ..minichain.backends.openai import OpenaiPromptModel
+from ..minichain.backends.sentencetransformers import SentencetransformersEmbeddingModel
+from ..minichain.backends.transformers import TransformersPromptModel
 from .state import load_state
 from .state import save_state
 
@@ -65,10 +56,10 @@ class ChatState:
     created_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
     updated_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
-    chat: Chat = ()
+    chat: mc.Chat = ()
 
 
-CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
+CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatModel]] = {
     'anthropic': AnthropicChatModel,
     'google': GoogleChatModel,
     'mistral': MistralChatModel,
@@ -78,16 +69,16 @@ CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
 
 
 def _run_chat(
-        content: Content,
+        content: mc.Content,
         *,
         new: bool = False,
         backend: str | None = None,
 ) -> None:
     prompt = check.isinstance(content, str)
 
-    state_dir = os.path.join(get_home_dir(), 'llm')
+    state_dir = os.path.join(get_state_dir(), 'minichain', 'cli')
     if not os.path.exists(state_dir):
-        os.mkdir(state_dir)
+        os.makedirs(state_dir, exist_ok=True)
         os.chmod(state_dir, 0o770)  # noqa
 
     chat_file = os.path.join(state_dir, 'chat.json')
@@ -102,12 +93,12 @@ def _run_chat(
         state,
         chat=[
             *state.chat,
-            UserMessage(prompt),
+            mc.UserMessage(prompt),
         ],
     )
 
     mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-    response = mdl.invoke(ChatRequest.new(state.chat))
+    response = mdl.invoke(mc.ChatRequest.new(state.chat))
     print(check.isinstance(response.v[0].m.s, str).strip())
 
     chat = dc.replace(
@@ -129,7 +120,7 @@ def _run_chat(
 ##
 
 
-PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[PromptModel]] = {
+PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[mc.PromptModel]] = {
     'llamacpp': LlamacppPromptModel,
     'openai': OpenaiPromptModel,
     'transformers': TransformersPromptModel,
@@ -137,32 +128,32 @@ PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[PromptModel]] = {
 
 
 def _run_prompt(
-        content: Content,
+        content: mc.Content,
         *,
         backend: str | None = None,
 ) -> None:
     prompt = check.isinstance(content, str)
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-    response = mdl.invoke(PromptRequest.new(prompt))
+    response = mdl.invoke(mc.PromptRequest.new(prompt))
     print(response.v.strip())
 
 
 ##
 
 
-EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[EmbeddingModel]] = {
+EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[mc.EmbeddingModel]] = {
     'openai': OpenaiEmbeddingModel,
     'sentencetransformers': SentencetransformersEmbeddingModel,
 }
 
 
 def _run_embed(
-        content: Content,
+        content: mc.Content,
         *,
         backend: str | None = None,
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-    response = mdl.invoke(EmbeddingRequest.new(content))
+    response = mdl.invoke(mc.EmbeddingRequest.new(content))
     print(json.dumps_compact(response.v))
 
 
@@ -189,10 +180,10 @@ def _main() -> None:
 
     #
 
-    content: Content
+    content: mc.Content
 
     if args.image:
-        content = Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
+        content = mc.Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
 
     else:
         prompt = ' '.join(args.prompt)
@@ -205,8 +196,17 @@ def _main() -> None:
 
     #
 
-    with open(os.path.join(get_home_dir(), 'llm/.env')) as f:
-        dotenv.Dotenv(stream=f).apply_to(os.environ)
+    # FIXME: lol garbage
+    for key in [
+        'OPENAI_API_KEY',
+        'HUGGINGFACE_TOKEN',
+        'TAVILY_API_KEY',
+        'ANTHROPIC_API_KEY',
+        'MISTRAL_API_KEY',
+        'GEMINI_API_KEY',
+    ]:
+        if (sec := load_secrets().try_get(key.lower())) is not None:
+            os.environ[key] = sec.reveal()
 
     #
 
