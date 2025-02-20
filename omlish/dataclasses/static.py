@@ -1,3 +1,8 @@
+"""
+TODO:
+ - metaclass, to forbid __subclasscheck__ / __instancecheck__? Clash with dc.Meta, don't want that lock-in, not
+   necessary for functionality, just a helpful misuse prevention.
+"""
 import abc
 import copy
 import dataclasses as dc
@@ -12,6 +17,14 @@ from .impl.api import dataclass
 
 
 class Static(lang.Abstract):
+    """
+    Dataclass mixin for dataclasses in which all fields have class-level defaults and are not intended for any
+    instance-level overrides - effectively making their subclasses equivalent to instances. For dataclasses which make
+    sense as singletons (such as project specs or manifests), for which dynamic instantiation is not the usecase, this
+    can enable more natural syntax. Inheritance is permitted - equivalent to a `functools.partial` or composing
+    `**kwargs`, as long as there is only ever one unambiguous underlying non-static dataclass to be instantiated.
+    """
+
     __static_dataclass_class__: ta.ClassVar[type]
     __static_dataclass_instance__: ta.ClassVar[ta.Any]
 
@@ -23,7 +36,7 @@ class Static(lang.Abstract):
                 raise TypeError(f'Static base class {cls} must not implement {a}')
 
         if cls.__init__ is not Static.__init__:
-            # This is necessary to make type-checking work (by allowing it to accept zero). This isn't strictly
+            # This is necessary to make type-checking work (by allowing it to accept zero args). This isn't strictly
             # necessary, but since it's useful to do sometimes it might as well be done everywhere to prevent clashing.
             raise TypeError(f'Static.__init__ should be first in mro of {cls}')
 
@@ -144,8 +157,8 @@ class Static(lang.Abstract):
                 )
 
         if not is_abstract:
-            # This is the only time the Statices are ever actually instantiated, and it's only to produce the
-            # kwargs passed to the underlying dataclass.
+            # This is the only time the Statics are ever actually instantiated, and it's only to produce the kwargs
+            # passed to the underlying dataclass.
             tmp_inst = cls()
             inst_kw = dc.asdict(tmp_inst)  # type: ignore[call-overload]  # noqa
             inst = sdc_cls(**inst_kw)

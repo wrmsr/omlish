@@ -44,6 +44,7 @@ T = ta.TypeVar('T')
 
 MANIFEST_MAGIC_KEY = '@omlish-manifest'
 
+
 _MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
     # _FOO_MANIFEST = FooManifest(...
     r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*',
@@ -51,6 +52,16 @@ _MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
     # class _FOO_MANIFEST(StaticFooManifest): ...
     r'^class (?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(\(|$)',
 ])
+
+
+def extract_manifest_target_name(line: str) -> str:
+    for pat in _MANIFEST_GLOBAL_PATS:
+        if (m := pat.match(line)) is not None:
+            return m.groupdict()['name']
+    raise Exception(line)
+
+
+##
 
 
 def _dump_module_manifests(spec: str, *attrs: str) -> None:
@@ -158,15 +169,11 @@ class ManifestBuilder:
         for i, l in enumerate(lines):
             if l.startswith('# ' + MANIFEST_MAGIC_KEY):
                 nl = lines[i + 1]
-                for pat in _MANIFEST_GLOBAL_PATS:
-                    if (m := pat.match(nl)) is not None:
-                        break
-                else:
-                    raise Exception(nl)
+                attr_name = extract_manifest_target_name(nl)
 
                 origins.append(ManifestOrigin(
                     module='.'.join(['', *mod_name.split('.')[1:]]),
-                    attr=m.groupdict()['name'],
+                    attr=attr_name,
 
                     file=file,
                     line=i + 1,
