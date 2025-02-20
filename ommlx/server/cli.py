@@ -5,6 +5,8 @@ import signal
 import time
 import urllib.request
 
+from omdev.home.paths import get_run_dir
+from omlish import cached
 from omlish import check
 from omlish.argparse import all as ap
 from omlish.daemons.daemon import Daemon
@@ -17,7 +19,7 @@ from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 
-from .server import LlmServer
+from .server import Server
 
 
 log = logging.getLogger(__name__)
@@ -26,16 +28,20 @@ log = logging.getLogger(__name__)
 ##
 
 
-PID_FILE = 'llmd.pid'
-
-
 class Cli(ap.Cli):
+    @cached.function
+    def pid_file(self) -> str:
+        return os.path.join(get_run_dir(), 'minichain', 'server', 'pid')
+
     @ap.cmd()
     def demo(self) -> None:
-        server_config = LlmServer.Config()
+        server_config = Server.Config()
+
+        pid_file = self.pid_file()
+        os.makedirs(os.path.dirname(pid_file), exist_ok=True)
 
         daemon = Daemon(
-            FnTarget(functools.partial(LlmServer.run_config, server_config)),
+            FnTarget(functools.partial(Server.run_config, server_config)),
             Daemon.Config(
                 spawning=(spawning := ThreadSpawning()),
                 # spawning=(spawning := MultiprocessingSpawning()),
@@ -43,7 +49,7 @@ class Cli(ap.Cli):
 
                 reparent_process=not isinstance(spawning, ThreadSpawning),
 
-                pid_file=PID_FILE,
+                pid_file=pid_file,
                 wait=ConnectWait(('localhost', server_config.port)),
 
                 wait_timeout=10.,
@@ -62,22 +68,22 @@ class Cli(ap.Cli):
 
         with urllib.request.urlopen(urllib.request.Request(
             f'http://localhost:{server_config.port}/',
-            data='Hi! How are you?'.encode('utf-8'),
+            data='Hi! How are you?'.encode('utf-8'),  # noqa
         )) as resp:
             log.info('Parent got response: %s', resp.read().decode('utf-8'))
 
         for i in range(60, 0, -1):
-            log.info(f'Parent process {os.getpid()} sleeping {i}')
+            log.info('Parent process %d sleeping %d', os.getpid(), i)
             time.sleep(1.)
 
     @ap.cmd()
     def pid(self) -> None:
-        with PidfilePinner.default_impl()().pin_pidfile_owner(PID_FILE) as pid:
+        with PidfilePinner.default_impl()().pin_pidfile_owner(self.pid_file()) as pid:
             print(pid)
 
     @ap.cmd()
     def kill(self) -> None:
-        with PidfilePinner.default_impl()().pin_pidfile_owner(PID_FILE) as pid:
+        with PidfilePinner.default_impl()().pin_pidfile_owner(self.pid_file()) as pid:
             log.info('Killing pid: %d', pid)
             os.kill(pid, signal.SIGTERM)
 

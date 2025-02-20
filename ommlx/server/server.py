@@ -3,10 +3,12 @@ import logging
 import time
 import typing as ta
 
+from omdev.home.secrets import load_secrets
+from omlish import check
 from omlish.http.coro.simple import make_simple_http_server
+from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
-from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import LoggingHttpHandler
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import SocketBinder
@@ -23,19 +25,19 @@ log = logging.getLogger(__name__)
 
 
 @dc.dataclass(frozen=True)
-class LlmServerHandler(HttpHandler_):
+class ServerHandler(HttpHandler_):
     llm: ChatModel
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
-        prompt = req.data.decode('utf-8')
+        prompt = check.not_none(req.data).decode('utf-8')
 
-        log.info(f'Server got prompt: %s', prompt)
+        log.info('Server got prompt: %s', prompt)
 
         resp = self.llm(
             [UserMessage(prompt)],
             Temperature(.1),
         )
-        resp_txt = resp.v[0].m.s
+        resp_txt = check.not_none(resp.v[0].m.s)
 
         log.info('Server got response: %s', resp_txt)
 
@@ -50,7 +52,7 @@ class LlmServerHandler(HttpHandler_):
         )
 
 
-class LlmServer:
+class Server:
     @dc.dataclass(frozen=True)
     class Config:
         DEFAULT_PORT: ta.ClassVar[int] = 5067
@@ -65,11 +67,11 @@ class LlmServer:
         log.info('Server running')
         try:
 
-            llm = OpenaiChatModel(api_key=HarnessSecrets().get_or_skip('openai_api_key').reveal())
+            llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
 
             with make_simple_http_server(
                     SocketBinder.Config.of(self._config.port),
-                    LoggingHttpHandler(LlmServerHandler(llm), log),
+                    LoggingHttpHandler(ServerHandler(llm), log),
             ) as server:
 
                 deadline = time.time() + 60.
