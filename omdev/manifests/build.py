@@ -120,6 +120,9 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
             else:
                 raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
 
+        elif target['kind'] == 'inline':
+            raise NotImplementedError
+
         else:
             raise ValueError(target)
 
@@ -198,11 +201,33 @@ class ManifestBuilder:
                 pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(m.body))
                 cls_name = check.non_empty_str(pat_match.groupdict()['cls_name'])
                 has_cls_args = bool(pat_match.groupdict().get('cls_args'))  # Noqa
-                cls = import_attr(cls_name)
-                check.issubclass(cls, ModAttrManifest)
-                attr_name = extract_manifest_target_name(lines[m.end_line])
 
-                raise NotImplementedError(m.body)
+                cls = check.isinstance(import_attr(cls_name), type)
+                check.state(dc.is_dataclass(cls))
+
+                inl_kw: dict = {}
+                if issubclass(cls, ModAttrManifest):
+                    attr_name = extract_manifest_target_name(lines[m.end_line])
+                    inl_kw.update({
+                        'mod_name': mod_name,
+                        'attr_name': attr_name,
+                    })
+
+                origin = ManifestOrigin(
+                    module='.'.join(['', *mod_name.split('.')[1:]]),
+                    attr=None,
+
+                    file=file,
+                    line=m.start_line,
+                )
+
+                origins.append(origin)
+                targets.append({
+                    'origin': dc.asdict(origin),
+                    'kind': 'inline',
+                    'cls_name': cls_name,
+                    'kwargs': inl_kw,
+                })
 
             else:
                 nl = lines[m.end_line]

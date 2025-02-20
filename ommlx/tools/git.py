@@ -6,7 +6,6 @@ import urllib.request
 
 from omdev.home.paths import get_home_dir
 from omdev.tools.git.messages import GitMessageGenerator
-from omdev.tools.git.messages import StaticGitMessageGeneratorManifest
 from omlish import check
 from omlish import lang
 from omlish.configs.classes import Configurable
@@ -85,7 +84,7 @@ class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.
 ##
 
 
-# # @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
+# @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
 class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
             self,
@@ -127,12 +126,3 @@ class AiGitMessageGenerator(GitMessageGenerator):
             msg=msg,
             confirm=True,
         )
-
-
-#
-
-
-# @omlish-manifest
-class _AI_GIT_MESSAGE_GENERATOR_MANIFEST(StaticGitMessageGeneratorManifest):  # noqa
-    attr_name = 'AiGitMessageGenerator'
-    name = 'ai'
