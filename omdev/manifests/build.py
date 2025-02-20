@@ -164,20 +164,27 @@ class ManifestBuilder:
         with open(os.path.join(self._base, file)) as f:  # noqa
             src = f.read()
 
-        origins: ta.List[ManifestOrigin] = []
         lines = src.splitlines(keepends=True)
-        for i, l in enumerate(lines):
-            if l.startswith('# ' + MANIFEST_MAGIC_KEY):
-                nl = lines[i + 1]
-                attr_name = extract_manifest_target_name(nl)
 
-                origins.append(ManifestOrigin(
-                    module='.'.join(['', *mod_name.split('.')[1:]]),
-                    attr=attr_name,
+        magics = magic.find_magic(
+            magic.PY_MAGIC_STYLE,
+            lines,
+            file=file,
+            keys={MANIFEST_MAGIC_KEY},
+        )
 
-                    file=file,
-                    line=i + 1,
-                ))
+        origins: ta.List[ManifestOrigin] = []
+        for m in magics:
+            nl = lines[m.end_line]
+            attr_name = extract_manifest_target_name(nl)
+
+            origins.append(ManifestOrigin(
+                module='.'.join(['', *mod_name.split('.')[1:]]),
+                attr=attr_name,
+
+                file=file,
+                line=m.start_line,
+            ))
 
         if not origins:
             raise Exception('no manifests found')
