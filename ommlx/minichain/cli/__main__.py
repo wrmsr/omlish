@@ -1,8 +1,4 @@
-from omdev.cli import CliModule
-
-
-# @omlish-manifest
-_CLI_MODULE = CliModule(['minichain', 'mc'], __name__)
+# @omlish-manifest omdev.cli.CliModule(['minichain', 'mc'], __name__)
 
 
 if __name__ == '__main__':
