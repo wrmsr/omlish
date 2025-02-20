@@ -27,8 +27,11 @@ import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check
+from omlish.lite.imports import import_attr
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log
+from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.load import MANIFEST_LOADER
 from omlish.manifests.types import Manifest
 from omlish.manifests.types import ManifestOrigin
@@ -61,6 +64,9 @@ def extract_manifest_target_name(line: str) -> str:
     raise Exception(line)
 
 
+_INLINE_MANIFEST_CLS_NAME_PAT = re.compile(r'^(?P<cls_name>[_a-zA-Z][_a-zA-Z0-9.]*)\s*(?P<cls_args>\()?')
+
+
 ##
 
 
@@ -72,8 +78,10 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
 
     mod = importlib.import_module(spec)
 
-    out = {}
+    out = []
     for target in targets:
+        origin = target['origin']
+
         if target['kind'] == 'attr':
             attr = target['attr']
             manifest = getattr(mod, attr)
@@ -92,7 +100,7 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
                     raise Exception(f'Manifest failed to roundtrip: {manifest} => {manifest_dct} != {rt_manifest}')
 
                 key = f'${cls.__module__}.{cls.__qualname__}'
-                out[attr] = {key: manifest_dct}
+                out_value = {key: manifest_dct}
 
             elif isinstance(manifest, collections.abc.Mapping):
                 [(key, manifest_dct)] = manifest.items()
@@ -107,13 +115,18 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
                 if manifest_dct != rt_manifest_dct:
                     raise Exception(f'Manifest failed to roundtrip: {manifest_dct} != {rt_manifest_dct}')
 
-                out[attr] = {key: manifest_dct}
+                out_value = {key: manifest_dct}
 
             else:
                 raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
 
         else:
             raise ValueError(target)
+
+        out.append({
+            **origin,
+            'value': out_value,
+        })
 
     out_json = json.dumps(out, indent=None, separators=(',', ':'))
     print(out_json)
@@ -179,30 +192,42 @@ class ManifestBuilder:
         )
 
         origins: ta.List[ManifestOrigin] = []
+        targets: ta.List[dict] = []
         for m in magics:
             if m.body:
+                pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(m.body))
+                cls_name = check.non_empty_str(pat_match.groupdict()['cls_name'])
+                has_cls_args = bool(pat_match.groupdict().get('cls_args'))  # Noqa
+                cls = import_attr(cls_name)
+                check.issubclass(cls, ModAttrManifest)
+                attr_name = extract_manifest_target_name(lines[m.end_line])
+
                 raise NotImplementedError(m.body)
 
-            nl = lines[m.end_line]
-            attr_name = extract_manifest_target_name(nl)
+            else:
+                nl = lines[m.end_line]
+                attr_name = extract_manifest_target_name(nl)
 
-            origins.append(ManifestOrigin(
-                module='.'.join(['', *mod_name.split('.')[1:]]),
-                attr=attr_name,
+                origin = ManifestOrigin(
+                    module='.'.join(['', *mod_name.split('.')[1:]]),
+                    attr=attr_name,
 
-                file=file,
-                line=m.start_line,
-            ))
+                    file=file,
+                    line=m.start_line,
+                )
+
+                origins.append(origin)
+                targets.append({
+                    'origin': dc.asdict(origin),
+                    'kind': 'attr',
+                    'attr': attr_name,
+                })
 
         if not origins:
             raise Exception('no manifests found')
 
         if (dups := [k for k, v in collections.Counter(o.attr for o in origins).items() if v > 1]):
             raise Exception(f'Duplicate attrs: {dups}')
-
-        attrs = [o.attr for o in origins]
-
-        targets = [{'kind': 'attr', 'attr': a} for a in attrs]
 
         subproc_src = '\n\n'.join([
             _payload_src(),
@@ -234,14 +259,14 @@ class ManifestBuilder:
         if len(sp_lines) != 1:
             raise Exception('Unexpected subprocess output')
 
-        dct = json.loads(sp_lines[0])
-        if set(dct) != set(attrs):
-            raise Exception('Unexpected subprocess output keys')
+        sp_outs = json.loads(sp_lines[0])
+        # FIXME:
+        # if set(dct) != set(attrs):
+        #     raise Exception('Unexpected subprocess output keys')
 
         out: ta.List[Manifest] = []
-
-        for o in origins:
-            value = dct[o.attr]
+        for sp_out in sp_outs:
+            value = sp_out['value']
 
             if not (
                     isinstance(value, ta.Mapping) and
@@ -256,10 +281,10 @@ class ManifestBuilder:
                 key = f'$.{kr}'
                 value = {key: value_dct}
 
-            out.append(Manifest(
-                **dc.asdict(o),
-                value=value,
-            ))
+            out.append(Manifest(**{
+                **sp_out,
+                **dict(value=value),
+            }))
 
         return out
 

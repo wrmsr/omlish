@@ -85,6 +85,7 @@ class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.
 ##
 
 
+# # @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
 class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
             self,

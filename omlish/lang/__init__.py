@@ -137,9 +137,6 @@ from .imports import (  # noqa
     can_import,
     get_real_module_name,
     import_all,
-    import_attr,
-    import_module,
-    import_module_attr,
     lazy_import,
     proxy_import,
     proxy_init,
@@ -234,6 +231,12 @@ from .typing import (  # noqa
 )
 
 ##
+
+from ..lite.imports import (  # noqa
+    import_attr,
+    import_module,
+    import_module_attr,
+)
 
 from ..lite.timeouts import (  # noqa
     DeadlineTimeout,

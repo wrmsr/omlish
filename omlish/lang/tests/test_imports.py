@@ -1,7 +1,6 @@
 import sys
 
 from ..imports import can_import
-from ..imports import import_attr
 from ..imports import lazy_import
 from ..imports import proxy_import
 from ..imports import yield_importable
@@ -37,9 +36,3 @@ def test_yield_importable():
     lst = list(yield_importable(base_pkg, recursive=True))
     assert base_pkg + '.imports' in lst
     assert __name__ in lst
-
-
-def test_import_attr():
-    dotted_path = __package__.rpartition('.')[0] + '.import_attr.__name__'
-    name = import_attr(dotted_path)
-    assert name == 'import_attr'
