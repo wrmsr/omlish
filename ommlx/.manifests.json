@@ -15,6 +15,21 @@
     }
   },
   {
+    "module": ".server.__main__",
+    "attr": null,
+    "file": "ommlx/server/__main__.py",
+    "line": 1,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": [
+          "minichain-server",
+          "mcs"
+        ],
+        "mod_name": "ommlx.server.__main__"
+      }
+    }
+  },
+  {
     "module": ".tools.git",
     "attr": null,
     "file": "ommlx/tools/git.py",
