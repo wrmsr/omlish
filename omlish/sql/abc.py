@@ -26,6 +26,13 @@ class DbapiColumnDescription_(ta.NamedTuple):  # noqa
     scale: int | None
     null_ok: bool | None
 
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'DbapiColumnDescription_':
+        if isinstance(obj, cls):
+            return obj
+        else:
+            return cls(*obj[:len(cls._fields)])
+
 
 class DbapiConnection(ta.Protocol):
     def close(self) -> object: ...
