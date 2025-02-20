@@ -36,7 +36,9 @@ class Cli(ap.Cli):
 
     @ap.cmd()
     def demo(self) -> None:
-        server_config = Server.Config()
+        server_config = Server.Config(
+            backend='local',
+        )
         port = check.isinstance(server_config.bind, TcpSocketBinder.Config).port
 
         pid_file = self.pid_file()

@@ -4,6 +4,7 @@ import time
 import typing as ta
 
 from omdev.home.secrets import load_secrets
+from omlish import cached
 from omlish import check
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandler_
@@ -13,10 +14,11 @@ from omlish.http.handlers import LoggingHttpHandler
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
-from ommlx.minichain.backends.openai import OpenaiChatModel
-from ommlx.minichain.chat import ChatModel
-from ommlx.minichain.chat import UserMessage
-from ommlx.minichain.generative import Temperature
+
+from .. import minichain as mc
+from ..minichain.backends.mlxlm import MlxlmChatModel
+from ..minichain.backends.openai import OpenaiChatModel
+from ..minichain.generative import Temperature
 
 
 log = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ log = logging.getLogger(__name__)
 
 @dc.dataclass(frozen=True)
 class ServerHandler(HttpHandler_):
-    llm: ChatModel
+    llm: mc.ChatModel
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         prompt = check.not_none(req.data).decode('utf-8')
@@ -35,7 +37,7 @@ class ServerHandler(HttpHandler_):
         log.info('Server got prompt: %s', prompt)
 
         resp = self.llm(
-            [UserMessage(prompt)],
+            [mc.UserMessage(prompt)],
             Temperature(.1),
         )
         resp_txt = check.not_none(resp.v[0].m.s)
@@ -59,16 +61,29 @@ class Server:
         DEFAULT_BIND: ta.ClassVar[CanSocketBinderConfig] = 5067
         bind: SocketBinder.Config = SocketBinder.Config.of(DEFAULT_BIND)
 
+        backend: ta.Literal['openai', 'local'] = 'openai'
+
     def __init__(self, config: Config = Config()) -> None:
         super().__init__()
 
         self._config = config
 
+    @cached.function
+    def llm(self) -> mc.ChatModel:
+        if self._config.backend == 'openai':
+            return OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
+
+        elif self._config.backend == 'local':
+            return MlxlmChatModel()
+
+        else:
+            raise ValueError(self._config.backend)
+
     def run(self) -> None:
         log.info('Server running')
         try:
 
-            llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
+            llm = self.llm()
 
             with make_simple_http_server(
                     self._config.bind,

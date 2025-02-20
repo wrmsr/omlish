@@ -63,10 +63,8 @@ class LlamacppPromptModel(PromptModel):
 class LlamacppChatModel(ChatModel):
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
-        'models--TheBloke--Llama-2-7B-Chat-GGUF',
-        'snapshots',
-        '191239b3e26b2882fb562ffccdd1cf0f65402adb',
-        'llama-2-7b-chat.Q5_0.gguf',
+        'models--meta-llama--Llama-3.2-3B-Instruct/snapshots/0cb88a4f764b7a12671c53f0838cd831a0843b95/llama-2-7b-chat.Q5_0.gguf',  # noqa
+        # 'models--QuantFactory--Meta-Llama-3-8B-GGUF/snapshots/1ca85c857dce892b673b988ad0aa83f2cb1bbd19/Meta-Llama-3-8B.Q8_0.gguf',  # noqa
     )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
