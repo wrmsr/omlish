@@ -18,6 +18,7 @@ from omlish.daemons.waiting import ConnectWait
 from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
+from omlish.sockets.bind import TcpSocketBinder
 
 from .server import Server
 
@@ -36,6 +37,7 @@ class Cli(ap.Cli):
     @ap.cmd()
     def demo(self) -> None:
         server_config = Server.Config()
+        port = check.isinstance(server_config.bind, TcpSocketBinder.Config).port
 
         pid_file = self.pid_file()
         os.makedirs(os.path.dirname(pid_file), exist_ok=True)
@@ -50,7 +52,7 @@ class Cli(ap.Cli):
                 reparent_process=not isinstance(spawning, ThreadSpawning),
 
                 pid_file=pid_file,
-                wait=ConnectWait(('localhost', server_config.port)),
+                wait=ConnectWait(('localhost', port)),
 
                 wait_timeout=10.,
             ),
@@ -67,7 +69,7 @@ class Cli(ap.Cli):
         log.info('Client continuing')
 
         with urllib.request.urlopen(urllib.request.Request(
-            f'http://localhost:{server_config.port}/',
+            f'http://localhost:{port}/',
             data='Hi! How are you?'.encode('utf-8'),  # noqa
         )) as resp:
             log.info('Parent got response: %s', resp.read().decode('utf-8'))

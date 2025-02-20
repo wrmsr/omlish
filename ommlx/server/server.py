@@ -11,6 +11,7 @@ from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.http.handlers import LoggingHttpHandler
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
+from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
 from ommlx.minichain.backends.openai import OpenaiChatModel
 from ommlx.minichain.chat import ChatModel
@@ -55,8 +56,8 @@ class ServerHandler(HttpHandler_):
 class Server:
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT_PORT: ta.ClassVar[int] = 5067
-        port = DEFAULT_PORT
+        DEFAULT_BIND: ta.ClassVar[CanSocketBinderConfig] = 5067
+        bind: SocketBinder.Config = SocketBinder.Config.of(DEFAULT_BIND)
 
     def __init__(self, config: Config = Config()) -> None:
         super().__init__()
@@ -70,7 +71,7 @@ class Server:
             llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
 
             with make_simple_http_server(
-                    SocketBinder.Config.of(self._config.port),
+                    self._config.bind,
                     LoggingHttpHandler(ServerHandler(llm), log),
             ) as server:
 
