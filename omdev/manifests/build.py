@@ -73,6 +73,7 @@ _INLINE_MANIFEST_CLS_NAME_PAT = re.compile(r'^(?P<cls_name>[_a-zA-Z][_a-zA-Z0-9.
 def _dump_module_manifests(spec: str, *targets: dict) -> None:
     import collections.abc
     import dataclasses as dc  # noqa
+    import functools
     import importlib
     import json
 
@@ -81,6 +82,8 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
     out = []
     for target in targets:
         origin = target['origin']
+
+        cls: ta.Any
 
         if target['kind'] == 'attr':
             attr = target['attr']
@@ -121,7 +124,25 @@ def _dump_module_manifests(spec: str, *targets: dict) -> None:
                 raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
 
         elif target['kind'] == 'inline':
-            raise NotImplementedError
+            cls = importlib.import_module(target['cls_mod_name'])
+            for p in target['cls_qualname'].split('.'):
+                cls = getattr(cls, p)
+            if not isinstance(cls, type) or not dc.is_dataclass(cls):
+                raise TypeError(cls)
+
+            cls_fac = functools.partial(cls, **target['kwargs'])
+            eval_attr_name = '__manifest_factory__'
+            inl_glo = {
+                **mod.__dict__,
+                eval_attr_name: cls_fac,
+            }
+            inl_src = eval_attr_name + target['init_src']
+            inl_code = compile(inl_src, '<magic>', 'eval')
+            manifest = eval(inl_code, inl_glo)  # noqa
+            manifest_json = json.dumps(dc.asdict(manifest))
+            manifest_dct = json.loads(manifest_json)
+            key = f'${cls.__module__}.{cls.__qualname__}'
+            out_value = {key: manifest_dct}
 
         else:
             raise ValueError(target)
@@ -200,12 +221,25 @@ class ManifestBuilder:
             if m.body:
                 pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(m.body))
                 cls_name = check.non_empty_str(pat_match.groupdict()['cls_name'])
-                has_cls_args = bool(pat_match.groupdict().get('cls_args'))  # Noqa
+                has_cls_args = bool(pat_match.groupdict().get('cls_args'))
 
                 cls = check.isinstance(import_attr(cls_name), type)
                 check.state(dc.is_dataclass(cls))
 
+                cls_mod_name = cls.__module__
+                cls_qualname = cls.__qualname__
+                cls_reload = sys.modules[cls_mod_name]
+                for p in cls_qualname.split('.'):
+                    cls_reload = getattr(cls_reload, p)
+                check.is_(cls_reload, cls)
+
+                if has_cls_args:
+                    inl_init_src = m.body[len(cls_name):]
+                else:
+                    inl_init_src = '()'
+
                 inl_kw: dict = {}
+
                 if issubclass(cls, ModAttrManifest):
                     attr_name = extract_manifest_target_name(lines[m.end_line])
                     inl_kw.update({
@@ -223,9 +257,11 @@ class ManifestBuilder:
 
                 origins.append(origin)
                 targets.append({
-                    'origin': dc.asdict(origin),
+                    'origin': dc.asdict(origin),  # noqa
                     'kind': 'inline',
-                    'cls_name': cls_name,
+                    'cls_mod_name': cls_mod_name,
+                    'cls_qualname': cls_qualname,
+                    'init_src': inl_init_src,
                     'kwargs': inl_kw,
                 })
 
@@ -243,7 +279,7 @@ class ManifestBuilder:
 
                 origins.append(origin)
                 targets.append({
-                    'origin': dc.asdict(origin),
+                    'origin': dc.asdict(origin),  # noqa
                     'kind': 'attr',
                     'attr': attr_name,
                 })
@@ -298,7 +334,7 @@ class ManifestBuilder:
                     len(value) == 1 and
                     all(isinstance(k, str) and k.startswith('$') and len(k) > 1 for k in value)
             ):
-                raise TypeError(f'Manifests must be mappings of strings starting with $: {value!r}')
+                raise TypeError(f'Manifest values must be mappings of strings starting with $: {value!r}')
 
             [(key, value_dct)] = value.items()
             kb, _, kr = key[1:].partition('.')  # noqa
