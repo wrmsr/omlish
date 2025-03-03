@@ -12,7 +12,7 @@
 # thinc
 ##
 
-matplotlib==3.10.0
+matplotlib==3.10.1
 
 evaluate==0.4.3
 
@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.126.0
+hypothesis==6.127.5
 
 hexdump==3.3
 
@@ -92,7 +92,7 @@ regex==2024.11.6
 ipykernel==6.29.4
 ipywidgets==8.1.2
 jupyter-console==6.6.3
-nbconvert==7.16.4
+nbconvert==7.16.6
 notebook==7.3.2
 qtconsole==5.5.1
 
@@ -143,8 +143,8 @@ einops==0.8.1
 
 ### infra
 
-google-api-python-client==2.161.0
-google-cloud-compute==1.25.0
+google-api-python-client==2.162.0
+google-cloud-compute==1.26.0
 
 cloudflare==3.1.0  # httpx
 
@@ -153,20 +153,20 @@ cloudflare==3.1.0  # httpx
 
 selectolax==0.3.27
 
-soco==0.30.8
+soco==0.30.9
 
 sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.43.0
-zigpy==0.76.1
+zigpy==0.76.2
 
 # python-openzwave
-zwave-js-server-python==0.60.0
+zwave-js-server-python==0.60.1
 
 ##
 
-python-telegram-bot==21.10
+python-telegram-bot==21.11.1
 discord.py==2.5.0
 
 ##
@@ -179,31 +179,31 @@ mitogen==0.3.22
 
 ##
 
-openai==1.63.2
+openai==1.65.2
 
 trl==0.14.0
 tf-keras==2.17.0  # @omlish-venv !13
 
-polars==1.22.0
+polars==1.24.0
 
 pyzmq==26.2.1
 
-safetensors==0.5.2
+safetensors==0.5.3
 
 customtkinter==5.2.2
 
 ##
 
 langchain==0.3.19
-langchain-anthropic==0.3.7
+langchain-anthropic==0.3.8
 langchain-chroma==0.2.2  # @omlish-venv !13
 langchain-community==0.3.18
-langchain-core==0.3.37
+langchain-core==0.3.40
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.7
-langchain-openai==0.3.6
+langchain-openai==0.3.7
 langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.6
 
@@ -212,9 +212,9 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.2.74
+langgraph==0.3.2
 
-langsmith==0.3.8
+langsmith==0.3.11
 
 tavily-python==0.5.1
 
@@ -238,7 +238,7 @@ tantivy==0.22
 
 neo4j==5.28.1
 
-pypdf==5.3.0
+pypdf==5.3.1
 
 fparser==0.1.4
 
@@ -246,18 +246,18 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.19
+llama-index-core==0.12.22
 
 unstructured==0.16.23
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
 
-libtmux==0.44.2
+libtmux==0.46.0
 
 sqlite-vec==0.1.6
 
-anthropic==0.46.0
+anthropic==0.49.0
 
 jedi==0.19.2
 jedi-language-server==0.43.1
@@ -289,6 +289,6 @@ flask==3.1.0
 
 pyinfra==3.2
 
-opendal==0.45.15
+opendal==0.45.16
 
 watchdog==6.0.0

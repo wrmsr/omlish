@@ -55,7 +55,7 @@ services:
   # main
 
   omlish-postgres:
-    image: 'postgres:17.3'
+    image: 'postgres:17.4'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'
@@ -102,7 +102,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.26.2-community'
+    image: 'neo4j:5.26.3-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
