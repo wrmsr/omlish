@@ -2,6 +2,7 @@
 """
 TODO:
  - https://github.com/vegardit/bash-funk/blob/main/docs/git.md
+ - git submodule foreach 'git remote show origin | grep "HEAD branch" | cut -f5 -d" " | xargs git checkout && git pull'
 """
 import dataclasses as dc
 import os

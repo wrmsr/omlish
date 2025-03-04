@@ -122,10 +122,14 @@ dep-tree:
 dep-updates: venv
 	${PYTHON} -m pip list -o --format=columns
 
+.PHONY: dep-dry-run
+dep-dry-run: venv
+	${PYTHON} -m uv pip install --upgrade --dry-run -r requirements-ext.txt
+
 .PHONY: dep-refresh
 dep-refresh: venv
-	${PYTHON} -m pip install --upgrade pip setuptools wheel
-	${PYTHON} -m pip install -r requirements-ext.txt
+	${PYTHON} -m uv pip install --upgrade pip setuptools wheel
+	${PYTHON} -m uv pip install --upgrade -r requirements-ext.txt
 
 
 ### Gen
