@@ -1,5 +1,6 @@
 # ruff: noqa: PT009 UP006 UP007
 import asyncio
+import dataclasses as dc
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.logs.standard import configure_standard_logging
@@ -21,7 +22,11 @@ async def a_main() -> None:
     async with CiHarness() as ci_harness:
         for _ in range(2):
             async with Ci(
-                    config=ci_harness.ci_config(),
+                    config=dc.replace(
+                        ci_harness.ci_config(),
+
+                        setup_concurrency=2,
+                    ),
 
                     docker_build_caching=DockerBuildCachingImpl(
                         config=ci_harness.docker_build_caching_impl_config(),
@@ -34,7 +39,7 @@ async def a_main() -> None:
 
                     docker_image_pulling=ci_harness.docker_image_pulling_impl(),
             ) as ci:
-                image_id = await ci.resolve_ci_image()
+                image_id = await ci.resolve_ci_image_task()
 
                 print(image_id)
 

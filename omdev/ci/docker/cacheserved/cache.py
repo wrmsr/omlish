@@ -47,6 +47,10 @@ class CacheServedDockerCache(DockerCache):
 
         #
 
+        pull_run_cmd: ta.Optional[str] = 'true'
+
+        #
+
         server_start_timeout: TimeoutLike = 5.
         server_start_sleep: float = .1
 
@@ -132,10 +136,22 @@ class CacheServedDockerCache(DockerCache):
                         break
                     await asyncio.sleep(self._config.server_start_sleep)
 
+                if (prc := self._config.pull_run_cmd) is not None:
+                    pull_cmd = [
+                        'run',
+                        '--rm',
+                        image_url,
+                        prc,
+                    ]
+                else:
+                    pull_cmd = [
+                        'pull',
+                        image_url,
+                    ]
+
                 await asyncio_subprocesses.check_call(
                     'docker',
-                    'pull',
-                    image_url,
+                    *pull_cmd,
                 )
 
             finally:

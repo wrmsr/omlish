@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - split module
+"""
 import asyncio
 import contextlib
 import functools
@@ -9,6 +13,21 @@ import typing as ta
 T = ta.TypeVar('T')
 
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+
+##
+
+
+def asyncio_ensure_task(obj: ta.Awaitable) -> asyncio.Task:
+    if isinstance(obj, asyncio.Task):
+        return obj
+    elif isinstance(obj, ta.Coroutine):
+        return asyncio.create_task(obj)
+    else:
+        raise TypeError(obj)
+
+
+##
 
 
 def asyncio_once(fn: CallableT) -> CallableT:
@@ -22,6 +41,9 @@ def asyncio_once(fn: CallableT) -> CallableT:
         return await future
 
     return ta.cast(CallableT, inner)
+
+
+##
 
 
 def drain_asyncio_tasks(loop=None):
@@ -42,6 +64,9 @@ def draining_asyncio_tasks() -> ta.Iterator[None]:
             drain_asyncio_tasks(loop)  # noqa
 
 
+##
+
+
 async def asyncio_wait_concurrent(
         coros: ta.Iterable[ta.Awaitable[T]],
         concurrency: ta.Union[int, asyncio.Semaphore],
@@ -59,7 +84,7 @@ async def asyncio_wait_concurrent(
         async with semaphore:
             return await coro
 
-    tasks = [asyncio.create_task(limited_task(coro)) for coro in coros]
+    tasks = [asyncio_ensure_task(limited_task(coro)) for coro in coros]
     done, pending = await asyncio.wait(tasks, return_when=return_when)
 
     for task in pending:
@@ -70,3 +95,18 @@ async def asyncio_wait_concurrent(
             raise task.exception()  # type: ignore
 
     return [task.result() for task in done]
+
+
+async def asyncio_wait_maybe_concurrent(
+        coros: ta.Iterable[ta.Awaitable[T]],
+        concurrency: ta.Union[int, asyncio.Semaphore, None],
+) -> ta.List[T]:
+    # Note: Only supports return_when=asyncio.FIRST_EXCEPTION
+    if concurrency is None:
+        return [
+            await c
+            for c in coros
+        ]
+
+    else:
+        return await asyncio_wait_concurrent(coros, concurrency)

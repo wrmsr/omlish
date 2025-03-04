@@ -90,6 +90,8 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--cache-served-docker', action='store_true'),
 
+        argparse_arg('--setup-concurrency', type=int),
+
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
 
@@ -204,6 +206,8 @@ class CiCli(ArgparseCli):
 
             always_pull=self.args.always_pull,
             always_build=self.args.always_build,
+
+            setup_concurrency=self.args.setup_concurrency,
 
             no_dependencies=self.args.no_dependencies,
 

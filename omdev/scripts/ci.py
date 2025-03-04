@@ -247,6 +247,25 @@ class OciCompression(enum.Enum):
 
 ########################################
 # ../../../omlish/asyncs/asyncio/asyncio.py
+"""
+TODO:
+ - split module
+"""
+
+
+##
+
+
+def asyncio_ensure_task(obj: ta.Awaitable) -> asyncio.Task:
+    if isinstance(obj, asyncio.Task):
+        return obj
+    elif isinstance(obj, ta.Coroutine):
+        return asyncio.create_task(obj)
+    else:
+        raise TypeError(obj)
+
+
+##
 
 
 def asyncio_once(fn: CallableT) -> CallableT:
@@ -260,6 +279,9 @@ def asyncio_once(fn: CallableT) -> CallableT:
         return await future
 
     return ta.cast(CallableT, inner)
+
+
+##
 
 
 def drain_asyncio_tasks(loop=None):
@@ -280,6 +302,9 @@ def draining_asyncio_tasks() -> ta.Iterator[None]:
             drain_asyncio_tasks(loop)  # noqa
 
 
+##
+
+
 async def asyncio_wait_concurrent(
         coros: ta.Iterable[ta.Awaitable[T]],
         concurrency: ta.Union[int, asyncio.Semaphore],
@@ -297,7 +322,7 @@ async def asyncio_wait_concurrent(
         async with semaphore:
             return await coro
 
-    tasks = [asyncio.create_task(limited_task(coro)) for coro in coros]
+    tasks = [asyncio_ensure_task(limited_task(coro)) for coro in coros]
     done, pending = await asyncio.wait(tasks, return_when=return_when)
 
     for task in pending:
@@ -308,6 +333,21 @@ async def asyncio_wait_concurrent(
             raise task.exception()  # type: ignore
 
     return [task.result() for task in done]
+
+
+async def asyncio_wait_maybe_concurrent(
+        coros: ta.Iterable[ta.Awaitable[T]],
+        concurrency: ta.Union[int, asyncio.Semaphore, None],
+) -> ta.List[T]:
+    # Note: Only supports return_when=asyncio.FIRST_EXCEPTION
+    if concurrency is None:
+        return [
+            await c
+            for c in coros
+        ]
+
+    else:
+        return await asyncio_wait_concurrent(coros, concurrency)
 
 
 ########################################
@@ -11236,6 +11276,10 @@ class CacheServedDockerCache(DockerCache):
 
         #
 
+        pull_run_cmd: ta.Optional[str] = 'true'
+
+        #
+
         server_start_timeout: TimeoutLike = 5.
         server_start_sleep: float = .1
 
@@ -11321,10 +11365,22 @@ class CacheServedDockerCache(DockerCache):
                         break
                     await asyncio.sleep(self._config.server_start_sleep)
 
+                if (prc := self._config.pull_run_cmd) is not None:
+                    pull_cmd = [
+                        'run',
+                        '--rm',
+                        image_url,
+                        prc,
+                    ]
+                else:
+                    pull_cmd = [
+                        'pull',
+                        image_url,
+                    ]
+
                 await asyncio_subprocesses.check_call(
                     'docker',
-                    'pull',
-                    image_url,
+                    *pull_cmd,
                 )
 
             finally:
@@ -11465,6 +11521,8 @@ class Ci(AsyncExitStacked):
         always_pull: bool = False
         always_build: bool = False
 
+        setup_concurrency: ta.Optional[int] = None
+
         no_dependencies: bool = False
 
         run_options: ta.Optional[ta.Sequence[str]] = None
@@ -11535,7 +11593,7 @@ class Ci(AsyncExitStacked):
     def ci_image_cache_key(self) -> str:
         return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
 
-    async def _resolve_ci_image(self) -> str:
+    async def _resolve_ci_image_(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
             base_image = await self.resolve_ci_base_image()
 
@@ -11580,24 +11638,46 @@ class Ci(AsyncExitStacked):
             build_and_tag,
         )
 
-    @async_cached_nullary
-    async def resolve_ci_image(self) -> str:
+    async def _resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
-            image_id = await self._resolve_ci_image()
+            image_id = await self._resolve_ci_image_()
             ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
 
+    @cached_nullary
+    def resolve_ci_image_task(self) -> asyncio.Task:
+        return asyncio.create_task(self._resolve_ci_image())
+
     #
 
-    @async_cached_nullary
-    async def pull_dependencies(self) -> None:
+    @cached_nullary
+    def pull_dependencies_tasks(self) -> ta.Sequence[asyncio.Task]:
         deps = get_compose_service_dependencies(
             self._config.compose_file,
             self._config.service,
         )
 
-        for dep_image in deps.values():
-            await self._docker_image_pulling.pull_docker_image(dep_image)
+        return [
+            asyncio_ensure_task(self._docker_image_pulling.pull_docker_image(dep_image))
+            for dep_image in deps.values()
+        ]
+
+    #
+
+    @cached_nullary
+    def setup_tasks(self) -> ta.Sequence[asyncio.Task]:
+        return [
+            self.resolve_ci_image_task(),
+
+            *(self.pull_dependencies_tasks() if not self._config.no_dependencies else []),
+        ]
+
+    @async_cached_nullary
+    async def setup(self) -> None:
+        await asyncio_wait_maybe_concurrent(
+            self.setup_tasks(),
+            self._config.setup_concurrency,
+        )
 
     #
 
@@ -11606,7 +11686,7 @@ class Ci(AsyncExitStacked):
             compose_file=self._config.compose_file,
             service=self._config.service,
 
-            image=await self.resolve_ci_image(),
+            image=await self.resolve_ci_image_task(),
 
             cmd=self._config.cmd,
 
@@ -11628,9 +11708,7 @@ class Ci(AsyncExitStacked):
     #
 
     async def run(self) -> None:
-        await self.resolve_ci_image()
-
-        await self.pull_dependencies()
+        await self.setup()
 
         await self._run_compose()
 
@@ -11806,6 +11884,8 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--cache-served-docker', action='store_true'),
 
+        argparse_arg('--setup-concurrency', type=int),
+
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
 
@@ -11920,6 +12000,8 @@ class CiCli(ArgparseCli):
 
             always_pull=self.args.always_pull,
             always_build=self.args.always_build,
+
+            setup_concurrency=self.args.setup_concurrency,
 
             no_dependencies=self.args.no_dependencies,
 
