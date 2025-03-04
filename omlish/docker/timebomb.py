@@ -1,10 +1,14 @@
+# @omlish-lite
 import shlex
 
 
-_DEFAULT_TIMEBOMB_NAME = '-'.join([*__name__.split('.'), 'timebomb'])
+##
 
 
-def timebomb_payload(delay_s: float, name: str = _DEFAULT_TIMEBOMB_NAME) -> str:
+_DEFAULT_DOCKER_TIMEBOMB_NAME = 'omlish-timebomb'
+
+
+def docker_timebomb_payload(delay_s: float, name: str = _DEFAULT_DOCKER_TIMEBOMB_NAME) -> str:
     return (
         '('
         f'echo {shlex.quote(name)} && '

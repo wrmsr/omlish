@@ -1,5 +1,11 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - docstring
+ - timebomb
+ - auto-discover available ports
+"""
 import dataclasses as dc
 import os
 import typing as ta
@@ -30,7 +36,7 @@ class DockerPortRelay:
 
     def run_args(self) -> ta.List[str]:
         if (name := self.name) is None:
-            name = f'docker_port_relay-{os.getpid()}'
+            name = f'docker_port_relay-{os.getpid()}-{self.docker_port}-{self.host_port}'
 
         return [
             '--name', name,

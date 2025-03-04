@@ -5,7 +5,7 @@ import traceback
 import typing as ta
 
 from omlish.diag.pydevd import silence_subprocess_check
-from omlish.docker.timebomb import timebomb_payload
+from omlish.docker.timebomb import docker_timebomb_payload
 
 
 def run(*args, **kwargs):
@@ -50,7 +50,7 @@ def launch_docker_container(
         if timebomb_delay_s:
             subprocess.check_call([
                 'docker', 'exec', '-id', ctr_id,
-                'sh', '-c', timebomb_payload(timebomb_delay_s),
+                'sh', '-c', docker_timebomb_payload(timebomb_delay_s),
             ])
 
         yield ctr_id

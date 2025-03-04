@@ -19,6 +19,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.docker import all as dck
+from omlish.docker.ns1 import build_docker_ns1_run_args
 from omlish.formats import json
 from omlish.formats import yaml
 from omlish.logs import all as logs
@@ -44,37 +45,17 @@ def get_local_platform() -> str:
 
 class Cli(ap.Cli):
     @ap.cmd(
-        ap.arg('args', nargs='*'),
+        ap.arg('cmd', nargs='*'),
     )
     def ns1(self) -> None:
-        """
-        - https://gist.github.com/BretFisher/5e1a0c7bcca4c735e716abf62afad389
-        - https://github.com/justincormack/nsenter1/blob/8d3ba504b2c14d73c70cf34f1ec6943c093f1b02/nsenter1.c
-
-        alt:
-         - nc -U ~/Library/Containers/com.docker.docker/Data/debug-shell.sock
-        """
-
         os.execl(
             exe := docker_exe(),
             exe,
             'run',
             '--rm',
             '--platform', get_local_platform(),
-            '--privileged',
-            '--pid=host',
-            '-it', 'debian',
-            'nsenter',
-            '-t', '1',
-            '-m',  # mount
-            '-u',  # uts
-            '-i',  # ipc
-            '-n',  # net
-            '-p',  # pid
-            '-C',  # cgroup
-            # '-U',  # user
-            '-T',  # time
-            *self.args.args,
+            '-it',
+            *build_docker_ns1_run_args(self.args.cmd),
         )
 
     @ap.cmd(

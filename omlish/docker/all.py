@@ -27,5 +27,5 @@ from .hub import (  # noqa
 )
 
 from .timebomb import (  # noqa
-    timebomb_payload,
+    docker_timebomb_payload as timebomb_payload,
 )
