@@ -96,6 +96,7 @@ class CacheServedDockerCache(DockerCache):
             elif isinstance(cache_data, DataCache.UrlData):
                 return DataServerTarget.of(
                     url=cache_data.url,
+                    methods=['GET'],
                     **target_kwargs,
                 )
 

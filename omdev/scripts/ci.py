@@ -11285,6 +11285,7 @@ class CacheServedDockerCache(DockerCache):
             elif isinstance(cache_data, DataCache.UrlData):
                 return DataServerTarget.of(
                     url=cache_data.url,
+                    methods=['GET'],
                     **target_kwargs,
                 )
 
@@ -11419,7 +11420,7 @@ class DockerImagePullingImpl(DockerImagePulling):
         for c in '/:.-_':
             dep_suffix = dep_suffix.replace(c, '-')
 
-        cache_key = f'docker-{dep_suffix}'
+        cache_key = f'docker--{dep_suffix}'
         if (
                 self._docker_cache is not None and
                 (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
@@ -11495,7 +11496,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def ci_base_image_cache_key(self) -> str:
-        return f'ci-base-{self.docker_file_hash()}'
+        return f'ci-base--{self.docker_file_hash()}'
 
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -11532,7 +11533,7 @@ class Ci(AsyncExitStacked):
 
     @cached_nullary
     def ci_image_cache_key(self) -> str:
-        return f'ci-{self.docker_file_hash()}-{self.requirements_hash()}'
+        return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:

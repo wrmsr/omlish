@@ -48,7 +48,7 @@ class DockerImagePullingImpl(DockerImagePulling):
         for c in '/:.-_':
             dep_suffix = dep_suffix.replace(c, '-')
 
-        cache_key = f'docker-{dep_suffix}'
+        cache_key = f'docker--{dep_suffix}'
         if (
                 self._docker_cache is not None and
                 (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
