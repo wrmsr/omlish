@@ -69,11 +69,6 @@ def make_simple_http_server(
 
         #
 
-        if ignore_ssl_errors:
-            server_handler = SslErrorHandlingSocketServerHandler(
-                server_handler,
-            )
-
         if ssl_context is not None:
             server_handler = SocketWrappingSocketServerHandler(
                 server_handler,
@@ -81,6 +76,11 @@ def make_simple_http_server(
                     ssl_context.wrap_socket,
                     server_side=True,
                 )),
+            )
+
+        if ignore_ssl_errors:
+            server_handler = SslErrorHandlingSocketServerHandler(
+                server_handler,
             )
 
         #
