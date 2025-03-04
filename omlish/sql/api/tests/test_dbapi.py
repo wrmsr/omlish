@@ -1,5 +1,10 @@
 import sqlite3
+import urllib.parse
 
+from .... import check
+from ....testing import pytest as ptu
+from ...dbs import UrlDbLoc
+from ...tests.harness import HarnessDbs
 from .. import funcs
 from ..dbapi import DbapiDb
 
@@ -7,7 +12,7 @@ from ..dbapi import DbapiDb
 ##
 
 
-def test_dbapi() -> None:
+def test_sqlite() -> None:
     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
         with db.connect() as conn:
             for stmt in [
@@ -33,3 +38,31 @@ def test_dbapi() -> None:
                 (8.2,),
                 (7.5,),
             ]
+
+
+@ptu.skip.if_cant_import('pg8000')
+def test_pg8000(harness) -> None:
+    url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
+    p_u = urllib.parse.urlparse(url)
+
+    import pg8000
+
+    with DbapiDb(lambda: pg8000.connect(
+            p_u.username,
+            host=p_u.hostname,
+            port=p_u.port,
+            password=p_u.password,
+    )) as db:
+        with db.connect() as conn:
+            for q in [
+                'select 1',
+                'select 1 union select 2',
+                # 'select 1, 2 union select 3, 4',
+            ]:
+                with funcs.query(conn, q) as rows:
+                    vals = []
+                    for row in rows:
+                        vals.append(tuple(row.values))
+                        print(row)
+
+                print(vals)
