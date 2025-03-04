@@ -12,6 +12,8 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.timeouts import Timeout
+from omlish.lite.timeouts import TimeoutLike
 
 from ....dataserver.server import DataServer
 from ....dataserver.targets import DataServerTarget
@@ -40,6 +42,11 @@ class CacheServedDockerCache(DockerCache):
         port: int = 5021
 
         repack: bool = True
+
+        #
+
+        server_start_timeout: TimeoutLike = 5.
+        server_start_sleep: float = .1
 
     def __init__(
             self,
@@ -92,8 +99,18 @@ class CacheServedDockerCache(DockerCache):
         ) as dds:
             dds_run_task = asyncio.create_task(dds.run())
             try:
-                # FIXME: lol
-                await asyncio.sleep(3.)
+                timeout = Timeout.of(self._config.server_start_timeout)
+                while True:
+                    timeout()
+                    try:
+                        reader, writer = await asyncio.open_connection('localhost', self._config.port)
+                    except Exception as e:  # noqa
+                        log.exception('Failed to connect to cache server - will try again')
+                    else:
+                        writer.close()
+                        await asyncio.wait_for(writer.wait_closed(), timeout=timeout.remaining())
+                        break
+                    await asyncio.sleep(self._config.server_start_sleep)
 
                 await asyncio_subprocesses.check_call(
                     'docker',

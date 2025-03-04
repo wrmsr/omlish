@@ -93,6 +93,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
                 self._port,
                 self._handler,
                 ssl_context=self._ssl_context(),
+                ignore_ssl_errors=True,
                 use_threads=True,
         ) as server:
             yield server

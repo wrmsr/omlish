@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+ - logging
+"""
 import concurrent.futures as cf
 import contextlib
 import functools
@@ -15,6 +19,7 @@ from ...sockets.server.handlers import SocketServerHandler
 from ...sockets.server.handlers import SocketWrappingSocketServerHandler
 from ...sockets.server.handlers import StandardSocketServerHandler
 from ...sockets.server.server import SocketServer
+from ...sockets.server.ssl import SslErrorHandlingSocketServerHandler
 from ...sockets.server.threading import ThreadingSocketServerHandler
 from ..handlers import HttpHandler
 from ..parsing import HttpRequestParser
@@ -35,6 +40,7 @@ def make_simple_http_server(
         *,
         server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
+        ignore_ssl_errors: bool = False,
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
 ) -> ta.Iterator[SocketServer]:
@@ -62,6 +68,11 @@ def make_simple_http_server(
         )
 
         #
+
+        if ignore_ssl_errors:
+            server_handler = SslErrorHandlingSocketServerHandler(
+                server_handler,
+            )
 
         if ssl_context is not None:
             server_handler = SocketWrappingSocketServerHandler(
