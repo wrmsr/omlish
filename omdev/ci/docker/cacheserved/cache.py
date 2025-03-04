@@ -43,6 +43,8 @@ class CacheServedDockerCache(DockerCache):
 
         repack: bool = True
 
+        key_suffix: ta.Optional[str] = '--cs'
+
         #
 
         server_start_timeout: TimeoutLike = 5.
@@ -64,6 +66,8 @@ class CacheServedDockerCache(DockerCache):
         self._data_cache = data_cache
 
     async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+        key += (self._config.key_suffix or '')
+
         if (manifest_data := await self._data_cache.get_data(key)) is None:
             return None
 
@@ -140,6 +144,8 @@ class CacheServedDockerCache(DockerCache):
         return image_url
 
     async def save_cache_docker_image(self, key: str, image: str) -> None:
+        key += (self._config.key_suffix or '')
+
         async with contextlib.AsyncExitStack() as es:
             image_repo: OciRepository = await es.enter_async_context(
                 self._image_repo_opener.open_docker_image_repository(image),
