@@ -19,9 +19,9 @@ from ..cache import FileCacheDataCache
 from ..ci import Ci
 from ..docker.buildcaching import DockerBuildCaching
 from ..docker.buildcaching import DockerBuildCachingImpl
-from ..docker.cacheserved import CacheServedDockerCache
-from ..docker.cacheserved import build_cache_served_docker_image_data_server_routes
-from ..docker.cacheserved import build_cache_served_docker_image_manifest
+from ..docker.cacheserved.cache import CacheServedDockerCache
+from ..docker.cacheserved.manifests import build_cache_served_docker_image_data_server_routes
+from ..docker.cacheserved.manifests import build_cache_served_docker_image_manifest
 from ..docker.dataserver import DockerDataServer
 from ..docker.packing import PackedDockerImageIndexRepositoryBuilder
 from ..docker.repositories import DockerImageRepositoryOpenerImpl
