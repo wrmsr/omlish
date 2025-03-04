@@ -1609,6 +1609,31 @@ class VpcCidrBlockStateCode(_enum.Enum):
     FAILED = 'failed'
 
 
+class VpcEncryptionControlExclusionState(_enum.Enum):
+    ENABLING = 'enabling'
+    ENABLED = 'enabled'
+    DISABLING = 'disabling'
+    DISABLED = 'disabled'
+
+
+VpcEncryptionControlId = _ta.NewType('VpcEncryptionControlId', str)
+
+
+class VpcEncryptionControlMode(_enum.Enum):
+    MONITOR = 'monitor'
+    ENFORCE = 'enforce'
+
+
+class VpcEncryptionControlState(_enum.Enum):
+    ENFORCE_IN_PROGRESS = 'enforce-in-progress'
+    MONITOR_IN_PROGRESS = 'monitor-in-progress'
+    ENFORCE_FAILED = 'enforce-failed'
+    MONITOR_FAILED = 'monitor-failed'
+    DELETING = 'deleting'
+    DELETED = 'deleted'
+    AVAILABLE = 'available'
+
+
 VpcEndpointId = _ta.NewType('VpcEndpointId', str)
 
 VpcId = _ta.NewType('VpcId', str)
@@ -3675,6 +3700,24 @@ class VpcCidrBlockState(
     ))
 
 
+@_dc.dataclass(frozen=True, kw_only=True)
+class VpcEncryptionControlExclusion(
+    _base.Shape,
+    shape_name='VpcEncryptionControlExclusion',
+):
+    state: VpcEncryptionControlExclusionState | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='State',
+        serialization_name='state',
+        shape_name='VpcEncryptionControlExclusionState',
+    ))
+
+    state_message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StateMessage',
+        serialization_name='stateMessage',
+        shape_name='String',
+    ))
+
+
 VpcIdStringList: _ta.TypeAlias = _ta.Sequence[VpcId]
 
 AddressList: _ta.TypeAlias = _ta.Sequence[Address]
@@ -4501,6 +4544,42 @@ class VpcCidrBlockAssociation(
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
+class VpcEncryptionControlExclusions(
+    _base.Shape,
+    shape_name='VpcEncryptionControlExclusions',
+):
+    internet_gateway: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='InternetGateway',
+        serialization_name='internetGateway',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    egress_only_internet_gateway: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EgressOnlyInternetGateway',
+        serialization_name='egressOnlyInternetGateway',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    nat_gateway: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NatGateway',
+        serialization_name='natGateway',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    virtual_private_gateway: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VirtualPrivateGateway',
+        serialization_name='virtualPrivateGateway',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    vpc_peering: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VpcPeering',
+        serialization_name='vpcPeering',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
 class VpcIpv6CidrBlockAssociation(
     _base.Shape,
     shape_name='VpcIpv6CidrBlockAssociation',
@@ -5138,6 +5217,56 @@ RouteTableAssociationList: _ta.TypeAlias = _ta.Sequence[RouteTableAssociation]
 SubnetIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[SubnetIpv6CidrBlockAssociation]
 
 VpcCidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcCidrBlockAssociation]
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class VpcEncryptionControl(
+    _base.Shape,
+    shape_name='VpcEncryptionControl',
+):
+    vpc_id: VpcId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VpcId',
+        serialization_name='vpcId',
+        shape_name='VpcId',
+    ))
+
+    vpc_encryption_control_id: VpcEncryptionControlId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VpcEncryptionControlId',
+        serialization_name='vpcEncryptionControlId',
+        shape_name='VpcEncryptionControlId',
+    ))
+
+    mode: VpcEncryptionControlMode | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Mode',
+        serialization_name='mode',
+        shape_name='VpcEncryptionControlMode',
+    ))
+
+    state: VpcEncryptionControlState | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='State',
+        serialization_name='state',
+        shape_name='VpcEncryptionControlState',
+    ))
+
+    state_message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StateMessage',
+        serialization_name='stateMessage',
+        shape_name='String',
+    ))
+
+    resource_exclusions: VpcEncryptionControlExclusions | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ResourceExclusions',
+        serialization_name='resourceExclusions',
+        shape_name='VpcEncryptionControlExclusions',
+    ))
+
+    tags: _base.TagList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Tags',
+        serialization_name='tagSet',
+        value_type=_base.ListValueType(_base.Tag),
+        shape_name='TagList',
+    ))
+
 
 VpcIpv6CidrBlockAssociationSet: _ta.TypeAlias = _ta.Sequence[VpcIpv6CidrBlockAssociation]
 
@@ -6478,6 +6607,12 @@ class Vpc(
         shape_name='Boolean',
     ))
 
+    encryption_control: VpcEncryptionControl | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EncryptionControl',
+        serialization_name='encryptionControl',
+        shape_name='VpcEncryptionControl',
+    ))
+
     tags: _base.TagList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Tags',
         serialization_name='tagSet',
@@ -7805,6 +7940,9 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     Vpc,
     VpcCidrBlockAssociation,
     VpcCidrBlockState,
+    VpcEncryptionControl,
+    VpcEncryptionControlExclusion,
+    VpcEncryptionControlExclusions,
     VpcIpv6CidrBlockAssociation,
 ])
 
