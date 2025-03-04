@@ -3,6 +3,7 @@
 TODO:
  - asyncio
  - chunked transfer - both output and urllib input
+ - range headers
 """
 import typing as ta
 

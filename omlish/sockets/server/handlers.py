@@ -13,7 +13,7 @@ from ..io import SocketIoPair
 from ..io import close_socket_immediately
 
 
-SocketServerHandler = ta.Callable[[SocketAndAddress], None]  # ta.TypeAlias
+SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 
 
 ##

@@ -68,6 +68,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
     @staticmethod
     def _load_file_module(fp: str) -> None:
         import os.path  # noqa
+        import sys  # noqa
         import types  # noqa
 
         fp = os.path.abspath(fp)
@@ -82,6 +83,8 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         mod.__file__ = fp
         mod.__builtins__ = __builtins__  # type: ignore
         mod.__spec__ = None
+
+        sys.modules[mn] = mod
 
         code = compile(src, fp, 'exec')
         exec(code, mod.__dict__, mod.__dict__)

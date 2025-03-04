@@ -175,11 +175,11 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
         if hasattr(self, '_socket'):
             raise self.AlreadyBoundError
 
-        socket = socket_.socket(self.address_family, socket_.SOCK_STREAM)
-        self._socket = socket
+        sock = socket_.socket(self.address_family, socket_.SOCK_STREAM)
+        self._socket = sock
 
         if self._config.allow_reuse_address and hasattr(socket_, 'SO_REUSEADDR'):
-            socket.setsockopt(socket_.SOL_SOCKET, socket_.SO_REUSEADDR, 1)
+            sock.setsockopt(socket_.SOL_SOCKET, socket_.SO_REUSEADDR, 1)
 
         # Since Linux 6.12.9, SO_REUSEPORT is not allowed on other address families than AF_INET/AF_INET6.
         if (
@@ -187,13 +187,13 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
                 self.address_family in (socket_.AF_INET, socket_.AF_INET6)
         ):
             try:
-                socket.setsockopt(socket_.SOL_SOCKET, socket_.SO_REUSEPORT, 1)
+                sock.setsockopt(socket_.SOL_SOCKET, socket_.SO_REUSEPORT, 1)
             except OSError as err:
                 if err.errno not in (errno.ENOPROTOOPT, errno.EINVAL):
                     raise
 
-        if self._config.set_inheritable and hasattr(socket, 'set_inheritable'):
-            socket.set_inheritable(True)
+        if self._config.set_inheritable and hasattr(sock, 'set_inheritable'):
+            sock.set_inheritable(True)
 
     def _pre_bind(self) -> None:
         pass
@@ -224,7 +224,7 @@ class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
         self.socket.listen(self._config.listen_backlog)
 
     @abc.abstractmethod
-    def accept(self, socket: ta.Optional[socket_.socket] = None) -> SocketAndAddress:
+    def accept(self, sock: ta.Optional[socket_.socket] = None) -> SocketAndAddress:
         raise NotImplementedError
 
 
@@ -270,11 +270,11 @@ class TcpSocketBinder(SocketBinder):
 
     #
 
-    def accept(self, socket: ta.Optional[socket_.socket] = None) -> SocketAndAddress:
-        if socket is None:
-            socket = self.socket
+    def accept(self, sock: ta.Optional[socket_.socket] = None) -> SocketAndAddress:
+        if sock is None:
+            sock = self.socket
 
-        conn, client_address = socket.accept()
+        conn, client_address = sock.accept()
         return SocketAndAddress(conn, client_address)
 
 
