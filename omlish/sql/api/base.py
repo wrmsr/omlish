@@ -20,7 +20,7 @@ class Closer(lang.Abstract):
         pass
 
 
-class SelfCloser(Closer):
+class ContextCloser(Closer):
     def __enter__(self) -> ta.Self:
         return self
 
@@ -31,7 +31,7 @@ class SelfCloser(Closer):
 ##
 
 
-class Querier(SelfCloser, lang.Abstract):
+class Querier(ContextCloser, lang.Abstract):
     @property
     @abc.abstractmethod
     def adapter(self) -> 'Adapter':
@@ -45,7 +45,7 @@ class Querier(SelfCloser, lang.Abstract):
 ##
 
 
-class Rows(SelfCloser, lang.Abstract):
+class Rows(ContextCloser, lang.Abstract):
     @property
     @abc.abstractmethod
     def columns(self) -> Columns:
