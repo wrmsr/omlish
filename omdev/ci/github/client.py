@@ -230,7 +230,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
         entry1 = check.isinstance(entry, self.Entry)
-        return entry1.artifact.cache_key
+        return entry1.artifact.archive_location
 
     #
 
