@@ -75,13 +75,28 @@ class CacheServedDockerCache(DockerCache):
         )
 
         async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
-            # FIXME: url
             cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
-            file_path = check.isinstance(cache_data, DataCache.FileData).file_path
-            return DataServerTarget.of(
-                file_path=file_path,
-                **target_kwargs,
-            )
+
+            if isinstance(cache_data, DataCache.BytesData):
+                return DataServerTarget.of(
+                    cache_data.data,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.FileData):
+                return DataServerTarget.of(
+                    file_path=cache_data.file_path,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.UrlData):
+                return DataServerTarget.of(
+                    url=cache_data.url,
+                    **target_kwargs,
+                )
+
+            else:
+                raise TypeError(cache_data)
 
         data_server_routes = await build_cache_served_docker_image_data_server_routes(
             manifest,

@@ -88,6 +88,8 @@ class CiCli(ArgparseCli):
         argparse_arg('--github', action='store_true'),
         argparse_arg('--github-detect', action='store_true'),
 
+        argparse_arg('--cache-served-docker', action='store_true'),
+
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
 
@@ -225,6 +227,8 @@ class CiCli(ArgparseCli):
             directory_file_cache_config=directory_file_cache_config,
 
             github=github,
+
+            cache_served_docker=self.args.cache_served_docker,
         ))
 
         async with injector[Ci] as ci:

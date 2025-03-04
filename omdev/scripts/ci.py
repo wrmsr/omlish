@@ -11263,13 +11263,28 @@ class CacheServedDockerCache(DockerCache):
         )
 
         async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
-            # FIXME: url
             cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
-            file_path = check.isinstance(cache_data, DataCache.FileData).file_path
-            return DataServerTarget.of(
-                file_path=file_path,
-                **target_kwargs,
-            )
+
+            if isinstance(cache_data, DataCache.BytesData):
+                return DataServerTarget.of(
+                    cache_data.data,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.FileData):
+                return DataServerTarget.of(
+                    file_path=cache_data.file_path,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.UrlData):
+                return DataServerTarget.of(
+                    url=cache_data.url,
+                    **target_kwargs,
+                )
+
+            else:
+                raise TypeError(cache_data)
 
         data_server_routes = await build_cache_served_docker_image_data_server_routes(
             manifest,
@@ -11677,6 +11692,8 @@ def bind_ci(
         directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None,
 
         github: bool = False,
+
+        cache_served_docker: bool = False,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [  # noqa
         inj.bind(config),
@@ -11689,6 +11706,10 @@ def bind_ci(
 
             always_build=config.always_build,
         ),
+
+        cache_served_docker_cache_config=CacheServedDockerCache.Config(
+            #
+        ) if cache_served_docker else None,
 
         image_pulling_config=DockerImagePullingImpl.Config(
             always_pull=config.always_pull,
@@ -11765,6 +11786,8 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--github', action='store_true'),
         argparse_arg('--github-detect', action='store_true'),
+
+        argparse_arg('--cache-served-docker', action='store_true'),
 
         argparse_arg('--always-pull', action='store_true'),
         argparse_arg('--always-build', action='store_true'),
@@ -11903,6 +11926,8 @@ class CiCli(ArgparseCli):
             directory_file_cache_config=directory_file_cache_config,
 
             github=github,
+
+            cache_served_docker=self.args.cache_served_docker,
         ))
 
         async with injector[Ci] as ci:

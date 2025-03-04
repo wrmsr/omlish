@@ -9,6 +9,7 @@ from .cache import DirectoryFileCache
 from .cache import FileCache
 from .ci import Ci
 from .docker.buildcaching import DockerBuildCachingImpl
+from .docker.cacheserved.cache import CacheServedDockerCache
 from .docker.imagepulling import DockerImagePullingImpl
 from .docker.inject import bind_docker
 from .github.inject import bind_github
@@ -24,6 +25,8 @@ def bind_ci(
         directory_file_cache_config: ta.Optional[DirectoryFileCache.Config] = None,
 
         github: bool = False,
+
+        cache_served_docker: bool = False,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [  # noqa
         inj.bind(config),
@@ -36,6 +39,10 @@ def bind_ci(
 
             always_build=config.always_build,
         ),
+
+        cache_served_docker_cache_config=CacheServedDockerCache.Config(
+            #
+        ) if cache_served_docker else None,
 
         image_pulling_config=DockerImagePullingImpl.Config(
             always_pull=config.always_pull,
