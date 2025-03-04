@@ -12,6 +12,8 @@ from .cache import DockerCacheImpl
 from .cacheserved.cache import CacheServedDockerCache
 from .imagepulling import DockerImagePulling
 from .imagepulling import DockerImagePullingImpl
+from .repositories import DockerImageRepositoryOpener
+from .repositories import DockerImageRepositoryOpenerImpl
 
 
 ##
@@ -37,6 +39,9 @@ def bind_docker(
 
     if cache_served_docker_cache_config is not None:
         lst.extend([
+            inj.bind(DockerImageRepositoryOpenerImpl, singleton=True),
+            inj.bind(DockerImageRepositoryOpener, to_key=DockerImageRepositoryOpenerImpl),
+
             inj.bind(cache_served_docker_cache_config),
             inj.bind(CacheServedDockerCache, singleton=True),
             inj.bind(DockerCache, to_key=CacheServedDockerCache),

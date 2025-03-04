@@ -1,3 +1,7 @@
+"""
+TODO:
+ - exclude @omlish-amalg-output files
+"""
 import abc
 import dataclasses as dc
 import os.path

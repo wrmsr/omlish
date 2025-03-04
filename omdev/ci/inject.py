@@ -5,8 +5,10 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
+from .cache import DataCache
 from .cache import DirectoryFileCache
 from .cache import FileCache
+from .cache import FileCacheDataCache
 from .ci import Ci
 from .docker.buildcaching import DockerBuildCachingImpl
 from .docker.cacheserved.cache import CacheServedDockerCache
@@ -57,7 +59,13 @@ def bind_ci(
 
         if github:
             lst.append(bind_github())
+
         else:
-            lst.append(inj.bind(FileCache, to_key=DirectoryFileCache))
+            lst.extend([
+                inj.bind(FileCache, to_key=DirectoryFileCache),
+
+                inj.bind(FileCacheDataCache, singleton=True),
+                inj.bind(DataCache, to_key=FileCacheDataCache),
+            ])
 
     return inj.as_bindings(*lst)

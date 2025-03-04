@@ -9272,6 +9272,7 @@ async def build_cache_served_docker_image_data_server_routes(
 def bind_github() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(GithubCache, singleton=True),
+        inj.bind(DataCache, to_key=GithubCache),
         inj.bind(FileCache, to_key=GithubCache),
     ]
 
@@ -11654,6 +11655,9 @@ def bind_docker(
 
     if cache_served_docker_cache_config is not None:
         lst.extend([
+            inj.bind(DockerImageRepositoryOpenerImpl, singleton=True),
+            inj.bind(DockerImageRepositoryOpener, to_key=DockerImageRepositoryOpenerImpl),
+
             inj.bind(cache_served_docker_cache_config),
             inj.bind(CacheServedDockerCache, singleton=True),
             inj.bind(DockerCache, to_key=CacheServedDockerCache),
@@ -11724,8 +11728,14 @@ def bind_ci(
 
         if github:
             lst.append(bind_github())
+
         else:
-            lst.append(inj.bind(FileCache, to_key=DirectoryFileCache))
+            lst.extend([
+                inj.bind(FileCache, to_key=DirectoryFileCache),
+
+                inj.bind(FileCacheDataCache, singleton=True),
+                inj.bind(DataCache, to_key=FileCacheDataCache),
+            ])
 
     return inj.as_bindings(*lst)
 
