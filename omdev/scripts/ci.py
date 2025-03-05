@@ -11089,6 +11089,13 @@ class DockerDataServer(AsyncExitStacked):
         return self._stop_event
 
     async def run(self) -> None:
+        # FIXME:
+        #  - shared single server with updatable routes
+        #  - get docker used ports with ns1
+        #  - discover server port with get_available_port
+        #  - discover relay port pair with get_available_ports
+        # relay_port: ta.Optional[ta.Tuple[int, int]] = None
+
         relay_port: ta.Optional[int] = None
         if sys.platform == 'darwin':
             relay_port = self._port
