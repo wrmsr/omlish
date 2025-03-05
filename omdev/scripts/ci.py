@@ -269,14 +269,14 @@ def asyncio_ensure_task(obj: ta.Awaitable) -> asyncio.Task:
 
 
 def asyncio_once(fn: CallableT) -> CallableT:
-    future = None
+    task = None
 
     @functools.wraps(fn)
     async def inner(*args, **kwargs):
-        nonlocal future
-        if not future:
-            future = asyncio.create_task(fn(*args, **kwargs))
-        return await future
+        nonlocal task
+        if not task:
+            task = asyncio.create_task(fn(*args, **kwargs))
+        return await task
 
     return ta.cast(CallableT, inner)
 
@@ -306,7 +306,7 @@ def draining_asyncio_tasks() -> ta.Iterator[None]:
 
 
 async def asyncio_wait_concurrent(
-        coros: ta.Iterable[ta.Awaitable[T]],
+        awaitables: ta.Iterable[ta.Awaitable[T]],
         concurrency: ta.Union[int, asyncio.Semaphore],
         *,
         return_when: ta.Any = asyncio.FIRST_EXCEPTION,
@@ -318,36 +318,33 @@ async def asyncio_wait_concurrent(
     else:
         raise TypeError(concurrency)
 
-    async def limited_task(coro):
+    async def limited_task(a):
         async with semaphore:
-            return await coro
+            return await a
 
-    tasks = [asyncio_ensure_task(limited_task(coro)) for coro in coros]
-    done, pending = await asyncio.wait(tasks, return_when=return_when)
+    futs = [asyncio.create_task(limited_task(a)) for a in awaitables]
+    done, pending = await asyncio.wait(futs, return_when=return_when)
 
-    for task in pending:
-        task.cancel()
+    for fut in pending:
+        fut.cancel()
 
-    for task in done:
-        if task.exception():
-            raise task.exception()  # type: ignore
+    for fut in done:
+        if fut.exception():
+            raise fut.exception()  # type: ignore
 
-    return [task.result() for task in done]
+    return [fut.result() for fut in done]
 
 
 async def asyncio_wait_maybe_concurrent(
-        coros: ta.Iterable[ta.Awaitable[T]],
+        awaitables: ta.Iterable[ta.Awaitable[T]],
         concurrency: ta.Union[int, asyncio.Semaphore, None],
 ) -> ta.List[T]:
     # Note: Only supports return_when=asyncio.FIRST_EXCEPTION
     if concurrency is None:
-        return [
-            await c
-            for c in coros
-        ]
+        return [await a for a in awaitables]
 
     else:
-        return await asyncio_wait_concurrent(coros, concurrency)
+        return await asyncio_wait_concurrent(awaitables, concurrency)
 
 
 ########################################
@@ -11620,7 +11617,7 @@ class Ci(AsyncExitStacked):
     def ci_image_cache_key(self) -> str:
         return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
 
-    async def _resolve_ci_image_(self) -> str:
+    async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
             base_image = await self.resolve_ci_base_image()
 
@@ -11665,44 +11662,44 @@ class Ci(AsyncExitStacked):
             build_and_tag,
         )
 
-    async def _resolve_ci_image(self) -> str:
+    @async_cached_nullary
+    async def resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
-            image_id = await self._resolve_ci_image_()
+            image_id = await self._resolve_ci_image()
             ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
-
-    @cached_nullary
-    def resolve_ci_image_task(self) -> asyncio.Task:
-        return asyncio.create_task(self._resolve_ci_image())
 
     #
 
     @cached_nullary
-    def pull_dependencies_tasks(self) -> ta.Sequence[asyncio.Task]:
+    def pull_dependencies_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
         deps = get_compose_service_dependencies(
             self._config.compose_file,
             self._config.service,
         )
 
         return [
-            asyncio_ensure_task(self._docker_image_pulling.pull_docker_image(dep_image))
+            async_cached_nullary(functools.partial(
+                self._docker_image_pulling.pull_docker_image,
+                dep_image,
+            ))
             for dep_image in deps.values()
         ]
 
     #
 
     @cached_nullary
-    def setup_tasks(self) -> ta.Sequence[asyncio.Task]:
+    def setup_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
         return [
-            self.resolve_ci_image_task(),
+            self.resolve_ci_image,
 
-            *(self.pull_dependencies_tasks() if not self._config.no_dependencies else []),
+            *(self.pull_dependencies_funcs() if not self._config.no_dependencies else []),
         ]
 
     @async_cached_nullary
     async def setup(self) -> None:
         await asyncio_wait_maybe_concurrent(
-            self.setup_tasks(),
+            [fn() for fn in self.setup_funcs()],
             self._config.setup_concurrency,
         )
 
@@ -11713,7 +11710,7 @@ class Ci(AsyncExitStacked):
             compose_file=self._config.compose_file,
             service=self._config.service,
 
-            image=await self.resolve_ci_image_task(),
+            image=await self.resolve_ci_image(),
 
             cmd=self._config.cmd,
 

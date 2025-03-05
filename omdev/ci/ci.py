@@ -1,10 +1,9 @@
 # ruff: noqa: UP006 UP007
-import asyncio
 import dataclasses as dc
+import functools
 import os.path
 import typing as ta
 
-from omlish.asyncs.asyncio.asyncio import asyncio_ensure_task
 from omlish.asyncs.asyncio.asyncio import asyncio_wait_maybe_concurrent
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
@@ -119,7 +118,7 @@ class Ci(AsyncExitStacked):
     def ci_image_cache_key(self) -> str:
         return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
 
-    async def _resolve_ci_image_(self) -> str:
+    async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
             base_image = await self.resolve_ci_base_image()
 
@@ -164,44 +163,44 @@ class Ci(AsyncExitStacked):
             build_and_tag,
         )
 
-    async def _resolve_ci_image(self) -> str:
+    @async_cached_nullary
+    async def resolve_ci_image(self) -> str:
         with log_timing_context('Resolve ci image') as ltc:
-            image_id = await self._resolve_ci_image_()
+            image_id = await self._resolve_ci_image()
             ltc.set_description(f'Resolve ci image: {image_id}')
             return image_id
-
-    @cached_nullary
-    def resolve_ci_image_task(self) -> asyncio.Task:
-        return asyncio.create_task(self._resolve_ci_image())
 
     #
 
     @cached_nullary
-    def pull_dependencies_tasks(self) -> ta.Sequence[asyncio.Task]:
+    def pull_dependencies_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
         deps = get_compose_service_dependencies(
             self._config.compose_file,
             self._config.service,
         )
 
         return [
-            asyncio_ensure_task(self._docker_image_pulling.pull_docker_image(dep_image))
+            async_cached_nullary(functools.partial(
+                self._docker_image_pulling.pull_docker_image,
+                dep_image,
+            ))
             for dep_image in deps.values()
         ]
 
     #
 
     @cached_nullary
-    def setup_tasks(self) -> ta.Sequence[asyncio.Task]:
+    def setup_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
         return [
-            self.resolve_ci_image_task(),
+            self.resolve_ci_image,
 
-            *(self.pull_dependencies_tasks() if not self._config.no_dependencies else []),
+            *(self.pull_dependencies_funcs() if not self._config.no_dependencies else []),
         ]
 
     @async_cached_nullary
     async def setup(self) -> None:
         await asyncio_wait_maybe_concurrent(
-            self.setup_tasks(),
+            [fn() for fn in self.setup_funcs()],
             self._config.setup_concurrency,
         )
 
@@ -212,7 +211,7 @@ class Ci(AsyncExitStacked):
             compose_file=self._config.compose_file,
             service=self._config.service,
 
-            image=await self.resolve_ci_image_task(),
+            image=await self.resolve_ci_image(),
 
             cmd=self._config.cmd,
 

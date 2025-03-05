@@ -39,7 +39,7 @@ async def a_main() -> None:
 
                     docker_image_pulling=ci_harness.docker_image_pulling_impl(),
             ) as ci:
-                image_id = await ci.resolve_ci_image_task()
+                image_id = await ci.resolve_ci_image()
 
                 print(image_id)
 
