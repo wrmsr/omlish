@@ -11762,6 +11762,7 @@ def bind_docker(
 
     #
 
+    cache_served_docker_cache_config = None
     if cache_served_docker_cache_config is not None:
         lst.extend([
             inj.bind(DockerImageRepositoryOpenerImpl, singleton=True),
