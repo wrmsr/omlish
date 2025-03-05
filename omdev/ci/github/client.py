@@ -213,7 +213,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
-    KEY_PART_SEPARATOR = '--'
+    KEY_PART_SEPARATOR = '---'
 
     def fix_key(self, s: str, partial_suffix: bool = False) -> str:
         return self.KEY_PART_SEPARATOR.join([

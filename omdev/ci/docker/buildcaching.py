@@ -4,6 +4,7 @@ import dataclasses as dc
 import typing as ta
 
 from .cache import DockerCache
+from .cache import DockerCacheKey
 from .cmds import is_docker_image_present
 from .cmds import tag_docker_image
 
@@ -15,7 +16,7 @@ class DockerBuildCaching(abc.ABC):
     @abc.abstractmethod
     def cached_build_docker_image(
             self,
-            cache_key: str,
+            cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
     ) -> ta.Awaitable[str]:
         raise NotImplementedError
@@ -43,10 +44,10 @@ class DockerBuildCachingImpl(DockerBuildCaching):
 
     async def cached_build_docker_image(
             self,
-            cache_key: str,
+            cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
     ) -> str:
-        image_tag = f'{self._config.service}:{cache_key}'
+        image_tag = f'{self._config.service}:{str(cache_key)}'
 
         if not self._config.always_build and (await is_docker_image_present(image_tag)):
             return image_tag

@@ -26,6 +26,7 @@ from ....oci.repositories import OciRepository
 from ...cache import DataCache
 from ...cache import read_data_cache_data
 from ..cache import DockerCache
+from ..cache import DockerCacheKey
 from ..dataserver import DockerDataServer
 from ..repositories import DockerImageRepositoryOpener
 from .manifests import CacheServedDockerImageManifest
@@ -69,10 +70,10 @@ class CacheServedDockerCache(DockerCache):
         self._image_repo_opener = image_repo_opener
         self._data_cache = data_cache
 
-    async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
         key += (self._config.key_suffix or '')
 
-        if (manifest_data := await self._data_cache.get_data(key)) is None:
+        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
             return None
 
         manifest_bytes = await read_data_cache_data(manifest_data)
@@ -114,7 +115,7 @@ class CacheServedDockerCache(DockerCache):
 
         data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
 
-        image_url = f'localhost:{self._config.port}/{key}'
+        image_url = f'localhost:{self._config.port}/{str(key)}'
 
         async with DockerDataServer(
                 self._config.port,
@@ -160,7 +161,7 @@ class CacheServedDockerCache(DockerCache):
 
         return image_url
 
-    async def save_cache_docker_image(self, key: str, image: str) -> None:
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
         key += (self._config.key_suffix or '')
 
         async with contextlib.AsyncExitStack() as es:
@@ -175,18 +176,18 @@ class CacheServedDockerCache(DockerCache):
                 prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
                     image_repo,
                 ))
-                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)
+                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
 
             else:
                 built_repo = build_oci_index_repository(image_index)
 
             data_server_routes = build_oci_repository_data_server_routes(
-                key,
+                str(key),
                 built_repo,
             )
 
             async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{key}--{os.path.basename(file_path).split(".")[0]}'
+                target_cache_key = f'{str(key)}--{os.path.basename(file_path).split(".")[0]}'
                 await self._data_cache.put_data(
                     target_cache_key,
                     DataCache.FileData(file_path),
@@ -201,6 +202,6 @@ class CacheServedDockerCache(DockerCache):
         manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
 
         await self._data_cache.put_data(
-            key,
+            str(key),
             DataCache.BytesData(manifest_data),
         )

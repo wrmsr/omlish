@@ -15,6 +15,7 @@ from omlish.os.temp import temp_file_context
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies
 from .docker.buildcaching import DockerBuildCaching
+from .docker.cache import DockerCacheKey
 from .docker.cmds import build_docker_image
 from .docker.imagepulling import DockerImagePulling
 from .docker.utils import build_docker_file_hash
@@ -78,8 +79,8 @@ class Ci(AsyncExitStacked):
         return build_docker_file_hash(self._config.docker_file)[:self.KEY_HASH_LEN]
 
     @cached_nullary
-    def ci_base_image_cache_key(self) -> str:
-        return f'ci-base--{self.docker_file_hash()}'
+    def ci_base_image_cache_key(self) -> DockerCacheKey:
+        return DockerCacheKey(['ci-base'], self.docker_file_hash())
 
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -115,8 +116,8 @@ class Ci(AsyncExitStacked):
         return build_requirements_hash(self.requirements_txts())[:self.KEY_HASH_LEN]
 
     @cached_nullary
-    def ci_image_cache_key(self) -> str:
-        return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
+    def ci_image_cache_key(self) -> DockerCacheKey:
+        return DockerCacheKey(['ci'], f'{self.docker_file_hash()}-{self.requirements_hash()}')
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
