@@ -413,7 +413,6 @@ CI_RUN:=\
 	./python omdev/scripts/ci.py run \
 		--cache-dir ~/.cache/omlish/ci \
 		--github-detect \
-		--cache-served-docker \
 		-e CI=1 \
 		$$CI_RUN_OPTS \
 		. \
