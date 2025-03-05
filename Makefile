@@ -414,7 +414,6 @@ CI_RUN:=\
 		--cache-dir ~/.cache/omlish/ci \
 		--github-detect \
 		--cache-served-docker \
-		--setup-concurrency 4 \
 		-e CI=1 \
 		$$CI_RUN_OPTS \
 		. \

@@ -25,7 +25,7 @@ async def a_main() -> None:
                     config=dc.replace(
                         ci_harness.ci_config(),
 
-                        setup_concurrency=2,
+                        # setup_concurrency=2,
                     ),
 
                     docker_build_caching=DockerBuildCachingImpl(

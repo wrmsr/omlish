@@ -20,6 +20,10 @@ def if_python_version_less_than(num: ta.Sequence[int]):
     return pytest.mark.skipif(sys.version_info < tuple(num), reason=f'python version {tuple(sys.version_info)} < {tuple(num)}')  # noqa
 
 
+def if_not_platform(*platforms: str):
+    return pytest.mark.skipif(sys.platform not in platforms, reason=f'requires platform in {platforms}')
+
+
 def if_not_single():
     # FIXME
     # [resolve_collection_argument(a) for a in session.config.args]

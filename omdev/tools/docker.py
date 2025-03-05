@@ -19,7 +19,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.docker import all as dck
-from omlish.docker.ns1 import build_docker_ns1_run_args
+from omlish.docker.ns1 import build_docker_ns1_run_cmd
 from omlish.formats import json
 from omlish.formats import yaml
 from omlish.logs import all as logs
@@ -48,14 +48,17 @@ class Cli(ap.Cli):
         ap.arg('cmd', nargs='*'),
     )
     def ns1(self) -> None:
+        exe = docker_exe()
         os.execl(
-            exe := docker_exe(),
             exe,
-            'run',
-            '--rm',
-            '--platform', get_local_platform(),
-            '-it',
-            *build_docker_ns1_run_args(self.args.cmd),
+            *build_docker_ns1_run_cmd(
+                *self.args.cmd,
+                exe=exe,
+                run_args=[
+                    '--platform', get_local_platform(),
+                    '-t',
+                ],
+            ),
         )
 
     @ap.cmd(
