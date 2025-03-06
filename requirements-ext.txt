@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.3
 
-hypothesis==6.127.6
+hypothesis==6.127.9
 
 hexdump==3.3
 
@@ -143,7 +143,7 @@ einops==0.8.1
 
 ### infra
 
-google-api-python-client==2.162.0
+google-api-python-client==2.163.0
 google-cloud-compute==1.26.0
 
 cloudflare==3.1.0  # httpx
@@ -151,7 +151,7 @@ cloudflare==3.1.0  # httpx
 
 ### hn
 
-selectolax==0.3.27
+selectolax==0.3.28
 
 soco==0.30.9
 
@@ -162,12 +162,12 @@ bellows==0.43.0
 zigpy==0.77.0
 
 # python-openzwave
-zwave-js-server-python==0.60.1
+zwave-js-server-python==0.61.0
 
 ##
 
 python-telegram-bot==21.11.1
-discord.py==2.5.1
+discord.py==2.5.2
 
 ##
 
@@ -179,7 +179,7 @@ mitogen==0.3.22
 
 ##
 
-openai==1.65.2
+openai==1.65.4
 
 trl==0.15.2
 tf-keras==2.17.0  # @omlish-venv !13
@@ -212,7 +212,7 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.3.3
+langgraph==0.3.5
 
 langsmith==0.3.11
 
@@ -283,7 +283,7 @@ dspy==2.5.42  # FIXME: httpx, litellm, cryptography, oh my
 
 wikipedia==1.4.0
 trafilatura==2.0.0
-qdrant-client==1.13.2  # @omlish-venv !13
+qdrant-client==1.13.3  # @omlish-venv !13
 
 flask==3.1.0
 

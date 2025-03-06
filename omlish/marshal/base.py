@@ -13,6 +13,7 @@ See:
  - https://github.com/python-attrs/cattrs
  - https://github.com/jcrist/msgspec
  - https://github.com/Fatal1ty/mashumaro
+ - https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
 
 cattrs:
  *

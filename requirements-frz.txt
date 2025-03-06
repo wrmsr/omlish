@@ -1,12 +1,12 @@
 absl-py==2.1.0
 accelerate==1.4.0
 aiofiles==24.1.0
-aiohappyeyeballs==2.4.8
+aiohappyeyeballs==2.5.0
 aiohttp==3.11.13
 aiomysql==0.2.0
 aiosignal==1.3.2
 aiosqlite==0.21.0
-alembic==1.15.0
+alembic==1.15.1
 annotated-types==0.7.0
 anthropic==0.49.0
 anyio==4.8.0
@@ -37,8 +37,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.37.5
-botocore==1.37.5
+boto3==1.37.7
+botocore==1.37.7
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -79,14 +79,14 @@ darkdetect==0.8.0
 dataclasses-json==0.6.7
 datasets==3.3.2
 dateparser==1.2.1
-debugpy==1.8.12
+debugpy==1.8.13
 decorator==5.2.1
 defusedxml==0.7.1
 Deprecated==1.2.18
 dill==0.3.8
 directsearch==1.0
 dirtyjson==1.0.8
-discord.py==2.5.1
+discord.py==2.5.2
 diskcache==5.6.3
 distro==1.9.0
 docstring-to-markdown==0.15
@@ -94,7 +94,7 @@ docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
-duckdb==1.2.0
+duckdb==1.2.1
 duckduckgo_search==7.5.0
 durationpy==0.9
 einops==0.8.1
@@ -131,12 +131,12 @@ gguf==0.14.0
 gitdb==4.0.12
 GitPython==3.1.44
 google-api-core==2.24.1
-google-api-python-client==2.162.0
+google-api-python-client==2.163.0
 google-auth==2.38.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.26.0
 google-pasta==0.2.0
-googleapis-common-protos==1.69.0
+googleapis-common-protos==1.69.1
 gprof2dot==2024.6.6
 gpt4all==2.8.2
 greenlet==3.1.1
@@ -159,10 +159,10 @@ httplib2==0.22.0
 httptools==0.6.4
 httpx==0.28.1
 httpx-sse==0.4.0
-huggingface-hub==0.29.1
+huggingface-hub==0.29.2
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.127.6
+hypothesis==6.127.9
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -170,7 +170,7 @@ imageio==2.37.0
 importlib_metadata==8.5.0
 importlib_resources==6.5.2
 iniconfig==2.0.0
-instructor==1.7.2
+instructor==1.7.3
 ipykernel==6.29.4
 ipython==9.0.1
 ipython_pygments_lexers==1.1.1
@@ -183,7 +183,7 @@ jaraco.context==6.0.1
 jaraco.functools==4.1.0
 jedi==0.19.2
 jedi-language-server==0.43.1
-Jinja2==3.1.5
+Jinja2==3.1.6
 jiter==0.8.2
 jmespath==1.0.1
 joblib==1.4.2
@@ -205,7 +205,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 jusText==3.0.2
-keras==3.8.0
+keras==3.9.0
 keyring==25.6.0
 kiwisolver==1.4.8
 kubernetes==32.0.1
@@ -224,9 +224,9 @@ langchain-text-splitters==0.3.6
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.3.3
+langgraph==0.3.5
 langgraph-checkpoint==2.0.16
-langgraph-prebuilt==0.1.1
+langgraph-prebuilt==0.1.2
 langgraph-sdk==0.1.53
 langsmith==0.3.11
 language_data==1.3.0
@@ -234,7 +234,7 @@ lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
 libtmux==0.46.0
-lightning-utilities==0.13.0
+lightning-utilities==0.13.1
 litecli==1.14.4
 litellm==1.51.0
 llama-index-core==0.12.22
@@ -262,7 +262,7 @@ mdurl==0.1.2
 mistune==3.1.2
 mitogen==0.3.22
 ml-dtypes==0.4.1
-mlx==0.23.1
+mlx==0.23.2
 mlx-lm==0.21.5
 mmh3==5.1.0
 monotonic==1.6
@@ -298,7 +298,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.65.2
+openai==1.65.4
 opencv-python==4.11.0.86
 opendal==0.45.16
 opentelemetry-api==1.30.0
@@ -323,7 +323,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@dbae76979b590fa8b3d9855256db81e371e7bb33
+peft @ git+https://github.com/huggingface/peft.git@24150d0e41fa8a6fc998980e73a96dede0b33ffc
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -406,7 +406,7 @@ pytz==2025.1
 pywinrm==0.5.0
 PyYAML==6.0.2
 pyzmq==26.2.1
-qdrant-client==1.13.2
+qdrant-client==1.13.3
 qtconsole==5.5.1
 QtPy==2.4.3
 RapidFuzz==3.12.2
@@ -429,14 +429,14 @@ rpds-py==0.23.1
 rsa==4.9
 rubicon-objc==0.5.0
 ruff==0.9.9
-s3transfer==0.11.3
+s3transfer==0.11.4
 safetensors==0.5.3
 scikit-image==0.25.2
 scikit-learn==1.6.1
 scipy==1.15.2
 scramp==1.4.5
 segno==1.6.1
-selectolax==0.3.27
+selectolax==0.3.28
 Send2Trash==1.8.3
 sentence-transformers==3.4.1
 sentencepiece==0.2.0
@@ -511,12 +511,12 @@ types-Markdown==3.7.0.20241204
 types-paramiko==3.5.0.20240928
 types-python-dateutil==2.9.0.20241206
 types-PyYAML==6.0.12.20241230
-types-requests==2.32.0.20250301
+types-requests==2.32.0.20250306
 types-ujson==5.10.0.20240515
 typing-inspect==0.9.0
 typing_extensions==4.12.2
 tzdata==2025.1
-tzlocal==5.3
+tzlocal==5.3.1
 ujson==5.10.0
 unstructured==0.16.23
 unstructured-client==0.31.0
@@ -538,7 +538,7 @@ weasel==0.4.1
 webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
-websockets==15.0
+websockets==15.0.1
 Werkzeug==3.1.3
 wgpu==0.19.3
 wheel==0.45.1
@@ -556,4 +556,4 @@ zipp==3.21.0
 zope.event==5.0
 zope.interface==7.2
 zstandard==0.23.0
-zwave-js-server-python==0.60.1
+zwave-js-server-python==0.61.0

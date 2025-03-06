@@ -8,6 +8,7 @@ TODO:
   - merge mro?
   - are these better left up to callers? too usecase-specific to favor either way?
 """
+import threading
 import types
 import typing as ta
 
@@ -60,6 +61,8 @@ def _unwrap_object_metadata_target(obj: ta.Any) -> ta.Any:
 ##
 
 
+_OBJECT_METADATA_LOCK = threading.RLock()
+
 _OBJECT_METADATA_ATTR = '__' + __name__.replace('.', '_') + '__metadata__'
 
 
@@ -71,15 +74,14 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
     dct = tgt.__dict__
 
     if isinstance(dct, types.MappingProxyType):
-        for _ in range(2):
-            try:
-                lst = dct[_OBJECT_METADATA_ATTR]
-            except KeyError:
-                setattr(tgt, _OBJECT_METADATA_ATTR, [])
-            else:
-                break
-        else:
-            raise RuntimeError
+        try:
+            lst = dct[_OBJECT_METADATA_ATTR]
+        except KeyError:
+            with _OBJECT_METADATA_LOCK:
+                try:
+                    lst = dct[_OBJECT_METADATA_ATTR]
+                except KeyError:
+                    setattr(tgt, _OBJECT_METADATA_ATTR, lst := [])
 
     else:
         lst = dct.setdefault(_OBJECT_METADATA_ATTR, [])
