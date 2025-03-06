@@ -104,6 +104,7 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
             #   https://github.com/huggingface/tokenizers/blob/4f1a810aa258d287e6936315e63fbf58bde2a980/bindings/python/src/lib.rs#L57
             # then complains about `TOKENIZERS_PARALLELISM` at the next fork (which presumably will happen immediately
             # after this to `git commit`, despite it being conceptually just a fork/exe).
+            # TODO: a generic subprocessing minichain service wrapper?
             with cf.ProcessPoolExecutor() as exe:
                 return exe.submit(
                     self._run_prompt,
