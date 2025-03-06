@@ -41,18 +41,13 @@ class CacheKey:
                 return os
             elif isinstance(os, str):
                 raise TypeError(os)
-            gs = [list(g) for _, g in itertools.groupby(os, key=lambda o: isinstance(o, str))]
             pl = []
-            for cg in gs:
-                ck = isinstance(cg[0], str)
+            for ck, cg in itertools.groupby(os, key=lambda o: isinstance(o, str)):
                 if ck:
                     pl.extend(cg)
                 else:
                     for c in cg:
                         pl.append(build(l - 1, c))
-            # FIXME: squeeze
-            # if len(pl) == 1 and isinstance(p0 := pl[0], CacheKey):
-            #     return p0
             return CacheKey(l, tuple(pl))
         return build(level, objs)
 
