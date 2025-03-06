@@ -41,13 +41,18 @@ class CacheKey:
                 return os
             elif isinstance(os, str):
                 raise TypeError(os)
+            gs = [list(g) for _, g in itertools.groupby(os, key=lambda o: isinstance(o, str))]
             pl = []
-            for ck, cg in itertools.groupby(os, key=lambda o: isinstance(o, str)):
+            for cg in gs:
+                ck = isinstance(cg[0], str)
                 if ck:
                     pl.extend(cg)
                 else:
                     for c in cg:
                         pl.append(build(l - 1, c))
+            # FIXME: squeeze
+            # if len(pl) == 1 and isinstance(p0 := pl[0], CacheKey):
+            #     return p0
             return CacheKey(l, tuple(pl))
         return build(level, objs)
 
@@ -175,12 +180,14 @@ def _main() -> None:
         else:
             raise Exception
 
+    assert CacheKey.of('') == CacheKey(1, ('',))
     assert CacheKey.of(CacheKey(1, ('a',))) == CacheKey(1, ('a',))
     assert CacheKey.of('a') == CacheKey(1, ('a',))
     assert CacheKey.of('a', 'b') == CacheKey(1, ('a', 'b'))
     assert CacheKey.of(['a']) == CacheKey(2, (CacheKey(1, ('a',)),))
     assert CacheKey.of(['a', 'b']) == CacheKey(2, (CacheKey(1, ('a', 'b')),))
     assert CacheKey.of(['a'], 'b') == CacheKey(2, (CacheKey(1, ('a',)), 'b'))
+    assert CacheKey.of('a', ['b']) == CacheKey(2, ('a', CacheKey(1, ('b',))))
     assert CacheKey.of('a', CacheKey(2, ('b',))) == CacheKey(3, ('a', CacheKey(2, ('b',))))
     assert CacheKey.of('a', [CacheKey(2, ('b',))]) == CacheKey(4, ('a', CacheKey(3, (CacheKey(2, ('b',)),))))
 
