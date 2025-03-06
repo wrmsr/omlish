@@ -419,6 +419,10 @@ CI_RUN:=\
 		omlish-ci \
 		--
 
+.PHONY: ci-setup
+ci-setup:
+	${CI_RUN} true
+
 .PHONY: ci
 ci:
 	${CI_RUN} python3 \

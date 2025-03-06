@@ -6,9 +6,11 @@ from omlish import lang
 
 if ta.TYPE_CHECKING:
     import huggingface_hub as hf
+    import huggingface_hub.errors  # noqa
     import huggingface_hub.utils  # noqa
 else:
     hf = lang.proxy_import('huggingface_hub', extras=[
+        'errors',
         'utils',
     ])
 
@@ -21,7 +23,10 @@ def is_repo_cached(
 ) -> bool:
     check.not_isinstance(revisions, str)
 
-    cache_info = hf.utils.scan_cache_dir(cache_dir=cache_dir)
+    try:
+        cache_info = hf.utils.scan_cache_dir(cache_dir=cache_dir)
+    except hf.errors.CacheNotFound:
+        return False
 
     revision_set = frozenset(revisions) if revisions is not None else None
 

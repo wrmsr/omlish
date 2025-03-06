@@ -5,6 +5,7 @@ TODO:
 import abc
 import dataclasses as dc
 import os.path
+import re
 import typing as ta
 import urllib.request
 
@@ -66,6 +67,12 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
 #
 
 
+def _strip_markdown_code_block(text: str) -> str:
+    if (match := re.fullmatch(r'```(?:\w+)?\n(.+?)\n```', text, re.DOTALL)) is None:
+        return text
+    return match.group(1)
+
+
 class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
     @dc.dataclass(frozen=True)
     class Config(GitAiBackend.Config):
@@ -81,7 +88,11 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
             [UserMessage(prompt)],
             *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         )
-        return check.non_empty_str(resp.v[0].m.s)
+        text = check.non_empty_str(resp.v[0].m.s)
+
+        text = _strip_markdown_code_block(text)
+
+        return text
 
 
 #
@@ -146,6 +157,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
         prompt = '\n\n'.join([
             'Write a short git commit message for the following git diff:',
             f'```\n{diff}\n```',
+            'Only output the message to be commited into git - do not output any explanation.',
         ])
 
         msg = self._backend.run_prompt(prompt)

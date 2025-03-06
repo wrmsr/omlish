@@ -39,6 +39,10 @@ jobs:
           script: |
             process.env['export-vars'].trim().split(/\s+/).forEach((k) => core.exportVariable(k, process.env[k]))
 
+      - name: 'Setup CI'
+        run: >
+          make ci-setup
+
       - name: 'Run CI'
         run: >
           CI_RUN_OPTS='-v ${{ github.workspace }}:/github/workspace -e PYTEST_JUNIT_XML_PATH'
