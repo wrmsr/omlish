@@ -193,14 +193,20 @@ class TestFactories(unittest.TestCase):
 
 class TestInspect(unittest.TestCase):
     def test_overridden_new(self):
-        class Foo(ta.Generic[T]):
+        class NonGenericFoo:
             def __init__(self, t: T) -> None:
                 pass
 
-        # See note in _do_injection_inspect about failing on 3.8.
-        insp = _do_injection_inspect(Foo)
+        class GenericFoo(ta.Generic[T]):
+            def __init__(self, t: T) -> None:
+                pass
 
-        self.assertIs(insp.signature.parameters['t'].annotation, T)
+        for cls in [NonGenericFoo, GenericFoo]:
+            # See note in _do_injection_inspect about failing on 3.8.
+            insp = _do_injection_inspect(cls)
+
+            self.assertEqual(len(insp.signature.parameters) - insp.args_offset, 1)
+            self.assertIs(insp.signature.parameters['t'].annotation, T)
 
     class A:
         pass
