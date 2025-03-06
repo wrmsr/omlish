@@ -118,7 +118,7 @@ class DirectoryFileCache(FileCache):
         elif not os.path.isdir(self.dir):
             os.makedirs(self.dir)
             with open(version_file, 'w') as f:
-                f.write(str(self._version))
+                f.write(f'{self._version}\n')
             return
 
         # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.

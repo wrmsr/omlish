@@ -44,7 +44,7 @@ class CacheServedDockerCache(DockerCache):
 
         repack: bool = True
 
-        key_suffix: ta.Optional[str] = '--cs'
+        key_prefix: ta.Optional[str] = 'cs'
 
         #
 
@@ -71,7 +71,8 @@ class CacheServedDockerCache(DockerCache):
         self._data_cache = data_cache
 
     async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
-        key += (self._config.key_suffix or '')
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
 
         if (manifest_data := await self._data_cache.get_data(str(key))) is None:
             return None
@@ -115,7 +116,7 @@ class CacheServedDockerCache(DockerCache):
 
         data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
 
-        image_url = f'localhost:{self._config.port}/{str(key)}'
+        image_url = f'localhost:{self._config.port}/{key!s}'
 
         async with DockerDataServer(
                 self._config.port,
@@ -162,7 +163,8 @@ class CacheServedDockerCache(DockerCache):
         return image_url
 
     async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
-        key += (self._config.key_suffix or '')
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
 
         async with contextlib.AsyncExitStack() as es:
             image_repo: OciRepository = await es.enter_async_context(
@@ -187,7 +189,7 @@ class CacheServedDockerCache(DockerCache):
             )
 
             async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{str(key)}--{os.path.basename(file_path).split(".")[0]}'
+                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
                 await self._data_cache.put_data(
                     target_cache_key,
                     DataCache.FileData(file_path),

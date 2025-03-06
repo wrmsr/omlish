@@ -47,7 +47,7 @@ class DockerBuildCachingImpl(DockerBuildCaching):
             cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
     ) -> str:
-        image_tag = f'{self._config.service}:{str(cache_key)}'
+        image_tag = f'{self._config.service}:{cache_key!s}'
 
         if not self._config.always_build and (await is_docker_image_present(image_tag)):
             return image_tag

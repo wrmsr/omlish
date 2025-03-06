@@ -5410,6 +5410,41 @@ class SubprocessRunnable(abc.ABC, ta.Generic[T]):
 
 
 ########################################
+# ../../../omlish/text/mangle.py
+
+
+@dc.dataclass(frozen=True)
+class StringMangler:
+    escape: str
+    escaped: ta.Sequence[str]
+
+    @classmethod
+    def of(cls, escape: str, escaped: ta.Iterable[str]) -> 'StringMangler':
+        check.arg(len(escape) == 1)
+        return StringMangler(escape, sorted(set(escaped) - {escape}))
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.escape)
+        check.arg(len(self.escape) == 1)
+        check.not_in(self.escape, self.escaped)
+        check.arg(len(set(self.escaped)) == len(self.escaped))
+
+    @cached_nullary
+    def replacements(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return [(l, self.escape + str(i)) for i, l in enumerate([self.escape, *self.escaped])]
+
+    def mangle(self, s: str) -> str:
+        for l, r in self.replacements():
+            s = s.replace(l, r)
+        return s
+
+    def unmangle(self, s: str) -> str:
+        for l, r in reversed(self.replacements()):
+            s = s.replace(r, l)
+        return s
+
+
+########################################
 # ../cache.py
 """
 TODO:
@@ -5514,7 +5549,7 @@ class DirectoryFileCache(FileCache):
         elif not os.path.isdir(self.dir):
             os.makedirs(self.dir)
             with open(version_file, 'w') as f:
-                f.write(str(self._version))
+                f.write(f'{self._version}\n')
             return
 
         # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
@@ -5881,7 +5916,6 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
-        log.info('Sending gha request: %r', path)
 
         if content is not None and json_content is not None:
             raise RuntimeError('Must not pass both content and json_content')
@@ -11280,7 +11314,7 @@ class DockerBuildCachingImpl(DockerBuildCaching):
             cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
     ) -> str:
-        image_tag = f'{self._config.service}:{str(cache_key)}'
+        image_tag = f'{self._config.service}:{cache_key!s}'
 
         if not self._config.always_build and (await is_docker_image_present(image_tag)):
             return image_tag
@@ -11317,7 +11351,7 @@ class CacheServedDockerCache(DockerCache):
 
         repack: bool = True
 
-        key_suffix: ta.Optional[str] = '--cs'
+        key_prefix: ta.Optional[str] = 'cs'
 
         #
 
@@ -11344,7 +11378,8 @@ class CacheServedDockerCache(DockerCache):
         self._data_cache = data_cache
 
     async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
-        key += (self._config.key_suffix or '')
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
 
         if (manifest_data := await self._data_cache.get_data(str(key))) is None:
             return None
@@ -11388,7 +11423,7 @@ class CacheServedDockerCache(DockerCache):
 
         data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
 
-        image_url = f'localhost:{self._config.port}/{str(key)}'
+        image_url = f'localhost:{self._config.port}/{key!s}'
 
         async with DockerDataServer(
                 self._config.port,
@@ -11435,7 +11470,8 @@ class CacheServedDockerCache(DockerCache):
         return image_url
 
     async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
-        key += (self._config.key_suffix or '')
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
 
         async with contextlib.AsyncExitStack() as es:
             image_repo: OciRepository = await es.enter_async_context(
@@ -11460,7 +11496,7 @@ class CacheServedDockerCache(DockerCache):
             )
 
             async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{str(key)}--{os.path.basename(file_path).split(".")[0]}'
+                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
                 await self._data_cache.put_data(
                     target_cache_key,
                     DataCache.FileData(file_path),
@@ -11517,11 +11553,9 @@ class DockerImagePullingImpl(DockerImagePulling):
         if not self._config.always_pull and (await is_docker_image_present(image)):
             return
 
-        dep_suffix = image
-        for c in '/:.-_':
-            dep_suffix = dep_suffix.replace(c, '-')
+        key_content = StringMangler.of('-', '/:._').mangle(image)
 
-        cache_key = f'docker--{dep_suffix}'
+        cache_key = DockerCacheKey(['docker'], key_content)
         if (
                 self._docker_cache is not None and
                 (await self._docker_cache.load_cache_docker_image(cache_key)) is not None

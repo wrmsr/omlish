@@ -4,9 +4,11 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.timing import log_timing_context
+from omlish.text.mangle import StringMangler
 
 from ..cache import FileCache
 from .cache import DockerCache
+from .cache import DockerCacheKey
 from .cmds import is_docker_image_present
 from .cmds import pull_docker_image
 
@@ -44,11 +46,9 @@ class DockerImagePullingImpl(DockerImagePulling):
         if not self._config.always_pull and (await is_docker_image_present(image)):
             return
 
-        dep_suffix = image
-        for c in '/:.-_':
-            dep_suffix = dep_suffix.replace(c, '-')
+        key_content = StringMangler.of('-', '/:._').mangle(image)
 
-        cache_key = f'docker--{dep_suffix}'
+        cache_key = DockerCacheKey(['docker'], key_content)
         if (
                 self._docker_cache is not None and
                 (await self._docker_cache.load_cache_docker_image(cache_key)) is not None

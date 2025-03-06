@@ -1,4 +1,9 @@
+# @omlish-lite
 # ruff: noqa: UP006 UP007
+"""
+TODO:
+ - move to omlish.text
+"""
 import dataclasses as dc
 import itertools
 import typing as ta
