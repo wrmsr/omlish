@@ -15,6 +15,7 @@ from omlish import lang
 from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
+from ..minichain.backends.mlxlm import MlxlmChatModel
 from ..minichain.backends.openai import OpenaiChatModel
 from ..minichain.chat import UserMessage
 from ..minichain.generative import MaxTokens
@@ -54,6 +55,27 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
                 os.environ[key] = sec.reveal()
 
         llm = OpenaiChatModel()
+
+        resp = llm(
+            [UserMessage(prompt)],
+            *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
+        )
+        return check.non_empty_str(resp.v[0].m.s)
+
+
+#
+
+
+class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(GitAiBackend.Config):
+        model: str = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+    def run_prompt(self, prompt: str) -> str:
+        llm = MlxlmChatModel(self._config.model)
 
         resp = llm(
             [UserMessage(prompt)],
