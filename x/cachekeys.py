@@ -154,6 +154,7 @@ class CacheKey:
 
 
 def _main() -> None:
+    assert hash(CacheKey(2, (CacheKey(1, ('a',)),))) == hash(CacheKey(2, (CacheKey(1, ('a',)),)))
 
     assert CacheKey(1, ('foo',)).render() == 'foo'
     assert CacheKey(1, ('foo', 'bar')).render() == 'foo-bar'

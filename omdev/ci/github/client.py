@@ -173,6 +173,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
+        log.info('Sending gha request: %r', path)
 
         if content is not None and json_content is not None:
             raise RuntimeError('Must not pass both content and json_content')

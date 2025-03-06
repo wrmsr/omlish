@@ -153,7 +153,7 @@ OciMediaDataclassT = ta.TypeVar('OciMediaDataclassT', bound='OciMediaDataclass')
 # ../consts.py
 
 
-CI_CACHE_VERSION = 1
+CI_CACHE_VERSION = 2
 
 
 ########################################
@@ -5881,6 +5881,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
         url = f'{self._service_url}/{path}'
+        log.info('Sending gha request: %r', path)
 
         if content is not None and json_content is not None:
             raise RuntimeError('Must not pass both content and json_content')
@@ -5921,7 +5922,7 @@ class GithubCacheServiceV1BaseClient(GithubCacheClient, abc.ABC):
 
     #
 
-    KEY_PART_SEPARATOR = '--'
+    KEY_PART_SEPARATOR = '---'
 
     def fix_key(self, s: str, partial_suffix: bool = False) -> str:
         return self.KEY_PART_SEPARATOR.join([
@@ -11173,13 +11174,33 @@ class DockerImageRepositoryOpenerImpl(DockerImageRepositoryOpener):
 ##
 
 
+@dc.dataclass(frozen=True)
+class DockerCacheKey:
+    prefixes: ta.Sequence[str]
+    content: str
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.prefixes, str)
+
+    def append_prefix(self, *prefixes: str) -> 'DockerCacheKey':
+        return dc.replace(self, prefixes=(*self.prefixes, *prefixes))
+
+    SEPARATOR: ta.ClassVar[str] = '--'
+
+    def __str__(self) -> str:
+        return self.SEPARATOR.join([*self.prefixes, self.content])
+
+
+##
+
+
 class DockerCache(abc.ABC):
     @abc.abstractmethod
-    def load_cache_docker_image(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
+    def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Awaitable[ta.Optional[str]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def save_cache_docker_image(self, key: str, image: str) -> ta.Awaitable[None]:
+    def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
@@ -11193,11 +11214,11 @@ class DockerCacheImpl(DockerCache):
 
         self._file_cache = file_cache
 
-    async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
         if self._file_cache is None:
             return None
 
-        cache_file = await self._file_cache.get_file(key)
+        cache_file = await self._file_cache.get_file(str(key))
         if cache_file is None:
             return None
 
@@ -11205,7 +11226,7 @@ class DockerCacheImpl(DockerCache):
 
         return await load_docker_tar_cmd(get_cache_cmd)
 
-    async def save_cache_docker_image(self, key: str, image: str) -> None:
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
         if self._file_cache is None:
             return
 
@@ -11214,7 +11235,7 @@ class DockerCacheImpl(DockerCache):
 
             await save_docker_tar_cmd(image, write_tmp_cmd)
 
-            await self._file_cache.put_file(key, tmp_file, steal=True)
+            await self._file_cache.put_file(str(key), tmp_file, steal=True)
 
 
 ########################################
@@ -11228,7 +11249,7 @@ class DockerBuildCaching(abc.ABC):
     @abc.abstractmethod
     def cached_build_docker_image(
             self,
-            cache_key: str,
+            cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
     ) -> ta.Awaitable[str]:
         raise NotImplementedError
@@ -11256,10 +11277,10 @@ class DockerBuildCachingImpl(DockerBuildCaching):
 
     async def cached_build_docker_image(
             self,
-            cache_key: str,
+            cache_key: DockerCacheKey,
             build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
     ) -> str:
-        image_tag = f'{self._config.service}:{cache_key}'
+        image_tag = f'{self._config.service}:{str(cache_key)}'
 
         if not self._config.always_build and (await is_docker_image_present(image_tag)):
             return image_tag
@@ -11322,10 +11343,10 @@ class CacheServedDockerCache(DockerCache):
         self._image_repo_opener = image_repo_opener
         self._data_cache = data_cache
 
-    async def load_cache_docker_image(self, key: str) -> ta.Optional[str]:
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
         key += (self._config.key_suffix or '')
 
-        if (manifest_data := await self._data_cache.get_data(key)) is None:
+        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
             return None
 
         manifest_bytes = await read_data_cache_data(manifest_data)
@@ -11367,7 +11388,7 @@ class CacheServedDockerCache(DockerCache):
 
         data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
 
-        image_url = f'localhost:{self._config.port}/{key}'
+        image_url = f'localhost:{self._config.port}/{str(key)}'
 
         async with DockerDataServer(
                 self._config.port,
@@ -11413,7 +11434,7 @@ class CacheServedDockerCache(DockerCache):
 
         return image_url
 
-    async def save_cache_docker_image(self, key: str, image: str) -> None:
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
         key += (self._config.key_suffix or '')
 
         async with contextlib.AsyncExitStack() as es:
@@ -11428,18 +11449,18 @@ class CacheServedDockerCache(DockerCache):
                 prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
                     image_repo,
                 ))
-                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)
+                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
 
             else:
                 built_repo = build_oci_index_repository(image_index)
 
             data_server_routes = build_oci_repository_data_server_routes(
-                key,
+                str(key),
                 built_repo,
             )
 
             async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{key}--{os.path.basename(file_path).split(".")[0]}'
+                target_cache_key = f'{str(key)}--{os.path.basename(file_path).split(".")[0]}'
                 await self._data_cache.put_data(
                     target_cache_key,
                     DataCache.FileData(file_path),
@@ -11454,7 +11475,7 @@ class CacheServedDockerCache(DockerCache):
         manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
 
         await self._data_cache.put_data(
-            key,
+            str(key),
             DataCache.BytesData(manifest_data),
         )
 
@@ -11577,8 +11598,8 @@ class Ci(AsyncExitStacked):
         return build_docker_file_hash(self._config.docker_file)[:self.KEY_HASH_LEN]
 
     @cached_nullary
-    def ci_base_image_cache_key(self) -> str:
-        return f'ci-base--{self.docker_file_hash()}'
+    def ci_base_image_cache_key(self) -> DockerCacheKey:
+        return DockerCacheKey(['ci-base'], self.docker_file_hash())
 
     async def _resolve_ci_base_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
@@ -11614,8 +11635,8 @@ class Ci(AsyncExitStacked):
         return build_requirements_hash(self.requirements_txts())[:self.KEY_HASH_LEN]
 
     @cached_nullary
-    def ci_image_cache_key(self) -> str:
-        return f'ci--{self.docker_file_hash()}-{self.requirements_hash()}'
+    def ci_image_cache_key(self) -> DockerCacheKey:
+        return DockerCacheKey(['ci'], f'{self.docker_file_hash()}-{self.requirements_hash()}')
 
     async def _resolve_ci_image(self) -> str:
         async def build_and_tag(image_tag: str) -> str:
