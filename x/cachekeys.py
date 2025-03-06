@@ -24,16 +24,31 @@ class CacheKey:
         if len(objs) == 1 and isinstance(obj := objs[0], CacheKey):
             return obj
 
-        def find_depth(o):
+        def prepare(o):
             if isinstance(o, CacheKey):
-                return o.level
+                return o.level, o
             elif isinstance(o, str):
-                return 0
+                return 0, o
             elif isinstance(o, ta.Sequence):
-                return max(find_depth(c) for c in o) + 1
+                max_lvl = 0
+                out_lst = []
+                for c in o:
+                    cur_lvl, cur_out = prepare(c)
+                    max_lvl = max(max_lvl, cur_lvl)
+                    if out_lst and all(
+                            isinstance(x, ta.Sequence) and not isinstance(x, str)
+                            for x in (out_lst[-1], cur_out)
+                    ):
+                        out_lst[-1].extend(cur_out)
+                    else:
+                        out_lst.append(cur_out)
+                if len(out_lst) == 1 and isinstance(out_lst[0], ta.Sequence) and not isinstance(out_lst[0], str):
+                    return max_lvl + 1, out_lst[0]
+                else:
+                    return max_lvl + 1, out_lst
             else:
                 raise TypeError(o)
-        level = find_depth(objs)
+        level, objs = prepare(objs)
 
         def build(l, os):
             if isinstance(os, CacheKey):
@@ -141,6 +156,8 @@ class CacheKey:
 
 
 def _main() -> None:
+    assert CacheKey.of(['a'], ['b']) == CacheKey(2, ('a', 'b'))
+
     assert CacheKey(1, ('foo',)).render() == 'foo'
     assert CacheKey(1, ('foo', 'bar')).render() == 'foo-bar'
 
@@ -179,8 +196,9 @@ def _main() -> None:
     assert CacheKey.of(CacheKey(1, ('a',))) == CacheKey(1, ('a',))
     assert CacheKey.of('a') == CacheKey(1, ('a',))
     assert CacheKey.of('a', 'b') == CacheKey(1, ('a', 'b'))
-    assert CacheKey.of(['a']) == CacheKey(2, (CacheKey(1, ('a',)),))
-    assert CacheKey.of(['a', 'b']) == CacheKey(2, (CacheKey(1, ('a', 'b')),))
+    assert CacheKey.of(['a']) == CacheKey(2, ('a',))
+    assert CacheKey.of(['a', 'b']) == CacheKey(2, ('a', 'b'))
+    assert CacheKey.of(['a'], ['b']) == CacheKey(2, ('a', 'b'))
     assert CacheKey.of(['a'], 'b') == CacheKey(2, (CacheKey(1, ('a',)), 'b'))
     assert CacheKey.of('a', ['b']) == CacheKey(2, ('a', CacheKey(1, ('b',))))
     assert CacheKey.of('a', CacheKey(2, ('b',))) == CacheKey(3, ('a', CacheKey(2, ('b',))))
