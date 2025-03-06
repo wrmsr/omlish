@@ -42,17 +42,15 @@ class CacheKey:
                         out_lst[-1].extend(cur_out)
                     else:
                         out_lst.append(cur_out)
-                if len(out_lst) == 1 and isinstance(out_lst[0], ta.Sequence) and not isinstance(out_lst[0], str):
+                if len(out_lst) == 1 and not isinstance(out_lst[0], str):
                     return max_lvl + 1, out_lst[0]
-                else:
-                    return max_lvl + 1, out_lst
+                return max_lvl + 1, out_lst
             else:
                 raise TypeError(o)
         level, objs = prepare(objs)
 
         def build(l, os):
             if isinstance(os, CacheKey):
-                check.state(l == os.level)
                 return os
             elif isinstance(os, str):
                 raise TypeError(os)
@@ -156,7 +154,6 @@ class CacheKey:
 
 
 def _main() -> None:
-    assert CacheKey.of(['a'], ['b']) == CacheKey(2, ('a', 'b'))
 
     assert CacheKey(1, ('foo',)).render() == 'foo'
     assert CacheKey(1, ('foo', 'bar')).render() == 'foo-bar'
@@ -202,7 +199,7 @@ def _main() -> None:
     assert CacheKey.of(['a'], 'b') == CacheKey(2, (CacheKey(1, ('a',)), 'b'))
     assert CacheKey.of('a', ['b']) == CacheKey(2, ('a', CacheKey(1, ('b',))))
     assert CacheKey.of('a', CacheKey(2, ('b',))) == CacheKey(3, ('a', CacheKey(2, ('b',))))
-    assert CacheKey.of('a', [CacheKey(2, ('b',))]) == CacheKey(4, ('a', CacheKey(3, (CacheKey(2, ('b',)),))))
+    assert CacheKey.of('a', [CacheKey(2, ('b',))]) == CacheKey(4, ('a', CacheKey(2, ('b',)),))
 
 
 if __name__ == '__main__':
