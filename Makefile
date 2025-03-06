@@ -409,23 +409,30 @@ docker-updates: venv
 
 ### CI
 
+CI_PROJECT_DIR:=.
+CI_SERVICE:=omlish-ci
 CI_RUN:=\
 	./python omdev/scripts/ci.py run \
 		--cache-dir ~/.cache/omlish/ci \
 		--github-detect \
 		-e CI=1 \
-		$$CI_RUN_OPTS \
-		. \
-		omlish-ci \
-		--
+		$$CI_RUN_OPTS
 
 .PHONY: ci-setup
 ci-setup:
-	${CI_RUN} true
+	${CI_RUN} \
+		--setup-only \
+		${CI_PROJECT_DIR} \
+		${CI_SERVICE} \
+		true
 
 .PHONY: ci
 ci:
-	${CI_RUN} python3 \
+	${CI_RUN} \
+		${CI_PROJECT_DIR} \
+		${CI_SERVICE} \
+		-- \
+		python3 \
 		-m pytest \
 		${PYTEST_OPTS} \
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \

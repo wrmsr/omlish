@@ -123,3 +123,21 @@ async def load_docker_tar(
         tar_file: str,
 ) -> str:
     return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
+
+
+##
+
+
+async def ensure_docker_image_setup(
+        image: str,
+        *,
+        cwd: ta.Optional[str] = None,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'run',
+        '--rm',
+        '--entrypoint', '/bin/true',  # FIXME: lol
+        image,
+        **(dict(cwd=cwd) if cwd is not None else {}),
+    )

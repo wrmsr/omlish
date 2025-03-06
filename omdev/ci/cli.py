@@ -97,6 +97,8 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--no-dependencies', action='store_true'),
 
+        argparse_arg('--setup-only', action='store_true'),
+
         argparse_arg('-e', '--env', action='append'),
         argparse_arg('-v', '--volume', action='append'),
 
@@ -210,6 +212,8 @@ class CiCli(ArgparseCli):
             setup_concurrency=self.args.setup_concurrency,
 
             no_dependencies=self.args.no_dependencies,
+
+            setup_only=self.args.setup_only,
 
             run_options=run_options,
         )

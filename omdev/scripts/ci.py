@@ -10983,6 +10983,24 @@ async def load_docker_tar(
     return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
 
 
+##
+
+
+async def ensure_docker_image_setup(
+        image: str,
+        *,
+        cwd: ta.Optional[str] = None,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'run',
+        '--rm',
+        '--entrypoint', '/bin/true',  # FIXME: lol
+        image,
+        **(dict(cwd=cwd) if cwd is not None else {}),
+    )
+
+
 ########################################
 # ../docker/dataserver.py
 
@@ -11613,6 +11631,8 @@ class Ci(AsyncExitStacked):
 
         no_dependencies: bool = False
 
+        setup_only: bool = False
+
         run_options: ta.Optional[ta.Sequence[str]] = None
 
         #
@@ -11736,18 +11756,21 @@ class Ci(AsyncExitStacked):
     #
 
     @cached_nullary
-    def pull_dependencies_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
+    def get_dependency_images(self) -> ta.Sequence[str]:
         deps = get_compose_service_dependencies(
             self._config.compose_file,
             self._config.service,
         )
+        return sorted(deps.values())
 
+    @cached_nullary
+    def pull_dependencies_funcs(self) -> ta.Sequence[ta.Callable[[], ta.Awaitable]]:
         return [
             async_cached_nullary(functools.partial(
                 self._docker_image_pulling.pull_docker_image,
                 dep_image,
             ))
-            for dep_image in deps.values()
+            for dep_image in self.get_dependency_images()
         ]
 
     #
@@ -11795,10 +11818,29 @@ class Ci(AsyncExitStacked):
 
     #
 
+    async def _run_setup_only(self) -> None:
+        image_ids = [
+            await self.resolve_ci_image(),
+
+            *(self.get_dependency_images() if not self._config.no_dependencies else []),
+        ]
+
+        for image_id in image_ids:
+            with log_timing_context(f'Run setup only: {image_id}'):
+                await ensure_docker_image_setup(
+                    image_id,
+                    cwd=self._config.project_dir,
+                )
+
+    #
+
     async def run(self) -> None:
         await self.setup()
 
-        await self._run_compose()
+        if self._config.setup_only:
+            await self._run_setup_only()
+        else:
+            await self._run_compose()
 
 
 ########################################
@@ -11979,6 +12021,8 @@ class CiCli(ArgparseCli):
 
         argparse_arg('--no-dependencies', action='store_true'),
 
+        argparse_arg('--setup-only', action='store_true'),
+
         argparse_arg('-e', '--env', action='append'),
         argparse_arg('-v', '--volume', action='append'),
 
@@ -12092,6 +12136,8 @@ class CiCli(ArgparseCli):
             setup_concurrency=self.args.setup_concurrency,
 
             no_dependencies=self.args.no_dependencies,
+
+            setup_only=self.args.setup_only,
 
             run_options=run_options,
         )
