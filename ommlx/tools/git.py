@@ -3,6 +3,7 @@ TODO:
  - exclude @omlish-amalg-output files
 """
 import abc
+import concurrent.futures as cf
 import dataclasses as dc
 import os.path
 import re
@@ -78,10 +79,13 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
     class Config(GitAiBackend.Config):
         model: str = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
 
+        run_in_subprocess: bool = True
+        subprocess_timeout: float | None = 60.
+
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
 
-    def run_prompt(self, prompt: str) -> str:
+    def _run_prompt(self, prompt: str) -> str:
         llm = MlxlmChatModel(self._config.model)
 
         resp = llm(
@@ -93,6 +97,17 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
         text = _strip_markdown_code_block(text)
 
         return text
+
+    def run_prompt(self, prompt: str) -> str:
+        if self._config.run_in_subprocess:
+            with cf.ProcessPoolExecutor() as exe:
+                return exe.submit(
+                    self._run_prompt,
+                    prompt,
+                ).result(timeout=self._config.subprocess_timeout)
+
+        else:
+            return self._run_prompt(prompt)
 
 
 #
@@ -160,7 +175,11 @@ class AiGitMessageGenerator(GitMessageGenerator):
             'Only output the message to be commited into git - do not output any explanation.',
         ])
 
-        msg = self._backend.run_prompt(prompt)
+        with cf.ProcessPoolExecutor() as exe:
+            msg = exe.submit(
+                self._backend.run_prompt,
+                prompt,
+            ).result()
 
         return GitMessageGenerator.GenerateCommitMessageResult(
             msg=msg,

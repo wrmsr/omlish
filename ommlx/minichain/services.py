@@ -54,6 +54,7 @@ class ServiceResponse(lang.Abstract, ta.Generic[T]):
 
 
 class Service(lang.Abstract, ta.Generic[ServiceRequestT, ServiceOptionT, ServiceNewT, ServiceResponseT]):
+    # Not ClassVar - wrappers for example vary by instance.
     request_cls: type[ServiceRequest]
     option_cls_set: frozenset[type[Option]]
     new_cls: ta.Any
