@@ -193,6 +193,20 @@ class TestFactories(unittest.TestCase):
 
 class TestInspect(unittest.TestCase):
     def test_overridden_new(self):
+        # See note in _do_injection_inspect about failing on 3.8.
+
+        class NonGenericNullary:
+            pass
+
+        class GenericNullary(ta.Generic[T]):
+            pass
+
+        cls: ta.Any
+        for cls in [NonGenericNullary, GenericNullary]:
+            insp = _do_injection_inspect(cls)
+
+            self.assertEqual(len(insp.signature.parameters) - insp.args_offset, 0)
+
         class NonGenericFoo:
             def __init__(self, t: T) -> None:
                 pass
@@ -202,7 +216,6 @@ class TestInspect(unittest.TestCase):
                 pass
 
         for cls in [NonGenericFoo, GenericFoo]:
-            # See note in _do_injection_inspect about failing on 3.8.
             insp = _do_injection_inspect(cls)
 
             self.assertEqual(len(insp.signature.parameters) - insp.args_offset, 1)
