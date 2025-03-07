@@ -11,7 +11,7 @@ import os.path
 import sys
 import typing as ta
 
-from omdev.home.paths import get_state_dir
+from omdev.home.paths import get_home_paths
 from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import lang
@@ -76,7 +76,7 @@ def _run_chat(
 ) -> None:
     prompt = check.isinstance(content, str)
 
-    state_dir = os.path.join(get_state_dir(), 'minichain', 'cli')
+    state_dir = os.path.join(get_home_paths().state_dir, 'minichain', 'cli')
     if not os.path.exists(state_dir):
         os.makedirs(state_dir, exist_ok=True)
         os.chmod(state_dir, 0o770)  # noqa

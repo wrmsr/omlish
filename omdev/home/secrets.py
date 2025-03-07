@@ -4,7 +4,7 @@ import typing as ta
 from omlish import lang
 from omlish.secrets import all as sec
 
-from .paths import get_config_dir
+from .paths import get_home_paths
 
 
 if ta.TYPE_CHECKING:
@@ -24,7 +24,7 @@ def get_secrets_file() -> str:
     return os.path.expanduser(
         os.getenv(
             SECRETS_FILE_ENV_VAR,
-            os.path.join(get_config_dir(), DEFAULT_SECRETS_FILE_NAME),
+            os.path.join(get_home_paths().config_dir, DEFAULT_SECRETS_FILE_NAME),
         ),
     )
 

@@ -5,6 +5,7 @@ TODO:
  - XDG cache root
 """
 import os.path
+import typing as ta
 
 
 ##
@@ -21,20 +22,41 @@ def get_home_dir() -> str:
 #
 
 
-def get_config_dir() -> str:
-    return os.path.join(get_home_dir(), 'config')
+class HomePaths:
+    def __init__(self, home_dir: ta.Optional[str] = None) -> None:
+        super().__init__()
+
+        if home_dir is None:
+            home_dir = get_home_dir()
+        self._home_dir = home_dir
+
+    @property
+    def home_dir(self) -> str:
+        return self._home_dir
+
+    @property
+    def config_dir(self) -> str:
+        return os.path.join(self._home_dir, 'config')
+
+    @property
+    def log_dir(self) -> str:
+        return os.path.join(self._home_dir, 'log')
+
+    @property
+    def run_dir(self) -> str:
+        return os.path.join(self._home_dir, 'run')
+
+    @property
+    def shadow_dir(self) -> str:
+        return os.path.join(self._home_dir, 'shadow')
+
+    @property
+    def state_dir(self) -> str:
+        return os.path.join(self._home_dir, 'state')
 
 
-def get_run_dir() -> str:
-    return os.path.join(get_home_dir(), 'run')
-
-
-def get_shadow_dir() -> str:
-    return os.path.join(get_home_dir(), 'shadow')
-
-
-def get_state_dir() -> str:
-    return os.path.join(get_home_dir(), 'state')
+def get_home_paths() -> HomePaths:
+    return HomePaths()
 
 
 ##

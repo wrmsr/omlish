@@ -5,7 +5,7 @@ import signal
 import time
 import urllib.request
 
-from omdev.home.paths import get_run_dir
+from omdev.home.paths import get_home_paths
 from omlish import cached
 from omlish import check
 from omlish.argparse import all as ap
@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 class Cli(ap.Cli):
     @cached.function
     def pid_file(self) -> str:
-        return os.path.join(get_run_dir(), 'minichain', 'server', 'pid')
+        return os.path.join(get_home_paths().run_dir, 'minichain', 'server.pid')
 
     @ap.cmd()
     def demo(self) -> None:
