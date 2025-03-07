@@ -1,5 +1,6 @@
 import functools  # noqa
 import logging
+import time
 import urllib.request
 
 from ....argparse import all as ap
@@ -16,11 +17,16 @@ log = logging.getLogger(__name__)
 
 
 class HiCli(ap.Cli):
-    @ap.cmd()
+    @ap.cmd(
+        ap.arg('--sleep', type=float),
+    )
     def launch(self) -> None:
         daemon = hi_service_daemon().daemon_()
 
         daemon.launch()
+
+        if (sl := self.args.sleep) is not None:
+            time.sleep(sl)
 
     @ap.cmd()
     def post(self) -> None:

@@ -1,4 +1,5 @@
 import abc
+import enum
 import functools
 import os
 import sys
@@ -59,10 +60,28 @@ def spawner_for(spawning: Spawning) -> Spawner:
 
 
 class MultiprocessingSpawning(Spawning, kw_only=True):
-    # Defaults to 'fork' if under pydevd, else 'spawn'
-    start_method: str | None = None
+    class StartMethod(enum.Enum):
+        SPAWN = enum.auto()
+        FORK = enum.auto()
 
-    non_daemon: bool = False
+    # Defaults to 'fork' if under pydevd, else 'spawn'
+    start_method: StartMethod | None = None
+
+    #
+
+    # Note: Per multiprocessing docs, `no_linger=True` processes (corresponding to `Process(daemon=True)`) cannot spawn
+    # subprocesses, and thus will fail if `Daemon.Config.reparent_process` is set.
+    no_linger: bool = False
+
+    #
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class EntrypointArgs:
+        spawning: 'MultiprocessingSpawning'
+        spawn: Spawn
+        start_method: 'MultiprocessingSpawning.StartMethod'
+
+    entrypoint: ta.Callable[[EntrypointArgs], None] | None = None
 
 
 class MultiprocessingSpawner(Spawner):
@@ -72,20 +91,26 @@ class MultiprocessingSpawner(Spawner):
         self._spawning = spawning
         self._process: ta.Optional['mp.process.BaseProcess'] = None  # noqa
 
+    @lang.cached_function
+    def _determine_start_method(self) -> 'MultiprocessingSpawning.StartMethod':
+        if (start_method := self._spawning.start_method) is not None:
+            return start_method
+
+        # Unfortunately, pydevd forces the use of the 'fork' start_method, which cannot be mixed with 'spawn':
+        #   https://github.com/python/cpython/blob/a7427f2db937adb4c787754deb4c337f1894fe86/Lib/multiprocessing/spawn.py#L102  # noqa
+        if pydevd.is_running():
+            return MultiprocessingSpawning.StartMethod.FORK
+
+        return MultiprocessingSpawning.StartMethod.SPAWN
+
     def _process_cls(self, spawn: Spawn) -> type['mp.process.BaseProcess']:
-        if (start_method := self._spawning.start_method) is None:
-            # Unfortunately, pydevd forces the use of the 'fork' start_method, which cannot be mixed with 'spawn':
-            #   https://github.com/python/cpython/blob/a7427f2db937adb4c787754deb4c337f1894fe86/Lib/multiprocessing/spawn.py#L102  # noqa
-            if pydevd.is_running():
-                start_method = 'fork'
-            else:
-                start_method = 'spawn'
+        start_method = self._determine_start_method()
 
         ctx: 'mp.context.BaseContext'  # noqa
-        if start_method == 'fork':
-            ctx = mp.get_context(check.non_empty_str(start_method))
+        if start_method == MultiprocessingSpawning.StartMethod.FORK:
+            ctx = mp.get_context(check.non_empty_str('fork'))
 
-        elif start_method == 'spawn':
+        elif start_method == MultiprocessingSpawning.StartMethod.SPAWN:
             ctx = omp_spawn.ExtrasSpawnContext(omp_spawn.SpawnExtras(
                 pass_fds=frozenset(spawn.inherit_fds) if spawn.inherit_fds is not None else None,
             ))
@@ -97,9 +122,20 @@ class MultiprocessingSpawner(Spawner):
 
     def spawn(self, spawn: Spawn) -> None:
         check.none(self._process)
+
+        target: ta.Callable[[], None]
+        if (ep := self._spawning.entrypoint) is not None:
+            target = functools.partial(ep, MultiprocessingSpawning.EntrypointArgs(
+                spawning=self._spawning,
+                spawn=spawn,
+                start_method=self._determine_start_method(),
+            ))
+        else:
+            target = spawn.fn
+
         self._process = self._process_cls(spawn)(
-            target=spawn.fn,
-            daemon=not self._spawning.non_daemon,
+            target=target,
+            daemon=self._spawning.no_linger,
         )
         self._process.start()
 
@@ -142,7 +178,7 @@ def _(spawning: ForkSpawning) -> ForkSpawner:
 
 
 class ThreadSpawning(Spawning, kw_only=True):
-    non_daemon: bool = False
+    linger: bool = False
 
 
 class ThreadSpawner(InProcessSpawner):
@@ -156,7 +192,7 @@ class ThreadSpawner(InProcessSpawner):
         check.none(self._thread)
         self._thread = threading.Thread(
             target=spawn.fn,
-            daemon=not self._spawning.non_daemon,
+            daemon=not self._spawning.linger,
         )
         self._thread.start()
 

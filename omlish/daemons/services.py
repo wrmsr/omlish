@@ -1,4 +1,5 @@
 import abc
+import threading
 import typing as ta
 
 from .. import cached
@@ -88,21 +89,23 @@ class ServiceDaemon(lang.Final, ta.Generic[ServiceT, ServiceConfigT]):
 
     @cached.function
     def service_config(self) -> ServiceConfigT:
-        if isinstance(self.service, Service):
-            return self.service.config
-        elif isinstance(self.service, Service.Config):
-            return self.service
-        else:
-            raise TypeError(self.service)
+        with self._lock:
+            if isinstance(self.service, Service):
+                return self.service.config
+            elif isinstance(self.service, Service.Config):
+                return self.service
+            else:
+                raise TypeError(self.service)
 
     @cached.function
     def service_(self) -> ServiceT:
-        if isinstance(self.service, Service):
-            return self.service  # type: ignore[return-value]
-        elif isinstance(self.service, Service.Config):
-            return Service.from_config(self.service)  # type: ignore[return-value]
-        else:
-            raise TypeError(self.service)
+        with self._lock:
+            if isinstance(self.service, Service):
+                return self.service  # type: ignore[return-value]
+            elif isinstance(self.service, Service.Config):
+                return Service.from_config(self.service)  # type: ignore[return-value]
+            else:
+                raise TypeError(self.service)
 
     #
 
@@ -110,9 +113,14 @@ class ServiceDaemon(lang.Final, ta.Generic[ServiceT, ServiceConfigT]):
 
     @cached.function
     def daemon_(self) -> Daemon:
-        if isinstance(self.daemon, Daemon):
-            return self.daemon
-        elif isinstance(self.daemon, Daemon.Config):
-            return Daemon(Target.of(self.service_()), self.daemon)
-        else:
-            raise TypeError(self.daemon)
+        with self._lock:
+            if isinstance(self.daemon, Daemon):
+                return self.daemon
+            elif isinstance(self.daemon, Daemon.Config):
+                return Daemon(Target.of(self.service_()), self.daemon)
+            else:
+                raise TypeError(self.daemon)
+
+    #
+
+    _lock: threading.RLock = dc.field(default_factory=lambda: threading.RLock(), init=False)

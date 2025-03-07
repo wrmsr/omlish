@@ -8,6 +8,7 @@ from .... import cached
 from ....http.coro.simple import make_simple_http_server
 from ....http.handlers import LoggingHttpHandler
 from ....http.handlers import StringResponseHttpHandler
+from ....logs import all as logs
 from ....sockets.bind import SocketBinder
 from ... import spawning
 from ...daemon import Daemon
@@ -82,6 +83,13 @@ class HiService(Service['HiService.Config']):
 ##
 
 
+def _hi_service_multiprocessing_entrypoint(args: spawning.MultiprocessingSpawning.EntrypointArgs) -> None:
+    if args.start_method == spawning.MultiprocessingSpawning.StartMethod.SPAWN:
+        logs.configure_standard_logging('DEBUG')
+
+    args.spawn.fn()
+
+
 @cached.function(lock=True)
 def hi_service_daemon() -> ServiceDaemon[HiService, HiService.Config]:
     # FIXME: lol
@@ -93,8 +101,8 @@ def hi_service_daemon() -> ServiceDaemon[HiService, HiService.Config]:
         ),
 
         Daemon.Config(
-            spawning=spawning.ThreadSpawning(),
-            # spawning=spawning.MultiprocessingSpawning(),
+            # spawning=spawning.ThreadSpawning(),
+            spawning=spawning.MultiprocessingSpawning(entrypoint=_hi_service_multiprocessing_entrypoint),
             # spawning=spawning.ForkSpawning(),
 
             pid_file=pid_file,
