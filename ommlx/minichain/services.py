@@ -36,11 +36,11 @@ class ServiceRequest(lang.Abstract, ta.Generic[T, ServiceOptionT, ServiceNewT]):
 
     @classmethod
     def new(
-            cls,
+            cls: type[U],
             v: ServiceNewT,
             *options: ServiceOptionT,
             **kwargs: ta.Any,
-    ) -> ta.Self:
+    ) -> U:
         return cls(
             v=v,  # type: ignore
             options=Options(*options),
