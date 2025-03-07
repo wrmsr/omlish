@@ -112,6 +112,7 @@ class Launcher:
                     pidfile_manager=pidfile_manager,
                     launched_callback=launched_event.set if launched_event is not None else None,
                 ),
+                target=self._target,
                 inherit_fds=inherit_fds,
             ))
 

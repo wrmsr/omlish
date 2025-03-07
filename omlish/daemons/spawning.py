@@ -10,6 +10,7 @@ from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from ..diag import pydevd
+from .targets import Target
 
 
 if ta.TYPE_CHECKING:
@@ -37,6 +38,8 @@ class Spawn(dc.Frozen, final=True):
     fn: ta.Callable[[], None]
 
     _: dc.KW_ONLY
+
+    target: Target | None = None
 
     inherit_fds: ta.Collection[int] | None = None
 

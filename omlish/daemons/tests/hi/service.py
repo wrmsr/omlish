@@ -5,6 +5,7 @@ import time
 import typing as ta
 
 from .... import cached
+from .... import check
 from ....http.coro.simple import make_simple_http_server
 from ....http.handlers import LoggingHttpHandler
 from ....http.handlers import StringResponseHttpHandler
@@ -14,6 +15,7 @@ from ... import spawning
 from ...daemon import Daemon
 from ...services import Service
 from ...services import ServiceDaemon
+from ...services import ServiceTarget
 
 
 log = logging.getLogger(__name__)
@@ -84,6 +86,8 @@ class HiService(Service['HiService.Config']):
 
 
 def _hi_service_multiprocessing_entrypoint(args: spawning.MultiprocessingSpawning.EntrypointArgs) -> None:
+    svc = check.isinstance(check.isinstance(args.spawn.target, ServiceTarget).svc, HiService)  # noqa
+
     if args.start_method == spawning.MultiprocessingSpawning.StartMethod.SPAWN:
         logs.configure_standard_logging('DEBUG')
 
