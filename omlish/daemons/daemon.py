@@ -48,7 +48,9 @@ class Daemon:
 
         #
 
+        # TODO: None, defaults, figure out from spawn method
         reparent_process: bool = False
+
         launched_timeout_s: float = 5.
 
         #

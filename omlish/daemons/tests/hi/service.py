@@ -89,7 +89,15 @@ def _hi_service_multiprocessing_entrypoint(args: spawning.MultiprocessingSpawnin
     svc = check.isinstance(check.isinstance(args.spawn.target, ServiceTarget).svc, HiService)  # noqa
 
     if args.start_method == spawning.MultiprocessingSpawning.StartMethod.SPAWN:
-        logs.configure_standard_logging('DEBUG')
+        # FIXME: lol
+        log_file = os.path.join(os.getcwd(), 'hi.log')
+
+        logs.configure_standard_logging(
+            'DEBUG',
+            handler_factory=lambda: logging.FileHandler(log_file),
+        )
+
+    log.debug('%r', args)
 
     args.spawn.fn()
 
@@ -110,5 +118,7 @@ def hi_service_daemon() -> ServiceDaemon[HiService, HiService.Config]:
             # spawning=spawning.ForkSpawning(),
 
             pid_file=pid_file,
+
+            reparent_process=True,
         ),
     )

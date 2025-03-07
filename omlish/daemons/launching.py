@@ -53,8 +53,10 @@ class Launcher:
             self,
             *,
             pidfile_manager: ta.ContextManager | None,
-            launched_callback: ta.Callable[[], None] | None = None,
+            callback: ta.Callable[[], None] | None = None,
     ) -> None:
+        callback_called = False
+
         try:
             if self._reparent_process:
                 log.info('Reparenting')
@@ -66,15 +68,16 @@ class Launcher:
                     pidfile = check.isinstance(es.enter_context(pidfile_manager), Pidfile)
                     pidfile.write()
 
-                if launched_callback is not None:
-                    launched_callback()
+                if callback is not None:
+                    callback_called = True
+                    callback()
 
                 runner = target_runner_for(self._target)
                 runner.run()
 
         finally:
-            if launched_callback is not None:
-                launched_callback()
+            if callback is not None and not callback_called:
+                callback()
 
     def launch(self) -> bool:
         with contextlib.ExitStack() as es:
@@ -110,7 +113,7 @@ class Launcher:
                 functools.partial(
                     self._inner_launch,
                     pidfile_manager=pidfile_manager,
-                    launched_callback=launched_event.set if launched_event is not None else None,
+                    callback=launched_event.set if launched_event is not None else None,
                 ),
                 target=self._target,
                 inherit_fds=inherit_fds,
