@@ -10,6 +10,7 @@ TODO:
   - shared stop_event?
 """
 import abc
+import contextlib
 import dataclasses as dc
 import threading
 import time
@@ -48,9 +49,10 @@ class ThreadWorker(ExitStacked, abc.ABC):
 
     #
 
-    def __enter__(self: ThreadWorkerT) -> ThreadWorkerT:
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
         with self._lock:
-            return super().__enter__()  # noqa
+            yield
 
     #
 

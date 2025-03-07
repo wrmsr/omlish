@@ -1,29 +1,10 @@
-import contextlib
 import typing as ta
 
 import pytest
 
 from ..contextmanagers import AsyncContextManager
 from ..contextmanagers import ContextManager
-from ..contextmanagers import ExitStacked
 from ..contextmanagers import context_wrapped
-
-
-def test_exit_stacked():
-    class A(ExitStacked):
-        pass
-
-    with A() as a:
-        assert isinstance(a, A)
-        assert isinstance(a._exit_stack, contextlib.ExitStack)  # noqa
-
-    class B(ExitStacked):
-
-        def __enter__(self):
-            return 'hi'
-
-    with B() as b:
-        assert b == 'hi'
 
 
 def test_context_wrapped():

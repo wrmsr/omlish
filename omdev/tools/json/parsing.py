@@ -55,10 +55,8 @@ class DelimitingParser:
 class StreamBuilder(lang.ExitStacked):
     _builder: JsonObjectBuilder | None = None
 
-    def __enter__(self) -> ta.Self:
-        super().__enter__()
+    def _enter_contexts(self) -> None:
         self._builder = self._enter_context(JsonObjectBuilder())
-        return self
 
     def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any, None, None]:
         yield from check.not_none(self._builder)(e)
@@ -69,12 +67,10 @@ class StreamParser(lang.ExitStacked):
     _lex: JsonStreamLexer
     _parse: JsonStreamParser
 
-    def __enter__(self) -> ta.Self:
-        super().__enter__()
+    def _enter_contexts(self) -> None:
         self._decoder = codecs.getincrementaldecoder('utf-8')()
         self._lex = self._enter_context(JsonStreamLexer())
         self._parse = self._enter_context(JsonStreamParser())
-        return self
 
     def parse(self, b: bytes) -> ta.Generator[JsonStreamParserEvent, None, None]:
         for s in self._decoder.decode(b, not b):

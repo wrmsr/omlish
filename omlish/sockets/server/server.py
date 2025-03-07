@@ -7,6 +7,7 @@ import selectors
 import threading
 import typing as ta
 
+from ...lite.contextmanagers import ExitStacked
 from ..addresses import SocketAndAddress
 from ..bind import SocketBinder
 from ..io import close_socket_immediately
@@ -73,6 +74,14 @@ class SocketServer(abc.ABC):
         Selector = selectors.PollSelector
     else:
         Selector = selectors.SelectSelector
+
+    #
+
+    class _ListenContext(ExitStacked):
+        def __init__(self, server: 'SocketServer') -> None:
+            super().__init__()
+
+            self._server = server
 
     #
 

@@ -9,6 +9,7 @@ import urllib.request
 from ... import check
 from ... import lang  # noqa
 from ...logs import all as logs
+from ...sockets.wait import socket_wait_until_can_connect
 from ..daemon import Daemon
 from ..spawning import ForkSpawning  # noqa
 from ..spawning import MultiprocessingSpawning  # noqa
@@ -58,9 +59,14 @@ def _main() -> None:
     if daemon.config.pid_file is not None:
         check.state(daemon.is_pidfile_locked())
 
-    req_str = 'Hi! How are you?'
-
     hi_server_config = check.isinstance(hi().service_(), HiService).server.config
+
+    socket_wait_until_can_connect(
+        ('localhost', hi_server_config.port),
+        timeout=5.,
+    )
+
+    req_str = 'Hi! How are you?'
 
     with urllib.request.urlopen(urllib.request.Request(
         f'http://localhost:{hi_server_config.port}/',

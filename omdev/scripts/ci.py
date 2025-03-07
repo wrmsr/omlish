@@ -3085,17 +3085,46 @@ class HttpRequestParser:
 class ExitStacked:
     _exit_stack: ta.Optional[contextlib.ExitStack] = None
 
-    def __enter__(self: ExitStackedT) -> ExitStackedT:
-        check.state(self._exit_stack is None)
-        es = self._exit_stack = contextlib.ExitStack()
-        es.__enter__()
-        return self
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
+        """
+        Overridable wrapper around __enter__ which deliberately does not have access to an _exit_stack yet. Intended for
+        things like wrapping __enter__ in a lock.
+        """
 
+        yield
+
+    @ta.final
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        """
+        Final because any contexts entered during this init must be exited if any exception is thrown, and user
+        overriding would likely interfere with that. Override `_enter_contexts` for such init.
+        """
+
+        with self._exit_stacked_init_wrapper():
+            check.state(self._exit_stack is None)
+            es = self._exit_stack = contextlib.ExitStack()
+            es.__enter__()
+            try:
+                self._enter_contexts()
+            except Exception:  # noqa
+                es.__exit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):
         if (es := self._exit_stack) is None:
             return None
-        self._exit_contexts()
+        try:
+            self._exit_contexts()
+        except Exception:  # noqa
+            es.__exit__(*sys.exc_info())
+            raise
         return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _enter_contexts(self) -> None:
+        pass
 
     def _exit_contexts(self) -> None:
         pass
@@ -3108,17 +3137,36 @@ class ExitStacked:
 class AsyncExitStacked:
     _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
 
-    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
-        check.state(self._exit_stack is None)
-        es = self._exit_stack = contextlib.AsyncExitStack()
-        await es.__aenter__()
-        return self
+    @contextlib.asynccontextmanager
+    async def _async_exit_stacked_init_wrapper(self) -> ta.AsyncGenerator[None, None]:
+        yield
 
+    @ta.final
+    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
+        async with self._async_exit_stacked_init_wrapper():
+            check.state(self._exit_stack is None)
+            es = self._exit_stack = contextlib.AsyncExitStack()
+            await es.__aenter__()
+            try:
+                await self._async_enter_contexts()
+            except Exception:  # noqa
+                await es.__aexit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if (es := self._exit_stack) is None:
             return None
-        await self._async_exit_contexts()
+        try:
+            await self._async_exit_contexts()
+        except Exception:  # noqa
+            await es.__aexit__(*sys.exc_info())
+            raise
         return await es.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def _async_enter_contexts(self) -> None:
+        pass
 
     async def _async_exit_contexts(self) -> None:
         pass
@@ -6994,11 +7042,7 @@ class OciDataTarWriter(ExitStacked):
             tar_sha256=self._tw.sha256(),
         )
 
-    def __enter__(self) -> 'OciDataTarWriter':
-        super().__enter__()
-
-        #
-
+    def _enter_contexts(self) -> None:
         self._cw = self._FileWrapper(self._f)
 
         if self._compression is OciCompression.GZIP:
@@ -7027,15 +7071,11 @@ class OciDataTarWriter(ExitStacked):
         self._tw = self._FileWrapper(self._cf)
 
         self._tf = self._enter_context(
-            tarfile.open(  # type: ignore
+            tarfile.open(  # type: ignore  # noqa
                 fileobj=self._tw,
                 mode='w',
             ),
         )
-
-        #
-
-        return self
 
     def tar_file(self) -> tarfile.TarFile:
         return self._tf
@@ -8839,6 +8879,14 @@ class SocketServer(abc.ABC):
         Selector = selectors.PollSelector
     else:
         Selector = selectors.SelectSelector
+
+    #
+
+    class _ListenContext(ExitStacked):
+        def __init__(self, server: 'SocketServer') -> None:
+            super().__init__()
+
+            self._server = server
 
     #
 

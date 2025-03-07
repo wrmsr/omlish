@@ -79,11 +79,7 @@ class OciDataTarWriter(ExitStacked):
             tar_sha256=self._tw.sha256(),
         )
 
-    def __enter__(self) -> 'OciDataTarWriter':
-        super().__enter__()
-
-        #
-
+    def _enter_contexts(self) -> None:
         self._cw = self._FileWrapper(self._f)
 
         if self._compression is OciCompression.GZIP:
@@ -112,15 +108,11 @@ class OciDataTarWriter(ExitStacked):
         self._tw = self._FileWrapper(self._cf)
 
         self._tf = self._enter_context(
-            tarfile.open(  # type: ignore
+            tarfile.open(  # type: ignore  # noqa
                 fileobj=self._tw,
                 mode='w',
             ),
         )
-
-        #
-
-        return self
 
     def tar_file(self) -> tarfile.TarFile:
         return self._tf

@@ -54,18 +54,15 @@ from .cmp import (  # noqa
 
 from .contextmanagers import (  # noqa
     AsyncContextManager,
-    AsyncExitStacked,
     ContextManaged,
     ContextManager,
     ContextWrapped,
     DefaultLockable,
-    ExitStacked,
     Lockable,
     NOP_CONTEXT_MANAGER,
     NopContextManager,
     Timer,
     a_defer,
-    attr_setting,
     breakpoint_on_exception,
     context_var_setting,
     context_wrapped,
@@ -231,6 +228,12 @@ from .typing import (  # noqa
 )
 
 ##
+
+from ..lite.contextmanagers import (  # noqa
+    attr_setting,
+    AsyncExitStacked,
+    ExitStacked,
+)
 
 from ..lite.imports import (  # noqa
     import_attr,
