@@ -112,6 +112,16 @@ class ServiceDaemon(lang.Final, ta.Generic[ServiceT, ServiceConfigT]):
     daemon: Daemon | Daemon.Config = Daemon.Config()
 
     @cached.function
+    def daemon_config(self) -> Daemon.Config:
+        with self._lock:
+            if isinstance(self.daemon, Daemon):
+                return self.daemon.config
+            elif isinstance(self.daemon, Daemon.Config):
+                return self.daemon
+            else:
+                raise TypeError(self.daemon)
+
+    @cached.function
     def daemon_(self) -> Daemon:
         with self._lock:
             if isinstance(self.daemon, Daemon):

@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 
 @dc.dataclass(frozen=True)
-class ServerHandler(HttpHandler_):
+class McServerHandler(HttpHandler_):
     llm: mc.ChatModel
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -55,7 +55,7 @@ class ServerHandler(HttpHandler_):
         )
 
 
-class Server:
+class McServer:
     @dc.dataclass(frozen=True)
     class Config:
         DEFAULT_BIND: ta.ClassVar[CanSocketBinderConfig] = 5067
@@ -87,7 +87,7 @@ class Server:
 
             with make_simple_http_server(
                     self._config.bind,
-                    LoggingHttpHandler(ServerHandler(llm), log),
+                    LoggingHttpHandler(McServerHandler(llm), log),
             ) as server:
 
                 deadline = time.time() + 60.

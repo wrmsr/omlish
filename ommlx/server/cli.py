@@ -1,26 +1,22 @@
-import functools
+import contextlib
 import logging
 import os.path
 import signal
-import time
+import typing as ta
 import urllib.request
 
-from omdev.home.paths import get_home_paths
-from omlish import cached
 from omlish import check
 from omlish.argparse import all as ap
-from omlish.daemons.daemon import Daemon
 from omlish.daemons.spawning import ForkSpawning  # noqa
 from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
 from omlish.daemons.spawning import ThreadSpawning  # noqa
-from omlish.daemons.targets import FnTarget
-from omlish.daemons.waiting import ConnectWait
 from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import TcpSocketBinder
+from omlish.sockets.wait import socket_wait_until_can_connect
 
-from .server import Server
+from .service import mc_service_daemon
 
 
 log = logging.getLogger(__name__)
@@ -29,65 +25,53 @@ log = logging.getLogger(__name__)
 ##
 
 
-class Cli(ap.Cli):
-    @cached.function
-    def pid_file(self) -> str:
-        return os.path.join(get_home_paths().run_dir, 'minichain', 'server.pid')
-
+class McCli(ap.Cli):
     @ap.cmd()
+    def launch(self) -> None:
+        mc_service_daemon().daemon_().launch()
+
+    @ap.cmd(
+        ap.arg('prompt'),
+    )
     def demo(self) -> None:
-        server_config = Server.Config(
-            backend='local',
-        )
-        port = check.isinstance(server_config.bind, TcpSocketBinder.Config).port
-
-        pid_file = self.pid_file()
-        os.makedirs(os.path.dirname(pid_file), exist_ok=True)
-
-        daemon = Daemon(
-            FnTarget(functools.partial(Server.run_config, server_config)),
-            Daemon.Config(
-                spawning=(spawning := ThreadSpawning()),
-                # spawning=(spawning := MultiprocessingSpawning()),
-                # spawning=(spawning := ForkSpawning()),
-
-                reparent_process=not isinstance(spawning, ThreadSpawning),
-
-                pid_file=pid_file,
-                wait=ConnectWait(('localhost', port)),
-
-                wait_timeout=10.,
-            ),
-        )
-
-        if not daemon.is_pidfile_locked():
-            daemon.launch()
-
-        #
-
+        daemon = mc_service_daemon().daemon_()
         if daemon.config.pid_file is not None:
             check.state(daemon.is_pidfile_locked())
 
-        log.info('Client continuing')
+        server_config = mc_service_daemon().service_config().server
+        port = check.isinstance(server_config.bind, TcpSocketBinder.Config).port
+
+        socket_wait_until_can_connect(
+            ('localhost', port),
+            timeout=5.,
+        )
+
+        req_str = 'Hi! How are you?'
 
         with urllib.request.urlopen(urllib.request.Request(
-            f'http://localhost:{port}/',
-            data='Hi! How are you?'.encode('utf-8'),  # noqa
+                f'http://localhost:{port}/',
+                data=req_str.encode('utf-8'),
         )) as resp:
-            log.info('Parent got response: %s', resp.read().decode('utf-8'))
+            resp_str = resp.read().decode('utf-8')
 
-        for i in range(60, 0, -1):
-            log.info('Parent process %d sleeping %d', os.getpid(), i)
-            time.sleep(1.)
+        log.info('Response: %r', resp_str)
+
+    #
+
+    @contextlib.contextmanager
+    def _pin_pid(self) -> ta.Iterator[int]:
+        pid_file = check.non_empty_str(mc_service_daemon().daemon_config().pid_file)
+        with PidfilePinner.default_impl()().pin_pidfile_owner(pid_file) as pid:
+            yield pid
 
     @ap.cmd()
     def pid(self) -> None:
-        with PidfilePinner.default_impl()().pin_pidfile_owner(self.pid_file()) as pid:
+        with self._pin_pid() as pid:
             print(pid)
 
     @ap.cmd()
     def kill(self) -> None:
-        with PidfilePinner.default_impl()().pin_pidfile_owner(self.pid_file()) as pid:
+        with self._pin_pid() as pid:
             log.info('Killing pid: %d', pid)
             os.kill(pid, signal.SIGTERM)
 
@@ -98,7 +82,7 @@ class Cli(ap.Cli):
 def _main() -> None:
     logs.configure_standard_logging('DEBUG')
 
-    Cli().cli_run_and_exit()
+    McCli().cli_run_and_exit()
 
 
 if __name__ == '__main__':
