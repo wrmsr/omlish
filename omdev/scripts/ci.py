@@ -8912,66 +8912,88 @@ class SocketServer(abc.ABC):
 
     #
 
-    class _ListenContext(ExitStacked):
+    class PollResult(enum.Enum):
+        TIMEOUT = enum.auto()
+        CONNECTION = enum.auto()
+        ERROR = enum.auto()
+        SHUTDOWN = enum.auto()
+
+    class PollContext(ExitStacked, abc.ABC):
+        @abc.abstractmethod
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+            raise NotImplementedError
+
+    class _PollContext(PollContext):
         def __init__(self, server: 'SocketServer') -> None:
             super().__init__()
 
             self._server = server
 
-    #
+        _selector: ta.Any = None
 
-    @contextlib.contextmanager
-    def _listen_context(self) -> ta.Iterator[SelectorProtocol]:
-        with contextlib.ExitStack() as es:
-            es.enter_context(self._lock)
-            es.enter_context(self._binder)
+        def _enter_contexts(self) -> None:
+            self._enter_context(self._server._lock)  # noqa: SLF001
+            self._enter_context(self._server._binder)  # noqa: SLF001
 
-            self._binder.listen()
+            self._server._binder.listen()  # noqa: SLF001
 
-            self._is_shutdown.clear()
+            self._server._is_shutdown.clear()  # noqa: SLF001
+            self._enter_context(defer(self._server._is_shutdown.set))  # noqa
+
+            # XXX: Consider using another file descriptor or connecting to the socket to wake this up instead of
+            # polling. Polling reduces our responsiveness to a shutdown request and wastes cpu at all other times.
+            self._selector = self._enter_context(self._server.Selector())
+            self._selector.register(self._server._binder.fileno(), selectors.EVENT_READ)  # noqa: SLF001
+
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+            if self._server._should_shutdown:  # noqa: SLF001
+                return SocketServer.PollResult.SHUTDOWN
+
+            ready = self._selector.select(timeout)
+
+            # bpo-35017: shutdown() called during select(), exit immediately.
+            if self._server._should_shutdown:  # noqa: SLF001
+                return SocketServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
+
+            if not ready:
+                return SocketServer.PollResult.TIMEOUT
+
             try:
-                # XXX: Consider using another file descriptor or connecting to the socket to wake this up instead of
-                # polling. Polling reduces our responsiveness to a shutdown request and wastes cpu at all other times.
-                with self.Selector() as selector:
-                    selector.register(self._binder.fileno(), selectors.EVENT_READ)
+                conn = self._server._binder.accept()  # noqa: SLF001
 
-                    yield selector
+            except OSError as exc:
+                self._server._handle_error(exc)  # noqa: SLF001
 
-            finally:
-                self._is_shutdown.set()
+                return SocketServer.PollResult.ERROR
+
+            try:
+                self._server._handler(conn)  # noqa: SLF001
+
+            except Exception as exc:  # noqa
+                self._server._handle_error(exc, conn)  # noqa: SLF001
+
+                close_socket_immediately(conn.socket)
+
+            return SocketServer.PollResult.CONNECTION
+
+    def poll_context(self) -> PollContext:
+        return self._PollContext(self)
+
+    #
 
     @contextlib.contextmanager
     def loop_context(self, poll_interval: ta.Optional[float] = None) -> ta.Iterator[ta.Iterator[bool]]:
         if poll_interval is None:
             poll_interval = self._poll_interval
 
-        with self._listen_context() as selector:
+        with self.poll_context() as pc:
             def loop():
-                while not self._should_shutdown:
-                    ready = selector.select(poll_interval)
-
-                    # bpo-35017: shutdown() called during select(), exit immediately.
-                    if self._should_shutdown:
-                        break  # type: ignore[unreachable]
-
-                    if ready:
-                        try:
-                            conn = self._binder.accept()
-
-                        except OSError as exc:
-                            self._handle_error(exc)
-
-                            return
-
-                        try:
-                            self._handler(conn)
-
-                        except Exception as exc:  # noqa
-                            self._handle_error(exc, conn)
-
-                            close_socket_immediately(conn.socket)
-
-                    yield bool(ready)
+                while True:
+                    res = pc.poll(poll_interval)
+                    if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                        return
+                    else:
+                        yield res == SocketServer.PollResult.CONNECTION
 
             yield loop()
 
