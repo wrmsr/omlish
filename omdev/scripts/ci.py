@@ -2608,6 +2608,48 @@ class ArgparseCli:
 
 
 ########################################
+# ../../../omlish/asyncs/asyncio/sockets.py
+
+
+async def asyncio_wait_until_can_connect(
+        host: ta.Any = None,
+        port: ta.Any = None,
+        *,
+        timeout: ta.Optional[TimeoutLike] = None,
+        on_fail: ta.Optional[ta.Callable[[BaseException], None]] = None,
+        sleep_s: float = .1,
+        exception: ta.Union[ta.Type[BaseException], ta.Tuple[ta.Type[BaseException], ...]] = (Exception,),
+) -> None:
+    timeout = Timeout.of(timeout)
+
+    async def inner():
+        while True:
+            timeout()
+
+            try:
+                reader, writer = await asyncio.open_connection(host, port)
+
+            except asyncio.CancelledError:
+                raise
+
+            except exception as e:  # noqa
+                if on_fail is not None:
+                    on_fail(e)
+
+            else:
+                writer.close()
+                await asyncio.wait_for(writer.wait_closed(), timeout=timeout.or_(None))
+                break
+
+            await asyncio.sleep(min(sleep_s, timeout.remaining()))
+
+    if timeout() != float('inf'):
+        await asyncio.wait_for(inner(), timeout=timeout())
+    else:
+        await inner()
+
+
+########################################
 # ../../../omlish/asyncs/asyncio/timeouts.py
 
 
@@ -11460,17 +11502,14 @@ class CacheServedDockerCache(DockerCache):
             dds_run_task = asyncio.create_task(dds.run())
             try:
                 timeout = Timeout.of(self._config.server_start_timeout)
-                while True:
-                    timeout()
-                    try:
-                        reader, writer = await asyncio.open_connection('localhost', self._config.port)
-                    except Exception as e:  # noqa
-                        log.exception('Failed to connect to cache server - will try again')
-                    else:
-                        writer.close()
-                        await asyncio.wait_for(writer.wait_closed(), timeout=timeout.remaining())
-                        break
-                    await asyncio.sleep(self._config.server_start_sleep)
+
+                await asyncio_wait_until_can_connect(
+                    'localhost',
+                    self._config.port,
+                    timeout=timeout,
+                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
+                    sleep_s=self._config.server_start_sleep,
+                )
 
                 if (prc := self._config.pull_run_cmd) is not None:
                     pull_cmd = [

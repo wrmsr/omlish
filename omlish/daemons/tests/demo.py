@@ -45,8 +45,8 @@ def _main() -> None:
         ),
         config=dc.replace(
             hi().daemon_().config,
-            spawning=ThreadSpawning(),
-            # spawning=MultiprocessingSpawning(),
+            # spawning=ThreadSpawning(),
+            spawning=MultiprocessingSpawning(),
             # spawning=ForkSpawning(),
         ),
     )

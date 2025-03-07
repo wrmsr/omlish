@@ -6,6 +6,7 @@ import json
 import os.path
 import typing as ta
 
+from omlish.asyncs.asyncio.sockets import asyncio_wait_until_can_connect
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
@@ -126,17 +127,14 @@ class CacheServedDockerCache(DockerCache):
             dds_run_task = asyncio.create_task(dds.run())
             try:
                 timeout = Timeout.of(self._config.server_start_timeout)
-                while True:
-                    timeout()
-                    try:
-                        reader, writer = await asyncio.open_connection('localhost', self._config.port)
-                    except Exception as e:  # noqa
-                        log.exception('Failed to connect to cache server - will try again')
-                    else:
-                        writer.close()
-                        await asyncio.wait_for(writer.wait_closed(), timeout=timeout.remaining())
-                        break
-                    await asyncio.sleep(self._config.server_start_sleep)
+
+                await asyncio_wait_until_can_connect(
+                    'localhost',
+                    self._config.port,
+                    timeout=timeout,
+                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
+                    sleep_s=self._config.server_start_sleep,
+                )
 
                 if (prc := self._config.pull_run_cmd) is not None:
                     pull_cmd = [
