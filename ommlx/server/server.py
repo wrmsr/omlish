@@ -14,6 +14,7 @@ from omlish.http.handlers import LoggingHttpHandler
 from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
+from omlish.sockets.server.server import SocketServer
 
 from .. import minichain as mc
 from ..minichain.backends.mlxlm import MlxlmChatModel
@@ -63,6 +64,8 @@ class McServer:
 
         backend: ta.Literal['openai', 'local'] = 'openai'
 
+        linger_s: float | None = 10.
+
     def __init__(self, config: Config = Config()) -> None:
         super().__init__()
 
@@ -81,20 +84,32 @@ class McServer:
 
     def run(self) -> None:
         log.info('Server running')
-        try:
 
+        try:
             llm = self.llm()
 
             with make_simple_http_server(
                     self._config.bind,
                     LoggingHttpHandler(McServerHandler(llm), log),
             ) as server:
+                if (linger_s := self._config.linger_s) is None:
+                    linger_s = float('inf')
 
-                deadline = time.time() + 60.
-                with server.loop_context(poll_interval=5.) as loop:
-                    for _ in loop:
+                deadline = time.time()
+
+                with server.poll_context() as pc:
+                    while True:
                         if time.time() >= deadline:
+                            log.info('Linger deadline exceeded')
                             break
+
+                        res = pc.poll(5.)
+
+                        if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                            break
+
+                        if res == SocketServer.PollResult.CONNECTION:
+                            deadline = time.time() + linger_s
 
         finally:
             log.info('Server exiting')

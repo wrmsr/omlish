@@ -33,7 +33,7 @@ class McCli(ap.Cli):
     @ap.cmd(
         ap.arg('prompt'),
     )
-    def demo(self) -> None:
+    def prompt(self) -> None:
         daemon = mc_service_daemon().daemon_()
         if daemon.config.pid_file is not None:
             check.state(daemon.is_pidfile_locked())
@@ -46,15 +46,13 @@ class McCli(ap.Cli):
             timeout=5.,
         )
 
-        req_str = 'Hi! How are you?'
-
         with urllib.request.urlopen(urllib.request.Request(
                 f'http://localhost:{port}/',
-                data=req_str.encode('utf-8'),
+                data=self.args.prompt.encode('utf-8'),
         )) as resp:
             resp_str = resp.read().decode('utf-8')
 
-        log.info('Response: %r', resp_str)
+        print(resp_str)
 
     #
 

@@ -10773,6 +10773,7 @@ def make_simple_http_server(
         ignore_ssl_errors: bool = False,
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
+        **kwargs: ta.Any,
 ) -> ta.Iterator[SocketServer]:
     check.arg(not (executor is not None and use_threads))
 
@@ -10837,6 +10838,7 @@ def make_simple_http_server(
         server = es.enter_context(SocketServer(
             SocketBinder.of(bind),
             server_handler,
+            **kwargs,
         ))
 
         yield server
