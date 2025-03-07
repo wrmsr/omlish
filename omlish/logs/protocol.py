@@ -23,25 +23,25 @@ class Logging(ta.Protocol):
 
     #
 
-    def debug(self, msg: str, *args, **kwargs) -> None:
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
-    def info(self, msg: str, *args, **kwargs) -> None:
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
-    def warning(self, msg: str, *args, **kwargs) -> None:
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
-    def error(self, msg: str, *args, **kwargs) -> None:
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
-    def exception(self, msg: str, *args, exc_info=True, **kwargs) -> None:
+    def exception(self, msg: str, *args: ta.Any, exc_info: bool = True, **kwargs) -> None:
         ...
 
-    def critical(self, msg: str, *args, **kwargs) -> None:
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
-    def log(self, level: LogLevel, msg: str, *args, **kwargs) -> None:
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         ...
 
 
@@ -66,30 +66,30 @@ class AbstractLogging(abc.ABC):
 
     #
 
-    def debug(self, msg: str, *args, **kwargs) -> None:
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if self.is_enabled_for(logging.DEBUG):
             self.log(logging.DEBUG, msg, args, **kwargs)
 
-    def info(self, msg: str, *args, **kwargs) -> None:
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if self.is_enabled_for(logging.INFO):
             self.log(logging.INFO, msg, args, **kwargs)
 
-    def warning(self, msg: str, *args, **kwargs) -> None:
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if self.is_enabled_for(logging.WARNING):
             self.log(logging.WARNING, msg, args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs) -> None:
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if self.is_enabled_for(logging.ERROR):
             self.log(logging.ERROR, msg, args, **kwargs)
 
-    def exception(self, msg: str, *args, exc_info=True, **kwargs) -> None:
+    def exception(self, msg: str, *args: ta.Any, exc_info: bool = True, **kwargs: ta.Any) -> None:
         self.error(msg, *args, exc_info=exc_info, **kwargs)
 
-    def critical(self, msg: str, *args, **kwargs) -> None:
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if self.is_enabled_for(logging.CRITICAL):
             self.log(logging.CRITICAL, msg, args, **kwargs)
 
-    def log(self, level: LogLevel, msg: str, *args, **kwargs) -> None:
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
         if not isinstance(level, int):
             raise TypeError('Level must be an integer.')
         if self.is_enabled_for(level):

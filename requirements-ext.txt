@@ -214,7 +214,7 @@ langchainhub==0.1.21
 
 langgraph==0.3.5
 
-langsmith==0.3.11
+langsmith==0.3.12
 
 tavily-python==0.5.1
 
@@ -246,9 +246,9 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.22
+llama-index-core==0.12.23.post2
 
-unstructured==0.16.23
+unstructured==0.16.25
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
