@@ -126,7 +126,7 @@ class Daemon:
 
     #
 
-    def launch_no_wait(self) -> None:
+    def launch_no_wait(self) -> bool:
         launcher = Launcher(
             target=self._target,
             spawning=check.not_none(self._config.spawning),
@@ -136,7 +136,7 @@ class Daemon:
             launched_timeout_s=self._config.launched_timeout_s,
         )
 
-        launcher.launch()
+        return launcher.launch()
 
     def launch(self, timeout: lang.TimeoutLike = lang.Timeout.Default) -> None:
         self.launch_no_wait()

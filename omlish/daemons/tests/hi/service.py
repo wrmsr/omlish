@@ -1,16 +1,18 @@
 import dataclasses as dc
 import logging
+import os.path
 import time
 import typing as ta
 
-from ... import cached
-from ...http.coro.simple import make_simple_http_server
-from ...http.handlers import LoggingHttpHandler
-from ...http.handlers import StringResponseHttpHandler
-from ...logs import all as logs
-from ...sockets.bind import SocketBinder
-from ..services import Service
-from ..services import ServiceDaemon
+from .... import cached
+from ....http.coro.simple import make_simple_http_server
+from ....http.handlers import LoggingHttpHandler
+from ....http.handlers import StringResponseHttpHandler
+from ....sockets.bind import SocketBinder
+from ... import spawning
+from ...daemon import Daemon
+from ...services import Service
+from ...services import ServiceDaemon
 
 
 log = logging.getLogger(__name__)
@@ -37,7 +39,6 @@ class HiServer:
     def run(self) -> None:
         log.info('Server running')
         try:
-
             with make_simple_http_server(
                     SocketBinder.Config.of(self._config.port),
                     LoggingHttpHandler(StringResponseHttpHandler('Hi!'), log),
@@ -81,19 +82,21 @@ class HiService(Service['HiService.Config']):
 ##
 
 
-@cached.function
-def hi() -> ServiceDaemon:
-    return ServiceDaemon(HiService.Config(HiServer.Config()))
+@cached.function(lock=True)
+def hi_service_daemon() -> ServiceDaemon[HiService, HiService.Config]:
+    # FIXME: lol
+    pid_file = os.path.abspath(os.path.join(os.getcwd(), 'hi.pid'))
 
+    return ServiceDaemon(
+        HiService.Config(
+            HiServer.Config(),
+        ),
 
-##
+        Daemon.Config(
+            spawning=spawning.ThreadSpawning(),
+            # spawning=spawning.MultiprocessingSpawning(),
+            # spawning=spawning.ForkSpawning(),
 
-
-def _main() -> None:
-    logs.configure_standard_logging('DEBUG')
-
-    hi().service_().run()
-
-
-if __name__ == '__main__':
-    _main()
+            pid_file=pid_file,
+        ),
+    )

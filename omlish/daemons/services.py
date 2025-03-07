@@ -12,6 +12,7 @@ from .targets import TargetRunner
 from .targets import target_runner_for
 
 
+ServiceT = ta.TypeVar('ServiceT', bound='Service')
 ServiceConfigT = ta.TypeVar('ServiceConfigT', bound='Service.Config')
 
 
@@ -82,15 +83,24 @@ def _(target: ServiceConfigTarget) -> ServiceConfigTargetRunner:
 
 
 @dc.dataclass(frozen=True)
-class ServiceDaemon(lang.Final):
-    service: Service | Service.Config
+class ServiceDaemon(lang.Final, ta.Generic[ServiceT, ServiceConfigT]):
+    service: ServiceT | ServiceConfigT
 
     @cached.function
-    def service_(self) -> Service:
+    def service_config(self) -> ServiceConfigT:
         if isinstance(self.service, Service):
-            return self.service
+            return self.service.config
         elif isinstance(self.service, Service.Config):
-            return Service.from_config(self.service)
+            return self.service
+        else:
+            raise TypeError(self.service)
+
+    @cached.function
+    def service_(self) -> ServiceT:
+        if isinstance(self.service, Service):
+            return self.service  # type: ignore[return-value]
+        elif isinstance(self.service, Service.Config):
+            return Service.from_config(self.service)  # type: ignore[return-value]
         else:
             raise TypeError(self.service)
 
