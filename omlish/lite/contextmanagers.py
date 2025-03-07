@@ -15,6 +15,21 @@ AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
 
 class ExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__enter__', '__exit__'):
+            for b in cls.__bases__:
+                if b is ExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(ExitStacked, a):
+                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
+
     _exit_stack: ta.Optional[contextlib.ExitStack] = None
 
     @contextlib.contextmanager
@@ -67,6 +82,21 @@ class ExitStacked:
 
 
 class AsyncExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__aenter__', '__aexit__'):
+            for b in cls.__bases__:
+                if b is AsyncExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(AsyncExitStacked, a):
+                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
+
     _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
 
     @contextlib.asynccontextmanager
