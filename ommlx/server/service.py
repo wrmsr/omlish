@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-class McService(Service['McService.Config']):
+class McServerService(Service['McServerService.Config']):
     @dc.dataclass(frozen=True)
     class Config(Service.Config):
         server: McServer.Config = McServer.Config()
@@ -46,8 +46,8 @@ class McService(Service['McService.Config']):
 ##
 
 
-def _mc_service_multiprocessing_entrypoint(args: spawning.MultiprocessingSpawning.EntrypointArgs) -> None:
-    svc = check.isinstance(check.isinstance(args.spawn.target, ServiceTarget).svc, McService)  # noqa
+def _multiprocessing_entrypoint(args: spawning.MultiprocessingSpawning.EntrypointArgs) -> None:
+    svc = check.isinstance(check.isinstance(args.spawn.target, ServiceTarget).svc, McServerService)  # noqa
 
     if args.start_method == spawning.MultiprocessingSpawning.StartMethod.SPAWN:
         log_file = os.path.join(get_home_paths().log_dir, 'minichain', 'server.log')
@@ -64,17 +64,17 @@ def _mc_service_multiprocessing_entrypoint(args: spawning.MultiprocessingSpawnin
 
 
 @cached.function(lock=True)
-def mc_service_daemon() -> ServiceDaemon[McService, McService.Config]:
+def mc_server_service_daemon() -> ServiceDaemon[McServerService, McServerService.Config]:
     pid_file = os.path.join(get_home_paths().run_dir, 'minichain', 'server.pid')
 
     return ServiceDaemon(
-        McService.Config(
+        McServerService.Config(
             McServer.Config(),
         ),
 
         Daemon.Config(
             # spawning=spawning.ThreadSpawning(),
-            spawning=spawning.MultiprocessingSpawning(entrypoint=_mc_service_multiprocessing_entrypoint),
+            spawning=spawning.MultiprocessingSpawning(entrypoint=_multiprocessing_entrypoint),
             # spawning=spawning.ForkSpawning(),
 
             pid_file=pid_file,
