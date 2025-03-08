@@ -152,10 +152,14 @@ class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
         super().__init__(config)
 
     def run_prompt(self, prompt: str) -> str:
-        return McServerClient().prompt(
+        text =  McServerClient().prompt(
             prompt,
             launch=True,
         )
+
+        text = _strip_markdown_code_block(text)
+
+        return text
 
 
 ##
@@ -200,11 +204,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
             'Only output the message to be commited into git - do not output any explanation.',
         ])
 
-        with cf.ProcessPoolExecutor() as exe:
-            msg = exe.submit(
-                self._backend.run_prompt,
-                prompt,
-            ).result()
+        msg = self._backend.run_prompt(prompt)
 
         return GitMessageGenerator.GenerateCommitMessageResult(
             msg=msg,

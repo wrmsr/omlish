@@ -64,7 +64,7 @@ class McServer:
 
         backend: ta.Literal['openai', 'local'] = 'local'
 
-        linger_s: float | None = 10.
+        linger_s: float | None = 30.
 
     def __init__(self, config: Config = Config()) -> None:
         super().__init__()
