@@ -21,6 +21,7 @@ from ..minichain.backends.mlxlm import MlxlmChatModel
 from ..minichain.backends.openai import OpenaiChatModel
 from ..minichain.chat import UserMessage
 from ..minichain.generative import MaxTokens
+from ..server.client import McServerClient
 
 
 GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')
@@ -139,6 +140,24 @@ class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.
             return resp.read().decode('utf-8')
 
 
+#
+
+
+class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(GitAiBackend.Config):
+        pass
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+    def run_prompt(self, prompt: str) -> str:
+        return McServerClient().prompt(
+            prompt,
+            launch=True,
+        )
+
+
 ##
 
 
@@ -158,7 +177,8 @@ class AiGitMessageGenerator(GitMessageGenerator):
     DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = (
         # OpenaiGitAiBackend()
         # LocalhostHttpPostGitAiBackend()
-        MlxlmGitAiBackend()
+        # MlxlmGitAiBackend()
+        McServerGitAiBackend()
     )
 
     def generate_commit_message(
