@@ -14,9 +14,11 @@ from ..chat import UserMessage
 
 
 if ta.TYPE_CHECKING:
-    import mlx_lm
+    import mlx.nn
+    import mlx_lm.utils
 else:
-    mlx_lm = lang.proxy_import('mlx_lm')
+    mlx = lang.proxy_import('mlx', extras=['nn'])
+    mlx_lm = lang.proxy_import('mlx_lm', extras=['utils'])
 
 
 class MlxlmChatModel(ChatModel):
@@ -57,8 +59,18 @@ class MlxlmChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    class _LoadedModel(ta.NamedTuple):
+        model: 'mlx.nn.Module'
+        tokenizer: 'mlx_lm.utils.TokenizerWrapper'
+
+    # FIXME: transient
+    @lang.cached_function
+    def _load_model(self) -> _LoadedModel:
         model, tokenizer = mlx_lm.load(self._model)
+        return self._LoadedModel(model, tokenizer)
+
+    def invoke(self, request: ChatRequest) -> ChatResponse:
+        model, tokenizer = self._load_model()
 
         if not (
                 hasattr(tokenizer, 'apply_chat_template') and

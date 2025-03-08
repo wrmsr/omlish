@@ -62,7 +62,7 @@ class McServer:
         DEFAULT_BIND: ta.ClassVar[CanSocketBinderConfig] = 5067
         bind: SocketBinder.Config = SocketBinder.Config.of(DEFAULT_BIND)
 
-        backend: ta.Literal['openai', 'local'] = 'openai'
+        backend: ta.Literal['openai', 'local'] = 'local'
 
         linger_s: float | None = 10.
 
@@ -77,7 +77,8 @@ class McServer:
             return OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
 
         elif self._config.backend == 'local':
-            return MlxlmChatModel()
+            model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
+            return MlxlmChatModel(model)
 
         else:
             raise ValueError(self._config.backend)

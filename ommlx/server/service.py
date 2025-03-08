@@ -50,6 +50,7 @@ def _multiprocessing_entrypoint(args: spawning.MultiprocessingSpawning.Entrypoin
     svc = check.isinstance(check.isinstance(args.spawn.target, ServiceTarget).svc, McServerService)  # noqa
 
     if args.start_method == spawning.MultiprocessingSpawning.StartMethod.SPAWN:
+        # TODO: RotatingFileHandler('server.log', maxBytes=1_000_000, backupCount=3)
         log_file = os.path.join(get_home_paths().log_dir, 'minichain', 'server.log')
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
