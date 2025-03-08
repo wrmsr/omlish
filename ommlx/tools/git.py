@@ -152,7 +152,7 @@ class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
         super().__init__(config)
 
     def run_prompt(self, prompt: str) -> str:
-        text =  McServerClient().prompt(
+        text = McServerClient().prompt(
             prompt,
             launch=True,
         )
