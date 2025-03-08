@@ -4,7 +4,7 @@ import sys
 
 def reparent_process(
         *,
-        no_close_stdio: bool = True,
+        no_close_stdio: bool = False,
 ) -> None:
     if (pid := os.fork()):  # noqa
         sys.exit(0)
