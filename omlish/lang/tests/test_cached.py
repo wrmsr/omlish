@@ -241,21 +241,33 @@ class _PickleTestClass:
         return c
 
     @cached_function()
-    def foo(self) -> int:
+    def d_func(self) -> int:
         return self.c()
 
     @cached_function(transient=True)
-    def bar(self) -> int:
+    def t_func(self) -> int:
+        return self.c()
+
+    @cached_property()
+    def d_prop(self) -> int:
+        return self.c()
+
+    @cached_property(transient=True)
+    def t_prop(self) -> int:
         return self.c()
 
 
 def test_pickling():
     c = _PickleTestClass()
     for _ in range(2):
-        assert c.foo() == 0
-        assert c.bar() == 1
+        assert c.d_func() == 0
+        assert c.t_func() == 1
+        assert c.d_prop == 2
+        assert c.t_prop == 3
 
     c2 = pickle.loads(pickle.dumps(c))  # noqa
     for _ in range(2):
-        assert c2.foo() == 0
-        assert c2.bar() == 2
+        assert c2.d_func() == 0
+        assert c2.t_func() == 4
+        assert c2.d_prop == 2
+        assert c2.t_prop == 5

@@ -9,11 +9,12 @@ builtins and thus not distinguish it from a normal property.
         def p(self) -> str: ...
 
 """
-from .lang.cached import _CachedProperty  # noqa
 from .lang.cached import cached_function as _cached_function
+from .lang.cached import cached_property as _cached_property
+
 
 function = _cached_function
 
 property = property  # noqa
 
-globals()['property'] = _CachedProperty  # noqa
+globals()['property'] = _cached_property  # noqa
