@@ -96,11 +96,11 @@ class McServer:
                 if (linger_s := self._config.linger_s) is None:
                     linger_s = float('inf')
 
-                deadline = time.time() + linger_s
+                deadline = time.monotonic() + linger_s
 
                 with server.poll_context() as pc:
                     while True:
-                        if time.time() >= deadline:
+                        if time.monotonic() >= deadline:
                             log.info('Linger deadline exceeded')
                             break
 
@@ -110,7 +110,7 @@ class McServer:
                             break
 
                         if res == SocketServer.PollResult.CONNECTION:
-                            deadline = time.time() + linger_s
+                            deadline = time.monotonic() + linger_s
 
         finally:
             log.info('Server exiting')

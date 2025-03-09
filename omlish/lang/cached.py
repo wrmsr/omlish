@@ -233,7 +233,6 @@ class _CachedProperty(property):
             *,
             name=None,
             ignore_if=lambda _: False,
-            clear_on_init=False,
     ):
         if isinstance(fn, property):
             fn = fn.fget
@@ -241,7 +240,6 @@ class _CachedProperty(property):
         self._fn = fn
         self._ignore_if = ignore_if
         self._name = name
-        self._clear_on_init = clear_on_init
 
     def __set_name__(self, owner, name):
         if self._name is None:

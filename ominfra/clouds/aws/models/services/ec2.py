@@ -1518,6 +1518,11 @@ SecurityGroupId = _ta.NewType('SecurityGroupId', str)
 SecurityGroupName = _ta.NewType('SecurityGroupName', str)
 
 
+class ServiceManaged(_enum.Enum):
+    ALB = 'alb'
+    NLB = 'nlb'
+
+
 class ShutdownBehavior(_enum.Enum):
     STOP = 'stop'
     TERMINATE = 'terminate'
@@ -1729,6 +1734,12 @@ class Address(
         member_name='CarrierIp',
         serialization_name='carrierIp',
         shape_name='String',
+    ))
+
+    service_managed: ServiceManaged | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ServiceManaged',
+        serialization_name='serviceManaged',
+        shape_name='ServiceManaged',
     ))
 
     instance_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
