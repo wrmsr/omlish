@@ -5,6 +5,7 @@ import pytest
 
 from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.subprocesses.sync import subprocesses
+from omlish.testing import pytest as ptu
 
 from ... import huggingface as hfu
 from ..git import AiGitMessageGenerator
@@ -42,6 +43,7 @@ def test_git_message_generator_openai(harness):
     _test_git_message_generator(OpenaiGitAiBackend())
 
 
+@ptu.skip.if_cant_import('mlx_lm')
 def test_git_message_generator_mlxlm():
     bg_cfg = MlxlmGitAiBackend.Config()
 

@@ -6,6 +6,7 @@ TODO:
   - must support free functions (which have no instance nor owner)
   - 'staticmethod' or effective equiv - which must resolve to the shared instance
    - and must be transient?
+ - use __transient_dict__ to support common state nuking
 """
 import dataclasses as dc
 import functools
