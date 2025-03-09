@@ -4,7 +4,6 @@ from omlish import check
 from omlish.daemons.spawning import ForkSpawning  # noqa
 from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
 from omlish.daemons.spawning import ThreadSpawning  # noqa
-from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import TcpSocketBinder
 from omlish.sockets.wait import socket_can_connect
 from omlish.sockets.wait import socket_wait_until_can_connect

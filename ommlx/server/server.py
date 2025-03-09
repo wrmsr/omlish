@@ -11,7 +11,6 @@ from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.http.handlers import LoggingHttpHandler
-from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
 from omlish.sockets.server.server import SocketServer

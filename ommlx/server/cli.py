@@ -11,7 +11,6 @@ from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
 from omlish.daemons.spawning import ThreadSpawning  # noqa
 from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
-from omlish.secrets.tests.harness import HarnessSecrets  # noqa
 
 from .client import McServerClient
 from .service import mc_server_service_daemon
