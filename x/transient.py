@@ -148,14 +148,11 @@ class Foo:
 
     @property
     def y(self) -> int:
-        try:
-            return self.__transient__['y']
-        except KeyError:
-            raise AttributeError('y')
+        return transient_getattr(self, 'y', 0)
 
     @y.setter
     def y(self, val: int) -> None:
-        self.__transient__['y'] = val
+        transient_setattr(self, 'y', val)
 
 
 def _main() -> None:
