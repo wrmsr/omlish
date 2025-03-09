@@ -1,6 +1,5 @@
 import abc
 import collections.abc
-import pickle
 import typing as ta
 
 
@@ -9,7 +8,7 @@ import typing as ta
 
 class AttrOps(abc.ABC):
     class NOT_SET:  # noqa
-        def __new__(cls, *args, **kwargs):
+        def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError
 
     @abc.abstractmethod
@@ -23,6 +22,9 @@ class AttrOps(abc.ABC):
     @abc.abstractmethod
     def delattr(self, obj: ta.Any, name: str) -> None:
         raise NotImplementedError
+
+
+##
 
 
 class StdAttrOps(AttrOps):
@@ -39,6 +41,9 @@ class StdAttrOps(AttrOps):
         delattr(obj, name)
 
 
+STD_ATTR_OPS = StdAttrOps()
+
+
 ##
 
 
@@ -46,7 +51,7 @@ class TransientDict(collections.abc.MutableMapping):
     def __init__(self) -> None:
         super().__init__()
 
-        self._dct = {}
+        self._dct: dict = {}
 
     def __reduce__(self):
         return (TransientDict, ())
@@ -64,7 +69,7 @@ class TransientDict(collections.abc.MutableMapping):
         return len(self._dct)
 
     def __iter__(self):
-       return iter(self._dct)
+        return iter(self._dct)
 
     def clear(self):
         self._dct.clear()
@@ -125,45 +130,3 @@ TRANSIENT_ATTR_OPS = TransientAttrOps()
 transient_getattr = TRANSIENT_ATTR_OPS.getattr
 transient_setattr = TRANSIENT_ATTR_OPS.setattr
 transient_delattr = TRANSIENT_ATTR_OPS.delattr
-
-
-##
-
-
-class Foo:
-    def __init__(self, x: int) -> None:
-        super().__init__()
-
-        self._x = x
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(x={self.x!r}, y={self.y!r})'
-
-    @property
-    def x(self) -> int:
-        return self._x
-
-    @x.setter
-    def x(self, val: int) -> None:
-        self._x = val
-
-    @property
-    def y(self) -> int:
-        return transient_getattr(self, 'y', 0)
-
-    @y.setter
-    def y(self, val: int) -> None:
-        transient_setattr(self, 'y', val)
-
-
-def _main() -> None:
-    foo = Foo(5)
-    foo.y = 6
-    print(foo)
-
-    foo2 = pickle.loads(pickle.dumps(foo))
-    print(foo2)
-
-
-if __name__ == '__main__':
-    _main()

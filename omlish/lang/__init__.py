@@ -1,3 +1,15 @@
+from .attrs import (  # noqa
+    AttrOps,
+    STD_ATTR_OPS,
+    StdAttrOps,
+    TRANSIENT_ATTR_OPS,
+    TransientAttrOps,
+    TransientDict,
+    transient_delattr,
+    transient_getattr,
+    transient_setattr,
+)
+
 from .cached import (  # noqa
     cached_function,
     cached_property,
