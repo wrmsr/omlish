@@ -1,4 +1,5 @@
 import functools
+import pickle
 import time
 
 from ... import testing as tu
@@ -228,3 +229,33 @@ def test_context_wrapped():
     assert c.d() == 'dcaba'
     assert c._lock.enter_count == 4  # noqa
     assert c._lock.exit_count == 4  # noqa
+
+
+class _PickleTestClass:
+    _c = 0
+
+    @classmethod
+    def c(cls) -> int:
+        c = cls._c
+        cls._c += 1
+        return c
+
+    @cached_function()
+    def foo(self) -> int:
+        return self.c()
+
+    @cached_function(transient=True)
+    def bar(self) -> int:
+        return self.c()
+
+
+def test_pickling():
+    c = _PickleTestClass()
+    for _ in range(2):
+        assert c.foo() == 0
+        assert c.bar() == 1
+
+    c2 = pickle.loads(pickle.dumps(c))  # noqa
+    for _ in range(2):
+        assert c2.foo() == 0
+        assert c2.bar() == 2
