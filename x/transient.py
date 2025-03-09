@@ -133,7 +133,6 @@ class Foo:
         super().__init__()
 
         self._x = x
-        self.__transient__ = TransientDict()
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(x={self.x!r}, y={self.y!r})'
