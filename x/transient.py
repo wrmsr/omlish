@@ -8,7 +8,9 @@ import typing as ta
 
 
 class AttrOps(abc.ABC):
-    NOT_SET: ta.ClassVar[ta.Any] = object()
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):
+            raise TypeError
 
     @abc.abstractmethod
     def getattr(self, obj: ta.Any, name: str, default: ta.Any = NOT_SET) -> ta.Any:
