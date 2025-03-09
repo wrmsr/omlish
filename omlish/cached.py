@@ -9,8 +9,8 @@ builtins and thus not distinguish it from a normal property.
         def p(self) -> str: ...
 
 """
-from .lang.cached import cached_function as _cached_function
-from .lang.cached import cached_property as _cached_property
+from .lang.cached.function import cached_function as _cached_function
+from .lang.cached.property import cached_property as _cached_property
 
 
 function = _cached_function

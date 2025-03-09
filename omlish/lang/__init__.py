@@ -10,42 +10,54 @@ from .attrs import (  # noqa
     transient_setattr,
 )
 
-from .cached import (  # noqa
+from .cached.function import (  # noqa
     cached_function,
-    cached_property,
     static_init,
 )
 
-from .classes import (  # noqa
+from .cached.property import (  # noqa
+    cached_property,
+)
+
+from .classes.abstract import (  # noqa
     Abstract,
     AbstractTypeError,
-    AnySensitive,
-    Callable,
-    Descriptor,
-    Final,
-    FinalTypeError,
-    LazySingleton,
-    Marker,
-    Namespace,
-    NoBool,
-    NotInstantiable,
-    NotPicklable,
-    PackageSealed,
-    Picklable,
-    SENSITIVE_ATTR,
-    Sealed,
-    SealedError,
-    Sensitive,
-    SimpleMetaDict,
-    Singleton,
-    Virtual,
     get_abstract_methods,
     is_abstract,
     is_abstract_class,
     is_abstract_method,
     make_abstract,
-    no_bool,
     unabstract_class,
+)
+
+from .classes.restrict import (  # noqa
+    AnySensitive,
+    Final,
+    FinalTypeError,
+    NoBool,
+    NotInstantiable,
+    NotPicklable,
+    PackageSealed,
+    SENSITIVE_ATTR,
+    Sealed,
+    SealedError,
+    Sensitive,
+    no_bool,
+)
+
+from .classes.simple import (  # noqa
+    LazySingleton,
+    Marker,
+    Namespace,
+    SimpleMetaDict,
+    Singleton,
+)
+
+from .classes.virtual import (  # noqa
+    Callable,
+    Descriptor,
+    Picklable,
+    Virtual,
     virtual_check,
 )
 

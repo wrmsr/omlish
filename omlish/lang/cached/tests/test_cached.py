@@ -2,10 +2,10 @@ import functools
 import pickle
 import time
 
-from ... import testing as tu
-from ..cached import cached_function
-from ..cached import cached_property
-from ..contextmanagers import context_wrapped
+from .... import testing as tu
+from ...contextmanagers import context_wrapped
+from ..function import cached_function
+from ..property import cached_property
 
 
 def test_cached_function_nullary():
@@ -157,7 +157,7 @@ def test_property():
 
 
 def test_collections_cache():
-    from ...collections import cache
+    from ....collections import cache
 
     xys = []
 
