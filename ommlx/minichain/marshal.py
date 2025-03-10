@@ -14,7 +14,7 @@ from .options import ScalarOption
 
 
 def _build_option_poly(rty: rfl.Type) -> msh.Polymorphism:
-    ty = check.issubclass(check.isinstance(rty, type), Option)
+    ty: type[Option] = check.issubclass(check.isinstance(rty, type), Option)
     check.state(lang.is_abstract_class(ty))
     return msh.polymorphism_from_subclasses(
         ty,
@@ -95,7 +95,7 @@ class OptionsUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
             msh.WrapperTypeTagging(),
             ctx,
         )
-        return msh.IterableUnmarshaler(Options, opt_u)  # noqa
+        return msh.IterableUnmarshaler(lambda it: Options(*it), opt_u)  # noqa
 
 
 ##

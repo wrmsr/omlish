@@ -44,6 +44,22 @@ class ChatRequest(
     ],
     lang.Final,
 ):
+    @classmethod
+    def new(
+            cls,
+            v: ChatNew,
+            *options: ChatOptions,
+            **kwargs: ta.Any,
+    ) -> 'ChatRequest':
+        if isinstance(v, Message):
+            v = (v,)
+
+        return super().new(
+            v,
+            *options,
+            **kwargs,
+        )
+
     @dc.validate
     def _validate_v(self) -> bool:
         return (

@@ -71,8 +71,10 @@ class Options(lang.Final, ta.Generic[OptionT]):
                 ulst = udct.setdefault(uoc, [])
                 ulst.append(o)
                 tmp.append((o, len(ulst)))
-            else:
+            elif isinstance(o, Option):
                 tmp.append(o)
+            else:
+                raise TypeError(o)
 
         lst: list = []
         dct: dict = {}
