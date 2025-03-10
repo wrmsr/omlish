@@ -130,7 +130,7 @@ gevent==24.11.1
 gguf==0.14.0
 gitdb==4.0.12
 GitPython==3.1.44
-google-api-core==2.24.1
+google-api-core==2.24.2
 google-api-python-client==2.163.0
 google-auth==2.38.0
 google-auth-httplib2==0.2.0
@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.29.2
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.128.1
+hypothesis==6.128.2
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -172,7 +172,7 @@ importlib_resources==6.5.2
 iniconfig==2.0.0
 instructor==1.7.3
 ipykernel==6.29.4
-ipython==9.0.1
+ipython==9.0.2
 ipython_pygments_lexers==1.1.1
 ipywidgets==8.1.2
 isodate==0.7.2
@@ -343,7 +343,7 @@ priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 propcache==0.3.0
-proto-plus==1.26.0
+proto-plus==1.26.1
 protobuf==4.25.6
 psutil==7.0.0
 psycopg==3.2.5

@@ -47,6 +47,31 @@ STD_ATTR_OPS = StdAttrOps()
 ##
 
 
+class DictAttrOps(AttrOps):
+    def __init__(self, dct: ta.MutableMapping[str, ta.Any] | None = None) -> None:
+        super().__init__()
+
+        self._dct = dct
+
+    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrOps.NOT_SET) -> ta.Any:
+        try:
+            return self._dct[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+    def setattr(self, obj: ta.Any, name: str, value: ta.Any) -> None:
+        self._dct[name] = value
+
+    def delattr(self, obj: ta.Any, name: str) -> None:
+        try:
+            del self._dct[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+
+##
+
+
 class TransientDict(collections.abc.MutableMapping):
     def __init__(self) -> None:
         super().__init__()

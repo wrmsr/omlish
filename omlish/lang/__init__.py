@@ -1,5 +1,6 @@
 from .attrs import (  # noqa
     AttrOps,
+    DictAttrOps,
     STD_ATTR_OPS,
     StdAttrOps,
     TRANSIENT_ATTR_OPS,
