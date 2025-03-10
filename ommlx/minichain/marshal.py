@@ -13,6 +13,15 @@ from .options import ScalarOption
 ##
 
 
+def _build_option_poly(rty: rfl.Type) -> msh.Polymorphism:
+    ty = check.issubclass(check.isinstance(rty, type), Option)
+    check.state(lang.is_abstract_class(ty))
+    return msh.polymorphism_from_subclasses(
+        ty,
+        naming=msh.Naming.SNAKE,
+    )
+
+
 class OptionMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, ScalarOption) and not lang.is_abstract_class(rty))  # noqa
     def _build_scalar(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
@@ -24,7 +33,7 @@ class OptionMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, Option) and lang.is_abstract_class(rty))
     def _build_abstract(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return msh.make_polymorphism_marshaler(
-            msh.polymorphism_from_subclasses(check.isinstance(rty, type)).impls,
+            _build_option_poly(rty).impls,
             msh.WrapperTypeTagging(),
             ctx,
         )
@@ -42,7 +51,7 @@ class OptionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, Option) and lang.is_abstract_class(rty))
     def _build_abstract(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return msh.make_polymorphism_unmarshaler(
-            msh.polymorphism_from_subclasses(check.isinstance(rty, type)).impls,
+            _build_option_poly(rty).impls,
             msh.WrapperTypeTagging(),
             ctx,
         )
@@ -62,8 +71,7 @@ def _build_options_impls(rty: rfl.Type) -> msh.Impls:
 
     opt_impls: list[msh.Impl] = []
     for opt_cls in opt_cls_set:
-        opt_poly = msh.polymorphism_from_subclasses(opt_cls)
-        opt_impls.extend(opt_poly.impls)
+        opt_impls.extend(_build_option_poly(opt_cls).impls)
 
     return msh.Impls(opt_impls)
 

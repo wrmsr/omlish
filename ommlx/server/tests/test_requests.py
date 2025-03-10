@@ -1,22 +1,18 @@
-import pytest  # noqa
-
 from omlish import marshal as msh
 from omlish.formats import json
 
 from ... import minichain as mc
 
 
-# @pytest.mark.xfail(reason='marshal unions')
 def test_requests():
     for req in [
         mc.ChatRequest.new(
             [mc.UserMessage('foo')],
         ),
-        # mc.ChatRequest.new(
-        #     [mc.UserMessage('foo')],
-        #     mc.Max
-        #
-        # ),
+        mc.ChatRequest.new(
+            [mc.UserMessage('foo')],
+            mc.MaxTokens(420),
+        ),
     ]:
         print(req)
 
