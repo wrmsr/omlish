@@ -191,7 +191,7 @@ class Pidfile:
         return buf
 
     def read(self) -> ta.Optional[int]:
-        buf = self._f.read()
+        buf = self.read_raw()
         if not buf:
             return None
         return int(buf.splitlines()[0].strip())

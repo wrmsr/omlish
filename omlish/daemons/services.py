@@ -1,3 +1,10 @@
+"""
+TODO:
+ - jsonl pidfile
+  - time started
+  - code version / revision
+  - venv?
+"""
 import abc
 import threading
 import typing as ta

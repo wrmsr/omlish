@@ -63,8 +63,7 @@ class MlxlmChatModel(ChatModel):
         model: 'mlx.nn.Module'
         tokenizer: 'mlx_lm.utils.TokenizerWrapper'
 
-    # FIXME: transient
-    @lang.cached_function
+    @lang.cached_function(transient=True)
     def _load_model(self) -> _LoadedModel:
         model, tokenizer = mlx_lm.load(self._model)
         return self._LoadedModel(model, tokenizer)
