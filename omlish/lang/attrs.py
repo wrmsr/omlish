@@ -51,12 +51,16 @@ class DictAttrOps(AttrOps):
     def __init__(self, dct: ta.MutableMapping[str, ta.Any] | None = None) -> None:
         super().__init__()
 
+        if dct is None:
+            dct = {}
         self._dct = dct
 
     def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrOps.NOT_SET) -> ta.Any:
         try:
             return self._dct[name]
         except KeyError:
+            if default is not AttrOps.NOT_SET:
+                return default
             raise AttributeError(name) from None
 
     def setattr(self, obj: ta.Any, name: str, value: ta.Any) -> None:

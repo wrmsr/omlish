@@ -1946,6 +1946,7 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 """
 TODO:
  - 'json pids', with code version? '.json.pid'? '.jpid'?
+  - json*L* pidfiles - first line is bare int, following may be json - now `head -n1 foo.pid` not cat
 """
 
 
@@ -2091,7 +2092,12 @@ class Pidfile:
 
     #
 
-    def write(self, pid: ta.Optional[int] = None) -> None:
+    def write(
+            self,
+            pid: ta.Optional[int] = None,
+            *,
+            suffix: ta.Optional[str] = None,
+    ) -> None:
         self.acquire_lock()
 
         if pid is None:
@@ -2099,7 +2105,11 @@ class Pidfile:
 
         self._f.seek(0)
         self._f.truncate()
-        self._f.write(f'{pid}\n')
+        self._f.write('\n'.join([
+            str(pid),
+            *([suffix] if suffix is not None else []),
+            '',
+        ]))
         self._f.flush()
 
     def clear(self) -> None:
@@ -2110,14 +2120,20 @@ class Pidfile:
 
     #
 
-    def read(self) -> ta.Optional[int]:
+    def read_raw(self) -> ta.Optional[str]:
         self.ensure_cannot_lock()
 
         self._f.seek(0)
         buf = self._f.read()
         if not buf:
             return None
-        return int(buf)
+        return buf
+
+    def read(self) -> ta.Optional[int]:
+        buf = self._f.read()
+        if not buf:
+            return None
+        return int(buf.splitlines()[0].strip())
 
     def kill(self, sig: int = signal.SIGTERM) -> None:
         if (pid := self.read()) is None:
