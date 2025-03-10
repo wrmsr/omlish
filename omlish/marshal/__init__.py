@@ -28,6 +28,11 @@ from .base import (  # noqa
     ReflectOverride,
 )
 
+from .composite.iterables import (  # noqa
+    IterableMarshaler,
+    IterableUnmarshaler,
+)
+
 from .composite.wrapped import (  # noqa
     WrappedMarshaler,
     WrappedUnmarshaler,

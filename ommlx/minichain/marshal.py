@@ -50,26 +50,43 @@ class OptionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
 ##
 
 
+def _build_options_impls(rty: rfl.Type) -> msh.Impls:
+    gty = check.isinstance(rty, rfl.Generic)
+    check.is_(gty.cls, Options)
+
+    opt_cls_set = {
+        check.issubclass(check.isinstance(a, type), Option)
+        for a in check.isinstance(check.single(gty.args), rfl.Union).args
+    }
+
+    opt_impls: list[msh.Impl] = []
+    for opt_cls in opt_cls_set:
+        opt_poly = msh.polymorphism_from_subclasses(opt_cls)
+        opt_impls.extend(opt_poly.impls)
+
+    return msh.Impls(opt_impls)
+
+
 class OptionsMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is Options)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        check.is_(gty.cls, Options)
-        opt_cls_set = {
-            check.issubclass(check.isinstance(a, type), Option)
-            for a in check.isinstance(check.single(gty.args), rfl.Union).args
-        }
-        for opt_cls in opt_cls_set:
-            opt_m = check.isinstance(ctx.make(opt_cls), msh.PolymorphismMarshaler)
-        raise NotImplementedError
+        opt_m = msh.make_polymorphism_marshaler(
+            msh.Impls(_build_options_impls(rty)),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
+        return msh.IterableMarshaler(opt_m)
 
 
 class OptionsUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is Options)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        check.is_(gty.cls, Options)
-        raise NotImplementedError
+        opt_u = msh.make_polymorphism_unmarshaler(
+            msh.Impls(_build_options_impls(rty)),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
+        return msh.IterableUnmarshaler(Options, opt_u)  # type: ignore
 
 
 ##

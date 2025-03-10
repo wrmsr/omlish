@@ -8,12 +8,23 @@ from ... import minichain as mc
 
 # @pytest.mark.xfail(reason='marshal unions')
 def test_requests():
-    prompt = 'foo'
-    req = mc.ChatRequest.new(
-        [mc.UserMessage(prompt)],
-    )
+    for req in [
+        mc.ChatRequest.new(
+            [mc.UserMessage('foo')],
+        ),
+        # mc.ChatRequest.new(
+        #     [mc.UserMessage('foo')],
+        #     mc.Max
+        #
+        # ),
+    ]:
+        print(req)
 
-    req_m = msh.marshal(req)
-    req_j = json.dumps_pretty(req_m)
+        req_m = msh.marshal(req)
+        req_j = json.dumps_pretty(req_m)
+        print(req_j)
 
-    print(req_j)
+        req_u = msh.unmarshal(json.loads(req_j), mc.ChatRequest)
+        print(req_u)
+
+        # assert req_u == req

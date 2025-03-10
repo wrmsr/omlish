@@ -180,10 +180,10 @@ class AiGitMessageGenerator(GitMessageGenerator):
         self._backend = backend
 
     DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = (
-        # OpenaiGitAiBackend()
+        OpenaiGitAiBackend()
         # LocalhostHttpPostGitAiBackend()
         # MlxlmGitAiBackend()
-        McServerGitAiBackend()
+        # McServerGitAiBackend()
     )
 
     def generate_commit_message(

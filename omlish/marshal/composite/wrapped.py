@@ -17,7 +17,6 @@ class WrappedMarshaler(Marshaler):
         return self.m.marshal(ctx, self.wrapper(ctx, o))
 
 
-
 @dc.dataclass(frozen=True)
 class WrappedUnmarshaler(Unmarshaler):
     unwrapper: ta.Callable[[UnmarshalContext, ta.Any], ta.Any]

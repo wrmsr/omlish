@@ -35,6 +35,15 @@ from .content import (  # noqa
     Image,
 )
 
+from .generative import (  # noqa
+    Generative,
+
+    GenerativeOption,
+    TopK,
+    Temperature,
+    MaxTokens,
+)
+
 from .models import (  # noqa
     FinishReason,
 
