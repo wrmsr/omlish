@@ -82,6 +82,19 @@ class Io(abc.ABC):  # noqa
 
 #
 
+
+@dc.dataclass(frozen=True)
+class ConnectIo(Io):
+    args: ta.Tuple[ta.Any, ...]
+    kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
+
+
+class CloseIo(Io):
+    pass
+
+
+#
+
 class AnyReadIo(Io):  # noqa
     pass
 
@@ -118,7 +131,7 @@ _MAX_LINE = 65536
 _MAX_HEADERS = 100
 
 
-def _read_headers(fp: ta.IO) -> list[bytes]:
+def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], list[bytes]]:
     """
     Reads potential header lines into a list from a file pointer.
 
@@ -127,7 +140,7 @@ def _read_headers(fp: ta.IO) -> list[bytes]:
 
     headers = []
     while True:
-        line = fp.readline(_MAX_LINE + 1)
+        line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
             raise LineTooLong('header line')
 
@@ -154,10 +167,10 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HTTPMessage:
     return email.parser.Parser(_class=HTTPMessage).parsestr(hstring)
 
 
-def parse_headers(fp: ta.IO) -> HTTPMessage:
+def parse_headers() -> ta.Generator[Io, ta.Optional[bytes], HTTPMessage]:
     """Parses only RFC2822 headers from a file pointer."""
 
-    headers = _read_headers(fp)
+    headers = yield from _read_headers()
     return _parse_header_lines(headers)
 
 
@@ -191,7 +204,7 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
     return enc_name
 
 
-class HTTPResponse:
+class HttpResponse:
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
@@ -199,22 +212,22 @@ class HTTPResponse:
 
     def __init__(
             self,
-            sock: socket.socket,
-            method: str | None = None,
+            method: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
+        self._closed = False
 
         # If the response includes a content-length header, we need to make sure that the client doesn't read more than
         # the specified number of bytes.  If it does, it will block until the server times out and closes the
         # connection.  This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not.
         # So, no self.fp.read() by clients unless they know what they are doing.
-        self.fp = sock.makefile('rb')
         self._method = method
 
-        # The HTTPResponse object is returned via urllib.  The clients of http and urllib expect different attributes
+        # The HttpResponse object is returned via urllib.  The clients of http and urllib expect different attributes
         # for the headers.  headers is used here and supports urllib.  msg is provided as a backwards compatibility
         # layer for http clients.
-        self.headers: HTTPMessage | None = None
+        self.headers: ta.Optional[HTTPMessage] = None
 
         # from the Status-Line of the response
         self.version = _UNKNOWN  # HTTP-Version
@@ -231,8 +244,8 @@ class HTTPResponse:
         status: int
         reason: str
 
-    def _read_status(self) -> _StatusLine:
-        line = str(self.fp.readline(_MAX_LINE + 1), 'iso-8859-1')
+    def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], _StatusLine]:
+        line = str(check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes), 'iso-8859-1')
         if len(line) > _MAX_LINE:
             raise LineTooLong('status line')
         if not line:
@@ -266,19 +279,19 @@ class HTTPResponse:
 
         return self._StatusLine(version, status, reason)
 
-    def begin(self) -> None:
+    def begin(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         if self.headers is not None:
             # we've already started reading the response
             return
 
         # read until we get a non-100 response
         while True:
-            version, status, reason = self._read_status()
+            version, status, reason = yield from self._read_status()
             if status != HTTPStatus.CONTINUE:
                 break
 
             # skip the header from the 100 response
-            skipped_headers = _read_headers(self.fp)
+            skipped_headers = yield from _read_headers()
 
             del skipped_headers
 
@@ -292,7 +305,7 @@ class HTTPResponse:
         else:
             raise UnknownProtocol(version)
 
-        self.headers = parse_headers(self.fp)
+        self.headers = yield from parse_headers()
 
         # are we using the chunked-style of transfer encoding?
         tr_enc = self.headers.get('transfer-encoding')
@@ -361,12 +374,10 @@ class HTTPResponse:
         return True
 
     def _close_conn(self) -> None:
-        fp = self.fp
-        self.fp = None
-        fp.close()
+        self._closed = True
 
     def close(self) -> None:
-        if self.fp:
+        if not self._closed:
             self._close_conn()
 
     # These implementations are for the benefit of io.BufferedReader.
@@ -394,7 +405,7 @@ class HTTPResponse:
         #          meaningful.
         return self.fp is None
 
-    def read(self, amt: int | None = None) -> bytes:
+    def read(self, amt: ta.Optional[int] = None) -> bytes:
         """Read and return the response body, or up to the next amt bytes."""
 
         if self.fp is None:
@@ -503,7 +514,7 @@ class HTTPResponse:
 
         return chunk_left
 
-    def _read_chunked(self, amt: int | None = None) -> bytes:
+    def _read_chunked(self, amt: ta.Optional[int] = None) -> bytes:
         check.not_equal(self.chunked, _UNKNOWN)
         value = []
         try:
@@ -625,7 +636,7 @@ class HTTPResponse:
 
     # We override IOBase.__iter__ so that it doesn't check for closed-ness
 
-    def __iter__(self) -> 'HTTPResponse':
+    def __iter__(self) -> 'HttpResponse':
         return self
 
 
@@ -701,10 +712,10 @@ class HttpConnection:
     def __init__(
             self,
             host: str,
-            port: int | None = None,
+            port: ta.Optional[int] = None,
             *,
-            timeout: float | None | type[_NOT_SET] = _NOT_SET,
-            source_address: str | None = None,
+            timeout: ta.Union[float, ta.Type[_NOT_SET], None] = _NOT_SET,
+            source_address: ta.Optional[str] = None,
             block_size: int = 8192,
             auto_open: bool = True,
     ) -> None:
@@ -715,27 +726,24 @@ class HttpConnection:
         self._block_size = block_size
         self._auto_open = auto_open
 
-        self._sock: socket.socket | None = None
-        self._buffer: list[bytes] = []
-        self._response: HTTPResponse | None = None
+        self._connected = False
+        self._buffer: ta.List[bytes] = []
+        self._response: ta.Optional[HttpResponse] = None
         self._state = self._State.IDLE
-        self._method: str | None = None
+        self._method: ta.Optional[str] = None
 
-        self._tunnel_host: str | None = None
-        self._tunnel_port: int | None = None
-        self._tunnel_headers: dict[str, str] = {}
-        self._raw_proxy_headers: ta.Sequence[bytes] | None = None
+        self._tunnel_host: ta.Optional[str] = None
+        self._tunnel_port: ta.Optional[int] = None
+        self._tunnel_headers: ta.Dict[str, str] = {}
+        self._raw_proxy_headers: ta.Optional[ta.Sequence[bytes]] = None
 
         (self._host, self._port) = self._get_hostport(host, port)
 
         HttpClientValidation.validate_host(self._host)
 
-        # This is stored as an instance variable to allow unit tests to replace it with a suitable mockup
-        self._create_connection = socket.create_connection
-
     #
 
-    def _get_hostport(self, host: str, port: int | None) -> tuple[str, int]:
+    def _get_hostport(self, host: str, port: ta.Optional[int]) -> ta.Tuple[str, int]:
         if port is None:
             i = host.rfind(':')
             j = host.rfind(']')         # ipv6 addresses have [...]
@@ -766,8 +774,8 @@ class HttpConnection:
     def set_tunnel(
             self,
             host: str,
-            port: int | None = None,
-            headers: ta.Mapping[str, str] | None = None,
+            port: ta.Optional[int] = None,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> None:
         """
         Set up host and port for HTTP CONNECT tunnelling.
@@ -800,7 +808,7 @@ class HttpConnection:
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
             self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
-    def _tunnel(self) -> None:
+    def _tunnel(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
             check.not_none(self._tunnel_port),
@@ -813,10 +821,10 @@ class HttpConnection:
 
         # Making a single send() call instead of one per line encourages the host OS to use a more optimal packet size
         # instead of potentially emitting a series of small packets.
-        self.send(b''.join(headers))
+        yield from self.send(b''.join(headers))
         del headers
 
-        response = HTTPResponse(check.not_none(self._sock), method=self._method)
+        response = HttpResponse(check.not_none(self._sock), method=self._method)
         try:
             # FIXME
             (version, code, message) = response._read_status()  # noqa
@@ -824,13 +832,13 @@ class HttpConnection:
             self._raw_proxy_headers = _read_headers(response.fp)
 
             if code != HTTPStatus.OK:
-                self.close()
+                yield from self.close()
                 raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
         finally:
             response.close()
 
-    def get_proxy_response_headers(self) -> HTTPMessage | None:
+    def get_proxy_response_headers(self) -> ta.Optional[HTTPMessage]:
         """
         Returns a dictionary with the headers of the response received from the proxy server to the CONNECT request sent
         to set the tunnel.
@@ -846,36 +854,37 @@ class HttpConnection:
 
     #
 
-    def connect(self) -> None:
+    def connect(self) -> ta.Generator[Io, None, None]:
         """Connect to the host and port specified in __init__."""
 
-        self._sock = self._create_connection(
-            (self._host, self._port),
-            source_address=self._source_address,
-            **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),  # type: ignore
-        )
+        if self._connected:
+            return
 
-        # Might fail in OSs that don't implement TCP_NODELAY
-        try:
-            self._sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        except OSError as e:
-            if e.errno != errno.ENOPROTOOPT:
-                raise
+        check.none((yield ConnectIo(
+            ((self._host, self._port),),
+            dict(
+                source_address=self._source_address,
+                **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),  # type: ignore
+            ),
+        )))
+
+        self._connected = True
 
         if self._tunnel_host:
-            self._tunnel()
+            yield from self._tunnel()
 
     #
 
-    def close(self) -> None:
+    def close(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """Close the connection to the HTTP server."""
 
         self._state = self._State.IDLE
+
         try:
-            sock = self._sock
-            if sock:
-                self._sock = None
-                sock.close()   # close it manually... there may be other refs
+            if self._connected:
+                yield CloseIo()   # close it manually... there may be other refs
+                self._connected = False
+
         finally:
             response = self._response
             if response:
@@ -890,36 +899,37 @@ class HttpConnection:
 
         return isinstance(stream, io.TextIOBase)
 
-    def send(self, data: ta.Any) -> None:
+    def send(self, data: ta.Any) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
         """
 
-        if self._sock is None:
+        if not self._connected:
             if self._auto_open:
-                self.connect()
+                yield from self.connect()
             else:
                 raise NotConnected
 
-        sock = check.not_none(self._sock)
+        check.state(self._connected)
 
         if hasattr(data, 'read') :
             encode = self._is_text_io(data)
             while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                sock.sendall(data_block)
+                check.none((yield WriteIo(data_block)))
             return
 
-        try:
-            sock.sendall(data)
-        except TypeError:
-            if isinstance(data, collections.abc.Iterable):
-                for d in data:
-                    sock.sendall(d)
-            else:
-                raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
+        if isinstance(data, (bytes, bytearray)):
+            check.none((yield WriteIo(data)))
+
+        elif isinstance(data, collections.abc.Iterable):
+            for d in data:
+                check.none((yield WriteIo(d)))
+
+        else:
+            raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
 
     def _output(self, s: bytes) -> None:
         """
@@ -939,9 +949,9 @@ class HttpConnection:
 
     def _send_output(
             self,
-            message_body: ta.Any | None = None,
+            message_body: ta.Optional[ta.Any] = None,
             encode_chunked: bool = False,
-    ) -> None:
+    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """
         Send the currently buffered request and clear the buffer.
 
@@ -951,7 +961,7 @@ class HttpConnection:
         self._buffer.extend((b'', b''))
         msg = b'\r\n'.join(self._buffer)
         del self._buffer[:]
-        self.send(msg)
+        yield from self.send(msg)
 
         chunks: ta.Iterable[bytes]
         if message_body is not None:
@@ -982,11 +992,11 @@ class HttpConnection:
                 if encode_chunked and self._http_version == 11:
                     # chunked encoding
                     chunk = f'{len(chunk):X}\r\n'.encode('ascii') + chunk + b'\r\n'
-                self.send(chunk)
+                yield from self.send(chunk)
 
             if encode_chunked and self._http_version == 11:
                 # end chunked transfer
-                self.send(b'0\r\n\r\n')
+                yield from self.send(b'0\r\n\r\n')
 
     #
 
@@ -1149,10 +1159,10 @@ class HttpConnection:
 
     def end_headers(
             self,
-            message_body: ta.Any | None = None,
+            message_body: ta.Optional[ta.Any] = None,
             *,
             encode_chunked: bool = False,
-    ) -> None:
+    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """Indicate that the last header line has been sent to the server.
 
         This method sends the request to the server.  The optional message_body argument can be used to pass a message
@@ -1164,7 +1174,7 @@ class HttpConnection:
         else:
             raise CannotSendHeader
 
-        self._send_output(message_body, encode_chunked=encode_chunked)
+        yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
     #
 
@@ -1172,20 +1182,20 @@ class HttpConnection:
             self,
             method: str,
             url: str,
-            body: ta.Any | None = None,
-            headers: ta.Mapping[str, str] | None = None,
+            body: ta.Optional[ta.Any] = None,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
             encode_chunked: bool = False,
-    ) -> None:
+    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """Send a complete request to the server."""
 
-        self._send_request(method, url, body, dict(headers or {}), encode_chunked)
+        yield from self._send_request(method, url, body, dict(headers or {}), encode_chunked)
 
     @staticmethod
     def _get_content_length(
-            body: ta.Any | None,
+            body: ta.Optional[ta.Any],
             method: str,
-    ) -> int | None:
+    ) -> ta.Optional[int]:
         """
         Get the content-length based on the body.
 
@@ -1220,10 +1230,10 @@ class HttpConnection:
             self,
             method: str,
             url: str,
-            body: ta.Any | None,
+            body: ta.Optional[ta.Any],
             headers: ta.Mapping[str, str],
             encode_chunked: bool,
-    ) -> None:
+    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
         # Honor explicitly requested Host: and Accept-Encoding: headers.
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
@@ -1263,13 +1273,13 @@ class HttpConnection:
             # RFC 2616 Section 3.7.1 says that text default has a default charset of iso-8859-1.
             body = _encode(body, 'body')
 
-        self.end_headers(body, encode_chunked=encode_chunked)
+        yield from self.end_headers(body, encode_chunked=encode_chunked)
 
-    def get_response(self) -> HTTPResponse:
+    def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
         """
         Get the response from the server.
 
-        If the HTTPConnection is in the correct state, returns an instance of HTTPResponse or of whatever object is
+        If the HTTPConnection is in the correct state, returns an instance of HttpResponse or of whatever object is
         returned by the response_class variable.
 
         If a request has not been sent or if a previous response has not be handled, ResponseNotReady is raised.  If the
@@ -1293,13 +1303,13 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReady(self._state)
 
-        response = HTTPResponse(check.not_none(self._sock), method=self._method)
+        response = HttpResponse(method=self._method)
 
         try:
             try:
-                response.begin()
+                yield from response.begin()
             except ConnectionError:
-                self.close()
+                yield from self.close()
                 raise
 
             check.not_equal(response.will_close, _UNKNOWN)
@@ -1307,7 +1317,7 @@ class HttpConnection:
 
             if response.will_close:
                 # this effectively passes the connection to the response
-                self.close()
+                yield from self.close()
             else:
                 # remember this, so we can tell when it is complete
                 self._response = response
@@ -1319,14 +1329,15 @@ class HttpConnection:
             raise
 
 
-def _main() -> None:
-    # import urllib.request
-    # req = urllib.request.Request('https://www.baidu.com')
-    # with urllib.request.urlopen(req) as resp:
-    #     print(resp.read())
+def _main3() -> None:
+    import urllib.request
+    req = urllib.request.Request('https://www.baidu.com')
+    with urllib.request.urlopen(req) as resp:
+        print(resp.read())
 
-    conn_cls = HttpConnection
-    # conn_cls = __import__('http.client').client.HTTPConnection
+
+def _main2() -> None:
+    conn_cls = __import__('http.client').client.HTTPConnection
 
     url = 'www.example.com'
     conn = conn_cls(url)
@@ -1339,6 +1350,77 @@ def _main() -> None:
 
     while chunk := r1.read(200):
         print(repr(chunk))
+
+
+def _main() -> None:
+    conn_cls = HttpConnection
+
+    url = 'www.example.com'
+    conn = conn_cls(url)
+
+    sock: ta.Optional[socket.socket] = None
+    sock_file: ta.Optional = None
+
+    def handle_io(o: Io) -> ta.Any:
+        nonlocal sock
+        nonlocal sock_file
+
+        if isinstance(o, ConnectIo):
+            check.none(sock)
+            sock = socket.create_connection(*o.args, **o.kwargs)
+
+            # Might fail in OSs that don't implement TCP_NODELAY
+            try:
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except OSError as e:
+                if e.errno != errno.ENOPROTOOPT:
+                    raise
+
+            sock_file = sock.makefile('rb')
+
+            return None
+
+        elif isinstance(o, WriteIo):
+            check.not_none(sock).sendall(o.data)
+            return None
+
+        elif isinstance(o, ReadIo):
+            return check.not_none(sock_file).read(o.sz)
+
+        elif isinstance(o, ReadLineIo):
+            return check.not_none(sock_file).readline(o.sz)
+
+        else:
+            raise TypeError(o)
+
+    resp: ta.Optional[HttpResponse] = None
+
+    def get_resp():
+        nonlocal resp
+        resp = yield from conn.get_response()
+
+    for f in [
+        conn.connect,
+        lambda: conn.request('GET', '/'),
+        get_resp,
+    ]:
+        g = f()
+        i = None
+        while True:
+            try:
+                o = g.send(i)
+            except StopIteration:
+                break
+            i = handle_io(o)
+
+    # conn.request('GET', '/')
+    # r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
+    # print((r1.status, r1.reason))
+    #
+    # # data1 = r1.read()
+    #
+    # while chunk := r1.read(200):
+    #     print(repr(chunk))
 
 
 if __name__ == '__main__':
