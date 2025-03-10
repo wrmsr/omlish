@@ -384,10 +384,6 @@ class HttpResponse:
 
     # XXX This class should probably be revised to act more like the 'raw stream' that BufferedReader expects.
 
-    def flush(self) -> None:
-        if self.fp:
-            self.fp.flush()
-
     def readable(self) -> bool:
         """Always returns True"""
 
@@ -403,7 +399,7 @@ class HttpResponse:
         #
         # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.isclosed() is
         #          meaningful.
-        return self.fp is None
+        return self._closed
 
     def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """Read and return the response body, or up to the next amt bytes."""
@@ -632,14 +628,6 @@ class HttpResponse:
         # peek is allowed to return more than requested.  Just request the entire chunk, and truncate what we get.
         return self.fp.peek(chunk_left)[:chunk_left]
 
-    def fileno(self) -> int:
-        return self.fp.fileno()
-
-    # We override IOBase.__iter__ so that it doesn't check for closed-ness
-
-    def __iter__(self) -> 'HttpResponse':
-        return self
-
 
 class HttpConnection:
     """
@@ -795,7 +783,7 @@ class HttpConnection:
         is not provided via the headers argument, one is generated and transmitted automatically.
         """
 
-        if self._sock:
+        if self._connected:
             raise RuntimeError("Can't set up tunnel for established connection")
 
         self._tunnel_host, self._tunnel_port = self._get_hostport(host, port)
@@ -825,12 +813,12 @@ class HttpConnection:
         yield from self.send(b''.join(headers))
         del headers
 
-        response = HttpResponse(check.not_none(self._sock), method=self._method)
+        response = HttpResponse(method=self._method)
         try:
             # FIXME
-            (version, code, message) = response._read_status()  # noqa
+            (version, code, message) = yield from response._read_status()  # noqa
 
-            self._raw_proxy_headers = _read_headers(response.fp)
+            self._raw_proxy_headers = yield from _read_headers()
 
             if code != HTTPStatus.OK:
                 yield from self.close()
