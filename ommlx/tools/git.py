@@ -1,6 +1,7 @@
 """
 TODO:
  - exclude @omlish-amalg-output files
+  - do in omdev
 """
 import abc
 import concurrent.futures as cf
@@ -201,7 +202,14 @@ class AiGitMessageGenerator(GitMessageGenerator):
         prompt = '\n\n'.join([
             'Write a short git commit message for the following git diff:',
             f'```\n{diff}\n```',
-            'Only output the message to be commited into git - do not output any explanation.',
+            '\n'.join([
+                'Follow these rules:',
+                '- Use imperative tense (e.g., "Fix bug", "Add feature").',
+                '- Be concise but descriptive. Avoid vague messages like "Update X".',
+                '- Do not mention files explicitly unless necessary.',
+                '- If the change is complex, add a second paragraph with more details.',
+                'Output only the commit message, with no additional text.',
+            ]),
         ])
 
         msg = self._backend.run_prompt(prompt)
