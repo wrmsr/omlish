@@ -22,7 +22,7 @@ from .unmarshal import ObjectUnmarshaler
 ##
 
 
-def _is_named_tuple(rty: rfl.Type) -> bool:
+def _is_namedtuple(rty: rfl.Type) -> bool:
     return (
         isinstance(rty, type) and
         issubclass(rty, tuple) and
@@ -30,11 +30,11 @@ def _is_named_tuple(rty: rfl.Type) -> bool:
     )
 
 
-def get_field_infos(
+def get_namedtuple_field_infos(
         ty: type,
         opts: col.TypeMap[Option] = col.TypeMap(),
 ) -> FieldInfos:
-    check.arg(_is_named_tuple(ty), ty)
+    check.arg(_is_namedtuple(ty), ty)
 
     sig = inspect.signature(ty)
 
@@ -57,14 +57,14 @@ def get_field_infos(
 
 class NamedtupleMarshalerFactory(MarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return _is_named_tuple(rty)
+        return _is_namedtuple(rty)
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        check.state(_is_named_tuple(rty))
+        check.state(_is_namedtuple(rty))
         ty = check.isinstance(rty, type)
         check.state(not lang.is_abstract_class(ty))
 
-        fis = get_field_infos(ty, ctx.options)
+        fis = get_namedtuple_field_infos(ty, ctx.options)
 
         fields = [
             (fi, ctx.make(fi.type))
@@ -81,14 +81,14 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
 
 class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return _is_named_tuple(rty)
+        return _is_namedtuple(rty)
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        check.state(_is_named_tuple(rty))
+        check.state(_is_namedtuple(rty))
         ty = check.isinstance(rty, type)
         check.state(not lang.is_abstract_class(ty))
 
-        fis = get_field_infos(ty, ctx.options)
+        fis = get_namedtuple_field_infos(ty, ctx.options)
 
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         defaults: dict[str, ta.Any] = {}

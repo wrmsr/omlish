@@ -1,7 +1,9 @@
+import abc
 import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import lang
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
@@ -17,9 +19,18 @@ from .metadata import WrapperTypeTagging
 ##
 
 
+class PolymorphismMarshaler(Marshaler, lang.Abstract):
+    @abc.abstractmethod
+    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+        raise NotImplementedError
+
+
 @dc.dataclass(frozen=True)
-class WrapperPolymorphismMarshaler(Marshaler):
+class WrapperPolymorphismMarshaler(PolymorphismMarshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
+
+    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+        return self.m
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
         tag, m = self.m[type(o)]
@@ -27,9 +38,12 @@ class WrapperPolymorphismMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
-class FieldPolymorphismMarshaler(Marshaler):
+class FieldPolymorphismMarshaler(PolymorphismMarshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
     tf: str
+
+    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+        return self.m
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
         tag, m = self.m[type(o)]

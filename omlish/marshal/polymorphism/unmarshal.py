@@ -1,8 +1,10 @@
+import abc
 import collections.abc
 import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import lang
 from ... import reflect as rfl
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
@@ -18,9 +20,18 @@ from .metadata import WrapperTypeTagging
 ##
 
 
+class PolymorphismUnmarshaler(Unmarshaler, lang.Abstract):
+    @abc.abstractmethod
+    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+        raise NotImplementedError
+
+
 @dc.dataclass(frozen=True)
-class WrapperPolymorphismUnmarshaler(Unmarshaler):
+class WrapperPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     m: ta.Mapping[str, Unmarshaler]
+
+    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+        return self.m
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = check.isinstance(v, collections.abc.Mapping)
@@ -30,9 +41,12 @@ class WrapperPolymorphismUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
-class FieldPolymorphismUnmarshaler(Unmarshaler):
+class FieldPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     m: ta.Mapping[str, Unmarshaler]
     tf: str
+
+    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+        return self.m
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = dict(check.isinstance(v, collections.abc.Mapping))

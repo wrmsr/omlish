@@ -79,6 +79,22 @@ class LoggingHttpHandler(HttpHandler_):
         return resp
 
 
+@dc.dataclass(frozen=True)
+class ExceptionLoggingHttpHandler(HttpHandler_):
+    handler: HttpHandler
+    log: logging.Logger
+    message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        try:
+            return self.handler(req)
+        except Exception as e:  # noqa
+            if callable(msg := self.message):
+                msg = msg(req, e)
+            self.log.exception(msg)
+            raise
+
+
 ##
 
 

@@ -12,9 +12,10 @@ from omdev.home.secrets import load_secrets
 from omlish import cached
 from omlish import check
 from omlish.http.coro.simple import make_simple_http_server
-from omlish.http.handlers import HttpHandler_
+from omlish.http.handlers import ExceptionLoggingHttpHandler
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
+from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import LoggingHttpHandler
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
@@ -95,7 +96,13 @@ class McServer:
 
             with make_simple_http_server(
                     self._config.bind,
-                    LoggingHttpHandler(McServerHandler(llm), log),
+                    ExceptionLoggingHttpHandler(
+                        LoggingHttpHandler(
+                            McServerHandler(llm),
+                            log,
+                        ),
+                        log,
+                    ),
             ) as server:
                 if (linger_s := self._config.linger_s) is None:
                     linger_s = float('inf')

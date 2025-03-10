@@ -15,11 +15,6 @@ ToolDtype: ta.TypeAlias = str
 
 
 @dc.dataclass(frozen=True)
-class Tool(ChatOption, lang.Final):
-    spec: 'ToolSpec'
-
-
-@dc.dataclass(frozen=True)
 class ToolParam(lang.Final):
     name: str
     dtype: ToolDtype
@@ -43,6 +38,11 @@ class ToolSpec(lang.Final):
     @dc.init
     def params_by_name(self) -> ta.Mapping[str, ToolParam]:
         return col.make_map_by(lambda p: p.name, self.params, strict=True)
+
+
+@dc.dataclass(frozen=True)
+class Tool(ChatOption, lang.Final):
+    spec: ToolSpec
 
 
 @dc.dataclass(frozen=True)

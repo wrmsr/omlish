@@ -41,10 +41,13 @@ def get_dataclass_metadata(ty: type) -> ObjectMetadata:
     ) or ObjectMetadata()
 
 
-def get_field_infos(
+def get_dataclass_field_infos(
         ty: type,
-        opts: col.TypeMap[Option] = col.TypeMap(),
+        opts: col.TypeMap[Option] | None = None,
 ) -> FieldInfos:
+    if opts is None:
+        opts = col.TypeMap()
+
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
     dc_rf = dc.reflect(ty)
@@ -165,7 +168,22 @@ def _make_field_obj(ctx, ty, obj, fac):
 ##
 
 
-class DataclassMarshalerFactory(MarshalerFactory):
+class AbstractDataclassFactory(lang.Abstract):
+    def _get_metadata(self, ty: type) -> ObjectMetadata:
+        return get_dataclass_metadata(ty)
+
+    def _get_field_infos(
+            self,
+            ty: type,
+            opts: col.TypeMap[Option] | None = None,
+    ) -> FieldInfos:
+        return get_dataclass_field_infos(ty, opts)
+
+
+##
+
+
+class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 
@@ -174,8 +192,8 @@ class DataclassMarshalerFactory(MarshalerFactory):
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_metadata(ty)
-        fis = get_field_infos(ty, ctx.options)
+        dc_md = self._get_metadata(ty)
+        fis = self._get_field_infos(ty, ctx.options)
 
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
@@ -192,7 +210,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 ##
 
 
-class DataclassUnmarshalerFactory(UnmarshalerFactory):
+class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 
@@ -201,8 +219,8 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_metadata(ty)
-        fis = get_field_infos(ty, ctx.options)
+        dc_md = self._get_metadata(ty)
+        fis = self._get_field_infos(ty, ctx.options)
 
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         defaults: dict[str, ta.Any] = {}
@@ -220,7 +238,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                     raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
                 embeds[fi.name] = e_ty
-                for e_fi in get_field_infos(e_ty, ctx.options):
+                for e_fi in self._get_field_infos(e_ty, ctx.options):
                     e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
                     embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
                     ret.extend(e_ns)

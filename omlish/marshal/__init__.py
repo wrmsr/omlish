@@ -28,6 +28,11 @@ from .base import (  # noqa
     ReflectOverride,
 )
 
+from .composite.wrapped import (  # noqa
+    WrappedMarshaler,
+    WrappedUnmarshaler,
+)
+
 from .exceptions import (  # noqa
     ForbiddenTypeError,
     MarshalError,
@@ -47,6 +52,14 @@ from .global_ import (  # noqa
 from .naming import (  # noqa
     Naming,
     translate_name,
+)
+
+from .objects.dataclasses import (  # noqa
+    AbstractDataclassFactory,
+    DataclassMarshalerFactory,
+    DataclassUnmarshalerFactory,
+    get_dataclass_field_infos,
+    get_dataclass_metadata,
 )
 
 from .objects.helpers import (  # noqa
@@ -75,14 +88,18 @@ from .objects.unmarshal import (  # noqa
 )
 
 from .polymorphism.marshal import (  # noqa
+    PolymorphismMarshaler,
     PolymorphismMarshalerFactory,
     make_polymorphism_marshaler,
 )
 
 from .polymorphism.metadata import (  # noqa
+    FieldTypeTagging,
     Impl,
     Impls,
     Polymorphism,
+    TypeTagging,
+    WrapperTypeTagging,
     polymorphism_from_subclasses,
 )
 
@@ -97,6 +114,7 @@ from .polymorphism.unions import (  # noqa
 )
 
 from .polymorphism.unmarshal import (  # noqa
+    PolymorphismUnmarshaler,
     PolymorphismUnmarshalerFactory,
     make_polymorphism_unmarshaler,
 )

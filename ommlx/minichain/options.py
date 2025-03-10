@@ -34,6 +34,7 @@ class UniqueOption(Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(generic_init=True)
 class ScalarOption(Option, lang.Abstract, ta.Generic[T]):
     v: T
 

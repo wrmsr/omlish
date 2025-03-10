@@ -6,7 +6,7 @@ from omlish.formats import json
 from ... import minichain as mc
 
 
-@pytest.mark.xfail(reason='marshal unions')
+# @pytest.mark.xfail(reason='marshal unions')
 def test_requests():
     prompt = 'foo'
     req = mc.ChatRequest.new(
