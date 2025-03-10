@@ -1,4 +1,3 @@
-import collections.abc
 import typing as ta
 import weakref
 
@@ -31,21 +30,6 @@ def guarded_map_update(
                 raise KeyError(k)
             dst[k] = v
     return dst
-
-
-def yield_dict_init(*args, **kwargs) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
-    if len(args) > 1:
-        raise TypeError
-    if args:
-        [src] = args
-        if isinstance(src, collections.abc.Mapping):
-            for k in src:
-                yield (k, src[k])
-        else:
-            for k, v in src:
-                yield (k, v)
-    for k, v in kwargs.items():
-        yield (k, v)
 
 
 class TypeMap(ta.Generic[T]):

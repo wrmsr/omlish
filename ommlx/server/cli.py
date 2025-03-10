@@ -55,7 +55,11 @@ class McServerCli(ap.Cli):
         ap.arg('signal', nargs='?'),
     )
     def kill(self) -> None:
-        sig = parse_signal(self.args.signal)
+        if (sig_arg := self.args.signal) is not None:
+            sig = parse_signal(sig_arg)
+        else:
+            sig = signal.SIGTERM
+
         with self._pin_pid() as pid:
             log.info('Killing pid: %d', pid)
             os.kill(pid, sig)

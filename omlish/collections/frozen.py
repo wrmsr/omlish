@@ -3,7 +3,7 @@ import collections.abc
 import itertools
 import typing as ta
 
-from .mappings import yield_dict_init
+from .. import lang
 
 
 T = ta.TypeVar('T')
@@ -27,7 +27,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         if len(args) > 1:
             raise TypeError(args)
         self._dct: dict[K, V] = {}
-        self._dct.update(yield_dict_init(*args, **kwargs))
+        self._dct.update(lang.yield_dict_init(*args, **kwargs))
 
     @property
     def debug(self) -> ta.Mapping[K, V]:

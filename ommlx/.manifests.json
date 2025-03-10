@@ -33,7 +33,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlx/tools/git.py",
-    "line": 168,
+    "line": 169,
     "value": {
       "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "ommlx.tools.git",

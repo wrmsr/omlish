@@ -32,6 +32,9 @@ def fields_dict(cls_or_instance: ta.Any) -> dict[str, dc.Field]:
     return {f.name: f for f in dc.fields(cls_or_instance)}
 
 
+##
+
+
 class field_modifier:  # noqa
     def __init__(self, fn: ta.Callable[[dc.Field], dc.Field]) -> None:
         super().__init__()
@@ -107,6 +110,17 @@ def update_fields_metadata(
         return update_field_metadata(f, nmd)
 
     return update_fields(inner, fields)
+
+
+##
+
+
+def shallow_astuple(o: ta.Any) -> tuple[ta.Any, ...]:
+    return tuple(getattr(o, f.name) for f in dc.fields(o))
+
+
+def shallow_asdict(o: ta.Any) -> dict[str, ta.Any]:
+    return {f.name: getattr(o, f.name) for f in dc.fields(o)}
 
 
 ##

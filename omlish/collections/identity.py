@@ -4,7 +4,6 @@ import typing as ta
 import weakref
 
 from .. import lang
-from .mappings import yield_dict_init
 
 
 T = ta.TypeVar('T')
@@ -38,7 +37,7 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
         self._dict: dict[int, tuple[K, V]] = {}
-        for k, v in yield_dict_init(*args, **kwargs):
+        for k, v in lang.yield_dict_init(*args, **kwargs):
             self[k] = v
 
     @property

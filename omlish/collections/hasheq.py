@@ -8,7 +8,6 @@ import dataclasses as dc
 import typing as ta
 
 from .. import lang
-from .mappings import yield_dict_init
 
 
 K = ta.TypeVar('K')
@@ -64,7 +63,7 @@ class HashEqMap(ta.MutableMapping[K, V]):
         self._dct: dict[int, list[HashEqMap._Node[K, V]]] = {}
         self._len = 0
 
-        for k, v in yield_dict_init(*args, **kwargs):
+        for k, v in lang.yield_dict_init(*args, **kwargs):
             self[k] = v
 
     def __len__(self) -> int:

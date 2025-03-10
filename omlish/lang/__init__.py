@@ -77,6 +77,11 @@ from .cmp import (  # noqa
     cmp,
 )
 
+from .collections import (  # noqa
+    merge_dicts,
+    yield_dict_init,
+)
+
 from .contextmanagers import (  # noqa
     AsyncContextManager,
     ContextManaged,

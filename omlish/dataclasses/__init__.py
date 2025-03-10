@@ -108,6 +108,9 @@ from .utils import (  # noqa
     update_fields,
     update_fields_metadata,
 
+    shallow_astuple,
+    shallow_asdict,
+
     deep_replace,
 
     iter_items,

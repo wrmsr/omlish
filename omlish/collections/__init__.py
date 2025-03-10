@@ -63,7 +63,6 @@ from .mappings import (  # noqa
     DynamicTypeMap,
     guarded_map_update,
     multikey_dict,
-    yield_dict_init,
 )
 
 from .ordered import (  # noqa

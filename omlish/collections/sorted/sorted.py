@@ -2,7 +2,6 @@ import abc
 import typing as ta
 
 from ... import lang
-from ..mappings import yield_dict_init
 
 
 T = ta.TypeVar('T')
@@ -83,7 +82,7 @@ class SortedListDict(SortedMutableMapping[K, V]):
     def __init__(self, impl: SortedCollection, *args, **kwargs) -> None:
         super().__init__()
         self._impl = impl
-        for k, v in yield_dict_init(*args, **kwargs):
+        for k, v in lang.yield_dict_init(*args, **kwargs):
             self[k] = v
 
     @property
