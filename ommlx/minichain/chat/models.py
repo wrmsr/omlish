@@ -35,6 +35,7 @@ ChatOutput: ta.TypeAlias = AiChoices
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_params(generic_init=True)
 class ChatRequest(
     ModelRequest[
         ChatInput,

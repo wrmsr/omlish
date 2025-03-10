@@ -47,6 +47,7 @@ def get_field_infos(
 ) -> FieldInfos:
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
+    dc_rf = dc.reflect(ty)
 
     fi_defaults = {
         k: v
@@ -62,18 +63,24 @@ def get_field_infos(
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
-    for field in dc.fields(ty):
+    for field in dc_rf.fields.values():
         if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
             um_name = translate_name(field.name, f_naming)
         else:
             um_name = field.name
+
+        f_ty: ta.Any
+        if (cpx := dc_rf.cls_params_extras) is not None and cpx.generic_init:
+            f_ty = dc_rf.generic_replaced_field_annotations[field.name]
+        else:
+            f_ty = type_hints[field.name]
 
         fi_kw = dict(fi_defaults)
         fo_kw = dict(fo_defaults)
 
         fi_kw.update(
             name=field.name,
-            type=type_hints[field.name],
+            type=f_ty,
             metadata=FieldMetadata(),
 
             marshal_name=um_name,
