@@ -1,3 +1,8 @@
+"""
+TODO:
+ - use omserv
+  - core daemon service skeleton should interop with simple server
+"""
 import dataclasses as dc
 import logging
 import time

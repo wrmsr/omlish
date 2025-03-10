@@ -11,6 +11,7 @@ from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
 from omlish.daemons.spawning import ThreadSpawning  # noqa
 from omlish.logs import all as logs
 from omlish.os.pidfiles.pinning import PidfilePinner
+from omlish.os.signals import parse_signal
 
 from .client import McServerClient
 from .service import mc_server_service_daemon
@@ -50,11 +51,14 @@ class McServerCli(ap.Cli):
         with self._pin_pid() as pid:
             print(pid)
 
-    @ap.cmd()
+    @ap.cmd(
+        ap.arg('signal', nargs='?'),
+    )
     def kill(self) -> None:
+        sig = parse_signal(self.args.signal)
         with self._pin_pid() as pid:
             log.info('Killing pid: %d', pid)
-            os.kill(pid, signal.SIGTERM)
+            os.kill(pid, sig)
 
 
 ##
