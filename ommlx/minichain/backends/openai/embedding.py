@@ -5,10 +5,10 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...vectors import EmbeddingModel
-from ...vectors import EmbeddingRequest
-from ...vectors import EmbeddingResponse
-from ...vectors import Vector
+from ...vectors.embeddings import EmbeddingModel
+from ...vectors.embeddings import EmbeddingRequest
+from ...vectors.embeddings import EmbeddingResponse
+from ...vectors.vectors import Vector
 
 
 class OpenaiEmbeddingModel(EmbeddingModel):

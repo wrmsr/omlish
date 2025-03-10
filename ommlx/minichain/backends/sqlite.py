@@ -6,14 +6,14 @@ import sqlite3
 
 from omlish import lang
 
-from ..vectors import CALC_NP_SIMILARITIES_FUNCS
-from ..vectors import Similarity
-from ..vectors import Vector
-from ..vectors import VectorHit
-from ..vectors import VectorHits
-from ..vectors import VectorIndexed
-from ..vectors import VectorSearch
-from ..vectors import VectorStore
+from ..vectors.index import VectorIndexed
+from ..vectors.search import VectorHit
+from ..vectors.search import VectorHits
+from ..vectors.search import VectorSearch
+from ..vectors.similarity import CALC_NP_SIMILARITIES_FUNCS
+from ..vectors.similarity import Similarity
+from ..vectors.stores import VectorStore
+from ..vectors.vectors import Vector
 
 
 class SqliteVectorStore(VectorStore):

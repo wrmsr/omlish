@@ -4,13 +4,13 @@ import typing as ta
 from omlish import lang
 from omlish.testing import pytest as ptu
 
-from ..vectors import Similarity
-from ..vectors import Vector
-from ..vectors import VectorHit
-from ..vectors import VectorHits
-from ..vectors import VectorIndexed
-from ..vectors import VectorSearch
-from ..vectors import VectorStore
+from ..vectors.index import VectorIndexed
+from ..vectors.search import VectorHit
+from ..vectors.search import VectorHits
+from ..vectors.search import VectorSearch
+from ..vectors.similarity import Similarity
+from ..vectors.stores import VectorStore
+from ..vectors.vectors import Vector
 
 
 if ta.TYPE_CHECKING:

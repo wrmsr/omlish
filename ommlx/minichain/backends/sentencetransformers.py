@@ -2,11 +2,11 @@ import typing as ta
 
 from omlish import lang
 
-from ..content import Image
-from ..vectors import EmbeddingModel
-from ..vectors import EmbeddingRequest
-from ..vectors import EmbeddingResponse
-from ..vectors import Vector
+from ..content.images import Image
+from ..vectors.embeddings import EmbeddingModel
+from ..vectors.embeddings import EmbeddingRequest
+from ..vectors.embeddings import EmbeddingResponse
+from ..vectors.vectors import Vector
 
 
 if ta.TYPE_CHECKING:

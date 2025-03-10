@@ -2,10 +2,10 @@ import sqlite3
 
 from omlish.testing import pytest as ptu
 
-from ...vectors import Similarity
-from ...vectors import Vector
-from ...vectors import VectorIndexed
-from ...vectors import VectorSearch
+from ...vectors.index import VectorIndexed
+from ...vectors.search import VectorSearch
+from ...vectors.similarity import Similarity
+from ...vectors.vectors import Vector
 from ..sqlite import SqliteVectorStore
 
 

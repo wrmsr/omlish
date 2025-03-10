@@ -13,9 +13,9 @@ from omlish import cached
 from omlish import check
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import ExceptionLoggingHttpHandler
+from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
-from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import LoggingHttpHandler
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder

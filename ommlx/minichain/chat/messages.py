@@ -3,7 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..content import Content
+from ..content.content import Content
 from .tools import ToolExecRequest
 
 

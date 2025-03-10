@@ -3,7 +3,7 @@ import enum
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..vectors import Vector
+from ..vectors.vectors import Vector
 
 
 @dc.dataclass(frozen=True)

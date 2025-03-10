@@ -5,14 +5,14 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import dispatch
 
-from .chat import AiMessage
-from .chat import Message
-from .chat import SystemMessage
-from .chat import ToolExecResultMessage
-from .chat import UserMessage
-from .content import Content
-from .content import Image
-from .content import Placeholder
+from .chat.messages import AiMessage
+from .chat.messages import Message
+from .chat.messages import SystemMessage
+from .chat.messages import ToolExecResultMessage
+from .chat.messages import UserMessage
+from .content.content import Content
+from .content.images import Image
+from .content.placeholders import Placeholder
 from .services import ServiceRequest
 
 

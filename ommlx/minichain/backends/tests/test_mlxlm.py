@@ -3,7 +3,7 @@ import pytest
 from omlish.testing import pytest as ptu
 
 from ...backends.mlxlm import MlxlmChatModel
-from ...chat import UserMessage
+from ...chat.messages import UserMessage
 
 
 @pytest.mark.not_docker_guest

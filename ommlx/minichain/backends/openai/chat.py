@@ -19,19 +19,19 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...chat import AiChoice
-from ...chat import AiMessage
-from ...chat import ChatModel
-from ...chat import ChatOptions
-from ...chat import ChatRequest
-from ...chat import ChatResponse
-from ...chat import Message
-from ...chat import SystemMessage
-from ...chat import Tool
-from ...chat import ToolExecRequest
-from ...chat import ToolExecResultMessage
-from ...chat import ToolSpec
-from ...chat import UserMessage
+from ...chat.messages import AiMessage
+from ...chat.messages import Message
+from ...chat.messages import SystemMessage
+from ...chat.messages import ToolExecRequest
+from ...chat.messages import ToolExecResultMessage
+from ...chat.messages import UserMessage
+from ...chat.models import AiChoice
+from ...chat.models import ChatModel
+from ...chat.models import ChatRequest
+from ...chat.models import ChatResponse
+from ...chat.options import ChatOptions
+from ...chat.tools import Tool
+from ...chat.tools import ToolSpec
 from ...generative import MaxTokens
 from ...generative import Temperature
 from ...models import TokenUsage

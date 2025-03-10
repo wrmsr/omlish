@@ -1,15 +1,27 @@
-from .chat import (  # noqa
+from .chat.formats import (  # noqa
+    JSON_RESPONSE_FORMAT,
+    JsonResponseFormat,
+    ResponseFormat,
+    TEXT_RESPONSE_FORMAT,
+    TextResponseFormat,
+)
+
+from .chat.history import (  # noqa
     ChatHistory,
     ChatHistoryModel,
     ListChatHistory,
+)
 
+from .chat.messages import (  # noqa
     AiMessage,
     Chat,
     Message,
     SystemMessage,
     ToolExecResultMessage,
     UserMessage,
+)
 
+from .chat.models import (  # noqa
     AiChoice,
     AiChoices,
     ChatInput,
@@ -17,10 +29,14 @@ from .chat import (  # noqa
     ChatOutput,
     ChatRequest,
     ChatResponse,
+)
 
+from .chat.options import (  # noqa
     ChatOption,
     ChatOptions,
+)
 
+from .chat.tools import (  # noqa
     Tool,
     ToolDtype,
     ToolExecRequest,
@@ -28,11 +44,17 @@ from .chat import (  # noqa
     ToolSpec,
 )
 
-from .content import (  # noqa
+from .content.content import (  # noqa
     Content,
     ExtendedContent,
+)
 
+from .content.images import (  # noqa
     Image,
+)
+
+from .content.placeholders import (  # noqa
+    Placeholder,
 )
 
 from .generative import (  # noqa
@@ -80,15 +102,40 @@ from .services import (  # noqa
     ServiceResponse,
 )
 
-from .vectors import (  # noqa
+from .vectors.embeddings import (  # noqa
     EmbeddingModel,
     EmbeddingOptions,
     EmbeddingOutput,
     EmbeddingRequest,
     EmbeddingResponse,
+)
 
+from .vectors.index import (  # noqa
+    VectorIndexed,
+    VectorIndexService,
+)
+
+from .vectors.search import (  # noqa
+    VectorHit,
+    VectorHits,
+    VectorSearch,
+)
+
+from .vectors.similarity import (  # noqa
+    CALC_NP_SIMILARITIES_FUNCS,
+    Similarity,
+    calc_np_cosine_similarities,
+    calc_np_dot_similarities,
+    calc_np_similarities,
+)
+
+from .vectors.vectors import (  # noqa
     Vector,
     Vectorable,
+)
+
+from .vectors.stores import (  # noqa
+    VectorStore,
 )
 
 

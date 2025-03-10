@@ -18,9 +18,9 @@ from omlish import lang
 from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
+from .. import minichain as mc
 from ..minichain.backends.mlxlm import MlxlmChatModel
 from ..minichain.backends.openai import OpenaiChatModel
-from ..minichain.chat import UserMessage
 from ..minichain.generative import MaxTokens
 from ..server.client import McServerClient
 
@@ -61,7 +61,7 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
         llm = OpenaiChatModel()
 
         resp = llm(
-            [UserMessage(prompt)],
+            [mc.UserMessage(prompt)],
             *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         )
         return check.non_empty_str(resp.v[0].m.s)
@@ -91,7 +91,7 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
         llm = MlxlmChatModel(self._config.model)
 
         resp = llm(
-            [UserMessage(prompt)],
+            [mc.UserMessage(prompt)],
             *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         )
         text = check.non_empty_str(resp.v[0].m.s)

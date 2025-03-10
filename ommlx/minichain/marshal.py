@@ -24,7 +24,7 @@ class OptionMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, Option) and lang.is_abstract_class(rty))
     def _build_abstract(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return msh.make_polymorphism_marshaler(
-            msh.polymorphism_from_subclasses(rty).impls,
+            msh.polymorphism_from_subclasses(check.isinstance(rty, type)).impls,
             msh.WrapperTypeTagging(),
             ctx,
         )
@@ -33,7 +33,8 @@ class OptionMarshalerFactory(msh.MarshalerFactoryMatchClass):
 class OptionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, ScalarOption) and not lang.is_abstract_class(rty))  # noqa
     def _build_scalar(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        dc_rfl = dc.reflect(check.isinstance(rty, type))
+        rty = check.isinstance(rty, type)
+        dc_rfl = dc.reflect(rty)
         v_rty = check.single(dc_rfl.generic_replaced_field_annotations.values())
         v_u = ctx.make(v_rty)
         return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
@@ -41,7 +42,7 @@ class OptionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, Option) and lang.is_abstract_class(rty))
     def _build_abstract(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return msh.make_polymorphism_unmarshaler(
-            msh.polymorphism_from_subclasses(rty).impls,
+            msh.polymorphism_from_subclasses(check.isinstance(rty, type)).impls,
             msh.WrapperTypeTagging(),
             ctx,
         )
@@ -54,7 +55,7 @@ def _build_options_impls(rty: rfl.Type) -> msh.Impls:
     gty = check.isinstance(rty, rfl.Generic)
     check.is_(gty.cls, Options)
 
-    opt_cls_set = {
+    opt_cls_set: set[type[Option]] = {
         check.issubclass(check.isinstance(a, type), Option)
         for a in check.isinstance(check.single(gty.args), rfl.Union).args
     }
@@ -86,7 +87,7 @@ class OptionsUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
             msh.WrapperTypeTagging(),
             ctx,
         )
-        return msh.IterableUnmarshaler(Options, opt_u)  # type: ignore
+        return msh.IterableUnmarshaler(Options, opt_u)  # noqa
 
 
 ##
