@@ -101,7 +101,7 @@ class AnyReadIo(Io):  # noqa
 
 @dc.dataclass(frozen=True)
 class ReadIo(AnyReadIo):
-    sz: int
+    sz: ta.Optional[int]
 
 
 @dc.dataclass(frozen=True)
@@ -405,10 +405,10 @@ class HttpResponse:
         #          meaningful.
         return self.fp is None
 
-    def read(self, amt: ta.Optional[int] = None) -> bytes:
+    def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """Read and return the response body, or up to the next amt bytes."""
 
-        if self.fp is None:
+        if self._closed is None:
             return b''
 
         if self._method == 'HEAD':
@@ -416,14 +416,14 @@ class HttpResponse:
             return b''
 
         if self.chunked:
-            return self._read_chunked(amt)
+            return (yield from self._read_chunked(amt))
 
         if amt is not None:
             if self.length is not None and amt > self.length:
                 # clip the read to the "end of response"
                 amt = self.length
 
-            s = self.fp.read(amt)
+            s = check.isinstance((yield ReadIo(amt)), bytes)
 
             if not s and amt:
                 # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
@@ -440,11 +440,11 @@ class HttpResponse:
         else:
             # Amount is not given (unbounded read) so we must check self.length
             if self.length is None:
-                s = self.fp.read()
+                s = check.isinstance((yield ReadIo(None)), bytes)
 
             else:
                 try:
-                    s = self._safe_read(self.length)
+                    s = yield from self._safe_read(self.length)
                 except IncompleteRead:
                     self._close_conn()
                     raise
@@ -454,9 +454,9 @@ class HttpResponse:
             self._close_conn()        # we read everything
             return s
 
-    def _read_next_chunk_size(self) -> int:
+    def _read_next_chunk_size(self) -> ta.Generator[Io, ta.Optional[bytes], int]:
         # Read the next chunk size from the file
-        line = self.fp.readline(_MAX_LINE + 1)
+        line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
             raise LineTooLong('chunk size')
 
@@ -471,11 +471,11 @@ class HttpResponse:
             self._close_conn()
             raise
 
-    def _read_and_discard_trailer(self) -> None:
+    def _read_and_discard_trailer(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         # read and discard trailer up to the CRLF terminator
         ### note: we shouldn't have any trailers!
         while True:
-            line = self.fp.readline(_MAX_LINE + 1)
+            line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
             if len(line) > _MAX_LINE:
                 raise LineTooLong('trailer line')
 
@@ -486,7 +486,7 @@ class HttpResponse:
             if line in (b'\r\n', b'\n', b''):
                 break
 
-    def _get_chunk_left(self):
+    def _get_chunk_left(self) -> ta.Generator[Io, ta.Optional[bytes], ta.Any]:
         # return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
         # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
         # None if the last chunk has been read.
@@ -494,16 +494,16 @@ class HttpResponse:
         if not chunk_left: # Can be 0 or None
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
-                self._safe_read(2)  # toss the CRLF at the end of the chunk
+                yield from self._safe_read(2)  # toss the CRLF at the end of the chunk
 
             try:
-                chunk_left = self._read_next_chunk_size()
+                chunk_left = yield from self._read_next_chunk_size()
             except ValueError:
                 raise IncompleteRead(b'') from None
 
             if chunk_left == 0:
                 # last chunk: 1*('0') [ chunk-extension ] CRLF
-                self._read_and_discard_trailer()
+                yield from self._read_and_discard_trailer()
 
                 # we read everything; close the 'file'
                 self._close_conn()
@@ -514,17 +514,17 @@ class HttpResponse:
 
         return chunk_left
 
-    def _read_chunked(self, amt: ta.Optional[int] = None) -> bytes:
+    def _read_chunked(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         check.not_equal(self.chunked, _UNKNOWN)
         value = []
         try:
-            while (chunk_left := self._get_chunk_left()) is not None:
+            while (chunk_left := (yield from self._get_chunk_left())) is not None:
                 if amt is not None and amt <= chunk_left:
-                    value.append(self._safe_read(amt))
+                    value.append((yield from self._safe_read(amt)))
                     self.chunk_left = chunk_left - amt
                     break
 
-                value.append(self._safe_read(chunk_left))
+                value.append((yield from self._safe_read(chunk_left)))
                 if amt is not None:
                     amt -= chunk_left
                 self.chunk_left = 0
@@ -534,7 +534,7 @@ class HttpResponse:
         except IncompleteRead as exc:
             raise IncompleteRead(b''.join(value)) from exc
 
-    def _safe_read(self, amt: int) -> bytes:
+    def _safe_read(self, amt: int) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """
         Read the number of bytes requested.
 
@@ -542,20 +542,21 @@ class HttpResponse:
         available (due to EOF), then the IncompleteRead exception can be used to detect the problem.
         """
 
-        data = self.fp.read(amt)
+        data = check.isinstance((yield ReadIo(amt)), bytes)
         if len(data) < amt:
             raise IncompleteRead(data, amt-len(data))
         return data
 
-    def peek(self, n: int = -1) -> bytes:
+    def peek(self, n: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         # Having this enables IOBase.readline() to read more than one byte at a time
-        if self.fp is None or self._method == 'HEAD':
+        if self._closed or self._method == 'HEAD':
             return b''
 
         if self.chunked:
-            return self._peek_chunked(n)
+            return (yield from self._peek_chunked(n))
 
-        return self.fp.peek(n)
+        # return self.fp.peek(n)
+        raise NotImplementedError
 
     def _readline(self, size=-1):
         # For backwards compatibility, a (slowish) readline().
@@ -1380,12 +1381,18 @@ def _main() -> None:
 
             return None
 
+        elif isinstance(o, CloseIo):
+            check.not_none(sock).close()
+
         elif isinstance(o, WriteIo):
             check.not_none(sock).sendall(o.data)
             return None
 
         elif isinstance(o, ReadIo):
-            return check.not_none(sock_file).read(o.sz)
+            if (sz := o.sz) is not None:
+                return check.not_none(sock_file).read(sz)
+            else:
+                return check.not_none(sock_file).read()
 
         elif isinstance(o, ReadLineIo):
             return check.not_none(sock_file).readline(o.sz)
@@ -1399,10 +1406,16 @@ def _main() -> None:
         nonlocal resp
         resp = yield from conn.get_response()
 
+    def print_resp():
+        d = yield from check.not_none(resp).read()
+        print(d)
+
     for f in [
         conn.connect,
         lambda: conn.request('GET', '/'),
         get_resp,
+        print_resp,
+        conn.close,
     ]:
         g = f()
         i = None
