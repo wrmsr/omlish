@@ -23,9 +23,10 @@ from prompt_toolkit.input import DummyInput
 from prompt_toolkit.input import Input
 from prompt_toolkit.input import create_input
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.key_binding import KeyPress
 from prompt_toolkit.key_binding import KeyPressEvent
 from prompt_toolkit.key_binding import vi_state
-from prompt_toolkit.key_binding.vi_state import InputMode
+from prompt_toolkit.keys import Keys
 from prompt_toolkit.layout.containers import ColorColumn
 from prompt_toolkit.layout.containers import ConditionalContainer
 from prompt_toolkit.layout.containers import Float
@@ -61,10 +62,13 @@ from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.mouse_events import MouseEventType
 from prompt_toolkit.output import DummyOutput
 from prompt_toolkit.output import Output
+from prompt_toolkit.search import SearchDirection
 from prompt_toolkit.selection import SelectionType
+from prompt_toolkit.styles import BaseStyle
 from prompt_toolkit.styles import DynamicStyle
 from prompt_toolkit.styles import Style
 from prompt_toolkit.styles import merge_styles
+from prompt_toolkit.styles import style_from_pygments_cls
 from prompt_toolkit.widgets import Frame
 from prompt_toolkit.widgets import Label
 from prompt_toolkit.widgets import TextArea
