@@ -37,8 +37,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.37.9
-botocore==1.37.9
+boto3==1.37.10
+botocore==1.37.10
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -53,7 +53,7 @@ chardet==5.2.0
 charset-normalizer==3.4.1
 chroma-hnswlib==0.7.6
 chromadb==0.6.3
-cli_helpers==2.3.1
+cli_helpers==2.4.0
 click==8.1.8
 click-log==0.4.0
 cloudflare==3.1.0
@@ -140,7 +140,7 @@ googleapis-common-protos==1.69.1
 gprof2dot==2024.6.6
 gpt4all==2.8.2
 greenlet==3.1.1
-grpcio==1.70.0
+grpcio==1.71.0
 grpcio-status==1.62.3
 grpcio-tools==1.62.3
 guppy3==3.1.5
@@ -335,7 +335,7 @@ pluggy==1.5.0
 polars==1.24.0
 pooch==1.8.2
 portalocker==2.8.2
-posthog==3.19.0
+posthog==3.19.1
 pprintpp==0.4.0
 preshed==3.0.9
 primp==0.14.0
@@ -552,7 +552,7 @@ wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
 yarl==1.18.3
-zigpy==0.77.0
+zigpy==0.77.1
 zipp==3.21.0
 zope.event==5.0
 zope.interface==7.2

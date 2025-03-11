@@ -159,7 +159,7 @@ sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.43.0
-zigpy==0.77.0
+zigpy==0.77.1
 
 # python-openzwave
 zwave-js-server-python==0.61.0

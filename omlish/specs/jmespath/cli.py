@@ -53,7 +53,7 @@ def _main() -> int:
         data = json.loads(data)
 
     try:
-        print(json_dumps(search(expression, data), ensure_ascii=False))
+        print(json_dumps(search(expression, data)))
         return 0
 
     except ArityError as e:
