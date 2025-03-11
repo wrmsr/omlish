@@ -84,3 +84,27 @@ class Dispatcher(ta.Generic[T]):
     dispatch: ta.Callable[[type], T | None]
 
     register: ta.Callable[[T, ta.Iterable[type]], T]
+
+
+##
+
+
+# from x.dispatch import _gpto1_2 as _dispatch  # noqa
+#
+#
+# class Dispatcher(ta.Generic[T]):  # noqa
+#     def __init__(self, find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None] | None = None) -> None:
+#         super().__init__()
+#
+#         if find_impl is None:
+#             find_impl = default_find_impl
+#         self._x = _dispatch.Dispatcher(find_impl)
+#
+#     def cache_size(self) -> int:
+#         return self._x.cache_size()
+#
+#     def dispatch(self, cls: type) -> T | None:
+#         return self._x.dispatch(cls)
+#
+#     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T:
+#         return self._x.register(impl, cls_col)
