@@ -23,7 +23,8 @@ def _main() -> None:
     #
 
     # from . import _claude as _dispatch  # noqa
-    from . import _gpto1 as _dispatch  # noqa
+    # from . import _gpto1 as _dispatch  # noqa
+    from . import _gpto1_2 as _dispatch  # noqa
     # from omlish import dispatch as _dispatch
 
     #
