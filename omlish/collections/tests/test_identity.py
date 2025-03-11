@@ -1,3 +1,4 @@
+import pickle
 import typing as ta
 
 import pytest
@@ -51,3 +52,39 @@ def test_identity_key_set():
     st.remove(x)
     assert x not in st
     assert y in st
+
+
+class PickleA:
+    def __hash__(self):
+        raise TypeError
+
+    def __eq__(self, other):
+        raise TypeError
+
+
+class PickleC:
+    def __init__(self):
+        self.a = PickleA()
+        self.b = PickleA()
+
+        self.s = IdentitySet([self.a, self.b])
+        self.m: ta.Any = IdentityKeyDict([(self.a, 'a'), (self.b, 'b')])
+
+
+def test_pickle():
+    def check_c(c):
+        assert c.a in c.s
+        assert c.b in c.s
+        assert PickleA() not in c.s
+        assert c.m[c.a] == 'a'
+        assert c.m[c.b] == 'b'
+        assert PickleA() not in c.m
+
+    c = PickleC()
+    check_c(c)
+
+    s = pickle.dumps(c)
+    c2 = pickle.loads(s)  # noqa
+
+    check_c(c2)
+    assert c2.a is not c.a

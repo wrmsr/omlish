@@ -16,11 +16,11 @@ def needs_parens(self, e: Expr) -> bool:
         raise TypeError(e)
 """
 import dataclasses as dc
-import io
 import typing as ta
 
 from ... import dispatch
 from ... import lang
+from ...text import parts as tp
 from ..params import ParamStyle
 from ..params import make_params_preparer
 from .base import Node
@@ -47,6 +47,12 @@ from .unary import UnaryOps
 
 
 @dc.dataclass(frozen=True)
+class RenderedQueryParts(lang.Final):
+    p: tp.Part
+    args: lang.Args
+
+
+@dc.dataclass(frozen=True)
 class RenderedQuery(lang.Final):
     s: str
     args: lang.Args
@@ -55,12 +61,11 @@ class RenderedQuery(lang.Final):
 class Renderer(lang.Abstract):
     def __init__(
             self,
-            out: ta.TextIO,
             *,
             param_style: ParamStyle | None = None,
     ) -> None:
         super().__init__()
-        self._out = out
+
         self._param_style = param_style if param_style is not None else self.default_param_style
 
         self._params_preparer = make_params_preparer(self._param_style)
@@ -71,18 +76,41 @@ class Renderer(lang.Abstract):
         return self._params_preparer.prepare()
 
     @dispatch.method
-    def render(self, o: ta.Any) -> None:
+    def render(self, o: ta.Any) -> tp.Part:
         raise TypeError(o)
 
     @classmethod
-    def render_str(cls, o: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> RenderedQuery:
-        out = io.StringIO()
-        pp = cls(out, *args, **kwargs)
-        pp.render(o)
-        return RenderedQuery(out.getvalue(), pp.args())
+    def render_query_parts(cls, o: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> RenderedQueryParts:
+        r = cls(*args, **kwargs)
+        return RenderedQueryParts(
+            r.render(o),
+            r.args(),
+        )
+
+    @classmethod
+    def render_query(cls, o: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> RenderedQuery:
+        rqp = cls.render_query_parts(o, *args, **kwargs)
+        return RenderedQuery(
+            tp.render(rqp.p),
+            rqp.args,
+        )
 
 
 class StdRenderer(Renderer):
+    # parens
+
+    NEEDS_PAREN_TYPES: ta.AbstractSet[type[Node]] = {
+        Binary,
+        # IsNull,
+        # SelectExpr,
+    }
+
+    def needs_paren(self, node: Node) -> bool:
+        return type(node) in self.NEEDS_PAREN_TYPES
+
+    def paren(self, node: Node) -> tp.Part:
+        return tp.Wrap(self.render(node)) if self.needs_paren(node) else self.render(node)
+
     # binary
 
     BINARY_OP_TO_STR: ta.ClassVar[ta.Mapping[BinaryOp, str]] = {
@@ -103,55 +131,50 @@ class StdRenderer(Renderer):
     }
 
     @Renderer.render.register
-    def render_binary(self, o: Binary) -> None:
-        self._out.write('(')
-        self.render(o.l)
-        self._out.write(f' {self.BINARY_OP_TO_STR[o.op]} ')
-        self.render(o.r)
-        self._out.write(')')
+    def render_binary(self, o: Binary) -> tp.Part:
+        return [
+            self.paren(o.l),
+            self.BINARY_OP_TO_STR[o.op],
+            self.paren(o.r),
+        ]
 
     # exprs
 
     @Renderer.render.register
-    def render_literal(self, o: Literal) -> None:
-        self._out.write(repr(o.v))
+    def render_literal(self, o: Literal) -> tp.Part:
+        return repr(o.v)
 
     @Renderer.render.register
-    def render_name_expr(self, o: NameExpr) -> None:
-        self.render(o.n)
+    def render_name_expr(self, o: NameExpr) -> tp.Part:
+        return self.render(o.n)
 
     @Renderer.render.register
-    def render_param(self, o: Param) -> None:
-        self._out.write(self._params_preparer.add(o.n if o.n is not None else id(o)))
+    def render_param(self, o: Param) -> tp.Part:
+        return self._params_preparer.add(o.n if o.n is not None else id(o))
 
     # idents
 
     @Renderer.render.register
-    def render_ident(self, o: Ident) -> None:
-        self._out.write(f'"{o.s}"')
+    def render_ident(self, o: Ident) -> tp.Part:
+        return f'"{o.s}"'
 
     # inserts
 
     @Renderer.render.register
-    def render_values(self, o: Values) -> None:
-        self._out.write('values (')
-        for i, v in enumerate(o.vs):
-            if i:
-                self._out.write(', ')
-            self.render(v)
-        self._out.write(')')
+    def render_values(self, o: Values) -> tp.Part:
+        return [
+            'values',
+            tp.Wrap(tp.List([self.render(v) for v in o.vs])),
+        ]
 
     @Renderer.render.register
-    def render_insert(self, o: Insert) -> None:
-        self._out.write('insert into ')
-        self.render(o.into)
-        self._out.write(' (')
-        for i, c in enumerate(o.columns):
-            if i:
-                self._out.write(', ')
-            self.render(c)
-        self._out.write(') ')
-        self.render(o.data)
+    def render_insert(self, o: Insert) -> tp.Part:
+        return [
+            'insert into',
+            self.render(o.into),
+            tp.Wrap(tp.List([self.render(c) for c in o.columns])),
+            self.render(o.data),
+        ]
 
     # multis
 
@@ -161,32 +184,31 @@ class StdRenderer(Renderer):
     }
 
     @Renderer.render.register
-    def render_multi(self, o: Multi) -> None:
-        d = f' {self.MULTI_KIND_TO_STR[o.k]} '
-        self._out.write('(')
-        for i, e in enumerate(o.es):
-            if i:
-                self._out.write(d)
-            self.render(e)
-        self._out.write(')')
+    def render_multi(self, o: Multi) -> tp.Part:
+        return tp.Wrap(tp.List(
+            [self.render(e) for e in o.es],
+            delimiter=' ' + self.MULTI_KIND_TO_STR[o.k],  # FIXME: Part
+        ))
 
     # names
 
     @Renderer.render.register
-    def render_name(self, o: Name) -> None:
+    def render_name(self, o: Name) -> tp.Part:
+        out: list[tp.Part] = []
         for n, i in enumerate(o.ps):
             if n:
-                self._out.write('.')
-            self.render(i)
+                out.append('.')
+            out.append(self.render(i))
+        return tp.Concat(out)
 
     # relations
 
     @Renderer.render.register
-    def render_table(self, o: Table) -> None:
-        self.render(o.n)
-        if o.a is not None:
-            self._out.write(' as ')
-            self.render(o.a)
+    def render_table(self, o: Table) -> tp.Part:
+        return [
+            self.render(o.n),
+            *(['as', self.render(o.a)] if o.a is not None else []),
+        ]
 
     JOIN_KIND_TO_STR: ta.ClassVar[ta.Mapping[JoinKind, str]] = {
         JoinKind.DEFAULT: 'join',
@@ -202,38 +224,31 @@ class StdRenderer(Renderer):
     }
 
     @Renderer.render.register
-    def render_join(self, o: Join) -> None:
-        self.render(o.l)
-        self._out.write(' ')
-        self._out.write(self.JOIN_KIND_TO_STR[o.k])
-        self._out.write(' ')
-        self.render(o.r)
-        if o.c is not None:
-            self._out.write(' on ')
-            self.render(o.c)
+    def render_join(self, o: Join) -> tp.Part:
+        return [
+            self.render(o.l),
+            self.JOIN_KIND_TO_STR[o.k],
+            self.render(o.r),
+            *(['on', self.render(o.c)] if o.c is not None else []),
+        ]
 
     # selects
 
     @Renderer.render.register
-    def render_select_item(self, o: SelectItem) -> None:
-        self.render(o.v)
-        if o.a is not None:
-            self._out.write(' as ')
-            self.render(o.a)
+    def render_select_item(self, o: SelectItem) -> tp.Part:
+        return [
+            self.render(o.v),
+            *(['as', self.render(o.a)] if o.a is not None else []),
+        ]
 
     @Renderer.render.register
-    def render_select(self, o: Select) -> None:
-        self._out.write('select ')
-        for i, it in enumerate(o.items):
-            if i:
-                self._out.write(', ')
-            self.render(it)
-        if o.from_ is not None:
-            self._out.write(' from ')
-            self.render(o.from_)
-        if o.where:
-            self._out.write(' where ')
-            self.render(o.where)
+    def render_select(self, o: Select) -> tp.Part:
+        return [
+            'select',
+            tp.List([self.render(i) for i in o.items]),
+            *(['from', self.render(o.from_)] if o.from_ is not None else []),
+            *(['where', self.render(o.where)] if o.where is not None else []),
+        ]
 
     # unary
 
@@ -247,12 +262,18 @@ class StdRenderer(Renderer):
     }
 
     @Renderer.render.register
-    def render_unary(self, o: Unary) -> None:
+    def render_unary(self, o: Unary) -> tp.Part:
         pfx, sfx = self.UNARY_OP_TO_STR[o.op]
-        self._out.write(pfx)
-        self.render(o.v)
-        self._out.write(sfx)
+        return tp.Concat([
+            pfx,
+            self.render(o.v),
+            sfx,
+        ])
+
+
+def render_parts(n: Node, **kwargs: ta.Any) -> RenderedQueryParts:
+    return StdRenderer.render_query_parts(n, **kwargs)
 
 
 def render(n: Node, **kwargs: ta.Any) -> RenderedQuery:
-    return StdRenderer.render_str(n, **kwargs)
+    return StdRenderer.render_query(n, **kwargs)

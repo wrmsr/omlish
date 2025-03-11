@@ -1,7 +1,5 @@
-from ....text import parts as tps
 from .. import Q
 from ..rendering import render
-from ..rendering2 import StdRenderer as Renderer2
 
 
 def test_render():
@@ -49,11 +47,4 @@ def test_render():
         print()
 
         print(rq.s)
-        print()
-
-        rps = Renderer2().render(query)
-        print(rps)
-        print()
-
-        print(tps.render(rps))
         print()
