@@ -19,8 +19,8 @@ def _main() -> None:
     #
 
     # from . import _claude as dispatch  # noqa
-    # from . import _gpto1 as dispatch  # noqa
-    from omlish import dispatch
+    from . import _gpto1 as dispatch  # noqa
+    # from omlish import dispatch
 
     #
 

@@ -20,31 +20,27 @@ Python code, including the weakref-based clearing of entries and the abc.get_cac
 */
 #include <Python.h>
 
-// We rely on CPython stable API for 3.12+
-// We'll keep a generally C-like style but use some minimal C++ features.
+#define MODULE_NAME "_gpto1"
+
 
 //////////////////////////////////////////////////////////////////////////////
-// Forward declarations of types:
 
-// Forward-declare our DispatchCache type.
 typedef struct {
     PyObject_HEAD
 
-    // The main dictionary for { weakref-to-class: impl }
-    // Value 'impl' is any PyObject.
+    // The main dictionary for { weakref-to-class: impl }. Value 'impl' is any PyObject.
     PyObject* dct;
 
-    // A Python object that acts as the remove-callback for all weakrefs we create
-    // (an instance of our custom RemoveCallback type).
+    // A Python object that acts as the remove-callback for all weakrefs we create (an instance of our custom
+    // RemoveCallback type).
     PyObject* remove_callback;
 
-    // We store the "token" used by the abc.get_cache_token logic. We store Py_None
-    // when not set, or the actual token object otherwise.
+    // We store the "token" used by the abc.get_cache_token logic. We store Py_None/ when not set, or the actual token
+    // object otherwise.
     PyObject* token;
 } DispatchCacheObject;
 
 
-// Forward-declare our Dispatcher type.
 typedef struct {
     PyObject_HEAD
 
@@ -55,7 +51,7 @@ typedef struct {
     PyObject* impls_by_arg_cls;
 
     // A DispatchCache instance for caching: dispatch_cache
-    PyObject* cache; // (DispatchCacheObject*)
+    PyObject* cache;  // (DispatchCacheObject*)
 } DispatcherObject;
 
 
@@ -64,8 +60,7 @@ typedef struct {
 //
 //   remove_callback(weakref_obj)
 //
-// The callback removes the 'weakref_obj' key from the DispatchCacheObject.dct
-// ignoring KeyError.
+// The callback removes the 'weakref_obj' key from the DispatchCacheObject.dct ignoring KeyError.
 
 typedef struct {
     PyObject_HEAD
@@ -90,7 +85,7 @@ import_abc_get_cache_token()
     // Import abc module
     PyObject* abc_mod = PyImport_ImportModule("abc");
     if (!abc_mod) {
-        return -1; // error
+        return -1;  // error
     }
 
     // Get the "get_cache_token" attribute
@@ -100,7 +95,7 @@ import_abc_get_cache_token()
         return -1;
     }
 
-    return 0; // success
+    return 0;  // success
 }
 
 // Call get_cache_token(), returning new reference or nullptr on error.
@@ -110,6 +105,7 @@ call_abc_get_cache_token()
     if (import_abc_get_cache_token() < 0) {
         return nullptr;
     }
+
     // call it with no args
     return PyObject_CallNoArgs(g_abc_get_cache_token_func);
 }
@@ -121,8 +117,8 @@ call_abc_get_cache_token()
 static PyObject*
 RemoveCallback_call(RemoveCallbackObject* self, PyObject* arg, PyObject* /*kwds*/)
 {
-    // arg should be the weakref that triggered the callback.
-    // We remove 'arg' as a key from self->dcache->dct, ignoring KeyError.
+    // arg should be the weakref that triggered the callback. We remove 'arg' as a key from self->dcache->dct, ignoring
+    // KeyError.
     if (!self->dcache || !self->dcache->dct) {
         // Shouldn't normally happen, but just in case:
         Py_RETURN_NONE;
@@ -131,8 +127,8 @@ RemoveCallback_call(RemoveCallbackObject* self, PyObject* arg, PyObject* /*kwds*
     // We'll attempt to delete the key from the dict, ignoring errors:
     int res = PyDict_DelItem(self->dcache->dct, arg);
     if (res < 0) {
-        // Could be KeyError or something else. We'll clear the error unconditionally
-        // to mimic the Python code's "except KeyError: pass".
+        // Could be KeyError or something else. We'll clear the error unconditionally to mimic the Python code's "except
+        // KeyError: pass".
         PyErr_Clear();
     }
 
@@ -150,14 +146,14 @@ RemoveCallback_dealloc(RemoveCallbackObject* self)
 static PyObject*
 RemoveCallback_init(RemoveCallbackObject* self, PyObject* args, PyObject* kwds)
 {
-    // This is not typically called via __init__ in normal usage.
-    // We'll just do a default init. We'll rely on our custom factory or so.
+    // This is not typically called via __init__ in normal usage. We'll just do a default init. We'll rely on our custom
+    // factory or so.
     Py_RETURN_NONE;
 }
 
 static PyTypeObject RemoveCallback_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    .tp_name = "dispatch.RemoveCallback",
+    .tp_name = MODULE_NAME ".RemoveCallback",
     .tp_basicsize = sizeof(RemoveCallbackObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
@@ -189,6 +185,7 @@ DispatchCache_clear_dict(DispatchCacheObject* self)
     if (self->dct) {
         PyDict_Clear(self->dct);
     }
+
     return 0;
 }
 
@@ -199,6 +196,7 @@ DispatchCache_size_impl(DispatchCacheObject* self)
     if (!self->dct) {
         return PyLong_FromLong(0);
     }
+
     Py_ssize_t sz = PyDict_Size(self->dct);
     return PyLong_FromSsize_t(sz);
 }
@@ -215,14 +213,16 @@ DispatchCache_prepare_impl(DispatchCacheObject* self, PyObject* cls)
         // Check if hasattr(cls, '__abstractmethods__')
         int has_abstract = PyObject_HasAttrString(cls, "__abstractmethods__");
         if (has_abstract < 0) {
-            return nullptr; // error
+            return nullptr;  // error
         }
+
         if (has_abstract == 1) {
             // we need to fetch abc.get_cache_token
             PyObject* new_tok = call_abc_get_cache_token();
             if (!new_tok) {
-                return nullptr; // error
+                return nullptr;  // error
             }
+
             // replace self->token
             Py_SETREF(self->token, new_tok);
         }
@@ -242,6 +242,7 @@ DispatchCache_clear_impl(DispatchCacheObject* self)
     if (DispatchCache_clear_dict(self) < 0) {
         return nullptr;
     }
+
     Py_RETURN_NONE;
 }
 
@@ -258,14 +259,14 @@ DispatchCache_put_impl(DispatchCacheObject* self, PyObject* args)
     // Make a weakref with our remove_callback so we can remove from dict on finalization.
     PyObject* wr = PyWeakref_NewRef(cls, self->remove_callback);
     if (!wr) {
-        return nullptr; // error creating weakref
+        return nullptr;  // error creating weakref
     }
 
     // Insert into self->dct
     int rc = PyDict_SetItem(self->dct, wr, impl);
     Py_DECREF(wr);
     if (rc < 0) {
-        return nullptr; // error
+        return nullptr;  // error
     }
 
     Py_RETURN_NONE;
@@ -281,30 +282,34 @@ DispatchCache_get_impl(DispatchCacheObject* self, PyObject* cls)
     if (self->token != Py_None) {
         PyObject* new_tok = call_abc_get_cache_token();
         if (!new_tok) {
-            return nullptr; // error
+            return nullptr;  // error
         }
+
         int cmp = PyObject_RichCompareBool(self->token, new_tok, Py_EQ);
         if (cmp < 0) {
             Py_DECREF(new_tok);
             return nullptr;
-        }
-        if (cmp == 0) {
+
+        } else if (cmp == 0) {
             // not equal => clear
             if (DispatchCache_clear_dict(self) < 0) {
                 Py_DECREF(new_tok);
                 return nullptr;
             }
             Py_SETREF(self->token, new_tok);
+
         } else {
             Py_DECREF(new_tok);
+
         }
     }
 
     // We do the same as python: wr = weakref.ref(cls) with no callback
     PyObject* wr = PyWeakref_NewRef(cls, nullptr);
     if (!wr) {
-        return nullptr; // error
+        return nullptr;  // error
     }
+
     PyObject* impl = PyDict_GetItemWithError(self->dct, wr);
     Py_DECREF(wr);
     if (!impl) {
@@ -403,7 +408,7 @@ static PyMethodDef DispatchCache_methods[] = {
 
 static PyTypeObject DispatchCache_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    .tp_name = "dispatch.DispatchCache",
+    .tp_name = MODULE_NAME ".DispatchCache",
     .tp_basicsize = sizeof(DispatchCacheObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
@@ -420,8 +425,7 @@ static PyTypeObject DispatchCache_Type = {
 static PyObject*
 Dispatcher_cache_size_impl(DispatcherObject* self)
 {
-    // just call self->cache.size()
-    // self->cache is a DispatchCache instance, so we can just call its "size" method
+    // just call self->cache.size(). self->cache is a DispatchCache instance, so we can just call its "size" method.
     PyObject* meth = PyObject_GetAttrString(self->cache, "size");
     if (!meth) return nullptr;
     PyObject* res = PyObject_CallNoArgs(meth);
@@ -457,7 +461,7 @@ Dispatcher_register_impl(DispatcherObject* self, PyObject* args)
                 Py_DECREF(iter);
                 return nullptr;
             }
-            break; // done
+            break;  // done
         }
 
         // self._impls_by_arg_cls[cls] = impl
@@ -475,6 +479,7 @@ Dispatcher_register_impl(DispatcherObject* self, PyObject* args)
             Py_DECREF(iter);
             return nullptr;
         }
+
         PyObject* call_res = PyObject_CallOneArg(meth_prepare, cls);
         Py_DECREF(meth_prepare);
         Py_DECREF(cls);
@@ -508,19 +513,24 @@ Dispatcher_dispatch_impl(DispatcherObject* self, PyObject* cls)
 
     // call self->cache.get(cls)
     PyObject* meth_get = PyObject_GetAttrString(self->cache, "get");
-    if (!meth_get) return nullptr;
+    if (!meth_get) {
+        return nullptr;
+    }
+
     PyObject* res = PyObject_CallOneArg(meth_get, cls);
     Py_DECREF(meth_get);
 
     if (res) {
         // we got an impl
-        return res; // T | None is possible
+        return res;  // T | None is possible
     }
+
     // check if it's a KeyError or real error
     if (!PyErr_ExceptionMatches(PyExc_KeyError)) {
         // real error
         return nullptr;
     }
+
     // clear the KeyError
     PyErr_Clear();
 
@@ -531,9 +541,13 @@ Dispatcher_dispatch_impl(DispatcherObject* self, PyObject* cls)
             // real error
             return nullptr;
         }
+
         // not found => call self->find_impl(cls, self->impls_by_arg_cls)
         PyObject* args2 = PyTuple_New(2);
-        if (!args2) return nullptr;
+        if (!args2) {
+            return nullptr;
+        }
+
         Py_INCREF(cls);
         PyTuple_SET_ITEM(args2, 0, cls);  // consumes reference
         Py_INCREF(self->impls_by_arg_cls);
@@ -544,6 +558,7 @@ Dispatcher_dispatch_impl(DispatcherObject* self, PyObject* cls)
         if (!impl) {
             return nullptr;
         }
+
     } else {
         // borrowed reference from the dict
         Py_INCREF(impl);
@@ -555,12 +570,14 @@ Dispatcher_dispatch_impl(DispatcherObject* self, PyObject* cls)
         Py_DECREF(impl);
         return nullptr;
     }
+
     PyObject* args3 = Py_BuildValue("(OO)", cls, impl);
     if (!args3) {
         Py_DECREF(meth_put);
         Py_DECREF(impl);
         return nullptr;
     }
+
     PyObject* put_res = PyObject_CallObject(meth_put, args3);
     Py_DECREF(args3);
     Py_DECREF(meth_put);
@@ -598,6 +615,7 @@ Dispatcher_init(DispatcherObject* self, PyObject* args, PyObject* /*kwds*/)
     if (!PyArg_UnpackTuple(args, "Dispatcher", 1, 1, &find_impl)) {
         return -1;
     }
+
     if (!PyCallable_Check(find_impl)) {
         PyErr_SetString(PyExc_TypeError, "find_impl must be callable");
         return -1;
@@ -609,6 +627,7 @@ Dispatcher_init(DispatcherObject* self, PyObject* args, PyObject* /*kwds*/)
     if (!d) {
         return -1;
     }
+
     self->impls_by_arg_cls = d;
 
     // create a new DispatchCache
@@ -650,7 +669,7 @@ static PyMethodDef Dispatcher_methods[] = {
 
 static PyTypeObject Dispatcher_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    .tp_name = "dispatch.Dispatcher",
+    .tp_name = MODULE_NAME ".Dispatcher",
     .tp_basicsize = sizeof(DispatcherObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
@@ -666,7 +685,7 @@ static PyTypeObject Dispatcher_Type = {
 
 static PyModuleDef dispatch_module = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "_gpto1",
+    .m_name = MODULE_NAME,
     .m_doc = "Example module implementing DispatchCache and Dispatcher natively.",
     .m_size = -1,
     .m_methods = nullptr,
@@ -708,9 +727,8 @@ PyInit__gpto1(void)
         return nullptr;
     }
 
-    // Optionally pre-import abc.get_cache_token so the first call might be faster:
-    // Not required, but we can do it.
-    import_abc_get_cache_token(); // ignore failure (just means calls will fail later)
+    // Optionally pre-import abc.get_cache_token so the first call might be faster. Not required, but we can do it.
+    import_abc_get_cache_token();  // ignore failure (just means calls will fail later)
 
     return m;
 }

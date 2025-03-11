@@ -49,10 +49,6 @@ typedef struct {
     PyObject* token;
 } DispatchCacheObject;
 
-// Forward declarations
-static PyTypeObject DispatchCacheType;
-static PyTypeObject DispatcherType;
-
 // Callback function when a weakref is cleared
 static void weakref_callback(PyObject* weakref, void* user_data) {
     DispatchCacheObject* self = (DispatchCacheObject*)user_data;
