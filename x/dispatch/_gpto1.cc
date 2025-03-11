@@ -140,7 +140,7 @@ RemoveCallback_dealloc(RemoveCallbackObject* self)
 {
     // Decref the dcache if present:
     Py_XDECREF(self->dcache);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
 static PyObject*
@@ -157,9 +157,9 @@ static PyTypeObject RemoveCallback_Type = {
     .tp_basicsize = sizeof(RemoveCallbackObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_call = (ternaryfunc)RemoveCallback_call,
-    .tp_dealloc = (destructor)RemoveCallback_dealloc,
-    .tp_init = (initproc)RemoveCallback_init,
+    .tp_call = (ternaryfunc) RemoveCallback_call,
+    .tp_dealloc = (destructor) RemoveCallback_dealloc,
+    .tp_init = (initproc) RemoveCallback_init,
 };
 
 // Helper to create a new RemoveCallback object for a given DispatchCache.
@@ -167,12 +167,14 @@ static PyObject*
 RemoveCallback_new_for_cache(DispatchCacheObject* dcache)
 {
     RemoveCallbackObject* rc = PyObject_New(RemoveCallbackObject, &RemoveCallback_Type);
-    if (!rc) return nullptr;
+    if (!rc) {
+        return nullptr;
+    }
 
     // We'll hold a strong reference to 'dcache':
     Py_INCREF(dcache);
     rc->dcache = dcache;
-    return (PyObject*)rc;
+    return (PyObject*) rc;
 }
 
 
@@ -338,7 +340,7 @@ DispatchCache_dealloc(DispatchCacheObject* self)
     Py_XDECREF(self->dct);
     Py_XDECREF(self->token);
 
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
 static int
@@ -346,7 +348,9 @@ DispatchCache_init(DispatchCacheObject* self, PyObject* /*args*/, PyObject* /*kw
 {
     // Just like Python code: self._dct = {}
     PyObject* d = PyDict_New();
-    if (!d) return -1;
+    if (!d) {
+        return -1;
+    }
 
     // Build the remove callback object:
     PyObject* rc = RemoveCallback_new_for_cache(self);
@@ -370,39 +374,39 @@ DispatchCache_init(DispatchCacheObject* self, PyObject* /*args*/, PyObject* /*kw
 static PyObject*
 DispatchCache_size(PyObject* self, PyObject* /*args*/)
 {
-    return DispatchCache_size_impl((DispatchCacheObject*)self);
+    return DispatchCache_size_impl((DispatchCacheObject*) self);
 }
 
 static PyObject*
 DispatchCache_prepare(PyObject* self, PyObject* arg)
 {
-    return DispatchCache_prepare_impl((DispatchCacheObject*)self, arg);
+    return DispatchCache_prepare_impl((DispatchCacheObject*) self, arg);
 }
 
 static PyObject*
 DispatchCache_clear(PyObject* self, PyObject* /*args*/)
 {
-    return DispatchCache_clear_impl((DispatchCacheObject*)self);
+    return DispatchCache_clear_impl((DispatchCacheObject*) self);
 }
 
 static PyObject*
 DispatchCache_put(PyObject* self, PyObject* args)
 {
-    return DispatchCache_put_impl((DispatchCacheObject*)self, args);
+    return DispatchCache_put_impl((DispatchCacheObject*) self, args);
 }
 
 static PyObject*
 DispatchCache_get(PyObject* self, PyObject* arg)
 {
-    return DispatchCache_get_impl((DispatchCacheObject*)self, arg);
+    return DispatchCache_get_impl((DispatchCacheObject*) self, arg);
 }
 
 static PyMethodDef DispatchCache_methods[] = {
-    {"size",    (PyCFunction)DispatchCache_size,    METH_NOARGS,  nullptr},
-    {"prepare", (PyCFunction)DispatchCache_prepare, METH_O,       nullptr},
-    {"clear",   (PyCFunction)DispatchCache_clear,   METH_NOARGS,  nullptr},
-    {"put",     (PyCFunction)DispatchCache_put,     METH_VARARGS, nullptr},
-    {"get",     (PyCFunction)DispatchCache_get,     METH_O,       nullptr},
+    {"size",    (PyCFunction) DispatchCache_size,    METH_NOARGS,  nullptr},
+    {"prepare", (PyCFunction) DispatchCache_prepare, METH_O,       nullptr},
+    {"clear",   (PyCFunction) DispatchCache_clear,   METH_NOARGS,  nullptr},
+    {"put",     (PyCFunction) DispatchCache_put,     METH_VARARGS, nullptr},
+    {"get",     (PyCFunction) DispatchCache_get,     METH_O,       nullptr},
     {nullptr, nullptr, 0, nullptr}
 };
 
@@ -413,8 +417,8 @@ static PyTypeObject DispatchCache_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_init = (initproc)DispatchCache_init,
-    .tp_dealloc = (destructor)DispatchCache_dealloc,
+    .tp_init = (initproc) DispatchCache_init,
+    .tp_dealloc = (destructor) DispatchCache_dealloc,
     .tp_methods = DispatchCache_methods,
 };
 
@@ -427,7 +431,9 @@ Dispatcher_cache_size_impl(DispatcherObject* self)
 {
     // just call self->cache.size(). self->cache is a DispatchCache instance, so we can just call its "size" method.
     PyObject* meth = PyObject_GetAttrString(self->cache, "size");
-    if (!meth) return nullptr;
+    if (!meth) {
+        return nullptr;
+    }
     PyObject* res = PyObject_CallNoArgs(meth);
     Py_DECREF(meth);
     return res;
@@ -602,7 +608,7 @@ Dispatcher_dealloc(DispatcherObject* self)
     Py_XDECREF(self->impls_by_arg_cls);
     Py_XDECREF(self->cache);
 
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
 static int
@@ -631,7 +637,7 @@ Dispatcher_init(DispatcherObject* self, PyObject* args, PyObject* /*kwds*/)
     self->impls_by_arg_cls = d;
 
     // create a new DispatchCache
-    PyObject* cache_obj = PyObject_CallNoArgs((PyObject*)&DispatchCache_Type);
+    PyObject* cache_obj = PyObject_CallNoArgs((PyObject*) &DispatchCache_Type);
     if (!cache_obj) {
         return -1;
     }
@@ -645,25 +651,25 @@ Dispatcher_init(DispatcherObject* self, PyObject* args, PyObject* /*kwds*/)
 static PyObject*
 Dispatcher_cache_size(PyObject* self, PyObject* /*args*/)
 {
-    return Dispatcher_cache_size_impl((DispatcherObject*)self);
+    return Dispatcher_cache_size_impl((DispatcherObject*) self);
 }
 
 static PyObject*
 Dispatcher_register(PyObject* self, PyObject* args)
 {
-    return Dispatcher_register_impl((DispatcherObject*)self, args);
+    return Dispatcher_register_impl((DispatcherObject*) self, args);
 }
 
 static PyObject*
 Dispatcher_dispatch(PyObject* self, PyObject* arg)
 {
-    return Dispatcher_dispatch_impl((DispatcherObject*)self, arg);
+    return Dispatcher_dispatch_impl((DispatcherObject*) self, arg);
 }
 
 static PyMethodDef Dispatcher_methods[] = {
-    {"cache_size", (PyCFunction)Dispatcher_cache_size, METH_NOARGS,  nullptr},
-    {"register",   (PyCFunction)Dispatcher_register,   METH_VARARGS, nullptr},
-    {"dispatch",   (PyCFunction)Dispatcher_dispatch,   METH_O,       nullptr},
+    {"cache_size", (PyCFunction) Dispatcher_cache_size, METH_NOARGS,  nullptr},
+    {"register",   (PyCFunction) Dispatcher_register,   METH_VARARGS, nullptr},
+    {"dispatch",   (PyCFunction) Dispatcher_dispatch,   METH_O,       nullptr},
     {nullptr, nullptr, 0, nullptr}
 };
 
@@ -674,8 +680,8 @@ static PyTypeObject Dispatcher_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_init = (initproc)Dispatcher_init,
-    .tp_dealloc = (destructor)Dispatcher_dealloc,
+    .tp_init = (initproc) Dispatcher_init,
+    .tp_dealloc = (destructor) Dispatcher_dealloc,
     .tp_methods = Dispatcher_methods,
 };
 
@@ -714,14 +720,14 @@ PyInit__gpto1(void)
 
     // Add the types to the module
     Py_INCREF(&DispatchCache_Type);
-    if (PyModule_AddObject(m, "DispatchCache", (PyObject*)&DispatchCache_Type) < 0) {
+    if (PyModule_AddObject(m, "DispatchCache", (PyObject*) &DispatchCache_Type) < 0) {
         Py_DECREF(&DispatchCache_Type);
         Py_DECREF(m);
         return nullptr;
     }
 
     Py_INCREF(&Dispatcher_Type);
-    if (PyModule_AddObject(m, "Dispatcher", (PyObject*)&Dispatcher_Type) < 0) {
+    if (PyModule_AddObject(m, "Dispatcher", (PyObject*) &Dispatcher_Type) < 0) {
         Py_DECREF(&Dispatcher_Type);
         Py_DECREF(m);
         return nullptr;
