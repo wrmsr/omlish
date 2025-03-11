@@ -112,7 +112,31 @@ call_abc_get_cache_token()
 
 
 //////////////////////////////////////////////////////////////////////////////
-// RemoveCallback: the __call__ method
+// RemoveCallback type methods
+
+static int
+RemoveCallback_traverse(RemoveCallbackObject* self, visitproc visit, void* arg)
+{
+    Py_VISIT(self->dcache);
+    return 0;
+}
+
+static int
+RemoveCallback_clear(RemoveCallbackObject* self)
+{
+    Py_CLEAR(self->dcache);
+    return 0;
+}
+
+static void
+RemoveCallback_dealloc(RemoveCallbackObject* self)
+{
+    PyObject_GC_UnTrack(self);
+
+    Py_XDECREF(self->dcache);
+
+    Py_TYPE(self)->tp_free((PyObject*) self);
+}
 
 static PyObject*
 RemoveCallback_call(RemoveCallbackObject* self, PyObject* arg, PyObject* /*kwds*/)
@@ -135,14 +159,6 @@ RemoveCallback_call(RemoveCallbackObject* self, PyObject* arg, PyObject* /*kwds*
     Py_RETURN_NONE;
 }
 
-static void
-RemoveCallback_dealloc(RemoveCallbackObject* self)
-{
-    // Decref the dcache if present:
-    Py_XDECREF(self->dcache);
-    Py_TYPE(self)->tp_free((PyObject*) self);
-}
-
 static PyObject*
 RemoveCallback_init(RemoveCallbackObject* self, PyObject* args, PyObject* kwds)
 {
@@ -156,8 +172,10 @@ static PyTypeObject RemoveCallback_Type = {
     .tp_name = MODULE_NAME ".RemoveCallback",
     .tp_basicsize = sizeof(RemoveCallbackObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     .tp_call = (ternaryfunc) RemoveCallback_call,
+    .tp_traverse = (traverseproc) RemoveCallback_traverse,
+    .tp_clear = (inquiry) RemoveCallback_clear,
     .tp_dealloc = (destructor) RemoveCallback_dealloc,
     .tp_init = (initproc) RemoveCallback_init,
 };
@@ -231,16 +249,6 @@ DispatchCache_prepare_impl(DispatchCacheObject* self, PyObject* cls)
     }
 
     // Clear the dict
-    if (DispatchCache_clear_dict(self) < 0) {
-        return nullptr;
-    }
-
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-DispatchCache_clear_impl(DispatchCacheObject* self)
-{
     if (DispatchCache_clear_dict(self) < 0) {
         return nullptr;
     }
@@ -330,12 +338,31 @@ DispatchCache_get_impl(DispatchCacheObject* self, PyObject* cls)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// DispatchCache type slots
+// DispatchCache type methods
+
+static int
+DispatchCache_traverse(DispatchCacheObject* self, visitproc visit, void* arg)
+{
+    Py_VISIT(self->remove_callback);
+    Py_VISIT(self->dct);
+    Py_VISIT(self->token);
+    return 0;
+}
+
+static int
+DispatchCache_clear(DispatchCacheObject* self, PyObject* /*args*/)
+{
+    Py_CLEAR(self->remove_callback);
+    Py_CLEAR(self->dct);
+    Py_CLEAR(self->token);
+    return 0;
+}
 
 static void
 DispatchCache_dealloc(DispatchCacheObject* self)
 {
-    // Dealloc
+    PyObject_GC_UnTrack(self);
+
     Py_XDECREF(self->remove_callback);
     Py_XDECREF(self->dct);
     Py_XDECREF(self->token);
@@ -384,12 +411,6 @@ DispatchCache_prepare(PyObject* self, PyObject* arg)
 }
 
 static PyObject*
-DispatchCache_clear(PyObject* self, PyObject* /*args*/)
-{
-    return DispatchCache_clear_impl((DispatchCacheObject*) self);
-}
-
-static PyObject*
 DispatchCache_put(PyObject* self, PyObject* args)
 {
     return DispatchCache_put_impl((DispatchCacheObject*) self, args);
@@ -415,9 +436,11 @@ static PyTypeObject DispatchCache_Type = {
     .tp_name = MODULE_NAME ".DispatchCache",
     .tp_basicsize = sizeof(DispatchCacheObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_init = (initproc) DispatchCache_init,
+    .tp_traverse = (traverseproc) DispatchCache_traverse,
+    .tp_clear = (inquiry) DispatchCache_clear,
     .tp_dealloc = (destructor) DispatchCache_dealloc,
     .tp_methods = DispatchCache_methods,
 };
@@ -601,9 +624,29 @@ Dispatcher_dispatch_impl(DispatcherObject* self, PyObject* cls)
 //////////////////////////////////////////////////////////////////////////////
 // Dispatcher type methods
 
+static int
+Dispatcher_traverse(DispatcherObject* self, visitproc visit, void* arg)
+{
+    Py_VISIT(self->find_impl);
+    Py_VISIT(self->impls_by_arg_cls);
+    Py_VISIT(self->cache);
+    return 0;
+}
+
+static int
+Dispatcher_clear(DispatcherObject* self)
+{
+    Py_CLEAR(self->find_impl);
+    Py_CLEAR(self->impls_by_arg_cls);
+    Py_CLEAR(self->cache);
+    return 0;
+}
+
 static void
 Dispatcher_dealloc(DispatcherObject* self)
 {
+    PyObject_GC_UnTrack(self);
+
     Py_XDECREF(self->find_impl);
     Py_XDECREF(self->impls_by_arg_cls);
     Py_XDECREF(self->cache);
@@ -678,9 +721,11 @@ static PyTypeObject Dispatcher_Type = {
     .tp_name = MODULE_NAME ".Dispatcher",
     .tp_basicsize = sizeof(DispatcherObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_init = (initproc) Dispatcher_init,
+    .tp_traverse = (traverseproc) Dispatcher_traverse,
+    .tp_clear = (inquiry) Dispatcher_clear,
     .tp_dealloc = (destructor) Dispatcher_dealloc,
     .tp_methods = Dispatcher_methods,
 };
