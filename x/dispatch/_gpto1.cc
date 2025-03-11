@@ -73,9 +73,6 @@ typedef struct {
     DispatchCacheObject* dcache;  // strong reference or borrowed? We'll hold a strong ref.
 } RemoveCallbackObject;
 
-// Forward-declare the RemoveCallback type.
-static PyTypeObject RemoveCallback_Type;
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Utility function to call abc.get_cache_token (cached at module level)
@@ -150,7 +147,7 @@ RemoveCallback_dealloc(RemoveCallbackObject* self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static int
+static PyObject*
 RemoveCallback_init(RemoveCallbackObject* self, PyObject* args, PyObject* kwds)
 {
     // This is not typically called via __init__ in normal usage.
@@ -190,10 +187,7 @@ static int
 DispatchCache_clear_dict(DispatchCacheObject* self)
 {
     if (self->dct) {
-        int err = PyDict_Clear(self->dct);
-        if (err < 0) {
-            return -1; // something weird
-        }
+        PyDict_Clear(self->dct);
     }
     return 0;
 }

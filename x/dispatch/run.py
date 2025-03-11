@@ -4,6 +4,7 @@ import shutil
 import time
 
 from omdev.cexts import importhook
+from omlish.dispatch.impls import find_impl
 
 
 def _main() -> None:
@@ -18,11 +19,12 @@ def _main() -> None:
     #
 
     # from . import _claude as dispatch  # noqa
-    from . import _gpto1 as dispatch  # noqa
+    # from . import _gpto1 as dispatch  # noqa
+    from omlish import dispatch
 
     #
 
-    disp = dispatch.Dispatcher()
+    disp = dispatch.Dispatcher(find_impl)
     disp.register('object', [object])
     disp.register('str', [str])
     disp_dispatch = disp.dispatch
