@@ -148,7 +148,7 @@ gen-amalg: venv
 
 .PHONY: gen-cmake
 gen-cmake:
-	${PYTHON} -m omdev.cexts.cmake gen ${SRCS}
+	${PYTHON} -m omdev.cexts.cmake gen ${SRCS} x
 
 .PHONY: gen-aws
 gen-aws:
