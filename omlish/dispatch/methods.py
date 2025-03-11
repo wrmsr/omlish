@@ -12,7 +12,7 @@ import weakref
 from .. import check
 from .. import lang
 from .dispatch import Dispatcher
-from .dispatch import get_impl_func_cls_set
+from .impls import get_impl_func_cls_set
 
 
 T = ta.TypeVar('T')

@@ -2,7 +2,7 @@ import abc
 import typing as ta
 import weakref
 
-from .dispatch import find_impl
+from .impls import find_impl as default_find_impl
 
 
 T = ta.TypeVar('T')
@@ -72,8 +72,12 @@ class DispatchCache(DispatchCacheProtocol[T]):
 
 
 class Dispatcher(DispatcherProtocol[T]):
-    def __init__(self) -> None:
+    def __init__(self, find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None] | None = None) -> None:
         super().__init__()
+
+        if find_impl is None:
+            find_impl = default_find_impl
+        self._find_impl = find_impl
 
         self._impls_by_arg_cls: dict[type, T] = {}
         self._cache: DispatchCache[T | None] = DispatchCache()
@@ -98,7 +102,7 @@ class Dispatcher(DispatcherProtocol[T]):
         try:
             impl = self._impls_by_arg_cls[cls]
         except KeyError:
-            impl = find_impl(cls, self._impls_by_arg_cls)
+            impl = self._find_impl(cls, self._impls_by_arg_cls)
 
         self._cache.put(cls, impl)
         return impl
