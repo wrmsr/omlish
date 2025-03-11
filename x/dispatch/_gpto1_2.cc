@@ -39,6 +39,8 @@ static PyObject* g_abc_get_cache_token = nullptr;
 typedef struct {
     PyObject_HEAD
 
+    PyObject *weakreflist;  // Field for weak references
+
     // The Python-level callables/objects we keep:
     //   find_impl: a Python callable
     //   impls_by_arg_cls: a dict
@@ -89,15 +91,6 @@ dispatcher_cache_remove_call(PyObject* callable_obj, PyObject* arg)
 
     // Otherwise, cast it to a DispatcherObject:
     DispatcherObject* disp = (DispatcherObject*)disp_obj;
-
-    // // Safety check:
-    // if (!PyObject_TypeCheck(disp, &DispatcherCacheRemove_Type)) {
-    //     // Actually, that check might be too strict if the user inherited, etc.
-    //     // We'll do a looser check: just see if it's the Dispatcher type:
-    //     // For simplicity, we skip. We'll assume it's the right type.
-    //
-    //     // If you want to be absolutely sure, you can compare type objects here.
-    // }
 
     // Now we want to do:
     //    del self->_dispatch_cache[weakref]
@@ -282,7 +275,7 @@ Dispatcher_register(PyObject* self, PyObject* args)
         return nullptr;
     }
 
-    while (1) {
+    while (true) {
         PyObject* cls = PyIter_Next(iter);
         if (!cls) {
             // No more items or error.  If error, PyErr_Occurred() is set.
@@ -376,11 +369,13 @@ Dispatcher_dispatch(PyObject* self, PyObject* args)
         if (!py_token) {
             return nullptr;
         }
+
         long new_token = PyLong_AsLong(py_token);
         Py_DECREF(py_token);
         if (new_token == -1 && PyErr_Occurred()) {
             return nullptr;
         }
+
         if (new_token != disp->cache_token) {
             // clear dispatch_cache
             PyDict_Clear(disp->dispatch_cache);
@@ -393,6 +388,7 @@ Dispatcher_dispatch(PyObject* self, PyObject* args)
     if (!cls_ref) {
         return nullptr;
     }
+
     PyObject* res = PyDict_GetItem(disp->dispatch_cache, cls_ref);
     if (res) {
         // Found. Return it.
@@ -411,14 +407,17 @@ Dispatcher_dispatch(PyObject* self, PyObject* args)
         if (!args2) {
             return nullptr;
         }
+
         impl = PyObject_CallObject(disp->find_impl, args2);
         Py_DECREF(args2);
         if (!impl) {
             return nullptr;
         }
+
     } else {
         // We only borrowed 'impl' from the dict, so inc-ref:
         Py_INCREF(impl);
+
     }
 
     // Store in dispatch_cache under a new ref with callback:
@@ -453,6 +452,10 @@ Dispatcher_dealloc(PyObject* self)
 {
     DispatcherObject* disp = (DispatcherObject*)self;
     PyObject_GC_UnTrack(self);  // required if we are GC-tracked
+
+    if (disp->weakreflist != nullptr) {
+        PyObject_ClearWeakRefs((PyObject*) disp);
+    }
 
     // Clear references:
     Py_XDECREF(disp->find_impl);
@@ -502,6 +505,7 @@ static PyTypeObject Dispatcher_Type = {
     .tp_dealloc = Dispatcher_dealloc,
     .tp_traverse = Dispatcher_traverse,
     .tp_clear = Dispatcher_clear,
+    .tp_weaklistoffset = offsetof(DispatcherObject, weakreflist),
 };
 
 // Module-level method table (if any).
