@@ -1,9 +1,9 @@
 # ruff: noqa: F401
 # flake8: noqa: F401
 
-from prompt_toolkit.application import Application
+from prompt_toolkit import Application
+from prompt_toolkit.application import get_app
 from prompt_toolkit.application import run_in_terminal
-from prompt_toolkit.application.current import get_app
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.completion import Completer
 from prompt_toolkit.completion import Completion
