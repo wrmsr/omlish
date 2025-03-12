@@ -53,8 +53,12 @@ def field() -> Field:
 
 def dataclass(
         *,
-        frozen: bool = False,
-        repr: bool = True,  # noqa
+        init=True,
+        repr=True,  # noqa
+        eq=True,
+        order=False,
+        unsafe_hash=False,
+        frozen=False,
 ):
     def inner(cls):
         fsl: list[FieldSpec] = []
@@ -69,8 +73,12 @@ def dataclass(
         cs = ClassSpec(
                 fields=fsl,
 
-                frozen=frozen,
+                init=init,
                 repr=repr,
+                eq=eq,
+                order=order,
+                unsafe_hash=unsafe_hash,
+                frozen=frozen,
         )
 
         setattr(cls, CLASS_SPEC_ATTR, cs)

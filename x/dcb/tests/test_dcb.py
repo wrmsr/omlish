@@ -17,7 +17,7 @@ from .. import api
 ##
 
 
-@api.dataclass(frozen=True)
+@api.dataclass(frozen=True, order=True)
 class A:
     i: int
     s: str
@@ -30,3 +30,5 @@ def test_dcb():
     print(a)
 
     assert hash(a) == hash(A(5, 'hi'))  # type: ignore[call-arg]
+
+    assert A(4, 'hi') < a
