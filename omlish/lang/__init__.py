@@ -78,6 +78,7 @@ from .cmp import (  # noqa
 )
 
 from .collections import (  # noqa
+    empty_map,
     merge_dicts,
     yield_dict_init,
 )

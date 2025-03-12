@@ -48,3 +48,39 @@ def merge_dicts(
             out[k] = v
 
     return out
+
+
+##
+
+
+class _EmptyMap(ta.Mapping[K, V]):
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError
+
+    def __new__(cls, *args, **kwargs):
+        if args or kwargs:
+            raise TypeError
+        return _EMPTY_MAP
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}()'
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def __getitem__(self, k: K) -> V:
+        raise KeyError
+
+    def __len__(self) -> int:
+        return 0
+
+    def __iter__(self) -> ta.Iterator[K]:
+        return
+        yield  # noqa
+
+
+_EMPTY_MAP = object.__new__(_EmptyMap)
+
+
+def empty_map() -> ta.Mapping[K, V]:
+    return _EMPTY_MAP
