@@ -29,5 +29,5 @@ class ReprGenerator(Generator[ReprPlan]):
         repr_fs = ', '.join([f'{f}={{self.{f}}}' for f in pl.fields])
         repr_str = f'f"{{self.__class__.__name__}}({repr_fs})"'
         return [
-            AddMethodOp(name='__repr__', src=f'def __repr__(self): return {repr_str}'),
+            AddMethodOp('__repr__', f'def __repr__(self): return {repr_str}'),
         ]

@@ -75,5 +75,5 @@ class InitGenerator(Generator[InitPlan]):
         lines.append('')
 
         return [
-            AddMethodOp(name='__init__', src='\n'.join(lines), refs=frozenset(ors)),
+            AddMethodOp('__init__', '\n'.join(lines), frozenset(ors)),
         ]

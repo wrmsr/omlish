@@ -69,8 +69,8 @@ class FrozenGenerator(Generator[FrozenPlan]):
 
         return [
             AddMethodOp(
-                name='__setattr__',
-                src='\n'.join([
+                '__setattr__',
+                '\n'.join([
                     f'def __setattr__(self, name, value):',
                     f'    if {condition}:',
                     f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',
@@ -79,8 +79,8 @@ class FrozenGenerator(Generator[FrozenPlan]):
             ),
 
             AddMethodOp(
-                name='__delattr__',
-                src='\n'.join([
+                '__delattr__',
+                '\n'.join([
                     f'def __delattr__(self, name):',
                     f'    if {condition}:',
                     f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',

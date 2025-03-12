@@ -108,7 +108,7 @@ class HashGenerator(Generator[HashPlan]):
 
     def generate(self, pl: HashPlan) -> ta.Iterable[Op]:
         if pl.action == HashAction.SET_NONE:
-            return [SetAttrOp(name='__hash__', value=None)]
+            return [SetAttrOp('__hash__', None, 'replace')]
 
         elif pl.action == HashAction.EXCEPTION:
             raise RuntimeError
@@ -139,5 +139,5 @@ class HashGenerator(Generator[HashPlan]):
         lines.append('')
 
         return [
-            AddMethodOp(name='__hash__', src='\n'.join(lines)),
+            AddMethodOp('__hash__', '\n'.join(lines)),
         ]

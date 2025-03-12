@@ -30,6 +30,16 @@ class OpExecutor:
 
     def execute(self, op: Op) -> None:
         if isinstance(op, SetAttrOp):
+            if op.name in self._cls.__dict__:
+                if op.if_present == 'skip':
+                    return
+                elif op.if_present == 'replace':
+                    pass
+                elif op.if_present == 'raise':
+                    raise AttributeError(op.name)
+                else:
+                    raise ValueError(op.if_present)
+            set_qualname(self._cls, op.value)
             setattr(self._cls, op.name, op.value)
 
         elif isinstance(op, AddMethodOp):

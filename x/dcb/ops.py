@@ -31,18 +31,19 @@ OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class Op(abc.ABC):  # noqa
     pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class SetAttrOp(Op):
     name: str
     value: ta.Any
+    if_present: ta.Literal['skip', 'replace', 'raise']
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class AddMethodOp(Op):
     name: str
     src: str
