@@ -6,7 +6,6 @@ from ... import defs
 
 
 class AbstractFieldDescriptor(abc.ABC):
-
     def __init__(
             self,
             *,
@@ -69,7 +68,6 @@ class AbstractFieldDescriptor(abc.ABC):
 
 
 class PyFieldDescriptor(AbstractFieldDescriptor):
-
     def __init__(
             self,
             attr: str,
