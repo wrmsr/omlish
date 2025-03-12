@@ -1,4 +1,5 @@
 from omlish import check
+from omlish import lang
 
 from .base import Generator
 from .base import Plan
@@ -29,11 +30,13 @@ def register_generator_type(pl_ty):
     return inner
 
 
+@lang.cached_function
 def generator_type_for_plan_type(pl_ty: type[Plan]) -> type[Generator]:
     _seal_registry()
     return _GENERATOR_TYPES_BY_BLUEPRINT_TYPE[pl_ty]
 
 
+@lang.cached_function
 def all_generator_types() -> tuple[type[Generator], ...]:
     _seal_registry()
     return tuple(sorted(set(

@@ -1,5 +1,4 @@
 import dataclasses as dc
-import enum
 import typing as ta
 
 from omlish import check
@@ -18,10 +17,7 @@ from .utils import build_attr_tuple_str
 ##
 
 
-class HashAction(enum.Enum):
-    SET_NONE = enum.auto()
-    ADD = enum.auto()
-    EXCEPTION = enum.auto()
+HashAction: ta.TypeAlias = ta.Literal['set_none', 'add', 'exception']
 
 
 # See https://bugs.python.org/issue32929#msg312829 for an if-statement version of this table.
@@ -36,18 +32,18 @@ HASH_ACTIONS: ta.Mapping[tuple[bool, bool, bool, bool], HashAction | None] = {
     (False, False, False, True): None,
     (False, False, True, False): None,
     (False, False, True, True): None,
-    (False, True, False, False): HashAction.SET_NONE,
+    (False, True, False, False): 'set_none',
     (False, True, False, True): None,
-    (False, True, True, False): HashAction.ADD,
+    (False, True, True, False): 'add',
     (False, True, True, True): None,
-    (True, False, False, False): HashAction.ADD,
-    (True, False, False, True): HashAction.EXCEPTION,
-    (True, False, True, False): HashAction.ADD,
-    (True, False, True, True): HashAction.EXCEPTION,
-    (True, True, False, False): HashAction.ADD,
-    (True, True, False, True): HashAction.EXCEPTION,
-    (True, True, True, False): HashAction.ADD,
-    (True, True, True, True): HashAction.EXCEPTION,
+    (True, False, False, False): 'add',
+    (True, False, False, True): 'exception',
+    (True, False, True, False): 'add',
+    (True, False, True, True): 'exception',
+    (True, True, False, False): 'add',
+    (True, True, False, True): 'exception',
+    (True, True, True, False): 'add',
+    (True, True, True, True): 'exception',
 }
 
 
@@ -84,13 +80,13 @@ class HashGenerator(Generator[HashPlan]):
             has_explicit_hash,
         )]
 
-        if action == HashAction.SET_NONE:
+        if action == 'set_none':
             return PlanResult(HashPlan(action))
 
-        elif action == HashAction.EXCEPTION:
+        elif action == 'exception':
             _raise_hash_action_exception(ctx.cls)
 
-        elif action == HashAction.ADD:
+        elif action == 'add':
             fields = tuple(
                 f.name
                 for f in ctx.ana.instance_fields
@@ -98,7 +94,7 @@ class HashGenerator(Generator[HashPlan]):
             )
 
             return PlanResult(HashPlan(
-                HashAction.ADD,
+                'add',
                 fields=fields,
                 cache=ctx.cs.cache_hash,
             ))
@@ -107,13 +103,13 @@ class HashGenerator(Generator[HashPlan]):
             raise ValueError(action)
 
     def generate(self, pl: HashPlan) -> ta.Iterable[Op]:
-        if pl.action == HashAction.SET_NONE:
+        if pl.action == 'set_none':
             return [SetAttrOp('__hash__', None, 'replace')]
 
-        elif pl.action == HashAction.EXCEPTION:
+        elif pl.action == 'exception':
             raise RuntimeError
 
-        elif pl.action != HashAction.ADD:
+        elif pl.action != 'add':
             raise ValueError(pl.action)
 
         lines = [
