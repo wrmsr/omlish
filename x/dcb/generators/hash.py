@@ -7,9 +7,9 @@ from omlish import check
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import SetAttrOp
-from ..specs import ClassSpec
 from .base import Generator
 from .base import Plan
+from .base import PlanContext
 from .base import PlanResult
 from .registry import register_generator_type
 from .utils import build_attr_tuple_str
@@ -73,14 +73,14 @@ class HashPlan(Plan):
 
 @register_generator_type(HashPlan)
 class HashGenerator(Generator[HashPlan]):
-    def plan(self, cls: type, cs: ClassSpec) -> PlanResult[HashPlan] | None:
-        class_hash = cls.__dict__.get('__hash__', dc.MISSING)
-        has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in cls.__dict__))
+    def plan(self, ctx: PlanContext) -> PlanResult[HashPlan] | None:
+        class_hash = ctx.cls.__dict__.get('__hash__', dc.MISSING)
+        has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in ctx.cls.__dict__))
 
         action = HASH_ACTIONS[(
-            bool(cs.unsafe_hash),
-            bool(cs.eq),
-            bool(cs.frozen),
+            bool(ctx.cs.unsafe_hash),
+            bool(ctx.cs.eq),
+            bool(ctx.cs.frozen),
             has_explicit_hash,
         )]
 
@@ -88,7 +88,7 @@ class HashGenerator(Generator[HashPlan]):
             return PlanResult(HashPlan(action))
 
         elif action == HashAction.EXCEPTION:
-            _raise_hash_action_exception(cls)
+            _raise_hash_action_exception(ctx.cls)
 
         elif action == HashAction.ADD:
             # FIXME:
@@ -96,8 +96,8 @@ class HashGenerator(Generator[HashPlan]):
 
             return PlanResult(HashPlan(
                 HashAction.ADD,
-                fields=tuple(f.name for f in cs.fields),
-                cache=cs.cache_hash,
+                fields=tuple(f.name for f in ctx.cs.fields),
+                cache=ctx.cs.cache_hash,
             ))
 
         else:

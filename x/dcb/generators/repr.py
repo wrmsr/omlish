@@ -3,9 +3,9 @@ import typing as ta
 
 from ..ops import AddMethodOp
 from ..ops import Op
-from ..specs import ClassSpec
 from .base import Generator
 from .base import Plan
+from .base import PlanContext
 from .base import PlanResult
 from .registry import register_generator_type
 
@@ -20,10 +20,10 @@ class ReprPlan(Plan):
 
 @register_generator_type(ReprPlan)
 class ReprGenerator(Generator[ReprPlan]):
-    def plan(self, cls: type, cs: ClassSpec) -> PlanResult[ReprPlan] | None:
-        if not cs.repr:
+    def plan(self, ctx: PlanContext) -> PlanResult[ReprPlan] | None:
+        if not ctx.cs.repr:
             return None
-        return PlanResult(ReprPlan(tuple(f.name for f in cs.fields)))
+        return PlanResult(ReprPlan(tuple(f.name for f in ctx.cs.fields)))
 
     def generate(self, pl: ReprPlan) -> ta.Iterable[Op]:
         repr_fs = ', '.join([f'{f}={{self.{f}}}' for f in pl.fields])

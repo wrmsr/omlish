@@ -7,9 +7,9 @@ from ..internals import FIELDS_ATTR
 from ..internals import PARAMS_ATTR
 from ..ops import AddMethodOp
 from ..ops import Op
-from ..specs import ClassSpec
 from .base import Generator
 from .base import Plan
+from .base import PlanContext
 from .base import PlanResult
 from .registry import register_generator_type
 
@@ -53,13 +53,13 @@ class FrozenPlan(Plan):
 
 @register_generator_type(FrozenPlan)
 class FrozenGenerator(Generator[FrozenPlan]):
-    def plan(self, cls: type, cs: ClassSpec) -> PlanResult[FrozenPlan] | None:
-        check_frozen_bases(cls, cs.frozen)
+    def plan(self, ctx: PlanContext) -> PlanResult[FrozenPlan] | None:
+        check_frozen_bases(ctx.cls, ctx.cs.frozen)
 
-        if not cs.frozen:
+        if not ctx.cs.frozen:
             return None
 
-        return PlanResult(FrozenPlan(tuple(f.name for f in cs.fields)))
+        return PlanResult(FrozenPlan(tuple(f.name for f in ctx.cs.fields)))
 
     def generate(self, pl: FrozenPlan) -> ta.Iterable[Op]:
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5

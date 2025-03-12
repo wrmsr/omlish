@@ -7,9 +7,9 @@ from ..idents import SELF_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
-from ..specs import ClassSpec
 from .base import Generator
 from .base import Plan
+from .base import PlanContext
 from .base import PlanResult
 from .registry import register_generator_type
 
@@ -30,11 +30,11 @@ class InitPlan(Plan):
 
 @register_generator_type(InitPlan)
 class InitGenerator(Generator[InitPlan]):
-    def plan(self, cls: type, cs: ClassSpec) -> PlanResult[InitPlan] | None:
+    def plan(self, ctx: PlanContext) -> PlanResult[InitPlan] | None:
         orm = {}
 
         bfs: list[InitPlan.Field] = []
-        for i, fs in enumerate(cs.fields):
+        for i, fs in enumerate(ctx.cs.fields):
             r: OpRef = OpRef(f'init.fields.{i}.annotation')
             orm[r] = fs.annotation
             bfs.append(InitPlan.Field(
@@ -45,7 +45,7 @@ class InitGenerator(Generator[InitPlan]):
         return PlanResult(
             InitPlan(
                 fields=tuple(bfs),
-                frozen=cs.frozen,
+                frozen=ctx.cs.frozen,
             ),
             orm,
         )

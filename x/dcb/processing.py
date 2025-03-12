@@ -6,6 +6,7 @@ from omlish import lang
 
 from .execution import OpExecutor
 from .generators import Plan
+from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
 from .ops import Op
@@ -41,12 +42,14 @@ class ClassProcessor:
 
     @lang.cached_function
     def prepare(self) -> Prepared:
+        ctx = PlanContext(self._cls, self._cs)
+
         gs = [g_ty() for g_ty in all_generator_types()]
 
         pll: list[Plan] = []
         orm: dict[OpRef, ta.Any] = {}
         for g in gs:
-            if (pr := g.plan(self._cls, self._cs)) is None:
+            if (pr := g.plan(ctx)) is None:
                 continue
 
             for k, v in (pr.ref_map or {}).items():
