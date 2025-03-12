@@ -43,6 +43,8 @@ class OpExecutor:
             setattr(self._cls, op.name, op.value)
 
         elif isinstance(op, AddMethodOp):
+            if op.name in self._cls.__dict__:
+                raise AttributeError(op.name)
             ns = {
                 CLS_IDENT: self._cls,
                 **FN_GLOBALS,

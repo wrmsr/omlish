@@ -23,6 +23,7 @@ class ReprGenerator(Generator[ReprPlan]):
     def plan(self, ctx: PlanContext) -> PlanResult[ReprPlan] | None:
         if not ctx.cs.repr:
             return None
+
         return PlanResult(ReprPlan(tuple(f.name for f in ctx.cs.fields)))
 
     def generate(self, pl: ReprPlan) -> ta.Iterable[Op]:

@@ -2,9 +2,9 @@ import typing as ta
 
 from omlish import cached
 
-from ..internals import FieldType
 from ..specs import ClassSpec
 from ..specs import FieldSpec
+from ..specs import FieldType
 
 
 ##

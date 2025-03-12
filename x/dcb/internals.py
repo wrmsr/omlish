@@ -85,7 +85,7 @@ def _patch_missing_ctor() -> None:
 ##
 
 
-class FieldType(enum.Enum):
+class InternalFieldType(enum.Enum):
     INSTANCE = dc._FIELD  # type: ignore  # noqa
     CLASS = dc._FIELD_CLASSVAR  # type: ignore  # noqa
     INIT = dc._FIELD_INITVAR  # type: ignore  # noqa

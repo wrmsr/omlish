@@ -5,6 +5,11 @@ from .base import (  # noqa
     Generator,
 )
 
+from .copy import (  # noqa
+    CopyPlan,
+    CopyGenerator,
+)
+
 from .frozen import (  # noqa
     FrozenPlan,
     FrozenGenerator,

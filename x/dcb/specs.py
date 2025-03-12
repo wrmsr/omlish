@@ -1,13 +1,18 @@
 import dataclasses as dc
+import enum
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
-from .internals import FieldType
-
 
 ##
+
+
+class FieldType(enum.Enum):
+    INSTANCE = enum.auto()
+    CLASS = enum.auto()
+    INIT = enum.auto()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
