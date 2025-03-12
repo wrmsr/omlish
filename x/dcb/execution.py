@@ -1,3 +1,8 @@
+"""
+TODO:
+ - 'setup' locals - for FrozenGenerator's `condition += ' or name in {' + ', '.join(repr(f.name) for f in fields) + '}'`
+   allow for `condition += ' or name in {fields_frozenset_ident}' with fields_frozenset_ident setup in preamble
+"""
 import types
 import typing as ta
 
