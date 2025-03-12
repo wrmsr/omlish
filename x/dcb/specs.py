@@ -4,6 +4,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .internals import FieldType
+
 
 ##
 
@@ -27,6 +29,8 @@ class FieldSpec:
     kw_only: lang.Maybe[ta.Any] = lang.empty()
 
     # doc: ta.Any = None
+
+    field_type: FieldType = FieldType.INSTANCE
 
 
 ##

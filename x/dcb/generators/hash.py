@@ -91,12 +91,15 @@ class HashGenerator(Generator[HashPlan]):
             _raise_hash_action_exception(ctx.cls)
 
         elif action == HashAction.ADD:
-            # FIXME:
-            # flds = [f for f in self._info.instance_fields if (f.compare if f.hash is None else f.hash)]
+            fields = tuple(
+                f.name
+                for f in ctx.ana.instance_fields
+                if (f.compare if f.hash is None else f.hash)
+            )
 
             return PlanResult(HashPlan(
                 HashAction.ADD,
-                fields=tuple(f.name for f in ctx.cs.fields),
+                fields=fields,
                 cache=ctx.cs.cache_hash,
             ))
 
