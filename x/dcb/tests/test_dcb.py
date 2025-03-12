@@ -29,4 +29,4 @@ def test_dcb():
     a = A(5, 'hi')  # type: ignore[call-arg]
     print(a)
 
-    assert hash(a) == hash(A(5, 'hi'))
+    assert hash(a) == hash(A(5, 'hi'))  # type: ignore[call-arg]
