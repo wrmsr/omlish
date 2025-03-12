@@ -45,7 +45,6 @@ class NodeWrapped(lang.Final, ta.Generic[T]):
 
 
 class NodeUnwrapper:
-
     seq_types: tuple[type, ...] = (
         list,
         set,
@@ -95,7 +94,6 @@ def unwrap(nw: NodeWrapped[T]) -> T:
 
 
 class NodeWrappingConstructorMixin:
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -159,7 +157,6 @@ class _cached_class_property:  # noqa
 
 
 class WrappedLoaders(lang.Namespace):
-
     @staticmethod
     def _wrap(cls):  # noqa
         return type('NodeWrapping$' + cls.__name__, (NodeWrappingConstructorMixin, cls), {})

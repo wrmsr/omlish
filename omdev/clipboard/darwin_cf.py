@@ -237,7 +237,6 @@ _IMAGE_TYPE = 'public.png'
 
 
 class CfDarwinClipboard(Clipboard):
-
     def get(self) -> list[ClipboardContents]:
         ret: list[ClipboardContents] = []
         for i in get_darwin_clipboard_data(types={_TEXT_TYPE, _IMAGE_TYPE}):

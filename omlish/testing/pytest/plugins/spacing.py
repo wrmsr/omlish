@@ -3,7 +3,6 @@ from ._registry import register
 
 @register
 class SpacingPlugin:
-
     def pytest_addoption(self, parser):
         parser.addoption('--newlines-before', action='store', type=int, help='Adds newlines before tests')
         parser.addoption('--newlines-after', action='store', type=int, help='Adds newlines after tests')

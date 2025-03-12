@@ -1,13 +1,3 @@
-"""
-TODO:
- - multis?
-
-class SetBinding(Element, lang.Final):
-class SetProvider(Provider):
-
-class MapBinding(Element, lang.Final):
-class MapProvider(Provider):
-"""
 import functools
 import inspect
 import types

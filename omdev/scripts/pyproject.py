@@ -8004,9 +8004,6 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
 
 class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
     @dc.dataclass(frozen=True)
     class FileContents:
         pyproject_dct: ta.Mapping[str, ta.Any]
@@ -8148,9 +8145,6 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
 
 class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
     @cached_nullary
     def find_cext_srcs(self) -> ta.Sequence[str]:
         return sorted(find_magic_files(
@@ -8257,9 +8251,6 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
 
 class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
     @dc.dataclass(frozen=True)
     class FileContents:
         pyproject_dct: ta.Mapping[str, ta.Any]

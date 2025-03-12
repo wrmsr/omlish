@@ -204,7 +204,6 @@ class AccessForbiddenError(Exception):
 
 
 class AccessForbiddenDescriptor:
-
     def __init__(self, name: str | None = None) -> None:
         super().__init__()
 

@@ -111,7 +111,6 @@ REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, ta.Pattern[str]]] = {
 
 
 class RequiresTokenizer:
-
     def __init__(
         self,
         source: str,

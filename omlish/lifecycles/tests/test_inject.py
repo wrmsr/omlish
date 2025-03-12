@@ -18,7 +18,6 @@ from ..manager import LifecycleManager
 
 
 class _LifecycleRegistrar(lang.Final):
-
     def __init__(self) -> None:
         super().__init__()
 

@@ -8,7 +8,6 @@ from ..test_lexer import LexerUtils
 
 
 class TestLegacyRegexLexer(LexerUtils):
-
     def setUp(self):
         super().setUp()
 

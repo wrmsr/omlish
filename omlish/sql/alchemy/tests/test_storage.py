@@ -43,7 +43,6 @@ class NopBlobStorage(BlobStorage):
 
 
 class DictBlobStorage(BlobStorage):
-
     def __init__(self) -> None:
         super().__init__()
         self._dct: dict[bytes, Blob] = {}

@@ -6,7 +6,6 @@ PARAM_NAME = '__repeat'
 
 @register
 class RepeatPlugin:
-
     def pytest_addoption(self, parser):
         parser.addoption('--repeat', action='store', type=int, help='Number of times to repeat each test')
 

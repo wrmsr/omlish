@@ -10,7 +10,6 @@ T = ta.TypeVar('T')
 
 
 class FutureError(Exception, ta.Generic[T]):
-
     def __init__(self, future: cf.Future, target: T | None = None) -> None:
         super().__init__()
 

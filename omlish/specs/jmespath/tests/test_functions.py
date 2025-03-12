@@ -7,7 +7,6 @@ from ... import jmespath
 
 
 class TestFunctions(unittest.TestCase):
-
     def test_can_max_datetimes(self):
         # This is python specific behavior, but Jmespath does not specify what you should do with language specific
         # types.  We're going to add the ability that ``to_string`` will always default to str()'ing values it doesn't

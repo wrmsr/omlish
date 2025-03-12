@@ -27,7 +27,6 @@ def strip_ansi_codes(s: str) -> str:
 
 
 class ControlSequence:
-
     def __init__(self, fn: ta.Callable[..., str], desc: str) -> None:
         super().__init__()
         self._fn = fn

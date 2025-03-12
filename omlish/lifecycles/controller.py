@@ -14,7 +14,6 @@ LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 
 
 class LifecycleListener(ta.Generic[LifecycleT]):
-
     def on_starting(self, obj: LifecycleT) -> None:
         pass
 
@@ -29,7 +28,6 @@ class LifecycleListener(ta.Generic[LifecycleT]):
 
 
 class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
-
     def __init__(
             self,
             lifecycle: LifecycleT,

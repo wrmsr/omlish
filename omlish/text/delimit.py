@@ -7,7 +7,6 @@ import typing as ta
 
 
 class DelimitedEscaping:
-
     def __init__(
             self,
             delimit_char: str,

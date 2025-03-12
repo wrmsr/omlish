@@ -169,7 +169,6 @@ class TestParser(unittest.TestCase):
 
 
 class TestErrorMessages(unittest.TestCase):
-
     def setUp(self):
         self.parser = parser.Parser()
 

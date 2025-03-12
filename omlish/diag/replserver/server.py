@@ -38,7 +38,6 @@ log = logging.getLogger(__name__)
 
 
 class ReplServer:
-
     CONNECTION_THREAD_NAME = 'ReplServerConnection'
 
     @dc.dataclass(frozen=True)

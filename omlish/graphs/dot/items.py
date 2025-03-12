@@ -17,7 +17,6 @@ class Item(dc.Frozen, lang.Abstract, lang.Sealed):
 
 
 class Value(Item, lang.Abstract):
-
     @classmethod
     def of(cls, obj: ta.Union['Value', str, ta.Sequence]) -> 'Value':
         if isinstance(obj, Value):

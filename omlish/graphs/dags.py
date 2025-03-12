@@ -51,7 +51,6 @@ def invert_symmetric_set_map(src: ta.Mapping[T, ta.Iterable[T]]) -> dict[T, set[
 
 
 class Dag(ta.Generic[T]):
-
     def __init__(self, input_its_by_outputs: ta.Mapping[T, ta.Iterable[T]]) -> None:
         super().__init__()
 
@@ -70,7 +69,6 @@ class Dag(ta.Generic[T]):
 
 
 class Subdag(ta.Generic[U]):
-
     def __init__(
             self,
             dag: 'Dag[U]',

@@ -16,7 +16,6 @@ def suppress_deprecated_string_literals_warning():
 
 
 class LexerUtils(unittest.TestCase):
-
     def setUp(self):
         super().setUp()
 
@@ -37,7 +36,6 @@ class LexerUtils(unittest.TestCase):
 
 
 class TestRegexLexer(LexerUtils):
-
     def setUp(self):
         super().setUp()
 

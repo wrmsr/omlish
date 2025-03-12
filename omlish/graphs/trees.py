@@ -40,7 +40,6 @@ class UnknownNodeError(NodeError[NodeT]):
 
 
 class BasicTreeAnalysis(ta.Generic[NodeT]):
-
     def __init__(
             self,
             root: NodeT,

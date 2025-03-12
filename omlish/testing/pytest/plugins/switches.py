@@ -75,7 +75,6 @@ def get_specified_switches(obj: Configable) -> ta.Mapping[str, SwitchState]:
 
 @register
 class SwitchesPlugin:
-
     def pytest_configure(self, config):
         for sw in SWITCH_ATTRS:
             config.addinivalue_line('markers', f'{sw}: mark test as {sw}')

@@ -46,7 +46,6 @@ class UnboundVarError(ValueError):
 
 
 class Var(ta.Generic[T]):
-
     def __init__(
             self,
             default: type[MISSING] | T = MISSING,
@@ -152,7 +151,6 @@ class Var(ta.Generic[T]):
 
 
 class Binding(ta.Generic[T]):
-
     _frame: types.FrameType
     _frame_bindings: ta.MutableMapping[int, 'Binding']
     _level: int
@@ -207,7 +205,6 @@ class Binding(ta.Generic[T]):
 
 
 class _GeneratorContextManager(contextlib._GeneratorContextManager):  # noqa
-
     @hoist(2)
     def __enter__(self):
         return super().__enter__()

@@ -4,7 +4,6 @@ from ._registry import register
 
 @register
 class PydevdPlugin:
-
     def pytest_addoption(self, parser):
         parser.addoption('--no-pydevd', action='store_true', default=False, help='Disables pydevd debugging')
 

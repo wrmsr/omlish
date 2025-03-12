@@ -8,7 +8,6 @@ def _is_instance_or_subclass(obj, cls):
 
 
 class MypyDebugPathFinder(importlib.machinery.PathFinder):
-
     @classmethod
     def _get_spec(cls, fullname, path, target=None):  # noqa
         namespace_path = []

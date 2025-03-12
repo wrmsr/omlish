@@ -44,7 +44,6 @@ def _gen_tuple_proxy_method(name):
 
 
 class FixedWidthInt(int):
-
     BITS: ta.ClassVar[int]
     SIGNED: ta.ClassVar[bool]
 

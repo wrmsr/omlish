@@ -7,7 +7,6 @@ from .. import functions
 
 
 class TestFunctionSignatures(unittest.TestCase):
-
     def setUp(self):
         self._functions = functions.DefaultFunctions()
 

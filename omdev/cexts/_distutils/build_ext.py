@@ -63,7 +63,6 @@ def _get_str_config_var(name: str) -> str:
 
 
 class BuildExt:
-
     @dc.dataclass(frozen=True)
     class Options:
         build_base: str | None = None

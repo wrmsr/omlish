@@ -91,7 +91,6 @@ Stats.ATTRS = [f.name for f in dc.fields(Stats)]
 
 
 class StatsFactory:
-
     def __init__(self, *, start_time: ta.Optional[float] = None) -> None:
         super().__init__()
 
@@ -186,7 +185,6 @@ class Node:
 
 
 class ImportTracer:
-
     def __init__(self, *, stringify_fields: bool = False) -> None:
         super().__init__()
 
@@ -304,7 +302,6 @@ def sqlite_retrying(max_retries: int = 10):
 
 
 class SqliteWriter:
-
     def __init__(self, db_path: str) -> None:
         super().__init__()
 

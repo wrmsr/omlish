@@ -63,7 +63,6 @@ def _make_key(
 
 
 class Ignore:
-
     def __init__(self, value: ta.Any) -> None:
         super().__init__()
 
@@ -75,7 +74,6 @@ def ignore(value: ta.Any) -> ta.Any:
 
 
 class _CacheDescriptor:
-
     def __init__(
             self,
             fn: ta.Callable,

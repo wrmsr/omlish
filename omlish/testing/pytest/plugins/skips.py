@@ -10,7 +10,6 @@ from ._registry import register
 
 @register
 class SkipsPlugin:
-
     def pytest_collection_modifyitems(self, session, items):
         dct: dict[str, set[str]] = {}
         for arg in session.config.args:

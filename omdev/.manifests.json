@@ -207,7 +207,7 @@
     "module": ".scripts.importtrace",
     "attr": "_CLI_MODULE",
     "file": "omdev/scripts/importtrace.py",
-    "line": 480,
+    "line": 477,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/importtrace",

@@ -234,7 +234,6 @@ class Stats(ta.Sequence[float]):
 
 
 class SamplingHistogram:
-
     @dc.dataclass(frozen=True)
     class Entry:
         value: float

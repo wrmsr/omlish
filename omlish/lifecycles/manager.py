@@ -13,7 +13,6 @@ from .states import LifecycleStates
 
 
 class LifecycleManager(AbstractLifecycle):
-
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):
         controller: LifecycleController

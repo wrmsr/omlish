@@ -4,7 +4,6 @@ from ._registry import register
 
 @register
 class LoggingPlugin:
-
     def pytest_addoption(self, parser):
         parser.addoption('--log', action='store', help='Configures logging with given log level')
 

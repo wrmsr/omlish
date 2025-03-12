@@ -13,7 +13,6 @@ SetMap = ta.Mapping[MK, ta.AbstractSet[MV]]
 
 
 class DirectedGraph(ta.Generic[V], lang.Abstract):
-
     @abc.abstractmethod
     def get_successors(self, vertex: V) -> ta.Collection[V]:
         raise NotImplementedError
@@ -24,7 +23,6 @@ class DirectedGraph(ta.Generic[V], lang.Abstract):
 
 
 class ListDictDirectedGraph(DirectedGraph[V]):
-
     def __init__(self, items: ta.Iterable[tuple[V, ta.Iterable[V]]]) -> None:
         super().__init__()
 
@@ -59,7 +57,6 @@ class ListDictDirectedGraph(DirectedGraph[V]):
 
 
 class DominatorTree(ta.Generic[V]):
-
     def __init__(self, graph: DirectedGraph[V], root: V) -> None:
         super().__init__()
 
@@ -138,7 +135,6 @@ class DominatorTree(ta.Generic[V]):
 
 
 class _Dfs(ta.Generic[V]):
-
     def __init__(self, graph: DirectedGraph[V], root: V) -> None:
         super().__init__()
 
@@ -191,7 +187,6 @@ class _Dfs(ta.Generic[V]):
 
 
 class _ImmediateDominanceComputer(ta.Generic[V]):
-
     def __init__(self, dfs: _Dfs[V]) -> None:
         super().__init__()
 

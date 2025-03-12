@@ -8,7 +8,6 @@ from ..identity import IdentitySet
 
 
 class Incomparable:
-
     def __eq__(self, other):
         raise TypeError
 

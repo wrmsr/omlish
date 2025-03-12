@@ -9,7 +9,6 @@ _MISSING = object()
 
 
 class PeekIterator(ta.Iterator[T]):
-
     def __init__(self, it: ta.Iterable[T]) -> None:
         super().__init__()
 
@@ -78,7 +77,6 @@ class PeekIterator(ta.Iterator[T]):
 
 
 class ProxyIterator(ta.Iterator[T]):
-
     def __init__(self, fn: ta.Callable[[], T]) -> None:
         self._fn = fn
 
@@ -90,7 +88,6 @@ class ProxyIterator(ta.Iterator[T]):
 
 
 class PrefetchIterator(ta.Iterator[T]):
-
     def __init__(self, fn: ta.Callable[[], T] | None = None) -> None:
         super().__init__()
 
@@ -113,7 +110,6 @@ class PrefetchIterator(ta.Iterator[T]):
 
 
 class RetainIterator(ta.Iterator[T]):
-
     def __init__(self, fn: ta.Callable[[], T]) -> None:
         super().__init__()
 

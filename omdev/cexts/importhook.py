@@ -33,7 +33,6 @@ def load_dynamic(name: str, path: str) -> types.ModuleType:
 
 
 class CextImportLoader(importlib.machinery.ExtensionFileLoader):
-
     def __init__(
             self,
             filename: str,
@@ -55,7 +54,6 @@ CEXT_EXTENSIONS = ['.c', '.cc', '.cpp', '.cxx']
 
 
 class CextImportMetaFinder(importlib.abc.MetaPathFinder):
-
     def __init__(
             self,
             extensions: ta.AbstractSet[str] = frozenset(CEXT_EXTENSIONS),
