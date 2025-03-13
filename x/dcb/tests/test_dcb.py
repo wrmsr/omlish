@@ -34,7 +34,7 @@ def test_dcb():
     assert A(4, 'hi') < a  # type: ignore[call-arg,operator]
 
     match a:
-        case A(i, s):
-            print(f'{i=} {s=}')
+        case A(i, s):  # type: ignore[misc]
+            print(f'{i=} {s=}')  # type: ignore[unreachable]
         case _:
             raise RuntimeError

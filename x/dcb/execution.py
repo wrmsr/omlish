@@ -38,7 +38,7 @@ class OpExecutor:
             src: str,
             refs: ta.Iterable[OpRef] = (),
     ) -> types.FunctionType:
-        ns = {
+        ns: dict = {
             CLS_IDENT: self._cls,
             **FN_GLOBALS,
         }

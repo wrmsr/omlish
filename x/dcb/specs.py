@@ -5,7 +5,9 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .types import InitFn
 from .types import ReprFn
+from .types import ValidateFn
 
 
 ##
@@ -116,17 +118,17 @@ class ClassSpec:
     ## callbacks
     #
 
-    init_fns: ta.Sequence[ta.Callable[[ta.Any], None]] | None = None
+    init_fns: ta.Sequence[InitFn] | None = None
 
     @dc.dataclass(frozen=True)
-    class ValidateFn:
-        fn: ta.Callable[..., bool]
+    class ValidateFnWithParams:
+        fn: ValidateFn
         params: ta.Sequence[str]
 
         def __post_init__(self) -> None:
             check.not_isinstance(self.params, str)
 
-    validate_fns: ta.Sequence[ValidateFn] | None = None
+    validate_fns: ta.Sequence[ValidateFnWithParams] | None = None
 
 
 ##

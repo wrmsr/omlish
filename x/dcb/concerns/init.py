@@ -12,6 +12,7 @@ from ..idents import SELF_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
+from ..types import InitFn
 
 
 ##
@@ -28,6 +29,8 @@ class InitPlan(Plan):
     fields: tuple[Field, ...]
 
     frozen: bool
+
+    init_fns: tuple[OpRef[InitFn], ...]
 
 
 @register_generator_type(InitPlan)
@@ -48,10 +51,17 @@ class InitGenerator(Generator[InitPlan]):
                 f.override or ctx.cs.override,
             ))
 
+        ifs: list[OpRef[InitFn]] = []
+        for i, ifn in enumerate(ctx.cs.init_fns or []):
+            r = OpRef(f'init.init_fns.{i}')
+            orm[r] = ifn
+            ifs.append(r)
+
         return PlanResult(
             InitPlan(
                 fields=tuple(bfs),
                 frozen=ctx.cs.frozen,
+                init_fns=tuple(ifs),
             ),
             orm,
         )
@@ -76,6 +86,9 @@ class InitGenerator(Generator[InitPlan]):
 
         for f in bs.fields:
             lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen, override=f.override)}')
+
+        if bs.init_fns:
+            raise NotImplementedError
 
         if not bs.fields:
             lines.append(

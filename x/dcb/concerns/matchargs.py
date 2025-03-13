@@ -21,11 +21,11 @@ class MatchArgsPlan(Plan):
 @register_generator_type(MatchArgsPlan)
 class MatchArgsGenerator(Generator[MatchArgsPlan]):
     def plan(self, ctx: PlanContext) -> PlanResult[MatchArgsPlan] | None:
-        if not ctx.cs.match_args:
-            return
+        if not ctx.cs.match_args or '__match_args__' in ctx.cls.__dict__:
+            return None
 
         return PlanResult(MatchArgsPlan(
-            tuple(tuple(f.name for f in ctx.ana.init_fields.std)),
+            tuple(f.name for f in ctx.ana.init_fields.std),
         ))
 
     def generate(self, pl: MatchArgsPlan) -> ta.Iterable[Op]:
@@ -34,5 +34,5 @@ class MatchArgsGenerator(Generator[MatchArgsPlan]):
                 '__match_args__',
                 pl.fields,
                 'error',
-            )
+            ),
         ]

@@ -94,7 +94,7 @@ class ClassProcessor:
         opc = OpCompiler(self._cls.__qualname__)
         comp = opc.compile(ops)
 
-        ns = {}
+        ns: dict = {}
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 
