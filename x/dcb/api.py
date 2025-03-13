@@ -48,14 +48,17 @@ from .types import ReprFn
 @dc.dataclass(frozen=True)
 class Field:
     repr_fn: ReprFn | None = None
+    override: bool = False
 
 
 def field(
         *,
         repr_fn: ReprFn | None = None,
+        override: bool = False,
 ) -> ta.Any:
     return Field(
         repr_fn=repr_fn,
+        override=override,
     )
 
 
@@ -67,6 +70,9 @@ def dataclass(
         order=False,
         unsafe_hash=False,
         frozen=False,
+
+        cache_hash: bool = False,
+        override: bool = False,
 ):
     def inner(cls):
         fsl: list[FieldSpec] = []
@@ -83,6 +89,7 @@ def dataclass(
                 annotation=ann,
 
                 repr_fn=fld.repr_fn,
+                override=fld.override,
             ))
 
         cs = ClassSpec(
@@ -94,6 +101,9 @@ def dataclass(
                 order=order,
                 unsafe_hash=unsafe_hash,
                 frozen=frozen,
+
+                cache_hash=cache_hash,
+                override=override,
         )
 
         setattr(cls, CLASS_SPEC_ATTR, cs)

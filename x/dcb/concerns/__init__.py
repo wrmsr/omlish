@@ -23,6 +23,11 @@ from .order import (  # noqa
     OrderGenerator,
 )
 
+from .override import (  # noqa
+    OverridePlan,
+    OverrideGenerator,
+)
+
 from .repr import (  # noqa
     ReprPlan,
     ReprGenerator,

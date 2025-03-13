@@ -20,7 +20,7 @@ from .. import api
 @api.dataclass(frozen=True, order=True)
 class A:
     i: int
-    s: str = api.field(repr_fn=lambda s: f'{s}!')
+    s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
 
 
 def test_dcb():
