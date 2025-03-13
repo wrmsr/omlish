@@ -99,6 +99,9 @@ class HashGenerator(Generator[HashPlan]):
                 cache=ctx.cs.cache_hash,
             ))
 
+        elif action is None:
+            return None
+
         else:
             raise ValueError(action)
 
