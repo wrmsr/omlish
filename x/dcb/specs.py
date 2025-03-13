@@ -5,6 +5,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .types import ReprFn
+
 
 ##
 
@@ -35,7 +37,7 @@ class FieldSpec:
 
     # doc: ta.Any = None
 
-    repr_fn: ta.Callable[[ta.Any], str | None] | None = None
+    repr_fn: ReprFn | None = None
 
     field_type: FieldType = FieldType.INSTANCE
 

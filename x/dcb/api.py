@@ -30,13 +30,16 @@ def dataclass(
 ):
 """
 import dataclasses as dc
+import typing as ta
 
+from omlish import check
 from omlish import reflect as rfl
 
 from .processing import ClassProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec
+from .types import ReprFn
 
 
 ##
@@ -44,11 +47,16 @@ from .specs import FieldSpec
 
 @dc.dataclass(frozen=True)
 class Field:
-    pass
+    repr_fn: ReprFn | None = None
 
 
-def field() -> Field:
-    return Field()
+def field(
+        *,
+        repr_fn: ReprFn | None = None,
+) -> ta.Any:
+    return Field(
+        repr_fn=repr_fn,
+    )
 
 
 def dataclass(
@@ -65,9 +73,16 @@ def dataclass(
 
         anns = rfl.get_annotations(cls)
         for att, ann in anns.items():
+            try:
+                fld = check.isinstance(cls.__dict__[att], Field)
+            except (KeyError, TypeError):
+                fld = Field()
+
             fsl.append(FieldSpec(
                 name=att,
                 annotation=ann,
+
+                repr_fn=fld.repr_fn,
             ))
 
         cs = ClassSpec(

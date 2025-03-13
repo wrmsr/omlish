@@ -9,6 +9,7 @@ from ..generators.registry import register_generator_type
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
+from ..types import ReprFn
 
 
 ##
@@ -19,11 +20,11 @@ class ReprPlan(Plan):
     fields: tuple[str, ...]
 
     @dc.dataclass(frozen=True)
-    class ReprFn:
+    class Fn:
         field: str
-        fn: OpRef[ta.Callable[[ta.Any], str | None]]
+        fn: OpRef[ReprFn]
 
-    repr_fns: tuple[ReprFn, ...] = ()
+    fns: tuple[Fn, ...] = ()
 
 
 @register_generator_type(ReprPlan)
@@ -33,13 +34,13 @@ class ReprGenerator(Generator[ReprPlan]):
             return None
 
         orm = {}
-        rfs: list[ReprPlan.ReprFn] = []
+        rfs: list[ReprPlan.Fn] = []
         for i, f in enumerate(ctx.cs.fields):
             if f.repr_fn is None:
                 continue
-            r: OpRef = OpRef(f'repr.repr_fns.{i}.fn')
+            r: OpRef = OpRef(f'repr.fns.{i}.fn')
             orm[r] = f.repr_fn
-            rfs.append(ReprPlan.ReprFn(f.name, r))
+            rfs.append(ReprPlan.Fn(f.name, r))
 
         return PlanResult(
             ReprPlan(
@@ -54,7 +55,7 @@ class ReprGenerator(Generator[ReprPlan]):
             f'    f"{{self.__class__.__name__}}("',
         ]
 
-        rfd = {rf.field: rf.fn for rf in pl.repr_fns}
+        rfd = {rf.field: rf.fn for rf in pl.fns}
         for i, f in enumerate(pl.fields):
             if (rf := rfd.get(f)) is not None:
                 raise NotImplementedError
