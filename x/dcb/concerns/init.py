@@ -26,6 +26,7 @@ class InitPlan(Plan):
         override: bool
 
     fields: tuple[Field, ...]
+
     frozen: bool
 
 

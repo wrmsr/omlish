@@ -26,6 +26,7 @@ class OverridePlan(Plan):
         annotation: OpRef[ta.Any]
 
     fields: tuple[Field, ...]
+
     frozen: bool
 
 

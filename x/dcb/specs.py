@@ -113,6 +113,21 @@ class ClassSpec:
     # generic_init = MISSING,
     override: bool = False
 
+    ## callbacks
+    #
+
+    init_fns: ta.Sequence[ta.Callable[[ta.Any], None]] | None = None
+
+    @dc.dataclass(frozen=True)
+    class ValidateFn:
+        fn: ta.Callable[..., bool]
+        params: ta.Sequence[str]
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.params, str)
+
+    validate_fns: ta.Sequence[ValidateFn] | None = None
+
 
 ##
 
