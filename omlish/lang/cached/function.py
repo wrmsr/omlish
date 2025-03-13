@@ -1,5 +1,7 @@
 """
 TODO:
+ - !! reconcile A().f() with A.f(A())
+  - unbound descriptor *should* still hit instance cache
  - integrate / expose with collections.cache
  - weakrefs (selectable by arg)
  - more rigorous descriptor pickling
@@ -18,8 +20,11 @@ from ..contextmanagers import DefaultLockable
 from ..contextmanagers import default_lock
 from ..descriptors import unwrap_func
 from ..descriptors import unwrap_func_with_partials
+from ..params import KwargsParam
 from ..params import Param
+from ..params import ParamSeparator
 from ..params import ParamSpec
+from ..params import ValueParam
 from ..params import param_render
 
 
@@ -47,7 +52,7 @@ _PRE_MADE_CACHE_KEY_MAKERS = [
 
 
 _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC: ta.Mapping[ParamSpec, CacheKeyMaker] = {
-    ParamSpec.of_signature(inspect.signature(fn)): fn
+    ParamSpec.of_signature(inspect.signature(fn)): fn  # type: ignore
     for fn in _PRE_MADE_CACHE_KEY_MAKERS
 }
 
@@ -61,24 +66,20 @@ def _make_cache_key_maker(fn, *, bound=False):
     if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
         raise TypeError(fn)
 
-    sig = inspect.signature(fn)
-    sig_params = list(sig.parameters.values())[1 if bound else 0:]
-    if not sig_params:
+    ps = ParamSpec.of_signature(
+        inspect.signature(fn),
+        offset=1 if bound else 0,
+        strip_annotations=True,
+    )
+
+    if not len(ps):
         return _nullary_cache_key_maker
 
-    ps = ParamSpec.of_signature(sig, strip_annotations=True)
     if not ps.has_defaults:
         try:
             return _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC[ps]
         except KeyError:
             pass
-
-    # for p2 in ps.with_seps:
-    #     s = param_render(
-    #         p2,
-    #         render_default=(lambda: p2.name) if isinstance(p2, Param) else None,
-    #     )
-    #     print(s)
 
     builtin_pfx = '__cache_key_maker__'
     ns = {
@@ -89,36 +90,28 @@ def _make_cache_key_maker(fn, *, bound=False):
     src_params = []
     src_vals = []
     kwargs_name = None
-    render_pos_only_separator = False
-    render_kw_only_separator = True
-    for p in sig_params:
-        formatted = p.name
-        if p.default is not inspect.Parameter.empty:
+    for p in ps:
+        if isinstance(p, ParamSeparator):
+            src_params.append(p.value)
+            continue
+
+        if not isinstance(p, Param):
+            raise TypeError(p)
+
+        if isinstance(p, ValueParam) and p.default.present:
             ns[p.name] = p.default
-            formatted = f'{formatted}={formatted}'
-        kind = p.kind
-        if kind == inspect.Parameter.VAR_POSITIONAL:
-            formatted = '*' + formatted
-        elif kind == inspect.Parameter.VAR_KEYWORD:
-            formatted = '**' + formatted
-        if kind == inspect.Parameter.POSITIONAL_ONLY:
-            render_pos_only_separator = True
-        elif render_pos_only_separator:
-            src_params.append('/')
-            render_pos_only_separator = False
-        if kind == inspect.Parameter.VAR_POSITIONAL:
-            render_kw_only_separator = False
-        elif kind == inspect.Parameter.KEYWORD_ONLY and render_kw_only_separator:
-            src_params.append('*')
-            render_kw_only_separator = False
-        src_params.append(formatted)
-        if kind == inspect.Parameter.VAR_KEYWORD:
+
+        src_params.append(param_render(
+            p,
+            render_default=lambda _: p.name,  # noqa
+        ))
+
+        if isinstance(p, KwargsParam):
             kwargs_name = p.name
         else:
             src_vals.append(p.name)
-    if render_pos_only_separator:
-        src_params.append('/')
-    if kwargs_name:
+
+    if kwargs_name is not None:
         src_vals.append(f'{builtin_tuple}({builtin_sorted}({kwargs_name}.items()))')
 
     rendered = (

@@ -29,7 +29,7 @@ class Param(Sealed, Abstract):
 
     @property
     def name_with_prefix(self) -> str:
-        return f'{self.name}{self.prefix}'
+        return f'{self.prefix}{self.name}'
 
 
 #
@@ -107,13 +107,17 @@ class ParamSpec(ta.Sequence[Param], Final):
             cls,
             sig: inspect.Signature,
             *,
+            offset: int = 0,
             strip_defaults: bool = False,
             strip_annotations: bool = False,
     ) -> 'ParamSpec':
         ps: list[Param] = []
 
         ip: inspect.Parameter
-        for ip in sig.parameters.values():
+        for i, ip in enumerate(sig.parameters.values()):
+            if i < offset:
+                continue
+
             dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else empty()
             ann = _inspect_empty_to_maybe(ip.annotation) if not strip_annotations else empty()
 
