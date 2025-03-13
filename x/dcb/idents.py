@@ -10,12 +10,12 @@ VALUE_IDENT = IDENT_PREFIX + 'value'
 
 FN_GLOBALS = {
     (NONE_IDENT := IDENT_PREFIX + 'None'): None,
+    (PROPERTY_IDENT := IDENT_PREFIX + 'property'): property,
     (TYPE_ERROR_IDENT := IDENT_PREFIX + 'TypeError'): TypeError,
 
     (OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): object.__setattr__,
 
     (FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): dc.FrozenInstanceError,
-    (MISSING_IDENT := IDENT_PREFIX + 'MISSING'): dc.MISSING,
 
     (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): types.FunctionType,
 }
