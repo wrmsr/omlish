@@ -32,6 +32,12 @@ class OpExecutor:
 
     #
 
+    def _set_fn_qualname(self, fn: types.FunctionType, name: str | None = None) -> types.FunctionType:
+        if name is None:
+            name = fn.__name__
+        fn.__qualname__ = f'{self._cls.__qualname__}.{name}'
+        return fn
+
     def _create_fn(
             self,
             name: str,
@@ -44,10 +50,15 @@ class OpExecutor:
         }
         for r in refs:
             ns[r.ident()] = self._orm[r]
+
         exec(src, ns)
         fn = ns[name]
+
         if not isinstance(fn, types.FunctionType):
             raise TypeError(fn)
+
+        self._set_fn_qualname(fn, name)
+
         return fn
 
     def _create_opt_fn(
@@ -84,7 +95,7 @@ class OpExecutor:
             if isinstance(v := op.value, OpRef):
                 v = self._orm[v]
                 if isinstance(v, types.FunctionType):
-                    v.__qualname__ = f'{self._cls.__qualname__}.{v.__name__}'
+                    self._set_fn_qualname(v)
             else:
                 v = repr_round_trip_value(v)
 
@@ -100,7 +111,6 @@ class OpExecutor:
                 op.refs,
             )
 
-            fn.__qualname__ = f'{self._cls.__qualname__}.{op.name}'
             setattr(self._cls, op.name, fn)
 
         elif isinstance(op, AddPropertyOp):
