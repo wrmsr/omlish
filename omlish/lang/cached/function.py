@@ -60,9 +60,11 @@ _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC: ta.Mapping[ParamSpec, CacheKeyMaker] =
 ##
 
 
-def _make_cache_key_maker(fn, *, bound=False):
-    fn, partials = unwrap_func_with_partials(fn)
-
+def _make_unwrapped_cache_key_maker(
+        fn: ta.Callable,
+        *,
+        bound: bool = False,
+) -> CacheKeyMaker:
     if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
         raise TypeError(fn)
 
@@ -120,7 +122,19 @@ def _make_cache_key_maker(fn, *, bound=False):
     )
     exec(rendered, ns)
 
-    kfn: ta.Callable = ns['__func__']  # type: ignore[assignment]
+    kfn: CacheKeyMaker = ns['__func__']  # type: ignore[assignment]
+    return kfn
+
+
+def _make_cache_key_maker(
+        fn: ta.Any,
+        *,
+        bound: bool = False,
+):
+    fn, partials = unwrap_func_with_partials(fn)
+
+    kfn = _make_unwrapped_cache_key_maker(fn, bound=bound)
+
     for part in partials[::-1]:
         kfn = functools.partial(kfn, *part.args, **part.keywords)
 

@@ -297,3 +297,20 @@ def test_func_only_kws():
         assert c == 3
         assert foo(y=2, x=1) == {'x': 1, 'y': 2}
         assert c == 3
+
+
+def test_partials():
+    c = 0
+
+    @cached_function
+    def f(x):
+        nonlocal c
+        c += 1
+        return x + 1
+
+    pf = functools.partial(f, 1)
+    assert c == 0
+    for _ in range(2):
+        assert pf() == 2
+        assert f(1) == 2
+        assert c == 1
