@@ -20,7 +20,9 @@ T = ta.TypeVar('T')
 ##
 
 
-def set_qualname(cls: type, value: T) -> T:
+# Kept here - it should not be used anywhere else - all class modification should be through ops via Executor or
+# Compiler
+def _set_qualname(cls: type, value: T) -> T:
     if isinstance(value, types.FunctionType):
         value.__qualname__ = f'{cls.__qualname__}.{value.__name__}'
     return value
@@ -44,7 +46,7 @@ class OpExecutor:
                     raise AttributeError(op.name)
                 else:
                     raise ValueError(op.if_present)
-            set_qualname(self._cls, op.value)
+            _set_qualname(self._cls, op.value)
             setattr(self._cls, op.name, op.value)
 
         elif isinstance(op, AddMethodOp):
@@ -58,7 +60,7 @@ class OpExecutor:
                 ns[r.ident()] = self._orm[r]
             exec(op.src, ns)
             fn = ns[op.name]
-            set_qualname(self._cls, fn)
+            _set_qualname(self._cls, fn)
             setattr(self._cls, op.name, fn)
 
         else:

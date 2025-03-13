@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .compilation import OpCompiler
 from .execution import OpExecutor
 from .generators import Plan
 from .generators import PlanContext
@@ -77,9 +78,19 @@ class ClassProcessor:
         return ops
 
     def process(self) -> None:
+        self.compile()
+
         ops = self.ops()
         orm = self.prepare().ref_map
 
         opx = OpExecutor(self._cls, orm)
         for op in ops:
             opx.execute(op)
+
+    def compile(self) -> None:
+        ops = self.ops()
+
+        opc = OpCompiler(self._cls.__qualname__)
+        comp = opc.compile(ops)
+
+        print(comp)

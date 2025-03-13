@@ -72,8 +72,6 @@ class InitGenerator(Generator[InitPlan]):
                 '    pass',
             )
 
-        lines.append('')
-
         return [
             AddMethodOp('__init__', '\n'.join(lines), frozenset(ors)),
         ]

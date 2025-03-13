@@ -1,4 +1,5 @@
 import dataclasses as dc
+import types
 
 
 IDENT_PREFIX = '__dataclass__'
@@ -14,4 +15,6 @@ FN_GLOBALS = {
 
     (FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): dc.FrozenInstanceError,
     (MISSING_IDENT := IDENT_PREFIX + 'MISSING'): dc.MISSING,
+
+    (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): types.FunctionType,
 }

@@ -132,8 +132,6 @@ class HashGenerator(Generator[HashPlan]):
                 f'    return hash({self_tuple})',
             )
 
-        lines.append('')
-
         return [
             AddMethodOp('__hash__', '\n'.join(lines)),
         ]

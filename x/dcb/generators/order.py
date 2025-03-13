@@ -59,7 +59,7 @@ class OrderGenerator(Generator[OrderPlan]):
                 '\n'.join([
                     f'def {name}(self, other):',
                     f'    if other.__class__ is self.__class__:',
-                    f'        return {self_tuple}{op}{other_tuple}',
+                    f'        return {self_tuple} {op} {other_tuple}',
                     f'    return NotImplemented',
                 ]),
             ))
