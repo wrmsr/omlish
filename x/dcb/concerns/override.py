@@ -42,7 +42,7 @@ class OverrideGenerator(Generator[OverridePlan]):
             orm[r] = f.annotation
             flds.append(OverridePlan.Field(
                 f.name,
-                f.annotation,
+                r,
             ))
 
         if not flds:
