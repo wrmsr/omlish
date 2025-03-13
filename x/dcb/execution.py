@@ -59,6 +59,8 @@ class OpExecutor:
                 ns[r.ident()] = self._orm[r]
             exec(op.src, ns)
             fn = ns[op.name]
+            if not isinstance(fn, types.FunctionType):
+                raise TypeError(fn)
             fn.__qualname__ = f'{self._cls.__qualname__}.{op.name}'
             setattr(self._cls, op.name, fn)
 

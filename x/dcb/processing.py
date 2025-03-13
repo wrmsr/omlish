@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from . import concerns  # noqa
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .generators import Plan

@@ -31,4 +31,4 @@ def test_dcb():
 
     assert hash(a) == hash(A(5, 'hi'))  # type: ignore[call-arg]
 
-    assert A(4, 'hi') < a
+    assert A(4, 'hi') < a  # type: ignore[call-arg,operator]
