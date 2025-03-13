@@ -6,7 +6,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_kwargs_src
+from ..generators.utils import build_attr_kwargs_body_src_lines
 from ..idents import CLS_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
@@ -36,10 +36,11 @@ class CopyGenerator(Generator[CopyPlan]):
         if pl.fields:
             return_lines = [
                 f'    return {CLS_IDENT}(  # noqa',
-                *[
-                    f'        {a}=self.{a},'
-                    for a in pl.fields
-                ],
+                *build_attr_kwargs_body_src_lines(
+                    'self',
+                    *pl.fields,
+                    prefix='        ',
+                ),
                 f'    )',
             ]
         else:

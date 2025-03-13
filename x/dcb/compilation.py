@@ -56,7 +56,9 @@ class OpCompiler:
                     ])
                 else:
                     vs = repr(repr_round_trip_value(v))
+
                 setattr_stmt = f'setattr({CLS_IDENT}, {op.name!r}, {vs})'
+
                 if op.if_present == 'skip':
                     body_lines.extend([
                         f'if {op.name!r} not in {CLS_IDENT}.__dict__:',
@@ -87,6 +89,7 @@ class OpCompiler:
 
             elif isinstance(op, AddPropertyOp):
                 gen_ident = IDENT_PREFIX + f'property__{op.name}'
+
                 gen_lines = [
                     f'def {gen_ident}():',
                     f'    @{PROPERTY_IDENT}',
@@ -110,6 +113,7 @@ class OpCompiler:
                     f'',
                     f'    return {op.name}',
                 ])
+
                 body_lines.extend([
                     *gen_lines,
                     '',

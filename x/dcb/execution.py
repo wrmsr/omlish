@@ -80,22 +80,26 @@ class OpExecutor:
                     raise AttributeError(op.name)
                 else:
                     raise ValueError(op.if_present)
+
             if isinstance(v := op.value, OpRef):
                 v = self._orm[v]
                 if isinstance(v, types.FunctionType):
                     v.__qualname__ = f'{self._cls.__qualname__}.{v.__name__}'
             else:
                 v = repr_round_trip_value(v)
+
             setattr(self._cls, op.name, v)
 
         elif isinstance(op, AddMethodOp):
             if op.name in self._cls.__dict__:
                 raise AttributeError(op.name)
+
             fn = self._create_fn(
                 op.name,
                 op.src,
                 op.refs,
             )
+
             fn.__qualname__ = f'{self._cls.__qualname__}.{op.name}'
             setattr(self._cls, op.name, fn)
 
@@ -120,6 +124,7 @@ class OpExecutor:
                 set_fn,
                 del_fn,
             )
+
             setattr(self._cls, op.name, prop)
 
         else:

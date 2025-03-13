@@ -8,7 +8,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_tuple_src
+from ..generators.utils import build_attr_tuple_body_src_lines
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import SetAttrOp
@@ -116,7 +116,19 @@ class HashGenerator(Generator[HashPlan]):
             'def __hash__(self):',
         ]
 
-        self_tuple = build_attr_tuple_src('self', *check.not_none(pl.fields))
+        hash_lines: list[str]
+        if pl.fields:
+            hash_lines = [
+                'hash(',
+                *build_attr_tuple_body_src_lines(
+                    'self',
+                    *check.not_none(pl.fields),
+                    prefix='    ',
+                ),
+                ')',
+            ]
+        else:
+            hash_lines = ['hash()']
 
         if pl.cache:
             lines.extend([
@@ -124,13 +136,25 @@ class HashGenerator(Generator[HashPlan]):
                 f'        return self.{CACHED_HASH_ATTR}',
                 f'    except AttributeError:',
                 f'        pass',
-                f'    object.__setattr__(self, {CACHED_HASH_ATTR!r}, h := hash({self_tuple}))',
+                f'    object.__setattr__(',
+                f'        self,',
+                f'        {CACHED_HASH_ATTR!r},',
+                f'        h := {hash_lines[0]}',
+                *[
+                    f'        {l}'
+                    for l in hash_lines[1:]
+                ],
+                f'    )',
                 f'    return h',
             ])
         else:
-            lines.append(
-                f'    return hash({self_tuple})',
-            )
+            lines.extend([
+                f'    return {hash_lines[0]}',
+                *[
+                    f'    {l}'
+                    for l in hash_lines[1:]
+                ],
+            ])
 
         return [
             AddMethodOp('__hash__', '\n'.join(lines)),

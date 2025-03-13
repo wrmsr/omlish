@@ -5,15 +5,18 @@ from ..idents import SELF_IDENT
 ##
 
 
-def build_attr_tuple_src(obj_name: str, *attrs: str) -> str:
-    if not attrs:
-        return '()'
+def build_attr_tuple_body_src_lines(obj_name: str, *attrs: str, prefix: str = '') -> list[str]:
+    return [
+        f'{prefix}{obj_name}.{a},'
+        for a in attrs
+    ]
 
-    return f'({", ".join([f"{obj_name}.{a}" for a in attrs])}{"," if len(attrs) < 2 else ""})'
 
-
-def build_attr_kwargs_src(obj_name: str, *attrs: str) -> str:
-    return ', '.join([f'{a}={obj_name}.{a}' for a in attrs])
+def build_attr_kwargs_body_src_lines(obj_name: str, *attrs: str, prefix: str = '') -> list[str]:
+    return [
+        f'{prefix}{a}={obj_name}.{a},'
+        for a in attrs
+    ]
 
 
 def build_setattr_src(
