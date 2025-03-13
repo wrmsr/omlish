@@ -34,7 +34,9 @@ class OpCompiler:
     @dc.dataclass(frozen=True)
     class CompileResult:
         fn_name: str
+        params: ta.Sequence[str]
         src: str
+        refs: frozenset[OpRef]
 
     def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
         body_lines: list[str] = []
@@ -73,6 +75,8 @@ class OpCompiler:
                     *op.src.splitlines(),
                     '',
                     f'{op.name}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{op.name}"',
+                    f'if {op.name!r} in {CLS_IDENT}.__dict__:',
+                    f'    raise AttributeError({op.name!r})',
                     f'setattr({CLS_IDENT}, {op.name!r}, {op.name})',
                 ])
 
@@ -83,7 +87,7 @@ class OpCompiler:
 
         #
 
-        refs = {r for o in ops if isinstance(o, AddMethodOp) for r in o.refs}
+        refs = frozenset(r for o in ops if isinstance(o, AddMethodOp) for r in o.refs)
 
         params = [
             *sorted(r.ident() for r in refs),
@@ -112,5 +116,7 @@ class OpCompiler:
 
         return self.CompileResult(
             fn_name,
+            params,
             src,
+            refs,
         )
