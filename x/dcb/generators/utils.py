@@ -21,10 +21,13 @@ def build_setattr_src(
         value_src: str,
         *,
         frozen: bool,
+        override: bool,
 
         object_ident: str = SELF_IDENT,
 ) -> str:
-    if frozen:
+    if override:
+        return f'{object_ident}.__dict__[{name!r}] = {value_src}'
+    elif frozen:
         return f'{OBJECT_SETATTR_IDENT}({object_ident}, {name!r}, {value_src})'
     else:
         return f'{object_ident}.{name} = {value_src}'

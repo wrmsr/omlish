@@ -61,15 +61,15 @@ class OverrideGenerator(Generator[OverridePlan]):
 
         for f in pl.fields:
             get_src = '\n'.join([
-                f'def {f.name}({SELF_IDENT}) -> {f.annotation.ident()}:'
-                f'    return {SELF_IDENT}.__dict__[{f.name!r}',
+                f'def {f.name}({SELF_IDENT}) -> {f.annotation.ident()}:',
+                f'    return {SELF_IDENT}.__dict__[{f.name!r}]',
             ])
 
             set_src: str | None = None
             if not pl.frozen:
                 set_src = '\n'.join([
                     f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
-                    f'    {build_setattr_src(f.name, VALUE_IDENT, frozen=pl.frozen)}',
+                    f'    {build_setattr_src(f.name, VALUE_IDENT, frozen=pl.frozen, override=True)}',
                 ])
 
             ops.append(AddPropertyOp(

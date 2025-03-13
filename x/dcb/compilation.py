@@ -7,6 +7,7 @@ from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
 from .idents import FUNCTION_TYPE_IDENT
 from .ops import AddMethodOp
+from .ops import AddPropertyOp
 from .ops import Op
 from .ops import OpRef
 from .ops import SetAttrOp
@@ -80,6 +81,10 @@ class OpCompiler:
                     f'    raise AttributeError({op.name!r})',
                     f'setattr({CLS_IDENT}, {op.name!r}, {op.name})',
                 ])
+
+            elif isinstance(op, AddPropertyOp):
+                # FIXME
+                pass
 
             else:
                 raise TypeError(op)

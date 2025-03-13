@@ -23,6 +23,7 @@ class InitPlan(Plan):
     class Field:
         name: str
         annotation: OpRef[ta.Any]
+        override: bool
 
     fields: tuple[Field, ...]
     frozen: bool
@@ -37,12 +38,13 @@ class InitGenerator(Generator[InitPlan]):
         orm = {}
 
         bfs: list[InitPlan.Field] = []
-        for i, fs in enumerate(ctx.cs.fields):
+        for i, f in enumerate(ctx.cs.fields):
             r: OpRef = OpRef(f'init.fields.{i}.annotation')
-            orm[r] = fs.annotation
+            orm[r] = f.annotation
             bfs.append(InitPlan.Field(
-                fs.name,
+                f.name,
                 r,
+                f.override or ctx.cs.override,
             ))
 
         return PlanResult(
@@ -72,7 +74,7 @@ class InitGenerator(Generator[InitPlan]):
         ]
 
         for f in bs.fields:
-            lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen)}')
+            lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen, override=f.override)}')
 
         if not bs.fields:
             lines.append(

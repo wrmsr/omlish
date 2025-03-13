@@ -9,6 +9,7 @@ import typing as ta
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
 from .ops import AddMethodOp
+from .ops import AddPropertyOp
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -28,6 +29,45 @@ class OpExecutor:
 
         self._cls = cls
         self._orm = orm
+
+    #
+
+    def _create_fn(
+            self,
+            name: str,
+            src: str,
+            refs: ta.Iterable[OpRef] = (),
+    ) -> types.FunctionType:
+        ns = {
+            CLS_IDENT: self._cls,
+            **FN_GLOBALS,
+        }
+        for r in refs:
+            ns[r.ident()] = self._orm[r]
+        exec(src, ns)
+        fn = ns[name]
+        if not isinstance(fn, types.FunctionType):
+            raise TypeError(fn)
+        return fn
+
+    def _create_opt_fn(
+            self,
+            name: str,
+            src: str | None,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> types.FunctionType | None:
+        if src is None:
+            return None
+
+        return self._create_fn(
+            name,
+            src,
+            *args,
+            **kwargs,
+        )
+
+    #
 
     def execute(self, op: Op) -> None:
         if isinstance(op, SetAttrOp):
@@ -51,18 +91,36 @@ class OpExecutor:
         elif isinstance(op, AddMethodOp):
             if op.name in self._cls.__dict__:
                 raise AttributeError(op.name)
-            ns = {
-                CLS_IDENT: self._cls,
-                **FN_GLOBALS,
-            }
-            for r in op.refs:
-                ns[r.ident()] = self._orm[r]
-            exec(op.src, ns)
-            fn = ns[op.name]
-            if not isinstance(fn, types.FunctionType):
-                raise TypeError(fn)
+            fn = self._create_fn(
+                op.name,
+                op.src,
+                op.refs,
+            )
             fn.__qualname__ = f'{self._cls.__qualname__}.{op.name}'
             setattr(self._cls, op.name, fn)
+
+        elif isinstance(op, AddPropertyOp):
+            get_fn = self._create_opt_fn(
+                op.name,
+                op.get_src,
+                op.refs,
+            )
+            set_fn = self._create_opt_fn(
+                op.name,
+                op.set_src,
+                op.refs,
+            )
+            del_fn = self._create_opt_fn(
+                op.name,
+                op.del_src,
+                op.refs,
+            )
+            prop = property(
+                get_fn,
+                set_fn,
+                del_fn,
+            )
+            setattr(self._cls, op.name, prop)
 
         else:
             raise TypeError(op)
