@@ -32,11 +32,26 @@ class CopyGenerator(Generator[CopyPlan]):
         ))
 
     def generate(self, pl: CopyPlan) -> ta.Iterable[Op]:
+        return_lines: list[str]
+        if pl.fields:
+            return_lines = [
+                f'    return {CLS_IDENT}(  # noqa',
+                *[
+                    f'        {a}=self.{a},'
+                    for a in pl.fields
+                ],
+                f'    )',
+            ]
+        else:
+            return_lines = [
+                f'    return {CLS_IDENT}()  # noqa',
+            ]
+
         lines = [
             f'def __copy__(self):',
             f'    if self.__class__ is not {CLS_IDENT}:',
             f'        raise TypeError(self)',
-            f'    return {CLS_IDENT}({build_attr_kwargs_src('self', *pl.fields)})',
+            *return_lines,
         ]
 
         return [AddMethodOp('__copy__', '\n'.join(lines))]
