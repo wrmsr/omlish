@@ -50,14 +50,25 @@ class ReprGenerator(Generator[ReprPlan]):
         )
 
     def generate(self, pl: ReprPlan) -> ta.Iterable[Op]:
-        repr_fs = ', '.join([f'{f}={{self.{f}}}' for f in pl.fields])
-        repr_str = f'f"{{self.__class__.__name__}}({repr_fs})"'
+        repr_lines: list[str] = [
+            f'    f"{{self.__class__.__name__}}("',
+        ]
+
+        for i, f in enumerate(pl.fields):
+            repr_lines.append(
+                f'    f"{f}={{self.{f}!r}}{', ' if i < len(pl.fields) - 1 else ''}"',
+            )
+
+        repr_lines.append('    f")"')
+
         return [
             AddMethodOp(
                 '__repr__',
                 '\n'.join([
                     f'def __repr__(self):',
-                    f'    return {repr_str}',
+                    f'    return (',
+                    *repr_lines,
+                    f'    )',
                 ]),
             ),
         ]
