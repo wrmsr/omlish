@@ -19,6 +19,8 @@ class JsonObjectBuilder:
             *,
             yield_object_lists: bool = False,
     ) -> None:
+        super().__init__()
+
         self._stack: list[JsonStreamObject | list | Key] = []
         self._yield_object_lists = yield_object_lists
 
