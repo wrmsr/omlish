@@ -32,16 +32,25 @@ class Param(Sealed, Abstract):
         return f'{self.name}{self.prefix}'
 
 
+#
+
+
+@dc.dataclass(frozen=True)
 class VariadicParam(Param, Abstract):
-    pass
+    annotation: Maybe = empty()
 
 
+@dc.dataclass(frozen=True)
 class ArgsParam(VariadicParam, Final):
     prefix: ta.ClassVar[str] = '*'
 
 
+@dc.dataclass(frozen=True)
 class KwargsParam(VariadicParam, Final):
     prefix: ta.ClassVar[str] = '**'
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -50,12 +59,17 @@ class ValueParam(Param):
     annotation: Maybe = empty()
 
 
+@dc.dataclass(frozen=True)
 class PosOnlyParam(ValueParam, Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class KwOnlyParam(ValueParam, Final):
     pass
+
+
+#
 
 
 class ParamSeparator(enum.Enum):
@@ -84,13 +98,19 @@ class ParamSpec(ta.Sequence[Param], Final):
     #
 
     @classmethod
-    def of_signature(cls, sig: inspect.Signature) -> 'ParamSpec':
+    def of_signature(
+            cls,
+            sig: inspect.Signature,
+            *,
+            strip_defaults: bool = False,
+            strip_annotations: bool = False,
+    ) -> 'ParamSpec':
         ps: list[Param] = []
 
         ip: inspect.Parameter
         for ip in sig.parameters.values():
-            dfl = _inspect_empty_to_maybe(ip.default)
-            ann = _inspect_empty_to_maybe(ip.annotation)
+            dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else empty()
+            ann = _inspect_empty_to_maybe(ip.annotation) if not strip_annotations else empty()
 
             if ip.kind == inspect.Parameter.POSITIONAL_ONLY:
                 ps.append(PosOnlyParam(ip.name, dfl, ann))
@@ -169,3 +189,42 @@ class ParamSpec(ta.Sequence[Param], Final):
 
     def __len__(self) -> int:
         return len(self._ps)
+
+
+##
+
+
+def param_render(
+        p: Param | ParamSeparator,
+        *,
+        render_default: ta.Callable[[ta.Any], str] | None = None,
+        render_annotation: ta.Callable[[ta.Any], str] | None = None,
+) -> str:
+    if isinstance(p, Param):
+        dfl_s: str | None = None
+        if isinstance(p, ValueParam) and p.default.present:
+            if render_default is None:
+                raise ValueError(f'Param {p.name} has a default but no default renderer provided')
+            dfl_s = render_default(p.default.must())
+
+        ann_s: str | None = None
+        if isinstance(p, (VariadicParam, ValueParam)) and p.annotation.present:
+            if render_annotation is None:
+                raise ValueError(f'Param {p.name} has an annotation but no annotation renderer provided')
+            ann_s = render_annotation(p.annotation.must())
+
+        if ann_s is not None:
+            if dfl_s is not None:
+                return f'{p.name_with_prefix}: {ann_s} = {dfl_s}'
+            else:
+                return f'{p.name_with_prefix}: {ann_s}'
+        elif dfl_s is not None:
+            return f'{p.name_with_prefix}={dfl_s}'
+        else:
+            return p.name_with_prefix
+
+    elif isinstance(p, ParamSeparator):
+        return p.value
+
+    else:
+        raise TypeError(p)

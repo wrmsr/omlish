@@ -219,6 +219,7 @@ from .params import (  # noqa
     PosOnlyParam,
     ValueParam,
     VariadicParam,
+    param_render,
 )
 
 from .resolving import (  # noqa

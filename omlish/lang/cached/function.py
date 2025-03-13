@@ -32,14 +32,7 @@ def _nullary_cache_key_maker():
     return ()
 
 
-def _simple_cache_key_maker(*args, **kwargs):
-    return (args, tuple(sorted(kwargs.items())))
-
-
-def _make_cache_key_maker(fn, *, simple=False, bound=False):
-    if simple:
-        return _simple_cache_key_maker
-
+def _make_cache_key_maker(fn, *, bound=False):
     fn, partials = unwrap_func_with_partials(fn)
 
     if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
@@ -111,7 +104,6 @@ class _CachedFunction(ta.Generic[T], Abstract):
     @dc.dataclass(frozen=True)
     class Opts:
         map_maker: ta.Callable[[], ta.MutableMapping] = dict
-        simple_key: bool = False
         lock: DefaultLockable = None
         transient: bool = False
 
@@ -128,7 +120,7 @@ class _CachedFunction(ta.Generic[T], Abstract):
 
         self._fn = (fn,)
         self._opts = opts
-        self._key_maker = key_maker if key_maker is not None else _make_cache_key_maker(fn, simple=opts.simple_key)
+        self._key_maker = key_maker if key_maker is not None else _make_cache_key_maker(fn)
 
         self._lock = default_lock(opts.lock, False)() if opts.lock is not None else None
         self._values = values if values is not None else opts.map_maker()
@@ -284,7 +276,7 @@ class _DescriptorCachedFunction(_CachedFunction[T]):
         name = self._name
         bound_fn = fn.__get__(instance, owner)
         if self._bound_key_maker is None:
-            self._bound_key_maker = _make_cache_key_maker(fn, simple=self._opts.simple_key, bound=True)
+            self._bound_key_maker = _make_cache_key_maker(fn, bound=True)
 
         bound = self.__class__(
             fn,
