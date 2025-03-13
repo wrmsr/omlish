@@ -8,6 +8,7 @@ from omlish import lang
 from omlish.algorithm import all as alg
 from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
+from ..git.magic import GIT_DIFF_OMIT_MAGIC
 from ..tokens import all as tks
 from .srcfiles import SrcFile
 from .srcfiles import make_src_file
@@ -91,7 +92,7 @@ class AmalgGenerator:
             '# @omlish-lite\n',
             '# @omlish-script\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
-            '# @omlish-git-diff-omit\n',
+            f'# {GIT_DIFF_OMIT_MAGIC}\n',
         ]
 
         ruff_disables = sorted({

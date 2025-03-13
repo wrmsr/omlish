@@ -10,6 +10,7 @@ import re
 import typing as ta
 import urllib.request
 
+from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
 from omdev.home.secrets import load_secrets
 from omdev.tools.git.messages import GitMessageGenerator
 from omlish import check
@@ -165,10 +166,6 @@ class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
 ##
 
 
-_DIFF_OMIT_MAGIC = '@omlish-git-diff-omit'
-_DIFF_OMIT_MAGIC_COMMENT = f'# {_DIFF_OMIT_MAGIC}'
-
-
 # @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
 class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
@@ -200,7 +197,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
             return False
 
         return any(
-            l.startswith(_DIFF_OMIT_MAGIC_COMMENT)
+            l.startswith(GIT_DIFF_OMIT_MAGIC_COMMENT)
             for l in f_src.splitlines()
         )
 
