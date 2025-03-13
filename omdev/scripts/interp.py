@@ -3,6 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../interp/cli.py
+# @omlish-git-diff-omit
 # ruff: noqa: N802 UP006 UP007 UP036
 """
 TODO:

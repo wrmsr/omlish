@@ -3,6 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../clouds/aws/journald2aws/main.py
+# @omlish-git-diff-omit
 # ruff: noqa: N802 UP006 UP007 UP036
 import abc
 import argparse

@@ -91,6 +91,7 @@ class AmalgGenerator:
             '# @omlish-lite\n',
             '# @omlish-script\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
+            '# @omlish-git-diff-omit\n',
         ]
 
         ruff_disables = sorted({

@@ -1,7 +1,6 @@
 """
 TODO:
- - exclude @omlish-amalg-output files
-  - do in omdev
+ - move omit magic to omdev lol
 """
 import abc
 import concurrent.futures as cf
@@ -166,6 +165,10 @@ class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
 ##
 
 
+_DIFF_OMIT_MAGIC = '@omlish-git-diff-omit'
+_DIFF_OMIT_MAGIC_COMMENT = f'# {_DIFF_OMIT_MAGIC}'
+
+
 # @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
 class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
@@ -186,16 +189,45 @@ class AiGitMessageGenerator(GitMessageGenerator):
         # McServerGitAiBackend()
     )
 
+    def _should_exclude_file_name(self, fn: str) -> bool:
+        if not fn.endswith('.py'):
+            return False
+
+        try:
+            with open(fn) as f:
+                f_src = f.read()
+        except FileNotFoundError:
+            return False
+
+        return any(
+            l.startswith(_DIFF_OMIT_MAGIC_COMMENT)
+            for l in f_src.splitlines()
+        )
+
     def generate_commit_message(
             self,
             args: GitMessageGenerator.GenerateCommitMessageArgs,
     ) -> GitMessageGenerator.GenerateCommitMessageResult:
+        diff_files = subprocesses.check_output(
+            'git',
+            'diff',
+            '--name-only',
+            'HEAD',
+        ).decode().splitlines()
+
+        excludes = [
+            fn
+            for fn in diff_files
+            if self._should_exclude_file_name(fn)
+        ]
+
         diff = subprocesses.check_output(
             'git',
             'diff',
             'HEAD',
             '--',
             ':(exclude)**/.manifests.json',  # TODO: configurable
+            *[f':(exclude){x}' for x in excludes],
             cwd=args.cwd,
         ).decode()
 

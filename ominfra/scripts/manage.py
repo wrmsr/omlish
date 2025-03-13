@@ -3,6 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../manage/main.py
+# @omlish-git-diff-omit
 # ruff: noqa: N802 TC003 UP006 UP007 UP036
 """
 manage.py -s 'docker run -i python:3.12'
