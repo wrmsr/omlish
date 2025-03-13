@@ -6,13 +6,13 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..idents import SELF_IDENT
+from ..generators.utils import build_setattr_src
 from ..idents import NONE_IDENT
+from ..idents import SELF_IDENT
 from ..idents import VALUE_IDENT
-from ..ops import AddMethodOp
+from ..ops import AddPropertyOp
 from ..ops import Op
 from ..ops import OpRef
-from ..types import ReprFn
 
 
 ##
@@ -57,36 +57,26 @@ class OverrideGenerator(Generator[OverridePlan]):
         )
 
     def generate(self, pl: OverridePlan) -> ta.Iterable[Op]:
+        ops: list[Op] = []
+
         for f in pl.fields:
             get_src = '\n'.join([
-                f'def {f}({SELF_IDENT}) -> {f.annotation.ident()}:'
+                f'def {f.name}({SELF_IDENT}) -> {f.annotation.ident()}:'
                 f'    return {SELF_IDENT}.__dict__[{f.name!r}',
             ])
 
+            set_src: str | None = None
             if not pl.frozen:
                 set_src = '\n'.join([
-                    f'def {f}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
+                    f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
+                    f'    {build_setattr_src(f.name, VALUE_IDENT, frozen=pl.frozen)}',
                 ])
-                setter = create_fn(
-                    f.name,
-                    (self_name, f'{f.name}: __dataclass_type_{f.name}__'),
-                    [
-                        field_assign(
-                            self._info.params.frozen,
-                            f.name,
-                            f.name,
-                            self_name,
-                            True,
-                        ),
-                    ],
-                    globals=self._info.globals,
-                    locals={f'__dataclass_type_{f.name}__': f.type},
-                    return_type=lang.just(None),
-                )
-                prop = prop.setter(setter)
 
-            set_new_attribute(
-                self._cls,
+            ops.append(AddPropertyOp(
                 f.name,
-                prop,
-            )
+                get_src=get_src,
+                set_src=set_src,
+                refs=frozenset([f.annotation]),
+            ))
+
+        return ops
