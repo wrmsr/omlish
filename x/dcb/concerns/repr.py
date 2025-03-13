@@ -54,10 +54,14 @@ class ReprGenerator(Generator[ReprPlan]):
             f'    f"{{self.__class__.__name__}}("',
         ]
 
+        rfd = {rf.field: rf.fn for rf in pl.repr_fns}
         for i, f in enumerate(pl.fields):
-            repr_lines.append(
-                f'    f"{f}={{self.{f}!r}}{', ' if i < len(pl.fields) - 1 else ''}"',
-            )
+            if (rf := rfd.get(f)) is not None:
+                raise NotImplementedError
+            else:
+                repr_lines.append(
+                    f'    f"{f}={{self.{f}!r}}{', ' if i < len(pl.fields) - 1 else ''}"',
+                )
 
         repr_lines.append('    f")"')
 
