@@ -3,6 +3,11 @@ from .copy import (  # noqa
     CopyGenerator,
 )
 
+from .eq import (  # noqa
+    EqPlan,
+    EqGenerator,
+)
+
 from .frozen import (  # noqa
     FrozenPlan,
     FrozenGenerator,

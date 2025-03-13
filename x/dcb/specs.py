@@ -22,11 +22,18 @@ class FieldSpec:
     name: str
     annotation: ta.Any
 
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
+    ##
+    # defaults
 
     default: lang.Maybe[ta.Any] = lang.empty()
     default_factory: ta.Callable[..., ta.Any] | None = None
+
+    @property
+    def has_default(self) -> bool:
+        return self.default.present or self.default_factory is not None
+
+    ##
+    # std
 
     init: bool = True
     repr: bool = True
@@ -37,10 +44,30 @@ class FieldSpec:
 
     # doc: ta.Any = None
 
-    repr_fn: ReprFn | None = None
+    ##
+    # ext
+
+    # derive: ta.Callable[..., ta.Any] | None = None
+    # coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
+    # validate: ta.Callable[[ta.Any], bool] | None = None
+    # check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
+    repr_fn: ReprFn | None = None
+    # frozen: bool | None = None
+
+    ##
+    # derived
 
     field_type: FieldType = FieldType.INSTANCE
+
+    ##
+    # init
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+        check.state(not (self.default.present and self.default_factory is not None))
+
 
 
 ##
@@ -48,6 +75,9 @@ class FieldSpec:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ClassSpec:
+    ##
+    # fields
+
     fields: ta.Sequence[FieldSpec]
 
     @lang.cached_function
@@ -58,6 +88,9 @@ class ClassSpec:
             dct[f.name] = f
         return dct
 
+    ##
+    # std
+
     init: bool = True
     repr: bool = True
     eq: bool = True
@@ -65,12 +98,19 @@ class ClassSpec:
     unsafe_hash: bool = False
     frozen: bool = False
 
-    # match_args: bool = True
-    # kw_only: bool = False
+    match_args: bool = True
+    kw_only: bool = False
     # slots: bool = False
     # weakref_slot: bool = False
 
+    ##
+    # ext
+
+    metadata = None
+
+    reorder: bool = False
     cache_hash: bool = False
+    # generic_init = MISSING,
     override: bool = False
 
 
