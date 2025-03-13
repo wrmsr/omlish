@@ -1,11 +1,14 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish import check
 from omlish.text.mangle import StringMangler
 
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
+from .idents import PROPERTY_IDENT
 from .idents import FUNCTION_TYPE_IDENT
+from .idents import IDENT_PREFIX
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import Op
@@ -23,7 +26,7 @@ T = ta.TypeVar('T')
 
 QUALNAME_MANGLER = StringMangler('_', '.')
 
-COMPILED_FN_PREFIX = '__transform_dataclass__'
+COMPILED_FN_PREFIX = '_transform_dataclass__'
 
 
 class OpCompiler:
@@ -83,8 +86,35 @@ class OpCompiler:
                 ])
 
             elif isinstance(op, AddPropertyOp):
-                # FIXME
-                pass
+                gen_ident = IDENT_PREFIX + f'property__op.name'
+                gen_lines = [
+                    f'def {gen_ident}():',
+                    f'    @{PROPERTY_IDENT}',
+                    *[
+                        f'    {l}'
+                        for l in check.not_none(op.get_src).splitlines()
+                    ],
+                ]
+                if op.set_src is not None:
+                    gen_lines.extend([
+                        f'',
+                        f'    @{op.name}.setter',
+                        *[
+                            f'    {l}'
+                            for l in op.set_src.splitlines()
+                        ]
+                    ])
+                if op.del_src is not None:
+                    raise NotImplementedError
+                gen_lines.extend([
+                    f'',
+                    f'    return {op.name}',
+                ])
+                body_lines.extend([
+                    '\n'.join(gen_lines),
+                    '',
+                    f'setattr({CLS_IDENT}, {op.name!r}, {gen_ident}())',
+                ])
 
             else:
                 raise TypeError(op)
