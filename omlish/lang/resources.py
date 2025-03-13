@@ -1,8 +1,18 @@
 import dataclasses as dc
 import functools
-import importlib.resources
 import os.path
 import typing as ta
+
+from .imports import proxy_import
+
+
+if ta.TYPE_CHECKING:
+    import importlib.resources as importlib_resources
+else:
+    importlib_resources = proxy_import('importlib.resources')
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -18,7 +28,7 @@ class ReadableResource:
 def get_package_resources(anchor: str) -> ta.Mapping[str, ReadableResource]:
     lst: list[ReadableResource] = []
 
-    for pf in importlib.resources.files(anchor).iterdir():
+    for pf in importlib_resources.files(anchor).iterdir():
         lst.append(ReadableResource(
             name=pf.name,
             is_file=pf.is_file(),
@@ -65,7 +75,7 @@ def get_relative_resources(
         if num_up:
             pkg_parts = pkg_parts[:-num_up]
         anchor = '.'.join([*pkg_parts, *path_parts])
-        for pf in importlib.resources.files(anchor).iterdir():
+        for pf in importlib_resources.files(anchor).iterdir():
             lst.append(ReadableResource(
                 name=pf.name,
                 is_file=pf.is_file(),
