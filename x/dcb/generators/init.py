@@ -59,7 +59,13 @@ class InitGenerator(Generator[InitPlan]):
             ors.add(f.annotation)
 
         lines = [
-            f'def __init__({", ".join([SELF_IDENT, *params])}) -> {NONE_IDENT}:',
+            f'def __init__(',
+            f'    {SELF_IDENT},',
+            *[
+                f'    {p},'
+                for p in params
+            ],
+            f') -> {NONE_IDENT}:',
         ]
 
         for f in bs.fields:
