@@ -6,9 +6,9 @@ from omlish.text.mangle import StringMangler
 
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
-from .idents import PROPERTY_IDENT
 from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
+from .idents import PROPERTY_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import Op
@@ -86,7 +86,7 @@ class OpCompiler:
                 ])
 
             elif isinstance(op, AddPropertyOp):
-                gen_ident = IDENT_PREFIX + f'property__op.name'
+                gen_ident = IDENT_PREFIX + f'property__{op.name}'
                 gen_lines = [
                     f'def {gen_ident}():',
                     f'    @{PROPERTY_IDENT}',
@@ -102,7 +102,7 @@ class OpCompiler:
                         *[
                             f'    {l}'
                             for l in op.set_src.splitlines()
-                        ]
+                        ],
                     ])
                 if op.del_src is not None:
                     raise NotImplementedError
@@ -111,7 +111,7 @@ class OpCompiler:
                     f'    return {op.name}',
                 ])
                 body_lines.extend([
-                    '\n'.join(gen_lines),
+                    *gen_lines,
                     '',
                     f'setattr({CLS_IDENT}, {op.name!r}, {gen_ident}())',
                 ])
