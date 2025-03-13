@@ -54,19 +54,19 @@ class OrderGenerator(Generator[OrderPlan]):
             ret_lines: list[str] = []
             if pl.fields:
                 ret_lines.extend([
-                    f'        return (',
+                    f'    return (',
                     *build_attr_tuple_body_src_lines(
                         'self',
                         *pl.fields,
-                        prefix='            ',
+                        prefix='        ',
                     ),
-                    f'        ) {op} (',
+                    f'    ) {op} (',
                     *build_attr_tuple_body_src_lines(
                         'other',
                         *pl.fields,
-                        prefix='            ',
+                        prefix='        ',
                     ),
-                    f'        )',
+                    f'    )',
                 ])
             else:
                 ret_lines.append(
@@ -78,8 +78,8 @@ class OrderGenerator(Generator[OrderPlan]):
                 '\n'.join([
                     f'def {name}(self, other):',
                     f'    if other.__class__ is self.__class__:',
+                    f'        return NotImplemented',
                     *ret_lines,
-                    f'    return NotImplemented',
                 ]),
             ))
 
