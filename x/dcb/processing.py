@@ -80,19 +80,29 @@ class ClassProcessor:
 
         return ops
 
-    def process_with_executor(self) -> None:
-        ops = self.ops()
-        orm = self.prepare().ref_map
+    @lang.cached_function
+    def compile(self) -> OpCompiler.CompileResult:
+        opc = OpCompiler(
+            self._cls.__qualname__,
+        )
 
-        opx = OpExecutor(self._cls, orm)
-        for op in ops:
+        return opc.compile(
+            self.ops(),
+        )
+
+    #
+
+    def process_with_executor(self) -> None:
+        opx = OpExecutor(
+            self._cls,
+            self.prepare().ref_map,
+        )
+
+        for op in self.ops():
             opx.execute(op)
 
     def process_with_compiler(self) -> None:
-        ops = self.ops()
-
-        opc = OpCompiler(self._cls.__qualname__)
-        comp = opc.compile(ops)
+        comp = self.compile()
 
         ns: dict = {}
         exec(comp.src, ns)
