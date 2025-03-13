@@ -6,6 +6,7 @@ IDENT_PREFIX = '__dataclass__'
 
 CLS_IDENT = IDENT_PREFIX + 'cls'
 SELF_IDENT = IDENT_PREFIX + 'self'
+VALUE_IDENT = IDENT_PREFIX + 'value'
 
 FN_GLOBALS = {
     (NONE_IDENT := IDENT_PREFIX + 'None'): None,

@@ -10,6 +10,7 @@ from .ops import AddMethodOp
 from .ops import Op
 from .ops import OpRef
 from .ops import SetAttrOp
+from .ops import get_op_refs
 from .utils import repr_round_trip_value
 
 
@@ -87,7 +88,7 @@ class OpCompiler:
 
         #
 
-        refs = frozenset(r for o in ops if isinstance(o, AddMethodOp) for r in o.refs)
+        refs = frozenset.union(*[get_op_refs(o) for o in ops])
 
         params = [
             CLS_IDENT,

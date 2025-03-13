@@ -8,7 +8,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_tuple_str
+from ..generators.utils import build_attr_tuple_src
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import SetAttrOp
@@ -116,7 +116,7 @@ class HashGenerator(Generator[HashPlan]):
             'def __hash__(self):',
         ]
 
-        self_tuple = build_attr_tuple_str('self', *check.not_none(pl.fields))
+        self_tuple = build_attr_tuple_src('self', *check.not_none(pl.fields))
 
         if pl.cache:
             lines.extend([

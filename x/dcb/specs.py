@@ -38,6 +38,7 @@ class FieldSpec:
     # doc: ta.Any = None
 
     repr_fn: ReprFn | None = None
+    override: bool = False
 
     field_type: FieldType = FieldType.INSTANCE
 
@@ -70,6 +71,7 @@ class ClassSpec:
     # weakref_slot: bool = False
 
     cache_hash: bool = False
+    override: bool = False
 
 
 ##

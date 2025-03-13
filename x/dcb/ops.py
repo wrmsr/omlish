@@ -47,3 +47,29 @@ class AddMethodOp(Op):
     name: str
     src: str
     refs: frozenset[OpRef] = frozenset()
+
+
+@dc.dataclass(frozen=True)
+class AddPropertyOp(Op):
+    name: str
+    get_src: str | None = None
+    set_src: str | None = None
+    del_src: str | None = None
+    refs: frozenset[OpRef] = frozenset()
+
+
+##
+
+
+def get_op_refs(op: Op) -> frozenset[OpRef]:
+    if isinstance(op, SetAttrOp):
+        if isinstance(v := op.value, OpRef):
+            return frozenset([v])
+        else:
+            return frozenset()
+
+    elif isinstance(op, (AddMethodOp, AddPropertyOp)):
+        return op.refs
+
+    else:
+        raise TypeError(op)

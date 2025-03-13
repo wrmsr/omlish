@@ -6,7 +6,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_tuple_str
+from ..generators.utils import build_attr_tuple_src
 from ..ops import AddMethodOp
 from ..ops import Op
 
@@ -50,8 +50,8 @@ class OrderGenerator(Generator[OrderPlan]):
     def generate(self, pl: OrderPlan) -> ta.Iterable[Op]:
         ops: list[AddMethodOp] = []
 
-        self_tuple = build_attr_tuple_str('self', *pl.fields)
-        other_tuple = build_attr_tuple_str('other', *pl.fields)
+        self_tuple = build_attr_tuple_src('self', *pl.fields)
+        other_tuple = build_attr_tuple_src('other', *pl.fields)
 
         for name, op in NAME_OP_PAIRS:
             ops.append(AddMethodOp(

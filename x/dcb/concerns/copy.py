@@ -6,7 +6,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_kwargs_str
+from ..generators.utils import build_attr_kwargs_src
 from ..idents import CLS_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
@@ -36,7 +36,7 @@ class CopyGenerator(Generator[CopyPlan]):
             f'def __copy__(self):',
             f'    if self.__class__ is not {CLS_IDENT}:',
             f'        raise TypeError(self)',
-            f'    return {CLS_IDENT}({build_attr_kwargs_str('self', *pl.fields)})',
+            f'    return {CLS_IDENT}({build_attr_kwargs_src('self', *pl.fields)})',
         ]
 
         return [AddMethodOp('__copy__', '\n'.join(lines))]
