@@ -1,12 +1,16 @@
+import dataclasses as dc
 import typing as ta
 
 from omlish.text.mangle import StringMangler
 
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
+from .idents import FUNCTION_TYPE_IDENT
 from .ops import AddMethodOp
 from .ops import Op
+from .ops import OpRef
 from .ops import SetAttrOp
+from .utils import repr_round_trip_value
 
 
 T = ta.TypeVar('T')
@@ -27,13 +31,25 @@ class OpCompiler:
         self._qualname = qualname
         self._mangled_qualname = QUALNAME_MANGLER.mangle(qualname)
 
-    def compile(self, ops: ta.Sequence[Op]) -> str:
+    @dc.dataclass(frozen=True)
+    class CompileResult:
+        fn_name: str
+        src: str
+
+    def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
         body_lines: list[str] = []
 
         for op in ops:
             if isinstance(op, SetAttrOp):
-                # set_qualname(self._cls, op.value)  # FIXME
-                setattr_stmt = f'setattr({CLS_IDENT}, {op.name!r}, {op.value!r})'  # FIXME: repr??
+                if isinstance(v := op.value, OpRef):
+                    vs = v.ident()
+                    body_lines.extend([
+                        f'if isinstance({vs}, {FUNCTION_TYPE_IDENT}):'
+                        f'    {vs}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{{{vs}.__name__}}"',
+                    ])
+                else:
+                    vs = repr(repr_round_trip_value(v))
+                setattr_stmt = f'setattr({CLS_IDENT}, {op.name!r}, {vs})'
                 if op.if_present == 'skip':
                     body_lines.extend([
                         f'if {op.name!r} not in {CLS_IDENT}.__dict__:',
@@ -94,4 +110,7 @@ class OpCompiler:
 
         src = '\n'.join(lines)
 
-        return src
+        return self.CompileResult(
+            fn_name,
+            src,
+        )

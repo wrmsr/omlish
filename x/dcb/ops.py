@@ -38,7 +38,7 @@ class Op(abc.ABC):  # noqa
 @dc.dataclass(frozen=True)
 class SetAttrOp(Op):
     name: str
-    value: ta.Any
+    value: OpRef | ta.Any
     if_present: ta.Literal['skip', 'replace', 'raise']
 
 

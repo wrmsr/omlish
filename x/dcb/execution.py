@@ -10,22 +10,16 @@ from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
 from .ops import AddMethodOp
 from .ops import Op
+from .ops import OpRef
 from .ops import OpRefMap
 from .ops import SetAttrOp
+from .utils import repr_round_trip_value
 
 
 T = ta.TypeVar('T')
 
 
 ##
-
-
-# Kept here - it should not be used anywhere else - all class modification should be through ops via Executor or
-# Compiler
-def _set_qualname(cls: type, value: T) -> T:
-    if isinstance(value, types.FunctionType):
-        value.__qualname__ = f'{cls.__qualname__}.{value.__name__}'
-    return value
 
 
 class OpExecutor:
@@ -46,8 +40,13 @@ class OpExecutor:
                     raise AttributeError(op.name)
                 else:
                     raise ValueError(op.if_present)
-            _set_qualname(self._cls, op.value)
-            setattr(self._cls, op.name, op.value)
+            if isinstance(v := op.value, OpRef):
+                v = self._orm[v]
+                if isinstance(v, types.FunctionType):
+                    v.__qualname__ = f'{self._cls.__qualname__}.{v.__name__}'
+            else:
+                v = repr_round_trip_value(v)
+            setattr(self._cls, op.name, v)
 
         elif isinstance(op, AddMethodOp):
             if op.name in self._cls.__dict__:
@@ -60,7 +59,7 @@ class OpExecutor:
                 ns[r.ident()] = self._orm[r]
             exec(op.src, ns)
             fn = ns[op.name]
-            _set_qualname(self._cls, fn)
+            fn.__qualname__ = f'{self._cls.__qualname__}.{op.name}'
             setattr(self._cls, op.name, fn)
 
         else:
