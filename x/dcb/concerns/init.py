@@ -87,8 +87,11 @@ class InitGenerator(Generator[InitPlan]):
         for f in bs.fields:
             lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen, override=f.override)}')
 
-        if bs.init_fns:
-            raise NotImplementedError
+        for ifn in bs.init_fns:
+            ors.add(ifn)
+            lines.append(
+                f'    {ifn.ident()}({SELF_IDENT})',
+            )
 
         if not bs.fields:
             lines.append(

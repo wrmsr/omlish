@@ -22,6 +22,10 @@ class A:
     i: int
     s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
 
+    @api.init
+    def _init_foo(self) -> None:
+        print('hi!')
+
 
 def test_dcb():
     print(inspect.signature(A))
