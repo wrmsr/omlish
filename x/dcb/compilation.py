@@ -90,6 +90,7 @@ class OpCompiler:
         refs = frozenset(r for o in ops if isinstance(o, AddMethodOp) for r in o.refs)
 
         params = [
+            CLS_IDENT,
             *sorted(r.ident() for r in refs),
             *FN_GLOBALS,
         ]
