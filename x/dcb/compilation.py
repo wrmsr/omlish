@@ -139,7 +139,7 @@ class OpCompiler:
 
         lines = [
             f'def {fn_name}(',
-            f'    *',
+            f'    *,',
             *[
                 f'    {p},'
                 for p in params

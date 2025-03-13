@@ -11,6 +11,8 @@ from .generators import Plan
 from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
+from .idents import CLS_IDENT
+from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -78,9 +80,7 @@ class ClassProcessor:
 
         return ops
 
-    def process(self) -> None:
-        self.compile()
-
+    def process_with_executor(self) -> None:
         ops = self.ops()
         orm = self.prepare().ref_map
 
@@ -88,10 +88,24 @@ class ClassProcessor:
         for op in ops:
             opx.execute(op)
 
-    def compile(self) -> None:
+    def process_with_compiler(self) -> None:
         ops = self.ops()
 
         opc = OpCompiler(self._cls.__qualname__)
         comp = opc.compile(ops)
 
-        print(comp)
+        ns = {}
+        exec(comp.src, ns)
+        fn = ns[comp.fn_name]
+
+        kw = {
+            CLS_IDENT: self._cls,
+            **FN_GLOBALS,
+        }
+        orm = self.prepare().ref_map
+        for r in comp.refs:
+            kw[r.ident()] = orm[r]
+
+        fn(**kw)
+
+    process = process_with_compiler

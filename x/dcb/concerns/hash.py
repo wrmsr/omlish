@@ -119,16 +119,16 @@ class HashGenerator(Generator[HashPlan]):
         hash_lines: list[str]
         if pl.fields:
             hash_lines = [
-                'hash(',
+                'hash((',
                 *build_attr_tuple_body_src_lines(
                     'self',
                     *check.not_none(pl.fields),
                     prefix='    ',
                 ),
-                ')',
+                '))',
             ]
         else:
-            hash_lines = ['hash()']
+            hash_lines = ['hash(())']
 
         if pl.cache:
             lines.extend([

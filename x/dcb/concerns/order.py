@@ -77,7 +77,7 @@ class OrderGenerator(Generator[OrderPlan]):
                 name,
                 '\n'.join([
                     f'def {name}(self, other):',
-                    f'    if other.__class__ is self.__class__:',
+                    f'    if other.__class__ is not self.__class__:',
                     f'        return NotImplemented',
                     *ret_lines,
                 ]),
