@@ -109,9 +109,6 @@ class HashGenerator(Generator[HashPlan]):
         if pl.action == 'set_none':
             return [SetAttrOp('__hash__', None, 'replace')]
 
-        elif pl.action == 'exception':
-            raise RuntimeError
-
         elif pl.action != 'add':
             raise ValueError(pl.action)
 
