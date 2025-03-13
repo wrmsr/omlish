@@ -271,3 +271,29 @@ def test_pickling():
         assert c2.t_func() == 4
         assert c2.d_prop == 2
         assert c2.t_prop == 5
+
+
+def test_func_only_kws():
+    c = 0
+
+    @cached_function
+    def foo(**kw):
+        nonlocal c
+        c += 1
+        return kw
+
+    assert c == 0
+
+    for _ in range(2):
+        assert foo() == {}
+        assert c == 1
+
+    for _ in range(2):
+        assert foo(x=1) == {'x': 1}
+        assert c == 2
+
+    for _ in range(2):
+        assert foo(x=1, y=2) == {'x': 1, 'y': 2}
+        assert c == 3
+        assert foo(y=2, x=1) == {'x': 1, 'y': 2}
+        assert c == 3

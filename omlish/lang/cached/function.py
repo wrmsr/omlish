@@ -50,7 +50,12 @@ def _make_cache_key_maker(fn, *, simple=False, bound=False):
     if not sig_params:
         return _nullary_cache_key_maker
 
-    ns = {}
+    builtin_pfx = '__cache_key_maker__'
+    ns = {
+        (builtin_tuple := builtin_pfx + 'tuple'): tuple,
+        (builtin_sorted := builtin_pfx + 'sorted'): sorted,
+    }
+
     src_params = []
     src_vals = []
     kwargs_name = None
@@ -83,15 +88,16 @@ def _make_cache_key_maker(fn, *, simple=False, bound=False):
             src_vals.append(p.name)
     if render_pos_only_separator:
         src_params.append('/')
+    if kwargs_name:
+        src_vals.append(f'{builtin_tuple}({builtin_sorted}({kwargs_name}.items()))')
 
-    kwa = f', __builtins__.tuple(__builtins__.sorted({kwargs_name}.items()))' if kwargs_name else ''
     rendered = (
         f'def __func__({", ".join(src_params)}):\n'
-        f'    return ({", ".join(src_vals)}{kwa})\n'
+        f'    return ({", ".join(src_vals)}{"," if len(src_vals) == 1 else ""})\n'
     )
     exec(rendered, ns)
 
-    kfn = ns['__func__']
+    kfn: ta.Callable = ns['__func__']  # type: ignore[assignment]
     for part in partials[::-1]:
         kfn = functools.partial(kfn, *part.args, **part.keywords)
 
