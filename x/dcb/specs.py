@@ -24,7 +24,7 @@ class FieldSpec:
         check.non_empty_str(self.name)
 
     default: lang.Maybe[ta.Any] = lang.empty()
-    default_factory: lang.Maybe[ta.Any] = lang.empty()
+    default_factory: ta.Callable[..., ta.Any] | None = None
 
     init: bool = True
     repr: bool = True
@@ -34,6 +34,8 @@ class FieldSpec:
     kw_only: lang.Maybe[ta.Any] = lang.empty()
 
     # doc: ta.Any = None
+
+    repr_fn: ta.Callable[[ta.Any], str | None] | None = None
 
     field_type: FieldType = FieldType.INSTANCE
 
