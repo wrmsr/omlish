@@ -7,6 +7,7 @@ from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..ops import Op
+from ..ops import SetAttrOp
 
 
 ##
@@ -20,13 +21,18 @@ class MatchArgsPlan(Plan):
 @register_generator_type(MatchArgsPlan)
 class MatchArgsGenerator(Generator[MatchArgsPlan]):
     def plan(self, ctx: PlanContext) -> PlanResult[MatchArgsPlan] | None:
-        # if not self._info.params.match_args:
-        #     return
-        #
-        # ifs = get_init_fields(self._info.fields.values())
-        # set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
+        if not ctx.cs.match_args:
+            return
 
-        raise NotImplementedError
+        return PlanResult(MatchArgsPlan(
+            tuple(tuple(f.name for f in ctx.ana.init_fields.std)),
+        ))
 
     def generate(self, pl: MatchArgsPlan) -> ta.Iterable[Op]:
-        raise NotImplementedError
+        return [
+            SetAttrOp(
+                '__match_args__',
+                pl.fields,
+                'error',
+            )
+        ]

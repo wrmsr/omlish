@@ -71,6 +71,8 @@ def dataclass(
         unsafe_hash=False,
         frozen=False,
 
+        match_args=True,
+
         cache_hash: bool = False,
         override: bool = False,
 ):
@@ -101,6 +103,8 @@ def dataclass(
                 order=order,
                 unsafe_hash=unsafe_hash,
                 frozen=frozen,
+
+                match_args=match_args,
 
                 cache_hash=cache_hash,
                 override=override,

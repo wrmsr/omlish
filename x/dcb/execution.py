@@ -76,7 +76,7 @@ class OpExecutor:
                     return
                 elif op.if_present == 'replace':
                     pass
-                elif op.if_present == 'raise':
+                elif op.if_present == 'error':
                     raise AttributeError(op.name)
                 else:
                     raise ValueError(op.if_present)

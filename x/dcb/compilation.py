@@ -68,7 +68,7 @@ class OpCompiler:
                     body_lines.append(
                         setattr_stmt,
                     )
-                elif op.if_present == 'raise':
+                elif op.if_present == 'error':
                     body_lines.extend([
                         f'if {op.name!r} in {CLS_IDENT}.__dict__:',
                         f'    raise AttributeError({op.name!r})',
