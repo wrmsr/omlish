@@ -53,18 +53,18 @@ class KwargsParam(VariadicParam, Final):
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class ValueParam(Param):
     default: Maybe = empty()
     annotation: Maybe = empty()
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class PosOnlyParam(ValueParam, Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class KwOnlyParam(ValueParam, Final):
     pass
 
@@ -92,7 +92,12 @@ class ParamSpec(ta.Sequence[Param], Final):
         super().__init__()
 
         self._ps = ps
+
         self._hash: int | None = None
+
+        self._has_defaults: bool | None = None
+        self._has_annotations: bool | None = None
+
         self._with_seps: tuple[Param | ParamSeparator, ...] | None = None
 
     #
@@ -147,6 +152,28 @@ class ParamSpec(ta.Sequence[Param], Final):
         if type(other) is not ParamSpec:
             raise TypeError(other)
         return self._ps == other._ps  # noqa
+
+    #
+
+    @property
+    def has_defaults(self) -> bool:
+        if (hd := self._has_defaults) is not None:
+            return hd
+        self._has_defaults = hd = any(
+            isinstance(p, ValueParam) and p.default.present
+            for p in self._ps
+        )
+        return hd
+
+    @property
+    def has_annotations(self) -> bool:
+        if (ha := self._has_defaults) is not None:
+            return ha
+        self._has_annotations = ha = any(
+            isinstance(p, (VariadicParam, ValueParam)) and p.annotation.present
+            for p in self._ps
+        )
+        return ha
 
     #
 

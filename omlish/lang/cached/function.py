@@ -18,11 +18,15 @@ from ..contextmanagers import DefaultLockable
 from ..contextmanagers import default_lock
 from ..descriptors import unwrap_func
 from ..descriptors import unwrap_func_with_partials
+from ..params import Param
+from ..params import ParamSpec
+from ..params import param_render
 
 
 P = ta.ParamSpec('P')
 T = ta.TypeVar('T')
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+CacheKeyMaker: ta.TypeAlias = ta.Callable[..., tuple]
 
 
 ##
@@ -30,6 +34,25 @@ CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 def _nullary_cache_key_maker():
     return ()
+
+
+def _self_cache_key_maker(self):
+    return (self,)
+
+
+_PRE_MADE_CACHE_KEY_MAKERS = [
+    _nullary_cache_key_maker,
+    _self_cache_key_maker,
+]
+
+
+_PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC: ta.Mapping[ParamSpec, CacheKeyMaker] = {
+    ParamSpec.of_signature(inspect.signature(fn)): fn
+    for fn in _PRE_MADE_CACHE_KEY_MAKERS
+}
+
+
+##
 
 
 def _make_cache_key_maker(fn, *, bound=False):
@@ -42,6 +65,20 @@ def _make_cache_key_maker(fn, *, bound=False):
     sig_params = list(sig.parameters.values())[1 if bound else 0:]
     if not sig_params:
         return _nullary_cache_key_maker
+
+    ps = ParamSpec.of_signature(sig, strip_annotations=True)
+    if not ps.has_defaults:
+        try:
+            return _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC[ps]
+        except KeyError:
+            pass
+
+    # for p2 in ps.with_seps:
+    #     s = param_render(
+    #         p2,
+    #         render_default=(lambda: p2.name) if isinstance(p2, Param) else None,
+    #     )
+    #     print(s)
 
     builtin_pfx = '__cache_key_maker__'
     ns = {
