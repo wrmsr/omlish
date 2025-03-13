@@ -3,8 +3,8 @@ import typing as ta
 
 from ..idents import CLS_IDENT
 from ..idents import FROZEN_INSTANCE_ERROR_IDENT
-from ..internals import FIELDS_ATTR
-from ..internals import PARAMS_ATTR
+from ..std import STD_FIELDS_ATTR
+from ..std import STD_PARAMS_ATTR
 from ..ops import AddMethodOp
 from ..ops import Op
 from .base import Generator
@@ -23,7 +23,7 @@ def check_frozen_bases(cls: type, frozen: bool) -> None:
     has_dataclass_bases = False
 
     for b in cls.__mro__[-1:0:-1]:
-        base_fields = getattr(b, FIELDS_ATTR, None)
+        base_fields = getattr(b, STD_FIELDS_ATTR, None)
         if base_fields is None:
             continue
 
@@ -31,7 +31,7 @@ def check_frozen_bases(cls: type, frozen: bool) -> None:
         if all_frozen_bases is None:
             all_frozen_bases = True
 
-        current_frozen = getattr(b, PARAMS_ATTR).frozen
+        current_frozen = getattr(b, STD_PARAMS_ATTR).frozen
         all_frozen_bases = all_frozen_bases and current_frozen
         any_frozen_base = any_frozen_base or current_frozen
 

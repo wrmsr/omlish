@@ -3,7 +3,6 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
 from .idents import IDENT_PREFIX
 
@@ -22,7 +21,7 @@ class OpRef(ta.Generic[T]):
         check.non_empty_str(self.name)
 
     def ident(self) -> str:
-        return IDENT_PREFIX + lang.replace_many(self.name, '.[]', '__')
+        return IDENT_PREFIX + self.name.replace( '.', '__')
 
 
 OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]

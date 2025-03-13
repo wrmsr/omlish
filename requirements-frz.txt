@@ -24,7 +24,7 @@ async-lru==2.0.4
 asyncer==0.0.8
 asyncpg==0.30.0
 asyncssh==2.20.0
-attrs==25.2.0
+attrs==25.3.0
 audioread==3.0.1
 babel==2.17.0
 backoff==2.2.1
@@ -95,10 +95,10 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.2.1
-duckduckgo_search==7.5.1
+duckduckgo_search==7.5.2
 durationpy==0.9
 einops==0.8.1
-elastic-transport==8.17.0
+elastic-transport==8.17.1
 elasticsearch==8.17.2
 emoji==2.14.1
 eval_type_backport==0.2.2
@@ -131,7 +131,7 @@ gguf==0.14.0
 gitdb==4.0.12
 GitPython==3.1.44
 google-api-core==2.24.2
-google-api-python-client==2.163.0
+google-api-python-client==2.164.0
 google-auth==2.38.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.26.0
@@ -226,7 +226,7 @@ langcodes==3.5.0
 langdetect==1.0.9
 langgraph==0.3.8
 langgraph-checkpoint==2.0.19
-langgraph-prebuilt==0.1.2
+langgraph-prebuilt==0.1.3
 langgraph-sdk==0.1.56
 langsmith==0.3.13
 language_data==1.3.0
@@ -298,7 +298,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.21.0
-openai==1.66.2
+openai==1.66.3
 opencv-python==4.11.0.86
 opendal==0.45.16
 opentelemetry-api==1.31.0
@@ -323,7 +323,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@37266c1baba367a9a31fc31f22e992a486e84f19
+peft @ git+https://github.com/huggingface/peft.git@2f063e6342235842a00bca150a98854b89117986
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.2.0
@@ -346,7 +346,7 @@ propcache==0.3.0
 proto-plus==1.26.1
 protobuf==4.25.6
 psutil==7.0.0
-psycopg==3.2.5
+psycopg==3.2.6
 psycopg2==2.9.10
 ptyprocess==0.7.0
 pudb==2024.1.3
@@ -435,7 +435,7 @@ scikit-image==0.25.2
 scikit-learn==1.6.1
 scipy==1.15.2
 scramp==1.4.5
-segno==1.6.5
+segno==1.6.6
 selectolax==0.3.28
 Send2Trash==1.8.3
 sentence-transformers==3.4.1
@@ -464,7 +464,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.39
 sqlean.py==3.47.0
-sqlglot==26.9.0
+sqlglot==26.10.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.5.1
@@ -482,12 +482,12 @@ termcolor==2.5.0
 terminado==0.18.1
 tf_keras==2.17.0
 thinc==8.3.4
-threadpoolctl==3.5.0
+threadpoolctl==3.6.0
 tifffile==2025.2.18
 tiktoken==0.9.0
 tinycss2==1.4.0
 tld==0.13
-tokenizers==0.21.0
+tokenizers==0.21.1
 tomlkit==0.13.2
 torch==2.6.0
 torchinfo==1.8.0

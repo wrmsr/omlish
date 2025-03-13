@@ -64,7 +64,7 @@ json5==0.10.0
 ##
 
 psycopg2==2.9.10
-psycopg==3.2.5
+psycopg==3.2.6
 
 mysql-connector-python==9.2.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
@@ -113,9 +113,9 @@ transformers==4.49.0; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
-segno==1.6.5
+segno==1.6.6
 
-duckduckgo_search==7.5.1  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==7.5.2  # @omlish-venv !13t  # segfault lol
 
 boto3>=1.37.11
 

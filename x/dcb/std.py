@@ -8,14 +8,14 @@ import typing as ta
 ##
 
 
-HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY  # type: ignore  # noqa
+STD_HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY  # type: ignore  # noqa
 
-FIELDS_ATTR = dc._FIELDS  # type: ignore  # noqa
-PARAMS_ATTR = dc._PARAMS  # type: ignore  # noqa
+STD_FIELDS_ATTR = dc._FIELDS  # type: ignore  # noqa
+STD_PARAMS_ATTR = dc._PARAMS  # type: ignore  # noqa
 
-POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
+STD_POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
-Params = dc._DataclassParams  # type: ignore  # noqa
+StdParams = dc._DataclassParams  # type: ignore  # noqa
 
 
 """
@@ -85,7 +85,7 @@ def _patch_missing_ctor() -> None:
 ##
 
 
-class InternalFieldType(enum.Enum):
+class StdFieldType(enum.Enum):
     INSTANCE = dc._FIELD  # type: ignore  # noqa
     CLASS = dc._FIELD_CLASSVAR  # type: ignore  # noqa
     INIT = dc._FIELD_INITVAR  # type: ignore  # noqa
