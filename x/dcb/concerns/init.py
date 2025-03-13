@@ -31,6 +31,9 @@ class InitPlan(Plan):
 @register_generator_type(InitPlan)
 class InitGenerator(Generator[InitPlan]):
     def plan(self, ctx: PlanContext) -> PlanResult[InitPlan] | None:
+        if '__init__' in ctx.cls.__dict__:
+            return None
+
         orm = {}
 
         bfs: list[InitPlan.Field] = []
