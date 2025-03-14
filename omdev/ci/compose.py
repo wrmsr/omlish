@@ -99,8 +99,7 @@ class DockerComposeRun(AsyncExitStacked):
         out_service['image'] = self._cfg.image
 
         for k in ['build', 'platform']:
-            if k in out_service:
-                del out_service[k]
+            out_service.pop(k, None)
 
         #
 

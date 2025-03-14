@@ -164,6 +164,7 @@ ignore = [
     'B028',  # no-explicit-stacklevel
     'B905',  # zip-without-explicit-strict
     'C408',  # unnecessary-collection-call
+    'C420',  # unnecessary-dict-comprehension-for-iterable
     'C901',  # complex-structure
     'D',  # docstrings
     'E731',  # lambda-assignment
@@ -197,6 +198,7 @@ ignore = [
     'PT016',  # pytest-fail-without-message
     'PT018',  # pytest-composite-assertion
     'PTH',  # pathlib
+    'PYI019',  # custom-type-var-for-self
     'Q003',  # avoidable-escaped-quote
     'RET504',  # unnecessary-assign
     'RET505',  # superfluous-else-return
@@ -221,7 +223,8 @@ ignore = [
     'T201',  # print
     'T203',  # p-print
     'TC001',  # typing-only-first-party-import
-    'TD001', # invalid-todo-tag
+    'TC006',  # runtime-cast-value
+    'TD001',  # invalid-todo-tag
     'TD002',  # missing-todo-author
     'TD003',  # missing-todo-link
     'TD004',  # missing-todo-colon

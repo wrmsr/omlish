@@ -191,7 +191,7 @@ class Stats(ta.Sequence[float]):
             # freedman algorithm for fixed-width bin selection
             q25, q75 = self.get_quantile(0.25), self.get_quantile(0.75)
             dx = 2 * (q75 - q25) / (len_data ** (1 / 3.0))
-            bin_count = max(1, int(math.ceil((max_data - min_data) / dx)))
+            bin_count = max(1, math.ceil((max_data - min_data) / dx))
             bins = [min_data + (dx * i) for i in range(bin_count + 1)]
             bins = [b for b in bins if b < max_data]
 
@@ -301,7 +301,7 @@ class SamplingHistogram:
 
     @staticmethod
     def _calc_percentile_pos(p: float, sz: int) -> int:
-        return int(round((p * sz) - 1))
+        return round((p * sz) - 1)
 
     def _calc_percentiles(self, entries: list[Entry | None]) -> list[Percentile]:
         entries = list(filter(None, entries))

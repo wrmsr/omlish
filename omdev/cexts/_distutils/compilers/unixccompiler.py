@@ -372,7 +372,7 @@ class UnixCCompiler(CCompiler):
         """
         lib_names = (
             self.library_filename(lib, lib_type=ty)
-            for ty in 'dylib xcode_stub shared static'.split()
+            for ty in ['dylib', 'xcode_stub', 'shared', 'static']
         )
 
         roots = map(self._library_root, dirs)

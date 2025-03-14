@@ -4653,7 +4653,7 @@ _DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
 
 _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (dict,)},
-    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},
+    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},  # noqa
 }
 
 _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
@@ -10945,8 +10945,7 @@ class DockerComposeRun(AsyncExitStacked):
         out_service['image'] = self._cfg.image
 
         for k in ['build', 'platform']:
-            if k in out_service:
-                del out_service[k]
+            out_service.pop(k, None)
 
         #
 
