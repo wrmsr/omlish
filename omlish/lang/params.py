@@ -244,13 +244,13 @@ def param_render(
         render_default: ta.Callable[[ta.Any], str] | None = None,
 ) -> str:
     if isinstance(p, Param):
-        dfl_s: str | None = None
         ann_s: str | None = None
-        if isinstance(p, (VarParam, ValParam)) and p.annotation.present:
+        if p.annotation.present:
             if render_annotation is None:
                 raise ValueError(f'Param {p.name} has an annotation but no annotation renderer provided')
             ann_s = render_annotation(p.annotation.must())
 
+        dfl_s: str | None = None
         if isinstance(p, ValParam) and p.default.present:
             if render_default is None:
                 raise ValueError(f'Param {p.name} has a default but no default renderer provided')

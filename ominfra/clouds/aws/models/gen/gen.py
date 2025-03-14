@@ -16,7 +16,7 @@ from omlish.algorithm import all as alg
 
 if ta.TYPE_CHECKING:
     import botocore.loaders
-    import botocore.model
+    import botocore.mode2
     import botocore.session
 else:
     botocore = lang.proxy_import('botocore', extras=[
@@ -204,6 +204,8 @@ class ModelGen:
         'CA',
         'CRC32',
         'CRC32C',
+        'CRC64',
+        'CRC64C',
         'DB',
         'EFS',
         'ETag',
@@ -214,6 +216,7 @@ class ModelGen:
         'KMS',
         'MD5',
         'MFA',
+        'NVME',
         'SHA1',
         'SHA256',
         'SSE',

@@ -46,7 +46,7 @@ class OpExecutor:
     ) -> types.FunctionType:
         ns: dict = {
             CLS_IDENT: self._cls,
-            **FN_GLOBALS,
+            **FN_GLOBAL_VALUES,
         }
         for r in refs:
             ns[r.ident()] = self._orm[r]

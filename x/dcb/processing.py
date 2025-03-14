@@ -12,7 +12,7 @@ from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_VALUES
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -110,7 +110,7 @@ class ClassProcessor:
 
         kw = {
             CLS_IDENT: self._cls,
-            **FN_GLOBALS,
+            **FN_GLOBAL_VALUES,
         }
         orm = self.prepare().ref_map
         for r in comp.refs:

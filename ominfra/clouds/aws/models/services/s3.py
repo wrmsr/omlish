@@ -680,7 +680,7 @@ class PutObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
@@ -844,7 +844,7 @@ class GetObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
@@ -1221,7 +1221,7 @@ class PutObjectRequest(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_c_r_c64_n_v_m_e: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
