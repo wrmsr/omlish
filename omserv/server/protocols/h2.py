@@ -6,7 +6,10 @@ import h2.connection
 import h2.events
 import h2.exceptions
 import h2.settings
+import hpack
 import priority
+
+from omlish import check
 
 from ..config import Config
 from ..events import Body
@@ -137,7 +140,9 @@ class H2Protocol(Protocol):
             settings: str | None = None,
     ) -> None:
         if settings is not None:
-            self.connection.initiate_upgrade_connection(settings)
+            self.connection.initiate_upgrade_connection(
+                settings.encode('ascii') if settings is not None else None,
+            )
         else:
             self.connection.initiate_connection()
 
@@ -146,7 +151,7 @@ class H2Protocol(Protocol):
         if headers is not None:
             event = h2.events.RequestReceived()
             event.stream_id = 1
-            event.headers = headers
+            event.headers = [hpack.HeaderTuple(*t) for t in headers]
             await self._create_stream(event)
             await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
 
@@ -258,7 +263,7 @@ class H2Protocol(Protocol):
         for event in events:
             if isinstance(event, h2.events.RequestReceived):
                 if self.context.terminated.is_set():
-                    self.connection.reset_stream(event.stream_id)
+                    self.connection.reset_stream(check.not_none(event.stream_id))
                     self.connection.update_settings(
                         {h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: 0},
                     )
@@ -270,23 +275,26 @@ class H2Protocol(Protocol):
                     self.connection.close_connection()
 
             elif isinstance(event, h2.events.DataReceived):
-                await self.streams[event.stream_id].handle(Body(
-                    stream_id=event.stream_id,
-                    data=event.data,
+                await self.streams[check.not_none(event.stream_id)].handle(Body(
+                    stream_id=check.not_none(event.stream_id),
+                    data=check.not_none(event.data),
                 ))
                 self.connection.acknowledge_received_data(
-                    event.flow_controlled_length, event.stream_id,
+                    check.not_none(event.flow_controlled_length),
+                    check.not_none(event.stream_id),
                 )
 
             elif isinstance(event, h2.events.StreamEnded):
-                await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
+                await self.streams[check.not_none(event.stream_id)].handle(
+                    EndBody(stream_id=check.not_none(event.stream_id)),
+                )
 
             elif isinstance(event, h2.events.StreamReset):
-                await self._close_stream(event.stream_id)
+                await self._close_stream(check.not_none(event.stream_id))
                 await self._window_updated(event.stream_id)
 
             elif isinstance(event, h2.events.WindowUpdated):
-                await self._window_updated(event.stream_id)
+                await self._window_updated(check.not_none(event.stream_id))
 
             elif isinstance(event, h2.events.PriorityUpdated):
                 await self._priority_updated(event)
@@ -315,34 +323,41 @@ class H2Protocol(Protocol):
         await self.has_data.set()
 
     async def _priority_updated(self, event: h2.events.PriorityUpdated) -> None:
+        stream_id = check.not_none(event.stream_id)
+
         try:
             self.priority.reprioritize(
-                stream_id=event.stream_id,
+                stream_id=stream_id,
                 depends_on=event.depends_on or None,
-                weight=event.weight,
-                exclusive=event.exclusive,
+                weight=check.not_none(event.weight),
+                exclusive=check.not_none(event.exclusive),
             )
 
         except priority.MissingStreamError:
             # Received PRIORITY frame before HEADERS frame
             self.priority.insert_stream(
-                stream_id=event.stream_id,
+                stream_id=stream_id,
                 depends_on=event.depends_on or None,
-                weight=event.weight,
-                exclusive=event.exclusive,
+                weight=check.not_none(event.weight),
+                exclusive=check.not_none(event.exclusive),
             )
-            self.priority.block(event.stream_id)
+            self.priority.block(stream_id)
+
         await self.has_data.set()
 
     async def _create_stream(self, request: h2.events.RequestReceived) -> None:
-        for name, value in request.headers:
+        method: str | None = None
+        for name, value in request.headers or []:
             if name == b':method':
                 method = value.decode('ascii').upper()
             elif name == b':path':
                 raw_path = value
 
+        method = check.not_none(method)
+        stream_id = check.not_none(request.stream_id)
+
         if method == 'CONNECT':
-            self.streams[request.stream_id] = WsStream(
+            self.streams[stream_id] = WsStream(
                 self.app,
                 self.config,
                 self.context,
@@ -350,11 +365,11 @@ class H2Protocol(Protocol):
                 self.client,
                 self.server,
                 self.stream_send,
-                request.stream_id,
+                stream_id,
             )
 
         else:
-            self.streams[request.stream_id] = HttpStream(
+            self.streams[stream_id] = HttpStream(
                 self.app,
                 self.config,
                 self.context,
@@ -362,22 +377,22 @@ class H2Protocol(Protocol):
                 self.client,
                 self.server,
                 self.stream_send,
-                request.stream_id,
+                stream_id,
             )
 
-        self.stream_buffers[request.stream_id] = StreamBuffer(self.context.event_class)
+        self.stream_buffers[stream_id] = StreamBuffer(self.context.event_class)
 
         try:
-            self.priority.insert_stream(request.stream_id)
+            self.priority.insert_stream(check.not_none(request.stream_id))
         except priority.DuplicateStreamError:
             # Recieved PRIORITY frame before HEADERS frame
             pass
         else:
-            self.priority.block(request.stream_id)
+            self.priority.block(check.not_none(request.stream_id))
 
-        await self.streams[request.stream_id].handle(Request(
-            stream_id=request.stream_id,
-            headers=filter_pseudo_headers(request.headers),
+        await self.streams[stream_id].handle(Request(
+            stream_id=stream_id,
+            headers=filter_pseudo_headers(check.not_none(request.headers)),  # type: ignore[arg-type]
             http_version='2',
             method=method,
             raw_path=raw_path,
@@ -412,7 +427,7 @@ class H2Protocol(Protocol):
         else:
             event = h2.events.RequestReceived()
             event.stream_id = push_stream_id
-            event.headers = request_headers
+            event.headers = [hpack.HeaderTuple(*t) for t in request_headers]
             await self._create_stream(event)
             await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
             self.keep_alive_requests += 1
