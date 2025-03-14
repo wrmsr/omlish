@@ -24,7 +24,7 @@ from ..params import KwargsParam
 from ..params import Param
 from ..params import ParamSeparator
 from ..params import ParamSpec
-from ..params import ValueParam
+from ..params import ValParam
 from ..params import param_render
 
 
@@ -100,7 +100,7 @@ def _make_unwrapped_cache_key_maker(
         if not isinstance(p, Param):
             raise TypeError(p)
 
-        if isinstance(p, ValueParam) and p.default.present:
+        if isinstance(p, ValParam) and p.default.present:
             ns[p.name] = p.default
 
         src_params.append(param_render(

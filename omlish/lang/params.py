@@ -36,17 +36,17 @@ class Param(Sealed, Abstract):
 
 
 @dc.dataclass(frozen=True)
-class VariadicParam(Param, Abstract):
+class VarParam(Param, Abstract):
     annotation: Maybe = empty()
 
 
 @dc.dataclass(frozen=True)
-class ArgsParam(VariadicParam, Final):
+class ArgsParam(VarParam, Final):
     prefix: ta.ClassVar[str] = '*'
 
 
 @dc.dataclass(frozen=True)
-class KwargsParam(VariadicParam, Final):
+class KwargsParam(VarParam, Final):
     prefix: ta.ClassVar[str] = '**'
 
 
@@ -54,18 +54,18 @@ class KwargsParam(VariadicParam, Final):
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
-class ValueParam(Param):
+class ValParam(Param):
     default: Maybe = empty()
     annotation: Maybe = empty()
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
-class PosOnlyParam(ValueParam, Final):
+class PosOnlyParam(ValParam, Final):
     pass
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
-class KwOnlyParam(ValueParam, Final):
+class KwOnlyParam(ValParam, Final):
     pass
 
 
@@ -125,16 +125,16 @@ class ParamSpec(ta.Sequence[Param], Final):
                 ps.append(PosOnlyParam(ip.name, dfl, ann))
 
             elif ip.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
-                ps.append(ValueParam(ip.name, dfl, ann))
+                ps.append(ValParam(ip.name, dfl, ann))
 
             elif ip.kind == inspect.Parameter.VAR_POSITIONAL:
                 ps.append(ArgsParam(ip.name))
 
-            elif ip.kind == inspect.Parameter.VAR_KEYWORD:
-                ps.append(KwargsParam(ip.name))
-
             elif ip.kind == inspect.Parameter.KEYWORD_ONLY:
                 ps.append(KwOnlyParam(ip.name, dfl, ann))
+
+            elif ip.kind == inspect.Parameter.VAR_KEYWORD:
+                ps.append(KwargsParam(ip.name))
 
             else:
                 raise ValueError(ip.kind)
@@ -175,7 +175,7 @@ class ParamSpec(ta.Sequence[Param], Final):
         if (hd := self._has_defaults) is not None:
             return hd
         self._has_defaults = hd = any(
-            isinstance(p, ValueParam) and p.default.present
+            isinstance(p, ValParam) and p.default.present
             for p in self._ps
         )
         return hd
@@ -185,7 +185,7 @@ class ParamSpec(ta.Sequence[Param], Final):
         if (ha := self._has_defaults) is not None:
             return ha
         self._has_annotations = ha = any(
-            isinstance(p, (VariadicParam, ValueParam)) and p.annotation.present
+            isinstance(p, (VarParam, ValParam)) and p.annotation.present
             for p in self._ps
         )
         return ha
@@ -244,13 +244,13 @@ def param_render(
 ) -> str:
     if isinstance(p, Param):
         dfl_s: str | None = None
-        if isinstance(p, ValueParam) and p.default.present:
+        if isinstance(p, ValParam) and p.default.present:
             if render_default is None:
                 raise ValueError(f'Param {p.name} has a default but no default renderer provided')
             dfl_s = render_default(p.default.must())
 
         ann_s: str | None = None
-        if isinstance(p, (VariadicParam, ValueParam)) and p.annotation.present:
+        if isinstance(p, (VarParam, ValParam)) and p.annotation.present:
             if render_annotation is None:
                 raise ValueError(f'Param {p.name} has an annotation but no annotation renderer provided')
             ann_s = render_annotation(p.annotation.must())

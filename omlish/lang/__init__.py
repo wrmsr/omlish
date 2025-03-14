@@ -217,8 +217,8 @@ from .params import (  # noqa
     ParamSeparator,
     ParamSpec,
     PosOnlyParam,
-    ValueParam,
-    VariadicParam,
+    ValParam,
+    VarParam,
     param_render,
 )
 

@@ -6,7 +6,7 @@ from ..params import KwOnlyParam
 from ..params import ParamSeparator
 from ..params import ParamSpec
 from ..params import PosOnlyParam
-from ..params import ValueParam
+from ..params import ValParam
 
 
 def test_params_simple() -> None:
@@ -16,15 +16,15 @@ def test_params_simple() -> None:
     ps = ParamSpec.of_signature(inspect.signature(foo))
 
     assert ps == ParamSpec(
-        ValueParam('a'),
-        ValueParam('b'),
+        ValParam('a'),
+        ValParam('b'),
         ArgsParam('c'),
         KwargsParam('kw'),
     )
 
     assert list(ps.with_seps) == [
-        ValueParam('a'),
-        ValueParam('b'),
+        ValParam('a'),
+        ValParam('b'),
         ArgsParam('c'),
         KwargsParam('kw'),
     ]
@@ -38,7 +38,7 @@ def test_params_pos_only() -> None:
 
     assert ps == ParamSpec(
         PosOnlyParam('a'),
-        ValueParam('b'),
+        ValParam('b'),
         ArgsParam('c'),
         KwargsParam('kw'),
     )
@@ -46,7 +46,7 @@ def test_params_pos_only() -> None:
     assert list(ps.with_seps) == [
         PosOnlyParam('a'),
         ParamSeparator.POS_ONLY,
-        ValueParam('b'),
+        ValParam('b'),
         ArgsParam('c'),
         KwargsParam('kw'),
     ]
@@ -59,13 +59,13 @@ def test_params_kw_only() -> None:
     ps = ParamSpec.of_signature(inspect.signature(foo))
 
     assert ps == ParamSpec(
-        ValueParam('a'),
+        ValParam('a'),
         KwOnlyParam('b'),
         KwargsParam('kw'),
     )
 
     assert list(ps.with_seps) == [
-        ValueParam('a'),
+        ValParam('a'),
         ParamSeparator.KW_ONLY,
         KwOnlyParam('b'),
         KwargsParam('kw'),
@@ -80,7 +80,7 @@ def test_params_pos_only_and_kw_only() -> None:
 
     assert ps == ParamSpec(
         PosOnlyParam('a'),
-        ValueParam('b'),
+        ValParam('b'),
         KwOnlyParam('c'),
         KwargsParam('kw'),
     )
@@ -88,7 +88,7 @@ def test_params_pos_only_and_kw_only() -> None:
     assert list(ps.with_seps) == [
         PosOnlyParam('a'),
         ParamSeparator.POS_ONLY,
-        ValueParam('b'),
+        ValParam('b'),
         ParamSeparator.KW_ONLY,
         KwOnlyParam('c'),
         KwargsParam('kw'),
