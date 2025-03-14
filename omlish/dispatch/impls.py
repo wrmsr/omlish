@@ -1,3 +1,10 @@
+"""
+TODO:
+ - generics? injected Manifests / type contexts?
+ - ta.Literal? support for simple scalars, enums
+ - multidispatch? never solved..
+  - just generic on tuple[A0, A1, ...]
+"""
 import contextlib
 import typing as ta
 import weakref

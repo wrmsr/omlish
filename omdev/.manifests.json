@@ -156,18 +156,6 @@
     }
   },
   {
-    "module": ".pycharm.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/pycharm/__main__.py",
-    "line": 4,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "pycharm",
-        "mod_name": "omdev.pycharm.__main__"
-      }
-    }
-  },
-  {
     "module": ".pyproject.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/pyproject/__main__.py",
@@ -312,6 +300,21 @@
       "$.cli.types.CliModule": {
         "cmd_name": "py/importscan",
         "mod_name": "omdev.tools.importscan"
+      }
+    }
+  },
+  {
+    "module": ".tools.intellij",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/intellij.py",
+    "line": 234,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "intellij",
+          "ij"
+        ],
+        "mod_name": "omdev.tools.intellij"
       }
     }
   },

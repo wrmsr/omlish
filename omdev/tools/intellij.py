@@ -1,24 +1,101 @@
 """
 TODO:
+ - read .idea/ for inference?
  - PyCharm.app/Contents/plugins/python-ce/helpers/pydev/_pydevd_bundle/pydevd_constants.py -> USE_LOW_IMPACT_MONITORING
  - DISPLAY=":1" - ls /tmp/.X11-unix/X1 ?
   - https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
   - w -oush
 """
 import dataclasses as dc
+import enum
 import inspect
 import os.path
 import shlex
 import subprocess
 import sys
 import tempfile
+import typing as ta
 
 from omlish.argparse import all as ap
 from omlish.diag.pycharm import get_pycharm_version
 
+from ..cli import CliModule
+
 
 ##
 
+
+class Ide(enum.Enum):
+    PYCHARM = enum.auto()
+    IDEA = enum.auto()
+    CLION = enum.auto()
+
+
+##
+
+
+_INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
+    Ide.PYCHARM: frozenset([
+        'setup.py',
+        'setup.cfg',
+        'pyproject.toml',
+        'requirements.txt',
+        'Pipfile',
+        'poetry.lock',
+        '.python-version',
+        'wsgi.py',
+        'asgi.py',
+        'manage.py',
+    ]),
+    Ide.IDEA: frozenset([
+        'pom.xml',
+        'mvnw',
+        'build.gradle',
+        'build.gradle.kts',
+        'gradlew',
+        'module-info.java',
+        '.java-version',
+    ]),
+    Ide.CLION: frozenset([
+        'CMakeLists.txt',
+        'configure.ac',
+        'configure.in',
+        'config.h.in',
+        'vcpkg.json',
+    ]),
+}
+
+
+def _infer_directory_ide(cwd: str | None) -> Ide | None:
+    if cwd is None:
+        cwd = os.getcwd()
+
+    for i, fs in _INFER_FILE_NAME_SETS_BY_IDE.items():
+        for f in fs:
+            if os.path.exists(os.path.join(cwd, f)):
+                return i
+
+    return None
+
+
+##
+
+
+def _get_ide_version(ide: Ide) -> str:
+    if ide is Ide.PYCHARM:
+        return get_pycharm_version()
+    else:
+        raise ValueError(ide)
+
+
+##
+
+
+_DARWIN_OPEN_SCRIPT_APP_BY_IDE: ta.Mapping[Ide, str] = {
+    Ide.PYCHARM: 'PyCharm',
+    Ide.CLION: 'CLion',
+    Ide.IDEA: 'IntelliJ IDEA',
+}
 
 _DARWIN_OPEN_SCRIPT = """
 tell application "{app}"
@@ -32,8 +109,11 @@ return
 ##
 
 
-_LINUX_PYCHARM_WM_CLASS = 'jetbrains-pycharm.jetbrains-pycharm'
-_LINUX_CLION_WM_CLASS = 'jetbrains-clion.jetbrains-pycharm'
+_LINUX_WM_CLASS_BY_IDE: ta.Mapping[Ide, str] = {
+    Ide.PYCHARM: 'jetbrains-pycharm.jetbrains-pycharm',
+    Ide.CLION: 'jetbrains-clion.jetbrains-clion',
+    Ide.IDEA: 'jetbrains-idea.jetbrains-idea',
+}
 
 
 # sudo apt install xdotool wmctrl
@@ -63,16 +143,12 @@ def parse_wmctrl_lxp_line(l: str) -> WmctrlLine:
 ##
 
 
-class Cli(ap.Cli):
-    @ap.cmd()
-    def version(self) -> None:
-        print(get_pycharm_version())
-
+class IntellijCli(ap.Cli):
     @ap.cmd(
         ap.arg('python-exe'),
         ap.arg('args', nargs=ap.REMAINDER),
     )
-    def runhack(self) -> int:
+    def pycharm_runhack(self) -> int:
         if not os.path.isfile(exe := self.args.python_exe):
             raise FileNotFoundError(exe)
 
@@ -86,19 +162,43 @@ class Cli(ap.Cli):
         proc = subprocess.run([exe, src_file, *self.args.args], check=False)
         return proc.returncode
 
+    #
+
+    def _get_ide(
+            self,
+            *,
+            cwd: str | None = None,
+    ) -> Ide:  # noqa
+        if (ai := self.args.ide) is not None:
+            return Ide(ai)
+
+        if (ii := _infer_directory_ide(cwd)) is not None:
+            return ii
+
+        return Ide.PYCHARM
+
+    @ap.cmd(
+        ap.arg('-e', '--ide'),
+    )
+    def version(self) -> None:
+        i = self._get_ide()
+        v = _get_ide_version(i)
+        print(v)
+
     @ap.cmd(
         ap.arg('dir', nargs='?'),
-        ap.arg('-c', '--clion', action='store_true'),
+        ap.arg('-e', '--ide'),
     )
     def open(self) -> None:
         dir = os.path.abspath(self.args.dir or '.')  # noqa
+        ide = self._get_ide(cwd=dir)
 
         if (plat := sys.platform) == 'darwin':
             if '"' in dir:
                 raise ValueError(dir)
 
             scpt_src = _DARWIN_OPEN_SCRIPT.format(
-                app='CLion' if self.args.clion else 'PyCharm',
+                app=_DARWIN_OPEN_SCRIPT_APP_BY_IDE[ide],
                 dir=dir,
             )
 
@@ -114,7 +214,7 @@ class Cli(ap.Cli):
 
             wmc_out = subprocess.check_output(['wmctrl', '-lxp'], env=env).decode()
             wls = [parse_wmctrl_lxp_line(l) for l in wmc_out.splitlines()]
-            tgt_wmc = _LINUX_CLION_WM_CLASS if self.args.clion else _LINUX_PYCHARM_WM_CLASS
+            tgt_wmc = _LINUX_WM_CLASS_BY_IDE[ide]
             tgt_wl = next(wl for wl in wls if wl.wm_class == tgt_wmc)
             subprocess.check_call(['wmctrl', '-ia', tgt_wl.window_id], env=env)
 
@@ -128,7 +228,11 @@ class Cli(ap.Cli):
 
 
 def _main() -> None:
-    Cli()(exit=True)
+    IntellijCli()(exit=True)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule(['intellij', 'ij'], __name__)
 
 
 if __name__ == '__main__':
