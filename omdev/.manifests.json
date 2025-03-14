@@ -307,7 +307,7 @@
     "module": ".tools.intellij",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/intellij.py",
-    "line": 234,
+    "line": 248,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": [

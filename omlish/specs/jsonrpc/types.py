@@ -81,6 +81,9 @@ def result(id: Id, result: ta.Any) -> Response:  # noqa
     return Response(id, result=result)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['data'], omit_if=is_not_specified)
 class Error(lang.Final):

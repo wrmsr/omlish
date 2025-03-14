@@ -29,6 +29,8 @@ class Ide(enum.Enum):
     PYCHARM = enum.auto()
     IDEA = enum.auto()
     CLION = enum.auto()
+    WEBSTORM = enum.auto()
+    GOLAND = enum.auto()
 
 
 ##
@@ -63,6 +65,14 @@ _INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
         'config.h.in',
         'vcpkg.json',
     ]),
+    Ide.WEBSTORM: frozenset([
+        'package.json',
+        'package-lock.json',
+    ]),
+    Ide.GOLAND: frozenset([
+        'go.mod',
+        'go.sum',
+    ]),
 }
 
 
@@ -95,6 +105,8 @@ _DARWIN_OPEN_SCRIPT_APP_BY_IDE: ta.Mapping[Ide, str] = {
     Ide.PYCHARM: 'PyCharm',
     Ide.CLION: 'CLion',
     Ide.IDEA: 'IntelliJ IDEA',
+    Ide.WEBSTORM: 'WebStorm',
+    Ide.GOLAND: 'GoLand',
 }
 
 _DARWIN_OPEN_SCRIPT = """
@@ -113,6 +125,8 @@ _LINUX_WM_CLASS_BY_IDE: ta.Mapping[Ide, str] = {
     Ide.PYCHARM: 'jetbrains-pycharm.jetbrains-pycharm',
     Ide.CLION: 'jetbrains-clion.jetbrains-clion',
     Ide.IDEA: 'jetbrains-idea.jetbrains-idea',
+    Ide.WEBSTORM: 'jetbrains-webstorm.jetbrains-webstorm',
+    Ide.GOLAND: 'jetbrains-goland.jetbrains-goland',
 }
 
 

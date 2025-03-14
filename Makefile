@@ -188,9 +188,9 @@ ruff-fix: venv
 	fi
 	${PYTHON} -m ruff check --fix ${SRCS}
 
-.PHONY: fix-imports
-fix-imports: venv
-	${PYTHON} -m ruff check --select I001 --fix ${SRCS}
+.PHONY: fix
+fix: venv
+	${PYTHON} -m ruff check --select I001,W291,W292,W293 --fix ${SRCS}
 
 .PHONY: mypy
 mypy: venv
