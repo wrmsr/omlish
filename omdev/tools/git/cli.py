@@ -1,27 +1,26 @@
 # ruff: noqa: UP006 UP007
 """
 TODO:
- - https://github.com/vegardit/bash-funk/blob/main/docs/git.md
- - git submodule foreach 'git remote show origin | grep "HEAD branch" | cut -f5 -d" " | xargs git checkout && git pull'
-  - Handle:
-   Your branch and 'origin/main' have diverged,
-   and have 2691 and 2708 different commits each, respectively.
-     (use "git pull" if you want to integrate the remote branch with yours)
-   hint: You have divergent branches and need to specify how to reconcile them.
-   hint: You can do so by running one of the following commands sometime before
-   hint: your next pull:
-   hint:
-   hint:   git config pull.rebase false  # merge
-   hint:   git config pull.rebase true   # rebase
-   hint:   git config pull.ff only       # fast-forward only
-   hint:
-   hint: You can replace "git config" with "git config --global" to set a default
-   hint: preference for all repositories. You can also pass --rebase, --no-rebase,
-   hint: or --ff-only on the command line to override the configured default per
-   hint: invocation.
-   fatal: Need to specify how to reconcile divergent branches.
+ - Handle:
+  Your branch and 'origin/main' have diverged,
+  and have 2691 and 2708 different commits each, respectively.
+    (use "git pull" if you want to integrate the remote branch with yours)
+  hint: You have divergent branches and need to specify how to reconcile them.
+  hint: You can do so by running one of the following commands sometime before
+  hint: your next pull:
+  hint:
+  hint:   git config pull.rebase false  # merge
+  hint:   git config pull.rebase true   # rebase
+  hint:   git config pull.ff only       # fast-forward only
+  hint:
+  hint: You can replace "git config" with "git config --global" to set a default
+  hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+  hint: or --ff-only on the command line to override the configured default per
+  hint: invocation.
+  fatal: Need to specify how to reconcile divergent branches.
 """
 import dataclasses as dc
+import logging
 import os
 import re
 import typing as ta
@@ -52,6 +51,9 @@ if ta.TYPE_CHECKING:
     from omlish import marshal as msh
 else:
     msh = lang.proxy_import('omlish.marshal')
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -363,6 +365,48 @@ class Cli(ap.Cli):
         def run(cwd: str | None) -> None:
             subprocesses.check_call('git', 'pull', cwd=cwd)
             subprocesses.check_call('git', 'submodule', 'update', cwd=cwd)
+
+        if not self.args.dir:
+            run(None)
+        else:
+            for d in self.args.dir:
+                run(d)
+
+    @ap.cmd(
+        ap.arg('dir', nargs='*'),
+        aliases=['usb'],
+    )
+    def update_submodule_branches(self) -> None:
+        def run_submodule(submodule: str, cwd: str | None) -> None:
+            submodule_path = submodule if cwd is None else os.path.join(cwd, submodule)
+
+            # Get the HEAD branch from origin
+            remote_show = subprocesses.check_output(
+                'git', 'remote', 'show', 'origin',
+                cwd=submodule_path,
+            ).decode()
+            head_branch: str | None = None
+            for line in remote_show.splitlines():
+                line = line.strip()
+                if line.startswith('HEAD branch:'):
+                    head_branch = line.split(':')[1].strip()
+                    break
+
+            if not head_branch:
+                log.warning('Could not determine HEAD branch for submodule %s', submodule)
+                return
+
+            subprocesses.check_call('git', 'checkout', head_branch, cwd=submodule_path)
+            subprocesses.check_call('git', 'pull', cwd=submodule_path)
+
+        def run(cwd: str | None) -> None:
+            submodules = subprocesses.check_output(
+                'git', 'submodule', 'foreach', '-q', 'echo $name',
+                cwd=cwd,
+            ).decode().strip().splitlines()
+
+            for submodule in submodules:
+                run_submodule(submodule, cwd)
 
         if not self.args.dir:
             run(None)
