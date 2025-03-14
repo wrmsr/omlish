@@ -173,7 +173,7 @@ class ParamSpec(ta.Sequence[Param], Final):
 
     @property
     def has_annotations(self) -> bool:
-        if (ha := self._has_defaults) is not None:
+        if (ha := self._has_annotations) is not None:
             return ha
         self._has_annotations = ha = any(
             isinstance(p, (VarParam, ValParam)) and p.annotation.present
