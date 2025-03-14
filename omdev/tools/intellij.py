@@ -202,7 +202,7 @@ class IntellijCli(ap.Cli):
                 dir=dir,
             )
 
-            scpt_file = tempfile.mktemp(__package__ + '-pycharm-open')  # noqa
+            scpt_file = tempfile.mktemp(__package__ + '-intellij-open')  # noqa
             with open(scpt_file, 'w') as f:
                 f.write(scpt_src)
 
