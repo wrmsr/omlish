@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            'mlx-lm ~= 0.21; sys_platform == "darwin"',
+            'mlx-lm ~= 0.22; sys_platform == "darwin"',
 
             'sentence-transformers ~= 3.4',
 

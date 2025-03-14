@@ -63,9 +63,9 @@ sympy>=1.13.1  # FIXME: torch :|
 # triton-nightly; platform_machine == "x86_64"
 # triton==2.3.1; platform_machine == "x86_64"
 
-wgpu==0.19.3
+wgpu==0.20.1
 
-hypothesis==6.129.0
+hypothesis==6.129.1
 
 hexdump==3.3
 
@@ -98,7 +98,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.5.1
+accelerate==1.5.2
 
 pytorch-lightning==2.5.0.post0
 
@@ -198,11 +198,11 @@ langchain==0.3.20
 langchain-anthropic==0.3.9
 langchain-chroma==0.2.2  # @omlish-venv !13
 langchain-community==0.3.19
-langchain-core==0.3.44
+langchain-core==0.3.45
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
-langchain-mistralai==0.2.7
+langchain-mistralai==0.2.8
 langchain-openai==0.3.8
 langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.6
@@ -212,7 +212,7 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.3.8
+langgraph==0.3.10
 
 langsmith==0.3.13
 
@@ -246,7 +246,7 @@ usearch==2.16.9
 
 ##
 
-llama-index-core==0.12.23.post2
+llama-index-core==0.12.24.post1
 
 unstructured==0.17.0
 
