@@ -1,5 +1,5 @@
 absl-py==2.1.0
-accelerate==1.5.1
+accelerate==1.5.2
 aiofiles==24.1.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.11.13
@@ -37,8 +37,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.37.11
-botocore==1.37.11
+boto3==1.37.12
+botocore==1.37.12
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -109,7 +109,7 @@ fairscale==0.4.13
 faiss-cpu==1.10.0
 fastapi==0.115.11
 fastjsonschema==2.21.1
-filelock==3.17.0
+filelock==3.18.0
 filetype==1.2.0
 fire==0.6.0
 flake8==7.1.2
@@ -148,7 +148,7 @@ Gutenberg==0.8.2
 gym==0.26.2
 gym-notices==0.0.8
 h11==0.14.0
-h2==4.1.0
+h2==4.2.0
 h5py==3.13.0
 hexdump==3.3
 hpack==4.1.0
@@ -162,7 +162,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.29.3
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.129.0
+hypothesis==6.129.1
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -200,7 +200,7 @@ jupyter_client==8.6.3
 jupyter_core==5.7.2
 jupyter_server==2.15.0
 jupyter_server_terminals==0.5.3
-jupyterlab==4.3.5
+jupyterlab==4.3.6
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
@@ -213,21 +213,21 @@ langchain==0.3.20
 langchain-anthropic==0.3.9
 langchain-chroma==0.2.2
 langchain-community==0.3.19
-langchain-core==0.3.44
+langchain-core==0.3.45
 langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
-langchain-mistralai==0.2.7
+langchain-mistralai==0.2.8
 langchain-openai==0.3.8
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.6
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.3.8
+langgraph==0.3.10
 langgraph-checkpoint==2.0.19
 langgraph-prebuilt==0.1.3
-langgraph-sdk==0.1.56
+langgraph-sdk==0.1.57
 langsmith==0.3.13
 language_data==1.3.0
 lazy_loader==0.4
@@ -237,7 +237,7 @@ libtmux==0.46.0
 lightning-utilities==0.14.0
 litecli==1.14.4
 litellm==1.51.0
-llama-index-core==0.12.23.post2
+llama-index-core==0.12.24.post1
 llama_cpp_python==0.3.8
 llvmlite==0.44.0
 Logbook==1.8.0
@@ -263,7 +263,7 @@ mistune==3.1.2
 mitogen==0.3.22
 ml-dtypes==0.4.1
 mlx==0.23.2
-mlx-lm==0.21.5
+mlx-lm==0.22.0
 mmh3==5.1.0
 monotonic==1.6
 more-itertools==10.6.0
@@ -323,7 +323,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@2f063e6342235842a00bca150a98854b89117986
+peft @ git+https://github.com/huggingface/peft.git@7320bb94a04f32dd576c8952cb4d4f59f8fc5a1b
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.2.0
@@ -335,7 +335,7 @@ pluggy==1.5.0
 polars==1.24.0
 pooch==1.8.2
 portalocker==2.8.2
-posthog==3.19.1
+posthog==3.20.0
 pprintpp==0.4.0
 preshed==3.0.9
 primp==0.14.0
@@ -428,7 +428,7 @@ rich==13.9.4
 rpds-py==0.23.1
 rsa==4.9
 rubicon-objc==0.5.0
-ruff==0.9.10
+ruff==0.11.0
 s3transfer==0.11.4
 safetensors==0.5.3
 scikit-image==0.25.2
@@ -464,7 +464,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.39
 sqlean.py==3.47.0
-sqlglot==26.10.0
+sqlglot==26.10.1
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.5.1
@@ -483,7 +483,7 @@ terminado==0.18.1
 tf_keras==2.17.0
 thinc==8.3.4
 threadpoolctl==3.6.0
-tifffile==2025.2.18
+tifffile==2025.3.13
 tiktoken==0.9.0
 tinycss2==1.4.0
 tld==0.13
@@ -491,7 +491,7 @@ tokenizers==0.21.1
 tomlkit==0.13.2
 torch==2.6.0
 torchinfo==1.8.0
-torchmetrics==1.6.2
+torchmetrics==1.6.3
 torchsummary==1.5.1
 torchvision==0.21.0
 tornado==6.4.2
@@ -541,7 +541,7 @@ webencodings==0.5.1
 websocket-client==1.8.0
 websockets==15.0.1
 Werkzeug==3.1.3
-wgpu==0.19.3
+wgpu==0.20.1
 wheel==0.45.1
 widgetsnbextension==4.0.13
 wikipedia==1.4.0
