@@ -52,7 +52,7 @@ _PRE_MADE_CACHE_KEY_MAKERS = [
 
 
 _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC: ta.Mapping[ParamSpec, CacheKeyMaker] = {
-    ParamSpec.of_signature(inspect.signature(fn)): fn  # type: ignore
+    ParamSpec.inspect(fn): fn  # type: ignore
     for fn in _PRE_MADE_CACHE_KEY_MAKERS
 }
 
@@ -68,8 +68,8 @@ def _make_unwrapped_cache_key_maker(
     if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
         raise TypeError(fn)
 
-    ps = ParamSpec.of_signature(
-        inspect.signature(fn),
+    ps = ParamSpec.inspect(
+        fn,
         offset=1 if bound else 0,
         strip_annotations=True,
     )

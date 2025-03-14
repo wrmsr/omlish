@@ -141,6 +141,17 @@ class ParamSpec(ta.Sequence[Param], Final):
 
         return cls(*ps)
 
+    @classmethod
+    def inspect(
+            cls,
+            obj: ta.Any,
+            **kwargs: ta.Any,
+    ) -> 'ParamSpec':
+        return cls.of_signature(
+            inspect.signature(obj),
+            **kwargs,
+        )
+
     #
 
     def __repr__(self) -> str:
