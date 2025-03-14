@@ -21,9 +21,11 @@ T = ta.TypeVar('T')
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class Param(Sealed, Abstract):
     name: str
+
+    annotation: Maybe = empty()
 
     prefix: ta.ClassVar[str] = ''
 
@@ -35,17 +37,17 @@ class Param(Sealed, Abstract):
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class VarParam(Param, Abstract):
-    annotation: Maybe = empty()
+    pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class ArgsParam(VarParam, Final):
     prefix: ta.ClassVar[str] = '*'
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, unsafe_hash=True)
 class KwargsParam(VarParam, Final):
     prefix: ta.ClassVar[str] = '**'
 
@@ -56,7 +58,6 @@ class KwargsParam(VarParam, Final):
 @dc.dataclass(frozen=True, unsafe_hash=True)
 class ValParam(Param):
     default: Maybe = empty()
-    annotation: Maybe = empty()
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
@@ -95,8 +96,8 @@ class ParamSpec(ta.Sequence[Param], Final):
 
         self._hash: int | None = None
 
-        self._has_defaults: bool | None = None
         self._has_annotations: bool | None = None
+        self._has_defaults: bool | None = None
 
         self._with_seps: tuple[Param | ParamSeparator, ...] | None = None
 
@@ -108,8 +109,8 @@ class ParamSpec(ta.Sequence[Param], Final):
             sig: inspect.Signature,
             *,
             offset: int = 0,
-            strip_defaults: bool = False,
             strip_annotations: bool = False,
+            strip_defaults: bool = False,
     ) -> 'ParamSpec':
         ps: list[Param] = []
 
@@ -118,23 +119,23 @@ class ParamSpec(ta.Sequence[Param], Final):
             if i < offset:
                 continue
 
-            dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else empty()
             ann = _inspect_empty_to_maybe(ip.annotation) if not strip_annotations else empty()
+            dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else empty()
 
             if ip.kind == inspect.Parameter.POSITIONAL_ONLY:
-                ps.append(PosOnlyParam(ip.name, dfl, ann))
+                ps.append(PosOnlyParam(ip.name, ann, dfl))
 
             elif ip.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
-                ps.append(ValParam(ip.name, dfl, ann))
+                ps.append(ValParam(ip.name, ann, dfl))
 
             elif ip.kind == inspect.Parameter.VAR_POSITIONAL:
-                ps.append(ArgsParam(ip.name))
+                ps.append(ArgsParam(ip.name, ann))
 
             elif ip.kind == inspect.Parameter.KEYWORD_ONLY:
-                ps.append(KwOnlyParam(ip.name, dfl, ann))
+                ps.append(KwOnlyParam(ip.name, ann, dfl))
 
             elif ip.kind == inspect.Parameter.VAR_KEYWORD:
-                ps.append(KwargsParam(ip.name))
+                ps.append(KwargsParam(ip.name, ann))
 
             else:
                 raise ValueError(ip.kind)
@@ -171,16 +172,6 @@ class ParamSpec(ta.Sequence[Param], Final):
     #
 
     @property
-    def has_defaults(self) -> bool:
-        if (hd := self._has_defaults) is not None:
-            return hd
-        self._has_defaults = hd = any(
-            isinstance(p, ValParam) and p.default.present
-            for p in self._ps
-        )
-        return hd
-
-    @property
     def has_annotations(self) -> bool:
         if (ha := self._has_defaults) is not None:
             return ha
@@ -189,6 +180,16 @@ class ParamSpec(ta.Sequence[Param], Final):
             for p in self._ps
         )
         return ha
+
+    @property
+    def has_defaults(self) -> bool:
+        if (hd := self._has_defaults) is not None:
+            return hd
+        self._has_defaults = hd = any(
+            isinstance(p, ValParam) and p.default.present
+            for p in self._ps
+        )
+        return hd
 
     #
 
@@ -239,21 +240,21 @@ class ParamSpec(ta.Sequence[Param], Final):
 def param_render(
         p: Param | ParamSeparator,
         *,
-        render_default: ta.Callable[[ta.Any], str] | None = None,
         render_annotation: ta.Callable[[ta.Any], str] | None = None,
+        render_default: ta.Callable[[ta.Any], str] | None = None,
 ) -> str:
     if isinstance(p, Param):
         dfl_s: str | None = None
-        if isinstance(p, ValParam) and p.default.present:
-            if render_default is None:
-                raise ValueError(f'Param {p.name} has a default but no default renderer provided')
-            dfl_s = render_default(p.default.must())
-
         ann_s: str | None = None
         if isinstance(p, (VarParam, ValParam)) and p.annotation.present:
             if render_annotation is None:
                 raise ValueError(f'Param {p.name} has an annotation but no annotation renderer provided')
             ann_s = render_annotation(p.annotation.must())
+
+        if isinstance(p, ValParam) and p.default.present:
+            if render_default is None:
+                raise ValueError(f'Param {p.name} has a default but no default renderer provided')
+            dfl_s = render_default(p.default.must())
 
         if ann_s is not None:
             if dfl_s is not None:
