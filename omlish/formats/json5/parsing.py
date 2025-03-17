@@ -1,4 +1,4 @@
-# ruff: noqa: N802
+# ruff: noqa: N802 N803
 import typing as ta
 
 from omlish import antlr

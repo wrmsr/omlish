@@ -6,6 +6,4 @@ TODO:
  - jsonpatch
  - jsonpath
  - jsonpointer.py
- - protobuf
- - irc? or in net?
 """
