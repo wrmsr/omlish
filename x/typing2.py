@@ -10,7 +10,11 @@ _MISSING = object()
 
 
 def _update_wrapper_no_anns(wrapper, wrapped):
-    functools.update_wrapper(wrapper, wrapped, assigned=list(set(functools.WRAPPER_ASSIGNMENTS) - {'__annotations__'}))
+    functools.update_wrapper(
+        wrapper,
+        wrapped,
+        assigned=list(set(functools.WRAPPER_ASSIGNMENTS) - {'__annotations__'}),
+    )
     return wrapper
 
 
