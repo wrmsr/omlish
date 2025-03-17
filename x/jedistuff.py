@@ -7,10 +7,11 @@ TODO:
  - executing? asttokens?
 """
 import os.path
+import shlex
 import sys
+import tempfile
 
 import jedi.api.environment
-import jedi.inference.compiled.subprocess
 
 from omlish import check
 from omlish import lang
@@ -43,21 +44,6 @@ IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
 )
 
 
-class _SubprocessHackedEnvironment(jedi.api.environment.Environment):
-    def __init__(self, *args, **kwargs):
-        self.__subprocess = None
-        super().__init__(*args, **kwargs)
-
-    @property
-    def _subprocess(self):
-        return self.__subprocess
-
-    @_subprocess.setter
-    def _subprocess(self, value):
-        value = check.isinstance(value, jedi.inference.compiled.subprocess.CompiledSubprocess)
-        self.__subprocess = value
-
-
 def _main() -> None:
     cls = lang.Final
     cls_src = findsource(cls)
@@ -66,6 +52,24 @@ def _main() -> None:
 
     column = 13
 
+    env_path = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..'))
+    real_env_exe = os.path.join(env_path, 'bin', 'python')
+
+    env_exe_proxy_src = '\n'.join([
+        '#!/usr/bin/env bash',
+        f'exec {shlex.quote(os.path.abspath(real_env_exe))} -- "$@"',
+        # f'exec /bin/sh -c "exec {shlex.quote(os.path.abspath(real_env_exe))} "\'"$@"\' -- "$@"',
+        '',
+    ])
+
+    tmp_dir = tempfile.mkdtemp()
+    env_exe_proxy = os.path.join(tmp_dir, 'python')
+
+    with open(env_exe_proxy, 'w') as f:
+        f.write(env_exe_proxy_src)
+
+    os.chmod(env_exe_proxy, 0o755)
+
     try:
         # script = jedi.Interpreter(
         #     file_src,
@@ -73,10 +77,8 @@ def _main() -> None:
         #     namespaces=[locals(), globals()],
         # )
 
-        env_path = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..'))
-
-        env = _SubprocessHackedEnvironment(
-            os.path.join(env_path, 'bin', 'python'),
+        env = jedi.api.environment.Environment(
+            env_exe_proxy,
         )
 
         project = jedi.Project(
