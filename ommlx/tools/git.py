@@ -201,6 +201,12 @@ class AiGitMessageGenerator(GitMessageGenerator):
             for l in f_src.splitlines()
         )
 
+    # TODO: configurable
+    DEFAULT_EXCLUDES: ta.ClassVar[ta.Sequence[str]] = [
+        '**/.manifests.json',
+        '**/_antlr/*',
+    ]
+
     def generate_commit_message(
             self,
             args: GitMessageGenerator.GenerateCommitMessageArgs,
@@ -223,9 +229,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
             'diff',
             'HEAD',
             '--',
-            ':(exclude)**/.manifests.json',  # TODO: configurable
-            ':(exclude)**/_antlr/*',
-            *[f':(exclude){x}' for x in excludes],
+            *[f':(exclude){x}' for x in [*self.DEFAULT_EXCLUDES, *excludes]],
             cwd=args.cwd,
         ).decode()
 
