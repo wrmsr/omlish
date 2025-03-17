@@ -35,12 +35,34 @@
 # License Agreement.
 # https://github.com/python/cpython/blob/a936af924efc6e2fb59e27990dcd905b7819470a/Lib/inspect.py
 import ast
+import dataclasses as dc
 import inspect
 import linecache
 import re
+import types
+import typing as ta
 
 
 ##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class FoundSource:
+    obj: ta.Any
+    file: str
+    module: types.ModuleType
+    file_lines: ta.Sequence[str]
+    line: int
+    column: int | None = None
+    end_line: int | None = None
+    end_column: int | None = None
+
+
+#
+
+
+class _ClassFoundException(Exception):
+    pass
 
 
 class _ClassFinder(ast.NodeVisitor):
@@ -59,21 +81,37 @@ class _ClassFinder(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         self.stack.append(node.name)
+
         if self.qualname == '.'.join(self.stack):
             # Return the decorator for the class if present
+            start_node = node
             if node.decorator_list:
-                line_number = node.decorator_list[0].lineno
-            else:
-                line_number = node.lineno
+                start_node = node.decorator_list[0]
 
-            # decrement by one since lines starts with indexing by zero
-            line_number -= 1
-            raise ClassFoundException(line_number)
+            # decrement line numbers by one since lines starts with indexing by zero
+            raise _ClassFoundException(dict(
+                line=start_node.lineno - 1,
+                column=start_node.col_offset,
+                end_line=node.end_lineno - 1,
+                end_column=node.end_col_offset,
+            ))
+
         self.generic_visit(node)
         self.stack.pop()
 
 
-def findsource(obj):
+#
+
+
+_FIND_SOURCE_CODE_PAT = re.compile(
+    r'^(\s*(?P<def>def)\s)|'
+    r'(\s*(?P<async>async)\s+def\s)|'
+    r'(.*(?<!\w)(?P<lambda>lambda)(:|\s))|'
+    r'^(\s*(?P<decorator>@))'
+)
+
+
+def findsource(obj: ta.Any) -> FoundSource:
     """
     Return the entire source file and starting line number for an object.
 
@@ -82,7 +120,12 @@ def findsource(obj):
     raised if the source code cannot be retrieved.
     """
 
+    ret_kw: dict = dict(
+        obj=obj,
+    )
+
     file = inspect.getsourcefile(obj)
+    ret_kw.update(file=file)
     if file:
         # Invalidate cache if needed.
         linecache.checkcache(file)
@@ -94,15 +137,18 @@ def findsource(obj):
             raise OSError('source code not available')
 
     module = inspect.getmodule(obj, file)
+    ret_kw.update(module=module)
     if module:
         lines = linecache.getlines(file, module.__dict__)
     else:
         lines = linecache.getlines(file)
     if not lines:
         raise OSError('could not get source code')
+    ret_kw.update(file_lines=lines)
 
     if inspect.ismodule(obj):
-        return lines, 0
+        ret_kw.update(line=0)
+        return FoundSource(**ret_kw)
 
     if inspect.isclass(obj):
         qualname = obj.__qualname__
@@ -111,9 +157,9 @@ def findsource(obj):
         class_finder = _ClassFinder(qualname)
         try:
             class_finder.visit(tree)
-        except inspect.ClassFoundException as e:
-            line_number = e.args[0]
-            return lines, line_number
+        except _ClassFoundException as e:
+            ret_kw.update(**e.args[0])
+            return FoundSource(**ret_kw)
         else:
             raise OSError('could not find class definition')
 
@@ -129,15 +175,30 @@ def findsource(obj):
         if not hasattr(obj, 'co_firstlineno'):
             raise OSError('could not find function definition')
         lnum = obj.co_firstlineno - 1
-        pat = re.compile(r'^(\s*def\s)|(\s*async\s+def\s)|(.*(?<!\w)lambda(:|\s))|^(\s*@)')
         while lnum > 0:
             try:
                 line = lines[lnum]
             except IndexError:
                 raise OSError('lineno is out of bounds')
-            if pat.match(line):
+            if (m := _FIND_SOURCE_CODE_PAT.match(line)) is not None:
+                [span] = [m.span(g) for g, gv in m.groupdict().items() if gv is not None]
+                ret_kw.update(column=span[0])
                 break
             lnum = lnum - 1
-        return lines, lnum
+        ret_kw.update(line=lnum)
+        return FoundSource(**ret_kw)
 
     raise OSError('could not find code object')
+
+
+class Foo:
+    def bar(self):
+        pass
+
+
+def _main() -> None:
+    print(findsource(Foo.bar))
+
+
+if __name__ == '__main__':
+    _main()

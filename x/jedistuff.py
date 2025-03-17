@@ -14,6 +14,8 @@ import jedi
 from omlish import check
 from omlish import lang
 
+from .inspectstuff import findsource
+
 
 IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
     # Issue #9: bad syntax causes completions() to fail in jedi.
@@ -30,7 +32,7 @@ IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
     # Jedi issue: "ValueError: invalid \x escape"
     ValueError,
 
-    # Jedi issue: "KeyError: u'a_lambda'."
+    # Jedi issue: "KeyError: 'a_lambda'."
     # https://github.com/jonathanslenders/ptpython/issues/89
     KeyError,
 
@@ -42,17 +44,16 @@ IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
 
 def _main() -> None:
     cls = lang.Final
-    file_path = inspect.getfile(cls)
-    file_lines, line_num = inspect.findsource(cls)
-    check.state(file_lines[line_num] == 'class Final(Abstract):\n')
-    file_src = ''.join(file_lines)
+    cls_src = findsource(cls)
+    check.state(cls_src.file_lines[cls_src.line] == 'class Final(Abstract):\n')
+    file_src = ''.join(cls_src.file_lines)
 
     column = 13
 
     try:
         script = jedi.Interpreter(
             file_src,
-            path=file_path,
+            path=cls_src.file,
             namespaces=[locals(), globals()],
         )
     except Exception as e:  # noqa
@@ -63,7 +64,7 @@ def _main() -> None:
 
     try:
         infers = script.infer(
-            line=line_num + 1,
+            line=cls_src.line + 1,
             column=column,
         )
     except IGNORED_JEDI_EXCEPTIONS as e:  # noqa
