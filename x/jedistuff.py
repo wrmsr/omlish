@@ -7,9 +7,10 @@ TODO:
  - executing? asttokens?
 """
 import os.path
-import inspect
+import sys
 
-import jedi
+import jedi.api.environment
+import jedi.inference.compiled.subprocess
 
 from omlish import check
 from omlish import lang
@@ -42,6 +43,21 @@ IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
 )
 
 
+class _SubprocessHackedEnvironment(jedi.api.environment.Environment):
+    def __init__(self, *args, **kwargs):
+        self.__subprocess = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def _subprocess(self):
+        return self.__subprocess
+
+    @_subprocess.setter
+    def _subprocess(self, value):
+        value = check.isinstance(value, jedi.inference.compiled.subprocess.CompiledSubprocess)
+        self.__subprocess = value
+
+
 def _main() -> None:
     cls = lang.Final
     cls_src = findsource(cls)
@@ -51,11 +67,31 @@ def _main() -> None:
     column = 13
 
     try:
-        script = jedi.Interpreter(
+        # script = jedi.Interpreter(
+        #     file_src,
+        #     path=cls_src.file,
+        #     namespaces=[locals(), globals()],
+        # )
+
+        env_path = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..'))
+
+        env = _SubprocessHackedEnvironment(
+            os.path.join(env_path, 'bin', 'python'),
+        )
+
+        project = jedi.Project(
+            os.getcwd(),
+            environment_path=env_path,
+            sys_path=list(sys.path),
+        )
+
+        script = jedi.Script(
             file_src,
             path=cls_src.file,
-            namespaces=[locals(), globals()],
+            project=project,
+            environment=env,
         )
+
     except Exception as e:  # noqa
         return
 
