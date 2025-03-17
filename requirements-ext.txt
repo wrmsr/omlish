@@ -63,9 +63,9 @@ sympy>=1.13.1  # FIXME: torch :|
 # triton-nightly; platform_machine == "x86_64"
 # triton==2.3.1; platform_machine == "x86_64"
 
-wgpu==0.20.1
+wgpu==0.21.0
 
-hypothesis==6.129.1
+hypothesis==6.129.3
 
 hexdump==3.3
 
@@ -144,7 +144,7 @@ einops==0.8.1
 ### infra
 
 google-api-python-client==2.164.0
-google-cloud-compute==1.26.0
+google-cloud-compute==1.27.0
 
 cloudflare==3.1.0  # httpx
 
@@ -162,11 +162,11 @@ bellows==0.43.0
 zigpy==0.77.1
 
 # python-openzwave
-zwave-js-server-python==0.61.0
+zwave-js-server-python==0.62.0
 
 ##
 
-python-telegram-bot==21.11.1
+python-telegram-bot==22.0
 discord.py==2.5.2
 
 ##
@@ -184,7 +184,7 @@ openai==1.66.3
 trl==0.15.2
 tf-keras==2.17.0  # @omlish-venv !13
 
-polars==1.24.0
+polars==1.25.2
 
 pyzmq==26.3.0
 
@@ -203,7 +203,7 @@ langchain-elasticsearch==0.3.2
 langchain-experimental==0.3.4
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.8
-langchain-openai==0.3.8
+langchain-openai==0.3.9
 langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.6
 
@@ -212,9 +212,9 @@ langchain-text-splitters==0.3.6
 
 langchainhub==0.1.21
 
-langgraph==0.3.10
+langgraph==0.3.11
 
-langsmith==0.3.14
+langsmith==0.3.15
 
 tavily-python==0.5.1
 
@@ -238,7 +238,7 @@ tantivy==0.22
 
 neo4j==5.28.1
 
-pypdf==5.3.1
+pypdf==5.4.0
 
 fparser==0.1.4
 
@@ -253,7 +253,7 @@ unstructured==0.17.0
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
 
-libtmux==0.46.0
+libtmux==0.46.1
 
 sqlite-vec==0.1.6
 
