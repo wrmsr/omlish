@@ -11,11 +11,24 @@ T = ta.TypeVar('T')
 ##
 
 
-def attr_repr(obj: ta.Any, *attrs: str) -> str:
-    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
+def attr_repr(
+        obj: ta.Any,
+        *attrs: str,
+        with_module: bool = False,
+        use_qualname: bool = False,
+        with_id: bool = False,
+) -> str:
+    return (
+        f'{obj.__class__.__module__ + "." if with_module else ""}'
+        f'{obj.__class__.__qualname__ if use_qualname else obj.__class__.__name__}'
+        f'{("@" + hex(id(obj))[2:]) if with_id else ""}'
+        f'('
+        f'{", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)}'
+        f')'
+    )
 
 
-def arg_repr(*args, **kwargs) -> str:
+def arg_repr(*args: ta.Any, **kwargs: ta.Any) -> str:
     return ', '.join(*(
         list(map(repr, args)) +
         [f'{k}={v!r}' for k, v in kwargs.items()]
@@ -57,7 +70,7 @@ def new_type(
         name: str,
         bases: ta.Sequence[ta.Any],
         namespace: ta.Mapping[str, ta.Any],
-        **kwargs,
+        **kwargs: ta.Any,
 ) -> type:
     return types.new_class(
         name,
@@ -73,7 +86,7 @@ def super_meta(
         name: str,
         bases: ta.Sequence[ta.Any],
         namespace: ta.MutableMapping[str, ta.Any],
-        **kwargs,
+        **kwargs: ta.Any,
 ) -> type:
     """Per types.new_class"""
     resolved_bases = types.resolve_bases(bases)
@@ -87,7 +100,11 @@ def super_meta(
 ##
 
 
-def deep_subclasses(cls: type[T], *, concrete_only: bool = False) -> ta.Iterator[type[T]]:
+def deep_subclasses(
+        cls: type[T],
+        *,
+        concrete_only: bool = False,
+) -> ta.Iterator[type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
     while todo:
