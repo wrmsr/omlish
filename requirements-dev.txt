@@ -119,9 +119,9 @@ duckduckgo_search==7.5.2  # @omlish-venv !13t  # segfault lol
 
 boto3>=1.37.13
 
-mlx==0.23.2; sys_platform == "darwin"
-mlx-lm==0.22.0; sys_platform == "darwin"
+mlx==0.23.2; sys_platform == "darwin"  # @omlish-venv !13t
+mlx-lm==0.22.0; sys_platform == "darwin"  # @omlish-venv !13t
 
 apsw==3.49.1.0
 
-rapidocr_onnxruntime==1.4.4
+rapidocr_onnxruntime==1.4.4  # @omlish-venv !13t
