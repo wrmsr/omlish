@@ -188,9 +188,16 @@ ruff-fix: venv
 	fi
 	${PYTHON} -m ruff check --fix ${SRCS}
 
+RUFF_FIX_CODES:=\
+	I001 \
+	F401 \
+	W291 \
+	W292 \
+	W293
+
 .PHONY: fix
 fix: venv
-	${PYTHON} -m ruff check --select I001,W291,W292,W293 --fix ${SRCS}
+	${PYTHON} -m ruff check --select $(shell echo "$(RUFF_FIX_CODES)" | tr ' ' ',') --fix ${SRCS}
 
 .PHONY: mypy
 mypy: venv

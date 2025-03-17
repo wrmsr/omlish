@@ -8,6 +8,9 @@ Features:
  - directory / path_parts tree?
 
 TODO:
+ - read raw, decode (detect)
+  - ! index from byteofs -> charofs
+   - charofs -> lineno
  - 1-based?
  - maximums?
   - lru? max_size/max_entries?
@@ -20,13 +23,13 @@ Notes:
         lines[-1] += '\n'
 """
 import dataclasses as dc
+import io
 import os.path
 import stat as stat_
 import tokenize
 import typing as ta
 
 from .. import cached
-from .. import check
 from .. import lang
 from ..os.paths import abs_real_path
 
@@ -45,12 +48,15 @@ class TextFileCache:
                 cache: 'TextFileCache',
                 path: str,
                 stat: 'TextFileCache.FileStat',
+                *,
+                encoding: str | None = None,
         ) -> None:
             super().__init__()
 
             self._cache = cache
             self._path = path
             self._stat = stat
+            self._given_encoding = encoding
 
         def __repr__(self) -> str:
             return lang.attr_repr(self, 'path', 'stat')
@@ -64,12 +70,22 @@ class TextFileCache:
             return self._stat
 
         @cached.function
-        def contents(self) -> str:
+        def raw(self) -> bytes:
             return self._cache._read_file(self._path)  # noqa
 
         @cached.function
+        def encoding(self) -> str:
+            if (ge := self._given_encoding) is not None:
+                return ge
+            return self._cache._determine_encoding(self._path, self.raw())  # noqa
+
+        @cached.function
+        def text(self) -> str:
+            return self.raw().decode(self.encoding())
+
+        @cached.function
         def lines(self) -> ta.Sequence[str]:
-            return self.contents().splitlines(keepends=True)
+            return self.text().splitlines(keepends=True)
 
         def safe_line(self, n: int, default: str = '') -> str:
             lines = self.lines()
@@ -79,12 +95,21 @@ class TextFileCache:
 
     #
 
+    @dc.dataclass(frozen=True)
+    class Config:
+        max_file_size: int | None = 5 * 1024 * 1024
+
+        default_encoding: str = 'utf-8'
+
     def __init__(
             self,
+            config: Config = Config(),
             *,
             locking: lang.DefaultLockable = None,
     ) -> None:
         super().__init__()
+
+        self._config = config
 
         self._dct: dict[str, TextFileCache.Entry] = {}
         self._lock = lang.default_lock(locking)()
@@ -95,8 +120,14 @@ class TextFileCache:
         pass
 
     @dc.dataclass()
-    class PathTypeError(Error):
+    class PathError(Error):
         path: str
+
+    class PathTypeError(PathError):
+        pass
+
+    class FileTooBigError(PathError):
+        pass
 
     #
 
@@ -119,14 +150,17 @@ class TextFileCache:
             st.st_mtime,
         )
 
-    def _read_file(self, path: str) -> str:
-        if path.endswith('.py'):
-            with tokenize.open(path) as f:
-                return f.read()
+    def _read_file(self, path: str) -> bytes:
+        with open(path, 'rb') as f:
+            return f.read()
 
-        else:
-            with open(path) as f:
-                return f.read()
+    def _determine_encoding(self, path: str, raw: bytes) -> str:
+        if path.endswith('.py'):
+            buf = io.BytesIO(raw)
+            encoding, _ = tokenize.detect_encoding(buf.readline)
+            return encoding
+
+        return self._config.default_encoding
 
     #
 
@@ -163,10 +197,13 @@ class TextFileCache:
         if isinstance(st, Exception):
             raise st
 
+        if (mfs := self._config.max_file_size) is not None and st.size > mfs:
+            raise TextFileCache.FileTooBigError(path)
+
         e = TextFileCache.Entry(
             self,
             path,
-            check.isinstance(st, TextFileCache.FileStat),
+            st,
         )
 
         self._dct[path] = e
