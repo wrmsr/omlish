@@ -224,6 +224,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
             'HEAD',
             '--',
             ':(exclude)**/.manifests.json',  # TODO: configurable
+            ':(exclude)**/_antlr/*',
             *[f':(exclude){x}' for x in excludes],
             cwd=args.cwd,
         ).decode()
