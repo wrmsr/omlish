@@ -127,3 +127,4 @@ def typed_partial(obj, **kw):  # noqa
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
+    return _TypedPartial(obj, **kw)
