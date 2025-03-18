@@ -1,8 +1,8 @@
 # ruff: noqa: Q000
 import pytest
 
-from ..unquote import UnquoteError
-from ..unquote import unquote
+from ..quoting import UnquoteError
+from ..quoting import unquote
 
 
 def test_unquote():
