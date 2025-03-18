@@ -7592,6 +7592,11 @@ class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
 
 ########################################
 # ../../../omlish/subprocesses/wrap.py
+"""
+This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
+
+  https://github.com/JetBrains/intellij-community/blob/e9d8f126c286acf9df3ff272f440b305bf2ff585/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
+"""
 
 
 ##

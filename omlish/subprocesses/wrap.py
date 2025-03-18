@@ -1,5 +1,10 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
+
+  https://github.com/JetBrains/intellij-community/blob/e9d8f126c286acf9df3ff272f440b305bf2ff585/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
+"""
 import shlex
 import typing as ta
 

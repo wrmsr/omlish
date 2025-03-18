@@ -56,14 +56,16 @@ def _main() -> None:
     real_env_exe = os.path.join(env_path, 'bin', 'python')
 
     env_exe_proxy_src = '\n'.join([
-        '#!/usr/bin/env bash',
+        '#!/bin/sh',
+        # f'echo "$@" >> env_exe_args',
         f'exec {shlex.quote(os.path.abspath(real_env_exe))} -- "$@"',
         # f'exec /bin/sh -c "exec {shlex.quote(os.path.abspath(real_env_exe))} "\'"$@"\' -- "$@"',
         '',
     ])
 
     tmp_dir = tempfile.mkdtemp()
-    env_exe_proxy = os.path.join(tmp_dir, 'python')
+    env_exe_proxy = os.path.join(tmp_dir, 'jedi-interpreter')
+    print(env_exe_proxy)
 
     with open(env_exe_proxy, 'w') as f:
         f.write(env_exe_proxy_src)
