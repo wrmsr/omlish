@@ -18,8 +18,6 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from . import check
-
 
 ValueT_co = ta.TypeVar('ValueT_co', covariant=True)
 ResultT = ta.TypeVar('ResultT')
@@ -36,7 +34,8 @@ class AlreadyUsedError(RuntimeError):
 def _remove_tb_frames(exc: BaseException, n: int) -> BaseException:
     tb: ta.Any = exc.__traceback__
     for _ in range(n):
-        check.not_none(tb)
+        if tb is None:
+            raise RuntimeError
         tb = tb.tb_next
     return exc.with_traceback(tb)
 
@@ -141,6 +140,19 @@ class Outcome(abc.ABC, ta.Generic[ValueT_co]):
     :class:`Outcome` objects are hashable if the contained objects are hashable.
     """
 
+    @property
+    @abc.abstractmethod
+    def is_error(self) -> bool:
+        raise NotImplementedError
+
+    def value(self) -> ValueT_co:
+        raise TypeError
+
+    def error(self) -> BaseException:
+        raise TypeError
+
+    #
+
     _unwrapped: bool = dc.field(default=False, compare=False, init=False)
 
     def _set_unwrapped(self) -> None:
@@ -178,27 +190,44 @@ class Outcome(abc.ABC, ta.Generic[ValueT_co]):
         """
 
 
+#
+
+
 @ta.final
 @dc.dataclass(frozen=True, repr=False, slots=True, order=True)
 class Value(Outcome[ValueT_co], ta.Generic[ValueT_co]):
     """Concrete :class:`Outcome` subclass representing a regular value."""
 
-    value: ValueT_co
+    _value: ValueT_co
 
     def __repr__(self) -> str:
-        return f'Value({self.value!r})'
+        return f'Value({self._value!r})'
+
+    #
+
+    @property
+    def is_error(self) -> bool:
+        return True
+
+    def value(self) -> ValueT_co:
+        return self._value
+
+    #
 
     def unwrap(self) -> ValueT_co:
         self._set_unwrapped()
-        return self.value
+        return self._value
 
     def send(self, gen: ta.Generator[ResultT, ValueT_co, object]) -> ResultT:
         self._set_unwrapped()
-        return gen.send(self.value)
+        return gen.send(self._value)
 
     async def asend(self, agen: ta.AsyncGenerator[ResultT, ValueT_co]) -> ResultT:
         self._set_unwrapped()
-        return await agen.asend(self.value)
+        return await agen.asend(self._value)
+
+
+#
 
 
 @ta.final
@@ -206,21 +235,32 @@ class Value(Outcome[ValueT_co], ta.Generic[ValueT_co]):
 class Error(Outcome[ta.NoReturn]):
     """Concrete :class:`Outcome` subclass representing a raised exception."""
 
-    error: BaseException
+    _error: BaseException
 
     def __post_init__(self) -> None:
-        if not isinstance(self.error, BaseException):
-            raise TypeError(self.error)
+        if not isinstance(self._error, BaseException):
+            raise TypeError(self._error)
 
     def __repr__(self) -> str:
-        return f'Error({self.error!r})'
+        return f'Error({self._error!r})'
+
+    #
+
+    @property
+    def is_error(self) -> bool:
+        return True
+
+    def error(self) -> BaseException:
+        return self._error
+
+    #
 
     def unwrap(self) -> ta.NoReturn:
         self._set_unwrapped()
 
         # Tracebacks show the 'raise' line below out of context, so let's give this variable a name that makes sense out
         # of context.
-        captured_error = self.error
+        captured_error = self._error
 
         try:
             raise captured_error
@@ -239,12 +279,15 @@ class Error(Outcome[ta.NoReturn]):
 
     def send(self, gen: ta.Generator[ResultT, ta.NoReturn, object]) -> ResultT:
         self._set_unwrapped()
-        return gen.throw(self.error)
+        return gen.throw(self._error)
 
     async def asend(self, agen: ta.AsyncGenerator[ResultT, ta.NoReturn]) -> ResultT:
         self._set_unwrapped()
-        return await agen.athrow(self.error)
+        return await agen.athrow(self._error)
+
+
+##
 
 
 # A convenience alias to a union of both results, allowing exhaustiveness checking.
-Maybe = Value[ValueT_co] | Error
+Either = Value[ValueT_co] | Error

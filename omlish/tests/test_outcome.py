@@ -28,7 +28,7 @@ from .. import outcome
 
 def test_outcome():
     v = outcome.Value(1)
-    assert v.value == 1
+    assert v.value() == 1
     assert v.unwrap() == 1
     assert repr(v) == 'Value(1)'
 
@@ -39,7 +39,7 @@ def test_outcome():
 
     exc = RuntimeError('oops')
     e = outcome.Error(exc)
-    assert e.error is exc
+    assert e.error() is exc
     with pytest.raises(RuntimeError):
         e.unwrap()
     with pytest.raises(outcome.AlreadyUsedError):
@@ -118,8 +118,8 @@ def test_capture():
 
     e = outcome.capture(raise_value_error, 'two')
     assert type(e) is outcome.Error
-    assert type(e.error) is ValueError
-    assert e.error.args == ('two',)
+    assert type(e.error()) is ValueError
+    assert e.error().args == ('two',)
 
 
 def test_inheritance():
@@ -175,8 +175,8 @@ def test_acapture():
             raise ValueError(x)
 
         e = await outcome.acapture(raise_value_error, 9)
-        assert type(e.error) is ValueError
-        assert e.error.args == (9,)
+        assert type(e.error()) is ValueError
+        assert e.error().args == (9,)
 
     asyncio.run(run())
 
