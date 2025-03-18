@@ -48,6 +48,9 @@ def is_valid_utf8(r: int) -> bool:
     return False
 
 
+##
+
+
 class UnquoteError(Exception):
     pass
 
@@ -74,7 +77,7 @@ def unquote_char(s: str, quote: str) -> tuple[str, bool, str]:  # (value, multib
     c = s[0]
     if c == quote and quote in '\'"':
         raise UnquoteError
-    # elif c >= utf8.RuneSelf:
+    # elif c >= utf8.graphic_only:
     #     r, size = utf8.DecodeRuneInString(s)
     #     return r, True, s[size:]
     elif c != '\\':
