@@ -25,18 +25,23 @@ class Symbol:
 
 
 @dc.dataclass(frozen=True)
+class List:
+    values: ta.Sequence['Value']
+
+
+@dc.dataclass(frozen=True)
 class Vector:
+    values: ta.Sequence['Value']
+
+
+@dc.dataclass(frozen=True)
+class Set:
     values: ta.Sequence['Value']
 
 
 @dc.dataclass(frozen=True)
 class Map:
     entries: ta.Sequence[ta.Tuple['Value', 'Value']]
-
-
-@dc.dataclass(frozen=True)
-class Set:
-    values: ta.Sequence['Value']
 
 
 @dc.dataclass(frozen=True)
@@ -80,6 +85,7 @@ ScalarValue: ta.TypeAlias = ta.Union[  # noqa
 
 VALUE_TYPES: tuple[type, ...] = (
     *SCALAR_VALUE_TYPES,
+    List,
     Vector,
     Map,
     Set,
@@ -88,6 +94,7 @@ VALUE_TYPES: tuple[type, ...] = (
 
 Value: ta.TypeAlias = ta.Union[  # noqa
     ScalarValue,
+    List,
     Vector,
     Map,
     Set,

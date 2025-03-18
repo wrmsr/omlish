@@ -5,6 +5,7 @@ import typing as ta
 from ..errors import ParseError
 from ..parsing import Parser
 from ..values import Char
+from ..values import List
 from ..values import Map
 from ..values import Nil
 from ..values import Set
@@ -34,10 +35,8 @@ def test_nil(parse):
 def test_boolean(parse):
     assert parse('true') is True
     assert parse('false') is False
-    with pytest.raises(ParseError):
-        parse('True')
-    with pytest.raises(ParseError):
-        parse('False')
+    assert parse('True') == Symbol('True')
+    assert parse('False') == Symbol('False')
 
 
 def test_string(parse):
@@ -85,6 +84,15 @@ def test_keyword(parse):
     assert parse(':abc.def') == Symbol('abc.def')
 
 
+def test_list(parse):
+    assert parse('()') == List([])
+    assert parse('(1)') == List([1])
+    assert parse('(1 2)') == List([1, 2])
+    assert parse('(1 \"two\" true)') == List([1, 'two', True])
+    with pytest.raises(ParseError):
+        parse('(1 2')
+
+
 def test_vector(parse):
     assert parse('[]') == Vector([])
     assert parse('[1]') == Vector([1])
@@ -94,13 +102,13 @@ def test_vector(parse):
         parse('[1 2')
 
 
-def test_list(parse):
-    assert parse('()') == Vector([])
-    assert parse('(1)') == Vector([1])
-    assert parse('(1 2)') == Vector([1, 2])
-    assert parse('(1 \"two\" true)') == Vector([1, 'two', True])
+def test_set(parse):
+    assert parse('#{}') == Set([])
+    assert parse('#{1}') == Set([1])
+    assert parse('#{1 2}') == Set([1, 2])
+    assert parse('#{1 \"two\" true}') == Set([1, 'two', True])
     with pytest.raises(ParseError):
-        parse('(1 2')
+        parse('#{1 2')
 
 
 def test_map(parse):
@@ -119,15 +127,6 @@ def test_map(parse):
         parse('{:a')
     with pytest.raises(ParseError):
         parse('{:a 1')
-
-
-def test_set(parse):
-    assert parse('#{') == Set([])
-    assert parse('#{1}') == Set([1])
-    assert parse('#{1 2}') == Set([1, 2])
-    assert parse('#{1 \"two\" true}') == Set([1, 'two', True])
-    with pytest.raises(ParseError):
-        parse('#{1 2')
 
 
 def test_tagged(parse):
@@ -173,7 +172,8 @@ def test_whitespace_and_comments(parse):
     # Comments
     assert parse(';comment\n42') == 42
     assert parse('42;comment') == 42
-    assert parse('4;comment\n2') == 42
+    with pytest.raises(ParseError):
+        parse('4;comment\n2')
     
     # Commas as whitespace
     assert parse('[1,2,3]') == Vector([1, 2, 3])

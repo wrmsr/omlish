@@ -1,7 +1,13 @@
+"""
+TODO:
+ - class Keyword
+ - UnexpectedInput - parse() should read one and raise if not eof
+"""
 import typing as ta
 
 from .errors import ParseError
 from .values import Char
+from .values import List
 from .values import Map
 from .values import NIL
 from .values import Nil
@@ -43,6 +49,9 @@ class Parser:
         return char
 
     def parse(self) -> Value:
+        return self.parse_one()
+
+    def parse_one(self) -> Value:
         self._skip_whitespace()
 
         if not self._current_char:
@@ -71,7 +80,7 @@ class Parser:
             return self._parse_vector()
         elif self._current_char == '{':  # map
             return self._parse_map()
-        elif self._current_char == '(':  # list (treated as Vector)
+        elif self._current_char == '(':  # list
             return self._parse_list()
         elif self._current_char == '-' or self._current_char.isdigit():  # number
             return self._parse_number()
@@ -178,6 +187,20 @@ class Parser:
         self._advance()  # Skip :
         return self._parse_symbol()
 
+    def _parse_list(self) -> List:
+        self._advance()  # Skip (
+        values = []
+
+        while self._current_char:
+            self._skip_whitespace()
+            if self._current_char == ')':
+                self._advance()
+                return List(values)
+            values.append(self.parse_one())
+            self._skip_whitespace()
+
+        raise ParseError('Unterminated list')
+
     def _parse_vector(self) -> Vector:
         self._advance()  # Skip [
         values = []
@@ -187,10 +210,24 @@ class Parser:
             if self._current_char == ']':
                 self._advance()
                 return Vector(values)
-            values.append(self.parse())
+            values.append(self.parse_one())
             self._skip_whitespace()
 
         raise ParseError('Unterminated vector')
+
+    def _parse_set(self) -> Set:
+        self._advance()  # Skip {
+        values = []
+
+        while self._current_char:
+            self._skip_whitespace()
+            if self._current_char == '}':
+                self._advance()
+                return Set(values)
+            values.append(self.parse_one())
+            self._skip_whitespace()
+
+        raise ParseError('Unterminated set')
 
     def _parse_map(self) -> Map:
         self._advance()  # Skip {
@@ -202,51 +239,23 @@ class Parser:
                 self._advance()
                 return Map(entries)
             
-            key = self.parse()
+            key = self.parse_one()
             self._skip_whitespace()
             if not self._current_char:
                 raise ParseError('Unexpected end of input in map')
             
-            value = self.parse()
+            value = self.parse_one()
             entries.append((key, value))
             self._skip_whitespace()
 
         raise ParseError('Unterminated map')
-
-    def _parse_set(self) -> Set:
-        self._advance()  # Skip {
-        values = []
-        
-        while self._current_char:
-            self._skip_whitespace()
-            if self._current_char == '}':
-                self._advance()
-                return Set(values)
-            values.append(self.parse())
-            self._skip_whitespace()
-
-        raise ParseError('Unterminated set')
-
-    def _parse_list(self) -> Vector:
-        self._advance()  # Skip (
-        values = []
-        
-        while self._current_char:
-            self._skip_whitespace()
-            if self._current_char == ')':
-                self._advance()
-                return Vector(values)
-            values.append(self.parse())
-            self._skip_whitespace()
-
-        raise ParseError('Unterminated list')
 
     def _parse_tagged(self) -> Tagged:
         tag = self._parse_symbol()
         self._skip_whitespace()
         if not self._current_char:
             raise ParseError('Unexpected end of input after tag')
-        value = self.parse()
+        value = self.parse_one()
         return Tagged(tag=tag, value=value)
 
     def _parse_number(self) -> ta.Union[int, float]:
