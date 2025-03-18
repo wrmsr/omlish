@@ -42,10 +42,10 @@ class Future(lang.Abstract, ta.Awaitable[lang.Outcome[T]]):
         raise NotImplementedError
 
     def set_value(self, v: T) -> None:
-        self.set_outcome(lang.Value(v))
+        self.set_outcome(lang.value(v))
 
     def set_error(self, e: BaseException) -> None:
-        self.set_outcome(lang.Error(e))
+        self.set_outcome(lang.error(e))
 
 
 ##

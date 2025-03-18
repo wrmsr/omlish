@@ -217,6 +217,8 @@ from .outcomes import (  # noqa
     Value,
     acapture,
     capture,
+    error,
+    value,
 )
 
 from .params import (  # noqa

@@ -14,11 +14,16 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+TODO:
+ - hide Value and Error classes like Maybes
+"""
 import abc
 import dataclasses as dc
 import typing as ta
 
 
+T = ta.TypeVar('T')
 ValueT_co = ta.TypeVar('ValueT_co', covariant=True)
 ResultT = ta.TypeVar('ResultT')
 ArgsT = ta.ParamSpec('ArgsT')
@@ -227,6 +232,10 @@ class Value(Outcome[ValueT_co], ta.Generic[ValueT_co]):
         return await agen.asend(self._value)
 
 
+def value(v: T) -> Outcome[T]:
+    return Value(v)
+
+
 #
 
 
@@ -284,6 +293,10 @@ class Error(Outcome[ta.NoReturn]):
     async def asend(self, agen: ta.AsyncGenerator[ResultT, ta.NoReturn]) -> ResultT:
         self._set_unwrapped()
         return await agen.athrow(self._error)
+
+
+def error(e: BaseException) -> Outcome[T]:
+    return Error(e)
 
 
 ##
