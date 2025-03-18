@@ -2,6 +2,7 @@
 TODO:
  - sync (lol) w/ asyncs.anyio
  - atomics
+ - Once poison=False, PoisonedError
 """
 import collections
 import threading
@@ -11,6 +12,9 @@ from . import lang
 
 
 T = ta.TypeVar('T')
+
+
+##
 
 
 class Once:
@@ -30,6 +34,9 @@ class Once:
             finally:
                 self._done = True
             return True
+
+
+##
 
 
 class Lazy(ta.Generic[T]):
@@ -69,6 +76,9 @@ class LazyFn(ta.Generic[T]):
             self._v = lang.just(self._fn())
         self._once.do(do)
         return self._v.must()
+
+
+##
 
 
 class ConditionDeque(ta.Generic[T]):
