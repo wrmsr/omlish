@@ -24,7 +24,7 @@ class FileMode:
 
     https://en.cppreference.com/w/cpp/io/c/fopen
 
-    "r"   read             Open a file for reading        read from start   return NULL and set error
+    "r"   read             Open a file for reading       read from start   return NULL and set error
     "w"   write            Create a file for writing     destroy contents  create new
     "a"   append           Append to a file              write to end      create new
     "r+"  read extended    Open a file for read/write    read from start   return NULL and set error

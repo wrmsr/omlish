@@ -100,11 +100,14 @@ sortItem
     ;
 
 relation
-    : relation AS? ident                                                     #aliasedRelation
-    | left=relation ty=joinType? JOIN right=relation (ON cond=booleanExpr)?  #joinRelation
-    | '(' select ')'                                                         #selectRelation
-    | '(' relation ')'                                                       #parenRelation
-    | qualifiedName                                                          #tableRelation
+    : relation AS? ident      #aliasedRelation
+    | left=relation
+      ty=joinType?
+      JOIN right=relation
+      (ON cond=booleanExpr)?  #joinRelation
+    | '(' select ')'          #selectRelation
+    | '(' relation ')'        #parenRelation
+    | qualifiedName           #tableRelation
     ;
 
 groupBy

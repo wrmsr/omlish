@@ -72,40 +72,43 @@ class Meta(DataPart):
 
 
 class PartTransform:
-    @dispatch.method
     def __call__(self, part: Part) -> Part:
+        return self._transform(part)
+
+    @dispatch.method
+    def _transform(self, part: Part) -> Part:
         raise TypeError(part)
 
-    @__call__.register
-    def __call__str(self, part: str) -> Part:
+    @_transform.register
+    def _transform_str(self, part: str) -> Part:
         return part
 
-    @__call__.register
-    def __call__sequence(self, part: collections.abc.Sequence) -> Part:
+    @_transform.register
+    def _transform_sequence(self, part: collections.abc.Sequence) -> Part:
         return [self(c) for c in part]
 
-    @__call__.register
-    def __call__wrap(self, part: Wrap) -> Part:
+    @_transform.register
+    def _transform_wrap(self, part: Wrap) -> Part:
         return Wrap(self(part.part), part.wrapper)
 
-    @__call__.register
-    def __call__list(self, part: List) -> Part:
+    @_transform.register
+    def _transform_list(self, part: List) -> Part:
         return List([self(c) for c in part.parts], part.delimiter, part.trailer)
 
-    @__call__.register
-    def __call__concat(self, part: Concat) -> Part:
+    @_transform.register
+    def _transform_concat(self, part: Concat) -> Part:
         return Concat([self(c) for c in part.parts])
 
-    @__call__.register
-    def __call__block(self, part: Block) -> Part:
+    @_transform.register
+    def _transform_block(self, part: Block) -> Part:
         return Block([self(c) for c in part.parts])
 
-    @__call__.register
-    def __call__section(self, part: Section) -> Part:
+    @_transform.register
+    def _transform_section(self, part: Section) -> Part:
         return Section([self(c) for c in part.parts])
 
-    @__call__.register
-    def __call__meta(self, part: Meta) -> Meta:
+    @_transform.register
+    def _transform_meta(self, part: Meta) -> Meta:
         return part
 
 
@@ -113,8 +116,8 @@ class PartTransform:
 
 
 class RemoveMetas(PartTransform):
-    @PartTransform.__call__.register
-    def __call__meta(self, part: Meta) -> Part:
+    @PartTransform._transform.register
+    def _transform_meta(self, part: Meta) -> Part:
         return []
 
 
@@ -137,27 +140,27 @@ def _drop_empties(it: ta.Iterable[T]) -> list[T]:
 
 
 class CompactPart(PartTransform):
-    @PartTransform.__call__.register
-    def __call__sequence(self, part: collections.abc.Sequence) -> Part:
+    @PartTransform._transform.register
+    def _transform_sequence(self, part: collections.abc.Sequence) -> Part:
         return _drop_empties(self(c) for c in part)
 
-    @PartTransform.__call__.register
-    def __call__list(self, part: List) -> Part:
+    @PartTransform._transform.register
+    def _transform_list(self, part: List) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return List(parts, part.delimiter, part.trailer) if parts else []
 
-    @PartTransform.__call__.register
-    def __call__concat(self, part: Concat) -> Part:
+    @PartTransform._transform.register
+    def _transform_concat(self, part: Concat) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Concat(parts) if parts else []
 
-    @PartTransform.__call__.register
-    def __call__block(self, part: Block) -> Part:
+    @PartTransform._transform.register
+    def _transform_block(self, part: Block) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Block(parts) if parts else []
 
-    @PartTransform.__call__.register
-    def __call__section(self, part: Section) -> Part:
+    @PartTransform._transform.register
+    def _transform_section(self, part: Section) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Section(parts) if parts else []
 
@@ -204,29 +207,32 @@ class PartRenderer:
             self._blank_lines += n
             self._has_indented = False
 
-    @dispatch.method
     def __call__(self, part: Part) -> None:
+        return self._render(part)
+
+    @dispatch.method
+    def _render(self, part: Part) -> None:
         raise TypeError(part)
 
-    @__call__.register
-    def __call__str(self, part: str) -> None:
+    @_render.register
+    def _transform_str(self, part: str) -> None:
         self._write(part)
 
-    @__call__.register
-    def __call__sequence(self, part: collections.abc.Sequence) -> None:
+    @_render.register
+    def _transform_sequence(self, part: collections.abc.Sequence) -> None:
         for i, c in enumerate(part):
             if i:
                 self._write(' ')
             self(c)
 
-    @__call__.register
-    def __call__wrap(self, part: Wrap) -> None:
+    @_render.register
+    def _transform_wrap(self, part: Wrap) -> None:
         self._write(part.wrapper[0])
         self(part.part)
         self._write(part.wrapper[1])
 
-    @__call__.register
-    def __call__list(self, part: List) -> None:
+    @_render.register
+    def _transform_list(self, part: List) -> None:
         for i, c in enumerate(part.parts):
             if i:
                 self._write(part.delimiter + ' ')
@@ -234,19 +240,19 @@ class PartRenderer:
         if part.trailer:
             self._write(part.delimiter)
 
-    @__call__.register
-    def __call__concat(self, part: Concat) -> None:
+    @_render.register
+    def _transform_concat(self, part: Concat) -> None:
         for c in part.parts:
             self(c)
 
-    @__call__.register
-    def __call__block(self, part: Block) -> None:
+    @_render.register
+    def _transform_block(self, part: Block) -> None:
         for c in part.parts:
             self(c)
             self._write_newline()
 
-    @__call__.register
-    def __call__section(self, part: Section) -> None:
+    @_render.register
+    def _transform_section(self, part: Section) -> None:
         self._indents += 1
         try:
             for c in part.parts:
