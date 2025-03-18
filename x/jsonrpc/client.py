@@ -1,16 +1,13 @@
 """
 TODO:
- - chop lines lol
  - split connection and dispatcher
 """
-import contextlib
 import json
 import typing as ta
 import uuid
 
 import anyio.abc
 
-from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.asyncs import anyio as aiu
