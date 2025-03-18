@@ -1,5 +1,5 @@
-# https://github.com/edn-format/edn
-r"""
+## https://github.com/edn-format/edn
+
 edn
 ===
 
@@ -160,7 +160,7 @@ In addition, a floating-point number may have the suffix `M` to indicate that ex
 
 A list is a sequence of values. Lists are represented by zero or more elements enclosed in parentheses `()`. Note that
 lists can be heterogeneous.
- 
+
     (a b 42)
 
 ### vectors
@@ -199,7 +199,7 @@ elements), then pass the result to the corresponding handler for further interpr
 will be the data value yielded by the tag + tagged element, i.e. reading a tag and tagged element yields one value. This
 value is the value to be returned to the program and is not further interpreted as **edn** data by the reader.
 
-This process will bottom out on elements either understood or built-in. 
+This process will bottom out on elements either understood or built-in.
 
 Thus you can build new distinct readable elements out of (and only out of) other readable elements, keeping extenders
 and extension consumers out of the text business.
@@ -215,7 +215,7 @@ and all **edn**, in spite of being unaware of the details of any extensions pres
 
 ### rules for tags
 
-Tag symbols without a prefix are reserved by **edn** for built-ins defined using the tag system. 
+Tag symbols without a prefix are reserved by **edn** for built-ins defined using the tag system.
 
 User tags _**must**_ contain a prefix component, which must be owned by the user (e.g. trademark or domain) or known
 unique in the communication context.
@@ -275,4 +275,3 @@ and mapped to an equal value in the other.
 tagged elements must define their own equality semantics. #uuid elements are equal if their canonic representations are
 equal. #inst elements are equal if their representation strings designate the same timestamp per
 [RFC-3339](http://www.ietf.org/rfc/rfc3339.txt).
-"""

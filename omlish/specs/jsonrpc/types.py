@@ -11,6 +11,7 @@ See:
 import operator
 import typing as ta
 
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
@@ -43,11 +44,20 @@ def is_not_specified(v: ta.Any) -> bool:
 @msh.update_fields_metadata(['params'], omit_if=operator.not_)
 class Request(lang.Final):
     id: Id | type[NotSpecified]
+
+    @property
+    def is_notification(self) -> bool:
+        return self.id is NotSpecified
+
+    def id_value(self) -> Id:
+        return check.isinstance(self.id, Id)
+
     method: str
     params: Object | None = None
 
     jsonrpc: str = dc.field(default=VERSION, kw_only=True)
     dc.validate(lambda self: self.jsonrpc == VERSION)
+
 
 
 def request(id: Id, method: str, params: Object | None = None) -> Request:  # noqa
@@ -94,3 +104,18 @@ class Error(lang.Final):
 
 def error(id: Id, error: Error) -> Response:  # noqa
     return Response(id, error=error)
+
+
+##
+
+
+Message: ta.TypeAlias = Request | Response | Error
+
+
+def detect_message_type(dct: ta.Mapping[str, ta.Any]) -> type[Message]:
+    if 'method' in dct:
+        return Request
+    elif 'code' in dct:
+        return Error
+    else:
+        return Response

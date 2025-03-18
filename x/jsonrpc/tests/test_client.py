@@ -11,10 +11,10 @@ from omlish.specs.jsonrpc.types import Response
 from omlish.specs.jsonrpc.types import notification
 from omlish.specs.jsonrpc.types import result
 
-from ..client import JsonRpcClient
-from ..client import JsonRpcConnectionError
-from ..client import JsonRpcError
-from ..client import JsonRpcTimeoutError
+from ..client import JsonrpcClient
+from ..client import JsonrpcConnectionError
+from ..client import JsonrpcError
+from ..client import JsonrpcTimeoutError
 
 
 ##
@@ -75,7 +75,7 @@ async def test_request_response(stream: MockStream) -> None:
     """Test basic request-response functionality."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream) as client:
+        async with JsonrpcClient(tg, stream) as client:
             # Start request in background
             async def make_request() -> None:
                 result = await client.request('test_method', {'param': 'value'})
@@ -102,7 +102,7 @@ async def test_notification(stream: MockStream, notification_handler: ta.Any) ->
     """Test notification handling."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream, notification_handler=notification_handler) as client:  # noqa
+        async with JsonrpcClient(tg, stream, notification_handler=notification_handler) as client:  # noqa
             # Send notification from server
             notif = notification('test_notification', {'data': 'value'})
             await stream.receive_queue_tx.send(json.dumps(msh.marshal(notif)).encode())
@@ -121,7 +121,7 @@ async def test_notification(stream: MockStream, notification_handler: ta.Any) ->
 async def test_client_notification(stream: MockStream) -> None:
     """Test sending notifications from client."""
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream) as client:
+        async with JsonrpcClient(tg, stream) as client:
             await client.notify('test_method', {'param': 'value'})
 
             # Get the notification from the mock stream
@@ -139,8 +139,8 @@ async def test_request_timeout(stream: MockStream) -> None:
     """Test request timeout handling."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream, default_timeout=0.1) as client:
-            with pytest.raises(JsonRpcTimeoutError):
+        async with JsonrpcClient(tg, stream, default_timeout=0.1) as client:
+            with pytest.raises(JsonrpcTimeoutError):
                 await client.request('test_method')
 
 
@@ -149,9 +149,9 @@ async def test_connection_error(stream: MockStream) -> None:
     """Test connection error handling."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream) as client:
+        async with JsonrpcClient(tg, stream) as client:
             stream.close()
-            with pytest.raises(JsonRpcConnectionError):
+            with pytest.raises(JsonrpcConnectionError):
                 await client.request('test_method')
 
 
@@ -160,10 +160,10 @@ async def test_error_response(stream: MockStream) -> None:
     """Test error response handling."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream) as client:
+        async with JsonrpcClient(tg, stream) as client:
             # Start request in background
             async def make_request() -> None:
-                with pytest.raises(JsonRpcError) as exc_info:
+                with pytest.raises(JsonrpcError) as exc_info:
                     await client.request('test_method')
                 assert 'Test error' in str(exc_info.value)
 
@@ -186,7 +186,7 @@ async def test_concurrent_requests(stream: MockStream) -> None:
     """Test handling multiple concurrent requests."""
 
     async with anyio.create_task_group() as tg:
-        async with JsonRpcClient(tg, stream) as client:
+        async with JsonrpcClient(tg, stream) as client:
             results: dict[str, str] = {}
 
             async def make_request(method: str) -> None:
