@@ -63,6 +63,7 @@ class JsonRpcClient:
 
     def __init__(
             self,
+            tg: anyio.abc.TaskGroup,
             stream: anyio.abc.ByteStream,
             *,
             notification_handler: ta.Callable[[str, Object | None], ta.Awaitable[None]] | None = None,
@@ -79,6 +80,7 @@ class JsonRpcClient:
 
         super().__init__()
 
+        self._tg = tg
         self._stream = stream
         self._notification_handler = notification_handler
         self._default_timeout = default_timeout
@@ -88,19 +90,12 @@ class JsonRpcClient:
         self._send_lock = anyio.Lock()
         self._running = True
 
-        # Start the receive task
-        self._receive_task: anyio.abc.TaskGroup | None = None
-
     async def __aenter__(self) -> 'JsonRpcClient':
-        async with anyio.create_task_group() as tg:
-            self._receive_task = tg
-            tg.start_soon(self._receive_loop)
-            return self
+        self._tg.start_soon(self._receive_loop)
+        return self
 
     async def __aexit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         self._running = False
-        if self._receive_task is not None:
-            self._receive_task.cancel_scope.cancel()
 
     async def _receive_loop(self) -> None:
         """Background task that receives and processes incoming messages."""

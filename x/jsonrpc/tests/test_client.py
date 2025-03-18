@@ -74,9 +74,9 @@ def notification_handler() -> ta.Callable[[str, ta.Any], ta.Awaitable[None]]:
 async def test_request_response(stream: MockStream) -> None:
     """Test basic request-response functionality."""
 
-    async with JsonRpcClient(stream) as client:
-        # Start request in background
-        async with anyio.create_task_group() as tg:
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream) as client:
+            # Start request in background
             async def make_request() -> None:
                 result = await client.request('test_method', {'param': 'value'})
                 assert result == 'test_response'
@@ -101,63 +101,67 @@ async def test_request_response(stream: MockStream) -> None:
 async def test_notification(stream: MockStream, notification_handler: ta.Any) -> None:
     """Test notification handling."""
 
-    async with JsonRpcClient(stream, notification_handler=notification_handler) as client:  # noqa
-        # Send notification from server
-        notif = notification('test_notification', {'data': 'value'})
-        await stream.receive_queue_tx.send(json.dumps(msh.marshal(notif)).encode())
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream, notification_handler=notification_handler) as client:  # noqa
+            # Send notification from server
+            notif = notification('test_notification', {'data': 'value'})
+            await stream.receive_queue_tx.send(json.dumps(msh.marshal(notif)).encode())
 
-        # Wait a bit for notification to be processed
-        await anyio.sleep(0.1)
+            # Wait a bit for notification to be processed
+            await anyio.sleep(0.1)
 
-        # Verify notification was received
-        assert len(notification_handler.notifications) == 1
-        method, params = notification_handler.notifications[0]
-        assert method == 'test_notification'
-        assert params == {'data': 'value'}
+            # Verify notification was received
+            assert len(notification_handler.notifications) == 1
+            method, params = notification_handler.notifications[0]
+            assert method == 'test_notification'
+            assert params == {'data': 'value'}
 
 
 @pytest.mark.asyncs
 async def test_client_notification(stream: MockStream) -> None:
     """Test sending notifications from client."""
-    async with JsonRpcClient(stream) as client:
-        await client.notify('test_method', {'param': 'value'})
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream) as client:
+            await client.notify('test_method', {'param': 'value'})
 
-        # Get the notification from the mock stream
-        notif_data = await stream.send_queue.receive()
-        notif_obj = json.loads(notif_data.decode())
+            # Get the notification from the mock stream
+            notif_data = await stream.send_queue.receive()
+            notif_obj = json.loads(notif_data.decode())
 
-        # Verify notification format
-        assert notif_obj['method'] == 'test_method'
-        assert notif_obj['params'] == {'param': 'value'}
-        assert 'id' not in notif_obj
+            # Verify notification format
+            assert notif_obj['method'] == 'test_method'
+            assert notif_obj['params'] == {'param': 'value'}
+            assert 'id' not in notif_obj
 
 
 @pytest.mark.asyncs
 async def test_request_timeout(stream: MockStream) -> None:
     """Test request timeout handling."""
 
-    async with JsonRpcClient(stream, default_timeout=0.1) as client:
-        with pytest.raises(JsonRpcTimeoutError):
-            await client.request('test_method')
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream, default_timeout=0.1) as client:
+            with pytest.raises(JsonRpcTimeoutError):
+                await client.request('test_method')
 
 
 @pytest.mark.asyncs
 async def test_connection_error(stream: MockStream) -> None:
     """Test connection error handling."""
 
-    async with JsonRpcClient(stream) as client:
-        stream.close()
-        with pytest.raises(JsonRpcConnectionError):
-            await client.request('test_method')
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream) as client:
+            stream.close()
+            with pytest.raises(JsonRpcConnectionError):
+                await client.request('test_method')
 
 
 @pytest.mark.asyncs
 async def test_error_response(stream: MockStream) -> None:
     """Test error response handling."""
 
-    async with JsonRpcClient(stream) as client:
-        # Start request in background
-        async with anyio.create_task_group() as tg:
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream) as client:
+            # Start request in background
             async def make_request() -> None:
                 with pytest.raises(JsonRpcError) as exc_info:
                     await client.request('test_method')
@@ -181,8 +185,8 @@ async def test_error_response(stream: MockStream) -> None:
 async def test_concurrent_requests(stream: MockStream) -> None:
     """Test handling multiple concurrent requests."""
 
-    async with JsonRpcClient(stream) as client:
-        async with anyio.create_task_group() as tg:
+    async with anyio.create_task_group() as tg:
+        async with JsonRpcClient(tg, stream) as client:
             results: dict[str, str] = {}
 
             async def make_request(method: str) -> None:
@@ -202,7 +206,7 @@ async def test_concurrent_requests(stream: MockStream) -> None:
                 response = result(request_obj['id'], f"response_{request_obj['method']}")
                 await stream.receive_queue_tx.send(json.dumps(msh.marshal(response)).encode())
 
-        # Verify all requests got correct responses
-        assert len(results) == 3
-        for i in range(3):
-            assert results[f'method_{i}'] == f'response_method_{i}'
+            # Verify all requests got correct responses
+            assert len(results) == 3
+            for i in range(3):
+                assert results[f'method_{i}'] == f'response_method_{i}'
