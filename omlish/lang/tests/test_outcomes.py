@@ -20,37 +20,37 @@ import traceback
 
 import pytest
 
-from .. import outcome
+from .. import outcomes
 
 
 ##
 
 
 def test_outcome():
-    v = outcome.Value(1)
+    v = outcomes.Value(1)
     assert v.value() == 1
     assert v.unwrap() == 1
     assert repr(v) == 'Value(1)'
 
-    with pytest.raises(outcome.AlreadyUsedError):
+    with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
         v.unwrap()
 
-    v = outcome.Value(1)
+    v = outcomes.Value(1)
 
     exc = RuntimeError('oops')
-    e = outcome.Error(exc)
+    e = outcomes.Error(exc)
     assert e.error() is exc
     with pytest.raises(RuntimeError):
         e.unwrap()
-    with pytest.raises(outcome.AlreadyUsedError):
+    with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
         e.unwrap()
     assert repr(e) == f'Error({exc!r})'
 
-    e = outcome.Error(exc)
+    e = outcomes.Error(exc)
     with pytest.raises(TypeError):
-        outcome.Error('hello')  # type: ignore
+        outcomes.Error('hello')  # type: ignore
     with pytest.raises(TypeError):
-        outcome.Error(RuntimeError)  # type: ignore
+        outcomes.Error(RuntimeError)  # type: ignore
 
     def expect_1():
         assert (yield) == 1
@@ -59,7 +59,7 @@ def test_outcome():
     it = iter(expect_1())
     next(it)
     assert v.send(it) == 'ok'
-    with pytest.raises(outcome.AlreadyUsedError):
+    with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
         v.send(it)
 
     def expect_runtime_error():
@@ -70,15 +70,15 @@ def test_outcome():
     it = iter(expect_runtime_error())
     next(it)
     assert e.send(it) == 'ok'
-    with pytest.raises(outcome.AlreadyUsedError):
+    with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
         e.send(it)
 
 
 def test_outcome_eq_hash():
-    v1 = outcome.Value(['hello'])
-    v2 = outcome.Value(['hello'])
-    v3 = outcome.Value('hello')
-    v4 = outcome.Value('hello')
+    v1 = outcomes.Value(['hello'])
+    v2 = outcomes.Value(['hello'])
+    v3 = outcomes.Value('hello')
+    v4 = outcomes.Value('hello')
     assert v1 == v2
     assert v1 != v3
     with pytest.raises(TypeError):
@@ -88,10 +88,10 @@ def test_outcome_eq_hash():
     # exceptions in general compare by identity
     exc1 = RuntimeError('oops')
     exc2 = KeyError('foo')
-    e1 = outcome.Error(exc1)
-    e2 = outcome.Error(exc1)
-    e3 = outcome.Error(exc2)
-    e4 = outcome.Error(exc2)
+    e1 = outcomes.Error(exc1)
+    e2 = outcomes.Error(exc1)
+    e3 = outcomes.Error(exc2)
+    e4 = outcomes.Error(exc2)
     assert e1 == e2
     assert e3 == e4
     assert e1 != e3
@@ -99,39 +99,39 @@ def test_outcome_eq_hash():
 
 
 def test_value_compare():
-    assert outcome.Value(1) < outcome.Value(2)
-    assert not outcome.Value(3) < outcome.Value(2)
+    assert outcomes.Value(1) < outcomes.Value(2)
+    assert not outcomes.Value(3) < outcomes.Value(2)
     with pytest.raises(TypeError):
-        outcome.Value(1) < outcome.Value('foo')  # type: ignore  # noqa
+        outcomes.Value(1) < outcomes.Value('foo')  # type: ignore  # noqa
 
 
 def test_capture():
     def add(x, y):
         return x + y
 
-    v = outcome.capture(add, 2, y=3)
-    assert type(v) is outcome.Value
+    v = outcomes.capture(add, 2, y=3)
+    assert type(v) is outcomes.Value
     assert v.unwrap() == 5
 
     def raise_value_error(x):
         raise ValueError(x)
 
-    e = outcome.capture(raise_value_error, 'two')
-    assert type(e) is outcome.Error
+    e = outcomes.capture(raise_value_error, 'two')
+    assert type(e) is outcomes.Error
     assert type(e.error()) is ValueError
     assert e.error().args == ('two',)
 
 
 def test_inheritance():
-    assert issubclass(outcome.Value, outcome.Outcome)
-    assert issubclass(outcome.Error, outcome.Outcome)
+    assert issubclass(outcomes.Value, outcomes.Outcome)
+    assert issubclass(outcomes.Error, outcomes.Outcome)
 
 
 def test_traceback_frame_removal():
     def raise_value_error(x):
         raise ValueError(x)
 
-    e = outcome.capture(raise_value_error, 'abc')
+    e = outcomes.capture(raise_value_error, 'abc')
     with pytest.raises(ValueError) as exc_info:  # noqa
         e.unwrap()
     frames = traceback.extract_tb(exc_info.value.__traceback__)
@@ -142,7 +142,7 @@ def test_traceback_frame_removal():
 def test_error_unwrap_does_not_create_reference_cycles():
     # See comment in Error.unwrap for why reference cycles are tricky
     exc = ValueError()
-    err = outcome.Error(exc)
+    err = outcomes.Error(exc)
     try:
         err.unwrap()
     except ValueError:
@@ -167,14 +167,14 @@ def test_acapture():
             await asyncio.sleep(0)
             return x + y
 
-        v = await outcome.acapture(add, 3, y=4)
-        assert v == outcome.Value(7)
+        v = await outcomes.acapture(add, 3, y=4)
+        assert v == outcomes.Value(7)
 
         async def raise_value_error(x):
             await asyncio.sleep(0)
             raise ValueError(x)
 
-        e = await outcome.acapture(raise_value_error, 9)
+        e = await outcomes.acapture(raise_value_error, 9)
         assert type(e.error()) is ValueError
         assert e.error().args == (9,)
 
@@ -190,15 +190,15 @@ def test_asend():
             yield 3
 
         my_agen = my_agen_func().__aiter__()
-        v = outcome.Value('value')
-        e = outcome.Error(KeyError())
+        v = outcomes.Value('value')
+        e = outcomes.Error(KeyError())
         assert (await my_agen.asend(None)) == 1
         assert (await v.asend(my_agen)) == 2
-        with pytest.raises(outcome.AlreadyUsedError):
+        with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
             await v.asend(my_agen)
 
         assert (await e.asend(my_agen)) == 3
-        with pytest.raises(outcome.AlreadyUsedError):
+        with pytest.raises(outcomes.OutcomeAlreadyUnwrappedError):
             await e.asend(my_agen)
         with pytest.raises(StopAsyncIteration):
             await my_agen.asend(None)
@@ -211,7 +211,7 @@ def test_async_traceback_frame_removal():
         async def raise_value_error(x):
             raise ValueError(x)
 
-        e = await outcome.acapture(raise_value_error, 'abc')
+        e = await outcomes.acapture(raise_value_error, 'abc')
         with pytest.raises(ValueError) as exc_info:  # noqa
             e.unwrap()
         frames = traceback.extract_tb(exc_info.value.__traceback__)

@@ -27,7 +27,6 @@ from _pytest.outcomes import XFailed  # noqa
 
 from ..... import check
 from ..... import lang
-from ..... import outcome
 from .backends.base import AsyncsBackend
 from .utils import is_coroutine_function
 
@@ -225,14 +224,14 @@ class AsyncsFixture:
             # process), save any exception that *isn't* Cancelled (because if its Cancelled then we can't route it to
             # the right place, and anyway the teardown code will get it again if it matters), and then use a shield to
             # keep waiting for the teardown to finish without having to worry about cancellation.
-            yield_outcome: outcome.Outcome = outcome.Value(None)
+            yield_outcome: lang.Outcome = lang.Value(None)
             try:
                 for event in self.user_done_events:
                     await event.wait()
 
             except BaseException as exc:  # noqa
                 check.isinstance(exc, anyio.get_cancelled_exc_class())
-                yield_outcome = outcome.Error(exc)
+                yield_outcome = lang.Error(exc)
                 test_ctx.crash(self, None)
                 with anyio.CancelScope(shield=True):
                     for event in self.user_done_events:

@@ -27,7 +27,7 @@ ArgsT = ta.ParamSpec('ArgsT')
 ##
 
 
-class AlreadyUsedError(RuntimeError):
+class OutcomeAlreadyUnwrappedError(RuntimeError):
     """An Outcome can only be unwrapped once."""
 
 
@@ -157,7 +157,7 @@ class Outcome(abc.ABC, ta.Generic[ValueT_co]):
 
     def _set_unwrapped(self) -> None:
         if self._unwrapped:
-            raise AlreadyUsedError
+            raise OutcomeAlreadyUnwrappedError
         object.__setattr__(self, '_unwrapped', True)
 
     @abc.abstractmethod

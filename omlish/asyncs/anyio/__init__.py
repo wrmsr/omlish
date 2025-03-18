@@ -30,6 +30,15 @@ from .backends import (  # noqa
     get_current_backend_task,
 )
 
+from .futures import (  # noqa
+    FutureError,
+    FutureOutcomeAlreadySetError,
+
+    Future,
+
+    create_future,
+)
+
 from .signals import (  # noqa
     install_shutdown_signal_handler,
 )

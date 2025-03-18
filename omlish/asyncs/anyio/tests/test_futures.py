@@ -1,17 +1,16 @@
 import anyio
 import pytest
 
-from omlish import outcome as oc
+from .... import lang
+from ..futures import create_future
 
-from ..afuts import create_future
 
-
-@pytest.mark.asyncs('asyncio')
+@pytest.mark.asyncs
 async def test_futs():
     async with anyio.create_task_group() as tg:
         fut = create_future[int]()
 
-        o: oc.Outcome[int] | None = None
+        o: lang.Outcome[int] | None = None
 
         async def a():
             nonlocal o

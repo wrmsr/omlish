@@ -209,6 +209,16 @@ from .objects import (  # noqa
     super_meta,
 )
 
+from .outcomes import (  # noqa
+    Either,
+    Error,
+    Outcome,
+    OutcomeAlreadyUnwrappedError,
+    Value,
+    acapture,
+    capture,
+)
+
 from .params import (  # noqa
     ArgsParam,
     KwOnlyParam,
