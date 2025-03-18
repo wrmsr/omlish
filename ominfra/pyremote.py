@@ -35,45 +35,81 @@ class PyremoteBootstrapOptions:
 
 @dc.dataclass(frozen=True)
 class PyremoteEnvInfo:
-    sys_base_prefix: str
-    sys_byteorder: str
-    sys_defaultencoding: str
-    sys_exec_prefix: str
-    sys_executable: str
-    sys_implementation_name: str
-    sys_path: ta.List[str]
-    sys_platform: str
-    sys_prefix: str
-    sys_version: str
-    sys_version_info: ta.List[ta.Union[int, str]]
+    @dc.dataclass(frozen=True)
+    class Sys:
+        base_prefix: str
+        byteorder: str
+        defaultencoding: str
+        exec_prefix: str
+        executable: str
+        implementation_name: str
+        path: ta.List[str]
+        platform: str
+        prefix: str
+        version: str
+        version_info: ta.List[ta.Union[int, str]]
 
-    platform_architecture: ta.List[str]
-    platform_machine: str
-    platform_platform: str
-    platform_processor: str
-    platform_system: str
-    platform_release: str
-    platform_version: str
+    sys: Sys
 
-    site_userbase: str
+    @dc.dataclass(frozen=True)
+    class Platform:
+        architecture: ta.List[str]
+        machine: str
+        platform: str
+        processor: str
+        system: str
+        release: str
+        version: str
 
-    os_cwd: str
-    os_gid: int
-    os_loadavg: ta.List[float]
-    os_login: ta.Optional[str]
-    os_pgrp: int
-    os_pid: int
-    os_ppid: int
-    os_uid: int
+    platform: Platform
 
-    pw_name: str
-    pw_uid: int
-    pw_gid: int
-    pw_gecos: str
-    pw_dir: str
-    pw_shell: str
+    @dc.dataclass(frozen=True)
+    class Site:
+        userbase: str
+
+    site: Site
+
+    @dc.dataclass(frozen=True)
+    class Os:
+        cwd: str
+        gid: int
+        loadavg: ta.List[float]
+        login: ta.Optional[str]
+        pgrp: int
+        pid: int
+        ppid: int
+        uid: int
+
+    os: Os
+
+    @dc.dataclass(frozen=True)
+    class Pw:
+        name: str
+        uid: int
+        gid: int
+        gecos: str
+        dir: str
+        shell: str
+
+    pw: Pw
 
     env_path: ta.Optional[str]
+
+    #
+
+    def to_dict(self) -> dict:
+        return {
+            f.name: dc.asdict(v) if dc.is_dataclass(v := getattr(self, f.name)) else v  # type: ignore[arg-type]
+            for f in dc.fields(self)
+        }
+
+    @classmethod
+    def from_dict(cls, dct: dict) -> 'PyremoteEnvInfo':
+        flds_dct = {f.name: f for f in dc.fields(cls)}
+        return cls(**{
+            k: ft(**v) if isinstance((ft := flds_dct[k].type), type) and dc.is_dataclass(ft) is not None else v
+            for k, v in dct.items()
+        })
 
 
 def _get_pyremote_env_info() -> PyremoteEnvInfo:
@@ -88,43 +124,53 @@ def _get_pyremote_env_info() -> PyremoteEnvInfo:
         os_login = None
 
     return PyremoteEnvInfo(
-        sys_base_prefix=sys.base_prefix,
-        sys_byteorder=sys.byteorder,
-        sys_defaultencoding=sys.getdefaultencoding(),
-        sys_exec_prefix=sys.exec_prefix,
-        sys_executable=sys.executable,
-        sys_implementation_name=sys.implementation.name,
-        sys_path=sys.path,
-        sys_platform=sys.platform,
-        sys_prefix=sys.prefix,
-        sys_version=sys.version,
-        sys_version_info=list(sys.version_info),
+        sys=PyremoteEnvInfo.Sys(
+            base_prefix=sys.base_prefix,
+            byteorder=sys.byteorder,
+            defaultencoding=sys.getdefaultencoding(),
+            exec_prefix=sys.exec_prefix,
+            executable=sys.executable,
+            implementation_name=sys.implementation.name,
+            path=sys.path,
+            platform=sys.platform,
+            prefix=sys.prefix,
+            version=sys.version,
+            version_info=list(sys.version_info),
+        ),
 
-        platform_architecture=list(platform.architecture()),
-        platform_machine=platform.machine(),
-        platform_platform=platform.platform(),
-        platform_processor=platform.processor(),
-        platform_system=platform.system(),
-        platform_release=platform.release(),
-        platform_version=platform.version(),
+        platform=PyremoteEnvInfo.Platform(
+            architecture=list(platform.architecture()),
+            machine=platform.machine(),
+            platform=platform.platform(),
+            processor=platform.processor(),
+            system=platform.system(),
+            release=platform.release(),
+            version=platform.version(),
+        ),
 
-        site_userbase=site.getuserbase(),
+        site=PyremoteEnvInfo.Site(
+            userbase=site.getuserbase(),
+        ),
 
-        os_cwd=os.getcwd(),
-        os_gid=os.getgid(),
-        os_loadavg=list(os.getloadavg()),
-        os_login=os_login,
-        os_pgrp=os.getpgrp(),
-        os_pid=os.getpid(),
-        os_ppid=os.getppid(),
-        os_uid=os_uid,
+        os=PyremoteEnvInfo.Os(
+            cwd=os.getcwd(),
+            gid=os.getgid(),
+            loadavg=list(os.getloadavg()),
+            login=os_login,
+            pgrp=os.getpgrp(),
+            pid=os.getpid(),
+            ppid=os.getppid(),
+            uid=os_uid,
+        ),
 
-        pw_name=pw.pw_name,
-        pw_uid=pw.pw_uid,
-        pw_gid=pw.pw_gid,
-        pw_gecos=pw.pw_gecos,
-        pw_dir=pw.pw_dir,
-        pw_shell=pw.pw_shell,
+        pw=PyremoteEnvInfo.Pw(
+            name=pw.pw_name,
+            uid=pw.pw_uid,
+            gid=pw.pw_gid,
+            gecos=pw.pw_gecos,
+            dir=pw.pw_dir,
+            shell=pw.pw_shell,
+        ),
 
         env_path=os.environ.get('PATH'),
     )
@@ -335,7 +381,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
     # Write env info
     env_info = _get_pyremote_env_info()
-    env_info_json = json.dumps(dc.asdict(env_info), indent=None, separators=(',', ':'))  # noqa
+    env_info_json = json.dumps(env_info.to_dict(), indent=None, separators=(',', ':'))  # noqa
     os.write(1, struct.pack('<I', len(env_info_json)))
     os.write(1, env_info_json.encode('utf-8'))
 
@@ -449,7 +495,7 @@ class PyremoteBootstrapDriver:
         env_info_json_len = struct.unpack('<I', d)[0]
         d = yield from self._read(env_info_json_len)
         env_info_json = d.decode('utf-8')
-        env_info = PyremoteEnvInfo(**json.loads(env_info_json))
+        env_info = PyremoteEnvInfo.from_dict(json.loads(env_info_json))
 
         # Read fourth ack (after finalization completed)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK3)

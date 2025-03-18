@@ -450,6 +450,10 @@ ci:
 
 .PHONY: package
 package: gen check clean-package
+	${MAKE} _package
+
+.PHONY: _package
+_package:
 	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b -r gen
 
 .PHONY: test-install

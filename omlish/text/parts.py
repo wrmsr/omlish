@@ -72,12 +72,16 @@ class Meta(DataPart):
 
 
 class PartTransform:
-    def __call__(self, part: Part) -> Part:
+    def __call__(self, part: Part | None) -> Part:
         return self._transform(part)
 
     @dispatch.method
-    def _transform(self, part: Part) -> Part:
+    def _transform(self, part: Part | None) -> Part:
         raise TypeError(part)
+
+    @_transform.register
+    def _transform_none(self, part: None) -> Part:
+        return []
 
     @_transform.register
     def _transform_str(self, part: str) -> Part:
@@ -116,7 +120,7 @@ class PartTransform:
 
 
 class RemoveMetas(PartTransform):
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_meta(self, part: Meta) -> Part:
         return []
 
@@ -140,26 +144,26 @@ def _drop_empties(it: ta.Iterable[T]) -> list[T]:
 
 
 class CompactPart(PartTransform):
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_sequence(self, part: collections.abc.Sequence) -> Part:
         return _drop_empties(self(c) for c in part)
 
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_list(self, part: List) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return List(parts, part.delimiter, part.trailer) if parts else []
 
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_concat(self, part: Concat) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Concat(parts) if parts else []
 
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_block(self, part: Block) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Block(parts) if parts else []
 
-    @PartTransform._transform.register
+    @PartTransform._transform.register  # noqa
     def _transform_section(self, part: Section) -> Part:
         parts = _drop_empties(self(c) for c in part.parts)
         return Section(parts) if parts else []
@@ -207,32 +211,36 @@ class PartRenderer:
             self._blank_lines += n
             self._has_indented = False
 
-    def __call__(self, part: Part) -> None:
+    def __call__(self, part: Part | None) -> None:
         return self._render(part)
 
     @dispatch.method
-    def _render(self, part: Part) -> None:
+    def _render(self, part: Part | None) -> None:
         raise TypeError(part)
 
     @_render.register
-    def _transform_str(self, part: str) -> None:
+    def _render_none(self, part: None) -> None:
+        pass
+
+    @_render.register
+    def _render_str(self, part: str) -> None:
         self._write(part)
 
     @_render.register
-    def _transform_sequence(self, part: collections.abc.Sequence) -> None:
+    def _render_sequence(self, part: collections.abc.Sequence) -> None:
         for i, c in enumerate(part):
             if i:
                 self._write(' ')
             self(c)
 
     @_render.register
-    def _transform_wrap(self, part: Wrap) -> None:
+    def _render_wrap(self, part: Wrap) -> None:
         self._write(part.wrapper[0])
         self(part.part)
         self._write(part.wrapper[1])
 
     @_render.register
-    def _transform_list(self, part: List) -> None:
+    def _render_list(self, part: List) -> None:
         for i, c in enumerate(part.parts):
             if i:
                 self._write(part.delimiter + ' ')
@@ -241,18 +249,18 @@ class PartRenderer:
             self._write(part.delimiter)
 
     @_render.register
-    def _transform_concat(self, part: Concat) -> None:
+    def _render_concat(self, part: Concat) -> None:
         for c in part.parts:
             self(c)
 
     @_render.register
-    def _transform_block(self, part: Block) -> None:
+    def _render_block(self, part: Block) -> None:
         for c in part.parts:
             self(c)
             self._write_newline()
 
     @_render.register
-    def _transform_section(self, part: Section) -> None:
+    def _render_section(self, part: Section) -> None:
         self._indents += 1
         try:
             for c in part.parts:

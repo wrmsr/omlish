@@ -7,6 +7,7 @@ def test_rendering():
         'foo',
         ['foo', 'bar'],
         ['foo', r.Block(['bar', 'baz']), 'qux'],
+        None,
     ]:
         print(p)
         print(r.render(p))  # type: ignore

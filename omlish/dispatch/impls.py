@@ -5,7 +5,6 @@ TODO:
  - multidispatch? never solved..
   - just generic on tuple[A0, A1, ...]
 """
-import contextlib
 import typing as ta
 import weakref
 
@@ -24,8 +23,10 @@ _IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, frozenset[type]] = weak
 
 
 def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
-    with contextlib.suppress(KeyError):
+    try:
         return _IMPL_FUNC_CLS_SET_CACHE[func]
+    except KeyError:
+        pass
 
     ann = getattr(func, '__annotations__', {})
     if not ann:

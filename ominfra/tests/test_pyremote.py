@@ -43,6 +43,7 @@ class TestPyremote(unittest.TestCase):
             opts,
         ).run(stdout, stdin)
         self.assertEqual(res.pid, proc.pid)
+        self.assertEqual(res.env_info.sys.executable, sys.executable)
 
         stdin.write(b'foo')
         try:
