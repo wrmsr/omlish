@@ -9,6 +9,7 @@ See:
  - https://github.com/python-lsp/python-lsp-jsonrpc
 """
 import operator
+import types
 import typing as ta
 
 from ... import check
@@ -17,8 +18,12 @@ from ... import lang
 from ... import marshal as msh
 
 
+NUMBER_TYPES: tuple[type, ...] = (int, float)
 Number: ta.TypeAlias = int | float
+
 Object: ta.TypeAlias = ta.Mapping[str, ta.Any]
+
+ID_TYPES: tuple[type, ...] = (str, *NUMBER_TYPES, types.NoneType)
 Id: ta.TypeAlias = str | Number | None
 
 
@@ -50,7 +55,7 @@ class Request(lang.Final):
         return self.id is NotSpecified
 
     def id_value(self) -> Id:
-        return check.isinstance(self.id, Id)
+        return check.isinstance(self.id, ID_TYPES)
 
     method: str
     params: Object | None = None
