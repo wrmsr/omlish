@@ -14,6 +14,7 @@ import pytest
 import wsproto
 
 from omlish import lang
+from omlish.asyncs.anyio import eof_to_empty as anyio_eof_to_empty
 
 from ..config import Config
 from ..default import serve
@@ -21,7 +22,6 @@ from ..types import AsgiWrapper
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import sanity_framework
 from .utils import CONNECTION_REFUSED_EXCEPTION_TYPES
-from .utils import anyio_eof_to_empty
 from .utils import get_free_port
 from .utils import get_timeout_s
 from .utils import headers_time_patch  # noqa

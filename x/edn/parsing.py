@@ -2,6 +2,9 @@
 TODO:
  - class Keyword
  - UnexpectedInput - parse() should read one and raise if not eof
+ - more error types
+ - dedupe parse_scalar_container
+ - lol 'nil' parsing
 """
 import typing as ta
 
@@ -26,6 +29,7 @@ class Parser:
         super().__init__()
 
         self._stream = stream
+
         self._current_char: str | None = None
         self._position = 0
         self._advance()
@@ -138,20 +142,20 @@ class Parser:
 
         raise ParseError('Unterminated string')
 
+    _SPECIAL_CHARS: ta.ClassVar[ta.Mapping[str, str]] = {
+        'newline': '\n',
+        'return': '\r',
+        'space': ' ',
+        'tab': '\t'
+    }
+
     def _parse_char(self) -> Char:
         self._advance()  # Skip backslash
         if not self._current_char:
             raise ParseError('Unexpected end of input after \\')
 
-        special_chars = {
-            'newline': '\n',
-            'return': '\r',
-            'space': ' ',
-            'tab': '\t'
-        }
-
         # Check for special characters
-        for name, char in special_chars.items():
+        for name, char in self._SPECIAL_CHARS.items():
             if self._current_char == name[0]:
                 test_pos = self._stream.tell()
                 test = self._current_char

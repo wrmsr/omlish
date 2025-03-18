@@ -1,7 +1,6 @@
 import socket
 import typing as ta
 
-import anyio
 import pytest
 
 from omlish.diag import pydevd as pdu
@@ -10,6 +9,9 @@ from .. import headers
 
 
 T = ta.TypeVar('T')
+
+
+##
 
 
 DEFAULT_TIMEOUT_S: float = 50
@@ -46,13 +48,6 @@ CONNECTION_REFUSED_EXCEPTION_TYPES: tuple[type[Exception], ...] = (OSError, Conn
 
 def is_connection_refused_exception(e: Exception) -> bool:
     return any(isinstance(ce, ConnectionRefusedError) for ce in get_exception_chain(e))
-
-
-async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T | bytes:
-    try:
-        return await fn(*args, **kwargs)
-    except anyio.EndOfStream:
-        return b''
 
 
 @pytest.fixture(autouse=True)

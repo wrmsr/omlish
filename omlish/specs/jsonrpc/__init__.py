@@ -1,22 +1,34 @@
 from .errors import (  # noqa
-    CUSTOM_ERROR_BASE,
     KnownError,
     KnownErrors,
+
+    CUSTOM_ERROR_BASE,
 )
 
 from .types import (  # noqa
-    Error,
-    Id,
-    NotSpecified,
+    NUMBER_TYPES,
     Number,
     Object,
-    Request,
-    Response,
+    ID_TYPES,
+    Id,
+
     VERSION,
-    error,
-    notification,
+
+    NotSpecified,
+    is_not_specified,
+
+    Request,
     request,
+    notification,
+
+    Response,
     result,
+
+    Error,
+    error,
+
+    Message,
+    detect_message_type,
 )
 
 

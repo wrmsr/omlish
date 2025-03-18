@@ -1,3 +1,8 @@
+"""
+TODO:
+ - chop lines lol
+ - split connection and dispatcher
+"""
 import contextlib
 import json
 import typing as ta
@@ -8,15 +13,7 @@ import anyio.abc
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
-from omlish.specs.jsonrpc.types import Error
-from omlish.specs.jsonrpc.types import Id
-from omlish.specs.jsonrpc.types import NotSpecified
-from omlish.specs.jsonrpc.types import Object
-from omlish.specs.jsonrpc.types import Request
-from omlish.specs.jsonrpc.types import Response
-from omlish.specs.jsonrpc.types import detect_message_type
-from omlish.specs.jsonrpc.types import notification
-from omlish.specs.jsonrpc.types import request
+from omlish.specs import jsonrpc as jr
 
 
 ##
@@ -46,13 +43,19 @@ def _create_id() -> str:
     return str(uuid.uuid4())
 
 
+CONNECTION_ERROR_EXCEPTIONS: tuple[type[Exception], ...] = (
+    OSError,
+    anyio.BrokenResourceError,
+)
+
+
 class JsonrpcClient:
     def __init__(
             self,
             tg: anyio.abc.TaskGroup,
             stream: anyio.abc.ByteStream,
             *,
-            notification_handler: ta.Callable[[Request], ta.Awaitable[None]] | None = None,
+            notification_handler: ta.Callable[[jr.Request], ta.Awaitable[None]] | None = None,
             default_timeout: float | None = 30.0,
     ) -> None:
         super().__init__()
@@ -62,10 +65,12 @@ class JsonrpcClient:
         self._notification_handler = notification_handler
         self._default_timeout = default_timeout
 
-        self._pending: dict[Id, anyio.Event] = {}
-        self._responses: dict[Id, Response] = {}
+        self._pending: dict[jr.Id, anyio.Event] = {}
+        self._responses: dict[jr.Id, jr.Response] = {}
         self._send_lock = anyio.Lock()
         self._running = True
+
+    #
 
     async def __aenter__(self) -> 'JsonrpcClient':
         await self._tg.start(self._receive_loop)
@@ -73,6 +78,32 @@ class JsonrpcClient:
 
     async def __aexit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         self._running = False
+
+    async def _receive(self) -> jr.Message | None:
+        try:
+            data = await self._stream.receive()
+        except CONNECTION_ERROR_EXCEPTIONS as e:
+            raise JsonrpcConnectionError('Failed to receive message') from e
+
+        if not data:
+            return None
+
+        # FIXME: lines lol
+        check.state(b'\n' not in data[:-1])
+        check.state(data.endswith(b'\n'))
+
+        try:
+            dct = json.loads(data.decode('utf-8'))
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            raise JsonrpcProtocolError from e
+
+        mcls = jr.detect_message_type(dct)
+        try:
+            msg = msh.unmarshal(dct, mcls)
+        except Exception as e:
+            raise JsonrpcProtocolError from e
+
+        return msg
 
     async def _receive_loop(
             self,
@@ -82,103 +113,72 @@ class JsonrpcClient:
         task_status.started()
 
         while self._running:
-            try:
-                data = await self._stream.receive()
-                if not data:
-                    break
+            msg = await self._receive()
+            if msg is None:
+                break
 
-                # FIXME: lines lol
-                check.state(b'\n' not in data[:-1])
-                check.state(data.endswith(b'\n'))
-
-                try:
-                    dct = json.loads(data.decode('utf-8'))
-                except (UnicodeDecodeError, json.JSONDecodeError) as e:
-                    raise JsonrpcProtocolError from e
-
-                mcls = detect_message_type(dct)
-                try:
-                    msg = msh.unmarshal(dct, mcls)
-                except Exception as e:
-                    raise JsonrpcProtocolError from e
-
-                if isinstance(msg, Response):
-                    msg_id = msg.id
-                    if msg_id in self._pending:
-                        self._responses[msg_id] = msg
-                        self._pending[msg_id].set()
-
-                elif isinstance(msg, Request):
-                    if msg.is_notification:
-                        if (mh := self._notification_handler) is not None:
-                            await mh(msg)
-
-                    else:
-                        raise NotImplementedError
-
-                elif isinstance(msg, Error):
-                    raise NotImplementedError
+            if isinstance(msg, jr.Response):
+                msg_id = msg.id
+                if msg_id in self._pending:
+                    self._responses[msg_id] = msg
+                    self._pending[msg_id].set()
 
                 else:
-                    raise JsonrpcProtocolError(msg)
+                    raise NotImplementedError
 
-            # except (OSError, anyio.BrokenResourceError):
-            #     break
+            elif isinstance(msg, jr.Request):
+                if msg.is_notification:
+                    if (mh := self._notification_handler) is not None:
+                        await mh(msg)
 
-            except Exception as e:  # noqa
-                # FIXME: log / report
-                raise
+                else:
+                    raise NotImplementedError
+
+            elif isinstance(msg, jr.Error):
+                raise NotImplementedError
+
+            else:
+                raise JsonrpcProtocolError(msg)
+
+    #
+
+    async def _send(self, msg: jr.Message) -> None:
+        async with self._send_lock:
+            try:
+                await self._stream.send(json.dumps(msh.marshal(msg)).encode())
+            except CONNECTION_ERROR_EXCEPTIONS as e:
+                raise JsonrpcConnectionError('Failed to send message') from e
 
     async def request(
             self,
             method: str,
-            params: Object | None = None,
+            params: jr.Object | None = None,
             *,
             timeout: float | None = None,
     ) -> ta.Any:
-        """
-        Send a JSON-RPC request and wait for the response.
-
-        Args:
-            method: The method name to call
-            params: Optional parameters for the method
-            timeout: Optional timeout override for this specific request
-
-        Returns:
-            The result of the request
-
-        Raises:
-            JsonrpcTimeoutError: If the request times out
-            JsonrpcError: If the request fails
-            JsonrpcConnectionError: If there are connection issues
-        """
-
         msg_id = _create_id()
-        req = request(msg_id, method, params)
+        req = jr.request(msg_id, method, params)
 
         event = anyio.Event()
         self._pending[msg_id] = event
 
         try:
             # Send request
-            async with self._send_lock:
-                try:
-                    await self._stream.send(json.dumps(msh.marshal(req)).encode())
-                except (OSError, anyio.BrokenResourceError) as e:
-                    raise JsonrpcConnectionError('Failed to send request') from e
+            await self._send(req)
 
             # Wait for response with timeout
             timeout_val = timeout if timeout is not None else self._default_timeout
             with contextlib.suppress(TimeoutError):
-                await anyio.fail_after(timeout_val, event.wait)
+                with anyio.fail_after(timeout_val):
+                    await event.wait()
 
             if msg_id not in self._responses:
                 raise JsonrpcTimeoutError(f'Request timed out after {timeout_val} seconds')
 
             response = self._responses[msg_id]
 
-            if response.error is not NotSpecified:
-                error = ta.cast(Error, response.error)
+            if response.error is not jr.NotSpecified:
+                error = ta.cast(jr.Error, response.error)
                 raise JsonrpcError(f'Error {error.code}: {error.message}')
 
             return response.result
@@ -187,22 +187,6 @@ class JsonrpcClient:
             self._pending.pop(msg_id, None)
             self._responses.pop(msg_id, None)
 
-    async def notify(self, method: str, params: Object | None = None) -> None:
-        """
-        Send a JSON-RPC notification (a request without an ID).
-
-        Args:
-            method: The method name to call
-            params: Optional parameters for the method
-
-        Raises:
-            JsonrpcConnectionError: If there are connection issues
-        """
-
-        msg = notification(method, params)
-
-        async with self._send_lock:
-            try:
-                await self._stream.send(json.dumps(msh.marshal(msg)).encode())
-            except (OSError, anyio.BrokenResourceError) as e:
-                raise JsonrpcConnectionError('Failed to send notification') from e
+    async def notify(self, method: str, params: jr.Object | None = None) -> None:
+        msg = jr.notification(method, params)
+        await self._send(msg)
