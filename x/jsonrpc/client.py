@@ -13,6 +13,8 @@ import anyio.abc
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
+from omlish.asyncs import anyio as aiu
+from omlish.io.buffers import DelimitingBuffer
 from omlish.specs import jsonrpc as jr
 
 
@@ -65,9 +67,10 @@ class JsonrpcClient:
         self._notification_handler = notification_handler
         self._default_timeout = default_timeout
 
-        self._pending: dict[jr.Id, anyio.Event] = {}
-        self._responses: dict[jr.Id, jr.Response] = {}
+        self._buf = DelimitingBuffer(b'\n')
+        self._response_futures_by_id: dict[jr.Id, aiu.Future[jr.Response]] = {}
         self._send_lock = anyio.Lock()
+        self._received_eof = False
         self._running = True
 
     #
@@ -79,31 +82,45 @@ class JsonrpcClient:
     async def __aexit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         self._running = False
 
-    async def _receive(self) -> jr.Message | None:
-        try:
-            data = await self._stream.receive()
-        except CONNECTION_ERROR_EXCEPTIONS as e:
-            raise JsonrpcConnectionError('Failed to receive message') from e
-
-        if not data:
+    async def _receive(self) -> list[jr.Message] | None:
+        if self._received_eof:
             return None
 
-        # FIXME: lines lol
-        check.state(b'\n' not in data[:-1])
-        check.state(data.endswith(b'\n'))
+        while True:
+            try:
+                data = await self._stream.receive()
+            except CONNECTION_ERROR_EXCEPTIONS as e:
+                raise JsonrpcConnectionError('Failed to receive message') from e
 
-        try:
-            dct = json.loads(data.decode('utf-8'))
-        except (UnicodeDecodeError, json.JSONDecodeError) as e:
-            raise JsonrpcProtocolError from e
+            if not data:
+                self._received_eof = True
 
-        mcls = jr.detect_message_type(dct)
-        try:
-            msg = msh.unmarshal(dct, mcls)
-        except Exception as e:
-            raise JsonrpcProtocolError from e
+            lines = list(self._buf.feed(data))
+            if lines:
+                break
 
-        return msg
+            if not data:
+                return None
+
+        msgs: list[jr.Message] = []
+        for line in lines:
+            if isinstance(line, DelimitingBuffer.Incomplete):
+                raise JsonrpcConnectionError('Received incomplete message')
+
+            try:
+                dct = json.loads(line.decode('utf-8'))
+            except (UnicodeDecodeError, json.JSONDecodeError) as e:
+                raise JsonrpcProtocolError from e
+
+            mcls = jr.detect_message_type(dct)
+            try:
+                msg = msh.unmarshal(dct, mcls)
+            except Exception as e:
+                raise JsonrpcProtocolError from e
+
+            msgs.append(msg)
+
+        return msgs
 
     async def _receive_loop(
             self,
@@ -113,32 +130,32 @@ class JsonrpcClient:
         task_status.started()
 
         while self._running:
-            msg = await self._receive()
-            if msg is None:
+            msgs = await self._receive()
+            if msgs is None:
                 break
 
-            if isinstance(msg, jr.Response):
-                msg_id = msg.id
-                if msg_id in self._pending:
-                    self._responses[msg_id] = msg
-                    self._pending[msg_id].set()
+            for msg in msgs:
+                if isinstance(msg, jr.Response):
+                    msg_id = msg.id
+                    try:
+                        resp_fut = self._response_futures_by_id[msg_id]
+                    except KeyError:
+                        raise NotImplementedError
+                    resp_fut.set_value(msg)
 
-                else:
+                elif isinstance(msg, jr.Request):
+                    if msg.is_notification:
+                        if (mh := self._notification_handler) is not None:
+                            await mh(msg)
+
+                    else:
+                        raise NotImplementedError
+
+                elif isinstance(msg, jr.Error):
                     raise NotImplementedError
 
-            elif isinstance(msg, jr.Request):
-                if msg.is_notification:
-                    if (mh := self._notification_handler) is not None:
-                        await mh(msg)
-
                 else:
-                    raise NotImplementedError
-
-            elif isinstance(msg, jr.Error):
-                raise NotImplementedError
-
-            else:
-                raise JsonrpcProtocolError(msg)
+                    raise JsonrpcProtocolError(msg)
 
     #
 
@@ -159,23 +176,20 @@ class JsonrpcClient:
         msg_id = _create_id()
         req = jr.request(msg_id, method, params)
 
-        event = anyio.Event()
-        self._pending[msg_id] = event
+        fut = aiu.create_future[jr.Response]()
+        self._response_futures_by_id[msg_id] = fut
 
         try:
-            # Send request
             await self._send(req)
 
-            # Wait for response with timeout
             timeout_val = timeout if timeout is not None else self._default_timeout
-            with contextlib.suppress(TimeoutError):
+            try:
                 with anyio.fail_after(timeout_val):
-                    await event.wait()
-
-            if msg_id not in self._responses:
+                    await fut
+            except TimeoutError:
                 raise JsonrpcTimeoutError(f'Request timed out after {timeout_val} seconds')
 
-            response = self._responses[msg_id]
+            response = fut.outcome.must().unwrap()
 
             if response.error is not jr.NotSpecified:
                 error = ta.cast(jr.Error, response.error)
@@ -184,8 +198,7 @@ class JsonrpcClient:
             return response.result
 
         finally:
-            self._pending.pop(msg_id, None)
-            self._responses.pop(msg_id, None)
+            self._response_futures_by_id.pop(msg_id, None)  # noqa
 
     async def notify(self, method: str, params: jr.Object | None = None) -> None:
         msg = jr.notification(method, params)
