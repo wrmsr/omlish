@@ -72,10 +72,7 @@ class Location:
     range: ta.Mapping[str, ta.Mapping[str, int]]  # { "start": {"line": int, "character": int}, "end": {...} }
 
 
-@dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-class DefinitionResponse:
-    result: ta.Sequence[Location] | None
+DefinitionResponse: ta.TypeAlias = ta.Sequence[Location] | None
 
 
 @dc.dataclass(frozen=True)
