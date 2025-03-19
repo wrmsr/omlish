@@ -30,8 +30,30 @@ T = ta.TypeVar('T')
 ##
 
 
-def _update_wrapper_no_anns(wrapper, wrapped):
-    functools.update_wrapper(
+def _try_update_wrapper(
+        wrapper,
+        wrapped,
+        assigned = functools.WRAPPER_ASSIGNMENTS,
+        updated = functools.WRAPPER_UPDATES,
+):
+    for attr in assigned:
+        try:
+            value = getattr(wrapped, attr)
+        except AttributeError:
+            pass
+        else:
+            try:
+                setattr(wrapper, attr, value)
+            except AttributeError:
+                pass
+    for attr in updated:
+        getattr(wrapper, attr).update(getattr(wrapped, attr, {}))
+    wrapper.__wrapped__ = wrapped
+    return wrapper
+
+
+def _try_update_wrapper_no_anns(wrapper, wrapped):
+    _try_update_wrapper(
         wrapper,
         wrapped,
         assigned=list(set(functools.WRAPPER_ASSIGNMENTS) - {'__annotations__'}),
@@ -110,21 +132,36 @@ def _make_typed_lambda_fn(fn, *pps, **kw):
 _TYPED_LAMBDA_SELF_ARG = '__self'
 
 
+class _TypedLambdaCallDescriptor:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        fn = instance.__class__.__dict__['__typed_lambda__']
+        mth = fn.__get__(instance, owner)
+        _try_update_wrapper_no_anns(mth, fn)
+
+        # update_wrapper sets __call__.__name__, and method unpickling machinery getattr's by __name__ after
+        # instantiating __self__, so that needs to return the proxy. this might blow up with bad names, but we'll burn
+        # that bridge if we come to it.
+        setattr(instance, mth.__name__, mth)
+
+        return mth
+
+
 class _TypedLambda:
     __typed_lambda_fn__: ta.ClassVar[ta.Any]
     __typed_lambda_kw__: ta.ClassVar[ta.Mapping[str, ta.Any]]
+
+    __typed_lambda__: ta.ClassVar[ta.Any]
+
+    __call__ = _TypedLambdaCallDescriptor()
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
 
         fn = cls.__dict__['__typed_lambda_fn__']
-        cls.__call__ = _make_typed_lambda_fn(fn, _TYPED_LAMBDA_SELF_ARG, **cls.__typed_lambda_kw__)
-        _update_wrapper_no_anns(cls.__call__, fn)
-
-        # update_wrapper sets __call__.__name__, and method unpickling machinery getattr's by __name__ after
-        # instantiating __self__, so that needs to return the proxy. this might blow up with bad names, but we'll burn
-        # that bridge if we come to it.
-        setattr(cls, cls.__call__.__name__, cls.__call__)
+        cls.__typed_lambda__ = _make_typed_lambda_fn(fn, _TYPED_LAMBDA_SELF_ARG, **cls.__typed_lambda_kw__)
 
     def __reduce__(self):
         cls = self.__class__
@@ -191,7 +228,7 @@ class _TypedPartial:
         else:
             ret = _MISSING
 
-        inner = _update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
+        inner = _try_update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
         self._lam = _make_typed_lambda_fn(
             inner,
             **{'return': ret},
@@ -203,7 +240,7 @@ class _TypedPartial:
             },
         )
 
-        _update_wrapper_no_anns(self, obj)
+        _try_update_wrapper_no_anns(self, obj)
         self.__signature__ = inspect.signature(self._lam, follow_wrapped=False)
 
     def __reduce__(self):
