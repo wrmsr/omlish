@@ -1,3 +1,8 @@
+"""
+TODO:
+ - use asts / executing / whatever
+  - always hit the ast, don't bother with regex
+"""
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
@@ -111,13 +116,13 @@ _FIND_SOURCE_CODE_PAT = re.compile(
 )
 
 
-def findsource(obj: ta.Any) -> FoundSource:
+def find_source(obj: ta.Any) -> FoundSource:
     """
-    Return the entire source file and starting line number for an object.
+    Return the source location for an object.
 
-    The argument may be a module, class, method, function, traceback, frame, or code object.  The source code is
-    returned as a list of all the lines in the file and the line number indexes a line in that list.  An OSError is
-    raised if the source code cannot be retrieved.
+    The argument may be a module, class, method, function, traceback, frame, or code object.
+
+    Returns more information than stdlib inspect's findsource, namely column and end position, if possible.
     """
 
     ret_kw: dict = dict(
@@ -189,16 +194,3 @@ def findsource(obj: ta.Any) -> FoundSource:
         return FoundSource(**ret_kw)
 
     raise OSError('could not find code object')
-
-
-class Foo:
-    def bar(self):
-        pass
-
-
-def _main() -> None:
-    print(findsource(Foo.bar))
-
-
-if __name__ == '__main__':
-    _main()

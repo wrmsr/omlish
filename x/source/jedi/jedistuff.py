@@ -15,8 +15,9 @@ import jedi.api.environment
 
 from omlish import check
 from omlish import lang
+from omlish.diag import pydevd
 
-from ..inspectstuff import findsource
+from ..inspect import find_source
 
 
 IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
@@ -46,7 +47,7 @@ IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
 
 def _main() -> None:
     cls = lang.Final
-    cls_src = findsource(cls)
+    cls_src = find_source(cls)
     check.state(cls_src.file_lines[cls_src.line] == 'class Final(Abstract):\n')
     file_src = ''.join(cls_src.file_lines)
 
@@ -55,22 +56,25 @@ def _main() -> None:
     env_path = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..'))
     real_env_exe = os.path.join(env_path, 'bin', 'python')
 
-    env_exe_proxy_src = '\n'.join([
-        '#!/bin/sh',
-        # f'echo "$@" >> /tmp/env_exe_args',
-        f'exec {shlex.quote(os.path.abspath(real_env_exe))} "$@"',
-        # f'exec /bin/sh -c "exec {shlex.quote(os.path.abspath(real_env_exe))} "\'"$@"\' -- "$@"',
-        '',
-    ])
+    if pydevd.is_running():
+        env_exe_proxy_src = '\n'.join([
+            '#!/bin/sh',
+            f'exec {shlex.quote(os.path.abspath(real_env_exe))} "$@"',
+            '',
+        ])
 
-    tmp_dir = tempfile.mkdtemp()
-    env_exe_proxy = os.path.join(tmp_dir, 'jedi-interpreter')
-    print(env_exe_proxy)
+        tmp_dir = tempfile.mkdtemp()
+        env_exe_proxy = os.path.join(tmp_dir, 'jedi-interpreter')
 
-    with open(env_exe_proxy, 'w') as f:
-        f.write(env_exe_proxy_src)
+        with open(env_exe_proxy, 'w') as f:
+            f.write(env_exe_proxy_src)
 
-    os.chmod(env_exe_proxy, 0o755)
+        os.chmod(env_exe_proxy, 0o755)
+
+        env_exe = env_exe_proxy
+
+    else:
+        env_exe = real_env_exe
 
     try:
         # script = jedi.Interpreter(
@@ -80,7 +84,7 @@ def _main() -> None:
         # )
 
         env = jedi.api.environment.Environment(
-            env_exe_proxy,
+            env_exe,
         )
 
         project = jedi.Project(
