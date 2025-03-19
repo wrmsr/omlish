@@ -1,4 +1,3 @@
-import operator
 import typing as ta
 
 from .... import check
@@ -13,6 +12,7 @@ from .base import StrKeyword
 from .base import StrOrStrsKeyword
 from .base import StrToKeywordsKeyword
 from .core import CoreKeyword
+from .format import FormatKeyword
 from .metadata import MetadataKeyword
 from .validation import ValidationKeyword
 
@@ -24,16 +24,17 @@ KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
 
 
 def build_keyword_types_by_tag(keyword_types: ta.Iterable[type[Keyword]]) -> ta.Mapping[str, type[Keyword]]:
-    return col.make_map_by(operator.attrgetter('tag'), keyword_types, strict=True)
+    return col.make_map(((t, kt) for kt in keyword_types for t in kt.tag_and_aliases), strict=True)
 
 
-DEFAULT_KEYWORD_SUPERTYPES: ta.AbstractSet = frozenset([
+DEFAULT_KEYWORD_SUPERTYPES: ta.AbstractSet[type[Keyword]] = frozenset([
     CoreKeyword,
+    FormatKeyword,
     MetadataKeyword,
     ValidationKeyword,
 ])
 
-DEFAULT_KEYWORD_TYPES: ta.AbstractSet = frozenset(lang.flatten(
+DEFAULT_KEYWORD_TYPES: ta.AbstractSet[type[Keyword]] = frozenset(lang.flatten(
     lang.deep_subclasses(st, concrete_only=True) for st in DEFAULT_KEYWORD_SUPERTYPES
 ))
 

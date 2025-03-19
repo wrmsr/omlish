@@ -69,18 +69,18 @@ from .clsdct import (  # noqa
     is_possibly_cls_dct,
 )
 
-from .cmp import (  # noqa
+from .collections import (  # noqa
+    empty_map,
+    merge_dicts,
+    yield_dict_init,
+)
+
+from .comparison import (  # noqa
     Infinity,
     InfinityType,
     NegativeInfinity,
     NegativeInfinityType,
     cmp,
-)
-
-from .collections import (  # noqa
-    empty_map,
-    merge_dicts,
-    yield_dict_init,
 )
 
 from .contextmanagers import (  # noqa

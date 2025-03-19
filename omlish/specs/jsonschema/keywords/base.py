@@ -16,15 +16,28 @@ KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 class Keyword(lang.Abstract):
     tag: ta.ClassVar[str]
+    aliases: ta.ClassVar[frozenset[str]]
 
-    def __init_subclass__(cls, *, tag: str | None = None, **kwargs: ta.Any) -> None:
+    tag_and_aliases: ta.ClassVar[frozenset[str]]
+
+    def __init_subclass__(
+            cls,
+            *,
+            tag: str | None = None,
+            aliases: ta.Iterable[str] | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
         super().__init_subclass__(**kwargs)
-        check.not_in('tag', dir(cls))
+        check.empty(set(dir(cls)) & {'tag', 'aliases', 'tag_and_aliases'})
         if not lang.is_abstract_class(cls):
             check.issubclass(cls, lang.Final)
+            check.not_isinstance(aliases, str)
             cls.tag = check.non_empty_str(tag)
+            cls.aliases = frozenset(aliases or ())
+            cls.tag_and_aliases = frozenset([cls.tag, *cls.aliases])
         else:
-            check.none(tag)
+            for a in (tag, aliases):
+                check.none(a)
 
 
 ##

@@ -1,6 +1,7 @@
 from .... import lang
 from .base import Keyword
 from .base import StrKeyword
+from .base import StrToKeywordsKeyword
 
 
 ##
@@ -22,4 +23,8 @@ class SchemaKeyword(StrKeyword, CoreKeyword, lang.Final, tag='$schema'):
 
 
 class Ref(StrKeyword, CoreKeyword, lang.Final, tag='$ref'):
+    pass
+
+
+class Defs(StrToKeywordsKeyword, CoreKeyword, lang.Final, tag='$defs', aliases=['definitions']):
     pass

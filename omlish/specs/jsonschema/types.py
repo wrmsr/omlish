@@ -2,6 +2,9 @@ import enum
 import typing as ta
 
 
+##
+
+
 class JsonType(enum.Enum):
     NULL = enum.auto()
     BOOLEAN = enum.auto()

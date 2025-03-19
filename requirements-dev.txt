@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.6.7
+uv>=0.6.8
 
 pytest==8.3.5
 pytest-benchmark==5.1.0
@@ -117,10 +117,10 @@ segno==1.6.6
 
 duckduckgo_search==7.5.2  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.37.14
+boto3>=1.37.15
 
 mlx==0.23.2; sys_platform == "darwin"  # @omlish-venv !13t
-mlx-lm==0.22.0; sys_platform == "darwin"  # @omlish-venv !13t
+mlx-lm==0.22.1; sys_platform == "darwin"  # @omlish-venv !13t
 
 apsw==3.49.1.0
 

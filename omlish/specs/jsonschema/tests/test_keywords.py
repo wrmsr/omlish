@@ -9,7 +9,8 @@ https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 """
 from ....formats import json
-from .. import keywords
+from ..keywords.parse import parse_keywords
+from ..keywords.render import render_keywords
 
 
 def test_keywords():
@@ -105,7 +106,7 @@ def test_keywords():
         warehouse_location_schema,
         product_schema,
     ]:
-        kws = keywords.parse_keywords(schema)
+        kws = parse_keywords(schema)
         print(kws)
 
-        print(json.dumps_pretty(keywords.render_keywords(kws)))
+        print(json.dumps_pretty(render_keywords(kws)))
