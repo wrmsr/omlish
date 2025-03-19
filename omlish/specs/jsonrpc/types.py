@@ -117,13 +117,11 @@ def error(id: Id, error: Error) -> Response:  # noqa
 ##
 
 
-Message: ta.TypeAlias = Request | Response | Error
+Message: ta.TypeAlias = Request | Response
 
 
 def detect_message_type(dct: ta.Mapping[str, ta.Any]) -> type[Message]:
     if 'method' in dct:
         return Request
-    elif 'code' in dct:
-        return Error
     else:
         return Response

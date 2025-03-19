@@ -295,3 +295,9 @@ pyinfra==3.2
 opendal==0.45.16
 
 watchdog==6.0.0
+
+##
+
+pyright[nodejs]
+
+basedpyright
