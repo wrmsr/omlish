@@ -182,15 +182,21 @@ class ReadableListBuffer:
             raise EOFError(f'ReadableListBuffer got {"no" if d is None else len(d)}, expected {sz}')
         return d
 
-    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+    def read_until_(self, delim: bytes = b'\n', start_buffer: int = 0) -> ta.Union[bytes, int]:
         if not (lst := self._lst):
-            return None
+            return 0
 
-        for i, d in enumerate(lst):
-            if (p := d.find(delim)) >= 0:
+        i = start_buffer
+        while i < len(lst):
+            if (p := lst[i].find(delim)) >= 0:
                 return self._chop(i, p + len(delim))
+            i += 1
 
-        return None
+        return i
+
+    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+        r = self.read_until_(delim)
+        return r if isinstance(r, bytes) else None
 
 
 class IncrementalWriteBuffer:
