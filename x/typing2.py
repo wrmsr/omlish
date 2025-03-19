@@ -63,26 +63,24 @@ def _render_typed_lambda(fn: ta.Any, *pps: str, **kw: ta.Any) -> _RenderedTypedL
     proto = [f'def __call__(']
     call = ['return __fn(']
 
-    i = 0
     if pps:
-        for pp in pps:
+        for i, pp in enumerate(pps):
             if i:
                 proto.append(', ')
             proto.append(pp)
-            i += 1
         proto.append(', /')
-        i += 1
 
-    for n, t in kw.items():
+    if kw:
+        if pps:
+            proto.append(', ')
+        proto.append('*')
+
+    for i, (n, t) in enumerate(kw.items()):
         if i:
             call.append(', ')
-        else:
-            proto.append('*')
-
         ns['__ann_' + n] = t
         proto.append(f', {n}: __ann_{n}')
         call.append(f'{n}={n}')
-        i += 1
 
     proto.append(')')
 
@@ -100,7 +98,7 @@ def _render_typed_lambda(fn: ta.Any, *pps: str, **kw: ta.Any) -> _RenderedTypedL
     )
 
 
-def _make_typed_lambda(fn, *pps, **kw):
+def _make_typed_lambda_fn(fn, *pps, **kw):
     rtl = _render_typed_lambda(fn, *pps, **kw)
     src = f'{rtl.proto} {rtl.call}'
     exec(src, rtl.ns)
@@ -117,11 +115,22 @@ class _TypedLambda:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
 
-        cls.__call__ = _make_typed_lambda(cls.fn, _TYPED_LAMBDA_SELF_ARG, **cls.kw)
+        cls.__call__ = _make_typed_lambda_fn(cls.fn, _TYPED_LAMBDA_SELF_ARG, **cls.kw)
 
     def __reduce__(self):
         # return (_TypedLambda, (self._fn, self._kw))
         raise NotImplementedError
+
+
+def _make_typed_lambda_cls(fn, **kw):
+    return type(
+        '_TypedLambdaInstance',  # TODO: mangle fn/kw into class name
+        (_TypedLambda,),
+        dict(
+            fn=fn,
+            kw=kw,
+        ),
+    )
 
 
 def typed_lambda(
@@ -129,7 +138,8 @@ def typed_lambda(
         **kw: ta.Any,
 ) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:  # noqa
     def inner(fn):
-        return type('_TypedLambdaInstance', (_TypedLambda,), dict(fn=fn, kw={'return': return_, **kw}))
+        cls = _make_typed_lambda_cls(fn, **{'return': return_, **kw})
+        return cls().__call__
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
