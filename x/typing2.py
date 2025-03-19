@@ -115,16 +115,16 @@ class _TypedLambda:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
 
-        cls.__call__ = _make_typed_lambda_fn(cls.fn, _TYPED_LAMBDA_SELF_ARG, **cls.kw)
+        cls.__call__ = _make_typed_lambda_fn(cls.__dict__['fn'], _TYPED_LAMBDA_SELF_ARG, **cls.kw)
 
     def __reduce__(self):
-        # return (_TypedLambda, (self._fn, self._kw))
-        raise NotImplementedError
+        cls = self.__class__
+        return (_make_typed_lambda_cls_inst, (cls.__dict__['fn'], cls.kw))
 
 
-def _make_typed_lambda_cls(fn, **kw):
+def _make_typed_lambda_cls(fn, kw):
     return type(
-        '_TypedLambdaInstance',  # TODO: mangle fn/kw into class name
+        '$_TypedLambdaInstance',  # TODO: mangle fn/kw into class name
         (_TypedLambda,),
         dict(
             fn=fn,
@@ -133,13 +133,21 @@ def _make_typed_lambda_cls(fn, **kw):
     )
 
 
+def _make_typed_lambda_cls_inst(fn, kw):
+    return _make_typed_lambda_cls(fn, kw)()
+
+
+def _make_typed_lambda_cls_fn(fn, kw):
+    cls = _make_typed_lambda_cls(fn, kw)
+    return cls().__call__
+
+
 def typed_lambda(
         return_: ta.Any = _MISSING,
         **kw: ta.Any,
 ) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:  # noqa
     def inner(fn):
-        cls = _make_typed_lambda_cls(fn, **{'return': return_, **kw})
-        return cls().__call__
+        return _make_typed_lambda_cls_fn(fn, {**({'return': return_} if return_ is not _MISSING else {}), **kw})
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
@@ -197,10 +205,35 @@ def typed_partial(obj, **kw):  # noqa
 ##
 
 
+class _Foo:
+    def __init__(self, z):
+        self.z = z
+
+    def __call__(self, x, y):
+        return x + y + self.z
+
+
+def _foo(x, y):
+    return x + y
+
+
 def _main() -> None:
-    l = typed_lambda(x=int, y=int)(lambda x, y: x + y)
+    import pickle
+    f = _Foo(3).__call__
+    assert f(1, 2) == 6
+    fp = pickle.dumps(f)
+    f2 = pickle.loads(fp)
+    assert f2(1, 2) == 6
+
+    l = typed_lambda(x=int, y=int)(_foo)
     assert l(x=3, y=4) == 7
     assert ta.get_type_hints(l) == {'x': int, 'y': int}
+
+    import pickle
+    lp = pickle.dumps(l)
+    l2 = pickle.loads(lp)
+    assert l2(x=3, y=4) == 7
+    assert ta.get_type_hints(l2) == {'x': int, 'y': int}
 
     # p = typed_partial(l, x=5)
     # assert p(y=4) == 9
