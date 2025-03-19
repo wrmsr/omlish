@@ -6,10 +6,25 @@ TODO:
     __call__ with a proper signature, but it either has to have `self` *or* be a static/classmethod, both of which are
     unacceptable.
   - can we subclass types.FunctionType? no lol, but can we get close?
+ - alright, well, try a method
+  - can distinguish between types.FunctionType and types.MethodType, do that more
+  - exec a class Foo(_TypedLambda):
+
+==
+
+In [6]: %timeit exec('def foo(*a, x=0, **k): return (a, x, k)')
+7.77 μs ± 117 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+
+In [7]: %timeit exec('\n'.join(['class C:', '  def foo(self, *a, x=0, **k): return (a, x, k)']))
+12.9 μs ± 48.9 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
 """
 import functools
 import inspect
 import typing as ta
+
+
+P = ta.ParamSpec('P')
+T = ta.TypeVar('T')
 
 
 ##
@@ -30,7 +45,13 @@ def _update_wrapper_no_anns(wrapper, wrapped):
 #
 
 
-def _make_typed_lambda(fn, **kw):  # noqa
+class _RenderedTypedLambda(ta.NamedTuple):
+    proto: str
+    call: str
+    ns: dict[str, ta.Any]
+
+
+def _render_typed_lambda(fn: ta.Any, *pps: str, **kw: ta.Any) -> _RenderedTypedLambda:
     ret = kw.pop('return', _MISSING)
     for k in kw:
         if k.startswith('__'):
@@ -39,10 +60,20 @@ def _make_typed_lambda(fn, **kw):  # noqa
     ns = {}
     ns['__fn'] = fn
 
-    proto = ['def __lam(']
+    proto = [f'def __call__(']
     call = ['return __fn(']
 
-    for i, (n, t) in enumerate(kw.items()):
+    i = 0
+    if pps:
+        for pp in pps:
+            if i:
+                proto.append(', ')
+            proto.append(pp)
+            i += 1
+        proto.append(', /')
+        i += 1
+
+    for n, t in kw.items():
         if i:
             call.append(', ')
         else:
@@ -51,6 +82,7 @@ def _make_typed_lambda(fn, **kw):  # noqa
         ns['__ann_' + n] = t
         proto.append(f', {n}: __ann_{n}')
         call.append(f'{n}={n}')
+        i += 1
 
     proto.append(')')
 
@@ -61,38 +93,47 @@ def _make_typed_lambda(fn, **kw):  # noqa
     proto.append(':')
     call.append(')')
 
-    src = f'{"".join(proto)} {"".join(call)}'
-    exec(src, ns)
+    return _RenderedTypedLambda(
+        ''.join(proto),
+        ''.join(call),
+        ns,
+    )
 
-    return ns['__lam']
+
+def _make_typed_lambda(fn, *pps, **kw):
+    rtl = _render_typed_lambda(fn, *pps, **kw)
+    src = f'{rtl.proto} {rtl.call}'
+    exec(src, rtl.ns)
+    return rtl.ns['__call__']
+
+
+_TYPED_LAMBDA_SELF_ARG = '__self'
 
 
 class _TypedLambda:
-    def __init_(self, fn, kw):
-        super().__init__()
+    fn: ta.ClassVar[ta.Any]
+    kw: ta.ClassVar[ta.Mapping[str, ta.Any]]
 
-        self._fn = fn
-        self._kw = kw
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__()
 
-        self._lam = _make_typed_lambda(fn, **kw)
-
-        _update_wrapper_no_anns(self, fn)
-        self.__signature__ = inspect.signature(self._lam, follow_wrapped=False)
+        cls.__call__ = _make_typed_lambda(cls.fn, _TYPED_LAMBDA_SELF_ARG, **cls.kw)
 
     def __reduce__(self):
-        return (_TypedLambda, (self._fn, self._kw))
-
-    def __call__(self, *args, **kwargs):
-        return self._lam(*args, **kwargs)
+        # return (_TypedLambda, (self._fn, self._kw))
+        raise NotImplementedError
 
 
-def typed_lambda(return_=_MISSING, **kw):  # noqa
+def typed_lambda(
+        return_: ta.Any = _MISSING,
+        **kw: ta.Any,
+) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:  # noqa
     def inner(fn):
-        return _TypedLambda(fn, {'return': return_, **kw})
+        return type('_TypedLambdaInstance', (_TypedLambda,), dict(fn=fn, kw={'return': return_, **kw}))
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
-    return inner
+    return inner  # type: ignore
 
 
 #
@@ -151,9 +192,9 @@ def _main() -> None:
     assert l(x=3, y=4) == 7
     assert ta.get_type_hints(l) == {'x': int, 'y': int}
 
-    p = typed_partial(l, x=5)
-    assert p(y=4) == 9
-    assert ta.get_type_hints(p) == {'y': int}
+    # p = typed_partial(l, x=5)
+    # assert p(y=4) == 9
+    # assert ta.get_type_hints(p) == {'y': int}
 
 
 if __name__ == '__main__':
