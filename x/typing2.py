@@ -42,7 +42,9 @@ def _update_wrapper_no_anns(wrapper, wrapped):
 #
 
 
-_MISSING = object()
+class _MISSING:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
 
 
 class _RenderedTypedLambda(ta.NamedTuple):
@@ -233,6 +235,13 @@ def _foo(x, y):
     return x + y
 
 
+def _get_sig_params(o):
+    return [
+        (p.name, p.annotation if p.annotation is not inspect.Parameter.empty else None)
+        for p in inspect.signature(o).parameters.values()
+    ]
+
+
 def _main() -> None:
     import pickle
     f = _Foo(3).__call__
@@ -241,15 +250,26 @@ def _main() -> None:
     f2 = pickle.loads(fp)
     assert f2(1, 2) == 6
 
+    # assert ta.get_type_hints(_foo) == {'x': int, 'y': int}
+    assert _get_sig_params(_foo) == [('x', None), ('y', None)]
+
+    from omlish import lang
+    lo = lang.typed_lambda(x=int, y=int)(_foo)
+    assert lo(x=3, y=4) == 7
+    assert ta.get_type_hints(lo) == {'x': int, 'y': int}
+    assert _get_sig_params(lo) == [('x', int), ('y', int)]
+
     l = typed_lambda(x=int, y=int)(_foo)
     assert l(x=3, y=4) == 7
     assert ta.get_type_hints(l) == {'x': int, 'y': int}
+    assert _get_sig_params(l) == [('x', int), ('y', int)]
 
     import pickle
     lp = pickle._dumps(l)
     l2 = pickle._loads(lp)
     assert l2(x=3, y=4) == 7
     assert ta.get_type_hints(l2) == {'x': int, 'y': int}
+    assert list(inspect.signature(l2).parameters) == ['x', 'y']
 
     p = typed_partial(l, x=5)
     assert p(y=4) == 9
