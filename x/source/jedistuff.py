@@ -16,7 +16,7 @@ import jedi.api.environment
 from omlish import check
 from omlish import lang
 
-from .inspectstuff import findsource
+from ..inspectstuff import findsource
 
 
 IGNORED_JEDI_EXCEPTIONS: tuple[type[BaseException], ...] = (
@@ -57,8 +57,8 @@ def _main() -> None:
 
     env_exe_proxy_src = '\n'.join([
         '#!/bin/sh',
-        # f'echo "$@" >> env_exe_args',
-        f'exec {shlex.quote(os.path.abspath(real_env_exe))} -- "$@"',
+        # f'echo "$@" >> /tmp/env_exe_args',
+        f'exec {shlex.quote(os.path.abspath(real_env_exe))} "$@"',
         # f'exec /bin/sh -c "exec {shlex.quote(os.path.abspath(real_env_exe))} "\'"$@"\' -- "$@"',
         '',
     ])
