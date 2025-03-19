@@ -1,3 +1,12 @@
+"""
+TODO:
+ - the point of these is that there are ~many~ tools that only properly inspect real, honest functions - no args/kwargs
+   proxies, no method binding, no descriptors, nothing. we need a function with a custom pickler.
+  - generate a class? speed is no concern, but it doesn't get all the way there - now we have pickling, and a def
+    __call__ with a proper signature, but it either has to have `self` *or* be a static/classmethod, both of which are
+    unacceptable.
+  - can we subclass types.FunctionType? no lol, but can we get close?
+"""
 import functools
 import inspect
 import typing as ta
@@ -132,3 +141,20 @@ def typed_partial(obj, **kw):  # noqa
         if k.startswith('__'):
             raise NameError(k)
     return _TypedPartial(obj, **kw)
+
+
+##
+
+
+def _main() -> None:
+    l = typed_lambda(x=int, y=int)(lambda x, y: x + y)
+    assert l(x=3, y=4) == 7
+    assert ta.get_type_hints(l) == {'x': int, 'y': int}
+
+    p = typed_partial(l, x=5)
+    assert p(y=4) == 9
+    assert ta.get_type_hints(p) == {'y': int}
+
+
+if __name__ == '__main__':
+    _main()

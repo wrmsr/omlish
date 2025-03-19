@@ -20,6 +20,13 @@ VALUE_IDENT = IDENT_PREFIX + 'value'
 class FnGlobal(ta.NamedTuple):
     value: ta.Any
     src: str
+    import_: str | None = None
+
+
+FN_GLOBAL_IMPORTS: ta.Mapping[str, str | None] = {
+    'dc': 'dataclasses',
+    'types': None,
+}
 
 
 FN_GLOBALS: ta.Mapping[str, FnGlobal] = {

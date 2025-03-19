@@ -30,11 +30,18 @@ COMPILED_FN_PREFIX = '_transform_dataclass__'
 
 
 class OpCompiler:
-    def __init__(self, qualname: str) -> None:
+    def __init__(
+            self,
+            qualname: str,
+            *,
+            global_kwarg_defaults: bool = False,
+    ) -> None:
         super().__init__()
 
         self._qualname = qualname
         self._mangled_qualname = QUALNAME_MANGLER.mangle(qualname)
+
+        self._global_kwarg_defaults = global_kwarg_defaults
 
     @dc.dataclass(frozen=True)
     class CompileResult:
@@ -132,8 +139,12 @@ class OpCompiler:
         params = [
             CLS_IDENT,
             *sorted(r.ident() for r in refs),
-            *FN_GLOBALS,
         ]
+
+        if self._global_kwarg_defaults:
+            params.extend([f'{k}={v.src}' for k, v in FN_GLOBALS.items()])
+        else:
+            params.extend(FN_GLOBALS)
 
         fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
