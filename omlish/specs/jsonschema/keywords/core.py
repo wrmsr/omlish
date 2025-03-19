@@ -1,5 +1,5 @@
 from .... import lang
-from .base import Keyword
+from .base import KnownKeyword
 from .base import StrKeyword
 from .base import StrToKeywordsKeyword
 
@@ -7,7 +7,7 @@ from .base import StrToKeywordsKeyword
 ##
 
 
-class CoreKeyword(Keyword, lang.Abstract, lang.Sealed):
+class CoreKeyword(KnownKeyword, lang.Abstract, lang.Sealed):
     pass
 
 

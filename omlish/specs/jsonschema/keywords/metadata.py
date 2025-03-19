@@ -1,12 +1,12 @@
 from .... import lang
-from .base import Keyword
+from .base import KnownKeyword
 from .base import StrKeyword
 
 
 ##
 
 
-class MetadataKeyword(Keyword, lang.Abstract, lang.Sealed):
+class MetadataKeyword(KnownKeyword, lang.Abstract, lang.Sealed):
     pass
 
 

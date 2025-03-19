@@ -1,12 +1,12 @@
 from .... import lang
-from .base import Keyword
+from .base import KnownKeyword
 from .base import StrKeyword
 
 
 ##
 
 
-class FormatKeyword(Keyword, lang.Abstract, lang.Sealed):
+class FormatKeyword(KnownKeyword, lang.Abstract, lang.Sealed):
     pass
 
 

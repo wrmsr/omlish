@@ -7,6 +7,7 @@ from .base import BooleanKeyword
 from .base import Keyword
 from .base import Keywords
 from .base import KeywordsKeyword
+from .base import KnownKeyword
 from .base import NumberKeyword
 from .base import StrKeyword
 from .base import StrOrStrsKeyword
@@ -18,27 +19,28 @@ from .validation import ValidationKeyword
 
 
 KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
+# KnownKeywordT = ta.TypeVar('KnownKeywordT', bound=Keyword)
 
 
 ##
 
 
-def build_keyword_types_by_tag(keyword_types: ta.Iterable[type[Keyword]]) -> ta.Mapping[str, type[Keyword]]:
+def build_keyword_types_by_tag(keyword_types: ta.Iterable[type[KnownKeyword]]) -> ta.Mapping[str, type[KnownKeyword]]:
     return col.make_map(((t, kt) for kt in keyword_types for t in kt.tag_and_aliases), strict=True)
 
 
-DEFAULT_KEYWORD_SUPERTYPES: ta.AbstractSet[type[Keyword]] = frozenset([
+DEFAULT_KEYWORD_SUPERTYPES: ta.AbstractSet[type[KnownKeyword]] = frozenset([
     CoreKeyword,
     FormatKeyword,
     MetadataKeyword,
     ValidationKeyword,
 ])
 
-DEFAULT_KEYWORD_TYPES: ta.AbstractSet[type[Keyword]] = frozenset(lang.flatten(
+DEFAULT_KEYWORD_TYPES: ta.AbstractSet[type[KnownKeyword]] = frozenset(lang.flatten(
     lang.deep_subclasses(st, concrete_only=True) for st in DEFAULT_KEYWORD_SUPERTYPES
 ))
 
-DEFAULT_KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = build_keyword_types_by_tag(DEFAULT_KEYWORD_TYPES)
+DEFAULT_KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[KnownKeyword]] = build_keyword_types_by_tag(DEFAULT_KEYWORD_TYPES)
 
 
 ##
@@ -47,7 +49,7 @@ DEFAULT_KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = build_keyword_typ
 class Parser:
     def __init__(
             self,
-            keyword_types: ta.Iterable[type[Keyword]] | ta.Mapping[str, type[Keyword]] = DEFAULT_KEYWORD_TYPES_BY_TAG,
+            keyword_types: ta.Iterable[type[KnownKeyword]] | ta.Mapping[str, type[KnownKeyword]] = DEFAULT_KEYWORD_TYPES_BY_TAG,  # noqa
     ) -> None:
         super().__init__()
 

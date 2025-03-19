@@ -16,6 +16,12 @@ KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 class Keyword(lang.Abstract):
     tag: ta.ClassVar[str]
+
+
+##
+
+
+class KnownKeyword(Keyword, lang.Abstract):
     aliases: ta.ClassVar[frozenset[str]]
 
     tag_and_aliases: ta.ClassVar[frozenset[str]]

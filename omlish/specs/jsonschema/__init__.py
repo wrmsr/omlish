@@ -1,6 +1,7 @@
 from .keywords.base import (  # noqa
     Keyword,
     Keywords,
+    KnownKeyword,
 )
 
 from .keywords.core import (  # noqa
