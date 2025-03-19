@@ -15,7 +15,7 @@ def format_http_framed_message(
 ) -> bytes:
     headers = dict(headers or {})
 
-    if 'Content-Length' not in headers:
+    if 'content-length' not in {h.lower() for h in headers}:
         headers['Content-Length'] = str(len(content))
 
     return b'\r\n'.join([

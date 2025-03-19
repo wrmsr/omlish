@@ -26,7 +26,8 @@ class ServerCapabilities:
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class InitializeResult:
-    capabilities: ServerCapabilities
+    # capabilities: ServerCapabilities
+    capabilities: ta.Mapping[str, ta.Any]
 
 
 @dc.dataclass(frozen=True)

@@ -44,7 +44,7 @@ class LspClient:
         message = format_http_framed_message(content)
         await self._send(message)
 
-    async def request(self, method: str, params: ta.Any = None) -> dict[str, ta.Any]:
+    async def request(self, method: str, params: ta.Any = None) -> jr.Response:
         if dc.is_dataclass(params):
             params = msh.marshal(params)
         await self.send(jr.request(
@@ -64,19 +64,14 @@ class LspClient:
 
     #
 
-    async def read_message(self) -> dict[str, ta.Any] | None:
+    async def read(self) -> jr.Message:
         content, _ = await self._read_content()
+        dct = json.loads(content)
+        cls = jr.detect_message_type(dct)
+        return msh.unmarshal(dct, cls)
 
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            print('Invalid JSON response from LSP server.')
-            return None
-
-    async def read_response(self, msg_id: int) -> dict[str, ta.Any]:
+    async def read_response(self, msg_id: int) -> jr.Response:
         while True:
-            msg = await self.read_message()
-            if msg is None:
-                raise RuntimeError
-            if msg.get('id') == msg_id:
+            msg = await self.read()
+            if isinstance(msg, jr.Response) and msg.id == msg_id:
                 return msg

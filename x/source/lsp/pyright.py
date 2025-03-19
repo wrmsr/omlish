@@ -7,9 +7,11 @@ import subprocess
 import anyio.abc
 
 from omlish import check
+from omlish import marshal as msh
 
 from .client import LspClient
 from .data import InitializeParams
+from .data import InitializeResult
 
 
 ##
@@ -35,11 +37,12 @@ async def _a_main_(aes: contextlib.AsyncExitStack) -> None:
         check.not_none(process.stdout).receive,
     )
 
-    init_result = await client.request('initialize', InitializeParams(
+    init_response = await client.request('initialize', InitializeParams(
         process_id=None,
         root_uri='file:///tmp',
         capabilities={},
     ))
+    init_result = msh.unmarshal(init_response.result, InitializeResult)
     print('LSP Initialized:', init_result)
 
     await client.notify('initialized')
