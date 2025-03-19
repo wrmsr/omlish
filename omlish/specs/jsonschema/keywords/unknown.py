@@ -1,3 +1,6 @@
+import typing as ta
+
+from .... import dataclasses as dc
 from .... import lang
 from .base import Keyword
 
@@ -5,5 +8,7 @@ from .base import Keyword
 ##
 
 
-class ValidationKeyword(Keyword, lang.Abstract, lang.Sealed):
-    pass
+@dc.dataclass(frozen=True)
+class UnknownKeyword(Keyword, lang.Final):
+    tag: str  # type: ignore[misc]
+    value: ta.Any

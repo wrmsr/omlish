@@ -27,8 +27,8 @@ from .keywords.parse import (  # noqa
     DEFAULT_KEYWORD_SUPERTYPES,
     DEFAULT_KEYWORD_TYPES,
     DEFAULT_KEYWORD_TYPES_BY_TAG,
-    DEFAULT_PARSER,
-    Parser,
+    DEFAULT_KEYWORD_PARSER,
+    KeywordParser,
     build_keyword_types_by_tag,
     parse_keyword,
     parse_keywords,
@@ -37,6 +37,10 @@ from .keywords.parse import (  # noqa
 from .keywords.render import (  # noqa
     render_keyword,
     render_keywords,
+)
+
+from .keywords.unknown import (  # noqa
+    UnknownKeyword,
 )
 
 from .keywords.validation import (  # noqa

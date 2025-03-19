@@ -8,6 +8,10 @@ from .base import NumberKeyword
 from .base import StrKeyword
 from .base import StrOrStrsKeyword
 from .base import StrToKeywordsKeyword
+from .unknown import UnknownKeyword
+
+
+##
 
 
 def render_keyword(kw: Keyword) -> dict[str, ta.Any]:
@@ -31,6 +35,9 @@ def render_keyword(kw: Keyword) -> dict[str, ta.Any]:
 
     elif isinstance(kw, StrToKeywordsKeyword):
         return {kw.tag: {k: render_keywords(v) for k, v in kw.m.items()}}
+
+    elif isinstance(kw, UnknownKeyword):
+        return {kw.tag: kw.value}
 
     else:
         raise TypeError(kw)
