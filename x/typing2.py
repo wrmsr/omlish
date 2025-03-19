@@ -30,9 +30,6 @@ T = ta.TypeVar('T')
 ##
 
 
-_MISSING = object()
-
-
 def _update_wrapper_no_anns(wrapper, wrapped):
     functools.update_wrapper(
         wrapper,
@@ -43,6 +40,9 @@ def _update_wrapper_no_anns(wrapper, wrapped):
 
 
 #
+
+
+_MISSING = object()
 
 
 class _RenderedTypedLambda(ta.NamedTuple):
@@ -109,14 +109,14 @@ _TYPED_LAMBDA_SELF_ARG = '__self'
 
 
 class _TypedLambda:
-    fn: ta.ClassVar[ta.Any]
-    kw: ta.ClassVar[ta.Mapping[str, ta.Any]]
+    __typed_lambda_fn__: ta.ClassVar[ta.Any]
+    __typed_lambda_kw__: ta.ClassVar[ta.Mapping[str, ta.Any]]
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
 
-        fn = cls.__dict__['fn']
-        cls.__call__ = _make_typed_lambda_fn(fn, _TYPED_LAMBDA_SELF_ARG, **cls.kw)
+        fn = cls.__dict__['__typed_lambda_fn__']
+        cls.__call__ = _make_typed_lambda_fn(fn, _TYPED_LAMBDA_SELF_ARG, **cls.__typed_lambda_kw__)
         _update_wrapper_no_anns(cls.__call__, fn)
 
         # update_wrapper sets __call__.__name__, and method unpickling machinery getattr's by __name__ after
@@ -126,8 +126,8 @@ class _TypedLambda:
 
     def __reduce__(self):
         cls = self.__class__
-        fn = cls.__dict__['fn']
-        return (_make_typed_lambda_cls_inst, (fn, cls.kw))
+        fn = cls.__dict__['__typed_lambda_fn__']
+        return (_make_typed_lambda_cls_inst, (fn, cls.__typed_lambda_kw__))
 
 
 def _make_typed_lambda_cls(fn, kw):
@@ -135,8 +135,8 @@ def _make_typed_lambda_cls(fn, kw):
         '$_TypedLambdaInstance',  # TODO: mangle fn/kw into class name
         (_TypedLambda,),
         dict(
-            fn=fn,
-            kw=kw,
+            __typed_lambda_fn__=fn,
+            __typed_lambda_kw__=kw,
         ),
     )
 
@@ -155,10 +155,18 @@ def typed_lambda(
         **kw: ta.Any,
 ) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:  # noqa
     def inner(fn):
-        return _make_typed_lambda_cls_fn(fn, {**({'return': return_} if return_ is not _MISSING else {}), **kw})
+        return _make_typed_lambda_cls_fn(
+            fn,
+            {
+                **({'return': return_} if return_ is not _MISSING else {}),
+                **kw,
+            },
+        )
+
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
+
     return inner  # type: ignore
 
 
@@ -182,7 +190,7 @@ class _TypedPartial:
             ret = _MISSING
 
         inner = _update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
-        self._lam = _make_typed_lambda(
+        self._lam = _make_typed_lambda_fn(
             inner,
             **{'return': ret},
             **{
@@ -207,7 +215,7 @@ def typed_partial(obj, **kw):  # noqa
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
-    return _TypedPartial(obj, **kw)
+    return _TypedPartial(obj, kw)
 
 
 ##
@@ -243,9 +251,9 @@ def _main() -> None:
     assert l2(x=3, y=4) == 7
     assert ta.get_type_hints(l2) == {'x': int, 'y': int}
 
-    # p = typed_partial(l, x=5)
-    # assert p(y=4) == 9
-    # assert ta.get_type_hints(p) == {'y': int}
+    p = typed_partial(l, x=5)
+    assert p(y=4) == 9
+    assert ta.get_type_hints(p) == {'y': int}
 
 
 if __name__ == '__main__':
