@@ -1,4 +1,4 @@
-from .asyncs import (  # noqa
+from .sync import (  # noqa
     SyncableIterable,
     async_list,
     sync_await,
@@ -32,4 +32,8 @@ from .flavors import (  # noqa
     mark_flavor,
     mark_trio,
     with_adapter_loop,
+)
+
+from .utils import (  # noqa
+    call_with_async_exit_stack,
 )

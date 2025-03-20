@@ -16,6 +16,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 def sync_await(fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
     ret = missing = object()
 
