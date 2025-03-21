@@ -119,7 +119,15 @@ class InitGenerator(Generator[InitPlan]):
         ors: set[OpRef] = set()
 
         params: list[str] = []
+        seen_kw_only = False
         for f in bs.fields:
+            if f.kw_only:
+                if not seen_kw_only:
+                    params.append('*')
+                    seen_kw_only = True
+            elif seen_kw_only:
+                raise TypeError(f'non-keyword-only argument {f.name!r} follows keyword-only argument(s)')
+
             ors.add(f.annotation)
             p = f'{f.name}: {f.annotation.ident()}'
 
