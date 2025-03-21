@@ -1,5 +1,11 @@
+"""
+TODO:
+ - special case 'None' default, most common
+"""
 import dataclasses as dc
 import typing as ta
+
+from omlish import check
 
 from ..generators.base import Generator
 from ..generators.base import Plan
@@ -12,6 +18,7 @@ from ..idents import SELF_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
+from ..types import DefaultFactory
 from ..types import InitFn
 
 
@@ -24,6 +31,10 @@ class InitPlan(Plan):
     class Field:
         name: str
         annotation: OpRef[ta.Any]
+
+        default: OpRef[ta.Any] | None
+        default_factory: OpRef[ta.Any] | None
+
         override: bool
 
     fields: tuple[Field, ...]
@@ -43,19 +54,35 @@ class InitGenerator(Generator[InitPlan]):
 
         bfs: list[InitPlan.Field] = []
         for i, f in enumerate(ctx.cs.fields):
-            r: OpRef = OpRef(f'init.fields.{i}.annotation')
-            orm[r] = f.annotation
+            ar: OpRef = OpRef(f'init.fields.{i}.annotation')
+            orm[ar] = f.annotation
+
+            dr: OpRef[ta.Any] | None = None
+            dfr: OpRef[ta.Any] | None = None
+            if f.default.present:
+                dfl = f.default.must()
+                if isinstance(dfl, DefaultFactory):
+                    dfr = OpRef(f'init.fields.{i}.default_factory')
+                    orm[dfr] = dfl.fn
+                else:
+                    dr = OpRef(f'init.fields.{i}.default')
+                    orm[dr] = dfl
+
             bfs.append(InitPlan.Field(
-                f.name,
-                r,
-                f.override or ctx.cs.override,
+                name=f.name,
+                annotation=ar,
+
+                default=dr,
+                default_factory=dfr,
+
+                override=f.override or ctx.cs.override,
             ))
 
         ifs: list[OpRef[InitFn]] = []
         for i, ifn in enumerate(ctx.cs.init_fns or []):
-            r = OpRef(f'init.init_fns.{i}')
-            orm[r] = ifn
-            ifs.append(r)
+            ir = OpRef(f'init.init_fns.{i}')
+            orm[ir] = ifn
+            ifs.append(ir)
 
         return PlanResult(
             InitPlan(
@@ -71,8 +98,17 @@ class InitGenerator(Generator[InitPlan]):
 
         params: list[str] = []
         for f in bs.fields:
-            params.append(f'{f.name}: {f.annotation.ident()}')
+            p = f'{f.name}: {f.annotation.ident()}'
             ors.add(f.annotation)
+
+            if f.default_factory is not None:
+                check.none(f.default)
+                raise NotImplementedError
+            elif f.default is not None:
+                check.none(f.default_factory)
+                raise NotImplementedError
+
+            params.append(p)
 
         lines = [
             f'def __init__(',

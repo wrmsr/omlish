@@ -5,6 +5,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .types import DefaultFactory
 from .types import InitFn
 from .types import ReprFn
 from .types import ValidateFn
@@ -24,15 +25,7 @@ class FieldSpec:
     name: str
     annotation: ta.Any
 
-    ##
-    # defaults
-
-    default: lang.Maybe[ta.Any] = lang.empty()
-    default_factory: ta.Callable[..., ta.Any] | None = None
-
-    @property
-    def has_default(self) -> bool:
-        return self.default.present or self.default_factory is not None
+    default: lang.Maybe[DefaultFactory] = lang.empty()
 
     ##
     # std
@@ -67,9 +60,6 @@ class FieldSpec:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
-
-        check.state(not (self.default.present and self.default_factory is not None))
-
 
 
 ##

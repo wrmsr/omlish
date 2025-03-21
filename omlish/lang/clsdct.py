@@ -4,6 +4,9 @@ import types
 import typing as ta
 
 
+##
+
+
 _CLS_DCT_ATTR_SETS = [
     {
         '__module__',
@@ -35,8 +38,17 @@ def get_caller_cls_dct(offset: int = 0) -> ta.MutableMapping[str, ta.Any]:
     return cls_dct
 
 
+##
+
+
 class ClassDctFn:
-    def __init__(self, fn: ta.Callable, offset: int | None = None, *, wrap=True) -> None:
+    def __init__(
+            self,
+            fn: ta.Callable,
+            offset: int | None = None,
+            *,
+            wrap: bool = True,
+    ) -> None:
         super().__init__()
 
         self._fn = fn

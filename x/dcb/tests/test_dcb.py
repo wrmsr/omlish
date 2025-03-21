@@ -21,6 +21,8 @@ from .. import api
 class A:
     i: int
     s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
+    d: int = 5
+    l: list = api.field(default_factory=list)
 
     @api.init
     def _init_foo(self) -> None:

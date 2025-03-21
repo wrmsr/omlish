@@ -7,6 +7,7 @@ TODO:
   - unwrap instances of objects to their types?
   - merge mro?
   - are these better left up to callers? too usecase-specific to favor either way?
+ - cls_dct_fn?
 """
 import threading
 import types

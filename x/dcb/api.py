@@ -40,6 +40,7 @@ from .processing import ClassProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec
+from .types import DefaultFactory
 from .types import InitFn
 from .types import ReprFn
 
@@ -69,18 +70,31 @@ def init(obj):
 ##
 
 
+class _NoDefault(lang.Marker):
+    pass
+
+
 @dc.dataclass(frozen=True)
 class Field:
+    default: ta.Any = _NoDefault
+    default_factory: ta.Callable[..., ta.Any] | None = None
+
     repr_fn: ReprFn | None = None
     override: bool = False
 
 
 def field(
         *,
+        default: ta.Any = _NoDefault,
+        default_factory: ta.Callable[..., ta.Any] | None = None,
+
         repr_fn: ReprFn | None = None,
         override: bool = False,
 ) -> ta.Any:
     return Field(
+        default=default,
+        default_factory=default_factory,
+
         repr_fn=repr_fn,
         override=override,
     )
@@ -106,13 +120,27 @@ def dataclass(
         anns = rfl.get_annotations(cls)
         for att, ann in anns.items():
             try:
-                fld = check.isinstance(cls.__dict__[att], Field)
-            except (KeyError, TypeError):
+                fv = cls.__dict__[att]
+            except KeyError:
                 fld = Field()
+            else:
+                if isinstance(fv, Field):
+                    fld = fv
+                else:
+                    fld = Field(default=fv)
+
+            dfl: lang.Maybe[ta.Any] = lang.empty()
+            if fld.default is not _NoDefault:
+                check.state(fld.default_factory is None)
+                dfl = lang.just(fld.default)
+            elif fld.default_factory is not None:
+                dfl = lang.just(DefaultFactory(fld.default_factory))
 
             fsl.append(FieldSpec(
                 name=att,
                 annotation=ann,
+
+                default=dfl,
 
                 repr_fn=fld.repr_fn,
                 override=fld.override,
