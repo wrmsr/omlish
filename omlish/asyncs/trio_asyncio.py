@@ -17,6 +17,9 @@ else:
     trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
+##
+
+
 def check_trio_asyncio() -> None:
     if trio_asyncio.current_loop.get() is None:
         raise RuntimeError('trio_asyncio loop not running')
