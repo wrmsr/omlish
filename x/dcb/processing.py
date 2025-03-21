@@ -69,8 +69,11 @@ class ClassProcessor:
 
             pll.append(pr.plan)
 
+        plans = tuple(pll)
+        print(repr(plans))
+
         return self.Prepared(
-            tuple(pll),
+            plans,
             orm,
         )
 
