@@ -12,7 +12,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_setattr_src
+from ..generators.utils import SetattrSrcBuilder
 from ..idents import HAS_DEFAULT_FACTORY_IDENT
 from ..idents import NONE_IDENT
 from ..idents import SELF_IDENT
@@ -131,8 +131,12 @@ class InitGenerator(Generator[InitPlan]):
                 f'        {f.name} = {f.default_factory.ident()}()',
             ])
 
+        sab = SetattrSrcBuilder()
         for f in bs.fields:
-            lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen, override=f.override)}')
+            lines.extend([
+                f'    {l}'
+                for l in sab(f.name, f.name, frozen=bs.frozen, override=f.override)
+            ])
 
         for ifn in bs.init_fns:
             ors.add(ifn)

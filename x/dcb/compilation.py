@@ -6,6 +6,7 @@ from omlish.text.mangle import StringMangler
 
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_IMPORTS
 from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
 from .idents import PROPERTY_IDENT
@@ -34,14 +35,16 @@ class OpCompiler:
             self,
             qualname: str,
             *,
-            global_kwarg_defaults: bool = False,
+            set_global_kwarg_defaults: bool = False,
+            import_global_modules: bool = False,
     ) -> None:
         super().__init__()
 
         self._qualname = qualname
         self._mangled_qualname = QUALNAME_MANGLER.mangle(qualname)
 
-        self._global_kwarg_defaults = global_kwarg_defaults
+        self._set_global_kwarg_defaults = set_global_kwarg_defaults
+        self._import_global_modules = import_global_modules
 
     @dc.dataclass(frozen=True)
     class CompileResult:
@@ -141,14 +144,26 @@ class OpCompiler:
             *sorted(r.ident() for r in refs),
         ]
 
-        if self._global_kwarg_defaults:
+        if self._set_global_kwarg_defaults:
             params.extend([f'{k}={v.src}' for k, v in FN_GLOBALS.items()])
         else:
             params.extend(FN_GLOBALS)
 
         fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
-        lines = [
+        lines = []
+
+        if self._import_global_modules:
+            lines.extend([
+                *[
+                    f'import {i}'
+                    for i in FN_GLOBAL_IMPORTS
+                ],
+                '',
+                '',
+            ])
+
+        lines.extend([
             f'def {fn_name}(',
             f'    *,',
             *[
@@ -160,7 +175,7 @@ class OpCompiler:
                 f'    {l}'
                 for l in body_lines
             ],
-        ]
+        ])
 
         #
 

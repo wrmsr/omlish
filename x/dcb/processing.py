@@ -29,6 +29,8 @@ class ClassProcessor:
             self,
             cls: type,
             cs: ClassSpec | None = None,
+            *,
+            set_global_kwarg_defaults: bool = True,
     ) -> None:
         super().__init__()
 
@@ -36,6 +38,8 @@ class ClassProcessor:
         if cs is None:
             cs = get_class_spec(cls)
         self._cs = cs
+
+        self._set_global_kwarg_defaults = set_global_kwarg_defaults
 
     @dc.dataclass(frozen=True)
     class Prepared:
@@ -85,7 +89,8 @@ class ClassProcessor:
     def compile(self) -> OpCompiler.CompileResult:
         opc = OpCompiler(
             self._cls.__qualname__,
-            # global_kwarg_defaults=True,
+            set_global_kwarg_defaults=self._set_global_kwarg_defaults,
+            import_global_modules=self._set_global_kwarg_defaults,
         )
 
         return opc.compile(
@@ -106,16 +111,14 @@ class ClassProcessor:
     def process_with_compiler(self) -> None:
         comp = self.compile()
 
-        ns: dict = {
-            # **FN_GLOBAL_IMPORTS,
-        }
+        ns: dict = {}
+        if self._set_global_kwarg_defaults:
+            ns.update(FN_GLOBAL_IMPORTS)
+        print(comp.src)
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 
-        kw = {
-            CLS_IDENT: self._cls,
-            **FN_GLOBAL_VALUES,
-        }
+        kw = {CLS_IDENT: self._cls}
         orm = self.prepare().ref_map
         for r in comp.refs:
             kw[r.ident()] = orm[r]

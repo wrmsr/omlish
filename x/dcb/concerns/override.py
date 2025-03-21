@@ -6,7 +6,7 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..generators.utils import build_setattr_src
+from ..generators.utils import SetattrSrcBuilder
 from ..idents import NONE_IDENT
 from ..idents import SELF_IDENT
 from ..idents import VALUE_IDENT
@@ -70,7 +70,10 @@ class OverrideGenerator(Generator[OverridePlan]):
             if not pl.frozen:
                 set_src = '\n'.join([
                     f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
-                    f'    {build_setattr_src(f.name, VALUE_IDENT, frozen=pl.frozen, override=True)}',
+                    *[
+                        f'    {l}'
+                        for l in SetattrSrcBuilder()(f.name, VALUE_IDENT, frozen=pl.frozen, override=True)
+                    ],
                 ])
 
             ops.append(AddPropertyOp(

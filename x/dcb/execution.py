@@ -7,7 +7,7 @@ import types
 import typing as ta
 
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_VALUES
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import Op
