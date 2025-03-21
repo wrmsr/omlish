@@ -13,6 +13,7 @@ from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..generators.utils import build_setattr_src
+from ..idents import HAS_DEFAULT_FACTORY_IDENT
 from ..idents import NONE_IDENT
 from ..idents import SELF_IDENT
 from ..ops import AddMethodOp
@@ -98,15 +99,16 @@ class InitGenerator(Generator[InitPlan]):
 
         params: list[str] = []
         for f in bs.fields:
-            p = f'{f.name}: {f.annotation.ident()}'
             ors.add(f.annotation)
+            p = f'{f.name}: {f.annotation.ident()}'
 
             if f.default_factory is not None:
                 check.none(f.default)
-                raise NotImplementedError
+                p += f' = {HAS_DEFAULT_FACTORY_IDENT}'
             elif f.default is not None:
                 check.none(f.default_factory)
-                raise NotImplementedError
+                ors.add(f.default)
+                p += f' = {f.default.ident()}'
 
             params.append(p)
 
@@ -119,6 +121,15 @@ class InitGenerator(Generator[InitPlan]):
             ],
             f') -> {NONE_IDENT}:',
         ]
+
+        for f in bs.fields:
+            if f.default_factory is None:
+                continue
+            ors.add(f.default_factory)
+            lines.extend([
+                f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
+                f'        {f.name} = {f.default_factory.ident()}()',
+            ])
 
         for f in bs.fields:
             lines.append(f'    {build_setattr_src(f.name, f.name, frozen=bs.frozen, override=f.override)}')

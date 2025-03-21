@@ -43,6 +43,14 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
         dc.FrozenInstanceError,
         'dataclasses.FrozenInstanceError',
     ),
+    (HAS_DEFAULT_FACTORY_IDENT := IDENT_PREFIX + 'HAS_DEFAULT_FACTORY'): FnGlobal(
+        dc._HAS_DEFAULT_FACTORY,  # noqa
+        'dataclasses._HAS_DEFAULT_FACTORY',
+    ),
+    (MISSING_IDENT := IDENT_PREFIX + 'MISSING'): FnGlobal(
+        dc.MISSING,  # noqa
+        'dataclasses.MISSING',
+    ),
 
     (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(
         types.FunctionType,
