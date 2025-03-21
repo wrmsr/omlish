@@ -12,6 +12,7 @@ from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
 from .idents import CLS_IDENT
+from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBAL_VALUES
 from .ops import Op
 from .ops import OpRef
@@ -84,6 +85,7 @@ class ClassProcessor:
     def compile(self) -> OpCompiler.CompileResult:
         opc = OpCompiler(
             self._cls.__qualname__,
+            # global_kwarg_defaults=True,
         )
 
         return opc.compile(
@@ -104,7 +106,9 @@ class ClassProcessor:
     def process_with_compiler(self) -> None:
         comp = self.compile()
 
-        ns: dict = {}
+        ns: dict = {
+            # **FN_GLOBAL_IMPORTS,
+        }
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 

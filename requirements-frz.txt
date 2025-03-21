@@ -28,7 +28,7 @@ attrs==25.3.0
 audioread==3.0.1
 babel==2.17.0
 backoff==2.2.1
-basedpyright==1.28.2
+basedpyright==1.28.3
 bayesian-optimization==1.4.0
 bcrypt==4.3.0
 beautifulsoup4==4.13.3
@@ -96,7 +96,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.2.1
-duckduckgo_search==7.5.2
+duckduckgo_search==7.5.3
 durationpy==0.9
 einops==0.8.1
 elastic-transport==8.17.1
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.29.3
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.129.4
+hypothesis==6.130.0
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -227,7 +227,7 @@ langcodes==3.5.0
 langdetect==1.0.9
 langgraph==0.3.18
 langgraph-checkpoint==2.0.21
-langgraph-prebuilt==0.1.3
+langgraph-prebuilt==0.1.4
 langgraph-sdk==0.1.58
 langsmith==0.3.18
 language_data==1.3.0
@@ -264,7 +264,7 @@ mistune==3.1.3
 mitogen==0.3.22
 ml-dtypes==0.4.1
 mlx==0.24.0
-mlx-lm==0.22.1
+mlx-lm==0.22.2
 mmh3==5.1.0
 monotonic==1.6
 more-itertools==10.6.0
@@ -326,7 +326,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@5b601548b93c1dbbf36bb43383ab48a269c78e68
+peft @ git+https://github.com/huggingface/peft.git@e79fdd78f63ca274174fa973d79779107448e660
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.2.0
@@ -432,7 +432,7 @@ rich==13.9.4
 rpds-py==0.23.1
 rsa==4.9
 rubicon-objc==0.5.0
-ruff==0.11.1
+ruff==0.11.2
 s3transfer==0.11.4
 safetensors==0.5.3
 scikit-image==0.25.2
@@ -502,7 +502,7 @@ tornado==6.4.2
 tqdm==4.67.1
 trafilatura==2.0.0
 traitlets==5.14.3
-transformers==4.49.0
+transformers==4.50.0
 tree-sitter==0.24.0
 tree-sitter-python==0.23.6
 trio==0.29.0

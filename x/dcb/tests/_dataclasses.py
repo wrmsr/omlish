@@ -1,3 +1,7 @@
+import dataclasses
+import types
+
+
 def _transform_dataclass__A(
         *,
         __dataclass__cls,
@@ -6,12 +10,12 @@ def _transform_dataclass__A(
         __dataclass__init__init_fns__0,
         __dataclass__override__fields__1__annotation,
         __dataclass__repr__fns__1__fn,
-        __dataclass__None,
-        __dataclass__property,
-        __dataclass__TypeError,
-        __dataclass__object_setattr,
-        __dataclass__FrozenInstanceError,
-        __dataclass__FunctionType,
+        __dataclass__None=None,
+        __dataclass__property=property,
+        __dataclass__TypeError=TypeError,
+        __dataclass__object_setattr=object.__setattr__,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,
+        __dataclass__FunctionType=types.FunctionType,
 ):
     def __copy__(self):
         if self.__class__ is not __dataclass__cls:

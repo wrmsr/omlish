@@ -23,9 +23,9 @@ class FnGlobal(ta.NamedTuple):
     import_: str | None = None
 
 
-FN_GLOBAL_IMPORTS: ta.Mapping[str, str | None] = {
-    'dc': 'dataclasses',
-    'types': None,
+FN_GLOBAL_IMPORTS: ta.Mapping[str, types.ModuleType] = {
+    'dataclasses': dc,
+    'types': types,
 }
 
 
@@ -34,11 +34,20 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
     (PROPERTY_IDENT := IDENT_PREFIX + 'property'): FnGlobal(property, 'property'),
     (TYPE_ERROR_IDENT := IDENT_PREFIX + 'TypeError'): FnGlobal(TypeError, 'TypeError'),
 
-    (OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): FnGlobal(object.__setattr__, 'object.__setattr__'),
+    (OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): FnGlobal(
+        object.__setattr__,
+        'object.__setattr__',
+    ),
 
-    (FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): FnGlobal(dc.FrozenInstanceError, 'dc.FrozenInstanceError'),  # noqa
+    (FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): FnGlobal(
+        dc.FrozenInstanceError,
+        'dataclasses.FrozenInstanceError',
+    ),
 
-    (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(types.FunctionType, 'types.FunctionType'),
+    (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(
+        types.FunctionType,
+        'types.FunctionType',
+    ),
 }
 
 
