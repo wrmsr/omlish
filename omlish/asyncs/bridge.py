@@ -32,7 +32,7 @@ from .. import check
 from .. import lang
 from .. import sync
 from ..concurrent import threadlets
-from .asyncs import sync_await
+from .sync import sync_await
 
 
 if ta.TYPE_CHECKING:

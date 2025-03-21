@@ -151,6 +151,7 @@ class Runtime(_enum.Enum):
     JAVA17 = 'java17'
     RUBY3_2 = 'ruby3.2'
     RUBY3_3 = 'ruby3.3'
+    RUBY3_4 = 'ruby3.4'
     PYTHON3_11 = 'python3.11'
     NODEJS20_X = 'nodejs20.x'
     PROVIDED_AL2023 = 'provided.al2023'

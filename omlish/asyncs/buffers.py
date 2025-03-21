@@ -37,6 +37,8 @@ class AsyncBufferedReader:
                 return r
             o = r
             b = await self._read()
+            if not b:
+                raise EOFError
             self._buf.feed(b)
 
     async def read_exact(
@@ -52,4 +54,6 @@ class AsyncBufferedReader:
             if r is not None:
                 return r
             b = await self._read()
+            if not b:
+                raise EOFError
             self._buf.feed(b)
