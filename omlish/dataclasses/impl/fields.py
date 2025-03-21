@@ -174,14 +174,12 @@ def field_init(
 
     value: str | None = None
     if f.default_factory is not MISSING:
+        locals[default_name] = f.default_factory
         if f.init:
-            locals[default_name] = f.default_factory
             lines.append(f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__: {f.name} = {default_name}()')
-            value = f.name
         else:
-            locals[default_name] = f.default_factory
             lines.append(f'{f.name} = {default_name}()')
-            value = f.name
+        value = f.name
 
     elif f.init:
         if f.default is MISSING:

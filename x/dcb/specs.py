@@ -35,7 +35,7 @@ class FieldSpec:
     hash: ta.Any = None
     compare: bool = True
     metadata: ta.Any = None
-    kw_only: lang.Maybe[ta.Any] = lang.empty()
+    kw_only: bool = False
 
     # doc: ta.Any = None
 

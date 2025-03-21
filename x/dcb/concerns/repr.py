@@ -44,7 +44,7 @@ class ReprGenerator(Generator[ReprPlan]):
 
         return PlanResult(
             ReprPlan(
-                tuple(f.name for f in ctx.cs.fields),
+                tuple(f.name for f in ctx.ana.instance_fields if f.repr),
                 tuple(rfs),
             ),
             orm,

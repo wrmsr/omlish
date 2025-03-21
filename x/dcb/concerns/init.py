@@ -19,6 +19,7 @@ from ..idents import SELF_IDENT
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
+from ..specs import FieldType
 from ..types import DefaultFactory
 from ..types import InitFn
 
@@ -36,7 +37,11 @@ class InitPlan(Plan):
         default: OpRef[ta.Any] | None
         default_factory: OpRef[ta.Any] | None
 
+        kw_only: bool
+
         override: bool
+
+        field_type: FieldType
 
     fields: tuple[Field, ...]
 
@@ -51,10 +56,22 @@ class InitGenerator(Generator[InitPlan]):
         if '__init__' in ctx.cls.__dict__:
             return None
 
+        seen_default = None
+        for f in ctx.ana.init_fields.std:
+            if not f.init:
+                continue
+            if f.default.present:
+                seen_default = f
+            elif seen_default:
+                raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
+
         orm = {}
 
         bfs: list[InitPlan.Field] = []
         for i, f in enumerate(ctx.cs.fields):
+            if not f.init:
+                continue
+
             ar: OpRef = OpRef(f'init.fields.{i}.annotation')
             orm[ar] = f.annotation
 
@@ -76,7 +93,11 @@ class InitGenerator(Generator[InitPlan]):
                 default=dr,
                 default_factory=dfr,
 
+                kw_only=f.kw_only,
+
                 override=f.override or ctx.cs.override,
+
+                field_type=f.field_type,
             ))
 
         ifs: list[OpRef[InitFn]] = []
