@@ -42,6 +42,7 @@ class PromptResponse(ModelResponse[PromptOutput], lang.Final):
     pass
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class PromptModel(
     Model[
         PromptRequest,

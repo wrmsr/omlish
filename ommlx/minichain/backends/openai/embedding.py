@@ -11,6 +11,7 @@ from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.vectors import Vector
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='EmbeddingModel')
 class OpenaiEmbeddingModel(EmbeddingModel):
     model = 'text-embedding-3-small'
 

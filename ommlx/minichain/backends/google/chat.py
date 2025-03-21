@@ -18,6 +18,7 @@ from ...chat.models import ChatRequest
 from ...chat.models import ChatResponse
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='google', type='ChatModel')
 class GoogleChatModel(ChatModel):
     model: ta.ClassVar[str] = 'gemini-1.5-flash-latest'
 

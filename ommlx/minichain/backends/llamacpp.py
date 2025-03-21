@@ -60,6 +60,7 @@ class LlamacppPromptModel(PromptModel):
         return PromptResponse(v=output['choices'][0]['text'])  # type: ignore
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatModel')
 class LlamacppChatModel(ChatModel):
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),

@@ -10,6 +10,7 @@ from ...prompts import PromptRequest
 from ...prompts import PromptResponse
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='PromptModel')
 class OpenaiPromptModel(PromptModel):
     model = 'gpt-3.5-turbo-instruct'
 

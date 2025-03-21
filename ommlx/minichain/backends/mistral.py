@@ -18,6 +18,7 @@ from ..chat.models import ChatRequest
 from ..chat.models import ChatResponse
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mistral', type='ChatModel')
 class MistralChatModel(ChatModel):
     model: ta.ClassVar[str] = 'mistral-large-latest'
 

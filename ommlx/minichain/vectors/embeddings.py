@@ -39,6 +39,7 @@ class EmbeddingResponse(ModelResponse[EmbeddingOutput], lang.Final):
     pass
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class EmbeddingModel(
     Model[
         EmbeddingRequest,

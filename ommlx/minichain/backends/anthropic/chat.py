@@ -23,6 +23,7 @@ from ...chat.models import ChatRequest
 from ...chat.models import ChatResponse
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='anthropic', type='ChatModel')
 class AnthropicChatModel(ChatModel):
     model: ta.ClassVar[str] = (
         'claude-3-5-sonnet-20241022'

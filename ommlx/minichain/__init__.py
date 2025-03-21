@@ -1,3 +1,10 @@
+# fmt: off
+
+
+from .backends.manifests import (  # noqa
+    new_backend,
+)
+
 from .chat.formats import (  # noqa
     JSON_RESPONSE_FORMAT,
     JsonResponseFormat,

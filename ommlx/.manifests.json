@@ -15,6 +15,204 @@
     }
   },
   {
+    "module": ".minichain.backends.anthropic.chat",
+    "attr": null,
+    "file": "ommlx/minichain/backends/anthropic/chat.py",
+    "line": 26,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.anthropic.chat",
+        "attr_name": "AnthropicChatModel",
+        "name": "anthropic",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.google.chat",
+    "attr": null,
+    "file": "ommlx/minichain/backends/google/chat.py",
+    "line": 21,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.google.chat",
+        "attr_name": "GoogleChatModel",
+        "name": "google",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp",
+    "attr": null,
+    "file": "ommlx/minichain/backends/llamacpp.py",
+    "line": 63,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.llamacpp",
+        "attr_name": "LlamacppChatModel",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mistral",
+    "attr": null,
+    "file": "ommlx/minichain/backends/mistral.py",
+    "line": 21,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.mistral",
+        "attr_name": "MistralChatModel",
+        "name": "mistral",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mlxlm",
+    "attr": null,
+    "file": "ommlx/minichain/backends/mlxlm.py",
+    "line": 24,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.mlxlm",
+        "attr_name": "MlxlmChatModel",
+        "name": "mlxlm",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.chat",
+    "attr": null,
+    "file": "ommlx/minichain/backends/openai/chat.py",
+    "line": 109,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.openai.chat",
+        "attr_name": "OpenaiChatModel",
+        "name": "openai",
+        "aliases": null,
+        "type": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.embedding",
+    "attr": null,
+    "file": "ommlx/minichain/backends/openai/embedding.py",
+    "line": 14,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.openai.embedding",
+        "attr_name": "OpenaiEmbeddingModel",
+        "name": "openai",
+        "aliases": null,
+        "type": "EmbeddingModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.prompt",
+    "attr": null,
+    "file": "ommlx/minichain/backends/openai/prompt.py",
+    "line": 13,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.openai.prompt",
+        "attr_name": "OpenaiPromptModel",
+        "name": "openai",
+        "aliases": null,
+        "type": "PromptModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.sentencetransformers",
+    "attr": null,
+    "file": "ommlx/minichain/backends/sentencetransformers.py",
+    "line": 18,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.sentencetransformers",
+        "attr_name": "SentencetransformersEmbeddingModel",
+        "name": "sentencetransformers",
+        "aliases": null,
+        "type": "EmbeddingModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers",
+    "attr": null,
+    "file": "ommlx/minichain/backends/transformers.py",
+    "line": 18,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.transformers",
+        "attr_name": "TransformersPromptModel",
+        "name": "transformers",
+        "aliases": null,
+        "type": "PromptModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.models",
+    "attr": null,
+    "file": "ommlx/minichain/chat/models.py",
+    "line": 77,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.chat.models",
+        "attr_name": "ChatModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.prompts",
+    "attr": null,
+    "file": "ommlx/minichain/prompts.py",
+    "line": 45,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.prompts",
+        "attr_name": "PromptModel"
+      }
+    }
+  },
+  {
+    "module": ".minichain.search",
+    "attr": null,
+    "file": "ommlx/minichain/search.py",
+    "line": 60,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.search",
+        "attr_name": "SearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.embeddings",
+    "attr": null,
+    "file": "ommlx/minichain/vectors/embeddings.py",
+    "line": 42,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.vectors.embeddings",
+        "attr_name": "EmbeddingModel"
+      }
+    }
+  },
+  {
     "module": ".server.__main__",
     "attr": null,
     "file": "ommlx/server/__main__.py",

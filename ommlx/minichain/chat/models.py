@@ -74,6 +74,7 @@ class ChatResponse(ModelResponse[ChatOutput], lang.Final):
     pass
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class ChatModel(
     Model[
         ChatRequest,

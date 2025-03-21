@@ -106,10 +106,11 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
         raise TypeError(m)
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatModel')
 class OpenaiChatModel(ChatModel):
     DEFAULT_MODEL: ta.ClassVar[str] = (
-        # 'gpt-4o'
-        'gpt-4o-mini'
+        'gpt-4o'
+        # 'gpt-4o-mini'
     )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {

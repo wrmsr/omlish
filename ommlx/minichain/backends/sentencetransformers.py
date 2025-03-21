@@ -15,6 +15,10 @@ else:
     st = lang.proxy_import('sentence_transformers')
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
+#     name='sentencetransformers',
+#     type='EmbeddingModel',
+# )
 class SentencetransformersEmbeddingModel(EmbeddingModel):
     model = 'clip-ViT-B-32'
 

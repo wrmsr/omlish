@@ -57,6 +57,7 @@ class SearchResponse(ServiceResponse[SearchOutput], lang.Final):
     pass
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class SearchService(
     Service[
         SearchRequest,

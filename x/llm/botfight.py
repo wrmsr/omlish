@@ -1,7 +1,7 @@
 import textwrap
 import typing as ta
 
-from omdev.secrets import load_secrets
+from omdev.home.secrets import load_secrets
 from omlish import check
 from ommlx import minichain as mc
 from ommlx.minichain.backends.anthropic import AnthropicChatModel

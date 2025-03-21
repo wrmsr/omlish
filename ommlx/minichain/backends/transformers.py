@@ -15,6 +15,7 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='PromptModel')
 class TransformersPromptModel(PromptModel):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
