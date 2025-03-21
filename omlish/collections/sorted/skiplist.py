@@ -10,6 +10,9 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
+##
+
+
 class SkipList(SortedCollection[T]):
     """https://gist.github.com/icejoywoo/3bf0c54983a725fa3917"""
 
@@ -59,6 +62,8 @@ class SkipList(SortedCollection[T]):
         self._head.next = [None] * self._max_height
         self._length = 0
 
+    #
+
     def __len__(self) -> int:
         return self._length
 
@@ -67,6 +72,8 @@ class SkipList(SortedCollection[T]):
 
     def __contains__(self, value: T) -> bool:  # type: ignore
         return self.find(value) is not None
+
+    #
 
     def _random_level(self) -> int:
         result = 1
@@ -108,6 +115,8 @@ class SkipList(SortedCollection[T]):
         self._length += 1
         return True
 
+    #
+
     def _find(self, value: T) -> _Node | None:
         if value is None:
             raise TypeError(value)
@@ -127,6 +136,8 @@ class SkipList(SortedCollection[T]):
         if node is None or self._compare(value, node.value) != 0:  # type: ignore
             return None
         return node.value  # type: ignore
+
+    #
 
     def remove(self, value: T) -> bool:
         if value is None:
@@ -157,6 +168,8 @@ class SkipList(SortedCollection[T]):
         self._length -= 1
         return True
 
+    #
+
     def iter(self, base: T | None = None) -> ta.Iterable[T]:
         if base is not None:
             cur = self._find(base)
@@ -185,6 +198,9 @@ class SkipList(SortedCollection[T]):
         while cur is not self._head:
             yield cur.value  # type: ignore
             cur = cur.prev  # type: ignore
+
+
+##
 
 
 class SkipListDict(SortedListDict[K, V]):
