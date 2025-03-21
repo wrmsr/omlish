@@ -16,15 +16,13 @@ jobs:
   CI:
     runs-on: 'ubuntu-24.04'
     timeout-minutes: 60
+    concurrency:
+      group: '${{ github.workflow }}-${{ github.ref }}'
+      cancel-in-progress: true
 
     steps:
       - name: 'Checkout repository'
         uses: 'actions/checkout@v4.2.2'
-
-      - name: 'Cancel previous workflows'
-        uses: 'styfle/cancel-workflow-action@0.12.1'
-        with:
-          access_token: '${{ github.token }}'
 
       # - uses: 'mxschmitt/action-tmate@v3.19'
 

@@ -102,7 +102,7 @@ class Cli(ap.Cli):
             with open(self.config_file_path()) as f:
                 buf = f.read()
         except FileNotFoundError:
-            return self.Config()
+            return dc.asdict(self.Config())  # noqa
 
         return yaml.safe_load(buf) or {}
 
