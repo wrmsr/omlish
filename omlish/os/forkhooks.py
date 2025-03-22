@@ -220,8 +220,8 @@ class ProcessOriginTracker:
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
-        self._process_cookie: bytes | None = self._PROCESS_COOKIE
-        self._fork_depth: int | None = get_fork_depth()
+        self._process_cookie: ta.Optional[bytes] = self._PROCESS_COOKIE
+        self._fork_depth: ta.Optional[int] = get_fork_depth()
 
     def is_in_origin_process(self) -> bool:
         return (self._PROCESS_COOKIE, get_fork_depth()) == (self._process_cookie, self._fork_depth)

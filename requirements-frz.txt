@@ -38,8 +38,8 @@ black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
 blis==1.2.0
-boto3==1.37.17
-botocore==1.37.17
+boto3==1.37.18
+botocore==1.37.18
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.29.3
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.130.0
+hypothesis==6.130.1
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -511,7 +511,7 @@ trl==0.15.2
 twine==6.1.0
 typeguard==4.4.2
 typer==0.15.2
-types-Markdown==3.7.0.20241204
+types-Markdown==3.7.0.20250322
 types-paramiko==3.5.0.20240928
 types-python-dateutil==2.9.0.20241206
 types-PyYAML==6.0.12.20241230

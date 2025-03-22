@@ -93,7 +93,11 @@ class PyremoteEnvInfo:
 
     pw: Pw
 
-    env_path: ta.Optional[str]
+    @dc.dataclass(frozen=True)
+    class Env:
+        path: ta.Optional[str]
+
+    env: Env
 
     #
 
@@ -172,7 +176,9 @@ def _get_pyremote_env_info() -> PyremoteEnvInfo:
             shell=pw.pw_shell,
         ),
 
-        env_path=os.environ.get('PATH'),
+        env=PyremoteEnvInfo.Env(
+            path=os.environ.get('PATH'),
+        ),
     )
 
 

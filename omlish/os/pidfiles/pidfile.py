@@ -5,6 +5,7 @@ TODO:
  - 'json pids', with code version? '.json.pid'? '.jpid'?
   - json*L* pidfiles - first line is bare int, following may be json - now `head -n1 foo.pid` not cat
 """
+import errno
 import fcntl
 import os
 import signal
@@ -68,6 +69,7 @@ class Pidfile:
         if hasattr(self, '_fd_to_dup'):
             fd = os.dup(self._fd_to_dup)
             del self._fd_to_dup
+
         else:
             ofl = os.O_RDWR
             if not self._no_create:
@@ -80,11 +82,8 @@ class Pidfile:
 
             f = os.fdopen(fd, 'r+')
 
-        except Exception:
-            try:
-                os.close(fd)
-            except Exception:  # noqa
-                pass
+        except BaseException:
+            os.close(fd)
             raise
 
         self._f = f
@@ -129,8 +128,11 @@ class Pidfile:
             fcntl.flock(self._f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             return True
 
-        except OSError:
-            return False
+        except BlockingIOError as e:
+            if e.errno == errno.EAGAIN:
+                return False
+            else:
+                raise
 
     #
 

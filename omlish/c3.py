@@ -33,6 +33,7 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import functools
 import operator
 import typing as ta
 
@@ -70,12 +71,17 @@ def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
                 del seq[0]
 
 
+def _default_is_abstract(obj: ta.Any) -> bool:
+    return hasattr(obj, '__abstractmethods__')
+
+
 def mro(
         cls: T,
         abcs: ta.Sequence[T] | None = None,
         *,
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
+        is_abstract: ta.Callable[[T], bool] = _default_is_abstract,
 ) -> list[T]:
     """
     Computes the method resolution order using extended C3 linearization.
@@ -91,7 +97,7 @@ def mro(
     """
 
     for i, base in enumerate(reversed(get_bases(cls))):
-        if hasattr(base, '__abstractmethods__'):
+        if is_abstract(base):
             boundary = len(get_bases(cls)) - i
             break  # Bases up to the last explicit ABC are considered first.
     else:
@@ -109,9 +115,16 @@ def mro(
             abstract_bases.append(base)
     for base in abstract_bases:
         abcs.remove(base)
-    explicit_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in explicit_bases]
-    abstract_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in abstract_bases]
-    other_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in other_bases]
+    rec = functools.partial(
+        mro,
+        abcs=abcs,
+        get_bases=get_bases,
+        is_subclass=is_subclass,
+        is_abstract=is_abstract,
+    )
+    explicit_c3_mros = [rec(base) for base in explicit_bases]
+    abstract_c3_mros = [rec(base) for base in abstract_bases]
+    other_c3_mros = [rec(base) for base in other_bases]
     return merge(
         [[cls]] +  # noqa
         explicit_c3_mros + abstract_c3_mros + other_c3_mros +
@@ -127,6 +140,7 @@ def compose_mro(
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
         get_subclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),
+        is_abstract: ta.Callable[[T], bool] = _default_is_abstract,
 ) -> list[T]:
     """
     Calculates the method resolution order for a given class *cls*.
@@ -171,4 +185,10 @@ def compose_mro(
                 if subcls not in _mro:
                     _mro.append(subcls)
 
-    return mro(cls, abcs=_mro, get_bases=get_bases, is_subclass=is_subclass)
+    return mro(
+        cls,
+        abcs=_mro,
+        get_bases=get_bases,
+        is_subclass=is_subclass,
+        is_abstract=is_abstract,
+    )

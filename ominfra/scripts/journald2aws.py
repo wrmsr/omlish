@@ -16,6 +16,7 @@ import dataclasses as dc
 import datetime
 import decimal
 import enum
+import errno
 import fcntl
 import fractions
 import functools
@@ -2008,6 +2009,7 @@ class Pidfile:
         if hasattr(self, '_fd_to_dup'):
             fd = os.dup(self._fd_to_dup)
             del self._fd_to_dup
+
         else:
             ofl = os.O_RDWR
             if not self._no_create:
@@ -2020,11 +2022,8 @@ class Pidfile:
 
             f = os.fdopen(fd, 'r+')
 
-        except Exception:
-            try:
-                os.close(fd)
-            except Exception:  # noqa
-                pass
+        except BaseException:
+            os.close(fd)
             raise
 
         self._f = f
@@ -2069,8 +2068,11 @@ class Pidfile:
             fcntl.flock(self._f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             return True
 
-        except OSError:
-            return False
+        except BlockingIOError as e:
+            if e.errno == errno.EAGAIN:
+                return False
+            else:
+                raise
 
     #
 

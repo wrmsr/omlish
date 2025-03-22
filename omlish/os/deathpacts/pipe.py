@@ -1,3 +1,7 @@
+"""
+TODO:
+ - why didn't this just use set_inheritable(wfd, False)?
+"""
 import os
 import typing as ta
 import weakref

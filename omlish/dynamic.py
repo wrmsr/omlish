@@ -100,7 +100,6 @@ class Var(ta.Generic[T]):
 
         def outer(fn):
             class Descriptor:
-
                 @staticmethod
                 @functools.wraps(fn)
                 def __call__(*args, **kwargs):  # noqa

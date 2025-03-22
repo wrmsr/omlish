@@ -4,7 +4,6 @@ import contextlib
 import os
 import threading
 import typing as ta
-import weakref
 
 from ...lite.check import check
 from ..forkhooks import ForkHook
@@ -23,7 +22,7 @@ class _PidfileManager(ForkHook):
     """
 
     _lock: ta.ClassVar[threading.Lock] = threading.Lock()
-    _pidfile_threads: ta.ClassVar[ta.MutableMapping[Pidfile, threading.Thread]] = weakref.WeakKeyDictionary()
+    _pidfile_threads: ta.ClassVar[ta.MutableMapping[Pidfile, threading.Thread]] = {}
     _num_kills: ta.ClassVar[int] = 0
 
     @classmethod
@@ -66,8 +65,8 @@ class _PidfileManager(ForkHook):
 
         with cls._lock:
             cls._pidfile_threads[pf] = threading.current_thread()
-        try:
 
+        try:
             with pf:
                 os.set_inheritable(check.not_none(pf.fileno()), True)
                 yield pf
