@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.21.1
 
-hypothesis==6.130.1
+hypothesis==6.130.2
 
 hexdump==3.3
 
@@ -181,10 +181,10 @@ mitogen==0.3.22
 
 openai==1.66.5
 
-trl==0.15.2
+trl==0.16.0
 tf-keras==2.17.0  # @omlish-venv !13
 
-polars==1.25.2
+polars==1.26.0
 
 pyzmq==26.3.0
 

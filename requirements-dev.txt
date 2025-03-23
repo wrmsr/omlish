@@ -38,7 +38,7 @@ pymysql==1.1.1
 
 litecli==1.15.0  # @omlish-venv !13t
 mycli==1.29.2  # @omlish-venv !13t
-pgcli==4.2.0  # @omlish-venv !13t
+pgcli==4.3.0  # @omlish-venv !13t
 
 # pydevd_pycharm==241.18034.82
 
