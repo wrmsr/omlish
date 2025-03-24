@@ -84,7 +84,7 @@ if sys.version_info < (3, 8):
 # shell.py
 T = ta.TypeVar('T')
 
-# ../../omlish/asyncs/asyncio/asyncio.py
+# ../../omlish/asyncs/asyncio/utils.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 # ../../omlish/lite/check.py
@@ -247,7 +247,7 @@ class OciCompression(enum.Enum):
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/asyncio.py
+# ../../../omlish/asyncs/asyncio/utils.py
 """
 TODO:
  - split module

@@ -4,7 +4,7 @@ import functools
 import os.path
 import typing as ta
 
-from omlish.asyncs.asyncio.asyncio import asyncio_wait_maybe_concurrent
+from omlish.asyncs.asyncio.utils import asyncio_wait_maybe_concurrent
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check

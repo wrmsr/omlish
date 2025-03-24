@@ -1,5 +1,5 @@
 # ruff: noqa: I001
-from .asyncio import (  # noqa
+from .utils import (  # noqa
     asyncio_ensure_task as ensure_task,
 
     asyncio_once as once,

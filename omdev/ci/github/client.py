@@ -9,7 +9,7 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
-from omlish.asyncs.asyncio.asyncio import asyncio_wait_concurrent
+from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
