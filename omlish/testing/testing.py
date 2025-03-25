@@ -7,15 +7,22 @@ import traceback
 import typing as ta
 
 
-DEFAULT_TIMEOUT_S = 30
-
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
+##
+
+
 def assert_dicts_equal_ordered(l: ta.Mapping[K, V], r: ta.Mapping[K, V]) -> None:
     assert list(l.items()) == list(r.items())
+
+
+##
+
+
+DEFAULT_TIMEOUT_S = 30
 
 
 def call_many_with_timeout(
@@ -86,6 +93,9 @@ def waitpid_with_timeout(
         elapsed_time = time.time() - start_time
         if elapsed_time >= timeout_s:
             raise timeout_exception
+
+
+##
 
 
 def xfail(fn):

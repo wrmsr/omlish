@@ -7,6 +7,9 @@ from ..lite.cached import cached_nullary
 from ..lite.check import check
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class StringMangler:
     escape: str

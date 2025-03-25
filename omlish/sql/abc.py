@@ -5,6 +5,9 @@ import enum
 import typing as ta
 
 
+##
+
+
 DbapiTypeCode: ta.TypeAlias = ta.Any | None
 
 DbapiColumnDescription: ta.TypeAlias = tuple[

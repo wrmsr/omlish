@@ -5,6 +5,9 @@ import re
 import typing as ta
 
 
+##
+
+
 def to_seconds(value: datetime.timedelta) -> float:
     return 86400 * value.days + value.seconds + 0.000001 * value.microseconds
 
