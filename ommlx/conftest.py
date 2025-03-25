@@ -13,6 +13,12 @@ def pytest_addhooks(pluginmanager):
 
     ptp.depskip.register(
         pluginmanager,
+        [r'ommlx/mlx/.*\.py'],
+        [r'mlx(\..*)?', r'mlx_lm(\..*)?', r'transformers(\..*)?'],
+    )
+
+    ptp.depskip.register(
+        pluginmanager,
         [r'ommlx/torch/.*\.py'],
         [r'torch(\..*)?'],
     )

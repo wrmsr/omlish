@@ -9,6 +9,7 @@ from ..lex import JsonStreamLexer
 from ..parse import JsonStreamParser
 from ..parse import yield_parser_events
 from ..render import StreamJsonRenderer
+from ..utils import stream_parse_one_object
 
 
 def test_stream():
@@ -73,3 +74,23 @@ def test_delimit():
                 ), **kw)
 
         print(r)
+
+
+def test_partial():
+    oj = '{"name": "multiply", "arguments": {"a": 12234585, "b": 48838483920}}'
+    s = f"""\
+<tools>
+{oj}
+</tools>
+    """
+
+    i = iter(s)
+    while True:
+        if next(i) == '\n':
+            break
+
+    o = stream_parse_one_object(i)
+    assert o == json.loads(oj)
+
+    r = ''.join(i).strip()
+    assert r == '</tools>'

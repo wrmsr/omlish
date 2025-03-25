@@ -14,11 +14,14 @@ from ..chat.models import ChatResponse
 
 
 if ta.TYPE_CHECKING:
-    import mlx.nn
     import mlx_lm.utils
+
+    from ... import mlx as mlxu
+
 else:
-    mlx = lang.proxy_import('mlx', extras=['nn'])
     mlx_lm = lang.proxy_import('mlx_lm', extras=['utils'])
+
+    mlxu = lang.proxy_import('...mlx', __package__)
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mlxlm', type='ChatModel')
@@ -60,14 +63,9 @@ class MlxlmChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    class _LoadedModel(ta.NamedTuple):
-        model: 'mlx.nn.Module'
-        tokenizer: 'mlx_lm.utils.TokenizerWrapper'
-
     @lang.cached_function(transient=True)
-    def _load_model(self) -> _LoadedModel:
-        model, tokenizer = mlx_lm.load(self._model)
-        return self._LoadedModel(model, tokenizer)
+    def _load_model(self) -> 'mlxu.LoadedModel':
+        return mlxu.load_model(self._model)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         model, tokenizer = self._load_model()
