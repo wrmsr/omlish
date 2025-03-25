@@ -225,4 +225,4 @@ def opt_coalesce(*vs: T | None) -> T | None:
 
 
 def opt_kw(**kwargs: ta.Any) -> dict[str, ta.Any]:
-    return {k: v for k, v in kwargs.items() if k is not None}
+    return {k: v for k, v in kwargs.items() if v is not None}
