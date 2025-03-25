@@ -301,3 +301,7 @@ watchdog==6.0.0
 pyright[nodejs]
 
 basedpyright
+
+##
+
+# git+https://github.com/wrmsr/egglog-python@lite
