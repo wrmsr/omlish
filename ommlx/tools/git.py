@@ -19,7 +19,7 @@ from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
-from ..minichain.backends.mlxlm import MlxlmChatModel
+from ..minichain.backends.mlx import MlxChatModel
 from ..minichain.backends.openai import OpenaiChatModel
 from ..minichain.generative import MaxTokens
 from ..server.client import McServerClient
@@ -76,7 +76,7 @@ def _strip_markdown_code_block(text: str) -> str:
     return match.group(1)
 
 
-class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
+class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
     @dc.dataclass(frozen=True)
     class Config(GitAiBackend.Config):
         model: str = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
@@ -88,7 +88,7 @@ class MlxlmGitAiBackend(GitAiBackend['MlxlmGitAiBackend.Config']):
         super().__init__(config)
 
     def _run_prompt(self, prompt: str) -> str:
-        llm = MlxlmChatModel(self._config.model)
+        llm = MlxChatModel(self._config.model)
 
         resp = llm(
             [mc.UserMessage(prompt)],
@@ -182,7 +182,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
     DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = (
         OpenaiGitAiBackend()
         # LocalhostHttpPostGitAiBackend()
-        # MlxlmGitAiBackend()
+        # MlxGitAiBackend()
         # McServerGitAiBackend()
     )
 

@@ -18,7 +18,7 @@
     "module": ".minichain.backends.anthropic.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/anthropic/chat.py",
-    "line": 26,
+    "line": 27,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.anthropic.chat",
@@ -75,15 +75,15 @@
     }
   },
   {
-    "module": ".minichain.backends.mlxlm",
+    "module": ".minichain.backends.mlx",
     "attr": null,
-    "file": "ommlx/minichain/backends/mlxlm.py",
+    "file": "ommlx/minichain/backends/mlx.py",
     "line": 27,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.mlxlm",
-        "attr_name": "MlxlmChatModel",
-        "name": "mlxlm",
+        "mod_name": "ommlx.minichain.backends.mlx",
+        "attr_name": "MlxChatModel",
+        "name": "mlx",
         "aliases": null,
         "type": "ChatModel"
       }
@@ -93,7 +93,7 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/chat.py",
-    "line": 109,
+    "line": 110,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.chat",

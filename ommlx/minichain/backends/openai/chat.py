@@ -15,6 +15,7 @@ import os
 import typing as ta
 
 from omlish import check
+from omlish import lang
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
@@ -175,7 +176,7 @@ class OpenaiChatModel(ChatModel):
                 for m in request.v
             ],
             top_p=1,
-            **(dict(tools=tools) if tools else {}),
+            **lang.opt_kw(tools=tools),
             frequency_penalty=0.0,
             presence_penalty=0.0,
             stream=False,

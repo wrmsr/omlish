@@ -11,7 +11,7 @@ from ... import huggingface as hfu
 from ..git import AiGitMessageGenerator
 from ..git import GitAiBackend
 from ..git import GitMessageGenerator
-from ..git import MlxlmGitAiBackend
+from ..git import MlxGitAiBackend
 from ..git import OpenaiGitAiBackend
 
 
@@ -45,7 +45,7 @@ def test_git_message_generator_openai(harness):
 
 @ptu.skip.if_cant_import('mlx_lm')
 def test_git_message_generator_mlxlm():
-    bg_cfg = MlxlmGitAiBackend.Config()
+    bg_cfg = MlxGitAiBackend.Config()
 
     try:
         import huggingface_hub  # noqa
@@ -55,4 +55,4 @@ def test_git_message_generator_mlxlm():
     if not hfu.is_repo_cached(mdl := bg_cfg.model):
         pytest.skip(f'no model: {mdl}')
 
-    _test_git_message_generator(MlxlmGitAiBackend(bg_cfg))
+    _test_git_message_generator(MlxGitAiBackend(bg_cfg))

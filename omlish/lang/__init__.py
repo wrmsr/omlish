@@ -142,6 +142,7 @@ from .functions import (  # noqa
     maybe_call,
     opt_coalesce,
     opt_fn,
+    opt_kw,
     periodically,
     raise_,
     raising,

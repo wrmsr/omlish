@@ -9,6 +9,7 @@ import os
 import typing as ta
 
 from omlish import check
+from omlish import lang
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
@@ -75,7 +76,7 @@ class AnthropicChatModel(ChatModel):
 
         raw_request = dict(
             model=self.model,
-            **(dict(system=system) if system is not None else {}),
+            **lang.opt_kw(system=system),
             messages=messages,
             max_tokens=max_tokens,
         )

@@ -189,8 +189,10 @@ ruff-fix: venv
 	${PYTHON} -m ruff check --fix ${SRCS}
 
 RUFF_FIX_CODES:=\
-	I001 \
+	COM812 \
 	F401 \
+	I001 \
+	Q000 \
 	W291 \
 	W292 \
 	W293

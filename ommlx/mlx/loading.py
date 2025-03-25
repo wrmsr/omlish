@@ -22,8 +22,13 @@ class LoadedModel(ta.NamedTuple):
     tokenizer: 'mlx_lm.utils.TokenizerWrapper'
 
     @property
-    def pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
-        return check.isinstance(self.tokenizer, transformers.PreTrainedTokenizerBase)
+    def as_pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
+        return ta.cast(transformers.PreTrainedTokenizerBase, self.tokenizer)
+
+    @property
+    def check_pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
+        tw = check.isinstance(self.tokenizer, mlx_lm.utils.TokenizerWrapper)
+        return check.isinstance(tw._tokenizer, transformers.PreTrainedTokenizerBase)  # noqa
 
 
 def load_model(
@@ -37,8 +42,10 @@ def load_model(
 ) -> LoadedModel:
     model, tokenizer = mlx_lm.load(
         path_or_hf_repo,
-        **(dict(tokenizer_config=tokenizer_config) if tokenizer_config is not None else {}),
-        **(dict(model_config=model_config) if model_config is not None else {}),
+        **lang.opt_kw(
+            tokenizer_config=tokenizer_config,
+            model_config=model_config,
+        ),
         adapter_path=adapter_path,
         lazy=lazy,
         **kwargs,

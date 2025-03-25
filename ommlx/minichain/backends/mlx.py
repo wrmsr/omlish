@@ -24,8 +24,8 @@ else:
     mlxu = lang.proxy_import('...mlx', __package__)
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mlxlm', type='ChatModel')
-class MlxlmChatModel(ChatModel):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mlx', type='ChatModel')
+class MlxChatModel(ChatModel):
     DEFAULT_MODEL = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         'mlx-community/Llama-3.3-70B-Instruct-4bit'

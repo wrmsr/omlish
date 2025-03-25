@@ -22,7 +22,7 @@ from omlish.sockets.bind import SocketBinder
 from omlish.sockets.server.server import SocketServer
 
 from .. import minichain as mc
-from ..minichain.backends.mlxlm import MlxlmChatModel
+from ..minichain.backends.mlx import MlxChatModel
 from ..minichain.backends.openai import OpenaiChatModel
 from ..minichain.generative import Temperature
 
@@ -83,7 +83,7 @@ class McServer:
 
         elif self._config.backend == 'local':
             model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-            return MlxlmChatModel(model)
+            return MlxChatModel(model)
 
         else:
             raise ValueError(self._config.backend)
