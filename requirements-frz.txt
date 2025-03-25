@@ -46,7 +46,7 @@ bsddb3==6.2.9
 build==1.2.2.post1
 cachetools==5.5.2
 catalogue==2.0.10
-cattrs==24.1.2
+cattrs==24.1.3
 cbor2==5.6.5
 certifi==2025.1.31
 cffi==1.17.1
@@ -90,7 +90,7 @@ dirtyjson==1.0.8
 discord.py==2.5.2
 diskcache==5.6.3
 distro==1.9.0
-docstring-to-markdown==0.15
+docstring-to-markdown==0.16
 docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
@@ -163,7 +163,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.29.3
 humanfriendly==10.0
 hyperframe==6.1.0
-hypothesis==6.130.3
+hypothesis==6.130.4
 id==1.5.0
 idna==3.10
 ifaddr==0.2.0
@@ -225,7 +225,7 @@ langchain-text-splitters==0.3.7
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.3.19
+langgraph==0.3.20
 langgraph-checkpoint==2.0.23
 langgraph-prebuilt==0.1.4
 langgraph-sdk==0.1.58
@@ -327,7 +327,7 @@ paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@e5e7b73fcf7f0d9fc370adbb016390454ef6eb09
+peft @ git+https://github.com/huggingface/peft.git@8d935a63c287c9de82fd8fede90f4835b754fffd
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.3.0
@@ -399,7 +399,7 @@ pytest-stress==1.0.1
 pytest-timeout==2.3.1
 pytest-xdist==3.6.1
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 python-iso639==2025.2.18
 python-json-logger==3.3.0
 python-magic==0.4.27
@@ -407,7 +407,7 @@ python-oxmsg==0.0.2
 python-snappy==0.7.3
 python-telegram-bot==22.0
 pytorch-lightning==2.5.1
-pytz==2025.1
+pytz==2025.2
 pywinrm==0.5.0
 PyYAML==6.0.2
 pyzmq==26.3.0
@@ -503,7 +503,7 @@ tornado==6.4.2
 tqdm==4.67.1
 trafilatura==2.0.0
 traitlets==5.14.3
-transformers==4.50.0
+transformers==4.50.1
 tree-sitter==0.24.0
 tree-sitter-python==0.23.6
 trio==0.29.0
