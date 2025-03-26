@@ -11,6 +11,7 @@ from omlish.manifests.base import NameAliasesManifest
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 ##
@@ -98,7 +99,7 @@ class _ManifestRegistry:
         return cls
 
 
-@cached.function
+@cached.function(lock=True)
 def _manifest_registry() -> _ManifestRegistry:
     return _ManifestRegistry(
         _load_backend_type_manifests(),
@@ -119,16 +120,19 @@ def new_backend(cls: type[T], name: str, **kwargs: ta.Any) -> T:
 #
 
 
-# # PEP695 / https://github.com/python/mypy/issues/4717 workaround
-# class backend_of(ta.Generic[T]):  # noqa
-#     class _new_descriptor:  # noqa
-#         def __init__(self, fn):
-#             pass
-#
-#         def __get__(self, instance, owner):
-#             raise NotImplementedError
-#
-#     @_new_descriptor  # noqa
-#     @classmethod
-#     def new(cls, name: str, **kwargs: ta.Any) -> T:
-#         raise TypeError
+# PEP695 / https://github.com/python/mypy/issues/4717 workaround
+class backend_of(ta.Generic[T]):  # noqa
+    @dc.dataclass(frozen=True)
+    class _bound(ta.Generic[U]):  # noqa
+        cls: type[U]
+
+        def new(self, name: str, **kwargs: ta.Any) -> U:
+            return new_backend(self.cls, name, **kwargs)
+
+    def __class_getitem__(cls, *args, **kwargs):
+        [bind_cls] = args
+        return backend_of._bound(bind_cls)
+
+    @classmethod
+    def new(cls, name: str, **kwargs: ta.Any) -> T:  # noqa
+        raise TypeError
