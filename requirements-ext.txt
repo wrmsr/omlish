@@ -158,8 +158,8 @@ soco==0.30.9
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.43.0
-zigpy==0.77.1
+bellows==0.44.0
+zigpy==0.78.0
 
 # python-openzwave
 zwave-js-server-python==0.62.0
@@ -171,7 +171,7 @@ discord.py==2.5.2
 
 ##
 
-logbook==1.8.0
+logbook==1.8.1
 
 # tenacity==9.0.0
 
@@ -217,7 +217,7 @@ langchainhub==0.1.21
 
 ##
 
-llama-index-core==0.12.25
+llama-index-core==0.12.26
 
 ##
 

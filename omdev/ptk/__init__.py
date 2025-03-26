@@ -5,6 +5,7 @@ from prompt_toolkit import Application
 from prompt_toolkit.application import get_app
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.buffer import Buffer
+from prompt_toolkit.completion import CompleteEvent
 from prompt_toolkit.completion import Completer
 from prompt_toolkit.completion import Completion
 from prompt_toolkit.completion import PathCompleter
@@ -18,6 +19,9 @@ from prompt_toolkit.filters import is_searching
 from prompt_toolkit.filters import to_filter
 from prompt_toolkit.filters import vi_insert_mode
 from prompt_toolkit.filters import vi_navigation_mode
+from prompt_toolkit.formatted_text import AnyFormattedText
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.input import DummyInput
 from prompt_toolkit.input import Input

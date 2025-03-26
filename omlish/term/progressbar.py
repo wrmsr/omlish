@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import sys
 import time
 import typing as ta
@@ -20,12 +22,12 @@ class ProgressBar:
 
     def __init__(
             self,
-            total: int | None = None,
+            total: ta.Optional[int] = None,
             *,
             length: int = 40,
             interval: float = .2,
-            start_time: float | None = None,
-            out: ta.TextIO | None = None,
+            start_time: ta.Optional[float] = None,
+            out: ta.Optional[ta.TextIO] = None,
     ) -> None:
         super().__init__()
 
@@ -73,17 +75,25 @@ class ProgressBar:
         info = ' | '.join(info_parts)
         return f'{bar} {info}'
 
+    # Note: omitted, kept lite for now
+    # _LINE_UPDATE_PREFIX: ta.ClassVar[str] = ''.join([
+    #     codes.EL(codes.ELs.ALL),
+    #     codes.CHA(),
+    # ])
+
+    _LINE_UPDATE_PREFIX: ta.ClassVar[str] = '\033[2K\033['
+
     def print(
             self,
             *,
-            now: float | None = None,
+            now: ta.Optional[float] = None,
             **kwargs: ta.Any,
     ) -> None:
         if now is None:
             now = time.time()
 
         line = self.render(**kwargs)
-        self._out.write(f'\033[2K\033[G{line}')
+        self._out.write(f'{self._LINE_UPDATE_PREFIX}{line}')
         self._out.flush()
 
         self._last_print = now
@@ -92,7 +102,7 @@ class ProgressBar:
             self,
             n: int = 1,
             *,
-            now: float | None = None,
+            now: ta.Optional[float] = None,
             silent: bool = False,
     ) -> None:
         if now is None:
@@ -110,8 +120,8 @@ def progress_bar(
         seq: ta.Iterable[T],
         *,
         no_tty_check: bool = False,
-        total: int | None = None,
-        out: ta.TextIO | None = None,
+        total: ta.Optional[int] = None,
+        out: ta.Optional[ta.TextIO] = None,
         **kwargs: ta.Any,
 ) -> ta.Generator[T, None, None]:
     if out is None:
@@ -137,3 +147,14 @@ def progress_bar(
 
     pb.print(complete=True)
     out.write('\n')
+
+
+##
+
+
+if __name__ == '__main__':
+    def _main() -> None:
+        for _ in progress_bar(range(100), no_tty_check=True):
+            time.sleep(0.01)
+
+    _main()

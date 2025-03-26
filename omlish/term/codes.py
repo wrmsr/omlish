@@ -29,6 +29,7 @@ def strip_ansi_codes(s: str) -> str:
 class ControlSequence:
     def __init__(self, fn: ta.Callable[..., str], desc: str) -> None:
         super().__init__()
+
         self._fn = fn
         self._desc = desc
 
@@ -40,24 +41,31 @@ class ControlSequence:
         return self._fn(*args, **kwargs)
 
 
-CUU = ControlSequence(lambda n: CSI + str(n) + 'A', 'Cursor Up')
-CUD = ControlSequence(lambda n: CSI + str(n) + 'B', 'Cursor Down')
-CUF = ControlSequence(lambda n: CSI + str(n) + 'C', 'Cursor Forward')
-CUB = ControlSequence(lambda n: CSI + str(n) + 'D', 'Cursor Back')
-
-CNL = ControlSequence(lambda n: CSI + str(n) + 'E', 'Cursor Next Line')
-CPL = ControlSequence(lambda n: CSI + str(n) + 'F', 'Cursor Previous Line')
-CHA = ControlSequence(lambda n: CSI + str(n) + 'G', 'Cursor Horizontal Line Absolute')
-
-CUP = ControlSequence(lambda n, m: CSI + str(n) + ';' + str(m) + 'H', 'Cursor Position')
-HVP = ControlSequence(lambda n, m: CSI + str(n) + ';' + str(m) + 'f', 'Horizontal Vertical Position')
-
-
 def _str_val(val: ta.Any) -> str:
     if isinstance(val, enum.Enum):
         return str(val.value)
     else:
         return str(val)
+
+
+def _opt_str_val(v):
+    if v is None:
+        return ''
+    else:
+        return _str_val(v)
+
+
+CUU = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'A', 'Cursor Up')
+CUD = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'B', 'Cursor Down')
+CUF = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'C', 'Cursor Forward')
+CUB = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'D', 'Cursor Back')
+
+CNL = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'E', 'Cursor Next Line')
+CPL = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'F', 'Cursor Previous Line')
+CHA = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'G', 'Cursor Horizontal Line Absolute')
+
+CUP = ControlSequence(lambda n, m: CSI + str(n) + ';' + str(m) + 'H', 'Cursor Position')
+HVP = ControlSequence(lambda n, m: CSI + str(n) + ';' + str(m) + 'f', 'Horizontal Vertical Position')
 
 
 class EDs(enum.Enum):
@@ -67,7 +75,7 @@ class EDs(enum.Enum):
     ALL_AND_SCROLLBACK = 3
 
 
-ED = ControlSequence(lambda n: CSI + _str_val(n) + 'J', 'Erase in Display')
+ED = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'J', 'Erase in Display')
 
 
 class ELs(enum.Enum):
@@ -76,10 +84,10 @@ class ELs(enum.Enum):
     ALL = 2
 
 
-EL = ControlSequence(lambda n: CSI + _str_val(n) + 'K', 'Erase in Line')
+EL = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'K', 'Erase in Line')
 
-SU = ControlSequence(lambda n: CSI + str(n) + 'S', 'Scroll Up')
-SD = ControlSequence(lambda n: CSI + str(n) + 'T', 'Scroll Down')
+SU = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'S', 'Scroll Up')
+SD = ControlSequence(lambda n=None: CSI + _opt_str_val(n) + 'T', 'Scroll Down')
 
 DSR = ControlSequence(lambda: CSI + '6n', 'Device Status Report')
 

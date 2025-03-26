@@ -23,7 +23,7 @@ class SentencetransformersEmbeddingModel(EmbeddingModel):
     model = 'clip-ViT-B-32'
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
-        mdl = st.SentenceTransformer(self.model)
+        mdl = st.SentenceTransformer(self.model)  # type: ignore[call-overload]
 
         obj: ta.Any
         v = request.v
