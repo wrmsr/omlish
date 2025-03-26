@@ -5,8 +5,11 @@ from omlish import lang
 
 from ...chat.messages import UserMessage
 from ...chat.models import ChatRequest
+from ...chat.models import ChatResponse
+from ...chat.models import ChatStreamModel
 from ...generative import MaxTokens
 from ...generative import Temperature
+from ...streams import StreamServiceResponse
 from ..llamacpp import LlamacppChatModel
 
 
@@ -22,6 +25,14 @@ else:
 
 
 T = ta.TypeVar('T')
+
+
+##
+
+
+class LlamacppChatStreamModel(ChatStreamModel):
+    def invoke(self, request: ChatRequest) -> StreamServiceResponse[ChatResponse]:
+        raise NotImplementedError
 
 
 ##

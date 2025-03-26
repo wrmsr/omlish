@@ -199,3 +199,21 @@ class SimpleProxy(ta.Generic[T]):
 
     def __delattr__(self, item):
         delattr(object.__getattribute__(self, '__wrapped__'), item)
+
+
+##
+
+
+class _AnonObject:
+    def __init__(self, **attrs: ta.Any) -> None:
+        super().__init__()
+
+        for k, v in attrs.items():
+            setattr(self, k, v)
+
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError
+
+
+def anon_object(**attrs: ta.Any) -> ta.Any:
+    return _AnonObject(**attrs)

@@ -199,6 +199,7 @@ from .maybes import (  # noqa
 
 from .objects import (  # noqa
     SimpleProxy,
+    anon_object,
     arg_repr,
     attr_repr,
     build_mro_dict,
