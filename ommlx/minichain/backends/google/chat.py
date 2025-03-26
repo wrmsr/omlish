@@ -20,7 +20,10 @@ from ...chat.models import ChatResponse
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='google', type='ChatModel')
 class GoogleChatModel(ChatModel):
-    model: ta.ClassVar[str] = 'gemini-1.5-flash-latest'
+    model: ta.ClassVar[str] = (
+        # 'gemini-1.5-flash-latest'
+        'gemini-2.0-pro-exp-02-05'
+    )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',

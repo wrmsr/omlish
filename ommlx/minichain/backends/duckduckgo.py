@@ -15,6 +15,11 @@ else:
     duckduckgo_search = lang.proxy_import('duckduckgo_search')
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
+#     name='duckduckgo',
+#     aliases=['ddg'],
+#     type='SearchService',
+# )
 class DuckduckgoSearchService(SearchService):
     def invoke(
             self,

@@ -114,3 +114,21 @@ def new_backend(cls: type[T], name: str, **kwargs: ta.Any) -> T:
     be_cls = mr.get_backend_cls(cls.__name__, name)
     be_cls = check.issubclass(be_cls, cls)
     return be_cls(**kwargs)
+
+
+#
+
+
+# # PEP695 / https://github.com/python/mypy/issues/4717 workaround
+# class backend_of(ta.Generic[T]):  # noqa
+#     class _new_descriptor:  # noqa
+#         def __init__(self, fn):
+#             pass
+#
+#         def __get__(self, instance, owner):
+#             raise NotImplementedError
+#
+#     @_new_descriptor  # noqa
+#     @classmethod
+#     def new(cls, name: str, **kwargs: ta.Any) -> T:
+#         raise TypeError

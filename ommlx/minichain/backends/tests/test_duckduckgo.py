@@ -5,7 +5,9 @@ import pytest
 from omlish import lang
 from omlish.testing import pytest as ptu
 
+from ...search import SearchService
 from ..duckduckgo import DuckduckgoSearchService
+from ..manifests import new_backend
 
 
 if ta.TYPE_CHECKING:
@@ -25,3 +27,9 @@ def test_search():
 
     print(res)
     assert res
+
+
+@ptu.skip.if_cant_import('duckduckgo_search')
+def test_manifest():
+    svc = new_backend(SearchService, 'ddg')  # type: ignore[type-abstract]
+    assert isinstance(svc, DuckduckgoSearchService)

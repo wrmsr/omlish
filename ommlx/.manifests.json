@@ -30,6 +30,23 @@
     }
   },
   {
+    "module": ".minichain.backends.duckduckgo",
+    "attr": null,
+    "file": "ommlx/minichain/backends/duckduckgo.py",
+    "line": 18,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.duckduckgo",
+        "attr_name": "DuckduckgoSearchService",
+        "name": "duckduckgo",
+        "aliases": [
+          "ddg"
+        ],
+        "type": "SearchService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.google.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/google/chat.py",
@@ -144,7 +161,9 @@
         "mod_name": "ommlx.minichain.backends.sentencetransformers",
         "attr_name": "SentencetransformersEmbeddingModel",
         "name": "sentencetransformers",
-        "aliases": null,
+        "aliases": [
+          "st"
+        ],
         "type": "EmbeddingModel"
       }
     }

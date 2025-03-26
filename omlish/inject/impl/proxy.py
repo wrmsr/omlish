@@ -4,6 +4,9 @@ from ... import check
 from ... import lang
 
 
+##
+
+
 @lang.cached_function
 def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None]]:
     import wrapt  # noqa

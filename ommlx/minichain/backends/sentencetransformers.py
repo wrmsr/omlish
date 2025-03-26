@@ -17,6 +17,7 @@ else:
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
 #     name='sentencetransformers',
+#     aliases=['st'],
 #     type='EmbeddingModel',
 # )
 class SentencetransformersEmbeddingModel(EmbeddingModel):

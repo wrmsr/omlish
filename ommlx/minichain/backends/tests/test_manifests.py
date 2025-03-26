@@ -14,3 +14,12 @@ def test_new_backend_openai(harness):
 
     resp = llm(UserMessage('what is 2 + 2?'))
     print(resp)
+
+
+# def test_new_backend_openai2(harness):
+#     llm = backend_of[ChatModel].new(
+#         'openai',
+#         api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal(),
+#     )
+#
+#     assert isinstance(llm, ChatModel)

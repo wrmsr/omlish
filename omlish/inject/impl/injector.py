@@ -45,6 +45,9 @@ from .scopes import make_scope_impl
 log = logging.getLogger(__name__)
 
 
+##
+
+
 DEFAULT_SCOPES: list[Scope] = [
     Unscoped(),
     Singleton(),

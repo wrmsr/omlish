@@ -6,6 +6,9 @@ from .. import lang
 from .impl.origins import HasOriginsImpl
 
 
+##
+
+
 class Element(HasOriginsImpl, lang.Abstract, lang.PackageSealed):
     """Note: inheritors must be dataclasses."""
 
@@ -29,7 +32,7 @@ class Elements(lang.Final):
                 yield from c
 
 
-Elemental = ta.Union[  # noqa
+Elemental: ta.TypeAlias = ta.Union[  # noqa
     Element,
     Elements,
     ElementGenerator,

@@ -69,6 +69,7 @@ class MapProvider(Provider):
 class SetBinder(ElementGenerator, ta.Generic[T]):
     def __init__(self, *, tag: ta.Any = None) -> None:
         super().__init__()
+
         self._tag: ta.Any = tag
         self._sbs: list[SetBinding] = []
 
@@ -96,6 +97,7 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
 class MapBinder(ElementGenerator, ta.Generic[K, V]):
     def __init__(self, *, tag: ta.Any = None) -> None:
         super().__init__()
+
         self._tag: ta.Any = tag
         self._mbs: list[MapBinding] = []
 
