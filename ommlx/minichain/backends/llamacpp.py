@@ -76,7 +76,8 @@ class LlamacppChatModel(ChatModel):
         ToolExecResultMessage: 'tool',
     }
 
-    def _get_msg_content(self, m: Message) -> str | None:
+    @classmethod
+    def _get_msg_content(cls, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
 
