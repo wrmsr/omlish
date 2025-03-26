@@ -8,6 +8,7 @@ from ..generative import Generative
 from ..models import Model
 from ..models import ModelRequest
 from ..models import ModelResponse
+from ..models import StreamModel
 from .messages import AiMessage
 from .messages import Chat
 from .messages import Message
@@ -76,6 +77,20 @@ class ChatResponse(ModelResponse[ChatOutput], lang.Final):
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class ChatModel(  # noqa
     Model[
+        ChatRequest,
+        ChatOptions,
+        ChatNew,
+        ChatResponse,
+    ],
+    Generative,
+    lang.Abstract,
+):
+    pass
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
+class ChatStreamModel(  # noqa
+    StreamModel[
         ChatRequest,
         ChatOptions,
         ChatNew,

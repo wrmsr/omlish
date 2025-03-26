@@ -202,7 +202,7 @@ class ManifestBuilder:
         if not origins:
             raise Exception('no manifests found')
 
-        if (dups := [k for k, v in collections.Counter(o.attr for o in origins).items() if v > 1]):
+        if (dups := [k for k, v in collections.Counter(o.attr for o in origins if o.attr is not None).items() if v > 1]):  # noqa
             raise Exception(f'Duplicate attrs: {dups}')
 
         subproc_src = '\n\n'.join([

@@ -196,10 +196,22 @@
     }
   },
   {
+    "module": ".minichain.chat.models",
+    "attr": null,
+    "file": "ommlx/minichain/chat/models.py",
+    "line": 91,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.chat.models",
+        "attr_name": "ChatStreamModel"
+      }
+    }
+  },
+  {
     "module": ".minichain.prompts",
     "attr": null,
     "file": "ommlx/minichain/prompts.py",
-    "line": 45,
+    "line": 44,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.prompts",
@@ -211,7 +223,7 @@
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlx/minichain/search.py",
-    "line": 60,
+    "line": 59,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.search",

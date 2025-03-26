@@ -37,6 +37,7 @@ from .chat.models import (  # noqa
     ChatOutput,
     ChatRequest,
     ChatResponse,
+    ChatStreamModel,
 )
 
 from .chat.options import (  # noqa
@@ -83,6 +84,8 @@ from .models import (  # noqa
     ModelRequest,
     ModelOption,
     ModelResponse,
+
+    StreamModel,
 )
 
 from .options import (  # noqa
@@ -108,6 +111,11 @@ from .services import (  # noqa
     ServiceOption,
     ServiceRequest,
     ServiceResponse,
+)
+
+from .streams import (  # noqa
+    StreamService,
+    StreamServiceResponse,
 )
 
 from .vectors.embeddings import (  # noqa
