@@ -1,3 +1,4 @@
+import abc
 import contextlib
 import typing as ta
 
@@ -21,7 +22,22 @@ else:
     lcu = lang.proxy_import('....llamacpp', __package__)
 
 
+T = ta.TypeVar('T')
+
+
 ##
+
+
+class StreamServiceResponse(ta.Iterator[T]):
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return None
+
+    @abc.abstractmethod
+    def __next__(self) -> T:
+        raise NotImplementedError
 
 
 def _main() -> None:
@@ -48,10 +64,12 @@ def _main() -> None:
                 for m in request.v
             ],
             max_tokens=1024,
+            stream=True,
             # stop=['\n'],
         )
 
-        print(output)
+        for chunk in output:
+            print(chunk)
 
         # return ChatResponse(v=[
         #     AiChoice(AiMessage(c['message']['content']))  # noqa

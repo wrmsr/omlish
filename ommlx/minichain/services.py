@@ -29,7 +29,14 @@ class ServiceOption(Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ServiceRequest(lang.Abstract, ta.Generic[T, ServiceOptionT, ServiceNewT]):
+class ServiceRequest(
+    lang.Abstract,
+    ta.Generic[
+        T,
+        ServiceOptionT,
+        ServiceNewT,
+    ],
+):
     v: T
 
     options: Options[ServiceOptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
@@ -53,7 +60,15 @@ class ServiceResponse(lang.Abstract, ta.Generic[T]):
     v: T
 
 
-class Service(lang.Abstract, ta.Generic[ServiceRequestT, ServiceOptionT, ServiceNewT, ServiceResponseT]):
+class Service(
+    lang.Abstract,
+    ta.Generic[
+        ServiceRequestT,
+        ServiceOptionT,
+        ServiceNewT,
+        ServiceResponseT,
+    ],
+):
     # Not ClassVar - wrappers for example vary by instance.
     request_cls: type[ServiceRequest]
     option_cls_set: frozenset[type[Option]]
