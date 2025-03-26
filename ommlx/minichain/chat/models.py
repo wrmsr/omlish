@@ -1,4 +1,3 @@
-import abc
 import collections.abc
 import typing as ta
 
@@ -75,7 +74,7 @@ class ChatResponse(ModelResponse[ChatOutput], lang.Final):
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class ChatModel(
+class ChatModel(  # noqa
     Model[
         ChatRequest,
         ChatOptions,
@@ -85,6 +84,4 @@ class ChatModel(
     Generative,
     lang.Abstract,
 ):
-    @abc.abstractmethod
-    def invoke(self, request: ChatRequest) -> ChatResponse:
-        raise NotImplementedError
+    pass

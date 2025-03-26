@@ -1,4 +1,3 @@
-import abc
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -43,7 +42,7 @@ class PromptResponse(ModelResponse[PromptOutput], lang.Final):
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class PromptModel(
+class PromptModel(  # noqa
     Model[
         PromptRequest,
         PromptOptions,
@@ -53,6 +52,4 @@ class PromptModel(
     Generative,
     lang.Abstract,
 ):
-    @abc.abstractmethod
-    def invoke(self, request: PromptRequest) -> PromptResponse:
-        raise NotImplementedError
+    pass

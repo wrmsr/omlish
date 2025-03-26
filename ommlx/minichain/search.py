@@ -1,4 +1,3 @@
-import abc
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -58,7 +57,7 @@ class SearchResponse(ServiceResponse[SearchOutput], lang.Final):
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class SearchService(
+class SearchService(  # noqa
     Service[
         SearchRequest,
         SearchOptions,
@@ -67,6 +66,4 @@ class SearchService(
     ],
     lang.Abstract,
 ):
-    @abc.abstractmethod
-    def invoke(self, request: SearchRequest) -> SearchResponse:
-        raise NotImplementedError
+    pass

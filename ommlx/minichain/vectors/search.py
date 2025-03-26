@@ -1,4 +1,3 @@
-import abc
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -77,7 +76,7 @@ class VectorSearchResponse(ServiceResponse[VectorSearchOutput], lang.Final):
     pass
 
 
-class VectorSearchService(
+class VectorSearchService(  # noqa
     Service[
         VectorSearchRequest,
         VectorSearchOptions,
@@ -86,6 +85,4 @@ class VectorSearchService(
     ],
     lang.Abstract,
 ):
-    @abc.abstractmethod
-    def invoke(self, request: VectorSearchRequest) -> VectorSearchResponse:
-        raise NotImplementedError
+    pass

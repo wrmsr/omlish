@@ -1,4 +1,3 @@
-import abc
 import contextlib
 import typing as ta
 
@@ -26,18 +25,6 @@ T = ta.TypeVar('T')
 
 
 ##
-
-
-class StreamServiceResponse(ta.Iterator[T]):
-    def __enter__(self) -> ta.Self:
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return None
-
-    @abc.abstractmethod
-    def __next__(self) -> T:
-        raise NotImplementedError
 
 
 def _main() -> None:

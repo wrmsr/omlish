@@ -1,4 +1,3 @@
-import abc
 import enum
 import typing as ta
 
@@ -10,6 +9,7 @@ from .services import Service
 from .services import ServiceOption
 from .services import ServiceRequest
 from .services import ServiceResponse
+from .streams import StreamService
 
 
 ModelInputT = ta.TypeVar('ModelInputT')
@@ -70,7 +70,7 @@ class ModelResponse(ServiceResponse[ModelOutputT], lang.Abstract):
     reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
-class Model(
+class Model(  # noqa
     Service[
         ModelRequestT,
         ModelOptionT,
@@ -79,6 +79,16 @@ class Model(
     ],
     lang.Abstract,
 ):
-    @abc.abstractmethod
-    def invoke(self, request: ModelRequestT) -> ModelResponseT:
-        raise NotImplementedError
+    pass
+
+
+class StreamModel(  # noqa
+    StreamService[
+        ModelRequestT,
+        ModelOptionT,
+        ModelNewT,
+        ModelResponseT,
+    ],
+    lang.Abstract,
+):
+    pass
