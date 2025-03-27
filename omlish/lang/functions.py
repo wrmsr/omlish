@@ -1,6 +1,7 @@
 import dataclasses as dc
 import functools
 import time
+import types
 import typing as ta
 
 
@@ -239,3 +240,46 @@ def opt_coalesce(*vs: T | None) -> T | None:
 
 def opt_kw(**kwargs: ta.Any) -> dict[str, ta.Any]:
     return {k: v for k, v in kwargs.items() if v is not None}
+
+
+##
+
+
+def new_function(
+        # a code object
+        code: types.CodeType,
+
+        # the globals dictionary
+        globals: dict,  # noqa
+
+        # a string that overrides the name from the code object
+        name: str | None = None,
+
+        # a tuple that specifies the default argument values
+        argdefs: tuple | None = None,
+
+        # a tuple that supplies the bindings for free variables
+        closure: tuple | None = None,
+
+        # # a dictionary that specifies the default keyword argument values
+        # kwdefaults: dict | None = None,
+) -> types.FunctionType:
+    return types.FunctionType(
+        code=code,
+        globals=globals,
+        name=name,
+        argdefs=argdefs,
+        closure=closure,
+        # kwdefaults=kwdefaults,
+    )
+
+
+def new_function_kwargs(f: types.FunctionType) -> dict[str, ta.Any]:
+    return dict(
+        code=f.__code__,
+        globals=f.__globals__,  # noqa
+        name=f.__name__,
+        argdefs=f.__defaults__,
+        closure=f.__closure__,
+        # kwdefaults=f.__kwdefaults__,
+    )
