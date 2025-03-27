@@ -122,6 +122,7 @@ def build_mro_owner_dict(
         owner_cls: type | None = None,
         *,
         bottom_up_key_order: bool = False,
+        sort_keys: bool = False,
 ) -> ta.Mapping[str, tuple[type, ta.Any]]:
     if owner_cls is None:
         owner_cls = instance_cls
@@ -143,6 +144,9 @@ def build_mro_owner_dict(
         for cur_cls in mro[:pos + 1]:
             dct.update({k: (cur_cls, v) for k, v in cur_cls.__dict__.items()})
 
+    if sort_keys:
+        dct = dict(sorted(dct.items(), key=lambda t: t[0]))
+
     return dct
 
 
@@ -151,6 +155,7 @@ def build_mro_dict(
         owner_cls: type | None = None,
         *,
         bottom_up_key_order: bool = False,
+        sort_keys: bool = False,
 ) -> ta.Mapping[str, ta.Any]:
     return {
         k: v
@@ -158,6 +163,7 @@ def build_mro_dict(
             instance_cls,
             owner_cls,
             bottom_up_key_order=bottom_up_key_order,
+            sort_keys=sort_keys,
         ).items()
     }
 
