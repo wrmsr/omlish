@@ -57,6 +57,11 @@ from .identity import (  # noqa
     IdentityWeakSet,
 )
 
+if _ta.TYPE_CHECKING:
+    from . import kv
+else:
+    kv = _lang.proxy_import('.kv', __package__)
+
 from .mappings import (  # noqa
     MissingDict,
     TypeMap,

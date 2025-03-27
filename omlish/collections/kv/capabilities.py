@@ -1,7 +1,6 @@
 import abc
 
-from omlish import lang
-
+from ... import lang
 from .base import Kv
 from .wrappers import underlying_of
 

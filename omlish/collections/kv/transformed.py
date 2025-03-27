@@ -1,7 +1,6 @@
 import typing as ta
 
-from omlish import check
-
+from ... import check
 from .base import Kv
 from .wrappers import WrapperKv
 

@@ -4,7 +4,7 @@ from ..transformed import KeyTransformedKv
 from ..wrappers import underlying
 
 
-def test_kvs():
+def test_kv():
     d = {i: i for i in range(20)}
     kv0 = MappingKv(d)
     assert kv0[1] == 1

@@ -1,8 +1,7 @@
 import abc
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .base import Kv
 
 
