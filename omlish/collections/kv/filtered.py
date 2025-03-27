@@ -2,7 +2,9 @@ import typing as ta
 
 from ... import lang
 from .base import Kv
+from .base import MutableKv
 from .wrappers import SimpleWrapperKv
+from .wrappers import SimpleWrapperMutableKv
 
 
 K = ta.TypeVar('K')
@@ -33,6 +35,25 @@ class KeyFilteredKv(SimpleWrapperKv[K, V]):
     def items(self) -> ta.Iterator[tuple[K, V]]:
         fn = self._fn
         return filter(lambda t: fn(t[0]), self._u.items())
+
+
+class KeyFilteredMutableKv(KeyFilteredKv[K, V], SimpleWrapperMutableKv[K, V]):
+    def __init__(
+            self,
+            u: MutableKv[K, V],
+            fn: ta.Callable[[K], bool],
+    ) -> None:
+        super().__init__(u, fn)
+
+    def __setitem__(self, k: K, v: V) -> None:
+        if not self._fn(k):
+            raise KeyError(k)
+        self._u[k] = v
+
+    def __delitem__(self, k: K) -> None:
+        if not self._fn(k):
+            raise KeyError(k)
+        del self._u[k]
 
 
 #

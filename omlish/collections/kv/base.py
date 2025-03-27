@@ -51,3 +51,13 @@ class Kv(lang.Abstract, ta.Generic[K, V]):
     @abc.abstractmethod
     def items(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
+
+
+class MutableKv(Kv[K, V], lang.Abstract):  # noqa
+    @abc.abstractmethod
+    def __setitem__(self, k: K, v: V) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __delitem__(self, k: K) -> None:
+        raise NotImplementedError

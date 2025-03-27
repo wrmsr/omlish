@@ -1,5 +1,6 @@
 from .base import (  # noqa
     Kv,
+    MutableKv,
 )
 
 from .capabilities import (  # noqa
@@ -9,24 +10,34 @@ from .capabilities import (  # noqa
 
 from .filtered import (  # noqa
     KeyFilteredKv,
+    KeyFilteredMutableKv,
+
     ValueFilteredKv,
 )
 
 from .mappings import (  # noqa
     MappingKv,
+    MappingMutableKv,
+
     KvMapping,
+    KvMutableMapping,
 )
 
 from .transformed import (  # noqa
     KeyTransformedKv,
+
     ValueTransformedKv,
 )
 
 from .wrappers import (  # noqa
     WrapperKv,
 
-    SimpleWrapperKv,
-
     underlying,
     underlying_of,
+
+    SimpleWrapperKv,
+    SimpleWrapperMutableKv,
+
+    UnmodifiableError,
+    UnmodifiableKv,
 )
