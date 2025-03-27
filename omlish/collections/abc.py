@@ -1,5 +1,6 @@
 # ruff: noqa: ANN204
 
+
 class Hashable:
     def __hash__(self): ...
 
@@ -153,6 +154,29 @@ class MutableMapping(Mapping):
     def update(self, other=(), **kwds): ...
 
     def setdefault(self, key, default=None): ...
+
+
+# endregion
+
+
+# region Views
+
+
+class MappingView(Sized):
+    @property
+    def _mapping(self): ...  # noqa
+
+
+class KeysView(MappingView, Set):
+    pass
+
+
+class ValuesView(MappingView, Collection):
+    pass
+
+
+class ItemsView(MappingView, Set):
+    pass
 
 
 # endregion
