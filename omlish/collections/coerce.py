@@ -12,7 +12,8 @@ K2 = ta.TypeVar('K2')
 V = ta.TypeVar('V')
 V2 = ta.TypeVar('V2')
 
-_map = map
+
+##
 
 
 def _unpack_fn(fn):

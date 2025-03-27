@@ -21,7 +21,11 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
-Comparer = ta.Callable[[T, T], int]
+
+Comparer: ta.TypeAlias = ta.Callable[[T, T], int]
+
+
+##
 
 
 class TreapNode(ta.Generic[T]):

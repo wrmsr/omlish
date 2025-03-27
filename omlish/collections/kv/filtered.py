@@ -56,7 +56,11 @@ class KeyFilteredMutableKv(KeyFilteredKv[K, V], SimpleWrapperMutableKv[K, V]):
         del self._u[k]
 
 
-#
+##
+
+
+class ValueFilteredKeyError(KeyError):
+    pass
 
 
 class ValueFilteredKv(SimpleWrapperKv[K, V]):
@@ -72,7 +76,7 @@ class ValueFilteredKv(SimpleWrapperKv[K, V]):
     def __getitem__(self, k: K, /) -> V:
         v = self._u[k]
         if not self._fn(v):
-            raise KeyError(k)
+            raise ValueFilteredKeyError(k)
         return v
 
     def __len__(self) -> int:
@@ -80,4 +84,18 @@ class ValueFilteredKv(SimpleWrapperKv[K, V]):
 
     def items(self) -> ta.Iterator[tuple[K, V]]:
         fn = self._fn
-        return filter(lambda t: fn(t[1]), self._u.items())
+        return ((k, v) for k, v in self._u.items() if fn(v))
+
+
+class ValueFilteredMutableKv(ValueFilteredKv[K, V], SimpleWrapperMutableKv[K, V]):
+    def __init__(
+            self,
+            u: MutableKv[K, V],
+            fn: ta.Callable[[V], bool],
+    ) -> None:
+        super().__init__(u, fn)
+
+    def __setitem__(self, k: K, v: V) -> None:
+        if not self._fn(v):
+            raise ValueFilteredKeyError(k)
+        self._u[k] = v

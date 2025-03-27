@@ -7,6 +7,9 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
+##
+
+
 def multikey_dict(dct: ta.Mapping[ta.Iterable[K] | K, V], *, deep: bool = False) -> dict[K, V]:
     ret = {}
     for k, v in dct.items():

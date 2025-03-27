@@ -12,7 +12,9 @@ from .filtered import (  # noqa
     KeyFilteredKv,
     KeyFilteredMutableKv,
 
+    ValueFilteredKeyError,
     ValueFilteredKv,
+    ValueFilteredMutableKv,
 )
 
 from .mappings import (  # noqa
@@ -25,8 +27,10 @@ from .mappings import (  # noqa
 
 from .transformed import (  # noqa
     KeyTransformedKv,
+    KeyTransformedMutableKey,
 
     ValueTransformedKv,
+    ValueTransformedMutableKv,
 )
 
 from .wrappers import (  # noqa

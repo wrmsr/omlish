@@ -1,9 +1,9 @@
 """
 TODO:
- - MutableKv
  - OpKv
- - Table ala guava - (row key, column key) keys, sparse storage
- - Router
+ - table ala guava - (row key, column key) keys, sparse storage
+ - router
+ - value thunker idiom - for key-iterable-only storage, transform Kv[K, V], to Kv[K, ta.Callable[[], V]]
  - zict classes
   - AsyncBuffer
   - Buffer
@@ -35,6 +35,7 @@ class Kv(lang.Abstract, ta.Generic[K, V]):
     def __enter__(self) -> ta.Self:
         return self
 
+    @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
