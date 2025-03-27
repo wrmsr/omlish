@@ -33,10 +33,10 @@ class MappingMutableKv(MappingKv[K, V], MutableKv[K, V]):
 
     _m: ta.MutableMapping[K, V]
 
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         self._m[k] = v
 
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         del self._m[k]
 
 

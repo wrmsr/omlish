@@ -77,10 +77,10 @@ class SimpleWrapperMutableKv(SimpleWrapperKv[K, V], MutableKv[K, V]):
 
     _u: MutableKv[K, V]
 
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         self._u[k] = v
 
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         del self._u[k]
 
 
@@ -92,8 +92,8 @@ class UnmodifiableError(Exception):
 
 
 class UnmodifiableKv(SimpleWrapperKv[K, V], MutableKv[K, V]):
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         raise UnmodifiableError
 
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         raise UnmodifiableError

@@ -1,5 +1,8 @@
 """
 TODO:
+ - further decomp?
+  - Sized + Iterable?
+  - COM-style QueryInterface? :|
  - OpKv
  - table ala guava - (row key, column key) keys, sparse storage
  - router
@@ -44,9 +47,9 @@ class Kv(lang.Abstract, ta.Generic[K, V]):
 
 class MutableKv(Kv[K, V], lang.Abstract):  # noqa
     @abc.abstractmethod
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         raise NotImplementedError

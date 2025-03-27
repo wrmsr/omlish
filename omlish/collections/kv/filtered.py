@@ -45,12 +45,12 @@ class KeyFilteredMutableKv(KeyFilteredKv[K, V], SimpleWrapperMutableKv[K, V]):
     ) -> None:
         super().__init__(u, fn)
 
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         if not self._fn(k):
             raise KeyError(k)
         self._u[k] = v
 
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         if not self._fn(k):
             raise KeyError(k)
         del self._u[k]
@@ -95,7 +95,7 @@ class ValueFilteredMutableKv(ValueFilteredKv[K, V], SimpleWrapperMutableKv[K, V]
     ) -> None:
         super().__init__(u, fn)
 
-    def __setitem__(self, k: K, v: V) -> None:
+    def __setitem__(self, k: K, v: V, /) -> None:
         if not self._fn(v):
             raise ValueFilteredKeyError(k)
         self._u[k] = v

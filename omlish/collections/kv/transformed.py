@@ -63,11 +63,11 @@ class KeyTransformedMutableKey(KeyTransformedKv[KT, KF, V], MutableKv[KT, V], ta
 
     _u: MutableKv[KF, V]
 
-    def __setitem__(self, k: KT, v: V) -> None:
+    def __setitem__(self, k: KT, v: V, /) -> None:
         fn = check.not_none(self._t_to_f)
         self._u[fn(k)] = v
 
-    def __delitem__(self, k: KT) -> None:
+    def __delitem__(self, k: KT, /) -> None:
         fn = check.not_none(self._t_to_f)
         del self._u[fn(k)]
 
@@ -115,9 +115,9 @@ class ValueTransformedMutableKv(ValueTransformedKv[K, VT, VF], MutableKv[K, VT],
 
     _u: MutableKv[K, VF]
 
-    def __setitem__(self, k: K, v: VT) -> None:
+    def __setitem__(self, k: K, v: VT, /) -> None:
         fn = check.not_none(self._t_to_f)
         self._u[k] = fn(v)
 
-    def __delitem__(self, k: K) -> None:
+    def __delitem__(self, k: K, /) -> None:
         del self._u[k]
