@@ -147,6 +147,7 @@ from .functions import (  # noqa
     raise_,
     raising,
     recurse,
+    strict_constant,
     try_,
     void,
 )

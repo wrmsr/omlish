@@ -92,14 +92,27 @@ def opt_fn(fn: ta.Callable[[F], T]) -> ta.Callable[[F | None], T | None]:
     return inner
 
 
-class constant(ta.Generic[T]):  # noqa
+##
+
+
+class _constant(ta.Generic[T]):  # noqa
     def __init__(self, obj: T) -> None:
         super().__init__()
 
         self._obj = obj
 
+
+class constant(_constant[T]):  # noqa
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return self._obj
+
+
+class strict_constant(_constant[T]):  # noqa
     def __call__(self) -> T:
         return self._obj
+
+
+##
 
 
 def is_none(o: ta.Any) -> bool:
