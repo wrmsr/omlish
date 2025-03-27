@@ -33,7 +33,7 @@ all = [
     'cffi ~= 1.17',
     'docutils ~= 0.21',
     'markdown ~= 3.7',
-    'mypy ~= 1.11',
+    'mypy ~= 1.15',
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
@@ -52,7 +52,7 @@ doc = [
     'markdown ~= 3.7',
 ]
 mypy = [
-    'mypy ~= 1.11',
+    'mypy ~= 1.15',
 ]
 prof = [
     'gprof2dot ~= 2024.6',

@@ -40,6 +40,7 @@ def _main() -> None:
             opt_dist = dist_dct[opt_cn]
             opt_ver = opt_dist.version
 
+            print((opt_dep, opt_spec, opt_ver))
             if not opt_spec.contains(opt_ver):
                 print(f'{pkg} :: {opt_cn} : {opt_spec} ! {opt_ver}')
 

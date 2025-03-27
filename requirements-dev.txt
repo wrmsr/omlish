@@ -104,20 +104,20 @@ huggingface-hub==0.29.3
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==3.4.1; python_version < "3.13"  # !! includes arrow and pandas and shit
+datasets==3.5.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 sentence-transformers==4.0.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"
-transformers==4.50.1; python_version < "3.13"
+transformers==4.50.2; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.6
 
-duckduckgo_search==7.5.4  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==7.5.5  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.37.20
+boto3>=1.37.21
 
 mlx==0.24.1; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.2; sys_platform == "darwin"  # @omlish-venv !13t

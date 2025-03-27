@@ -29,17 +29,17 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'mlx-lm ~= 0.22; sys_platform == "darwin"',
-    'sentence-transformers ~= 3.4',
+    'sentence-transformers ~= 4.0',
     'transformers ~= 4.50',
     'huggingface-hub ~= 0.27',
-    'datasets ~= 3.1',
+    'datasets ~= 3.5',
     'llama-cpp-python ~= 0.3',
-    'numpy >= 1.20',
+    'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
-    'pillow ~= 11.0',
-    'duckduckgo-search ~= 7.3',
-    'tinygrad ~= 0.9',
+    'pillow ~= 11.1',
+    'duckduckgo-search ~= 7.5',
+    'tinygrad ~= 0.10',
     'torch ~= 2.6',
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
@@ -47,31 +47,31 @@ all = [
 ]
 backends = [
     'mlx-lm ~= 0.22; sys_platform == "darwin"',
-    'sentence-transformers ~= 3.4',
+    'sentence-transformers ~= 4.0',
     'transformers ~= 4.50',
 ]
 huggingface = [
     'huggingface-hub ~= 0.27',
-    'datasets ~= 3.1',
+    'datasets ~= 3.5',
 ]
 llamacpp = [
     'llama-cpp-python ~= 0.3',
 ]
 numpy = [
-    'numpy >= 1.20',
+    'numpy >= 1.26',
 ]
 ocr = [
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
 ]
 pillow = [
-    'pillow ~= 11.0',
+    'pillow ~= 11.1',
 ]
 search = [
-    'duckduckgo-search ~= 7.3',
+    'duckduckgo-search ~= 7.5',
 ]
 tinygrad = [
-    'tinygrad ~= 0.9',
+    'tinygrad ~= 0.10',
 ]
 torch = [
     'torch ~= 2.6',

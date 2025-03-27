@@ -99,15 +99,15 @@ class Project(ProjectBase):
             'aiosqlite ~= 0.21',
             'asyncpg ~= 0.30',
 
-            'apsw ~= 3.47',
+            'apsw ~= 3.49',
 
-            'sqlean.py ~= 3.45',
+            'sqlean.py ~= 3.47',
 
             'duckdb ~= 1.2',
         ],
 
         'testing': [
-            'pytest ~= 8.0',
+            'pytest ~= 8.3',
         ],
     }
 

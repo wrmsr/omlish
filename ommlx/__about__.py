@@ -16,14 +16,14 @@ class Project(ProjectBase):
         'backends': [
             'mlx-lm ~= 0.22; sys_platform == "darwin"',
 
-            'sentence-transformers ~= 3.4',
+            'sentence-transformers ~= 4.0',
 
             'transformers ~= 4.50',
         ],
 
         'huggingface': [
             'huggingface-hub ~= 0.27',
-            'datasets ~= 3.1',
+            'datasets ~= 3.5',
         ],
 
         'llamacpp': [
@@ -31,7 +31,7 @@ class Project(ProjectBase):
         ],
 
         'numpy': [
-            'numpy >= 1.20',
+            'numpy >= 1.26',
         ],
 
         'ocr': [
@@ -41,16 +41,16 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 11.0',
+            'pillow ~= 11.1',
         ],
 
         'search': [
-            'duckduckgo-search ~= 7.3',
+            'duckduckgo-search ~= 7.5',
         ],
 
         'tinygrad': [
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
-            'tinygrad ~= 0.9',
+            'tinygrad ~= 0.10',
         ],
 
         'torch': [

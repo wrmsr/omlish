@@ -14,7 +14,7 @@ class Project(ProjectBase):
     optional_dependencies = {
         'server': [
             'h11 ~= 0.14',
-            'h2 ~= 4.1',
+            'h2 ~= 4.2',
             'priority ~= 2.0',
             'wsproto ~= 1.2',
         ],
