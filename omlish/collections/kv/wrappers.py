@@ -20,10 +20,6 @@ class WrapperKv(Kv[K, V], lang.Abstract):
     def underlying(self) -> ta.Iterable[Kv]:
         raise NotImplementedError
 
-    def close(self) -> None:
-        for u in self.underlying():
-            u.close()
-
 
 ##
 
@@ -35,8 +31,6 @@ def underlying(
         filter: ta.Callable[[Kv], bool] | None = None,  # noqa
 ) -> ta.Iterator[Kv]:
     def rec(c):
-        if c is not root and filter is not None and not filter(c):
-            return
         if isinstance(c, WrapperKv):
             if not leaves_only:
                 yield c
@@ -45,7 +39,10 @@ def underlying(
         else:
             yield c
 
-    yield from rec(root)
+    for u in rec(root):
+        if filter is not None and not filter(u):
+            continue
+        yield u
 
 
 def underlying_of(root: Kv, cls: type[T]) -> ta.Iterator[T]:

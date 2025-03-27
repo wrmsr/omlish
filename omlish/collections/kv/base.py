@@ -29,18 +29,6 @@ V = ta.TypeVar('V')
 
 
 class Kv(lang.Abstract, ta.Generic[K, V]):
-    def close(self) -> None:
-        pass
-
-    def __enter__(self) -> ta.Self:
-        return self
-
-    @ta.final
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    #
-
     @abc.abstractmethod
     def __getitem__(self, k: K, /) -> V:
         raise NotImplementedError

@@ -4,6 +4,10 @@ from .base import (  # noqa
 )
 
 from .capabilities import (  # noqa
+    Closeable,
+    close,
+    closing,
+
     Flushable,
     flush,
 )

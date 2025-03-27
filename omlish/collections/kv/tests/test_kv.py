@@ -1,10 +1,15 @@
+import typing as ta
+
 import pytest
 
 from ..base import Kv
+from ..capabilities import Closeable
+from ..capabilities import closing
 from ..filtered import KeyFilteredMutableKv
 from ..mappings import MappingKv
 from ..mappings import MappingMutableKv
 from ..transformed import KeyTransformedKv
+from ..transformed import ValueTransformedKv
 from ..wrappers import underlying
 
 
@@ -32,3 +37,46 @@ def test_filtered():
     del kv1[2]
     with pytest.raises(KeyError):
         kv1[2]  # noqa
+
+
+class DummyCloseableKv(Kv[int, int], Closeable):
+    closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+    def __getitem__(self, k: int, /) -> int:
+        if k == 0:
+            return 1
+        raise KeyError(k)
+
+    def __len__(self) -> int:
+        return 1
+
+    def items(self) -> ta.Iterator[tuple[int, int]]:
+        return iter([(0, 1)])
+
+
+def test_closing():
+    with closing(DummyCloseableKv()) as kv0:
+        assert kv0[0] == 1
+        assert not kv0.closed
+    assert kv0.closed
+
+
+def test_closing_wrapped():
+    kv0 = DummyCloseableKv()
+    kv1: Kv[int, int] = KeyTransformedKv(kv0, t_to_f=lambda k: k - 1)
+    with closing(kv1):
+        assert kv1[1] == 1
+        assert not kv0.closed
+    assert kv0.closed
+
+
+def test_closing_wrapped2():
+    kv0 = DummyCloseableKv()
+    kv1: Kv[int, int] = KeyTransformedKv(kv0, t_to_f=lambda k: k - 1)
+    with closing(ValueTransformedKv(kv1, f_to_t=lambda v: v + 1)) as kv2:
+        assert kv2[1] == 2
+        assert not kv0.closed
+    assert kv0.closed
