@@ -147,7 +147,7 @@ class InitBuilder:
             body_lines.append(f'if not {cn}({cas}): __dataclass_raise_validation_error__({self._self_name}, {cn})')
 
         inits = self._info.merged_metadata.get(Init, [])
-        mro_dct = lang.build_mro_dict(self._info.cls)
+        mro_dct = lang.mro_dict(self._info.cls)
         mro_v_ids = set(map(id, mro_dct.values()))
         props_by_fget_id = {id(v.fget): v for v in mro_dct.values() if isinstance(v, property) and v.fget is not None}
         for i, obj in enumerate(inits):

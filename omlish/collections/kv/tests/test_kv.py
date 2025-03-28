@@ -18,7 +18,7 @@ def test_transformed():
     kv0 = MappingKv(d)
     assert kv0[1] == 1
 
-    kv1: Kv[int, int] = KeyTransformedKv(kv0, t_to_f=lambda i: i * 2)
+    kv1: Kv[int, int] = KeyTransformedKv(kv0, a_to_b=lambda i: i * 2)
     assert kv1[1] == 2
     print(list(underlying(kv1)))
 
@@ -66,7 +66,7 @@ def test_closing():
 
 def test_closing_wrapped():
     kv0 = DummyCloseableKv()
-    kv1: Kv[int, int] = KeyTransformedKv(kv0, t_to_f=lambda k: k - 1)
+    kv1: Kv[int, int] = KeyTransformedKv(kv0, a_to_b=lambda k: k - 1)
     with closing(kv1):
         assert kv1[1] == 1
         assert not kv0.closed
@@ -75,8 +75,8 @@ def test_closing_wrapped():
 
 def test_closing_wrapped2():
     kv0 = DummyCloseableKv()
-    kv1: Kv[int, int] = KeyTransformedKv(kv0, t_to_f=lambda k: k - 1)
-    with closing(ValueTransformedKv(kv1, f_to_t=lambda v: v + 1)) as kv2:
+    kv1: Kv[int, int] = KeyTransformedKv(kv0, a_to_b=lambda k: k - 1)
+    with closing(ValueTransformedKv(kv1, b_to_a=lambda v: v + 1)) as kv2:
         assert kv2[1] == 2
         assert not kv0.closed
     assert kv0.closed

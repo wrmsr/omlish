@@ -117,7 +117,7 @@ def deep_subclasses(
         todo.extend(reversed(cur.__subclasses__()))
 
 
-def build_mro_owner_dict(
+def mro_owner_dict(
         instance_cls: type,
         owner_cls: type | None = None,
         *,
@@ -150,7 +150,7 @@ def build_mro_owner_dict(
     return dct
 
 
-def build_mro_dict(
+def mro_dict(
         instance_cls: type,
         owner_cls: type | None = None,
         *,
@@ -159,7 +159,7 @@ def build_mro_dict(
 ) -> ta.Mapping[str, ta.Any]:
     return {
         k: v
-        for k, (o, v) in build_mro_owner_dict(
+        for k, (o, v) in mro_owner_dict(
             instance_cls,
             owner_cls,
             bottom_up_key_order=bottom_up_key_order,

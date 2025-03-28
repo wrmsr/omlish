@@ -78,7 +78,7 @@ class Method:
     def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
-        mro_dct = lang.build_mro_dict(instance_cls, owner_cls)
+        mro_dct = lang.mro_dict(instance_cls, owner_cls)
         seen: ta.Mapping[ta.Any, str] = {}
         for nam, att in mro_dct.items():
             try:

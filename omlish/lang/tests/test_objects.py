@@ -1,6 +1,6 @@
 from ...testing import assert_dicts_equal_ordered
 from ..objects import SimpleProxy
-from ..objects import build_mro_dict
+from ..objects import mro_dict
 
 
 def test_simple_proxy():
@@ -38,7 +38,7 @@ def test_mro_dict():
         f = 0
 
     def md(i, o=None, *, bu=False):
-        return {k: v for k, v in build_mro_dict(i, o, bottom_up_key_order=bu).items() if not k.startswith('_')}
+        return {k: v for k, v in mro_dict(i, o, bottom_up_key_order=bu).items() if not k.startswith('_')}
 
     assert_dicts_equal_ordered(md(E), {'e': 0, 'd': 0, 'x': 'D', 'c': 0, 'a': 0, 'b': 0})
     assert_dicts_equal_ordered(md(E, bu=True), {'b': 0, 'a': 0, 'c': 0, 'x': 'D', 'd': 0, 'e': 0})
@@ -79,7 +79,7 @@ def test_test_mro_dict2():
         z = 'D.z'
 
     def md(i, o=None, *, bu=False):
-        return {k: v for k, v in build_mro_dict(i, o, bottom_up_key_order=bu).items() if not k.startswith('_')}
+        return {k: v for k, v in mro_dict(i, o, bottom_up_key_order=bu).items() if not k.startswith('_')}
 
     assert_dicts_equal_ordered(md(D, D), {'x': 'D.x', 'y': 'D.y', 'z': 'D.z'})
     assert_dicts_equal_ordered(md(D, C), {'y': 'C.y', 'z': 'C.z', 'x': 'A.x'})

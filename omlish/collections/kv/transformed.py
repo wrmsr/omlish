@@ -9,114 +9,117 @@ from .wrappers import WrapperKv
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
-KF = ta.TypeVar('KF')
-KT = ta.TypeVar('KT')
-VF = ta.TypeVar('VF')
-VT = ta.TypeVar('VT')
+# 'Above' the wrapper
+KA = ta.TypeVar('KA')
+VA = ta.TypeVar('VA')
+
+# 'Below' the wrapper
+KB = ta.TypeVar('KB')
+VB = ta.TypeVar('VB')
 
 
 ##
 
 
-class KeyTransformedKv(WrapperKv[KT, V], ta.Generic[KT, KF, V]):
+class KeyTransformedKv(WrapperKv[KA, V], ta.Generic[KA, KB, V]):
     def __init__(
             self,
-            u: Kv[KF, V],
+            u: Kv[KB, V],
             *,
-            t_to_f: ta.Callable[[KT], KF] | None = None,
-            f_to_t: ta.Callable[[KF], KT] | None = None,
+            a_to_b: ta.Callable[[KA], KB] | None = None,
+            b_to_a: ta.Callable[[KB], KA] | None = None,
     ) -> None:
         super().__init__()
 
         self._u = u
-        self._t_to_f = t_to_f
-        self._f_to_t = f_to_t
+        self._a_to_b = a_to_b
+        self._b_to_a = b_to_a
 
     def underlying(self) -> ta.Sequence[Kv]:
         return [self._u]
 
-    def __getitem__(self, k: KT, /) -> V:
-        fn = check.not_none(self._t_to_f)
+    def __getitem__(self, k: KA, /) -> V:
+        fn = check.not_none(self._a_to_b)
         return self._u[fn(k)]
 
     def __len__(self) -> int:
         return len(self._u)
 
-    def items(self) -> ta.Iterator[tuple[KT, V]]:
-        fn = check.not_none(self._f_to_t)
+    def items(self) -> ta.Iterator[tuple[KA, V]]:
+        fn = check.not_none(self._b_to_a)
         return ((fn(k), v) for k, v in self._u.items())
 
 
-class KeyTransformedMutableKey(KeyTransformedKv[KT, KF, V], MutableKv[KT, V], ta.Generic[KT, KF, V]):
+class KeyTransformedMutableKey(KeyTransformedKv[KA, KB, V], MutableKv[KA, V], ta.Generic[KA, KB, V]):
     def __init__(
             self,
-            u: MutableKv[KF, V],
+            u: MutableKv[KB, V],
             *,
-            t_to_f: ta.Callable[[KT], KF] | None = None,
-            f_to_t: ta.Callable[[KF], KT] | None = None,
+            a_to_b: ta.Callable[[KA], KB] | None = None,
+            b_to_a: ta.Callable[[KB], KA] | None = None,
     ) -> None:
         super().__init__(
             u,
-            t_to_f=t_to_f,
-            f_to_t=f_to_t,
+            a_to_b=a_to_b,
+            b_to_a=b_to_a,
         )
 
-    _u: MutableKv[KF, V]
+    _u: MutableKv[KB, V]
 
-    def __setitem__(self, k: KT, v: V, /) -> None:
-        fn = check.not_none(self._t_to_f)
+    def __setitem__(self, k: KA, v: V, /) -> None:
+        fn = check.not_none(self._a_to_b)
         self._u[fn(k)] = v
 
-    def __delitem__(self, k: KT, /) -> None:
-        fn = check.not_none(self._t_to_f)
+    def __delitem__(self, k: KA, /) -> None:
+        fn = check.not_none(self._a_to_b)
         del self._u[fn(k)]
 
 
 ##
 
 
-class ValueTransformedKv(WrapperKv[K, VT], ta.Generic[K, VT, VF]):
+class ValueTransformedKv(WrapperKv[K, VA], ta.Generic[K, VA, VB]):
     def __init__(
             self,
-            u: Kv[K, VF],
-            f_to_t: ta.Callable[[VF], VT] | None = None,
+            u: Kv[K, VB],
+            b_to_a: ta.Callable[[VB], VA] | None = None,
     ) -> None:
         super().__init__()
 
         self._u = u
-        self._f_to_t = f_to_t
+        self._b_to_a = b_to_a
 
     def underlying(self) -> ta.Sequence[Kv]:
         return [self._u]
 
-    def __getitem__(self, k: K, /) -> VT:
-        fn = check.not_none(self._f_to_t)
+    def __getitem__(self, k: K, /) -> VA:
+        fn = check.not_none(self._b_to_a)
         return fn(self._u[k])
 
     def __len__(self) -> int:
         return len(self._u)
 
-    def items(self) -> ta.Iterator[tuple[K, VT]]:
-        fn = check.not_none(self._f_to_t)
+    def items(self) -> ta.Iterator[tuple[K, VA]]:
+        fn = check.not_none(self._b_to_a)
         return ((k, fn(v)) for k, v in self._u.items())
 
 
-class ValueTransformedMutableKv(ValueTransformedKv[K, VT, VF], MutableKv[K, VT], ta.Generic[K, VT, VF]):
+class ValueTransformedMutableKv(ValueTransformedKv[K, VA, VB], MutableKv[K, VA], ta.Generic[K, VA, VB]):
     def __init__(
             self,
-            u: MutableKv[K, VF],
+            u: MutableKv[K, VB],
             *,
-            f_to_t: ta.Callable[[VF], VT] | None = None,
-            t_to_f: ta.Callable[[VT], VF] | None = None,
+            b_to_a: ta.Callable[[VB], VA] | None = None,
+            a_to_b: ta.Callable[[VA], VB] | None = None,
     ) -> None:
-        super().__init__(u, f_to_t)
+        super().__init__(u, b_to_a)
 
-        self._t_to_f = t_to_f
+        self._a_to_b = a_to_b
 
-    _u: MutableKv[K, VF]
+    _u: MutableKv[K, VB]
 
-    def __setitem__(self, k: K, v: VT, /) -> None:
-        fn = check.not_none(self._t_to_f)
+    def __setitem__(self, k: K, v: VA, /) -> None:
+        fn = check.not_none(self._a_to_b)
         self._u[k] = fn(v)
 
     def __delitem__(self, k: K, /) -> None:
