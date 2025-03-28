@@ -1,3 +1,8 @@
+"""
+TODO:
+ - init_subclass should allow piecewise method defs as long as no kv interface is partially implemented. default impls
+   are optional and only apply to the non-2, KA=KB/VA=VB case.
+"""
 import functools
 import typing as ta
 
@@ -159,7 +164,7 @@ def _raise_shrinkwrap_not_implemented_error(self, *args) -> ta.NoReturn:
 _BOUND_SHRINKWRAP_CACHE_ATTR = '__shrinkwrap_kv_bound_cache__'
 
 
-def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]:
+def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv2], iface_mro: KvMro) -> type[Kv]:
     check.issubclass(w_cls, ShrinkwrapKv2)
     check_kv_interface_mro(iface_mro)
 
