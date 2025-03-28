@@ -1,10 +1,17 @@
 import typing as ta
 
+from ..interfaces import Kv
 from ..bases import SizedQueryableKv
+from ..bases import FullKv
 from ..interfaces import IterableKv
 from ..interfaces import SizedKv
+from ..shrinkwraps import ShrinkwrapKv
 from ..shrinkwraps import ShrinkwrapFullKv
 from ..shrinkwraps import shrinkwrap_factory
+
+
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 def test_shrinkwraps():
@@ -23,6 +30,18 @@ def test_shrinkwraps():
 
     if ta.TYPE_CHECKING:
         reveal_type(kv)  # noqa
+
+    #
+
+    def barf0(u: SizedQueryableKv[int, int]) -> None:
+        pass
+
+    barf0(kv)
+
+    # def barf1(u: FullKv[int, int]) -> None:
+    #     pass
+    #
+    # barf1(kv)
 
     #
 

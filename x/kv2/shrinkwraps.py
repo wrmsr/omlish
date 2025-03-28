@@ -23,6 +23,8 @@ from .wrappers import WrapperKv
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+# P = ta.ParamSpec('P')
+
 
 ##
 
@@ -199,8 +201,9 @@ def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]
     return bw_cls
 
 
-def shrinkwrap_factory(w_cls: ta.Callable[..., ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V]:
-    w_cls = check.issubclass(w_cls, ShrinkwrapKv)  # type: ignore[arg-type]
+# def shrinkwrap_factory(w_cls: ta.Callable[P, ShrinkwrapKv[K, V]]) -> KvToKvFunc[P, K, V]:
+def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V]:
+    w_cls = check.issubclass(w_cls, ShrinkwrapKv)
 
     @functools.wraps(w_cls)
     def inner(kv, *args, **kwargs):
