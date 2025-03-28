@@ -143,7 +143,7 @@ def _raise_shrinkwrap_not_implemented_error(self, *args) -> ta.NoReturn:
     raise ShrinkwrapNotImplementedError
 
 
-_BOUND_SHRINKWRAP_CACHE_ATTR = '__bound_shrinkwrap_kv_cache__'
+_BOUND_SHRINKWRAP_CACHE_ATTR = '__shrinkwrap_kv_bound_cache__'
 
 
 def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]:
