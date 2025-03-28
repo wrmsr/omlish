@@ -70,6 +70,8 @@ class KvMutableMapping(KvMapping[K, V], FullKv[K, V], ta.MutableMapping[K, V]):
     def __init__(self, kv: FullKv[K, V]) -> None:
         super().__init__(kv)
 
+    _kv: FullKv[K, V]
+
     def __setitem__(self, key: K, value: V, /) -> None:
         self._kv[key] = value
 
