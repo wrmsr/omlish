@@ -23,6 +23,14 @@ from .wrappers import WrapperKv
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+# 'Above' the wrapper
+KA = ta.TypeVar('KA')
+VA = ta.TypeVar('VA')
+
+# 'Below' the wrapper
+KB = ta.TypeVar('KB')
+VB = ta.TypeVar('VB')
+
 # P = ta.ParamSpec('P')
 
 
@@ -33,8 +41,8 @@ class _BoundShrinkwrapKv:
     pass
 
 
-class ShrinkwrapKv(WrapperKv[K, V]):
-    def __init__(self, u: Kv[K, V]) -> None:
+class ShrinkwrapKv2(WrapperKv[KA, VA], ta.Generic[KA, VA, KB, VB]):
+    def __init__(self, u: Kv[KB, VB]) -> None:
         super().__init__()
 
         self._u = u
@@ -67,8 +75,11 @@ class ShrinkwrapKv(WrapperKv[K, V]):
             )
 
     @ta.final
-    def underlying(self) -> ta.Iterable[Kv[K, V]]:
+    def underlying(self) -> ta.Iterable[Kv[KB, VB]]:
         return [self._u]
+
+
+ShrinkwrapKv: ta.TypeAlias = ShrinkwrapKv2[K, V, K, V]
 
 
 ##
@@ -149,7 +160,7 @@ _BOUND_SHRINKWRAP_CACHE_ATTR = '__shrinkwrap_kv_bound_cache__'
 
 
 def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]:
-    check.issubclass(w_cls, ShrinkwrapKv)
+    check.issubclass(w_cls, ShrinkwrapKv2)
     check_kv_interface_mro(iface_mro)
 
     kv_base_cls = KV_BASES_BY_MRO[iface_mro]
@@ -203,7 +214,7 @@ def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]
 
 # def shrinkwrap_factory(w_cls: ta.Callable[P, ShrinkwrapKv[K, V]]) -> KvToKvFunc[P, K, V]:
 def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V, K, V]:
-    w_cls = check.issubclass(w_cls, ShrinkwrapKv)
+    w_cls = check.issubclass(w_cls, ShrinkwrapKv2)
 
     @functools.wraps(w_cls)
     def inner(kv, *args, **kwargs):
