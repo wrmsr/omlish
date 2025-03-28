@@ -20,9 +20,9 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 KF = ta.TypeVar('KF')
-KT = ta.TypeVar('KT')
-
 VF = ta.TypeVar('VF')
+
+KT = ta.TypeVar('KT')
 VT = ta.TypeVar('VT')
 
 
