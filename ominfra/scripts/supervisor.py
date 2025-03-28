@@ -2,6 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
+# @omlish-generated
 # @omlish-amalg-output ../supervisor/main.py
 # @omlish-git-diff-omit
 # ruff: noqa: N802 UP006 UP007 UP012 UP036

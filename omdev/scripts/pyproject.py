@@ -2,6 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
+# @omlish-generated
 # @omlish-amalg-output ../pyproject/cli.py
 # @omlish-git-diff-omit
 # ruff: noqa: N802 TC003 UP006 UP007 UP036

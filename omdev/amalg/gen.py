@@ -91,6 +91,7 @@ class AmalgGenerator:
             '# noinspection DuplicatedCode\n',
             '# @omlish-lite\n',
             '# @omlish-script\n',
+            '# @omlish-generated\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
             f'# {GIT_DIFF_OMIT_MAGIC}\n',
         ]
