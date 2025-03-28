@@ -130,19 +130,19 @@ class CodeGen:
     def _gen_kv_to_kv_func_section(self) -> Section:
         return CodeGen.Section(
             lines=[
-                # 'class KvToKvFunc(ta.Protocol[P, K, V]):',
-                'class KvToKvFunc(ta.Protocol[K, V]):',
+                # 'class KvToKvFunc(ta.Protocol[P, KF, VF, KT, VT]):',
+                'class KvToKvFunc(ta.Protocol[KF, VF, KT, VT]):',
                 *itertools.chain.from_iterable(
                     [
                         f'    @ta.overload',
                         f'    def __call__(',
                         f'        self,',
-                        f'        kv: {bn}[K, V],',
+                        f'        kv: {bn}[KF, VF],',
                         # f'        *args: P.args,',
                         # f'        **kwargs: P.kwargs,',
                         f'        *args: ta.Any,',
                         f'        **kwargs: ta.Any,',
-                        f'    ) -> {bn}[K, V]: ...',
+                        f'    ) -> {bn}[KT, VT]: ...',
                         f'',
                     ]
                     for bn in [
@@ -183,6 +183,12 @@ class CodeGen:
     _HEADER_TYPE_DEFS: ta.Sequence[str] = [
         "K = ta.TypeVar('K')",
         "V = ta.TypeVar('V')",
+        '',
+        "KF = ta.TypeVar('KF')",
+        "KT = ta.TypeVar('KT')",
+        '',
+        "VF = ta.TypeVar('VF')",
+        "VT = ta.TypeVar('VT')",
         # '',
         # "P = ta.ParamSpec('P')",
     ]

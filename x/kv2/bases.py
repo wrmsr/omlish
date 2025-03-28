@@ -19,6 +19,12 @@ from .interfaces import SizedKv
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+KF = ta.TypeVar('KF')
+KT = ta.TypeVar('KT')
+
+VF = ta.TypeVar('VF')
+VT = ta.TypeVar('VT')
+
 
 ##
 
@@ -197,126 +203,126 @@ KV_BASES_BY_MRO: ta.Mapping[tuple[type[Kv], ...], type[Kv]] = {
 ##
 
 
-class KvToKvFunc(ta.Protocol[K, V]):
+class KvToKvFunc(ta.Protocol[KF, VF, KT, VT]):
     @ta.overload
     def __call__(
         self,
-        kv: MutableIterableSizedQueryableKv[K, V],
+        kv: MutableIterableSizedQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableIterableSizedQueryableKv[K, V]: ...
+    ) -> MutableIterableSizedQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableIterableSizedKv[K, V],
+        kv: MutableIterableSizedKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableIterableSizedKv[K, V]: ...
+    ) -> MutableIterableSizedKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableIterableQueryableKv[K, V],
+        kv: MutableIterableQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableIterableQueryableKv[K, V]: ...
+    ) -> MutableIterableQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableSizedQueryableKv[K, V],
+        kv: MutableSizedQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableSizedQueryableKv[K, V]: ...
+    ) -> MutableSizedQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: IterableSizedQueryableKv[K, V],
+        kv: IterableSizedQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> IterableSizedQueryableKv[K, V]: ...
+    ) -> IterableSizedQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableIterableKv[K, V],
+        kv: MutableIterableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableIterableKv[K, V]: ...
+    ) -> MutableIterableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableSizedKv[K, V],
+        kv: MutableSizedKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableSizedKv[K, V]: ...
+    ) -> MutableSizedKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableQueryableKv[K, V],
+        kv: MutableQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableQueryableKv[K, V]: ...
+    ) -> MutableQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: IterableSizedKv[K, V],
+        kv: IterableSizedKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> IterableSizedKv[K, V]: ...
+    ) -> IterableSizedKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: IterableQueryableKv[K, V],
+        kv: IterableQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> IterableQueryableKv[K, V]: ...
+    ) -> IterableQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: SizedQueryableKv[K, V],
+        kv: SizedQueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> SizedQueryableKv[K, V]: ...
+    ) -> SizedQueryableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: MutableKv[K, V],
+        kv: MutableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> MutableKv[K, V]: ...
+    ) -> MutableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: IterableKv[K, V],
+        kv: IterableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> IterableKv[K, V]: ...
+    ) -> IterableKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: SizedKv[K, V],
+        kv: SizedKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> SizedKv[K, V]: ...
+    ) -> SizedKv[KT, VT]: ...
 
     @ta.overload
     def __call__(
         self,
-        kv: QueryableKv[K, V],
+        kv: QueryableKv[KF, VF],
         *args: ta.Any,
         **kwargs: ta.Any,
-    ) -> QueryableKv[K, V]: ...
+    ) -> QueryableKv[KT, VT]: ...
 
     def __call__(self, kv, *args, **kwargs): ...
 
