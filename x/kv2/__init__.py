@@ -33,7 +33,6 @@ from .capabilities import (  # noqa
 
 from .interfaces import (  # noqa
     KvSubclassMustUseBaseTypeError,
-
     Kv,
 
     QueryableKv,
@@ -41,7 +40,26 @@ from .interfaces import (  # noqa
     IterableKv,
     MutableKv,
 
+    KvMro,
     KV_INTERFACES,
+
+    check_kv_interface_mro,
+    get_cls_kv_interface_mro,
+)
+
+from .shrinkwraps import (  # noqa
+    ShrinkwrapKv,
+
+    ShrinkwrapQueryableKv,
+    ShrinkwrapSizedKv,
+    ShrinkwrapIterableKv,
+    ShrinkwrapMutableKv,
+
+    ShrinkwrapFullKv,
+
+    # FIXME: unstable
+    # shrinkwrap_factory,
+    # bind_shrinkwrap_cls,
 )
 
 from .wrappers import (  # noqa

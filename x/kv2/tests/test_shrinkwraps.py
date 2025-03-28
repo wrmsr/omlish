@@ -21,6 +21,9 @@ def test_shrinkwraps():
     assert kv[0] == 1
     assert len(kv) == 1
 
+    if ta.TYPE_CHECKING:
+        reveal_type(kv)  # noqa
+
     #
 
     class Mul2Kv(ShrinkwrapFullKv[int, int]):
@@ -38,3 +41,6 @@ def test_shrinkwraps():
         assert len(dw_kv) == 1
         assert isinstance(dw_kv, SizedKv)
         assert not isinstance(dw_kv, IterableKv)
+
+        if ta.TYPE_CHECKING:
+            reveal_type(dw_kv)  # noqa

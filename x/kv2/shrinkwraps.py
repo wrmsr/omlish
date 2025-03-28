@@ -199,7 +199,7 @@ def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv], iface_mro: KvMro) -> type[Kv]
     return bw_cls
 
 
-def shrinkwrap_factory(w_cls: type[ShrinkwrapKv]) -> KvToKvFunc:
+def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V]:
     @functools.wraps(w_cls)
     def inner(kv, *args, **kwargs):
         bw_cls = bind_shrinkwrap_cls(w_cls, get_cls_kv_interface_mro(type(kv)))
