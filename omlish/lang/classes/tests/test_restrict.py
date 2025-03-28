@@ -1,7 +1,10 @@
+import abc
 import typing as ta
 
 import pytest
 
+from ..abstract import Abstract
+from ..abstract import AbstractTypeError
 from ..restrict import AnySensitive
 from ..restrict import Final
 from ..restrict import FinalTypeError
@@ -37,6 +40,24 @@ def test_final():
 
     with pytest.raises(FinalTypeError):
         class E(D[int]):
+            pass
+
+
+def test_abstract_final_mro():
+    class A:
+        def foo(self):
+            pass
+
+    class B(Abstract):
+        @abc.abstractmethod
+        def foo(self):
+            pass
+
+    class C(A, B, Final):  # noqa
+        pass
+
+    with pytest.raises(AbstractTypeError):
+        class D(B, Final):  # noqa
             pass
 
 

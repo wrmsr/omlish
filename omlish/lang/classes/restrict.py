@@ -3,7 +3,6 @@ import functools
 import typing as ta
 
 from .abstract import Abstract
-from .abstract import is_abstract
 
 
 ##
@@ -25,7 +24,6 @@ class Final(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        abstracts: set[ta.Any] = set()
         for base in cls.__bases__:
             if base is Abstract:
                 raise FinalTypeError(base)
@@ -33,16 +31,6 @@ class Final(Abstract):
                 continue
             elif Final in base.__mro__:
                 raise FinalTypeError(base)
-            else:
-                abstracts.update(getattr(base, '__abstractmethods__', []))
-
-        for a in abstracts:
-            try:
-                v = cls.__dict__[a]
-            except KeyError:
-                raise FinalTypeError(a) from None
-            if is_abstract(v):
-                raise FinalTypeError(a)
 
 
 ##
