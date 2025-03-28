@@ -1,11 +1,8 @@
 import typing as ta
 
-from ..interfaces import Kv
 from ..bases import SizedQueryableKv
-from ..bases import FullKv
 from ..interfaces import IterableKv
 from ..interfaces import SizedKv
-from ..shrinkwraps import ShrinkwrapKv
 from ..shrinkwraps import ShrinkwrapFullKv
 from ..shrinkwraps import shrinkwrap_factory
 
