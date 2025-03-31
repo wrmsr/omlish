@@ -40,7 +40,6 @@ def call_many_with_timeout(
 
     def inner(fn, idx):
         try:
-            nonlocal rets
             rets[idx] = fn()
         except Exception as e:
             nonlocal thread_exception

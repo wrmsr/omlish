@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.21.1
 
-hypothesis==6.130.5
+hypothesis==6.130.6
 
 hexdump==3.3
 
@@ -194,7 +194,7 @@ customtkinter==5.2.2
 
 ##
 
-langchain==0.3.21
+langchain==0.3.22
 langchain-anthropic==0.3.10
 langchain-chroma==0.2.2  # @omlish-venv !13
 langchain-community==0.3.20
@@ -217,11 +217,11 @@ langchainhub==0.1.21
 
 ##
 
-llama-index-core==0.12.26
+llama-index-core==0.12.27
 
 ##
 
-tavily-python==0.5.2
+tavily-python==0.5.3
 
 gpt4all==2.8.2
 

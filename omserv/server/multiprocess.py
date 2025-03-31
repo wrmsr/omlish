@@ -68,8 +68,8 @@ def serve_multiprocess(
     shutdown_event = ctx.Event()
 
     def shutdown(*args: ta.Any) -> None:
-        nonlocal active, shutdown_event
         shutdown_event.set()
+        nonlocal active
         active = False
 
     processes: list[mp.Process] = []

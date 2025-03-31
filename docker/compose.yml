@@ -90,7 +90,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.17.3'
+    image: 'elasticsearch:8.17.4'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
