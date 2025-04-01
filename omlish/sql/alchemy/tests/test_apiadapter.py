@@ -3,7 +3,10 @@ import contextlib
 import sqlalchemy as sa
 
 from .... import lang
+from ... import api
+from ... import queries
 from ...queries import Q
+from ..apiadapter import SqlalchemyDb
 
 
 ##
@@ -36,16 +39,14 @@ def test_sqlite() -> None:
                 ],
             )
 
-        Q.select(
+        db = SqlalchemyDb(engine)
+        q = Q.select(
             [Q.i.name],
             Q.i.t1,
             Q.eq(Q.n.name, 'some name 1'),
         )
+        with api.query(db, queries.render(q).s) as rows:
+            lst = list(rows)
 
-        with engine.connect() as conn:
-            result = conn.execute(sa.select(t1).where(t1.c.name == 'some name 1'))
-            rows = list(result.fetchall())
-            assert len(rows) == 1
-            assert rows[0].name == 'some name 1'
-
-            print(conn.execute(sa.text('select sqlite_version()')).fetchall())
+        assert len(lst) == 1
+        assert lst[0]['name'] == 'some name 1'
