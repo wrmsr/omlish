@@ -68,7 +68,9 @@ from .rendering import (  # noqa
 )
 
 from .selects import (  # noqa
+    AllSelectItem,
     CanRelation,
+    ExprSelectItem,
     Select,
     SelectBuilder,
     SelectItem,

@@ -16,9 +16,20 @@ from .stmts import Stmt
 ##
 
 
-class SelectItem(Node, lang.Final):
+class SelectItem(Node, lang.Abstract):
+    pass
+
+
+class AllSelectItem(SelectItem, lang.Final):
+    pass
+
+
+class ExprSelectItem(SelectItem, lang.Final):
     v: Expr
     a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
+
+
+##
 
 
 class Select(Stmt, lang.Final):
@@ -31,11 +42,15 @@ CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 
 
 class SelectBuilder(RelationBuilder, ExprBuilder):
+    @property
+    def star(self) -> AllSelectItem:
+        return AllSelectItem()
+
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
         else:
-            return SelectItem(self.expr(o))
+            return ExprSelectItem(self.expr(o))
 
     def select(
             self,

@@ -40,8 +40,9 @@ from .params import Param
 from .relations import Join
 from .relations import JoinKind
 from .relations import Table
+from .selects import AllSelectItem
+from .selects import ExprSelectItem
 from .selects import Select
-from .selects import SelectItem
 from .unary import Unary
 from .unary import UnaryOp
 from .unary import UnaryOps
@@ -242,7 +243,11 @@ class StdRenderer(Renderer):
     # selects
 
     @Renderer.render.register
-    def render_select_item(self, o: SelectItem) -> tp.Part:
+    def render_all_select_item(self, o: AllSelectItem) -> tp.Part:
+        return '*'
+
+    @Renderer.render.register
+    def render_expr_select_item(self, o: ExprSelectItem) -> tp.Part:
         return [
             self.render(o.v),
             *(['as', self.render(o.a)] if o.a is not None else []),

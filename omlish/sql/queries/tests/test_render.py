@@ -38,6 +38,11 @@ def test_render():
                 Q.eq(Q.i.some_id, Q.i.some_other_id),
             ),
         ),
+
+        Q.select(
+            [Q.star],
+            Q.n.foo,
+        ),
     ]:
         print(query)
         print()
