@@ -2,7 +2,6 @@ import contextlib
 
 import sqlalchemy as sa
 
-from ... import api
 from .... import lang
 from ...queries import Q
 

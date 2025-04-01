@@ -69,12 +69,13 @@ class BMul(BNode):
 
 class LameVisitor:
     def __call__(self, obj, *args, **kwargs):
-        bfn, bty = None, None
+        bfn: ta.Any = None
+        bty: ta.Any = None
         for an in dir(self):
             if not an.startswith('visit_'):
                 continue
-            afn = getattr(self, an)
-            aty = afn.__annotations__[afn.__code__.co_varnames[1]]
+            afn: ta.Any = getattr(self, an)
+            aty: ta.Any = afn.__annotations__[afn.__code__.co_varnames[1]]
             if not isinstance(obj, aty):
                 continue
             if bfn is not None and not issubclass(aty, bty):

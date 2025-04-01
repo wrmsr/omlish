@@ -1,7 +1,9 @@
+import types
 import typing as ta
 
 from ... import lang
 from .base import Builder
+from .base import Node
 from .exprs import Expr
 
 
@@ -17,7 +19,7 @@ class Param(Expr, lang.Final):
         else:
             return f'{self.__class__.__name__}(@{hex(id(self))[2:]})'
 
-    def __eq__(self, other):
+    def eq(self, other: Node) -> bool | types.NotImplementedType:
         if not isinstance(other, Param):
             return False
         if self.n is None and other.n is None:

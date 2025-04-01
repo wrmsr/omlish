@@ -1,3 +1,4 @@
+import types
 import typing as ta
 
 from ... import dataclasses as dc
@@ -32,6 +33,20 @@ class Node(
         'eq',
     ]),
 ):
+    @ta.final
+    def __hash__(self) -> ta.NoReturn:
+        raise NodeComparisonTypeError(type(self))
+
+    @ta.final
+    def __eq__(self, other) -> ta.NoReturn:
+        raise NodeComparisonTypeError(type(self))
+
+    @ta.final
+    def __ne__(self, other) -> ta.NoReturn:
+        raise NodeComparisonTypeError(type(self))
+
+    #
+
     @dc.dataclass(frozen=True)
     class _Fields:
         cmp_fields: ta.Sequence[str]
@@ -55,21 +70,8 @@ class Node(
         setattr(cls, '__node_fields__', fields)
         return fields
 
-    @ta.final
-    def __hash__(self) -> ta.NoReturn:
-        raise NodeComparisonTypeError(type(self))
-
-    @ta.final
-    def __eq__(self, other) -> ta.NoReturn:
-        raise NodeComparisonTypeError(type(self))
-
-    @ta.final
-    def __ne__(self, other) -> ta.NoReturn:
-        raise NodeComparisonTypeError(type(self))
-
     _hash: ta.ClassVar[int]
 
-    @ta.final
     def hash(self) -> int:
         try:
             return self._hash
@@ -80,8 +82,7 @@ class Node(
         object.__setattr__(self, '_hash', h)
         return h
 
-    @ta.final
-    def eq(self, other: 'Node') -> bool | type[NotImplemented]:
+    def eq(self, other: 'Node') -> bool | types.NotImplementedType:
         if self is other:
             return True
 
@@ -100,7 +101,7 @@ class Node(
                     rv = r[k]
                     if (ret := rec(lv, rv)) is not True:
                         return ret
-                    return True
+                return True
 
             elif isinstance(l, ta.Sequence):
                 if len(l) != len(r):
@@ -108,20 +109,20 @@ class Node(
                 for le, re in zip(l, r):
                     if (ret := rec(le, re)) is not True:
                         return ret
-                    return True
+                return True
 
             elif isinstance(l, Node):
-                for f in l._fields().cmp_fields:
-                    lf = getattr(l, f)
-                    rf = getattr(r, f)
-                    if (ret := rec(lf, rf)) is not True:
-                        return ret
-                return True
+                return l.eq(r)
 
             else:
                 return l == r
 
-        return rec(self, other)
+        for f in self._fields().cmp_fields:
+            lf = getattr(self, f)
+            rf = getattr(other, f)
+            if (ret := rec(lf, rf)) is not True:
+                return ret
+        return True
 
 
 ##

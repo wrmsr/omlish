@@ -26,7 +26,7 @@ from .errors import (  # noqa
 
 from .funcs import (  # noqa
     query,
-    exec,
+    exec,  # noqa
 )
 
 from .queries import (  # noqa
