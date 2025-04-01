@@ -2,6 +2,7 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
+from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
@@ -17,7 +18,7 @@ from .stmts import Stmt
 ##
 
 
-class Values(dc.Frozen, lang.Final):
+class Values(Node, lang.Final):
     vs: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
 
 

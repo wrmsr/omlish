@@ -26,4 +26,4 @@ def test_marshal():
         print(j)
 
         u = msh.unmarshal(json.loads(j), Node)
-        assert u == query
+        assert u.eq(query)

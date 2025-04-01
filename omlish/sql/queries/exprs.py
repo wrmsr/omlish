@@ -15,6 +15,9 @@ from .names import CanName
 from .names import Name
 from .names import NameBuilder
 from .names import NameLike
+from .params import CanParam
+from .params import Param
+from .params import ParamBuilder
 
 
 ##
@@ -38,14 +41,21 @@ class NameExpr(Expr, lang.Final):
     n: Name
 
 
+#
+
+
+class ParamExpr(Expr, lang.Final):
+    p: Param
+
+
 ##
 
 
 CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | CanName | CanLiteral
+CanExpr: ta.TypeAlias = Expr | CanParam | CanName | CanLiteral
 
 
-class ExprBuilder(NameBuilder):
+class ExprBuilder(ParamBuilder, NameBuilder):
     def literal(self, o: CanLiteral) -> Literal:
         if isinstance(o, Literal):
             return o
@@ -63,6 +73,8 @@ class ExprBuilder(NameBuilder):
     def expr(self, o: CanExpr) -> Expr:
         if isinstance(o, Expr):
             return o
+        elif isinstance(o, Param):
+            return ParamExpr(o)
         elif isinstance(o, (NameLike, IdentLike)):
             return NameExpr(self.name(o))
         else:

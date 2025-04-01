@@ -1,16 +1,15 @@
-import types
 import typing as ta
 
+from ... import dataclasses as dc
 from ... import lang
 from .base import Builder
-from .base import Node
-from .exprs import Expr
 
 
 ##
 
 
-class Param(Expr, lang.Final):
+@dc.dataclass(frozen=True)
+class Param(lang.Final):
     n: str | None = None
 
     def __repr__(self) -> str:
@@ -19,7 +18,7 @@ class Param(Expr, lang.Final):
         else:
             return f'{self.__class__.__name__}(@{hex(id(self))[2:]})'
 
-    def eq(self, other: Node) -> bool | types.NotImplementedType:
+    def __eq__(self, other):
         if not isinstance(other, Param):
             return False
         if self.n is None and other.n is None:

@@ -29,6 +29,7 @@ from .binary import BinaryOp
 from .binary import BinaryOps
 from .exprs import Literal
 from .exprs import NameExpr
+from .exprs import ParamExpr
 from .idents import Ident
 from .inserts import Insert
 from .inserts import Values
@@ -149,8 +150,8 @@ class StdRenderer(Renderer):
         return self.render(o.n)
 
     @Renderer.render.register
-    def render_param(self, o: Param) -> tp.Part:
-        return self._params_preparer.add(o.n if o.n is not None else id(o))
+    def render_param_expr(self, o: ParamExpr) -> tp.Part:
+        return self.render(o.p)
 
     # idents
 
@@ -200,6 +201,12 @@ class StdRenderer(Renderer):
                 out.append('.')
             out.append(self.render(i))
         return tp.Concat(out)
+
+    # params
+
+    @Renderer.render.register
+    def render_param(self, o: Param) -> tp.Part:
+        return self._params_preparer.add(o.n if o.n is not None else id(o))
 
     # relations
 
