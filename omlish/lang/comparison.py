@@ -1,6 +1,9 @@
 import typing as ta
 
 
+##
+
+
 def cmp(l: ta.Any, r: ta.Any) -> int:
     return int(l > r) - int(l < r)
 

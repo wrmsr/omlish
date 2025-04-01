@@ -203,8 +203,8 @@ class GeneratorMappedIterator(ta.Generic[O, I, R]):
     Like a `map` iterator but takes a generator instead of a function. Provided generator *must* yield outputs 1:1 with
     inputs.
 
-    Generator return value will be captured on `value` property - if present generator stopped, it absent iterator
-    stopped.
+    Generator return value will be captured on `value` property - present if the generator stopped, absent if the
+    iterator stopped.
     """
 
     def __init__(self, g: ta.Generator[O, I, R], it: ta.Iterator[I]) -> None:
