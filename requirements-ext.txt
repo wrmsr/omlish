@@ -208,7 +208,7 @@ langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.7
 
 langgraph==0.3.21
-langsmith==0.3.19
+langsmith==0.3.21
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
