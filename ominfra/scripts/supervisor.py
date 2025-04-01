@@ -800,6 +800,8 @@ class TomlFlags:
     EXPLICIT_NEST = 1
 
     def __init__(self) -> None:
+        super().__init__()
+
         self._flags: ta.Dict[str, dict] = {}
         self._pending_flags: ta.Set[ta.Tuple[TomlKey, int]] = set()
 
@@ -850,6 +852,8 @@ class TomlFlags:
 
 class TomlNestedDict:
     def __init__(self) -> None:
+        super().__init__()
+
         # The parsed content of the TOML document
         self.dict: ta.Dict[str, ta.Any] = {}
 
@@ -882,11 +886,6 @@ class TomlNestedDict:
             cont[last_key] = [{}]
 
 
-class TomlOutput(ta.NamedTuple):
-    data: TomlNestedDict
-    flags: TomlFlags
-
-
 class TomlParser:
     def __init__(
             self,
@@ -900,6 +899,8 @@ class TomlParser:
 
         self.parse_float = parse_float
 
+        self.data = TomlNestedDict()
+        self.flags = TomlFlags()
         self.pos = 0
 
     ASCII_CTRL = frozenset(chr(i) for i in range(32)) | frozenset(chr(127))
@@ -931,7 +932,6 @@ class TomlParser:
     })
 
     def parse(self) -> ta.Dict[str, ta.Any]:  # noqa: C901
-        out = TomlOutput(TomlNestedDict(), TomlFlags())
         header: TomlKey = ()
 
         # Parse one statement at a time (typically means one line in TOML source)
@@ -955,18 +955,18 @@ class TomlParser:
                 self.pos += 1
                 continue
             if char in self.KEY_INITIAL_CHARS:
-                self.key_value_rule(out, header)
+                self.key_value_rule(header)
                 self.skip_chars(self.WS)
             elif char == '[':
                 try:
                     second_char: ta.Optional[str] = self.src[self.pos + 1]
                 except IndexError:
                     second_char = None
-                out.flags.finalize_pending()
+                self.flags.finalize_pending()
                 if second_char == '[':
-                    header = self.create_list_rule(out)
+                    header = self.create_list_rule()
                 else:
-                    header = self.create_dict_rule(out)
+                    header = self.create_dict_rule()
                 self.skip_chars(self.WS)
             elif char != '#':
                 raise self.suffixed_err('Invalid statement')
@@ -983,7 +983,7 @@ class TomlParser:
                 raise self.suffixed_err('Expected newline or end of document after a statement')
             self.pos += 1
 
-        return out.data.dict
+        return self.data.dict
 
     def skip_chars(self, chars: ta.Iterable[str]) -> None:
         try:
@@ -1033,16 +1033,16 @@ class TomlParser:
             if self.pos == pos_before_skip:
                 return
 
-    def create_dict_rule(self, out: TomlOutput) -> TomlKey:
+    def create_dict_rule(self) -> TomlKey:
         self.pos += 1  # Skip "["
         self.skip_chars(self.WS)
         key = self.parse_key()
 
-        if out.flags.is_(key, TomlFlags.EXPLICIT_NEST) or out.flags.is_(key, TomlFlags.FROZEN):
+        if self.flags.is_(key, TomlFlags.EXPLICIT_NEST) or self.flags.is_(key, TomlFlags.FROZEN):
             raise self.suffixed_err(f'Cannot declare {key} twice')
-        out.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
+        self.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
         try:
-            out.data.get_or_create_nest(key)
+            self.data.get_or_create_nest(key)
         except KeyError:
             raise self.suffixed_err('Cannot overwrite a value') from None
 
@@ -1051,19 +1051,19 @@ class TomlParser:
         self.pos += 1
         return key
 
-    def create_list_rule(self, out: TomlOutput) -> TomlKey:
+    def create_list_rule(self) -> TomlKey:
         self.pos += 2  # Skip "[["
         self.skip_chars(self.WS)
         key = self.parse_key()
 
-        if out.flags.is_(key, TomlFlags.FROZEN):
+        if self.flags.is_(key, TomlFlags.FROZEN):
             raise self.suffixed_err(f'Cannot mutate immutable namespace {key}')
         # Free the namespace now that it points to another empty list item...
-        out.flags.unset_all(key)
+        self.flags.unset_all(key)
         # ...but this key precisely is still prohibited from table declaration
-        out.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
+        self.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
         try:
-            out.data.append_nest_to_list(key)
+            self.data.append_nest_to_list(key)
         except KeyError:
             raise self.suffixed_err('Cannot overwrite a value') from None
 
@@ -1072,11 +1072,7 @@ class TomlParser:
         self.pos += 2
         return key
 
-    def key_value_rule(
-            self,
-            out: TomlOutput,
-            header: TomlKey,
-    ) -> None:
+    def key_value_rule(self, header: TomlKey) -> None:
         key, value = self.parse_key_value_pair()
         key_parent, key_stem = key[:-1], key[-1]
         abs_key_parent = header + key_parent
@@ -1084,24 +1080,24 @@ class TomlParser:
         relative_path_cont_keys = (header + key[:i] for i in range(1, len(key)))
         for cont_key in relative_path_cont_keys:
             # Check that dotted key syntax does not redefine an existing table
-            if out.flags.is_(cont_key, TomlFlags.EXPLICIT_NEST):
+            if self.flags.is_(cont_key, TomlFlags.EXPLICIT_NEST):
                 raise self.suffixed_err(f'Cannot redefine namespace {cont_key}')
             # Containers in the relative path can't be opened with the table syntax or dotted key/value syntax in
             # following table sections.
-            out.flags.add_pending(cont_key, TomlFlags.EXPLICIT_NEST)
+            self.flags.add_pending(cont_key, TomlFlags.EXPLICIT_NEST)
 
-        if out.flags.is_(abs_key_parent, TomlFlags.FROZEN):
+        if self.flags.is_(abs_key_parent, TomlFlags.FROZEN):
             raise self.suffixed_err(f'Cannot mutate immutable namespace {abs_key_parent}')
 
         try:
-            nest = out.data.get_or_create_nest(abs_key_parent)
+            nest = self.data.get_or_create_nest(abs_key_parent)
         except KeyError:
             raise self.suffixed_err('Cannot overwrite a value') from None
         if key_stem in nest:
             raise self.suffixed_err('Cannot overwrite a value')
         # Mark inline table and array namespaces recursively immutable
         if isinstance(value, (dict, list)):
-            out.flags.set(header + key, TomlFlags.FROZEN, recursive=True)
+            self.flags.set(header + key, TomlFlags.FROZEN, recursive=True)
         nest[key_stem] = value
 
     def parse_key_value_pair(self) -> ta.Tuple[TomlKey, ta.Any]:
