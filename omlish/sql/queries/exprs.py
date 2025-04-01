@@ -2,6 +2,8 @@
 TODO:
  - case
  - cast / ::
+ - explicit null
+ - star
 """
 import typing as ta
 

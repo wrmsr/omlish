@@ -24,6 +24,7 @@ class ContextCloser(Closer):
     def __enter__(self) -> ta.Self:
         return self
 
+    @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 

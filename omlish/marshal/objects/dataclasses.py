@@ -66,7 +66,7 @@ def get_dataclass_field_infos(
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
-    for field in dc_rf.fields.values():
+    for field in dc_rf.instance_fields:
         if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
             um_name = translate_name(field.name, f_naming)
         else:

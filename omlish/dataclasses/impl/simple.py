@@ -15,7 +15,7 @@ class EqProcessor(Processor):
         # self_tuple = tuple_str('self', flds)
         # other_tuple = tuple_str('other', flds)
         # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-        cmp_fields = (field for field in self._info.instance_fields if field.compare)
+        cmp_fields = [field for field in self._info.instance_fields if field.compare]
         terms = [f'self.{field.name} == other.{field.name}' for field in cmp_fields]
         field_comparisons = ' and '.join(terms) or 'True'
         body = [

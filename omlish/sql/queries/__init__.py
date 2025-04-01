@@ -1,6 +1,7 @@
 from .base import (  # noqa
     Builder,
     Node,
+    NodeComparisonTypeError,
     Value,
 )
 
