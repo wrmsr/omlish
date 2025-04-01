@@ -33,7 +33,7 @@ class _ParseVisitor(MinisqlVisitor):
     def visitExprSelectItem(self, ctx: MinisqlParser.ExprSelectItemContext):
         value = self.visit(ctx.expr())
         label = self.visit(ctx.ident()) if ctx.ident() is not None else None
-        return no.SelectItem(value, label)
+        return no.ExprSelectItem(value, label)
 
     def visitIntegerNumber(self, ctx: MinisqlParser.IntegerNumberContext):
         return no.Literal(int(ctx.INTEGER_VALUE().getText()))

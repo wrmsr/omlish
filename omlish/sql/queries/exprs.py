@@ -2,7 +2,7 @@
 TODO:
  - case
  - cast / ::
- - explicit null
+ - explicit null? already wrapped in non-null Literal node
 """
 import typing as ta
 
