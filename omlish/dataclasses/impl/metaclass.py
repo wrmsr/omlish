@@ -25,6 +25,7 @@ T = ta.TypeVar('T')
 
 
 _CONFER_PARAMS: tuple[str, ...] = (
+    'eq',
     'frozen',
     'kw_only',
 )

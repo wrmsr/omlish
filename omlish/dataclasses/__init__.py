@@ -39,6 +39,13 @@ from .impl.as_ import (  # noqa
 from .impl.params import (  # noqa
     FieldExtras,
     get_field_extras,
+
+    get_params,
+
+    get_params_extras,
+
+    MetaclassParams,
+    get_metaclass_params,
 )
 
 from .impl.replace import (  # noqa
