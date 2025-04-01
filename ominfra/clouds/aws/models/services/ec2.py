@@ -1475,6 +1475,9 @@ class ResourceType(_enum.Enum):
     VERIFIED_ACCESS_TRUST_PROVIDER = 'verified-access-trust-provider'
     VPN_CONNECTION_DEVICE_TYPE = 'vpn-connection-device-type'
     VPC_BLOCK_PUBLIC_ACCESS_EXCLUSION = 'vpc-block-public-access-exclusion'
+    ROUTE_SERVER = 'route-server'
+    ROUTE_SERVER_ENDPOINT = 'route-server-endpoint'
+    ROUTE_SERVER_PEER = 'route-server-peer'
     IPAM_RESOURCE_DISCOVERY = 'ipam-resource-discovery'
     IPAM_RESOURCE_DISCOVERY_ASSOCIATION = 'ipam-resource-discovery-association'
     INSTANCE_CONNECT_ENDPOINT = 'instance-connect-endpoint'
@@ -1637,6 +1640,8 @@ class VpcEncryptionControlState(_enum.Enum):
     DELETING = 'deleting'
     DELETED = 'deleted'
     AVAILABLE = 'available'
+    CREATING = 'creating'
+    DELETE_FAILED = 'delete-failed'
 
 
 VpcEndpointId = _ta.NewType('VpcEndpointId', str)
