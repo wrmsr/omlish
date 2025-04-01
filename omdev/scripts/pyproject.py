@@ -911,75 +911,6 @@ class WheelFile(zipfile.ZipFile):
 ##
 
 
-_TOML_TIME_RE_STR = r'([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(?:\.([0-9]{1,6})[0-9]*)?'
-
-TOML_RE_NUMBER = re.compile(
-    r"""
-0
-(?:
-    x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*   # hex
-    |
-    b[01](?:_?[01])*                 # bin
-    |
-    o[0-7](?:_?[0-7])*               # oct
-)
-|
-[+-]?(?:0|[1-9](?:_?[0-9])*)         # dec, integer part
-(?P<floatpart>
-    (?:\.[0-9](?:_?[0-9])*)?         # optional fractional part
-    (?:[eE][+-]?[0-9](?:_?[0-9])*)?  # optional exponent part
-)
-""",
-    flags=re.VERBOSE,
-)
-TOML_RE_LOCALTIME = re.compile(_TOML_TIME_RE_STR)
-TOML_RE_DATETIME = re.compile(
-    rf"""
-([0-9]{{4}})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])  # date, e.g. 1988-10-27
-(?:
-    [Tt ]
-    {_TOML_TIME_RE_STR}
-    (?:([Zz])|([+-])([01][0-9]|2[0-3]):([0-5][0-9]))?  # optional time offset
-)?
-""",
-    flags=re.VERBOSE,
-)
-
-
-def toml_match_to_datetime(match: re.Match) -> ta.Union[datetime.datetime, datetime.date]:
-    """Convert a `RE_DATETIME` match to `datetime.datetime` or `datetime.date`.
-
-    Raises ValueError if the match does not correspond to a valid date or datetime.
-    """
-    (
-        year_str,
-        month_str,
-        day_str,
-        hour_str,
-        minute_str,
-        sec_str,
-        micros_str,
-        zulu_time,
-        offset_sign_str,
-        offset_hour_str,
-        offset_minute_str,
-    ) = match.groups()
-    year, month, day = int(year_str), int(month_str), int(day_str)
-    if hour_str is None:
-        return datetime.date(year, month, day)
-    hour, minute, sec = int(hour_str), int(minute_str), int(sec_str)
-    micros = int(micros_str.ljust(6, '0')) if micros_str else 0
-    if offset_sign_str:
-        tz: ta.Optional[datetime.tzinfo] = toml_cached_tz(
-            offset_hour_str, offset_minute_str, offset_sign_str,
-        )
-    elif zulu_time:
-        tz = datetime.UTC
-    else:  # local date-time
-        tz = None
-    return datetime.datetime(year, month, day, hour, minute, sec, micros, tzinfo=tz)
-
-
 @functools.lru_cache()  # noqa
 def toml_cached_tz(hour_str: str, minute_str: str, sign_str: str) -> datetime.timezone:
     sign = 1 if sign_str == '+' else -1
@@ -991,47 +922,25 @@ def toml_cached_tz(hour_str: str, minute_str: str, sign_str: str) -> datetime.ti
     )
 
 
-def toml_match_to_localtime(match: re.Match) -> datetime.time:
-    hour_str, minute_str, sec_str, micros_str = match.groups()
-    micros = int(micros_str.ljust(6, '0')) if micros_str else 0
-    return datetime.time(int(hour_str), int(minute_str), int(sec_str), micros)
+def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
+    """
+    A decorator to make `parse_float` safe.
 
+    `parse_float` must not return dicts or lists, because these types would be mixed with parsed TOML tables and arrays,
+    thus confusing the parser. The returned decorated callable raises `ValueError` instead of returning illegal types.
+    """
 
-def toml_match_to_number(match: re.Match, parse_float: TomlParseFloat) -> ta.Any:
-    if match.group('floatpart'):
-        return parse_float(match.group())
-    return int(match.group(), 0)
+    # The default `float` callable never returns illegal types. Optimize it.
+    if parse_float is float:
+        return float
 
+    def safe_parse_float(float_str: str) -> ta.Any:
+        float_value = parse_float(float_str)
+        if isinstance(float_value, (dict, list)):
+            raise ValueError('parse_float must not return dicts or lists')  # noqa
+        return float_value
 
-TOML_ASCII_CTRL = frozenset(chr(i) for i in range(32)) | frozenset(chr(127))
-
-# Neither of these sets include quotation mark or backslash. They are currently handled as separate cases in the parser
-# functions.
-TOML_ILLEGAL_BASIC_STR_CHARS = TOML_ASCII_CTRL - frozenset('\t')
-TOML_ILLEGAL_MULTILINE_BASIC_STR_CHARS = TOML_ASCII_CTRL - frozenset('\t\n')
-
-TOML_ILLEGAL_LITERAL_STR_CHARS = TOML_ILLEGAL_BASIC_STR_CHARS
-TOML_ILLEGAL_MULTILINE_LITERAL_STR_CHARS = TOML_ILLEGAL_MULTILINE_BASIC_STR_CHARS
-
-TOML_ILLEGAL_COMMENT_CHARS = TOML_ILLEGAL_BASIC_STR_CHARS
-
-TOML_WS = frozenset(' \t')
-TOML_WS_AND_NEWLINE = TOML_WS | frozenset('\n')
-TOML_BARE_KEY_CHARS = frozenset(string.ascii_letters + string.digits + '-_')
-TOML_KEY_INITIAL_CHARS = TOML_BARE_KEY_CHARS | frozenset("\"'")
-TOML_HEXDIGIT_CHARS = frozenset(string.hexdigits)
-
-TOML_BASIC_STR_ESCAPE_REPLACEMENTS = types.MappingProxyType(
-    {
-        '\\b': '\u0008',  # backspace
-        '\\t': '\u0009',  # tab
-        '\\n': '\u000A',  # linefeed
-        '\\f': '\u000C',  # form feed
-        '\\r': '\u000D',  # carriage return
-        '\\"': '\u0022',  # quote
-        '\\\\': '\u005C',  # backslash
-    },
-)
+    return safe_parse_float
 
 
 class TomlDecodeError(ValueError):
@@ -1178,6 +1087,34 @@ class TomlParser:
 
         self.pos = 0
 
+    ASCII_CTRL = frozenset(chr(i) for i in range(32)) | frozenset(chr(127))
+
+    # Neither of these sets include quotation mark or backslash. They are currently handled as separate cases in the
+    # parser functions.
+    ILLEGAL_BASIC_STR_CHARS = ASCII_CTRL - frozenset('\t')
+    ILLEGAL_MULTILINE_BASIC_STR_CHARS = ASCII_CTRL - frozenset('\t\n')
+
+    ILLEGAL_LITERAL_STR_CHARS = ILLEGAL_BASIC_STR_CHARS
+    ILLEGAL_MULTILINE_LITERAL_STR_CHARS = ILLEGAL_MULTILINE_BASIC_STR_CHARS
+
+    ILLEGAL_COMMENT_CHARS = ILLEGAL_BASIC_STR_CHARS
+
+    WS = frozenset(' \t')
+    WS_AND_NEWLINE = WS | frozenset('\n')
+    BARE_KEY_CHARS = frozenset(string.ascii_letters + string.digits + '-_')
+    KEY_INITIAL_CHARS = BARE_KEY_CHARS | frozenset("\"'")
+    HEXDIGIT_CHARS = frozenset(string.hexdigits)
+
+    BASIC_STR_ESCAPE_REPLACEMENTS = types.MappingProxyType({
+        '\\b': '\u0008',  # backspace
+        '\\t': '\u0009',  # tab
+        '\\n': '\u000A',  # linefeed
+        '\\f': '\u000C',  # form feed
+        '\\r': '\u000D',  # carriage return
+        '\\"': '\u0022',  # quote
+        '\\\\': '\u005C',  # backslash
+    })
+
     def parse(self) -> ta.Dict[str, ta.Any]:  # noqa: C901
         out = TomlOutput(TomlNestedDict(), TomlFlags())
         header: TomlKey = ()
@@ -1185,7 +1122,7 @@ class TomlParser:
         # Parse one statement at a time (typically means one line in TOML source)
         while True:
             # 1. Skip line leading whitespace
-            self.skip_chars(TOML_WS)
+            self.skip_chars(self.WS)
 
             # 2. Parse rules. Expect one of the following:
             #    - end of file
@@ -1202,9 +1139,9 @@ class TomlParser:
             if char == '\n':
                 self.pos += 1
                 continue
-            if char in TOML_KEY_INITIAL_CHARS:
+            if char in self.KEY_INITIAL_CHARS:
                 self.key_value_rule(out, header)
-                self.skip_chars(TOML_WS)
+                self.skip_chars(self.WS)
             elif char == '[':
                 try:
                     second_char: ta.Optional[str] = self.src[self.pos + 1]
@@ -1215,7 +1152,7 @@ class TomlParser:
                     header = self.create_list_rule(out)
                 else:
                     header = self.create_dict_rule(out)
-                self.skip_chars(TOML_WS)
+                self.skip_chars(self.WS)
             elif char != '#':
                 raise self.suffixed_err('Invalid statement')
 
@@ -1269,21 +1206,21 @@ class TomlParser:
             self.pos += 1
             self.skip_until(
                 '\n',
-                error_on=TOML_ILLEGAL_COMMENT_CHARS,
+                error_on=self.ILLEGAL_COMMENT_CHARS,
                 error_on_eof=False,
             )
 
     def skip_comments_and_array_ws(self) -> None:
         while True:
             pos_before_skip = self.pos
-            self.skip_chars(TOML_WS_AND_NEWLINE)
+            self.skip_chars(self.WS_AND_NEWLINE)
             self.skip_comment()
             if self.pos == pos_before_skip:
                 return
 
     def create_dict_rule(self, out: TomlOutput) -> TomlKey:
         self.pos += 1  # Skip "["
-        self.skip_chars(TOML_WS)
+        self.skip_chars(self.WS)
         key = self.parse_key()
 
         if out.flags.is_(key, TomlFlags.EXPLICIT_NEST) or out.flags.is_(key, TomlFlags.FROZEN):
@@ -1301,7 +1238,7 @@ class TomlParser:
 
     def create_list_rule(self, out: TomlOutput) -> TomlKey:
         self.pos += 2  # Skip "[["
-        self.skip_chars(TOML_WS)
+        self.skip_chars(self.WS)
         key = self.parse_key()
 
         if out.flags.is_(key, TomlFlags.FROZEN):
@@ -1361,14 +1298,14 @@ class TomlParser:
         if char != '=':
             raise self.suffixed_err("Expected '=' after a key in a key/value pair")
         self.pos += 1
-        self.skip_chars(TOML_WS)
+        self.skip_chars(self.WS)
         value = self.parse_value()
         return key, value
 
     def parse_key(self) -> TomlKey:
         key_part = self.parse_key_part()
         key: TomlKey = (key_part,)
-        self.skip_chars(TOML_WS)
+        self.skip_chars(self.WS)
         while True:
             try:
                 char: ta.Optional[str] = self.src[self.pos]
@@ -1377,19 +1314,19 @@ class TomlParser:
             if char != '.':
                 return key
             self.pos += 1
-            self.skip_chars(TOML_WS)
+            self.skip_chars(self.WS)
             key_part = self.parse_key_part()
             key += (key_part,)
-            self.skip_chars(TOML_WS)
+            self.skip_chars(self.WS)
 
     def parse_key_part(self) -> str:
         try:
             char: ta.Optional[str] = self.src[self.pos]
         except IndexError:
             char = None
-        if char in TOML_BARE_KEY_CHARS:
+        if char in self.BARE_KEY_CHARS:
             start_pos = self.pos
-            self.skip_chars(TOML_BARE_KEY_CHARS)
+            self.skip_chars(self.BARE_KEY_CHARS)
             return self.src[start_pos:self.pos]
         if char == "'":
             return self.parse_literal_str()
@@ -1432,7 +1369,7 @@ class TomlParser:
         nested_dict = TomlNestedDict()
         flags = TomlFlags()
 
-        self.skip_chars(TOML_WS)
+        self.skip_chars(self.WS)
         if self.src.startswith('}', self.pos):
             self.pos += 1
             return nested_dict.dict
@@ -1448,7 +1385,7 @@ class TomlParser:
             if key_stem in nest:
                 raise self.suffixed_err(f'Duplicate inline table key {key_stem!r}')
             nest[key_stem] = value
-            self.skip_chars(TOML_WS)
+            self.skip_chars(self.WS)
             c = self.src[self.pos:self.pos + 1]
             if c == '}':
                 self.pos += 1
@@ -1458,7 +1395,7 @@ class TomlParser:
             if isinstance(value, (dict, list)):
                 flags.set(key, TomlFlags.FROZEN, recursive=True)
             self.pos += 1
-            self.skip_chars(TOML_WS)
+            self.skip_chars(self.WS)
 
     def parse_basic_str_escape(self, multiline: bool = False) -> str:
         escape_id = self.src[self.pos:self.pos + 2]
@@ -1467,7 +1404,7 @@ class TomlParser:
             # Skip whitespace until next non-whitespace character or end of the doc. Error if non-whitespace is found
             # before newline.
             if escape_id != '\\\n':
-                self.skip_chars(TOML_WS)
+                self.skip_chars(self.WS)
                 try:
                     char = self.src[self.pos]
                 except IndexError:
@@ -1475,34 +1412,38 @@ class TomlParser:
                 if char != '\n':
                     raise self.suffixed_err("Unescaped '\\' in a string")
                 self.pos += 1
-            self.skip_chars(TOML_WS_AND_NEWLINE)
+            self.skip_chars(self.WS_AND_NEWLINE)
             return ''
         if escape_id == '\\u':
             return self.parse_hex_char(4)
         if escape_id == '\\U':
             return self.parse_hex_char(8)
         try:
-            return TOML_BASIC_STR_ESCAPE_REPLACEMENTS[escape_id]
+            return self.BASIC_STR_ESCAPE_REPLACEMENTS[escape_id]
         except KeyError:
             raise self.suffixed_err("Unescaped '\\' in a string") from None
 
     def parse_basic_str_escape_multiline(self) -> str:
         return self.parse_basic_str_escape(multiline=True)
 
+    @classmethod
+    def is_unicode_scalar_value(cls, codepoint: int) -> bool:
+        return (0 <= codepoint <= 55295) or (57344 <= codepoint <= 1114111)
+
     def parse_hex_char(self, hex_len: int) -> str:
         hex_str = self.src[self.pos:self.pos + hex_len]
-        if len(hex_str) != hex_len or not TOML_HEXDIGIT_CHARS.issuperset(hex_str):
+        if len(hex_str) != hex_len or not self.HEXDIGIT_CHARS.issuperset(hex_str):
             raise self.suffixed_err('Invalid hex value')
         self.pos += hex_len
         hex_int = int(hex_str, 16)
-        if not toml_is_unicode_scalar_value(hex_int):
+        if not self.is_unicode_scalar_value(hex_int):
             raise self.suffixed_err('Escaped character is not a Unicode scalar value')
         return chr(hex_int)
 
     def parse_literal_str(self) -> str:
         self.pos += 1  # Skip starting apostrophe
         start_pos = self.pos
-        self.skip_until("'", error_on=TOML_ILLEGAL_LITERAL_STR_CHARS, error_on_eof=True)
+        self.skip_until("'", error_on=self.ILLEGAL_LITERAL_STR_CHARS, error_on_eof=True)
         end_pos = self.pos
         self.pos += 1
         return self.src[start_pos:end_pos]  # Skip ending apostrophe
@@ -1517,7 +1458,7 @@ class TomlParser:
             start_pos = self.pos
             self.skip_until(
                 "'''",
-                error_on=TOML_ILLEGAL_MULTILINE_LITERAL_STR_CHARS,
+                error_on=self.ILLEGAL_MULTILINE_LITERAL_STR_CHARS,
                 error_on_eof=True,
             )
             result = self.src[start_pos:self.pos]
@@ -1537,10 +1478,10 @@ class TomlParser:
 
     def parse_basic_str(self, *, multiline: bool) -> str:
         if multiline:
-            error_on = TOML_ILLEGAL_MULTILINE_BASIC_STR_CHARS
+            error_on = self.ILLEGAL_MULTILINE_BASIC_STR_CHARS
             parse_escapes = self.parse_basic_str_escape_multiline
         else:
-            error_on = TOML_ILLEGAL_BASIC_STR_CHARS
+            error_on = self.ILLEGAL_BASIC_STR_CHARS
             parse_escapes = self.parse_basic_str_escape
         result = ''
         start_pos = self.pos
@@ -1609,25 +1550,25 @@ class TomlParser:
             return self.parse_inline_table()
 
         # Dates and times
-        datetime_match = TOML_RE_DATETIME.match(self.src, self.pos)
+        datetime_match = self.RE_DATETIME.match(self.src, self.pos)
         if datetime_match:
             try:
-                datetime_obj = toml_match_to_datetime(datetime_match)
+                datetime_obj = self.match_to_datetime(datetime_match)
             except ValueError as e:
                 raise self.suffixed_err('Invalid date or datetime') from e
             self.pos = datetime_match.end()
             return datetime_obj
-        localtime_match = TOML_RE_LOCALTIME.match(self.src, self.pos)
+        localtime_match = self.RE_LOCALTIME.match(self.src, self.pos)
         if localtime_match:
             self.pos = localtime_match.end()
-            return toml_match_to_localtime(localtime_match)
+            return self.match_to_localtime(localtime_match)
 
         # Integers and "normal" floats. The regex will greedily match any type starting with a decimal char, so needs to
         # be located after handling of dates and times.
-        number_match = TOML_RE_NUMBER.match(self.src, self.pos)
+        number_match = self.RE_NUMBER.match(self.src, self.pos)
         if number_match:
             self.pos = number_match.end()
-            return toml_match_to_number(number_match, self.parse_float)
+            return self.match_to_number(number_match, self.parse_float)
 
         # Special floats
         first_three = self.src[self.pos:self.pos + 3]
@@ -1658,28 +1599,89 @@ class TomlParser:
             pos = self.pos
         return TomlDecodeError(f'{msg} (at {self.coord_repr(pos)})')
 
+    _TIME_RE_STR = r'([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(?:\.([0-9]{1,6})[0-9]*)?'
 
-def toml_is_unicode_scalar_value(codepoint: int) -> bool:
-    return (0 <= codepoint <= 55295) or (57344 <= codepoint <= 1114111)
+    RE_NUMBER = re.compile(
+        r"""
+        0
+        (?:
+            x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*   # hex
+            |
+            b[01](?:_?[01])*                 # bin
+            |
+            o[0-7](?:_?[0-7])*               # oct
+        )
+        |
+        [+-]?(?:0|[1-9](?:_?[0-9])*)         # dec, integer part
+        (?P<floatpart>
+            (?:\.[0-9](?:_?[0-9])*)?         # optional fractional part
+            (?:[eE][+-]?[0-9](?:_?[0-9])*)?  # optional exponent part
+        )
+        """,
+        flags=re.VERBOSE,
+    )
 
+    RE_LOCALTIME = re.compile(_TIME_RE_STR)
 
-def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
-    """A decorator to make `parse_float` safe.
+    RE_DATETIME = re.compile(
+        rf"""
+        ([0-9]{{4}})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])  # date, e.g. 1988-10-27
+        (?:
+            [Tt ]
+            {_TIME_RE_STR}
+            (?:([Zz])|([+-])([01][0-9]|2[0-3]):([0-5][0-9]))?  # optional time offset
+        )?
+        """,
+        flags=re.VERBOSE,
+    )
 
-    `parse_float` must not return dicts or lists, because these types would be mixed with parsed TOML tables and arrays,
-    thus confusing the parser. The returned decorated callable raises `ValueError` instead of returning illegal types.
-    """
-    # The default `float` callable never returns illegal types. Optimize it.
-    if parse_float is float:
-        return float
+    @classmethod
+    def match_to_datetime(cls, match: re.Match) -> ta.Union[datetime.datetime, datetime.date]:
+        """
+        Convert a `RE_DATETIME` match to `datetime.datetime` or `datetime.date`.
 
-    def safe_parse_float(float_str: str) -> ta.Any:
-        float_value = parse_float(float_str)
-        if isinstance(float_value, (dict, list)):
-            raise ValueError('parse_float must not return dicts or lists')  # noqa
-        return float_value
+        Raises ValueError if the match does not correspond to a valid date or datetime.
+        """
 
-    return safe_parse_float
+        (
+            year_str,
+            month_str,
+            day_str,
+            hour_str,
+            minute_str,
+            sec_str,
+            micros_str,
+            zulu_time,
+            offset_sign_str,
+            offset_hour_str,
+            offset_minute_str,
+        ) = match.groups()
+        year, month, day = int(year_str), int(month_str), int(day_str)
+        if hour_str is None:
+            return datetime.date(year, month, day)
+        hour, minute, sec = int(hour_str), int(minute_str), int(sec_str)
+        micros = int(micros_str.ljust(6, '0')) if micros_str else 0
+        if offset_sign_str:
+            tz: ta.Optional[datetime.tzinfo] = toml_cached_tz(
+                offset_hour_str, offset_minute_str, offset_sign_str,
+            )
+        elif zulu_time:
+            tz = datetime.UTC
+        else:  # local date-time
+            tz = None
+        return datetime.datetime(year, month, day, hour, minute, sec, micros, tzinfo=tz)
+
+    @classmethod
+    def match_to_localtime(cls, match: re.Match) -> datetime.time:
+        hour_str, minute_str, sec_str, micros_str = match.groups()
+        micros = int(micros_str.ljust(6, '0')) if micros_str else 0
+        return datetime.time(int(hour_str), int(minute_str), int(sec_str), micros)
+
+    @classmethod
+    def match_to_number(cls, match: re.Match, parse_float: TomlParseFloat) -> ta.Any:
+        if match.group('floatpart'):
+            return parse_float(match.group())
+        return int(match.group(), 0)
 
 
 ########################################
