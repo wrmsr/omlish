@@ -13,7 +13,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class SqlalchemyWrapper(api.ContextCloser, ta.Generic[T]):
+class SqlalchemyApiWrapper(api.ContextCloser, ta.Generic[T]):
     def __init__(
             self,
             u: T,
@@ -34,7 +34,7 @@ class SqlalchemyWrapper(api.ContextCloser, ta.Generic[T]):
 ##
 
 
-class SqlalchemyRows(api.Rows):
+class SqlalchemyApiRows(api.Rows):
     def __init__(self, columns: api.Columns, rows: ta.Sequence[api.Row]) -> None:
         super().__init__()
 
@@ -51,7 +51,7 @@ class SqlalchemyRows(api.Rows):
         return next(self._it)
 
 
-class SqlalchemyConn(SqlalchemyWrapper[sa.engine.Connection], api.Conn):
+class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
     @property
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
@@ -66,19 +66,19 @@ class SqlalchemyConn(SqlalchemyWrapper[sa.engine.Connection], api.Conn):
                 api.Row(cols, tuple(sa_row))
                 for sa_row in sa_rows
             ]
-        return SqlalchemyRows(cols, rows)
+        return SqlalchemyApiRows(cols, rows)
 
 
-class SqlalchemyDb(SqlalchemyWrapper[sa.engine.Engine], api.Db):
+class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
     def connect(self) -> api.Conn:
-        return SqlalchemyConn(self._u.connect(), auto_close=True)
+        return SqlalchemyApiConn(self._u.connect(), auto_close=True)
 
     @property
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
 
 
-class SqlalchemyAdapter(api.Adapter):
+class SqlalchemyApiAdapter(api.Adapter):
     def scan_type(self, c: api.Column) -> type:
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class SqlalchemyAdapter(api.Adapter):
 
 
 @ta.overload
-def api_adapt(o: sa.engine.Connection) -> SqlalchemyConn:
+def api_adapt(o: sa.engine.Connection) -> SqlalchemyApiConn:
     ...
 
 
@@ -97,7 +97,7 @@ def api_adapt(o: api.Conn) -> api.Conn:
 
 
 @ta.overload
-def api_adapt(o: sa.engine.Engine) -> SqlalchemyDb:
+def api_adapt(o: sa.engine.Engine) -> SqlalchemyApiDb:
     ...
 
 
@@ -108,12 +108,12 @@ def api_adapt(o: api.Db) -> api.Db:
 
 def api_adapt(o):
     if isinstance(o, sa.engine.Connection):
-        return SqlalchemyConn(o)
+        return SqlalchemyApiConn(o)
     elif isinstance(o, api.Conn):
         return o
 
     elif isinstance(o, sa.engine.Engine):
-        return SqlalchemyDb(o)
+        return SqlalchemyApiDb(o)
     elif isinstance(o, api.Db):
         return o
 

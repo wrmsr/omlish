@@ -6,7 +6,7 @@ from .... import lang
 from ... import api
 from ... import queries
 from ...queries import Q
-from ..apiadapter import SqlalchemyDb
+from ..apiadapter import api_adapt
 
 
 ##
@@ -39,7 +39,7 @@ def test_sqlite() -> None:
                 ],
             )
 
-        db = SqlalchemyDb(engine)
+        db = api_adapt(engine)
         q = Q.select(
             [Q.i.name],
             Q.i.t1,

@@ -20,6 +20,7 @@ from .multi import MultiKind
 from .relations import JoinKind
 from .relations import Relation
 from .selects import Select
+from .selects import SelectItem
 from .stmts import Stmt
 from .unary import UnaryOp
 from .unary import UnaryOps
@@ -78,9 +79,14 @@ def _install_standard_marshalling() -> None:
         Expr,
         Node,
         Relation,
+        SelectItem,
         Stmt,
     ]:
-        p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
+        p = msh.polymorphism_from_subclasses(
+            cls,
+            naming=msh.Naming.SNAKE,
+            strip_suffix='auto',
+        )
         msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
         msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
 

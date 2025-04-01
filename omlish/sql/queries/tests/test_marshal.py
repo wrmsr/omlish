@@ -16,10 +16,16 @@ def test_marshal():
                 Q.ne(Q.i('bar'), Q.add(Q.i('baz'), 2)),
             ),
         ),
+
         Q.insert(
             ['foo', 'bar'],
             'some_table',
             [123, 'abc'],
+        ),
+
+        Q.select(
+            [Q.star],
+            Q.n.barf,
         ),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))

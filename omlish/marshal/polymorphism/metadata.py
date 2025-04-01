@@ -109,12 +109,11 @@ def polymorphism_from_subclasses(
         ty: type,
         *,
         naming: Naming | None = None,
-        strip_suffix: bool = False,
+        strip_suffix: bool | ta.Literal['auto'] = False,
 ) -> Polymorphism:
-    dct: dict[str, Impl] = {}
-
     seen: set[type] = set()
     todo: list[type] = [ty]
+    impls: set[type] = set()
     while todo:
         cur = todo.pop()
         seen.add(cur)
@@ -124,6 +123,13 @@ def polymorphism_from_subclasses(
         if lang.is_abstract_class(cur):
             continue
 
+        impls.add(cur)
+
+    if strip_suffix == 'auto':
+        strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impls)
+
+    dct: dict[str, Impl] = {}
+    for cur in impls:
         name = cur.__name__
         if strip_suffix:
             name = lang.strip_suffix(name, ty.__name__)
