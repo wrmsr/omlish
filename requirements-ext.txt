@@ -98,7 +98,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.5.2
+accelerate==1.6.0
 
 pytorch-lightning==2.5.1
 
@@ -207,8 +207,8 @@ langchain-openai==0.3.9
 langchain-qdrant==0.2.0  # @omlish-venv !13
 langchain-text-splitters==0.3.7
 
-langgraph==0.3.21
-langsmith==0.3.21
+langgraph==0.3.22
+langsmith==0.3.22
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0

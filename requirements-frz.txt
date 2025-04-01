@@ -1,5 +1,5 @@
 absl-py==2.2.1
-accelerate==1.5.2
+accelerate==1.6.0
 aiofiles==24.1.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.11.15
@@ -38,7 +38,7 @@ bitsandbytes==0.42.0
 black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
-blis==1.2.0
+blis==1.2.1
 boto3==1.37.24
 botocore==1.37.24
 Brotli==1.1.0
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.2.1
-duckduckgo_search==7.5.5
+duckduckgo_search==2025.4.1
 durationpy==0.9
 einops==0.8.1
 elastic-transport==8.17.1
@@ -142,7 +142,7 @@ googleapis-common-protos==1.69.2
 gprof2dot==2024.6.6
 gpt4all==2.8.2
 greenlet==3.1.1
-griffe==1.7.1
+griffe==1.7.2
 grpcio==1.71.0
 grpcio-status==1.62.3
 grpcio-tools==1.62.3
@@ -227,11 +227,11 @@ langchain-text-splitters==0.3.7
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.3.21
+langgraph==0.3.22
 langgraph-checkpoint==2.0.23
 langgraph-prebuilt==0.1.7
 langgraph-sdk==0.1.60
-langsmith==0.3.21
+langsmith==0.3.22
 language_data==1.3.0
 lazy_loader==0.4
 libclang==18.1.1
