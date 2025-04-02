@@ -137,15 +137,12 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
 
 
 class TypedValueGeneric(ta.Generic[TypedValueT], lang.Abstract):
-    _typed_value_type: ta.ClassVar[rfl.TypeInfo]
+    _typed_value_type: ta.ClassVar[rfl.Type]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if (
-                TypedValueGeneric not in cls.__bases__ or
-                '_typed_value_type' in cls.__dict__
-        ):
+        if '_typed_value_type' in cls.__dict__:
             return
 
         g_mro = rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(cls)
