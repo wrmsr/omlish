@@ -208,20 +208,44 @@ class UnmarshalerFactoryMatchClass(
 ##
 
 
-@dc.dataclass(frozen=True)
-class MultiMarshalerFactory(
-    mfs.MultiMatchFn[['MarshalContext', rfl.Type], Marshaler],
-    SimpleMarshalerFactory,
-):
-    pass
+class MultiMarshalerFactory(MarshalerFactory):
+    def __init__(
+            self,
+            fs: ta.Iterable[MarshalerFactory],
+            *,
+            strict: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._fs = list(fs)
+        self._mmf: mfs.MultiMatchFn[['MarshalContext', rfl.Type], Marshaler] = mfs.MultiMatchFn(
+            [f.make_marshaler for f in self._fs],
+            strict=strict,
+        )
+
+    @property
+    def make_marshaler(self) -> MarshalerMaker:
+        return self._mmf
 
 
-@dc.dataclass(frozen=True)
-class MultiUnmarshalerFactory(
-    mfs.MultiMatchFn[['UnmarshalContext', rfl.Type], Unmarshaler],
-    SimpleUnmarshalerFactory,
-):
-    pass
+class MultiUnmarshalerFactory(UnmarshalerFactory):
+    def __init__(
+            self,
+            fs: ta.Iterable[UnmarshalerFactory],
+            *,
+            strict: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._fs = list(fs)
+        self._mmf: mfs.MultiMatchFn[['UnmarshalContext', rfl.Type], Unmarshaler] = mfs.MultiMatchFn(
+            [f.make_unmarshaler for f in self._fs],
+            strict=strict,
+        )
+
+    @property
+    def make_unmarshaler(self) -> UnmarshalerMaker:
+        return self._mmf
 
 
 ##
@@ -245,6 +269,36 @@ class TypeMapUnmarshalerFactory(
     @property
     def make_unmarshaler(self) -> UnmarshalerMaker:
         return self
+
+
+# class TypeMapMarshalerFactory(MarshalerFactory):
+#     def __init__(self, m: ta.Mapping[rfl.Type, MarshalerFactory]) -> None:
+#         super().__init__()
+#
+#         self._m = m
+#         self._tmf: TypeMapFactory['MarshalContext', Marshaler] = TypeMapFactory({
+#             t: f.make_marshaler
+#             for t, f in m.items()
+#         })
+#
+#     @property
+#     def make_marshaler(self) -> MarshalerMaker:
+#         return self._tmf
+
+
+# class TypeMapUnmarshalerFactory(UnmarshalerFactory):
+#     def __init__(self, m: ta.Mapping[rfl.Type, UnmarshalerFactory]) -> None:
+#         super().__init__()
+#
+#         self._m = m
+#         self._tmf: TypeMapFactory['UnmarshalContext', Unmarshaler] = TypeMapFactory({
+#             t: f.make_unmarshaler
+#             for t, f in m.items()
+#         })
+#
+#     @property
+#     def make_unmarshaler(self) -> UnmarshalerMaker:
+#         return self._tmf
 
 
 ##

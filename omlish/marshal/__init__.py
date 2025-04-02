@@ -2,11 +2,23 @@ from .base import (  # noqa
     Marshaler,
     Unmarshaler,
 
+    MarshalerMaker,
+    UnmarshalerMaker,
+
     MarshalerFactory,
     UnmarshalerFactory,
 
+    MarshalerFactory_,
+    UnmarshalerFactory_,
+
+    SimpleMarshalerFactory,
+    SimpleUnmarshalerFactory,
+
     MarshalerFactoryMatchClass,
     UnmarshalerFactoryMatchClass,
+
+    MultiMarshalerFactory,
+    MultiUnmarshalerFactory,
 
     TypeMapMarshalerFactory,
     TypeMapUnmarshalerFactory,
