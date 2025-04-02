@@ -6,11 +6,14 @@ from ... import check
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..values import Value
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -21,7 +24,7 @@ class EnumMarshaler(Marshaler):
         return o.name
 
 
-class EnumMarshalerFactory(MarshalerFactory):
+class EnumMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and issubclass(rty, enum.Enum)
 
@@ -39,7 +42,7 @@ class EnumUnmarshaler(Unmarshaler):
         return self.ty[check.isinstance(v, str)]
 
 
-class EnumUnmarshalerFactory(UnmarshalerFactory):
+class EnumUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and issubclass(rty, enum.Enum)
 

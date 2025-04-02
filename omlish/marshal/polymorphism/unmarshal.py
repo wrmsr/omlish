@@ -8,7 +8,7 @@ from ... import lang
 from ... import reflect as rfl
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..values import Value
 from .metadata import FieldTypeTagging
 from .metadata import Impls
@@ -75,7 +75,7 @@ def make_polymorphism_unmarshaler(
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
+class PolymorphismUnmarshalerFactory(SimpleUnmarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 

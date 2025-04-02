@@ -7,7 +7,7 @@ from ... import lang
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..values import Value
 from .metadata import FieldTypeTagging
 from .metadata import Impls
@@ -68,7 +68,7 @@ def make_polymorphism_marshaler(
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismMarshalerFactory(MarshalerFactory):
+class PolymorphismMarshalerFactory(SimpleMarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 

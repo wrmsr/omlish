@@ -3,13 +3,16 @@ import typing as ta
 
 from ... import check
 from ... import reflect as rfl
+from ..base import SimpleMarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
 from ..values import Value
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -21,7 +24,7 @@ class LiteralMarshaler(Marshaler):
         return self.e.marshal(ctx, check.in_(o, self.vs))
 
 
-class LiteralMarshalerFactory(MarshalerFactory):
+class LiteralMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.Literal)
 
@@ -40,7 +43,7 @@ class LiteralUnmarshaler(Unmarshaler):
         return check.in_(self.e.unmarshal(ctx, v), self.vs)
 
 
-class LiteralUnmarshalerFactory(UnmarshalerFactory):
+class LiteralUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.Literal)
 

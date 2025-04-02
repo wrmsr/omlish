@@ -1,10 +1,13 @@
 from ..funcs import match as mfs
 from .base import MarshalerFactory
+from .base import MarshalerFactory_
 from .base import RecursiveMarshalerFactory
 from .base import RecursiveUnmarshalerFactory
 from .base import TypeCacheMarshalerFactory
 from .base import TypeCacheUnmarshalerFactory
 from .base import UnmarshalerFactory
+from .base import MultiMarshalerFactory
+from .base import MultiUnmarshalerFactory
 from .composite.iterables import IterableMarshalerFactory
 from .composite.iterables import IterableUnmarshalerFactory
 from .composite.literals import LiteralMarshalerFactory
@@ -65,7 +68,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
 def new_standard_marshaler_factory() -> MarshalerFactory:
     return TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
-            mfs.MultiMatchFn(
+            MultiMarshalerFactory(
                 list(STANDARD_MARSHALER_FACTORIES),
             ),
         ),
@@ -98,8 +101,29 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
 def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
     return TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
-            mfs.MultiMatchFn(
+            MultiUnmarshalerFactory(
                 list(STANDARD_UNMARSHALER_FACTORIES),
             ),
         ),
     )
+
+
+##
+
+
+def install_standard_factories(
+        *factories: MarshalerFactory | UnmarshalerFactory,
+) -> None:
+    for f in factories:
+        k = False
+
+        if isinstance(f, MarshalerFactory):
+            STANDARD_MARSHALER_FACTORIES[0:0] = [f]
+            k = True
+
+        if isinstance(f, UnmarshalerFactory):
+            STANDARD_UNMARSHALER_FACTORIES[0:0] = [f]
+            k = True
+
+        if not k:
+            raise TypeError(f)

@@ -7,11 +7,11 @@ from ... import lang
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..base import Option
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from .marshal import ObjectMarshaler
 from .metadata import FieldInfo
 from .metadata import FieldInfos
@@ -55,7 +55,7 @@ def get_namedtuple_field_infos(
 ##
 
 
-class NamedtupleMarshalerFactory(MarshalerFactory):
+class NamedtupleMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return _is_namedtuple(rty)
 
@@ -79,7 +79,7 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
 ##
 
 
-class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
+class NamedtupleUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return _is_namedtuple(rty)
 

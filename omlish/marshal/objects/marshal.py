@@ -6,7 +6,7 @@ from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..values import Value
 from .metadata import FieldInfo
 from .metadata import FieldInfos
@@ -86,7 +86,7 @@ class ObjectMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
-class SimpleObjectMarshalerFactory(MarshalerFactory):
+class SimpleObjectMarshalerFactory(SimpleMarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
 
     _: dc.KW_ONLY

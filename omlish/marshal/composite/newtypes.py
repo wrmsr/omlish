@@ -2,13 +2,16 @@ from ... import check
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
 
 
-class NewtypeMarshalerFactory(MarshalerFactory):
+##
+
+
+class NewtypeMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.NewType)
 
@@ -16,7 +19,7 @@ class NewtypeMarshalerFactory(MarshalerFactory):
         return ctx.make(check.isinstance(rty, rfl.NewType).ty)
 
 
-class NewtypeUnmarshalerFactory(UnmarshalerFactory):
+class NewtypeUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.NewType)
 

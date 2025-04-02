@@ -3,6 +3,8 @@ import dataclasses as dc
 from ...funcs import match as mfs
 from ..base import MarshalContext
 from ..base import MarshalerFactory
+from ..base import MultiMarshalerFactory
+from ..base import MultiUnmarshalerFactory
 from ..base import RecursiveMarshalerFactory
 from ..base import RecursiveUnmarshalerFactory
 from ..base import TypeCacheMarshalerFactory
@@ -55,7 +57,7 @@ P_POLYMORPHISM = Polymorphism(
 def _test_polymorphism(tt):
     mf: MarshalerFactory = TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
-            mfs.MultiMatchFn([
+            MultiMarshalerFactory([
                 PolymorphismMarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassMarshalerFactory(),
                 PRIMITIVE_MARSHALER_FACTORY,
@@ -65,7 +67,7 @@ def _test_polymorphism(tt):
 
     uf: UnmarshalerFactory = TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
-            mfs.MultiMatchFn([
+            MultiUnmarshalerFactory([
                 PolymorphismUnmarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassUnmarshalerFactory(),
                 PRIMITIVE_UNMARSHALER_FACTORY,

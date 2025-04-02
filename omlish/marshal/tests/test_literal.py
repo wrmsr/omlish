@@ -16,8 +16,8 @@ def test_literal():
 
     mf = new_standard_marshaler_factory()
     mc = MarshalContext(r, factory=mf)
-    assert mf(mc, rfl.type_(Foo)).marshal(mc, 'a') == 'a'
+    assert mf.make_marshaler(mc, rfl.type_(Foo)).marshal(mc, 'a') == 'a'
 
     uf = new_standard_unmarshaler_factory()
     uc = UnmarshalContext(r, factory=uf)
-    assert uf(uc, rfl.type_(Foo)).unmarshal(uc, 'a') == 'a'
+    assert uf.make_unmarshaler(uc, rfl.type_(Foo)).unmarshal(uc, 'a') == 'a'

@@ -12,11 +12,11 @@ from ... import reflect as rfl
 from ...lite import marshal as lm
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..base import Option
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..naming import Naming
 from ..naming import translate_name
 from .marshal import ObjectMarshaler
@@ -183,7 +183,7 @@ class AbstractDataclassFactory(lang.Abstract):
 ##
 
 
-class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
+class DataclassMarshalerFactory(AbstractDataclassFactory, SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 
@@ -210,7 +210,7 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
 ##
 
 
-class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
+class DataclassUnmarshalerFactory(AbstractDataclassFactory, SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 

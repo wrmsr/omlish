@@ -8,10 +8,10 @@ from ... import reflect as rfl
 from ...funcs import match as mfs
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..values import Value
 from .marshal import make_polymorphism_marshaler
 from .metadata import Impls
@@ -69,7 +69,7 @@ class PrimitiveUnionMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
-class PrimitiveUnionMarshalerFactory(MarshalerFactory):
+class PrimitiveUnionMarshalerFactory(SimpleMarshalerFactory):
     tys: ta.Sequence[type] = PRIMITIVE_UNION_TYPES
 
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
@@ -94,7 +94,7 @@ class PrimitiveUnionUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
-class PrimitiveUnionUnmarshalerFactory(UnmarshalerFactory):
+class PrimitiveUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
     tys: ta.Sequence[type] = PRIMITIVE_UNION_TYPES
 
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
@@ -140,12 +140,12 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, MarshalerFactory):
+class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, SimpleMarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         return make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, UnmarshalerFactory):
+class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, SimpleUnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         return make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)

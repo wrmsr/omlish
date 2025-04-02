@@ -6,7 +6,7 @@ from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..values import Value
 from .metadata import FieldInfo
 from .metadata import FieldInfos
@@ -118,7 +118,7 @@ class ObjectUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
-class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
+class SimpleObjectUnmarshalerFactory(SimpleUnmarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
 
     _: dc.KW_ONLY

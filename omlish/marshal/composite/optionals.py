@@ -5,11 +5,14 @@ from ... import check
 from ... import reflect as rfl
 from ..base import MarshalContext
 from ..base import Marshaler
-from ..base import MarshalerFactory
+from ..base import SimpleMarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
 from ..values import Value
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -22,7 +25,7 @@ class OptionalMarshaler(Marshaler):
         return self.e.marshal(ctx, o)
 
 
-class OptionalMarshalerFactory(MarshalerFactory):
+class OptionalMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.Union) and rty.is_optional
 
@@ -40,7 +43,7 @@ class OptionalUnmarshaler(Unmarshaler):
         return self.e.unmarshal(ctx, v)
 
 
-class OptionalUnmarshalerFactory(UnmarshalerFactory):
+class OptionalUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, rfl.Union) and rty.is_optional
 
