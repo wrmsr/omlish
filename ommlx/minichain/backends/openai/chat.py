@@ -209,7 +209,7 @@ class OpenaiChatModel(ChatModel):
                 ))
                 for choice in response['choices']
             ],
-            usage=TokenUsage(
+            token_usage=TokenUsage(
                 input=response['usage']['prompt_tokens'],
                 output=response['usage']['completion_tokens'],
                 total=response['usage']['total_tokens'],

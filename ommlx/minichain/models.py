@@ -66,8 +66,8 @@ class ModelRequest(
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ModelResponse(ServiceResponse[ModelOutputT], lang.Abstract):
-    usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
-    reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    token_usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    finish_reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 class Model(  # noqa

@@ -12,6 +12,8 @@
 # from ...generative import Generative
 # from ...generative import MaxTokens
 # from ...generative import Temperature
+# from ...models import FinishReason
+# from ...models import TokenUsage
 # from ...streams import StreamService
 # from ...streams import StreamServiceResponse
 # from ..llamacpp import LlamacppChatModel
@@ -32,6 +34,12 @@
 #
 #
 # ##
+#
+#
+# @dc.dataclass(frozen=True, kw_only=True)
+# class Chat2Output:
+#     token_usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
+#     finish_reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 #
 #
 # @dc.dataclass(frozen=True, kw_only=True)
