@@ -2,7 +2,10 @@
 TODO:
  - -> omlish.collections?
   - potential circ-dep w/ om.dc, but will proxy_init anyway
- - Accessor inputs/outputs should be subtype of class generic param
+  - useful for nodal
+ - Accessor inputs/outputs should *ideally* be subtype of class generic param
+  - but can't make a typevar with a bound of another typevar
+ - def find? all subtypes? cached?
 """
 import abc
 import typing as ta
