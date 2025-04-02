@@ -1,3 +1,3 @@
-from .llm import Llam3Llm
+from .llm import Llama3Llm  # noqa
 from .tokenization import Tokenizer  # noqa
 from .transformer import Transformer  # noqa

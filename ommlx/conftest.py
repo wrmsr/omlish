@@ -19,6 +19,12 @@ def pytest_addhooks(pluginmanager):
 
     ptp.depskip.register(
         pluginmanager,
+        [r'ommlx/tinygrad/.*\.py'],
+        [r'tinygrad(\..*)?'],
+    )
+
+    ptp.depskip.register(
+        pluginmanager,
         [r'ommlx/torch/.*\.py'],
         [r'torch(\..*)?'],
     )

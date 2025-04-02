@@ -11,7 +11,7 @@ from .loading import build_transformer
 from .tokenization import Tokenizer
 
 
-class Llam3Llm:
+class Llama3Llm:
     def __init__(
             self,
             model_path: pathlib.Path,
