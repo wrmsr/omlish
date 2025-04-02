@@ -27,6 +27,8 @@ def timestep_embedding(timesteps: Tensor, dim: int, max_period=10000):
 
 class ResBlock:
     def __init__(self, channels: int, emb_channels: int, out_channels: int):
+        super().__init__()
+
         self.in_layers = [
             GroupNorm(32, channels),
             Tensor.silu,
@@ -58,6 +60,8 @@ class ResBlock:
 
 class CrossAttention:
     def __init__(self, query_dim: int, ctx_dim: int, n_heads: int, d_head: int):
+        super().__init__()
+
         self.to_q = Linear(query_dim, n_heads * d_head, bias=False)
         self.to_k = Linear(ctx_dim, n_heads * d_head, bias=False)
         self.to_v = Linear(ctx_dim, n_heads * d_head, bias=False)
@@ -79,6 +83,8 @@ class CrossAttention:
 
 class GEGLU:
     def __init__(self, dim_in: int, dim_out: int):
+        super().__init__()
+
         self.proj = Linear(dim_in, dim_out * 2)
         self.dim_out = dim_out
 
@@ -89,6 +95,8 @@ class GEGLU:
 
 class FeedForward:
     def __init__(self, dim: int, mult: int = 4):
+        super().__init__()
+
         self.net = [
             GEGLU(dim, dim * mult),
             lambda x: x,  # needed for weights loading code to work
@@ -101,6 +109,8 @@ class FeedForward:
 
 class BasicTransformerBlock:
     def __init__(self, dim: int, ctx_dim: int, n_heads: int, d_head: int):
+        super().__init__()
+
         self.attn1 = CrossAttention(dim, dim, n_heads, d_head)
         self.ff = FeedForward(dim)
         self.attn2 = CrossAttention(dim, ctx_dim, n_heads, d_head)
@@ -126,6 +136,8 @@ class SpatialTransformer:
         use_linear: bool,
         depth: int = 1,
     ):
+        super().__init__()
+
         if isinstance(ctx_dim, int):
             ctx_dim = [ctx_dim] * depth
         else:
@@ -165,6 +177,8 @@ class SpatialTransformer:
 
 class Downsample:
     def __init__(self, channels: int):
+        super().__init__()
+
         self.op = Conv2d(channels, channels, 3, stride=2, padding=1)
 
     def __call__(self, x: Tensor) -> Tensor:
@@ -173,6 +187,8 @@ class Downsample:
 
 class Upsample:
     def __init__(self, channels: int):
+        super().__init__()
+
         self.conv = Conv2d(channels, channels, 3, padding=1)
 
     def __call__(self, x: Tensor) -> Tensor:
@@ -202,6 +218,8 @@ class UNetModel:
         d_head: int | None = None,
         n_heads: int | None = None,
     ):
+        super().__init__()
+
         self.model_ch = model_ch
         self.num_res_blocks = [num_res_blocks] * len(channel_mult)
 

@@ -37,6 +37,8 @@ from .unet import UNetModel
 
 class AttnBlock:
     def __init__(self, in_channels):
+        super().__init__()
+
         self.norm = GroupNorm(32, in_channels)
         self.q = Conv2d(in_channels, in_channels, 1)
         self.k = Conv2d(in_channels, in_channels, 1)
@@ -61,6 +63,8 @@ class AttnBlock:
 
 class ResnetBlock:
     def __init__(self, in_channels, out_channels=None):
+        super().__init__()
+
         self.norm1 = GroupNorm(32, in_channels)
         self.conv1 = Conv2d(in_channels, out_channels, 3, padding=1)
         self.norm2 = GroupNorm(32, out_channels)
@@ -79,6 +83,8 @@ class ResnetBlock:
 
 class Mid:
     def __init__(self, block_in):
+        super().__init__()
+
         self.block_1 = ResnetBlock(block_in, block_in)
         self.attn_1 = AttnBlock(block_in)
         self.block_2 = ResnetBlock(block_in, block_in)
@@ -89,6 +95,8 @@ class Mid:
 
 class Decoder:
     def __init__(self):
+        super().__init__()
+
         sz = [(128, 256), (256, 512), (512, 512), (512, 512)]
         self.conv_in = Conv2d(4, 512, 3, padding=1)
         self.mid = Mid(512)
@@ -135,6 +143,8 @@ class Decoder:
 
 class Encoder:
     def __init__(self):
+        super().__init__()
+
         sz = [(128, 128), (128, 256), (256, 512), (512, 512)]
         self.conv_in = Conv2d(3, 128, 3, padding=1)
 
@@ -167,6 +177,8 @@ class Encoder:
 
 class AutoencoderKL:
     def __init__(self):
+        super().__init__()
+
         self.encoder = Encoder()
         self.decoder = Decoder()
         self.quant_conv = Conv2d(8, 8, 1)
@@ -208,6 +220,8 @@ unet_params: dict[str, ta.Any] = {
 
 class StableDiffusion:
     def __init__(self):
+        super().__init__()
+
         self.alphas_cumprod = get_alphas_cumprod()
         self.model = collections.namedtuple('DiffusionModel', ['diffusion_model'])(
             diffusion_model=UNetModel(**unet_params),
@@ -283,6 +297,9 @@ class StableDiffusion:
         return x_prev.realize()
 
 
+##
+
+
 # ** ldm.models.autoencoder.AutoencoderKL (done!)
 # 3x512x512 <--> 4x64x64 (16384)
 # decode torch.Size([1, 4, 64, 64]) torch.Size([1, 3, 512, 512])
@@ -299,7 +316,8 @@ class StableDiffusion:
 # ** ldm.modules.encoders.modules.FrozenCLIPEmbedder
 # cond_stage_model.transformer.text_model
 
-if __name__ == '__main__':
+
+def _main() -> None:
     default_prompt = 'a horse sized cat eating a bagel'
     parser = argparse.ArgumentParser(
         description='Run Stable Diffusion',
@@ -435,3 +453,7 @@ if __name__ == '__main__':
         )
         check.state(distance < 3e-3, f'validation failed with {distance=}')  # higher distance with WINO
         print(colored(f'output validated with {distance=}', 'green'))
+
+
+if __name__ == '__main__':
+    _main()

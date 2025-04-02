@@ -75,6 +75,8 @@ class Tokenizer:
 
     class ClipTokenizer:
         def __init__(self):
+            super().__init__()
+
             self.byte_encoder = Tokenizer.bytes_to_unicode()
             merges = gzip.open(default_bpe()).read().decode('utf-8').split('\n')
             merges = merges[1 : 49152 - 256 - 2 + 1]
@@ -173,6 +175,8 @@ class Closed:
 
     class ClipMlp:
         def __init__(self):
+            super().__init__()
+
             self.fc1 = Linear(768, 3072)
             self.fc2 = Linear(3072, 768)
 
@@ -184,6 +188,8 @@ class Closed:
 
     class ClipAttention:
         def __init__(self):
+            super().__init__()
+
             self.embed_dim = 768
             self.num_heads = 12
             self.head_dim = self.embed_dim // self.num_heads
@@ -214,6 +220,8 @@ class Closed:
 
     class ClipEncoderLayer:
         def __init__(self):
+            super().__init__()
+
             self.self_attn = Closed.ClipAttention()
             self.layer_norm1 = LayerNorm(768)
             self.mlp = Closed.ClipMlp()
@@ -236,6 +244,8 @@ class Closed:
 
     class ClipTextEmbeddings:
         def __init__(self):
+            super().__init__()
+
             self.token_embedding = Embedding(49408, 768)
             self.position_embedding = Embedding(77, 768)
 
@@ -246,6 +256,8 @@ class Closed:
 
     class ClipEncoder:
         def __init__(self, layer_count: int = 12):
+            super().__init__()
+
             self.layers = [Closed.ClipEncoderLayer() for _ in range(layer_count)]
 
         def __call__(
@@ -264,6 +276,8 @@ class Closed:
 
     class ClipTextTransformer:
         def __init__(self, ret_layer_idx: int | None = None):
+            super().__init__()
+
             self.embeddings = Closed.ClipTextEmbeddings()
             self.encoder = Closed.ClipEncoder()
             self.final_layer_norm = LayerNorm(768)
@@ -282,12 +296,16 @@ class Closed:
 
     class ClipTextModel:
         def __init__(self, ret_layer_idx: int | None):
+            super().__init__()
+
             self.text_model = Closed.ClipTextTransformer(ret_layer_idx=ret_layer_idx)
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L331
 class FrozenClosedClipEmbedder(Embedder):
     def __init__(self, ret_layer_idx: int | None = None):
+        super().__init__()
+
         self.tokenizer = Tokenizer.ClipTokenizer()
         self.transformer = Closed.ClipTextModel(ret_layer_idx)
         self.input_key = 'txt'
@@ -311,6 +329,8 @@ class Open:
 
     class MultiheadAttention:
         def __init__(self, dims: int, n_heads: int):
+            super().__init__()
+
             self.dims = dims
             self.n_heads = n_heads
             self.d_head = self.dims // self.n_heads
@@ -344,6 +364,8 @@ class Open:
 
     class Mlp:
         def __init__(self, dims, hidden_dims):
+            super().__init__()
+
             self.c_fc = Linear(dims, hidden_dims)
             self.c_proj = Linear(hidden_dims, dims)
 
@@ -353,6 +375,8 @@ class Open:
     # https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/src/open_clip/transformer.py#L210
     class ResidualAttentionBlock:
         def __init__(self, dims: int, n_heads: int, mlp_ratio: float):
+            super().__init__()
+
             self.ln_1 = LayerNorm(dims)
             self.attn = Open.MultiheadAttention(dims, n_heads)
 
@@ -376,6 +400,8 @@ class Open:
         def __init__(
             self, dims: int, layers: int, n_heads: int, mlp_ratio: float = 4.0,
         ):
+            super().__init__()
+
             self.resblocks = [
                 Open.ResidualAttentionBlock(dims, n_heads, mlp_ratio)
                 for _ in range(layers)
@@ -397,6 +423,8 @@ class Open:
             vocab_size: int = 49408,
             ctx_length: int = 77,
         ):
+            super().__init__()
+
             self.token_embedding = Embedding(vocab_size, width)
             self.positional_embedding = Tensor.empty(ctx_length, width)
             self.transformer = Open.ClipTransformer(width, layers, n_heads)
@@ -419,6 +447,8 @@ class Open:
         def __init__(
             self, width: int, layers: int, d_head: int, image_size: int, patch_size: int,
         ):
+            super().__init__()
+
             grid_size = image_size // patch_size
             n_heads = width // d_head
             check.state(n_heads * d_head == width)
@@ -463,6 +493,8 @@ class FrozenOpenClipEmbedder(Embedder):
         return_pooled: bool,
         ln_penultimate: bool = False,
     ):
+        super().__init__()
+
         self.tokenizer = Tokenizer.ClipTokenizer()
         self.model = Open.ClipTextTransformer(dims, n_heads, layers)
         self.return_pooled = return_pooled
@@ -541,6 +573,8 @@ clip_configs: dict = {
 
 class OpenClipEncoder:
     def __init__(self, dims: int, text_cfg: dict, vision_cfg: dict, **_):
+        super().__init__()
+
         self.visual = Open.ClipVisionTransformer(**vision_cfg)
 
         text = Open.ClipTextTransformer(**text_cfg)

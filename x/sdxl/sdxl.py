@@ -116,12 +116,16 @@ def tensor_identity(x: Tensor) -> Tensor:
 
 class DiffusionModel:
     def __init__(self, *args, **kwargs):
+        super().__init__()
+
         self.diffusion_model = UNetModel(*args, **kwargs)
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L913
 class ConcatTimestepEmbedderND(Embedder):
     def __init__(self, outdim: int, input_key: str):
+        super().__init__()
+
         self.outdim = outdim
         self.input_key = input_key
 
@@ -139,6 +143,8 @@ class Conditioner:
     embedders: list[Embedder]
 
     def __init__(self, concat_embedders: list[str]):
+        super().__init__()
+
         self.embedders = [
             FrozenClosedClipEmbedder(ret_layer_idx=11),
             FrozenOpenClipEmbedder(
@@ -195,11 +201,15 @@ class FirstStage:
             num_res_blocks: int,
             resolution: int,
         ):
+            super().__init__()
+
             self.conv_in = Conv2d(in_ch, ch, kernel_size=3, stride=1, padding=1)
             in_ch_mult = (1,) + tuple(ch_mult)
 
             class BlockEntry:
                 def __init__(self, block: list[ResnetBlock], downsample):
+                    super().__init__()
+
                     self.block = block
                     self.downsample = downsample
 
@@ -249,6 +259,8 @@ class FirstStage:
             num_res_blocks: int,
             resolution: int,
         ):
+            super().__init__()
+
             block_in = ch * ch_mult[-1]
             curr_res = resolution // 2 ** (len(ch_mult) - 1)
             self.z_shape = (1, z_ch, curr_res, curr_res)
@@ -261,6 +273,8 @@ class FirstStage:
                 def __init__(
                     self, block: list[ResnetBlock], upsample: ta.Callable[[ta.Any], ta.Any],
                 ):
+                    super().__init__()
+
                     self.block = block
                     self.upsample = upsample
 
@@ -297,6 +311,8 @@ class FirstStage:
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/models/autoencoder.py#L508
 class FirstStageModel:
     def __init__(self, embed_dim: int = 4, **kwargs):
+        super().__init__()
+
         self.encoder = FirstStage.Encoder(**kwargs)
         self.decoder = FirstStage.Decoder(**kwargs)
         self.quant_conv = Conv2d(2 * kwargs['z_ch'], 2 * embed_dim, 1)
@@ -314,6 +330,8 @@ class LegacyDDPMDiscretization:
         linear_end: float = 0.0120,
         num_timesteps: int = 1000,
     ):
+        super().__init__()
+
         self.num_timesteps = num_timesteps
         betas = (
             np.linspace(
@@ -353,6 +371,8 @@ def run(model, x, tms, ctx, y, c_out, add):
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/models/diffusion.py#L19
 class SDXL:
     def __init__(self, config: dict):
+        super().__init__()
+
         self.conditioner = Conditioner(**config['conditioner'])
         self.first_stage_model = FirstStageModel(**config['first_stage_model'])
         self.model = DiffusionModel(**config['model'])
@@ -416,6 +436,8 @@ class SDXL:
 
 class Guider(abc.ABC):
     def __init__(self, scale: float):
+        super().__init__()
+
         self.scale = scale
 
     @abc.abstractmethod
@@ -447,6 +469,8 @@ class SplitVanillaCFG(Guider):
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/sampling.py#L287
 class DPMPP2MSampler:
     def __init__(self, cfg_scale: float, guider_cls: type[Guider] = VanillaCFG):
+        super().__init__()
+
         self.discretization = LegacyDDPMDiscretization()
         self.guider = guider_cls(cfg_scale)
 
@@ -512,7 +536,10 @@ class DPMPP2MSampler:
         return x
 
 
-if __name__ == '__main__':
+##
+
+
+def _main() -> None:
     default_prompt = 'a horse sized cat eating a bagel'
     parser = argparse.ArgumentParser(
         description='Run SDXL', formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -627,3 +654,7 @@ if __name__ == '__main__':
         )
         check.state(distance < 4e-3, f'validation failed with {distance=}')
         print(colored(f'output validated with {distance=}', 'green'))
+
+
+if __name__ == '__main__':
+    _main()
