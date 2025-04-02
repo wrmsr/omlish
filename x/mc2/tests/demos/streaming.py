@@ -12,14 +12,16 @@ import typing as ta  # noqa
 
 from omlish import dataclasses as dc
 from omlish import lang
+from x.mc2.streaming import StreamResponseItemT
 
-from ..services import Request
-from ..services import RequestOption
-from ..services import Response
-from ..services import ResponseOutput
-from ..services import ScalarRequestOption
-from ..services import Service_
-from ..typedvalues import UniqueTypedValue
+from ...services import Request
+from ...services import RequestOption
+from ...services import Response
+from ...services import ResponseOutput
+from ...services import ScalarRequestOption
+from ...services import Service_
+from ...typedvalues import UniqueTypedValue
+from ...streaming import StreamResponse
 
 
 ##
@@ -46,8 +48,11 @@ class FooResponseOutput(ResponseOutput, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class FooResponse(Response[FooResponseOutput]):
+class FooResponse(StreamResponse[FooResponseOutput, str]):
     output_foo_str: str
+
+    def __iter__(self) -> ta.Iterator[StreamResponseItemT]:
+        return iter([self.output_foo_str, 'end'])
 
 
 #
@@ -73,9 +78,13 @@ def _main() -> None:
 
         foo_resp = foo_svc.invoke(foo_req)
         print(foo_resp)
+        for e in foo_resp:
+            print(e)
 
     foo_resp = foo_svc('foo')
     print(foo_resp)
+    for e in foo_resp:
+        print(e)
 
 
 if __name__ == '__main__':

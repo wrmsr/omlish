@@ -132,6 +132,9 @@ class Service(ta.Protocol[RequestT_contra, ResponseT_co]):
     def invoke(self, request: RequestT_contra) -> ResponseT_co: ...
 
 
+##
+
+
 @lang.protocol_check(Service)
 class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
     _service_request_cls: ta.ClassVar[type[Request]]
