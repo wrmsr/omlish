@@ -43,6 +43,7 @@ from .cdeps import process_marshaled_cdep
 class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('--cwd'),
+        ap.arg('--cc'),
         ap.arg('src-file'),
         ap.arg('args', nargs=ap.REMAINDER),
     )
@@ -96,7 +97,7 @@ class Cli(ap.Cli):
         src_file_name = os.path.basename(src_file)
 
         sh_parts: list[str] = [
-            'clang++',
+            self.args.cc or 'clang++',
         ]
 
         for inc_dir in include_dirs:
