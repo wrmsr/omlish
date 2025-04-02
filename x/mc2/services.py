@@ -45,7 +45,7 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
         },
     )
 
-    def with_options(self, *options: RequestOptionT) -> ta.Self:
+    def with_options(self: RequestT, *options: RequestOptionT) -> RequestT:
         return dc.replace(self, options=TypedValues(
             *(self.options or []),
             *options,
@@ -80,7 +80,7 @@ class Response(TypedValueContainer[ResponseOutputT], lang.Abstract):
         },
     )
 
-    def with_outputs(self, *outputs: ResponseOutputT) -> ta.Self:
+    def with_outputs(self: ResponseT, *outputs: ResponseOutputT) -> ResponseT:
         return dc.replace(self, outputs=TypedValues(
             *(self.outputs or []),
             *outputs,

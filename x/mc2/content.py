@@ -39,7 +39,7 @@ class Content(TypedValueContainer[ContentDetailT], lang.Abstract):
         },
     )
 
-    def with_details(self, *details: ContentDetailT) -> ta.Self:
+    def with_details(self: ContentT, *details: ContentDetailT) -> ContentT:
         return dc.replace(self, outputs=TypedValues(
             *(self.details or []),
             *details,

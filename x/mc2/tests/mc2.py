@@ -63,7 +63,7 @@ class FooService(Service_[FooRequest, FooResponse]):
 def _main() -> None:
     foo_svc = FooService()
 
-    foo_req = FooRequest('foo')
+    foo_req = FooRequest('foo').with_options(FooSuffix('?'))
     print(foo_req)
 
     foo_resp = foo_svc.invoke(foo_req)
