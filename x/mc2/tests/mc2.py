@@ -63,12 +63,14 @@ class FooService(Service_[FooRequest, FooResponse]):
 
 def _main() -> None:
     foo_svc = FooService()
+    for foo_req in [
+        FooRequest('foo').with_options(FooSuffix('?')),
+        FooRequest.new('foo', FooSuffix('*')),
+    ]:
+        print(foo_req)
 
-    foo_req = FooRequest('foo').with_options(FooSuffix('?'))
-    print(foo_req)
-
-    foo_resp = foo_svc.invoke(foo_req)
-    print(foo_resp)
+        foo_resp = foo_svc.invoke(foo_req)
+        print(foo_resp)
 
 
 if __name__ == '__main__':

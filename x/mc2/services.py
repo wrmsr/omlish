@@ -55,8 +55,39 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
     def _typed_values(self) -> TypedValues[RequestOptionT] | None:
         return self.options
 
+    #
 
-#
+    @classmethod
+    def new(
+            cls: type[RequestT],
+            *args: ta.Any,
+            options: TypedValues[RequestOptionT] | None = None,
+            **kwargs: ta.Any,
+    ) -> RequestT:
+        if not any(isinstance(a, RequestOption) for a in args):
+            return cls(*args, **kwargs)
+
+        arg_lst: list[ta.Any] = []
+        opt_lst: list[RequestOption] | None = None
+        for arg in args:
+            if isinstance(arg, RequestOption):
+                if opt_lst is None:
+                    if options is not None:
+                        opt_lst = list(options)
+                    else:
+                        opt_lst = []
+                opt_lst.append(arg)
+            else:
+                arg_lst.append(arg)
+
+        return cls(
+            *arg_lst,
+            options=TypedValues(*opt_lst) if opt_lst is not None else None,
+            **kwargs,
+        )
+
+
+##
 
 
 class ResponseOutput(TypedValue, lang.Abstract):
@@ -91,7 +122,7 @@ class Response(TypedValueContainer[ResponseOutputT], lang.Abstract):
         return self.outputs
 
 
-#
+##
 
 
 @ta.runtime_checkable
