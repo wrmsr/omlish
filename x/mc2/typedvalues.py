@@ -48,8 +48,12 @@ class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
 
 
 class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
-    @abc.abstractmethod
+    @ta.final
     def __contains__(self, cls: type[TypedValueU]) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _typed_value_contains(self, cls):
         raise NotImplementedError
 
     #
@@ -66,8 +70,12 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
     def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
         ...
 
-    @abc.abstractmethod
+    @ta.final
     def __getitem__(self, key):
+        return self._typed_value_getitem(key)
+
+    @abc.abstractmethod
+    def _typed_value_getitem(self, key):
         raise NotImplementedError
 
     #
@@ -106,8 +114,12 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
     ) -> ta.Sequence[TypedValueU]:
         ...
 
-    @abc.abstractmethod
+    @ta.final
     def get(self, key, /, default=None):
+        return self._typed_value_get(key, default)
+
+    @abc.abstractmethod
+    def _typed_value_get(self, key, /, default=None):
         raise NotImplementedError
 
 
@@ -187,12 +199,10 @@ class TypedValues(
 
     #
 
-    @ta.override
-    def __contains__(self, cls: type[TypedValueU]) -> bool:
+    def _typed_value_contains(self, cls):
         return cls in self._dct
 
-    @ta.override
-    def __getitem__(self, key):
+    def _typed_value_getitem(self, key):
         if isinstance(key, int):
             return self._lst[key]
         elif isinstance(key, type):
@@ -200,8 +210,7 @@ class TypedValues(
         else:
             raise TypeError(key)
 
-    @ta.override
-    def get(self, key, /, default=None):
+    def _typed_value_get(self, key, /, default=None):
         check.issubclass(key, TypedValue)
         try:
             return self._dct[key]
@@ -217,7 +226,7 @@ class TypedValues(
 ##
 
 
-class TypedValueGeneric(ta.Generic[TypedValueT], lang.Abstract):
+class TypedValueGeneric(lang.Abstract, ta.Generic[TypedValueT]):
     _typed_value_type: ta.ClassVar[rfl.Type]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
@@ -251,23 +260,17 @@ class TypedValueContainer(
 
     #
 
-    @ta.final
-    @ta.override
-    def __contains__(self, cls: type[TypedValueU]) -> bool:
+    def _typed_value_contains(self, cls):
         if (tvs := self._typed_values) is None:
             return False
         return cls in tvs
 
-    @ta.final
-    @ta.override
-    def __getitem__(self, key):
+    def _typed_value_getitem(self, key):
         if (tvs := self._typed_values) is None:
             return False
         return tvs[key]
 
-    @ta.final
-    @ta.override
-    def get(self, key, /, default=None):
+    def _typed_value_get(self, key, /, default=None):
         if (tvs := self._typed_values) is None:
             return False
         return tvs.get(key, default)
