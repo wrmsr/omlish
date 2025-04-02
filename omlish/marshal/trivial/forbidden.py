@@ -5,6 +5,8 @@ from ... import reflect as rfl
 from ...funcs import match as mfs
 from ..base import MarshalContext
 from ..base import Marshaler
+from ..base import SimpleMarshalerFactory
+from ..base import SimpleUnmarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
 from ..exceptions import ForbiddenTypeError
@@ -29,10 +31,16 @@ class ForbiddenTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
 
 
 @dc.dataclass(frozen=True)
-class ForbiddenTypeMarshalerFactory(ForbiddenTypeFactory[MarshalContext, Marshaler]):
+class ForbiddenTypeMarshalerFactory(
+    ForbiddenTypeFactory[MarshalContext, Marshaler],
+    SimpleMarshalerFactory,
+):
     pass
 
 
 @dc.dataclass(frozen=True)
-class ForbiddenTypeUnmarshalerFactory(ForbiddenTypeFactory[UnmarshalContext, Unmarshaler]):
+class ForbiddenTypeUnmarshalerFactory(
+    ForbiddenTypeFactory[UnmarshalContext, Unmarshaler],
+    SimpleUnmarshalerFactory,
+):
     pass

@@ -65,17 +65,17 @@ def _install_standard_marshalling() -> None:
             msh.Impl(RequiresOp, 'op'),
         ],
     )
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
+    msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(requires_node_poly),
-        msh.PolymorphismUnionMarshalerFactory(requires_node_poly.impls, allow_partial=True),
-        RequiresMarkerListMarshalerFactory(),
-
-    ]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismUnmarshalerFactory(requires_node_poly),
-    ]
+        msh.PolymorphismUnionMarshalerFactory(requires_node_poly.impls, allow_partial=True),
+    )
 
-    msh.GLOBAL_REGISTRY.register(
+    msh.install_standard_factories(
+        RequiresMarkerListMarshalerFactory(),
+    )
+
+    msh.register_global(
         RequiresMarkerList,
         msh.ReflectOverride(MarshalRequiresMarkerList),
         identity=True,

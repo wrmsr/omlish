@@ -65,15 +65,19 @@ def _install_standard_marshalling() -> None:
         (BinaryOp, BinaryOps),
         (UnaryOp, UnaryOps),
     ]:
-        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
-        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
+        msh.install_standard_factories(
+            msh.TypeMapMarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)}),
+            msh.TypeMapUnmarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)}),
+        )
 
     ets = [
         JoinKind,
         MultiKind,
     ]
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({t: LowerEnumMarshaler(t) for t in ets})]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets})]
+    msh.install_standard_factories(
+        msh.TypeMapMarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
+        msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
+    )
 
     for cls in [
         Expr,
@@ -87,12 +91,16 @@ def _install_standard_marshalling() -> None:
             naming=msh.Naming.SNAKE,
             strip_suffix='auto',
         )
-        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
-        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+        msh.install_standard_factories(
+            msh.PolymorphismMarshalerFactory(p),
+            msh.PolymorphismUnmarshalerFactory(p),
+        )
 
     insert_data_impls = msh.Impls([
         msh.Impl(Values, 'values'),
         msh.Impl(Select, 'select'),
     ])
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnionMarshalerFactory(insert_data_impls)]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnionUnmarshalerFactory(insert_data_impls)]
+    msh.install_standard_factories(
+        msh.PolymorphismUnionMarshalerFactory(insert_data_impls),
+        msh.PolymorphismUnionUnmarshalerFactory(insert_data_impls),
+    )

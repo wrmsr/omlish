@@ -10,6 +10,7 @@ def _install_standard_marshalling() -> None:
         Bootstrap.Config,
         [msh.Impl(b.Config, n) for n, b in BOOTSTRAP_TYPES_BY_NAME.items()],
     )
-
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(cfgs_poly)]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(cfgs_poly)]
+    msh.install_standard_factories(
+        msh.PolymorphismMarshalerFactory(cfgs_poly),
+        msh.PolymorphismUnmarshalerFactory(cfgs_poly),
+    )

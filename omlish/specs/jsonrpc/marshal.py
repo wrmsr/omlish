@@ -49,11 +49,10 @@ class NotSpecifiedUnionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
 
 @lang.static_init
 def _install_standard_marshalling() -> None:
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
+    msh.install_standard_factories(
         msh.ForbiddenTypeMarshalerFactory({_NOT_SPECIFIED_RTY}),
-        NotSpecifiedUnionMarshalerFactory(),
-    ]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
         msh.ForbiddenTypeUnmarshalerFactory({_NOT_SPECIFIED_RTY}),
+
+        NotSpecifiedUnionMarshalerFactory(),
         NotSpecifiedUnionUnmarshalerFactory(),
-    ]
+    )

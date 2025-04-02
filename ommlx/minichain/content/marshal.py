@@ -92,18 +92,18 @@ class _ImageUnmarshaler(msh.Unmarshaler):
 @lang.static_init
 def _install_standard_marshalling() -> None:
     extended_content_poly = msh.polymorphism_from_subclasses(ExtendedContent, naming=msh.Naming.SNAKE)
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
+    msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(extended_content_poly),
         msh.TypeMapMarshalerFactory({Image: _ImageMarshaler()}),
         _ContentMarshalerFactory(),
-    ]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
+    )
+    msh.install_standard_factories(
         msh.PolymorphismUnmarshalerFactory(extended_content_poly),
         msh.TypeMapUnmarshalerFactory({Image: _ImageUnmarshaler()}),
         _ContentUnmarshalerFactory(),
-    ]
+    )
 
-    msh.GLOBAL_REGISTRY.register(
+    msh.register_global(
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,

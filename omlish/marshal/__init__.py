@@ -64,6 +64,8 @@ from .global_ import (  # noqa
 
     global_unmarshaler_factory,
     unmarshal,
+
+    register_global,
 )
 
 from .naming import (  # noqa

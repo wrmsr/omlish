@@ -6,6 +6,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import UnmarshalerFactory
 from .registries import Registry
+from .registries import RegistryItem
 from .standard import new_standard_marshaler_factory
 from .standard import new_standard_unmarshaler_factory
 from .values import Value
@@ -44,3 +45,18 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
 def unmarshal(v: Value, ty: type[T], **kwargs: ta.Any) -> T:
     uc = UnmarshalContext(GLOBAL_REGISTRY, factory=global_unmarshaler_factory(), **kwargs)
     return uc.make(ty).unmarshal(uc, v)
+
+
+##
+
+
+def register_global(
+        key: ta.Any,
+        *items: RegistryItem,
+        identity: bool = False,
+) -> None:
+    GLOBAL_REGISTRY.register(
+        key,
+        *items,
+        identity=identity,
+    )

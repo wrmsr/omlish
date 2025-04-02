@@ -6,8 +6,10 @@ from .elements import Element
 
 def _install_poly(cls: type) -> None:
     p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+    msh.install_standard_factories(
+        msh.PolymorphismMarshalerFactory(p),
+        msh.PolymorphismUnmarshalerFactory(p),
+    )
 
 
 @lang.static_init
