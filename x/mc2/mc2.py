@@ -7,16 +7,19 @@ TODO:
   - no, fucks up type inference in TypedValues collection overload
  - @ta.overload def invoke
  - queryable req/resp type mapping, tv types
+ - class TypedValuesContainer(lang.Abstract, ta.Generic[TypedValueT]):
+  - figures out parameterization
+  - must support Union tv bounds
 """
 import abc
 import typing as ta
 
-from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
 from .typedvalues import ScalarTypedValue
 from .typedvalues import TypedValue
+from .typedvalues import TypedValueGeneric
 from .typedvalues import TypedValues
 
 
@@ -43,7 +46,7 @@ class ScalarOption(ScalarTypedValue[T], Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Request(lang.Abstract, ta.Generic[OptionT]):
+class Request(TypedValueGeneric[OptionT], lang.Abstract):
     options: TypedValues[OptionT] | None = dc.field(default=None, kw_only=True)
 
 
@@ -59,7 +62,7 @@ class ScalarDetail(ScalarTypedValue[T], Detail, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Response(lang.Abstract, ta.Generic[DetailT]):
+class Response(TypedValueGeneric[DetailT], lang.Abstract):
     details: TypedValues[DetailT] | None = dc.field(default=None, kw_only=True)
 
 
@@ -86,7 +89,7 @@ class FooOption(Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class FooRequest(Request):
+class FooRequest(Request[FooOption]):
     input_foo_str: str
 
 
@@ -95,7 +98,7 @@ class FooDetail(Detail, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class FooResponse(Response):
+class FooResponse(Response[FooDetail]):
     output_foo_str: str
 
 
