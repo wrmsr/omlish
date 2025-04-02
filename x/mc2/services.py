@@ -162,14 +162,28 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
 
     @ta.final
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
-        if args and isinstance(args[0], Request):
-            if not args and not kwargs:
-                return self.invoke(args[0])
+        req_cls: type[RequestT] = check.not_none(self._service_request_cls)  # type: ignore[assignment]
 
-            val_args, opt_args = col.partition(args, lambda a: isinstance(a, RequestOption))
-            check.empty(val_args)
-            raise NotImplementedError
+        req: RequestT
+        if not (args and isinstance(args[0], Request)):
+            req = req_cls.new(*args, **kwargs)
+            return self.invoke(req)
 
-        req_cls = check.not_none(self._service_request_cls)
-        req = req_cls.new(*args, **kwargs)
+        req = check.isinstance(args[0], req_cls)
+        if not args and not kwargs:
+            return self.invoke(req)
+
+        val_args, opt_args = col.partition(args, lambda a: isinstance(a, RequestOption))
+        check.empty(val_args)
+
+        if opt_args:
+            kwargs['options'] = TypedValues(
+                *kwargs.pop('options', req.options or []),
+                *opt_args,
+            )
+
+        if kwargs:
+            req = dc.replace(req, **kwargs)
+
         return self.invoke(req)
+
