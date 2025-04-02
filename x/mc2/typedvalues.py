@@ -272,16 +272,32 @@ class TypedValueContainer(
     #
 
     def _typed_value_contains(self, cls):
-        if (tvs := self._typed_values) is None:
-            return False
-        return cls in tvs
+        if (tvs := self._typed_values) is not None:
+            return cls in tvs
+        return False
 
     def _typed_value_getitem(self, key):
-        if (tvs := self._typed_values) is None:
-            return False
-        return tvs[key]
+        if (tvs := self._typed_values) is not None:
+            return tvs[key]
+        if isinstance(key, int):
+            raise IndexError(key)
+        elif isinstance(key, type):
+            raise KeyError(key)
+        else:
+            raise TypeError(key)
 
     def _typed_value_get(self, key, /, default=None):
-        if (tvs := self._typed_values) is None:
-            return False
-        return tvs.get(key, default)
+        if (tvs := self._typed_values) is not None:
+            return tvs.get(key, default)
+        if not isinstance(key, type):
+            if default is not None:
+                raise RuntimeError('Must not provide both an instance key and a default')
+            default = key
+            key = type(default)
+        check.issubclass(key, TypedValue)
+        if issubclass(key, UniqueTypedValue):
+            return default
+        elif default is not None:
+            return list(default)
+        else:
+            return []

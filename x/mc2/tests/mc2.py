@@ -8,6 +8,8 @@ TODO:
   - figures out parameterization
   - must support Union tv bounds
 """
+import typing as ta  # noqa
+
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -51,7 +53,7 @@ class FooResponse(Response[FooResponseOutput]):
 #
 
 
-class FooService(Service_[FooRequest, FooResponse]):
+class FooService(Service_[FooRequest, FooResponse], request=FooRequest, response=FooResponse):
     def invoke(self, request: FooRequest) -> FooResponse:
         return FooResponse(request.input_foo_str + request.get(FooSuffix('!')).v)
 
@@ -61,7 +63,9 @@ class FooService(Service_[FooRequest, FooResponse]):
 
 def _main() -> None:
     foo_svc = FooService()
+
     for foo_req in [
+        FooRequest('foo'),
         FooRequest('foo').with_options(FooSuffix('?')),
         FooRequest.new('foo', FooSuffix('*')),
     ]:
@@ -69,6 +73,9 @@ def _main() -> None:
 
         foo_resp = foo_svc.invoke(foo_req)
         print(foo_resp)
+
+    foo_resp = foo_svc('foo')
+    print(foo_resp)
 
 
 if __name__ == '__main__':

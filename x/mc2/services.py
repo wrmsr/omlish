@@ -1,6 +1,8 @@
 import abc
 import typing as ta
 
+from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -132,6 +134,42 @@ class Service(ta.Protocol[RequestT_contra, ResponseT_co]):
 
 @lang.protocol_check(Service)
 class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
+    _service_request_cls: ta.ClassVar[type[Request]]
+    _service_response_cls: ta.ClassVar[type[Response]]
+
+    def __init_subclass__(
+            cls,
+            *,
+            request: type[Request] | None = None,
+            response: type[Response] | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init_subclass__(**kwargs)
+
+        def set_svc_cls(a, v, b):
+            if v is None:
+                return
+            check.not_in(a, cls.__dict__)
+            check.issubclass(v, b)
+            setattr(cls, a, v)
+
+        set_svc_cls('_service_request_cls', request, Request)
+        set_svc_cls('_service_response_cls', response, Response)
+
     @abc.abstractmethod
     def invoke(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
+
+    @ta.final
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
+        if args and isinstance(args[0], Request):
+            if not args and not kwargs:
+                return self.invoke(args[0])
+
+            val_args, opt_args = col.partition(args, lambda a: isinstance(a, RequestOption))
+            check.empty(val_args)
+            raise NotImplementedError
+
+        req_cls = check.not_none(self._service_request_cls)
+        req = req_cls.new(*args, **kwargs)
+        return self.invoke(req)
