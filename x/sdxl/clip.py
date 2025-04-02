@@ -6,6 +6,7 @@ import re
 import numpy as np
 from PIL import Image
 
+from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad.helpers import fetch
@@ -296,9 +297,7 @@ class FrozenClosedClipEmbedder(Embedder):
     ) -> Tensor | tuple[Tensor, ...]:
         if isinstance(texts, str):
             texts = [texts]
-        assert isinstance(
-            texts, (list, tuple),
-        ), f'expected list of strings, got {type(texts).__name__}'
+        check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
         tokens = Tensor.cat(
             *[Tensor(self.tokenizer.encode(text)) for text in texts], dim=0,
         )
@@ -422,7 +421,7 @@ class Open:
         ):
             grid_size = image_size // patch_size
             n_heads = width // d_head
-            assert n_heads * d_head == width
+            check.state(n_heads * d_head == width)
 
             self.conv1 = Conv2d(
                 3, width, kernel_size=patch_size, stride=patch_size, bias=False,
@@ -512,9 +511,7 @@ class FrozenOpenClipEmbedder(Embedder):
     ) -> Tensor | tuple[Tensor, ...]:
         if isinstance(texts, str):
             texts = [texts]
-        assert isinstance(
-            texts, (list, tuple),
-        ), f'expected list of strings, got {type(texts).__name__}'
+        check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
         tokens = Tensor.cat(*[self.tokenize(text) for text in texts], dim=0)
         return self.embed_tokens(tokens)
 

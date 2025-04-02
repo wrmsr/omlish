@@ -1,6 +1,7 @@
 import math
 import typing as ta
 
+from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad.device import is_dtype_supported
@@ -128,9 +129,9 @@ class SpatialTransformer:
         if isinstance(ctx_dim, int):
             ctx_dim = [ctx_dim] * depth
         else:
-            assert isinstance(ctx_dim, list) and depth == len(ctx_dim)
+            check.state(isinstance(ctx_dim, list) and depth == len(ctx_dim))
         self.norm = GroupNorm(32, channels)
-        assert channels == n_heads * d_head
+        check.state(channels == n_heads * d_head)
         self.proj_in = (
             Linear(channels, channels) if use_linear else Conv2d(channels, channels, 1)
         )
@@ -210,14 +211,10 @@ class UNetModel:
 
         def get_d_and_n_heads(dims: int) -> tuple[int, int]:
             if self.d_head is None:
-                assert (
-                    self.n_heads is not None
-                ), f'd_head and n_heads cannot both be None'
+                check.state(self.n_heads is not None, f'd_head and n_heads cannot both be None')
                 return dims // self.n_heads, self.n_heads
             else:
-                assert (
-                    self.n_heads is None
-                ), f'd_head and n_heads cannot both be non-None'
+                check.state(self.n_heads is None, f'd_head and n_heads cannot both be non-None')
                 return self.d_head, dims // self.d_head
 
         time_embed_dim = model_ch * 4
@@ -320,7 +317,7 @@ class UNetModel:
         emb = t_emb.sequential(self.time_embed)
 
         if y is not None:
-            assert y.shape[0] == x.shape[0]
+            check.state(y.shape[0] == x.shape[0])
             emb = emb + y.sequential(self.label_emb[0])
 
         if is_dtype_supported(dtypes.float16):

@@ -11,6 +11,7 @@ import pathlib
 import numpy as np
 from PIL import Image
 
+from omlish import check
 from tinygrad import GlobalCounters
 from tinygrad import Tensor
 from tinygrad import TinyJit
@@ -125,7 +126,7 @@ class ConcatTimestepEmbedderND(Embedder):
         self.input_key = input_key
 
     def __call__(self, x: str | list[str] | Tensor):
-        assert isinstance(x, Tensor) and len(x.shape) == 2
+        check.state(isinstance(x, Tensor) and len(x.shape) == 2)
         emb = timestep_embedding(x.flatten(), self.outdim)
         emb = emb.reshape((x.shape[0], -1))
         return emb
@@ -160,7 +161,7 @@ class Conditioner:
 
             if isinstance(emb_out, Tensor):
                 emb_out = (emb_out,)
-            assert isinstance(emb_out, (list, tuple))
+            check.state(isinstance(emb_out, (list, tuple)))
 
             for emb in emb_out:
                 if embedder.input_key in force_zero_embeddings:
@@ -340,7 +341,7 @@ class LegacyDDPMDiscretization:
 
 def append_dims(x: Tensor, t: Tensor) -> Tensor:
     dims_to_append = len(t.shape) - len(x.shape)
-    assert dims_to_append >= 0
+    check.state(dims_to_append >= 0)
     return x.reshape(x.shape + (1,) * dims_to_append)
 
 
@@ -426,7 +427,7 @@ class VanillaCFG(Guider):
     def __call__(self, denoiser, x: Tensor, s: Tensor, c: dict, uc: dict) -> Tensor:
         c_out = {}
         for k in c:
-            assert k in ['vector', 'crossattn', 'concat']
+            check.state(k in ['vector', 'crossattn', 'concat'])
             c_out[k] = Tensor.cat(uc[k], c[k], dim=0)
 
         x_u, x_c = denoiser(Tensor.cat(x, x), Tensor.cat(s, s), c_out).chunk(2)
@@ -562,10 +563,8 @@ if __name__ == '__main__':
     C = 4
     F = 8
 
-    assert args.width % F == 0, f'img_width must be multiple of {F}, got {args.width}'
-    assert (
-        args.height % F == 0
-    ), f'img_height must be multiple of {F}, got {args.height}'
+    check.state(args.width % F == 0, f'img_width must be multiple of {F}, got {args.width}')
+    check.state(args.height % F == 0, f'img_height must be multiple of {F}, got {args.height}')
 
     c, uc = model.create_conditioning([args.prompt], args.width, args.height)
     del model.conditioner
@@ -626,5 +625,5 @@ if __name__ == '__main__':
             .mean()
             .item()
         )
-        assert distance < 4e-3, colored(f'validation failed with {distance=}', 'red')
+        check.state(distance < 4e-3, f'validation failed with {distance=}')
         print(colored(f'output validated with {distance=}', 'green'))

@@ -9,6 +9,7 @@ import typing as ta
 import numpy as np
 from PIL import Image
 
+from omlish import check
 from tinygrad import Device
 from tinygrad import GlobalCounters
 from tinygrad import Tensor
@@ -432,7 +433,5 @@ if __name__ == '__main__':
             .mean()
             .item()
         )
-        assert distance < 3e-3, colored(
-            f'validation failed with {distance=}', 'red',
-        )  # higher distance with WINO
+        check.state(distance < 3e-3, f'validation failed with {distance=}')  # higher distance with WINO
         print(colored(f'output validated with {distance=}', 'green'))
