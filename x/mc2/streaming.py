@@ -1,7 +1,5 @@
 """
 TODO:
- - _stream_closer hidden kwarg? prob wanna support dc.replace
-  - more generalized notion of resources? refcounted?
 """
 import abc
 import typing as ta

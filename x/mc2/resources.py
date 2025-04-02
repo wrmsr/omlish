@@ -1,7 +1,8 @@
 """
 TODO:
- - _stream_closer hidden kwarg? prob wanna support dc.replace
-  - more generalized notion of resources? refcounted?
+ - resources is IdentityKeyMap -> refcount, obj?
+ - lock, probably
+ - @dc.init to inc _resources refcount? who 'exits' what / where?
 """
 import typing as ta
 
