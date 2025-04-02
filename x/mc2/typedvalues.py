@@ -125,6 +125,11 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
 
     @ta.final
     def get(self, key, /, default=None):
+        if not isinstance(key, type):
+            if default is not None:
+                raise RuntimeError('Must not provide both an instance key and a default')
+            default = key
+            key = type(default)
         return self._typed_value_get(key, default)
 
     @abc.abstractmethod
@@ -220,11 +225,6 @@ class TypedValues(
             raise TypeError(key)
 
     def _typed_value_get(self, key, /, default=None):
-        if not isinstance(key, type):
-            if default is not None:
-                raise RuntimeError('Must not provide both an instance key and a default')
-            default = key
-            key = type(default)
         check.issubclass(key, TypedValue)
         try:
             return self._dct[key]
@@ -292,11 +292,6 @@ class TypedValueContainer(
     def _typed_value_get(self, key, /, default=None):
         if (tvs := self._typed_values) is not None:
             return tvs.get(key, default)
-        if not isinstance(key, type):
-            if default is not None:
-                raise RuntimeError('Must not provide both an instance key and a default')
-            default = key
-            key = type(default)
         check.issubclass(key, TypedValue)
         if issubclass(key, UniqueTypedValue):
             return default
