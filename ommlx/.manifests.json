@@ -169,6 +169,18 @@
     }
   },
   {
+    "module": ".minichain.backends.tests.streaming",
+    "attr": null,
+    "file": "ommlx/minichain/backends/tests/streaming.py",
+    "line": 42,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.backends.tests.streaming",
+        "attr_name": "Chat2Model"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers.py",

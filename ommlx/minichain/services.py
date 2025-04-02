@@ -60,6 +60,10 @@ class ServiceResponse(lang.Abstract, ta.Generic[T]):
     v: T
 
 
+def _check_concrete_subclass(ann: ta.Any, ty: type[T]) -> type[T]:
+    return check.issubclass(check.isinstance(rfl.get_concrete_type(ann), type), ty)
+
+
 class Service(
     lang.Abstract,
     ta.Generic[
@@ -107,10 +111,15 @@ class Service(
                 raise AttributeError('Must set all service attrs if any set')
             return
 
-        request_ann, option_ann, new_ann, response_ann = service_base.args
+        (
+            request_ann,
+            option_ann,
+            new_ann,
+            response_ann,
+        ) = service_base.args
 
-        request_cls: type[ServiceRequest] = check.issubclass(check.isinstance(request_ann, type), ServiceRequest)  # noqa
-        response_cls: type[ServiceResponse] = check.issubclass(check.isinstance(response_ann, type), ServiceResponse)  # noqa
+        request_cls: type[ServiceRequest] = _check_concrete_subclass(request_ann, ServiceRequest)
+        response_cls: type[ServiceResponse] = _check_concrete_subclass(response_ann, ServiceResponse)
         new_cls: ta.Any = new_ann
 
         option_cls_set: frozenset[type[Option]]
