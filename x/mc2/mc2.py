@@ -19,7 +19,7 @@ from omlish import lang
 
 from .typedvalues import ScalarTypedValue
 from .typedvalues import TypedValue
-from .typedvalues import TypedValueGeneric
+from .typedvalues import TypedValueContainer
 from .typedvalues import TypedValues
 
 
@@ -46,8 +46,12 @@ class ScalarOption(ScalarTypedValue[T], Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Request(TypedValueGeneric[OptionT], lang.Abstract):
+class Request(TypedValueContainer[OptionT], lang.Abstract):
     options: TypedValues[OptionT] | None = dc.field(default=None, kw_only=True)
+
+    @property
+    def _typed_values(self) -> TypedValues[OptionT] | None:
+        return self.options
 
 
 #
@@ -62,8 +66,12 @@ class ScalarDetail(ScalarTypedValue[T], Detail, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Response(TypedValueGeneric[DetailT], lang.Abstract):
+class Response(TypedValueContainer[DetailT], lang.Abstract):
     details: TypedValues[DetailT] | None = dc.field(default=None, kw_only=True)
+
+    @property
+    def _typed_values(self) -> TypedValues[DetailT] | None:
+        return self.details
 
 
 #

@@ -1,3 +1,4 @@
+import abc
 import typing as ta
 
 from omlish import check
@@ -102,17 +103,22 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'
 
+    #
+
     def __iter__(self) -> ta.Iterator[TypedValueT]:
         return iter(self._lst)
 
     def __len__(self) -> int:
         return len(self._lst)
 
-    def __contains__(self, cls: type[TypedValueU]) -> bool:
-        return cls in self._dct
-
     def __bool__(self) -> bool:
         return bool(self._lst)
+
+    ##
+    # shared with TypedValueContainer
+
+    def __contains__(self, cls: type[TypedValueU]) -> bool:
+        return cls in self._dct
 
     @ta.overload
     def __getitem__(self, idx: int) -> TypedValueT:
@@ -129,8 +135,28 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     def __getitem__(self, key):
         if isinstance(key, int):
             return self._lst[key]
+        elif isinstance(key, type):
+            return self._dct[check.issubclass(key, TypedValue)]
         else:
-            return self._dct[key]
+            raise TypeError(key)
+
+    @ta.overload
+    def get(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU | None:  # type: ignore[overload-overlap]
+        ...
+
+    @ta.overload
+    def get(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+        ...
+
+    def get(self, cls):
+        check.issubclass(cls, TypedValue)
+        try:
+            return self._dct[cls]
+        except KeyError:
+            if issubclass(cls, UniqueTypedValue):
+                return None
+            else:
+                return []
 
 
 ##
@@ -153,3 +179,51 @@ class TypedValueGeneric(ta.Generic[TypedValueT], lang.Abstract):
         )
         tvt = check.single(g_tvg.args)
         cls._typed_value_type = tvt
+
+
+#
+
+
+class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
+    @property
+    @abc.abstractmethod
+    def _typed_values(self) -> TypedValues[TypedValueT] | None:
+        raise NotImplementedError
+
+    ##
+    # shared with TypedValues
+
+    def __contains__(self, cls: type[TypedValueU]) -> bool:
+        if (tvs := self._typed_values) is None:
+            return False
+        return cls in tvs
+
+    @ta.overload
+    def __getitem__(self, idx: int) -> TypedValueT:
+        ...
+
+    @ta.overload
+    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU:  # type: ignore[overload-overlap]
+        ...
+
+    @ta.overload
+    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+        ...
+
+    def __getitem__(self, key):
+        if (tvs := self._typed_values) is None:
+            return False
+        return tvs[key]
+
+    @ta.overload
+    def get(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU | None:  # type: ignore[overload-overlap]
+        ...
+
+    @ta.overload
+    def get(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+        ...
+
+    def get(self, cls):
+        if (tvs := self._typed_values) is None:
+            return False
+        return tvs.get(cls)
