@@ -242,7 +242,8 @@ class AiGitMessageGenerator(GitMessageGenerator):
                 '- Be concise but descriptive. Avoid vague messages like "Update X".',
                 '- Do not mention files explicitly unless necessary.',
                 '- If the change is complex, add a second paragraph with more details.',
-                'Output only the commit message, with no additional text.',
+                '- Output only the commit message, with no additional text.',
+                '- Output plain text, not markdown. Do not begin your response with "```".',
             ]),
         ])
 
