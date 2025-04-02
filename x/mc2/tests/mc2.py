@@ -13,12 +13,13 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..services import Service_
 from ..services import Request
 from ..services import RequestOption
-from ..services import ScalarRequestOption
 from ..services import Response
 from ..services import ResponseOutput
+from ..services import ScalarRequestOption
+from ..services import Service_
+from ..typedvalues import UniqueTypedValue
 
 
 ##
@@ -28,7 +29,7 @@ class FooRequestOption(RequestOption, lang.Abstract):
     pass
 
 
-class FooSuffix(ScalarRequestOption[str], FooRequestOption, lang.Final):
+class FooSuffix(ScalarRequestOption[str], FooRequestOption, UniqueTypedValue, lang.Final):
     pass
 
 
@@ -54,7 +55,7 @@ class FooResponse(Response[FooResponseOutput]):
 
 class FooService(Service_[FooRequest, FooResponse]):
     def invoke(self, request: FooRequest) -> FooResponse:
-        return FooResponse(request.input_foo_str + '!')
+        return FooResponse(request.input_foo_str + request.get(FooSuffix, FooSuffix('!')).v)
 
 
 ##

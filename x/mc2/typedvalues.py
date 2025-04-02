@@ -120,6 +120,8 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     def __contains__(self, cls: type[TypedValueU]) -> bool:
         return cls in self._dct
 
+    #
+
     @ta.overload
     def __getitem__(self, idx: int) -> TypedValueT:
         ...
@@ -140,21 +142,44 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
         else:
             raise TypeError(key)
 
+    #
+
     @ta.overload
-    def get(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU | None:  # type: ignore[overload-overlap]
+    def get(
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
         ...
 
     @ta.overload
-    def get(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+    def get(  # type: ignore[overload-overlap]
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: None = None,
+    ) -> UniqueTypedValueU | None:
         ...
 
-    def get(self, cls):
+    @ta.overload
+    def get(
+            self,
+            cls: type[TypedValueU],
+            /,
+            default: ta.Iterable[TypedValueU] | None = None,
+    ) -> ta.Sequence[TypedValueU]:
+        ...
+
+    def get(self, cls, /, default=None):
         check.issubclass(cls, TypedValue)
         try:
             return self._dct[cls]
         except KeyError:
             if issubclass(cls, UniqueTypedValue):
-                return None
+                return default
+            elif default is not None:
+                return list(default)
             else:
                 return []
 
@@ -193,10 +218,13 @@ class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
     ##
     # shared with TypedValues
 
+    @ta.final
     def __contains__(self, cls: type[TypedValueU]) -> bool:
         if (tvs := self._typed_values) is None:
             return False
         return cls in tvs
+
+    #
 
     @ta.overload
     def __getitem__(self, idx: int) -> TypedValueT:
@@ -210,20 +238,43 @@ class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
     def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
         ...
 
+    @ta.final
     def __getitem__(self, key):
         if (tvs := self._typed_values) is None:
             return False
         return tvs[key]
 
+    #
+
     @ta.overload
-    def get(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU | None:  # type: ignore[overload-overlap]
+    def get(
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
         ...
 
     @ta.overload
-    def get(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+    def get(  # type: ignore[overload-overlap]
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: None = None,
+    ) -> UniqueTypedValueU | None:
         ...
 
-    def get(self, cls):
+    @ta.overload
+    def get(
+            self,
+            cls: type[TypedValueU],
+            /,
+            default: ta.Iterable[TypedValueU] | None = None,
+    ) -> ta.Sequence[TypedValueU]:
+        ...
+
+    @ta.final
+    def get(self, cls, /, default=None):
         if (tvs := self._typed_values) is None:
             return False
-        return tvs.get(cls)
+        return tvs.get(cls, default)
