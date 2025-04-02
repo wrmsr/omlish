@@ -23,9 +23,11 @@ T = ta.TypeVar('T')
 
 OptionT = ta.TypeVar('OptionT', bound='Option')
 RequestT = ta.TypeVar('RequestT', bound='Request')
+RequestT_contra = ta.TypeVar('RequestT_contra', bound='Request', contravariant=True)
 
 DetailT = ta.TypeVar('DetailT', bound='Detail')
 ResponseT = ta.TypeVar('ResponseT', bound='Response')
+ResponseT_co = ta.TypeVar('ResponseT_co', bound='Response', covariant=True)
 
 
 ##
@@ -64,9 +66,8 @@ class Response(lang.Abstract, ta.Generic[DetailT]):
 
 
 @ta.runtime_checkable
-class Service(ta.Protocol[RequestT, ResponseT]):
-    def invoke(self, request: RequestT) -> ResponseT:
-        raise NotImplementedError
+class Service(ta.Protocol[RequestT_contra, ResponseT_co]):
+    def invoke(self, request: RequestT_contra) -> ResponseT_co: ...
 
 
 @lang.protocol_check(Service)
