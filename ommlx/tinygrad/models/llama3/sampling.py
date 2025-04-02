@@ -13,7 +13,14 @@ _SAMPLE_ALPHA_COUNTER: ta.Any = None
 
 
 # standard openai sampling
-def sample(logits: Tensor, temp: float, k: int, p: float, af: float, ap: float):
+def sample(
+        logits: Tensor,
+        temp: float,
+        k: int,
+        p: float,
+        af: float,
+        ap: float,
+):
     check.arg(logits.ndim == 1, 'only works on 1d tensors')
     check.arg(0 <= p <= 1, 'p must be between 0 and 1')
     check.arg(0 <= k <= logits.numel(), 'k must be between 0 and numel')

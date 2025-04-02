@@ -7,7 +7,12 @@ from tinygrad import dtypes
 
 
 class Int8Linear:
-    def __init__(self, in_features, out_features, bias=False):
+    def __init__(
+            self,
+            in_features,
+            out_features,
+            bias=False,
+    ):
         super().__init__()
 
         check.arg(not bias)
@@ -18,7 +23,12 @@ class Int8Linear:
         return x.dot(self.weight.cast(self.scale.dtype).T * self.scale)
 
     @staticmethod
-    def quantize(tensors, device, scale_dtype=dtypes.float16, quantize_embeds=False):
+    def quantize(
+            tensors,
+            device,
+            scale_dtype=dtypes.float16,
+            quantize_embeds=False,
+    ):
         new_tensors = {}
         for name, v in tensors.items():
             if (
@@ -96,7 +106,12 @@ def nf4_linear(block_size):
     code = Tensor.stack(*[Tensor(c, dtype=dtypes.float16) for c in _code])
 
     class _Nf4Linear:
-        def __init__(self, in_features, out_features, bias=False):
+        def __init__(
+                self,
+                in_features,
+                out_features,
+                bias=False,
+        ):
             super().__init__()
 
             check.arg(not bias, 'bias not supported')

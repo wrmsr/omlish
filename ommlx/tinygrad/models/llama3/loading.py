@@ -105,7 +105,10 @@ def convert_from_huggingface(
     return sd
 
 
-def convert_from_gguf(weights: dict[str, Tensor], model: Transformer):
+def convert_from_gguf(
+        weights: dict[str, Tensor],
+        model: Transformer,
+):
     keymap = {
         'token_embd.weight': 'tok_embeddings.weight',
         **{

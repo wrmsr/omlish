@@ -59,7 +59,13 @@ class ResBlock:
 
 
 class CrossAttention:
-    def __init__(self, query_dim: int, ctx_dim: int, n_heads: int, d_head: int):
+    def __init__(
+            self,
+            query_dim: int,
+            ctx_dim: int,
+            n_heads: int,
+            d_head: int,
+    ):
         super().__init__()
 
         self.to_q = Linear(query_dim, n_heads * d_head, bias=False)
@@ -108,7 +114,13 @@ class FeedForward:
 
 
 class BasicTransformerBlock:
-    def __init__(self, dim: int, ctx_dim: int, n_heads: int, d_head: int):
+    def __init__(
+            self,
+            dim: int,
+            ctx_dim: int,
+            n_heads: int,
+            d_head: int,
+    ):
         super().__init__()
 
         self.attn1 = CrossAttention(dim, dim, n_heads, d_head)
@@ -329,7 +341,11 @@ class UNetModel:
         ]
 
     def __call__(
-        self, x: Tensor, tms: Tensor, ctx: Tensor, y: Tensor | None = None,
+            self,
+            x: Tensor,
+            tms: Tensor,
+            ctx: Tensor,
+            y: Tensor | None = None,
     ) -> Tensor:
         t_emb = timestep_embedding(tms, self.model_ch)
         emb = t_emb.sequential(self.time_embed)

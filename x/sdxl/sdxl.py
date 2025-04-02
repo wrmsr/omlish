@@ -138,8 +138,17 @@ class ConcatTimestepEmbedderND(Embedder):
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L71
 class Conditioner:
-    OUTPUT_DIM2KEYS = {2: 'vector', 3: 'crossattn', 4: 'concat', 5: 'concat'}
-    KEY2CATDIM = {'vector': 1, 'crossattn': 2, 'concat': 1}
+    OUTPUT_DIM2KEYS = {
+        2: 'vector',
+        3: 'crossattn',
+        4: 'concat',
+        5: 'concat',
+    }
+    KEY2CATDIM = {
+        'vector': 1,
+        'crossattn': 2,
+        'concat': 1,
+    }
     embedders: list[Embedder]
 
     def __init__(self, concat_embedders: list[str]):
@@ -185,9 +194,7 @@ class Conditioner:
 
 
 class FirstStage:
-    """
-    Namespace for First Stage Model components
-    """
+    """Namespace for First Stage Model components"""
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/model.py#L487
     class Encoder:
@@ -409,7 +416,6 @@ class SDXL:
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/denoiser.py#L42
     def denoise(self, x: Tensor, sigma: Tensor, cond: dict) -> Tensor:
-
         def sigma_to_idx(s: Tensor) -> Tensor:
             dists = s - self.sigmas.unsqueeze(1)
             return dists.abs().argmin(axis=0).view(*s.shape)

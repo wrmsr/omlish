@@ -29,9 +29,7 @@ def default_bpe():
 
 
 class Tokenizer:
-    """
-    Namespace for CLIP Text Tokenizer components.
-    """
+    """Namespace for CLIP Text Tokenizer components."""
 
     @staticmethod
     def get_pairs(word):
@@ -108,10 +106,12 @@ class Tokenizer:
 
             while True:
                 bigram = min(
-                    pairs, key=lambda pair: self.bpe_ranks.get(pair, float('inf')),
+                    pairs,
+                    key=lambda pair: self.bpe_ranks.get(pair, float('inf')),
                 )
                 if bigram not in self.bpe_ranks:
                     break
+
                 first, second = bigram
                 new_word = []
                 i = 0
@@ -130,11 +130,14 @@ class Tokenizer:
                     else:
                         new_word.append(word[i])
                         i += 1
+
                 new_word = tuple(new_word)
                 word = new_word
                 if len(word) == 1:
                     break
+
                 pairs = Tokenizer.get_pairs(word)
+
             word = ' '.join(word)
             self.cache[token] = word
             return word
@@ -144,9 +147,8 @@ class Tokenizer:
             text = Tokenizer.whitespace_clean(text.strip()).lower()
             for token in re.findall(self.pat, text):
                 token = ''.join(self.byte_encoder[b] for b in token.encode('utf-8'))
-                bpe_tokens.extend(
-                    self.encoder[bpe_token] for bpe_token in self.bpe(token).split(' ')
-                )
+                bpe_tokens.extend(self.encoder[bpe_token] for bpe_token in self.bpe(token).split(' '))
+
             # Truncation, keeping two slots for start and end tokens.
             if len(bpe_tokens) > 75:
                 bpe_tokens = bpe_tokens[:75]
@@ -162,16 +164,12 @@ class Embedder(abc.ABC):
     input_key: str
 
     @abc.abstractmethod
-    def __call__(
-        self, x: str | list[str] | Tensor,
-    ) -> Tensor | tuple[Tensor, ...]:
+    def __call__(self, x: str | list[str] | Tensor) -> Tensor | tuple[Tensor, ...]:
         pass
 
 
 class Closed:
-    """
-    Namespace for OpenAI CLIP model components.
-    """
+    """Namespace for OpenAI CLIP model components."""
 
     class ClipMlp:
         def __init__(self):
@@ -374,7 +372,12 @@ class Open:
 
     # https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/src/open_clip/transformer.py#L210
     class ResidualAttentionBlock:
-        def __init__(self, dims: int, n_heads: int, mlp_ratio: float):
+        def __init__(
+                self,
+                dims: int,
+                n_heads: int,
+                mlp_ratio: float,
+        ):
             super().__init__()
 
             self.ln_1 = LayerNorm(dims)
@@ -398,7 +401,11 @@ class Open:
     # https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/src/open_clip/transformer.py#L317
     class ClipTransformer:
         def __init__(
-            self, dims: int, layers: int, n_heads: int, mlp_ratio: float = 4.0,
+                self,
+                dims: int,
+                layers: int,
+                n_heads: int,
+                mlp_ratio: float = 4.0,
         ):
             super().__init__()
 
@@ -445,7 +452,12 @@ class Open:
 
     class ClipVisionTransformer:
         def __init__(
-            self, width: int, layers: int, d_head: int, image_size: int, patch_size: int,
+                self,
+                width: int,
+                layers: int,
+                d_head: int,
+                image_size: int,
+                patch_size: int,
         ):
             super().__init__()
 

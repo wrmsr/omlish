@@ -23,7 +23,9 @@ def complex_mult(a, c, d):
 
 
 def apply_rotary_emb(
-        xq: Tensor, xk: Tensor, freqs_cis: Tensor,
+        xq: Tensor,
+        xk: Tensor,
+        freqs_cis: Tensor,
 ) -> tuple[Tensor, Tensor]:
     check.state(
         freqs_cis.shape[1] == xq.shape[1] == xk.shape[1],

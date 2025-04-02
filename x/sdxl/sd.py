@@ -145,7 +145,12 @@ class Encoder:
     def __init__(self):
         super().__init__()
 
-        sz = [(128, 128), (128, 256), (256, 512), (512, 512)]
+        sz = [
+            (128, 128),
+            (128, 256),
+            (256, 512),
+            (512, 512),
+        ]
         self.conv_in = Conv2d(3, 128, 3, padding=1)
 
         arr = []
@@ -324,10 +329,16 @@ def _main() -> None:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        '--steps', type=int, default=6, help='Number of steps in diffusion',
+        '--steps',
+        type=int,
+        default=6,
+        help='Number of steps in diffusion',
     )
     parser.add_argument(
-        '--prompt', type=str, default=default_prompt, help='Phrase to render',
+        '--prompt',
+        type=str,
+        default=default_prompt,
+        help='Phrase to render',
     )
     parser.add_argument(
         '--out',
@@ -335,13 +346,32 @@ def _main() -> None:
         default=pathlib.Path(tempfile.gettempdir()) / 'rendered.png',
         help='Output filename',
     )
-    parser.add_argument('--noshow', action='store_true', help="Don't show the image")
     parser.add_argument(
-        '--fp16', action='store_true', help='Cast the weights to float16',
+        '--noshow',
+        action='store_true',
+        help="Don't show the image",
     )
-    parser.add_argument('--timing', action='store_true', help='Print timing per step')
-    parser.add_argument('--seed', type=int, help='Set the random latent seed')
-    parser.add_argument('--guidance', type=float, default=7.5, help='Prompt strength')
+    parser.add_argument(
+        '--fp16',
+        action='store_true',
+        help='Cast the weights to float16',
+    )
+    parser.add_argument(
+        '--timing',
+        action='store_true',
+        help='Print timing per step',
+    )
+    parser.add_argument(
+        '--seed',
+        type=int,
+        help='Set the random latent seed',
+    )
+    parser.add_argument(
+        '--guidance',
+        type=float,
+        default=7.5,
+        help='Prompt strength',
+    )
     args = parser.parse_args()
 
     Tensor.no_grad = True
@@ -441,13 +471,7 @@ def _main() -> None:
             np.array(Image.open(pathlib.Path(__file__).parent / 'stable_diffusion_seed0.png')),
         )
         distance = (
-            (
-                (
-                    (x.cast(dtypes.float) - ref_image.cast(dtypes.float))
-                    / ref_image.max()
-                )
-                ** 2
-            )
+            (((x.cast(dtypes.float) - ref_image.cast(dtypes.float)) / ref_image.max()) ** 2)
             .mean()
             .item()
         )
