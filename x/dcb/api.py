@@ -80,6 +80,7 @@ class Field:
     default_factory: ta.Callable[..., ta.Any] | None = None
 
     repr_fn: ReprFn | None = None
+    repr_priority: int | None = None
     override: bool = False
 
 
@@ -89,6 +90,7 @@ def field(
         default_factory: ta.Callable[..., ta.Any] | None = None,
 
         repr_fn: ReprFn | None = None,
+        repr_priority: int | None = None,
         override: bool = False,
 ) -> ta.Any:
     return Field(
@@ -96,6 +98,7 @@ def field(
         default_factory=default_factory,
 
         repr_fn=repr_fn,
+        repr_priority=repr_priority,
         override=override,
     )
 
@@ -143,6 +146,7 @@ def dataclass(
                 default=dfl,
 
                 repr_fn=fld.repr_fn,
+                repr_priority=fld.repr_priority,
                 override=fld.override,
             ))
 

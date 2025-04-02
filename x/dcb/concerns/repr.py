@@ -9,6 +9,7 @@ from ..generators.registry import register_generator_type
 from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
+from ..specs import FieldType
 from ..types import ReprFn
 
 
@@ -33,9 +34,11 @@ class ReprGenerator(Generator[ReprPlan]):
         if not ctx.cs.repr or '__repr__' in ctx.cls.__dict__:
             return None
 
+        fs = sorted(ctx.cs.fields, key=lambda f: f.repr_priority or 0)
+
         orm = {}
         rfs: list[ReprPlan.Fn] = []
-        for i, f in enumerate(ctx.cs.fields):
+        for i, f in enumerate(fs):
             if f.repr_fn is None:
                 continue
             r: OpRef = OpRef(f'repr.fns.{i}.fn')
@@ -44,7 +47,7 @@ class ReprGenerator(Generator[ReprPlan]):
 
         return PlanResult(
             ReprPlan(
-                tuple(f.name for f in ctx.ana.instance_fields if f.repr),
+                tuple(f.name for f in fs if f.field_type is FieldType.INSTANCE and f.repr),
                 tuple(rfs),
             ),
             orm,

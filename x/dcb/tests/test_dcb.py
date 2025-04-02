@@ -10,6 +10,7 @@ TODO:
  - if this works out, go hog wild with injection, won't be used 90% of the time...
 """
 import inspect
+import typing as ta
 
 from .. import api
 
@@ -22,7 +23,7 @@ class A:
     i: int
     s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
     d: int = 5
-    l: list = api.field(default_factory=list)
+    l: ta.Sequence = api.field(default_factory=tuple, repr_priority=-1)
 
     @api.init
     def _init_foo(self) -> None:

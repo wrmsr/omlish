@@ -48,7 +48,7 @@ class FieldSpec:
     # check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
     repr_fn: ReprFn | None = None
-    # repr_priority: int | None = None
+    repr_priority: int | None = None
     # frozen: bool | None = None
 
     ##

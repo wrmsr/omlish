@@ -186,4 +186,3 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             req = dc.replace(req, **kwargs)
 
         return self.invoke(req)
-
