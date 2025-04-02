@@ -27,18 +27,18 @@ class TypedValue(lang.Abstract):
 
 
 class UniqueTypedValue(TypedValue, lang.Abstract):
-    unique_tv_cls: ta.ClassVar[type[TypedValue]]
+    _unique_typed_value_cls: ta.ClassVar[type[TypedValue]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         if UniqueTypedValue in cls.__bases__:
             try:
-                cls.unique_tv_cls  # noqa
+                cls._unique_typed_value_cls  # noqa
             except AttributeError:
-                cls.unique_tv_cls = cls
+                cls._unique_typed_value_cls = cls
             else:
-                raise TypeError(f'Class already has unique_tv_cls: {cls}')
+                raise TypeError(f'Class already has _unique_typed_value_cls: {cls}')
 
 
 @dc.dataclass(frozen=True)
@@ -151,7 +151,7 @@ class TypedValues(
         udct: dict = {}
         for tv in tvs:
             if isinstance(tv, UniqueTypedValue):
-                uoc = tv.unique_tv_cls
+                uoc = tv._unique_typed_value_cls  # noqa
                 if not override:
                     try:
                         exu = udct[uoc]
@@ -172,10 +172,10 @@ class TypedValues(
         for tv in tmp:
             if isinstance(tv, tuple):
                 uo, idx = tv  # type: ignore
-                ulst = udct[uo.unique_tv_cls]
+                ulst = udct[uo._unique_typed_value_cls]  # noqa
                 if idx == len(ulst):
                     lst.append(uo)
-                    dct[uo.unique_tv_cls] = uo
+                    dct[uo._unique_typed_value_cls] = uo  # noqa
                     dct[type(uo)] = uo
             else:
                 lst.append(tv)
