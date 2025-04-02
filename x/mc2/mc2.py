@@ -78,7 +78,7 @@ class FooOption(Option, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class FooRequest(Request):
-    pass
+    input_foo_str: str
 
 
 class FooDetail(Detail, lang.Abstract):
@@ -87,14 +87,25 @@ class FooDetail(Detail, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class FooResponse(Response):
-    pass
+    output_foo_str: str
+
+
+class FooService(Service[FooRequest, FooResponse]):
+    def invoke(self, request: FooRequest) -> FooResponse:
+        return FooResponse(request.input_foo_str + '!')
 
 
 ##
 
 
 def _main() -> None:
-    pass
+    foo_svc = FooService()
+
+    foo_req = FooRequest('foo')
+    print(foo_req)
+
+    foo_resp = foo_svc.invoke(foo_req)
+    print(foo_resp)
 
 
 if __name__ == '__main__':
