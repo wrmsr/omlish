@@ -147,6 +147,13 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     @ta.overload
     def get(
             self,
+            tv: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
+        ...
+
+    @ta.overload
+    def get(
+            self,
             cls: type[UniqueTypedValueU],
             /,
             default: UniqueTypedValueU,
@@ -171,12 +178,12 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     ) -> ta.Sequence[TypedValueU]:
         ...
 
-    def get(self, cls, /, default=None):
-        check.issubclass(cls, TypedValue)
+    def get(self, key, /, default=None):
+        check.issubclass(key, TypedValue)
         try:
-            return self._dct[cls]
+            return self._dct[key]
         except KeyError:
-            if issubclass(cls, UniqueTypedValue):
+            if issubclass(key, UniqueTypedValue):
                 return default
             elif default is not None:
                 return list(default)
@@ -249,6 +256,13 @@ class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
     @ta.overload
     def get(
             self,
+            tv: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
+        ...
+
+    @ta.overload
+    def get(
+            self,
             cls: type[UniqueTypedValueU],
             /,
             default: UniqueTypedValueU,
@@ -274,7 +288,7 @@ class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
         ...
 
     @ta.final
-    def get(self, cls, /, default=None):
+    def get(self, key, /, default=None):
         if (tvs := self._typed_values) is None:
             return False
-        return tvs.get(cls, default)
+        return tvs.get(key, default)

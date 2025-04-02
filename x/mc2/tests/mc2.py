@@ -55,7 +55,7 @@ class FooResponse(Response[FooResponseOutput]):
 
 class FooService(Service_[FooRequest, FooResponse]):
     def invoke(self, request: FooRequest) -> FooResponse:
-        return FooResponse(request.input_foo_str + request.get(FooSuffix, FooSuffix('!')).v)
+        return FooResponse(request.input_foo_str + request.get(FooSuffix('!')).v)
 
 
 ##
