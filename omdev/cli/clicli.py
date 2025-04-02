@@ -136,11 +136,21 @@ class CliCli(ap.Cli):
 
         if self.args.local:
             install_src = inspect.getsource(install)
+
         else:
             url = self.args.url
             parsed = urllib.parse.urlparse(url)
             if parsed.scheme not in ('https', 'file'):
                 raise RuntimeError(f'Insecure url schem: {url}')
+
+            reco_cmd = ' '.join([
+                'curl -LsSf',
+                url,
+                '| python3 -',
+                *deps,
+            ])
+            print(f'Recovery command:\n{reco_cmd}\n')
+
             with urllib.request.urlopen(urllib.request.Request(url)) as resp:  # noqa
                 install_src = resp.read().decode('utf-8')
 

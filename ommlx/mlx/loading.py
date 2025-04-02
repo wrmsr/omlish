@@ -27,7 +27,7 @@ class LoadedModel(ta.NamedTuple):
 
     @property
     def check_pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
-        tw = check.isinstance(self.tokenizer, mlx_lm.utils.TokenizerWrapper)
+        tw: ta.Any = check.isinstance(self.tokenizer, mlx_lm.utils.TokenizerWrapper)
         return check.isinstance(tw._tokenizer, transformers.PreTrainedTokenizerBase)  # noqa
 
 
