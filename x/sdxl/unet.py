@@ -1,5 +1,5 @@
 import math
-from typing import Any
+import typing as ta
 
 from tinygrad import Tensor
 from tinygrad import dtypes
@@ -8,6 +8,9 @@ from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
 from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
+
+
+##
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/util.py#L207
@@ -233,13 +236,13 @@ class UNetModel:
                 ],
             ]
 
-        self.input_blocks: list[Any] = [[Conv2d(in_ch, model_ch, 3, padding=1)]]
+        self.input_blocks: list[ta.Any] = [[Conv2d(in_ch, model_ch, 3, padding=1)]]
         input_block_channels = [model_ch]
         ch = model_ch
         ds = 1
         for idx, mult in enumerate(channel_mult):
             for _ in range(self.num_res_blocks[idx]):
-                layers: list[Any] = [
+                layers: list[ta.Any] = [
                     ResBlock(ch, time_embed_dim, model_ch * mult),
                 ]
                 ch = mult * model_ch

@@ -2,14 +2,11 @@
 # https://github.com/ekagra-ranjan/huggingface-blog/blob/main/stable_diffusion.md
 import argparse
 import tempfile
-from collections import namedtuple
-from pathlib import Path
-from typing import Any
+import collections
+import pathlib
+import typing as ta
 
 import numpy as np
-from extra.models.clip import Closed
-from extra.models.clip import Tokenizer
-from extra.models.unet import UNetModel
 from PIL import Image
 
 from tinygrad import Device
@@ -28,6 +25,13 @@ from tinygrad.nn import GroupNorm
 from tinygrad.nn.state import get_state_dict
 from tinygrad.nn.state import load_state_dict
 from tinygrad.nn.state import torch_load
+
+from .clip import Closed
+from .clip import Tokenizer
+from .unet import UNetModel
+
+
+##
 
 
 class AttnBlock:
@@ -186,7 +190,7 @@ def get_alphas_cumprod(beta_start=0.00085, beta_end=0.0120, n_training_steps=100
     return Tensor(alphas_cumprod)
 
 
-unet_params: dict[str, Any] = {
+unet_params: dict[str, ta.Any] = {
     'adm_in_ch': None,
     'in_ch': 4,
     'out_ch': 4,
@@ -204,12 +208,12 @@ unet_params: dict[str, Any] = {
 class StableDiffusion:
     def __init__(self):
         self.alphas_cumprod = get_alphas_cumprod()
-        self.model = namedtuple('DiffusionModel', ['diffusion_model'])(
+        self.model = collections.namedtuple('DiffusionModel', ['diffusion_model'])(
             diffusion_model=UNetModel(**unet_params),
         )
         self.first_stage_model = AutoencoderKL()
-        self.cond_stage_model = namedtuple('CondStageModel', ['transformer'])(
-            transformer=namedtuple('Transformer', ['text_model'])(
+        self.cond_stage_model = collections.namedtuple('CondStageModel', ['transformer'])(
+            transformer=collections.namedtuple('Transformer', ['text_model'])(
                 text_model=Closed.ClipTextTransformer(),
             ),
         )
@@ -309,7 +313,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--out',
         type=str,
-        default=Path(tempfile.gettempdir()) / 'rendered.png',
+        default=pathlib.Path(tempfile.gettempdir()) / 'rendered.png',
         help='Output filename',
     )
     parser.add_argument('--noshow', action='store_true', help="Don't show the image")
@@ -415,7 +419,7 @@ if __name__ == '__main__':
         and args.guidance == 7.5
     ):
         ref_image = Tensor(
-            np.array(Image.open(Path(__file__).parent / 'stable_diffusion_seed0.png')),
+            np.array(Image.open(pathlib.Path(__file__).parent / 'stable_diffusion_seed0.png')),
         )
         distance = (
             (

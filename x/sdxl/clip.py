@@ -1,8 +1,7 @@
+import abc
+import functools
 import gzip
 import re
-from abc import ABC
-from abc import abstractmethod
-from functools import lru_cache
 
 import numpy as np
 from PIL import Image
@@ -16,7 +15,10 @@ from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
 
 
-@lru_cache
+##
+
+
+@functools.lru_cache
 def default_bpe():
     # Clip tokenizer, taken from https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py (MIT license)
     return fetch(
@@ -153,10 +155,10 @@ class Tokenizer:
             )
 
 
-class Embedder(ABC):
+class Embedder(abc.ABC):
     input_key: str
 
-    @abstractmethod
+    @abc.abstractmethod
     def __call__(
         self, x: str | list[str] | Tensor,
     ) -> Tensor | tuple[Tensor, ...]:

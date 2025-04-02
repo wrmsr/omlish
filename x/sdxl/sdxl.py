@@ -2,25 +2,13 @@
 # Github Name                    | License | Link
 # Stability-AI/generative-models | MIT     | https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/LICENSE-CODE
 # mlfoundations/open_clip        | MIT     | https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/LICENSE
-
 import argparse
 import tempfile
-from abc import ABC
-from abc import abstractmethod
-from collections.abc import Callable
-from pathlib import Path
-from typing import Any
+import abc
+import typing as ta
+import pathlib
 
 import numpy as np
-from examples.stable_diffusion import Mid
-from examples.stable_diffusion import ResnetBlock
-from extra.models.clip import Embedder
-from extra.models.clip import FrozenClosedClipEmbedder
-from extra.models.clip import FrozenOpenClipEmbedder
-from extra.models.unet import Downsample
-from extra.models.unet import UNetModel
-from extra.models.unet import Upsample
-from extra.models.unet import timestep_embedding
 from PIL import Image
 
 from tinygrad import GlobalCounters
@@ -35,6 +23,19 @@ from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
 from tinygrad.nn.state import load_state_dict
 from tinygrad.nn.state import safe_load
+
+from .clip import Embedder
+from .clip import FrozenClosedClipEmbedder
+from .clip import FrozenOpenClipEmbedder
+from .sd import Mid
+from .sd import ResnetBlock
+from .unet import Downsample
+from .unet import UNetModel
+from .unet import Upsample
+from .unet import timestep_embedding
+
+
+##
 
 
 # configs:
@@ -257,7 +258,7 @@ class FirstStage:
 
             class BlockEntry:
                 def __init__(
-                    self, block: list[ResnetBlock], upsample: Callable[[Any], Any],
+                    self, block: list[ResnetBlock], upsample: ta.Callable[[ta.Any], ta.Any],
                 ):
                     self.block = block
                     self.upsample = upsample
@@ -412,11 +413,11 @@ class SDXL:
         return self.first_stage_model.decode(1.0 / 0.13025 * x)
 
 
-class Guider(ABC):
+class Guider(abc.ABC):
     def __init__(self, scale: float):
         self.scale = scale
 
-    @abstractmethod
+    @abc.abstractmethod
     def __call__(self, denoiser, x: Tensor, s: Tensor, c: dict, uc: dict) -> Tensor:
         pass
 
@@ -527,7 +528,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--out',
         type=str,
-        default=Path(tempfile.gettempdir()) / 'rendered.png',
+        default=pathlib.Path(tempfile.gettempdir()) / 'rendered.png',
         help='Output filename',
     )
     parser.add_argument('--seed', type=int, help='Set the random latent seed')
@@ -612,7 +613,7 @@ if __name__ == '__main__':
         and not args.weights
     ):
         ref_image = Tensor(
-            np.array(Image.open(Path(__file__).parent / 'sdxl_seed0.png')),
+            np.array(Image.open(pathlib.Path(__file__).parent / 'sdxl_seed0.png')),
         )
         distance = (
             (
