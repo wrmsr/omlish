@@ -218,7 +218,7 @@ class MultiMarshalerFactory(MarshalerFactory):
         super().__init__()
 
         self._fs = list(fs)
-        self._mmf: mfs.MultiMatchFn[['MarshalContext', rfl.Type], Marshaler] = mfs.MultiMatchFn(
+        self._mmf: mfs.MultiMatchFn[[MarshalContext, rfl.Type], Marshaler] = mfs.MultiMatchFn(
             [f.make_marshaler for f in self._fs],
             strict=strict,
         )
@@ -238,7 +238,7 @@ class MultiUnmarshalerFactory(UnmarshalerFactory):
         super().__init__()
 
         self._fs = list(fs)
-        self._mmf: mfs.MultiMatchFn[['UnmarshalContext', rfl.Type], Unmarshaler] = mfs.MultiMatchFn(
+        self._mmf: mfs.MultiMatchFn[[UnmarshalContext, rfl.Type], Unmarshaler] = mfs.MultiMatchFn(
             [f.make_unmarshaler for f in self._fs],
             strict=strict,
         )
@@ -291,7 +291,7 @@ class TypeMapUnmarshalerFactory(
 #         super().__init__()
 #
 #         self._m = m
-#         self._tmf: TypeMapFactory['UnmarshalContext', Unmarshaler] = TypeMapFactory({
+#         self._tmf: TypeMapFactory[UnmarshalContext, Unmarshaler] = TypeMapFactory({
 #             t: f.make_unmarshaler
 #             for t, f in m.items()
 #         })
@@ -309,7 +309,7 @@ class TypeCacheMarshalerFactory(MarshalerFactory):
         super().__init__()
 
         self._f = f
-        self._tcf: TypeCacheFactory['MarshalContext', Marshaler] = TypeCacheFactory(f.make_marshaler)
+        self._tcf: TypeCacheFactory[MarshalContext, Marshaler] = TypeCacheFactory(f.make_marshaler)
 
     @property
     def make_marshaler(self) -> MarshalerMaker:
@@ -321,7 +321,7 @@ class TypeCacheUnmarshalerFactory(UnmarshalerFactory):
         super().__init__()
 
         self._f = f
-        self._tcf: TypeCacheFactory['UnmarshalContext', Unmarshaler] = TypeCacheFactory(f.make_unmarshaler)
+        self._tcf: TypeCacheFactory[UnmarshalContext, Unmarshaler] = TypeCacheFactory(f.make_unmarshaler)
 
     @property
     def make_unmarshaler(self) -> UnmarshalerMaker:
@@ -378,7 +378,7 @@ class MarshalContext(BaseContext, lang.Final):
     def make(self, o: ta.Any) -> Marshaler:
         rty = self._reflect(o)
         try:
-            return check.not_none(self.factory).make_marshaler(self, rty)  # type: ignore
+            return check.not_none(self.factory).make_marshaler(self, rty)
         except mfs.MatchGuardError:
             raise UnhandledTypeError(rty)  # noqa
 
@@ -390,7 +390,7 @@ class UnmarshalContext(BaseContext, lang.Final):
     def make(self, o: ta.Any) -> Unmarshaler:
         rty = self._reflect(o)
         try:
-            return check.not_none(self.factory).make_unmarshaler(self, rty)  # type: ignore
+            return check.not_none(self.factory).make_unmarshaler(self, rty)
         except mfs.MatchGuardError:
             raise UnhandledTypeError(rty)  # noqa
 
@@ -428,7 +428,7 @@ class RecursiveUnmarshalerFactory(UnmarshalerFactory, lang.Final):
         super().__init__()
 
         self._f = f
-        self._rtf: RecursiveTypeFactory[MarshalContext, Marshaler] = RecursiveTypeFactory(
+        self._rtf: RecursiveTypeFactory[UnmarshalContext, Unmarshaler] = RecursiveTypeFactory(
             self._f.make_unmarshaler,  # noqa
             _ProxyUnmarshaler._new,  # noqa
         )

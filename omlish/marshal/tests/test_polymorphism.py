@@ -1,6 +1,5 @@
 import dataclasses as dc
 
-from ...funcs import match as mfs
 from ..base import MarshalContext
 from ..base import MarshalerFactory
 from ..base import MultiMarshalerFactory
