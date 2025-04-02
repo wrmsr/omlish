@@ -1,3 +1,9 @@
+"""
+TODO:
+ - -> omlish.collections?
+  - potential circ-dep w/ om.dc, but will proxy_init anyway
+ - Accessor inputs/outputs should be subtype of class generic param
+"""
 import abc
 import typing as ta
 
@@ -211,6 +217,11 @@ class TypedValues(
             raise TypeError(key)
 
     def _typed_value_get(self, key, /, default=None):
+        if not isinstance(key, type):
+            if default is not None:
+                raise RuntimeError('Must not provide both an instance key and a default')
+            default = key
+            key = type(default)
         check.issubclass(key, TypedValue)
         try:
             return self._dct[key]
@@ -245,7 +256,7 @@ class TypedValueGeneric(lang.Abstract, ta.Generic[TypedValueT]):
         cls._typed_value_type = tvt
 
 
-#
+##
 
 
 class TypedValueContainer(
