@@ -16,6 +16,7 @@ from omlish import lang
 from ..services import Service_
 from ..services import Request
 from ..services import RequestOption
+from ..services import ScalarRequestOption
 from ..services import Response
 from ..services import ResponseOutput
 
@@ -24,6 +25,10 @@ from ..services import ResponseOutput
 
 
 class FooRequestOption(RequestOption, lang.Abstract):
+    pass
+
+
+class FooSuffix(ScalarRequestOption[str], FooRequestOption, lang.Final):
     pass
 
 
