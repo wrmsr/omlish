@@ -5,7 +5,8 @@ Response : Detail
 TODO:
  - try: unique class kwarg on TypedValue? modifies bases... don't want a metaclass
   - no, fucks up type inference in TypedValues collection overload
- - @ta.overload
+ - @ta.overload def invoke
+ - queryable req/resp type mapping, tv types
 """
 import abc
 import typing as ta
