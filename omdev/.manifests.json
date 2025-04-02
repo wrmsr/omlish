@@ -240,6 +240,18 @@
     }
   },
   {
+    "module": ".tools.diff",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/diff.py",
+    "line": 21,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "diff",
+        "mod_name": "omdev.tools.diff"
+      }
+    }
+  },
+  {
     "module": ".tools.doc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/doc.py",

@@ -23,6 +23,7 @@ import dataclasses as dc
 import logging
 import os
 import re
+import sys
 import typing as ta
 import urllib.parse
 
@@ -374,6 +375,7 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('dir', nargs='*'),
+        ap.arg('-x', '--on-error-resume-next', action='store_true'),
         aliases=['usb'],
     )
     def update_submodule_branches(self) -> None:
@@ -406,7 +408,13 @@ class Cli(ap.Cli):
             ).decode().strip().splitlines()
 
             for submodule in submodules:
-                run_submodule(submodule, cwd)
+                try:
+                    run_submodule(submodule, cwd)
+                except Exception as e:
+                    if self.args.on_error_resume_next:
+                        print(e, file=sys.stderr)
+                    else:
+                        raise
 
         if not self.args.dir:
             run(None)
