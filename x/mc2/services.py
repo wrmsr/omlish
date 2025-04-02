@@ -34,7 +34,22 @@ class ScalarRequestOption(ScalarTypedValue[T], RequestOption, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
-    options: TypedValues[RequestOptionT] | None = dc.field(default=None, kw_only=True)
+    options: TypedValues[RequestOptionT] | None = dc.field(
+        default=None,
+        kw_only=True,
+        metadata={
+            dc.FieldExtras: dc.FieldExtras(
+                repr_fn=lang.opt_repr,
+                repr_priority=100,
+            ),
+        },
+    )
+
+    def with_options(self, *options: RequestOptionT) -> ta.Self:
+        return dc.replace(self, options=TypedValues(
+            *(self.options or []),
+            *options,
+        ))
 
     @property
     def _typed_values(self) -> TypedValues[RequestOptionT] | None:
@@ -54,7 +69,22 @@ class ScalarResponseOutput(ScalarTypedValue[T], ResponseOutput, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Response(TypedValueContainer[ResponseOutputT], lang.Abstract):
-    outputs: TypedValues[ResponseOutputT] | None = dc.field(default=None, kw_only=True)
+    outputs: TypedValues[ResponseOutputT] | None = dc.field(
+        default=None,
+        kw_only=True,
+        metadata={
+            dc.FieldExtras: dc.FieldExtras(
+                repr_fn=lang.opt_repr,
+                repr_priority=100,
+            ),
+        },
+    )
+
+    def with_outputs(self, *outputs: ResponseOutputT) -> ta.Self:
+        return dc.replace(self, outputs=TypedValues(
+            *(self.outputs or []),
+            *outputs,
+        ))
 
     @property
     def _typed_values(self) -> TypedValues[ResponseOutputT] | None:

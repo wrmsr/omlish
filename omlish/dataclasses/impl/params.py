@@ -53,6 +53,7 @@ class FieldExtras(lang.Final):
     check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
     repr_fn: ta.Callable[[ta.Any], str | None] | None = None
+    repr_priority: int | None = None
     frozen: bool | None = None  # TODO
 
 

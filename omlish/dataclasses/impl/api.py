@@ -11,6 +11,7 @@ import types
 import typing as ta
 
 from ... import check as check_
+from ... import lang
 from .internals import PARAMS_ATTR
 from .internals import Params
 from .main import process_class
@@ -40,20 +41,26 @@ def field(  # noqa
         check_type: bool | type | tuple[type | None, ...] | None = None,
         override: bool = False,
         repr_fn: ta.Callable[[ta.Any], str | None] | None = None,
+        repr_priority: int | None = None,
         frozen: bool | None = None,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
 
-    fx = FieldExtras(
+    fx = FieldExtras()
+    if metadata is not None:
+        fx = metadata.get(FieldExtras, fx)
+
+    fx = dc.replace(fx, **lang.opt_kw(
         derive=derive,
         coerce=coerce,
         validate=validate,
         check_type=check_type,
         override=override,
         repr_fn=repr_fn,
+        repr_priority=repr_priority,
         frozen=frozen,
-    )
+    ))
 
     md: ta.Mapping = {FieldExtras: fx}
     if metadata is not None:

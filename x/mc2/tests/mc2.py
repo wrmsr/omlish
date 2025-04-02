@@ -14,7 +14,6 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..services import Service_
-
 from ..services import Request
 from ..services import RequestOption
 from ..services import Response
@@ -33,6 +32,9 @@ class FooRequest(Request[FooRequestOption]):
     input_foo_str: str
 
 
+#
+
+
 class FooResponseOutput(ResponseOutput, lang.Abstract):
     pass
 
@@ -40,6 +42,9 @@ class FooResponseOutput(ResponseOutput, lang.Abstract):
 @dc.dataclass(frozen=True)
 class FooResponse(Response[FooResponseOutput]):
     output_foo_str: str
+
+
+#
 
 
 class FooService(Service_[FooRequest, FooResponse]):

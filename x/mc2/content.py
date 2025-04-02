@@ -28,7 +28,22 @@ class ScalarDetail(ScalarTypedValue[T], ContentDetail, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Content(TypedValueContainer[ContentDetailT], lang.Abstract):
-    details: TypedValues[ContentDetailT] | None = dc.field(default=None, kw_only=True)
+    details: TypedValues[ContentDetailT] | None = dc.field(
+        default=None,
+        kw_only=True,
+        metadata={
+            dc.FieldExtras: dc.FieldExtras(
+                repr_fn=lang.opt_repr,
+                repr_priority=100,
+            ),
+        },
+    )
+
+    def with_details(self, *details: ContentDetailT) -> ta.Self:
+        return dc.replace(self, outputs=TypedValues(
+            *(self.details or []),
+            *details,
+        ))
 
     @property
     def _typed_values(self) -> TypedValues[ContentDetailT] | None:
