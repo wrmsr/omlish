@@ -14,14 +14,14 @@ from omlish import dataclasses as dc
 from omlish import lang
 from x.mc2.streaming import StreamResponseItemT
 
+from ...resources import Resources
 from ...services import Request
 from ...services import RequestOption
-from ...services import Response
 from ...services import ResponseOutput
 from ...services import ScalarRequestOption
 from ...services import Service_
-from ...typedvalues import UniqueTypedValue
 from ...streaming import StreamResponse
+from ...typedvalues import UniqueTypedValue
 
 
 ##
@@ -60,7 +60,10 @@ class FooResponse(StreamResponse[FooResponseOutput, str]):
 
 class FooService(Service_[FooRequest, FooResponse], request=FooRequest, response=FooResponse):
     def invoke(self, request: FooRequest) -> FooResponse:
-        return FooResponse(request.input_foo_str + request.get(FooSuffix('!')).v)
+        return FooResponse(
+            request.input_foo_str + request.get(FooSuffix('!')).v,
+            _resources=Resources(),
+        )
 
 
 ##
