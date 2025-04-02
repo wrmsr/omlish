@@ -63,7 +63,14 @@ class Response(lang.Abstract, ta.Generic[DetailT]):
 #
 
 
-class Service(lang.Abstract, ta.Generic[RequestT, ResponseT]):
+@ta.runtime_checkable
+class Service(ta.Protocol[RequestT, ResponseT]):
+    def invoke(self, request: RequestT) -> ResponseT:
+        raise NotImplementedError
+
+
+@lang.protocol_check(Service)
+class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
     @abc.abstractmethod
     def invoke(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
@@ -90,7 +97,7 @@ class FooResponse(Response):
     output_foo_str: str
 
 
-class FooService(Service[FooRequest, FooResponse]):
+class FooService(Service_[FooRequest, FooResponse]):
     def invoke(self, request: FooRequest) -> FooResponse:
         return FooResponse(request.input_foo_str + '!')
 
