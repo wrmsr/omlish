@@ -8,8 +8,6 @@ TODO:
   - figures out parameterization
   - must support Union tv bounds
 """
-import typing as ta
-
 from omlish import dataclasses as dc
 from omlish import lang
 

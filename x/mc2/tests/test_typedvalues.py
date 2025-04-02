@@ -4,10 +4,10 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..typedvalues import DuplicateUniqueTypedValueError
-from ..typedvalues import TypedValue
-from ..typedvalues import UniqueTypedValue
 from ..typedvalues import ScalarTypedValue
+from ..typedvalues import TypedValue
 from ..typedvalues import TypedValues
+from ..typedvalues import UniqueTypedValue
 
 
 ##
