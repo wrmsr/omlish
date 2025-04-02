@@ -47,6 +47,73 @@ class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
 ##
 
 
+class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
+    @abc.abstractmethod
+    def __contains__(self, cls: type[TypedValueU]) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @ta.overload
+    def __getitem__(self, idx: int) -> TypedValueT:
+        ...
+
+    @ta.overload
+    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU:  # type: ignore[overload-overlap]
+        ...
+
+    @ta.overload
+    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
+        ...
+
+    @abc.abstractmethod
+    def __getitem__(self, key):
+        raise NotImplementedError
+
+    #
+
+    @ta.overload
+    def get(
+            self,
+            tv: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
+        ...
+
+    @ta.overload
+    def get(
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: UniqueTypedValueU,
+    ) -> UniqueTypedValueU:
+        ...
+
+    @ta.overload
+    def get(  # type: ignore[overload-overlap]
+            self,
+            cls: type[UniqueTypedValueU],
+            /,
+            default: None = None,
+    ) -> UniqueTypedValueU | None:
+        ...
+
+    @ta.overload
+    def get(
+            self,
+            cls: type[TypedValueU],
+            /,
+            default: ta.Iterable[TypedValueU] | None = None,
+    ) -> ta.Sequence[TypedValueU]:
+        ...
+
+    @abc.abstractmethod
+    def get(self, key, /, default=None):
+        raise NotImplementedError
+
+
+##
+
+
 @dc.dataclass()
 class DuplicateUniqueTypedValueError(Exception, ta.Generic[UniqueTypedValueU]):
     cls: type[UniqueTypedValueU]
@@ -54,7 +121,11 @@ class DuplicateUniqueTypedValueError(Exception, ta.Generic[UniqueTypedValueU]):
     old: UniqueTypedValueU
 
 
-class TypedValues(lang.Final, ta.Generic[TypedValueT]):
+class TypedValues(
+    TypedValuesAccessor[TypedValueT],
+    lang.Final,
+    ta.Generic[TypedValueT],
+):
     def __init__(self, *tvs: TypedValueT, override: bool = False) -> None:
         super().__init__()
 
@@ -114,26 +185,13 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
     def __bool__(self) -> bool:
         return bool(self._lst)
 
-    ##
-    # shared with TypedValueContainer
+    #
 
+    @ta.override
     def __contains__(self, cls: type[TypedValueU]) -> bool:
         return cls in self._dct
 
-    #
-
-    @ta.overload
-    def __getitem__(self, idx: int) -> TypedValueT:
-        ...
-
-    @ta.overload
-    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU:  # type: ignore[overload-overlap]
-        ...
-
-    @ta.overload
-    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
-        ...
-
+    @ta.override
     def __getitem__(self, key):
         if isinstance(key, int):
             return self._lst[key]
@@ -142,42 +200,7 @@ class TypedValues(lang.Final, ta.Generic[TypedValueT]):
         else:
             raise TypeError(key)
 
-    #
-
-    @ta.overload
-    def get(
-            self,
-            tv: UniqueTypedValueU,
-    ) -> UniqueTypedValueU:
-        ...
-
-    @ta.overload
-    def get(
-            self,
-            cls: type[UniqueTypedValueU],
-            /,
-            default: UniqueTypedValueU,
-    ) -> UniqueTypedValueU:
-        ...
-
-    @ta.overload
-    def get(  # type: ignore[overload-overlap]
-            self,
-            cls: type[UniqueTypedValueU],
-            /,
-            default: None = None,
-    ) -> UniqueTypedValueU | None:
-        ...
-
-    @ta.overload
-    def get(
-            self,
-            cls: type[TypedValueU],
-            /,
-            default: ta.Iterable[TypedValueU] | None = None,
-    ) -> ta.Sequence[TypedValueU]:
-        ...
-
+    @ta.override
     def get(self, key, /, default=None):
         check.issubclass(key, TypedValue)
         try:
@@ -216,78 +239,34 @@ class TypedValueGeneric(ta.Generic[TypedValueT], lang.Abstract):
 #
 
 
-class TypedValueContainer(TypedValueGeneric[TypedValueT], lang.Abstract):
+class TypedValueContainer(
+    TypedValuesAccessor[TypedValueT],
+    TypedValueGeneric[TypedValueT],
+    lang.Abstract,
+):
     @property
     @abc.abstractmethod
     def _typed_values(self) -> TypedValues[TypedValueT] | None:
         raise NotImplementedError
 
-    ##
-    # shared with TypedValues
+    #
 
     @ta.final
+    @ta.override
     def __contains__(self, cls: type[TypedValueU]) -> bool:
         if (tvs := self._typed_values) is None:
             return False
         return cls in tvs
 
-    #
-
-    @ta.overload
-    def __getitem__(self, idx: int) -> TypedValueT:
-        ...
-
-    @ta.overload
-    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU:  # type: ignore[overload-overlap]
-        ...
-
-    @ta.overload
-    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
-        ...
-
     @ta.final
+    @ta.override
     def __getitem__(self, key):
         if (tvs := self._typed_values) is None:
             return False
         return tvs[key]
 
-    #
-
-    @ta.overload
-    def get(
-            self,
-            tv: UniqueTypedValueU,
-    ) -> UniqueTypedValueU:
-        ...
-
-    @ta.overload
-    def get(
-            self,
-            cls: type[UniqueTypedValueU],
-            /,
-            default: UniqueTypedValueU,
-    ) -> UniqueTypedValueU:
-        ...
-
-    @ta.overload
-    def get(  # type: ignore[overload-overlap]
-            self,
-            cls: type[UniqueTypedValueU],
-            /,
-            default: None = None,
-    ) -> UniqueTypedValueU | None:
-        ...
-
-    @ta.overload
-    def get(
-            self,
-            cls: type[TypedValueU],
-            /,
-            default: ta.Iterable[TypedValueU] | None = None,
-    ) -> ta.Sequence[TypedValueU]:
-        ...
-
     @ta.final
+    @ta.override
     def get(self, key, /, default=None):
         if (tvs := self._typed_values) is None:
             return False
