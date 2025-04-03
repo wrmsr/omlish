@@ -28,8 +28,6 @@ from tinygrad.nn.state import safe_load
 from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder
 from .clip import FrozenOpenClipEmbedder
-from .sd import Mid
-from .sd import ResnetBlock
 from .unet import Downsample
 from .unet import UNetModel
 from .unet import Upsample
@@ -37,6 +35,64 @@ from .unet import timestep_embedding
 
 
 ##
+
+
+class AttnBlock:
+    def __init__(self, in_channels):
+        super().__init__()
+
+        self.norm = GroupNorm(32, in_channels)
+        self.q = Conv2d(in_channels, in_channels, 1)
+        self.k = Conv2d(in_channels, in_channels, 1)
+        self.v = Conv2d(in_channels, in_channels, 1)
+        self.proj_out = Conv2d(in_channels, in_channels, 1)
+
+    # copied from AttnBlock in ldm repo
+    def __call__(self, x):
+        h_ = self.norm(x)
+        q, k, v = self.q(h_), self.k(h_), self.v(h_)
+
+        # compute attention
+        b, c, h, w = q.shape
+        q, k, v = [x.reshape(b, c, h * w).transpose(1, 2) for x in (q, k, v)]
+        h_ = (
+            Tensor.scaled_dot_product_attention(q, k, v)
+            .transpose(1, 2)
+            .reshape(b, c, h, w)
+        )
+        return x + self.proj_out(h_)
+
+
+class ResnetBlock:
+    def __init__(self, in_channels, out_channels=None):
+        super().__init__()
+
+        self.norm1 = GroupNorm(32, in_channels)
+        self.conv1 = Conv2d(in_channels, out_channels, 3, padding=1)
+        self.norm2 = GroupNorm(32, out_channels)
+        self.conv2 = Conv2d(out_channels, out_channels, 3, padding=1)
+        self.nin_shortcut = (
+            Conv2d(in_channels, out_channels, 1)
+            if in_channels != out_channels
+            else lambda x: x
+        )
+
+    def __call__(self, x):
+        h = self.conv1(self.norm1(x).swish())
+        h = self.conv2(self.norm2(h).swish())
+        return self.nin_shortcut(x) + h
+
+
+class Mid:
+    def __init__(self, block_in):
+        super().__init__()
+
+        self.block_1 = ResnetBlock(block_in, block_in)
+        self.attn_1 = AttnBlock(block_in)
+        self.block_2 = ResnetBlock(block_in, block_in)
+
+    def __call__(self, x):
+        return x.sequential([self.block_1, self.attn_1, self.block_2])
 
 
 # configs:
@@ -395,20 +451,20 @@ class SDXL:
         img_height: int,
         aesthetic_score: float = 5.0,
     ) -> tuple[dict, dict]:
-        N = len(pos_prompts)
+        n = len(pos_prompts)
         batch_c: dict = {
             'txt': pos_prompts,
-            'original_size_as_tuple': Tensor([img_height, img_width]).repeat(N, 1),
-            'crop_coords_top_left': Tensor([0, 0]).repeat(N, 1),
-            'target_size_as_tuple': Tensor([img_height, img_width]).repeat(N, 1),
-            'aesthetic_score': Tensor([aesthetic_score]).repeat(N, 1),
+            'original_size_as_tuple': Tensor([img_height, img_width]).repeat(n, 1),
+            'crop_coords_top_left': Tensor([0, 0]).repeat(n, 1),
+            'target_size_as_tuple': Tensor([img_height, img_width]).repeat(n, 1),
+            'aesthetic_score': Tensor([aesthetic_score]).repeat(n, 1),
         }
         batch_uc: dict = {
-            'txt': [''] * N,
-            'original_size_as_tuple': Tensor([img_height, img_width]).repeat(N, 1),
-            'crop_coords_top_left': Tensor([0, 0]).repeat(N, 1),
-            'target_size_as_tuple': Tensor([img_height, img_width]).repeat(N, 1),
-            'aesthetic_score': Tensor([aesthetic_score]).repeat(N, 1),
+            'txt': [''] * n,
+            'original_size_as_tuple': Tensor([img_height, img_width]).repeat(n, 1),
+            'crop_coords_top_left': Tensor([0, 0]).repeat(n, 1),
+            'target_size_as_tuple': Tensor([img_height, img_width]).repeat(n, 1),
+            'aesthetic_score': Tensor([aesthetic_score]).repeat(n, 1),
         }
         return self.conditioner(batch_c), self.conditioner(
             batch_uc, force_zero_embeddings=['txt'],
@@ -546,12 +602,16 @@ class DPMPP2MSampler:
 
 
 def _main() -> None:
-    default_prompt = 'a horse sized cat eating a bagel'
+    default_prompt = 'elon musk eating poop'
     parser = argparse.ArgumentParser(
-        description='Run SDXL', formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Run SDXL',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        '--steps', type=int, default=10, help='The number of diffusion steps',
+        '--steps',
+        type=int,
+        default=10,
+        help='The number of diffusion steps',
     )
     parser.add_argument(
         '--prompt',
@@ -565,17 +625,44 @@ def _main() -> None:
         default=pathlib.Path(tempfile.gettempdir()) / 'rendered.png',
         help='Output filename',
     )
-    parser.add_argument('--seed', type=int, help='Set the random latent seed')
-    parser.add_argument('--guidance', type=float, default=6.0, help='Prompt strength')
     parser.add_argument(
-        '--width', type=int, default=1024, help='The output image width',
+        '--seed',
+        type=int,
+        help='Set the random latent seed',
     )
     parser.add_argument(
-        '--height', type=int, default=1024, help='The output image height',
+        '--guidance',
+        type=float,
+        default=6.0,
+        help='Prompt strength',
     )
-    parser.add_argument('--weights', type=str, help='Custom path to weights')
-    parser.add_argument('--timing', action='store_true', help='Print timing per step')
-    parser.add_argument('--noshow', action='store_true', help="Don't show the image")
+    parser.add_argument(
+        '--width',
+        type=int,
+        default=1024,
+        help='The output image width',
+    )
+    parser.add_argument(
+        '--height',
+        type=int,
+        default=1024,
+        help='The output image height',
+    )
+    parser.add_argument(
+        '--weights',
+        type=str,
+        help='Custom path to weights',
+    )
+    parser.add_argument(
+        '--timing',
+        action='store_true',
+        help='Print timing per step',
+    )
+    parser.add_argument(
+        '--noshow',
+        action='store_true',
+        help="Don't show the image",
+    )
     args = parser.parse_args()
 
     Tensor.no_grad = True
@@ -592,7 +679,7 @@ def _main() -> None:
     )
     load_state_dict(model, safe_load(weights), strict=False)
 
-    N = 1
+    n = 1
     C = 4
     F = 8
 
@@ -608,7 +695,7 @@ def _main() -> None:
     print('created batch')
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/inference/helpers.py#L101
-    shape = (N, C, args.height // F, args.width // F)
+    shape = (n, C, args.height // F, args.width // F)
     randn = Tensor.randn(shape)
 
     sampler = DPMPP2MSampler(args.guidance)
@@ -620,7 +707,8 @@ def _main() -> None:
     # make image correct size and scale
     x = (x + 1.0) / 2.0
     x = (
-        x.reshape(3, args.height, args.width)
+        x
+        .reshape(3, args.height, args.width)
         .permute(1, 2, 0)
         .clip(0, 1)
         .mul(255)
@@ -648,13 +736,7 @@ def _main() -> None:
             np.array(Image.open(pathlib.Path(__file__).parent / 'sdxl_seed0.png')),
         )
         distance = (
-            (
-                (
-                    (x.cast(dtypes.float) - ref_image.cast(dtypes.float))
-                    / ref_image.max()
-                )
-                ** 2
-            )
+            (((x.cast(dtypes.float) - ref_image.cast(dtypes.float)) / ref_image.max()) ** 2)
             .mean()
             .item()
         )
