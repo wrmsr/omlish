@@ -3,11 +3,11 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..typedvalues import DuplicateUniqueTypedValueError
-from ..typedvalues import ScalarTypedValue
-from ..typedvalues import TypedValue
-from ..typedvalues import TypedValues
-from ..typedvalues import UniqueTypedValue
+from ..collection import DuplicateUniqueTypedValueError
+from ..collection import TypedValues
+from ..values import ScalarTypedValue
+from ..values import TypedValue
+from ..values import UniqueTypedValue
 
 
 ##

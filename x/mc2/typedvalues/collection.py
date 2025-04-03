@@ -1,28 +1,27 @@
-import abc
 import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
 
+from .accessor import TypedValuesAccessor
+from .values import TypedValue
+from .values import UniqueTypedValue
 
-T = ta.TypeVar('T')
 
 TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')
-TypedValueU = ta.TypeVar('TypedValueU', bound='TypedValue')
 
-UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
+UniqueTypedValueT = ta.TypeVar('UniqueTypedValueT', bound='UniqueTypedValue')
 
 
 ##
 
 
 @dc.dataclass()
-class DuplicateUniqueTypedValueError(Exception, ta.Generic[UniqueTypedValueU]):
-    cls: type[UniqueTypedValueU]
-    new: UniqueTypedValueU
-    old: UniqueTypedValueU
+class DuplicateUniqueTypedValueError(Exception, ta.Generic[UniqueTypedValueT]):
+    cls: type[UniqueTypedValueT]
+    new: UniqueTypedValueT
+    old: UniqueTypedValueT
 
 
 class TypedValues(
@@ -124,4 +123,3 @@ class TypedValues(
         ret = [tv for tv in self if isinstance(tv, cls)]
         self._any_dct[cls] = ret
         return ret
-

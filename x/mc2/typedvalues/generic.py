@@ -1,18 +1,11 @@
-import abc
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import reflect as rfl
 
 
-T = ta.TypeVar('T')
-
 TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')
-TypedValueU = ta.TypeVar('TypedValueU', bound='TypedValue')
-
-UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
 
 
 ##
@@ -35,4 +28,3 @@ class TypedValueGeneric(lang.Abstract, ta.Generic[TypedValueT]):
         )
         tvt = check.single(g_tvg.args)
         cls._typed_value_type = tvt
-

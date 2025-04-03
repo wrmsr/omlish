@@ -1,18 +1,10 @@
-import abc
 import typing as ta
 
-from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
 
 
 T = ta.TypeVar('T')
-
-TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')
-TypedValueU = ta.TypeVar('TypedValueU', bound='TypedValue')
-
-UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
 
 
 ##

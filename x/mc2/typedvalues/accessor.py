@@ -6,10 +6,7 @@ TODO:
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
 
 
 T = ta.TypeVar('T')
@@ -112,5 +109,3 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
     @abc.abstractmethod
     def _typed_value_get_any(self, cls):
         raise NotImplementedError
-
-
