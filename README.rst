@@ -3,13 +3,22 @@ It's like my previous python monorepo-ey thing `omnibus
 
 Core packages begin with ``om``, scratch app is in ``app``, temp / dump code is in ``x``.
 
+----
+
 The core packages are:
 
-  * omlish - core foundational code
-  * omdev - development utilities
-  * omserv - production web server
-  * ominfra - infrastructure and cloud code
-  * ommlx - ml / ai code
+omlish
+  core foundational code
+omdev
+  development utilities
+omserv
+  production web server
+ominfra
+  infrastructure and cloud code
+ommlx
+  ml / ai code
+
+----
 
 Core packages installable from pypi, or from git via:
 
