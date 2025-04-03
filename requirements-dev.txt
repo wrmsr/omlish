@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.6.11
+uv>=0.6.12
 
 pytest==8.3.5
 pytest-benchmark==5.1.0
@@ -15,7 +15,7 @@ pytest-xdist==3.6.1
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
-ruff==0.11.2
+ruff==0.11.3
 
 docutils-stubs==0.0.22
 types-markdown==3.7.0.20250322
@@ -54,7 +54,8 @@ lxml==5.3.1  # @omlish-venv !13t
 # clang
 
 
-json5==0.10.0
+# Used for tests
+json5==0.12.0
 
 # pyrsistent
 # rpds-py
@@ -106,7 +107,7 @@ huggingface-hub==0.30.1
 
 datasets==3.5.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-sentence-transformers==4.0.1; python_version < "3.13"
+sentence-transformers==4.0.2; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"
 transformers==4.50.3; python_version < "3.13"
@@ -117,7 +118,8 @@ segno==1.6.6
 
 duckduckgo_search==2025.4.1  # @omlish-venv !13t  # segfault lol
 
-boto3>=1.37.25
+# Used for codegen
+boto3>=1.37.26
 
 mlx==0.24.1; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.2; sys_platform == "darwin"  # @omlish-venv !13t

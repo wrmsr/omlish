@@ -26,7 +26,7 @@ scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.5.3
+tavily-python==0.5.4
 
 chromadb==0.6.3
 
