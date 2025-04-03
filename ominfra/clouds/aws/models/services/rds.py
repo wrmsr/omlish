@@ -601,7 +601,7 @@ class DomainMembership(
         shape_name='String',
     ))
 
-    f_q_d_n: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+    fqdn: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='FQDN',
         shape_name='String',
     ))
@@ -611,7 +611,7 @@ class DomainMembership(
         shape_name='String',
     ))
 
-    o_u: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+    ou: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='OU',
         shape_name='String',
     ))
