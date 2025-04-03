@@ -1,8 +1,7 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-
+from ... import dataclasses as dc
+from ... import lang
 from ..collection import DuplicateUniqueTypedValueError
 from ..collection import TypedValues
 from ..values import ScalarTypedValue

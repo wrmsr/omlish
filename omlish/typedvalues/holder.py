@@ -1,9 +1,8 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from .. import check
+from .. import lang
 from .accessor import TypedValuesAccessor
 from .collection import TypedValues
 from .generic import TypedValueGeneric
@@ -17,7 +16,7 @@ TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')
 ##
 
 
-class TypedValueContainer(
+class TypedValueHolder(
     TypedValuesAccessor[TypedValueT],
     TypedValueGeneric[TypedValueT],
     lang.Abstract,

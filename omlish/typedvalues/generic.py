@@ -1,8 +1,9 @@
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import reflect as rfl
+from .. import check
+from .. import lang
+from .. import reflect as rfl
+from .values import TypedValue  # noqa
 
 
 TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')

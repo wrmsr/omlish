@@ -5,11 +5,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-
-from .typedvalues import ScalarTypedValue
-from .typedvalues import TypedValue
-from .typedvalues import TypedValueContainer
-from .typedvalues import TypedValues
+from omlish import typedvalues as tv
 
 
 T = ta.TypeVar('T')
@@ -26,17 +22,17 @@ ResponseT_co = ta.TypeVar('ResponseT_co', bound='Response', covariant=True)
 ##
 
 
-class RequestOption(TypedValue, lang.Abstract):
+class RequestOption(tv.TypedValue, lang.Abstract):
     pass
 
 
-class ScalarRequestOption(ScalarTypedValue[T], RequestOption, lang.Abstract):
+class ScalarRequestOption(tv.ScalarTypedValue[T], RequestOption, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
-    options: TypedValues[RequestOptionT] | None = dc.field(
+class Request(tv.TypedValueHolder[RequestOptionT], lang.Abstract):
+    options: tv.TypedValues[RequestOptionT] | None = dc.field(
         default=None,
         kw_only=True,
         metadata={
@@ -48,13 +44,13 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
     )
 
     def with_options(self: RequestT, *options: RequestOptionT) -> RequestT:
-        return dc.replace(self, options=TypedValues(
+        return dc.replace(self, options=tv.TypedValues(
             *(self.options or []),
             *options,
         ))
 
     @property
-    def _typed_values(self) -> TypedValues[RequestOptionT] | None:
+    def _typed_values(self) -> tv.TypedValues[RequestOptionT] | None:
         return self.options
 
     #
@@ -63,7 +59,7 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
     def new(
             cls: type[RequestT],
             *args: ta.Any,
-            options: TypedValues[RequestOptionT] | None = None,
+            options: tv.TypedValues[RequestOptionT] | None = None,
             **kwargs: ta.Any,
     ) -> RequestT:
         if not any(isinstance(a, RequestOption) for a in args):
@@ -84,7 +80,7 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
 
         return cls(
             *arg_lst,
-            options=TypedValues(*opt_lst) if opt_lst is not None else None,
+            options=tv.TypedValues(*opt_lst) if opt_lst is not None else None,
             **kwargs,
         )
 
@@ -92,17 +88,17 @@ class Request(TypedValueContainer[RequestOptionT], lang.Abstract):
 ##
 
 
-class ResponseOutput(TypedValue, lang.Abstract):
+class ResponseOutput(tv.TypedValue, lang.Abstract):
     pass
 
 
-class ScalarResponseOutput(ScalarTypedValue[T], ResponseOutput, lang.Abstract):
+class ScalarResponseOutput(tv.ScalarTypedValue[T], ResponseOutput, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class Response(TypedValueContainer[ResponseOutputT], lang.Abstract):
-    outputs: TypedValues[ResponseOutputT] | None = dc.field(
+class Response(tv.TypedValueHolder[ResponseOutputT], lang.Abstract):
+    outputs: tv.TypedValues[ResponseOutputT] | None = dc.field(
         default=None,
         kw_only=True,
         metadata={
@@ -114,13 +110,13 @@ class Response(TypedValueContainer[ResponseOutputT], lang.Abstract):
     )
 
     def with_outputs(self: ResponseT, *outputs: ResponseOutputT) -> ResponseT:
-        return dc.replace(self, outputs=TypedValues(
+        return dc.replace(self, outputs=tv.TypedValues(
             *(self.outputs or []),
             *outputs,
         ))
 
     @property
-    def _typed_values(self) -> TypedValues[ResponseOutputT] | None:
+    def _typed_values(self) -> tv.TypedValues[ResponseOutputT] | None:
         return self.outputs
 
 
@@ -180,7 +176,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
         check.empty(val_args)
 
         if opt_args:
-            kwargs['options'] = TypedValues(
+            kwargs['options'] = tv.TypedValues(
                 *kwargs.pop('options', req.options or []),
                 *opt_args,
             )

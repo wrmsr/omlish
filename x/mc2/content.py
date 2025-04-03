@@ -2,11 +2,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
-
-from .typedvalues import ScalarTypedValue
-from .typedvalues import TypedValue
-from .typedvalues import TypedValueContainer
-from .typedvalues import TypedValues
+from omlish import typedvalues as tv
 
 
 T = ta.TypeVar('T')
@@ -18,17 +14,17 @@ ContentT = ta.TypeVar('ContentT', bound='Content')
 ##
 
 
-class ContentDetail(TypedValue, lang.Abstract):
+class ContentDetail(tv.TypedValue, lang.Abstract):
     pass
 
 
-class ScalarDetail(ScalarTypedValue[T], ContentDetail, lang.Abstract):
+class ScalarDetail(tv.ScalarTypedValue[T], ContentDetail, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class Content(TypedValueContainer[ContentDetailT], lang.Abstract):
-    details: TypedValues[ContentDetailT] | None = dc.field(
+class Content(tv.TypedValueHolder[ContentDetailT], lang.Abstract):
+    details: tv.TypedValues[ContentDetailT] | None = dc.field(
         default=None,
         kw_only=True,
         metadata={
@@ -40,11 +36,11 @@ class Content(TypedValueContainer[ContentDetailT], lang.Abstract):
     )
 
     def with_details(self: ContentT, *details: ContentDetailT) -> ContentT:
-        return dc.replace(self, outputs=TypedValues(
+        return dc.replace(self, outputs=tv.TypedValues(
             *(self.details or []),
             *details,
         ))
 
     @property
-    def _typed_values(self) -> TypedValues[ContentDetailT] | None:
+    def _typed_values(self) -> tv.TypedValues[ContentDetailT] | None:
         return self.details

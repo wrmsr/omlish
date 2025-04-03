@@ -6,7 +6,9 @@ TODO:
 import abc
 import typing as ta
 
-from omlish import lang
+from .. import lang
+from .values import TypedValue  # noqa
+from .values import UniqueTypedValue  # noqa
 
 
 T = ta.TypeVar('T')

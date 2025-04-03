@@ -8,12 +8,12 @@ from .collection import (  # noqa
     TypedValues,
 )
 
-from .container import (  # noqa
-    TypedValueContainer,
-)
-
 from .generic import (  # noqa
     TypedValueGeneric,
+)
+
+from .holder import (  # noqa
+    TypedValueHolder,
 )
 
 from .values import (  # noqa
