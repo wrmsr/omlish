@@ -195,6 +195,7 @@ class ModelGen:
     #
 
     DEMANGLE_PREFIXES: ta.ClassVar[ta.Sequence[str]] = [
+
         'AAAA',
         'ACL',
         'ACP',
@@ -210,11 +211,13 @@ class ModelGen:
         'EFS',
         'ETag',
         'FQDN',
+        'GB',
         'IAM',
         'IO',
         'IP',
         'JSON',
         'KMS',
+        'MBps',
         'MD5',
         'MFA',
         'NVME',
@@ -223,6 +226,7 @@ class ModelGen:
         'SHA256',
         'SSE',
         'TTL',
+
     ]
 
     def demangle_name(self, n: str) -> str:

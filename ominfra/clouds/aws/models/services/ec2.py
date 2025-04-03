@@ -2188,7 +2188,7 @@ class DiskInfo(
     _base.Shape,
     shape_name='DiskInfo',
 ):
-    size_in_g_b: DiskSize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_gb: DiskSize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInGB',
         serialization_name='sizeInGB',
         shape_name='DiskSize',
@@ -2278,7 +2278,7 @@ class EbsOptimizedInfo(
         shape_name='BaselineBandwidthInMbps',
     ))
 
-    baseline_throughput_in_m_bps: BaselineThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    baseline_throughput_in_mbps: BaselineThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='BaselineThroughputInMBps',
         serialization_name='baselineThroughputInMBps',
         shape_name='BaselineThroughputInMBps',
@@ -2296,7 +2296,7 @@ class EbsOptimizedInfo(
         shape_name='MaximumBandwidthInMbps',
     ))
 
-    maximum_throughput_in_m_bps: MaximumThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    maximum_throughput_in_mbps: MaximumThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MaximumThroughputInMBps',
         serialization_name='maximumThroughputInMBps',
         shape_name='MaximumThroughputInMBps',
@@ -4959,7 +4959,7 @@ class InstanceStorageInfo(
     _base.Shape,
     shape_name='InstanceStorageInfo',
 ):
-    total_size_in_g_b: DiskSize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_size_in_gb: DiskSize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalSizeInGB',
         serialization_name='totalSizeInGB',
         shape_name='DiskSize',
