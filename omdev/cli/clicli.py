@@ -75,6 +75,7 @@ class CliCli(ap.Cli):
     @ap.cmd(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
+        ap.arg('--no-deps', action='store_true'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
@@ -82,11 +83,11 @@ class CliCli(ap.Cli):
 
         #
 
-        root_dists = get_root_dists()
-        deps = sorted(
-            (set(root_dists) | set(self.args.extra_deps or []))
-            - {install.DEFAULT_CLI_PKG}  # noqa
-        )
+        dep_set: set[str] = set(self.args.extra_deps or [])
+        if not self.args.no_deps:
+            root_dists = get_root_dists()
+            dep_set.update(set(root_dists))
+        deps = sorted(dep_set - {install.DEFAULT_CLI_PKG})  # noqa
 
         #
 
@@ -98,6 +99,7 @@ class CliCli(ap.Cli):
                 'pip',
                 'install',
                 '--dry-run',
+                install.DEFAULT_CLI_PKG,
                 *deps,
             ])
             print('Pip install check successful')
@@ -149,7 +151,7 @@ class CliCli(ap.Cli):
                 '| python3 -',
                 *deps,
             ])
-            print(f'Recovery command:\n{reco_cmd}\n')
+            print(f'Recovery command:\n\n{reco_cmd}\n')
 
             with urllib.request.urlopen(urllib.request.Request(url)) as resp:  # noqa
                 install_src = resp.read().decode('utf-8')
