@@ -12,7 +12,7 @@ import typing as ta  # noqa
 
 from omlish import dataclasses as dc
 from omlish import lang
-from x.mc2.streaming import StreamResponseItemT
+from omlish import typedvalues as tv
 
 from ...resources import Resources
 from ...services import Request
@@ -21,7 +21,6 @@ from ...services import ResponseOutput
 from ...services import ScalarRequestOption
 from ...services import Service_
 from ...streaming import StreamResponse
-from ...typedvalues import UniqueTypedValue
 
 
 ##
@@ -31,7 +30,7 @@ class FooRequestOption(RequestOption, lang.Abstract):
     pass
 
 
-class FooSuffix(ScalarRequestOption[str], FooRequestOption, UniqueTypedValue, lang.Final):
+class FooSuffix(ScalarRequestOption[str], FooRequestOption, tv.UniqueTypedValue, lang.Final):
     pass
 
 
@@ -51,7 +50,7 @@ class FooResponseOutput(ResponseOutput, lang.Abstract):
 class FooResponse(StreamResponse[FooResponseOutput, str]):
     output_foo_str: str
 
-    def __iter__(self) -> ta.Iterator[StreamResponseItemT]:
+    def __iter__(self) -> ta.Iterator[str]:
         return iter([self.output_foo_str, 'end'])
 
 

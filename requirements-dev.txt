@@ -119,9 +119,9 @@ segno==1.6.6
 duckduckgo_search==2025.4.1  # @omlish-venv !13t  # segfault lol
 
 # Used for codegen
-boto3>=1.37.26
+boto3>=1.37.27
 
-mlx==0.24.1; sys_platform == "darwin"  # @omlish-venv !13t
+mlx==0.24.2; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.2; sys_platform == "darwin"  # @omlish-venv !13t
 
 apsw==3.49.1.0

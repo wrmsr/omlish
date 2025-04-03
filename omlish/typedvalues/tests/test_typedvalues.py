@@ -100,7 +100,11 @@ def test_typed_values():
             JSON_RESPONSE_FORMAT,
         )
     except DuplicateUniqueTypedValueError as e:
-        assert e == DuplicateUniqueTypedValueError(ResponseFormat, JSON_RESPONSE_FORMAT, TEXT_RESPONSE_FORMAT)  # noqa
+        assert e == DuplicateUniqueTypedValueError(  # noqa
+            ResponseFormat,
+            JSON_RESPONSE_FORMAT,
+            TEXT_RESPONSE_FORMAT,  # noqa
+        )
     else:
         raise Exception('Did not raise!')  # noqa
 

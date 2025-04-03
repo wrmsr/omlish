@@ -72,8 +72,9 @@ class TypedValues(
 
     def without(self, *tys: type) -> ta.Iterator[TypedValueT]:
         for o in self._lst:
-            if not isinstance(o, tys):
-                yield o
+            if isinstance(o, tys):
+                continue
+            yield o
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'

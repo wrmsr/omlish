@@ -12,6 +12,7 @@ import typing as ta  # noqa
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ...services import Request
 from ...services import RequestOption
@@ -19,7 +20,6 @@ from ...services import Response
 from ...services import ResponseOutput
 from ...services import ScalarRequestOption
 from ...services import Service_
-from ...typedvalues import UniqueTypedValue
 
 
 ##
@@ -29,7 +29,7 @@ class FooRequestOption(RequestOption, lang.Abstract):
     pass
 
 
-class FooSuffix(ScalarRequestOption[str], FooRequestOption, UniqueTypedValue, lang.Final):
+class FooSuffix(ScalarRequestOption[str], FooRequestOption, tv.UniqueTypedValue, lang.Final):
     pass
 
 

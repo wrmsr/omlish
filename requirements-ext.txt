@@ -28,7 +28,7 @@ safetensors==0.5.3
 
 tavily-python==0.5.4
 
-chromadb==0.6.3
+chromadb==1.0.0
 
 sqlite-vec==0.1.6
 
