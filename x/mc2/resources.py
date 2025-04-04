@@ -4,6 +4,7 @@ TODO:
  - lock, probably
 """
 import abc
+import contextlib
 import logging
 import typing as ta
 
@@ -62,17 +63,28 @@ class Resources:
 
         self._refs: ta.MutableSet[ResourcesReference] = col.IdentityWeakSet()
 
+        self._es = contextlib.ExitStack()
+        self._es.__enter__()
+
     def __repr__(self) -> str:
         return lang.attr_repr(self, '_closed', with_id=True)
 
+    def enter_context(self, cm):
+        check.state(not self._closed)
+        return self._es.enter_context(cm)
+
     def add_reference(self, ref: ResourcesReference) -> None:
+        check.state(not self._closed)
         self._refs.add(ref)
 
     def has_reference(self, ref: ResourcesReference) -> bool:
         return ref in self._refs
 
     def close(self) -> None:
-        self._closed = True
+        try:
+            self._es.__exit__(None, None, None)
+        finally:
+            self._closed = True
 
     def __del__(self) -> None:
         if not self._closed:

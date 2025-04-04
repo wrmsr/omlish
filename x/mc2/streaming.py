@@ -7,8 +7,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .services import ResponseOutput  # noqa
 from .resources import ResourcesResponse
+from .services import ResponseOutput  # noqa
 
 
 ResponseOutputT = ta.TypeVar('ResponseOutputT', bound='ResponseOutput')
