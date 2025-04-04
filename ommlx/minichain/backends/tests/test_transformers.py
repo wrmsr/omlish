@@ -2,7 +2,7 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
-from ...prompts import PromptRequest
+from ...prompt import PromptRequest
 from ..transformers import TransformersPromptService
 
 

@@ -4,11 +4,11 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..content.content import Content
-from ..services import Service_
 from ..services import Request
 from ..services import RequestOption
 from ..services import Response
 from ..services import ResponseOutput
+from ..services import Service_
 from .vectors import Vector
 
 

@@ -10,8 +10,8 @@ from ....chat.tools import Tool
 from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
 from ..chat import MaxTokens
-from ..chat import Temperature
 from ..chat import OpenaiChatService
+from ..chat import Temperature
 
 
 def test_openai(harness):

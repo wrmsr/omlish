@@ -18,14 +18,14 @@
     "module": ".minichain.backends.anthropic.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/anthropic/chat.py",
-    "line": 27,
+    "line": 30,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.anthropic.chat",
-        "attr_name": "AnthropicChatModel",
+        "attr_name": "AnthropicChatService",
         "name": "anthropic",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "ChatService"
       }
     }
   },
@@ -33,7 +33,7 @@
     "module": ".minichain.backends.duckduckgo",
     "attr": null,
     "file": "ommlx/minichain/backends/duckduckgo.py",
-    "line": 18,
+    "line": 21,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.duckduckgo",
@@ -50,14 +50,14 @@
     "module": ".minichain.backends.google.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/google/chat.py",
-    "line": 21,
+    "line": 24,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.google.chat",
-        "attr_name": "GoogleChatModel",
+        "attr_name": "GoogleChatService",
         "name": "google",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "ChatService"
       }
     }
   },
@@ -65,14 +65,29 @@
     "module": ".minichain.backends.llamacpp",
     "attr": null,
     "file": "ommlx/minichain/backends/llamacpp.py",
-    "line": 63,
+    "line": 36,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.llamacpp",
-        "attr_name": "LlamacppChatModel",
+        "attr_name": "LlamacppPromptService",
         "name": "llamacpp",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "PromptService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp",
+    "attr": null,
+    "file": "ommlx/minichain/backends/llamacpp.py",
+    "line": 67,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.llamacpp",
+        "attr_name": "LlamacppChatService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "ChatService"
       }
     }
   },
@@ -80,14 +95,14 @@
     "module": ".minichain.backends.mistral",
     "attr": null,
     "file": "ommlx/minichain/backends/mistral.py",
-    "line": 21,
+    "line": 24,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.mistral",
-        "attr_name": "MistralChatModel",
+        "attr_name": "MistralChatService",
         "name": "mistral",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "ChatService"
       }
     }
   },
@@ -95,14 +110,14 @@
     "module": ".minichain.backends.mlx",
     "attr": null,
     "file": "ommlx/minichain/backends/mlx.py",
-    "line": 27,
+    "line": 30,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.mlx",
-        "attr_name": "MlxChatModel",
+        "attr_name": "MlxChatService",
         "name": "mlx",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "ChatService"
       }
     }
   },
@@ -110,11 +125,11 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/chat.py",
-    "line": 110,
+    "line": 156,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.chat",
-        "attr_name": "OpenaiChatModel",
+        "attr_name": "OpenaiChatService",
         "name": "openai",
         "aliases": null,
         "type": "ChatModel"
@@ -125,14 +140,14 @@
     "module": ".minichain.backends.openai.embedding",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/embedding.py",
-    "line": 14,
+    "line": 17,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.embedding",
-        "attr_name": "OpenaiEmbeddingModel",
+        "attr_name": "OpenaiEmbeddingService",
         "name": "openai",
         "aliases": null,
-        "type": "EmbeddingModel"
+        "type": "EmbeddingService"
       }
     }
   },
@@ -140,14 +155,14 @@
     "module": ".minichain.backends.openai.prompt",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/prompt.py",
-    "line": 13,
+    "line": 16,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.prompt",
-        "attr_name": "OpenaiPromptModel",
+        "attr_name": "OpenaiPromptService",
         "name": "openai",
         "aliases": null,
-        "type": "PromptModel"
+        "type": "PromptService"
       }
     }
   },
@@ -155,16 +170,16 @@
     "module": ".minichain.backends.sentencetransformers",
     "attr": null,
     "file": "ommlx/minichain/backends/sentencetransformers.py",
-    "line": 18,
+    "line": 21,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.sentencetransformers",
-        "attr_name": "SentencetransformersEmbeddingModel",
+        "attr_name": "SentencetransformersEmbeddingService",
         "name": "sentencetransformers",
         "aliases": [
           "st"
         ],
-        "type": "EmbeddingModel"
+        "type": "EmbeddingService"
       }
     }
   },
@@ -172,50 +187,38 @@
     "module": ".minichain.backends.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers.py",
-    "line": 18,
+    "line": 21,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers",
-        "attr_name": "TransformersPromptModel",
+        "attr_name": "TransformersPromptService",
         "name": "transformers",
         "aliases": null,
-        "type": "PromptModel"
+        "type": "PromptService"
       }
     }
   },
   {
-    "module": ".minichain.chat.models",
+    "module": ".minichain.chat.services",
     "attr": null,
-    "file": "ommlx/minichain/chat/models.py",
-    "line": 77,
+    "file": "ommlx/minichain/chat/services.py",
+    "line": 32,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
-        "mod_name": "ommlx.minichain.chat.models",
-        "attr_name": "ChatModel"
+        "mod_name": "ommlx.minichain.chat.services",
+        "attr_name": "ChatService"
       }
     }
   },
   {
-    "module": ".minichain.chat.models",
+    "module": ".minichain.prompt",
     "attr": null,
-    "file": "ommlx/minichain/chat/models.py",
-    "line": 91,
+    "file": "ommlx/minichain/prompt.py",
+    "line": 38,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
-        "mod_name": "ommlx.minichain.chat.models",
-        "attr_name": "ChatStreamModel"
-      }
-    }
-  },
-  {
-    "module": ".minichain.prompts",
-    "attr": null,
-    "file": "ommlx/minichain/prompts.py",
-    "line": 44,
-    "value": {
-      "$.minichain.backends.manifests.BackendTypeManifest": {
-        "mod_name": "ommlx.minichain.prompts",
-        "attr_name": "PromptModel"
+        "mod_name": "ommlx.minichain.prompt",
+        "attr_name": "PromptService"
       }
     }
   },
@@ -223,7 +226,7 @@
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlx/minichain/search.py",
-    "line": 59,
+    "line": 64,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.search",
@@ -239,7 +242,31 @@
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.vectors.embeddings",
-        "attr_name": "EmbeddingModel"
+        "attr_name": "EmbeddingService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.index",
+    "attr": null,
+    "file": "ommlx/minichain/vectors/index.py",
+    "line": 53,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.vectors.index",
+        "attr_name": "VectorIndexService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.search",
+    "attr": null,
+    "file": "ommlx/minichain/vectors/search.py",
+    "line": 76,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.vectors.search",
+        "attr_name": "VectorSearchService"
       }
     }
   },
@@ -262,7 +289,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlx/tools/git.py",
-    "line": 169,
+    "line": 168,
     "value": {
       "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "ommlx.tools.git",

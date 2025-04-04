@@ -66,7 +66,7 @@ from .content.placeholders import (  # noqa
     Placeholder,
 )
 
-from .prompts import (  # noqa
+from .prompt import (  # noqa
     PromptRequest,
     PromptRequestOption,
     PromptResponse,

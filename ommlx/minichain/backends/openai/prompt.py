@@ -5,9 +5,9 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...prompts import PromptService
-from ...prompts import PromptRequest
-from ...prompts import PromptResponse
+from ...prompt import PromptRequest
+from ...prompt import PromptResponse
+from ...prompt import PromptService
 
 
 ##

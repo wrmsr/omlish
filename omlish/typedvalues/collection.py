@@ -81,9 +81,6 @@ class TypedValues(
 
     #
 
-    def __iter__(self) -> ta.Iterator[TypedValueT]:
-        return iter(self._lst)
-
     def __len__(self) -> int:
         return len(self._lst)
 
@@ -91,6 +88,9 @@ class TypedValues(
         return bool(self._lst)
 
     #
+
+    def _typed_value_iter(self):
+        return iter(self._lst)
 
     def _typed_value_contains(self, cls):
         return cls in self._dct

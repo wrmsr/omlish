@@ -3,9 +3,9 @@ import typing as ta
 from omlish import lang
 
 from ..content.images import Image
-from ..vectors.embeddings import EmbeddingService
 from ..vectors.embeddings import EmbeddingRequest
 from ..vectors.embeddings import EmbeddingResponse
+from ..vectors.embeddings import EmbeddingService
 from ..vectors.vectors import Vector
 
 

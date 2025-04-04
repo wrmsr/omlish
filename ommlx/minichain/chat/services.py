@@ -4,8 +4,8 @@ from omlish import lang
 from ..services import Request
 from ..services import Response
 from ..services import Service_
-from .messages import Chat
 from .choices import AiChoices
+from .messages import Chat
 from .types import ChatRequestOption
 from .types import ChatResponseOutput
 

@@ -5,18 +5,18 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ..chat.choices import AiChoice
 from ..chat.messages import AiMessage
 from ..chat.messages import Message
 from ..chat.messages import SystemMessage
 from ..chat.messages import ToolExecResultMessage
 from ..chat.messages import UserMessage
-from ..chat.choices import AiChoice
-from ..chat.services import ChatService
 from ..chat.services import ChatRequest
 from ..chat.services import ChatResponse
-from ..prompts import PromptService
-from ..prompts import PromptRequest
-from ..prompts import PromptResponse
+from ..chat.services import ChatService
+from ..prompt import PromptRequest
+from ..prompt import PromptResponse
+from ..prompt import PromptService
 
 
 if ta.TYPE_CHECKING:

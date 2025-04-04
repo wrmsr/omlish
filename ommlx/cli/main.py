@@ -20,16 +20,16 @@ from omlish.formats import json
 from omlish.logs import all as logs
 
 from .. import minichain as mc
-from ..minichain.backends.anthropic import AnthropicChatModel
-from ..minichain.backends.google import GoogleChatModel
-from ..minichain.backends.llamacpp import LlamacppChatModel
-from ..minichain.backends.llamacpp import LlamacppPromptModel
-from ..minichain.backends.mistral import MistralChatModel
-from ..minichain.backends.openai import OpenaiChatModel
-from ..minichain.backends.openai import OpenaiEmbeddingModel
-from ..minichain.backends.openai import OpenaiPromptModel
-from ..minichain.backends.sentencetransformers import SentencetransformersEmbeddingModel
-from ..minichain.backends.transformers import TransformersPromptModel
+from ..minichain.backends.anthropic.chat import AnthropicChatService
+from ..minichain.backends.google.chat import GoogleChatService
+from ..minichain.backends.llamacpp import LlamacppChatService
+from ..minichain.backends.llamacpp import LlamacppPromptService
+from ..minichain.backends.mistral import MistralChatService
+from ..minichain.backends.openai.chat import OpenaiChatService
+from ..minichain.backends.openai.embedding import OpenaiEmbeddingService
+from ..minichain.backends.openai.prompt import OpenaiPromptService
+from ..minichain.backends.sentencetransformers import SentencetransformersEmbeddingService
+from ..minichain.backends.transformers import TransformersPromptService
 from .state import load_state
 from .state import save_state
 
@@ -59,12 +59,12 @@ class ChatState:
     chat: mc.Chat = ()
 
 
-CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatModel]] = {
-    'anthropic': AnthropicChatModel,
-    'google': GoogleChatModel,
-    'mistral': MistralChatModel,
-    'openai': OpenaiChatModel,
-    'llamacpp': LlamacppChatModel,
+CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatService]] = {
+    'anthropic': AnthropicChatService,
+    'google': GoogleChatService,
+    'mistral': MistralChatService,
+    'openai': OpenaiChatService,
+    'llamacpp': LlamacppChatService,
 }
 
 
@@ -99,13 +99,13 @@ def _run_chat(
 
     mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
     response = mdl.invoke(mc.ChatRequest.new(state.chat))
-    print(check.isinstance(response.v[0].m.s, str).strip())
+    print(check.isinstance(response.choices[0].m.s, str).strip())
 
     chat = dc.replace(
         state,
         chat=[
             *state.chat,
-            response.v[0].m,
+            response.choices[0].m,
         ],
     )
 
@@ -120,10 +120,10 @@ def _run_chat(
 ##
 
 
-PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[mc.PromptModel]] = {
-    'llamacpp': LlamacppPromptModel,
-    'openai': OpenaiPromptModel,
-    'transformers': TransformersPromptModel,
+PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[mc.PromptService]] = {
+    'llamacpp': LlamacppPromptService,
+    'openai': OpenaiPromptService,
+    'transformers': TransformersPromptService,
 }
 
 
@@ -135,15 +135,15 @@ def _run_prompt(
     prompt = check.isinstance(content, str)
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
     response = mdl.invoke(mc.PromptRequest.new(prompt))
-    print(response.v.strip())
+    print(response.text.strip())
 
 
 ##
 
 
-EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[mc.EmbeddingModel]] = {
-    'openai': OpenaiEmbeddingModel,
-    'sentencetransformers': SentencetransformersEmbeddingModel,
+EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[mc.EmbeddingService]] = {
+    'openai': OpenaiEmbeddingService,
+    'sentencetransformers': SentencetransformersEmbeddingService,
 }
 
 
@@ -154,7 +154,7 @@ def _run_embed(
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
     response = mdl.invoke(mc.EmbeddingRequest.new(content))
-    print(json.dumps_compact(response.v))
+    print(json.dumps_compact(response.vector))
 
 
 ##
