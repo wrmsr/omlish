@@ -1,4 +1,3 @@
-import contextlib
 import operator as op
 import typing as ta
 import weakref
@@ -17,6 +16,7 @@ V = ta.TypeVar('V')
 class IdentityWrapper(ta.Generic[T]):
     def __init__(self, value: T) -> None:
         super().__init__()
+
         self._value = value
 
     def __repr__(self) -> str:
@@ -39,6 +39,7 @@ class IdentityWrapper(ta.Generic[T]):
 class IdentityKeyDict(ta.MutableMapping[K, V]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
+
         self._dict: dict[int, tuple[K, V]] = {}
         for k, v in lang.yield_dict_init(*args, **kwargs):
             self[k] = v
@@ -75,6 +76,7 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
 class IdentitySet(ta.MutableSet[T]):
     def __init__(self, init: ta.Iterable[T] | None = None) -> None:
         super().__init__()
+
         self._dict: dict[int, T] = {}
         if init is not None:
             for item in init:
@@ -94,8 +96,10 @@ class IdentitySet(ta.MutableSet[T]):
         self._dict[id(item)] = item
 
     def discard(self, item: T) -> None:
-        with contextlib.suppress(KeyError):
+        try:
             del self._dict[id(item)]
+        except KeyError:
+            pass
 
     def update(self, items: ta.Iterable[T]) -> None:
         for item in items:
@@ -111,7 +115,26 @@ class IdentitySet(ta.MutableSet[T]):
         return iter(self._dict.values())
 
 
-class IdentityWeakSet(weakref.WeakSet):
-    def __init__(self, init=None):
+class IdentityWeakSet(ta.MutableSet[T]):
+    def __init__(self, init: ta.Iterable[T] | None = None) -> None:
         super().__init__()
-        self.data = IdentitySet(init)  # type: ignore
+
+        self._dict: weakref.WeakValueDictionary[int, T] = weakref.WeakValueDictionary()
+
+    def add(self, value):
+        self._dict[id(value)] = value
+
+    def discard(self, value):
+        try:
+            del self._dict[id(value)]
+        except KeyError:
+            pass
+
+    def __contains__(self, x):
+        return id(x) in self._dict
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __iter__(self):
+        return self._dict.values()

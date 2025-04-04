@@ -103,8 +103,9 @@ class ClassSpec:
 
     reorder: bool = False
     cache_hash: bool = False
-    # generic_init = MISSING,
+    # generic_init: bool = False
     override: bool = False
+    # repr_id: bool = False
 
     ## callbacks
     #

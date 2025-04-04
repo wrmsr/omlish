@@ -12,10 +12,16 @@ from .utils import set_new_attribute
 def repr_fn(
         fields: ta.Sequence[dc.Field],
         globals: Namespace,  # noqa
+        *,
+        repr_id: bool = False,
 ) -> ta.Callable:
     locals: dict[str, ta.Any] = {}  # noqa
 
     fields = sorted(fields, key=lambda f: get_field_extras(f).repr_priority or 0)
+
+    prefix_src = '{self.__class__.__qualname__}'
+    if repr_id:
+        prefix_src += '@{hex(id(self))[2:]}'
 
     if any(get_field_extras(f).repr_fn is not None for f in fields):
         lst: list[str] = []
@@ -29,12 +35,12 @@ def repr_fn(
         src = [
             'l = []',
             *lst,
-            'return f"{self.__class__.__qualname__}({", ".join(l)})"',
+            f'return f"{prefix_src}({{", ".join(l)}})"',
         ]
 
     else:
         src = [
-            'return f"{self.__class__.__qualname__}(' +
+            f'return f"{prefix_src}(' +
             ', '.join([f'{f.name}={{self.{f.name}!r}}' for f in fields]) +
             ')"',
         ]
@@ -56,4 +62,5 @@ class ReprProcessor(Processor):
             return
 
         flds = [f for f in self._info.instance_fields if f.repr]
-        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))  # noqa
+        rfn = repr_fn(flds, self._info.globals, repr_id=self._info.params_extras.repr_id)
+        set_new_attribute(self._cls, '__repr__', rfn)  # noqa

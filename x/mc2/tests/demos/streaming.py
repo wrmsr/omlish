@@ -47,6 +47,7 @@ class FooResponseOutput(ResponseOutput, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(repr_id=True)
 class FooResponse(StreamResponse[FooResponseOutput, str]):
     output_foo_str: str
 
@@ -82,6 +83,7 @@ def _main() -> None:
         print(foo_resp)
         for e in foo_resp:
             print(e)
+        foo_resp.close()
 
     foo_resp = foo_svc('foo')
     print(foo_resp)

@@ -93,6 +93,7 @@ class ParamsExtras(lang.Final):
     cache_hash: bool = False
     generic_init: bool = False
     override: bool = False
+    repr_id: bool = False
 
 
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()

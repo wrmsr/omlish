@@ -5,6 +5,7 @@ import pytest
 
 from ..identity import IdentityKeyDict
 from ..identity import IdentitySet
+from ..identity import IdentityWeakSet
 
 
 class Incomparable:
@@ -87,3 +88,29 @@ def test_pickle():
 
     check_c(c2)
     assert c2.a is not c.a
+
+
+class NoHe:
+    def __hash__(self):
+        raise TypeError
+
+    def __eq__(self, other):
+        raise TypeError
+
+
+def test_identity_weak_set():
+    s: IdentityWeakSet[NoHe] = IdentityWeakSet()
+
+    o0 = NoHe()
+    o1 = NoHe()
+
+    assert o0 not in s
+    assert o1 not in s
+
+    s.add(o0)
+    assert o0 in s
+    assert o1 not in s
+
+    s.discard(o0)
+    assert o0 not in s
+    assert o1 not in s

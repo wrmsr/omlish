@@ -103,6 +103,7 @@ def dataclass(  # noqa
         cache_hash=MISSING,
         generic_init=MISSING,
         override=MISSING,
+        repr_id=MISSING,
 ):
     def wrap(cls):
         pkw = dict(
@@ -126,6 +127,7 @@ def dataclass(  # noqa
             cache_hash=cache_hash,
             generic_init=generic_init,
             override=override,
+            repr_id=repr_id,
         )))
         pex = ParamsExtras(**epk)
 
@@ -175,6 +177,7 @@ def make_dataclass(  # noqa
         cache_hash=MISSING,
         generic_init=MISSING,
         override=MISSING,
+        repr_id=MISSING,
 ):
     if namespace is None:
         namespace = {}
@@ -236,6 +239,7 @@ def make_dataclass(  # noqa
         cache_hash=cache_hash,
         generic_init=generic_init,
         override=override,
+        repr_id=repr_id,
     )
 
 
@@ -249,6 +253,7 @@ def extra_params(  # noqa
         cache_hash=MISSING,
         generic_init=MISSING,
         override=MISSING,
+        repr_id=MISSING,
 ):
     def inner(cls):
         if PARAMS_ATTR in cls.__dict__:
@@ -266,6 +271,7 @@ def extra_params(  # noqa
             cache_hash=cache_hash,
             generic_init=generic_init,
             override=override,
+            repr_id=repr_id,
         ))
 
         return cls
