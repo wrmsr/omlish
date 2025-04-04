@@ -13,7 +13,7 @@ def test_new_backend_openai(harness):
         api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal(),
     )
 
-    resp = llm(UserMessage('what is 2 + 2?'))
+    resp = llm([UserMessage('what is 2 + 2?')])
     print(resp)
 
 
