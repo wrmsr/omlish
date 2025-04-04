@@ -15,6 +15,9 @@ else:
     duckduckgo_search = lang.proxy_import('duckduckgo_search')
 
 
+##
+
+
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
 #     name='duckduckgo',
 #     aliases=['ddg'],
@@ -26,8 +29,8 @@ class DuckduckgoSearchService(SearchService):
             request: SearchRequest,
     ) -> SearchResponse:
         ddgs = duckduckgo_search.DDGS()
-        res = ddgs.text(request.v)
-        return SearchResponse(v=SearchHits(
+        res = ddgs.text(request.query)
+        return SearchResponse(SearchHits(
             l=[
                 SearchHit(
                     title=d.get('title'),

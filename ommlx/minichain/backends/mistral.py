@@ -12,14 +12,17 @@ from ..chat.messages import AiMessage
 from ..chat.messages import Message
 from ..chat.messages import SystemMessage
 from ..chat.messages import UserMessage
-from ..chat.models import AiChoice
-from ..chat.models import ChatModel
-from ..chat.models import ChatRequest
-from ..chat.models import ChatResponse
+from ..chat.choices import AiChoice
+from ..chat.services import ChatService
+from ..chat.services import ChatRequest
+from ..chat.services import ChatResponse
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mistral', type='ChatModel')
-class MistralChatModel(ChatModel):
+##
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mistral', type='ChatService')
+class MistralChatService(ChatService):
     model: ta.ClassVar[str] = 'mistral-large-latest'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -56,7 +59,7 @@ class MistralChatModel(ChatModel):
                     'role': self.ROLES_MAP[type(m)],
                     'content': self._get_msg_content(m),
                 }
-                for m in request.v
+                for m in request.chat
             ],
         }
 
@@ -73,7 +76,7 @@ class MistralChatModel(ChatModel):
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
-        return ChatResponse(v=[
+        return ChatResponse([
             AiChoice(AiMessage(c['message']['content']))
             for c in resp_dct['choices']
         ])

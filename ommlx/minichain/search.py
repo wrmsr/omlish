@@ -5,8 +5,9 @@ from omlish import lang
 
 from .services import Request
 from .services import RequestOption
+from .services import Response
 from .services import ResponseOutput
-from .services import Service
+from .services import Service_
 
 
 ##
@@ -53,7 +54,7 @@ class SearchResponseOutput(ResponseOutput, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class SearchResponse(ResponseOutput):
+class SearchResponse(Response):
     hits: SearchHits
 
 
@@ -62,12 +63,12 @@ class SearchResponse(ResponseOutput):
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class SearchService(  # noqa
-    Service[
+    Service_[
         SearchRequest,
         SearchResponse,
     ],
+    lang.Abstract,
     request=SearchRequest,
     response=SearchResponse,
-    lang.Abstract,
 ):
     pass

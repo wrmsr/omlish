@@ -10,11 +10,11 @@ from ..chat.messages import Message
 from ..chat.messages import SystemMessage
 from ..chat.messages import ToolExecResultMessage
 from ..chat.messages import UserMessage
-from ..chat.models import AiChoice
-from ..chat.models import ChatModel
-from ..chat.models import ChatRequest
-from ..chat.models import ChatResponse
-from ..prompts import PromptModel
+from ..chat.choices import AiChoice
+from ..chat.services import ChatService
+from ..chat.services import ChatRequest
+from ..chat.services import ChatResponse
+from ..prompts import PromptService
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
 
@@ -30,7 +30,11 @@ else:
     lcu = lang.proxy_import('...llamacpp', __package__)
 
 
-class LlamacppPromptModel(PromptModel):
+##
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='PromptService')
+class LlamacppPromptService(PromptService):
     # hf.hf_hub_download(
     #   revision='1ca85c857dce892b673b988ad0aa83f2cb1bbd19',
     #   repo_id='QuantFactory/Meta-Llama-3-8B-GGUF',
@@ -52,16 +56,16 @@ class LlamacppPromptModel(PromptModel):
         )
 
         output = llm.create_completion(
-            request.v,
+            request.prompt,
             max_tokens=1024,
             stop=['\n'],
         )
 
-        return PromptResponse(v=output['choices'][0]['text'])  # type: ignore
+        return PromptResponse(output['choices'][0]['text'])  # type: ignore
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatModel')
-class LlamacppChatModel(ChatModel):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatService')
+class LlamacppChatService(ChatService):
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         # 'models--meta-llama--Llama-3.2-3B-Instruct/snapshots/0cb88a4f764b7a12671c53f0838cd831a0843b95/llama-2-7b-chat.Q5_0.gguf',  # noqa
@@ -102,13 +106,13 @@ class LlamacppChatModel(ChatModel):
                         role=self.ROLES_MAP[type(m)],
                         content=self._get_msg_content(m),
                     )
-                    for m in request.v
+                    for m in request.chat
                 ],
                 max_tokens=1024,
                 # stop=['\n'],
             )
 
-            return ChatResponse(v=[
+            return ChatResponse([
                 AiChoice(AiMessage(c['message']['content']))  # noqa
                 for c in output['choices']  # type: ignore
             ])
