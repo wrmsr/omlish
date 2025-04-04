@@ -3,6 +3,7 @@
 # Stability-AI/generative-models | MIT     | https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/LICENSE-CODE
 # mlfoundations/open_clip        | MIT     | https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/LICENSE
 import argparse
+import dataclasses as dc
 import tempfile
 import abc
 import typing as ta
@@ -254,6 +255,13 @@ class FirstStage:
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/model.py#L487
     class Encoder:
+        class BlockEntry:
+            def __init__(self, block: list[ResnetBlock], downsample):
+                super().__init__()
+
+                self.block = block
+                self.downsample = downsample
+
         def __init__(
             self,
             ch: int,
@@ -269,14 +277,7 @@ class FirstStage:
             self.conv_in = Conv2d(in_ch, ch, kernel_size=3, stride=1, padding=1)
             in_ch_mult = (1,) + tuple(ch_mult)
 
-            class BlockEntry:
-                def __init__(self, block: list[ResnetBlock], downsample):
-                    super().__init__()
-
-                    self.block = block
-                    self.downsample = downsample
-
-            self.down: list[BlockEntry] = []
+            self.down: list[FirstStage.Encoder.BlockEntry] = []
             for i_level in range(len(ch_mult)):
                 block = []
                 block_in = ch * in_ch_mult[i_level]
@@ -290,7 +291,7 @@ class FirstStage:
                     if (i_level == len(ch_mult) - 1)
                     else Downsample(block_in)
                 )
-                self.down.append(BlockEntry(block, downsample))
+                self.down.append(FirstStage.Encoder.BlockEntry(block, downsample))
 
             self.mid = Mid(block_in)
 
@@ -312,6 +313,11 @@ class FirstStage:
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/model.py#L604
     class Decoder:
+        @dc.dataclass()
+        class BlockEntry:
+            block: list[ResnetBlock]
+            upsample: ta.Callable[[ta.Any], ta.Any]
+
         def __init__(
             self,
             ch: int,
@@ -332,16 +338,7 @@ class FirstStage:
 
             self.mid = Mid(block_in)
 
-            class BlockEntry:
-                def __init__(
-                    self, block: list[ResnetBlock], upsample: ta.Callable[[ta.Any], ta.Any],
-                ):
-                    super().__init__()
-
-                    self.block = block
-                    self.upsample = upsample
-
-            self.up: list[BlockEntry] = []
+            self.up: list[FirstStage.Decoder.BlockEntry] = []
             for i_level in reversed(range(len(ch_mult))):
                 block = []
                 block_out = ch * ch_mult[i_level]
@@ -350,7 +347,7 @@ class FirstStage:
                     block_in = block_out
 
                 upsample = tensor_identity if i_level == 0 else Upsample(block_in)
-                self.up.insert(0, BlockEntry(block, upsample))  # type: ignore
+                self.up.insert(0, self.BlockEntry(block, upsample))  # type: ignore
 
             self.norm_out = GroupNorm(32, block_in)
             self.conv_out = Conv2d(block_in, out_ch, kernel_size=3, stride=1, padding=1)

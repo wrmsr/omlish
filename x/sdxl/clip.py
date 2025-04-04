@@ -152,12 +152,13 @@ class Tokenizer:
             # Truncation, keeping two slots for start and end tokens.
             if len(bpe_tokens) > 75:
                 bpe_tokens = bpe_tokens[:75]
-            return (
-                [49406]
-                + bpe_tokens
-                + [49407]
-                + ([0] if pad_with_zeros else [49407]) * (77 - len(bpe_tokens) - 2)
-            )
+
+            return [
+                49406,
+                *bpe_tokens,
+                49407,
+                *(([0] if pad_with_zeros else [49407]) * (77 - len(bpe_tokens) - 2)),
+            ]
 
 
 class Embedder(abc.ABC):
