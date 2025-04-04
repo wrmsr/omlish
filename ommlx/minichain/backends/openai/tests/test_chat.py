@@ -1,7 +1,6 @@
 from omlish import check
 from omlish.formats import json
 from omlish.secrets.tests.harness import HarnessSecrets
-from omlish.testing import pytest as ptu
 
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
@@ -10,14 +9,13 @@ from ....chat.messages import UserMessage
 from ....chat.tools import Tool
 from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
-from ....generative import MaxTokens
-from ....generative import Temperature
-from ..chat import OpenaiChatModel
+from ..chat import MaxTokens
+from ..chat import Temperature
+from ..chat import OpenaiChatService
 
 
-@ptu.skip.if_cant_import('openai')
 def test_openai(harness):
-    llm = OpenaiChatModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+    llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
     resp = llm(
         [UserMessage('Is water dry?')],
@@ -25,12 +23,11 @@ def test_openai(harness):
         MaxTokens(64),
     )
     print(resp)
-    assert resp.v
+    assert resp.choices
 
 
-@ptu.skip.if_cant_import('openai')
 def test_openai_tools(harness):
-    llm = OpenaiChatModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+    llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
     tool_spec = ToolSpec(
         'get_weather',
@@ -53,11 +50,11 @@ def test_openai_tools(harness):
     )
 
     print(resp)
-    assert resp.v
+    assert resp.choices
 
-    chat.append(resp.v[0].m)
+    chat.append(resp.choices[0].m)
 
-    tr = check.single(check.not_none(resp.v[0].m.tool_exec_requests))
+    tr = check.single(check.not_none(resp.choices[0].m.tool_exec_requests))
     assert tr.spec.name == 'get_weather'
     assert json.loads(tr.args) == {'location': 'Seattle'}
 
@@ -71,4 +68,4 @@ def test_openai_tools(harness):
     )
 
     print(resp)
-    assert resp.v
+    assert resp.choices

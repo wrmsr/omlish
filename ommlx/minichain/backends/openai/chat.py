@@ -182,7 +182,7 @@ class OpenaiChatService(ChatService):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
-    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[tv.ScalarTypedValue[]], str] = {
+    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[tv.ScalarTypedValue], str] = {
         Temperature: 'temperature',
         MaxTokens: 'max_tokens',
     }
@@ -196,6 +196,8 @@ class OpenaiChatService(ChatService):
         tools_by_name: dict[str, ToolSpec] = {}
 
         for opt in request.options:
+            opt = check.isinstance(opt, ChatRequestOption)
+
             if (
                     isinstance(opt, tv.ScalarTypedValue) and
                     (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None
@@ -259,10 +261,10 @@ class OpenaiChatService(ChatService):
                 for choice in response['choices']
             ],
             outputs=tv.TypedValues(
-                *([TokenUsage(
+                *([TokenUsageOutput(TokenUsage(
                     input=response['usage']['prompt_tokens'],
                     output=response['usage']['completion_tokens'],
                     total=response['usage']['total_tokens'],
-                )] if response.get('usage') is not None else []),
+                ))] if response.get('usage') is not None else []),
             ),
         )
