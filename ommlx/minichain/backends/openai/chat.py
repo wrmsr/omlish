@@ -110,8 +110,11 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
         raise TypeError(m)
 
 
+##
+
+
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatModel')
-class OpenaiChatModel(ChatModel):
+class OpenaiChatService(ChatService):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'
@@ -176,7 +179,7 @@ class OpenaiChatModel(ChatModel):
             model=self._model,
             messages=[
                 build_request_message(m)
-                for m in request.v
+                for m in request.chat
             ],
             top_p=1,
             **lang.opt_kw(tools=tools),
@@ -198,7 +201,7 @@ class OpenaiChatModel(ChatModel):
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
         return ChatResponse(
-            v=[
+            [
                 AiChoice(AiMessage(
                     choice['message']['content'],
                     tool_exec_requests=[

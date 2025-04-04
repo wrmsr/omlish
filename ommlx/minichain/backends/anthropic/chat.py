@@ -18,14 +18,17 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.models import AiChoice
-from ...chat.models import ChatModel
-from ...chat.models import ChatRequest
-from ...chat.models import ChatResponse
+from ...chat.choices import AiChoice
+from ...chat.services import ChatService
+from ...chat.services import ChatRequest
+from ...chat.services import ChatResponse
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='anthropic', type='ChatModel')
-class AnthropicChatModel(ChatModel):
+##
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='anthropic', type='ChatService')
+class AnthropicChatService(ChatService):
     model: ta.ClassVar[str] = (
         'claude-3-5-sonnet-20241022'
         # 'claude-3-opus-20240229'
@@ -59,11 +62,11 @@ class AnthropicChatModel(ChatModel):
             self,
             request: ChatRequest,
             *,
-            max_tokens: int = 4096,
+            max_tokens: int = 4096,  # FIXME: ChatRequestOption
     ) -> ChatResponse:
         messages = []
         system: str | None = None
-        for i, m in enumerate(request.v):
+        for i, m in enumerate(request.chat):
             if isinstance(m, SystemMessage):
                 if i != 0 or system is not None:
                     raise Exception('Only supports one system message and must be first')
@@ -93,6 +96,6 @@ class AnthropicChatModel(ChatModel):
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        return ChatResponse(v=[
+        return ChatResponse([
             AiChoice(AiMessage(response['content'][0]['text'])),  # noqa
         ])
