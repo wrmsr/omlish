@@ -22,6 +22,8 @@ class FieldOptions:
 
     embed: bool = False
 
+    generic_replace: bool = False
+
     no_marshal: bool = False
     no_unmarshal: bool = False
 

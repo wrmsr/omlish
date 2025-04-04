@@ -5,6 +5,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 
@@ -39,6 +40,11 @@ class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
             dc.FieldExtras: dc.FieldExtras(
                 repr_fn=dc.truthy_repr,
                 repr_priority=100,
+            ),
+            msh.FieldMetadata: msh.FieldMetadata(
+                options=msh.FieldOptions(
+                    generic_replace=True,
+                ),
             ),
         },
     )
@@ -106,6 +112,11 @@ class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
             dc.FieldExtras: dc.FieldExtras(
                 repr_fn=dc.truthy_repr,
                 repr_priority=100,
+            ),
+            msh.FieldMetadata: msh.FieldMetadata(
+                options=msh.FieldOptions(
+                    generic_replace=True,
+                ),
             ),
         },
     )

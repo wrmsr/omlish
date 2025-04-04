@@ -72,9 +72,14 @@ def get_dataclass_field_infos(
         else:
             um_name = field.name
 
+        fmd: FieldMetadata | None = field.metadata.get(FieldMetadata)
+
         f_ty: ta.Any
-        if (cpx := dc_rf.cls_params_extras) is not None and cpx.generic_init:
-            f_ty = dc_rf.generic_replaced_field_annotations[field.name]
+        if (
+                ((cpx := dc_rf.cls_params_extras) is not None and cpx.generic_init) or
+                (fmd is not None and fmd.options.generic_replace)
+        ):
+            f_ty = rfl.to_annotation(dc_rf.generic_replaced_field_type(field.name))
         else:
             f_ty = type_hints[field.name]
 
@@ -91,7 +96,7 @@ def get_dataclass_field_infos(
         )
 
         has_set_name = False
-        if (fmd := field.metadata.get(FieldMetadata)) is not None:
+        if fmd is not None:
             fi_kw.update(
                 metadata=fmd,
             )

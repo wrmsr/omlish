@@ -149,16 +149,20 @@ class ClassInfo:
     def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
         return col.make_map(((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro), strict=True)
 
+    def generic_replaced_field_type(self, fn: str) -> rfl.Type:
+        f = self.fields[fn]
+        fo = self.field_owners[f.name]
+        go = self.generic_mro_lookup[fo]
+        tvr = rfl.get_type_var_replacements(go)
+        fty = rfl.type_(f.type)
+        rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
+        return rty
+
     @cached.property
     def generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
         ret: dict[str, ta.Any] = {}
         for f in self.fields.values():
-            fo = self.field_owners[f.name]
-            go = self.generic_mro_lookup[fo]
-            tvr = rfl.get_type_var_replacements(go)
-            fty = rfl.type_(f.type)
-            rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
-            ret[f.name] = rty
+            ret[f.name] = self.generic_replaced_field_type(f.name)
         return ret
 
     @cached.property

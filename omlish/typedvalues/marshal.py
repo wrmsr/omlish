@@ -23,14 +23,22 @@ def _build_typed_value_poly(rty: rfl.Type) -> msh.Polymorphism:
 
 
 class TypedValueMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, ScalarTypedValue) and not lang.is_abstract_class(rty))  # noqa
+    @mfs.simple(lambda _, ctx, rty: (
+        isinstance(rty, type) and
+        issubclass(rty, ScalarTypedValue) and
+        not lang.is_abstract_class(rty)
+    ))
     def _build_scalar(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         dc_rfl = dc.reflect(check.isinstance(rty, type))
         v_rty = check.single(dc_rfl.generic_replaced_field_annotations.values())
         v_m = ctx.make(v_rty)
         return msh.WrappedMarshaler(lambda _, o: o.v, v_m)
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, TypedValue) and lang.is_abstract_class(rty))
+    @mfs.simple(lambda _, ctx, rty: (
+        isinstance(rty, type) and
+        issubclass(rty, TypedValue) and
+        lang.is_abstract_class(rty)
+    ))
     def _build_abstract(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return msh.make_polymorphism_marshaler(
             _build_typed_value_poly(rty).impls,
@@ -40,7 +48,11 @@ class TypedValueMarshalerFactory(msh.MarshalerFactoryMatchClass):
 
 
 class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, ScalarTypedValue) and not lang.is_abstract_class(rty))  # noqa
+    @mfs.simple(lambda _, ctx, rty: (
+        isinstance(rty, type) and
+        issubclass(rty, ScalarTypedValue) and
+        not lang.is_abstract_class(rty)
+    ))
     def _build_scalar(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         rty = check.isinstance(rty, type)
         dc_rfl = dc.reflect(rty)
@@ -48,7 +60,11 @@ class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
         v_u = ctx.make(v_rty)
         return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, TypedValue) and lang.is_abstract_class(rty))
+    @mfs.simple(lambda _, ctx, rty: (
+        isinstance(rty, type) and
+        issubclass(rty, TypedValue) and
+        lang.is_abstract_class(rty)
+    ))
     def _build_abstract(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return msh.make_polymorphism_unmarshaler(
             _build_typed_value_poly(rty).impls,
@@ -64,10 +80,20 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
     gty = check.isinstance(rty, rfl.Generic)
     check.is_(gty.cls, TypedValues)
 
-    opt_cls_set: set[type[TypedValue]] = {
-        check.issubclass(check.isinstance(a, type), TypedValue)
-        for a in check.isinstance(check.single(gty.args), rfl.Union).args
-    }
+    opt_cls_set: set[type[TypedValue]] = set()
+
+    todo = [check.single(gty.args)]
+    seen = set()
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+
+        if isinstance(cur, rfl.Union):
+            todo.extend(cur.args)
+        else:
+            opt_cls_set.add(check.issubclass(check.isinstance(cur, type), TypedValue))
 
     opt_impls: list[msh.Impl] = []
     for opt_cls in opt_cls_set:
