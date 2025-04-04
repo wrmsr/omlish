@@ -151,6 +151,8 @@ class OpenaiChatService(
     }
 
     def invoke(self, request: OpenaiChatRequest) -> OpenaiChatResponse:
+        check.isinstance(request, OpenaiChatRequest)
+
         kw: dict = dict(
             temperature=0,
             max_tokens=1024,

@@ -7,6 +7,8 @@ from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
+from ....chat.services import ChatRequest
+from ....chat.services import ChatService_
 from ....chat.tools import Tool
 from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
@@ -78,3 +80,10 @@ def test_openai_tools(harness):
 
     print(resp)
     assert resp.choices
+
+
+def test_openai_chat_promote(harness):
+    llm: ChatService_ = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+
+    assert llm([UserMessage('Hi!')]).choices
+    assert llm(ChatRequest([UserMessage('Hi!')])).choices

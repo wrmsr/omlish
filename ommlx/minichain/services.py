@@ -181,7 +181,11 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             req = req_cls.new(*args, **kwargs)
             return self.invoke(req)
 
-        req = check.isinstance(args[0], req_cls)
+        req = args[0]
+        if not isinstance(req, req_cls):
+            # FIXME: auto-promote
+            raise TypeError(req)
+
         if not args and not kwargs:
             return self.invoke(req)
 
