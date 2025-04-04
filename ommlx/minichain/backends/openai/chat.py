@@ -195,7 +195,7 @@ class OpenaiChatService(ChatService):
 
         tools_by_name: dict[str, ToolSpec] = {}
 
-        for opt in request.options or []:
+        for opt in request.options:
             opt = check.isinstance(opt, ChatRequestOption)
 
             if (

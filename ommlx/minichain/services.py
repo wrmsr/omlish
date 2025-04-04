@@ -43,10 +43,15 @@ class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
         },
     )
 
-    def with_options(self: RequestT, *options: RequestOptionT) -> RequestT:
+    def with_options(
+            self: RequestT,
+            *options: RequestOptionT,
+            override: bool = False,
+    ) -> RequestT:
         return dc.replace(self, options=tv.TypedValues(
-            *(self.options or []),
+            *self.options,
             *options,
+            override=override,
         ))
 
     #
@@ -105,10 +110,15 @@ class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
         },
     )
 
-    def with_outputs(self: ResponseT, *outputs: ResponseOutputT) -> ResponseT:
+    def with_outputs(
+            self: ResponseT,
+            *outputs: ResponseOutputT,
+            override: bool = False,
+    ) -> ResponseT:
         return dc.replace(self, outputs=tv.TypedValues(
-            *(self.outputs or []),
+            *self.outputs,
             *outputs,
+            override=override,
         ))
 
 
