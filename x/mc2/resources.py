@@ -1,8 +1,7 @@
 """
 TODO:
- - resources is IdentityKeyMap -> refcount, obj?
+ - refcount? ref.close drops self-ref, resources delete if at 0?
  - lock, probably
- - @dc.init to inc _resources refcount? who 'exits' what / where?
 """
 import abc
 import logging
@@ -32,9 +31,24 @@ class ResourcesReference(lang.Abstract):
     def resources(self) -> 'Resources':
         raise NotImplementedError
 
+    def _close(self) -> None:
+        pass
+
+    @ta.final
     def close(self) -> None:
-        check.state(self.resources.has_reference(self))
-        self.resources.close()
+        try:
+            self._close()
+        finally:
+            check.state(self.resources.has_reference(self))
+            self.resources.close()
+
+    @ta.final
+    def __enter__(self) -> ta.Self:
+        return self
+
+    @ta.final
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 
 ##
@@ -64,7 +78,7 @@ class Resources:
         if not self._closed:
             ref_lst = list(self._refs)
             log.error(
-                f'{__package__}.{self.__class__.__name__}.__del__: '
+                f'{__package__}.{self.__class__.__name__}.__del__: '  # noqa
                 f'%r deleted without being closed! '
                 f'refs: %r',
                 self,
