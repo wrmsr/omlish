@@ -31,13 +31,13 @@ class ScalarRequestOption(tv.ScalarTypedValue[T], RequestOption, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Request(tv.TypedValueHolder[RequestOptionT], lang.Abstract):
-    options: tv.TypedValues[RequestOptionT] | None = dc.field(
-        default=None,
+class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
+    options: tv.TypedValues[RequestOptionT] = dc.field(
+        default=tv.TypedValues.empty(),
         kw_only=True,
         metadata={
             dc.FieldExtras: dc.FieldExtras(
-                repr_fn=lang.opt_repr,
+                repr_fn=dc.truthy_repr,
                 repr_priority=100,
             ),
         },
@@ -48,10 +48,6 @@ class Request(tv.TypedValueHolder[RequestOptionT], lang.Abstract):
             *(self.options or []),
             *options,
         ))
-
-    @property
-    def _typed_values(self) -> tv.TypedValues[RequestOptionT] | None:
-        return self.options
 
     #
 
@@ -80,7 +76,7 @@ class Request(tv.TypedValueHolder[RequestOptionT], lang.Abstract):
 
         return cls(
             *arg_lst,
-            options=tv.TypedValues(*opt_lst) if opt_lst is not None else None,
+            **lang.opt_kw(options=tv.TypedValues(*opt_lst) if opt_lst is not None else None),
             **kwargs,
         )
 
@@ -97,13 +93,13 @@ class ScalarResponseOutput(tv.ScalarTypedValue[T], ResponseOutput, lang.Abstract
 
 
 @dc.dataclass(frozen=True)
-class Response(tv.TypedValueHolder[ResponseOutputT], lang.Abstract):
-    outputs: tv.TypedValues[ResponseOutputT] | None = dc.field(
-        default=None,
+class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
+    outputs: tv.TypedValues[ResponseOutputT] = dc.field(
+        default=tv.TypedValues.empty(),
         kw_only=True,
         metadata={
             dc.FieldExtras: dc.FieldExtras(
-                repr_fn=lang.opt_repr,
+                repr_fn=dc.truthy_repr,
                 repr_priority=100,
             ),
         },
@@ -114,10 +110,6 @@ class Response(tv.TypedValueHolder[ResponseOutputT], lang.Abstract):
             *(self.outputs or []),
             *outputs,
         ))
-
-    @property
-    def _typed_values(self) -> tv.TypedValues[ResponseOutputT] | None:
-        return self.outputs
 
 
 ##
