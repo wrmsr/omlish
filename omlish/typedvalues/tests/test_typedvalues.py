@@ -126,7 +126,7 @@ def test_typed_values():
     ]
 
     assert opts[TopK] == TopK(10)
-    assert opts[Tool] == [Tool(foo_tool), Tool(bar_tool)]
+    assert list(opts[Tool]) == [Tool(foo_tool), Tool(bar_tool)]
     assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
     assert opts[JsonResponseFormat] == JSON_RESPONSE_FORMAT
 

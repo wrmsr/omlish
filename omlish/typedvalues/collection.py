@@ -29,8 +29,10 @@ class TypedValues(
     ta.Generic[TypedValueT],
 ):
     def __init__(self, *tvs: TypedValueT, override: bool = False) -> None:
-        if hasattr(self, '_lst'):
+        if hasattr(self, '_tup'):
             # When __new__ returns the empty singleton __init__ will still be called.
+            if self is not self._EMPTY:
+                raise RuntimeError
             return
 
         super().__init__()
@@ -69,10 +71,11 @@ class TypedValues(
                 lst.append(tv)
                 dct.setdefault(type(tv), []).append(tv)
 
-        self._lst = lst
-        self._dct = dct
+        self._tup: tuple[TypedValueT, ...] = tuple(lst)
+        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = \
+            {k: tuple(v) if isinstance(v, list) else v for k, v in dct.items()}
 
-        self._any_dct: dict[type, ta.Sequence[ta.Any]] = {}
+        self._any_dct: dict[type, tuple[TypedValueT, ...]] = {}
 
     #
 
@@ -92,30 +95,69 @@ class TypedValues(
 
     #
 
-    def with_(self, *tvs, override: bool = False) -> 'TypedValues':
-        return TypedValues(*self._lst, *tvs, override=override)
-
     def without(self, *tys: type) -> ta.Iterator[TypedValueT]:
-        for o in self._lst:
+        for o in self._tup:
             if isinstance(o, tys):
                 continue
             yield o
 
     #
 
+    def update(self, *tvs, override: bool = False) -> 'TypedValues':
+        return TypedValues(*self._tup, *tvs, override=override)
+
+    def discard(self, *tys: type) -> 'TypedValues':
+        return TypedValues(*self.without(*tys))
+
+    #
+
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'
+        return f'{self.__class__.__name__}({", ".join(map(repr, self._tup))})'
+
+    #
+
+    _set: frozenset[TypedValueT]
+
+    def to_set(self) -> frozenset[TypedValueT]:
+        try:
+            return self._set
+        except AttributeError:
+            pass
+        s = frozenset(self._tup)
+        self._set = s
+        return s
+
+    #
+
+    _hash: int
+
+    def __hash__(self) -> int:
+        try:
+            return self._hash
+        except AttributeError:
+            pass
+        h = hash(self._tup)
+        self._hash = h
+        return h
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (
+            other is self or
+            other._tup == self._tup
+        )
 
     #
 
     def __iter__(self) -> ta.Iterator[TypedValueT]:
-        return iter(self._lst)
+        return iter(self._tup)
 
     def __len__(self) -> int:
-        return len(self._lst)
+        return len(self._tup)
 
     def __bool__(self) -> bool:
-        return bool(self._lst)
+        return bool(self._tup)
 
     #
 
@@ -124,7 +166,7 @@ class TypedValues(
 
     def _typed_value_getitem(self, key):
         if isinstance(key, int):
-            return self._lst[key]
+            return self._tup[key]
         elif isinstance(key, type):
             return self._dct[check.issubclass(key, TypedValue)]
         else:
@@ -138,16 +180,16 @@ class TypedValues(
             if issubclass(key, UniqueTypedValue):
                 return default
             elif default is not None:
-                return list(default)
+                return tuple(default)
             else:
-                return []
+                return ()
 
     def _typed_value_get_any(self, cls):
         try:
             return self._any_dct[cls]
         except KeyError:
             pass
-        ret = [tv for tv in self if isinstance(tv, cls)]
+        ret = tuple(tv for tv in self if isinstance(tv, cls))
         self._any_dct[cls] = ret
         return ret
 
