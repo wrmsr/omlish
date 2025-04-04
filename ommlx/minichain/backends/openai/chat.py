@@ -39,6 +39,8 @@ from ...chat.types import ChatRequestOption
 from ...chat.types import ChatResponseOutput
 from ...services import RequestOption
 from ...services import ResponseOutput
+from .format import build_request_message
+from .format import render_tool_spec
 
 
 ##
@@ -106,76 +108,6 @@ class OpenaiChatResponse(ChatResponse[OpenaiChatResponseOutput | ChatResponseOut
 ##
 
 
-def _opt_dct_fld(k, v):
-    return {k: v} if v else {}
-
-
-def render_tool_spec(ts: ToolSpec) -> ta.Mapping[str, ta.Any]:
-    return dict(
-        name=ts.name,
-
-        **_opt_dct_fld('description', ts.desc),
-
-        parameters=dict(
-            type='object',
-            properties={
-                tp.name: {
-                    'type': tp.dtype,
-                    **_opt_dct_fld('description', tp.desc),
-                }
-                for tp in ts.params
-            },
-
-            required=[tp.name for tp in ts.params if tp.required],
-            additionalProperties=False,
-        ),
-    )
-
-
-def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
-    if isinstance(m, SystemMessage):
-        return dict(
-            role='system',
-            content=m.s,
-        )
-
-    elif isinstance(m, AiMessage):
-        return dict(
-            role='assistant',
-            content=m.s,
-            **(dict(tool_calls=[
-                dict(
-                    id=te.id,
-                    function=dict(
-                        arguments=te.args,
-                        name=te.spec.name,
-                    ),
-                    type='function',
-                )
-                for te in m.tool_exec_requests
-            ]) if m.tool_exec_requests else {}),
-        )
-
-    elif isinstance(m, UserMessage):
-        return dict(
-            role='user',
-            content=check.isinstance(m.c, str),
-        )
-
-    elif isinstance(m, ToolExecResultMessage):
-        return dict(
-            role='tool',
-            tool_call_id=m.id,
-            content=m.s,
-        )
-
-    else:
-        raise TypeError(m)
-
-
-##
-
-
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
 class OpenaiChatService(
     ChatService[
@@ -209,6 +141,7 @@ class OpenaiChatService(
             api_key: Secret | str | None = None,
     ) -> None:
         super().__init__()
+
         self._model = model or self.DEFAULT_MODEL
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
