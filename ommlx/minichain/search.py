@@ -3,10 +3,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .services import Request
+from .services import RequestOption
+from .services import ResponseOutput
 from .services import Service
-from .services import ServiceOption
-from .services import ServiceRequest
-from .services import ServiceResponse
 
 
 ##
@@ -30,40 +30,44 @@ class SearchHits(lang.Final):
 ##
 
 
-SearchInput: ta.TypeAlias = str
-SearchNew: ta.TypeAlias = str
-SearchOutput: ta.TypeAlias = SearchHits
-
-SearchOptions: ta.TypeAlias = ServiceOption
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class SearchRequest(
-    ServiceRequest[
-        SearchInput,
-        SearchOptions,
-        SearchNew,
-    ],
-    lang.Final,
-):
-    @dc.validate
-    def _validate_v(self) -> bool:
-        return isinstance(self.v, str)
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class SearchResponse(ServiceResponse[SearchOutput], lang.Final):
+class SearchRequestOption(RequestOption, lang.Abstract):
     pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SearchRequest(Request):
+    query: str
+
+
+##
+
+
+class SearchResponseOutput(ResponseOutput, lang.Abstract):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SearchResponse(ResponseOutput):
+    hits: SearchHits
+
+
+##
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class SearchService(  # noqa
     Service[
         SearchRequest,
-        SearchOptions,
-        SearchNew,
         SearchResponse,
     ],
+    request=SearchRequest,
+    response=SearchResponse,
     lang.Abstract,
 ):
     pass

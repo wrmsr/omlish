@@ -160,7 +160,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
         raise NotImplementedError
 
     @ta.final
-    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
+    def invoke_new(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
         req_cls: type[RequestT] = check.not_none(self._service_request_cls)  # type: ignore[assignment]
 
         req: RequestT
@@ -185,3 +185,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             req = dc.replace(req, **kwargs)
 
         return self.invoke(req)
+
+    @ta.final
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
+        return self.invoke_new(*args, **kwargs)

@@ -3,25 +3,13 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..options import Option
-from ..services import Service
-from ..services import ServiceOption
-from ..services import ServiceRequest
-from ..services import ServiceResponse
+from ..services import Request
+from ..services import RequestOption
+from ..services import Response
+from ..services import ResponseOutput
+from ..services import Service_
 from .similarity import Similarity
 from .vectors import Vector
-
-
-##
-
-
-class VectorSearchOption(Option, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class VectorSearchSimilarity(Option, lang.Final):
-    similarity: Similarity
 
 
 ##
@@ -50,39 +38,48 @@ class VectorHits(lang.Final):
 ##
 
 
-VectorSearchInput: ta.TypeAlias = VectorSearch
-VectorSearchNew: ta.TypeAlias = str
-VectorSearchOutput: ta.TypeAlias = str
-
-VectorSearchOptions: ta.TypeAlias = ServiceOption | VectorSearchOption
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class VectorSearchRequest(
-    ServiceRequest[
-        VectorSearchInput,
-        VectorSearchOptions,
-        VectorSearchNew,
-    ],
-    lang.Final,
-):
-    @dc.validate
-    def _validate_v(self) -> bool:
-        return isinstance(self.v, str)
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class VectorSearchResponse(ServiceResponse[VectorSearchOutput], lang.Final):
+class VectorSearchRequestOption(RequestOption, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
+class VectorSearchSimilarity(VectorSearchRequestOption, lang.Final):
+    similarity: Similarity
+
+
+#
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class VectorSearchRequest(Request[VectorSearchRequestOption]):
+    search: VectorSearch
+
+
+##
+
+
+class VectorSearchResponseOutput(ResponseOutput, lang.Abstract):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class VectorSearchResponse(Response[VectorSearchResponseOutput]):
+    hits: VectorHits
+
+
+##
+
+
 class VectorSearchService(  # noqa
-    Service[
+    Service_[
         VectorSearchRequest,
-        VectorSearchOptions,
-        VectorSearchNew,
         VectorSearchResponse,
     ],
     lang.Abstract,
+    request=VectorSearchRequest,
+    response=VectorSearchResponse,
 ):
     pass

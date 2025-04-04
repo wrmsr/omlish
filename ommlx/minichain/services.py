@@ -2,159 +2,190 @@ import abc
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
-
-from .options import Option
-from .options import Options
+from omlish import typedvalues as tv
 
 
 T = ta.TypeVar('T')
-U = ta.TypeVar('U')
-ServiceRequestT = ta.TypeVar('ServiceRequestT', bound='ServiceRequest')
-ServiceOptionT = ta.TypeVar('ServiceOptionT', bound='Option')
-ServiceNewT = ta.TypeVar('ServiceNewT')
-ServiceResponseT = ta.TypeVar('ServiceResponseT', bound='ServiceResponse')
+
+RequestOptionT = ta.TypeVar('RequestOptionT', bound='RequestOption')
+RequestT = ta.TypeVar('RequestT', bound='Request')
+RequestT_contra = ta.TypeVar('RequestT_contra', bound='Request', contravariant=True)
+
+ResponseOutputT = ta.TypeVar('ResponseOutputT', bound='ResponseOutput')
+ResponseT = ta.TypeVar('ResponseT', bound='Response')
+ResponseT_co = ta.TypeVar('ResponseT_co', bound='Response', covariant=True)
 
 
 ##
 
 
-class ServiceOption(Option, lang.Abstract):
+class RequestOption(tv.TypedValue, lang.Abstract):
     pass
 
 
-##
+class ScalarRequestOption(tv.ScalarTypedValue[T], RequestOption, lang.Abstract):
+    pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ServiceRequest(
-    lang.Abstract,
-    ta.Generic[
-        T,
-        ServiceOptionT,
-        ServiceNewT,
-    ],
-):
-    v: T
+@dc.dataclass(frozen=True)
+class Request(tv.TypedValueHolder[RequestOptionT], lang.Abstract):
+    options: tv.TypedValues[RequestOptionT] | None = dc.field(
+        default=None,
+        kw_only=True,
+        metadata={
+            dc.FieldExtras: dc.FieldExtras(
+                repr_fn=lang.opt_repr,
+                repr_priority=100,
+            ),
+        },
+    )
 
-    options: Options[ServiceOptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
+    def with_options(self: RequestT, *options: RequestOptionT) -> RequestT:
+        return dc.replace(self, options=tv.TypedValues(
+            *(self.options or []),
+            *options,
+        ))
+
+    @property
+    def _typed_values(self) -> tv.TypedValues[RequestOptionT] | None:
+        return self.options
+
+    #
 
     @classmethod
     def new(
-            cls: type[U],
-            v: ServiceNewT,
-            *options: ServiceOptionT,
+            cls: type[RequestT],
+            *args: ta.Any,
+            options: tv.TypedValues[RequestOptionT] | None = None,
             **kwargs: ta.Any,
-    ) -> U:
+    ) -> RequestT:
+        if not any(isinstance(a, RequestOption) for a in args):
+            return cls(*args, **kwargs)
+
+        arg_lst: list[ta.Any] = []
+        opt_lst: list[RequestOption] | None = None
+        for arg in args:
+            if isinstance(arg, RequestOption):
+                if opt_lst is None:
+                    if options is not None:
+                        opt_lst = list(options)
+                    else:
+                        opt_lst = []
+                opt_lst.append(arg)
+            else:
+                arg_lst.append(arg)
+
         return cls(
-            v=v,  # type: ignore
-            options=Options(*options),
+            *arg_lst,
+            options=tv.TypedValues(*opt_lst) if opt_lst is not None else None,
             **kwargs,
         )
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ServiceResponse(lang.Abstract, ta.Generic[T]):
-    v: T
+##
 
 
-def _check_concrete_subclass(ann: ta.Any, ty: type[T]) -> type[T]:
-    return check.issubclass(check.isinstance(rfl.get_concrete_type(ann), type), ty)
+class ResponseOutput(tv.TypedValue, lang.Abstract):
+    pass
 
 
-class Service(
-    lang.Abstract,
-    ta.Generic[
-        ServiceRequestT,
-        ServiceOptionT,
-        ServiceNewT,
-        ServiceResponseT,
-    ],
-):
-    # Not ClassVar - wrappers for example vary by instance.
-    request_cls: type[ServiceRequest]
-    option_cls_set: frozenset[type[Option]]
-    new_cls: ta.Any
-    response_cls: type[ServiceResponse]
+class ScalarResponseOutput(tv.ScalarTypedValue[T], ResponseOutput, lang.Abstract):
+    pass
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+
+@dc.dataclass(frozen=True)
+class Response(tv.TypedValueHolder[ResponseOutputT], lang.Abstract):
+    outputs: tv.TypedValues[ResponseOutputT] | None = dc.field(
+        default=None,
+        kw_only=True,
+        metadata={
+            dc.FieldExtras: dc.FieldExtras(
+                repr_fn=lang.opt_repr,
+                repr_priority=100,
+            ),
+        },
+    )
+
+    def with_outputs(self: ResponseT, *outputs: ResponseOutputT) -> ResponseT:
+        return dc.replace(self, outputs=tv.TypedValues(
+            *(self.outputs or []),
+            *outputs,
+        ))
+
+    @property
+    def _typed_values(self) -> tv.TypedValues[ResponseOutputT] | None:
+        return self.outputs
+
+
+##
+
+
+@ta.runtime_checkable
+class Service(ta.Protocol[RequestT_contra, ResponseT_co]):
+    def invoke(self, request: RequestT_contra) -> ResponseT_co: ...
+
+
+##
+
+
+@lang.protocol_check(Service)
+class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
+    _service_request_cls: ta.ClassVar[type[Request]]
+    _service_response_cls: ta.ClassVar[type[Response]]
+
+    def __init_subclass__(
+            cls,
+            *,
+            request: type[Request] | None = None,
+            response: type[Response] | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
         super().__init_subclass__(**kwargs)
 
-        if lang.is_abstract_class(cls):
-            return
+        def set_svc_cls(a, v, b):
+            if v is None:
+                return
+            check.not_in(a, cls.__dict__)
+            check.issubclass(v, b)
+            setattr(cls, a, v)
 
-        gmro = rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(cls)
-
-        service_bases = [
-            rb
-            for rb in gmro
-            if isinstance(rb, rfl.Generic)
-            and rb.cls is Service
-        ]
-        if not service_bases:
-            return
-
-        service_base = check.single(service_bases)
-
-        present_attr_ct = lang.ilen(
-            a for a in (
-                'request_cls',
-                'option_cls_set',
-                'new_cls',
-                'response_cls',
-            ) if hasattr(cls, a)
-        )
-        if present_attr_ct:
-            if present_attr_ct != 4:
-                raise AttributeError('Must set all service attrs if any set')
-            return
-
-        (
-            request_ann,
-            option_ann,
-            new_ann,
-            response_ann,
-        ) = service_base.args
-
-        request_cls: type[ServiceRequest] = _check_concrete_subclass(request_ann, ServiceRequest)
-        response_cls: type[ServiceResponse] = _check_concrete_subclass(response_ann, ServiceResponse)
-        new_cls: ta.Any = new_ann
-
-        option_cls_set: frozenset[type[Option]]
-        if isinstance(option_ann, rfl.Union):
-            option_cls_set = frozenset(check.issubclass(check.isinstance(a, type), Option) for a in option_ann.args)  # noqa
-        else:
-            option_cls_set = frozenset([check.issubclass(check.isinstance(option_ann, type), Option)])  # noqa
-
-        cls.request_cls = request_cls
-        cls.option_cls_set = option_cls_set
-        cls.new_cls = new_cls
-        cls.response_cls = response_cls
+        set_svc_cls('_service_request_cls', request, Request)
+        set_svc_cls('_service_response_cls', response, Response)
 
     @abc.abstractmethod
-    def invoke(self, request: ServiceRequestT) -> ServiceResponseT:
+    def invoke(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
 
     @ta.final
-    def invoke_new(
-            self,
-            v: ServiceNewT,
-            *options: ServiceOptionT,
-            **kwargs: ta.Any,
-    ) -> ServiceResponseT:
-        request = self.request_cls.new(
-            v,
-            *options,
-            **kwargs,
-        )
-        return self.invoke(ta.cast(ServiceRequestT, request))
+    def invoke_new(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
+        req_cls: type[RequestT] = check.not_none(self._service_request_cls)  # type: ignore[assignment]
 
-    def __call__(
-            self,
-            v: ServiceNewT,
-            *options: ServiceOptionT,
-            **kwargs: ta.Any,
-    ) -> ServiceResponseT:
-        return self.invoke_new(v, *options, **kwargs)
+        req: RequestT
+        if not (args and isinstance(args[0], Request)):
+            req = req_cls.new(*args, **kwargs)
+            return self.invoke(req)
+
+        req = check.isinstance(args[0], req_cls)
+        if not args and not kwargs:
+            return self.invoke(req)
+
+        val_args, opt_args = col.partition(args, lambda a: isinstance(a, RequestOption))
+        check.empty(val_args)
+
+        if opt_args:
+            kwargs['options'] = tv.TypedValues(
+                *kwargs.pop('options', req.options or []),
+                *opt_args,
+            )
+
+        if kwargs:
+            req = dc.replace(req, **kwargs)
+
+        return self.invoke(req)
+
+    @ta.final
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
+        return self.invoke_new(*args, **kwargs)
