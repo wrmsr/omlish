@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 from omlish import marshal as msh
 from omlish.formats import json
@@ -83,7 +85,9 @@ def test_openai_tools(harness):
 
 
 def test_openai_chat_promote(harness):
-    llm: ChatService_ = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+    llm: ChatService_ = ta.cast(ChatService_, OpenaiChatService(
+        api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal(),
+    ))
 
     assert llm([UserMessage('Hi!')]).choices
     assert llm(ChatRequest([UserMessage('Hi!')])).choices

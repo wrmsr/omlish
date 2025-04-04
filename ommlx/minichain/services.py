@@ -176,7 +176,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
     def invoke_new(self, *args: ta.Any, **kwargs: ta.Any) -> ResponseT:
         req_cls: type[RequestT] = check.not_none(self._service_request_cls)  # type: ignore[assignment]
 
-        req: RequestT
+        req: ta.Any
         if not (args and isinstance(args[0], Request)):
             req = req_cls.new(*args, **kwargs)
             return self.invoke(req)
