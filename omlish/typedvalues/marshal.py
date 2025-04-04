@@ -19,6 +19,7 @@ def _build_typed_value_poly(rty: rfl.Type) -> msh.Polymorphism:
     return msh.polymorphism_from_subclasses(
         ty,
         naming=msh.Naming.SNAKE,
+        strip_suffix='auto',
     )
 
 

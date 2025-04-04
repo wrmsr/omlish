@@ -127,3 +127,12 @@ from .vectors.vectors import (  # noqa
 from .vectors.stores import (  # noqa
     VectorStore,
 )
+
+
+##
+
+
+from omlish.lang.imports import _register_conditional_import  # noqa
+
+_register_conditional_import('omlish.marshal', '.chat.marshal', __package__)
+_register_conditional_import('omlish.marshal', '.content.marshal', __package__)

@@ -10,7 +10,7 @@ def test_requests():
             [mc.UserMessage('foo')],
         ),
         mc.ChatRequest.new(
-            mc.UserMessage('foo'),
+            [mc.UserMessage('foo')],
             # mc.MaxTokens(420),
         ),
     ]:

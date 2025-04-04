@@ -16,6 +16,9 @@ import string
 import typing as ta
 
 
+##
+
+
 CHAR_CLASSES: ta.Mapping[str, str] = {
     'lower': string.ascii_lowercase,
     'upper': string.ascii_uppercase,

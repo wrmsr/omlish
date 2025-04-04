@@ -1,9 +1,8 @@
 from ... import lang
 from ... import marshal as msh
-
 from ..collection import TypedValues
-from ..values import TypedValue
 from ..values import ScalarTypedValue
+from ..values import TypedValue
 
 
 class Opt(TypedValue, lang.Abstract):

@@ -323,7 +323,7 @@
     "module": ".secrets.pwgen",
     "attr": "_CLI_MODULE",
     "file": "omlish/secrets/pwgen.py",
-    "line": 75,
+    "line": 78,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": "pwgen",
