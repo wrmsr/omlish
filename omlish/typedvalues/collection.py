@@ -72,10 +72,10 @@ class TypedValues(
                 dct.setdefault(type(tv), []).append(tv)
 
         self._tup: tuple[TypedValueT, ...] = tuple(lst)
-        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = \
-            {k: tuple(v) if isinstance(v, list) else v for k, v in dct.items()}
-
-        self._any_dct: dict[type, tuple[TypedValueT, ...]] = {}
+        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = {
+            k: tuple(v) if isinstance(v, list) else v
+            for k, v in dct.items()
+        }
 
     #
 
@@ -184,13 +184,20 @@ class TypedValues(
             else:
                 return ()
 
+    _any_dct: dict[type, tuple[TypedValueT, ...]]
+
     def _typed_value_get_any(self, cls):
         try:
-            return self._any_dct[cls]
+            any_dct = self._any_dct
+        except AttributeError:
+            any_dct = {}
+            self._any_dct = any_dct
+        try:
+            return any_dct[cls]
         except KeyError:
             pass
         ret = tuple(tv for tv in self if isinstance(tv, cls))
-        self._any_dct[cls] = ret
+        any_dct[cls] = ret
         return ret
 
 

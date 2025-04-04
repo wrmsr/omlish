@@ -148,3 +148,7 @@ def test_mro_check():
 
 def test_empty():
     assert TypedValues() is TypedValues()
+
+
+def test_get_any():
+    TypedValues(TopK(10)).get_any(lang.Abstract)
