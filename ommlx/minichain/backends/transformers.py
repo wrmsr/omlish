@@ -15,6 +15,9 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
+##
+
+
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='PromptService')
 class TransformersPromptService(PromptService):
     DEFAULT_MODEL: ta.ClassVar[str] = (

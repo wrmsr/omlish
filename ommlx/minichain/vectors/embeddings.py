@@ -31,7 +31,7 @@ class EmbeddingResponseOutput(ResponseOutput, lang.Abstract):
     pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class EmbeddingResponse(Response[EmbeddingResponseOutput]):
     vector: Vector
 

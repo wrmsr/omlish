@@ -6,6 +6,9 @@ from omlish import lang
 from ..vectors.vectors import Vector
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Dtype(lang.Final):
     name: str

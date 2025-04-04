@@ -3,7 +3,7 @@ import typing as ta
 from omlish import lang
 
 from ..content.images import Image
-from ..vectors.embeddings import EmbeddingModel
+from ..vectors.embeddings import EmbeddingService
 from ..vectors.embeddings import EmbeddingRequest
 from ..vectors.embeddings import EmbeddingResponse
 from ..vectors.vectors import Vector
@@ -15,19 +15,22 @@ else:
     st = lang.proxy_import('sentence_transformers')
 
 
+##
+
+
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
 #     name='sentencetransformers',
 #     aliases=['st'],
-#     type='EmbeddingModel',
+#     type='EmbeddingService',
 # )
-class SentencetransformersEmbeddingModel(EmbeddingModel):
+class SentencetransformersEmbeddingService(EmbeddingService):
     model = 'clip-ViT-B-32'
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         mdl = st.SentenceTransformer(self.model)
 
         obj: ta.Any
-        v = request.v
+        v = request.content
         if isinstance(v, str):
             obj = v
         elif isinstance(v, Image):
@@ -37,4 +40,4 @@ class SentencetransformersEmbeddingModel(EmbeddingModel):
 
         response = mdl.encode(obj)
 
-        return EmbeddingResponse(v=Vector(response.tolist()))
+        return EmbeddingResponse(Vector(response.tolist()))

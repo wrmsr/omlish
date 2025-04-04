@@ -4,6 +4,9 @@ from omlish import marshal as msh
 from .messages import Message
 
 
+##
+
+
 @lang.static_init
 def _install_standard_marshalling() -> None:
     msgs_poly = msh.polymorphism_from_subclasses(Message, naming=msh.Naming.SNAKE, strip_suffix=True)
