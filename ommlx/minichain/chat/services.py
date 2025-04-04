@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -10,11 +12,15 @@ from .types import ChatRequestOption
 from .types import ChatResponseOutput
 
 
+ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=ChatRequestOption)
+ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ChatResponseOutput)
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
-class ChatRequest(Request[ChatRequestOption]):
+class ChatRequest(Request[ChatRequestOptionT]):
     chat: Chat
 
 
@@ -22,7 +28,7 @@ class ChatRequest(Request[ChatRequestOption]):
 
 
 @dc.dataclass(frozen=True)
-class ChatResponse(Response[ChatResponseOutput]):
+class ChatResponse(Response[ChatResponseOutputT]):
     choices: AiChoices
 
 

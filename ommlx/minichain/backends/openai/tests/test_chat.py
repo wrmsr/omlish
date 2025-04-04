@@ -19,7 +19,7 @@ from ..chat import Temperature
 def test_openai(harness):
     llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
-    req = ChatRequest.new(
+    req: ChatRequest = ChatRequest.new(
         [UserMessage('Is water dry?')],
         Temperature(.1),
         MaxTokens(64),

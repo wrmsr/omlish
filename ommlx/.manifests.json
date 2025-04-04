@@ -202,7 +202,7 @@
     "module": ".minichain.chat.services",
     "attr": null,
     "file": "ommlx/minichain/chat/services.py",
-    "line": 32,
+    "line": 38,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.chat.services",

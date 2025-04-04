@@ -40,6 +40,7 @@ from .types import (  # noqa
     get_orig_bases,
     get_orig_class,
     get_params,
+    get_type_var_bound,
     is_type,
     is_union_type,
     type_,

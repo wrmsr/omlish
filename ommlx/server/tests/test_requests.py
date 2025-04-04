@@ -5,6 +5,7 @@ from ... import minichain as mc
 
 
 def test_requests():
+    req: mc.ChatRequest
     for req in [
         mc.ChatRequest.new(
             [mc.UserMessage('foo')],

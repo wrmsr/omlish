@@ -115,6 +115,10 @@ def get_newtype_supertype(obj: ta.Any) -> ta.Any:
     return obj.__supertype__
 
 
+def get_type_var_bound(obj: ta.Any) -> ta.Any:
+    return obj.__bound__
+
+
 ##
 
 

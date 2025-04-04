@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -93,6 +95,8 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
 
         if isinstance(cur, rfl.Union):
             todo.extend(cur.args)
+        elif isinstance(cur, ta.TypeVar):
+            todo.append(rfl.get_type_var_bound(cur))
         else:
             opt_cls_set.add(check.issubclass(check.isinstance(cur, type), TypedValue))
 

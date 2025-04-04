@@ -188,12 +188,25 @@ class AbstractDataclassFactory(lang.Abstract):
 ##
 
 
+def _type_or_generic_base(rty: rfl.Type) -> type | None:
+    if isinstance(rty, rfl.Generic):
+        return rty.cls
+    elif isinstance(rty, type):
+        return rty
+    else:
+        return None
+
+
 class DataclassMarshalerFactory(AbstractDataclassFactory, SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
+        return (
+            (ty := _type_or_generic_base(rty)) is not None and
+            dc.is_dataclass(ty) and
+            not lang.is_abstract_class(ty)
+        )
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        ty = check.isinstance(rty, type)
+        ty = check.isinstance(_type_or_generic_base(rty), type)
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
@@ -217,10 +230,14 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, SimpleMarshalerFactory
 
 class DataclassUnmarshalerFactory(AbstractDataclassFactory, SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
+        return (
+            (ty := _type_or_generic_base(rty)) is not None and
+            dc.is_dataclass(ty) and
+            not lang.is_abstract_class(ty)
+        )
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        ty = check.isinstance(rty, type)
+        ty = check.isinstance(_type_or_generic_base(rty), type)
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
