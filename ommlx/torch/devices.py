@@ -10,6 +10,9 @@ else:
     torch = lang.proxy_import('torch', extras=['backends', 'nn'])
 
 
+##
+
+
 def get_best_device() -> str | None:
     if torch.cuda.is_available():
         return 'cuda'
