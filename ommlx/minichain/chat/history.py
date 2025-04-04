@@ -43,7 +43,7 @@ class ListChatHistory(ChatHistory):
         self._lst.clear()
 
 
-class ChatHistoryModel(ChatService):
+class ChatHistoryService(ChatService):
     def __init__(
             self,
             underlying: ChatService,

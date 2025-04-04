@@ -73,6 +73,7 @@ class VectorSearchResponse(Response[VectorSearchResponseOutput]):
 ##
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class VectorSearchService(  # noqa
     Service_[
         VectorSearchRequest,

@@ -50,6 +50,7 @@ class VectorIndexResponse(Response[VectorIndexResponseOutput]):
 ##
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class VectorIndexService(
     Service_[
         VectorIndexRequest,

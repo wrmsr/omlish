@@ -8,6 +8,9 @@ from .search import VectorSearch
 from .similarity import Similarity
 
 
+##
+
+
 class VectorStore(lang.Abstract):
     @abc.abstractmethod
     def index(self, doc: VectorIndexed) -> None:

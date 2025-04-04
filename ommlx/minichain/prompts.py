@@ -27,6 +27,7 @@ class PromptResponseOutput(ResponseOutput, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class PromptResponse(Response[PromptResponseOutput]):
     text: str
 
@@ -35,7 +36,7 @@ class PromptResponse(Response[PromptResponseOutput]):
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class PromptModel(  # noqa
+class PromptService(  # noqa
     Service_[
         PromptRequest,
         PromptResponse,

@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish import lang
 
-from ..prompts import PromptModel
+from ..prompts import PromptService
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
 
@@ -15,8 +15,8 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='PromptModel')
-class TransformersPromptModel(PromptModel):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='PromptService')
+class TransformersPromptService(PromptService):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
         # 'Qwen/Qwen2-0.5B'
@@ -47,5 +47,5 @@ class TransformersPromptModel(PromptModel):
                 **(self._kwargs or {}),
             },
         )
-        output = pipeline(request.v)
-        return PromptResponse(v=output)
+        output = pipeline(request.prompt)
+        return PromptResponse(output)
