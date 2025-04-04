@@ -37,24 +37,34 @@ from ...chat.tools import Tool
 from ...chat.tools import ToolSpec
 from ...chat.types import ChatRequestOption
 from ...chat.types import ChatResponseOutput
+from ...services import RequestOption
+from ...services import ResponseOutput
 
 
 ##
 
 
-class TopK(ChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+class OpenaiChatRequestOption(RequestOption, lang.Abstract):
     pass
 
 
-class Temperature(ChatRequestOption, tv.ScalarTypedValue[float], tv.UniqueTypedValue, lang.Final):
+class TopK(OpenaiChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
     pass
 
 
-class MaxTokens(ChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+class Temperature(OpenaiChatRequestOption, tv.ScalarTypedValue[float], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+class MaxTokens(OpenaiChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
     pass
 
 
 ##
+
+
+class OpenaiChatResponseOutput(ResponseOutput, lang.Abstract):
+    pass
 
 
 class FinishReason(enum.Enum):
@@ -65,7 +75,7 @@ class FinishReason(enum.Enum):
     OTHER = enum.auto()
 
 
-class FinishReasonOutput(ChatResponseOutput, tv.ScalarTypedValue[FinishReason], tv.UniqueTypedValue, lang.Final):
+class FinishReasonOutput(OpenaiChatResponseOutput, tv.ScalarTypedValue[FinishReason], tv.UniqueTypedValue, lang.Final):
     pass
 
 
@@ -76,7 +86,20 @@ class TokenUsage(lang.Final):
     total: int
 
 
-class TokenUsageOutput(ChatResponseOutput, tv.ScalarTypedValue[TokenUsage], tv.UniqueTypedValue, lang.Final):
+class TokenUsageOutput(OpenaiChatResponseOutput, tv.ScalarTypedValue[TokenUsage], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class OpenaiChatRequest(ChatRequest[OpenaiChatRequestOption | ChatRequestOption]):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class OpenaiChatResponse(ChatResponse[OpenaiChatResponseOutput | ChatResponseOutput]):
     pass
 
 
@@ -154,7 +177,14 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
-class OpenaiChatService(ChatService):
+class OpenaiChatService(
+    ChatService[
+        OpenaiChatRequest,
+        OpenaiChatResponse,
+    ],
+    request=OpenaiChatRequest,
+    response=OpenaiChatResponse,
+):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'
@@ -167,7 +197,7 @@ class OpenaiChatService(ChatService):
         ToolExecResultMessage: 'tool',
     }
 
-    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[ChatRequestOption]] = tv.TypedValues(
+    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[RequestOption]] = tv.TypedValues(
         Temperature(0.),
         MaxTokens(1024),
     )
@@ -187,7 +217,7 @@ class OpenaiChatService(ChatService):
         MaxTokens: 'max_tokens',
     }
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: OpenaiChatRequest) -> OpenaiChatResponse:
         kw: dict = dict(
             temperature=0,
             max_tokens=1024,
@@ -196,8 +226,6 @@ class OpenaiChatService(ChatService):
         tools_by_name: dict[str, ToolSpec] = {}
 
         for opt in request.options:
-            opt = check.isinstance(opt, ChatRequestOption)
-
             if (
                     isinstance(opt, tv.ScalarTypedValue) and
                     (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None
@@ -245,7 +273,7 @@ class OpenaiChatService(ChatService):
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        return ChatResponse(
+        return OpenaiChatResponse(
             [
                 AiChoice(AiMessage(
                     choice['message']['content'],

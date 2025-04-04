@@ -4,16 +4,18 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..services import Request
+from ..services import RequestOption
 from ..services import Response
+from ..services import ResponseOutput
 from ..services import Service_
 from .choices import AiChoices
 from .messages import Chat
-from .types import ChatRequestOption
-from .types import ChatResponseOutput
 
 
-ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=ChatRequestOption)
-ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ChatResponseOutput)
+ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=RequestOption)
+ChatRequestT = ta.TypeVar('ChatRequestT', bound='ChatRequest')
+ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ResponseOutput)
+ChatResponseT = ta.TypeVar('ChatResponseT', bound='ChatResponse')
 
 
 ##
@@ -38,11 +40,18 @@ class ChatResponse(Response[ChatResponseOutputT]):
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class ChatService(  # noqa
     Service_[
-        ChatRequest,
-        ChatResponse,
+        ChatRequestT,
+        ChatResponseT,
     ],
     lang.Abstract,
+    ta.Generic[
+        ChatRequestT,
+        ChatResponseT,
+    ],
     request=ChatRequest,
     response=ChatResponse,
 ):
     pass
+
+
+ChatService_: ta.TypeAlias = ChatService[ChatRequest, ChatResponse]

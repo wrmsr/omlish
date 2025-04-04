@@ -7,11 +7,11 @@ from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
-from ....chat.services import ChatRequest
 from ....chat.tools import Tool
 from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
 from ..chat import MaxTokens
+from ..chat import OpenaiChatRequest
 from ..chat import OpenaiChatService
 from ..chat import Temperature
 
@@ -19,7 +19,7 @@ from ..chat import Temperature
 def test_openai(harness):
     llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
-    req: ChatRequest = ChatRequest.new(
+    req: OpenaiChatRequest = OpenaiChatRequest.new(
         [UserMessage('Is water dry?')],
         Temperature(.1),
         MaxTokens(64),
@@ -27,7 +27,7 @@ def test_openai(harness):
 
     rm = msh.marshal(req)
     print(rm)
-    req2 = msh.unmarshal(rm, ChatRequest)
+    req2 = msh.unmarshal(rm, OpenaiChatRequest)
     print(req2)
 
     resp = llm(req)

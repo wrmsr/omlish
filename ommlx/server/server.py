@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 
 @dc.dataclass(frozen=True)
 class McServerHandler(HttpHandler_):
-    llm: mc.ChatService
+    llm: mc.ChatService_
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         prompt = check.not_none(req.data).decode('utf-8')

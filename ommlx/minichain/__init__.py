@@ -38,6 +38,7 @@ from .chat.services import (  # noqa
     ChatRequest,
     ChatResponse,
     ChatService,
+    ChatService_,
 )
 
 from .chat.tools import (  # noqa
