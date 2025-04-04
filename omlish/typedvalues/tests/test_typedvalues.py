@@ -144,3 +144,7 @@ def test_mro_check():
     with pytest.raises(TypeError):  # noqa
         class Bad(UniqueTypedValue, ScalarTypedValue[int]):
             pass
+
+
+def test_empty():
+    assert TypedValues() is TypedValues()

@@ -29,6 +29,10 @@ class TypedValues(
     ta.Generic[TypedValueT],
 ):
     def __init__(self, *tvs: TypedValueT, override: bool = False) -> None:
+        if hasattr(self, '_lst'):
+            # When __new__ returns the empty singleton __init__ will still be called.
+            return
+
         super().__init__()
 
         tmp: list = []
@@ -70,16 +74,42 @@ class TypedValues(
 
         self._any_dct: dict[type, ta.Sequence[ta.Any]] = {}
 
+    #
+
+    _EMPTY: ta.ClassVar['TypedValues']
+
+    @classmethod
+    def empty(cls) -> 'TypedValues':
+        return cls._EMPTY
+
+    def __new__(cls, *tvs, **kwargs):  # noqa
+        if not tvs:
+            try:
+                return cls._EMPTY
+            except AttributeError:
+                pass
+        return super().__new__(cls)
+
+    #
+
+    def with_(self, *tvs, override: bool = False) -> 'TypedValues':
+        return TypedValues(*self._lst, *tvs, override=override)
+
     def without(self, *tys: type) -> ta.Iterator[TypedValueT]:
         for o in self._lst:
             if isinstance(o, tys):
                 continue
             yield o
 
+    #
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'
 
     #
+
+    def __iter__(self) -> ta.Iterator[TypedValueT]:
+        return iter(self._lst)
 
     def __len__(self) -> int:
         return len(self._lst)
@@ -88,9 +118,6 @@ class TypedValues(
         return bool(self._lst)
 
     #
-
-    def _typed_value_iter(self):
-        return iter(self._lst)
 
     def _typed_value_contains(self, cls):
         return cls in self._dct
@@ -123,3 +150,6 @@ class TypedValues(
         ret = [tv for tv in self if isinstance(tv, cls)]
         self._any_dct[cls] = ret
         return ret
+
+
+TypedValues._EMPTY = TypedValues()  # noqa

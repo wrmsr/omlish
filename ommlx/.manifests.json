@@ -132,7 +132,7 @@
         "attr_name": "OpenaiChatService",
         "name": "openai",
         "aliases": null,
-        "type": "ChatModel"
+        "type": "ChatService"
       }
     }
   },

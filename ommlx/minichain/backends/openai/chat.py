@@ -153,7 +153,7 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
 ##
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatModel')
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
 class OpenaiChatService(ChatService):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'gpt-4o'
@@ -195,7 +195,7 @@ class OpenaiChatService(ChatService):
 
         tools_by_name: dict[str, ToolSpec] = {}
 
-        for opt in request:
+        for opt in request.options or []:
             opt = check.isinstance(opt, ChatRequestOption)
 
             if (

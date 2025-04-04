@@ -28,11 +28,6 @@ class TypedValueHolder(
 
     #
 
-    def _typed_value_iter(self):
-        if (tvs := self._typed_values) is not None:
-            return iter(tvs)
-        return iter([])
-
     def _typed_value_contains(self, cls):
         if (tvs := self._typed_values) is not None:
             return cls in tvs

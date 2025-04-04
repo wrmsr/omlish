@@ -23,13 +23,10 @@ UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
 
 
 class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
-    @ta.final
-    def __iter__(self) -> ta.Iterator[TypedValueT]:
-        return self._typed_value_iter()
-
-    @abc.abstractmethod
-    def _typed_value_iter(self):
-        raise NotImplementedError
+    def __iter__(self):
+        raise TypeError(
+            'TypedValuesAccessor does not implement __iter__ - it is reserved for implementation by subclasses.',
+        )
 
     #
 
