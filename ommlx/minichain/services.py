@@ -185,7 +185,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
         if not args and not kwargs:
             return self.invoke(req)
 
-        val_args, opt_args = col.partition(args, lambda a: isinstance(a, RequestOption))
+        opt_args, val_args = col.partition(args[1:], lambda a: isinstance(a, RequestOption))
         check.empty(val_args)
 
         if opt_args:

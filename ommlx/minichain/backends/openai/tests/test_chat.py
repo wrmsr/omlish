@@ -1,4 +1,5 @@
 from omlish import check
+from omlish import marshal as msh
 from omlish.formats import json
 from omlish.secrets.tests.harness import HarnessSecrets
 
@@ -6,6 +7,7 @@ from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
+from ....chat.services import ChatRequest
 from ....chat.tools import Tool
 from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
@@ -17,11 +19,13 @@ from ..chat import Temperature
 def test_openai(harness):
     llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
-    resp = llm(
+    req = ChatRequest.new(
         [UserMessage('Is water dry?')],
         Temperature(.1),
         MaxTokens(64),
     )
+
+    resp = llm(req)
     print(resp)
     assert resp.choices
 
