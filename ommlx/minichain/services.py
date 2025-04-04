@@ -182,12 +182,15 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             return self.invoke(req)
 
         req = args[0]
-        if not isinstance(req, req_cls):
-            # FIXME: auto-promote
-            raise TypeError(req)
-
-        if not args and not kwargs:
+        if not args and not kwargs and isinstance(req, req_cls):
             return self.invoke(req)
+
+        if not isinstance(req, req_cls):
+            if type(req) not in req_cls.__bases__:
+                raise TypeError(req)
+
+            # FIXME: auto-promote
+            raise NotImplementedError
 
         opt_args, val_args = col.partition(args[1:], lambda a: isinstance(a, RequestOption))
         check.empty(val_args)
