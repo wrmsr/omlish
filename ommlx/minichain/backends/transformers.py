@@ -34,6 +34,7 @@ class TransformersPromptService(PromptService):
             token: str | None = None,
     ) -> None:
         super().__init__()
+
         self._model = model
         self._kwargs = kwargs
         self._token = token

@@ -5,7 +5,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .services import ChatRequestOption
+from .types import ChatRequestOption
 
 
 ToolDtype: ta.TypeAlias = str
