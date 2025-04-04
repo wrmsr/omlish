@@ -11,33 +11,73 @@ TODO:
      "top_p": 1
    }
 """
+import enum
 import os
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
+from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecRequest
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.choices import AiChoice
-from ...chat.services import ChatService
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
-from ...chat.options import ChatOptions
+from ...chat.services import ChatService
 from ...chat.tools import Tool
 from ...chat.tools import ToolSpec
-from ...generative import MaxTokens
-from ...generative import Temperature
-from ...models import TokenUsage
-from ...options import Options
-from ...options import ScalarOption
+from ...chat.types import ChatRequestOption
+from ...chat.types import ChatResponseOutput
+
+
+##
+
+
+class TopK(ChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+class Temperature(ChatRequestOption, tv.ScalarTypedValue[float], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+class MaxTokens(ChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+##
+
+
+class FinishReason(enum.Enum):
+    STOP = enum.auto()
+    LENGTH = enum.auto()
+    TOOL_EXEC = enum.auto()
+    CONTENT_FILTER = enum.auto()
+    OTHER = enum.auto()
+
+
+class FinishReasonOutput(ChatResponseOutput, tv.ScalarTypedValue[FinishReason], tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class TokenUsage(lang.Final):
+    input: int
+    output: int
+    total: int
+
+
+class TokenUsageOutput(ChatResponseOutput, tv.ScalarTypedValue[TokenUsage], tv.UniqueTypedValue, lang.Final):
+    pass
 
 
 ##
@@ -127,7 +167,7 @@ class OpenaiChatService(ChatService):
         ToolExecResultMessage: 'tool',
     }
 
-    DEFAULT_OPTIONS: ta.ClassVar[Options[ChatOptions]] = Options(
+    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[ChatRequestOption]] = tv.TypedValues(
         Temperature(0.),
         MaxTokens(1024),
     )
@@ -142,7 +182,7 @@ class OpenaiChatService(ChatService):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
-    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[ScalarOption], str] = {
+    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[tv.ScalarTypedValue[]], str] = {
         Temperature: 'temperature',
         MaxTokens: 'max_tokens',
     }
@@ -156,7 +196,10 @@ class OpenaiChatService(ChatService):
         tools_by_name: dict[str, ToolSpec] = {}
 
         for opt in request.options:
-            if isinstance(opt, ScalarOption) and (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None:
+            if (
+                    isinstance(opt, tv.ScalarTypedValue) and
+                    (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None
+            ):
                 kw[kwn] = opt.v
 
             elif isinstance(opt, Tool):
@@ -215,9 +258,11 @@ class OpenaiChatService(ChatService):
                 ))
                 for choice in response['choices']
             ],
-            token_usage=TokenUsage(
-                input=response['usage']['prompt_tokens'],
-                output=response['usage']['completion_tokens'],
-                total=response['usage']['total_tokens'],
-            ) if response.get('usage') is not None else None,
+            outputs=tv.TypedValues(
+                *([TokenUsage(
+                    input=response['usage']['prompt_tokens'],
+                    output=response['usage']['completion_tokens'],
+                    total=response['usage']['total_tokens'],
+                )] if response.get('usage') is not None else []),
+            ),
         )
