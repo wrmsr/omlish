@@ -262,9 +262,9 @@ class OpenaiChatService(ChatService):
             ],
             outputs=tv.TypedValues(
                 *([TokenUsageOutput(TokenUsage(
-                    input=response['usage']['prompt_tokens'],
-                    output=response['usage']['completion_tokens'],
-                    total=response['usage']['total_tokens'],
-                ))] if response.get('usage') is not None else []),
+                    input=tu['prompt_tokens'],
+                    output=tu['completion_tokens'],
+                    total=tu['total_tokens'],
+                ))] if (tu := response.get('usage')) is not None else []),
             ),
         )

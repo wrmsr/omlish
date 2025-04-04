@@ -25,6 +25,11 @@ def test_openai(harness):
         MaxTokens(64),
     )
 
+    rm = msh.marshal(req)
+    print(rm)
+    req2 = msh.unmarshal(rm, ChatRequest)
+    print(req2)
+
     resp = llm(req)
     print(resp)
     assert resp.choices
