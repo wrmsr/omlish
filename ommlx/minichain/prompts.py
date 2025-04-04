@@ -1,55 +1,47 @@
-import typing as ta
-
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .generative import Generative
-from .generative import GenerativeOption
-from .models import Model
-from .models import ModelOption
-from .models import ModelRequest
-from .models import ModelResponse
-from .services import ServiceOption
+from .services import Request
+from .services import RequestOption
+from .services import Response
+from .services import ResponseOutput
+from .services import Service_
 
 
 ##
 
 
-PromptInput: ta.TypeAlias = str
-PromptNew: ta.TypeAlias = str
-PromptOutput: ta.TypeAlias = str
-
-PromptOptions: ta.TypeAlias = ServiceOption | ModelOption | GenerativeOption
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class PromptRequest(
-    ModelRequest[
-        PromptInput,
-        PromptOptions,
-        PromptNew,
-    ],
-    lang.Final,
-):
-    @dc.validate
-    def _validate_v(self) -> bool:
-        return isinstance(self.v, str)
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class PromptResponse(ModelResponse[PromptOutput], lang.Final):
+class PromptRequestOption(RequestOption, lang.Abstract):
     pass
+
+
+@dc.dataclass(frozen=True)
+class PromptRequest(Request[PromptRequestOption]):
+    prompt: str
+
+
+##
+
+
+class PromptResponseOutput(ResponseOutput, lang.Abstract):
+    pass
+
+
+class PromptResponse(Response[PromptResponseOutput]):
+    text: str
+
+
+##
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
 class PromptModel(  # noqa
-    Model[
+    Service_[
         PromptRequest,
-        PromptOptions,
-        PromptNew,
         PromptResponse,
     ],
-    Generative,
     lang.Abstract,
+    request=PromptRequest,
+    response=PromptResponse,
 ):
     pass

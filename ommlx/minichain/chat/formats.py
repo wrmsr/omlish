@@ -1,15 +1,15 @@
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ..json import JsonSchema
-from ..options import UniqueOption
-from .options import ChatOption
+from .services import ChatRequestOption
 
 
 ##
 
 
-class ResponseFormat(ChatOption, UniqueOption, lang.Abstract, lang.Sealed):
+class ResponseFormat(ChatRequestOption, tv.UniqueTypedValue, lang.Abstract, lang.Sealed):
     pass
 
 

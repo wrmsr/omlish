@@ -6,9 +6,12 @@ from omlish import lang
 
 from .messages import Chat
 from .messages import Message
-from .models import ChatModel
-from .models import ChatRequest
-from .models import ChatResponse
+from .services import ChatService
+from .services import ChatRequest
+from .services import ChatResponse
+
+
+##
 
 
 class ChatHistory(lang.Abstract):
@@ -40,10 +43,10 @@ class ListChatHistory(ChatHistory):
         self._lst.clear()
 
 
-class ChatHistoryModel(ChatModel):
+class ChatHistoryModel(ChatService):
     def __init__(
             self,
-            underlying: ChatModel,
+            underlying: ChatService,
             history: ChatHistory,
     ) -> None:
         super().__init__()
@@ -51,10 +54,10 @@ class ChatHistoryModel(ChatModel):
         self._history = history
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        new_req = dc.replace(request, v=[*self._history.get(), *request.v])
+        new_req = dc.replace(request, chat=[*self._history.get(), *request.chat])
         response = self._underlying.invoke(new_req)
         self._history.add(
-            *request.v,
-            response.v[0].m,
+            *request.chat,
+            response.choices[0].m,
         )
         return response
