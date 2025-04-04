@@ -5,14 +5,17 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...vectors.embeddings import EmbeddingModel
+from ...vectors.embeddings import EmbeddingService
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.vectors import Vector
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='EmbeddingModel')
-class OpenaiEmbeddingModel(EmbeddingModel):
+##
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='EmbeddingService')
+class OpenaiEmbeddingService(EmbeddingService):
     model = 'text-embedding-3-small'
 
     def __init__(
@@ -26,7 +29,7 @@ class OpenaiEmbeddingModel(EmbeddingModel):
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raw_request = dict(
             model=self.model,
-            input=check.isinstance(request.v, str),
+            input=check.isinstance(request.content, str),
         )
 
         raw_response = http.request(
@@ -40,4 +43,4 @@ class OpenaiEmbeddingModel(EmbeddingModel):
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        return EmbeddingResponse(v=Vector(response['data'][0]['embedding']))
+        return EmbeddingResponse(Vector(response['data'][0]['embedding']))

@@ -26,10 +26,10 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecRequest
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.models import AiChoice
-from ...chat.models import ChatModel
-from ...chat.models import ChatRequest
-from ...chat.models import ChatResponse
+from ...chat.choices import AiChoice
+from ...chat.services import ChatService
+from ...chat.services import ChatRequest
+from ...chat.services import ChatResponse
 from ...chat.options import ChatOptions
 from ...chat.tools import Tool
 from ...chat.tools import ToolSpec
@@ -38,6 +38,9 @@ from ...generative import Temperature
 from ...models import TokenUsage
 from ...options import Options
 from ...options import ScalarOption
+
+
+##
 
 
 def _opt_dct_fld(k, v):

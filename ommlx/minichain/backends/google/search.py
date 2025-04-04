@@ -20,6 +20,9 @@ from ...search import SearchResponse
 from ...search import SearchService
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class CseSearchResult(lang.Final):
@@ -71,6 +74,7 @@ class CseSearchService(SearchService):
             cse_api_key: str | None = None,
     ) -> None:
         super().__init__()
+
         self._cse_id = cse_id
         self._cse_api_key = cse_api_key
 
@@ -81,7 +85,7 @@ class CseSearchService(SearchService):
         qs = urllib.parse.urlencode(dict(
             key=check.non_empty_str(self._cse_api_key),
             cx=check.non_empty_str(self._cse_id),
-            q=request.v,
+            q=request.query,
         ))
         resp = http.request(
             f'https://www.googleapis.com/customsearch/v1?{qs}',
@@ -90,7 +94,7 @@ class CseSearchService(SearchService):
 
         dct = json.loads(out.decode('utf-8'))
         res = msh.unmarshal(dct, CseSearchResponse)
-        return SearchResponse(v=SearchHits(
+        return SearchResponse(SearchHits(
             l=[
                 SearchHit(
                     title=i.title,

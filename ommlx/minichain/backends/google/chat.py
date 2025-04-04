@@ -12,17 +12,19 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.models import AiChoice
-from ...chat.models import ChatModel
-from ...chat.models import ChatRequest
-from ...chat.models import ChatResponse
+from ...chat.choices import AiChoice
+from ...chat.services import ChatService
+from ...chat.services import ChatRequest
+from ...chat.services import ChatResponse
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='google', type='ChatModel')
-class GoogleChatModel(ChatModel):
+##
+
+
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='google', type='ChatService')
+class GoogleChatService(ChatService):
     model: ta.ClassVar[str] = (
-        # 'gemini-1.5-flash-latest'
-        'gemini-2.0-pro-exp-02-05'
+        'gemini-2.0-flash'
     )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -64,7 +66,7 @@ class GoogleChatModel(ChatModel):
                         },
                     ],
                 }
-                for m in request.v
+                for m in request.chat
             ],
         }
 
@@ -77,7 +79,7 @@ class GoogleChatModel(ChatModel):
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
-        return ChatResponse(v=[
+        return ChatResponse([
             AiChoice(AiMessage(c['content']['parts'][0]['text']))
             for c in resp_dct['candidates']
         ])
