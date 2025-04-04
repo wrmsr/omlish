@@ -1,53 +1,53 @@
 import abc
-import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
 
 from ..content.content import Content
-from ..models import Model
-from ..models import ModelOption
-from ..models import ModelRequest
-from ..models import ModelResponse
+from ..services import Service_
+from ..services import Request
+from ..services import RequestOption
+from ..services import Response
+from ..services import ResponseOutput
 from .vectors import Vector
 
 
 ##
 
 
-EmbeddingInput: ta.TypeAlias = Content
-EmbeddingNew: ta.TypeAlias = ta.Any
-EmbeddingOutput: ta.TypeAlias = Vector
-
-EmbeddingOptions: ta.TypeAlias = ModelOption
+class EmbeddingRequestOption(RequestOption, lang.Abstract):
+    pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class EmbeddingRequest(
-    ModelRequest[
-        EmbeddingInput,
-        EmbeddingOptions,
-        EmbeddingNew,
-    ],
-    lang.Final,
-):
+@dc.dataclass(frozen=True)
+class EmbeddingRequest(Request[EmbeddingRequestOption]):
+    content: Content
+
+
+##
+
+
+class EmbeddingResponseOutput(ResponseOutput, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class EmbeddingResponse(ModelResponse[EmbeddingOutput], lang.Final):
-    pass
+class EmbeddingResponse(Response[EmbeddingResponseOutput]):
+    vector: Vector
+
+
+##
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class EmbeddingModel(
-    Model[
+class EmbeddingService(
+    Service_[
         EmbeddingRequest,
-        EmbeddingOptions,
-        EmbeddingNew,
         EmbeddingResponse,
     ],
     lang.Abstract,
+    request=EmbeddingRequest,
+    response=EmbeddingResponse,
 ):
     @abc.abstractmethod
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:

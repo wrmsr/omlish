@@ -16,8 +16,10 @@ from ..vectors.stores import VectorStore
 from ..vectors.vectors import Vector
 
 
-class SqliteVectorStore(VectorStore):
+##
 
+
+class SqliteVectorStore(VectorStore):
     def __init__(
             self,
             db: sqlite3.Connection,
