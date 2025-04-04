@@ -35,17 +35,17 @@ class TypedValues(
         udct: dict = {}
         for tv in tvs:
             if isinstance(tv, UniqueTypedValue):
-                uoc = tv._unique_typed_value_cls  # noqa
+                utvc = tv._unique_typed_value_cls  # noqa
                 if not override:
                     try:
-                        exu = udct[uoc]
+                        exu = udct[utvc]
                     except KeyError:
                         pass
                     else:
-                        raise DuplicateUniqueTypedValueError(uoc, tv, check.single(exu))
-                ulst = udct.setdefault(uoc, [])
+                        raise DuplicateUniqueTypedValueError(utvc, tv, check.single(exu))
+                ulst = udct.setdefault(utvc, [])
                 ulst.append(tv)
-                tmp.append((tv, len(ulst)))
+                tmp.append((utvc, tv, ulst, len(ulst)))
             elif isinstance(tv, TypedValue):
                 tmp.append(tv)
             else:
@@ -53,15 +53,15 @@ class TypedValues(
 
         lst: list = []
         dct: dict = {}
-        for tv in tmp:
-            if isinstance(tv, tuple):
-                uo, idx = tv  # type: ignore
-                ulst = udct[uo._unique_typed_value_cls]  # noqa
+        for obj in tmp:
+            if isinstance(obj, tuple):
+                utvc, tv, ulst, idx = obj
                 if idx == len(ulst):
-                    lst.append(uo)
-                    dct[uo._unique_typed_value_cls] = uo  # noqa
-                    dct[type(uo)] = uo
+                    lst.append(tv)
+                    dct[utvc] = tv
+                    dct[type(tv)] = tv
             else:
+                tv = obj
                 lst.append(tv)
                 dct.setdefault(type(tv), []).append(tv)
 

@@ -42,3 +42,9 @@ class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.v!r})'
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if UniqueTypedValue in (mro := cls.__mro__) and mro.index(ScalarTypedValue) > mro.index(UniqueTypedValue):
+            raise TypeError(f'Class {cls} must have UniqueTypedValue before ScalarTypedValue in mro')

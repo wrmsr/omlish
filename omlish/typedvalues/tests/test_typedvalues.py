@@ -1,5 +1,7 @@
 import typing as ta
 
+import pytest
+
 from ... import dataclasses as dc
 from ... import lang
 from ..collection import DuplicateUniqueTypedValueError
@@ -16,7 +18,7 @@ class GenerativeOption(TypedValue, lang.Abstract):
     pass
 
 
-class TopK(GenerativeOption, UniqueTypedValue, ScalarTypedValue[int], lang.Final):
+class TopK(GenerativeOption, ScalarTypedValue[int], UniqueTypedValue, lang.Final):
     pass
 
 
@@ -130,3 +132,15 @@ def test_typed_values():
 
     assert list(TypedValues(*opts.without(ResponseFormat))) == [Tool(foo_tool), TopK(10), Tool(bar_tool)]
     assert list(TypedValues(*opts.without(Tool))) == [JSON_RESPONSE_FORMAT, TopK(10)]
+
+
+def test_mro_check():
+    class Good(ScalarTypedValue[int], UniqueTypedValue):
+        pass
+
+    assert Good(5).v == 5
+    assert issubclass(Good, UniqueTypedValue)
+
+    with pytest.raises(TypeError):  # noqa
+        class Bad(UniqueTypedValue, ScalarTypedValue[int]):
+            pass
