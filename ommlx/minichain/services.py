@@ -189,9 +189,6 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             if type(req) not in req_cls.__bases__:
                 raise TypeError(req)
 
-            # FIXME: auto-promote
-            raise NotImplementedError
-
         opt_args, val_args = col.partition(args[1:], lambda a: isinstance(a, RequestOption))
         check.empty(val_args)
 
@@ -200,6 +197,10 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
                 *kwargs.pop('options', req.options or []),
                 *opt_args,
             )
+
+        if not isinstance(req, req_cls):
+            # FIXME
+            raise NotImplementedError
 
         if kwargs:
             req = dc.replace(req, **kwargs)
