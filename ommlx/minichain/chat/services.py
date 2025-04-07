@@ -3,18 +3,20 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..llms import LlmRequestOption
+from ..llms import LlmResponseOutput
 from ..services import Request
-from ..services import RequestOption
 from ..services import Response
-from ..services import ResponseOutput
 from ..services import Service_
 from .choices import AiChoices
 from .messages import Chat
+from .types import ChatRequestOption
+from .types import ChatResponseOutput
 
 
-ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=RequestOption)
+ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=ChatRequestOption | LlmRequestOption)
 ChatRequestT = ta.TypeVar('ChatRequestT', bound='ChatRequest')
-ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ResponseOutput)
+ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ChatResponseOutput | LlmResponseOutput)
 ChatResponseT = ta.TypeVar('ChatResponseT', bound='ChatResponse')
 
 

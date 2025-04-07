@@ -11,12 +11,10 @@ TODO:
      "top_p": 1
    }
 """
-import enum
 import os
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 from omlish.formats import json
@@ -35,74 +33,13 @@ from ...chat.services import ChatResponse
 from ...chat.services import ChatService
 from ...chat.tools import Tool
 from ...chat.tools import ToolSpec
-from ...chat.types import ChatRequestOption
-from ...chat.types import ChatResponseOutput
+from ...llms import MaxTokens
+from ...llms import Temperature
+from ...llms import TokenUsage
+from ...llms import TokenUsageOutput
 from ...services import RequestOption
-from ...services import ResponseOutput
 from .format import build_request_message
 from .format import render_tool_spec
-
-
-##
-
-
-class OpenaiChatRequestOption(RequestOption, lang.Abstract):
-    pass
-
-
-class TopK(OpenaiChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
-    pass
-
-
-class Temperature(OpenaiChatRequestOption, tv.ScalarTypedValue[float], tv.UniqueTypedValue, lang.Final):
-    pass
-
-
-class MaxTokens(OpenaiChatRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
-    pass
-
-
-##
-
-
-class OpenaiChatResponseOutput(ResponseOutput, lang.Abstract):
-    pass
-
-
-class FinishReason(enum.Enum):
-    STOP = enum.auto()
-    LENGTH = enum.auto()
-    TOOL_EXEC = enum.auto()
-    CONTENT_FILTER = enum.auto()
-    OTHER = enum.auto()
-
-
-class FinishReasonOutput(OpenaiChatResponseOutput, tv.ScalarTypedValue[FinishReason], tv.UniqueTypedValue, lang.Final):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class TokenUsage(lang.Final):
-    input: int
-    output: int
-    total: int
-
-
-class TokenUsageOutput(OpenaiChatResponseOutput, tv.ScalarTypedValue[TokenUsage], tv.UniqueTypedValue, lang.Final):
-    pass
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class OpenaiChatRequest(ChatRequest[OpenaiChatRequestOption | ChatRequestOption]):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class OpenaiChatResponse(ChatResponse[OpenaiChatResponseOutput | ChatResponseOutput]):
-    pass
 
 
 ##
@@ -111,11 +48,11 @@ class OpenaiChatResponse(ChatResponse[OpenaiChatResponseOutput | ChatResponseOut
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
 class OpenaiChatService(
     ChatService[
-        OpenaiChatRequest,
-        OpenaiChatResponse,
+        ChatRequest,
+        ChatResponse,
     ],
-    request=OpenaiChatRequest,
-    response=OpenaiChatResponse,
+    request=ChatRequest,
+    response=ChatResponse,
 ):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'gpt-4o'
@@ -150,8 +87,8 @@ class OpenaiChatService(
         MaxTokens: 'max_tokens',
     }
 
-    def invoke(self, request: OpenaiChatRequest) -> OpenaiChatResponse:
-        check.isinstance(request, OpenaiChatRequest)
+    def invoke(self, request: ChatRequest) -> ChatResponse:
+        check.isinstance(request, ChatRequest)
 
         kw: dict = dict(
             temperature=0,
@@ -208,7 +145,7 @@ class OpenaiChatService(
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        return OpenaiChatResponse(
+        return ChatResponse(
             [
                 AiChoice(AiMessage(
                     choice['message']['content'],
