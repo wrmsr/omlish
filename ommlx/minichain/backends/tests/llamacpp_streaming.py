@@ -1,16 +1,17 @@
 import contextlib
 import typing as ta  # noqa
 
-from omlish import dataclasses as dc
+from omlish import check
 from omlish import lang
 
+from ...chat.choices import AiChoice
+from ...chat.choices import AiChoices
+from ...chat.messages import AiMessage
 from ...chat.messages import UserMessage
+from ...chat.streaming import ChatStreamRequest
+from ...chat.streaming import ChatStreamResponse
+from ...chat.streaming import ChatStreamService_
 from ...resources import Resources
-from ...services import Request
-from ...services import RequestOption
-from ...services import ResponseOutput
-from ...services import Service_
-from ...streaming import StreamResponse
 from ..llamacpp import LlamacppChatService
 
 
@@ -28,48 +29,8 @@ else:
 ##
 
 
-class LlamacppRequestOption(RequestOption, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class LlamacppRequest(Request[LlamacppRequestOption]):
-    message: str
-
-
-#
-
-
-class LlamacppResponseOutput(ResponseOutput, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class LlamacppChunk:
-    created: int
-    choices: ta.Sequence[llama_cpp.llama_types.ChatCompletionStreamResponseChoice]
-
-
-@dc.dataclass(frozen=True)
-class LlamacppResponse(StreamResponse[LlamacppResponseOutput, LlamacppChunk]):
-    _iterator: ta.Iterator[LlamacppChunk]
-
-    def __iter__(self) -> ta.Iterator[LlamacppChunk]:
-        return self._iterator
-
-
-#
-
-
-class LlamacppStreamService(
-    Service_[
-        LlamacppRequest,
-        LlamacppResponse,
-    ],
-    request=LlamacppRequest,
-    response=LlamacppResponse,
-):
-    def invoke(self, request: LlamacppRequest) -> LlamacppResponse:
+class LlamacppChatStreamService(ChatStreamService_):
+    def invoke(self, request: ChatStreamRequest) -> ChatStreamResponse:
         lcu.install_logging_hook()
 
         rs = Resources()
@@ -85,9 +46,7 @@ class LlamacppStreamService(
                         role=LlamacppChatService.ROLES_MAP[type(m)],
                         content=LlamacppChatService._get_msg_content(m),  # noqa
                     )
-                    for m in [
-                        UserMessage(request.message),
-                    ]
+                    for m in request.chat
                 ],
                 max_tokens=1024,
                 stream=True,
@@ -95,16 +54,19 @@ class LlamacppStreamService(
 
             rs.enter_context(lang.defer(output.close))
 
-            it = (
-                LlamacppChunk(
-                    o['created'],
-                    o['choices'],
-                )
-                for o in output
-            )
+            def handle_chunk(chunk: 'llama_cpp.llama_types.ChatCompletionChunk') -> ta.Iterator[AiChoices]:
+                check.state(chunk['object'] == 'chat.completion.chunk')
+                l: list[AiChoice] = []
+                for choice in chunk['choices']:
+                    if not (delta := choice.get('delta', {})):
+                        continue
+                    if not (content := delta.get('content', '')):
+                        continue
+                    l.append(AiChoice(AiMessage(content)))
+                yield l
 
-            return LlamacppResponse(
-                _iterator=it,
+            return ChatStreamResponse(
+                _iterator=lang.flatmap(handle_chunk, output),
                 _resources=rs,
             )
 
@@ -117,10 +79,10 @@ class LlamacppStreamService(
 
 
 def _main() -> None:
-    foo_svc = LlamacppStreamService()
+    foo_svc = LlamacppChatStreamService()
 
     for foo_req in [
-        LlamacppRequest('Is water dry?'),
+        ChatStreamRequest([UserMessage('Is water dry?')]),
     ]:
         print(foo_req)
 

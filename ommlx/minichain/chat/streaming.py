@@ -33,10 +33,10 @@ class ChatStreamRequest(Request[ChatStreamRequestOptionT]):
 
 @dc.dataclass(frozen=True)
 class ChatStreamResponse(StreamResponse[ChatStreamResponseOutputT, AiChoices]):
-    choices_iterator: ta.Iterator[AiChoices]
+    _iterator: ta.Iterator[AiChoices]
 
     def __iter__(self) -> ta.Iterator[AiChoices]:
-        return self.choices_iterator
+        return self._iterator
 
 
 ##
