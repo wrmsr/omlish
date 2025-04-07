@@ -184,7 +184,7 @@ class IntellijCli(ap.Cli):
             cwd: str | None = None,
     ) -> Ide:  # noqa
         if (ai := self.args.ide) is not None:
-            return Ide(ai)
+            return Ide[ai.upper()]
 
         if (ii := _infer_directory_ide(cwd)) is not None:
             return ii

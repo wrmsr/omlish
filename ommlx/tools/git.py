@@ -87,17 +87,16 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
         super().__init__(config)
 
     def _run_prompt(self, prompt: str) -> str:
-        llm = MlxChatService(self._config.model)
+        with MlxChatService(self._config.model) as llm:
+            resp = llm(
+                [mc.UserMessage(prompt)],
+                # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
+            )
+            text = check.non_empty_str(resp.choices[0].m.s)
 
-        resp = llm(
-            [mc.UserMessage(prompt)],
-            # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
-        )
-        text = check.non_empty_str(resp.choices[0].m.s)
+            text = _strip_markdown_code_block(text)
 
-        text = _strip_markdown_code_block(text)
-
-        return text
+            return text
 
     def run_prompt(self, prompt: str) -> str:
         if self._config.run_in_subprocess:

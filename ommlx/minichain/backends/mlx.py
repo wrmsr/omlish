@@ -28,7 +28,7 @@ else:
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mlx', type='ChatService')
-class MlxChatService(ChatService):
+class MlxChatService(ChatService, lang.ExitStacked):
     DEFAULT_MODEL = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         'mlx-community/Llama-3.3-70B-Instruct-4bit'
