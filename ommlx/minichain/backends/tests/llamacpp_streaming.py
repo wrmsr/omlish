@@ -29,18 +29,20 @@ else:
 ##
 
 
-class LlamacppChatStreamService(ChatStreamService_):
+class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
+    @lang.cached_function(transient=True)
+    def _load_model(self) -> 'llama_cpp.Llama':
+        return self._enter_context(contextlib.closing(llama_cpp.Llama(
+            model_path=LlamacppChatService.model_path,
+            verbose=False,
+        )))
+
     def invoke(self, request: ChatStreamRequest) -> ChatStreamResponse:
         lcu.install_logging_hook()
 
         rs = Resources()
         try:
-            llm = rs.enter_context(contextlib.closing(llama_cpp.Llama(
-                model_path=LlamacppChatService.model_path,
-                verbose=False,
-            )))
-
-            output = llm.create_chat_completion(
+            output = self._load_model().create_chat_completion(
                 messages=[  # noqa
                     dict(
                         role=LlamacppChatService.ROLES_MAP[type(m)],
@@ -52,7 +54,10 @@ class LlamacppChatStreamService(ChatStreamService_):
                 stream=True,
             )
 
-            rs.enter_context(lang.defer(output.close))
+            def close_output():
+                output.close()
+
+            rs.enter_context(lang.defer(close_output))
 
             def handle_chunk(chunk: 'llama_cpp.llama_types.ChatCompletionChunk') -> ta.Iterator[AiChoices]:
                 check.state(chunk['object'] == 'chat.completion.chunk')
@@ -79,17 +84,17 @@ class LlamacppChatStreamService(ChatStreamService_):
 
 
 def _main() -> None:
-    foo_svc = LlamacppChatStreamService()
+    with LlamacppChatStreamService() as foo_svc:
+        for foo_req in [
+            ChatStreamRequest([UserMessage('Is water dry?')]),
+            ChatStreamRequest([UserMessage('Is air wet?')]),
+        ]:
+            print(foo_req)
 
-    for foo_req in [
-        ChatStreamRequest([UserMessage('Is water dry?')]),
-    ]:
-        print(foo_req)
-
-        with foo_svc.invoke(foo_req) as foo_resp:
-            print(foo_resp)
-            for o in foo_resp:
-                print(o)
+            with foo_svc.invoke(foo_req) as foo_resp:
+                print(foo_resp)
+                for o in foo_resp:
+                    print(o)
 
 
 if __name__ == '__main__':
