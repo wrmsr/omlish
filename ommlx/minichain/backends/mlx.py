@@ -70,6 +70,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
 
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'mlxu.LoadedModel':
+        # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         return mlxu.load_model(self._model)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
