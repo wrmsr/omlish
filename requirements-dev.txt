@@ -31,7 +31,7 @@ gprof2dot==2024.6.6
 guppy3==3.1.5; python_version < "3.13"
 objgraph==3.6.2
 
-ipython==9.0.2
+ipython==9.1.0
 
 pg8000==1.31.2
 pymysql==1.1.1

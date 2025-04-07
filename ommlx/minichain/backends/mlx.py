@@ -34,6 +34,7 @@ class MlxChatService(ChatService):
         'mlx-community/Llama-3.3-70B-Instruct-4bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-8bit'
+        # 'mlx-community/Mistral-Small-3.1-Text-24B-Instruct-2503-8bit'
         # 'mlx-community/Mixtral-8x7B-Instruct-v0.1'
         # 'mlx-community/QwQ-32B-Preview-8bit'
         # 'mlx-community/QwQ-32B-Preview-bf16'

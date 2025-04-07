@@ -80,7 +80,7 @@ idna==3.10
 imageio==2.37.0
 importlib_metadata==8.6.1
 iniconfig==2.1.0
-ipython==9.0.2
+ipython==9.1.0
 ipython_pygments_lexers==1.1.1
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
