@@ -14,10 +14,10 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .services import Response
-from .services import ResponseOutput  # noqa
+from .services import ResponseOutput
 
 
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound='ResponseOutput')
+ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
 
 
 log = logging.getLogger(__name__)

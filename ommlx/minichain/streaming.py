@@ -5,10 +5,10 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .resources import ResourcesResponse
-from .services import ResponseOutput  # noqa
+from .services import ResponseOutput
 
 
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound='ResponseOutput')
+ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
 
 StreamResponseItemT = ta.TypeVar('StreamResponseItemT')
 
