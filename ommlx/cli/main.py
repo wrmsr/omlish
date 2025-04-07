@@ -22,8 +22,8 @@ from omlish.logs import all as logs
 from .. import minichain as mc
 from ..minichain.backends.anthropic.chat import AnthropicChatService
 from ..minichain.backends.google.chat import GoogleChatService
-from ..minichain.backends.llamacpp import LlamacppChatService
-from ..minichain.backends.llamacpp import LlamacppPromptService
+from ..minichain.backends.llamacpp.chat import LlamacppChatService
+from ..minichain.backends.llamacpp.prompt import LlamacppPromptService
 from ..minichain.backends.mistral import MistralChatService
 from ..minichain.backends.openai.chat import OpenaiChatService
 from ..minichain.backends.openai.embedding import OpenaiEmbeddingService

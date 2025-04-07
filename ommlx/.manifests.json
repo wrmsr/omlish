@@ -62,32 +62,32 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp",
+    "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
-    "file": "ommlx/minichain/backends/llamacpp.py",
-    "line": 36,
+    "file": "ommlx/minichain/backends/llamacpp/chat.py",
+    "line": 30,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.llamacpp",
-        "attr_name": "LlamacppPromptService",
-        "name": "llamacpp",
-        "aliases": null,
-        "type": "PromptService"
-      }
-    }
-  },
-  {
-    "module": ".minichain.backends.llamacpp",
-    "attr": null,
-    "file": "ommlx/minichain/backends/llamacpp.py",
-    "line": 67,
-    "value": {
-      "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.llamacpp",
+        "mod_name": "ommlx.minichain.backends.llamacpp.chat",
         "attr_name": "LlamacppChatService",
         "name": "llamacpp",
         "aliases": null,
         "type": "ChatService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.prompt",
+    "attr": null,
+    "file": "ommlx/minichain/backends/llamacpp/prompt.py",
+    "line": 25,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.llamacpp.prompt",
+        "attr_name": "LlamacppPromptService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "PromptService"
       }
     }
   },
