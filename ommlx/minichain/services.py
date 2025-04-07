@@ -199,10 +199,13 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             )
 
         if not isinstance(req, req_cls):
-            # FIXME
-            raise NotImplementedError
+            req_dct = {f.name: getattr(req, f.name) for f in dc.fields(req)}
+            req = req_cls(**{
+                **req_dct,
+                **kwargs,
+            })
 
-        if kwargs:
+        elif kwargs:
             req = dc.replace(req, **kwargs)
 
         return self.invoke(req)

@@ -16,6 +16,10 @@ from .holder import (  # noqa
     TypedValueHolder,
 )
 
+from .reflect import (  # noqa
+    reflect_typed_values_impls,
+)
+
 from .values import (  # noqa
     TypedValue,
 

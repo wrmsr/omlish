@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -8,6 +6,7 @@ from omlish import reflect as rfl
 from omlish.funcs import match as mfs
 
 from .collection import TypedValues
+from .reflect import reflect_typed_values_impls
 from .values import ScalarTypedValue
 from .values import TypedValue
 
@@ -83,50 +82,35 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
     gty = check.isinstance(rty, rfl.Generic)
     check.is_(gty.cls, TypedValues)
 
-    opt_cls_set: set[type[TypedValue]] = set()
+    tv_cls_set = reflect_typed_values_impls(check.single(gty.args))
 
-    todo = [check.single(gty.args)]
-    seen = set()
-    while todo:
-        cur = todo.pop()
-        if cur in seen:
-            continue
-        seen.add(cur)
+    tv_impls: list[msh.Impl] = []
+    for tv_cls in tv_cls_set:
+        tv_impls.extend(_build_typed_value_poly(tv_cls).impls)
 
-        if isinstance(cur, rfl.Union):
-            todo.extend(cur.args)
-        elif isinstance(cur, ta.TypeVar):
-            todo.append(rfl.get_type_var_bound(cur))
-        else:
-            opt_cls_set.add(check.issubclass(check.isinstance(cur, type), TypedValue))
-
-    opt_impls: list[msh.Impl] = []
-    for opt_cls in opt_cls_set:
-        opt_impls.extend(_build_typed_value_poly(opt_cls).impls)
-
-    return msh.Impls(opt_impls)
+    return msh.Impls(tv_impls)
 
 
 class TypedValuesMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        opt_m = msh.make_polymorphism_marshaler(
+        tv_m = msh.make_polymorphism_marshaler(
             msh.Impls(_build_typed_values_impls(rty)),
             msh.WrapperTypeTagging(),
             ctx,
         )
-        return msh.IterableMarshaler(opt_m)
+        return msh.IterableMarshaler(tv_m)
 
 
 class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        opt_u = msh.make_polymorphism_unmarshaler(
+        tv_u = msh.make_polymorphism_unmarshaler(
             msh.Impls(_build_typed_values_impls(rty)),
             msh.WrapperTypeTagging(),
             ctx,
         )
-        return msh.IterableUnmarshaler(lambda it: TypedValues(*it), opt_u)  # noqa
+        return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
 
 
 ##

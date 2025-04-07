@@ -129,6 +129,13 @@ class TypedValues(
 
     #
 
+    def check_all_isinstance(self, ty: type | tuple[type, ...]) -> ta.Self:
+        for tv in self._tup:
+            check.isinstance(tv, ty)
+        return self
+
+    #
+
     _hash: int
 
     def __hash__(self) -> int:
