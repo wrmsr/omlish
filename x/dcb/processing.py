@@ -12,8 +12,8 @@ from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
 from .idents import CLS_IDENT
+from .idents import FN_GLOBALS
 from .idents import FN_GLOBAL_IMPORTS
-from .idents import FN_GLOBAL_VALUES
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -122,6 +122,7 @@ class ClassProcessor:
         fn = ns[comp.fn_name]
 
         kw = {CLS_IDENT: self._cls}
+        kw.update({k: v for k, v in FN_GLOBALS.items() if v.src is None})
         orm = self.prepare().ref_map
         for r in comp.refs:
             kw[r.ident()] = orm[r]

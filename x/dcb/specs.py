@@ -44,7 +44,7 @@ class FieldSpec:
 
     # derive: ta.Callable[..., ta.Any] | None = None
     # coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
-    # validate: ta.Callable[[ta.Any], bool] | None = None
+    validate: ta.Callable[[ta.Any], bool] | None = None
     # check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
     repr_fn: ReprFn | None = None

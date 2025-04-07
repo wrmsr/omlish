@@ -2,6 +2,8 @@ import dataclasses as dc
 import types
 import typing as ta
 
+from .exceptions import FieldValidationError
+
 
 ##
 
@@ -19,8 +21,7 @@ VALUE_IDENT = IDENT_PREFIX + 'value'
 
 class FnGlobal(ta.NamedTuple):
     value: ta.Any
-    src: str
-    import_: str | None = None
+    src: str | None
 
 
 FN_GLOBAL_IMPORTS: ta.Mapping[str, types.ModuleType] = {
@@ -55,6 +56,11 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
     (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(
         types.FunctionType,
         'types.FunctionType',
+    ),
+
+    (FIELD_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldValidationError'): FnGlobal(
+        FieldValidationError,
+        None,  # __package__ + '.exceptions.FieldValidationError',
     ),
 }
 
