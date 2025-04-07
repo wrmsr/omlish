@@ -28,6 +28,7 @@ class RequestOption(tv.TypedValue, lang.Abstract):
 @dc.dataclass(frozen=True)
 class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
     _option_types: ta.ClassVar[tuple[type[RequestOption], ...]]
+    _option_types_set: ta.ClassVar[frozenset[type[RequestOption]]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -38,6 +39,7 @@ class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
             [check.issubclass(c, RequestOption) for c in tvi_set],  # type: ignore
             key=lambda c: c.__qualname__,
         ))
+        cls._option_types_set = frozenset(cls._option_types)
 
     #
 
@@ -59,7 +61,9 @@ class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
 
     @dc.init
     def _check_option_types(self) -> None:
-        self.options.check_all_isinstance(self._option_types)
+        for o in self.options:
+            if type(o) not in self._option_types_set and not isinstance(o, self._option_types):
+                raise TypeError(o)
 
     def with_options(
             self: RequestT,
@@ -114,6 +118,7 @@ class ResponseOutput(tv.TypedValue, lang.Abstract):
 @dc.dataclass(frozen=True)
 class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
     _output_types: ta.ClassVar[tuple[type[ResponseOutput], ...]]
+    _output_types_set: ta.ClassVar[frozenset[type[ResponseOutput]]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -124,6 +129,7 @@ class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
             [check.issubclass(c, ResponseOutput) for c in tvi_set],  # type: ignore
             key=lambda c: c.__qualname__,
         ))
+        cls._output_types_set = frozenset(cls._output_types)
 
     #
 
@@ -145,7 +151,9 @@ class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
 
     @dc.init
     def _check_output_types(self) -> None:
-        self.outputs.check_all_isinstance(self._output_types)
+        for o in self.outputs:
+            if type(o) not in self._output_types_set and not isinstance(o, self._output_types):
+                raise TypeError(o)
 
     def with_outputs(
             self: ResponseT,
