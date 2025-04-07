@@ -16,13 +16,12 @@ class Project(ProjectBase):
         'backends': [
             'mlx-lm ~= 0.22; sys_platform == "darwin"',
 
+            'transformers ~= 4.51',
             'sentence-transformers ~= 4.0',
-
-            'transformers ~= 4.50',
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 0.27',
+            'huggingface-hub ~= 0.30',
             'datasets ~= 3.5',
         ],
 
