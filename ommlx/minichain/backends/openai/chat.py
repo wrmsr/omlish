@@ -51,14 +51,22 @@ class OpenaiChatService(
         super().__init__()
 
         self._model = model or self.DEFAULT_MODEL
-        self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
+        self._api_key = self._default_api_key(api_key)
+
+    @classmethod
+    def _default_api_key(cls, api_key: Secret | str | None = None) -> Secret:
+        return Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
-            request=request,
+            request.chat,
+            *request.options,
             model=self._model,
+            mandatory_kwargs=dict(
+                stream=False,
+            ),
         )
 
         raw_request = rh.raw_request()

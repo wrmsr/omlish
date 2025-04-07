@@ -31,6 +31,7 @@ else:
 ##
 
 
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatStreamService')
 class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
     def __init__(self) -> None:
         super().__init__()

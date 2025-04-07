@@ -7,15 +7,17 @@ from omlish import typedvalues as tv
 
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
+from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecRequest
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
+from ...chat.services import ChatRequestOption
 from ...chat.services import ChatResponse
 from ...chat.tools import Tool
 from ...chat.tools import ToolSpec
+from ...llms import LlmRequestOption
 from ...llms import MaxTokens
 from ...llms import Temperature
 from ...llms import TokenUsage
@@ -99,14 +101,17 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
 class OpenaiChatRequestHandler:
     def __init__(
             self,
-            *,
-            request: ChatRequest,
+            chat: Chat,
+            *options: ChatRequestOption | LlmRequestOption,
             model: str,
+            mandatory_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
-        self._request = request
+        self._chat = chat
+        self._options = options
         self._model = model
+        self._mandatory_kwargs = mandatory_kwargs
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -138,7 +143,7 @@ class OpenaiChatRequestHandler:
 
         tools_by_name: dict[str, ToolSpec] = {}
 
-        for opt in self._request.options:
+        for opt in self._options:
             if (
                     isinstance(opt, tv.ScalarTypedValue) and
                     (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None
@@ -152,6 +157,11 @@ class OpenaiChatRequestHandler:
 
             else:
                 raise TypeError(opt)
+
+        if (mk := self._mandatory_kwargs):
+            for k, v in mk.items():
+                check.not_in(k, kwargs)
+                kwargs[k] = v
 
         return self._ProcessedOptions(
             kwargs=kwargs,
@@ -174,13 +184,12 @@ class OpenaiChatRequestHandler:
             model=self._model,
             messages=[
                 build_request_message(m)
-                for m in self._request.chat
+                for m in self._chat
             ],
             top_p=1,
             **lang.opt_kw(tools=tools),
             frequency_penalty=0.0,
             presence_penalty=0.0,
-            stream=False,
             **po.kwargs,
         )
 

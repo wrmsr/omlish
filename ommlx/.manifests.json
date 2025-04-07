@@ -92,6 +92,21 @@
     }
   },
   {
+    "module": ".minichain.backends.llamacpp.streaming",
+    "attr": null,
+    "file": "ommlx/minichain/backends/llamacpp/streaming.py",
+    "line": 34,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.llamacpp.streaming",
+        "attr_name": "LlamacppChatStreamService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "ChatStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.mistral",
     "attr": null,
     "file": "ommlx/minichain/backends/mistral.py",
@@ -163,6 +178,21 @@
         "name": "openai",
         "aliases": null,
         "type": "PromptService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.streaming",
+    "attr": null,
+    "file": "ommlx/minichain/backends/openai/streaming.py",
+    "line": 24,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.openai.streaming",
+        "attr_name": "OpenaiChatStreamService",
+        "name": "openai",
+        "aliases": null,
+        "type": "ChatStreamService"
       }
     }
   },
