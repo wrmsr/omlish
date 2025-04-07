@@ -211,6 +211,18 @@
     }
   },
   {
+    "module": ".minichain.chat.streaming",
+    "attr": null,
+    "file": "ommlx/minichain/chat/streaming.py",
+    "line": 45,
+    "value": {
+      "$.minichain.backends.manifests.BackendTypeManifest": {
+        "mod_name": "ommlx.minichain.chat.streaming",
+        "attr_name": "ChatStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.prompt",
     "attr": null,
     "file": "ommlx/minichain/prompt.py",
