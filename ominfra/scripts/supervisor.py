@@ -4048,6 +4048,10 @@ class HttpRequestParser:
 class DelimitingBuffer:
     """
     https://github.com/python-trio/trio/issues/796 :|
+
+    FIXME: when given overlapping delimiters like [b'\r', b'\r\n'], *should* refuse to output a line ending in '\r'
+      without knowing it will not be followed by '\n'. does not currently do this - currently only picks longest
+      delimiter present in the buffer. does this need a prefix-trie? is this borderline parsing?
     """
 
     #
