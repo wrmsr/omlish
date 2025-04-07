@@ -39,7 +39,7 @@ class SearchRequestOption(RequestOption, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class SearchRequest(Request):
+class SearchRequest(Request[SearchRequestOption]):
     query: str
 
 
@@ -54,7 +54,7 @@ class SearchResponseOutput(ResponseOutput, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class SearchResponse(Response):
+class SearchResponse(Response[SearchResponseOutput]):
     hits: SearchHits
 
 

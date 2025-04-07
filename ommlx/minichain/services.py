@@ -9,8 +9,6 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 
-T = ta.TypeVar('T')
-
 RequestOptionT = ta.TypeVar('RequestOptionT', bound='RequestOption')
 RequestT = ta.TypeVar('RequestT', bound='Request')
 RequestT_contra = ta.TypeVar('RequestT_contra', bound='Request', contravariant=True)
@@ -27,12 +25,22 @@ class RequestOption(tv.TypedValue, lang.Abstract):
     pass
 
 
-class ScalarRequestOption(tv.ScalarTypedValue[T], RequestOption, lang.Abstract):
-    pass
-
-
 @dc.dataclass(frozen=True)
 class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
+    _option_types: ta.ClassVar[tuple[type[RequestOption], ...]]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_in('_option_types', cls.__dict__)
+        tvi_set = tv.reflect_typed_values_impls(cls._typed_value_type)
+        cls._option_types = tuple(sorted(
+            [check.issubclass(c, RequestOption) for c in tvi_set],  # type: ignore
+            key=lambda c: c.__qualname__,
+        ))
+
+    #
+
     options: tv.TypedValues[RequestOptionT] = dc.field(
         default=tv.TypedValues.empty(),
         kw_only=True,
@@ -48,6 +56,10 @@ class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
             ),
         },
     )
+
+    @dc.init
+    def _check_option_types(self) -> None:
+        self.options.check_all_isinstance(self._option_types)
 
     def with_options(
             self: RequestT,
@@ -99,12 +111,22 @@ class ResponseOutput(tv.TypedValue, lang.Abstract):
     pass
 
 
-class ScalarResponseOutput(tv.ScalarTypedValue[T], ResponseOutput, lang.Abstract):
-    pass
-
-
 @dc.dataclass(frozen=True)
 class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
+    _output_types: ta.ClassVar[tuple[type[ResponseOutput], ...]]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_in('_output_types', cls.__dict__)
+        tvi_set = tv.reflect_typed_values_impls(cls._typed_value_type)
+        cls._output_types = tuple(sorted(
+            [check.issubclass(c, ResponseOutput) for c in tvi_set],  # type: ignore
+            key=lambda c: c.__qualname__,
+        ))
+
+    #
+
     outputs: tv.TypedValues[ResponseOutputT] = dc.field(
         default=tv.TypedValues.empty(),
         kw_only=True,
@@ -120,6 +142,10 @@ class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
             ),
         },
     )
+
+    @dc.init
+    def _check_output_types(self) -> None:
+        self.outputs.check_all_isinstance(self._output_types)
 
     def with_outputs(
             self: ResponseT,
