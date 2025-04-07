@@ -225,7 +225,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             )
 
         if not isinstance(req, req_cls):
-            req_dct = {f.name: getattr(req, f.name) for f in dc.fields(req)}
+            req_dct = dc.shallow_asdict(req)
             req = req_cls(**{
                 **req_dct,
                 **kwargs,

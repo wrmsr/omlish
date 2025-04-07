@@ -1,12 +1,14 @@
 """
 TODO:
+ - stream
+  - chunk size - httpx interface is awful, punch through?
  - httpx catch
- - check=False
  - return non-200 HttpResponses
  - async
- - stream
 """
 import abc
+import contextlib
+import functools
 import http.client
 import typing as ta
 import urllib.error
@@ -23,6 +25,9 @@ if ta.TYPE_CHECKING:
     import httpx
 else:
     httpx = lang.proxy_import('httpx')
+
+
+BaseHttpResponseT = ta.TypeVar('BaseHttpResponseT', bound='BaseHttpResponse')
 
 
 ##
@@ -65,21 +70,89 @@ class HttpRequest(lang.Final):
         return HttpHeaders(self.headers) if self.headers is not None else None
 
 
+#
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class HttpResponse(lang.Final):
+class BaseHttpResponse(lang.Abstract):
     status: int
 
     headers: HttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
-    data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
     request: HttpRequest
     underlying: ta.Any = dc.field(default=None, repr=False)
 
-    #
-
     @property
     def is_success(self) -> bool:
         return is_success_status(self.status)
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class HttpResponse(BaseHttpResponse, lang.Final):
+    data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class StreamHttpResponse(BaseHttpResponse, lang.Final):
+    class Stream(ta.Protocol):
+        def read(self, /, n: int = -1) -> bytes: ...
+
+    stream: Stream
+
+    _closer: ta.Callable[[], None] | None = dc.field(default=None, repr=False)
+
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def close(self) -> None:
+        if (c := self._closer) is not None:
+            c()
+
+
+def close_response(resp: BaseHttpResponse) -> None:
+    if isinstance(resp, HttpResponse):
+        pass
+
+    elif isinstance(resp, StreamHttpResponse):
+        resp.close()
+
+    else:
+        raise TypeError(resp)
+
+
+@contextlib.contextmanager
+def closing_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
+    if isinstance(resp, HttpResponse):
+        yield resp  # type: ignore
+        return
+
+    elif isinstance(resp, StreamHttpResponse):
+        with contextlib.closing(resp):
+            yield resp  # type: ignore
+
+    else:
+        raise TypeError(resp)
+
+
+def read_response(resp: BaseHttpResponse) -> HttpResponse:
+    if isinstance(resp, HttpResponse):
+        return resp
+
+    elif isinstance(resp, StreamHttpResponse):
+        data = resp.stream.read()
+        return HttpResponse(**{
+            **{k: v for k, v in dc.shallow_asdict(resp).items() if k not in ('stream', '_closer')},
+            'data': data,
+        })
+
+    else:
+        raise TypeError(resp)
+
+
+#
 
 
 class HttpClientError(Exception):
@@ -91,6 +164,9 @@ class HttpClientError(Exception):
 @dc.dataclass(frozen=True)
 class HttpStatusError(HttpClientError):
     response: HttpResponse
+
+
+#
 
 
 class HttpClient(lang.Abstract):
@@ -106,19 +182,36 @@ class HttpClient(lang.Abstract):
             *,
             check: bool = False,
     ) -> HttpResponse:
-        resp = self._request(req)
+        with closing_response(self.stream_request(
+            req,
+            check=check,
+        )) as resp:
+            return read_response(resp)
 
-        if check and not resp.is_success:
-            if isinstance(resp.underlying, Exception):
-                cause = resp.underlying
-            else:
-                cause = None
-            raise HttpStatusError(resp) from cause
+    def stream_request(
+            self,
+            req: HttpRequest,
+            *,
+            check: bool = False,
+    ) -> StreamHttpResponse:
+        resp = self._stream_request(req)
+
+        try:
+            if check and not resp.is_success:
+                if isinstance(resp.underlying, Exception):
+                    cause = resp.underlying
+                else:
+                    cause = None
+                raise HttpStatusError(read_response(resp)) from cause  # noqa
+
+        except Exception:
+            close_response(resp)
+            raise
 
         return resp
 
     @abc.abstractmethod
-    def _request(self, req: HttpRequest) -> HttpResponse:
+    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
         raise NotImplementedError
 
 
@@ -126,7 +219,7 @@ class HttpClient(lang.Abstract):
 
 
 class UrllibHttpClient(HttpClient):
-    def _request(self, req: HttpRequest) -> HttpResponse:
+    def _build_request(self, req: HttpRequest) -> urllib.request.Request:
         d: ta.Any
         if (d := req.data) is not None:
             if isinstance(d, str):
@@ -143,44 +236,73 @@ class UrllibHttpClient(HttpClient):
             for k, v in hs.strict_dct.items():
                 h[k.decode('ascii')] = v.decode('ascii')
 
+        return urllib.request.Request(  # noqa
+            req.url,
+            method=req.method_or_default,
+            headers=h,
+            data=d,
+        )
+
+    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
         try:
-            with urllib.request.urlopen(  # noqa
-                    urllib.request.Request(  # noqa
-                        req.url,
-                        method=req.method_or_default,
-                        headers=h,
-                        data=d,
-                    ),
-                    timeout=req.timeout_s,
-            ) as resp:
-                return HttpResponse(
-                    status=resp.status,
-                    headers=HttpHeaders(resp.headers.items()),
-                    data=resp.read(),
-                    request=req,
-                    underlying=resp,
-                )
+            resp = urllib.request.urlopen(  # noqa
+                self._build_request(req),
+                timeout=req.timeout_s,
+            )
 
         except urllib.error.HTTPError as e:
-            return HttpResponse(
-                status=e.code,
-                headers=HttpHeaders(e.headers.items()),
-                data=e.read(),
-                request=req,
-                underlying=e,
-            )
+            try:
+                return StreamHttpResponse(
+                    status=e.code,
+                    headers=HttpHeaders(e.headers.items()),
+                    request=req,
+                    underlying=e,
+                    stream=e,
+                    _closer=e.close,
+                )
+
+            except Exception:
+                e.close()
+                raise
 
         except (urllib.error.URLError, http.client.HTTPException) as e:
             raise HttpClientError from e
+
+        try:
+            return StreamHttpResponse(
+                status=resp.status,
+                headers=HttpHeaders(resp.headers.items()),
+                request=req,
+                underlying=resp,
+                stream=resp,
+                _closer=resp.close,
+            )
+
+        except Exception:  # noqa
+            resp.close()
+            raise
 
 
 ##
 
 
 class HttpxHttpClient(HttpClient):
-    def _request(self, req: HttpRequest) -> HttpResponse:
+    @dc.dataclass(frozen=True)
+    class _StreamAdapter:
+        it: ta.Iterator[bytes]
+
+        def read(self, /, n: int = -1) -> bytes:
+            if n < 0:
+                return b''.join(self.it)
+            else:
+                try:
+                    return next(self.it)
+                except StopIteration:
+                    return b''
+
+    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
         try:
-            response = httpx.request(
+            resp_cm = httpx.stream(
                 method=req.method_or_default,
                 url=req.url,
                 headers=req.headers_ or None,  # type: ignore
@@ -188,16 +310,29 @@ class HttpxHttpClient(HttpClient):
                 timeout=req.timeout_s,
             )
 
-            return HttpResponse(
-                status=response.status_code,
-                headers=HttpHeaders(response.headers.raw),
-                data=response.content,
+        except httpx.HTTPError as e:
+            raise HttpClientError from e
+
+        resp_close = functools.partial(resp_cm.__exit__, None, None, None)
+
+        try:
+            resp = resp_cm.__enter__()
+            return StreamHttpResponse(
+                status=resp.status_code,
+                headers=HttpHeaders(resp.headers.raw),
                 request=req,
-                underlying=response,
+                underlying=resp,
+                stream=self._StreamAdapter(resp.iter_bytes()),
+                _closer=resp_close,  # type: ignore
             )
 
         except httpx.HTTPError as e:
+            resp_close()
             raise HttpClientError from e
+
+        except Exception:
+            resp_close()
+            raise
 
 
 ##
@@ -222,7 +357,7 @@ def request(
 
         check: bool = False,
 
-        client: HttpClient | None = None,
+        client: HttpClient | None = None,  # noqa
 
         **kwargs: ta.Any,
 ) -> HttpResponse:

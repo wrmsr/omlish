@@ -1,13 +1,18 @@
 from . import consts  # noqa
 
 from .clients import (  # noqa
+    BaseHttpResponse,
     HttpClient,
     HttpClientError,
     HttpRequest,
     HttpResponse,
     HttpxHttpClient,
+    StreamHttpResponse,
     UrllibHttpClient,
     client,
+    close_response,
+    closing_response,
+    read_response,
     request,
 )
 
