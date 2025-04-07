@@ -27,6 +27,8 @@ class ReprPlan(Plan):
 
     fns: tuple[Fn, ...] = ()
 
+    id: bool = False
+
 
 @register_generator_type(ReprPlan)
 class ReprGenerator(Generator[ReprPlan]):
@@ -47,8 +49,9 @@ class ReprGenerator(Generator[ReprPlan]):
 
         return PlanResult(
             ReprPlan(
-                tuple(f.name for f in fs if f.field_type is FieldType.INSTANCE and f.repr),
-                tuple(rfs),
+                fields=tuple(f.name for f in fs if f.field_type is FieldType.INSTANCE and f.repr),
+                fns=tuple(rfs),
+                id=ctx.cs.repr_id,
             ),
             orm,
         )
@@ -57,8 +60,9 @@ class ReprGenerator(Generator[ReprPlan]):
         ors: set[OpRef] = set()
 
         repr_lines: list[str] = [
-            f'        f"{{self.__class__.__name__}}("',
+            f'        f"{{self.__class__.__name__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
         ]
+
 
         rfd = {rf.field: rf.fn for rf in pl.fns}
         for i, f in enumerate(pl.fields):

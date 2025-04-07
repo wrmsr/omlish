@@ -116,6 +116,7 @@ def dataclass(
 
         cache_hash: bool = False,
         override: bool = False,
+        repr_id: bool = False
 ):
     def inner(cls):
         fsl: list[FieldSpec] = []
@@ -170,8 +171,9 @@ def dataclass(
 
                 cache_hash=cache_hash,
                 override=override,
+                repr_id=repr_id,
 
-                init_fns=init_fns,
+            init_fns=init_fns,
         )
 
         setattr(cls, CLASS_SPEC_ATTR, cs)

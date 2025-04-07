@@ -1,3 +1,4 @@
+accelerate==1.6.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.11.16
 aiomysql==0.2.0
@@ -12,6 +13,7 @@ asyncssh==2.20.0
 attrs==25.3.0
 basedpyright==1.28.4
 bcrypt==4.3.0
+bitsandbytes==0.42.0
 black==25.1.0
 boto3==1.37.28
 botocore==1.37.28
@@ -64,6 +66,7 @@ grpcio-status==1.71.0
 guppy3==3.1.5
 h11==0.14.0
 h2==4.2.0
+hf-xet==1.0.2
 hpack==4.1.0
 httpcore==1.0.7
 httplib2==0.22.0

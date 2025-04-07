@@ -36,9 +36,8 @@ def test_tools():
 
     tools = {'add': add}
 
-    prompt = 'Add 123 and 4568319.'
     messages: list[dict] = [
-        {'role': 'user', 'content': prompt},
+        {'role': 'user', 'content': 'Add 123 and 4568319.'},
     ]
 
     prompt = loaded.check_pre_trained_tokenizer.apply_chat_template(
@@ -53,7 +52,7 @@ def test_tools():
     response = generate(
         model=loaded.model,
         tokenizer=loaded.tokenizer,
-        prompt=prompt,
+        prompt=prompt,  # type: ignore
         max_tokens=2048,
         # verbose=True,
         **lang.opt_kw(prompt_cache=prompt_cache),
@@ -79,7 +78,7 @@ def test_tools():
     response = generate(  # noqa
         model=loaded.model,
         tokenizer=loaded.tokenizer,
-        prompt=prompt,
+        prompt=prompt,  # type: ignore
         max_tokens=2048,
         # verbose=True,
         **lang.opt_kw(prompt_cache=prompt_cache),

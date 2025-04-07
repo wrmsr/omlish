@@ -5,7 +5,9 @@ import torch
 def _main() -> None:
     model_id = (
         # "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
-        'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-4bit'
+        'meta-llama/Llama-4-Scout-17B-16E-Instruct-Original'
+        # 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-4bit'
+        # 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-8bit'
     )
 
     processor = AutoProcessor.from_pretrained(model_id)
