@@ -45,14 +45,29 @@ class DelimitingBuffer:
     ) -> None:
         super().__init__()
 
-        self._delimiters: ta.FrozenSet[ta.Union[int, bytes]] = frozenset(
-            check.isinstance(d, (int, bytes))
-            for d in delimiters
-        )
+        ds: ta.Set[bytes] = set()
+        for d in delimiters:
+            if isinstance(d, int):
+                d = bytes([d])
+            ds.add(check.isinstance(d, bytes))
+
+        self._delimiters: ta.FrozenSet[bytes] = frozenset(ds)
         self._keep_ends = keep_ends
         self._max_size = max_size
 
         self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
+
+        ddl = {}
+        dl = sorted(self._delimiters, key=lambda d: -len(d))
+        for i, d in enumerate(dl):
+            for j, d2 in enumerate(dl):
+                if len(d2) < len(d):
+                    break
+                if i == j or not d2.startswith(d):
+                    continue
+                ddl[d] = len(d2)
+                break
+        self._delimiter_disambiguation_lens: ta.Dict[bytes, int] = ddl
 
     #
 
@@ -73,15 +88,26 @@ class DelimitingBuffer:
     def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[ta.Tuple[int, int]]:
         rp = None  # type: int | None
         rl = None  # type: int | None
+        rd = None  # type: bytes | None
+
         for d in self._delimiters:
-            if (p := data.find(d, i)) >= 0:
-                dl = len(d) if isinstance(d, bytes) else 1
-                if rp is None or p < rp:
-                    rp, rl = p, dl
-                elif rp == p:
-                    rl = max(rl, dl)  # type: ignore
+            if (p := data.find(d, i)) < 0:
+                continue
+
+            dl = len(d)
+
+            if rp is None or p < rp:
+                rp, rl, rd = p, dl, d
+            elif rp == p and rl < dl:  # type: ignore
+                rl, rd = dl, d  # noqa
+
         if rp is None:
             return None
+
+        # FIXME:
+        # if (ddl := self._delimiter_disambiguation_lens.get(rd)) is not None:
+        #     raise NotImplementedError
+
         return rp, rl  # type: ignore
 
     def _append_and_reset(self, chunk: bytes) -> bytes:

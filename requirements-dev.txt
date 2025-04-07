@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.6.12
+uv>=0.6.13
 
 pytest==8.3.5
 pytest-benchmark==5.1.0
@@ -119,7 +119,7 @@ segno==1.6.6
 duckduckgo_search==2025.4.4  # @omlish-venv !13t  # segfault lol
 
 # Used for codegen
-boto3>=1.37.28
+boto3>=1.37.29
 
 mlx==0.24.2; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.4; sys_platform == "darwin"  # @omlish-venv !13t

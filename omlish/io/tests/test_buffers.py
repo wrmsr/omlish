@@ -39,3 +39,8 @@ class TestDelimitingBuffer(unittest.TestCase):
         assert run(b'line1\nline2\rline3\n', delimiters=b'\r\n', keep_ends=True) == [[b'line1\n', b'line2\r', b'line3\n']]  # noqa
 
         assert run(b'line1\nline2\r\nline3\n\r', b'', delimiters=[b'\r\n',]) == [[b'line1\nline2'], [Db.Incomplete(b'line3\n\r')]]  # noqa
+
+        assert run(b'line1\nline2\r\nline3\n\r', b'', delimiters=[b'\n', b'\r\n']) == [[b'line1', b'line2', b'line3'], [Db.Incomplete(b'\r')]]  # noqa
+
+        # FIXME:
+        # assert run(b'line1\nline2\r\nline3\n\r', b'', delimiters=[b'\r', b'\r\n']) == [[b'line1', b'line2', b'line3'], [Db.Incomplete(b'\r')]]  # noqa
