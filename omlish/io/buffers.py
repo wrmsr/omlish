@@ -1,10 +1,13 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 # @omlish-lite
 import io
 import typing as ta
 
 from ..lite.check import check
 from ..lite.strings import attr_repr
+
+
+##
 
 
 class DelimitingBuffer:
@@ -31,14 +34,17 @@ class DelimitingBuffer:
 
     def __init__(
             self,
-            delimiters: ta.Iterable[int] = DEFAULT_DELIMITERS,
+            delimiters: ta.Iterable[ta.Union[int, bytes]] = DEFAULT_DELIMITERS,
             *,
             keep_ends: bool = False,
             max_size: ta.Optional[int] = None,
     ) -> None:
         super().__init__()
 
-        self._delimiters = frozenset(check.isinstance(d, int) for d in delimiters)
+        self._delimiters: ta.FrozenSet[ta.Union[int, bytes]] = frozenset(
+            check.isinstance(d, (int, bytes))
+            for d in delimiters
+        )
         self._keep_ends = keep_ends
         self._max_size = max_size
 
@@ -60,13 +66,19 @@ class DelimitingBuffer:
             raise self.ClosedError(self)
         return buf.getvalue()
 
-    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[int]:
-        r = None  # type: int | None
+    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[ta.Tuple[int, int]]:
+        rp = None  # type: int | None
+        rl = None  # type: int | None
         for d in self._delimiters:
             if (p := data.find(d, i)) >= 0:
-                if r is None or p < r:
-                    r = p
-        return r
+                dl = len(d) if isinstance(d, bytes) else 1
+                if rp is None or p < rp:
+                    rp, rl = p, dl
+                elif rp == p:
+                    rl = max(rl, dl)  # type: ignore
+        if rp is None:
+            return None
+        return rp, rl  # type: ignore
 
     def _append_and_reset(self, chunk: bytes) -> bytes:
         buf = check.not_none(self._buf)
@@ -97,10 +109,11 @@ class DelimitingBuffer:
         l = len(data)
         i = 0
         while i < l:
-            if (p := self._find_delim(data, i)) is None:
+            if (pt := self._find_delim(data, i)) is None:
                 break
 
-            n = p + 1
+            p, pl = pt
+            n = p + pl
             if self._keep_ends:
                 p = n
 
@@ -126,6 +139,9 @@ class DelimitingBuffer:
             p = i + remaining_buf_capacity
             yield self.Incomplete(self._append_and_reset(data[i:p]))
             i = p
+
+
+##
 
 
 class ReadableListBuffer:
@@ -197,6 +213,9 @@ class ReadableListBuffer:
     def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
         r = self.read_until_(delim)
         return r if isinstance(r, bytes) else None
+
+
+##
 
 
 class IncrementalWriteBuffer:

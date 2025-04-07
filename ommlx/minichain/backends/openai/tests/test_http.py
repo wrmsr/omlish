@@ -22,6 +22,8 @@ import pytest
 from omlish import dataclasses as dc
 from omlish.formats import json
 from omlish.http import all as hu
+from omlish.http import sse
+from omlish.io.buffers import DelimitingBuffer
 from omlish.secrets.tests.harness import HarnessSecrets
 
 
@@ -88,3 +90,53 @@ def test_openai_http(harness, cli_cls):
                 if v is not None
             }).encode('utf-8'),
         )).data)
+
+
+@pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])
+def test_openai_http_stream(harness, cli_cls):
+    key = harness[HarnessSecrets].get_or_skip('openai_api_key')
+
+    req = HttpOpenaiChatCompletionRequest(
+        model='gpt-4o-mini',
+        messages=[
+            dict(
+                role='user',
+                content='Hi!',
+            ),
+        ],
+        stream=True,
+    )
+
+    with cli_cls() as cli:
+        with cli.stream_request(hu.HttpRequest(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
+                hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(key.reveal()),
+            },
+            data=json.dumps({
+                k: v
+                for k, v in dc.asdict(req).items()
+                if v is not None
+            }).encode('utf-8'),
+        )) as resp:
+            db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+            sd = sse.SseDecoder()
+            while True:
+                b = resp.stream.read()
+                for l in db.feed(b):
+                    if isinstance(l, DelimitingBuffer.Incomplete):
+                        break
+                    done = False
+                    for so in sd.process_line(l):
+                        if isinstance(so, sse.SseEvent) and so.type == b'message':
+                            ss = so.data.decode('utf-8')
+                            if ss == '[DONE]':
+                                done = True
+                                break
+                            sj = json.loads(ss)
+                            print(sj)
+                    if done:
+                        break
+                if done or not b:
+                    break

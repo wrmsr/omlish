@@ -34,5 +34,8 @@ class TestDelimitingBuffer(unittest.TestCase):
         assert run(b'1234567890', max_size=10) == [[Db.Incomplete(b'1234567890')]]
         assert run(b'1234567890', b'') == [[], [Db.Incomplete(b'1234567890')]]
         assert run(b'', b'', [[], [Db.ClosedError]])
+
         assert run(b'line1\nline2\rline3\n', delimiters=b'\r\n') == [[b'line1', b'line2', b'line3']]
         assert run(b'line1\nline2\rline3\n', delimiters=b'\r\n', keep_ends=True) == [[b'line1\n', b'line2\r', b'line3\n']]  # noqa
+
+        assert run(b'line1\nline2\r\nline3\n\r', b'', delimiters=[b'\r\n',]) == [[b'line1\nline2'], [Db.Incomplete(b'line3\n\r')]]  # noqa
