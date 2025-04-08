@@ -23,7 +23,11 @@ class A:
     i: int
     s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
     d: int = 5
-    l: ta.Sequence = api.field(default_factory=tuple, repr_priority=-1)
+    l: ta.Sequence = api.field(
+        default_factory=tuple,
+        repr_priority=-1,
+        validate=lambda l: not (l and len(l) == 2),
+    )
 
     @api.init
     def _init_foo(self) -> None:

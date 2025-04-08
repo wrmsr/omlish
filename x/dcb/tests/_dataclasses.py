@@ -11,9 +11,10 @@ def _transform_dataclass__A(
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default_factory,
+        __dataclass__init__fields__3__validate,
         __dataclass__init__init_fns__0,
         __dataclass__override__fields__1__annotation,
-        __dataclass__repr__fns__1__fn,
+        __dataclass__repr__fns__2__fn,
         __dataclass__None=None,
         __dataclass__property=property,
         __dataclass__TypeError=TypeError,
@@ -22,6 +23,7 @@ def _transform_dataclass__A(
         __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,
         __dataclass__MISSING=dataclasses.MISSING,
         __dataclass__FunctionType=types.FunctionType,
+        __dataclass__FieldValidationError,
 ):
     def __copy__(self):
         if self.__class__ is not __dataclass__cls:
@@ -97,6 +99,13 @@ def _transform_dataclass__A(
     ) -> __dataclass__None:
         if l is __dataclass__HAS_DEFAULT_FACTORY:
             l = __dataclass__init__fields__3__default_factory()
+        if not __dataclass__init__fields__3__validate(l):
+            raise __dataclass__FieldValidationError(
+                __dataclass__self,
+                'l',
+                __dataclass__init__fields__3__validate,
+                l,
+            )
         __dataclass__object_setattr(__dataclass__self, 'i', i)
         __dataclass__self_dict = __dataclass__self.__dict__
         __dataclass__self_dict['s'] = s
@@ -205,10 +214,10 @@ def _transform_dataclass__A(
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
+            f"l={self.l!r}, "
             f"i={self.i!r}, "
-            f"{f's={s}' if ((s := __dataclass__repr__fns__1__fn(self.s)) is not None) else ''}, "
-            f"d={self.d!r}, "
-            f"l={self.l!r}"
+            f"{f's={s}' if ((s := __dataclass__repr__fns__2__fn(self.s)) is not None) else ''}, "
+            f"d={self.d!r}"
             f")"
         )
 

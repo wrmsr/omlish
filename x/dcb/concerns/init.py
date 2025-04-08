@@ -13,6 +13,7 @@ from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..generators.utils import SetattrSrcBuilder
+from ..idents import FIELD_VALIDATION_ERROR_IDENT
 from ..idents import HAS_DEFAULT_FACTORY_IDENT
 from ..idents import NONE_IDENT
 from ..idents import SELF_IDENT
@@ -22,6 +23,7 @@ from ..ops import OpRef
 from ..specs import FieldType
 from ..types import DefaultFactory
 from ..types import InitFn
+from ..types import ValidateFn
 
 
 ##
@@ -42,6 +44,8 @@ class InitPlan(Plan):
         override: bool
 
         field_type: FieldType
+
+        validate: OpRef[ValidateFn] | None
 
     fields: tuple[Field, ...]
 
@@ -86,6 +90,11 @@ class InitGenerator(Generator[InitPlan]):
                     dr = OpRef(f'init.fields.{i}.default')
                     orm[dr] = dfl
 
+            vr: OpRef[ValidateFn] | None = None
+            if f.validate is not None:
+                vr = OpRef(f'init.fields.{i}.validate')
+                orm[vr] = f.validate
+
             bfs.append(InitPlan.Field(
                 name=f.name,
                 annotation=ar,
@@ -98,6 +107,8 @@ class InitGenerator(Generator[InitPlan]):
                 override=f.override or ctx.cs.override,
 
                 field_type=f.field_type,
+
+                validate=vr,
             ))
 
         ifs: list[OpRef[InitFn]] = []
@@ -158,6 +169,20 @@ class InitGenerator(Generator[InitPlan]):
             lines.extend([
                 f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
                 f'        {f.name} = {f.default_factory.ident()}()',
+            ])
+
+        for f in bs.fields:
+            if f.validate is None:
+                continue
+            ors.add(f.validate)
+            lines.extend([
+                f'    if not {f.validate.ident()}({f.name}): ',
+                f'        raise {FIELD_VALIDATION_ERROR_IDENT}(',
+                f'            {SELF_IDENT},',
+                f'            {f.name!r},',
+                f'            {f.validate.ident()},',
+                f'            {f.name},',
+                f'        )',
             ])
 
         sab = SetattrSrcBuilder()

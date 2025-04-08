@@ -43,6 +43,7 @@ from .specs import FieldSpec
 from .types import DefaultFactory
 from .types import InitFn
 from .types import ReprFn
+from .types import ValidateFn
 
 
 ##
@@ -79,9 +80,10 @@ class Field:
     default: ta.Any = _NoDefault
     default_factory: ta.Callable[..., ta.Any] | None = None
 
+    validate: ValidateFn | None = None
+    override: bool = False
     repr_fn: ReprFn | None = None
     repr_priority: int | None = None
-    override: bool = False
 
 
 def field(
@@ -89,17 +91,19 @@ def field(
         default: ta.Any = _NoDefault,
         default_factory: ta.Callable[..., ta.Any] | None = None,
 
+        validate: ValidateFn | None = None,
+        override: bool = False,
         repr_fn: ReprFn | None = None,
         repr_priority: int | None = None,
-        override: bool = False,
 ) -> ta.Any:
     return Field(
         default=default,
         default_factory=default_factory,
 
+        validate=validate,
+        override=override,
         repr_fn=repr_fn,
         repr_priority=repr_priority,
-        override=override,
     )
 
 
@@ -146,9 +150,10 @@ def dataclass(
 
                 default=dfl,
 
+                validate=fld.validate,
+                override=fld.override,
                 repr_fn=fld.repr_fn,
                 repr_priority=fld.repr_priority,
-                override=fld.override,
             ))
 
         init_fns: list[InitFn] = []
