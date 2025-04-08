@@ -119,7 +119,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.37.29
+boto3>=1.37.30
 
 mlx==0.24.2; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.4; sys_platform == "darwin"  # @omlish-venv !13t
