@@ -19,10 +19,10 @@ from ..cli import CliModule
 
 if ta.TYPE_CHECKING:
     import docutils.core
-    import markdown
+    import markdown_it
 else:
     docutils = lang.proxy_import('docutils', extras=['core'])
-    markdown = lang.proxy_import('markdown')
+    markdown_it = lang.proxy_import('markdown_it')
 
 
 def rst2html(rst, report_level=None):
@@ -92,7 +92,7 @@ class Cli(ap.Cli):
     def md(self):
         src, name = self._read_file(self.args.input_file)
 
-        html = markdown.markdown(src)
+        html = markdown_it.MarkdownIt().render(src)
 
         if self.args.open:
             open_html(html, name)
