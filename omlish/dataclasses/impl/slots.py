@@ -61,6 +61,7 @@ def _update_func_cell_for__class__(f, oldcls, newcls):
 
 def add_slots(
         cls: type,
+        *,
         is_frozen: bool,
         weakref_slot: bool,
 ) -> type:

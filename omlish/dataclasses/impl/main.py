@@ -49,7 +49,11 @@ class MainProcessor:
             raise TypeError('weakref_slot is True but slots is False')
         if not self._info.params.slots:
             return
-        self._cls = add_slots(self._cls, self._info.params.frozen, self._info.params.weakref_slot)
+        self._cls = add_slots(
+            self._cls,
+            is_frozen=self._info.params.frozen,
+            weakref_slot=self._info.params.weakref_slot,
+        )
 
     PROCESSOR_TYPES: ta.ClassVar[ta.Sequence[type[Processor]]] = [
         FieldsProcessor,
