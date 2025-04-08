@@ -1,5 +1,6 @@
 """
 TODO:
+ - !! specialize nullary, explicit kwarg
  - !! reconcile A().f() with A.f(A())
   - unbound descriptor *should* still hit instance cache
  - integrate / expose with collections.cache

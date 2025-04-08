@@ -1,10 +1,10 @@
 import pytest
 
-from ..clients import HttpClientError
-from ..clients import HttpRequest
-from ..clients import HttpStatusError
-from ..clients import HttpxHttpClient
-from ..clients import UrllibHttpClient
+from ..base import HttpClientError
+from ..base import HttpRequest
+from ..base import HttpStatusError
+from ..httpx import HttpxHttpClient
+from ..urllib import UrllibHttpClient
 
 
 @pytest.mark.online
