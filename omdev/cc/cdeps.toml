@@ -3,7 +3,7 @@ include = ['.']
 
 [deps.httplib.git]
 url = 'https://github.com/yhirose/cpp-httplib'
-rev = 'a7bc00e3307fecdb4d67545e93be7b88cfb1e186'
+rev = '787a34ad7f01f20922a237d5142aae469828be72'  # Release v0.20.0
 subtrees = ['httplib.h']
 
 [deps.httplib.cmake.fetch_content.git]
@@ -18,7 +18,7 @@ include = ['single_include']
 
 [deps.json.git]
 url = 'https://github.com/nlohmann/json'
-rev = '9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03'
+rev = '9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03'  # Version 3.11.3
 subtrees = ['single_include']
 
 [deps.json.cmake.fetch_content]
@@ -32,7 +32,7 @@ include = ['include']
 
 [deps.pybind11.git]
 url = 'https://github.com/pybind/pybind11'
-rev = '945e251a6ce7273058b36214d94415e9c9530b8e'
+rev = 'b70b8eb332fadf55d7e22b492da0e954c1a4fcb7'
 subtrees = ['include']
 
 
@@ -43,5 +43,5 @@ include = ['include']
 
 [deps.ut.git]
 url = 'https://github.com/boost-ext/ut'
-rev = 'f83e15c7f1edb49b4ec20f866eec06940d18a47d'
+rev = 'f923e6fe4b7542d75e0c4ee54ad0af6a5382a87c'  # v2.3.1
 subtrees = ['include']
