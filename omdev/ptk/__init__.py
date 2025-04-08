@@ -75,6 +75,7 @@ from prompt_toolkit.output import DummyOutput
 from prompt_toolkit.output import Output
 from prompt_toolkit.search import SearchDirection
 from prompt_toolkit.selection import SelectionType
+from prompt_toolkit.shortcuts import print_formatted_text
 from prompt_toolkit.styles import BaseStyle
 from prompt_toolkit.styles import DynamicStyle
 from prompt_toolkit.styles import Style
