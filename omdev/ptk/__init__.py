@@ -13,6 +13,7 @@ from prompt_toolkit.completion import PathCompleter
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.eventloop.utils import call_soon_threadsafe
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.filters import has_arg
 from prompt_toolkit.filters import has_focus
@@ -22,6 +23,7 @@ from prompt_toolkit.filters import vi_insert_mode
 from prompt_toolkit.filters import vi_navigation_mode
 from prompt_toolkit.formatted_text import AnyFormattedText
 from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.formatted_text import OneStyleAndTextTuple
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.formatted_text import fragment_list_to_text
@@ -38,6 +40,7 @@ from prompt_toolkit.key_binding import KeyPress
 from prompt_toolkit.key_binding import KeyPressEvent
 from prompt_toolkit.key_binding import vi_state
 from prompt_toolkit.keys import Keys
+from prompt_toolkit.layout import Container
 from prompt_toolkit.layout.containers import ColorColumn
 from prompt_toolkit.layout.containers import ConditionalContainer
 from prompt_toolkit.layout.containers import Float
