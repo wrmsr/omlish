@@ -3,6 +3,7 @@
 
 from prompt_toolkit import Application
 from prompt_toolkit.application import get_app
+from prompt_toolkit.application import get_app_session
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.completion import CompleteEvent
@@ -21,7 +22,13 @@ from prompt_toolkit.filters import vi_insert_mode
 from prompt_toolkit.filters import vi_navigation_mode
 from prompt_toolkit.formatted_text import AnyFormattedText
 from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.formatted_text import OneStyleAndTextTuple
 from prompt_toolkit.formatted_text import StyleAndTextTuples
+from prompt_toolkit.formatted_text import fragment_list_to_text
+from prompt_toolkit.formatted_text import fragment_list_width
+from prompt_toolkit.formatted_text import split_lines
+from prompt_toolkit.formatted_text import to_formatted_text
+from prompt_toolkit.formatted_text import to_plain_text
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.input import DummyInput
 from prompt_toolkit.input import Input
@@ -73,6 +80,7 @@ from prompt_toolkit.styles import DynamicStyle
 from prompt_toolkit.styles import Style
 from prompt_toolkit.styles import merge_styles
 from prompt_toolkit.styles import style_from_pygments_cls
+from prompt_toolkit.utils import get_cwidth
 from prompt_toolkit.widgets import Frame
 from prompt_toolkit.widgets import Label
 from prompt_toolkit.widgets import TextArea
