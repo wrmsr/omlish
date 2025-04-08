@@ -48,6 +48,7 @@ from .interfaces import (  # noqa
 )
 
 from .shrinkwraps import (  # noqa
+    ShrinkwrapKv2,
     ShrinkwrapKv,
 
     ShrinkwrapQueryableKv,

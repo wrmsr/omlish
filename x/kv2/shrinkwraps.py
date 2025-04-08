@@ -217,8 +217,7 @@ def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv2], iface_mro: KvMro) -> type[Kv
     return bw_cls
 
 
-# def shrinkwrap_factory(w_cls: ta.Callable[P, ShrinkwrapKv[K, V]]) -> KvToKvFunc[P, K, V]:
-def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V, K, V]:
+def shrinkwrap_factory_(w_cls):
     w_cls = check.issubclass(w_cls, ShrinkwrapKv2)
 
     @functools.wraps(w_cls)
@@ -227,3 +226,8 @@ def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V, K, V
         return bw_cls(kv, *args, **kwargs)  # type: ignore[call-arg]
 
     return ta.cast(KvToKvFunc, inner)
+
+
+# def shrinkwrap_factory(w_cls: ta.Callable[P, ShrinkwrapKv[K, V]]) -> KvToKvFunc[P, K, V]:
+def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V, K, V]:
+    return shrinkwrap_factory_(w_cls)

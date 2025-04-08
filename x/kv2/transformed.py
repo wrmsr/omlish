@@ -2,8 +2,9 @@ import typing as ta
 
 from omlish import check
 
+from .bases import FullKv
 from .interfaces import Kv
-from .shrinkwraps import ShrinkwrapFullKv
+from .shrinkwraps import ShrinkwrapKv2
 
 
 K = ta.TypeVar('K')
@@ -21,10 +22,10 @@ VB = ta.TypeVar('VB')
 ##
 
 
-class KeyTransformedKv(ShrinkwrapFullKv[KA, V], ta.Generic[KA, KB, V]):
+class KeyTransformedKv(ShrinkwrapKv2[KA, V, KB, V], ta.Generic[KA, KB, V]):
     def __init__(
             self,
-            u: Kv[KB, V],
+            u: FullKv[KB, V],
             *,
             a_to_b: ta.Callable[[KA], KB] | None = None,
             b_to_a: ta.Callable[[KB], KA] | None = None,
@@ -33,6 +34,8 @@ class KeyTransformedKv(ShrinkwrapFullKv[KA, V], ta.Generic[KA, KB, V]):
 
         self._a_to_b = a_to_b
         self._b_to_a = b_to_a
+
+    _u: FullKv[KB, V]
 
     def __getitem__(self, k: KA, /) -> V:
         fn = check.not_none(self._a_to_b)
@@ -57,7 +60,7 @@ class KeyTransformedKv(ShrinkwrapFullKv[KA, V], ta.Generic[KA, KB, V]):
 ##
 
 
-class ValueTransformedKv(ShrinkwrapFullKv[K, VA], ta.Generic[K, VA, VB]):
+class ValueTransformedKv(ShrinkwrapKv2[K, VA, K, VB], ta.Generic[K, VA, VB]):
     def __init__(
             self,
             u: Kv[K, VB],
@@ -69,6 +72,8 @@ class ValueTransformedKv(ShrinkwrapFullKv[K, VA], ta.Generic[K, VA, VB]):
 
         self._a_to_b = a_to_b
         self._b_to_a = b_to_a
+
+    _u: FullKv[K, VB]
 
     def __getitem__(self, k: K, /) -> VA:
         fn = check.not_none(self._b_to_a)
