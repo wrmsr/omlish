@@ -9,13 +9,64 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 
-RequestOptionT = ta.TypeVar('RequestOptionT', bound='RequestOption')
+TypedValueT = ta.TypeVar('TypedValueT', bound=tv.TypedValue)
+
 RequestT = ta.TypeVar('RequestT', bound='Request')
 RequestT_contra = ta.TypeVar('RequestT_contra', bound='Request', contravariant=True)
 
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound='ResponseOutput')
 ResponseT = ta.TypeVar('ResponseT', bound='Response')
 ResponseT_co = ta.TypeVar('ResponseT_co', bound='Response', covariant=True)
+
+
+##
+
+
+class _ServiceTypedValuesHolder(tv.TypedValueGeneric[TypedValueT], lang.Abstract):
+    _typed_values_base_cls: ta.ClassVar[type[tv.TypedValue]]
+
+    #
+
+    _typed_values_types: ta.ClassVar[tuple[type[tv.TypedValue], ...]]
+    _typed_values_types_set: ta.ClassVar[frozenset[type[tv.TypedValue]]]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_in('_typed_values_types', cls.__dict__)
+        tvi_set = tv.reflect_typed_values_impls(cls._typed_value_type)
+        cls._typed_values_types = tuple(sorted(
+            [check.issubclass(c, cls._typed_values_base_cls) for c in tvi_set],
+            key=lambda c: c.__qualname__,
+        ))
+        cls._typed_values_types_set = frozenset(cls._typed_values_types)
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _typed_values(self) -> tv.TypedValues[TypedValueT]:
+        raise NotImplementedError
+
+    #
+
+    @dc.init
+    def _check_typed_value_types(self) -> None:
+        for o in self._typed_values:
+            if type(o) not in self._typed_values_types_set and not isinstance(o, self._typed_values_types):
+                raise TypeError(o)
+
+
+_SERVICE_TYPED_VALUES_HOLDER_FIELD_METADATA: ta.Mapping = {
+    dc.FieldExtras: dc.FieldExtras(
+        repr_fn=dc.truthy_repr,
+        repr_priority=100,
+    ),
+    msh.FieldMetadata: msh.FieldMetadata(
+        options=msh.FieldOptions(
+            generic_replace=True,
+        ),
+    ),
+}
 
 
 ##
@@ -25,45 +76,22 @@ class RequestOption(tv.TypedValue, lang.Abstract):
     pass
 
 
+RequestOptionT = ta.TypeVar('RequestOptionT', bound=RequestOption)
+
+
 @dc.dataclass(frozen=True)
-class Request(tv.TypedValueGeneric[RequestOptionT], lang.Abstract):
-    _option_types: ta.ClassVar[tuple[type[RequestOption], ...]]
-    _option_types_set: ta.ClassVar[frozenset[type[RequestOption]]]
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        check.not_in('_option_types', cls.__dict__)
-        tvi_set = tv.reflect_typed_values_impls(cls._typed_value_type)
-        cls._option_types = tuple(sorted(
-            [check.issubclass(c, RequestOption) for c in tvi_set],  # type: ignore
-            key=lambda c: c.__qualname__,
-        ))
-        cls._option_types_set = frozenset(cls._option_types)
-
-    #
+class Request(_ServiceTypedValuesHolder[RequestOptionT], lang.Abstract):
+    _typed_values_base_cls = RequestOption
 
     options: tv.TypedValues[RequestOptionT] = dc.field(
         default=tv.TypedValues.empty(),
         kw_only=True,
-        metadata={
-            dc.FieldExtras: dc.FieldExtras(
-                repr_fn=dc.truthy_repr,
-                repr_priority=100,
-            ),
-            msh.FieldMetadata: msh.FieldMetadata(
-                options=msh.FieldOptions(
-                    generic_replace=True,
-                ),
-            ),
-        },
+        metadata=_SERVICE_TYPED_VALUES_HOLDER_FIELD_METADATA,
     )
 
-    @dc.init
-    def _check_option_types(self) -> None:
-        for o in self.options:
-            if type(o) not in self._option_types_set and not isinstance(o, self._option_types):
-                raise TypeError(o)
+    @property
+    def _typed_values(self) -> tv.TypedValues[RequestOptionT]:
+        return self.options
 
     def with_options(
             self: RequestT,
@@ -115,45 +143,22 @@ class ResponseOutput(tv.TypedValue, lang.Abstract):
     pass
 
 
+ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
+
+
 @dc.dataclass(frozen=True)
-class Response(tv.TypedValueGeneric[ResponseOutputT], lang.Abstract):
-    _output_types: ta.ClassVar[tuple[type[ResponseOutput], ...]]
-    _output_types_set: ta.ClassVar[frozenset[type[ResponseOutput]]]
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        check.not_in('_output_types', cls.__dict__)
-        tvi_set = tv.reflect_typed_values_impls(cls._typed_value_type)
-        cls._output_types = tuple(sorted(
-            [check.issubclass(c, ResponseOutput) for c in tvi_set],  # type: ignore
-            key=lambda c: c.__qualname__,
-        ))
-        cls._output_types_set = frozenset(cls._output_types)
-
-    #
+class Response(_ServiceTypedValuesHolder[ResponseOutputT], lang.Abstract):
+    _typed_values_base_cls = ResponseOutput
 
     outputs: tv.TypedValues[ResponseOutputT] = dc.field(
         default=tv.TypedValues.empty(),
         kw_only=True,
-        metadata={
-            dc.FieldExtras: dc.FieldExtras(
-                repr_fn=dc.truthy_repr,
-                repr_priority=100,
-            ),
-            msh.FieldMetadata: msh.FieldMetadata(
-                options=msh.FieldOptions(
-                    generic_replace=True,
-                ),
-            ),
-        },
+        metadata=_SERVICE_TYPED_VALUES_HOLDER_FIELD_METADATA,
     )
 
-    @dc.init
-    def _check_output_types(self) -> None:
-        for o in self.outputs:
-            if type(o) not in self._output_types_set and not isinstance(o, self._output_types):
-                raise TypeError(o)
+    @property
+    def _typed_values(self) -> tv.TypedValues[ResponseOutputT]:
+        return self.outputs
 
     def with_outputs(
             self: ResponseT,
