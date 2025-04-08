@@ -160,3 +160,18 @@ def test_case():
 
     assert_non_abstract_class(B)
     assert_final_class(B)
+
+
+def test_post_init():
+    x = 0
+
+    class Foo(dc.Data):
+        def __post_init__(self):
+            nonlocal x
+            x += 1
+
+    assert x == 0
+    Foo()
+    assert x == 1
+    Foo()
+    assert x == 2

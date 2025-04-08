@@ -196,15 +196,6 @@ class Data(
         # Typechecking barrier
         super().__init_subclass__(**kwargs)
 
-    def __post_init__(self, *args, **kwargs) -> None:
-        try:
-            spi = super().__post_init__  # type: ignore  # noqa
-        except AttributeError:
-            if args or kwargs:
-                raise TypeError(args, kwargs) from None
-        else:
-            spi(*args, **kwargs)
-
 
 class Frozen(
     Data,
