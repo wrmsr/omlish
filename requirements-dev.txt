@@ -116,8 +116,6 @@ llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.6
 
-duckduckgo_search==2025.4.4  # @omlish-venv !13t  # segfault lol
-
 # Used for codegen
 boto3>=1.37.29
 
