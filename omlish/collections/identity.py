@@ -122,6 +122,7 @@ class IdentityWeakSet(ta.MutableSet[T]):
         self._dict: weakref.WeakValueDictionary[int, T] = weakref.WeakValueDictionary()
 
     def add(self, value):
+        # FIXME: race with weakref callback?
         self._dict[id(value)] = value
 
     def discard(self, value):
@@ -131,7 +132,11 @@ class IdentityWeakSet(ta.MutableSet[T]):
             pass
 
     def __contains__(self, x):
-        return id(x) in self._dict
+        try:
+            o = self._dict[id(x)]
+        except KeyError:
+            return False
+        return x is o
 
     def __len__(self):
         return len(self._dict)
