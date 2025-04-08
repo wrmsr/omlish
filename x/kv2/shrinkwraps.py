@@ -164,8 +164,19 @@ def _raise_shrinkwrap_not_implemented_error(self, *args) -> ta.NoReturn:
 _BOUND_SHRINKWRAP_CACHE_ATTR = '__shrinkwrap_kv_bound_cache__'
 
 
-def bind_shrinkwrap_cls(w_cls: type[ShrinkwrapKv2], iface_mro: KvMro) -> type[Kv]:
+def bind_shrinkwrap_cls(
+        w_cls: type[ShrinkwrapKv2],
+        ul: type[Kv] | KvMro,
+) -> type[Kv]:
     check.issubclass(w_cls, ShrinkwrapKv2)
+
+    if isinstance(ul, type):
+        iface_mro = get_cls_kv_interface_mro(ul)
+    elif isinstance(ul, tuple):
+        iface_mro = ul
+    else:
+        raise TypeError(ul)
+
     check_kv_interface_mro(iface_mro)
 
     kv_base_cls = KV_BASES_BY_MRO[iface_mro]
@@ -222,7 +233,7 @@ def shrinkwrap_factory_(w_cls):
 
     @functools.wraps(w_cls)
     def inner(kv, *args, **kwargs):
-        bw_cls = bind_shrinkwrap_cls(w_cls, get_cls_kv_interface_mro(type(kv)))
+        bw_cls = bind_shrinkwrap_cls(w_cls, type(kv))
         return bw_cls(kv, *args, **kwargs)  # type: ignore[call-arg]
 
     return ta.cast(KvToKvFunc, inner)

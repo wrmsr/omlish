@@ -11,5 +11,4 @@ def test_transformed():
 
     kv1 = shrinkwrap_factory(KeyTransformedKv)(kv0, a_to_b=lambda i: i * 2)
     assert kv1[1] == 2
-    reveal_type(kv1)
     print(list(underlying(kv1)))
