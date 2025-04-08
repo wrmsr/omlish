@@ -32,6 +32,15 @@ from .capabilities import (  # noqa
     flush,
 )
 
+from .filtered import (  # noqa
+    KeyFilteredKv,
+    filter_keys,
+
+    ValueFilteredKeyError,
+    ValueFilteredKv,
+    filter_values,
+)
+
 from .interfaces import (  # noqa
     KvSubclassMustUseBaseTypeError,
     Kv,
@@ -48,6 +57,16 @@ from .interfaces import (  # noqa
     get_cls_kv_interface_mro,
 )
 
+from .mappings import (  # noqa
+    MappingKvBase,
+
+    MappingKv,
+    MappingFullKv,
+
+    KvMapping,
+    KvMutableMapping,
+)
+
 from .shrinkwraps import (  # noqa
     ShrinkwrapKv2,
     ShrinkwrapKv,
@@ -59,9 +78,19 @@ from .shrinkwraps import (  # noqa
 
     ShrinkwrapFullKv,
 
-    # FIXME: unstable
-    # shrinkwrap_factory,
-    # bind_shrinkwrap_cls,
+    ShrinkwrapNotImplementedError,
+    bind_shrinkwrap_cls,
+
+    shrinkwrap_factory_,
+    shrinkwrap_factory,
+)
+
+from .transformed import (  # noqa
+    KeyTransformedKv,
+    transform_keys,
+
+    ValueTransformedKv,
+    transform_values,
 )
 
 from .wrappers import (  # noqa

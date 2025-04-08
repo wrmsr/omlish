@@ -228,13 +228,13 @@ def bind_shrinkwrap_cls(
     return bw_cls
 
 
-def shrinkwrap_factory_(w_cls):
+def shrinkwrap_factory_(w_cls, *args0, **kwargs0):
     w_cls = check.issubclass(w_cls, ShrinkwrapKv2)
 
     @functools.wraps(w_cls)
-    def inner(kv, *args, **kwargs):
+    def inner(kv, *args1, **kwargs1):
         bw_cls = bind_shrinkwrap_cls(w_cls, type(kv))
-        return bw_cls(kv, *args, **kwargs)  # type: ignore[call-arg]
+        return bw_cls(kv, *args0, *args1, **kwargs0, **kwargs1)  # type: ignore[call-arg]
 
     return ta.cast(KvToKvFunc, inner)
 

@@ -1,6 +1,5 @@
 from ..mappings import MappingFullKv
-from ..shrinkwraps import shrinkwrap_factory
-from ..transformed import KeyTransformedKv
+from ..transformed import transform_keys
 from ..wrappers import underlying
 
 
@@ -9,6 +8,6 @@ def test_transformed():
     kv0 = MappingFullKv(d)
     assert kv0[1] == 1
 
-    kv1 = shrinkwrap_factory(KeyTransformedKv)(kv0, a_to_b=lambda i: i * 2)
+    kv1 = transform_keys(a_to_b=lambda i: i * 2)(kv0)
     assert kv1[1] == 2
     print(list(underlying(kv1)))

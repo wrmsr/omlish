@@ -4,7 +4,9 @@ from omlish import check
 
 from .bases import FullKv
 from .interfaces import Kv
+from .bases import KvToKvFunc2
 from .shrinkwraps import ShrinkwrapKv2
+from .shrinkwraps import shrinkwrap_factory_
 
 
 K = ta.TypeVar('K')
@@ -57,6 +59,18 @@ class KeyTransformedKv(ShrinkwrapKv2[KA, V, KB, V], ta.Generic[KA, KB, V]):
         del self._u[fn(k)]
 
 
+def transform_keys(
+        *,
+        a_to_b: ta.Callable[[KA], KB] | None = None,
+        b_to_a: ta.Callable[[KB], KA] | None = None,
+) -> KvToKvFunc2[KA, V, KB, V]:
+    return shrinkwrap_factory_(
+        KeyTransformedKv,
+        a_to_b=a_to_b,
+        b_to_a=b_to_a,
+    )
+
+
 ##
 
 
@@ -92,3 +106,15 @@ class ValueTransformedKv(ShrinkwrapKv2[K, VA, K, VB], ta.Generic[K, VA, VB]):
 
     def __delitem__(self, k: K, /) -> None:
         del self._u[k]
+
+
+def transform_values(
+        *,
+        a_to_b: ta.Callable[[VA], VB] | None = None,
+        b_to_a: ta.Callable[[VB], VA] | None = None,
+) -> KvToKvFunc2[KA, V, KB, V]:
+    return shrinkwrap_factory_(
+        ValueTransformedKv,
+        a_to_b=a_to_b,
+        b_to_a=b_to_a,
+    )

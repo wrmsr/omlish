@@ -5,7 +5,7 @@ from omlish import lang
 from .bases import KvToKvFunc
 from .interfaces import Kv
 from .shrinkwraps import ShrinkwrapFullKv
-from .shrinkwraps import bind_shrinkwrap_cls
+from .shrinkwraps import shrinkwrap_factory_
 
 
 K = ta.TypeVar('K')
@@ -49,9 +49,7 @@ class KeyFilteredKv(ShrinkwrapFullKv[K, V]):
 
 
 def filter_keys(fn: ta.Callable[[K], bool]) -> KvToKvFunc[K, V]:
-    def inner(kv):
-        return bind_shrinkwrap_cls(kv)(kv, fn)  # type: ignore[call-arg]
-    return inner  # noqa
+    return shrinkwrap_factory_(KeyFilteredKv, fn)
 
 
 ##
@@ -91,8 +89,4 @@ class ValueFilteredKv(ShrinkwrapFullKv[K, V]):
 
 
 def filter_values(fn: ta.Callable[[V], bool]) -> KvToKvFunc[K, V]:
-    def inner(kv):
-        return bind_shrinkwrap_cls(kv)(kv, fn)  # type: ignore[call-arg]
-    return inner  # noqa
-
-
+    return shrinkwrap_factory_(ValueFilteredKv, fn)
