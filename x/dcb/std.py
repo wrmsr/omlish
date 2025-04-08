@@ -91,6 +91,16 @@ class StdFieldType(enum.Enum):
     INIT = dc._FIELD_INITVAR  # type: ignore  # noqa
 
 
+def std_field_type(f: dc.Field) -> StdFieldType:
+    if (ft := getattr(f, '_field_type')) is not None:
+        return StdFieldType(ft)
+    else:
+        return StdFieldType.INSTANCE
+
+
+##
+
+
 _SELF_MODULE = None
 
 

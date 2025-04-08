@@ -8,10 +8,10 @@ from omlish import collections as col
 from omlish import lang
 from omlish import reflect as rfl
 
-from .internals import FIELDS_ATTR
-from .internals import FieldType
-from .internals import field_type
-from .internals import is_kw_only
+from .std import STD_FIELDS_ATTR
+from .std import StdFieldType
+from .std import is_kw_only
+from .std import std_field_type
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]
@@ -72,7 +72,7 @@ class FieldsInspection:
         field_owners: dict[str, type] = {}
 
         for b in self._cls.__mro__[-1:0:-1]:
-            base_fields = getattr(b, FIELDS_ATTR, None)
+            base_fields = getattr(b, STD_FIELDS_ATTR, None)
             if base_fields is not None:
                 for name in get_cls_annotations(b):
                     try:
@@ -82,7 +82,7 @@ class FieldsInspection:
                     fields[f.name] = f
                     field_owners[f.name] = b
 
-        cls_fields = getattr(self._cls, FIELDS_ATTR)
+        cls_fields = getattr(self._cls, STD_FIELDS_ATTR)
         for name, ann in self.cls_annotations.items():
             if is_kw_only(self._cls, ann):
                 continue
@@ -97,7 +97,7 @@ class FieldsInspection:
 
     @cached.property
     def instance_fields(self) -> ta.Sequence[dc.Field]:
-        return [f for f in self.fields.values() if field_type(f) is FieldType.INSTANCE]
+        return [f for f in self.fields.values() if std_field_type(f) is StdFieldType.INSTANCE]
 
     @cached.property
     def field_owners(self) -> ta.Mapping[str, type]:
