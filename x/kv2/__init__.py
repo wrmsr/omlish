@@ -93,6 +93,11 @@ from .transformed import (  # noqa
     transform_values,
 )
 
+from .unmodifiable_ import (  # noqa
+    UnmodifiableKv,
+    unmodifiable,
+)
+
 from .wrappers import (  # noqa
     WrapperKv,
 
