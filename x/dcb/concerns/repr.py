@@ -63,7 +63,6 @@ class ReprGenerator(Generator[ReprPlan]):
             f'        f"{{self.__class__.__name__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
         ]
 
-
         rfd = {rf.field: rf.fn for rf in pl.fns}
         for i, f in enumerate(pl.fields):
             sfx = ', ' if i < len(pl.fields) - 1 else ''

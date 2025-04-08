@@ -34,8 +34,8 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import reflect as rfl
 
+from .inspect import get_cls_annotations
 from .processing import ClassProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
@@ -121,7 +121,7 @@ def dataclass(
     def inner(cls):
         fsl: list[FieldSpec] = []
 
-        anns = rfl.get_annotations(cls)
+        anns = get_cls_annotations(cls)
         for att, ann in anns.items():
             try:
                 fv = cls.__dict__[att]
