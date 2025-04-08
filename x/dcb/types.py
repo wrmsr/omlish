@@ -4,6 +4,7 @@ import typing as ta
 ##
 
 
+CoerceFn: ta.TypeAlias = ta.Callable[[ta.Any], ta.Any]
 ValidateFn: ta.TypeAlias = ta.Callable[[ta.Any], bool]
 ReprFn: ta.TypeAlias = ta.Callable[[ta.Any], str | None]
 

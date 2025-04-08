@@ -40,6 +40,7 @@ from .processing import ClassProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec
+from .types import CoerceFn
 from .types import DefaultFactory
 from .types import InitFn
 from .types import ReprFn
@@ -80,6 +81,7 @@ class Field:
     default: ta.Any = _NoDefault
     default_factory: ta.Callable[..., ta.Any] | None = None
 
+    coerce: bool | CoerceFn | None = None
     validate: ValidateFn | None = None
     override: bool = False
     repr_fn: ReprFn | None = None
@@ -91,6 +93,7 @@ def field(
         default: ta.Any = _NoDefault,
         default_factory: ta.Callable[..., ta.Any] | None = None,
 
+        coerce: bool | CoerceFn | None = None,
         validate: ValidateFn | None = None,
         override: bool = False,
         repr_fn: ReprFn | None = None,
@@ -100,6 +103,7 @@ def field(
         default=default,
         default_factory=default_factory,
 
+        coerce=coerce,
         validate=validate,
         override=override,
         repr_fn=repr_fn,
@@ -150,6 +154,7 @@ def dataclass(
 
                 default=dfl,
 
+                coerce=fld.coerce,
                 validate=fld.validate,
                 override=fld.override,
                 repr_fn=fld.repr_fn,

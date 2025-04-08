@@ -5,10 +5,11 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .types import ClassValidateFn
+from .types import CoerceFn
 from .types import DefaultFactory
 from .types import InitFn
 from .types import ReprFn
-from .types import ClassValidateFn
 from .types import ValidateFn
 
 
@@ -26,7 +27,7 @@ class FieldSpec:
     name: str
     annotation: ta.Any
 
-    default: lang.Maybe[DefaultFactory] = lang.empty()
+    default: lang.Maybe[DefaultFactory | ta.Any] = lang.empty()
 
     ##
     # std
@@ -44,7 +45,7 @@ class FieldSpec:
     # ext
 
     # derive: ta.Callable[..., ta.Any] | None = None
-    # coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
+    coerce: bool | CoerceFn | None = None
     validate: ValidateFn | None = None
     # check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False

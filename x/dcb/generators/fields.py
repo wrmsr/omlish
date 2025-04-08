@@ -27,7 +27,7 @@ def get_init_fields(
 
     ordered_init_fields = list(all_init_fields)
     if reorder:
-        ordered_init_fields.sort(key=lambda f: (f.has_default, not f.kw_only))
+        ordered_init_fields.sort(key=lambda f: (f.default.present, not f.kw_only))
 
     std_init_fields, kw_only_init_fields = (
         tuple(f1 for f1 in ordered_init_fields if f1.init and not f1.kw_only),

@@ -121,7 +121,7 @@ class ClassProcessor:
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 
-        kw = {CLS_IDENT: self._cls}
+        kw: dict = {CLS_IDENT: self._cls}
         kw.update({k: v for k, v in FN_GLOBALS.items() if v.src is None})
         orm = self.prepare().ref_map
         for r in comp.refs:

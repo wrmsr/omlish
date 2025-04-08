@@ -113,7 +113,7 @@ class InitGenerator(Generator[InitPlan]):
 
         ifs: list[OpRef[InitFn]] = []
         for i, ifn in enumerate(ctx.cs.init_fns or []):
-            ir = OpRef(f'init.init_fns.{i}')
+            ir: OpRef = OpRef(f'init.init_fns.{i}')
             orm[ir] = ifn
             ifs.append(ir)
 
