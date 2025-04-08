@@ -21,6 +21,7 @@ from ..ops import AddMethodOp
 from ..ops import Op
 from ..ops import OpRef
 from ..specs import FieldType
+from ..types import CoerceFn
 from ..types import DefaultFactory
 from ..types import InitFn
 from ..types import ValidateFn
@@ -45,6 +46,7 @@ class InitPlan(Plan):
 
         field_type: FieldType
 
+        coerce: bool | OpRef[CoerceFn] | None
         validate: OpRef[ValidateFn] | None
 
     fields: tuple[Field, ...]
@@ -90,6 +92,13 @@ class InitGenerator(Generator[InitPlan]):
                     dr = OpRef(f'init.fields.{i}.default')
                     orm[dr] = dfl
 
+            co: bool | OpRef[CoerceFn] | None = None
+            if isinstance(f.coerce, bool):
+                co = f.coerce
+            elif f.coerce is not None:
+                co = OpRef(f'init.fields.{i}.coerce')
+                orm[co] = f.coerce
+
             vr: OpRef[ValidateFn] | None = None
             if f.validate is not None:
                 vr = OpRef(f'init.fields.{i}.validate')
@@ -108,6 +117,7 @@ class InitGenerator(Generator[InitPlan]):
 
                 field_type=f.field_type,
 
+                coerce=co,
                 validate=vr,
             ))
 
@@ -170,6 +180,17 @@ class InitGenerator(Generator[InitPlan]):
                 f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
                 f'        {f.name} = {f.default_factory.ident()}()',
             ])
+
+        for f in bs.fields:
+            if isinstance(f.coerce, bool) and f.coerce:
+                lines.append(
+                    f'    {f.name} = {f.annotation.ident()}({f.name})',
+                )
+            elif isinstance(f.coerce, OpRef):
+                ors.add(f.coerce)
+                lines.append(
+                    f'    {f.name} = {f.coerce.ident()}({f.name})',
+                )
 
         for f in bs.fields:
             if f.validate is None:

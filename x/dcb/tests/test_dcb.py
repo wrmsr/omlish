@@ -22,7 +22,7 @@ from .. import api
 class A:
     i: int
     s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
-    d: int = 5
+    d: int = api.field(default=5, coerce=int)
     l: ta.Sequence = api.field(
         default_factory=tuple,
         repr_priority=-1,

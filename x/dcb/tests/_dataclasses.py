@@ -12,6 +12,7 @@ def _transform_dataclass__A(
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__coerce,
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default_factory,
@@ -103,6 +104,7 @@ def _transform_dataclass__A(
     ) -> __dataclass__None:
         if l is __dataclass__HAS_DEFAULT_FACTORY:
             l = __dataclass__init__fields__3__default_factory()
+        d = __dataclass__init__fields__2__coerce(d)
         if not __dataclass__init__fields__3__validate(l):
             raise __dataclass__FieldValidationError(
                 __dataclass__self,
