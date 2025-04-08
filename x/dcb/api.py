@@ -124,7 +124,7 @@ def dataclass(
 
         cache_hash: bool = False,
         override: bool = False,
-        repr_id: bool = False
+        repr_id: bool = False,
 ):
     def inner(cls):
         fsl: list[FieldSpec] = []
@@ -165,7 +165,7 @@ def dataclass(
         if (cls_md_dct := cls.__dict__.get(METADATA_ATTR)):
             if (md_ifs := cls_md_dct.get(_InitMetadata)):
                 for md_if in md_ifs:
-                    init_fns.append(md_if)
+                    init_fns.append(md_if)  # noqa
 
         cs = ClassSpec(
                 fields=fsl,

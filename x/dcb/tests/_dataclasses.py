@@ -1,3 +1,7 @@
+# type: ignore
+# ruff: noqa
+# flake8: noqa
+# @omlish-generated
 import dataclasses
 import types
 

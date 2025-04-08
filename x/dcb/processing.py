@@ -12,8 +12,8 @@ from .generators import PlanContext
 from .generators import all_generator_types
 from .generators import generator_type_for_plan_type
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
 from .idents import FN_GLOBAL_IMPORTS
+from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap

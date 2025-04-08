@@ -5,8 +5,8 @@ from omlish import check
 from omlish.text.mangle import StringMangler
 
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
 from .idents import FN_GLOBAL_IMPORTS
+from .idents import FN_GLOBALS
 from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
 from .idents import PROPERTY_IDENT
@@ -52,6 +52,13 @@ class OpCompiler:
         params: ta.Sequence[str]
         src: str
         refs: frozenset[OpRef]
+
+    _MODULE_HEADER_LINES: ta.ClassVar[ta.Sequence[str]] = [
+        '# type: ignore',
+        '# ruff: noqa',
+        '# flake8: noqa',
+        '# @omlish-generated',
+    ]
 
     def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
         body_lines: list[str] = []
@@ -158,6 +165,7 @@ class OpCompiler:
 
         if self._import_global_modules:
             lines.extend([
+                *self._MODULE_HEADER_LINES,
                 *[
                     f'import {i}'
                     for i in FN_GLOBAL_IMPORTS
