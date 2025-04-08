@@ -130,8 +130,8 @@ class CodeGen:
     def _gen_kv_to_kv_func_section(self) -> Section:
         return CodeGen.Section(
             lines=[
-                # 'class KvToKvFunc(ta.Protocol[P, KF, VF, KT, VT]):',
-                'class KvToKvFunc(ta.Protocol[KF, VF, KT, VT]):',
+                # 'class KvToKvFunc2(ta.Protocol[P, KF, VF, KT, VT]):',
+                'class KvToKvFunc2(ta.Protocol[KF, VF, KT, VT]):',
                 *itertools.chain.from_iterable(
                     [
                         f'    @ta.overload',
@@ -151,8 +151,13 @@ class CodeGen:
                     ]
                 ),
                 '    def __call__(self, kv, *args, **kwargs): ...',
+                '\n',
+                'KvToKvFunc: ta.TypeAlias = KvToKvFunc2[K, V, K, V]',
             ],
-            exports=['KvToKvFunc'],
+            exports=[
+                'KvToKvFunc2',
+                'KvToKvFunc',
+            ],
         )
 
     def _gen_install_section(self) -> Section:

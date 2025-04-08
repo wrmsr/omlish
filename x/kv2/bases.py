@@ -52,6 +52,7 @@ __all__ = [  # noqa
 
     'KV_BASES_BY_MRO',
 
+    'KvToKvFunc2',
     'KvToKvFunc',
 ]
 
@@ -203,7 +204,7 @@ KV_BASES_BY_MRO: ta.Mapping[tuple[type[Kv], ...], type[Kv]] = {
 ##
 
 
-class KvToKvFunc(ta.Protocol[KF, VF, KT, VT]):
+class KvToKvFunc2(ta.Protocol[KF, VF, KT, VT]):
     @ta.overload
     def __call__(
         self,
@@ -325,6 +326,9 @@ class KvToKvFunc(ta.Protocol[KF, VF, KT, VT]):
     ) -> QueryableKv[KT, VT]: ...
 
     def __call__(self, kv, *args, **kwargs): ...
+
+
+KvToKvFunc: ta.TypeAlias = KvToKvFunc2[K, V, K, V]
 
 
 ##

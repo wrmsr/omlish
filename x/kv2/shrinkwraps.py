@@ -240,5 +240,5 @@ def shrinkwrap_factory_(w_cls):
 
 
 # def shrinkwrap_factory(w_cls: ta.Callable[P, ShrinkwrapKv[K, V]]) -> KvToKvFunc[P, K, V]:
-def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V, K, V]:
+def shrinkwrap_factory(w_cls: type[ShrinkwrapKv[K, V]]) -> KvToKvFunc[K, V]:
     return shrinkwrap_factory_(w_cls)

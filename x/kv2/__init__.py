@@ -15,6 +15,7 @@ from .bases import (  # noqa
 
     KV_BASES_BY_MRO,
 
+    KvToKvFunc2,
     KvToKvFunc,
 )
 
