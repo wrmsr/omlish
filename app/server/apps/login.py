@@ -1,9 +1,5 @@
 from omlish import lang
-from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import redirect_response
+from omlish.http import asgi
 from omserv.apps.base import url_for
 from omserv.apps.markers import AppMarker
 from omserv.apps.markers import AppMarkerProcessor
@@ -25,9 +21,9 @@ def login_user(user: User, *, remember: bool = False) -> None:
 
 
 @lang.decorator
-async def _login_required(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+async def _login_required(fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
     if USER.get() is None:
-        await redirect_response(send, url_for('login'))
+        await asgi.redirect_response(send, url_for('login'))
         return
 
     await fn(scope, recv, send)
@@ -46,5 +42,5 @@ def login_required(fn):
 
 
 class _LoginRequiredAppMarkerProcessor(AppMarkerProcessor):
-    def process_app(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
         return _login_required(app)  # noqa

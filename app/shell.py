@@ -16,7 +16,7 @@ from omlish.asyncs import all as au
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
 from omlish.formats import dotenv
-from omlish.http.asgi import AsgiApp
+from omlish.http import asgi
 from omlish.logs import all as logs
 from omserv import server
 from omserv.nodes import registry as nr
@@ -64,7 +64,7 @@ def bind_node_registrant() -> inj.Elemental:
 class AsgiServerShellTask:
     def __init__(
             self,
-            app: AsgiApp,
+            app: asgi.AsgiApp,
             config: server.Config = server.Config(),
     ) -> None:
         super().__init__()

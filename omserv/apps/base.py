@@ -1,13 +1,13 @@
 import contextvars
 import typing as ta
 
-from omlish.http.asgi import AsgiScope
+from omlish.http import asgi
 
 
 ##
 
 
-SCOPE: contextvars.ContextVar[AsgiScope] = contextvars.ContextVar('scope')
+SCOPE: contextvars.ContextVar[asgi.AsgiScope] = contextvars.ContextVar('scope')
 
 
 ##

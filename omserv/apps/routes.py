@@ -10,13 +10,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiApp_
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import send_response
-from omlish.http.asgi import stub_lifespan
+from omlish.http import asgi
 
 from .base import BASE_SERVER_URL
 from .base import SCOPE
@@ -58,7 +52,7 @@ class Route(ta.NamedTuple):
 
 class RouteHandler(ta.NamedTuple):
     route: Route
-    handler: AsgiApp
+    handler: asgi.AsgiApp
 
 
 @dc.dataclass(frozen=True)
@@ -117,7 +111,7 @@ class DuplicateRouteError(Exception):
 def build_route_handler_map(
         handlers: ta.Iterable[RouteHandler | RouteHandlerHolder],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
-) -> ta.Mapping[Route, AsgiApp]:
+) -> ta.Mapping[Route, asgi.AsgiApp]:
     rh_by_r: dict[Route, RouteHandler] = {}
     for h in handlers:
         if isinstance(h, RouteHandlerHolder):
@@ -135,7 +129,7 @@ def build_route_handler_map(
 
             rh_by_r[rh.route] = rh
 
-    app_by_r: dict[Route, AsgiApp] = {}
+    app_by_r: dict[Route, asgi.AsgiApp] = {}
     for r, rh in rh_by_r.items():
         app = rh.handler
 
@@ -154,8 +148,8 @@ def build_route_handler_map(
 
 
 @dc.dataclass(frozen=True)
-class RouteHandlerApp(AsgiApp_):
-    route_handlers: ta.Mapping[Route, AsgiApp]
+class RouteHandlerApp(asgi.AsgiApp_):
+    route_handlers: ta.Mapping[Route, asgi.AsgiApp]
     base_server_url: BaseServerUrl | None = None
 
     URL_SCHEME_PORT_PAIRS: ta.ClassVar[ta.Collection[tuple[str, int]]] = (
@@ -163,13 +157,13 @@ class RouteHandlerApp(AsgiApp_):
         ('https', 443),
     )
 
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         with contextlib.ExitStack() as es:
             es.enter_context(lang.context_var_setting(SCOPE, scope))  # noqa
 
             match scope_ty := scope['type']:
                 case 'lifespan':
-                    await stub_lifespan(scope, recv, send)
+                    await asgi.stub_lifespan(scope, recv, send)
                     return
 
                 case 'http':
@@ -192,7 +186,7 @@ class RouteHandlerApp(AsgiApp_):
                         await handler(scope, recv, send)
 
                     else:
-                        await send_response(send, 404)
+                        await asgi.send_response(send, 404)
 
                 case _:
                     raise ValueError(f'Unhandled scope type: {scope_ty!r}')

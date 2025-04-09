@@ -12,12 +12,7 @@ import typing as ta
 import anyio
 
 from omlish import inject as inj
-from omlish.http.asgi import AsgiApp_
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import send_response
-from omlish.http.asgi import stub_lifespan
+from omlish.http import asgi
 from omlish.logs import all as logs
 
 from ...config import Config
@@ -30,20 +25,20 @@ log = logging.getLogger(__name__)
 ##
 
 
-class HiAsgiApp(AsgiApp_):
+class HiAsgiApp(asgi.AsgiApp_):
     def __init__(self) -> None:
         super().__init__()
 
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        await send_response(send, 200, body=b'hi')
+    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+        await asgi.send_response(send, 200, body=b'hi')
 
 
-class ByeAsgiApp(AsgiApp_):
+class ByeAsgiApp(asgi.AsgiApp_):
     def __init__(self) -> None:
         super().__init__()
 
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        await send_response(send, 200, body=b'bye')
+    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+        await asgi.send_response(send, 200, body=b'bye')
 
 
 ##
@@ -55,22 +50,22 @@ class Endpoint:
     endpoint: str
 
 
-class InjApp(AsgiApp_):
-    def __init__(self, endpoints: ta.Mapping[Endpoint, AsgiApp_]) -> None:
+class InjApp(asgi.AsgiApp_):
+    def __init__(self, endpoints: ta.Mapping[Endpoint, asgi.AsgiApp_]) -> None:
         super().__init__()
         self._endpoints = endpoints
 
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         match scope_ty := scope['type']:
             case 'lifespan':
-                await stub_lifespan(scope, recv, send)
+                await asgi.stub_lifespan(scope, recv, send)
                 return
 
             case 'http':
                 ep = Endpoint(scope['method'], scope['raw_path'].decode())
                 app = self._endpoints.get(ep)
                 if app is None:
-                    await send_response(send, 404)
+                    await asgi.send_response(send, 404)
                     return
 
                 await app(scope, recv, send)
@@ -84,14 +79,14 @@ class InjApp(AsgiApp_):
 
 def _bind() -> inj.Elements:
     return inj.as_elements(
-        inj.map_binder[Endpoint, AsgiApp_](),
+        inj.map_binder[Endpoint, asgi.AsgiApp_](),
         inj.bind(InjApp, singleton=True),
 
         inj.bind(HiAsgiApp, singleton=True),
-        inj.map_binder[Endpoint, AsgiApp_]().bind(Endpoint('GET', '/hi'), HiAsgiApp),
+        inj.map_binder[Endpoint, asgi.AsgiApp_]().bind(Endpoint('GET', '/hi'), HiAsgiApp),
 
         inj.bind(ByeAsgiApp, singleton=True),
-        inj.map_binder[Endpoint, AsgiApp_]().bind(Endpoint('GET', '/bye'), ByeAsgiApp),
+        inj.map_binder[Endpoint, asgi.AsgiApp_]().bind(Endpoint('GET', '/bye'), ByeAsgiApp),
     )
 
 

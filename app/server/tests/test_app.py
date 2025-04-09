@@ -12,7 +12,7 @@ from omlish import check
 from omlish import inject as inj
 from omlish import lang
 from omlish.asyncs import all as au
-from omlish.http.asgi import AsgiApp
+from omlish.http import asgi
 from omlish.testing import pytest as ptu
 from omserv.server.config import Config
 from omserv.server.default import serve
@@ -152,7 +152,7 @@ async def test_auth(harness):
         bind_secrets(),
         bind_in_memory_user_store(),
     ) as i:
-        app = await au.s_to_a(i.provide)(AsgiApp)
+        app = await au.s_to_a(i.provide)(asgi.AsgiApp)
 
         async with anyio.create_task_group() as tg:
             tg.start_soon(functools.partial(

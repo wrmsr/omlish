@@ -3,11 +3,8 @@ import dataclasses as dc
 import logging
 
 from omlish import lang
+from omlish.http import asgi
 from omlish.http import sessions
-from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
 
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
@@ -35,7 +32,7 @@ def with_session(fn):
 class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
     _ss: sessions.CookieSessionStore
 
-    async def _wrap(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def _wrap(self, fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         async def _send(obj):
             if obj['type'] == 'http.response.start':
                 out_session = SESSION.get()
@@ -53,5 +50,5 @@ class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(SESSION, in_session):
             await fn(scope, recv, _send)
 
-    def process_app(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
         return lang.decorator(self._wrap)(app)  # noqa

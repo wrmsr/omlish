@@ -4,10 +4,7 @@ import logging
 
 from omlish import lang
 from omlish.http import all as hu
-from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
+from omlish.http import asgi
 from omserv.apps.markers import AppMarker
 from omserv.apps.markers import AppMarkerProcessor
 from omserv.apps.markers import append_app_marker
@@ -48,7 +45,7 @@ def with_user(fn):
 class _WithUserAppMarkerProcessor(AppMarkerProcessor):
     _users: UserStore
 
-    async def _wrap(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def _wrap(self, fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         session = SESSION.get()
 
         user_id = session.get('_user_id')
@@ -60,14 +57,14 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(USER, user):
             await fn(scope, recv, send)
 
-    def process_app(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
         return lang.decorator(self._wrap)(app)  # noqa
 
 
 ##
 
 
-async def get_auth_user(scope: AsgiScope, users: UserStore) -> User | None:
+async def get_auth_user(scope: asgi.AsgiScope, users: UserStore) -> User | None:
     hdrs = dict(scope['headers'])
     auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
     if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):

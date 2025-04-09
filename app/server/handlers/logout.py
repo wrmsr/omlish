@@ -1,7 +1,4 @@
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import redirect_response
+from omlish.http import asgi
 from omserv.apps.base import url_for
 from omserv.apps.routes import Route
 from omserv.apps.routes import RouteHandlerHolder
@@ -18,6 +15,6 @@ class LogoutHandler(RouteHandlerHolder):
     @with_session
     @with_user
     @login_required
-    async def handle_get_logout(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def handle_get_logout(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         SESSION.get().pop('_user_id', None)
-        await redirect_response(send, url_for(''))
+        await asgi.redirect_response(send, url_for(''))

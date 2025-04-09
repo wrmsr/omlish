@@ -25,11 +25,7 @@ import httpx
 from omlish import lang
 from omlish.formats import json
 from omlish.http import all as hu
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import read_body
-from omlish.http.asgi import send_response
+from omlish.http import asgi
 from omlish.secrets import all as sec
 from omserv.apps.routes import Route
 from omserv.apps.routes import RouteHandlerHolder
@@ -142,7 +138,7 @@ def run_sd(args: SdArgs) -> bytes:
 ##
 
 
-def _check_auth(scope: AsgiScope, sec_token: str) -> bool:
+def _check_auth(scope: asgi.AsgiScope, sec_token: str) -> bool:
     if not sec_token:
         return False
 
@@ -163,27 +159,27 @@ class SdHandler(RouteHandlerHolder):
     _secrets: sec.Secrets
 
     @handles(Route.post('/sd'))
-    async def handle_post_sd(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def handle_post_sd(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
-            await send_response(send, 401)
+            await asgi.send_response(send, 401)
             return
 
-        req_body = await read_body(recv)
+        req_body = await asgi.read_body(recv)
         sd_args = SdArgs(**json.loads(req_body))
         sd_out_png = await anyio.to_thread.run_sync(functools.partial(run_sd, sd_args))
 
-        await send_response(send, 200, hu.consts.CONTENT_TYPE_PNG, body=sd_out_png)
+        await asgi.send_response(send, 200, hu.consts.CONTENT_TYPE_PNG, body=sd_out_png)
 
     @handles(Route.post('/sd2'))
-    async def handle_post_sd2(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def handle_post_sd2(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
-            await send_response(send, 401)
+            await asgi.send_response(send, 401)
             return
 
         sd2_url = self._secrets.get('sd2_url').reveal()
 
-        req_body = await read_body(recv)
+        req_body = await asgi.read_body(recv)
 
         async with httpx.AsyncClient(timeout=180) as client:
             resp = await client.post(f'{sd2_url}/sd', content=req_body)
-            await send_response(send, resp.status_code, hu.consts.CONTENT_TYPE_PNG, body=resp.content)
+            await asgi.send_response(send, resp.status_code, hu.consts.CONTENT_TYPE_PNG, body=resp.content)

@@ -8,11 +8,7 @@ from omlish import lang
 from omlish.asyncs import anyio as anu
 from omlish.formats import json
 from omlish.http import all as hu
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import read_body
-from omlish.http.asgi import send_response
+from omlish.http import asgi
 from omserv.apps.routes import Route
 from omserv.apps.routes import RouteHandlerHolder
 from omserv.apps.routes import handles
@@ -39,14 +35,14 @@ class TikHandler(RouteHandlerHolder):
     _users: UserStore
 
     @handles(Route.post('/tik'))
-    async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def handle_post_tik(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
         if (user := await get_auth_user(scope, self._users)) is None:
-            await send_response(send, 401)
+            await asgi.send_response(send, 401)
             return
 
         enc = await gpt2_enc.get()
 
-        req_body = await read_body(recv)
+        req_body = await asgi.read_body(recv)
         toks = enc.encode(req_body.decode())
         dct = {
             'user_id': user.id,
@@ -55,4 +51,4 @@ class TikHandler(RouteHandlerHolder):
         }
         resp_body = json.dumps(dct).encode() + b'\n'
 
-        await send_response(send, 200, hu.consts.CONTENT_TYPE_JSON_UTF8, body=resp_body)
+        await asgi.send_response(send, 200, hu.consts.CONTENT_TYPE_JSON_UTF8, body=resp_body)

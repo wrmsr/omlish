@@ -2,7 +2,7 @@ import abc
 import typing as ta
 
 from omlish import lang
-from omlish.http.asgi import AsgiApp
+from omlish.http import asgi
 from omlish.metadata import ObjectMetadata
 from omlish.metadata import append_object_metadata
 from omlish.metadata import get_object_metadata
@@ -35,12 +35,12 @@ def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
 
 class AppMarkerProcessor(lang.Abstract):
     @abc.abstractmethod
-    def process_app(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
         raise NotImplementedError
 
 
 class NopAppMarkerProcessor(AppMarkerProcessor, lang.Final):
-    def process_app(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
         return app
 
 

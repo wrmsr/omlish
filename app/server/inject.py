@@ -12,8 +12,8 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 import datetime
 
 from omlish import inject as inj
+from omlish.http import asgi
 from omlish.http import sessions
-from omlish.http.asgi import AsgiApp
 from omlish.secrets import all as sec
 from omserv.apps.routes import RouteHandlerApp
 from omserv.apps.templates import JinjaTemplates
@@ -75,5 +75,5 @@ def bind_app() -> inj.Elemental:
         _bind_cookie_session_store(),
 
         inj.bind(RouteHandlerApp, singleton=True),
-        inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
+        inj.bind(asgi.AsgiApp, to_key=RouteHandlerApp, expose=True),
     )
