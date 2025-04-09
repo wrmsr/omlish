@@ -75,5 +75,5 @@ def bind_app() -> inj.Elemental:
         _bind_cookie_session_store(),
 
         inj.bind(RouteHandlerApp, singleton=True),
-        inj.bind(asgi.AsgiApp, to_key=RouteHandlerApp, expose=True),
+        inj.bind(asgi.App, to_key=RouteHandlerApp, expose=True),
     )

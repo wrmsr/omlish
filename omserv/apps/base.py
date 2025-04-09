@@ -7,7 +7,7 @@ from omlish.http import asgi
 ##
 
 
-SCOPE: contextvars.ContextVar[asgi.AsgiScope] = contextvars.ContextVar('scope')
+SCOPE: contextvars.ContextVar[asgi.Scope] = contextvars.ContextVar('scope')
 
 
 ##

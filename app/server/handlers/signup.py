@@ -22,7 +22,7 @@ class SignupHandler(RouteHandlerHolder):
     @handles(Route.get('/signup'))
     @with_session
     @with_user
-    async def handle_get_signup(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_get_signup(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         html = self._templates.render('signup.html.j2')
         await asgi.start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await asgi.finish_response(send, html)
@@ -30,7 +30,7 @@ class SignupHandler(RouteHandlerHolder):
     @handles(Route.post('/signup'))
     @with_session
     @with_user
-    async def handle_post_signup(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_post_signup(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         dct = await asgi.read_form_body(recv)
 
         email = dct[b'email'].decode()

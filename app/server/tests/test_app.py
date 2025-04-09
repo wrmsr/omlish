@@ -152,7 +152,7 @@ async def test_auth(harness):
         bind_secrets(),
         bind_in_memory_user_store(),
     ) as i:
-        app = await au.s_to_a(i.provide)(asgi.AsgiApp)
+        app = await au.s_to_a(i.provide)(asgi.App)
 
         async with anyio.create_task_group() as tg:
             tg.start_soon(functools.partial(

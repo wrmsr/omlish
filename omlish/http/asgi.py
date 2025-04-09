@@ -13,24 +13,24 @@ log = logging.getLogger(__name__)
 ##
 
 
-AsgiScope: ta.TypeAlias = ta.Mapping[str, ta.Any]
-AsgiMessage: ta.TypeAlias = ta.Mapping[str, ta.Any]
-AsgiRecv: ta.TypeAlias = ta.Callable[[], ta.Awaitable[AsgiMessage]]
-AsgiSend: ta.TypeAlias = ta.Callable[[AsgiMessage], ta.Awaitable[None]]
-AsgiApp: ta.TypeAlias = ta.Callable[[AsgiScope, AsgiRecv, AsgiSend], ta.Awaitable[None]]
-AsgiWrapper: ta.TypeAlias = ta.Callable[[AsgiApp, AsgiScope, AsgiRecv, AsgiSend], ta.Awaitable[None]]
+Scope: ta.TypeAlias = ta.Mapping[str, ta.Any]
+Message: ta.TypeAlias = ta.Mapping[str, ta.Any]
+Recv: ta.TypeAlias = ta.Callable[[], ta.Awaitable[Message]]
+Send: ta.TypeAlias = ta.Callable[[Message], ta.Awaitable[None]]
+App: ta.TypeAlias = ta.Callable[[Scope, Recv, Send], ta.Awaitable[None]]
+Wrapper: ta.TypeAlias = ta.Callable[[App, Scope, Recv, Send], ta.Awaitable[None]]
 
 
-class AsgiApp_(abc.ABC):  # noqa
+class App_(abc.ABC):  # noqa
     @abc.abstractmethod
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def __call__(self, scope: Scope, recv: Recv, send: Send) -> None:
         raise NotImplementedError
 
 
 ##
 
 
-async def stub_lifespan(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend, *, verbose: bool = False) -> None:
+async def stub_lifespan(scope: Scope, recv: Recv, send: Send, *, verbose: bool = False) -> None:
     while True:
         message = await recv()
         if message['type'] == 'lifespan.startup':
@@ -49,7 +49,7 @@ async def stub_lifespan(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend, *, ver
 
 
 async def start_response(
-        send: AsgiSend,
+        send: Send,
         status: int,
         content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
@@ -65,7 +65,7 @@ async def start_response(
 
 
 async def finish_response(
-        send: AsgiSend,
+        send: Send,
         body: bytes = b'',
 ) -> None:
     await send({
@@ -75,7 +75,7 @@ async def finish_response(
 
 
 async def send_response(
-        send: AsgiSend,
+        send: Send,
         status: int,
         content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
@@ -93,7 +93,7 @@ async def send_response(
 
 
 async def redirect_response(
-        send: AsgiSend,
+        send: Send,
         url: str,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
 ) -> None:
@@ -116,7 +116,7 @@ async def redirect_response(
 ##
 
 
-async def read_body(recv: AsgiRecv) -> bytes:
+async def read_body(recv: Recv) -> bytes:
     body = b''
     more_body = True
     while more_body:
@@ -126,7 +126,7 @@ async def read_body(recv: AsgiRecv) -> bytes:
     return body
 
 
-async def read_form_body(recv: AsgiRecv) -> dict[bytes, bytes]:
+async def read_form_body(recv: Recv) -> dict[bytes, bytes]:
     body = await read_body(recv)
     dct = urllib.parse.parse_qs(body)  # noqa
     return {k: check.single(v) for k, v in dct.items()}

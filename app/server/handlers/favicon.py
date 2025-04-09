@@ -8,5 +8,5 @@ from omserv.server.resources import favicon_bytes
 
 class FaviconHandler(RouteHandlerHolder):
     @handles(Route.get('/favicon.ico'))
-    async def handle_get_favicon_ico(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_get_favicon_ico(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         await asgi.send_response(send, 200, hu.consts.CONTENT_TYPE_ICON, body=favicon_bytes())

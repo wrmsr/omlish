@@ -21,7 +21,7 @@ class IndexHandler(RouteHandlerHolder):
     @handles(Route.get('/'))
     @with_session
     @with_user
-    async def handle_get_index(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_get_index(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         session = self._current_session()
 
         views = session['c'] = session.get('c', 0) + 1

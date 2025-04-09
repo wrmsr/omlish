@@ -36,7 +36,7 @@ def bind_app_marker_processor(mc: type[AppMarker], pc: type[AppMarkerProcessor])
 def _build_route_handler_map(
         handler_holders: ta.AbstractSet[RouteHandlerHolder],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
-) -> ta.Mapping[Route, asgi.AsgiApp]:
+) -> ta.Mapping[Route, asgi.App]:
     return build_route_handler_map(
         handler_holders,
         processors,
@@ -52,7 +52,7 @@ def bind_route_handler_map() -> inj.Elemental:
 
 def bind() -> inj.Elemental:
     return inj.as_elements(
-        inj.bind(ta.Callable[[], asgi.AsgiScope], to_const=SCOPE.get),
+        inj.bind(ta.Callable[[], asgi.Scope], to_const=SCOPE.get),
         inj.bind(ta.Callable[[], sessions.Session], to_const=SESSION.get),
 
         ##

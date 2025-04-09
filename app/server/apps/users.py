@@ -45,7 +45,7 @@ def with_user(fn):
 class _WithUserAppMarkerProcessor(AppMarkerProcessor):
     _users: UserStore
 
-    async def _wrap(self, fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def _wrap(self, fn: asgi.App, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         session = SESSION.get()
 
         user_id = session.get('_user_id')
@@ -57,14 +57,14 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(USER, user):
             await fn(scope, recv, send)
 
-    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
+    def process_app(self, app: asgi.App) -> asgi.App:
         return lang.decorator(self._wrap)(app)  # noqa
 
 
 ##
 
 
-async def get_auth_user(scope: asgi.AsgiScope, users: UserStore) -> User | None:
+async def get_auth_user(scope: asgi.Scope, users: UserStore) -> User | None:
     hdrs = dict(scope['headers'])
     auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
     if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):

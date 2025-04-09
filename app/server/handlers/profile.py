@@ -27,7 +27,7 @@ class ProfileHandler(RouteHandlerHolder):
     @with_session
     @with_user
     @login_required
-    async def handle_get_profile(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_get_profile(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         user = check.not_none(self._current_user())
         html = self._templates.render(
             'profile.html.j2',
@@ -40,7 +40,7 @@ class ProfileHandler(RouteHandlerHolder):
     @handles(Route.post('/profile'))
     @with_session
     @with_user
-    async def handle_post_profile(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_post_profile(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         user = check.not_none(self._current_user())
 
         dct = await asgi.read_form_body(recv)

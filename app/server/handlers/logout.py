@@ -15,6 +15,6 @@ class LogoutHandler(RouteHandlerHolder):
     @with_session
     @with_user
     @login_required
-    async def handle_get_logout(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_get_logout(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         SESSION.get().pop('_user_id', None)
         await asgi.redirect_response(send, url_for(''))

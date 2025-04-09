@@ -32,7 +32,7 @@ def with_session(fn):
 class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
     _ss: sessions.CookieSessionStore
 
-    async def _wrap(self, fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def _wrap(self, fn: asgi.App, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         async def _send(obj):
             if obj['type'] == 'http.response.start':
                 out_session = SESSION.get()
@@ -50,5 +50,5 @@ class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(SESSION, in_session):
             await fn(scope, recv, _send)
 
-    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
+    def process_app(self, app: asgi.App) -> asgi.App:
         return lang.decorator(self._wrap)(app)  # noqa

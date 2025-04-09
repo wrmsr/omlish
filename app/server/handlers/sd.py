@@ -138,7 +138,7 @@ def run_sd(args: SdArgs) -> bytes:
 ##
 
 
-def _check_auth(scope: asgi.AsgiScope, sec_token: str) -> bool:
+def _check_auth(scope: asgi.Scope, sec_token: str) -> bool:
     if not sec_token:
         return False
 
@@ -159,7 +159,7 @@ class SdHandler(RouteHandlerHolder):
     _secrets: sec.Secrets
 
     @handles(Route.post('/sd'))
-    async def handle_post_sd(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_post_sd(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
             await asgi.send_response(send, 401)
             return
@@ -171,7 +171,7 @@ class SdHandler(RouteHandlerHolder):
         await asgi.send_response(send, 200, hu.consts.CONTENT_TYPE_PNG, body=sd_out_png)
 
     @handles(Route.post('/sd2'))
-    async def handle_post_sd2(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_post_sd2(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
             await asgi.send_response(send, 401)
             return

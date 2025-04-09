@@ -64,7 +64,7 @@ def bind_node_registrant() -> inj.Elemental:
 class AsgiServerShellTask:
     def __init__(
             self,
-            app: asgi.AsgiApp,
+            app: asgi.App,
             config: server.Config = server.Config(),
     ) -> None:
         super().__init__()

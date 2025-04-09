@@ -52,7 +52,7 @@ class Route(ta.NamedTuple):
 
 class RouteHandler(ta.NamedTuple):
     route: Route
-    handler: asgi.AsgiApp
+    handler: asgi.App
 
 
 @dc.dataclass(frozen=True)
@@ -111,7 +111,7 @@ class DuplicateRouteError(Exception):
 def build_route_handler_map(
         handlers: ta.Iterable[RouteHandler | RouteHandlerHolder],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
-) -> ta.Mapping[Route, asgi.AsgiApp]:
+) -> ta.Mapping[Route, asgi.App]:
     rh_by_r: dict[Route, RouteHandler] = {}
     for h in handlers:
         if isinstance(h, RouteHandlerHolder):
@@ -129,7 +129,7 @@ def build_route_handler_map(
 
             rh_by_r[rh.route] = rh
 
-    app_by_r: dict[Route, asgi.AsgiApp] = {}
+    app_by_r: dict[Route, asgi.App] = {}
     for r, rh in rh_by_r.items():
         app = rh.handler
 
@@ -148,8 +148,8 @@ def build_route_handler_map(
 
 
 @dc.dataclass(frozen=True)
-class RouteHandlerApp(asgi.AsgiApp_):
-    route_handlers: ta.Mapping[Route, asgi.AsgiApp]
+class RouteHandlerApp(asgi.App_):
+    route_handlers: ta.Mapping[Route, asgi.App]
     base_server_url: BaseServerUrl | None = None
 
     URL_SCHEME_PORT_PAIRS: ta.ClassVar[ta.Collection[tuple[str, int]]] = (
@@ -157,7 +157,7 @@ class RouteHandlerApp(asgi.AsgiApp_):
         ('https', 443),
     )
 
-    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def __call__(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         with contextlib.ExitStack() as es:
             es.enter_context(lang.context_var_setting(SCOPE, scope))  # noqa
 

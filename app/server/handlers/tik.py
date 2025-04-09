@@ -35,7 +35,7 @@ class TikHandler(RouteHandlerHolder):
     _users: UserStore
 
     @handles(Route.post('/tik'))
-    async def handle_post_tik(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def handle_post_tik(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         if (user := await get_auth_user(scope, self._users)) is None:
             await asgi.send_response(send, 401)
             return

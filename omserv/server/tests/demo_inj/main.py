@@ -25,19 +25,19 @@ log = logging.getLogger(__name__)
 ##
 
 
-class HiAsgiApp(asgi.AsgiApp_):
+class HiAsgiApp(asgi.App_):
     def __init__(self) -> None:
         super().__init__()
 
-    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def __call__(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         await asgi.send_response(send, 200, body=b'hi')
 
 
-class ByeAsgiApp(asgi.AsgiApp_):
+class ByeAsgiApp(asgi.App_):
     def __init__(self) -> None:
         super().__init__()
 
-    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def __call__(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         await asgi.send_response(send, 200, body=b'bye')
 
 
@@ -50,12 +50,12 @@ class Endpoint:
     endpoint: str
 
 
-class InjApp(asgi.AsgiApp_):
-    def __init__(self, endpoints: ta.Mapping[Endpoint, asgi.AsgiApp_]) -> None:
+class InjApp(asgi.App_):
+    def __init__(self, endpoints: ta.Mapping[Endpoint, asgi.App_]) -> None:
         super().__init__()
         self._endpoints = endpoints
 
-    async def __call__(self, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+    async def __call__(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
         match scope_ty := scope['type']:
             case 'lifespan':
                 await asgi.stub_lifespan(scope, recv, send)
@@ -79,14 +79,14 @@ class InjApp(asgi.AsgiApp_):
 
 def _bind() -> inj.Elements:
     return inj.as_elements(
-        inj.map_binder[Endpoint, asgi.AsgiApp_](),
+        inj.map_binder[Endpoint, asgi.App_](),
         inj.bind(InjApp, singleton=True),
 
         inj.bind(HiAsgiApp, singleton=True),
-        inj.map_binder[Endpoint, asgi.AsgiApp_]().bind(Endpoint('GET', '/hi'), HiAsgiApp),
+        inj.map_binder[Endpoint, asgi.App_]().bind(Endpoint('GET', '/hi'), HiAsgiApp),
 
         inj.bind(ByeAsgiApp, singleton=True),
-        inj.map_binder[Endpoint, asgi.AsgiApp_]().bind(Endpoint('GET', '/bye'), ByeAsgiApp),
+        inj.map_binder[Endpoint, asgi.App_]().bind(Endpoint('GET', '/bye'), ByeAsgiApp),
     )
 
 

@@ -21,7 +21,7 @@ def login_user(user: User, *, remember: bool = False) -> None:
 
 
 @lang.decorator
-async def _login_required(fn: asgi.AsgiApp, scope: asgi.AsgiScope, recv: asgi.AsgiRecv, send: asgi.AsgiSend) -> None:
+async def _login_required(fn: asgi.App, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:
     if USER.get() is None:
         await asgi.redirect_response(send, url_for('login'))
         return
@@ -42,5 +42,5 @@ def login_required(fn):
 
 
 class _LoginRequiredAppMarkerProcessor(AppMarkerProcessor):
-    def process_app(self, app: asgi.AsgiApp) -> asgi.AsgiApp:
+    def process_app(self, app: asgi.App) -> asgi.App:
         return _login_required(app)  # noqa
