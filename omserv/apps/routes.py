@@ -158,6 +158,11 @@ class RouteHandlerApp(AsgiApp_):
     route_handlers: ta.Mapping[Route, AsgiApp]
     base_server_url: BaseServerUrl | None = None
 
+    URL_SCHEME_PORT_PAIRS: ta.ClassVar[ta.Collection[tuple[str, int]]] = (
+        ('http', 80),
+        ('https', 443),
+    )
+
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         with contextlib.ExitStack() as es:
             es.enter_context(lang.context_var_setting(SCOPE, scope))  # noqa
@@ -173,7 +178,7 @@ class RouteHandlerApp(AsgiApp_):
                     else:
                         sch = scope['scheme']
                         h, p = scope['server']
-                        if (sch, p) not in (('http', 80), ('https', 443)):
+                        if (sch, p) not in self.URL_SCHEME_PORT_PAIRS:
                             ps = f':{p}'
                         else:
                             ps = ''

@@ -2,12 +2,14 @@ import typing as ta
 
 from omlish import inject as inj
 from omlish.http import sessions
+from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiScope
 
 from .base import SCOPE
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import NopAppMarkerProcessor
+from .routes import Route
 from .routes import RouteHandlerHolder
 from .routes import _HandlesAppMarker
 from .routes import build_route_handler_map
@@ -32,9 +34,19 @@ def bind_app_marker_processor(mc: type[AppMarker], pc: type[AppMarkerProcessor])
     )
 
 
+def _build_route_handler_map(
+        handler_holders: ta.AbstractSet[RouteHandlerHolder],
+        processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
+) -> ta.Mapping[Route, AsgiApp]:
+    return build_route_handler_map(
+        handler_holders,
+        processors,
+    )
+
+
 def bind_route_handler_map() -> inj.Elemental:
     return inj.as_elements(
-        inj.bind(build_route_handler_map, singleton=True),
+        inj.bind(_build_route_handler_map, singleton=True),
         inj.map_binder[type[AppMarker], AppMarkerProcessor](),
     )
 
