@@ -9,7 +9,6 @@ App = ta.Callable[[Environ, StartResponse], ta.Iterable[lang.BytesLike]]
 
 
 # class App(lang.Abstract):
-#
 #     def __enter__(self: AppT) -> AppT:
 #         return self
 #
@@ -22,7 +21,6 @@ App = ta.Callable[[Environ, StartResponse], ta.Iterable[lang.BytesLike]]
 
 
 # class AsyncApp(lang.Abstract):
-#
 #     async def __aenter__(self: AppT) -> AppT:
 #         return self
 #

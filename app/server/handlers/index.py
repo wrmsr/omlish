@@ -9,7 +9,7 @@ from omlish.http.asgi import finish_response
 from omlish.http.asgi import start_response
 from omlish.http.sessions import Session
 from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandler_
+from omserv.apps.routes import RouteHandlerHolder
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
 from omserv.apps.templates import JinjaTemplates
@@ -18,7 +18,7 @@ from ..apps.users import with_user
 
 
 @dc.dataclass(frozen=True)
-class IndexHandler(RouteHandler_):
+class IndexHandler(RouteHandlerHolder):
     _current_session: ta.Callable[[], Session]
     _templates: JinjaTemplates
 

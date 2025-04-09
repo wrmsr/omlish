@@ -7,8 +7,8 @@ from omlish.http.asgi import send_response
 
 from ..routes import HANDLES_APP_MARKER_PROCESSORS
 from ..routes import Route
-from ..routes import RouteHandler_
 from ..routes import RouteHandlerApp
+from ..routes import RouteHandlerHolder
 from ..routes import build_route_handler_map
 from ..routes import handles
 
@@ -16,7 +16,7 @@ from ..routes import handles
 ##
 
 
-class FooHandler(RouteHandler_):
+class FooHandler(RouteHandlerHolder):
     @handles(Route.get('/'))
     async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         await send_response(send, 200, hu.consts.CONTENT_TYPE_TEXT, body=b'hi!')

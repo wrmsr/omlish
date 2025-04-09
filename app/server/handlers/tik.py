@@ -14,7 +14,7 @@ from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import read_body
 from omlish.http.asgi import send_response
 from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandler_
+from omserv.apps.routes import RouteHandlerHolder
 from omserv.apps.routes import handles
 
 from ...users import UserStore
@@ -35,7 +35,7 @@ gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
 @dc.dataclass(frozen=True)
-class TikHandler(RouteHandler_):
+class TikHandler(RouteHandlerHolder):
     _users: UserStore
 
     @handles(Route.post('/tik'))

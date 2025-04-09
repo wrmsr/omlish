@@ -46,5 +46,5 @@ def login_required(fn):
 
 
 class _LoginRequiredAppMarkerProcessor(AppMarkerProcessor):
-    def __call__(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: AsgiApp) -> AsgiApp:
         return _login_required(app)  # noqa

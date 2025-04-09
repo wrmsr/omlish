@@ -53,5 +53,5 @@ class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(SESSION, in_session):
             await fn(scope, recv, _send)
 
-    def __call__(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: AsgiApp) -> AsgiApp:
         return lang.decorator(self._wrap)(app)  # noqa

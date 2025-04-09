@@ -60,7 +60,7 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
         with lang.context_var_setting(USER, user):
             await fn(scope, recv, send)
 
-    def __call__(self, app: AsgiApp) -> AsgiApp:
+    def process_app(self, app: AsgiApp) -> AsgiApp:
         return lang.decorator(self._wrap)(app)  # noqa
 
 

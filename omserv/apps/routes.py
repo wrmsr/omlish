@@ -1,3 +1,8 @@
+"""
+TODO:
+ - include route in process_app?
+  - or, deduplicate handlers and only process apps once?
+"""
 import contextlib
 import dataclasses as dc
 import logging
@@ -78,12 +83,12 @@ HANDLES_APP_MARKER_PROCESSORS: AppMarkerProcessorMap = {
 ##
 
 
-class RouteHandler_(lang.Abstract):  # noqa
+class RouteHandlerHolder(lang.Abstract):  # noqa
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return get_marked_route_handlers(self)
 
 
-def get_marked_route_handlers(h: RouteHandler_) -> ta.Sequence[RouteHandler]:
+def get_marked_route_handlers(h: RouteHandlerHolder) -> ta.Sequence[RouteHandler]:
     ret: list[RouteHandler] = []
 
     cdct: dict[str, ta.Any] = {}
@@ -104,21 +109,45 @@ def get_marked_route_handlers(h: RouteHandler_) -> ta.Sequence[RouteHandler]:
     return ret
 
 
+@dc.dataclass()
+class DuplicateRouteError(Exception):
+    route_handlers: ta.Sequence[RouteHandler]
+
+
 def build_route_handler_map(
-        handlers: ta.AbstractSet[RouteHandler_],
+        handlers: ta.Iterable[RouteHandler | RouteHandlerHolder],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
 ) -> ta.Mapping[Route, AsgiApp]:
-    route_handlers: dict[Route, AsgiApp] = {}
+    rh_by_r: dict[Route, RouteHandler] = {}
     for h in handlers:
-        for rh in h.get_route_handlers():
-            app = rh.handler
-            markers = get_app_markers(rh.handler)
-            for m in markers:
-                mp = processors[type(m)]
-                if mp is not None:
-                    app = mp(app)
-            route_handlers[rh.route] = app
-    return route_handlers
+        if isinstance(h, RouteHandlerHolder):
+            rhs = list(h.get_route_handlers())
+        else:
+            rhs = [h]
+
+        for rh in rhs:
+            try:
+                ex = rh_by_r[rh.route]
+            except KeyError:
+                pass
+            else:
+                raise DuplicateRouteError([rh, ex])
+
+            rh_by_r[rh.route] = rh
+
+    app_by_r: dict[Route, AsgiApp] = {}
+    for r, rh in rh_by_r.items():
+        app = rh.handler
+
+        markers = get_app_markers(rh.handler)
+        for m in markers:
+            mp = processors[type(m)]
+            if mp is not None:
+                app = mp.process_app(app)
+
+        app_by_r[r] = app
+
+    return app_by_r
 
 
 ##

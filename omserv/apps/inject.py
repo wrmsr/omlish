@@ -8,7 +8,7 @@ from .base import SCOPE
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import NopAppMarkerProcessor
-from .routes import RouteHandler_
+from .routes import RouteHandlerHolder
 from .routes import _HandlesAppMarker
 from .routes import build_route_handler_map
 from .sessions import SESSION
@@ -18,10 +18,10 @@ from .templates import JinjaNamespace
 from .templates import JinjaTemplates
 
 
-def bind_handler(hc: type[RouteHandler_]) -> inj.Elemental:
+def bind_route_handler_class(hc: type[RouteHandlerHolder]) -> inj.Elemental:
     return inj.as_elements(
         inj.bind(hc, singleton=True),
-        inj.set_binder[RouteHandler_]().bind(hc),
+        inj.set_binder[RouteHandlerHolder]().bind(hc),
     )
 
 
@@ -53,7 +53,7 @@ def bind() -> inj.Elemental:
 
         ##
 
-        inj.set_binder[RouteHandler_](),
+        inj.set_binder[RouteHandlerHolder](),
     )
 
 

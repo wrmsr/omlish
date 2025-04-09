@@ -12,7 +12,7 @@ from omlish.http.asgi import redirect_response
 from omlish.http.asgi import start_response
 from omserv.apps.base import url_for
 from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandler_
+from omserv.apps.routes import RouteHandlerHolder
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
 from omserv.apps.templates import JinjaTemplates
@@ -24,7 +24,7 @@ from ..apps.users import with_user
 
 
 @dc.dataclass(frozen=True)
-class ProfileHandler(RouteHandler_):
+class ProfileHandler(RouteHandlerHolder):
     _current_user: ta.Callable[[], User | None]
     _templates: JinjaTemplates
     _users: UserStore
