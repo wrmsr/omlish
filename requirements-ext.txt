@@ -48,7 +48,7 @@ watchdog==6.0.0
 
 pyright[nodejs]==1.1.398
 
-basedpyright==1.28.4
+basedpyright==1.28.5
 
 blobfile==3.0.0
 
