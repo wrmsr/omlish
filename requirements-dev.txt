@@ -2,7 +2,7 @@
 
 build>=1.2.2
 twine>=6.1.0
-wheel>=0.46.1
+wheel>=0.45.1
 
 uv>=0.6.13
 
@@ -135,4 +135,4 @@ accelerate==1.6.0
 # bitsandbytes==0.45.4
 bitsandbytes
 
-hf_xet==1.0.2
+hf_xet==1.0.3

@@ -17,7 +17,7 @@ asyncpg==0.30.0
 asyncssh==2.20.0
 attrs==25.3.0
 babel==2.17.0
-basedpyright==1.28.4
+basedpyright==1.28.5
 bcrypt==4.3.0
 beautifulsoup4==4.13.3
 bitsandbytes==0.42.0
@@ -80,7 +80,7 @@ grpcio-status==1.71.0
 guppy3==3.1.5
 h11==0.14.0
 h2==4.2.0
-hf-xet==1.0.2
+hf-xet==1.0.3
 hpack==4.1.0
 httpcore==1.0.7
 httplib2==0.22.0
@@ -158,7 +158,7 @@ networkx==3.4.2
 nh3==0.2.21
 nodeenv==1.9.1
 nodejs-wheel-binaries==22.14.0
-notebook==7.0.7
+notebook==7.4.0
 notebook_shim==0.2.4
 numpy==2.2.4
 objgraph==3.6.2
@@ -309,7 +309,7 @@ wcwidth==0.2.13
 webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
-wheel==0.46.1
+wheel==0.45.1
 widgetsnbextension==4.0.13
 wikitextparser==0.56.3
 wrapt==1.17.2

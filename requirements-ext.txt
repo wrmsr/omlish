@@ -58,3 +58,4 @@ blobfile==3.0.0
 
 jupyter==1.1.1
 jupyterlab==4.4.0
+notebook==7.4.0
