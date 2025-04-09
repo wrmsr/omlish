@@ -42,3 +42,9 @@ class AppMarkerProcessor(lang.Abstract):
 class NopAppMarkerProcessor(AppMarkerProcessor, lang.Final):
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return app
+
+
+##
+
+
+AppMarkerProcessorMap: ta.TypeAlias = ta.Mapping[type[AppMarker], AppMarkerProcessor]

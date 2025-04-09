@@ -31,8 +31,8 @@ from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import read_body
 from omlish.http.asgi import send_response
 from omlish.secrets import all as sec
-from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
+from omserv.apps.routes import RouteHandler_
 from omserv.apps.routes import handles
 
 
@@ -159,7 +159,7 @@ def _check_auth(scope: AsgiScope, sec_token: str) -> bool:
 
 
 @dc.dataclass(frozen=True)
-class SdHandler(Handler_):
+class SdHandler(RouteHandler_):
     _secrets: sec.Secrets
 
     @handles(Route.post('/sd'))

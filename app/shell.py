@@ -43,7 +43,7 @@ async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
 
 def bind_node_registrant() -> inj.Elemental:
     async def get_procstats() -> ta.Mapping[str, ta.Any]:
-        return dc.asdict(procstats.get_psutil_procstats())
+        return dc.asdict(procstats.get_psutil_procstats())  # noqa
 
     return inj.as_elements(
         inj.private(
@@ -78,7 +78,7 @@ class AsgiServerShellTask:
             task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
     ) -> None:
         await server.serve(
-            self._app,  # type: ignore
+            self._app,
             self._config,
             shutdown_trigger=shutdown.wait,
         )

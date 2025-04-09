@@ -10,8 +10,8 @@ from omlish.http.asgi import redirect_response
 from omlish.http.asgi import start_response
 from omlish.secrets.pwhash import generate_password_hash
 from omserv.apps.base import url_for
-from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
+from omserv.apps.routes import RouteHandler_
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
 from omserv.apps.templates import JinjaTemplates
@@ -21,7 +21,7 @@ from ..apps.users import with_user
 
 
 @dc.dataclass(frozen=True)
-class SignupHandler(Handler_):
+class SignupHandler(RouteHandler_):
     _templates: JinjaTemplates
     _users: UserStore
 

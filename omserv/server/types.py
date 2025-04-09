@@ -4,13 +4,13 @@ import typing as ta
 ##
 
 
-AsgiReceiveEvent: ta.TypeAlias = dict[str, ta.Any]
-AsgiSendEvent: ta.TypeAlias = dict[str, ta.Any]
+AsgiReceiveEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
+AsgiSendEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
 
 AsgiReceiveCallable: ta.TypeAlias = ta.Callable[[], ta.Awaitable[AsgiReceiveEvent]]
 AsgiSendCallable: ta.TypeAlias = ta.Callable[[AsgiSendEvent], ta.Awaitable[None]]
 
-Scope: ta.TypeAlias = dict[str, ta.Any]
+Scope: ta.TypeAlias = ta.Mapping[str, ta.Any]
 AsgiFramework: ta.TypeAlias = ta.Callable[
     [
         Scope,
@@ -22,13 +22,13 @@ AsgiFramework: ta.TypeAlias = ta.Callable[
 
 LifespanScope: ta.TypeAlias = Scope
 
-HttpResponseStartEvent: ta.TypeAlias = dict[str, ta.Any]
+HttpResponseStartEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
 HttpScope: ta.TypeAlias = Scope
 WebsocketScope: ta.TypeAlias = Scope
 
-WebsocketAcceptEvent: ta.TypeAlias = dict[str, ta.Any]
-WebsocketResponseBodyEvent: ta.TypeAlias = dict[str, ta.Any]
-WebsocketResponseStartEvent: ta.TypeAlias = dict[str, ta.Any]
+WebsocketAcceptEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
+WebsocketResponseBodyEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
+WebsocketResponseStartEvent: ta.TypeAlias = ta.Mapping[str, ta.Any]
 
 
 ##

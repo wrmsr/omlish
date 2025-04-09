@@ -101,7 +101,7 @@ def _main() -> None:
     async def _a_main():
         injector = inj.create_injector(_bind())
         await serve(
-            injector[InjApp],  # type: ignore
+            injector[InjApp],
             Config(),
             handle_shutdown_signals=True,
         )

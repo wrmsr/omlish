@@ -51,7 +51,7 @@ async def test_auth(harness):
 
     async def inner():
         async with contextlib.AsyncExitStack() as aes:
-            aes.enter_context(lang.defer(sev.set))
+            aes.enter_context(lang.defer(sev.set))  # noqa
 
             r: httpx.Response
             async with httpx.AsyncClient(timeout=get_timeout_s()) as client:

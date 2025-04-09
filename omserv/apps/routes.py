@@ -17,6 +17,9 @@ from .base import BASE_SERVER_URL
 from .base import SCOPE
 from .base import BaseServerUrl
 from .markers import AppMarker
+from .markers import AppMarkerProcessor
+from .markers import AppMarkerProcessorMap
+from .markers import NopAppMarkerProcessor
 from .markers import append_app_marker
 from .markers import get_app_markers
 
@@ -67,15 +70,20 @@ def handles(*routes: Route):
     return inner
 
 
+HANDLES_APP_MARKER_PROCESSORS: AppMarkerProcessorMap = {
+    _HandlesAppMarker: NopAppMarkerProcessor(),
+}
+
+
 ##
 
 
-class Handler_(lang.Abstract):  # noqa
+class RouteHandler_(lang.Abstract):  # noqa
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return get_marked_route_handlers(self)
 
 
-def get_marked_route_handlers(h: Handler_) -> ta.Sequence[RouteHandler]:
+def get_marked_route_handlers(h: RouteHandler_) -> ta.Sequence[RouteHandler]:
     ret: list[RouteHandler] = []
 
     cdct: dict[str, ta.Any] = {}
@@ -94,6 +102,23 @@ def get_marked_route_handlers(h: Handler_) -> ta.Sequence[RouteHandler]:
         ret.extend(RouteHandler(r, app) for r in rs)
 
     return ret
+
+
+def build_route_handler_map(
+        handlers: ta.AbstractSet[RouteHandler_],
+        processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
+) -> ta.Mapping[Route, AsgiApp]:
+    route_handlers: dict[Route, AsgiApp] = {}
+    for h in handlers:
+        for rh in h.get_route_handlers():
+            app = rh.handler
+            markers = get_app_markers(rh.handler)
+            for m in markers:
+                mp = processors[type(m)]
+                if mp is not None:
+                    app = mp(app)
+            route_handlers[rh.route] = app
+    return route_handlers
 
 
 ##

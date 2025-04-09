@@ -1,0 +1,77 @@
+from omlish.http import all as hu
+from omlish.http.asgi import AsgiApp
+from omlish.http.asgi import AsgiRecv
+from omlish.http.asgi import AsgiScope
+from omlish.http.asgi import AsgiSend
+from omlish.http.asgi import send_response
+
+from ..routes import HANDLES_APP_MARKER_PROCESSORS
+from ..routes import Route
+from ..routes import RouteHandler_
+from ..routes import RouteHandlerApp
+from ..routes import build_route_handler_map
+from ..routes import handles
+
+
+##
+
+
+class FooHandler(RouteHandler_):
+    @handles(Route.get('/'))
+    async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        await send_response(send, 200, hu.consts.CONTENT_TYPE_TEXT, body=b'hi!')
+
+    @handles(Route.get('/foo'))
+    async def handle_get_foo(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        await send_response(send, 200, hu.consts.CONTENT_TYPE_TEXT, body=b'foo!')
+
+    @handles(Route.post('/bar'))
+    async def handle_post_bar(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        await send_response(send, 200, hu.consts.CONTENT_TYPE_TEXT, body=b'bar!')
+
+
+##
+
+
+def build_foo_app() -> AsgiApp:
+    rhs = {FooHandler()}
+    rhm = build_route_handler_map(rhs, {**HANDLES_APP_MARKER_PROCESSORS})
+    rha = RouteHandlerApp(rhm)
+    return rha
+
+
+##
+
+
+async def _a_main() -> None:
+    import functools
+
+    import anyio
+
+    from ...server.config import Config
+    from ...server.default import serve
+    from ...server.tests.utils import get_free_port
+    from ...server.types import AsgiWrapper
+
+    app = build_foo_app()
+
+    port = get_free_port()
+    server_bind = f'127.0.0.1:{port}'
+    base_url = f'http://{server_bind}/'
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(functools.partial(
+            serve,
+            AsgiWrapper(app),  # noqa
+            Config(
+                bind=(server_bind,),
+            ),
+        ))
+
+        print(f'Serving at {base_url}')
+
+
+if __name__ == '__main__':
+    import anyio
+
+    anyio.run(_a_main)

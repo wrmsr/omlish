@@ -6,8 +6,8 @@ from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
-from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
+from omserv.apps.routes import RouteHandler_
 from omserv.apps.routes import handles
 
 from ...users import UserStore
@@ -15,7 +15,7 @@ from ..apps.users import get_auth_user
 
 
 @dc.dataclass(frozen=True)
-class AuthHandler(Handler_):
+class AuthHandler(RouteHandler_):
     _users: UserStore
 
     @handles(Route.post('/check-auth'))
