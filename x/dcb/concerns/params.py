@@ -7,11 +7,11 @@ check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], Para
             raise ValueError('eq must be true if order is true')
 
 """
-from ..processing import Processor
 from ..processing import ProcessingContext
+from ..processing import Processor
+from ..registry import register_context_item_factory
 from ..specs import ClassSpec
 from ..std import StdParams
-from ..registry import register_context_item_factory
 
 
 ##

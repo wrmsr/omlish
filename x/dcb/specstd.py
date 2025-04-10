@@ -1,5 +1,5 @@
-import typing as ta
 import dataclasses as dc
+import typing as ta
 
 from omlish import check
 from omlish import lang

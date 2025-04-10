@@ -1,7 +1,7 @@
 import inspect
 
-from ..processing import Processor
 from ..processing import ProcessingContext
+from ..processing import Processor
 
 
 ##

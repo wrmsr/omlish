@@ -18,6 +18,8 @@ from .. import api
 
 
 T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 ##
@@ -61,7 +63,7 @@ def test_dcb():
 ##
 
 
-@api.dataclass(frozen=True, generic_init=True)  # type: ignore
+@api.dataclass(frozen=True, generic_init=True)
 class Thing(ta.Generic[T]):
     s: set[T]
     # mk: ta.Mapping[K, T]
@@ -74,17 +76,17 @@ class Thing(ta.Generic[T]):
     mfv: ta.Mapping[T, frozenset[str]]
 
 
-@api.dataclass(frozen=True, generic_init=True)  # type: ignore
+@api.dataclass(frozen=True, generic_init=True)
 class IntThing(Thing[int]):
     pass
 
 
-@api.dataclass(frozen=True, generic_init=True)  # type: ignore
+@api.dataclass(frozen=True, generic_init=True)
 class Thing2(Thing[K]):
     pass
 
 
-@api.dataclass(frozen=True, generic_init=True)  # type: ignore
+@api.dataclass(frozen=True, generic_init=True)
 class IntThing2(Thing2[int]):
     pass
 

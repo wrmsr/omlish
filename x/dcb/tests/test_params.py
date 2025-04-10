@@ -2,8 +2,8 @@ import dataclasses as dc
 import typing as ta
 
 from ..specs import ClassSpec
-from ..std import StdParams
 from ..std import STD_PARAMS_ATTR
+from ..std import StdParams
 
 
 ##
@@ -60,5 +60,5 @@ class Foo:
 
 def test_std_params():
     ap = getattr(Foo, STD_PARAMS_ATTR)
-    cs = ClassSpec(fields=[])
+    cs = ClassSpec(fields=[])  # noqa
     print(ap)
