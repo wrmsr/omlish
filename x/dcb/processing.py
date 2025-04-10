@@ -58,10 +58,5 @@ class Processor(lang.Abstract):
     def check(self) -> None:
         pass
 
-    @ta.final
-    @lang.cached_function
-    def process(self) -> None:
-        self._process()
-
-    def _process(self) -> None:
+    def process(self, cls: type) -> type:
         raise NotImplementedError

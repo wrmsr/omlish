@@ -27,10 +27,12 @@ class GeneratorProcessor(Processor):
             self,
             ctx: ProcessingContext,
             *,
+            mode: ta.Literal['executor', 'compiler'] = 'compiler',
             set_global_kwarg_defaults: bool = True,
     ) -> None:
         super().__init__(ctx)
 
+        self._mode = mode
         self._set_global_kwarg_defaults = set_global_kwarg_defaults
 
     @dc.dataclass(frozen=True)
@@ -92,16 +94,16 @@ class GeneratorProcessor(Processor):
 
     #
 
-    def process_with_executor(self) -> None:
+    def process_with_executor(self, cls: type) -> None:
         opx = OpExecutor(
-            self._ctx.cls,
+            cls,
             self.prepare().ref_map,
         )
 
         for op in self.ops():
             opx.execute(op)
 
-    def process_with_compiler(self) -> None:
+    def process_with_compiler(self, cls: type) -> None:
         comp = self.compile()
 
         ns: dict = {}
@@ -111,7 +113,7 @@ class GeneratorProcessor(Processor):
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 
-        kw: dict = {CLS_IDENT: self._ctx.cls}
+        kw: dict = {CLS_IDENT: cls}
         kw.update({k: v for k, v in FN_GLOBALS.items() if v.src is None})
         orm = self.prepare().ref_map
         for r in comp.refs:
@@ -119,13 +121,11 @@ class GeneratorProcessor(Processor):
 
         fn(**kw)
 
-    def _process(
-            self,
-            mode: ta.Literal['executor', 'compiler'] = 'compiler',
-    ) -> None:
-        if mode == 'compiler':
-            self.process_with_compiler()
-        elif mode == 'executor':
-            self.process_with_executor()
+    def process(self, cls: type) -> type:
+        if self._mode == 'compiler':
+            self.process_with_compiler(cls)
+        elif self._mode == 'executor':
+            self.process_with_executor(cls)
         else:
-            raise ValueError(mode)
+            raise ValueError(self._mode)
+        return cls
