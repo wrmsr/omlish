@@ -25,6 +25,7 @@ from ..types import CoerceFn
 from ..types import DefaultFactory
 from ..types import InitFn
 from ..types import ValidateFn
+from .fields import InitFields
 
 
 ##
@@ -63,7 +64,7 @@ class InitGenerator(Generator[InitPlan]):
             return None
 
         seen_default = None
-        for f in ctx.ana.init_fields.std:
+        for f in ctx[InitFields].std:
             if not f.init:
                 continue
             if f.default.present:

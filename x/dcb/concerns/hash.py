@@ -7,11 +7,12 @@ from ..generators.base import Generator
 from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
-from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_tuple_body_src_lines
 from ..generators.ops import AddMethodOp
 from ..generators.ops import Op
 from ..generators.ops import SetAttrOp
+from ..generators.registry import register_generator_type
+from ..generators.utils import build_attr_tuple_body_src_lines
+from .fields import InstanceFields
 
 
 ##
@@ -89,7 +90,7 @@ class HashGenerator(Generator[HashPlan]):
         elif action == 'add':
             fields = tuple(
                 f.name
-                for f in ctx.ana.instance_fields
+                for f in ctx[InstanceFields]
                 if (f.compare if f.hash is None else f.hash)
             )
 

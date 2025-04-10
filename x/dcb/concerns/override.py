@@ -13,6 +13,7 @@ from ..generators.idents import VALUE_IDENT
 from ..generators.ops import AddPropertyOp
 from ..generators.ops import Op
 from ..generators.ops import OpRef
+from .fields import InstanceFields
 
 
 ##
@@ -36,7 +37,7 @@ class OverrideGenerator(Generator[OverridePlan]):
         orm = {}
 
         flds: list[OverridePlan.Field] = []
-        for i, f in enumerate(ctx.ana.instance_fields):
+        for i, f in enumerate(ctx[InstanceFields]):
             if not (f.override or ctx.cs.override):
                 continue
             r: OpRef = OpRef(f'override.fields.{i}.annotation')

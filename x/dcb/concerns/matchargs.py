@@ -8,6 +8,7 @@ from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..generators.ops import Op
 from ..generators.ops import SetAttrOp
+from .fields import InitFields
 
 
 ##
@@ -25,7 +26,7 @@ class MatchArgsGenerator(Generator[MatchArgsPlan]):
             return None
 
         return PlanResult(MatchArgsPlan(
-            tuple(f.name for f in ctx.ana.init_fields.std),
+            tuple(f.name for f in ctx[InitFields].std),
         ))
 
     def generate(self, pl: MatchArgsPlan) -> ta.Iterable[Op]:

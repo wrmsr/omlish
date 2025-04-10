@@ -9,6 +9,7 @@ from ..generators.registry import register_generator_type
 from ..generators.utils import build_attr_tuple_body_src_lines
 from ..generators.ops import AddMethodOp
 from ..generators.ops import Op
+from .fields import InstanceFields
 
 
 ##
@@ -44,7 +45,7 @@ class OrderGenerator(Generator[OrderPlan]):
                 )
 
         return PlanResult(OrderPlan(
-            tuple(f.name for f in ctx.ana.instance_fields if f.compare),
+            tuple(f.name for f in ctx[InstanceFields] if f.compare),
         ))
 
     def generate(self, pl: OrderPlan) -> ta.Iterable[Op]:

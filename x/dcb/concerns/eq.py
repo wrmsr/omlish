@@ -5,9 +5,10 @@ from ..generators.base import Generator
 from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
-from ..generators.registry import register_generator_type
 from ..generators.ops import AddMethodOp
 from ..generators.ops import Op
+from ..generators.registry import register_generator_type
+from .fields import InstanceFields
 
 
 ##
@@ -25,7 +26,7 @@ class EqGenerator(Generator[EqPlan]):
             return None
 
         return PlanResult(EqPlan(
-            tuple(f.name for f in ctx.ana.instance_fields if f.compare),
+            tuple(f.name for f in ctx[InstanceFields] if f.compare),
         ))
 
     def generate(self, pl: EqPlan) -> ta.Iterable[Op]:
