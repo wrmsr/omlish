@@ -38,16 +38,13 @@ class PyenvInstallOpts:
 
 
 # TODO: https://github.com/pyenv/pyenv/blob/master/plugins/python-build/README.md#building-for-maximum-performance
-DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
+_DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
     opts=[
         '-s',
         '-v',
         '-k',
     ],
     conf_opts=[
-        # FIXME: breaks on mac for older py's
-        '--enable-loadable-sqlite-extensions',
-
         # '--enable-shared',
 
         '--enable-optimizations',
@@ -62,6 +59,27 @@ DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
         # '-mtune=native',
     ],
 )
+
+
+def get_default_pyenv_install_opts(
+        version: str,
+        *,
+        platform: ta.Optional[str] = None,
+) -> PyenvInstallOpts:
+    if platform is None:
+        platform = sys.platform
+
+    opts = _DEFAULT_PYENV_INSTALL_OPTS
+
+    ma, mi, rev = map(int, version.split('.'))
+    if not (platform == 'darwin' and (ma, mi) < (3, 11)):
+        opts = dc.replace(opts, conf_opts=[
+            *opts.conf_opts,
+            '--enable-loadable-sqlite-extensions',
+        ])
+
+    return opts
+
 
 DEBUG_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-g'])
 
@@ -188,7 +206,11 @@ class PyenvVersionInstaller:
             if opts is None:
                 opts = PyenvInstallOpts()
         else:
-            lst = [self._given_opts if self._given_opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
+            lst: ta.List[PyenvInstallOpts] = []
+            if self._given_opts is not None:
+                lst.append(self._given_opts)
+            else:
+                lst.append(get_default_pyenv_install_opts(self._version))
             if self._interp_opts.debug:
                 lst.append(DEBUG_PYENV_INSTALL_OPTS)
             if self._interp_opts.threaded:
