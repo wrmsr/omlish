@@ -3,15 +3,15 @@ import typing as ta
 
 from omlish import check
 
-from ..generators.base import Generator
-from ..generators.base import Plan
-from ..generators.base import PlanContext
-from ..generators.base import PlanResult
-from ..generators.ops import AddMethodOp
-from ..generators.ops import Op
-from ..generators.ops import SetAttrOp
-from ..generators.registry import register_generator_type
-from ..generators.utils import build_attr_tuple_body_src_lines
+from ..generation.base import Generator
+from ..generation.base import Plan
+from ..generation.base import PlanContext
+from ..generation.base import PlanResult
+from ..generation.ops import AddMethodOp
+from ..generation.ops import Op
+from ..generation.ops import SetAttrOp
+from ..generation.registry import register_generator_type
+from ..generation.utils import build_attr_tuple_body_src_lines
 from .fields import InstanceFields
 
 

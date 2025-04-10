@@ -35,8 +35,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .generation.processor import GeneratorProcessor
 from .inspect import get_cls_annotations
-from .generators.processor import GeneratorProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec

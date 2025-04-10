@@ -10,8 +10,8 @@ from omlish import reflect as rfl
 
 from .std import STD_FIELDS_ATTR
 from .std import StdFieldType
-from .std import std_is_kw_only
 from .std import std_field_type
+from .std import std_is_kw_only
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]

@@ -1,14 +1,14 @@
 import dataclasses as dc
 import typing as ta
 
-from ..generators.base import Generator
-from ..generators.base import Plan
-from ..generators.base import PlanContext
-from ..generators.base import PlanResult
-from ..generators.registry import register_generator_type
-from ..generators.ops import AddMethodOp
-from ..generators.ops import Op
-from ..generators.ops import OpRef
+from ..generation.base import Generator
+from ..generation.base import Plan
+from ..generation.base import PlanContext
+from ..generation.base import PlanResult
+from ..generation.ops import AddMethodOp
+from ..generation.ops import Op
+from ..generation.ops import OpRef
+from ..generation.registry import register_generator_type
 from ..specs import FieldType
 from ..types import ReprFn
 

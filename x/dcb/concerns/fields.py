@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish import check
 
-from ..generators.base import PlanContext
-from ..generators.registry import register_context_item_factory
+from ..generation.base import PlanContext
+from ..generation.registry import register_context_item_factory
 from ..inspect import get_cls_annotations
 from ..specs import FieldSpec
 from ..specs import FieldType

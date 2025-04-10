@@ -2,9 +2,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from ..specs import ClassSpec
 from .ops import Op
 from .ops import OpRefMap
-from ..specs import ClassSpec
 
 
 T = ta.TypeVar('T')

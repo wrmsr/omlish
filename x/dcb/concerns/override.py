@@ -1,18 +1,18 @@
 import dataclasses as dc
 import typing as ta
 
-from ..generators.base import Generator
-from ..generators.base import Plan
-from ..generators.base import PlanContext
-from ..generators.base import PlanResult
-from ..generators.registry import register_generator_type
-from ..generators.utils import SetattrSrcBuilder
-from ..generators.idents import NONE_IDENT
-from ..generators.idents import SELF_IDENT
-from ..generators.idents import VALUE_IDENT
-from ..generators.ops import AddPropertyOp
-from ..generators.ops import Op
-from ..generators.ops import OpRef
+from ..generation.base import Generator
+from ..generation.base import Plan
+from ..generation.base import PlanContext
+from ..generation.base import PlanResult
+from ..generation.idents import NONE_IDENT
+from ..generation.idents import SELF_IDENT
+from ..generation.idents import VALUE_IDENT
+from ..generation.ops import AddPropertyOp
+from ..generation.ops import Op
+from ..generation.ops import OpRef
+from ..generation.registry import register_generator_type
+from ..generation.utils import SetattrSrcBuilder
 from .fields import InstanceFields
 
 

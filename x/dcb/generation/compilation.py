@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish.text.mangle import StringMangler
 
+from ..utils import repr_round_trip_value
 from .idents import CLS_IDENT
 from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBALS
@@ -16,7 +17,6 @@ from .ops import Op
 from .ops import OpRef
 from .ops import SetAttrOp
 from .ops import get_op_refs
-from ..utils import repr_round_trip_value
 
 
 T = ta.TypeVar('T')

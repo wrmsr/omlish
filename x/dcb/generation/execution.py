@@ -6,6 +6,7 @@ TODO:
 import types
 import typing as ta
 
+from ..utils import repr_round_trip_value
 from .idents import CLS_IDENT
 from .idents import FN_GLOBAL_VALUES
 from .ops import AddMethodOp
@@ -14,7 +15,6 @@ from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
 from .ops import SetAttrOp
-from ..utils import repr_round_trip_value
 
 
 T = ta.TypeVar('T')
