@@ -9,9 +9,9 @@ from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..generators.utils import build_attr_tuple_body_src_lines
-from ..ops import AddMethodOp
-from ..ops import Op
-from ..ops import SetAttrOp
+from ..generators.ops import AddMethodOp
+from ..generators.ops import Op
+from ..generators.ops import SetAttrOp
 
 
 ##

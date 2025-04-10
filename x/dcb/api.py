@@ -36,7 +36,7 @@ from omlish import check
 from omlish import lang
 
 from .inspect import get_cls_annotations
-from .processing import ClassProcessor
+from .generators.processor import GeneratorProcessor
 from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec
@@ -188,7 +188,7 @@ def dataclass(
 
         setattr(cls, CLASS_SPEC_ATTR, cs)
 
-        ClassProcessor(cls, cs).process()
+        GeneratorProcessor(cls, cs).process()
 
         return cls
 

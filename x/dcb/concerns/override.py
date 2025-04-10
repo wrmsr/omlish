@@ -7,12 +7,12 @@ from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
 from ..generators.utils import SetattrSrcBuilder
-from ..idents import NONE_IDENT
-from ..idents import SELF_IDENT
-from ..idents import VALUE_IDENT
-from ..ops import AddPropertyOp
-from ..ops import Op
-from ..ops import OpRef
+from ..generators.idents import NONE_IDENT
+from ..generators.idents import SELF_IDENT
+from ..generators.idents import VALUE_IDENT
+from ..generators.ops import AddPropertyOp
+from ..generators.ops import Op
+from ..generators.ops import OpRef
 
 
 ##

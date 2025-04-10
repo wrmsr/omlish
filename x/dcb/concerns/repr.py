@@ -6,9 +6,9 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..ops import AddMethodOp
-from ..ops import Op
-from ..ops import OpRef
+from ..generators.ops import AddMethodOp
+from ..generators.ops import Op
+from ..generators.ops import OpRef
 from ..specs import FieldType
 from ..types import ReprFn
 

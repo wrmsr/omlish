@@ -6,10 +6,10 @@ from ..generators.base import Plan
 from ..generators.base import PlanContext
 from ..generators.base import PlanResult
 from ..generators.registry import register_generator_type
-from ..idents import CLS_IDENT
-from ..idents import FROZEN_INSTANCE_ERROR_IDENT
-from ..ops import AddMethodOp
-from ..ops import Op
+from ..generators.idents import CLS_IDENT
+from ..generators.idents import FROZEN_INSTANCE_ERROR_IDENT
+from ..generators.ops import AddMethodOp
+from ..generators.ops import Op
 from ..std import STD_FIELDS_ATTR
 from ..std import STD_PARAMS_ATTR
 
