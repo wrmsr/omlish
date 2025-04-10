@@ -28,8 +28,6 @@ def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
 ) -> type:
-    # setattr(cls, CLASS_SPEC_ATTR, cs)
-
     ctx = ProcessingContext(
         cls,
         cs,

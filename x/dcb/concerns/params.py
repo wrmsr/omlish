@@ -34,4 +34,7 @@ class ParamsProcessor(Processor):
         pass
 
     def process(self, cls: type) -> type:
+        # FIXME: set std params
+        # setattr(cls, CLASS_SPEC_ATTR, cs)
+
         return cls
