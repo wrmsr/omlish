@@ -3,6 +3,7 @@ import typing as ta
 from . import concerns  # noqa
 from .concerns.doc import DocProcessor
 from .concerns.fields import FieldsProcessor
+from .concerns.params import ParamsProcessor
 from .concerns.replace import ReplaceProcessor
 from .concerns.slots import SlotsProcessor
 from .generation.processor import GeneratorProcessor
@@ -16,6 +17,7 @@ from .specs import ClassSpec
 
 
 PROCESSOR_TYPES: ta.Sequence[type[Processor]] = [
+    ParamsProcessor,
     FieldsProcessor,
     GeneratorProcessor,
     ReplaceProcessor,

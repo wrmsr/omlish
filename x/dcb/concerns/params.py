@@ -7,23 +7,22 @@ check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], Para
             raise ValueError('eq must be true if order is true')
 
 """
+from omlish import check
+
 from ..processing import ProcessingContext
 from ..processing import Processor
 from ..registry import register_processing_context_item_factory
-from ..specs import ClassSpec
+from ..std.conversion import class_spec_to_spec_std_params
+from ..std.internals import STD_PARAMS_ATTR
 from ..std.internals import StdParams
 
 
 ##
 
 
-def build_std_params(cs: ClassSpec) -> StdParams:
-    raise NotImplementedError
-
-
 @register_processing_context_item_factory(StdParams)
 def _std_params_processing_context_item_factory(ctx: ProcessingContext) -> StdParams:
-    return build_std_params(ctx.cs)
+    return class_spec_to_spec_std_params(ctx.cs)
 
 
 ##
@@ -31,10 +30,10 @@ def _std_params_processing_context_item_factory(ctx: ProcessingContext) -> StdPa
 
 class ParamsProcessor(Processor):
     def check(self) -> None:
-        pass
+        check.not_in(STD_PARAMS_ATTR, self._ctx.cls.__dict__)
+        check.not_none(self._ctx[StdParams])
 
     def process(self, cls: type) -> type:
-        # FIXME: set std params
-        # setattr(cls, CLASS_SPEC_ATTR, cs)
+        setattr(cls, STD_PARAMS_ATTR, self._ctx[StdParams])
 
         return cls

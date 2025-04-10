@@ -11,6 +11,7 @@ from ..specs import FieldType
 from .internals import StdFieldType
 from .internals import StdParams
 from .internals import std_field_type
+from .specparams import SpecDataclassParams
 
 
 ##
@@ -71,7 +72,14 @@ def std_field_to_spec_field_default(f: dc.Field) -> lang.Maybe[ta.Any]:
 #
 
 
-def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
+def field_spec_to_std_field(
+        fs: FieldSpec,
+        *,
+        add_spec_metadata: bool = False,
+) -> dc.Field:
+    if add_spec_metadata:
+        # FIXME: metadata[FieldSpec] = fs
+        raise NotImplementedError
     f = dc.Field(
         default=...,
         default_factory=...,
@@ -86,6 +94,9 @@ def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
     f.type = fs.annotation
     f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type]  # noqa
     return f
+
+
+#
 
 
 def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
@@ -131,8 +142,8 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 #
 
 
-def class_spec_to_std_params(cs: ClassSpec) -> StdParams:
-    return StdParams(
+def class_spec_to_std_params_kwargs(cs: ClassSpec) -> dict[str, ta.Any]:
+    return dict(
         init=cs.init,
         repr=cs.repr,
         eq=cs.eq,
@@ -145,6 +156,22 @@ def class_spec_to_std_params(cs: ClassSpec) -> StdParams:
         slots=cs.slots,
         weakref_slot=cs.weakref_slot,
     )
+
+
+def class_spec_to_std_params(cs: ClassSpec) -> StdParams:
+    return StdParams(
+        **class_spec_to_std_params_kwargs(cs),
+    )
+
+
+def class_spec_to_spec_std_params(cs: ClassSpec) -> SpecDataclassParams:
+    return SpecDataclassParams(
+        **class_spec_to_std_params_kwargs(cs),
+        spec=cs,
+    )
+
+
+#
 
 
 def std_params_to_class_spec(
