@@ -10,7 +10,7 @@ from omlish import reflect as rfl
 
 from .std import STD_FIELDS_ATTR
 from .std import StdFieldType
-from .std import is_kw_only
+from .std import std_is_kw_only
 from .std import std_field_type
 
 
@@ -47,14 +47,25 @@ class FieldsInspection:
     def __init__(
             self,
             cls: type,
+            *,
+            cls_fields: ta.Mapping[str, dc.Field] | None = None,
     ) -> None:
         super().__init__()
 
         self._cls = cls
 
+        self._given_cls_fields = cls_fields
+        if cls_fields is None:
+            cls_fields = getattr(self._cls, STD_FIELDS_ATTR)
+        self._cls_fields = cls_fields
+
     @property
     def cls(self) -> type:
         return self._cls  # noqa
+
+    @property
+    def cls_fields(self) -> ta.Mapping[str, dc.Field]:
+        return self._cls_fields
 
     @cached.property
     def cls_annotations(self) -> ta.Mapping[str, ta.Any]:
@@ -82,9 +93,9 @@ class FieldsInspection:
                     fields[f.name] = f
                     field_owners[f.name] = b
 
-        cls_fields = getattr(self._cls, STD_FIELDS_ATTR)
+        cls_fields = self._cls_fields
         for name, ann in self.cls_annotations.items():
-            if is_kw_only(self._cls, ann):
+            if std_is_kw_only(self._cls, ann):
                 continue
             fields[name] = cls_fields[name]
             field_owners[name] = self._cls

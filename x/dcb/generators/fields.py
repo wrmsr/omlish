@@ -1,7 +1,17 @@
+import dataclasses as dc
+import types
 import typing as ta
 
+from omlish import check
+
+from ..inspect import get_cls_annotations
 from ..specs import FieldSpec
 from ..specs import FieldType
+from ..std import STD_FIELDS_ATTR
+from ..std import StdFieldType
+from ..std import std_is_classvar
+from ..std import std_is_initvar
+from ..std import std_is_kw_only
 
 
 ##
@@ -14,7 +24,7 @@ class InitFields(ta.NamedTuple):
     kw_only: ta.Sequence[FieldSpec]
 
 
-def get_init_fields(
+def calc_init_fields(
         fields: ta.Iterable[FieldSpec],
         *,
         reorder: bool = False,
@@ -39,4 +49,117 @@ def get_init_fields(
         ordered=ordered_init_fields,
         std=std_init_fields,
         kw_only=kw_only_init_fields,
+    )
+
+
+##
+
+
+def build_std_field(
+        cls: type,
+        a_name: str,
+        a_type: ta.Any,
+        *,
+        default_kw_only: bool,
+) -> dc.Field:
+    default: ta.Any = getattr(cls, a_name, dc.MISSING)
+    if isinstance(default, dc.Field):
+        f = default
+    else:
+        if isinstance(default, types.MemberDescriptorType):
+            # This is a field in __slots__, so it has no default value.
+            default = dc.MISSING
+        f = dc.field(default=default)
+
+    f.name = a_name
+    f.type = a_type
+
+    ft = StdFieldType.INSTANCE
+    if std_is_classvar(cls, f.type):
+        ft = StdFieldType.CLASS
+    if std_is_initvar(cls, f.type):
+        ft = StdFieldType.INIT
+    if ft in (StdFieldType.CLASS, StdFieldType.INIT):
+        if f.default_factory is not dc.MISSING:
+            raise TypeError(f'field {f.name} cannot have a default factory')
+    f._field_type = ft.value  # type: ignore  # noqa
+
+    if ft in (StdFieldType.INSTANCE, StdFieldType.INIT):
+        if f.kw_only is dc.MISSING:
+            f.kw_only = default_kw_only
+    else:
+        check.arg(ft is StdFieldType.CLASS)
+        if f.kw_only is not dc.MISSING:
+            raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
+
+    if ft is StdFieldType.INSTANCE and f.default is not dc.MISSING and f.default.__class__.__hash__ is None:
+        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
+
+    return f
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class BuiltClsStdFields:
+    field: ta.Mapping[str, dc.Field]
+
+    _: dc.KW_ONLY
+
+    setattrs: ta.Mapping[str, ta.Any] | None = None
+    delattrs: ta.AbstractSet[str] | None = None
+
+
+def build_cls_std_fields(
+        cls: type,
+        *,
+        kw_only: bool,
+) -> BuiltClsStdFields:
+    fields: dict[str, dc.Field] = {}
+
+    for b in cls.__mro__[-1:0:-1]:
+        base_fields = getattr(b, STD_FIELDS_ATTR, None)
+        if base_fields is not None:
+            for f in base_fields.values():
+                fields[f.name] = f
+
+    cls_annotations = get_cls_annotations(cls)
+
+    cls_fields: list[dc.Field] = []
+
+    kw_only_seen = False
+    for name, ann in cls_annotations.items():
+        if std_is_kw_only(cls, ann):
+            if kw_only_seen:
+                raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
+            kw_only_seen = True
+            kw_only = True
+
+        else:
+            cls_fields.append(build_std_field(
+                cls,
+                name,
+                ann,
+                default_kw_only=kw_only,
+            ))
+
+    setattrs: dict[str, ta.Any] = {}
+    delattrs: set[str] = set()
+    for f in cls_fields:
+        fields[f.name] = f
+        if isinstance(getattr(cls, f.name, None), dc.Field):
+            if f.default is dc.MISSING:
+                delattrs.add(f.name)
+            else:
+                setattrs[f.name] = f.default
+
+    for name, value in cls.__dict__.items():
+        if isinstance(value, dc.Field) and name not in cls_annotations:
+            raise TypeError(f'{name!r} is a field but has no type annotation')
+
+    return BuiltClsStdFields(
+        fields,
+        setattrs=setattrs,
+        delattrs=delattrs,
     )

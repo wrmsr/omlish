@@ -9,6 +9,7 @@ TODO:
   - fine-grained compile caching, overriding, ...
  - if this works out, go hog wild with injection, won't be used 90% of the time...
 """
+import dataclasses as dc
 import inspect
 import typing as ta
 
@@ -35,6 +36,8 @@ class A:
 
 
 def test_dcb():
+    assert dc.is_dataclass(A)
+
     print(inspect.signature(A))
 
     a = A(5, 'hi')  # type: ignore[call-arg]

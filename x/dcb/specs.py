@@ -44,14 +44,14 @@ class FieldSpec:
     ##
     # ext
 
-    # derive: ta.Callable[..., ta.Any] | None = None
+    # derive: ta.Callable[..., ta.Any] | None = None  # NYI in core
     coerce: bool | CoerceFn | None = None
     validate: ValidateFn | None = None
     # check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
     repr_fn: ReprFn | None = None
     repr_priority: int | None = None
-    # frozen: bool | None = None
+    # frozen: bool | None = None  # NYI in core
 
     ##
     # derived

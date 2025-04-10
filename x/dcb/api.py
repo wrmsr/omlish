@@ -168,20 +168,20 @@ def dataclass(
                     init_fns.append(md_if)  # noqa
 
         cs = ClassSpec(
-                fields=fsl,
+            fields=fsl,
 
-                init=init,
-                repr=repr,
-                eq=eq,
-                order=order,
-                unsafe_hash=unsafe_hash,
-                frozen=frozen,
+            init=init,
+            repr=repr,
+            eq=eq,
+            order=order,
+            unsafe_hash=unsafe_hash,
+            frozen=frozen,
 
-                match_args=match_args,
+            match_args=match_args,
 
-                cache_hash=cache_hash,
-                override=override,
-                repr_id=repr_id,
+            cache_hash=cache_hash,
+            override=override,
+            repr_id=repr_id,
 
             init_fns=init_fns,
         )

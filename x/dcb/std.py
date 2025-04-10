@@ -111,14 +111,14 @@ def _self_module():
     return _SELF_MODULE
 
 
-def is_classvar(cls: type, ty: ta.Any) -> bool:
+def std_is_classvar(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_classvar(ty, ta)  # type: ignore  # noqa
         or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # type: ignore  # noqa
     )
 
 
-def is_initvar(cls: type, ty: ta.Any) -> bool:
+def std_is_initvar(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_initvar(ty, dc)  # type: ignore  # noqa
         or (
@@ -131,7 +131,7 @@ def is_initvar(cls: type, ty: ta.Any) -> bool:
     )
 
 
-def is_kw_only(cls: type, ty: ta.Any) -> bool:
+def std_is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_kw_only(ty, dc)  # type: ignore  # noqa
         or (
