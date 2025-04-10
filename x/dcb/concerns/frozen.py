@@ -3,13 +3,13 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.idents import CLS_IDENT
 from ..generation.idents import FROZEN_INSTANCE_ERROR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
+from ..processing import ProcessingContext
 from ..std import STD_FIELDS_ATTR
 from ..std import STD_PARAMS_ATTR
 
@@ -53,7 +53,7 @@ class FrozenPlan(Plan):
 
 @register_generator_type(FrozenPlan)
 class FrozenGenerator(Generator[FrozenPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[FrozenPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[FrozenPlan] | None:
         check_frozen_bases(ctx.cls, ctx.cs.frozen)
 
         if not ctx.cs.frozen:

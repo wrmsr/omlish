@@ -3,11 +3,11 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
+from ..processing import ProcessingContext
 from .fields import InstanceFields
 
 
@@ -21,7 +21,7 @@ class EqPlan(Plan):
 
 @register_generator_type(EqPlan)
 class EqGenerator(Generator[EqPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[EqPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[EqPlan] | None:
         if not ctx.cs.eq or '__eq__' in ctx.cls.__dict__:
             return None
 

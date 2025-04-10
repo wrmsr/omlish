@@ -4,10 +4,9 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..specs import ClassSpec
-from ..specs import get_class_spec
+from ..processing import ProcessingContext
+from ..processing import Processor
 from .base import Plan
-from .base import PlanContext
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
@@ -16,7 +15,6 @@ from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
-from .registry import all_context_factories
 from .registry import all_generator_types
 from .registry import generator_type_for_plan_type
 
@@ -24,25 +22,14 @@ from .registry import generator_type_for_plan_type
 ##
 
 
-@lang.cached_function
-def _import_concerns() -> None:
-    from .. import concerns  # noqa
-
-
-class GeneratorProcessor:
+class GeneratorProcessor(Processor):
     def __init__(
             self,
-            cls: type,
-            cs: ClassSpec | None = None,
+            ctx: ProcessingContext,
             *,
             set_global_kwarg_defaults: bool = True,
     ) -> None:
-        super().__init__()
-
-        self._cls = cls
-        if cs is None:
-            cs = get_class_spec(cls)
-        self._cs = cs
+        super().__init__(ctx)
 
         self._set_global_kwarg_defaults = set_global_kwarg_defaults
 
@@ -56,20 +43,12 @@ class GeneratorProcessor:
 
     @lang.cached_function
     def prepare(self) -> Prepared:
-        _import_concerns()
-
-        ctx = PlanContext(
-            self._cls,
-            self._cs,
-            all_context_factories(),
-        )
-
         gs = [g_ty() for g_ty in all_generator_types()]
 
         pll: list[Plan] = []
         orm: dict[OpRef, ta.Any] = {}
         for g in gs:
-            if (pr := g.plan(ctx)) is None:
+            if (pr := g.plan(self._ctx)) is None:
                 continue
 
             for k, v in (pr.ref_map or {}).items():
@@ -102,7 +81,7 @@ class GeneratorProcessor:
     @lang.cached_function
     def compile(self) -> OpCompiler.CompileResult:
         opc = OpCompiler(
-            self._cls.__qualname__,
+            self._ctx.cls.__qualname__,
             set_global_kwarg_defaults=self._set_global_kwarg_defaults,
             import_global_modules=self._set_global_kwarg_defaults,
         )
@@ -115,7 +94,7 @@ class GeneratorProcessor:
 
     def process_with_executor(self) -> None:
         opx = OpExecutor(
-            self._cls,
+            self._ctx.cls,
             self.prepare().ref_map,
         )
 
@@ -132,7 +111,7 @@ class GeneratorProcessor:
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 
-        kw: dict = {CLS_IDENT: self._cls}
+        kw: dict = {CLS_IDENT: self._ctx.cls}
         kw.update({k: v for k, v in FN_GLOBALS.items() if v.src is None})
         orm = self.prepare().ref_map
         for r in comp.refs:
@@ -140,7 +119,7 @@ class GeneratorProcessor:
 
         fn(**kw)
 
-    def process(
+    def _process(
             self,
             mode: ta.Literal['executor', 'compiler'] = 'compiler',
     ) -> None:

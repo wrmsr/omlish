@@ -3,7 +3,7 @@
 #
 # from ..generation.base import Generator
 # from ..generation.base import Plan
-# from ..generation.base import PlanContext
+# from ..processing import ProcessingContext
 # from ..generation.base import PlanResult
 # from ..generation.registry import register_generator_type
 # from ..generation.ops import Op
@@ -19,7 +19,7 @@
 #
 # @register_generator_type(DocPlan)
 # class DocGenerator(Generator[DocPlan]):
-#     def plan(self, ctx: PlanContext) -> PlanResult[DocPlan] | None:
+#     def plan(self, ctx: ProcessingContext) -> PlanResult[DocPlan] | None:
 #         # if getattr(self._cls, '__doc__'):
 #         #     return
 #         #

@@ -3,12 +3,12 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
 from ..generation.utils import build_attr_tuple_body_src_lines
+from ..processing import ProcessingContext
 from .fields import InstanceFields
 
 
@@ -33,7 +33,7 @@ class OrderPlan(Plan):
 
 @register_generator_type(OrderPlan)
 class OrderGenerator(Generator[OrderPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[OrderPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[OrderPlan] | None:
         if not ctx.cs.order:
             return None
 

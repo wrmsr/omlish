@@ -3,12 +3,12 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
+from ..processing import ProcessingContext
 from ..specs import FieldType
 from ..types import ReprFn
 
@@ -32,7 +32,7 @@ class ReprPlan(Plan):
 
 @register_generator_type(ReprPlan)
 class ReprGenerator(Generator[ReprPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[ReprPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[ReprPlan] | None:
         if not ctx.cs.repr or '__repr__' in ctx.cls.__dict__:
             return None
 

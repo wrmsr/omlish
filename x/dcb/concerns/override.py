@@ -3,7 +3,6 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.idents import NONE_IDENT
 from ..generation.idents import SELF_IDENT
@@ -13,6 +12,7 @@ from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
+from ..processing import ProcessingContext
 from .fields import InstanceFields
 
 
@@ -33,7 +33,7 @@ class OverridePlan(Plan):
 
 @register_generator_type(OverridePlan)
 class OverrideGenerator(Generator[OverridePlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[OverridePlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[OverridePlan] | None:
         orm = {}
 
         flds: list[OverridePlan.Field] = []

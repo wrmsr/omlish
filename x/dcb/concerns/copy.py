@@ -3,13 +3,13 @@ import typing as ta
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.idents import CLS_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
 from ..generation.utils import build_attr_kwargs_body_src_lines
+from ..processing import ProcessingContext
 from ..specs import FieldType
 
 
@@ -23,7 +23,7 @@ class CopyPlan(Plan):
 
 @register_generator_type(CopyPlan)
 class CopyGenerator(Generator[CopyPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[CopyPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[CopyPlan] | None:
         if '__copy__' in ctx.cls.__dict__:
             return None
 

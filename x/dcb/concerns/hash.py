@@ -5,13 +5,13 @@ from omlish import check
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import SetAttrOp
 from ..generation.registry import register_generator_type
 from ..generation.utils import build_attr_tuple_body_src_lines
+from ..processing import ProcessingContext
 from .fields import InstanceFields
 
 
@@ -70,7 +70,7 @@ class HashPlan(Plan):
 
 @register_generator_type(HashPlan)
 class HashGenerator(Generator[HashPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[HashPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[HashPlan] | None:
         class_hash = ctx.cls.__dict__.get('__hash__', dc.MISSING)
         has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in ctx.cls.__dict__))
 

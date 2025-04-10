@@ -35,9 +35,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .generation.processor import GeneratorProcessor
+from .driver import drive_cls_processing
 from .inspect import get_cls_annotations
-from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 from .specs import FieldSpec
 from .types import CoerceFn
@@ -186,11 +185,7 @@ def dataclass(
             init_fns=init_fns,
         )
 
-        setattr(cls, CLASS_SPEC_ATTR, cs)
-
-        GeneratorProcessor(cls, cs).process()
-
-        return cls
+        return drive_cls_processing(cls, cs)
 
     return inner
 

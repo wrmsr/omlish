@@ -9,7 +9,6 @@ from omlish import check
 
 from ..generation.base import Generator
 from ..generation.base import Plan
-from ..generation.base import PlanContext
 from ..generation.base import PlanResult
 from ..generation.idents import FIELD_VALIDATION_ERROR_IDENT
 from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
@@ -20,6 +19,7 @@ from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
+from ..processing import ProcessingContext
 from ..specs import FieldType
 from ..types import CoerceFn
 from ..types import DefaultFactory
@@ -59,7 +59,7 @@ class InitPlan(Plan):
 
 @register_generator_type(InitPlan)
 class InitGenerator(Generator[InitPlan]):
-    def plan(self, ctx: PlanContext) -> PlanResult[InitPlan] | None:
+    def plan(self, ctx: ProcessingContext) -> PlanResult[InitPlan] | None:
         if '__init__' in ctx.cls.__dict__:
             return None
 

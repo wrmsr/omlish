@@ -4,9 +4,9 @@ import typing as ta
 
 from omlish import check
 
-from ..generation.base import PlanContext
-from ..generation.registry import register_context_item_factory
 from ..inspect import get_cls_annotations
+from ..processing import ProcessingContext
+from ..registry import register_context_item_factory
 from ..specs import FieldSpec
 from ..specs import FieldType
 from ..std import STD_FIELDS_ATTR
@@ -27,7 +27,7 @@ def get_instance_fields(fields: ta.Iterable[FieldSpec]) -> InstanceFields:
 
 
 @register_context_item_factory(InstanceFields)
-def _instance_fields_context_item_factory(ctx: PlanContext) -> InstanceFields:
+def _instance_fields_context_item_factory(ctx: ProcessingContext) -> InstanceFields:
     return get_instance_fields(ctx.cs.fields)
 
 
@@ -70,7 +70,7 @@ def calc_init_fields(
 
 
 @register_context_item_factory(InitFields)
-def _init_fields_context_item_factory(ctx: PlanContext) -> InitFields:
+def _init_fields_context_item_factory(ctx: ProcessingContext) -> InitFields:
     return calc_init_fields(
         ctx.cs.fields,
         reorder=ctx.cs.reorder,
