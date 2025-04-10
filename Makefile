@@ -265,7 +265,7 @@ venv-13:
 
 .PHONY: test-13
 test-13:
-	${PYPROJECT} venv 13 test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 13 test -- ${PYTEST_OPTS}
 
 # 13t
 

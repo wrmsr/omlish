@@ -122,7 +122,7 @@ segno==1.6.6
 boto3>=1.37.31
 
 mlx==0.24.2; sys_platform == "darwin"  # @omlish-venv !13t
-mlx-lm==0.22.4; sys_platform == "darwin"  # @omlish-venv !13t
+mlx-lm==0.22.4; sys_platform == "darwin" and python_version < "3.13"
 
 apsw==3.49.1.0
 
@@ -135,4 +135,4 @@ accelerate==1.6.0
 # bitsandbytes==0.45.4
 bitsandbytes
 
-hf_xet==1.0.3
+hf_xet==1.0.3  # @omlish-venv !13t

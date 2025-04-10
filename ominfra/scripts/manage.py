@@ -11932,7 +11932,7 @@ def get_default_pyenv_install_opts(
 
     opts = _DEFAULT_PYENV_INSTALL_OPTS
 
-    ma, mi, rev = map(int, version.split('.'))
+    ma, mi = map(int, version.split('.')[:2])
     if not (platform == 'darwin' and (ma, mi) < (3, 11)):
         opts = dc.replace(opts, conf_opts=[
             *opts.conf_opts,
