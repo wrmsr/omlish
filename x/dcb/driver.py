@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import lang
-
+from . import concerns  # noqa
+from .concerns.fields import FieldsProcessor
 from .generation.processor import GeneratorProcessor
 from .processing import ProcessingContext
 from .processing import Processor
@@ -13,12 +13,8 @@ from .specs import ClassSpec
 ##
 
 
-@lang.cached_function
-def _import_concerns() -> None:
-    from . import concerns  # noqa
-
-
 PROCESSOR_TYPES: ta.Sequence[type[Processor]] = [
+    FieldsProcessor,
     GeneratorProcessor,
 ]
 
@@ -27,8 +23,6 @@ def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
 ) -> type:
-    _import_concerns()
-
     setattr(cls, CLASS_SPEC_ATTR, cs)
 
     ctx = ProcessingContext(

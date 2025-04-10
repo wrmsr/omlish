@@ -9,6 +9,7 @@ TODO:
   - fine-grained compile caching, overriding, ...
  - if this works out, go hog wild with injection, won't be used 90% of the time...
 """
+import dataclasses as dc
 import inspect
 import typing as ta
 
@@ -35,7 +36,7 @@ class A:
 
 
 def test_dcb():
-    # assert dc.is_dataclass(A)
+    assert getattr(dc, 'is_dataclass')(A)  # mypy blackhole
 
     print(inspect.signature(A))
 

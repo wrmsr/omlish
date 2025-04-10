@@ -7,6 +7,7 @@ from omlish import check
 from ..inspect import FieldsInspection
 from ..inspect import get_cls_annotations
 from ..processing import ProcessingContext
+from ..processing import Processor
 from ..registry import register_context_item_factory
 from ..specs import FieldSpec
 from ..specs import FieldType
@@ -219,3 +220,24 @@ def _fields_inspection_context_item_factory(ctx: ProcessingContext) -> FieldsIns
         ctx.cls,
         cls_fields=ctx[StdFields],
     )
+
+
+##
+
+
+class FieldsProcessor(Processor):
+    def check(self) -> None:
+        check.not_none(self._ctx[BuiltClsStdFields])
+
+    def process(self, cls: type) -> type:
+        csf = self._ctx[BuiltClsStdFields]
+
+        for sak, sav in (csf.setattrs or {}).items():
+            setattr(cls, sak, sav)
+
+        for dak in csf.delattrs or []:
+            delattr(cls, dak)
+
+        setattr(cls, STD_FIELDS_ATTR, csf.fields)
+
+        return cls
