@@ -46,7 +46,7 @@ class InitFields(ta.NamedTuple):
 def calc_init_fields(
         fields: ta.Iterable[FieldSpec],
         *,
-        reorder: bool = False,
+        reorder: bool,
 ) -> InitFields:
     all_init_fields = [
         f

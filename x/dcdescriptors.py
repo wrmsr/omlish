@@ -2,7 +2,10 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ... import defs
+from omlish import defs
+
+
+##
 
 
 class AbstractFieldDescriptor(abc.ABC):

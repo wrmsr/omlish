@@ -19,6 +19,7 @@ from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
+from ..inspect import FieldsInspection
 from ..processing import ProcessingContext
 from ..specs import CoerceFn
 from ..specs import DefaultFactory
@@ -72,6 +73,12 @@ class InitGenerator(Generator[InitPlan]):
             elif seen_default:
                 raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
 
+        if ctx.cs.generic_init:
+            gfad = ctx[FieldsInspection].generic_replaced_field_annotations
+            get_ann = lambda f: gfad[f.name]
+        else:
+            get_ann = lambda f: f.annotation
+
         orm = {}
 
         bfs: list[InitPlan.Field] = []
@@ -80,7 +87,7 @@ class InitGenerator(Generator[InitPlan]):
                 continue
 
             ar: OpRef = OpRef(f'init.fields.{i}.annotation')
-            orm[ar] = f.annotation
+            orm[ar] = get_ann(f)
 
             dr: OpRef[ta.Any] | None = None
             dfr: OpRef[ta.Any] | None = None

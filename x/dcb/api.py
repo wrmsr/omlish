@@ -121,7 +121,9 @@ def dataclass(
 
         match_args=True,
 
+        reorder: bool = False,
         cache_hash: bool = False,
+        generic_init: bool = False,
         override: bool = False,
         repr_id: bool = False,
 ):
@@ -178,7 +180,9 @@ def dataclass(
 
             match_args=match_args,
 
+            reorder=reorder,
             cache_hash=cache_hash,
+            generic_init=generic_init,
             override=override,
             repr_id=repr_id,
 
