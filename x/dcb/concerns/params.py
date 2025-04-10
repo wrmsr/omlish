@@ -9,7 +9,7 @@ check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], Para
 """
 from ..processing import ProcessingContext
 from ..processing import Processor
-from ..registry import register_context_item_factory
+from ..registry import register_processing_context_item_factory
 from ..specs import ClassSpec
 from ..std.internals import StdParams
 
@@ -21,8 +21,8 @@ def build_std_params(cs: ClassSpec) -> StdParams:
     raise NotImplementedError
 
 
-@register_context_item_factory(StdParams)
-def _std_params_context_item_factory(ctx: ProcessingContext) -> StdParams:
+@register_processing_context_item_factory(StdParams)
+def _std_params_processing_context_item_factory(ctx: ProcessingContext) -> StdParams:
     return build_std_params(ctx.cs)
 
 

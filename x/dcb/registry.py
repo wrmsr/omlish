@@ -38,22 +38,22 @@ class SealableRegistry(ta.Generic[K, V]):
 ##
 
 
-_CONTEXT_ITEM_FACTORIES: SealableRegistry[type, ta.Callable] = SealableRegistry()
+_PROCESSING_CONTEXT_ITEM_FACTORIES: SealableRegistry[type, ta.Callable] = SealableRegistry()
 
 
-def register_context_item_factory(i_ty):
+def register_processing_context_item_factory(i_ty):
     def inner(fn):
-        _CONTEXT_ITEM_FACTORIES[i_ty] = fn
+        _PROCESSING_CONTEXT_ITEM_FACTORIES[i_ty] = fn
         return fn
 
     return inner
 
 
 @lang.cached_function
-def context_item_factory_for(i_ty: type) -> ta.Callable:
-    return _CONTEXT_ITEM_FACTORIES[i_ty]
+def processing_context_item_factory_for(i_ty: type) -> ta.Callable:
+    return _PROCESSING_CONTEXT_ITEM_FACTORIES[i_ty]
 
 
 @lang.cached_function
-def all_context_item_factories() -> ta.Mapping[type, ta.Callable]:
-    return dict(_CONTEXT_ITEM_FACTORIES.items())
+def all_processing_context_item_factories() -> ta.Mapping[type, ta.Callable]:
+    return dict(_PROCESSING_CONTEXT_ITEM_FACTORIES.items())

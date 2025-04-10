@@ -8,7 +8,7 @@ from .concerns.slots import SlotsProcessor
 from .generation.processor import GeneratorProcessor
 from .processing import ProcessingContext
 from .processing import Processor
-from .registry import all_context_item_factories
+from .registry import all_processing_context_item_factories
 from .specs import ClassSpec
 
 
@@ -31,7 +31,7 @@ def drive_cls_processing(
     ctx = ProcessingContext(
         cls,
         cs,
-        all_context_item_factories(),
+        all_processing_context_item_factories(),
     )
 
     processors: list[Processor] = [

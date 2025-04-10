@@ -8,7 +8,7 @@ from ..inspect import FieldsInspection
 from ..inspect import get_cls_annotations
 from ..processing import ProcessingContext
 from ..processing import Processor
-from ..registry import register_context_item_factory
+from ..registry import register_processing_context_item_factory
 from ..specs import FieldSpec
 from ..specs import FieldType
 from ..std.internals import STD_FIELDS_ATTR
@@ -28,8 +28,8 @@ def get_instance_fields(fields: ta.Iterable[FieldSpec]) -> InstanceFields:
     return InstanceFields([f for f in fields if f.field_type is FieldType.INSTANCE])
 
 
-@register_context_item_factory(InstanceFields)
-def _instance_fields_context_item_factory(ctx: ProcessingContext) -> InstanceFields:
+@register_processing_context_item_factory(InstanceFields)
+def _instance_fields_processing_context_item_factory(ctx: ProcessingContext) -> InstanceFields:
     return get_instance_fields(ctx.cs.fields)
 
 
@@ -71,8 +71,8 @@ def calc_init_fields(
     )
 
 
-@register_context_item_factory(InitFields)
-def _init_fields_context_item_factory(ctx: ProcessingContext) -> InitFields:
+@register_processing_context_item_factory(InitFields)
+def _init_fields_processing_context_item_factory(ctx: ProcessingContext) -> InitFields:
     return calc_init_fields(
         ctx.cs.fields,
         reorder=ctx.cs.reorder,
@@ -192,8 +192,8 @@ def build_cls_std_fields(
     )
 
 
-@register_context_item_factory(BuiltClsStdFields)
-def _built_cls_std_fields_context_item_factory(ctx: ProcessingContext) -> BuiltClsStdFields:
+@register_processing_context_item_factory(BuiltClsStdFields)
+def _built_cls_std_fields_processing_context_item_factory(ctx: ProcessingContext) -> BuiltClsStdFields:
     return build_cls_std_fields(
         ctx.cls,
         kw_only=ctx.cs.kw_only,
@@ -206,16 +206,16 @@ def _built_cls_std_fields_context_item_factory(ctx: ProcessingContext) -> BuiltC
 StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
 
 
-@register_context_item_factory(StdFields)
-def _std_fields_context_item_factory(ctx: ProcessingContext) -> StdFields:
+@register_processing_context_item_factory(StdFields)
+def _std_fields_processing_context_item_factory(ctx: ProcessingContext) -> StdFields:
     return StdFields(ctx[BuiltClsStdFields].fields)
 
 
 ##
 
 
-@register_context_item_factory(FieldsInspection)
-def _fields_inspection_context_item_factory(ctx: ProcessingContext) -> FieldsInspection:
+@register_processing_context_item_factory(FieldsInspection)
+def _fields_inspection_processing_context_item_factory(ctx: ProcessingContext) -> FieldsInspection:
     return FieldsInspection(
         ctx.cls,
         cls_fields=ctx[StdFields],
