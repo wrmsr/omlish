@@ -45,7 +45,7 @@ class FieldSpec:
 
     init: bool = True
     repr: bool = True
-    hash: ta.Any = None
+    hash: ta.Any = None  # FIXME: type?
     compare: bool = True
     metadata: ta.Any = None
     kw_only: bool = False

@@ -23,6 +23,9 @@ def multikey_dict(dct: ta.Mapping[ta.Iterable[K] | K, V], *, deep: bool = False)
     return ret
 
 
+##
+
+
 def guarded_map_update(
         dst: ta.MutableMapping[ta.Any, ta.Any],
         *srcs: ta.Mapping[ta.Any, ta.Any],
@@ -33,6 +36,9 @@ def guarded_map_update(
                 raise KeyError(k)
             dst[k] = v
     return dst
+
+
+##
 
 
 class TypeMap(ta.Generic[T]):
@@ -97,6 +103,9 @@ class DynamicTypeMap(ta.Generic[V]):
                     ret.append(item)
             self._cache[ty] = ret
             return ret
+
+
+##
 
 
 class MissingDict(dict[K, V]):

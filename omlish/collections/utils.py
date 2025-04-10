@@ -30,6 +30,9 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> PartitionR
     return PartitionResult(t, f)
 
 
+##
+
+
 def unique(
         it: ta.Iterable[T],
         *,
@@ -50,6 +53,9 @@ def unique(
             seen.add(k)
             ret.append(e)
     return ret
+
+
+##
 
 
 def make_map(
@@ -80,6 +86,9 @@ def make_map_by(
         identity=identity,
         strict=strict,
     )
+
+
+##
 
 
 def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:
