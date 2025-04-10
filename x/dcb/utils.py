@@ -17,6 +17,9 @@ def repr_round_trip_value(v: T) -> T:
     return v2
 
 
+##
+
+
 def set_qualname(cls: type, value: T) -> T:
     if isinstance(value, types.FunctionType):
         value.__qualname__ = f'{cls.__qualname__}.{value.__name__}'
