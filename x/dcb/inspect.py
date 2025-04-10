@@ -8,10 +8,10 @@ from omlish import collections as col
 from omlish import lang
 from omlish import reflect as rfl
 
-from .std import STD_FIELDS_ATTR
-from .std import StdFieldType
-from .std import std_field_type
-from .std import std_is_kw_only
+from .std.internals import STD_FIELDS_ATTR
+from .std.internals import StdFieldType
+from .std.internals import std_field_type
+from .std.internals import std_is_kw_only
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]

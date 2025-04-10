@@ -1,10 +1,10 @@
 import dataclasses as dc
 
 from ..processing import Processor
-from ..std import STD_FIELDS_ATTR
-from ..std import StdFieldType
-from ..std import is_dataclass_instance
-from ..std import std_field_type
+from ..std.internals import STD_FIELDS_ATTR
+from ..std.internals import StdFieldType
+from ..std.internals import std_field_type
+from ..std.internals import std_is_dataclass_instance
 from ..utils import set_new_attribute
 
 
@@ -12,7 +12,7 @@ from ..utils import set_new_attribute
 
 
 def replace(obj, /, **changes):  # noqa
-    if not is_dataclass_instance(obj):
+    if not std_is_dataclass_instance(obj):
         raise TypeError('replace() should be called on dataclass instances')
     return _replace(obj, **changes)
 

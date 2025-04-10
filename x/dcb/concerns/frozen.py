@@ -10,8 +10,8 @@ from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
 from ..processing import ProcessingContext
-from ..std import STD_FIELDS_ATTR
-from ..std import STD_PARAMS_ATTR
+from ..std.internals import STD_FIELDS_ATTR
+from ..std.internals import STD_PARAMS_ATTR
 
 
 ##

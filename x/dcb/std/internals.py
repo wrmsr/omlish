@@ -38,19 +38,19 @@ class Params:
 ##
 
 
-is_dataclass_instance = dc._is_dataclass_instance  # type: ignore  # noqa
+std_is_dataclass_instance = dc._is_dataclass_instance  # type: ignore  # noqa
 
 
 ##
 
 
-ATOMIC_TYPES: frozenset[type]
+STD_ATOMIC_TYPES: frozenset[type]
 
 if hasattr(dc, '_ATOMIC_TYPES'):
-    ATOMIC_TYPES = getattr(dc, '_ATOMIC_TYPES')
+    STD_ATOMIC_TYPES = getattr(dc, '_ATOMIC_TYPES')
 
 else:
-    ATOMIC_TYPES = frozenset({
+    STD_ATOMIC_TYPES = frozenset({
         types.NoneType,
         bool,
         int,

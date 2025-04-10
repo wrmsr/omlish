@@ -2,8 +2,8 @@ import dataclasses as dc
 import typing as ta
 
 from ..specs import ClassSpec
-from ..std import STD_PARAMS_ATTR
-from ..std import StdParams
+from ..std.internals import STD_PARAMS_ATTR
+from ..std.internals import StdParams
 
 
 ##

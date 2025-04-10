@@ -11,11 +11,11 @@ from ..processing import Processor
 from ..registry import register_context_item_factory
 from ..specs import FieldSpec
 from ..specs import FieldType
-from ..std import STD_FIELDS_ATTR
-from ..std import StdFieldType
-from ..std import std_is_classvar
-from ..std import std_is_initvar
-from ..std import std_is_kw_only
+from ..std.internals import STD_FIELDS_ATTR
+from ..std.internals import StdFieldType
+from ..std.internals import std_is_classvar
+from ..std.internals import std_is_initvar
+from ..std.internals import std_is_kw_only
 
 
 ##

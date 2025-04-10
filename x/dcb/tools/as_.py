@@ -1,24 +1,24 @@
 import copy
 import dataclasses as dc
 
-from ..std import ATOMIC_TYPES
-from ..std import is_dataclass_instance
+from ..std.internals import STD_ATOMIC_TYPES
+from ..std.internals import std_is_dataclass_instance
 
 
 ##
 
 
 def asdict(obj, *, dict_factory=dict):  # noqa
-    if not is_dataclass_instance(obj):  # noqa
+    if not std_is_dataclass_instance(obj):  # noqa
         raise TypeError('asdict() should be called on dataclass instances')
     return _asdict_inner(obj, dict_factory)
 
 
 def _asdict_inner(obj, dict_factory):
-    if type(obj) in ATOMIC_TYPES:
+    if type(obj) in STD_ATOMIC_TYPES:
         return obj
 
-    elif is_dataclass_instance(obj):
+    elif std_is_dataclass_instance(obj):
         l = []
         for f in dc.fields(obj):
             value = _asdict_inner(getattr(obj, f.name), dict_factory)
@@ -44,16 +44,16 @@ def _asdict_inner(obj, dict_factory):
 
 
 def astuple(obj, *, tuple_factory=tuple):  # noqa
-    if not is_dataclass_instance(obj):
+    if not std_is_dataclass_instance(obj):
         raise TypeError('astuple() should be called on dataclass instances')
     return _astuple_inner(obj, tuple_factory)
 
 
 def _astuple_inner(obj, tuple_factory):
-    if type(obj) in ATOMIC_TYPES:
+    if type(obj) in STD_ATOMIC_TYPES:
         return obj
 
-    elif is_dataclass_instance(obj):
+    elif std_is_dataclass_instance(obj):
         l = []
         for f in dc.fields(obj):
             value = _astuple_inner(getattr(obj, f.name), tuple_factory)
