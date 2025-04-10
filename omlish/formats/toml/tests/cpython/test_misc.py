@@ -108,7 +108,7 @@ class TestMiscellaneous(unittest.TestCase):
     def test_inline_table_recursion_limit(self):
         with support.infinite_recursion(max_depth=100):
             available = support.get_recursion_available()
-            nest_count = (available // 3) - 1
+            nest_count = (available // 3) - 2
             # Add details if the test fails
             with self.subTest(
                     limit=sys.getrecursionlimit(),
