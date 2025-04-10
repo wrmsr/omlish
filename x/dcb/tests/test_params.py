@@ -9,7 +9,7 @@ from ..std import StdParams
 ##
 
 
-class SpecStdParams(StdParams):
+class SpecStdDataclassParams(StdParams):
     __slots__ = (*StdParams.__slots__, 'spec')
 
     def __init__(
@@ -61,4 +61,8 @@ class Foo:
 def test_std_params():
     ap = getattr(Foo, STD_PARAMS_ATTR)
     cs = ClassSpec(fields=[])  # noqa
-    print(ap)
+    sap = SpecStdDataclassParams(
+        **{a: getattr(ap, a) for a in StdParams.__slots__},
+        spec=cs,
+    )
+    print(sap)

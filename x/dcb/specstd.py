@@ -30,21 +30,19 @@ from .std import std_field_type
 # ):
 
 
-def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
-    f = dc.Field(
-        default=...,
-        default_factory=...,
-        init=check.isinstance(fs.init, bool),
-        repr=check.isinstance(fs.repr, bool),
-        hash=...,
-        compare=check.isinstance(fs.compare, bool),
-        metadata=fs.metadata,
-        kw_only=...,
-    )
-    f.name = fs.name
-    f.type = fs.annotation
-    f._field_type = ...  # noqa
-    return f
+#
+
+
+STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE: ta.Mapping[FieldType, StdFieldType] = {
+    FieldType.INSTANCE: StdFieldType.INSTANCE,
+    FieldType.CLASS: StdFieldType.CLASS,
+    FieldType.INIT: StdFieldType.INIT,
+}
+
+SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE = {v: k for k, v in STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE.items()}
+
+
+#
 
 
 def std_to_spec_field_default(
@@ -70,13 +68,24 @@ def std_field_to_spec_field_default(f: dc.Field) -> lang.Maybe[ta.Any]:
     )
 
 
-STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE: ta.Mapping[FieldType, StdFieldType] = {
-    FieldType.INSTANCE: StdFieldType.INSTANCE,
-    FieldType.CLASS: StdFieldType.CLASS,
-    FieldType.INIT: StdFieldType.INIT,
-}
+#
 
-SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE = {v: k for k, v in STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE.items()}
+
+def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
+    f = dc.Field(
+        default=...,
+        default_factory=...,
+        init=check.isinstance(fs.init, bool),
+        repr=check.isinstance(fs.repr, bool),
+        hash=...,
+        compare=check.isinstance(fs.compare, bool),
+        metadata=fs.metadata,
+        kw_only=...,
+    )
+    f.name = fs.name
+    f.type = fs.annotation
+    f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type]  # noqa
+    return f
 
 
 def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
@@ -117,6 +126,9 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 #     slots=False,
 #     weakref_slot=False,
 # ):
+
+
+#
 
 
 def class_spec_to_std_params(cs: ClassSpec) -> StdParams:
