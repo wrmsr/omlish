@@ -3,6 +3,8 @@ import inspect
 import itertools
 import types
 
+from ..processing import Processor
+
 
 ##
 
@@ -133,3 +135,22 @@ def add_slots(
                 break
 
     return newcls
+
+
+##
+
+
+class SlotsProcessor(Processor):
+    def check(self) -> None:
+        if self._ctx.cs.weakref_slot and not self._ctx.cs.slots:
+            raise TypeError('weakref_slot is True but slots is False')
+
+    def process(self, cls: type) -> type:
+        if not self._ctx.cs.slots:
+            return cls
+
+        return add_slots(
+            cls,
+            is_frozen=self._ctx.cs.frozen,
+            weakref_slot=self._ctx.cs.weakref_slot,
+        )

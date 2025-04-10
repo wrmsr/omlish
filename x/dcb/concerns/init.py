@@ -21,10 +21,10 @@ from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..processing import ProcessingContext
 from ..specs import FieldType
-from ..types import CoerceFn
-from ..types import DefaultFactory
-from ..types import InitFn
-from ..types import ValidateFn
+from ..specs import CoerceFn
+from ..specs import DefaultFactory
+from ..specs import InitFn
+from ..specs import ValidateFn
 from .fields import InitFields
 
 

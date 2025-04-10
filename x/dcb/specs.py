@@ -5,12 +5,20 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .types import ClassValidateFn
-from .types import CoerceFn
-from .types import DefaultFactory
-from .types import InitFn
-from .types import ReprFn
-from .types import ValidateFn
+
+##
+
+
+CoerceFn: ta.TypeAlias = ta.Callable[[ta.Any], ta.Any]
+ValidateFn: ta.TypeAlias = ta.Callable[[ta.Any], bool]
+ReprFn: ta.TypeAlias = ta.Callable[[ta.Any], str | None]
+
+InitFn: ta.TypeAlias = ta.Callable[[ta.Any], None]
+ClassValidateFn: ta.TypeAlias = ta.Callable[..., bool]
+
+
+class DefaultFactory(ta.NamedTuple):
+    fn: ta.Callable[..., ta.Any]
 
 
 ##
@@ -95,8 +103,8 @@ class ClassSpec:
 
     match_args: bool = True
     kw_only: bool = False
-    # slots: bool = False
-    # weakref_slot: bool = False
+    slots: bool = False
+    weakref_slot: bool = False
 
     ##
     # ext

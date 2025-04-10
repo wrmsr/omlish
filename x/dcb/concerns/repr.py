@@ -10,7 +10,7 @@ from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..processing import ProcessingContext
 from ..specs import FieldType
-from ..types import ReprFn
+from ..specs import ReprFn
 
 
 ##

@@ -39,11 +39,11 @@ from .driver import drive_cls_processing
 from .inspect import get_cls_annotations
 from .specs import ClassSpec
 from .specs import FieldSpec
-from .types import CoerceFn
-from .types import DefaultFactory
-from .types import InitFn
-from .types import ReprFn
-from .types import ValidateFn
+from .specs import CoerceFn
+from .specs import DefaultFactory
+from .specs import InitFn
+from .specs import ReprFn
+from .specs import ValidateFn
 
 
 ##
