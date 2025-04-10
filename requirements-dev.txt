@@ -15,7 +15,7 @@ pytest-xdist==3.6.1
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
-ruff==0.11.4
+ruff==0.11.5
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20240928  # @omlish-venv !13t
@@ -108,7 +108,7 @@ huggingface-hub==0.30.2
 
 datasets==3.5.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-transformers==4.51.1; python_version < "3.13"
+transformers==4.51.2; python_version < "3.13"
 sentence-transformers==4.0.2; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"

@@ -46,7 +46,7 @@ tree-sitter-python==0.23.6
 
 watchdog==6.0.0
 
-pyright[nodejs]==1.1.398
+pyright[nodejs]==1.1.399
 
 basedpyright==1.28.5
 
