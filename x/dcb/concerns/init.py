@@ -20,9 +20,9 @@ from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..processing import ProcessingContext
-from ..specs import FieldType
 from ..specs import CoerceFn
 from ..specs import DefaultFactory
+from ..specs import FieldType
 from ..specs import InitFn
 from ..specs import ValidateFn
 from .fields import InitFields

@@ -145,7 +145,7 @@ class Static(lang.Abstract):
                     )
 
         # Explicitly forbid dc transforms that rebuild the class, such as slots.
-        if (dc_cls := dataclass(cls, frozen=True)) is not cls:
+        if (dc_cls := dataclass(frozen=True)(cls)) is not cls:
             raise TypeError(dc_cls)
 
         dc_flds = dc.fields(cls)  # type: ignore[arg-type]  # noqa
