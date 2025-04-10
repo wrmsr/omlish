@@ -1,44 +1,12 @@
-from .copy import (  # noqa
-    CopyPlan,
-    CopyGenerator,
-)
-
-from .eq import (  # noqa
-    EqPlan,
-    EqGenerator,
-)
-
-from .frozen import (  # noqa
-    FrozenPlan,
-    FrozenGenerator,
-)
-
-from .hash import (  # noqa
-    HashPlan,
-    HashGenerator,
-)
-
-from .init import (  # noqa
-    InitPlan,
-    InitGenerator,
-)
-
-from .matchargs import (  # noqa
-    MatchArgsPlan,
-    MatchArgsGenerator,
-)
-
-from .order import (  # noqa
-    OrderPlan,
-    OrderGenerator,
-)
-
-from .override import (  # noqa
-    OverridePlan,
-    OverrideGenerator,
-)
-
-from .repr import (  # noqa
-    ReprPlan,
-    ReprGenerator,
-)
+from . import copy  # noqa
+from . import doc  # noqa
+from . import eq  # noqa
+from . import fields  # noqa
+from . import frozen  # noqa
+from . import hash  # noqa
+from . import init  # noqa
+from . import matchargs  # noqa
+from . import order  # noqa
+from . import override  # noqa
+from . import repr  # noqa
+from . import slots  # noqa

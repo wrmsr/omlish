@@ -2,7 +2,7 @@ import dataclasses as dc
 import types
 import typing as ta
 
-from .exceptions import FieldValidationError
+from ..exceptions import FieldValidationError
 
 
 ##

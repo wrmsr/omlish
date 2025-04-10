@@ -1,6 +1,6 @@
-from ..idents import OBJECT_SETATTR_IDENT
-from ..idents import SELF_DICT_IDENT
-from ..idents import SELF_IDENT
+from .idents import OBJECT_SETATTR_IDENT
+from .idents import SELF_DICT_IDENT
+from .idents import SELF_IDENT
 
 
 ##

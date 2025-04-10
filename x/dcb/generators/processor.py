@@ -4,27 +4,32 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from . import concerns  # noqa
+from ..specs import ClassSpec
+from ..specs import get_class_spec
+from .base import Plan
+from .base import PlanContext
 from .compilation import OpCompiler
 from .execution import OpExecutor
-from .generators import Plan
-from .generators import PlanContext
-from .generators import all_generator_types
-from .generators import generator_type_for_plan_type
 from .idents import CLS_IDENT
-from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_IMPORTS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
-from .specs import ClassSpec
-from .specs import get_class_spec
+from .registry import all_context_factories
+from .registry import all_generator_types
+from .registry import generator_type_for_plan_type
 
 
 ##
 
 
-class ClassProcessor:
+@lang.cached_function
+def _import_concerns() -> None:
+    from .. import concerns  # noqa
+
+
+class GeneratorProcessor:
     def __init__(
             self,
             cls: type,
@@ -51,7 +56,13 @@ class ClassProcessor:
 
     @lang.cached_function
     def prepare(self) -> Prepared:
-        ctx = PlanContext(self._cls, self._cs)
+        _import_concerns()
+
+        ctx = PlanContext(
+            self._cls,
+            self._cs,
+            all_context_factories(),
+        )
 
         gs = [g_ty() for g_ty in all_generator_types()]
 
@@ -129,4 +140,13 @@ class ClassProcessor:
 
         fn(**kw)
 
-    process = process_with_compiler
+    def process(
+            self,
+            mode: ta.Literal['executor', 'compiler'] = 'compiler',
+    ) -> None:
+        if mode == 'compiler':
+            self.process_with_compiler()
+        elif mode == 'executor':
+            self.process_with_executor()
+        else:
+            raise ValueError(mode)

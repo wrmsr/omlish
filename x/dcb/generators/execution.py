@@ -14,7 +14,7 @@ from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
 from .ops import SetAttrOp
-from .utils import repr_round_trip_value
+from ..utils import repr_round_trip_value
 
 
 T = ta.TypeVar('T')

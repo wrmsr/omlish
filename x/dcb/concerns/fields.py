@@ -17,6 +17,16 @@ from ..std import std_is_kw_only
 ##
 
 
+InstanceFields = ta.NewType('InstanceFields', ta.Sequence[FieldSpec])
+
+
+def get_instance_fields(fields: ta.Iterable[FieldSpec]) -> InstanceFields:
+    return InstanceFields([f for f in fields if f.field_type is FieldType.INSTANCE])
+
+
+##
+
+
 class InitFields(ta.NamedTuple):
     all: ta.Sequence[FieldSpec]
     ordered: ta.Sequence[FieldSpec]
