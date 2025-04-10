@@ -4,6 +4,7 @@ import typing as ta
 
 from omlish import check
 
+from ..inspect import FieldsInspection
 from ..inspect import get_cls_annotations
 from ..processing import ProcessingContext
 from ..registry import register_context_item_factory
@@ -128,7 +129,7 @@ def build_std_field(
 
 @dc.dataclass(frozen=True)
 class BuiltClsStdFields:
-    field: ta.Mapping[str, dc.Field]
+    fields: ta.Mapping[str, dc.Field]
 
     _: dc.KW_ONLY
 
@@ -187,4 +188,34 @@ def build_cls_std_fields(
         fields,
         setattrs=setattrs,
         delattrs=delattrs,
+    )
+
+
+@register_context_item_factory(BuiltClsStdFields)
+def _built_cls_std_fields_context_item_factory(ctx: ProcessingContext) -> BuiltClsStdFields:
+    return build_cls_std_fields(
+        ctx.cls,
+        kw_only=ctx.cs.kw_only,
+    )
+
+
+##
+
+
+StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
+
+
+@register_context_item_factory(StdFields)
+def _std_fields_context_item_factory(ctx: ProcessingContext) -> StdFields:
+    return StdFields(ctx[BuiltClsStdFields].fields)
+
+
+##
+
+
+@register_context_item_factory(FieldsInspection)
+def _fields_inspection_context_item_factory(ctx: ProcessingContext) -> FieldsInspection:
+    return FieldsInspection(
+        ctx.cls,
+        cls_fields=ctx[StdFields],
     )
