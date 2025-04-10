@@ -9,7 +9,6 @@ from .generation.processor import GeneratorProcessor
 from .processing import ProcessingContext
 from .processing import Processor
 from .registry import all_context_item_factories
-from .specs import CLASS_SPEC_ATTR
 from .specs import ClassSpec
 
 
@@ -29,7 +28,7 @@ def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
 ) -> type:
-    setattr(cls, CLASS_SPEC_ATTR, cs)
+    # setattr(cls, CLASS_SPEC_ATTR, cs)
 
     ctx = ProcessingContext(
         cls,

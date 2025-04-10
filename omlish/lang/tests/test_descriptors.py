@@ -157,6 +157,7 @@ def test_single_decorator():
     assert Foo.s1(1) == 3
 
     # FIXME: https://github.com/python/cpython/commit/7f9a99e8549b792662f2cd28bf38a4d4625bd402 :|
+    # See: https://github.com/python/cpython/issues/63272
     if sys.version_info < (3, 13):
         assert Foo.c2(2) == 9
         assert Foo.s2(1) == 3

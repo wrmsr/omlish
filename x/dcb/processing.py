@@ -1,3 +1,10 @@
+"""
+TODO:
+ - Configurable? class Config crtc?
+  - all config on specs? prob not desirable purity, prob want ~some~ global config if only defaults
+   - ProcessorConfigSpecProviderFactoryThingy?
+  - FIXME: for now these are processor ctor kwargs that are never overridden
+"""
 import typing as ta
 
 from omlish import lang

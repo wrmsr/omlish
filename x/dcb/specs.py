@@ -1,3 +1,6 @@
+"""
+Should be kept pure. No references to dc std, no references to impl detail.
+"""
 import dataclasses as dc
 import enum
 import typing as ta
@@ -109,7 +112,7 @@ class ClassSpec:
     ##
     # ext
 
-    metadata = None
+    metadata: ta.Mapping[ta.Any, ta.Any] | None = None
 
     reorder: bool = False
     cache_hash: bool = False
@@ -131,13 +134,3 @@ class ClassSpec:
             check.not_isinstance(self.params, str)
 
     validate_fns: ta.Sequence[ValidateFnWithParams] | None = None
-
-
-##
-
-
-CLASS_SPEC_ATTR = '__dataclass_spec__'
-
-
-def get_class_spec(cls: type) -> ClassSpec:
-    return check.isinstance(getattr(cls, CLASS_SPEC_ATTR), ClassSpec)
