@@ -14,12 +14,13 @@ from omlish import check
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
-from ..generation.idents import FIELD_VALIDATION_ERROR_IDENT
+from ..generation.idents import FIELD_FN_VALIDATION_ERROR_IDENT
 from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
 from ..generation.idents import ISINSTANCE_IDENT
 from ..generation.idents import NONE_IDENT
 from ..generation.idents import SELF_IDENT
-from ..generation.idents import VALIDATION_ERROR_IDENT
+from ..generation.idents import FN_VALIDATION_ERROR_IDENT
+from ..generation.idents import FIELD_TYPE_VALIDATION_ERROR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
@@ -263,11 +264,16 @@ class InitGenerator(Generator[InitPlan]):
         for f in bs.fields:
             if f.check_type is None:
                 continue
-            # lines.append(
-            #     f'if not __dataclass_builtins_isinstance__({value}, {cn}): '
-            #     f'raise __dataclass_builtins_TypeError__({value}, {cn})',
-            # )
-            pass
+            ors.add(f.check_type)
+            lines.extend([
+                f'    if not {ISINSTANCE_IDENT}({f.name}, {f.check_type.ident()}): ',
+                f'        raise {FIELD_TYPE_VALIDATION_ERROR_IDENT}(',
+                f'            obj={SELF_IDENT},',
+                f'            type={f.check_type.ident()},',
+                f'            field={f.name!r},',
+                f'            value={f.name},',
+                f'        )',
+            ])
 
         for f in bs.fields:
             if f.validate is None:
@@ -275,7 +281,7 @@ class InitGenerator(Generator[InitPlan]):
             ors.add(f.validate)
             lines.extend([
                 f'    if not {f.validate.ident()}({f.name}): ',
-                f'        raise {FIELD_VALIDATION_ERROR_IDENT}(',
+                f'        raise {FIELD_FN_VALIDATION_ERROR_IDENT}(',
                 f'            obj={SELF_IDENT},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
@@ -299,7 +305,7 @@ class InitGenerator(Generator[InitPlan]):
                     f'    if not {vfn.fn.ident()}():',
                 )
             lines.extend([
-                f'        raise {VALIDATION_ERROR_IDENT}(',
+                f'        raise {FN_VALIDATION_ERROR_IDENT}(',
                 f'            obj={SELF_IDENT},',
                 f'            fn={vfn.fn.ident()},',
                 f'        )',

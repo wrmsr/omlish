@@ -25,57 +25,91 @@ def _fn_repr(fn: ta.Callable) -> str:
 class ValidationError(Exception):
     def __init__(
             self,
+            *,
             obj: ta.Any,
-            fn: ta.Callable,
     ) -> None:
         self.obj = obj
-        self.fn = fn
 
         super().__init__(self._build_message())
+
+    @property
+    def _message_parts(self) -> ta.Mapping[str, str]:
+        return {
+            'obj': _hands_off_repr(self.obj),
+        }
 
     def _build_message(self) -> str:
         return (
             f'{self.__class__.__name__} '
-            f'on object {_hands_off_repr(self.obj)} '
-            f'in validator {_fn_repr(self.fn)}'
+            f'{", ".join(f"{k} {v}" for k, v in self._message_parts.items())}'
         )
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join([
-            f"obj={_hands_off_repr(self.obj)}",
-            f"fn={_fn_repr(self.fn)}",
+            f"{k}={v}" for k, v in self._message_parts.items()
         ])})'
+
+
+class FnValidationError(ValidationError):
+    def __init__(
+            self,
+            *,
+            fn: ta.Callable,
+            **kwargs: ta.Any,
+    ) -> None:
+        self.fn = fn
+
+        super().__init__(**kwargs)
+
+    def _message_parts(self) -> ta.Mapping[str, str]:
+        return {
+            **super()._build_message(),
+            'fn': _fn_repr(self.fn),
+        }
 
 
 class FieldValidationError(ValidationError):
     def __init__(
             self,
-            obj: ta.Any,
-            fn: ta.Callable,
+            *,
             field: str,
             value: ta.Any,
+            **kwargs: ta.Any,
     ) -> None:
         self.field = field
         self.value = value
 
-        super().__init__(
-            obj,
-            fn,
-        )
+        super().__init__(**kwargs)
 
-    def _build_message(self) -> str:
-        return (
-            f'{self.__class__.__name__} '
-            f'on object {_hands_off_repr(self.obj)} '
-            f'in validator {_fn_repr(self.fn)} '
-            f'for field {self.field!r} '
-            f'with value {self.value!r}'
-        )
+    def _message_parts(self) -> ta.Mapping[str, str]:
+        return {
+            **super()._build_message(),
+            'field': repr(self.field),
+            'value': repr(self.value),
+        }
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({", ".join([
-            f"obj={_hands_off_repr(self.obj)}",
-            f"fn={_fn_repr(self.fn)}",
-            f"field={self.field!r}",
-            f"value={self.value!r}",
-        ])})'
+
+class FieldFnValidationError(FieldValidationError, FnValidationError):
+    pass
+
+
+class TypeValidationError(ValidationError, TypeError):
+    def __init__(
+            self,
+            *,
+            type: ta.Any,  # noqa
+            **kwargs: ta.Any,
+    ) -> None:
+        self.type = type
+
+        super().__init__(**kwargs)
+
+    def _message_parts(self) -> ta.Mapping[str, str]:
+        return {
+            **super()._build_message(),
+            'type': repr(self.type),
+        }
+
+
+class FieldTypeValidationError(FieldValidationError, TypeValidationError):
+    pass

@@ -11,6 +11,7 @@ def _transform_dataclass__A(
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__check_type,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__coerce,
         __dataclass__init__fields__2__default,
@@ -21,16 +22,17 @@ def _transform_dataclass__A(
         __dataclass__init__validate_fns__0,
         __dataclass__override__fields__1__annotation,
         __dataclass__repr__fns__2__fn,
+        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__None=None,  # noqa
         __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
         __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__FieldValidationError,  # noqa
-        __dataclass__ValidationError,  # noqa
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
 ):
     def __copy__(self):
         if self.__class__ is not __dataclass__cls:
@@ -107,8 +109,15 @@ def _transform_dataclass__A(
         if l is __dataclass__HAS_DEFAULT_FACTORY:
             l = __dataclass__init__fields__3__default_factory()
         d = __dataclass__init__fields__2__coerce(d)
+        if not __dataclass__isinstance(s, __dataclass__init__fields__1__check_type):
+            raise __dataclass__FieldTypeValidationError(
+                obj=__dataclass__self,
+                type=__dataclass__init__fields__1__check_type,
+                field='s',
+                value=s,
+            )
         if not __dataclass__init__fields__3__validate(l):
-            raise __dataclass__FieldValidationError(
+            raise __dataclass__FieldFnValidationError(
                 obj=__dataclass__self,
                 fn=__dataclass__init__fields__3__validate,
                 field='l',
@@ -117,7 +126,7 @@ def _transform_dataclass__A(
         if not __dataclass__init__validate_fns__0(
                 l,
         ):
-            raise __dataclass__ValidationError(
+            raise __dataclass__FnValidationError(
                 obj=__dataclass__self,
                 fn=__dataclass__init__validate_fns__0,
             )
