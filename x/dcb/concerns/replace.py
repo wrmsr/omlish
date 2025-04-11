@@ -1,8 +1,8 @@
 import dataclasses as dc
 
 from ..processing.base import Processor
-from ..processing.registry import register_processor_type
 from ..processing.priority import ProcessorPriority
+from ..processing.registry import register_processor_type
 from ..std.internals import STD_FIELDS_ATTR
 from ..std.internals import StdFieldType
 from ..std.internals import std_field_type

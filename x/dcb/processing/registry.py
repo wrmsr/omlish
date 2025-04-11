@@ -5,7 +5,6 @@ from omlish import check
 from omlish import lang
 
 from ..registry import SealableRegistry
-
 from .base import ProcessingContextItemFactory
 from .base import Processor
 from .priority import ProcessorPriority

@@ -16,8 +16,8 @@ from .base import Plan
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
 from .idents import FN_GLOBAL_IMPORTS
+from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap

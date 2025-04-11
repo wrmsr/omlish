@@ -8,9 +8,9 @@ from ..inspect import FieldsInspection
 from ..inspect import get_cls_annotations
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
-from ..processing.registry import register_processor_type
-from ..processing.registry import register_processing_context_item_factory
 from ..processing.priority import ProcessorPriority
+from ..processing.registry import register_processing_context_item_factory
+from ..processing.registry import register_processor_type
 from ..specs import FieldSpec
 from ..specs import FieldType
 from ..std.internals import STD_FIELDS_ATTR
@@ -23,7 +23,8 @@ from ..std.internals import std_is_kw_only
 ##
 
 
-InstanceFields = ta.NewType('InstanceFields', ta.Sequence[FieldSpec])
+class InstanceFields(list[FieldSpec]):
+    pass
 
 
 def get_instance_fields(fields: ta.Iterable[FieldSpec]) -> InstanceFields:

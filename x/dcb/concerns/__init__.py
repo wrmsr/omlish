@@ -4,13 +4,13 @@ from . import (  # noqa
     eq,
     fields,
     frozen,
-    hash,
+    hash,  # noqa
     init,
     matchargs,
     order,
     override,
     params,
     replace,
-    repr,
+    repr,  # noqa
     slots,
 )

@@ -2,8 +2,8 @@ import inspect
 
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
-from ..processing.registry import register_processor_type
 from ..processing.priority import ProcessorPriority
+from ..processing.registry import register_processor_type
 
 
 ##

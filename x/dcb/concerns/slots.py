@@ -4,8 +4,8 @@ import itertools
 import types
 
 from ..processing.base import Processor
-from ..processing.registry import register_processor_type
 from ..processing.priority import ProcessorPriority
+from ..processing.registry import register_processor_type
 
 
 ##

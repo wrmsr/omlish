@@ -2,9 +2,9 @@ from omlish import check
 
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
-from ..processing.registry import register_processor_type
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processing_context_item_factory
+from ..processing.registry import register_processor_type
 from ..std.conversion import class_spec_to_spec_std_params
 from ..std.internals import STD_PARAMS_ATTR
 from ..std.internals import StdParams
