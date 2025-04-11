@@ -157,7 +157,7 @@ class OpCompiler:
 
         if self._set_global_kwarg_defaults:
             params.extend([
-                f'{k}={v.src}' if v.src is not None else k
+                f'{k}={v.src}' if not v.src.startswith('.') else k
                 for k, v in FN_GLOBALS.items()
             ])
         else:

@@ -124,7 +124,7 @@ class GeneratorProcessor(Processor):
         fn = ns[comp.fn_name]
 
         kw: dict = {CLS_IDENT: cls}
-        kw.update({k: v for k, v in FN_GLOBALS.items() if v.src is None})
+        kw.update({k: v for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
         orm = self.prepare().ref_map
         for r in comp.refs:
             kw[r.ident()] = orm[r]

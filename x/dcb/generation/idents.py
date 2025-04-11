@@ -3,6 +3,7 @@ import types
 import typing as ta
 
 from ..exceptions import FieldValidationError
+from ..exceptions import ValidationError
 
 
 ##
@@ -21,7 +22,7 @@ VALUE_IDENT = IDENT_PREFIX + 'value'
 
 class FnGlobal(ta.NamedTuple):
     value: ta.Any
-    src: str | None
+    src: str  # Leading '.' denotes a dataclasses-internal symbol
 
 
 FN_GLOBAL_IMPORTS: ta.Mapping[str, types.ModuleType] = {
@@ -60,7 +61,11 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
 
     (FIELD_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldValidationError'): FnGlobal(
         FieldValidationError,
-        None,  # __package__ + '.exceptions.FieldValidationError',
+        '.exceptions.FieldValidationError',
+    ),
+    (VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'ValidationError'): FnGlobal(
+        ValidationError,
+        '.exceptions.ValidationError',
     ),
 }
 

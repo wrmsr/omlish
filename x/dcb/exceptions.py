@@ -5,10 +5,6 @@ import typing as ta
 ##
 
 
-class ValidationError(Exception):
-    pass
-
-
 def _hands_off_repr(obj: ta.Any) -> str:
     return f'{obj.__class__.__qualname__}@{hex(id(obj))[2:]}'
 
@@ -23,31 +19,63 @@ def _fn_repr(fn: ta.Callable) -> str:
     return f'{fn!r} ({co_filename}:{co.co_firstlineno})'
 
 
-class FieldValidationError(ValidationError):
+##
+
+
+class ValidationError(Exception):
     def __init__(
             self,
             obj: ta.Any,
-            field: str,
             fn: ta.Callable,
-            value: ta.Any,
     ) -> None:
-        super().__init__(
-            f'{self.__class__.__name__} '
-            f'for field {field!r} '
-            f'on object {_hands_off_repr(obj)} '
-            f'in validator {_fn_repr(fn)} '
-            f'with value {value!r}',
-        )
-
         self.obj = obj
-        self.field = field
         self.fn = fn
-        self.value = value
+
+        super().__init__(self._build_message())
+
+    def _build_message(self) -> str:
+        return (
+            f'{self.__class__.__name__} '
+            f'on object {_hands_off_repr(self.obj)} '
+            f'in validator {_fn_repr(self.fn)}'
+        )
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join([
             f"obj={_hands_off_repr(self.obj)}",
-            f"field={self.field!r}",
             f"fn={_fn_repr(self.fn)}",
+        ])})'
+
+
+class FieldValidationError(ValidationError):
+    def __init__(
+            self,
+            obj: ta.Any,
+            fn: ta.Callable,
+            field: str,
+            value: ta.Any,
+    ) -> None:
+        self.field = field
+        self.value = value
+
+        super().__init__(
+            obj,
+            fn,
+        )
+
+    def _build_message(self) -> str:
+        return (
+            f'{self.__class__.__name__} '
+            f'on object {_hands_off_repr(self.obj)} '
+            f'in validator {_fn_repr(self.fn)} '
+            f'for field {self.field!r} '
+            f'with value {self.value!r}'
+        )
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({", ".join([
+            f"obj={_hands_off_repr(self.obj)}",
+            f"fn={_fn_repr(self.fn)}",
+            f"field={self.field!r}",
             f"value={self.value!r}",
         ])})'

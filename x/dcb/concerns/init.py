@@ -15,6 +15,7 @@ from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.idents import FIELD_VALIDATION_ERROR_IDENT
+from ..generation.idents import VALIDATION_ERROR_IDENT
 from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
 from ..generation.idents import NONE_IDENT
 from ..generation.idents import SELF_IDENT
@@ -60,9 +61,16 @@ class InitPlan(Plan):
 
     frozen: bool
 
-    post_init_args: tuple[str, ...] | None
+    post_init_params: tuple[str, ...] | None
 
     init_fns: tuple[OpRef[InitFn], ...]
+
+    @dc.dataclass(frozen=True)
+    class ValidateFnWithParams:
+        fn: OpRef[ValidateFn]
+        params: tuple[str, ...]
+
+    validate_fns: ta.Sequence[ValidateFnWithParams] | None
 
 
 @register_generator_type(InitPlan)
@@ -142,9 +150,18 @@ class InitGenerator(Generator[InitPlan]):
             orm[ir] = ifn
             ifs.append(ir)
 
-        post_init_args: tuple[str, ...] | None = None
+        vfs: list[InitPlan.ValidateFnWithParams] = []
+        for i, vfn in enumerate(ctx.cs.validate_fns or []):
+            vr: OpRef = OpRef(f'init.init_fns.{i}')
+            orm[vr] = vfn
+            vfs.append(InitPlan.ValidateFnWithParams(
+                fn=vr,
+                params=tuple(vfn.params),
+            ))
+
+        post_init_params: tuple[str, ...] | None = None
         if hasattr(ctx.cls, STD_POST_INIT_NAME):
-            post_init_args = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT)
+            post_init_params = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT)
 
         return PlanResult(
             InitPlan(
@@ -152,15 +169,19 @@ class InitGenerator(Generator[InitPlan]):
 
                 frozen=ctx.cs.frozen,
 
-                post_init_args=post_init_args,
+                post_init_params=post_init_params,
 
                 init_fns=tuple(ifs),
+
+                validate_fns=tuple(vfs),
             ),
             orm,
         )
 
     def generate(self, bs: InitPlan) -> ta.Iterable[Op]:
         ors: set[OpRef] = set()
+
+        # proto
 
         params: list[str] = []
         seen_kw_only = False
@@ -195,6 +216,8 @@ class InitGenerator(Generator[InitPlan]):
             f') -> {NONE_IDENT}:',
         ]
 
+        # defaults
+
         for f in bs.fields:
             if f.default_factory is None:
                 continue
@@ -203,6 +226,8 @@ class InitGenerator(Generator[InitPlan]):
                 f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
                 f'        {f.name} = {f.default_factory.ident()}()',
             ])
+
+        # coercion
 
         for f in bs.fields:
             if isinstance(f.coerce, bool) and f.coerce:
@@ -215,6 +240,8 @@ class InitGenerator(Generator[InitPlan]):
                     f'    {f.name} = {f.coerce.ident()}({f.name})',
                 )
 
+        # validation
+
         for f in bs.fields:
             if f.validate is None:
                 continue
@@ -222,12 +249,36 @@ class InitGenerator(Generator[InitPlan]):
             lines.extend([
                 f'    if not {f.validate.ident()}({f.name}): ',
                 f'        raise {FIELD_VALIDATION_ERROR_IDENT}(',
-                f'            {SELF_IDENT},',
-                f'            {f.name!r},',
-                f'            {f.validate.ident()},',
-                f'            {f.name},',
+                f'            obj={SELF_IDENT},',
+                f'            fn={f.validate.ident()},',
+                f'            field={f.name!r},',
+                f'            value={f.name},',
                 f'        )',
             ])
+
+        for vfn in bs.validate_fns:
+            ors.add(vfn.fn)
+            if vfn.params:
+                lines.extend([
+                    f'    if not {vfn.fn.ident()}(',
+                    *[
+                        f'        {p},'
+                        for p in vfn.params
+                    ],
+                    f'    ):',
+                ])
+            else:
+                lines.append(
+                    f'    if not {vfn.fn.ident()}():',
+                )
+            lines.extend([
+                f'        raise {VALIDATION_ERROR_IDENT}(',
+                f'            obj={SELF_IDENT},',
+                f'            fn={vfn.fn.ident()},',
+                f'        )',
+            ])
+
+        # setattr
 
         sab = SetattrSrcBuilder()
         for f in bs.fields:
@@ -236,7 +287,9 @@ class InitGenerator(Generator[InitPlan]):
                 for l in sab(f.name, f.name, frozen=bs.frozen, override=f.override)
             ])
 
-        if (pia := bs.post_init_args) is not None:
+        # post-init
+
+        if (pia := bs.post_init_params) is not None:
             lines.append(
                 f'    {SELF_IDENT}.{STD_POST_INIT_NAME}({", ".join(pia)})',
             )
@@ -246,6 +299,8 @@ class InitGenerator(Generator[InitPlan]):
             lines.append(
                 f'    {ifn.ident()}({SELF_IDENT})',
             )
+
+        #
 
         if not lines:
             lines.append(
