@@ -27,10 +27,12 @@ class DefaultFactory(ta.NamedTuple):
 ##
 
 
-class FieldType(enum.Enum):
+class FieldType(enum.StrEnum):
     INSTANCE = enum.auto()
     CLASS = enum.auto()
     INIT = enum.auto()
+
+    __repr__ = lang.enum_name_repr
 
 
 @dc.dataclass(frozen=True, kw_only=True)

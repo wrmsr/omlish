@@ -106,10 +106,14 @@ class GeneratorProcessor(Processor):
     def process_with_compiler(self, cls: type) -> None:
         comp = self.compile()
 
+        print(repr(self.prepare().plans))
+        print()
+        print(comp.src)
+
         ns: dict = {}
         if self._set_global_kwarg_defaults:
             ns.update(FN_GLOBAL_IMPORTS)
-        print(comp.src)
+
         exec(comp.src, ns)
         fn = ns[comp.fn_name]
 

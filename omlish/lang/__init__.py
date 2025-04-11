@@ -122,6 +122,10 @@ from .descriptors import (  # noqa
     update_wrapper,
 )
 
+from .enums import (  # noqa
+    enum_name_repr,
+)
+
 from .exceptions import (  # noqa
     Unreachable,
 )
