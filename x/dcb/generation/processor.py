@@ -36,12 +36,10 @@ class GeneratorProcessor(Processor):
             ctx: ProcessingContext,
             *,
             mode: ta.Literal['executor', 'compiler'] = 'compiler',
-            set_global_kwarg_defaults: bool = True,
     ) -> None:
         super().__init__(ctx)
 
         self._mode = mode
-        self._set_global_kwarg_defaults = set_global_kwarg_defaults
 
     @dc.dataclass(frozen=True)
     class Prepared:
@@ -88,14 +86,15 @@ class GeneratorProcessor(Processor):
         return ops
 
     @lang.cached_function
-    def compile(self) -> OpCompiler.CompileResult:
-        opc = OpCompiler(
+    def compiler(self) -> OpCompiler:
+        return OpCompiler(
             self._ctx.cls.__qualname__,
-            set_global_kwarg_defaults=self._set_global_kwarg_defaults,
-            import_global_modules=self._set_global_kwarg_defaults,
+            OpCompiler.AotStyle(),
         )
 
-        return opc.compile(
+    @lang.cached_function
+    def compile(self) -> OpCompiler.CompileResult:
+        return self.compiler().compile(
             self.ops(),
         )
 
@@ -117,8 +116,7 @@ class GeneratorProcessor(Processor):
         # print(comp.src)
 
         ns: dict = {}
-        if self._set_global_kwarg_defaults:
-            ns.update(FN_GLOBAL_IMPORTS)
+        ns.update(self.compiler().style.globals_ns())  # noqa
 
         exec(comp.src, ns)
         fn = ns[comp.fn_name]

@@ -2,6 +2,7 @@
 TODO:
  - md5 spec to fn name
 """
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -35,20 +36,81 @@ COMPILED_FN_PREFIX = '_transform_dataclass__'
 
 
 class OpCompiler:
+    @dc.dataclass(frozen=True)
+    class FnParam:
+        param: str
+        noqa: bool = dc.field(default=False, kw_only=True)
+
+    class Style(abc.ABC):
+        @abc.abstractmethod
+        def header_lines(self) -> ta.Sequence[str]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+    class JitStyle(Style):
+        def header_lines(self) -> ta.Sequence[str]:
+            pass
+
+        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
+            return [OpCompiler.FnParam(k) for k in FN_GLOBALS]
+
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            return dict(FN_GLOBAL_IMPORTS)
+
+    class AotStyle(Style):
+        HEADER_LINES: ta.ClassVar[ta.Sequence[str]] = [
+            '# type: ignore',
+            '# ruff: noqa',
+            '# flake8: noqa',
+            '# @omlish-generated',
+        ]
+
+        def header_lines(self) -> ta.Sequence[str]:
+            return [
+                *self.HEADER_LINES,
+                *[
+                    f'import {i}'
+                    for i in FN_GLOBAL_IMPORTS
+                ],
+                '',
+                '',
+            ]
+
+        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
+            return [
+                OpCompiler.FnParam(
+                    p := f'{k}={v.src}' if not v.src.startswith('.') else k,
+                    noqa=k != k.lower() or not v.src.startswith('.'),
+                )
+                for k, v in FN_GLOBALS.items()
+            ]
+
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            return {}
+
+    #
+
     def __init__(
             self,
             qualname: str,
-            *,
-            set_global_kwarg_defaults: bool = False,
-            import_global_modules: bool = False,
+            style: Style,
     ) -> None:
         super().__init__()
 
         self._qualname = qualname
         self._mangled_qualname = QUALNAME_MANGLER.mangle(qualname)
+        self._style = style
 
-        self._set_global_kwarg_defaults = set_global_kwarg_defaults
-        self._import_global_modules = import_global_modules
+    @property
+    def style(self) -> Style:
+        return self._style
 
     @dc.dataclass(frozen=True)
     class CompileResult:
@@ -56,13 +118,6 @@ class OpCompiler:
         params: ta.Sequence[str]
         src: str
         refs: frozenset[OpRef]
-
-    _MODULE_HEADER_LINES: ta.ClassVar[ta.Sequence[str]] = [
-        '# type: ignore',
-        '# ruff: noqa',
-        '# flake8: noqa',
-        '# @omlish-generated',
-    ]
 
     def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
         body_lines: list[str] = []
@@ -150,42 +205,24 @@ class OpCompiler:
 
         refs = frozenset.union(*[get_op_refs(o) for o in ops])
 
-        noqa_params: set[str] = set()
-        params = [
-            CLS_IDENT,
-            *sorted(r.ident() for r in refs),
+        params: list[OpCompiler.FnParam] = [
+            OpCompiler.FnParam(CLS_IDENT),
+            *[OpCompiler.FnParam(p) for p in sorted(r.ident() for r in refs)],
         ]
 
-        if self._set_global_kwarg_defaults:
-            for k, v in FN_GLOBALS.items():
-                params.append(p := (
-                    f'{k}={v.src}' if not v.src.startswith('.') else k
-                ))
-                if k != k.lower() or not v.src.startswith('.'):
-                    noqa_params.add(p)
-        else:
-            params.extend(FN_GLOBALS)
+        params.extend(self._style.globals_params())
 
         fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
         lines = []
 
-        if self._import_global_modules:
-            lines.extend([
-                *self._MODULE_HEADER_LINES,
-                *[
-                    f'import {i}'
-                    for i in FN_GLOBAL_IMPORTS
-                ],
-                '',
-                '',
-            ])
+        lines.extend(self._style.header_lines())
 
         lines.extend([
             f'def {fn_name}(',
             f'    *,',
             *[
-                f'    {p},{"  # noqa" if p in noqa_params else ""}'
+                f'    {p.param},{"  # noqa" if p.noqa  else ""}'
                 for p in params
             ],
             f'):',
