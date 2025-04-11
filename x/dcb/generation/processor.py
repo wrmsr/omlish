@@ -13,6 +13,7 @@ from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
 from .base import Plan
+from .base import Plans
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
@@ -44,7 +45,7 @@ class GeneratorProcessor(Processor):
 
     @dc.dataclass(frozen=True)
     class Prepared:
-        plans: tuple[Plan, ...]
+        plans: Plans
         ref_map: OpRefMap
 
         def __post_init__(self) -> None:
@@ -69,7 +70,6 @@ class GeneratorProcessor(Processor):
             pll.append(pr.plan)
 
         plans = tuple(pll)
-        print(repr(plans))
 
         return self.Prepared(
             plans,
@@ -113,9 +113,8 @@ class GeneratorProcessor(Processor):
     def process_with_compiler(self, cls: type) -> None:
         comp = self.compile()
 
-        print(repr(self.prepare().plans))
-        print()
-        print(comp.src)
+        # print(repr(self.prepare().plans))
+        # print(comp.src)
 
         ns: dict = {}
         if self._set_global_kwarg_defaults:

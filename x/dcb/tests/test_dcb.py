@@ -39,6 +39,9 @@ class A:
     def _init_foo(self) -> None:
         print('hi!')
 
+    def __post_init__(self):
+        pass
+
 
 def test_dcb():
     assert getattr(dc, 'is_dataclass')(A)  # mypy blackhole

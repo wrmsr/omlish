@@ -19,6 +19,9 @@ class Plan(abc.ABC):  # noqa
     pass
 
 
+Plans: ta.TypeAlias = tuple[Plan, ...]
+
+
 ##
 
 

@@ -30,6 +30,7 @@ from ..specs import DefaultFactory
 from ..specs import FieldType
 from ..specs import InitFn
 from ..specs import ValidateFn
+from ..std.internals import STD_POST_INIT_NAME
 from .fields import InitFields
 
 
@@ -58,6 +59,8 @@ class InitPlan(Plan):
     fields: tuple[Field, ...]
 
     frozen: bool
+
+    post_init_args: tuple[str, ...] | None
 
     init_fns: tuple[OpRef[InitFn], ...]
 
@@ -139,10 +142,18 @@ class InitGenerator(Generator[InitPlan]):
             orm[ir] = ifn
             ifs.append(ir)
 
+        post_init_args: tuple[str, ...] | None = None
+        if hasattr(ctx.cls, STD_POST_INIT_NAME):
+            post_init_args = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT)
+
         return PlanResult(
             InitPlan(
                 fields=tuple(bfs),
+
                 frozen=ctx.cs.frozen,
+
+                post_init_args=post_init_args,
+
                 init_fns=tuple(ifs),
             ),
             orm,
@@ -225,13 +236,18 @@ class InitGenerator(Generator[InitPlan]):
                 for l in sab(f.name, f.name, frozen=bs.frozen, override=f.override)
             ])
 
+        if (pia := bs.post_init_args) is not None:
+            lines.append(
+                f'    {SELF_IDENT}.{STD_POST_INIT_NAME}({", ".join(pia)})',
+            )
+
         for ifn in bs.init_fns:
             ors.add(ifn)
             lines.append(
                 f'    {ifn.ident()}({SELF_IDENT})',
             )
 
-        if not bs.fields:
+        if not lines:
             lines.append(
                 '    pass',
             )
