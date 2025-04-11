@@ -138,3 +138,34 @@ def extract_attr_docs(src: str) -> ta.Mapping[str, AttrDoc]:
     ast_visitor = _AttrDocAstVisitor(tok_lines=tok_lines)
     ast_visitor.visit(src_ast)
     return ast_visitor.attr_docs
+
+
+##
+
+
+def _main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file')
+    args = parser.parse_args()
+
+    #
+
+    with open(args.file) as f:
+        src = f.read()
+
+    attr_docs = extract_attr_docs(src)
+
+    #
+
+    import json
+
+    print(json.dumps({
+        a: {k: v for k, v in dc.asdict(ad).items() if v}
+        for a, ad in sorted(attr_docs.items(), key=lambda t: t[0])
+    }))
+
+
+if __name__ == '__main__':
+    _main()
