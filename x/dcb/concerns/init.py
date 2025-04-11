@@ -15,10 +15,11 @@ from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.idents import FIELD_VALIDATION_ERROR_IDENT
-from ..generation.idents import VALIDATION_ERROR_IDENT
 from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
+from ..generation.idents import ISINSTANCE_IDENT
 from ..generation.idents import NONE_IDENT
 from ..generation.idents import SELF_IDENT
+from ..generation.idents import VALIDATION_ERROR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
@@ -56,6 +57,8 @@ class InitPlan(Plan):
 
         coerce: bool | OpRef[CoerceFn] | None
         validate: OpRef[ValidateFn] | None
+
+        check_type: OpRef[type | tuple[type, ...]] | None
 
     fields: tuple[Field, ...]
 
@@ -127,6 +130,19 @@ class InitGenerator(Generator[InitPlan]):
                 vr = OpRef(f'init.fields.{i}.validate')
                 orm[vr] = f.validate
 
+            ctr: OpRef[type | tuple[type, ...]] | None = None
+            if f.check_type is not None and f.check_type is not False:
+                if isinstance(f.check_type, tuple):
+                    ct = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
+                elif isinstance(f.check_type, type):
+                    ct = f.check_type
+                elif f.check_type is True:
+                    ct = f.annotation
+                else:
+                    raise TypeError(f.check_type)
+                ctr = OpRef(f'init.fields.{i}.check_type')
+                orm[ctr] = ct
+
             bfs.append(InitPlan.Field(
                 name=f.name,
                 annotation=ar,
@@ -142,6 +158,8 @@ class InitGenerator(Generator[InitPlan]):
 
                 coerce=co,
                 validate=vr,
+
+                check_type=ctr,
             ))
 
         ifs: list[OpRef[InitFn]] = []
@@ -241,6 +259,15 @@ class InitGenerator(Generator[InitPlan]):
                 )
 
         # validation
+
+        for f in bs.fields:
+            if f.check_type is None:
+                continue
+            # lines.append(
+            #     f'if not __dataclass_builtins_isinstance__({value}, {cn}): '
+            #     f'raise __dataclass_builtins_TypeError__({value}, {cn})',
+            # )
+            pass
 
         for f in bs.fields:
             if f.validate is None:

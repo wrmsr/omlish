@@ -27,7 +27,7 @@ V = ta.TypeVar('V')
 @api.dataclass(frozen=True, order=True)
 class A:
     i: int
-    s: str = api.field(repr_fn=lambda s: f'{s}!', override=True)
+    s: str = api.field(repr_fn=lambda s: f'{s}!', override=True, check_type=True)
     d: int = api.field(default=5, coerce=int)
     l: ta.Sequence = api.field(
         default_factory=tuple,

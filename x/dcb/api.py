@@ -97,6 +97,7 @@ class Field:
 
     coerce: bool | CoerceFn | None = None
     validate: ValidateFn | None = None
+    check_type: bool | type | tuple[type | None, ...] | None = None
     override: bool = False
     repr_fn: ReprFn | None = None
     repr_priority: int | None = None
@@ -108,7 +109,8 @@ def field(
         default_factory: ta.Callable[..., ta.Any] | None = None,
 
         coerce: bool | CoerceFn | None = None,
-        validate: ValidateFn | None = None,
+        validate: ValidateFn | None = None,  # noqa
+        check_type: bool | type | tuple[type | None, ...] | None = None,
         override: bool = False,
         repr_fn: ReprFn | None = None,
         repr_priority: int | None = None,
@@ -119,6 +121,7 @@ def field(
 
         coerce=coerce,
         validate=validate,
+        check_type=check_type,
         override=override,
         repr_fn=repr_fn,
         repr_priority=repr_priority,
@@ -172,6 +175,7 @@ def dataclass(
 
                 coerce=fld.coerce,
                 validate=fld.validate,
+                check_type=fld.check_type,
                 override=fld.override,
                 repr_fn=fld.repr_fn,
                 repr_priority=fld.repr_priority,
