@@ -152,8 +152,8 @@ class InitGenerator(Generator[InitPlan]):
 
         vfs: list[InitPlan.ValidateFnWithParams] = []
         for i, vfn in enumerate(ctx.cs.validate_fns or []):
-            vr: OpRef = OpRef(f'init.init_fns.{i}')
-            orm[vr] = vfn
+            vr: OpRef = OpRef(f'init.validate_fns.{i}')
+            orm[vr] = vfn.fn
             vfs.append(InitPlan.ValidateFnWithParams(
                 fn=vr,
                 params=tuple(vfn.params),

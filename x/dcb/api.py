@@ -1,4 +1,9 @@
 """
+TODO:
+ - strip metadata out of __dict__ after construction
+
+==
+
 def field(
     *,
     default=MISSING,
@@ -30,6 +35,7 @@ def dataclass(
 ):
 """
 import dataclasses as dc
+import inspect
 import typing as ta
 
 from omlish import check
@@ -65,6 +71,15 @@ class _InitMetadata(lang.Marker):
 
 def init(obj):
     _append_cls_md(_InitMetadata, obj)
+    return obj
+
+
+class _ValidateMetadata(lang.Marker):
+    pass
+
+
+def validate(obj):
+    _append_cls_md(_ValidateMetadata, obj)
     return obj
 
 
@@ -163,10 +178,19 @@ def dataclass(
             ))
 
         init_fns: list[InitFn] = []
+        validate_fns: list[ClassSpec.ValidateFnWithParams] = []
         if (cls_md_dct := cls.__dict__.get(METADATA_ATTR)):
             if (md_ifs := cls_md_dct.get(_InitMetadata)):
                 for md_if in md_ifs:
-                    init_fns.append(md_if)  # noqa
+                    init_fns.append(md_if)
+            if (md_vfs := cls_md_dct.get(_ValidateMetadata)):
+                for md_vf in md_vfs:
+                    if isinstance(md_vf, staticmethod):
+                        md_vf = md_vf.__func__
+                    validate_fns.append(ClassSpec.ValidateFnWithParams(
+                        md_vf,
+                        [p.name for p in inspect.signature(md_vf).parameters.values()],
+                    ))
 
         cs = ClassSpec(
             fields=fsl,
@@ -187,6 +211,7 @@ def dataclass(
             repr_id=repr_id,
 
             init_fns=init_fns,
+            validate_fns=validate_fns,
         )
 
         return drive_cls_processing(cls, cs)

@@ -18,17 +18,19 @@ def _transform_dataclass__A(
         __dataclass__init__fields__3__default_factory,
         __dataclass__init__fields__3__validate,
         __dataclass__init__init_fns__0,
+        __dataclass__init__validate_fns__0,
         __dataclass__override__fields__1__annotation,
         __dataclass__repr__fns__2__fn,
-        __dataclass__None=None,
-        __dataclass__property=property,
-        __dataclass__TypeError=TypeError,
-        __dataclass__object_setattr=object.__setattr__,
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,
-        __dataclass__MISSING=dataclasses.MISSING,
-        __dataclass__FunctionType=types.FunctionType,
-        __dataclass__FieldValidationError,
+        __dataclass__None=None,  # noqa
+        __dataclass__property=property,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__FieldValidationError,  # noqa
+        __dataclass__ValidationError,  # noqa
 ):
     def __copy__(self):
         if self.__class__ is not __dataclass__cls:
@@ -107,16 +109,24 @@ def _transform_dataclass__A(
         d = __dataclass__init__fields__2__coerce(d)
         if not __dataclass__init__fields__3__validate(l):
             raise __dataclass__FieldValidationError(
-                __dataclass__self,
-                'l',
-                __dataclass__init__fields__3__validate,
+                obj=__dataclass__self,
+                fn=__dataclass__init__fields__3__validate,
+                field='l',
+                value=l,
+            )
+        if not __dataclass__init__validate_fns__0(
                 l,
+        ):
+            raise __dataclass__ValidationError(
+                obj=__dataclass__self,
+                fn=__dataclass__init__validate_fns__0,
             )
         __dataclass__object_setattr(__dataclass__self, 'i', i)
         __dataclass__self_dict = __dataclass__self.__dict__
         __dataclass__self_dict['s'] = s
         __dataclass__object_setattr(__dataclass__self, 'd', d)
         __dataclass__object_setattr(__dataclass__self, 'l', l)
+        __dataclass__self.__post_init__()
         __dataclass__init__init_fns__0(__dataclass__self)
 
     __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"

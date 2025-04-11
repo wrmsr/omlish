@@ -150,16 +150,19 @@ class OpCompiler:
 
         refs = frozenset.union(*[get_op_refs(o) for o in ops])
 
+        noqa_params: set[str] = set()
         params = [
             CLS_IDENT,
             *sorted(r.ident() for r in refs),
         ]
 
         if self._set_global_kwarg_defaults:
-            params.extend([
-                f'{k}={v.src}' if not v.src.startswith('.') else k
-                for k, v in FN_GLOBALS.items()
-            ])
+            for k, v in FN_GLOBALS.items():
+                params.append(p := (
+                    f'{k}={v.src}' if not v.src.startswith('.') else k
+                ))
+                if k != k.lower() or not v.src.startswith('.'):
+                    noqa_params.add(p)
         else:
             params.extend(FN_GLOBALS)
 
@@ -182,7 +185,7 @@ class OpCompiler:
             f'def {fn_name}(',
             f'    *,',
             *[
-                f'    {p},'
+                f'    {p},{"  # noqa" if p in noqa_params else ""}'
                 for p in params
             ],
             f'):',

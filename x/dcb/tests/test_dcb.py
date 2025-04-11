@@ -39,6 +39,11 @@ class A:
     def _init_foo(self) -> None:
         print('hi!')
 
+    @api.validate  # noqa
+    @staticmethod
+    def _validate_foo_not_in_l(l):
+        return 'foo' not in l
+
     def __post_init__(self):
         pass
 
