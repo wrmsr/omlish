@@ -29,5 +29,4 @@ class ParamsProcessor(Processor):
 
     def process(self, cls: type) -> type:
         setattr(cls, STD_PARAMS_ATTR, self._ctx[StdParams])
-
         return cls

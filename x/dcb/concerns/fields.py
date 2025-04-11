@@ -2,9 +2,11 @@
 FIXME:
  - !! calc_init_fields should be doing kw_only defaulting !!
   - so it does: raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
+  - _: dc.KW_ONLY crap handled by api/
  - !! DONT MUTATE FIELDS IN _build_std_field
   - should do this crap in dcb/api/...
   - also like use dcb/std/conversion std_*_field_* ...
+ - this does *not* inspect cls anns
 """
 import dataclasses as dc
 import types
@@ -58,6 +60,7 @@ def calc_init_fields(
         fields: ta.Iterable[FieldSpec],
         *,
         reorder: bool,
+        class_kw_only: bool,
 ) -> InitFields:
     all_init_fields = [
         f
@@ -65,13 +68,16 @@ def calc_init_fields(
         if f.field_type in (FieldType.INSTANCE, FieldType.INIT_VAR)
     ]
 
+    def f_kw_only(f: FieldSpec) -> bool:
+        return f.kw_only if f.kw_only is not None else class_kw_only
+
     ordered_init_fields = list(all_init_fields)
     if reorder:
-        ordered_init_fields.sort(key=lambda f: (f.default.present, not f.kw_only))
+        ordered_init_fields.sort(key=lambda f: (f.default.present, not f_kw_only(f)))
 
     std_init_fields, kw_only_init_fields = (
-        tuple(f1 for f1 in ordered_init_fields if f1.init and not f1.kw_only),
-        tuple(f1 for f1 in ordered_init_fields if f1.init and f1.kw_only),
+        tuple(f1 for f1 in ordered_init_fields if f1.init and not f_kw_only(f1)),
+        tuple(f1 for f1 in ordered_init_fields if f1.init and f_kw_only(f1)),
     )
 
     return InitFields(
@@ -87,6 +93,7 @@ def _init_fields_processing_context_item_factory(ctx: ProcessingContext) -> Init
     return calc_init_fields(
         ctx.cs.fields,
         reorder=ctx.cs.reorder,
+        class_kw_only=ctx.cs.kw_only,
     )
 
 
