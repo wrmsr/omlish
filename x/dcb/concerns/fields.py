@@ -191,7 +191,7 @@ def build_cls_std_fields(
     return BuiltClsStdFields(
         fields,
         setattrs=setattrs,
-        delattrs=delattrs,
+        delattrs=delattrs,  # noqa
     )
 
 
