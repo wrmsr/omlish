@@ -54,10 +54,8 @@ def std_to_spec_field_default(
     if default is not dc.MISSING:
         check.state(default_factory is dc.MISSING)
         return lang.just(default)
-
     elif default_factory is not None:
         return lang.just(DefaultFactory(default_factory))
-
     else:
         return lang.empty()
 

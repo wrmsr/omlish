@@ -1,12 +1,3 @@
-"""
-check.is_(check.isinstance(cls.__dict__[PARAMS_ATTR], Params), info.params)
-check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], ParamsExtras), info.params_extras)  # noqa
-
-    def _check_params(self) -> None:
-        if self._info.params.order and not self._info.params.eq:
-            raise ValueError('eq must be true if order is true')
-
-"""
 from omlish import check
 
 from ..processing.base import ProcessingContext
@@ -35,6 +26,9 @@ class ParamsProcessor(Processor):
     def check(self) -> None:
         check.not_in(STD_PARAMS_ATTR, self._ctx.cls.__dict__)
         check.not_none(self._ctx[StdParams])
+
+        if self._ctx.cs.order and not self._ctx.cs.eq:
+            raise ValueError('eq must be true if order is true')
 
     def process(self, cls: type) -> type:
         setattr(cls, STD_PARAMS_ATTR, self._ctx[StdParams])

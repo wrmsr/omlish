@@ -1,3 +1,7 @@
+"""
+TODO:
+ - md5 spec to fn name
+"""
 import dataclasses as dc
 import typing as ta
 

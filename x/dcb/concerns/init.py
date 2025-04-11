@@ -1,6 +1,10 @@
 """
 TODO:
+ - ensure all 'init' fields work - non-instance
+ - post_init
  - special case 'None' default, most common
+ - validate fns
+ - check_type
 """
 import dataclasses as dc
 import typing as ta
