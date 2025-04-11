@@ -16,7 +16,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(json.loads(result), str(data[-1]))
 
     def test_type_error_messages(self):
-        with self.assertRaises(jmespath.exceptions.JmespathTypeError) as e:
+        with self.assertRaises(jmespath.errors.JmespathTypeError) as e:
             jmespath.search('length(@)', 2)
         exception = e.exception
         # 1. Function name should be in error message
@@ -29,7 +29,7 @@ class TestFunctions(unittest.TestCase):
         self.assertIn('received: "number"', str(exception))
 
     def test_singular_in_error_message(self):
-        with self.assertRaises(jmespath.exceptions.ArityError) as e:
+        with self.assertRaises(jmespath.errors.ArityError) as e:
             jmespath.search('length(@, @)', [0, 1])
         exception = e.exception
         self.assertEqual(
@@ -37,7 +37,7 @@ class TestFunctions(unittest.TestCase):
         )
 
     def test_error_message_is_pluralized(self):
-        with self.assertRaises(jmespath.exceptions.ArityError) as e:
+        with self.assertRaises(jmespath.errors.ArityError) as e:
             jmespath.search('sort_by(@)', [0, 1])
         exception = e.exception
         self.assertEqual(
@@ -45,7 +45,7 @@ class TestFunctions(unittest.TestCase):
         )
 
     def test_variadic_is_pluralized(self):
-        with self.assertRaises(jmespath.exceptions.VariadicArityError) as e:
+        with self.assertRaises(jmespath.errors.VariadicArityError) as e:
             jmespath.search('not_null()', 'foo')
         exception = e.exception
         self.assertEqual(

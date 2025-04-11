@@ -161,7 +161,7 @@ CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
 
 ########################################
-# ../exceptions.py
+# ../errors.py
 
 
 class ProcessError(Exception):

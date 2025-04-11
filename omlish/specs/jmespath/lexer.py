@@ -4,8 +4,8 @@ import typing as ta
 import warnings
 
 from ... import check
-from .exceptions import EmptyExpressionError
-from .exceptions import LexerError
+from .errors import EmptyExpressionError
+from .errors import LexerError
 from .visitor import Options
 
 

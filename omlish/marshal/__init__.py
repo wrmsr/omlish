@@ -50,7 +50,7 @@ from .composite.wrapped import (  # noqa
     WrappedUnmarshaler,
 )
 
-from .exceptions import (  # noqa
+from .errors import (  # noqa
     ForbiddenTypeError,
     MarshalError,
     UnhandledTypeError,

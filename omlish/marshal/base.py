@@ -92,7 +92,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from ..funcs import match as mfs
-from .exceptions import UnhandledTypeError
+from .errors import UnhandledTypeError
 from .factories import RecursiveTypeFactory
 from .factories import TypeCacheFactory
 from .factories import TypeMapFactory

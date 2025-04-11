@@ -5,12 +5,12 @@ import math
 import re
 import typing as ta
 
-from .exceptions import ArityError
-from .exceptions import JmespathError
-from .exceptions import JmespathTypeError
-from .exceptions import JmespathValueError
-from .exceptions import UnknownFunctionError
-from .exceptions import VariadicArityError
+from .errors import ArityError
+from .errors import JmespathError
+from .errors import JmespathTypeError
+from .errors import JmespathValueError
+from .errors import UnknownFunctionError
+from .errors import VariadicArityError
 
 
 T = ta.TypeVar('T')

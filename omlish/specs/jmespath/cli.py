@@ -5,11 +5,11 @@ import typing as ta
 
 from ...formats import json
 from .ast import Node
-from .exceptions import ArityError
-from .exceptions import JmespathTypeError
-from .exceptions import JmespathValueError
-from .exceptions import ParseError
-from .exceptions import UnknownFunctionError
+from .errors import ArityError
+from .errors import JmespathTypeError
+from .errors import JmespathValueError
+from .errors import ParseError
+from .errors import UnknownFunctionError
 from .parser import compile  # noqa
 from .parser import search
 from .visitor import node_type

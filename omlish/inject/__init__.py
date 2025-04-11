@@ -21,7 +21,7 @@ from .elements import (  # noqa
     as_elements,
 )
 
-from .exceptions import (  # noqa
+from .errors import (  # noqa
     BaseKeyError,
     ConflictingKeyError,
     CyclicDependencyError,

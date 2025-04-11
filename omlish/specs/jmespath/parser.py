@@ -57,9 +57,9 @@ from .ast import Subexpression
 from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
-from .exceptions import IncompleteExpressionError
-from .exceptions import LexerError
-from .exceptions import ParseError
+from .errors import IncompleteExpressionError
+from .errors import LexerError
+from .errors import ParseError
 from .lexer import Lexer
 from .lexer import Token
 from .visitor import GraphvizVisitor

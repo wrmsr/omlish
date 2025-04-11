@@ -31,7 +31,7 @@ from .coerce import (  # noqa
     seq_or_none,
 )
 
-from .exceptions import (  # noqa
+from .errors import (  # noqa
     DuplicateKeyError,
 )
 

@@ -1,7 +1,7 @@
 import typing as ta
 
 from .. import lang
-from .exceptions import DuplicateKeyError
+from .errors import DuplicateKeyError
 from .identity import IdentityKeyDict
 from .identity import IdentitySet
 

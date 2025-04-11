@@ -2,9 +2,9 @@ import dataclasses as dc
 import types
 import typing as ta
 
-from ..exceptions import FieldFnValidationError
-from ..exceptions import FieldTypeValidationError
-from ..exceptions import FnValidationError
+from ..errors import FieldFnValidationError
+from ..errors import FieldTypeValidationError
+from ..errors import FnValidationError
 
 
 ##
@@ -62,15 +62,15 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
 
     (FIELD_FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldFnValidationError'): FnGlobal(
         FieldFnValidationError,
-        '.exceptions.FieldFnValidationError',
+        '.errors.FieldFnValidationError',
     ),
     (FIELD_TYPE_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldTypeValidationError'): FnGlobal(
         FieldTypeValidationError,
-        '.exceptions.FieldTypeValidationError',
+        '.errors.FieldTypeValidationError',
     ),
     (FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FnValidationError'): FnGlobal(
         FnValidationError,
-        '.exceptions.FnValidationError',
+        '.errors.FnValidationError',
     ),
 }
 

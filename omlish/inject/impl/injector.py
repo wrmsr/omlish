@@ -23,8 +23,8 @@ import weakref
 from ... import check
 from ... import lang
 from ..elements import Elements
-from ..exceptions import CyclicDependencyError
-from ..exceptions import UnboundKeyError
+from ..errors import CyclicDependencyError
+from ..errors import UnboundKeyError
 from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..keys import Key

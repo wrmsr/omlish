@@ -3,7 +3,7 @@ import inspect
 import typing as ta
 
 from ... import lang
-from .exceptions import ValidationError
+from .errors import ValidationError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default

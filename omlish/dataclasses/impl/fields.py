@@ -8,7 +8,7 @@ import typing as ta
 
 from ... import check as check_
 from ... import lang
-from .exceptions import FieldValidationError
+from .errors import FieldValidationError
 from .internals import FIELDS_ATTR
 from .internals import FieldType
 from .internals import is_classvar

@@ -12,7 +12,7 @@ import weakref
 
 from ... import check
 from ... import reflect as rfl
-from ..exceptions import ConflictingKeyError
+from ..errors import ConflictingKeyError
 from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key

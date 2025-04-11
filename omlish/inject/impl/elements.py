@@ -29,8 +29,8 @@ from ..bindings import Binding
 from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
-from ..exceptions import ConflictingKeyError
-from ..exceptions import UnboundKeyError
+from ..errors import ConflictingKeyError
+from ..errors import UnboundKeyError
 from ..keys import Key
 from ..listeners import ProvisionListenerBinding
 from ..multis import MapBinding

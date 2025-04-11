@@ -15,8 +15,8 @@ from ... import lang
 from ..bindings import Binding
 from ..elements import Elements
 from ..elements import as_elements
-from ..exceptions import ScopeAlreadyOpenError
-from ..exceptions import ScopeNotOpenError
+from ..errors import ScopeAlreadyOpenError
+from ..errors import ScopeNotOpenError
 from ..injector import Injector
 from ..keys import Key
 from ..providers import FnProvider

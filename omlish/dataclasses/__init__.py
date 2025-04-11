@@ -65,7 +65,7 @@ globals()['make_dataclass'] = xmake_dataclass
 ##
 
 
-from .impl.exceptions import (  # noqa
+from .impl.errors import (  # noqa
     FieldValidationError,
     ValidationError,
 )

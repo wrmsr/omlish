@@ -7,7 +7,7 @@ import threading
 import unittest
 
 from .. import ast
-from .. import exceptions
+from .. import errors
 from .. import parser
 from .. import visitor
 
@@ -21,7 +21,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(parsed.parsed, expected_ast)
 
     def test_parse_empty_string_raises_exception(self):
-        with self.assertRaises(exceptions.EmptyExpressionError):
+        with self.assertRaises(errors.EmptyExpressionError):
             self.parser.parse('')
 
     def test_field(self):
@@ -173,7 +173,7 @@ class TestErrorMessages(unittest.TestCase):
         self.parser = parser.Parser()
 
     def assert_error_message(
-        self, expression, error_message, exception=exceptions.ParseError,
+        self, expression, error_message, exception=errors.ParseError,
     ):
         try:
             self.parser.parse(expression)
@@ -188,7 +188,7 @@ class TestErrorMessages(unittest.TestCase):
             self.fail(f'ParseError not raised for bad expression: {expression}')
 
     def test_bad_parse(self):
-        with self.assertRaises(exceptions.ParseError):
+        with self.assertRaises(errors.ParseError):
             self.parser.parse('foo]baz')
 
     def test_bad_parse_error_message(self):
@@ -221,7 +221,7 @@ class TestErrorMessages(unittest.TestCase):
             'Bad jmespath expression: Unclosed " delimiter:\nfoo."bar\n    ^'
         )
         self.assert_error_message(
-            'foo."bar', error_message, exception=exceptions.LexerError,
+            'foo."bar', error_message, exception=errors.LexerError,
         )
 
     def test_bad_unicode_string(self):
@@ -230,7 +230,7 @@ class TestErrorMessages(unittest.TestCase):
         error_message = re.compile(
             r'Bad jmespath expression: Invalid \\uXXXX escape.*\\uAZ12', re.DOTALL,
         )
-        with self.assertRaisesRegex(exceptions.LexerError, error_message):
+        with self.assertRaisesRegex(errors.LexerError, error_message):
             self.parser.parse(r'"\uAZ12"')
 
 

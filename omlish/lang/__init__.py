@@ -126,10 +126,6 @@ from .enums import (  # noqa
     enum_name_repr,
 )
 
-from .exceptions import (  # noqa
-    Unreachable,
-)
-
 from .functions import (  # noqa
     Args,
     VoidError,

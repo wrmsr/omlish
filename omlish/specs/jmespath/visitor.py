@@ -36,7 +36,7 @@ from .ast import Subexpression
 from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
-from .exceptions import UndefinedVariableError
+from .errors import UndefinedVariableError
 from .functions import DefaultFunctions
 from .functions import Functions
 from .scope import ScopedChainDict

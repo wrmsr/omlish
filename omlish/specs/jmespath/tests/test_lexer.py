@@ -4,8 +4,8 @@ import unittest
 import warnings
 
 from ... import jmespath
-from ..exceptions import EmptyExpressionError
-from ..exceptions import LexerError
+from ..errors import EmptyExpressionError
+from ..errors import LexerError
 
 
 @contextlib.contextmanager

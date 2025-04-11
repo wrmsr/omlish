@@ -2,7 +2,7 @@
 import inspect
 import unittest
 
-from .. import exceptions
+from .. import errors
 from .. import functions
 
 
@@ -14,7 +14,7 @@ class TestFunctionSignatures(unittest.TestCase):
         (function_name, signature) = self._make_test('_function_with_monotyped_arguments')
         self._functions._validate_arguments(['string'], signature, function_name)  # noqa
         self.assertRaises(
-            exceptions.ArityError, lambda:
+            errors.ArityError, lambda:
             self._functions._validate_arguments([], signature, function_name),  # noqa
         )
 
@@ -24,11 +24,11 @@ class TestFunctionSignatures(unittest.TestCase):
         self._functions._validate_arguments(['string', 42], signature, function_name)  # noqa
         self._functions._validate_arguments(['string', 43], signature, function_name)  # noqa
         self.assertRaises(
-            exceptions.ArityError, lambda:
+            errors.ArityError, lambda:
             self._functions._validate_arguments([], signature, function_name),  # noqa
         )
         self.assertRaises(
-            exceptions.ArityError, lambda:
+            errors.ArityError, lambda:
             self._functions._validate_arguments(['string', 42, 43, 44], signature, function_name),  # noqa
         )
 
@@ -37,7 +37,7 @@ class TestFunctionSignatures(unittest.TestCase):
         self._functions._validate_arguments(['string', 'text1'], signature, function_name)  # noqa
         self._functions._validate_arguments(['string', 'text1', 'text2'], signature, function_name)  # noqa
         self.assertRaises(
-            exceptions.VariadicArityError, lambda:
+            errors.VariadicArityError, lambda:
             self._functions._validate_arguments(['string'], signature, function_name),  # noqa
         )
 

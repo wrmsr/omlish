@@ -2,6 +2,7 @@
 TODO:
  - populate linecache
 """
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -30,11 +31,57 @@ from .registry import generator_type_for_plan_type
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
+    class Mode(abc.ABC):
+        @abc.abstractmethod
+        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+            raise NotImplementedError
+
+    class ExecutorMode(Mode):
+        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+            opx = OpExecutor(
+                cls,
+                gp.prepare().ref_map,
+            )
+
+            for op in gp.ops():
+                opx.execute(op)
+
+    class CompilerMode(Mode):
+        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+            compiler = OpCompiler(
+                OpCompiler.AotStyle(),
+                # OpCompiler.JitStyle(),
+            )
+
+            comp = compiler.compile(
+                '_transform_dataclass',
+                gp.ops(),
+            )
+
+            # print(repr(gp.prepare().plans))
+            # print(comp.src)
+
+            ns: dict = {}
+            ns.update(compiler.style.globals_ns())  # noqa
+
+            exec(comp.src, ns)
+            fn = ns[comp.fn_name]
+
+            kw: dict = {CLS_IDENT: cls}
+            kw.update({k: v for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
+            orm = gp.prepare().ref_map
+            for r in comp.refs:
+                kw[r.ident()] = orm[r]
+
+            fn(**kw)
+
+    #
+
     def __init__(
             self,
             ctx: ProcessingContext,
             *,
-            mode: ta.Literal['executor', 'compiler'] = 'compiler',
+            mode: Mode = CompilerMode(),
     ) -> None:
         super().__init__(ctx)
 
@@ -84,56 +131,8 @@ class GeneratorProcessor(Processor):
 
         return ops
 
-    @lang.cached_function
-    def compiler(self) -> OpCompiler:
-        return OpCompiler(
-            OpCompiler.AotStyle(),
-            # OpCompiler.JitStyle(),
-        )
-
-    @lang.cached_function
-    def compile(self) -> OpCompiler.CompileResult:
-        return self.compiler().compile(
-            '_transform_dataclass',
-            self.ops(),
-        )
-
     #
 
-    def process_with_executor(self, cls: type) -> None:
-        opx = OpExecutor(
-            cls,
-            self.prepare().ref_map,
-        )
-
-        for op in self.ops():
-            opx.execute(op)
-
-    def process_with_compiler(self, cls: type) -> None:
-        comp = self.compile()
-
-        # print(repr(self.prepare().plans))
-        # print(comp.src)
-
-        ns: dict = {}
-        ns.update(self.compiler().style.globals_ns())  # noqa
-
-        exec(comp.src, ns)
-        fn = ns[comp.fn_name]
-
-        kw: dict = {CLS_IDENT: cls}
-        kw.update({k: v for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
-        orm = self.prepare().ref_map
-        for r in comp.refs:
-            kw[r.ident()] = orm[r]
-
-        fn(**kw)
-
     def process(self, cls: type) -> type:
-        if self._mode == 'compiler':
-            self.process_with_compiler(cls)
-        elif self._mode == 'executor':
-            self.process_with_executor(cls)
-        else:
-            raise ValueError(self._mode)
+        self._mode._process(self, cls)  # noqa
         return cls

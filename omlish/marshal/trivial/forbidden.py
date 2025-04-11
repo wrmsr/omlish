@@ -9,7 +9,7 @@ from ..base import SimpleMarshalerFactory
 from ..base import SimpleUnmarshalerFactory
 from ..base import UnmarshalContext
 from ..base import Unmarshaler
-from ..exceptions import ForbiddenTypeError
+from ..errors import ForbiddenTypeError
 
 
 C = ta.TypeVar('C')

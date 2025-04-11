@@ -2,7 +2,7 @@
 import unittest
 
 from ... import lexer
-from ...exceptions import LexerError
+from ...errors import LexerError
 from ...visitor import Options
 from ..test_lexer import LexerUtils
 
