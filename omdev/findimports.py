@@ -13,6 +13,9 @@ import sys
 import typing as ta
 
 
+##
+
+
 _BUILTIN_MODULE_NAMES = frozenset([*sys.builtin_module_names, *sys.stdlib_module_names])
 
 
@@ -76,6 +79,9 @@ def find_imports(*rootps: str) -> set[str]:
 def get_import_deps(imps: set[str]) -> set[str]:
     eimps = {n for n in imps for n in [n.split('.')[0]] if n not in sys.builtin_module_names}
     return {i for i in eimps if whichmod(i) != 'builtin'}
+
+
+##
 
 
 # @omlish-manifest

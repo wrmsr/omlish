@@ -12,10 +12,22 @@
     }
   },
   {
+    "module": ".attrdocs",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/attrdocs.py",
+    "line": 146,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/attrdocs",
+        "mod_name": "omdev.attrdocs"
+      }
+    }
+  },
+  {
     "module": ".bracepy",
     "attr": "_CLI_MODULE",
     "file": "omdev/bracepy.py",
-    "line": 88,
+    "line": 94,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "bracepy",
@@ -51,7 +63,7 @@
     "module": ".classdot",
     "attr": "_CLI_MODULE",
     "file": "omdev/classdot.py",
-    "line": 62,
+    "line": 65,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/classdot",
@@ -75,7 +87,7 @@
     "module": ".findimports",
     "attr": "_CLI_MODULE",
     "file": "omdev/findimports.py",
-    "line": 81,
+    "line": 87,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/findimports",
@@ -87,7 +99,7 @@
     "module": ".imgur",
     "attr": "_FOO_CLI_MODULE",
     "file": "omdev/imgur.py",
-    "line": 130,
+    "line": 133,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "imgur",
