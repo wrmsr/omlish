@@ -54,7 +54,7 @@ def std_to_spec_field_default(
     if default is not dc.MISSING:
         check.state(default_factory is dc.MISSING)
         return lang.just(default)
-    elif default_factory is not None:
+    elif default_factory is not dc.MISSING:
         return lang.just(DefaultFactory(default_factory))
     else:
         return lang.empty()
@@ -65,6 +65,20 @@ def std_field_to_spec_field_default(f: dc.Field) -> lang.Maybe[ta.Any]:
         default=f.default,
         default_factory=f.default_factory,
     )
+
+
+class StdDefaults(ta.NamedTuple):
+    default: ta.Any
+    default_factory: ta.Any
+
+
+def spec_field_default_to_std_defaults(dfl: lang.Maybe[DefaultFactory | ta.Any]) -> StdDefaults:
+    if not dfl.present:
+        return StdDefaults(dc.MISSING, dc.MISSING)
+    elif isinstance(dfv := dfl.must(), DefaultFactory):
+        return StdDefaults(dc.MISSING, dfv.fn)
+    else:
+        return StdDefaults(dfv, dc.MISSING)
 
 
 #
@@ -78,9 +92,10 @@ def field_spec_to_std_field(
     if add_spec_metadata:
         # FIXME: metadata[FieldSpec] = fs
         raise NotImplementedError
+    sdf = spec_field_default_to_std_defaults(fs.default)
     f = dc.Field(
-        default=...,
-        default_factory=...,
+        default=sdf.default,
+        default_factory=sdf.default_factory,
         init=check.isinstance(fs.init, bool),
         repr=check.isinstance(fs.repr, bool),
         hash=...,

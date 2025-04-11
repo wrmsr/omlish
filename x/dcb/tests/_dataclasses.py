@@ -124,10 +124,6 @@ def _transform_dataclass__A(
         raise AttributeError('__init__')
     setattr(__dataclass__cls, '__init__', __init__)
 
-    if '__match_args__' in __dataclass__cls.__dict__:
-        raise AttributeError('__match_args__')
-    setattr(__dataclass__cls, '__match_args__', ('i', 's', 'd', 'l'))
-
     def __lt__(self, other):
         if other.__class__ is not self.__class__:
             return NotImplemented

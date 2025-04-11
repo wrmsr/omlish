@@ -1,3 +1,7 @@
+"""
+TODO:
+ - prebuild field frozenset for getters/setters
+"""
 import dataclasses as dc
 import typing as ta
 
