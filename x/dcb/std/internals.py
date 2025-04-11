@@ -20,23 +20,6 @@ STD_EMPTY_METADATA = dc._EMPTY_METADATA  # type: ignore  # noqa
 StdParams = dc._DataclassParams  # type: ignore  # noqa
 
 
-"""
-@dc.dataclass(frozen=True)
-class Params:
-    init = True
-    repr = True
-    eq = True
-    order = False
-    unsafe_hash = False
-    frozen = False
-
-    match_args = True
-    kw_only = False
-    slots = False
-    weakref_slot = False
-"""
-
-
 ##
 
 

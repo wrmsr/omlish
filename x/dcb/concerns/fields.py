@@ -6,7 +6,9 @@ FIXME:
  - !! DONT MUTATE FIELDS IN _build_std_field
   - should do this crap in dcb/api/...
   - also like use dcb/std/conversion std_*_field_* ...
- - this does *not* inspect cls anns
+ - this does *not* inspect cls anns .. ?
+  - api layer does gross mutation of bad superclasses, this layer expects ClassSpec to hold all fields
+  - this layer should only mutate things directly in cls.__dict__
 """
 import dataclasses as dc
 import types

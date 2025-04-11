@@ -1,6 +1,4 @@
-"""
-Should be kept pure. No references to dc std, no references to impl detail.
-"""
+"""Should be kept pure. No references to dc std, no references to impl detail."""
 import dataclasses as dc
 import enum
 import typing as ta
