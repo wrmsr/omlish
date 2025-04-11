@@ -9,7 +9,7 @@ from ..generation.idents import FROZEN_INSTANCE_ERROR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
-from ..processing import ProcessingContext
+from ..processing.base import ProcessingContext
 from ..std.internals import STD_FIELDS_ATTR
 from ..std.internals import STD_PARAMS_ATTR
 

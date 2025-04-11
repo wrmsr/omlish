@@ -20,7 +20,7 @@ from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..inspect import FieldsInspection
-from ..processing import ProcessingContext
+from ..processing.base import ProcessingContext
 from ..specs import CoerceFn
 from ..specs import DefaultFactory
 from ..specs import FieldType

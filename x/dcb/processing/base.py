@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish import lang
 
-from .specs import ClassSpec
+from ..specs import ClassSpec
 
 
 T = ta.TypeVar('T')
@@ -18,12 +18,15 @@ T = ta.TypeVar('T')
 ##
 
 
+ProcessingContextItemFactory: ta.TypeAlias = ta.Callable[['ProcessingContext'], ta.Any]
+
+
 class ProcessingContext:
     def __init__(
             self,
             cls: type,
             cs: ClassSpec,
-            item_factories: ta.Mapping[type, ta.Callable[['ProcessingContext'], ta.Any]],
+            item_factories: ta.Mapping[type, ProcessingContextItemFactory],
     ) -> None:
         super().__init__()
 

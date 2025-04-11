@@ -6,9 +6,10 @@ from omlish import check
 
 from ..inspect import FieldsInspection
 from ..inspect import get_cls_annotations
-from ..processing import ProcessingContext
-from ..processing import Processor
-from ..registry import register_processing_context_item_factory
+from ..processing.base import ProcessingContext
+from ..processing.base import Processor
+from ..processing.registry import register_processor_type
+from ..processing.registry import register_processing_context_item_factory
 from ..specs import FieldSpec
 from ..specs import FieldType
 from ..std.internals import STD_FIELDS_ATTR
@@ -225,6 +226,7 @@ def _fields_inspection_processing_context_item_factory(ctx: ProcessingContext) -
 ##
 
 
+@register_processor_type(priority=-10)
 class FieldsProcessor(Processor):
     def check(self) -> None:
         check.not_none(self._ctx[BuiltClsStdFields])

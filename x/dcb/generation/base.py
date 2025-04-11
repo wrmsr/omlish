@@ -2,7 +2,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ..processing import ProcessingContext
+from ..processing.base import ProcessingContext
 from .ops import Op
 from .ops import OpRefMap
 

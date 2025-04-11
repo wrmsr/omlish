@@ -4,14 +4,15 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..processing import ProcessingContext
-from ..processing import Processor
+from ..processing.base import ProcessingContext
+from ..processing.base import Processor
+from ..processing.registry import register_processor_type
 from .base import Plan
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
-from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_IMPORTS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -22,6 +23,7 @@ from .registry import generator_type_for_plan_type
 ##
 
 
+@register_processor_type(priority=0)
 class GeneratorProcessor(Processor):
     def __init__(
             self,

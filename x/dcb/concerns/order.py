@@ -8,7 +8,7 @@ from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
 from ..generation.utils import build_attr_tuple_body_src_lines
-from ..processing import ProcessingContext
+from ..processing.base import ProcessingContext
 from .fields import InstanceFields
 
 

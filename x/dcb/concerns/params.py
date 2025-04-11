@@ -9,9 +9,10 @@ check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], Para
 """
 from omlish import check
 
-from ..processing import ProcessingContext
-from ..processing import Processor
-from ..registry import register_processing_context_item_factory
+from ..processing.base import ProcessingContext
+from ..processing.base import Processor
+from ..processing.registry import register_processor_type
+from ..processing.registry import register_processing_context_item_factory
 from ..std.conversion import class_spec_to_spec_std_params
 from ..std.internals import STD_PARAMS_ATTR
 from ..std.internals import StdParams
@@ -28,6 +29,7 @@ def _std_params_processing_context_item_factory(ctx: ProcessingContext) -> StdPa
 ##
 
 
+@register_processor_type(priority=-10)
 class ParamsProcessor(Processor):
     def check(self) -> None:
         check.not_in(STD_PARAMS_ATTR, self._ctx.cls.__dict__)

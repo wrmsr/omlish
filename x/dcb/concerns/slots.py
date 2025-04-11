@@ -3,7 +3,8 @@ import inspect
 import itertools
 import types
 
-from ..processing import Processor
+from ..processing.base import Processor
+from ..processing.registry import register_processor_type
 
 
 ##
@@ -140,6 +141,7 @@ def add_slots(
 ##
 
 
+@register_processor_type(priority=1000)
 class SlotsProcessor(Processor):
     def check(self) -> None:
         if self._ctx.cs.weakref_slot and not self._ctx.cs.slots:

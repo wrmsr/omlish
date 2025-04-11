@@ -12,7 +12,7 @@ from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
-from ..processing import ProcessingContext
+from ..processing.base import ProcessingContext
 from .fields import InstanceFields
 
 
