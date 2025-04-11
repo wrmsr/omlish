@@ -1,3 +1,9 @@
+"""
+FIXME:
+ - !! DONT MUTATE FIELDS IN _build_std_field
+  - should do this crap in dcb/api/...
+  - also like use dcb/std/conversion std_*_field_* ...
+"""
 import dataclasses as dc
 import types
 import typing as ta

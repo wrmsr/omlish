@@ -15,6 +15,8 @@ STD_PARAMS_ATTR = dc._PARAMS  # type: ignore  # noqa
 
 STD_POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
+STD_EMPTY_METADATA = dc._EMPTY_METADATA  # type: ignore  # noqa
+
 StdParams = dc._DataclassParams  # type: ignore  # noqa
 
 

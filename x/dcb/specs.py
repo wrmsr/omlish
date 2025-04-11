@@ -47,10 +47,22 @@ class FieldSpec:
 
     init: bool = True
     repr: bool = True
-    hash: ta.Any = None  # FIXME: type?
+
+    # This can be a bool or None. If true, this field is included in the generated __hash__() method. If false, this
+    # field is excluded from the generated __hash__(). If None (the default), use the value of compare: this would
+    # normally be the expected behavior, since a field should be included in the hash if it's used for comparisons.
+    # Setting this value to anything other than None is discouraged.
+    hash: bool | None = None  # FIXME: type?
+
     compare: bool = True
-    metadata: ta.Any = None
-    kw_only: bool = False
+
+    # This can be a mapping or None. None is treated as an empty dict. This value is wrapped in MappingProxyType() to
+    # make it read-only, and exposed on the Field object. It is not used at all by Data Classes, and is provided as a
+    # third-party extension mechanism. Multiple third-parties can each have their own key, to use as a namespace in the
+    # metadata.
+    metadata: ta.Any | None = None
+
+    kw_only: bool | None = None
 
     # doc: ta.Any = None
 

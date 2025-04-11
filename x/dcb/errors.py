@@ -103,6 +103,7 @@ class TypeValidationError(ValidationError, TypeError):
 
         super().__init__(**kwargs)
 
+    @property
     def _message_parts(self) -> ta.Mapping[str, str]:
         return {
             **super()._message_parts,

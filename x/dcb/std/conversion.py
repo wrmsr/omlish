@@ -1,4 +1,6 @@
+import collections
 import dataclasses as dc
+import types
 import typing as ta
 
 from omlish import check
@@ -8,6 +10,7 @@ from ..specs import ClassSpec
 from ..specs import DefaultFactory
 from ..specs import FieldSpec
 from ..specs import FieldType
+from .internals import STD_EMPTY_METADATA
 from .internals import StdFieldType
 from .internals import StdParams
 from .internals import std_field_type
@@ -89,23 +92,33 @@ def field_spec_to_std_field(
         *,
         add_spec_metadata: bool = False,
 ) -> dc.Field:
+    md: ta.Any = fs.metadata
     if add_spec_metadata:
-        # FIXME: metadata[FieldSpec] = fs
-        raise NotImplementedError
+        if md is None:
+            md = STD_EMPTY_METADATA
+        md = (STD_EMPTY_METADATA if md is None else types.MappingProxyType(md))
+        md = types.MappingProxyType(collections.ChainMap({
+            FieldSpec: fs,
+        }, md))
+
     sdf = spec_field_default_to_std_defaults(fs.default)
+
     f = dc.Field(
         default=sdf.default,
         default_factory=sdf.default_factory,
-        init=check.isinstance(fs.init, bool),
-        repr=check.isinstance(fs.repr, bool),
-        hash=...,
-        compare=check.isinstance(fs.compare, bool),
-        metadata=fs.metadata,
-        kw_only=...,
+        init=fs.init,
+        repr=fs.repr,
+        hash=fs.hash,
+        compare=fs.compare,
+        metadata=md,
+        kw_only=dc.MISSING if fs.kw_only is None else fs.kw_only,  # type: ignore[arg-type]
     )
+
     f.name = fs.name
     f.type = fs.annotation
+
     f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type]  # type: ignore[attr-defined]  # noqa
+
     return f
 
 
@@ -121,10 +134,10 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 
         init=check.isinstance(f.init, bool),
         repr=check.isinstance(f.repr, bool),
-        hash=...,
+        hash=check.isinstance(f.hash, (bool, None)),
         compare=check.isinstance(f.compare, bool),
-        metadata=...,
-        kw_only=...,
+        metadata=f.metadata,
+        kw_only=None if f.kw_only is dc.MISSING else check.isinstance(f.kw_only, bool),
 
         field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
     )
@@ -155,8 +168,12 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 #
 
 
-def class_spec_to_std_params_kwargs(cs: ClassSpec) -> dict[str, ta.Any]:
-    return dict(
+def class_spec_to_std_params(
+        cs: ClassSpec,
+        *,
+        use_spec_wrapper: bool = False,
+) -> StdParams:
+    kw = dict(
         init=cs.init,
         repr=cs.repr,
         eq=cs.eq,
@@ -170,18 +187,13 @@ def class_spec_to_std_params_kwargs(cs: ClassSpec) -> dict[str, ta.Any]:
         weakref_slot=cs.weakref_slot,
     )
 
-
-def class_spec_to_std_params(cs: ClassSpec) -> StdParams:
-    return StdParams(
-        **class_spec_to_std_params_kwargs(cs),
-    )
-
-
-def class_spec_to_spec_std_params(cs: ClassSpec) -> SpecDataclassParams:
-    return SpecDataclassParams(
-        **class_spec_to_std_params_kwargs(cs),
-        spec=cs,
-    )
+    if use_spec_wrapper:
+        return SpecDataclassParams(
+            **kw,
+            spec=cs,
+        )
+    else:
+        return StdParams(**kw)
 
 
 #
