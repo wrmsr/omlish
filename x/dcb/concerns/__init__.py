@@ -1,12 +1,16 @@
-from . import copy  # noqa
-from . import doc  # noqa
-from . import eq  # noqa
-from . import fields  # noqa
-from . import frozen  # noqa
-from . import hash  # noqa
-from . import init  # noqa
-from . import matchargs  # noqa
-from . import order  # noqa
-from . import override  # noqa
-from . import repr  # noqa
-from . import slots  # noqa
+from . import (  # noqa
+    copy,
+    doc,
+    eq,
+    fields,
+    frozen,
+    hash,
+    init,
+    matchargs,
+    order,
+    override,
+    params,
+    replace,
+    repr,
+    slots,
+)

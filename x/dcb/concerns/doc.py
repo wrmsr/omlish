@@ -3,6 +3,7 @@ import inspect
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
 from ..processing.registry import register_processor_type
+from ..processing.priority import ProcessorPriority
 
 
 ##
@@ -27,7 +28,7 @@ class _LazyClsDocDescriptor:
         return doc
 
 
-@register_processor_type(priority=10)
+@register_processor_type(priority=ProcessorPriority.POST_GENERATION)
 class DocProcessor(Processor):
     def __init__(
             self,

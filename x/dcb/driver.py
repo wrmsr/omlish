@@ -1,29 +1,13 @@
-import typing as ta
-
-from . import concerns  # noqa
-from .concerns.doc import DocProcessor
-from .concerns.fields import FieldsProcessor
-from .concerns.params import ParamsProcessor
-from .concerns.replace import ReplaceProcessor
-from .concerns.slots import SlotsProcessor
-from .generation.processor import GeneratorProcessor
-from .processing import ProcessingContext
-from .processing import Processor
-from .registry import all_processing_context_item_factories
+from . import concerns as _ # noqa
+from .generation import processor as _  # noqa
+from .processing.registry import ordered_processor_types
+from .processing.base import Processor
+from .processing.base import ProcessingContext
+from .processing.registry import all_processing_context_item_factories
 from .specs import ClassSpec
 
 
 ##
-
-
-PROCESSOR_TYPES: ta.Sequence[type[Processor]] = [
-    ParamsProcessor,
-    FieldsProcessor,
-    GeneratorProcessor,
-    ReplaceProcessor,
-    DocProcessor,
-    SlotsProcessor,
-]
 
 
 def drive_cls_processing(
@@ -38,7 +22,7 @@ def drive_cls_processing(
 
     processors: list[Processor] = [
         proc_cls(ctx)
-        for proc_cls in PROCESSOR_TYPES
+        for proc_cls in ordered_processor_types()
     ]
 
     for p in processors:

@@ -8,6 +8,10 @@ from ..registry import SealableRegistry
 
 from .base import ProcessingContextItemFactory
 from .base import Processor
+from .priority import ProcessorPriority
+
+
+ProcessorT = ta.TypeVar('ProcessorT', bound=Processor)
 
 
 ##
@@ -39,7 +43,7 @@ def all_processing_context_item_factories() -> ta.Mapping[type, ProcessingContex
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ProcessorTypeRegistration:
-    priority: int
+    priority: ProcessorPriority
 
 
 _PROCESSOR_TYPES: SealableRegistry[type[Processor], ProcessorTypeRegistration] = SealableRegistry()
@@ -47,10 +51,13 @@ _PROCESSOR_TYPES: SealableRegistry[type[Processor], ProcessorTypeRegistration] =
 
 def register_processor_type(
         *,
-        priority,
+        priority: ProcessorPriority,
+        **kwargs: ta.Any,
+) -> ta.Callable[[type[ProcessorT]], type[ProcessorT]]:
+    reg = ProcessorTypeRegistration(
+        priority=priority,
         **kwargs,
-):
-    reg = ProcessorTypeRegistration(**kwargs)
+    )
 
     def inner(ty):
         check.issubclass(ty, Processor)
@@ -63,3 +70,14 @@ def register_processor_type(
 @lang.cached_function
 def all_processor_types() -> ta.Mapping[type, ProcessorTypeRegistration]:
     return dict(_PROCESSOR_TYPES.items())
+
+
+@lang.cached_function
+def ordered_processor_types() -> ta.Sequence[type]:
+    return [
+        t
+        for t, r in sorted(
+            all_processor_types().items(),
+            key=lambda t_r: t_r[1].priority,
+        )
+    ]

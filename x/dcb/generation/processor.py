@@ -6,6 +6,7 @@ from omlish import lang
 
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
+from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
 from .base import Plan
 from .compilation import OpCompiler
@@ -23,7 +24,7 @@ from .registry import generator_type_for_plan_type
 ##
 
 
-@register_processor_type(priority=0)
+@register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
     def __init__(
             self,
