@@ -17,7 +17,6 @@ from .base import Plans
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
-from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
@@ -89,7 +88,8 @@ class GeneratorProcessor(Processor):
     def compiler(self) -> OpCompiler:
         return OpCompiler(
             self._ctx.cls.__qualname__,
-            OpCompiler.AotStyle(),
+            # OpCompiler.AotStyle(),
+            OpCompiler.JitStyle(),
         )
 
     @lang.cached_function

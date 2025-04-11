@@ -36,18 +36,9 @@ COMPILED_FN_PREFIX = '_transform_dataclass__'
 
 
 class OpCompiler:
-    @dc.dataclass(frozen=True)
-    class FnParam:
-        param: str
-        noqa: bool = dc.field(default=False, kw_only=True)
-
     class Style(abc.ABC):
         @abc.abstractmethod
         def header_lines(self) -> ta.Sequence[str]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
             raise NotImplementedError
 
         @abc.abstractmethod
@@ -56,10 +47,7 @@ class OpCompiler:
 
     class JitStyle(Style):
         def header_lines(self) -> ta.Sequence[str]:
-            pass
-
-        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
-            return [OpCompiler.FnParam(k) for k in FN_GLOBALS]
+            return []
 
         def globals_ns(self) -> ta.Mapping[str, ta.Any]:
             return dict(FN_GLOBAL_IMPORTS)
@@ -81,15 +69,6 @@ class OpCompiler:
                 ],
                 '',
                 '',
-            ]
-
-        def globals_params(self) -> ta.Sequence['OpCompiler.FnParam']:
-            return [
-                OpCompiler.FnParam(
-                    p := f'{k}={v.src}' if not v.src.startswith('.') else k,
-                    noqa=k != k.lower() or not v.src.startswith('.'),
-                )
-                for k, v in FN_GLOBALS.items()
             ]
 
         def globals_ns(self) -> ta.Mapping[str, ta.Any]:
@@ -118,6 +97,12 @@ class OpCompiler:
         params: ta.Sequence[str]
         src: str
         refs: frozenset[OpRef]
+
+    @dc.dataclass(frozen=True)
+    class _FnParam:
+        name: str
+        src: str | None = None
+        noqa: bool = dc.field(default=False, kw_only=True)
 
     def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
         body_lines: list[str] = []
@@ -205,12 +190,19 @@ class OpCompiler:
 
         refs = frozenset.union(*[get_op_refs(o) for o in ops])
 
-        params: list[OpCompiler.FnParam] = [
-            OpCompiler.FnParam(CLS_IDENT),
-            *[OpCompiler.FnParam(p) for p in sorted(r.ident() for r in refs)],
+        params: list[OpCompiler._FnParam] = [
+            OpCompiler._FnParam(CLS_IDENT),
+            *[OpCompiler._FnParam(p) for p in sorted(r.ident() for r in refs)],
         ]
 
-        params.extend(self._style.globals_params())
+        params.extend([
+            OpCompiler._FnParam(
+                k,
+                src=f'{k}={v.src}' if not v.src.startswith('.') else k,
+                noqa=k != k.lower() or not v.src.startswith('.'),
+            )
+            for k, v in FN_GLOBALS.items()
+        ])
 
         fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
@@ -222,7 +214,7 @@ class OpCompiler:
             f'def {fn_name}(',
             f'    *,',
             *[
-                f'    {p.param},{"  # noqa" if p.noqa  else ""}'
+                f'    {p.src if p.src is not None else p.name},{"  # noqa" if p.noqa  else ""}'
                 for p in params
             ],
             f'):',
@@ -238,7 +230,7 @@ class OpCompiler:
 
         return self.CompileResult(
             fn_name,
-            params,
+            [p.name for p in params],
             src,
             refs,
         )

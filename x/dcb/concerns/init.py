@@ -12,12 +12,12 @@ from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.idents import FIELD_FN_VALIDATION_ERROR_IDENT
+from ..generation.idents import FIELD_TYPE_VALIDATION_ERROR_IDENT
+from ..generation.idents import FN_VALIDATION_ERROR_IDENT
 from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
 from ..generation.idents import ISINSTANCE_IDENT
 from ..generation.idents import NONE_IDENT
 from ..generation.idents import SELF_IDENT
-from ..generation.idents import FN_VALIDATION_ERROR_IDENT
-from ..generation.idents import FIELD_TYPE_VALIDATION_ERROR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef

@@ -186,7 +186,7 @@ def dataclass(
         if (cls_md_dct := cls.__dict__.get(METADATA_ATTR)):
             if (md_ifs := cls_md_dct.get(_InitMetadata)):
                 for md_if in md_ifs:
-                    init_fns.append(md_if)
+                    init_fns.append(md_if)  # noqa
             if (md_vfs := cls_md_dct.get(_ValidateMetadata)):
                 for md_vf in md_vfs:
                     if isinstance(md_vf, staticmethod):
