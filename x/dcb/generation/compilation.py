@@ -7,7 +7,6 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import check
-from omlish.text.mangle import StringMangler
 
 from ..utils import repr_round_trip_value
 from .idents import CLS_IDENT
@@ -28,11 +27,6 @@ T = ta.TypeVar('T')
 
 
 ##
-
-
-QUALNAME_MANGLER = StringMangler('_', '.')
-
-COMPILED_FN_PREFIX = '_transform_dataclass__'
 
 
 class OpCompiler:
@@ -78,13 +72,10 @@ class OpCompiler:
 
     def __init__(
             self,
-            qualname: str,
             style: Style,
     ) -> None:
         super().__init__()
 
-        self._qualname = qualname
-        self._mangled_qualname = QUALNAME_MANGLER.mangle(qualname)
         self._style = style
 
     @property
@@ -104,7 +95,11 @@ class OpCompiler:
         src: str | None = None
         noqa: bool = dc.field(default=False, kw_only=True)
 
-    def compile(self, ops: ta.Sequence[Op]) -> CompileResult:
+    def compile(
+            self,
+            fn_name: str,
+            ops: ta.Sequence[Op],
+    ) -> CompileResult:
         body_lines: list[str] = []
 
         for op in ops:
@@ -203,8 +198,6 @@ class OpCompiler:
             )
             for k, v in FN_GLOBALS.items()
         ])
-
-        fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
         lines: list[str] = []
 

@@ -87,14 +87,14 @@ class GeneratorProcessor(Processor):
     @lang.cached_function
     def compiler(self) -> OpCompiler:
         return OpCompiler(
-            self._ctx.cls.__qualname__,
-            # OpCompiler.AotStyle(),
-            OpCompiler.JitStyle(),
+            OpCompiler.AotStyle(),
+            # OpCompiler.JitStyle(),
         )
 
     @lang.cached_function
     def compile(self) -> OpCompiler.CompileResult:
         return self.compiler().compile(
+            '_transform_dataclass',
             self.ops(),
         )
 
