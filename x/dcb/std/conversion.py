@@ -36,8 +36,8 @@ from .specparams import SpecDataclassParams
 
 STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE: ta.Mapping[FieldType, StdFieldType] = {
     FieldType.INSTANCE: StdFieldType.INSTANCE,
-    FieldType.CLASS: StdFieldType.CLASS,
-    FieldType.INIT: StdFieldType.INIT,
+    FieldType.CLASS_VAR: StdFieldType.CLASS_VAR,
+    FieldType.INIT_VAR: StdFieldType.INIT_VAR,
 }
 
 SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE = {v: k for k, v in STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE.items()}

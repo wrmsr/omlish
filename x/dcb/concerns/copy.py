@@ -28,7 +28,7 @@ class CopyGenerator(Generator[CopyPlan]):
             return None
 
         return PlanResult(CopyPlan(
-            tuple(f.name for f in ctx.cs.fields if f.field_type is not FieldType.CLASS),
+            tuple(f.name for f in ctx.cs.fields if f.field_type is not FieldType.CLASS_VAR),
         ))
 
     def generate(self, pl: CopyPlan) -> ta.Iterable[Op]:

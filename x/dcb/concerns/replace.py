@@ -21,7 +21,7 @@ def replace(obj, /, **changes):  # noqa
 
 def _replace(obj, /, **changes):
     for f in getattr(obj, STD_FIELDS_ATTR).values():
-        if (ft := std_field_type(f)) is StdFieldType.CLASS:
+        if (ft := std_field_type(f)) is StdFieldType.CLASS_VAR:
             continue
 
         if not f.init:
@@ -30,7 +30,7 @@ def _replace(obj, /, **changes):
             continue
 
         if f.name not in changes:
-            if ft is StdFieldType.INIT and f.default is dc.MISSING:
+            if ft is StdFieldType.INIT_VAR and f.default is dc.MISSING:
                 raise TypeError(f'InitVar {f.name!r} must be specified with replace()')
             changes[f.name] = getattr(obj, f.name)
 

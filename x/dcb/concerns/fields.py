@@ -54,7 +54,7 @@ def calc_init_fields(
     all_init_fields = [
         f
         for f in fields
-        if f.field_type in (FieldType.INSTANCE, FieldType.INIT)
+        if f.field_type in (FieldType.INSTANCE, FieldType.INIT_VAR)
     ]
 
     ordered_init_fields = list(all_init_fields)
@@ -85,7 +85,7 @@ def _init_fields_processing_context_item_factory(ctx: ProcessingContext) -> Init
 ##
 
 
-def build_std_field(
+def _build_std_field(
         cls: type,
         a_name: str,
         a_type: ta.Any,
@@ -106,24 +106,24 @@ def build_std_field(
 
     ft = StdFieldType.INSTANCE
     if std_is_classvar(cls, f.type):
-        ft = StdFieldType.CLASS
+        ft = StdFieldType.CLASS_VAR
     if std_is_initvar(cls, f.type):
-        ft = StdFieldType.INIT
-    if ft in (StdFieldType.CLASS, StdFieldType.INIT):
+        ft = StdFieldType.INIT_VAR
+    if ft in (StdFieldType.CLASS_VAR, StdFieldType.INIT_VAR):
         if f.default_factory is not dc.MISSING:
-            raise TypeError(f'field {f.name} cannot have a default factory')
+            raise TypeError(f'field {a_name} cannot have a default factory')
     f._field_type = ft.value  # type: ignore  # noqa
 
-    if ft in (StdFieldType.INSTANCE, StdFieldType.INIT):
+    if ft in (StdFieldType.INSTANCE, StdFieldType.INIT_VAR):
         if f.kw_only is dc.MISSING:
             f.kw_only = default_kw_only
     else:
-        check.arg(ft is StdFieldType.CLASS)
+        check.arg(ft is StdFieldType.CLASS_VAR)
         if f.kw_only is not dc.MISSING:
-            raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
+            raise TypeError(f'field {a_name} is a ClassVar but specifies kw_only')
 
     if ft is StdFieldType.INSTANCE and f.default is not dc.MISSING and f.default.__class__.__hash__ is None:
-        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
+        raise ValueError(f'mutable default {type(f.default)} for field {a_name} is not allowed: use default_factory')
 
     return f
 
@@ -167,7 +167,7 @@ def build_cls_std_fields(
             kw_only = True
 
         else:
-            cls_fields.append(build_std_field(
+            cls_fields.append(_build_std_field(
                 cls,
                 name,
                 ann,

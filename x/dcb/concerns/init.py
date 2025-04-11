@@ -178,7 +178,7 @@ class InitGenerator(Generator[InitPlan]):
 
         post_init_params: tuple[str, ...] | None = None
         if hasattr(ctx.cls, STD_POST_INIT_NAME):
-            post_init_params = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT)
+            post_init_params = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT_VAR)
 
         return PlanResult(
             InitPlan(

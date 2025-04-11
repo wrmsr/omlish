@@ -29,8 +29,8 @@ class DefaultFactory(ta.NamedTuple):
 
 class FieldType(enum.StrEnum):
     INSTANCE = enum.auto()
-    CLASS = enum.auto()
-    INIT = enum.auto()
+    CLASS_VAR = enum.auto()
+    INIT_VAR = enum.auto()
 
     __repr__ = lang.enum_name_repr
 
