@@ -82,7 +82,7 @@ class HashGenerator(Generator[HashPlan]):
         )]
 
         if action == 'set_none':
-            return PlanResult(HashPlan(action))
+            return PlanResult(HashPlan(action))  # noqa
 
         elif action == 'exception':
             _raise_hash_action_exception(ctx.cls)

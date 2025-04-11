@@ -1,39 +1,28 @@
-import dataclasses as dc
-import typing as ta
+from omlish import check
 
-from ..generation.base import Generator
-from ..generation.base import Plan
-from ..generation.base import PlanResult
-from ..generation.ops import Op
-from ..generation.ops import SetAttrOp
-from ..generation.registry import register_generator_type
-from ..processing.base import ProcessingContext
+from ..processing.base import Processor
+from ..processing.priority import ProcessorPriority
+from ..processing.registry import register_processor_type
+from ..utils import set_new_attribute
 from .fields import InitFields
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class MatchArgsPlan(Plan):
-    fields: tuple[str, ...]
+@register_processor_type(priority=ProcessorPriority.POST_GENERATION)
+class MatchArgsProcessor(Processor):
+    def check(self) -> None:
+        check.not_none(self._ctx[InitFields])
 
+    def process(self, cls: type) -> type:
+        if not self._ctx.cs.match_args or '__match_args__' in self._ctx.cls.__dict__:
+            return cls
 
-@register_generator_type(MatchArgsPlan)
-class MatchArgsGenerator(Generator[MatchArgsPlan]):
-    def plan(self, ctx: ProcessingContext) -> PlanResult[MatchArgsPlan] | None:
-        if not ctx.cs.match_args or '__match_args__' in ctx.cls.__dict__:
-            return None
+        set_new_attribute(
+            cls,
+            '__match_args__',
+            tuple(f.name for f in self._ctx[InitFields].std),
+        )
 
-        return PlanResult(MatchArgsPlan(
-            tuple(f.name for f in ctx[InitFields].std),
-        ))
-
-    def generate(self, pl: MatchArgsPlan) -> ta.Iterable[Op]:
-        return [
-            SetAttrOp(
-                '__match_args__',
-                pl.fields,
-                'error',
-            ),
-        ]
+        return cls

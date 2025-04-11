@@ -11,6 +11,8 @@ from .base import Plan
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+GeneratorT = ta.TypeVar('GeneratorT', bound=Generator)
+
 
 ##
 
@@ -18,7 +20,7 @@ V = ta.TypeVar('V')
 _GENERATOR_TYPES_BY_PLAN_TYPE: SealableRegistry[type[Plan], type[Generator]] = SealableRegistry()
 
 
-def register_generator_type(pl_ty):
+def register_generator_type(pl_ty: type[Plan]) -> ta.Callable[[type[GeneratorT]], type[GeneratorT]]:
     def inner(g_ty):
         check.issubclass(g_ty, Generator)
         _GENERATOR_TYPES_BY_PLAN_TYPE[pl_ty] = g_ty
