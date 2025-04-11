@@ -105,7 +105,7 @@ def field_spec_to_std_field(
     )
     f.name = fs.name
     f.type = fs.annotation
-    f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type]  # noqa
+    f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type]  # type: ignore[attr-defined]  # noqa
     return f
 
 
