@@ -206,7 +206,7 @@ class OpCompiler:
 
         fn_name = f'{COMPILED_FN_PREFIX}{self._mangled_qualname}'
 
-        lines = []
+        lines: list[str] = []
 
         lines.extend(self._style.header_lines())
 

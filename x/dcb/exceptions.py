@@ -30,19 +30,16 @@ class ValidationError(Exception):
     ) -> None:
         self.obj = obj
 
-        super().__init__(self._build_message())
+        super().__init__(
+            f'{self.__class__.__name__} '
+            f'{", ".join(f"{k} {v}" for k, v in self._message_parts.items())}',
+        )
 
     @property
     def _message_parts(self) -> ta.Mapping[str, str]:
         return {
             'obj': _hands_off_repr(self.obj),
         }
-
-    def _build_message(self) -> str:
-        return (
-            f'{self.__class__.__name__} '
-            f'{", ".join(f"{k} {v}" for k, v in self._message_parts.items())}'
-        )
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join([
@@ -61,9 +58,10 @@ class FnValidationError(ValidationError):
 
         super().__init__(**kwargs)
 
+    @property
     def _message_parts(self) -> ta.Mapping[str, str]:
         return {
-            **super()._build_message(),
+            **super()._message_parts,
             'fn': _fn_repr(self.fn),
         }
 
@@ -81,9 +79,10 @@ class FieldValidationError(ValidationError):
 
         super().__init__(**kwargs)
 
+    @property
     def _message_parts(self) -> ta.Mapping[str, str]:
         return {
-            **super()._build_message(),
+            **super()._message_parts,
             'field': repr(self.field),
             'value': repr(self.value),
         }
@@ -106,7 +105,7 @@ class TypeValidationError(ValidationError, TypeError):
 
     def _message_parts(self) -> ta.Mapping[str, str]:
         return {
-            **super()._build_message(),
+            **super()._message_parts,
             'type': repr(self.type),
         }
 

@@ -130,6 +130,7 @@ class InitGenerator(Generator[InitPlan]):
 
             ctr: OpRef[type | tuple[type, ...]] | None = None
             if f.check_type is not None and f.check_type is not False:
+                ct: ta.Any
                 if isinstance(f.check_type, tuple):
                     ct = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
                 elif isinstance(f.check_type, type):
@@ -168,10 +169,10 @@ class InitGenerator(Generator[InitPlan]):
 
         vfs: list[InitPlan.ValidateFnWithParams] = []
         for i, vfn in enumerate(ctx.cs.validate_fns or []):
-            vr: OpRef = OpRef(f'init.validate_fns.{i}')
-            orm[vr] = vfn.fn
+            vfr: OpRef = OpRef(f'init.validate_fns.{i}')
+            orm[vfr] = vfn.fn
             vfs.append(InitPlan.ValidateFnWithParams(
-                fn=vr,
+                fn=vfr,
                 params=tuple(vfn.params),
             ))
 
@@ -286,7 +287,7 @@ class InitGenerator(Generator[InitPlan]):
                 f'        )',
             ])
 
-        for vfn in bs.validate_fns:
+        for vfn in bs.validate_fns or []:
             ors.add(vfn.fn)
             if vfn.params:
                 lines.extend([
