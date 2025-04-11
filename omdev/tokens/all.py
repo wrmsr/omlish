@@ -14,6 +14,7 @@ from .utils import (  # noqa
     ignore_ws,
 
     split_lines,
+    split_lines_dense,
     join_toks,
     join_lines,
 

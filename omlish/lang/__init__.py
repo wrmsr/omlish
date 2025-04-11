@@ -201,6 +201,7 @@ from .maybes import (  # noqa
 )
 
 from .objects import (  # noqa
+    AttrRepr,
     SimpleProxy,
     anon_object,
     arg_repr,

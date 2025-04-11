@@ -42,6 +42,15 @@ def split_lines(ts: Tokens) -> list[Tokens]:
     return [list(it) for g, it in itertools.groupby(ts, lambda t: t.line)]
 
 
+def split_lines_dense(ts: Tokens) -> list[Tokens]:
+    lines: list[list[Token]] = []
+    for t in ts:
+        while len(lines) < (t.line or 0):
+            lines.append([])
+        lines[-1].append(t)
+    return lines  # type: ignore[return-value]
+
+
 def join_toks(ts: Tokens) -> str:
     return ''.join(t.src for t in ts)
 
