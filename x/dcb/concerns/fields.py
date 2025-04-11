@@ -1,5 +1,7 @@
 """
 FIXME:
+ - !! calc_init_fields should be doing kw_only defaulting !!
+  - so it does: raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
  - !! DONT MUTATE FIELDS IN _build_std_field
   - should do this crap in dcb/api/...
   - also like use dcb/std/conversion std_*_field_* ...

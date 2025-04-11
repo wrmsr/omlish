@@ -84,10 +84,25 @@ class FieldSpec:
     field_type: FieldType = FieldType.INSTANCE
 
     ##
-    # init
+    # validate
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+
+        if self.field_type in (FieldType.CLASS_VAR, FieldType.INIT_VAR):
+            if isinstance(self.default.or_else(None), DefaultFactory):
+                raise TypeError(f'field {self.name} cannot have a default factory')
+
+        if self.field_type is FieldType.CLASS_VAR and self.kw_only is not None:
+            raise TypeError(f'field {self.name} is a ClassVar but specifies kw_only')
+
+        if (
+                self.field_type is FieldType.INSTANCE and
+                self.default.present and
+                not isinstance(dfv := self.default.must(), DefaultFactory) and
+                dfv.__class__.__hash__ is None  # noqa
+        ):
+            raise ValueError(f'mutable default {type(dfv)} for field {self.name} is not allowed: use default_factory')
 
 
 ##
@@ -148,3 +163,10 @@ class ClassSpec:
             check.not_isinstance(self.params, str)
 
     validate_fns: ta.Sequence[ValidateFnWithParams] | None = None
+
+    ## validate
+    #
+
+    def __post_init__(self) -> None:
+        if self.order and not self.eq:
+            raise ValueError('eq must be true if order is true')
