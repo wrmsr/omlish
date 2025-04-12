@@ -97,6 +97,7 @@ from .services import (  # noqa
     Response,
     ResponseOutput,
     Service,
+    Service_,
 )
 
 from .vectors.embeddings import (  # noqa
