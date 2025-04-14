@@ -1,5 +1,6 @@
 import ast
 import dataclasses as dc
+import functools
 import types
 import typing as ta
 
@@ -86,3 +87,15 @@ class SealableRegistry(ta.Generic[K, V]):
     def items(self) -> ta.Iterator[tuple[K, V]]:
         self.seal()
         return iter(self._dct.items())
+
+
+##
+
+
+def class_decorator(fn):
+    @functools.wraps(fn)
+    def inner(cls=None, *args, **kwargs):
+        if cls is None:
+            return lambda cls: fn(cls, *args, **kwargs)  # noqa
+        return fn(cls, *args, **kwargs)
+    return inner

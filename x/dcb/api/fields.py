@@ -7,11 +7,11 @@ from omlish import check
 from omlish import lang
 
 from ..inspect import get_cls_annotations
-from ..std.internals import STD_FIELDS_ATTR
-from ..std.internals import StdFieldType
-from ..std.internals import std_is_classvar
-from ..std.internals import std_is_initvar
-from ..std.internals import std_is_kw_only
+from ..internals import STD_FIELDS_ATTR
+from ..internals import StdFieldType
+from ..internals import std_is_classvar
+from ..internals import std_is_initvar
+from ..internals import std_is_kw_only
 from ..utils import AttrMods
 
 

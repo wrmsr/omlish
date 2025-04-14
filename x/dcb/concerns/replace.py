@@ -3,10 +3,10 @@ import dataclasses as dc
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
-from ..std.internals import STD_FIELDS_ATTR
-from ..std.internals import StdFieldType
-from ..std.internals import std_field_type
-from ..std.internals import std_is_dataclass_instance
+from ..internals import STD_FIELDS_ATTR
+from ..internals import StdFieldType
+from ..internals import std_field_type
+from ..internals import std_is_dataclass_instance
 from ..utils import set_new_attribute
 
 

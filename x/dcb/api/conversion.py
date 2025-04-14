@@ -10,11 +10,11 @@ from ..specs import ClassSpec
 from ..specs import DefaultFactory
 from ..specs import FieldSpec
 from ..specs import FieldType
-from .internals import STD_EMPTY_METADATA
-from .internals import StdFieldType
-from .internals import StdParams
-from .internals import std_field_type
-from .specparams import SpecDataclassParams
+from ..internals import STD_EMPTY_METADATA
+from ..internals import StdFieldType
+from ..internals import StdParams
+from ..internals import std_field_type
+from .params import SpecDataclassParams
 
 
 ##

@@ -1,8 +1,8 @@
 import copy
 import dataclasses as dc
 
-from ..std.internals import STD_ATOMIC_TYPES
-from ..std.internals import std_is_dataclass_instance
+from ..internals import STD_ATOMIC_TYPES
+from ..internals import std_is_dataclass_instance
 
 
 ##

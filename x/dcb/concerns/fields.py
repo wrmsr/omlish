@@ -11,7 +11,7 @@ from ..processing.registry import register_processing_context_item_factory
 from ..processing.registry import register_processor_type
 from ..specs import FieldSpec
 from ..specs import FieldType
-from ..std.internals import STD_FIELDS_ATTR
+from ..internals import STD_FIELDS_ATTR
 
 
 ##

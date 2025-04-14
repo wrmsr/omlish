@@ -30,7 +30,7 @@ from ..specs import DefaultFactory
 from ..specs import FieldType
 from ..specs import InitFn
 from ..specs import ValidateFn
-from ..std.internals import STD_POST_INIT_NAME
+from ..internals import STD_POST_INIT_NAME
 from .fields import InitFields
 
 

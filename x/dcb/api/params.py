@@ -1,7 +1,7 @@
 import typing as ta
 
 from ..specs import ClassSpec
-from ..std.internals import StdParams
+from ..internals import StdParams
 
 
 ##

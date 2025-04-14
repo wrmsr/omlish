@@ -3,7 +3,7 @@ from omlish import check
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
-from ..std.internals import STD_PARAMS_ATTR
+from ..internals import STD_PARAMS_ATTR
 
 
 ##
