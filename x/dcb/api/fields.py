@@ -26,6 +26,14 @@ class AttrMods:
     sets: ta.Mapping[str, ta.Any] | None = None
     dels: ta.AbstractSet[str] | None = None
 
+    def apply(self) -> None:
+        if self.sets:
+            for sak, sav in self.sets.items():
+                setattr(self.obj, sak, sav)
+        if self.dels:
+            for dak in self.dels or []:
+                delattr(self.obj, dak)
+
 
 ##
 
@@ -47,7 +55,6 @@ def build_std_field(
         a_type: ta.Any,
         *,
         default_kw_only: bool,
-        extra_metadata: ta.Mapping[ta.Any, ta.Any] | None = None,
 ) -> BuiltStdField:
     default: ta.Any = getattr(cls, a_name, dc.MISSING)
     if isinstance(default, dc.Field):
@@ -96,20 +103,7 @@ def build_std_field(
 
     # metadata
 
-    md: ta.Any = f.metadata
-    if extra_metadata:
-        mdu: dict = {}
-        for k, v in extra_metadata.items():
-            if md is None or md.get(k) != v:
-                mdu[k] = v  # noqa
-        if mdu:
-            if md is None:
-                md = mdu
-            else:
-                md = collections.ChainMap(mdu, md)
-            md = types.MappingProxyType(md)
-            attr_sets.update(metadata=md)
-    elif md is None:
+    if f.metadata is None:
         attr_sets.update(metadata=STD_EMPTY_METADATA)
 
     #
@@ -138,7 +132,6 @@ def build_cls_std_fields(
         cls: type,
         *,
         kw_only: bool,
-        extra_metadata: ta.Mapping[str, ta.Mapping[ta.Any, ta.Any]] | None = None,
 ) -> BuiltClsStdFields:
     fields: dict[str, dc.Field] = {}
 
@@ -167,7 +160,6 @@ def build_cls_std_fields(
                 name,
                 ann,
                 default_kw_only=kw_only,
-                extra_metadata=extra_metadata.get(name) if extra_metadata is not None else None,
             )
             built_fields.append(bsf)
             if (fam := bsf.attr_mods) is not None:
@@ -205,9 +197,31 @@ def install_built_cls_std_fields(
         csf: BuiltClsStdFields,
 ) -> None:
     for am in csf.attr_mods or []:
-        for sak, sav in (am.sets or {}).items():
-            setattr(am.obj, sak, sav)
-        for dak in am.dels or []:
-            delattr(am.obj, dak)
+        am.apply()
 
     setattr(cls, STD_FIELDS_ATTR, csf.fields)
+
+
+##
+
+
+def build_std_field_metadata_update(
+        f: dc.Field,
+        metadata: ta.Mapping[str, ta.Mapping[ta.Any, ta.Any]],
+) -> AttrMods | None:
+    md: ta.Any = f.metadata
+
+    mdu: dict = {}
+    for k, v in metadata.items():
+        if md is None or md.get(k) != v:
+            mdu[k] = v  # noqa
+    if not mdu:
+        return None
+
+    if md is None:
+        md = mdu
+    else:
+        md = collections.ChainMap(mdu, md)
+    md = types.MappingProxyType(md)
+
+    return AttrMods(f, sets=dict(metadata=md))
