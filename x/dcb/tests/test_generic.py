@@ -2,7 +2,7 @@ import inspect
 import pprint
 import typing as ta
 
-from .. import api
+from ..api import api
 
 
 T = ta.TypeVar('T')

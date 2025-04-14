@@ -1,6 +1,8 @@
 """
 TODO:
  - !! specialize nullary, explicit kwarg
+ - !! use c-backed functools.cache if possible
+  - also just riic
  - !! reconcile A().f() with A.f(A())
   - unbound descriptor *should* still hit instance cache
  - integrate / expose with collections.cache

@@ -1,14 +1,7 @@
 """
-FIXME:
- - !! calc_init_fields should be doing kw_only defaulting !!
-  - so it does: raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
-  - _: dc.KW_ONLY crap handled by api/
- - !! DONT MUTATE FIELDS IN _build_std_field
-  - should do this crap in dcb/api/...
-  - also like use dcb/std/conversion std_*_field_* ...
- - this does *not* inspect cls anns .. ?
-  - api layer does gross mutation of bad superclasses, this layer expects ClassSpec to hold all fields
-  - this layer should only mutate things directly in cls.__dict__
+TODO:
+ - should build_std_fields take a FieldSpec? sync Field? just ensure in sync?
+  - should it at least set FieldSpec metadata?
 """
 import dataclasses as dc
 import types
@@ -102,13 +95,37 @@ def _init_fields_processing_context_item_factory(ctx: ProcessingContext) -> Init
 ##
 
 
+@dc.dataclass(frozen=True)
+class AttrMods:
+    obj: ta.Any
+
+    _: dc.KW_ONLY
+
+    sets: ta.Mapping[str, ta.Any] | None = None
+    dels: ta.AbstractSet[str] | None = None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class BuiltStdField:
+    fld: dc.Field
+    name: str
+    type: str
+
+    _: dc.KW_ONLY
+
+    attr_mods: AttrMods | None = None
+
+
 def _build_std_field(
         cls: type,
         a_name: str,
         a_type: ta.Any,
         *,
         default_kw_only: bool,
-) -> dc.Field:
+) -> BuiltStdField:
     default: ta.Any = getattr(cls, a_name, dc.MISSING)
     if isinstance(default, dc.Field):
         f = default
@@ -118,8 +135,10 @@ def _build_std_field(
             default = dc.MISSING
         f = dc.field(default=default)
 
-    f.name = a_name
-    f.type = a_type
+    attr_sets: dict[str, ta.Any] = dict(
+        name=a_name,
+        type=a_type,
+    )
 
     ft = StdFieldType.INSTANCE
     if std_is_classvar(cls, f.type):
@@ -129,20 +148,29 @@ def _build_std_field(
     if ft in (StdFieldType.CLASS_VAR, StdFieldType.INIT_VAR):
         if f.default_factory is not dc.MISSING:
             raise TypeError(f'field {a_name} cannot have a default factory')
-    f._field_type = ft.value  # type: ignore  # noqa
+    attr_sets.update(_field_type=ft.value)
 
     if ft in (StdFieldType.INSTANCE, StdFieldType.INIT_VAR):
         if f.kw_only is dc.MISSING:
-            f.kw_only = default_kw_only
+            attr_sets.update(kw_only=default_kw_only)
     else:
         check.arg(ft is StdFieldType.CLASS_VAR)
         if f.kw_only is not dc.MISSING:
             raise TypeError(f'field {a_name} is a ClassVar but specifies kw_only')
 
-    if ft is StdFieldType.INSTANCE and f.default is not dc.MISSING and f.default.__class__.__hash__ is None:
+    if (
+            ft is StdFieldType.INSTANCE and
+            f.default is not dc.MISSING and
+            f.default.__class__.__hash__ is None
+    ):
         raise ValueError(f'mutable default {type(f.default)} for field {a_name} is not allowed: use default_factory')
 
-    return f
+    return BuiltStdField(
+        f,
+        a_name,
+        a_type,
+        attr_mods=AttrMods(f, sets=attr_sets) if attr_sets else None,
+    )
 
 
 #
@@ -154,8 +182,7 @@ class BuiltClsStdFields:
 
     _: dc.KW_ONLY
 
-    setattrs: ta.Mapping[str, ta.Any] | None = None
-    delattrs: ta.AbstractSet[str] | None = None
+    attr_mods: ta.Sequence[AttrMods] | None = None
 
 
 def build_cls_std_fields(
@@ -173,7 +200,8 @@ def build_cls_std_fields(
 
     cls_annotations = get_cls_annotations(cls)
 
-    cls_fields: list[dc.Field] = []
+    built_fields: list[BuiltStdField] = []
+    attr_mods: list[AttrMods] = []
 
     kw_only_seen = False
     for name, ann in cls_annotations.items():
@@ -184,31 +212,40 @@ def build_cls_std_fields(
             kw_only = True
 
         else:
-            cls_fields.append(_build_std_field(
+            bsf = _build_std_field(
                 cls,
                 name,
                 ann,
                 default_kw_only=kw_only,
-            ))
+            )
+            built_fields.append(bsf)
+            if (fam := bsf.attr_mods) is not None:
+                attr_mods.append(fam)
 
-    setattrs: dict[str, ta.Any] = {}
-    delattrs: set[str] = set()
-    for f in cls_fields:
-        fields[f.name] = f
-        if isinstance(getattr(cls, f.name, None), dc.Field):
-            if f.default is dc.MISSING:
-                delattrs.add(f.name)
+    cls_attr_sets: dict[str, ta.Any] = {}
+    cls_attr_dels: set[str] = set()
+    for bsf in built_fields:
+        fields[bsf.name] = bsf.fld
+        if isinstance(getattr(cls, bsf.name, None), dc.Field):
+            if bsf.fld.default is dc.MISSING:
+                cls_attr_dels.add(bsf.name)
             else:
-                setattrs[f.name] = f.default
+                cls_attr_sets[bsf.name] = bsf.fld.default
 
     for name, value in cls.__dict__.items():
         if isinstance(value, dc.Field) and name not in cls_annotations:
             raise TypeError(f'{name!r} is a field but has no type annotation')
 
+    if cls_attr_sets or cls_attr_dels:
+        attr_mods.append(AttrMods(
+            cls,
+            sets=cls_attr_sets,
+            dels=cls_attr_dels,
+        ))
+
     return BuiltClsStdFields(
         fields,
-        setattrs=setattrs,
-        delattrs=delattrs,  # noqa
+        attr_mods=attr_mods,
     )
 
 
@@ -253,11 +290,11 @@ class FieldsProcessor(Processor):
     def process(self, cls: type) -> type:
         csf = self._ctx[BuiltClsStdFields]
 
-        for sak, sav in (csf.setattrs or {}).items():
-            setattr(cls, sak, sav)
-
-        for dak in csf.delattrs or []:
-            delattr(cls, dak)
+        for am in csf.attr_mods or []:
+            for sak, sav in (am.sets or {}).items():
+                setattr(am.obj, sak, sav)
+            for dak in am.dels or []:
+                delattr(am.obj, dak)
 
         setattr(cls, STD_FIELDS_ATTR, csf.fields)
 

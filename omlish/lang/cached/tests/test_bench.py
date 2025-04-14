@@ -13,7 +13,7 @@ import functools
 from ..function import cached_function
 
 
-def test_bench():
+def test_bench_free():
     def f():
         return 42
 
@@ -28,3 +28,32 @@ def test_bench():
     for _ in range(3):
         assert f0() == 42
         assert f1() == 42
+
+
+def test_bench_method():
+    class C:
+        def f(self):
+            return 42
+
+        @cached_function
+        def f0(self):
+            return 42
+
+        @functools.cache
+        def f1(self):
+            return 42
+
+    c = C()
+
+    assert c.f() == 42
+
+    assert c.f0() == 42
+    assert c.f1() == 42
+
+    for _ in range(3):
+        assert c.f0() == 42
+        assert c.f1() == 42
+
+    # import gc
+    # refs = gc.get_referrers(c)
+    # print(refs)

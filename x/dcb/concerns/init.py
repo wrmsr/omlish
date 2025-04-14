@@ -80,8 +80,9 @@ class InitGenerator(Generator[InitPlan]):
         if '__init__' in ctx.cls.__dict__:
             return None
 
+        ifs = ctx[InitFields]
         seen_default = None
-        for f in ctx[InitFields].std:
+        for f in ifs.std:
             if not f.init:
                 continue
             if f.default.present:
@@ -98,10 +99,10 @@ class InitGenerator(Generator[InitPlan]):
         orm = {}
 
         bfs: list[InitPlan.Field] = []
-        for i, f in enumerate(ctx.cs.fields):
-            if not f.init:
-                continue
-
+        for i, (kw_only, f) in enumerate([
+            *[(False, f) for f in ifs.std],
+            *[(True, f) for f in ifs.kw_only],
+        ]):
             ar: OpRef = OpRef(f'init.fields.{i}.annotation')
             orm[ar] = get_ann(f)
 
@@ -149,7 +150,7 @@ class InitGenerator(Generator[InitPlan]):
                 default=dr,
                 default_factory=dfr,
 
-                kw_only=f.kw_only,
+                kw_only=kw_only,
 
                 override=f.override or ctx.cs.override,
 
@@ -161,11 +162,11 @@ class InitGenerator(Generator[InitPlan]):
                 check_type=ctr,
             ))
 
-        ifs: list[OpRef[InitFn]] = []
+        ifns: list[OpRef[InitFn]] = []
         for i, ifn in enumerate(ctx.cs.init_fns or []):
             ir: OpRef = OpRef(f'init.init_fns.{i}')
             orm[ir] = ifn
-            ifs.append(ir)
+            ifns.append(ir)
 
         vfs: list[InitPlan.ValidateFnWithParams] = []
         for i, vfn in enumerate(ctx.cs.validate_fns or []):
@@ -178,7 +179,7 @@ class InitGenerator(Generator[InitPlan]):
 
         post_init_params: tuple[str, ...] | None = None
         if hasattr(ctx.cls, STD_POST_INIT_NAME):
-            post_init_params = tuple(f.name for f in ctx[InitFields].all if f.field_type is FieldType.INIT_VAR)
+            post_init_params = tuple(f.name for f in ifs.all if f.field_type is FieldType.INIT_VAR)
 
         return PlanResult(
             InitPlan(
@@ -188,7 +189,7 @@ class InitGenerator(Generator[InitPlan]):
 
                 post_init_params=post_init_params,
 
-                init_fns=tuple(ifs),
+                init_fns=tuple(ifns),
 
                 validate_fns=tuple(vfs),
             ),
