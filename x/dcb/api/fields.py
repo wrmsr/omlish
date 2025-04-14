@@ -25,7 +25,7 @@ class AttrMods:
     dels: ta.AbstractSet[str] | None = None
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -39,7 +39,7 @@ class BuiltStdField:
     attr_mods: AttrMods | None = None
 
 
-def _build_std_field(
+def build_std_field(
         cls: type,
         a_name: str,
         a_type: ta.Any,
@@ -93,7 +93,7 @@ def _build_std_field(
     )
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -132,7 +132,7 @@ def build_cls_std_fields(
             kw_only = True
 
         else:
-            bsf = _build_std_field(
+            bsf = build_std_field(
                 cls,
                 name,
                 ann,
@@ -167,3 +167,16 @@ def build_cls_std_fields(
         fields,
         attr_mods=attr_mods,
     )
+
+
+def install_built_cls_std_fields(
+        cls: type,
+        csf: BuiltClsStdFields,
+) -> None:
+    for am in csf.attr_mods or []:
+        for sak, sav in (am.sets or {}).items():
+            setattr(am.obj, sak, sav)
+        for dak in am.dels or []:
+            delattr(am.obj, dak)
+
+    setattr(cls, STD_FIELDS_ATTR, csf.fields)

@@ -94,7 +94,10 @@ StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
 
 @register_processing_context_item_factory(StdFields)
 def _std_fields_processing_context_item_factory(ctx: ProcessingContext) -> StdFields:
-    return StdFields(ctx[BuiltClsStdFields].fields)
+    fld_lst = getattr(ctx.cls, STD_FIELDS_ATTR)
+    fld_set = {check.isinstance(sf, dc.Field).name for sf in fld_lst}
+    check.equal(fld_set, set(ctx.cs.fields_by_name))
+    return StdFields(fld_lst)
 
 
 ##
@@ -114,17 +117,4 @@ def _fields_inspection_processing_context_item_factory(ctx: ProcessingContext) -
 @register_processor_type(priority=ProcessorPriority.BOOTSTRAP)
 class FieldsProcessor(Processor):
     def check(self) -> None:
-        check.not_none(self._ctx[BuiltClsStdFields])
-
-    def process(self, cls: type) -> type:
-        csf = self._ctx[BuiltClsStdFields]
-
-        for am in csf.attr_mods or []:
-            for sak, sav in (am.sets or {}).items():
-                setattr(am.obj, sak, sav)
-            for dak in am.dels or []:
-                delattr(am.obj, dak)
-
-        setattr(cls, STD_FIELDS_ATTR, csf.fields)
-
-        return cls
+        check.not_none(self._ctx[StdFields])

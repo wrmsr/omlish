@@ -69,4 +69,4 @@ class Processor(lang.Abstract):
         pass
 
     def process(self, cls: type) -> type:
-        raise NotImplementedError
+        return cls
