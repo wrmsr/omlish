@@ -156,7 +156,7 @@ def dataclass(
 
         cmd = extract_cls_metadata(cls)
         validate_fns: list[ClassSpec.ValidateFnWithParams] = []
-        for md_vf in cmd.validate_fns:
+        for md_vf in cmd.validate_fns or []:
             if isinstance(md_vf, staticmethod):
                 md_vf = md_vf.__func__
             validate_fns.append(ClassSpec.ValidateFnWithParams(
