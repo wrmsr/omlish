@@ -6,7 +6,6 @@ import typing as ta
 from omlish import check
 
 from ..inspect import get_cls_annotations
-from ..std.internals import STD_EMPTY_METADATA
 from ..std.internals import STD_FIELDS_ATTR
 from ..std.internals import StdFieldType
 from ..std.internals import std_is_classvar
@@ -100,11 +99,6 @@ def build_std_field(
             f.default.__class__.__hash__ is None
     ):
         raise ValueError(f'mutable default {type(f.default)} for field {a_name} is not allowed: use default_factory')
-
-    # metadata
-
-    if f.metadata is None:
-        attr_sets.update(metadata=STD_EMPTY_METADATA)
 
     #
 
