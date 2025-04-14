@@ -196,5 +196,3 @@ def dataclass(
         return drive_cls_processing(cls, cs)
 
     return inner
-
-

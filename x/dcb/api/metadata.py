@@ -3,7 +3,6 @@ import typing as ta
 
 from omlish import lang
 
-from ..specs import ClassValidateFn
 from ..specs import InitFn
 
 
@@ -47,27 +46,14 @@ def validate(obj):
 @dc.dataclass(frozen=True, kw_only=True, eq=False)
 class ClassMetadata:
     init_fns: ta.Sequence[InitFn] | None = None
-    validate_fns: ta.Sequence[ClassValidateFn] | None = None
+    validate_fns: ta.Sequence[ta.Any] | None = None
 
 
 def extract_cls_metadata(cls: type) -> ClassMetadata:
-    init_fns: list[InitFn] = []
-    validate_fns: list[ClassValidateFn] = []
-
-    if (cls_md_dct := cls.__dict__.get(METADATA_ATTR)):
-        if (md_ifs := cls_md_dct.get(_InitMetadata)):
-            for md_if in md_ifs:
-                init_fns.append(md_if)  # noqa
-
-        if (md_vfs := cls_md_dct.get(_ValidateMetadata)):
-            for md_vf in md_vfs:
-                if isinstance(md_vf, staticmethod):
-                    md_vf = md_vf.__func__
-                validate_fns.append(md_vf)  # noqa
-
+    cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
     return ClassMetadata(
-        init_fns=init_fns or None,
-        validate_fns=validate_fns or None,
+        init_fns=cls_md_dct.get(_InitMetadata),
+        validate_fns=cls_md_dct.get(_ValidateMetadata),
     )
 
 
