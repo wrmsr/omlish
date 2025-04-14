@@ -68,12 +68,16 @@ class FieldSpec:
     # ext
 
     # derive: ta.Callable[..., ta.Any] | None = None  # NYI in core
+
     coerce: bool | CoerceFn | None = None
     validate: ValidateFn | None = None
     check_type: bool | type | tuple[type | None, ...] | None = None
+
     override: bool = False
+
     repr_fn: ReprFn | None = None
     repr_priority: int | None = None
+
     # frozen: bool | None = None  # NYI in core
 
     ##
@@ -91,8 +95,12 @@ class FieldSpec:
             if isinstance(self.default.or_else(None), DefaultFactory):
                 raise TypeError(f'field {self.name} cannot have a default factory')
 
-        if self.field_type is FieldType.CLASS_VAR and self.kw_only is not None:
-            raise TypeError(f'field {self.name} is a ClassVar but specifies kw_only')
+        if self.field_type is FieldType.CLASS_VAR:
+            if self.kw_only is not None:
+                raise TypeError(f'field {self.name} is a ClassVar but specifies kw_only')
+            check.none(self.coerce)
+            check.none(self.validate)
+            check.in_(self.check_type, (None, False))
 
         if (
                 self.field_type is FieldType.INSTANCE and
@@ -113,13 +121,11 @@ class ClassSpec:
 
     fields: ta.Sequence[FieldSpec]
 
-    @lang.cached_function
+    @property
     def fields_by_name(self) -> ta.Mapping[str, FieldSpec]:
-        dct: dict[str, FieldSpec] = {}
-        for f in self.fields:
-            check.not_in(f.name, dct)
-            dct[f.name] = f
-        return dct
+        return self._fields_by_name
+
+    _fields_by_name: ta.ClassVar[ta.Mapping[str, FieldSpec]]
 
     ##
     # std
@@ -166,5 +172,11 @@ class ClassSpec:
     #
 
     def __post_init__(self) -> None:
+        dct: dict[str, FieldSpec] = {}
+        for f in self.fields:
+            check.not_in(f.name, dct)
+            dct[f.name] = f
+        object.__setattr__(self, '_fields_by_name', dct)
+
         if self.order and not self.eq:
             raise ValueError('eq must be true if order is true')
