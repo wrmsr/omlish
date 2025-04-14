@@ -3,7 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..registry import SealableRegistry
+from ..utils import SealableRegistry
 from .base import Generator
 from .base import Plan
 

@@ -11,27 +11,7 @@ from ..std.internals import StdFieldType
 from ..std.internals import std_is_classvar
 from ..std.internals import std_is_initvar
 from ..std.internals import std_is_kw_only
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class AttrMods:
-    obj: ta.Any
-
-    _: dc.KW_ONLY
-
-    sets: ta.Mapping[str, ta.Any] | None = None
-    dels: ta.AbstractSet[str] | None = None
-
-    def apply(self) -> None:
-        if self.sets:
-            for sak, sav in self.sets.items():
-                setattr(self.obj, sak, sav)
-        if self.dels:
-            for dak in self.dels or []:
-                delattr(self.obj, dak)
+from ..utils import AttrMods
 
 
 ##
