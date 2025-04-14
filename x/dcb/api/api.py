@@ -41,8 +41,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..driver import drive_cls_processing
 from ..inspect import get_cls_annotations
+from ..processing.driving import drive_cls_processing
 from ..specs import ClassSpec
 from ..specs import CoerceFn
 from ..specs import DefaultFactory

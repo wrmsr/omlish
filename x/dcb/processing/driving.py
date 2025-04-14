@@ -1,10 +1,10 @@
-from . import concerns as _concerns # noqa
-from .generation import processor as _generation_processor  # noqa
-from .processing.registry import ordered_processor_types
-from .processing.base import Processor
-from .processing.base import ProcessingContext
-from .processing.registry import all_processing_context_item_factories
-from .specs import ClassSpec
+from .. import concerns as _concerns # noqa
+from ..generation import processor as _generation_processor  # noqa
+from ..specs import ClassSpec
+from .base import ProcessingContext
+from .base import Processor
+from .registry import all_processing_context_item_factories
+from .registry import ordered_processor_types
 
 
 ##
