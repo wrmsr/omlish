@@ -1,8 +1,3 @@
-"""
-TODO:
- - should build_std_fields take a FieldSpec? sync Field? just ensure in sync?
-  - should it at least set FieldSpec metadata?
-"""
 import dataclasses as dc
 import typing as ta
 
@@ -94,7 +89,7 @@ StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
 
 @register_processing_context_item_factory(StdFields)
 def _std_fields_processing_context_item_factory(ctx: ProcessingContext) -> StdFields:
-    fld_dct = getattr(ctx.cls, STD_FIELDS_ATTR)
+    fld_dct = ctx.cls.__dict__[STD_FIELDS_ATTR]
     check.equal(set(fld_dct), set(ctx.cs.fields_by_name))
     return StdFields(fld_dct)
 
