@@ -47,40 +47,13 @@ from ..specs import ClassSpec
 from ..specs import CoerceFn
 from ..specs import DefaultFactory
 from ..specs import FieldSpec
-from ..specs import InitFn
 from ..specs import ReprFn
 from ..specs import ValidateFn
-
-
-##
-
-
-METADATA_ATTR = '__dataclass_metadata__'
-
-
-def _append_cls_md(k, v):
-    lang.get_caller_cls_dct(1).setdefault(METADATA_ATTR, {}).setdefault(k, []).append(v)
-
-
-#
-
-
-class _InitMetadata(lang.Marker):
-    pass
-
-
-def init(obj):
-    _append_cls_md(_InitMetadata, obj)
-    return obj
-
-
-class _ValidateMetadata(lang.Marker):
-    pass
-
-
-def validate(obj):
-    _append_cls_md(_ValidateMetadata, obj)
-    return obj
+from ..std.conversion import class_spec_to_std_params
+from ..std.internals import STD_PARAMS_ATTR
+from .fields import build_cls_std_fields
+from .fields import install_built_cls_std_fields
+from .metadata import extract_cls_metadata
 
 
 ##
@@ -181,20 +154,15 @@ def dataclass(
                 repr_priority=fld.repr_priority,
             ))
 
-        init_fns: list[InitFn] = []
+        cmd = extract_cls_metadata(cls)
         validate_fns: list[ClassSpec.ValidateFnWithParams] = []
-        if (cls_md_dct := cls.__dict__.get(METADATA_ATTR)):
-            if (md_ifs := cls_md_dct.get(_InitMetadata)):
-                for md_if in md_ifs:
-                    init_fns.append(md_if)  # noqa
-            if (md_vfs := cls_md_dct.get(_ValidateMetadata)):
-                for md_vf in md_vfs:
-                    if isinstance(md_vf, staticmethod):
-                        md_vf = md_vf.__func__
-                    validate_fns.append(ClassSpec.ValidateFnWithParams(
-                        md_vf,
-                        [p.name for p in inspect.signature(md_vf).parameters.values()],
-                    ))
+        for md_vf in cmd.validate_fns:
+            if isinstance(md_vf, staticmethod):
+                md_vf = md_vf.__func__
+            validate_fns.append(ClassSpec.ValidateFnWithParams(
+                md_vf,
+                [p.name for p in inspect.signature(md_vf).parameters.values()],
+            ))
 
         cs = ClassSpec(
             fields=fsl,
@@ -214,9 +182,16 @@ def dataclass(
             override=override,
             repr_id=repr_id,
 
-            init_fns=init_fns,
+            init_fns=cmd.init_fns,
             validate_fns=validate_fns,
         )
+
+        std_params = class_spec_to_std_params(cs, use_spec_wrapper=True)
+        check.not_in(STD_PARAMS_ATTR, cls.__dict__)
+        setattr(cls, STD_PARAMS_ATTR, std_params)
+
+        csf = build_cls_std_fields(cls, kw_only=cs.kw_only)
+        install_built_cls_std_fields(cls, csf)
 
         return drive_cls_processing(cls, cs)
 

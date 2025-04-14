@@ -13,7 +13,7 @@ import dataclasses as dc
 import inspect
 import typing as ta
 
-from ..api import api
+from .. import api
 
 
 T = ta.TypeVar('T')

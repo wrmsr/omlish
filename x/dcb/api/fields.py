@@ -1,3 +1,4 @@
+import collections
 import dataclasses as dc
 import types
 import typing as ta
@@ -5,6 +6,7 @@ import typing as ta
 from omlish import check
 
 from ..inspect import get_cls_annotations
+from ..std.internals import STD_EMPTY_METADATA
 from ..std.internals import STD_FIELDS_ATTR
 from ..std.internals import StdFieldType
 from ..std.internals import std_is_classvar
@@ -45,6 +47,7 @@ def build_std_field(
         a_type: ta.Any,
         *,
         default_kw_only: bool,
+        extra_metadata: ta.Mapping[ta.Any, ta.Any] | None = None,
 ) -> BuiltStdField:
     default: ta.Any = getattr(cls, a_name, dc.MISSING)
     if isinstance(default, dc.Field):
@@ -60,6 +63,8 @@ def build_std_field(
         type=a_type,
     )
 
+    # field type
+
     ft = StdFieldType.INSTANCE
     if std_is_classvar(cls, f.type):
         ft = StdFieldType.CLASS_VAR
@@ -70,6 +75,8 @@ def build_std_field(
             raise TypeError(f'field {a_name} cannot have a default factory')
     attr_sets.update(_field_type=ft.value)
 
+    # kw_only
+
     if ft in (StdFieldType.INSTANCE, StdFieldType.INIT_VAR):
         if f.kw_only is dc.MISSING:
             attr_sets.update(kw_only=default_kw_only)
@@ -78,12 +85,34 @@ def build_std_field(
         if f.kw_only is not dc.MISSING:
             raise TypeError(f'field {a_name} is a ClassVar but specifies kw_only')
 
+    # defaults
+
     if (
             ft is StdFieldType.INSTANCE and
             f.default is not dc.MISSING and
             f.default.__class__.__hash__ is None
     ):
         raise ValueError(f'mutable default {type(f.default)} for field {a_name} is not allowed: use default_factory')
+
+    # metadata
+
+    md: ta.Any = f.metadata
+    if extra_metadata:
+        mdu: dict = {}
+        for k, v in extra_metadata.items():
+            if md is None or md.get(k) != v:
+                mdu[k] = v  # noqa
+        if mdu:
+            if md is None:
+                md = mdu
+            else:
+                md = collections.ChainMap(mdu, md)
+            md = types.MappingProxyType(md)
+            attr_sets.update(metadata=md)
+    elif md is None:
+        attr_sets.update(metadata=STD_EMPTY_METADATA)
+
+    #
 
     return BuiltStdField(
         f,
@@ -109,6 +138,7 @@ def build_cls_std_fields(
         cls: type,
         *,
         kw_only: bool,
+        extra_metadata: ta.Mapping[str, ta.Mapping[ta.Any, ta.Any]] | None = None,
 ) -> BuiltClsStdFields:
     fields: dict[str, dc.Field] = {}
 
@@ -137,6 +167,7 @@ def build_cls_std_fields(
                 name,
                 ann,
                 default_kw_only=kw_only,
+                extra_metadata=extra_metadata.get(name) if extra_metadata is not None else None,
             )
             built_fields.append(bsf)
             if (fam := bsf.attr_mods) is not None:

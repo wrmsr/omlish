@@ -33,8 +33,8 @@ class FieldType(enum.StrEnum):
     __repr__ = lang.enum_name_repr
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class FieldSpec:
+@dc.dataclass(frozen=True, kw_only=True, eq=False)
+class FieldSpec(lang.Final):
     name: str
     annotation: ta.Any
 
@@ -114,8 +114,8 @@ class FieldSpec:
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ClassSpec:
+@dc.dataclass(frozen=True, kw_only=True, eq=False)
+class ClassSpec(lang.Final):
     ##
     # fields
 
