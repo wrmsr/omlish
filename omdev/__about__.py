@@ -24,7 +24,7 @@ class Project(ProjectBase):
         'doc': [
             'docutils ~= 0.21',
 
-            'markdown-it-py ~= 3.7',
+            'markdown-it-py ~= 3.0',
             # 'mdit-py-plugins ~= 0.4',
         ],
 
@@ -33,7 +33,7 @@ class Project(ProjectBase):
         ],
 
         'prof': [
-            'gprof2dot ~= 2024.6',
+            'gprof2dot ~= 2025.4',
         ],
 
         'ptk': [
@@ -42,10 +42,6 @@ class Project(ProjectBase):
 
         'qr': [
             'segno ~= 1.6',
-        ],
-
-        'wheel': [
-            'wheel ~= 0.45',
         ],
     }
 

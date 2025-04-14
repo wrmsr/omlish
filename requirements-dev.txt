@@ -26,7 +26,7 @@ black==25.1.0
 mypy==1.15.0
 pipdeptree==2.26.0
 
-gprof2dot==2024.6.6
+gprof2dot==2025.4.14
 guppy3==3.1.5; python_version < "3.13"
 objgraph==3.6.2
 
@@ -108,7 +108,7 @@ huggingface-hub==0.30.2
 
 datasets==3.5.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-transformers==4.51.2; python_version < "3.13"
+transformers==4.51.3; python_version < "3.13"
 sentence-transformers==4.0.2; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
@@ -119,7 +119,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.37.33
+boto3>=1.37.34
 
 mlx==0.24.2; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.22.5; sys_platform == "darwin" and python_version < "3.13"
@@ -128,7 +128,7 @@ apsw==3.49.1.0
 
 rapidocr_onnxruntime==1.4.4  # @omlish-venv !13t
 
-pillow==11.1.0
+pillow==11.2.1
 
 accelerate==1.6.0
 

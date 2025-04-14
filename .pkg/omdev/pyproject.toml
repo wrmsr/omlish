@@ -31,12 +31,11 @@ all = [
     'pycparser ~= 2.22',
     'pcpp ~= 1.30',
     'docutils ~= 0.21',
-    'markdown-it-py ~= 3.7',
+    'markdown-it-py ~= 3.0',
     'mypy ~= 1.15',
-    'gprof2dot ~= 2024.6',
+    'gprof2dot ~= 2025.4',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
-    'wheel ~= 0.45',
 ]
 black = [
     'black ~= 25.1',
@@ -47,22 +46,19 @@ c = [
 ]
 doc = [
     'docutils ~= 0.21',
-    'markdown-it-py ~= 3.7',
+    'markdown-it-py ~= 3.0',
 ]
 mypy = [
     'mypy ~= 1.15',
 ]
 prof = [
-    'gprof2dot ~= 2024.6',
+    'gprof2dot ~= 2025.4',
 ]
 ptk = [
     'prompt-toolkit ~= 3.0',
 ]
 qr = [
     'segno ~= 1.6',
-]
-wheel = [
-    'wheel ~= 0.45',
 ]
 
 [project.entry-points]
