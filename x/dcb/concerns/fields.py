@@ -90,6 +90,9 @@ StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
 @register_processing_context_item_factory(StdFields)
 def _std_fields_processing_context_item_factory(ctx: ProcessingContext) -> StdFields:
     fld_dct = ctx.cls.__dict__[STD_FIELDS_ATTR]
+    for fn, f in fld_dct.items():
+        check.isinstance(f, dc.Field)
+        check.equal(f.name, fn)
     check.equal(set(fld_dct), set(ctx.cs.fields_by_name))
     return StdFields(fld_dct)
 
