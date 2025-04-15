@@ -92,7 +92,7 @@ class Project(ProjectBase):
             # 'psycopg ~= 3.2',
 
             'pymysql ~= 1.1',
-            # 'mysql-connector-python ~= 9.1',
+            # 'mysql-connector-python ~= 9.3',
             # 'mysqlclient ~= 2.2',
 
             'aiomysql ~= 0.2',

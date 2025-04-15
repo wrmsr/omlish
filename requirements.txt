@@ -1,6 +1,5 @@
 #### optional
 
-# git+https://github.com/vstinner/greenlet@py313
 greenlet==3.2.0
 
 wrapt>=1.17.2
@@ -17,8 +16,8 @@ cryptography==44.0.2  # @omlish-venv !13t
 
 ### compress:
 
-# git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
 lz4==4.4.4
+# git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
 
 python-snappy==0.7.3  # @omlish-venv !13t  # segfault
 zstandard==0.23.0  # @omlish-venv !13t
