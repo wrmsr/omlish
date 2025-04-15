@@ -52,33 +52,33 @@ def test_foo():
     assert type(FooInst2()) is Foo
 
 
-# ##
-#
-#
-# @dc.dataclass(frozen=True)
-# class MyManifest(NameAliasesManifest, ModAttrManifest):
-#     pass
-#
-#
-# class StaticModAttrManifest(Static, ModAttrManifest, abc.ABC):
-#     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-#         if (
-#                 not (lang.is_abstract_class(cls) or abc.ABC in cls.__bases__) and
-#                 'mod_name' not in cls.__dict__
-#         ):
-#             setattr(cls, 'mod_name', cls.__module__)
-#
-#         super().__init_subclass__(**kwargs)
-#
-#
-# class StaticMyManifest(StaticModAttrManifest, MyManifest, abc.ABC):
-#     pass
-#
-#
-# class MyManifestInst(StaticMyManifest):
-#     attr_name = 'FOO_COUNT'
-#     name = 'foo'
-#
-#
-# def test_manifest():
-#     print(MyManifestInst())
+##
+
+
+@dc.dataclass(frozen=True)
+class MyManifest(NameAliasesManifest, ModAttrManifest):
+    pass
+
+
+class StaticModAttrManifest(Static, ModAttrManifest, abc.ABC):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        if (
+                not (lang.is_abstract_class(cls) or abc.ABC in cls.__bases__) and
+                'mod_name' not in cls.__dict__
+        ):
+            setattr(cls, 'mod_name', cls.__module__)
+
+        super().__init_subclass__(**kwargs)
+
+
+class StaticMyManifest(StaticModAttrManifest, MyManifest, abc.ABC):
+    pass
+
+
+class MyManifestInst(StaticMyManifest):
+    attr_name = 'FOO_COUNT'
+    name = 'foo'
+
+
+def test_manifest():
+    print(MyManifestInst())

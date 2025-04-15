@@ -137,11 +137,12 @@ class Static(lang.Abstract):
                         if k not in (FieldSpec, _ExtraFieldParams)
                     }
                     n_md[_ExtraFieldParams] = {
-                        getattr(x_fs, fs_f.name)
+                        fs_f.name: getattr(x_fs, fs_f.name)
                         for fs_f in dc.fields(FieldSpec)  # noqa
-                        if fs_f not in dc.Field.__slots__  # noqa
+                        if fs_f not in dc.Field.__slots__  # type: ignore[attr-defined]
+                        and fs_f.name not in ('default', 'default_factory')
                     }
-                    new_fld.metadata = n_md
+                    new_fld.metadata = n_md  # type: ignore[assignment]
 
                 setattr(cls, fld.name, new_fld)
                 new_anns[fld.name] = fld.type
