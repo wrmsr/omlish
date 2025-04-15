@@ -8,6 +8,7 @@ import inspect
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from ..internals import STD_PARAMS_ATTR
 from ..processing.driving import drive_cls_processing
@@ -44,7 +45,7 @@ def field(
         coerce: bool | CoerceFn | None = None,
         validate: ValidateFn | None = None,  # noqa
         check_type: bool | type | tuple[type | None, ...] | None = None,
-        override: bool = False,
+        override: bool | None = None,
         repr_fn: ReprFn | None = None,
         repr_priority: int | None = None,
 ) -> ta.Any:
@@ -96,11 +97,11 @@ def dataclass(
         slots=False,
         weakref_slot=False,
 
-        reorder: bool = False,
-        cache_hash: bool = False,
-        generic_init: bool = False,
-        override: bool = False,
-        repr_id: bool = False,
+        reorder: bool | None = None,
+        cache_hash: bool | None = None,
+        generic_init: bool | None = None,
+        override: bool | None = None,
+        repr_id: bool | None = None,
 ):
     cls = check.not_none(cls)
 
@@ -154,11 +155,16 @@ def dataclass(
         slots=slots,
         weakref_slot=weakref_slot,
 
-        reorder=reorder,
-        cache_hash=cache_hash,
-        generic_init=generic_init,
-        override=override,
-        repr_id=repr_id,
+        **{
+            **(cmd.extra_params or {}),
+            **lang.opt_kw(
+                reorder=reorder,
+                cache_hash=cache_hash,
+                generic_init=generic_init,
+                override=override,
+                repr_id=repr_id,
+            ),
+        },
 
         init_fns=cmd.init_fns,
         validate_fns=validate_fns,

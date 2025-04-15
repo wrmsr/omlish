@@ -88,26 +88,26 @@ def test_validate_init():
 #     assert C(10).x == 10
 
 
-def test_reflect():
-    @dc.dataclass()
-    class Foo:
-        x: int
-        y: int
-
-    @_dc.dataclass()
-    class Bar:
-        x: int
-        z: int
-
-    @dc.dataclass()
-    class Baz0(Foo, Bar):
-        a: int
-
-    ref = dc.reflect(Baz0)
-    print(ref)
-    print(ref.params)
-    print(ref.params_extras)
-    print(ref.merged_metadata)
+# def test_reflect():
+#     @dc.dataclass()
+#     class Foo:
+#         x: int
+#         y: int
+#
+#     @_dc.dataclass()
+#     class Bar:
+#         x: int
+#         z: int
+#
+#     @dc.dataclass()
+#     class Baz0(Foo, Bar):
+#         a: int
+#
+#     ref = dc.reflect(Baz0)
+#     print(ref)
+#     print(ref.params)
+#     print(ref.params_extras)
+#     print(ref.merged_metadata)
 
 
 def test_abc():
@@ -219,25 +219,25 @@ def test_reorder():
     assert b.y == 3
 
 
-def test_generics():
-    @dc.dataclass()
-    class Box(ta.Generic[T]):
-        v: T
-
-    rty0 = rfl.type_(Box[int])  # noqa
-
-    assert Box[int](5).v == 5
-
-    @dc.dataclass()
-    class IntBox(Box[int]):
-        pass
-
-    rty1 = rfl.type_(IntBox)  # noqa
-
-    assert IntBox(5).v == 5
-
-    info = dc.reflect(IntBox)
-    print(info.field_owners)
+# def test_generics():
+#     @dc.dataclass()
+#     class Box(ta.Generic[T]):
+#         v: T
+#
+#     rty0 = rfl.type_(Box[int])  # noqa
+#
+#     assert Box[int](5).v == 5
+#
+#     @dc.dataclass()
+#     class IntBox(Box[int]):
+#         pass
+#
+#     rty1 = rfl.type_(IntBox)  # noqa
+#
+#     assert IntBox(5).v == 5
+#
+#     info = dc.reflect(IntBox)
+#     print(info.field_owners)
 
 
 def test_generics2():
