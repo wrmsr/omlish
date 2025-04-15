@@ -18,6 +18,7 @@ from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
 from .idents import FN_GLOBALS
+from .mangling import IDENT_MANGLER
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -53,8 +54,10 @@ class GeneratorProcessor(Processor):
                 # OpCompiler.JitStyle(),
             )
 
+            fn_name = IDENT_MANGLER.mangle(cls.__qualname__)
+
             comp = compiler.compile(
-                '_transform_dataclass',
+                fn_name,
                 gp.ops(),
             )
 

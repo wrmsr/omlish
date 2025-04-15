@@ -5574,7 +5574,12 @@ class StringMangler:
 
     @cached_nullary
     def replacements(self) -> ta.Sequence[ta.Tuple[str, str]]:
-        return [(l, self.escape + str(i)) for i, l in enumerate([self.escape, *self.escaped])]
+        pad = len('%x' % (len(self.escaped) + 1,))  # noqa
+        fmt = f'%0{pad}x'
+        return [
+            (l, self.escape + fmt % (i,))
+            for i, l in enumerate([self.escape, *self.escaped])
+        ]
 
     def mangle(self, s: str) -> str:
         for l, r in self.replacements():

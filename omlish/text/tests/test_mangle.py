@@ -22,3 +22,19 @@ def test_mangle() -> None:
         decoded = mangler.unmangle(encoded)
         assert encoded == expected
         assert decoded == original
+
+
+def test_long_mangle():
+    mangler = StringMangler.of('_', 'abcdefghijklmnopqrstuvwxyz')
+
+    test_cases = {
+        'g0': '_070',
+        'a11': '_0111',
+        'q1': '_111',
+    }
+
+    for original, expected in test_cases.items():
+        encoded = mangler.mangle(original)
+        decoded = mangler.unmangle(encoded)
+        assert encoded == expected
+        assert decoded == original
