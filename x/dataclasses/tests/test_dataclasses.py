@@ -82,11 +82,11 @@ def test_validate_init():
         C(9)
 
 
-# def test_mcls():
-#     class C(dc.Data):
-#         x: int
-#
-#     assert C(10).x == 10
+def test_mcls():
+    class C(dc.Data):
+        x: int
+
+    assert C(10).x == 10
 
 
 # def test_reflect():
@@ -220,25 +220,25 @@ def test_reorder():
     assert b.y == 3
 
 
-# def test_generics():
-#     @dc.dataclass()
-#     class Box(ta.Generic[T]):
-#         v: T
-#
-#     rty0 = rfl.type_(Box[int])  # noqa
-#
-#     assert Box[int](5).v == 5
-#
-#     @dc.dataclass()
-#     class IntBox(Box[int]):
-#         pass
-#
-#     rty1 = rfl.type_(IntBox)  # noqa
-#
-#     assert IntBox(5).v == 5
-#
-#     ifs = inspect_fields(IntBox)
-#     print(ifs.field_owners)
+def test_generics():
+    @dc.dataclass()
+    class Box(ta.Generic[T]):
+        v: T
+
+    rty0 = rfl.type_(Box[int])  # noqa
+
+    assert Box[int](5).v == 5
+
+    @dc.dataclass()
+    class IntBox(Box[int]):
+        pass
+
+    rty1 = rfl.type_(IntBox)  # noqa
+
+    assert IntBox(5).v == 5
+
+    ifs = inspect_fields(IntBox)
+    print(ifs.field_owners)
 
 
 def test_generics2():
@@ -275,29 +275,29 @@ def test_generics2():
     pprint.pprint(dict(inspect.signature(IntThing2).parameters))
 
 
-# def test_confer_frozen():
-#     class A(dc.Frozen):
-#         x: int
-#
-#     with pytest.raises(AttributeError):
-#         A(2).x = 3
-#
-#     class B(A):
-#         y: int
-#
-#     with pytest.raises(AttributeError):
-#         B(2, 3).x = 3
+def test_confer_frozen():
+    class A(dc.Frozen):
+        x: int
+
+    with pytest.raises(AttributeError):
+        A(2).x = 3
+
+    class B(A):
+        y: int
+
+    with pytest.raises(AttributeError):
+        B(2, 3).x = 3
 
 
-# def test_box():
-#     class Thing(dc.Box[list[str]]):
-#         pass
-#
-#     assert Thing('foo').v == 'foo'
-#
-#     sig = inspect.signature(Thing)
-#
-#     assert sig.parameters['v'].annotation == list[str]
+def test_box():
+    class Thing(dc.Box[list[str]]):
+        pass
+
+    assert Thing('foo').v == 'foo'
+
+    sig = inspect.signature(Thing)
+
+    assert sig.parameters['v'].annotation == list[str]
 
 
 def test_check_type():
