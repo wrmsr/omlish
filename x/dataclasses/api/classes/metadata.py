@@ -94,3 +94,7 @@ def remove_cls_metadata(cls: type) -> None:
         delattr(cls, METADATA_ATTR)
     except AttributeError:
         pass
+
+
+def has_cls_metadata(cls: type) -> bool:
+    return hasattr(cls, METADATA_ATTR)

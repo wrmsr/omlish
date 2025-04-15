@@ -3,6 +3,8 @@ TODO:
  - collect init_fn's / validate_fns from superclass ClassSpecs
 """
 import inspect
+import dataclasses as dc
+import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -12,13 +14,16 @@ from ...internals import STD_PARAMS_ATTR
 from ...processing.driving import drive_cls_processing
 from ...specs import ClassSpec
 from ...specs import FieldSpec
+from ...specs import InitFn
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields
 from ..fields.building import update_field_metadata
 from ..fields.conversion import std_field_to_field_spec
 from .metadata import extract_cls_metadata
+from .metadata import has_cls_metadata
 from .metadata import remove_cls_metadata
 from .params import SpecDataclassParams
+from .params import get_dataclass_spec
 
 
 ##
@@ -76,7 +81,19 @@ def dataclass(
     cmd = extract_cls_metadata(cls)
     remove_cls_metadata(cls)
 
+    init_fns: list[InitFn | property] = []
     validate_fns: list[ClassSpec.ValidateFnWithParams] = []
+
+    for bc in cls.__mro__[-1:0:-1]:
+        if not dc.is_dataclass(bc):
+            check.state(not has_cls_metadata(bc))
+            continue
+        if (bcs := get_dataclass_spec(bc)) is None:
+            continue
+        init_fns.extend(bcs.init_fns or [])
+        validate_fns.extend(bcs.validate_fns or [])
+
+    init_fns.extend(cmd.init_fns or [])
     for md_vf in cmd.validate_fns or []:
         if isinstance(md_vf, staticmethod):
             md_vf = md_vf.__func__
@@ -111,8 +128,8 @@ def dataclass(
             ),
         },
 
-        init_fns=cmd.init_fns,
-        validate_fns=validate_fns,
+        init_fns=init_fns or None,
+        validate_fns=validate_fns or None,
     )
 
     std_params = SpecDataclassParams.from_spec(cs)

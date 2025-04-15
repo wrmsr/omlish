@@ -469,3 +469,22 @@ def test_default_factory_coerce():
 
     assert C().x == 4
     assert C(3).x == 6
+
+
+def test_super_init():
+    @dc.dataclass()
+    class A:
+        c: int = 0
+
+        @dc.init
+        def _inc_c(self) -> None:
+            self.c += 1
+
+    @dc.dataclass()
+    class B(A):
+        @dc.init
+        def _inc_c_again(self) -> None:
+            self.c += 1
+
+    assert A().c == 1
+    assert B().c == 2
