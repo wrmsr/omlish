@@ -29,8 +29,8 @@ class Plans:
 ##
 
 
-_WS_PAT = re.compile(r'\s')
+_WS_PAT = re.compile(r'\s+')
 
 
 def _render(plans: Plans) -> str:
-    return _WS_PAT.sub(repr(plans.tup), '')
+    return _WS_PAT.sub('', repr(plans.tup))
