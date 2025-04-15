@@ -26,7 +26,7 @@ from omlish import check
 from omlish import concurrent as cu
 from omlish import lang
 
-from ..cli import CliModule
+from ...cli import CliModule
 
 
 ##

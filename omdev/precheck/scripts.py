@@ -3,8 +3,8 @@ import os
 import stat
 import typing as ta
 
-from .. import findimports
 from .. import magic
+from ..py import findimports
 from .base import Precheck
 from .base import PrecheckContext
 

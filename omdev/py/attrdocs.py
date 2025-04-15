@@ -7,7 +7,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .tokens import all as tks
+from ..tokens import all as tks
 
 
 ##

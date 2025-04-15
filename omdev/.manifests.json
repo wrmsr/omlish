@@ -12,30 +12,6 @@
     }
   },
   {
-    "module": ".attrdocs",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/attrdocs.py",
-    "line": 146,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/attrdocs",
-        "mod_name": "omdev.attrdocs"
-      }
-    }
-  },
-  {
-    "module": ".bracepy",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/bracepy.py",
-    "line": 94,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "bracepy",
-        "mod_name": "omdev.bracepy"
-      }
-    }
-  },
-  {
     "module": ".cc.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/cc/__main__.py",
@@ -60,18 +36,6 @@
     }
   },
   {
-    "module": ".classdot",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/classdot.py",
-    "line": 65,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/classdot",
-        "mod_name": "omdev.classdot"
-      }
-    }
-  },
-  {
     "module": ".cli.clicli",
     "attr": "_CLI_MODULE",
     "file": "omdev/cli/clicli.py",
@@ -80,18 +44,6 @@
       "$.cli.types.CliModule": {
         "cmd_name": "cli",
         "mod_name": "omdev.cli.clicli"
-      }
-    }
-  },
-  {
-    "module": ".findimports",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/findimports.py",
-    "line": 87,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/findimports",
-        "mod_name": "omdev.findimports"
       }
     }
   },
@@ -168,6 +120,114 @@
     }
   },
   {
+    "module": ".py.attrdocs",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/attrdocs.py",
+    "line": 146,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/attrdocs",
+        "mod_name": "omdev.py.attrdocs"
+      }
+    }
+  },
+  {
+    "module": ".py.bracepy",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/bracepy.py",
+    "line": 94,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "bracepy",
+        "mod_name": "omdev.py.bracepy"
+      }
+    }
+  },
+  {
+    "module": ".py.classdot",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/classdot.py",
+    "line": 63,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/classdot",
+        "mod_name": "omdev.py.classdot"
+      }
+    }
+  },
+  {
+    "module": ".py.findimports",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/findimports.py",
+    "line": 87,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/findimports",
+        "mod_name": "omdev.py.findimports"
+      }
+    }
+  },
+  {
+    "module": ".py.scripts.execrss",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/scripts/execrss.py",
+    "line": 11,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/execrss",
+        "mod_name": "omdev.py.scripts.execrss"
+      }
+    }
+  },
+  {
+    "module": ".py.scripts.exectime",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/scripts/exectime.py",
+    "line": 66,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/exectime",
+        "mod_name": "omdev.py.scripts.exectime"
+      }
+    }
+  },
+  {
+    "module": ".py.scripts.importtrace",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/scripts/importtrace.py",
+    "line": 477,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/importtrace",
+        "mod_name": "omdev.py.scripts.importtrace"
+      }
+    }
+  },
+  {
+    "module": ".py.tools.importscan",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/tools/importscan.py",
+    "line": 178,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/importscan",
+        "mod_name": "omdev.py.tools.importscan"
+      }
+    }
+  },
+  {
+    "module": ".py.tools.mkrelimp",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/tools/mkrelimp.py",
+    "line": 146,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/mkrelimp",
+        "mod_name": "omdev.py.tools.mkrelimp"
+      }
+    }
+  },
+  {
     "module": ".pyproject.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/pyproject/__main__.py",
@@ -176,42 +236,6 @@
       "$.cli.types.CliModule": {
         "cmd_name": "pyproject",
         "mod_name": "omdev.pyproject.__main__"
-      }
-    }
-  },
-  {
-    "module": ".scripts.execrss",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/scripts/execrss.py",
-    "line": 11,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/execrss",
-        "mod_name": "omdev.scripts.execrss"
-      }
-    }
-  },
-  {
-    "module": ".scripts.exectime",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/scripts/exectime.py",
-    "line": 66,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/exectime",
-        "mod_name": "omdev.scripts.exectime"
-      }
-    }
-  },
-  {
-    "module": ".scripts.importtrace",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/scripts/importtrace.py",
-    "line": 477,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/importtrace",
-        "mod_name": "omdev.scripts.importtrace"
       }
     }
   },
@@ -316,18 +340,6 @@
     }
   },
   {
-    "module": ".tools.importscan",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/importscan.py",
-    "line": 178,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/importscan",
-        "mod_name": "omdev.tools.importscan"
-      }
-    }
-  },
-  {
     "module": ".tools.intellij",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/intellij.py",
@@ -380,18 +392,6 @@
           "mkenv"
         ],
         "mod_name": "omdev.tools.mkenv"
-      }
-    }
-  },
-  {
-    "module": ".tools.mkrelimp",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/mkrelimp.py",
-    "line": 146,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/mkrelimp",
-        "mod_name": "omdev.tools.mkrelimp"
       }
     }
   },

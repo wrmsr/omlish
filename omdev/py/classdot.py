@@ -7,8 +7,6 @@ import typing as ta
 
 from omlish.graphs import dot
 
-from .cli import CliModule
-
 
 ##
 
@@ -63,7 +61,10 @@ def _main() -> None:
 
 
 # @omlish-manifest
-_CLI_MODULE = CliModule('py/classdot', __name__)
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'py/classdot',
+    'mod_name': __name__,
+}}
 
 
 if __name__ == '__main__':
