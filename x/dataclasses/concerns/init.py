@@ -390,7 +390,7 @@ class InitGenerator(Generator[InitPlan]):
             object_ident=plan.self_param,
         )
         for f in plan.fields:
-            if not (f.field_type == FieldType.INSTANCE and f.init):
+            if f.name not in field_values or f.field_type != FieldType.INSTANCE:
                 continue
             lines.extend([
                 f'    {l}'
