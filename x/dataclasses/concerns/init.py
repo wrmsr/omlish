@@ -399,14 +399,14 @@ class InitGenerator(Generator[InitPlan]):
 
         if (pia := bs.post_init_params) is not None:
             if pia:
-                lines.extend(
+                lines.extend([
                     f'    {bs.self_param}.{STD_POST_INIT_NAME}(',
                     *[
                         f'        {field_values[p]},'
                         for p in pia
                     ],
                     f'    )',
-                )
+                ])
             else:
                 lines.append(
                     f'    {bs.self_param}.{STD_POST_INIT_NAME}()',
