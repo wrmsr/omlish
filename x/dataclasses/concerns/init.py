@@ -50,6 +50,8 @@ class InitPlan(Plan):
         default: OpRef[ta.Any] | None
         default_factory: OpRef[ta.Any] | None
 
+        init: bool
+
         override: bool
 
         field_type: FieldType
@@ -135,6 +137,8 @@ class InitGenerator(Generator[InitPlan]):
 
             default=default_ref,
             default_factory=default_factory_ref,
+
+            init=f.init,
 
             override=f.override or ctx.cs.override,
 
@@ -278,13 +282,25 @@ class InitGenerator(Generator[InitPlan]):
         # defaults
 
         for f in bs.fields:
-            if f.default_factory is None:
-                continue
-            ors.add(f.default_factory)
-            lines.extend([
-                f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
-                f'        {f.name} = {f.default_factory.ident()}()',
-            ])
+            if f.default_factory is not None:
+                check.none(f.default)
+                ors.add(f.default_factory)
+                if f.init:
+                    lines.extend([
+                        f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
+                        f'        {f.name} = {f.default_factory.ident()}()',
+                    ])
+                else:
+                    lines.append(
+                        f'    {f.name} = {f.default_factory.ident()}()',
+                    )
+
+            elif not f.init and f.default is not None:
+                check.none(f.default_factory)
+                ors.add(f.default)
+                lines.append(
+                    f'    {f.name} = {f.default.ident()}',
+                )
 
         # coercion
 
