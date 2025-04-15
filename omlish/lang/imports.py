@@ -312,6 +312,9 @@ class _ProxyInit:
 
         return val
 
+    def __call__(self, attr: str) -> ta.Any:
+        return self.get(attr)
+
 
 def proxy_init(
         globals: ta.MutableMapping[str, ta.Any],  # noqa
@@ -329,13 +332,22 @@ def proxy_init(
     pi: _ProxyInit
     try:
         pi = globals['__proxy_init__']
+
     except KeyError:
+        try:
+            xga = globals['__getattr__']
+        except KeyError:
+            pass
+        else:
+            raise RuntimeError(f'Module already has __getattr__ hook: {xga}')
+
         pi = _ProxyInit(
             init_name_package,
             globals=globals,
         )
         globals['__proxy_init__'] = pi
-        globals['__getattr__'] = pi.get
+        globals['__getattr__'] = pi
+
     else:
         if pi.name_package != init_name_package:
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
