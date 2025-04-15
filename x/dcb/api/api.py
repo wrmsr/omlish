@@ -18,6 +18,7 @@ from ..specs import ReprFn
 from ..specs import ValidateFn
 from ..utils import class_decorator
 from .classes.metadata import extract_cls_metadata
+from .classes.metadata import remove_cls_metadata
 from .classes.params import SpecDataclassParams
 from .fields.building import build_cls_std_fields
 from .fields.building import build_std_field_metadata_update
@@ -103,6 +104,8 @@ def dataclass(
 ):
     cls = check.not_none(cls)
 
+    #
+
     csf = build_cls_std_fields(cls, kw_only=kw_only)
     install_built_cls_std_fields(cls, csf)
 
@@ -122,7 +125,11 @@ def dataclass(
 
         build_std_field_metadata_update(f, {FieldSpec: fs}).apply()
 
+    #
+
     cmd = extract_cls_metadata(cls)
+    remove_cls_metadata(cls)
+
     validate_fns: list[ClassSpec.ValidateFnWithParams] = []
     for md_vf in cmd.validate_fns or []:
         if isinstance(md_vf, staticmethod):
@@ -161,4 +168,10 @@ def dataclass(
     check.not_in(STD_PARAMS_ATTR, cls.__dict__)
     setattr(cls, STD_PARAMS_ATTR, std_params)
 
+    #
+
     return drive_cls_processing(cls, cs)
+
+
+def make_dataclass(*args, **kwargs):
+    raise NotImplementedError
