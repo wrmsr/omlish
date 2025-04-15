@@ -5,6 +5,9 @@ TODO:
 """
 import dataclasses as dc
 import typing as ta
+import weakref
+
+from omlish import check
 
 from ..generation.base import Generator
 from ..generation.base import Plan
@@ -23,12 +26,23 @@ from ..processing.base import ProcessingContext
 ##
 
 
+_UNCHECKED_FROZEN_BASES: ta.MutableSet[type] = weakref.WeakSet()
+
+
+def unchecked_frozen_base(cls):
+    _UNCHECKED_FROZEN_BASES.add(check.isinstance(cls, type))
+    return cls
+
+
 def check_frozen_bases(cls: type, frozen: bool) -> None:
     all_frozen_bases = None
     any_frozen_base = False
     has_dataclass_bases = False
 
     for b in cls.__mro__[-1:0:-1]:
+        if b in _UNCHECKED_FROZEN_BASES:
+            continue
+
         base_fields = getattr(b, STD_FIELDS_ATTR, None)
         if base_fields is None:
             continue

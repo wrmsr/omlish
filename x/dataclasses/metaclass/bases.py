@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..concerns.frozen import unchecked_frozen_base
 from .meta import DataMeta
 from .specs import get_metaclass_spec
 
@@ -11,6 +12,7 @@ T = ta.TypeVar('T')
 
 
 # @ta.dataclass_transform(field_specifiers=(field,))  # FIXME: ctor
+@unchecked_frozen_base
 class Data(
     eq=False,
     order=False,
