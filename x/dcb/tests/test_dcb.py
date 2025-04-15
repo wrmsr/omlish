@@ -48,6 +48,11 @@ class A:
         pass
 
 
+@api.dataclass(frozen=True, order=True)
+class B(A):
+    x: int = api.field(default=10)
+
+
 def test_dcb():
     assert getattr(dc, 'is_dataclass')(A)  # mypy blackhole
 
@@ -65,3 +70,6 @@ def test_dcb():
             print(f'{i=} {s=}')  # type: ignore[unreachable]
         case _:
             raise RuntimeError
+
+    b = B(**dc.asdict(a), x=420)  # type: ignore[unreachable]
+    print(b)
