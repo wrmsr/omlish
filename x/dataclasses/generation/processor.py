@@ -16,8 +16,8 @@ from ..processing.registry import register_processor_type
 from .base import Plan
 from .compilation import OpCompiler
 from .execution import OpExecutor
-from .idents import CLS_IDENT
 from .globals import FN_GLOBALS
+from .idents import CLS_IDENT
 from .mangling import IDENT_MANGLER
 from .ops import Op
 from .ops import OpRef

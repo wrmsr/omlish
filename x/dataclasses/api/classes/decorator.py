@@ -2,8 +2,8 @@
 TODO:
  - collect init_fn's / validate_fns from superclass ClassSpecs
 """
-import inspect
 import dataclasses as dc
+import inspect
 
 from omlish import check
 from omlish import lang
@@ -83,6 +83,7 @@ def dataclass(
     init_fns: list[InitFn | property] = []
     validate_fns: list[ClassSpec.ValidateFnWithParams] = []
 
+    bc: type
     for bc in cls.__mro__[-1:0:-1]:
         if not dc.is_dataclass(bc):
             check.state(not has_cls_metadata(bc))

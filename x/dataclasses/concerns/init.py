@@ -172,7 +172,7 @@ class InitGenerator(Generator[InitPlan]):
         else:
             get_field_ann = lambda f: f.annotation
 
-        ref_map = {}
+        ref_map: dict = {}
 
         plan_fields: list[InitPlan.Field] = []
         for i, f in enumerate(ctx.cs.fields):

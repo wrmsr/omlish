@@ -9,8 +9,8 @@ import typing as ta
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
-from ..generation.idents import CLS_IDENT
 from ..generation.globals import FROZEN_INSTANCE_ERROR_GLOBAL
+from ..generation.idents import CLS_IDENT
 from ..generation.idents import IDENT_PREFIX
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op

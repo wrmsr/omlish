@@ -9,8 +9,8 @@ import typing as ta
 from omlish import check
 
 from ..utils import repr_round_trip_value
-from .globals import FN_GLOBALS
 from .globals import FN_GLOBAL_IMPORTS
+from .globals import FN_GLOBALS
 from .globals import FUNCTION_TYPE_GLOBAL
 from .globals import PROPERTY_GLOBAL
 from .globals import TYPE_ERROR_GLOBAL
@@ -216,7 +216,7 @@ class OpCompiler:
         params.extend([
             OpCompiler._FnParam(
                 k.ident,
-                src=f'{k.ident}={v.src}' if not v.src.startswith('.') else k,
+                src=f'{k.ident}={v.src}' if not v.src.startswith('.') else k.ident,
                 noqa=k.ident != k.ident.lower() or not v.src.startswith('.'),
             )
             for k, v in FN_GLOBALS.items()
