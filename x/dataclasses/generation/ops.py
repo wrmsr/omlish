@@ -46,7 +46,7 @@ class AddMethodOp(Op):
     src: str
     refs: frozenset[OpRef] = dc.field(default=frozenset())
 
-    if_present: IfAttrPresent = dc.field(default='replace', kw_only=True)
+    if_present: IfAttrPresent = dc.field(default='error', kw_only=True)
 
 
 @dc.dataclass(frozen=True)

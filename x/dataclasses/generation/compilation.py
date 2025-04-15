@@ -151,10 +151,13 @@ class OpCompiler:
             elif isinstance(op, AddMethodOp):
                 body_lines.extend([
                     *op.src.splitlines(),
-                    '',
+                    f'',
                     f'{op.name}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{op.name}"',
-                    f'if {op.name!r} in {CLS_IDENT}.__dict__:',
-                    f'    raise AttributeError({op.name!r})',
+                    *self._compile_set_attr(
+                        op.name,
+                        op.name,
+                        op.if_present,
+                    ),
                     f'setattr({CLS_IDENT}, {op.name!r}, {op.name})',
                 ])
 
