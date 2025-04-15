@@ -1,6 +1,7 @@
 """
 TODO:
  - prebuild field frozenset for getters/setters
+  - and one field per line
 """
 import dataclasses as dc
 import typing as ta
@@ -10,6 +11,7 @@ from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.idents import CLS_IDENT
 from ..generation.idents import FROZEN_INSTANCE_ERROR_IDENT
+from ..generation.idents import IDENT_PREFIX
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
@@ -63,32 +65,44 @@ class FrozenGenerator(Generator[FrozenPlan]):
         if not ctx.cs.frozen:
             return None
 
-        return PlanResult(FrozenPlan(tuple(f.name for f in ctx.cs.fields)))
+        return PlanResult(FrozenPlan(tuple(sorted(f.name for f in ctx.cs.fields))))
 
-    def generate(self, pl: FrozenPlan) -> ta.Iterable[Op]:
+    def _generate_one(
+            self,
+            pl: FrozenPlan,
+            mth: str,
+            params: ta.Sequence[str],
+    ) -> AddMethodOp:
+        preamble = []
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5
         condition = f'type(self) is {CLS_IDENT}'
+
         if pl.fields:
-            condition += ' or name in {' + ', '.join(repr(f) for f in pl.fields) + '}'
+            set_ident = f'{IDENT_PREFIX}_{mth}_frozen_fields'
+            preamble.extend([
+                f'{set_ident} = {{',
+                *[
+                    f'    {f!r},'
+                    for f in pl.fields
+                ],
+                f'}}',
+                f'',
+            ])
+            condition += f' or name in {set_ident}'
 
+        return AddMethodOp(
+            f'__{mth}__',
+            '\n'.join([
+                *preamble,
+                f'def __{mth}__(self, {", ".join(params)}):',
+                f'    if {condition}:',
+                f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',
+                f'    super({CLS_IDENT}, self).__{mth}__({", ".join(params)})',
+            ]),
+        )
+
+    def generate(self, pl: FrozenPlan) -> ta.Iterable[Op]:
         return [
-            AddMethodOp(
-                '__setattr__',
-                '\n'.join([
-                    f'def __setattr__(self, name, value):',
-                    f'    if {condition}:',
-                    f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',
-                    f'    super({CLS_IDENT}, self).__setattr__(name, value)',
-                ]),
-            ),
-
-            AddMethodOp(
-                '__delattr__',
-                '\n'.join([
-                    f'def __delattr__(self, name):',
-                    f'    if {condition}:',
-                    f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',
-                    f'    super({CLS_IDENT}, self).__delattr__(name)',
-                ]),
-            ),
+            self._generate_one(pl, 'setattr', ['name', 'value']),
+            self._generate_one(pl, 'delattr', ['name']),
         ]

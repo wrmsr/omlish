@@ -58,8 +58,10 @@ class GeneratorProcessor(Processor):
                 gp.ops(),
             )
 
-            # print(repr(gp.prepare().plans))
-            # print(comp.src)
+            print()
+            print(repr(gp.prepare().plans))
+            print(comp.src)
+            print()
 
             ns: dict = {}
             ns.update(compiler.style.globals_ns())  # noqa
