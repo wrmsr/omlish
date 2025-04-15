@@ -1,5 +1,6 @@
 import copy
 import dataclasses as dc
+import typing as ta
 
 from ..internals import STD_ATOMIC_TYPES
 from ..internals import std_is_dataclass_instance
@@ -77,3 +78,14 @@ def _astuple_inner(obj, tuple_factory):
 
     else:
         return copy.deepcopy(obj)
+
+
+##
+
+
+def shallow_astuple(o: ta.Any) -> tuple[ta.Any, ...]:
+    return tuple(getattr(o, f.name) for f in dc.fields(o))
+
+
+def shallow_asdict(o: ta.Any) -> dict[str, ta.Any]:
+    return {f.name: getattr(o, f.name) for f in dc.fields(o)}

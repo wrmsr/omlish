@@ -1,3 +1,6 @@
+##
+# stdlib interface
+
 from dataclasses import (  # noqa
     FrozenInstanceError,
 
@@ -36,7 +39,7 @@ from .concerns.replace import (  # noqa
 
 
 ##
-
+# globals hack
 
 globals()['field'] = xfield
 
@@ -45,7 +48,7 @@ globals()['make_dataclass'] = xmake_dataclass
 
 
 ##
-
+# additional interface
 
 from .api import (  # noqa
     extra_class_params,
@@ -66,13 +69,49 @@ from .errors import (  # noqa
     ValidationError,
 )
 
-from .metaclass.meta import (  # noqa
-    DataMeta,
-)
-
 from .metaclass.bases import (  # noqa
     Box,
     Case,
     Data,
     Frozen,
+)
+
+from .metaclass.meta import (  # noqa
+    DataMeta,
+)
+
+from .tools.as_ import (  # noqa
+    shallow_asdict,
+    shallow_astuple,
+)
+
+from .tools.iter import (  # noqa
+    fields_dict,
+
+    iter_items,
+    iter_keys,
+    iter_values,
+)
+
+from .tools.replace import (  # noqa
+    deep_replace,
+)
+
+from .tools.repr import (  # noqa
+    opt_repr,
+    truthy_repr,
+)
+
+from .tools.static import (  # noqa
+    Static,
+)
+
+
+##
+# lite imports
+
+from omlish.lite.dataclasses import (  # noqa
+    is_immediate_dataclass,
+
+    dataclass_maybe_post_init as maybe_post_init,
 )

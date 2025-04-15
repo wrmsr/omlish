@@ -1,4 +1,5 @@
 import dataclasses as dc
+import typing as ta
 
 from ..internals import STD_FIELDS_ATTR
 from ..internals import StdFieldType
@@ -8,6 +9,9 @@ from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
 from ..utils import set_new_attribute
+
+
+T = ta.TypeVar('T')
 
 
 ##
