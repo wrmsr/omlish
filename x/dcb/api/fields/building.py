@@ -4,26 +4,14 @@ import types
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
-from ..inspect import get_cls_annotations
-from ..internals import STD_FIELDS_ATTR
-from ..internals import StdFieldType
-from ..internals import std_is_classvar
-from ..internals import std_is_initvar
-from ..internals import std_is_kw_only
-from ..utils import AttrMods
-
-
-##
-
-
-class _ExtraParams(lang.Marker):
-    pass
-
-
-def extra_field_params(**kwargs) -> ta.Mapping[ta.Any, ta.Any]:
-    return {_ExtraParams: kwargs}
+from ...inspect import get_cls_annotations
+from ...internals import STD_FIELDS_ATTR
+from ...internals import StdFieldType
+from ...internals import std_is_classvar
+from ...internals import std_is_initvar
+from ...internals import std_is_kw_only
+from ...utils import AttrMods
 
 
 ##
@@ -193,7 +181,7 @@ def install_built_cls_std_fields(
 
 def build_std_field_metadata_update(
         f: dc.Field,
-        metadata: ta.Mapping[str, ta.Mapping[ta.Any, ta.Any]],
+        metadata: ta.Mapping[ta.Any, ta.Any],
 ) -> AttrMods | None:
     md: ta.Any = f.metadata
 

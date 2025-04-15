@@ -1,7 +1,7 @@
 import typing as ta
 
-from ..specs import ClassSpec
-from ..internals import StdParams
+from ...specs import ClassSpec
+from ...internals import StdParams
 
 
 ##
@@ -46,3 +46,21 @@ class SpecDataclassParams(StdParams):
     def __repr__(self) -> str:
         r = super().__repr__()
         return f'{self.__class__.__name__}{r[r.index("("):]}'
+
+    @classmethod
+    def from_spec(cls, cs: ClassSpec) -> 'SpecDataclassParams':
+        return cls(
+            init=cs.init,
+            repr=cs.repr,
+            eq=cs.eq,
+            order=cs.order,
+            unsafe_hash=cs.unsafe_hash,
+            frozen=cs.frozen,
+
+            match_args=cs.match_args,
+            kw_only=cs.kw_only,
+            slots=cs.slots,
+            weakref_slot=cs.weakref_slot,
+
+            spec=cs,
+        )

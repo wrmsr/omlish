@@ -58,7 +58,7 @@ class FieldSpec(lang.Final):
     # make it read-only, and exposed on the Field object. It is not used at all by Data Classes, and is provided as a
     # third-party extension mechanism. Multiple third-parties can each have their own key, to use as a namespace in the
     # metadata.
-    metadata: ta.Any | None = None
+    metadata: ta.Mapping[ta.Any, ta.Any] | None = None
 
     kw_only: bool | None = None
 

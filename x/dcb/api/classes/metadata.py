@@ -4,7 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..specs import InitFn
+from ...specs import InitFn
 
 
 ##

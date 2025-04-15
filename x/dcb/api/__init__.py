@@ -3,7 +3,7 @@ from .api import (  # noqa
     field,
 )
 
-from .metadata import (  # noqa
+from .classes.metadata import (  # noqa
     init,
     validate,
 )

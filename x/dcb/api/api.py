@@ -8,24 +8,22 @@ import inspect
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
-from ..utils import class_decorator
+from ..internals import STD_PARAMS_ATTR
 from ..processing.driving import drive_cls_processing
 from ..specs import ClassSpec
 from ..specs import CoerceFn
-from ..specs import DefaultFactory
 from ..specs import FieldSpec
 from ..specs import ReprFn
 from ..specs import ValidateFn
-from ..std.conversion import class_spec_to_std_params
-from ..internals import STD_PARAMS_ATTR
-from ..std.conversion import std_field_to_field_spec
-from .fields import build_cls_std_fields
-from ..std.conversion import std_field_to_spec_field_default
-from .fields import install_built_cls_std_fields
-from .metadata import extract_cls_metadata
-from .fields import extra_field_params
+from ..utils import class_decorator
+from .classes.metadata import extract_cls_metadata
+from .classes.params import SpecDataclassParams
+from .fields.building import build_cls_std_fields
+from .fields.building import build_std_field_metadata_update
+from .fields.building import install_built_cls_std_fields
+from .fields.conversion import std_field_to_field_spec
+from .fields.metadata import extra_field_params
 
 
 ##
@@ -81,11 +79,11 @@ def field(
 @class_decorator
 def dataclass(
         cls=None,
-        *,
         /,
+        *,
 
         init=True,
-        repr=True,
+        repr=True,  # noqa
         eq=True,
         order=False,
         unsafe_hash=False,
@@ -117,23 +115,11 @@ def dataclass(
             fsl.append(fs)
             continue
 
-        dfl = std_field_to_spec_field_default(f)
-
         fs = std_field_to_field_spec(f)
 
-        fsl.append(FieldSpec(
-            name=att,
-            annotation=ann,
+        fsl.append(fs)
 
-            default=dfl,
-
-            coerce=fld.coerce,
-            validate=fld.validate,
-            check_type=fld.check_type,
-            override=fld.override,
-            repr_fn=fld.repr_fn,
-            repr_priority=fld.repr_priority,
-        ))
+        build_std_field_metadata_update(f, {FieldSpec: fs}).apply()
 
     cmd = extract_cls_metadata(cls)
     validate_fns: list[ClassSpec.ValidateFnWithParams] = []
@@ -170,10 +156,8 @@ def dataclass(
         validate_fns=validate_fns,
     )
 
-    std_params = class_spec_to_std_params(cs, use_spec_wrapper=True)
+    std_params = SpecDataclassParams.from_spec(cs)
     check.not_in(STD_PARAMS_ATTR, cls.__dict__)
     setattr(cls, STD_PARAMS_ATTR, std_params)
-
-    install_built_cls_std_fields(cls, csf)
 
     return drive_cls_processing(cls, cs)
