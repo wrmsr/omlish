@@ -69,6 +69,8 @@ class InitPlan(Plan):
 
     frozen: bool
 
+    slots: bool
+
     post_init_params: tuple[str, ...] | None
 
     init_fns: tuple[OpRef[InitFn], ...]
@@ -222,6 +224,8 @@ class InitGenerator(Generator[InitPlan]):
 
                 frozen=ctx.cs.frozen,
 
+                slots=ctx.cs.slots,
+
                 post_init_params=post_init_params,
 
                 init_fns=tuple(init_fns),
@@ -231,19 +235,18 @@ class InitGenerator(Generator[InitPlan]):
             ref_map,
         )
 
-    def generate(self, bs: InitPlan) -> ta.Iterable[Op]:
+    def generate(self, plan: InitPlan) -> ta.Iterable[Op]:
         op_refs: set[OpRef] = set()
 
-        fields_by_name = {f.name: f for f in bs.fields}
-        field_values: dict[str, str] = {}
+        fields_by_name = {f.name: f for f in plan.fields}
 
         # proto
 
         params: list[str] = []
         seen_kw_only = False
         for fn, kw_only in itertools.chain(
-            [(fn, False) for fn in bs.std_params],
-            [(fn, True) for fn in bs.kw_only_params],
+            [(fn, False) for fn in plan.std_params],
+            [(fn, True) for fn in plan.kw_only_params],
         ):
             f = fields_by_name[fn]
             if kw_only:
@@ -263,15 +266,12 @@ class InitGenerator(Generator[InitPlan]):
                 check.none(f.default_factory)
                 op_refs.add(f.default)
                 p += f' = {f.default.ident()}'
-                field_values[f.name] = f.name
-            else:
-                field_values[f.name] = f.name
 
             params.append(p)
 
         proto_lines = [
             f'def __init__(',
-            f'    {bs.self_param},',
+            f'    {plan.self_param},',
             *[
                 f'    {p},'
                 for p in params
@@ -285,7 +285,9 @@ class InitGenerator(Generator[InitPlan]):
 
         # defaults
 
-        for f in bs.fields:
+        field_values: dict[str, str] = {}
+
+        for f in plan.fields:
             if f.default_factory is not None:
                 check.none(f.default)
                 op_refs.add(f.default_factory)
@@ -298,21 +300,26 @@ class InitGenerator(Generator[InitPlan]):
                     lines.append(
                         f'    {f.name} = {f.default_factory.ident()}()',
                     )
-                check.not_in(f.name, field_values)
                 field_values[f.name] = f.name
 
-            elif not f.init and f.default is not None:
-                check.none(f.default_factory)
+            elif f.init:
+                if f.default is not None:
+                    check.none(f.default_factory)
+                    field_values[f.name] = f.name
+
+                else:
+                    field_values[f.name] = f.name
+
+            elif plan.slots and f.default is not None:
                 op_refs.add(f.default)
                 lines.append(
                     f'    {f.name} = {f.default.ident()}',
                 )
-                check.not_in(f.name, field_values)
                 field_values[f.name] = f.name
 
         # coercion
 
-        for f in bs.fields:
+        for f in plan.fields:
             if isinstance(f.coerce, bool) and f.coerce:
                 lines.append(
                     f'    {f.name} = {f.annotation.ident()}({field_values[f.name]})',
@@ -327,35 +334,35 @@ class InitGenerator(Generator[InitPlan]):
 
         # validation
 
-        for f in bs.fields:
+        for f in plan.fields:
             if f.check_type is None:
                 continue
             op_refs.add(f.check_type)
             lines.extend([
                 f'    if not {ISINSTANCE_IDENT}({field_values[f.name]}, {f.check_type.ident()}): ',
                 f'        raise {FIELD_TYPE_VALIDATION_ERROR_IDENT}(',
-                f'            obj={bs.self_param},',
+                f'            obj={plan.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
                 f'            value={field_values[f.name]},',
                 f'        )',
             ])
 
-        for f in bs.fields:
+        for f in plan.fields:
             if f.validate is None:
                 continue
             op_refs.add(f.validate)
             lines.extend([
                 f'    if not {f.validate.ident()}({field_values[f.name]}): ',
                 f'        raise {FIELD_FN_VALIDATION_ERROR_IDENT}(',
-                f'            obj={bs.self_param},',
+                f'            obj={plan.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
                 f'            value={field_values[f.name]},',
                 f'        )',
             ])
 
-        for vfn in bs.validate_fns or []:
+        for vfn in plan.validate_fns or []:
             op_refs.add(vfn.fn)
             if vfn.params:
                 lines.extend([
@@ -372,7 +379,7 @@ class InitGenerator(Generator[InitPlan]):
                 )
             lines.extend([
                 f'        raise {FN_VALIDATION_ERROR_IDENT}(',
-                f'            obj={bs.self_param},',
+                f'            obj={plan.self_param},',
                 f'            fn={vfn.fn.ident()},',
                 f'        )',
             ])
@@ -380,9 +387,9 @@ class InitGenerator(Generator[InitPlan]):
         # setattr
 
         sab = SetattrSrcBuilder(
-            object_ident=bs.self_param,
+            object_ident=plan.self_param,
         )
-        for f in bs.fields:
+        for f in plan.fields:
             if not (f.field_type == FieldType.INSTANCE and f.init):
                 continue
             lines.extend([
@@ -390,17 +397,17 @@ class InitGenerator(Generator[InitPlan]):
                 for l in sab(
                     f.name,
                     field_values[f.name],
-                    frozen=bs.frozen,
+                    frozen=plan.frozen,
                     override=f.override,
                 )
             ])
 
         # post-init
 
-        if (pia := bs.post_init_params) is not None:
+        if (pia := plan.post_init_params) is not None:
             if pia:
                 lines.extend([
-                    f'    {bs.self_param}.{STD_POST_INIT_NAME}(',
+                    f'    {plan.self_param}.{STD_POST_INIT_NAME}(',
                     *[
                         f'        {field_values[p]},'
                         for p in pia
@@ -409,13 +416,13 @@ class InitGenerator(Generator[InitPlan]):
                 ])
             else:
                 lines.append(
-                    f'    {bs.self_param}.{STD_POST_INIT_NAME}()',
+                    f'    {plan.self_param}.{STD_POST_INIT_NAME}()',
                 )
 
-        for init_fn in bs.init_fns:
+        for init_fn in plan.init_fns:
             op_refs.add(init_fn)
             lines.append(
-                f'    {init_fn.ident()}({bs.self_param})',
+                f'    {init_fn.ident()}({plan.self_param})',
             )
 
         #
