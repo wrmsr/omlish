@@ -15,16 +15,19 @@ def make_dataclass(  # noqa
         *,
         bases=(),
         namespace=None,
+
         init=True,
         repr=True,  # noqa
         eq=True,
         order=False,
         unsafe_hash=False,
         frozen=False,
+
         match_args=True,
         kw_only=False,
         slots=False,
         weakref_slot=False,
+
         module=None,
 
         reorder: bool | None = None,
