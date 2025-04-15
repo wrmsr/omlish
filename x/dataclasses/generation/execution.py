@@ -3,8 +3,11 @@ TODO:
  - 'setup' locals - for FrozenGenerator's `condition += ' or name in {' + ', '.join(repr(f.name) for f in fields) + '}'`
    allow for `condition += ' or name in {fields_frozenset_ident}' with fields_frozenset_ident setup in preamble
 """
+import sys
 import types
 import typing as ta
+
+from omlish import lang
 
 from ..utils import repr_round_trip_value
 from .idents import CLS_IDENT
@@ -33,6 +36,15 @@ class OpExecutor:
 
     #
 
+    @lang.cached_function
+    def _cls_globals(self) -> dict[str, ta.Any]:
+        if self._cls.__module__ in sys.modules:
+            return sys.modules[self._cls.__module__].__dict__
+        else:
+            return {}
+
+    #
+
     def _set_fn_qualname(self, fn: types.FunctionType, name: str | None = None) -> types.FunctionType:
         if name is None:
             name = fn.__name__
@@ -52,7 +64,11 @@ class OpExecutor:
         for r in refs:
             ns[r.ident()] = self._orm[r]
 
-        exec(src, ns)
+        exec(
+            src,
+            self._cls_globals(),
+            ns,
+        )
         fn = ns[name]
 
         if not isinstance(fn, types.FunctionType):
