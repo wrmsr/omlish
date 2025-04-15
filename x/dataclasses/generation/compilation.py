@@ -15,6 +15,7 @@ from .idents import FN_GLOBAL_IMPORTS
 from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
 from .idents import PROPERTY_IDENT
+from .idents import TYPE_ERROR_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import IfAttrPresent
@@ -117,7 +118,7 @@ class OpCompiler:
         elif if_present == 'error':
             return [
                 f'if {attr_name!r} in {CLS_IDENT}.__dict__:',
-                f'    raise AttributeError({attr_name!r})',
+                f'    raise {TYPE_ERROR_IDENT}(f"Cannot overwrite attribute {attr_name} in class {{{CLS_IDENT}.__name__}}")',  # noqa
                 setattr_stmt,
             ]
 
@@ -190,7 +191,7 @@ class OpCompiler:
 
                 body_lines.extend([
                     *gen_lines,
-                    '',
+                    f'',
                     f'setattr({CLS_IDENT}, {op.name!r}, {gen_ident}())',
                 ])
 

@@ -38,6 +38,7 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
     (ISINSTANCE_IDENT := IDENT_PREFIX + 'isinstance'): FnGlobal(isinstance, 'isinstance'),
     (NONE_IDENT := IDENT_PREFIX + 'None'): FnGlobal(None, 'None'),
     (PROPERTY_IDENT := IDENT_PREFIX + 'property'): FnGlobal(property, 'property'),
+    (TYPE_ERROR_IDENT := IDENT_PREFIX + 'TypeError'): FnGlobal(TypeError, 'TypeError'),
 
     (OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): FnGlobal(
         object.__setattr__,

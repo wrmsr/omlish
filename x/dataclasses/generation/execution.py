@@ -11,6 +11,7 @@ from .idents import CLS_IDENT
 from .idents import FN_GLOBAL_VALUES
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
+from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -80,18 +81,26 @@ class OpExecutor:
 
     #
 
+    def _execute_set_attr(
+            self,
+            attr_name: str,
+            value: ta.Any,
+            if_present: IfAttrPresent,
+    ) -> None:
+        if attr_name in self._cls.__dict__:
+            if if_present == 'skip':
+                return
+            elif if_present == 'replace':
+                pass
+            elif if_present == 'error':
+                raise TypeError(f'Cannot overwrite attribute {attr_name} in class {self._cls.__name__}')
+            else:
+                raise ValueError(if_present)
+
+        setattr(self._cls, attr_name, value)
+
     def execute(self, op: Op) -> None:
         if isinstance(op, SetAttrOp):
-            if op.name in self._cls.__dict__:
-                if op.if_present == 'skip':
-                    return
-                elif op.if_present == 'replace':
-                    pass
-                elif op.if_present == 'error':
-                    raise AttributeError(op.name)
-                else:
-                    raise ValueError(op.if_present)
-
             if isinstance(v := op.value, OpRef):
                 v = self._orm[v]
                 if isinstance(v, types.FunctionType):
@@ -99,7 +108,11 @@ class OpExecutor:
             else:
                 v = repr_round_trip_value(v)
 
-            setattr(self._cls, op.name, v)
+            self._execute_set_attr(
+                op.name,
+                v,
+                op.if_present,
+            )
 
         elif isinstance(op, AddMethodOp):
             if op.name in self._cls.__dict__:
@@ -111,7 +124,11 @@ class OpExecutor:
                 op.refs,
             )
 
-            setattr(self._cls, op.name, fn)
+            self._execute_set_attr(
+                op.name,
+                fn,
+                op.if_present,
+            )
 
         elif isinstance(op, AddPropertyOp):
             get_fn = self._create_opt_fn(
