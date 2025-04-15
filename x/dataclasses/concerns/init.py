@@ -117,19 +117,19 @@ class InitGenerator(Generator[InitPlan]):
             validate_ref = OpRef(f'init.fields.{i}.validate')
             ref_map[validate_ref] = f.validate
 
-        ctr: OpRef[type | tuple[type, ...]] | None = None
+        check_type_ref: OpRef[type | tuple[type, ...]] | None = None
         if f.check_type is not None and f.check_type is not False:
-            ct: ta.Any
+            check_type_arg: ta.Any
             if isinstance(f.check_type, tuple):
-                ct = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
+                check_type_arg = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
             elif isinstance(f.check_type, type):
-                ct = f.check_type
+                check_type_arg = f.check_type
             elif f.check_type is True:
-                ct = f.annotation
+                check_type_arg = f.annotation
             else:
                 raise TypeError(f.check_type)
-            ctr = OpRef(f'init.fields.{i}.check_type')
-            ref_map[ctr] = ct
+            check_type_ref = OpRef(f'init.fields.{i}.check_type')
+            ref_map[check_type_ref] = check_type_arg
 
         return InitPlan.Field(
             name=f.name,
@@ -147,7 +147,7 @@ class InitGenerator(Generator[InitPlan]):
             coerce=coerce,
             validate=validate_ref,
 
-            check_type=ctr,
+            check_type=check_type_ref,
         )
 
     def plan(self, ctx: ProcessingContext) -> PlanResult[InitPlan] | None:
@@ -189,23 +189,23 @@ class InitGenerator(Generator[InitPlan]):
             if isinstance(v, property)
             and v.fget is not None
         }
-        ifns: list[OpRef[InitFn]] = []
-        for i, ifn in enumerate(ctx.cs.init_fns or []):
-            if (obj_id := id(ifn)) not in mro_v_ids and obj_id in props_by_fget_id:
-                ifn = props_by_fget_id[obj_id].__get__
-            elif isinstance(ifn, property):
-                ifn = ifn.__get__
-            ir: OpRef = OpRef(f'init.init_fns.{i}')
-            ref_map[ir] = ifn
-            ifns.append(ir)
+        init_fns: list[OpRef[InitFn]] = []
+        for i, init_fn in enumerate(ctx.cs.init_fns or []):
+            if (obj_id := id(init_fn)) not in mro_v_ids and obj_id in props_by_fget_id:
+                init_fn = props_by_fget_id[obj_id].__get__
+            elif isinstance(init_fn, property):
+                init_fn = init_fn.__get__
+            init_fn_ref: OpRef = OpRef(f'init.init_fns.{i}')
+            ref_map[init_fn_ref] = init_fn
+            init_fns.append(init_fn_ref)
 
-        vfs: list[InitPlan.ValidateFnWithParams] = []
-        for i, vfn in enumerate(ctx.cs.validate_fns or []):
-            vfr: OpRef = OpRef(f'init.validate_fns.{i}')
-            ref_map[vfr] = vfn.fn
-            vfs.append(InitPlan.ValidateFnWithParams(
-                fn=vfr,
-                params=tuple(vfn.params),
+        validate_fns: list[InitPlan.ValidateFnWithParams] = []
+        for i, validate_fn in enumerate(ctx.cs.validate_fns or []):
+            validate_fn_ref: OpRef = OpRef(f'init.validate_fns.{i}')
+            ref_map[validate_fn_ref] = validate_fn.fn
+            validate_fns.append(InitPlan.ValidateFnWithParams(
+                fn=validate_fn_ref,
+                params=tuple(validate_fn.params),
             ))
 
         post_init_params: tuple[str, ...] | None = None
@@ -224,9 +224,9 @@ class InitGenerator(Generator[InitPlan]):
 
                 post_init_params=post_init_params,
 
-                init_fns=tuple(ifns),
+                init_fns=tuple(init_fns),
 
-                validate_fns=tuple(vfs),
+                validate_fns=tuple(validate_fns),
             ),
             ref_map,
         )
@@ -412,10 +412,10 @@ class InitGenerator(Generator[InitPlan]):
                     f'    {bs.self_param}.{STD_POST_INIT_NAME}()',
                 )
 
-        for ifn in bs.init_fns:
-            op_refs.add(ifn)
+        for init_fn in bs.init_fns:
+            op_refs.add(init_fn)
             lines.append(
-                f'    {ifn.ident()}({bs.self_param})',
+                f'    {init_fn.ident()}({bs.self_param})',
             )
 
         #
