@@ -69,7 +69,9 @@ class SpecDataclassParams(StdParams):
         )
 
 
-def get_dataclass_spec(cls: type) -> ClassSpec:
+def get_dataclass_spec(cls: type) -> ClassSpec | None:
     check.isinstance(cls, type)
     sp = getattr(cls, STD_PARAMS_ATTR)
-    return check.isinstance(sp, SpecDataclassParams).spec
+    if not isinstance(sp, SpecDataclassParams):
+        return None
+    return check.isinstance(sp.spec, ClassSpec)

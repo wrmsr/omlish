@@ -14,12 +14,16 @@ class _ExtraParams(lang.Marker):
     pass
 
 
-def extra_field_params(**kwargs) -> ta.Mapping[ta.Any, ta.Any]:
+def extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
     return {_ExtraParams: kwargs}
 
 
 ##
 
 
-def get_field_spec(f: dc.Field) -> FieldSpec:
-    return check.isinstance(f.metadata[FieldSpec], FieldSpec)
+def get_field_spec(f: dc.Field) -> FieldSpec | None:
+    try:
+        fs = f.metadata[FieldSpec]
+    except KeyError:
+        return None
+    return check.isinstance(fs, FieldSpec)

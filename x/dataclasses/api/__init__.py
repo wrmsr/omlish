@@ -12,15 +12,14 @@ from .classes.metadata import (
     validate,
 )
 
-from .classes.params import (
-    get_dataclass_spec,
-)
-
 from .fields.metadata import (
     extra_field_params,
-    get_field_spec,
 )
 
 from .fields.constructor import (  # noqa
     field,
+)
+
+from .reflect import (  # noqa
+    reflect,
 )

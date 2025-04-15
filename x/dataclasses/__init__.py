@@ -18,9 +18,8 @@ from dataclasses import (  # noqa
 )
 
 from .api import (  # noqa
-    field as xfield,
-
     dataclass as xdataclass,
+
     make_dataclass as xmake_dataclass,
 
     extra_class_params,
@@ -28,6 +27,10 @@ from .api import (  # noqa
     validate,
 
     extra_field_params,
+
+    field as xfield,
+
+    reflect,
 )
 
 from .tools.as_ import (  # noqa
