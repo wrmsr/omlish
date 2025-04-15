@@ -112,7 +112,9 @@ class _TransientCachedProperty(_CachedProperty):
 def cached_property(fn=None, *, transient=False, **kwargs):  # noqa
     if fn is None:
         return functools.partial(cached_property, transient=transient, **kwargs)
-    if transient:
+
+    elif transient:
         return _TransientCachedProperty(fn, **kwargs)
+
     else:
         return _DictCachedProperty(fn, **kwargs)

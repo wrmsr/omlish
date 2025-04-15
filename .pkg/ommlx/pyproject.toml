@@ -30,7 +30,7 @@ dependencies = [
 all = [
     'mlx-lm ~= 0.22; sys_platform == "darwin"',
     'transformers ~= 4.51',
-    'sentence-transformers ~= 4.0',
+    'sentence-transformers ~= 4.1',
     'huggingface-hub ~= 0.30',
     'datasets ~= 3.5',
     'llama-cpp-python ~= 0.3',
@@ -48,7 +48,7 @@ all = [
 backends = [
     'mlx-lm ~= 0.22; sys_platform == "darwin"',
     'transformers ~= 4.51',
-    'sentence-transformers ~= 4.0',
+    'sentence-transformers ~= 4.1',
 ]
 huggingface = [
     'huggingface-hub ~= 0.30',

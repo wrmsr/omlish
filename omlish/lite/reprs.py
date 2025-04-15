@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP007
 import dataclasses as dc
 import typing as ta
 
@@ -10,7 +10,7 @@ import typing as ta
 class AttrRepr:
     attrs: ta.Sequence[str]
 
-    _: dc.KW_ONLY
+    # _: dc.KW_ONLY
 
     with_module: bool = False
     use_qualname: bool = False
@@ -38,8 +38,10 @@ class AttrRepr:
     def __get__(self, instance, owner):
         if instance is None:
             return self
+
         def __repr__(other):  # noqa
             return self(other)
+
         return __repr__.__get__(instance, owner)
 
 

@@ -355,10 +355,14 @@ class _DescriptorCachedFunction(_CachedFunction[T]):
 def cached_function(fn=None, **kwargs):  # noqa
     if fn is None:
         return functools.partial(cached_function, **kwargs)
+
     opts = _CachedFunction.Opts(**kwargs)
+
     if isinstance(fn, staticmethod):
         return _FreeCachedFunction(fn, opts=opts, value_fn=unwrap_func(fn))
+
     scope = classmethod if isinstance(fn, classmethod) else None
+
     return _DescriptorCachedFunction(fn, scope, opts=opts)
 
 

@@ -1,7 +1,5 @@
 from ...testing import assert_dicts_equal_ordered
-from ..objects import AttrRepr
 from ..objects import SimpleProxy
-from ..objects import attr_repr
 from ..objects import mro_dict
 
 

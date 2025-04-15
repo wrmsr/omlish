@@ -39,7 +39,7 @@ def test_bench_method():
         def f0(self):
             return 42
 
-        @functools.cache
+        @functools.cache  # noqa
         def f1(self):
             return 42
 
