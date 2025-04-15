@@ -68,7 +68,7 @@ class GeneratorProcessor(Processor):
             fn = ns[comp.fn_name]
 
             kw: dict = {CLS_IDENT: cls}
-            kw.update({k: v for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
+            kw.update({k: v.value for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
             orm = gp.prepare().ref_map
             for r in comp.refs:
                 kw[r.ident()] = orm[r]
