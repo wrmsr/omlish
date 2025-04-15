@@ -26,4 +26,5 @@ def get_field_spec(f: dc.Field) -> FieldSpec | None:
         fs = f.metadata[FieldSpec]
     except KeyError:
         return None
+
     return check.isinstance(fs, FieldSpec)

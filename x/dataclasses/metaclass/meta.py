@@ -59,7 +59,11 @@ class DataMeta(abc.ABCMeta):
 
         xbs: list[type] = []
 
-        if any(get_metaclass_spec(b).abstract_immediate_subclasses for b in bases if dc.is_dataclass(b)):
+        if any(
+                get_metaclass_spec(b).abstract_immediate_subclasses  # type: ignore[arg-type]
+                for b in bases
+                if dc.is_dataclass(b)
+        ):
             abstract = True
 
         final |= (mcp.final_subclasses and not abstract)

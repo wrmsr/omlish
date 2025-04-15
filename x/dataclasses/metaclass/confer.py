@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from ..api.classes.params import get_class_spec
 from .specs import get_metaclass_spec
 
 
@@ -42,7 +43,10 @@ def confer_kwargs(
         if not dc.is_dataclass(base):
             continue
 
-        if not (bmp := get_metaclass_spec(base)).confer:
+        if (bcs := get_class_spec(base)) is None:
+            continue
+
+        if not (bmp := get_metaclass_spec(bcs)).confer:
             continue
 
         for ck in bmp.confer:
@@ -50,7 +54,7 @@ def confer_kwargs(
                 continue
 
             if ck in CONFER_CLASS_PARAMS:
-                confer_kwarg(out, ck, getattr(get_params(base), ck))
+                confer_kwarg(out, ck, getattr(bcs, ck))
 
             elif ck in CONFER_METACLASS_PARAMS:
                 confer_kwarg(out, ck, getattr(bmp, ck))

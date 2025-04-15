@@ -3,6 +3,7 @@ import dataclasses as dc
 from omlish import lang
 
 from ..api.classes.params import get_class_spec
+from ..specs import ClassSpec
 
 
 ##
@@ -23,9 +24,19 @@ DEFAULT_METACLASS_SPEC = MetaclassSpec()
 ##
 
 
-def get_metaclass_spec(cls: type) -> MetaclassSpec:
-    if (cs := get_class_spec(cls)) is None:
-        return DEFAULT_METACLASS_SPEC
+def get_metaclass_spec(obj: type | ClassSpec) -> MetaclassSpec:
+    cs: ClassSpec
+    if isinstance(obj, type):
+        if (cs := get_class_spec(obj)) is None:  # type: ignore[assignment]
+            return DEFAULT_METACLASS_SPEC
+
+    elif isinstance(obj, ClassSpec):
+        cs = obj
+
+    else:
+        raise TypeError(obj)
+
     if (md := cs.metadata) is None:
         return DEFAULT_METACLASS_SPEC
+
     return md.get(MetaclassSpec, DEFAULT_METACLASS_SPEC)

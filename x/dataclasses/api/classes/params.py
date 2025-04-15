@@ -71,7 +71,9 @@ def build_spec_std_params(cs: ClassSpec) -> 'SpecDataclassParams':
 
 def get_class_spec(cls: type) -> ClassSpec | None:
     check.isinstance(cls, type)
+
     sp = getattr(cls, STD_PARAMS_ATTR)
     if not isinstance(sp, SpecDataclassParams):
         return None
+
     return check.isinstance(sp._spec, ClassSpec)  # noqa
