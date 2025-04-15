@@ -55,4 +55,9 @@ class CopyGenerator(Generator[CopyPlan]):
             *return_lines,
         ]
 
-        return [AddMethodOp('__copy__', '\n'.join(lines))]
+        return [
+            AddMethodOp(
+                '__copy__',
+                '\n'.join(lines),
+            ),
+        ]

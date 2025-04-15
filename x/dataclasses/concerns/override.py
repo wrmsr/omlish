@@ -10,6 +10,7 @@ from ..generation.idents import VALUE_IDENT
 from ..generation.ops import AddPropertyOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
+from ..generation.ops import Ref
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..processing.base import ProcessingContext
@@ -62,6 +63,8 @@ class OverrideGenerator(Generator[OverridePlan]):
         ops: list[Op] = []
 
         for f in pl.fields:
+            op_refs: set[Ref] = {f.annotation}
+
             get_src = '\n'.join([
                 f'def {f.name}({SELF_IDENT}) -> {f.annotation.ident()}:',
                 f'    return {SELF_IDENT}.__dict__[{f.name!r}]',
@@ -81,12 +84,13 @@ class OverrideGenerator(Generator[OverridePlan]):
                         )
                     ],
                 ])
+                op_refs.add(NONE_GLOBAL)
 
             ops.append(AddPropertyOp(
                 f.name,
                 get_src=get_src,
                 set_src=set_src,
-                refs=frozenset([f.annotation]),
+                refs=frozenset(op_refs),
             ))
 
         return ops

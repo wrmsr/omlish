@@ -11,6 +11,7 @@ from omlish import lang
 
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_VALUES
+from .globals import FnGlobal
 from .idents import CLS_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
@@ -62,7 +63,12 @@ class OpExecutor:
             **FN_GLOBAL_VALUES,
         }
         for r in refs:
-            ns[r.ident()] = self._orm[r]
+            if isinstance(r, OpRef):
+                ns[r.ident()] = self._orm[r]
+            elif isinstance(r, FnGlobal):
+                pass
+            else:
+                raise TypeError(r)
 
         exec(
             src,

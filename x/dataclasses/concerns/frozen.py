@@ -69,7 +69,7 @@ class FrozenGenerator(Generator[FrozenPlan]):
 
     def _generate_one(
             self,
-            pl: FrozenPlan,
+            plan: FrozenPlan,
             mth: str,
             params: ta.Sequence[str],
             exc_args: str,
@@ -78,13 +78,13 @@ class FrozenGenerator(Generator[FrozenPlan]):
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5
         condition = f'type(self) is {CLS_IDENT}'
 
-        if pl.fields:
+        if plan.fields:
             set_ident = f'{IDENT_PREFIX}_{mth}_frozen_fields'
             preamble.extend([
                 f'{set_ident} = {{',
                 *[
                     f'    {f!r},'
-                    for f in pl.fields
+                    for f in plan.fields
                 ],
                 f'}}',
                 f'',
@@ -100,18 +100,19 @@ class FrozenGenerator(Generator[FrozenPlan]):
                 f'        raise {FROZEN_INSTANCE_ERROR_GLOBAL.ident}{exc_args}',
                 f'    super({CLS_IDENT}, self).__{mth}__({", ".join(params)})',
             ]),
+            frozenset([FROZEN_INSTANCE_ERROR_GLOBAL]),
         )
 
-    def generate(self, pl: FrozenPlan) -> ta.Iterable[Op]:
+    def generate(self, plan: FrozenPlan) -> ta.Iterable[Op]:
         return [
             self._generate_one(
-                pl,
+                plan,
                 'setattr',
                 ['name', 'value'],
                 '(f"cannot assign to field {name!r}")',
             ),
             self._generate_one(
-                pl,
+                plan,
                 'delattr',
                 ['name'],
                 '(f"cannot delete field {name!r}")',

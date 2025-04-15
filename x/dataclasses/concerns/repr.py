@@ -6,6 +6,7 @@ from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.globals import REPRLIB_RECURSIVE_REPR_GLOBAL
 from ..generation.ops import AddMethodOp
+from ..generation.ops import Ref
 from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.registry import register_generator_type
@@ -58,7 +59,7 @@ class ReprGenerator(Generator[ReprPlan]):
         )
 
     def generate(self, pl: ReprPlan) -> ta.Iterable[Op]:
-        ors: set[OpRef] = set()
+        ors: set[Ref] = {REPRLIB_RECURSIVE_REPR_GLOBAL}
 
         part_lines: list[str] = []
 

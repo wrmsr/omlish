@@ -2,6 +2,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from .globals import FnGlobal
 from .idents import IDENT_PREFIX
 
 
@@ -20,6 +21,8 @@ class OpRef(ta.NamedTuple, ta.Generic[T]):
 
 OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]
 
+Ref: ta.TypeAlias = OpRef | FnGlobal
+
 
 ##
 
@@ -35,7 +38,7 @@ class Op(abc.ABC):  # noqa
 @dc.dataclass(frozen=True)
 class SetAttrOp(Op):
     name: str
-    value: OpRef | ta.Any
+    value: Ref | ta.Any
 
     if_present: IfAttrPresent = dc.field(default='replace', kw_only=True)
 
@@ -44,7 +47,7 @@ class SetAttrOp(Op):
 class AddMethodOp(Op):
     name: str
     src: str
-    refs: frozenset[OpRef] = dc.field(default=frozenset())
+    refs: frozenset[Ref] = dc.field(default=frozenset())
 
     if_present: IfAttrPresent = dc.field(default='error', kw_only=True)
 
@@ -55,15 +58,15 @@ class AddPropertyOp(Op):
     get_src: str | None = None
     set_src: str | None = None
     del_src: str | None = None
-    refs: frozenset[OpRef] = frozenset()
+    refs: frozenset[Ref] = frozenset()
 
 
 ##
 
 
-def get_op_refs(op: Op) -> frozenset[OpRef]:
+def get_op_refs(op: Op) -> frozenset[Ref]:
     if isinstance(op, SetAttrOp):
-        if isinstance(v := op.value, OpRef):
+        if isinstance(v := op.value, (OpRef, FnGlobal)):
             return frozenset([v])
         else:
             return frozenset()
