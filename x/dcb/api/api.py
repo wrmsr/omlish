@@ -1,6 +1,6 @@
 """
 TODO:
- - strip metadata out of __dict__ after construction
+ - collect init_fn's / validate_fns from superclass ClassSpecs
 """
 import collections
 import dataclasses as dc

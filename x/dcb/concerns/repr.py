@@ -60,7 +60,7 @@ class ReprGenerator(Generator[ReprPlan]):
         ors: set[OpRef] = set()
 
         repr_lines: list[str] = [
-            f'        f"{{self.__class__.__name__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
+            f'        f"{{self.__class__.__qualname__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
         ]
 
         rfd = {rf.field: rf.fn for rf in pl.fns}
