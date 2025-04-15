@@ -15,7 +15,7 @@ dc = dc2
 %timeit dc.make_dataclass('C', [('x', int), 'y', ('z', int, dc.field(default=5))], namespace={'add_one': lambda self: self.x + 1})
 244 μs ± 1.1 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
 """
-import sys
+import argparse
 import time
 
 import dataclasses as dc0
@@ -25,7 +25,10 @@ from . import dataclasses as dc2
 
 
 def _main() -> None:
-    [arg] = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('mode', type=int, default=0, nargs='?')
+    parser.add_argument('-n', type=int, default=1000)
+    args = parser.parse_args()
     
     modules = [
         dc0,
@@ -33,7 +36,7 @@ def _main() -> None:
         dc2,
     ]
     
-    dc = modules[int(arg)]
+    dc = modules[args.mode]
     
     def f():
         dc.make_dataclass(
@@ -48,13 +51,12 @@ def _main() -> None:
             },
         )
     
-    n = 1_000
     st = time.time()
-    for _ in range(1_000):
+    for _ in range(args.n):
         f()
     et = time.time()
     
-    print(f'Time elapsed: {(et - st) * 1_000_000. / n:.2f} us')
+    print(f'Time elapsed: {(et - st) * 1_000_000. / args.n:.2f} us')
 
 
 if __name__ == '__main__':
