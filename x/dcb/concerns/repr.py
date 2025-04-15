@@ -59,32 +59,32 @@ class ReprGenerator(Generator[ReprPlan]):
     def generate(self, pl: ReprPlan) -> ta.Iterable[Op]:
         ors: set[OpRef] = set()
 
-        repr_lines: list[str] = [
-            f'        f"{{self.__class__.__qualname__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
-        ]
+        part_lines: list[str] = []
 
         rfd = {rf.field: rf.fn for rf in pl.fns}
-        for i, f in enumerate(pl.fields):
-            sfx = ', ' if i < len(pl.fields) - 1 else ''
+        for f in pl.fields:
             if (rf := rfd.get(f)) is not None:
                 ors.add(rf)
-                repr_lines.append(
-                    f'        f"{{f\'{f}={{s}}\' if ((s := {rf.ident()}(self.{f})) is not None) else \'\'}}{sfx}"',
-                )
+                part_lines.extend([
+                    f'    if (s := {rf.ident()}(self.{f})) is not None:',
+                    f'        parts.append(f"{f}={{s}}")',
+                ])
             else:
-                repr_lines.append(
-                    f'        f"{f}={{self.{f}!r}}{sfx}"',
+                part_lines.append(
+                    f'    parts.append(f"{f}={{self.{f}!r}}")',
                 )
-
-        repr_lines.append('        f")"')
 
         return [
             AddMethodOp(
                 '__repr__',
                 '\n'.join([
                     f'def __repr__(self):',
+                    f'    parts = []',
+                    *part_lines,
                     f'    return (',
-                    *repr_lines,
+                    f'        f"{{self.__class__.__qualname__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
+                    f'        f"{{\', \'.join(parts)}}"',
+                    f'        f")"',
                     f'    )',
                 ]),
                 frozenset(ors),

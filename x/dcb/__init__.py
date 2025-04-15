@@ -17,20 +17,16 @@ from dataclasses import (  # noqa
     is_dataclass,
 )
 
-from .api.api import (  # noqa
+from .api import (  # noqa
     field as xfield,
 
     dataclass as xdataclass,
     make_dataclass as xmake_dataclass,
-)
 
-from .api.classes.metadata import (
     extra_class_params,
     init,
     validate,
-)
 
-from .api.fields.metadata import (
     extra_field_params,
 )
 
