@@ -4,6 +4,7 @@ TODO:
  - special case 'None' default, most common
 """
 import dataclasses as dc
+import itertools
 import typing as ta
 
 from omlish import check
@@ -48,8 +49,6 @@ class InitPlan(Plan):
 
         default: OpRef[ta.Any] | None
         default_factory: OpRef[ta.Any] | None
-
-        kw_only: bool
 
         override: bool
 
@@ -136,8 +135,6 @@ class InitGenerator(Generator[InitPlan]):
 
             default=default_ref,
             default_factory=default_factory_ref,
-
-            kw_only=f.kw_only,
 
             override=f.override or ctx.cs.override,
 
@@ -235,10 +232,16 @@ class InitGenerator(Generator[InitPlan]):
 
         # proto
 
+        fields_by_name = {f.name: f for f in bs.fields}
+
         params: list[str] = []
         seen_kw_only = False
-        for f in bs.fields:
-            if f.kw_only:
+        for fn, kw_only in itertools.chain(
+            [(fn, False) for fn in bs.std_params],
+            [(fn, True) for fn in bs.kw_only_params],
+        ):
+            f = fields_by_name[fn]
+            if kw_only:
                 if not seen_kw_only:
                     params.append('*')
                     seen_kw_only = True
