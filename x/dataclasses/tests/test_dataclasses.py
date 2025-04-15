@@ -89,26 +89,26 @@ def test_mcls():
     assert C(10).x == 10
 
 
-# def test_reflect():
-#     @dc.dataclass()
-#     class Foo:
-#         x: int
-#         y: int
-#
-#     @_dc.dataclass()
-#     class Bar:
-#         x: int
-#         z: int
-#
-#     @dc.dataclass()
-#     class Baz0(Foo, Bar):
-#         a: int
-#
-#     ref = dc.reflect(Baz0)
-#     print(ref)
-#     # print(ref.params)
-#     # print(ref.params_extras)
-#     # print(ref.merged_metadata)
+def test_reflect():
+    @dc.dataclass()
+    class Foo:
+        x: int
+        y: int
+
+    @_dc.dataclass()
+    class Bar:
+        x: int
+        z: int
+
+    @dc.dataclass()
+    class Baz0(Foo, Bar):
+        a: int
+
+    ref = dc.reflect(Baz0)
+    print(ref)
+    # print(ref.params)
+    # print(ref.params_extras)
+    # print(ref.merged_metadata)
 
 
 def test_abc():

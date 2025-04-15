@@ -11,7 +11,7 @@ import typing as ta
 from omlish import lang
 from omlish.lite.dataclasses import is_immediate_dataclass
 
-from ..api.api import dataclass
+from ..api.classes.decorator import dataclass
 
 
 ##
