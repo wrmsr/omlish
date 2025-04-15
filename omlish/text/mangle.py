@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 import dataclasses as dc
+import re
 import typing as ta
 
 from ..lite.cached import cached_nullary
@@ -40,6 +41,10 @@ class StringMangler:
     def replaced_indexes(self) -> ta.Mapping[str, int]:
         return {s: i for i, s in enumerate(self.replaced())}
 
+    @cached_nullary
+    def replaced_pat(self) -> re.Pattern:
+        return re.compile('|'.join(re.escape(k) for k in self.replaced()))
+
     #
 
     @cached_nullary
@@ -58,20 +63,38 @@ class StringMangler:
     def replacements_dict(self) -> ta.Mapping[str, str]:
         return dict(self.replacements())
 
+    @cached_nullary
+    def inverse_replacements_dict(self) -> ta.Mapping[str, str]:
+        return {v: k for k, v in self.replacements()}
+
+    @cached_nullary
+    def replacements_pat(self) -> re.Pattern:
+        return re.compile(''.join([re.escape(self.escape), '.' * self.replacement_pad()]))
+
     #
 
+    # def mangle(self, s: str) -> str:
+    #     ecs = sorted(
+    #         frozenset(s) & self.replaced_set(),
+    #         key=self.replaced_indexes().__getitem__,
+    #         )
+    #     rd = self.replacements_dict()
+    #     for l in ecs:
+    #         r = rd[l]
+    #         s = s.replace(l, r)
+    #     return s
+
     def mangle(self, s: str) -> str:
-        ecs = sorted(
-            frozenset(s) & self.replaced_set(),
-            key=self.replaced_indexes().__getitem__,
-        )
         rd = self.replacements_dict()
-        for l in ecs:
-            r = rd[l]
-            s = s.replace(l, r)
-        return s
+        return self.replaced_pat().sub(lambda m: rd[m.group(0)], s)
+
+    #
+
+    # def unmangle(self, s: str) -> str:
+    #     for l, r in reversed(self.replacements()):
+    #         s = s.replace(r, l)
+    #     return s
 
     def unmangle(self, s: str) -> str:
-        for l, r in reversed(self.replacements()):
-            s = s.replace(r, l)
-        return s
+        ird = self.inverse_replacements_dict()
+        return self.replacements_pat().sub(lambda m: ird[m.group(0)], s)
