@@ -166,6 +166,7 @@ from .generators import (  # noqa
 )
 
 from .imports import (  # noqa
+    LazyGlobals,
     can_import,
     get_real_module_name,
     import_all,

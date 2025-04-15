@@ -3,6 +3,7 @@ TODO:
  - proxy_init 'as' alias support - attrs of (src, dst)
 """
 import contextlib
+import functools
 import importlib.util
 import sys
 import types
@@ -254,6 +255,64 @@ def _trigger_conditional_imports(package: str) -> None:
 ##
 
 
+class LazyGlobals:
+    def __init__(
+            self,
+            *,
+            globals: ta.MutableMapping[str, ta.Any] | None = None,  # noqa
+            update_globals: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._globals = globals
+        self._update_globals = update_globals
+
+        self._attr_fns: dict[str, ta.Callable[[], ta.Any]] = {}
+
+    @classmethod
+    def install(cls, globals: ta.MutableMapping[str, ta.Any]) -> 'LazyGlobals':  # noqa
+        try:
+            xga = globals['__getattr__']
+        except KeyError:
+            pass
+        else:
+            if not isinstance(xga, cls):
+                raise RuntimeError(f'Module already has __getattr__ hook: {xga}')  # noqa
+            return xga
+
+        lm = cls(
+            globals=globals,
+            update_globals=True,
+        )
+
+        globals['__getattr__'] = lm
+
+        return lm
+
+    def set_fn(self, attr: str, fn: ta.Callable[[], ta.Any]) -> 'LazyGlobals':
+        self._attr_fns[attr] = fn
+        return self
+
+    def get(self, attr: str) -> ta.Any:
+        try:
+            fn = self._attr_fns[attr]
+        except KeyError:
+            raise AttributeError(attr) from None
+
+        val = fn()
+
+        if self._update_globals and self._globals is not None:
+            self._globals[attr] = val
+
+        return val
+
+    def __call__(self, attr: str) -> ta.Any:
+        return self.get(attr)
+
+
+##
+
+
 class NamePackage(ta.NamedTuple):
     name: str
     package: str
@@ -266,16 +325,13 @@ class _ProxyInit:
 
     def __init__(
             self,
+            lazy_globals: LazyGlobals,
             name_package: NamePackage,
-            *,
-            globals: ta.MutableMapping[str, ta.Any] | None = None,  # noqa
-            update_globals: bool = False,
     ) -> None:
         super().__init__()
 
+        self._lazy_globals = lazy_globals
         self._name_package = name_package
-        self._globals = globals
-        self._update_globals = update_globals
 
         self._imps_by_attr: dict[str, _ProxyInit._Import] = {}
         self._mods_by_pkgs: dict[str, ta.Any] = {}
@@ -287,12 +343,16 @@ class _ProxyInit:
     def add(self, package: str, attrs: ta.Iterable[str | tuple[str, str]]) -> None:
         if isinstance(attrs, str):
             raise TypeError(attrs)
+
         for attr in attrs:
             if isinstance(attr, tuple):
                 imp_attr, attr = attr
             else:
                 imp_attr = attr
+
             self._imps_by_attr[attr] = self._Import(package, imp_attr)
+
+            self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
 
     def get(self, attr: str) -> ta.Any:
         try:
@@ -307,13 +367,7 @@ class _ProxyInit:
 
         val = getattr(mod, imp.attr)
 
-        if self._update_globals and self._globals is not None:
-            self._globals[attr] = val
-
         return val
-
-    def __call__(self, attr: str) -> ta.Any:
-        return self.get(attr)
 
 
 def proxy_init(
@@ -334,19 +388,11 @@ def proxy_init(
         pi = globals['__proxy_init__']
 
     except KeyError:
-        try:
-            xga = globals['__getattr__']
-        except KeyError:
-            pass
-        else:
-            raise RuntimeError(f'Module already has __getattr__ hook: {xga}')
-
         pi = _ProxyInit(
+            LazyGlobals.install(globals),
             init_name_package,
-            globals=globals,
         )
         globals['__proxy_init__'] = pi
-        globals['__getattr__'] = pi
 
     else:
         if pi.name_package != init_name_package:

@@ -1,1 +1,1 @@
-from omlish import lang
+from omlish import lang  # noqa
