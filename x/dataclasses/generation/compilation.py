@@ -21,6 +21,7 @@ from .ops import AddPropertyOp
 from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
+from .ops import Ref
 from .ops import SetAttrOp
 from .ops import get_op_refs
 
@@ -88,7 +89,7 @@ class OpCompiler:
         fn_name: str
         params: ta.Sequence[str]
         src: str
-        refs: frozenset[OpRef]
+        refs: frozenset[Ref]
 
     @dc.dataclass(frozen=True)
     class _FnParam:
@@ -210,7 +211,14 @@ class OpCompiler:
 
         params: list[OpCompiler._FnParam] = [
             OpCompiler._FnParam(CLS_IDENT),
-            *[OpCompiler._FnParam(p) for p in sorted(r.ident() for r in refs)],
+            *[
+                OpCompiler._FnParam(p)
+                for p in sorted(
+                    r.ident()
+                    for r in refs
+                    if isinstance(r, OpRef)
+                )
+            ],
         ]
 
         params.extend([

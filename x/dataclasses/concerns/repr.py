@@ -6,9 +6,9 @@ from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.globals import REPRLIB_RECURSIVE_REPR_GLOBAL
 from ..generation.ops import AddMethodOp
-from ..generation.ops import Ref
 from ..generation.ops import Op
 from ..generation.ops import OpRef
+from ..generation.ops import Ref
 from ..generation.registry import register_generator_type
 from ..processing.base import ProcessingContext
 from ..specs import FieldType

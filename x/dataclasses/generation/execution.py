@@ -19,6 +19,7 @@ from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
+from .ops import Ref
 from .ops import SetAttrOp
 
 
@@ -56,7 +57,7 @@ class OpExecutor:
             self,
             name: str,
             src: str,
-            refs: ta.Iterable[OpRef] = (),
+            refs: ta.Iterable[Ref] = (),
     ) -> types.FunctionType:
         ns: dict = {
             CLS_IDENT: self._cls,

@@ -17,6 +17,7 @@ from .base import Plan
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .globals import FN_GLOBALS
+from .globals import FnGlobal
 from .idents import CLS_IDENT
 from .mangling import IDENT_MANGLER
 from .ops import Op
@@ -80,7 +81,12 @@ class GeneratorProcessor(Processor):
             })
             orm = gp.prepare().ref_map
             for r in comp.refs:
-                kw[r.ident()] = orm[r]
+                if isinstance(r, OpRef):
+                    kw[r.ident()] = orm[r]
+                elif isinstance(r, FnGlobal):
+                    pass
+                else:
+                    raise TypeError(r)
 
             fn(**kw)
 
