@@ -72,11 +72,12 @@ class OverrideGenerator(Generator[OverridePlan]):
 
             set_src: str | None = None
             if not pl.frozen:
+                sab = SetattrSrcBuilder()
                 set_src = '\n'.join([
                     f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_GLOBAL.ident}:',
                     *[
                         f'    {l}'
-                        for l in SetattrSrcBuilder()(
+                        for l in sab(
                             f.name,
                             VALUE_IDENT,
                             frozen=pl.frozen,
@@ -85,6 +86,7 @@ class OverrideGenerator(Generator[OverridePlan]):
                     ],
                 ])
                 op_refs.add(NONE_GLOBAL)
+                op_refs.update(sab.refs)
 
             ops.append(AddPropertyOp(
                 f.name,

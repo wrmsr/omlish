@@ -1,4 +1,7 @@
+import typing as ta
+
 from .globals import OBJECT_SETATTR_GLOBAL
+from .globals import FnGlobal
 from .idents import SELF_DICT_IDENT
 from .idents import SELF_IDENT
 
@@ -41,6 +44,11 @@ class SetattrSrcBuilder:
         self._object_dict_ident = object_dict_ident
 
         self._has_set_object_dict = False
+        self._global_refs: set[FnGlobal] = set()
+
+    @property
+    def refs(self) -> ta.AbstractSet[FnGlobal]:
+        return self._global_refs
 
     def __call__(
             self,
@@ -68,6 +76,7 @@ class SetattrSrcBuilder:
                 ]
 
         elif frozen:
+            self._global_refs.add(OBJECT_SETATTR_GLOBAL)
             return [f'{OBJECT_SETATTR_GLOBAL.ident}({self._object_ident}, {name!r}, {value_src})']
 
         else:

@@ -409,6 +409,7 @@ class InitGenerator(Generator[InitPlan]):
                     override=f.override,
                 )
             ])
+        refs.update(sab.refs)
 
         # post-init
 
