@@ -4,7 +4,6 @@ TODO:
 """
 import inspect
 import dataclasses as dc
-import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -22,7 +21,7 @@ from ..fields.conversion import std_field_to_field_spec
 from .metadata import extract_cls_metadata
 from .metadata import has_cls_metadata
 from .metadata import remove_cls_metadata
-from .params import SpecDataclassParams
+from .params import build_spec_std_params
 from .params import get_dataclass_spec
 
 
@@ -132,7 +131,7 @@ def dataclass(
         validate_fns=validate_fns or None,
     )
 
-    std_params = SpecDataclassParams.from_spec(cs)
+    std_params = build_spec_std_params(cs)
     check.not_in(STD_PARAMS_ATTR, cls.__dict__)
     setattr(cls, STD_PARAMS_ATTR, std_params)
 

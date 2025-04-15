@@ -11,7 +11,7 @@ from ...specs import ClassSpec
 
 
 class SpecDataclassParams(StdParams):
-    __slots__ = (*StdParams.__slots__, 'spec')
+    __slots__ = (*StdParams.__slots__, '_spec')
 
     def __init__(
             self,
@@ -44,29 +44,29 @@ class SpecDataclassParams(StdParams):
             **kwargs,
         )
 
-        self.spec = spec
+        self._spec = spec
 
     def __repr__(self) -> str:
         r = super().__repr__()
         return f'{self.__class__.__name__}{r[r.index("("):]}'
 
-    @classmethod
-    def from_spec(cls, cs: ClassSpec) -> 'SpecDataclassParams':
-        return cls(
-            init=cs.init,
-            repr=cs.repr,
-            eq=cs.eq,
-            order=cs.order,
-            unsafe_hash=cs.unsafe_hash,
-            frozen=cs.frozen,
 
-            match_args=cs.match_args,
-            kw_only=cs.kw_only,
-            slots=cs.slots,
-            weakref_slot=cs.weakref_slot,
+def build_spec_std_params(cs: ClassSpec) -> 'SpecDataclassParams':
+    return SpecDataclassParams(
+        init=cs.init,
+        repr=cs.repr,
+        eq=cs.eq,
+        order=cs.order,
+        unsafe_hash=cs.unsafe_hash,
+        frozen=cs.frozen,
 
-            spec=cs,
-        )
+        match_args=cs.match_args,
+        kw_only=cs.kw_only,
+        slots=cs.slots,
+        weakref_slot=cs.weakref_slot,
+
+        spec=cs,
+    )
 
 
 def get_dataclass_spec(cls: type) -> ClassSpec | None:
@@ -74,4 +74,4 @@ def get_dataclass_spec(cls: type) -> ClassSpec | None:
     sp = getattr(cls, STD_PARAMS_ATTR)
     if not isinstance(sp, SpecDataclassParams):
         return None
-    return check.isinstance(sp.spec, ClassSpec)
+    return check.isinstance(sp._spec, ClassSpec)  # noqa
