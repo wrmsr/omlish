@@ -10,7 +10,7 @@ import typing as ta
 
 from omlish import lang
 
-from ..api import dataclass
+from ..api.classes.decorator import dataclass
 from .confer import CONFER_METACLASS_PARAMS
 from .confer import confer_kwargs
 from .specs import MetaclassSpec

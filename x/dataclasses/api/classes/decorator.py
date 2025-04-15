@@ -23,7 +23,7 @@ from .metadata import extract_cls_metadata
 from .metadata import has_cls_metadata
 from .metadata import remove_cls_metadata
 from .params import build_spec_std_params
-from .params import get_dataclass_spec
+from .params import get_class_spec
 
 
 ##
@@ -93,7 +93,7 @@ def dataclass(
         if not dc.is_dataclass(bc):
             check.state(not has_cls_metadata(bc))
             continue
-        if (bcs := get_dataclass_spec(bc)) is None:
+        if (bcs := get_class_spec(bc)) is None:
             continue
         init_fns.extend(bcs.init_fns or [])
         validate_fns.extend(bcs.validate_fns or [])
