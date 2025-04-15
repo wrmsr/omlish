@@ -83,6 +83,7 @@ class GeneratorProcessor(Processor):
             self,
             ctx: ProcessingContext,
             *,
+            # mode: Mode = ExecutorMode(),
             mode: Mode = CompilerMode(),
     ) -> None:
         super().__init__(ctx)

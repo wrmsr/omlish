@@ -7,14 +7,14 @@ import inspect
 from omlish import check
 from omlish import lang
 
+from ...internals import STD_FIELDS_ATTR
 from ...internals import STD_PARAMS_ATTR
 from ...processing.driving import drive_cls_processing
 from ...specs import ClassSpec
 from ...specs import FieldSpec
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields
-from ..fields.building import build_std_field_metadata_update
-from ..fields.building import install_built_cls_std_fields
+from ..fields.building import update_field_metadata
 from ..fields.conversion import std_field_to_field_spec
 from .metadata import extract_cls_metadata
 from .metadata import remove_cls_metadata
@@ -52,11 +52,11 @@ def dataclass(
 
     #
 
-    csf = build_cls_std_fields(cls, kw_only=kw_only)
-    install_built_cls_std_fields(cls, csf)
+    fields = build_cls_std_fields(cls, kw_only=kw_only)
+    setattr(cls, STD_FIELDS_ATTR, fields)
 
     fsl: list[FieldSpec] = []
-    for f in csf.fields.values():
+    for f in fields.values():
         try:
             fs = f.metadata[FieldSpec]
         except KeyError:
@@ -69,7 +69,7 @@ def dataclass(
 
         fsl.append(fs)
 
-        build_std_field_metadata_update(f, {FieldSpec: fs}).apply()
+        update_field_metadata(f, {FieldSpec: fs})
 
     #
 

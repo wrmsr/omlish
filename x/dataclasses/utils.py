@@ -1,5 +1,4 @@
 import ast
-import dataclasses as dc
 import functools
 import types
 import typing as ta
@@ -39,27 +38,6 @@ def set_new_attribute(cls: type, name: str, value: ta.Any) -> bool:
     set_qualname(cls, value)
     setattr(cls, name, value)
     return False
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class AttrMods:
-    obj: ta.Any
-
-    _: dc.KW_ONLY
-
-    sets: ta.Mapping[str, ta.Any] | None = None
-    dels: ta.AbstractSet[str] | None = None
-
-    def apply(self) -> None:
-        if self.sets:
-            for sak, sav in self.sets.items():
-                setattr(self.obj, sak, sav)
-        if self.dels:
-            for dak in self.dels or []:
-                delattr(self.obj, dak)
 
 
 ##

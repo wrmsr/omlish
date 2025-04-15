@@ -11,21 +11,9 @@ from ...internals import StdFieldType
 from ...internals import std_is_classvar
 from ...internals import std_is_initvar
 from ...internals import std_is_kw_only
-from ...utils import AttrMods
 
 
 ##
-
-
-@dc.dataclass(frozen=True)
-class BuiltStdField:
-    fld: dc.Field
-    name: str
-    type: str
-
-    _: dc.KW_ONLY
-
-    attr_mods: AttrMods | None = None
 
 
 def build_std_field(
@@ -34,7 +22,7 @@ def build_std_field(
         a_type: ta.Any,
         *,
         default_kw_only: bool,
-) -> BuiltStdField:
+) -> dc.Field:
     default: ta.Any = getattr(cls, a_name, dc.MISSING)
     if isinstance(default, dc.Field):
         f = default
@@ -44,10 +32,8 @@ def build_std_field(
             default = dc.MISSING
         f = dc.field(default=default)
 
-    attr_sets: dict[str, ta.Any] = dict(
-        name=a_name,
-        type=a_type,
-    )
+    f.name = a_name
+    f.type = a_type
 
     # field type
 
@@ -59,13 +45,13 @@ def build_std_field(
     if ft in (StdFieldType.CLASS_VAR, StdFieldType.INIT_VAR):
         if f.default_factory is not dc.MISSING:
             raise TypeError(f'field {a_name} cannot have a default factory')
-    attr_sets.update(_field_type=ft.value)
+    f._field_type = ft.value  # type: ignore[attr-defined]  # noqa
 
     # kw_only
 
     if ft in (StdFieldType.INSTANCE, StdFieldType.INIT_VAR):
         if f.kw_only is dc.MISSING:
-            attr_sets.update(kw_only=default_kw_only)
+            f.kw_only = default_kw_only
     else:
         check.arg(ft is StdFieldType.CLASS_VAR)
         if f.kw_only is not dc.MISSING:
@@ -82,31 +68,17 @@ def build_std_field(
 
     #
 
-    return BuiltStdField(
-        f,
-        a_name,
-        a_type,
-        attr_mods=AttrMods(f, sets=attr_sets) if attr_sets else None,
-    )
+    return f
 
 
 ##
-
-
-@dc.dataclass(frozen=True)
-class BuiltClsStdFields:
-    fields: ta.Mapping[str, dc.Field]
-
-    _: dc.KW_ONLY
-
-    attr_mods: ta.Sequence[AttrMods] | None = None
 
 
 def build_cls_std_fields(
         cls: type,
         *,
         kw_only: bool,
-) -> BuiltClsStdFields:
+) -> ta.Mapping[str, dc.Field]:
     fields: dict[str, dc.Field] = {}
 
     for b in cls.__mro__[-1:0:-1]:
@@ -117,8 +89,7 @@ def build_cls_std_fields(
 
     cls_annotations = get_cls_annotations(cls)
 
-    built_fields: list[BuiltStdField] = []
-    attr_mods: list[AttrMods] = []
+    cls_fields: list[dc.Field] = []
 
     kw_only_seen = False
     for name, ann in cls_annotations.items():
@@ -129,60 +100,35 @@ def build_cls_std_fields(
             kw_only = True
 
         else:
-            bsf = build_std_field(
+            cls_fields.append(build_std_field(
                 cls,
                 name,
                 ann,
                 default_kw_only=kw_only,
-            )
-            built_fields.append(bsf)
-            if (fam := bsf.attr_mods) is not None:
-                attr_mods.append(fam)
+            ))
 
-    cls_attr_sets: dict[str, ta.Any] = {}
-    cls_attr_dels: set[str] = set()
-    for bsf in built_fields:
-        fields[bsf.name] = bsf.fld
-        if isinstance(getattr(cls, bsf.name, None), dc.Field):
-            if bsf.fld.default is dc.MISSING:
-                cls_attr_dels.add(bsf.name)
+    for f in cls_fields:
+        fields[f.name] = f
+        if isinstance(getattr(cls, f.name, None), dc.Field):
+            if f.default is dc.MISSING:
+                delattr(cls, f.name)
             else:
-                cls_attr_sets[bsf.name] = bsf.fld.default
+                setattr(cls, f.name, f.default)
 
     for name, value in cls.__dict__.items():
         if isinstance(value, dc.Field) and name not in cls_annotations:
             raise TypeError(f'{name!r} is a field but has no type annotation')
 
-    if cls_attr_sets or cls_attr_dels:
-        attr_mods.append(AttrMods(
-            cls,
-            sets=cls_attr_sets,
-            dels=cls_attr_dels,  # noqa
-        ))
-
-    return BuiltClsStdFields(
-        fields,
-        attr_mods=attr_mods,
-    )
-
-
-def install_built_cls_std_fields(
-        cls: type,
-        csf: BuiltClsStdFields,
-) -> None:
-    for am in csf.attr_mods or []:
-        am.apply()
-
-    setattr(cls, STD_FIELDS_ATTR, csf.fields)
+    return fields
 
 
 ##
 
 
-def build_std_field_metadata_update(
+def update_field_metadata(
         f: dc.Field,
         metadata: ta.Mapping[ta.Any, ta.Any],
-) -> AttrMods:
+) -> None:
     md: ta.Any = f.metadata
 
     mdu: dict = {}
@@ -190,7 +136,7 @@ def build_std_field_metadata_update(
         if md is None or md.get(k) != v:
             mdu[k] = v  # noqa
     if not mdu:
-        return AttrMods(f)
+        return
 
     if md is None:
         md = mdu
@@ -198,4 +144,4 @@ def build_std_field_metadata_update(
         md = collections.ChainMap(mdu, md)
     md = types.MappingProxyType(md)
 
-    return AttrMods(f, sets=dict(metadata=md))
+    f.metadata = md

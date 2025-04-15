@@ -1,3 +1,7 @@
+"""
+TODO:
+ - sha1 is slow :/ key by repr but name by sha1
+"""
 import hashlib
 
 from .base import Plans
