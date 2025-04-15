@@ -158,5 +158,9 @@ class HashGenerator(Generator[HashPlan]):
             ])
 
         return [
-            AddMethodOp('__hash__', '\n'.join(lines)),
+            AddMethodOp(
+                '__hash__',
+                '\n'.join(lines),
+                if_present='replace',
+            ),
         ]
