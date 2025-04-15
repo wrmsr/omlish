@@ -29,10 +29,18 @@ def build_attr_kwargs_body_src_lines(
 
 
 class SetattrSrcBuilder:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            object_ident: str = SELF_IDENT,
+            object_dict_ident: str | None = None,
+    ) -> None:
         super().__init__()
 
-        self._has_set_self_dict = False
+        self._object_ident = object_ident
+        self._object_dict_ident = object_dict_ident
+
+        self._has_set_object_dict = False
 
     def __call__(
             self,
@@ -41,20 +49,17 @@ class SetattrSrcBuilder:
             *,
             frozen: bool,
             override: bool,
-
-            object_ident: str = SELF_IDENT,
-            object_dict_ident: str | None = None,
     ) -> list[str]:
         if override:
-            if object_dict_ident is not None:
-                return [f'{object_dict_ident}[{name!r}] = {value_src}']
+            if self._object_dict_ident is not None:
+                return [f'{self._object_dict_ident}[{name!r}] = {value_src}']
 
             else:
-                if not self._has_set_self_dict:
+                if not self._has_set_object_dict:
                     x = [
-                        f'{SELF_DICT_IDENT} = {object_ident}.__dict__',
+                        f'{SELF_DICT_IDENT} = {self._object_ident}.__dict__',
                     ]
-                    self._has_set_self_dict = True
+                    self._has_set_object_dict = True
                 else:
                     x = []
                 return [
@@ -63,7 +68,7 @@ class SetattrSrcBuilder:
                 ]
 
         elif frozen:
-            return [f'{OBJECT_SETATTR_IDENT}({object_ident}, {name!r}, {value_src})']
+            return [f'{OBJECT_SETATTR_IDENT}({self._object_ident}, {name!r}, {value_src})']
 
         else:
-            return [f'{object_ident}.{name} = {value_src}']
+            return [f'{self._object_ident}.{name} = {value_src}']

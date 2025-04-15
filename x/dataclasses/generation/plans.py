@@ -3,6 +3,7 @@ TODO:
  - sha1 is slow :/ key by repr but name by sha1
 """
 import dataclasses as dc
+import re
 import typing as ta
 
 from omlish import lang
@@ -28,5 +29,8 @@ class Plans:
 ##
 
 
+_WS_PAT = re.compile(r'\s')
+
+
 def _render(plans: Plans) -> str:
-    return repr(plans.tup)
+    return _WS_PAT.sub(repr(plans.tup), '')

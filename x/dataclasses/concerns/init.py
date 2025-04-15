@@ -61,6 +61,8 @@ class InitPlan(Plan):
 
     fields: tuple[Field, ...]
 
+    self_param: str
+
     frozen: bool
 
     post_init_params: tuple[str, ...] | None
@@ -197,6 +199,8 @@ class InitGenerator(Generator[InitPlan]):
             InitPlan(
                 fields=tuple(bfs),
 
+                self_param=SELF_IDENT if 'self' in ctx.cs.fields_by_name else 'self',
+
                 frozen=ctx.cs.frozen,
 
                 post_init_params=post_init_params,
@@ -238,7 +242,7 @@ class InitGenerator(Generator[InitPlan]):
 
         proto_lines = [
             f'def __init__(',
-            f'    {SELF_IDENT},',
+            f'    {bs.self_param},',
             *[
                 f'    {p},'
                 for p in params
@@ -283,7 +287,7 @@ class InitGenerator(Generator[InitPlan]):
             lines.extend([
                 f'    if not {ISINSTANCE_IDENT}({f.name}, {f.check_type.ident()}): ',
                 f'        raise {FIELD_TYPE_VALIDATION_ERROR_IDENT}(',
-                f'            obj={SELF_IDENT},',
+                f'            obj={bs.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
                 f'            value={f.name},',
@@ -297,7 +301,7 @@ class InitGenerator(Generator[InitPlan]):
             lines.extend([
                 f'    if not {f.validate.ident()}({f.name}): ',
                 f'        raise {FIELD_FN_VALIDATION_ERROR_IDENT}(',
-                f'            obj={SELF_IDENT},',
+                f'            obj={bs.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
                 f'            value={f.name},',
@@ -321,14 +325,16 @@ class InitGenerator(Generator[InitPlan]):
                 )
             lines.extend([
                 f'        raise {FN_VALIDATION_ERROR_IDENT}(',
-                f'            obj={SELF_IDENT},',
+                f'            obj={bs.self_param},',
                 f'            fn={vfn.fn.ident()},',
                 f'        )',
             ])
 
         # setattr
 
-        sab = SetattrSrcBuilder()
+        sab = SetattrSrcBuilder(
+            object_ident=bs.self_param,
+        )
         for f in bs.fields:
             lines.extend([
                 f'    {l}'
@@ -339,13 +345,13 @@ class InitGenerator(Generator[InitPlan]):
 
         if (pia := bs.post_init_params) is not None:
             lines.append(
-                f'    {SELF_IDENT}.{STD_POST_INIT_NAME}({", ".join(pia)})',
+                f'    {bs.self_param}.{STD_POST_INIT_NAME}({", ".join(pia)})',
             )
 
         for ifn in bs.init_fns:
             ors.add(ifn)
             lines.append(
-                f'    {ifn.ident()}({SELF_IDENT})',
+                f'    {ifn.ident()}({bs.self_param})',
             )
 
         #
