@@ -115,9 +115,6 @@ class OpExecutor:
             )
 
         elif isinstance(op, AddMethodOp):
-            if op.name in self._cls.__dict__:
-                raise AttributeError(op.name)
-
             fn = self._create_fn(
                 op.name,
                 op.src,
