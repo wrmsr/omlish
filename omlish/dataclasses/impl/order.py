@@ -40,7 +40,17 @@ class OrderProcessor(Processor):
             ('__gt__', '>'),
             ('__ge__', '>='),
         ]:
-            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._info.globals)):  # noqa
+            if set_new_attribute(
+                    self._cls,  # noqa
+                    name,
+                    cmp_fn(
+                        name,
+                        op,
+                        self_tuple,
+                        other_tuple,
+                        globals=self._info.globals,
+                    ),
+            ):
                 raise TypeError(
                     f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
                     f'Consider using functools.total_ordering',

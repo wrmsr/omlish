@@ -1,4 +1,5 @@
 from . import (  # noqa
+    abc,
     copy,
     doc,
     eq,
