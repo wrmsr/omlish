@@ -1,6 +1,7 @@
 import typing as ta
 
-from .params import get_metaclass_params
+from .meta import DataMeta
+from .specs import get_metaclass_spec
 
 
 T = ta.TypeVar('T')
@@ -34,7 +35,7 @@ class Frozen(
     eq=False,
     order=False,
     confer=frozenset([
-        *get_metaclass_params(Data).confer,
+        *get_metaclass_spec(Data).confer,
         'frozen',
         'reorder',
         'cache_hash',
@@ -59,7 +60,7 @@ class Box(
     ta.Generic[T],
     generic_init=True,
     confer=frozenset([
-        *get_metaclass_params(Frozen).confer,
+        *get_metaclass_spec(Frozen).confer,
         'generic_init',
     ]),
 ):

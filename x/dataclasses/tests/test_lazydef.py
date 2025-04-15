@@ -6,7 +6,10 @@ from omlish import lang
 ##
 
 
-class _LazyDef:
+LAZY_DEFS_ATTR = '__dataclass_lazy_defs__'
+
+
+class _LazyDefs:
     def __init__(self, lazy_globals: lang.LazyGlobals) -> None:
         super().__init__()
 

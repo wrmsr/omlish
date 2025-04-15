@@ -11,7 +11,7 @@ import typing as ta
 from omlish import lang
 
 from ..api import dataclass
-from .params import get_metaclass_params
+from .specs import get_metaclass_spec
 
 
 T = ta.TypeVar('T')
@@ -56,7 +56,7 @@ class DataMeta(abc.ABCMeta):
 
         xbs: list[type] = []
 
-        if any(get_metaclass_params(b).abstract_immediate_subclasses for b in bases if dc.is_dataclass(b)):
+        if any(get_metaclass_spec(b).abstract_immediate_subclasses for b in bases if dc.is_dataclass(b)):
             abstract = True
 
         final |= (mcp.final_subclasses and not abstract)

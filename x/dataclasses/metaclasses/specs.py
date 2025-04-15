@@ -16,3 +16,10 @@ class MetaclassSpec(lang.Final):
 
 
 DEFAULT_METACLASS_SPEC = MetaclassSpec()
+
+
+##
+
+
+def get_metaclass_spec(cls: type) -> MetaclassSpec:
+    raise NotImplementedError

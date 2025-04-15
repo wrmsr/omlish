@@ -12,6 +12,7 @@ from omlish import lang
 from omlish import reflect as rfl  # noqa
 
 from ... import dataclasses as dc
+from ..inspect import inspect_fields  # noqa
 
 
 T = ta.TypeVar('T')
@@ -236,8 +237,8 @@ def test_reorder():
 #
 #     assert IntBox(5).v == 5
 #
-#     info = dc.reflect(IntBox)
-#     print(info.field_owners)
+#     ifs = inspect_fields(IntBox)
+#     print(ifs.field_owners)
 
 
 def test_generics2():
