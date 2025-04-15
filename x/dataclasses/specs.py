@@ -90,6 +90,7 @@ class FieldSpec(lang.Final):
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.arg(self.name.isidentifier())
 
         if self.field_type in (FieldType.CLASS_VAR, FieldType.INIT_VAR):
             if isinstance(self.default.or_else(None), DefaultFactory):
