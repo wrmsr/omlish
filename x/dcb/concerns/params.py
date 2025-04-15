@@ -1,9 +1,9 @@
 from omlish import check
 
+from ..internals import STD_PARAMS_ATTR
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
-from ..internals import STD_PARAMS_ATTR
 
 
 ##

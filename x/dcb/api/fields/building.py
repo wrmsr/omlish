@@ -182,7 +182,7 @@ def install_built_cls_std_fields(
 def build_std_field_metadata_update(
         f: dc.Field,
         metadata: ta.Mapping[ta.Any, ta.Any],
-) -> AttrMods | None:
+) -> AttrMods:
     md: ta.Any = f.metadata
 
     mdu: dict = {}
@@ -190,7 +190,7 @@ def build_std_field_metadata_update(
         if md is None or md.get(k) != v:
             mdu[k] = v  # noqa
     if not mdu:
-        return None
+        return AttrMods(f)
 
     if md is None:
         md = mdu

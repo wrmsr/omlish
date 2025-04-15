@@ -56,10 +56,11 @@ def field(
         repr_priority=repr_priority,
     )
 
-    if metadata is None:
-        metadata = efp
+    md: ta.Any = metadata
+    if md is None:
+        md = efp
     else:
-        metadata = collections.ChainMap(efp, metadata)  # noqa
+        md = collections.ChainMap(efp, md)  # type: ignore[arg-type]
 
     return dc.field(
         default=default,
@@ -68,7 +69,7 @@ def field(
         repr=repr,
         hash=hash,
         compare=compare,
-        metadata=metadata,
+        metadata=md,
         kw_only=kw_only,
     )
 

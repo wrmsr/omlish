@@ -4,11 +4,11 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ...internals import StdFieldType
+from ...internals import std_field_type
 from ...specs import DefaultFactory
 from ...specs import FieldSpec
 from ...specs import FieldType
-from ...internals import StdFieldType
-from ...internals import std_field_type
 from .metadata import _ExtraParams
 
 

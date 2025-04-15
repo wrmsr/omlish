@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 
 from ..inspect import FieldsInspection
+from ..internals import STD_FIELDS_ATTR
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
@@ -11,7 +12,6 @@ from ..processing.registry import register_processing_context_item_factory
 from ..processing.registry import register_processor_type
 from ..specs import FieldSpec
 from ..specs import FieldType
-from ..internals import STD_FIELDS_ATTR
 
 
 ##
