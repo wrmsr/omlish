@@ -59,24 +59,42 @@ class OpExecutor:
             src: str,
             refs: ta.Iterable[Ref] = (),
     ) -> types.FunctionType:
-        ns: dict = {
+        lo: dict = {
             CLS_IDENT: self._cls,
             **FN_GLOBAL_VALUES,
         }
         for r in refs:
             if isinstance(r, OpRef):
-                ns[r.ident()] = self._orm[r]
+                lo[r.ident()] = self._orm[r]
             elif isinstance(r, FnGlobal):
                 pass
             else:
                 raise TypeError(r)
 
+        x_src = '\n'.join([
+            f'def __create_fn__(',
+            f'    *,',
+            *[
+                f'    {k},'
+                for k in lo
+            ],
+            f'):',
+            *[
+                f'    {l}'
+                for l in src.splitlines()
+            ],
+            f'',
+            f'    return {name}',
+        ])
+
+        ns: dict = {}
         exec(
-            src,
+            x_src,
             self._cls_globals(),
             ns,
         )
-        fn = ns[name]
+        x_fn = ns['__create_fn__']
+        fn = x_fn(**lo)
 
         if not isinstance(fn, types.FunctionType):
             raise TypeError(fn)
