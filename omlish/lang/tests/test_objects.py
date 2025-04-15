@@ -92,17 +92,3 @@ def test_test_mro_dict2():
     assert_dicts_equal_ordered(md(B, B), {'x': 'B.x', 'z': 'B.z', 'y': 'A.y'})
     assert_dicts_equal_ordered(md(B, A), {'x': 'A.x', 'y': 'A.y', 'z': 'A.z'})
     assert_dicts_equal_ordered(md(A, A), {'x': 'A.x', 'y': 'A.y', 'z': 'A.z'})
-
-
-def test_attr_repr():
-    class Foo:
-        def __init__(self, x, y, z):
-            self.x = x
-            self.y = y
-            self.z = z
-
-        __repr__ = AttrRepr.of('x', 'y', 'z')
-
-    assert repr(Foo(1, 2, 3)) == 'Foo(x=1, y=2, z=3)'
-
-    assert attr_repr(Foo(1, 2, 3), 'z', 'y', 'x', value_filter=lambda v: v != 2) == 'Foo(z=3, x=1)'

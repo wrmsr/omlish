@@ -201,11 +201,9 @@ from .maybes import (  # noqa
 )
 
 from .objects import (  # noqa
-    AttrRepr,
     SimpleProxy,
     anon_object,
     arg_repr,
-    attr_repr,
     can_weakref,
     deep_subclasses,
     dir_dict,
@@ -302,6 +300,11 @@ from ..lite.imports import (  # noqa
     import_attr,
     import_module,
     import_module_attr,
+)
+
+from ..lite.reprs import (  # noqa
+    AttrRepr,
+    attr_repr,
 )
 
 from ..lite.timeouts import (  # noqa
