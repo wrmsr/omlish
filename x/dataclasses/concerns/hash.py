@@ -108,7 +108,7 @@ class HashGenerator(Generator[HashPlan]):
 
     def generate(self, pl: HashPlan) -> ta.Iterable[Op]:
         if pl.action == 'set_none':
-            return [SetAttrOp('__hash__', None, 'replace')]
+            return [SetAttrOp('__hash__', None, if_present='replace')]
 
         elif pl.action != 'add':
             raise ValueError(pl.action)

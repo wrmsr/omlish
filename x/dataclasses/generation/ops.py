@@ -24,6 +24,9 @@ OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]
 ##
 
 
+IfAttrPresent: ta.TypeAlias = ta.Literal['skip', 'replace', 'error']
+
+
 @dc.dataclass(frozen=True)
 class Op(abc.ABC):  # noqa
     pass
@@ -33,14 +36,17 @@ class Op(abc.ABC):  # noqa
 class SetAttrOp(Op):
     name: str
     value: OpRef | ta.Any
-    if_present: ta.Literal['skip', 'replace', 'error']
+
+    if_present: IfAttrPresent = dc.field(default='replace', kw_only=True)
 
 
 @dc.dataclass(frozen=True)
 class AddMethodOp(Op):
     name: str
     src: str
-    refs: frozenset[OpRef] = frozenset()
+    refs: frozenset[OpRef] = dc.field(default=frozenset())
+
+    if_present: IfAttrPresent = dc.field(default='replace', kw_only=True)
 
 
 @dc.dataclass(frozen=True)

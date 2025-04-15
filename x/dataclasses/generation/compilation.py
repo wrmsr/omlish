@@ -10,13 +10,14 @@ from omlish import check
 
 from ..utils import repr_round_trip_value
 from .idents import CLS_IDENT
-from .idents import FN_GLOBAL_IMPORTS
 from .idents import FN_GLOBALS
+from .idents import FN_GLOBAL_IMPORTS
 from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
 from .idents import PROPERTY_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
+from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
 from .ops import SetAttrOp
@@ -94,6 +95,35 @@ class OpCompiler:
         src: str | None = None
         noqa: bool = dc.field(default=False, kw_only=True)
 
+    def _compile_set_attr(
+            self,
+            attr_name: str,
+            value_src: str,
+            if_present: IfAttrPresent,
+    ) -> list[str]:
+        setattr_stmt = f'setattr({CLS_IDENT}, {attr_name!r}, {value_src})'
+
+        if if_present == 'skip':
+            return [
+                f'if {attr_name!r} not in {CLS_IDENT}.__dict__:',
+                f'    {setattr_stmt}',
+            ]
+
+        elif if_present == 'replace':
+            return [
+                setattr_stmt,
+            ]
+
+        elif if_present == 'error':
+            return [
+                f'if {attr_name!r} in {CLS_IDENT}.__dict__:',
+                f'    raise AttributeError({attr_name!r})',
+                setattr_stmt,
+            ]
+
+        else:
+            raise ValueError(if_present)
+
     def compile(
             self,
             fn_name: str,
@@ -112,25 +142,11 @@ class OpCompiler:
                 else:
                     vs = repr(repr_round_trip_value(v))
 
-                setattr_stmt = f'setattr({CLS_IDENT}, {op.name!r}, {vs})'
-
-                if op.if_present == 'skip':
-                    body_lines.extend([
-                        f'if {op.name!r} not in {CLS_IDENT}.__dict__:',
-                        f'    {setattr_stmt}',
-                    ])
-                elif op.if_present == 'replace':
-                    body_lines.append(
-                        setattr_stmt,
-                    )
-                elif op.if_present == 'error':
-                    body_lines.extend([
-                        f'if {op.name!r} in {CLS_IDENT}.__dict__:',
-                        f'    raise AttributeError({op.name!r})',
-                        setattr_stmt,
-                    ])
-                else:
-                    raise ValueError(op.if_present)
+                body_lines.extend(self._compile_set_attr(
+                    op.name,
+                    vs,
+                    op.if_present,
+                ))
 
             elif isinstance(op, AddMethodOp):
                 body_lines.extend([

@@ -12,6 +12,7 @@ TODO:
   - 'staticmethod' or effective equiv - which must resolve to the shared instance
    - and must be transient?
  - use __transient_dict__ to support common state nuking
+ - use __set_name__ ?
 """
 import dataclasses as dc
 import functools
