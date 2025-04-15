@@ -28,6 +28,7 @@ from ..internals import STD_POST_INIT_NAME
 from ..processing.base import ProcessingContext
 from ..specs import CoerceFn
 from ..specs import DefaultFactory
+from ..specs import FieldSpec
 from ..specs import FieldType
 from ..specs import InitFn
 from ..specs import ValidateFn
@@ -62,6 +63,8 @@ class InitPlan(Plan):
     fields: tuple[Field, ...]
 
     self_param: str
+    std_params: tuple[str, ...]
+    kw_only_params: tuple[str, ...]
 
     frozen: bool
 
@@ -79,13 +82,80 @@ class InitPlan(Plan):
 
 @register_generator_type(InitPlan)
 class InitGenerator(Generator[InitPlan]):
+    def _plan_field(
+            self,
+            ctx: ProcessingContext,
+            i: int,
+            f: FieldSpec,
+            ann: ta.Any,
+            ref_map: dict,
+    ) -> InitPlan.Field:
+        ann_ref: OpRef = OpRef(f'init.fields.{i}.annotation')
+        ref_map[ann_ref] = ann
+
+        default_ref: OpRef[ta.Any] | None = None
+        default_factory_ref: OpRef[ta.Any] | None = None
+        if f.default.present:
+            dfl = f.default.must()
+            if isinstance(dfl, DefaultFactory):
+                default_factory_ref = OpRef(f'init.fields.{i}.default_factory')
+                ref_map[default_factory_ref] = dfl.fn
+            else:
+                default_ref = OpRef(f'init.fields.{i}.default')
+                ref_map[default_ref] = dfl
+
+        coerce: bool | OpRef[CoerceFn] | None = None
+        if isinstance(f.coerce, bool):
+            coerce = f.coerce
+        elif f.coerce is not None:
+            coerce = OpRef(f'init.fields.{i}.coerce')
+            ref_map[coerce] = f.coerce
+
+        validate_ref: OpRef[ValidateFn] | None = None
+        if f.validate is not None:
+            validate_ref = OpRef(f'init.fields.{i}.validate')
+            ref_map[validate_ref] = f.validate
+
+        ctr: OpRef[type | tuple[type, ...]] | None = None
+        if f.check_type is not None and f.check_type is not False:
+            ct: ta.Any
+            if isinstance(f.check_type, tuple):
+                ct = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
+            elif isinstance(f.check_type, type):
+                ct = f.check_type
+            elif f.check_type is True:
+                ct = f.annotation
+            else:
+                raise TypeError(f.check_type)
+            ctr = OpRef(f'init.fields.{i}.check_type')
+            ref_map[ctr] = ct
+
+        return InitPlan.Field(
+            name=f.name,
+            annotation=ann_ref,
+
+            default=default_ref,
+            default_factory=default_factory_ref,
+
+            kw_only=f.kw_only,
+
+            override=f.override or ctx.cs.override,
+
+            field_type=f.field_type,
+
+            coerce=coerce,
+            validate=validate_ref,
+
+            check_type=ctr,
+        )
+
     def plan(self, ctx: ProcessingContext) -> PlanResult[InitPlan] | None:
         if '__init__' in ctx.cls.__dict__:
             return None
 
-        ifs = ctx[InitFields]
+        init_fields = ctx[InitFields]
         seen_default = None
-        for f in ifs.std:
+        for f in init_fields.std:
             if not f.init:
                 continue
             if f.default.present:
@@ -94,75 +164,21 @@ class InitGenerator(Generator[InitPlan]):
                 raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
 
         if ctx.cs.generic_init:
-            gfad = ctx[FieldsInspection].generic_replaced_field_annotations
-            get_ann = lambda f: gfad[f.name]
+            gr_field_anns = ctx[FieldsInspection].generic_replaced_field_annotations
+            get_field_ann = lambda f: gr_field_anns[f.name]
         else:
-            get_ann = lambda f: f.annotation
+            get_field_ann = lambda f: f.annotation
 
-        orm = {}
+        ref_map = {}
 
-        bfs: list[InitPlan.Field] = []
-        for i, (kw_only, f) in enumerate([
-            *[(False, f) for f in ifs.std],
-            *[(True, f) for f in ifs.kw_only],
-        ]):
-            ar: OpRef = OpRef(f'init.fields.{i}.annotation')
-            orm[ar] = get_ann(f)
-
-            dr: OpRef[ta.Any] | None = None
-            dfr: OpRef[ta.Any] | None = None
-            if f.default.present:
-                dfl = f.default.must()
-                if isinstance(dfl, DefaultFactory):
-                    dfr = OpRef(f'init.fields.{i}.default_factory')
-                    orm[dfr] = dfl.fn
-                else:
-                    dr = OpRef(f'init.fields.{i}.default')
-                    orm[dr] = dfl
-
-            co: bool | OpRef[CoerceFn] | None = None
-            if isinstance(f.coerce, bool):
-                co = f.coerce
-            elif f.coerce is not None:
-                co = OpRef(f'init.fields.{i}.coerce')
-                orm[co] = f.coerce
-
-            vr: OpRef[ValidateFn] | None = None
-            if f.validate is not None:
-                vr = OpRef(f'init.fields.{i}.validate')
-                orm[vr] = f.validate
-
-            ctr: OpRef[type | tuple[type, ...]] | None = None
-            if f.check_type is not None and f.check_type is not False:
-                ct: ta.Any
-                if isinstance(f.check_type, tuple):
-                    ct = tuple(type(None) if e is None else check.isinstance(e, type) for e in f.check_type)
-                elif isinstance(f.check_type, type):
-                    ct = f.check_type
-                elif f.check_type is True:
-                    ct = f.annotation
-                else:
-                    raise TypeError(f.check_type)
-                ctr = OpRef(f'init.fields.{i}.check_type')
-                orm[ctr] = ct
-
-            bfs.append(InitPlan.Field(
-                name=f.name,
-                annotation=ar,
-
-                default=dr,
-                default_factory=dfr,
-
-                kw_only=kw_only,
-
-                override=f.override or ctx.cs.override,
-
-                field_type=f.field_type,
-
-                coerce=co,
-                validate=vr,
-
-                check_type=ctr,
+        plan_fields: list[InitPlan.Field] = []
+        for i, f in enumerate(ctx.cs.fields):
+            plan_fields.append(self._plan_field(
+                ctx,
+                i,
+                f,
+                get_field_ann(f),
+                ref_map,
             ))
 
         mro_v_ids = set(map(id, ctx[MroDict].values()))
@@ -179,13 +195,13 @@ class InitGenerator(Generator[InitPlan]):
             elif isinstance(ifn, property):
                 ifn = ifn.__get__
             ir: OpRef = OpRef(f'init.init_fns.{i}')
-            orm[ir] = ifn
+            ref_map[ir] = ifn
             ifns.append(ir)
 
         vfs: list[InitPlan.ValidateFnWithParams] = []
         for i, vfn in enumerate(ctx.cs.validate_fns or []):
             vfr: OpRef = OpRef(f'init.validate_fns.{i}')
-            orm[vfr] = vfn.fn
+            ref_map[vfr] = vfn.fn
             vfs.append(InitPlan.ValidateFnWithParams(
                 fn=vfr,
                 params=tuple(vfn.params),
@@ -193,13 +209,15 @@ class InitGenerator(Generator[InitPlan]):
 
         post_init_params: tuple[str, ...] | None = None
         if hasattr(ctx.cls, STD_POST_INIT_NAME):
-            post_init_params = tuple(f.name for f in ifs.all if f.field_type is FieldType.INIT_VAR)
+            post_init_params = tuple(f.name for f in init_fields.all if f.field_type is FieldType.INIT_VAR)
 
         return PlanResult(
             InitPlan(
-                fields=tuple(bfs),
+                fields=tuple(plan_fields),
 
                 self_param=SELF_IDENT if 'self' in ctx.cs.fields_by_name else 'self',
+                std_params=tuple(f.name for f in init_fields.std),
+                kw_only_params=tuple(f.name for f in init_fields.kw_only),
 
                 frozen=ctx.cs.frozen,
 
@@ -209,7 +227,7 @@ class InitGenerator(Generator[InitPlan]):
 
                 validate_fns=tuple(vfs),
             ),
-            orm,
+            ref_map,
         )
 
     def generate(self, bs: InitPlan) -> ta.Iterable[Op]:
