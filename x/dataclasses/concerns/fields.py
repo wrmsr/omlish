@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import check
 
+from ..generation.idents import IDENT_PREFIX
 from ..inspect import FieldsInspection
 from ..internals import STD_FIELDS_ATTR
 from ..processing.base import ProcessingContext
@@ -59,10 +60,8 @@ def calc_init_fields(
     if reorder:
         ordered_init_fields.sort(key=lambda f: (f.default.present, not f_kw_only(f)))
 
-    std_init_fields, kw_only_init_fields = (
-        tuple(f1 for f1 in ordered_init_fields if f1.init and not f_kw_only(f1)),
-        tuple(f1 for f1 in ordered_init_fields if f1.init and f_kw_only(f1)),
-    )
+    std_init_fields = tuple(f1 for f1 in ordered_init_fields if f1.init and not f_kw_only(f1))
+    kw_only_init_fields = tuple(f1 for f1 in ordered_init_fields if f1.init and f_kw_only(f1))
 
     return InitFields(
         all=all_init_fields,
@@ -115,3 +114,5 @@ def _fields_inspection_processing_context_item_factory(ctx: ProcessingContext) -
 class FieldsProcessor(Processor):
     def check(self) -> None:
         check.not_none(self._ctx[StdFields])
+        for f in self._ctx.cs.fields:
+            check.arg(not f.name.startswith(IDENT_PREFIX))

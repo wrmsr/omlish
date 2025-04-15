@@ -232,11 +232,12 @@ class InitGenerator(Generator[InitPlan]):
         )
 
     def generate(self, bs: InitPlan) -> ta.Iterable[Op]:
-        ors: set[OpRef] = set()
-
-        # proto
+        op_refs: set[OpRef] = set()
 
         fields_by_name = {f.name: f for f in bs.fields}
+        field_values: dict[str, str] = {}
+
+        # proto
 
         params: list[str] = []
         seen_kw_only = False
@@ -252,7 +253,7 @@ class InitGenerator(Generator[InitPlan]):
             elif seen_kw_only:
                 raise TypeError(f'non-keyword-only argument {f.name!r} follows keyword-only argument(s)')
 
-            ors.add(f.annotation)
+            op_refs.add(f.annotation)
             p = f'{f.name}: {f.annotation.ident()}'
 
             if f.default_factory is not None:
@@ -260,8 +261,11 @@ class InitGenerator(Generator[InitPlan]):
                 p += f' = {HAS_DEFAULT_FACTORY_IDENT}'
             elif f.default is not None:
                 check.none(f.default_factory)
-                ors.add(f.default)
+                op_refs.add(f.default)
                 p += f' = {f.default.ident()}'
+                field_values[f.name] = f.name
+            else:
+                field_values[f.name] = f.name
 
             params.append(p)
 
@@ -284,7 +288,7 @@ class InitGenerator(Generator[InitPlan]):
         for f in bs.fields:
             if f.default_factory is not None:
                 check.none(f.default)
-                ors.add(f.default_factory)
+                op_refs.add(f.default_factory)
                 if f.init:
                     lines.extend([
                         f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
@@ -294,64 +298,70 @@ class InitGenerator(Generator[InitPlan]):
                     lines.append(
                         f'    {f.name} = {f.default_factory.ident()}()',
                     )
+                check.not_in(f.name, field_values)
+                field_values[f.name] = f.name
 
             elif not f.init and f.default is not None:
                 check.none(f.default_factory)
-                ors.add(f.default)
+                op_refs.add(f.default)
                 lines.append(
                     f'    {f.name} = {f.default.ident()}',
                 )
+                check.not_in(f.name, field_values)
+                field_values[f.name] = f.name
 
         # coercion
 
         for f in bs.fields:
             if isinstance(f.coerce, bool) and f.coerce:
                 lines.append(
-                    f'    {f.name} = {f.annotation.ident()}({f.name})',
+                    f'    {f.name} = {f.annotation.ident()}({field_values[f.name]})',
                 )
+                field_values[f.name] = f.name
             elif isinstance(f.coerce, OpRef):
-                ors.add(f.coerce)
+                op_refs.add(f.coerce)
                 lines.append(
-                    f'    {f.name} = {f.coerce.ident()}({f.name})',
+                    f'    {f.name} = {f.coerce.ident()}({field_values[f.name]})',
                 )
+                field_values[f.name] = f.name
 
         # validation
 
         for f in bs.fields:
             if f.check_type is None:
                 continue
-            ors.add(f.check_type)
+            op_refs.add(f.check_type)
             lines.extend([
-                f'    if not {ISINSTANCE_IDENT}({f.name}, {f.check_type.ident()}): ',
+                f'    if not {ISINSTANCE_IDENT}({field_values[f.name]}, {f.check_type.ident()}): ',
                 f'        raise {FIELD_TYPE_VALIDATION_ERROR_IDENT}(',
                 f'            obj={bs.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
-                f'            value={f.name},',
+                f'            value={field_values[f.name]},',
                 f'        )',
             ])
 
         for f in bs.fields:
             if f.validate is None:
                 continue
-            ors.add(f.validate)
+            op_refs.add(f.validate)
             lines.extend([
-                f'    if not {f.validate.ident()}({f.name}): ',
+                f'    if not {f.validate.ident()}({field_values[f.name]}): ',
                 f'        raise {FIELD_FN_VALIDATION_ERROR_IDENT}(',
                 f'            obj={bs.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
-                f'            value={f.name},',
+                f'            value={field_values[f.name]},',
                 f'        )',
             ])
 
         for vfn in bs.validate_fns or []:
-            ors.add(vfn.fn)
+            op_refs.add(vfn.fn)
             if vfn.params:
                 lines.extend([
                     f'    if not {vfn.fn.ident()}(',
                     *[
-                        f'        {p},'
+                        f'        {field_values[p]},'
                         for p in vfn.params
                     ],
                     f'    ):',
@@ -373,22 +383,37 @@ class InitGenerator(Generator[InitPlan]):
             object_ident=bs.self_param,
         )
         for f in bs.fields:
-            if f.field_type != FieldType.INSTANCE:
+            if not (f.field_type == FieldType.INSTANCE and f.init):
                 continue
             lines.extend([
                 f'    {l}'
-                for l in sab(f.name, f.name, frozen=bs.frozen, override=f.override)
+                for l in sab(
+                    f.name,
+                    field_values[f.name],
+                    frozen=bs.frozen,
+                    override=f.override,
+                )
             ])
 
         # post-init
 
         if (pia := bs.post_init_params) is not None:
-            lines.append(
-                f'    {bs.self_param}.{STD_POST_INIT_NAME}({", ".join(pia)})',
-            )
+            if pia:
+                lines.extend(
+                    f'    {bs.self_param}.{STD_POST_INIT_NAME}(',
+                    *[
+                        f'        {field_values[p]},'
+                        for p in pia
+                    ],
+                    f'    )',
+                )
+            else:
+                lines.append(
+                    f'    {bs.self_param}.{STD_POST_INIT_NAME}()',
+                )
 
         for ifn in bs.init_fns:
-            ors.add(ifn)
+            op_refs.add(ifn)
             lines.append(
                 f'    {ifn.ident()}({bs.self_param})',
             )
@@ -401,5 +426,5 @@ class InitGenerator(Generator[InitPlan]):
             )
 
         return [
-            AddMethodOp('__init__', '\n'.join([*proto_lines, *lines]), frozenset(ors)),
+            AddMethodOp('__init__', '\n'.join([*proto_lines, *lines]), frozenset(op_refs)),
         ]

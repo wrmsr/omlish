@@ -73,7 +73,12 @@ class OverrideGenerator(Generator[OverridePlan]):
                     f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
                     *[
                         f'    {l}'
-                        for l in SetattrSrcBuilder()(f.name, VALUE_IDENT, frozen=pl.frozen, override=True)
+                        for l in SetattrSrcBuilder()(
+                            f.name,
+                            VALUE_IDENT,
+                            frozen=pl.frozen,
+                            override=True,
+                        )
                     ],
                 ])
 
