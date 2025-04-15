@@ -93,7 +93,7 @@ _SELF_MODULE = None
 def _self_module():
     global _SELF_MODULE
     if _SELF_MODULE is None:
-        _SELF_MODULE = sys.modules[__package__.rpartition('.')[0]]
+        _SELF_MODULE = sys.modules[__package__]
     return _SELF_MODULE
 
 

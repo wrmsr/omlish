@@ -224,7 +224,7 @@ class InitGenerator(Generator[InitPlan]):
 
             params.append(p)
 
-        lines = [
+        proto_lines = [
             f'def __init__(',
             f'    {SELF_IDENT},',
             *[
@@ -233,6 +233,10 @@ class InitGenerator(Generator[InitPlan]):
             ],
             f') -> {NONE_IDENT}:',
         ]
+
+        # body
+
+        lines = []
 
         # defaults
 
@@ -340,5 +344,5 @@ class InitGenerator(Generator[InitPlan]):
             )
 
         return [
-            AddMethodOp('__init__', '\n'.join(lines), frozenset(ors)),
+            AddMethodOp('__init__', '\n'.join([*proto_lines, *lines]), frozenset(ors)),
         ]

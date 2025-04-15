@@ -143,3 +143,7 @@ class FieldsInspection:
     @cached.property
     def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
         return {k: rfl.to_annotation(v) for k, v in self.generic_replaced_field_types.items()}
+
+
+def inspect_fields(cls: type) -> FieldsInspection:
+    return FieldsInspection(cls)

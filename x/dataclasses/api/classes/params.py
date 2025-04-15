@@ -1,5 +1,8 @@
 import typing as ta
 
+from omlish import check
+
+from ...internals import STD_PARAMS_ATTR
 from ...internals import StdParams
 from ...specs import ClassSpec
 
@@ -64,3 +67,9 @@ class SpecDataclassParams(StdParams):
 
             spec=cs,
         )
+
+
+def get_dataclass_spec(cls: type) -> ClassSpec:
+    check.isinstance(cls, type)
+    sp = getattr(cls, STD_PARAMS_ATTR)
+    return check.isinstance(sp, SpecDataclassParams).spec

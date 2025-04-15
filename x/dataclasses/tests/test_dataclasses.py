@@ -11,7 +11,7 @@ from omlish import cached
 from omlish import lang
 from omlish import reflect as rfl  # noqa
 
-from ... import dcb as dc
+from ... import dataclasses as dc
 
 
 T = ta.TypeVar('T')
