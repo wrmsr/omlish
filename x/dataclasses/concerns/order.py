@@ -71,7 +71,7 @@ class OrderGenerator(Generator[OrderPlan]):
                 ])
             else:
                 ret_lines.append(
-                    f'        return {"True" if "=" in op else "False"}',
+                    f'    return {"True" if "=" in op else "False"}',
                 )
 
             ops.append(AddMethodOp(
