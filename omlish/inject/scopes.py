@@ -27,7 +27,7 @@ SCOPE_ALIASES: dict[str, Scope] = {}
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class ScopeBinding(Element, lang.Final):
     scope: Scope = dc.xfield(coerce=check.of_isinstance(Scope))
 
@@ -60,7 +60,7 @@ SCOPE_ALIASES['thread'] = ThreadScope()
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class SeededScope(Scope, lang.Final):
     tag: ta.Any = dc.xfield(coerce=check.not_none)
 
@@ -71,7 +71,7 @@ class SeededScope(Scope, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class ScopeSeededProvider(Provider):
     ss: SeededScope = dc.xfield(coerce=check.of_isinstance(SeededScope))
     key: Key = dc.xfield(coerce=check.of_isinstance(Key))

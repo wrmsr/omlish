@@ -12,7 +12,7 @@ from .types import Unscoped
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Binding(Element, lang.Final):
     key: Key = dc.xfield(coerce=check.of_isinstance(Key))
     provider: Provider = dc.xfield(coerce=check.of_isinstance(Provider))

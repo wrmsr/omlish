@@ -20,7 +20,7 @@ ProvisionListener: ta.TypeAlias = ta.Callable[[
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class ProvisionListenerBinding(Element, lang.Final):
     listener: ProvisionListener
 

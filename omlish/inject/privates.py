@@ -13,13 +13,13 @@ from .keys import as_key
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Expose(Element, lang.Final):
     key: Key = dc.xfield(coerce=as_key)
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Private(Element, lang.Final):
     elements: Elements = dc.xfield(coerce=check.of_isinstance(Elements))
 

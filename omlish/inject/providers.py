@@ -18,24 +18,24 @@ class Provider(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class FnProvider(Provider):
     fn: ta.Any = dc.xfield(validate=callable)
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class CtorProvider(Provider):
     ty: type = dc.xfield(coerce=check.of_isinstance(type))
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class ConstProvider(Provider):
     v: ta.Any
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class LinkProvider(Provider):
     k: Key = dc.xfield(coerce=check.of_isinstance(Key))

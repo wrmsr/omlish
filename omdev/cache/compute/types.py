@@ -90,7 +90,7 @@ class Object(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class CacheKey(lang.Abstract, ta.Generic[NameT]):
     name: NameT
 

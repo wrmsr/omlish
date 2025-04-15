@@ -17,7 +17,7 @@ class Project(ProjectBase):
             'mlx-lm ~= 0.22; sys_platform == "darwin"',
 
             'transformers ~= 4.51',
-            'sentence-transformers ~= 4.0',
+            'sentence-transformers ~= 4.1',
         ],
 
         'huggingface': [

@@ -28,7 +28,7 @@ from .impl.api import (  # noqa
     dataclass as xdataclass,
     make_dataclass as xmake_dataclass,
 
-    extra_params,
+    extra_class_params,
 )
 
 from .impl.as_ import (  # noqa

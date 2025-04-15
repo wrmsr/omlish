@@ -30,14 +30,14 @@ def _check_set_multi_key(mk: Key) -> bool:
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class SetBinding(Element, lang.Final):
     multi_key: Key = dc.xfield(validate=_check_set_multi_key)
     dst: Key = dc.xfield(coerce=check.of_isinstance(Key))
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class SetProvider(Provider):
     multi_key: Key = dc.xfield(validate=_check_set_multi_key)
 
@@ -50,7 +50,7 @@ def _check_map_multi_key(mk: Key) -> bool:
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class MapBinding(Element, lang.Final):
     multi_key: Key = dc.xfield(validate=_check_map_multi_key)
     map_key: ta.Any = dc.xfield()
@@ -58,7 +58,7 @@ class MapBinding(Element, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class MapProvider(Provider):
     multi_key: Key = dc.xfield(validate=_check_map_multi_key)
 

@@ -247,7 +247,7 @@ class _ExtraParamsKwargs:
     pass
 
 
-def extra_params(  # noqa
+def extra_class_params(  # noqa
         *,
         reorder=MISSING,
         cache_hash=MISSING,

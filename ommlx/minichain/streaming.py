@@ -17,7 +17,7 @@ StreamResponseItemT = ta.TypeVar('StreamResponseItemT')
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(repr_id=True)
+@dc.extra_class_params(repr_id=True)
 class StreamResponse(
     ResourcesResponse[ResponseOutputT],
     lang.Abstract,

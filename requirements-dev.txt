@@ -75,8 +75,11 @@ markupsafe==3.0.2
 
 redis==5.2.1
 
+# git+https://github.com/wrmsr/sqlean.py.git
 sqlean.py==3.47.0  # @omlish-venv !13t
+
 duckdb==1.2.2
+
 
 pycparser==2.22
 cffi==1.17.1
@@ -97,7 +100,7 @@ asttokens==3.0.0
 
 numpy>=1.20
 
-prompt-toolkit>=3.0.0
+prompt-toolkit==3.0.51
 
 snowflake-connector-python[secure-local-storage]==3.14.0; python_version < "3.13"
 snowflake-sqlalchemy==1.7.3; python_version < "3.13"
@@ -109,7 +112,7 @@ huggingface-hub==0.30.2
 datasets==3.5.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 transformers==4.51.3; python_version < "3.13"
-sentence-transformers==4.0.2; python_version < "3.13"
+sentence-transformers==4.1.0; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"

@@ -47,7 +47,7 @@ class FooResponseOutput(ResponseOutput, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(repr_id=True)
+@dc.extra_class_params(repr_id=True)
 class FooResponse(StreamResponse[FooResponseOutput, str]):
     output_foo_str: str
 

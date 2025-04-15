@@ -340,9 +340,9 @@ def test_cache_hash():
     assert o.c.n == 1
 
 
-def test_extra_params_deco():
+def test_extra_class_params_deco():
     @dc.dataclass(frozen=True)
-    @dc.extra_params(cache_hash=True)
+    @dc.extra_class_params(cache_hash=True)
     class CacheDc:
         c: HashCounter = dc.field(default_factory=HashCounter)
 

@@ -12,13 +12,13 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Origin:
     lst: ta.Sequence[str]
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Origins:
     lst: ta.Sequence[Origin]
 

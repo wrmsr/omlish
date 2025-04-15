@@ -12,7 +12,7 @@ from .elements import as_elements
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class Overrides(Element, lang.Final):
     ovr: Elements = dc.xfield(coerce=check.of_isinstance(Elements))
     src: Elements = dc.xfield(coerce=check.of_isinstance(Elements))

@@ -11,7 +11,7 @@ from .providers import ProviderImpl
 
 
 @dc.dataclass(frozen=True, eq=False)
-@dc.extra_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True)
 class BindingImpl(lang.Final):
     key: Key
     provider: ProviderImpl

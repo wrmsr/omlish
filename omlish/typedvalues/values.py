@@ -36,7 +36,7 @@ class UniqueTypedValue(TypedValue, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_params(generic_init=True)
+@dc.extra_class_params(generic_init=True)
 class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
     v: T
 
