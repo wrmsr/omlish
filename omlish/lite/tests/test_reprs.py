@@ -21,3 +21,16 @@ class TestAttrRepr(unittest.TestCase):
             attr_repr(Foo(1, 2, 3), 'z', 'y', 'x', value_filter=lambda v: v != 2),
             'Foo(z=3, x=1)',
         )
+
+    def test_rec_repr(self):
+        class RecFoo:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+            __repr__ = AttrRepr.of('x', 'y', recursive=True)
+
+        f = RecFoo(1, RecFoo(2, None))
+        f.y.y = f
+
+        self.assertEqual(repr(f), 'RecFoo(x=1, y=RecFoo(x=2, y=...))')
