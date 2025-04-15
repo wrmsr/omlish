@@ -61,7 +61,10 @@ def dataclass(
 
     #
 
-    fields = build_cls_std_fields(cls, kw_only=kw_only)
+    fields = build_cls_std_fields(
+        cls,
+        kw_only=kw_only,
+    )
     setattr(cls, STD_FIELDS_ATTR, fields)
 
     fsl: list[FieldSpec] = []

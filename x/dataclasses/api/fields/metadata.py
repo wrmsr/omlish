@@ -10,12 +10,12 @@ from ...specs import FieldSpec
 ##
 
 
-class _ExtraParams(lang.Marker):
+class _ExtraFieldParams(lang.Marker):
     pass
 
 
 def extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
-    return {_ExtraParams: kwargs}
+    return {_ExtraFieldParams: kwargs}
 
 
 ##

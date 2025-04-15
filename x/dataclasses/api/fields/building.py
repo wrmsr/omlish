@@ -82,10 +82,10 @@ def build_cls_std_fields(
     fields: dict[str, dc.Field] = {}
 
     for b in cls.__mro__[-1:0:-1]:
-        base_fields = getattr(b, STD_FIELDS_ATTR, None)
-        if base_fields is not None:
-            for f in base_fields.values():
-                fields[f.name] = f
+        if not (base_fields := getattr(b, STD_FIELDS_ATTR, None)):
+            continue
+        for f in base_fields.values():
+            fields[f.name] = f
 
     cls_annotations = get_cls_annotations(cls)
 

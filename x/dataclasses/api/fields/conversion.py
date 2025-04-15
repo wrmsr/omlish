@@ -9,7 +9,7 @@ from ...internals import std_field_type
 from ...specs import DefaultFactory
 from ...specs import FieldSpec
 from ...specs import FieldType
-from .metadata import _ExtraParams
+from .metadata import _ExtraFieldParams
 
 
 ##
@@ -66,7 +66,7 @@ def spec_field_default_to_std_defaults(dfl: lang.Maybe[DefaultFactory | ta.Any])
 
 
 def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
-    efp = f.metadata.get(_ExtraParams, {})
+    efp = f.metadata.get(_ExtraFieldParams, {})
 
     return FieldSpec(
         name=check.non_empty_str(f.name),

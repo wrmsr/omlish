@@ -30,13 +30,13 @@ def _append_cls_dct_md(k, v):
 ##
 
 
-class _ExtraParams(lang.Marker):
+class _ExtraClassParams(lang.Marker):
     pass
 
 
 def extra_class_params(**kwargs):
     def inner(cls):
-        _append_cls_md(cls, _ExtraParams, kwargs)
+        _append_cls_md(cls, _ExtraClassParams, kwargs)
         return cls
     return inner
 
@@ -79,7 +79,7 @@ def extract_cls_metadata(cls: type) -> ClassMetadata:
     cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
 
     eps = {}
-    for kw in cls_md_dct.get(_ExtraParams, []):
+    for kw in cls_md_dct.get(_ExtraClassParams, []):
         eps.update(kw)
 
     return ClassMetadata(

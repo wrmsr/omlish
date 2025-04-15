@@ -12,6 +12,8 @@ from omlish import lang
 from omlish.lite.dataclasses import is_immediate_dataclass
 
 from ..api.classes.decorator import dataclass
+from ..api.fields.metadata import _ExtraFieldParams  # noqa  # FIXME
+from ..specs import FieldSpec
 
 
 ##
@@ -122,6 +124,24 @@ class Static(lang.Abstract):
                     new_fld.default = dc.MISSING
                     # Use a default_factory to allow unsafe (mutable) values.
                     new_fld.default_factory = (lambda v2: lambda: v2)(v)  # noqa
+
+                try:
+                    x_fs = fld.metadata[FieldSpec]
+                except KeyError:
+                    pass
+                else:
+                    # FIXME: gross
+                    n_md = {
+                        k: v
+                        for k, v in fld.metadata.items()
+                        if k not in (FieldSpec, _ExtraFieldParams)
+                    }
+                    n_md[_ExtraFieldParams] = {
+                        getattr(x_fs, fs_f.name)
+                        for fs_f in dc.fields(FieldSpec)  # noqa
+                        if fs_f not in dc.Field.__slots__  # noqa
+                    }
+                    new_fld.metadata = n_md
 
                 setattr(cls, fld.name, new_fld)
                 new_anns[fld.name] = fld.type
