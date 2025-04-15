@@ -156,7 +156,7 @@ class ClassSpec(lang.Final):
     ## callbacks
     #
 
-    init_fns: ta.Sequence[InitFn] | None = None
+    init_fns: ta.Sequence[InitFn | property] | None = None
 
     @dc.dataclass(frozen=True)
     class ValidateFnWithParams:

@@ -71,7 +71,7 @@ def validate(obj):
 @dc.dataclass(frozen=True, kw_only=True, eq=False)
 class ClassMetadata:
     extra_params: ta.Mapping[str, ta.Any] | None = None
-    init_fns: ta.Sequence[InitFn] | None = None
+    init_fns: ta.Sequence[InitFn | property] | None = None
     validate_fns: ta.Sequence[ta.Any] | None = None
 
 

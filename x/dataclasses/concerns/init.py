@@ -32,6 +32,7 @@ from ..specs import FieldType
 from ..specs import InitFn
 from ..specs import ValidateFn
 from .fields import InitFields
+from .mro import MroDict
 
 
 ##
@@ -162,8 +163,19 @@ class InitGenerator(Generator[InitPlan]):
                 check_type=ctr,
             ))
 
+        mro_v_ids = set(map(id, ctx[MroDict].values()))
+        props_by_fget_id = {
+            id(v.fget): v
+            for v in ctx[MroDict].values()
+            if isinstance(v, property)
+            and v.fget is not None
+        }
         ifns: list[OpRef[InitFn]] = []
         for i, ifn in enumerate(ctx.cs.init_fns or []):
+            if (obj_id := id(ifn)) not in mro_v_ids and obj_id in props_by_fget_id:
+                ifn = props_by_fget_id[obj_id].__get__
+            elif isinstance(ifn, property):
+                ifn = ifn.__get__
             ir: OpRef = OpRef(f'init.init_fns.{i}')
             orm[ir] = ifn
             ifns.append(ir)
