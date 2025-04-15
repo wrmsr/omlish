@@ -2,78 +2,23 @@
 TODO:
  - collect init_fn's / validate_fns from superclass ClassSpecs
 """
-import collections
-import dataclasses as dc
 import inspect
-import typing as ta
 
 from omlish import check
 from omlish import lang
 
-from ..internals import STD_PARAMS_ATTR
-from ..processing.driving import drive_cls_processing
-from ..specs import ClassSpec
-from ..specs import CoerceFn
-from ..specs import FieldSpec
-from ..specs import ReprFn
-from ..specs import ValidateFn
-from ..utils import class_decorator
-from .classes.metadata import extract_cls_metadata
-from .classes.metadata import remove_cls_metadata
-from .classes.params import SpecDataclassParams
-from .fields.building import build_cls_std_fields
-from .fields.building import build_std_field_metadata_update
-from .fields.building import install_built_cls_std_fields
-from .fields.conversion import std_field_to_field_spec
-from .fields.metadata import extra_field_params
-
-
-##
-
-
-def field(
-        *,
-        default=dc.MISSING,
-        default_factory=dc.MISSING,
-        init=True,
-        repr=True,  # noqa
-        hash=None,  # noqa
-        compare=True,
-        metadata=None,
-        kw_only=dc.MISSING,
-
-        coerce: bool | CoerceFn | None = None,
-        validate: ValidateFn | None = None,  # noqa
-        check_type: bool | type | tuple[type | None, ...] | None = None,
-        override: bool | None = None,
-        repr_fn: ReprFn | None = None,
-        repr_priority: int | None = None,
-) -> ta.Any:
-    efp = extra_field_params(
-        coerce=coerce,
-        validate=validate,
-        check_type=check_type,
-        override=override,
-        repr_fn=repr_fn,
-        repr_priority=repr_priority,
-    )
-
-    md: ta.Any = metadata
-    if md is None:
-        md = efp
-    else:
-        md = collections.ChainMap(efp, md)  # type: ignore[arg-type]
-
-    return dc.field(
-        default=default,
-        default_factory=default_factory,
-        init=init,
-        repr=repr,
-        hash=hash,
-        compare=compare,
-        metadata=md,
-        kw_only=kw_only,
-    )
+from ...internals import STD_PARAMS_ATTR
+from ...processing.driving import drive_cls_processing
+from ...specs import ClassSpec
+from ...specs import FieldSpec
+from ...utils import class_decorator
+from ..fields.building import build_cls_std_fields
+from ..fields.building import build_std_field_metadata_update
+from ..fields.building import install_built_cls_std_fields
+from ..fields.conversion import std_field_to_field_spec
+from .metadata import extract_cls_metadata
+from .metadata import remove_cls_metadata
+from .params import SpecDataclassParams
 
 
 ##
@@ -177,7 +122,3 @@ def dataclass(
     #
 
     return drive_cls_processing(cls, cs)
-
-
-def make_dataclass(*args, **kwargs):
-    raise NotImplementedError

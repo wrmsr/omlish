@@ -1,7 +1,8 @@
-from .api import (  # noqa
-    field,
-
+from .classes.decorator import (  # noqa
     dataclass,
+)
+
+from .classes.make import (  # noqa
     make_dataclass,
 )
 
@@ -13,4 +14,8 @@ from .classes.metadata import (
 
 from .fields.metadata import (
     extra_field_params,
+)
+
+from .fields.constructor import (  # noqa
+    field,
 )
