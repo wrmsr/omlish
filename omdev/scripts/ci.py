@@ -5572,17 +5572,48 @@ class StringMangler:
         check.not_in(self.escape, self.escaped)
         check.arg(len(set(self.escaped)) == len(self.escaped))
 
+    #
+
+    @cached_nullary
+    def replaced(self) -> ta.Tuple[str, ...]:
+        return (self.escape, *self.escaped)
+
+    @cached_nullary
+    def replaced_set(self) -> ta.FrozenSet[str]:
+        return frozenset(self.replaced())
+
+    @cached_nullary
+    def replaced_indexes(self) -> ta.Mapping[str, int]:
+        return {s: i for i, s in enumerate(self.replaced())}
+
+    #
+
+    @cached_nullary
+    def replacement_pad(self) -> int:
+        return len('%x' % (len(self.replaced()),))  # noqa
+
     @cached_nullary
     def replacements(self) -> ta.Sequence[ta.Tuple[str, str]]:
-        pad = len('%x' % (len(self.escaped) + 1,))  # noqa
-        fmt = f'%0{pad}x'
+        fmt = f'%0{self.replacement_pad()}x'
         return [
             (l, self.escape + fmt % (i,))
-            for i, l in enumerate([self.escape, *self.escaped])
+            for i, l in enumerate(self.replaced())
         ]
 
+    @cached_nullary
+    def replacements_dict(self) -> ta.Mapping[str, str]:
+        return dict(self.replacements())
+
+    #
+
     def mangle(self, s: str) -> str:
-        for l, r in self.replacements():
+        ecs = sorted(
+            frozenset(s) & self.replaced_set(),
+            key=self.replaced_indexes().__getitem__,
+        )
+        rd = self.replacements_dict()
+        for l in ecs:
+            r = rd[l]
             s = s.replace(l, r)
         return s
 
