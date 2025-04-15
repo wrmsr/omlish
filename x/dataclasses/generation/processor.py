@@ -14,7 +14,6 @@ from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
 from .base import Plan
-from .base import Plans
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
@@ -22,6 +21,7 @@ from .idents import FN_GLOBALS
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
+from .plans import Plans
 from .registry import all_generator_types
 from .registry import generator_type_for_plan_type
 
@@ -116,7 +116,7 @@ class GeneratorProcessor(Processor):
 
             pll.append(pr.plan)
 
-        plans = tuple(pll)
+        plans = Plans(tuple(pll))
 
         return self.Prepared(
             plans,

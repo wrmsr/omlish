@@ -1,7 +1,7 @@
 import dataclasses as dc
 import json
 
-from .base import Plans
+from .plans import Plans
 
 
 ##

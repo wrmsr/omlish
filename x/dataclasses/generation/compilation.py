@@ -61,8 +61,7 @@ class OpCompiler:
                     f'import {i}'
                     for i in FN_GLOBAL_IMPORTS
                 ],
-                '',
-                '',
+                '\n',
             ]
 
         def globals_ns(self) -> ta.Mapping[str, ta.Any]:
