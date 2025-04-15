@@ -1,4 +1,4 @@
-from .idents import OBJECT_SETATTR_IDENT
+from .globals import OBJECT_SETATTR_GLOBAL
 from .idents import SELF_DICT_IDENT
 from .idents import SELF_IDENT
 
@@ -68,7 +68,7 @@ class SetattrSrcBuilder:
                 ]
 
         elif frozen:
-            return [f'{OBJECT_SETATTR_IDENT}({self._object_ident}, {name!r}, {value_src})']
+            return [f'{OBJECT_SETATTR_GLOBAL.ident}({self._object_ident}, {name!r}, {value_src})']
 
         else:
             return [f'{self._object_ident}.{name} = {value_src}']

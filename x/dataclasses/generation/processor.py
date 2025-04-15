@@ -17,7 +17,7 @@ from .base import Plan
 from .compilation import OpCompiler
 from .execution import OpExecutor
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
+from .globals import FN_GLOBALS
 from .mangling import IDENT_MANGLER
 from .ops import Op
 from .ops import OpRef
@@ -73,7 +73,11 @@ class GeneratorProcessor(Processor):
             fn = ns[comp.fn_name]
 
             kw: dict = {CLS_IDENT: cls}
-            kw.update({k: v.value for k, v in FN_GLOBALS.items() if v.src.startswith('.')})
+            kw.update({
+                k.ident: v.value
+                for k, v in FN_GLOBALS.items()
+                if v.src.startswith('.')
+            })
             orm = gp.prepare().ref_map
             for r in comp.refs:
                 kw[r.ident()] = orm[r]
