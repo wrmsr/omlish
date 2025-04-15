@@ -54,7 +54,7 @@ class GeneratorProcessor(Processor):
                 # OpCompiler.JitStyle(),
             )
 
-            fn_name = IDENT_MANGLER.mangle(cls.__qualname__)
+            fn_name = '_process_dataclass__' + IDENT_MANGLER.mangle(cls.__qualname__)
 
             comp = compiler.compile(
                 fn_name,
