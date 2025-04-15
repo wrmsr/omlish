@@ -23,6 +23,10 @@ VALUE_IDENT = IDENT_PREFIX + 'value'
 
 
 class FnGlobal(ta.NamedTuple):
+    ident: str
+
+
+class FnGlobalValue(ta.NamedTuple):
     value: ta.Any
     src: str  # Leading '.' denotes a dataclasses-internal symbol
 
@@ -34,49 +38,49 @@ FN_GLOBAL_IMPORTS: ta.Mapping[str, types.ModuleType] = {
 }
 
 
-FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
-    (ISINSTANCE_IDENT := IDENT_PREFIX + 'isinstance'): FnGlobal(isinstance, 'isinstance'),
-    (NONE_IDENT := IDENT_PREFIX + 'None'): FnGlobal(None, 'None'),
-    (PROPERTY_IDENT := IDENT_PREFIX + 'property'): FnGlobal(property, 'property'),
-    (TYPE_ERROR_IDENT := IDENT_PREFIX + 'TypeError'): FnGlobal(TypeError, 'TypeError'),
+FN_GLOBALS: ta.Mapping[FnGlobal, FnGlobalValue] = {
+    FnGlobal(ISINSTANCE_IDENT := IDENT_PREFIX + 'isinstance'): FnGlobalValue(isinstance, 'isinstance'),
+    FnGlobal(NONE_IDENT := IDENT_PREFIX + 'None'): FnGlobalValue(None, 'None'),
+    FnGlobal(PROPERTY_IDENT := IDENT_PREFIX + 'property'): FnGlobalValue(property, 'property'),
+    FnGlobal(TYPE_ERROR_IDENT := IDENT_PREFIX + 'TypeError'): FnGlobalValue(TypeError, 'TypeError'),
 
-    (OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): FnGlobal(
+    FnGlobal(OBJECT_SETATTR_IDENT := IDENT_PREFIX + 'object_setattr'): FnGlobalValue(
         object.__setattr__,
         'object.__setattr__',
     ),
 
-    (FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): FnGlobal(
+    FnGlobal(FROZEN_INSTANCE_ERROR_IDENT := IDENT_PREFIX + 'FrozenInstanceError'): FnGlobalValue(
         dc.FrozenInstanceError,
         'dataclasses.FrozenInstanceError',
     ),
-    (HAS_DEFAULT_FACTORY_IDENT := IDENT_PREFIX + 'HAS_DEFAULT_FACTORY'): FnGlobal(
+    FnGlobal(HAS_DEFAULT_FACTORY_IDENT := IDENT_PREFIX + 'HAS_DEFAULT_FACTORY'): FnGlobalValue(
         dc._HAS_DEFAULT_FACTORY,  # type: ignore[attr-defined]  # noqa
         'dataclasses._HAS_DEFAULT_FACTORY',
     ),
-    (MISSING_IDENT := IDENT_PREFIX + 'MISSING'): FnGlobal(
+    FnGlobal(MISSING_IDENT := IDENT_PREFIX + 'MISSING'): FnGlobalValue(
         dc.MISSING,  # noqa
         'dataclasses.MISSING',
     ),
 
-    (REPRLIB_RECURSIVE_REPR_IDENT := IDENT_PREFIX + '_recursive_repr'): FnGlobal(
+    FnGlobal(REPRLIB_RECURSIVE_REPR_IDENT := IDENT_PREFIX + '_recursive_repr'): FnGlobalValue(
         reprlib.recursive_repr,
         'reprlib.recursive_repr',
     ),
 
-    (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(
+    FnGlobal(FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobalValue(
         types.FunctionType,
         'types.FunctionType',
     ),
 
-    (FIELD_FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldFnValidationError'): FnGlobal(
+    FnGlobal(FIELD_FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldFnValidationError'): FnGlobalValue(
         FieldFnValidationError,
         '.errors.FieldFnValidationError',
     ),
-    (FIELD_TYPE_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldTypeValidationError'): FnGlobal(
+    FnGlobal(FIELD_TYPE_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FieldTypeValidationError'): FnGlobalValue(
         FieldTypeValidationError,
         '.errors.FieldTypeValidationError',
     ),
-    (FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FnValidationError'): FnGlobal(
+    FnGlobal(FN_VALIDATION_ERROR_IDENT := IDENT_PREFIX + 'FnValidationError'): FnGlobalValue(
         FnValidationError,
         '.errors.FnValidationError',
     ),
@@ -84,6 +88,6 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
 
 
 FN_GLOBAL_VALUES: ta.Mapping[str, ta.Any] = {
-    k: v.value
+    k.ident: v.value
     for k, v in FN_GLOBALS.items()
 }

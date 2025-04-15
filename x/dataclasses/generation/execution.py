@@ -62,6 +62,8 @@ class OpExecutor:
             **FN_GLOBAL_VALUES,
         }
         for r in refs:
+            if r in ns:
+                continue
             ns[r.ident()] = self._orm[r]
 
         exec(

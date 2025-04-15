@@ -433,5 +433,9 @@ class InitGenerator(Generator[InitPlan]):
             )
 
         return [
-            AddMethodOp('__init__', '\n'.join([*proto_lines, *lines]), frozenset(op_refs)),
+            AddMethodOp(
+                '__init__',
+                '\n'.join([*proto_lines, *lines]),
+                frozenset(op_refs),
+            ),
         ]
