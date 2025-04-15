@@ -4,6 +4,7 @@ TODO:
 """
 import dataclasses as dc
 import inspect
+import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -45,6 +46,10 @@ def dataclass(
         kw_only=False,
         slots=False,
         weakref_slot=False,
+
+        #
+
+        metadata: ta.Mapping[ta.Any, ta.Any] | None = None,
 
         reorder: bool | None = None,
         cache_hash: bool | None = None,
@@ -117,6 +122,10 @@ def dataclass(
         slots=slots,
         weakref_slot=weakref_slot,
 
+        #
+
+        metadata=metadata,
+
         **{
             **(cmd.extra_params or {}),
             **lang.opt_kw(
@@ -131,6 +140,8 @@ def dataclass(
         init_fns=init_fns or None,
         validate_fns=validate_fns or None,
     )
+
+    #
 
     std_params = build_spec_std_params(cs)
     check.not_in(STD_PARAMS_ATTR, cls.__dict__)

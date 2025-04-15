@@ -2,6 +2,7 @@ import contextlib
 import keyword
 import sys
 import types
+import typing as ta
 
 from .decorator import dataclass
 
@@ -29,6 +30,10 @@ def make_dataclass(  # noqa
         weakref_slot=False,
 
         module=None,
+
+        #
+
+        metadata: ta.Mapping[ta.Any, ta.Any] | None = None,
 
         reorder: bool | None = None,
         cache_hash: bool | None = None,
@@ -91,6 +96,10 @@ def make_dataclass(  # noqa
         kw_only=kw_only,
         slots=slots,
         weakref_slot=weakref_slot,
+
+        #
+
+        metadata=metadata,
 
         reorder=reorder,
         cache_hash=cache_hash,

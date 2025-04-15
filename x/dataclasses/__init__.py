@@ -66,13 +66,13 @@ from .errors import (  # noqa
     ValidationError,
 )
 
-# from .metaclass.meta import (  # noqa
-#     DataMeta,
-# )
+from .metaclass.meta import (  # noqa
+    DataMeta,
+)
 
-# from .metaclass.bases import (  # noqa
-#     Box,
-#     Case,
-#     Data,
-#     Frozen,
-# )
+from .metaclass.bases import (  # noqa
+    Box,
+    Case,
+    Data,
+    Frozen,
+)
