@@ -22,15 +22,7 @@ from .api import (  # noqa
 
     make_dataclass as xmake_dataclass,
 
-    extra_class_params,
-    init,
-    validate,
-
-    extra_field_params,
-
     field as xfield,
-
-    reflect,
 )
 
 from .tools.as_ import (  # noqa
@@ -55,6 +47,16 @@ globals()['make_dataclass'] = xmake_dataclass
 ##
 
 
+from .api import (  # noqa
+    extra_class_params,
+    init,
+    validate,
+
+    extra_field_params,
+
+    reflect,
+)
+
 from .errors import (  # noqa
     FieldFnValidationError,
     FieldTypeValidationError,
@@ -63,3 +65,14 @@ from .errors import (  # noqa
     TypeValidationError,
     ValidationError,
 )
+
+# from .metaclass.meta import (  # noqa
+#     DataMeta,
+# )
+
+# from .metaclass.bases import (  # noqa
+#     Box,
+#     Case,
+#     Data,
+#     Frozen,
+# )
