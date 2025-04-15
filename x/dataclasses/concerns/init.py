@@ -12,12 +12,12 @@ from omlish import check
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
-from ..generation.idents import FIELD_FN_VALIDATION_ERROR_IDENT
-from ..generation.idents import FIELD_TYPE_VALIDATION_ERROR_IDENT
-from ..generation.idents import FN_VALIDATION_ERROR_IDENT
-from ..generation.idents import HAS_DEFAULT_FACTORY_IDENT
-from ..generation.idents import ISINSTANCE_IDENT
-from ..generation.idents import NONE_IDENT
+from ..generation.globals import FIELD_FN_VALIDATION_ERROR_GLOBAL
+from ..generation.globals import FIELD_TYPE_VALIDATION_ERROR_GLOBAL
+from ..generation.globals import FN_VALIDATION_ERROR_GLOBAL
+from ..generation.globals import HAS_DEFAULT_FACTORY_GLOBAL
+from ..generation.globals import ISINSTANCE_GLOBAL
+from ..generation.globals import NONE_GLOBAL
 from ..generation.idents import SELF_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
@@ -261,7 +261,7 @@ class InitGenerator(Generator[InitPlan]):
 
             if f.default_factory is not None:
                 check.none(f.default)
-                p += f' = {HAS_DEFAULT_FACTORY_IDENT}'
+                p += f' = {HAS_DEFAULT_FACTORY_GLOBAL.ident}'
             elif f.default is not None:
                 check.none(f.default_factory)
                 op_refs.add(f.default)
@@ -276,7 +276,7 @@ class InitGenerator(Generator[InitPlan]):
                 f'    {p},'
                 for p in params
             ],
-            f') -> {NONE_IDENT}:',
+            f') -> {NONE_GLOBAL.ident}:',
         ]
 
         # body
@@ -293,7 +293,7 @@ class InitGenerator(Generator[InitPlan]):
                 op_refs.add(f.default_factory)
                 if f.init:
                     lines.extend([
-                        f'    if {f.name} is {HAS_DEFAULT_FACTORY_IDENT}:',
+                        f'    if {f.name} is {HAS_DEFAULT_FACTORY_GLOBAL.ident}:',
                         f'        {f.name} = {f.default_factory.ident()}()',
                     ])
                 else:
@@ -339,8 +339,8 @@ class InitGenerator(Generator[InitPlan]):
                 continue
             op_refs.add(f.check_type)
             lines.extend([
-                f'    if not {ISINSTANCE_IDENT}({field_values[f.name]}, {f.check_type.ident()}): ',
-                f'        raise {FIELD_TYPE_VALIDATION_ERROR_IDENT}(',
+                f'    if not {ISINSTANCE_GLOBAL.ident}({field_values[f.name]}, {f.check_type.ident()}): ',
+                f'        raise {FIELD_TYPE_VALIDATION_ERROR_GLOBAL.ident}(',
                 f'            obj={plan.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
@@ -354,7 +354,7 @@ class InitGenerator(Generator[InitPlan]):
             op_refs.add(f.validate)
             lines.extend([
                 f'    if not {f.validate.ident()}({field_values[f.name]}): ',
-                f'        raise {FIELD_FN_VALIDATION_ERROR_IDENT}(',
+                f'        raise {FIELD_FN_VALIDATION_ERROR_GLOBAL.ident}(',
                 f'            obj={plan.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
@@ -378,7 +378,7 @@ class InitGenerator(Generator[InitPlan]):
                     f'    if not {vfn.fn.ident()}():',
                 )
             lines.extend([
-                f'        raise {FN_VALIDATION_ERROR_IDENT}(',
+                f'        raise {FN_VALIDATION_ERROR_GLOBAL.ident}(',
                 f'            obj={plan.self_param},',
                 f'            fn={vfn.fn.ident()},',
                 f'        )',

@@ -10,7 +10,7 @@ from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
 from ..generation.idents import CLS_IDENT
-from ..generation.idents import FROZEN_INSTANCE_ERROR_IDENT
+from ..generation.globals import FROZEN_INSTANCE_ERROR_GLOBAL
 from ..generation.idents import IDENT_PREFIX
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
@@ -97,7 +97,7 @@ class FrozenGenerator(Generator[FrozenPlan]):
                 *preamble,
                 f'def __{mth}__(self, {", ".join(params)}):',
                 f'    if {condition}:',
-                f'        raise {FROZEN_INSTANCE_ERROR_IDENT}{exc_args}',
+                f'        raise {FROZEN_INSTANCE_ERROR_GLOBAL.ident}{exc_args}',
                 f'    super({CLS_IDENT}, self).__{mth}__({", ".join(params)})',
             ]),
         )

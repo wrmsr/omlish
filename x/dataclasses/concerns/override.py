@@ -4,7 +4,7 @@ import typing as ta
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
-from ..generation.idents import NONE_IDENT
+from ..generation.globals import NONE_GLOBAL
 from ..generation.idents import SELF_IDENT
 from ..generation.idents import VALUE_IDENT
 from ..generation.ops import AddPropertyOp
@@ -70,7 +70,7 @@ class OverrideGenerator(Generator[OverridePlan]):
             set_src: str | None = None
             if not pl.frozen:
                 set_src = '\n'.join([
-                    f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_IDENT}:',
+                    f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_GLOBAL.ident}:',
                     *[
                         f'    {l}'
                         for l in SetattrSrcBuilder()(
