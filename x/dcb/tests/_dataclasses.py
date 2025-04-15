@@ -6,7 +6,7 @@ import dataclasses
 import types
 
 
-def _transform_dataclass__A(
+def _transform_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
@@ -18,8 +18,8 @@ def _transform_dataclass__A(
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default_factory,
         __dataclass__init__fields__3__validate,
-        __dataclass__init__init_fns__0,
-        __dataclass__init__validate_fns__0,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__override__fields__1__annotation,
         __dataclass__repr__fns__2__fn,
         __dataclass__isinstance=isinstance,  # noqa
@@ -42,6 +42,7 @@ def _transform_dataclass__A(
             s=self.s,
             d=self.d,
             l=self.l,
+            x=self.x,
         )
 
     __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -58,7 +59,8 @@ def _transform_dataclass__A(
                 self.i == other.i and
                 self.s == other.s and
                 self.d == other.d and
-                self.l == other.l
+                self.l == other.l and
+                self.x == other.x
         )
 
     __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -67,7 +69,7 @@ def _transform_dataclass__A(
     setattr(__dataclass__cls, '__eq__', __eq__)
 
     def __setattr__(self, name, value):
-        if type(self) is __dataclass__cls or name in {'i', 's', 'd', 'l'}:
+        if type(self) is __dataclass__cls or name in {'i', 's', 'd', 'l', 'x'}:
             raise __dataclass__FrozenInstanceError
         super(__dataclass__cls, self).__setattr__(name, value)
 
@@ -77,7 +79,7 @@ def _transform_dataclass__A(
     setattr(__dataclass__cls, '__setattr__', __setattr__)
 
     def __delattr__(self, name):
-        if type(self) is __dataclass__cls or name in {'i', 's', 'd', 'l'}:
+        if type(self) is __dataclass__cls or name in {'i', 's', 'd', 'l', 'x'}:
             raise __dataclass__FrozenInstanceError
         super(__dataclass__cls, self).__delattr__(name)
 
@@ -92,6 +94,7 @@ def _transform_dataclass__A(
             self.s,
             self.d,
             self.l,
+            self.x,
         ))
 
     __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -105,6 +108,7 @@ def _transform_dataclass__A(
             s: __dataclass__init__fields__1__annotation,
             d: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             l: __dataclass__init__fields__3__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            x: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
     ) -> __dataclass__None:
         if l is __dataclass__HAS_DEFAULT_FACTORY:
             l = __dataclass__init__fields__3__default_factory()
@@ -123,20 +127,13 @@ def _transform_dataclass__A(
                 field='l',
                 value=l,
             )
-        if not __dataclass__init__validate_fns__0(
-                l,
-        ):
-            raise __dataclass__FnValidationError(
-                obj=__dataclass__self,
-                fn=__dataclass__init__validate_fns__0,
-            )
         __dataclass__object_setattr(__dataclass__self, 'i', i)
         __dataclass__self_dict = __dataclass__self.__dict__
         __dataclass__self_dict['s'] = s
         __dataclass__object_setattr(__dataclass__self, 'd', d)
         __dataclass__object_setattr(__dataclass__self, 'l', l)
+        __dataclass__object_setattr(__dataclass__self, 'x', x)
         __dataclass__self.__post_init__()
-        __dataclass__init__init_fns__0(__dataclass__self)
 
     __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
     if '__init__' in __dataclass__cls.__dict__:
@@ -151,11 +148,13 @@ def _transform_dataclass__A(
             self.s,
             self.d,
             self.l,
+            self.x,
         ) < (
             other.i,
             other.s,
             other.d,
             other.l,
+            other.x,
         )
 
     __lt__.__qualname__ = f"{__dataclass__cls.__qualname__}.__lt__"
@@ -171,11 +170,13 @@ def _transform_dataclass__A(
             self.s,
             self.d,
             self.l,
+            self.x,
         ) <= (
             other.i,
             other.s,
             other.d,
             other.l,
+            other.x,
         )
 
     __le__.__qualname__ = f"{__dataclass__cls.__qualname__}.__le__"
@@ -191,11 +192,13 @@ def _transform_dataclass__A(
             self.s,
             self.d,
             self.l,
+            self.x,
         ) > (
             other.i,
             other.s,
             other.d,
             other.l,
+            other.x,
         )
 
     __gt__.__qualname__ = f"{__dataclass__cls.__qualname__}.__gt__"
@@ -211,11 +214,13 @@ def _transform_dataclass__A(
             self.s,
             self.d,
             self.l,
+            self.x,
         ) >= (
             other.i,
             other.s,
             other.d,
             other.l,
+            other.x,
         )
 
     __ge__.__qualname__ = f"{__dataclass__cls.__qualname__}.__ge__"
@@ -238,7 +243,8 @@ def _transform_dataclass__A(
             f"l={self.l!r}, "
             f"i={self.i!r}, "
             f"{f's={s}' if ((s := __dataclass__repr__fns__2__fn(self.s)) is not None) else ''}, "
-            f"d={self.d!r}"
+            f"d={self.d!r}, "
+            f"x={self.x!r}"
             f")"
         )
 

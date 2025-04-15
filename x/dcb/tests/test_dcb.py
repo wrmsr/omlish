@@ -71,5 +71,5 @@ def test_dcb():
         case _:
             raise RuntimeError
 
-    b = B(**dc.asdict(a), x=420)  # type: ignore[unreachable]
+    b = B(**dc.asdict(a), x=420)  # type: ignore[unreachable]  # noqa
     print(b)
