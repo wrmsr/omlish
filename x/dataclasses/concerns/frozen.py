@@ -65,7 +65,7 @@ class FrozenGenerator(Generator[FrozenPlan]):
         if not ctx.cs.frozen:
             return None
 
-        return PlanResult(FrozenPlan(tuple(sorted(f.name for f in ctx.cs.fields))))
+        return PlanResult(FrozenPlan(tuple(f.name for f in ctx.cs.fields)))
 
     def _generate_one(
             self,
