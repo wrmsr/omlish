@@ -72,6 +72,7 @@ class FrozenGenerator(Generator[FrozenPlan]):
             pl: FrozenPlan,
             mth: str,
             params: ta.Sequence[str],
+            exc_args: str,
     ) -> AddMethodOp:
         preamble = []
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5
@@ -96,13 +97,23 @@ class FrozenGenerator(Generator[FrozenPlan]):
                 *preamble,
                 f'def __{mth}__(self, {", ".join(params)}):',
                 f'    if {condition}:',
-                f'        raise {FROZEN_INSTANCE_ERROR_IDENT}',
+                f'        raise {FROZEN_INSTANCE_ERROR_IDENT}{exc_args}',
                 f'    super({CLS_IDENT}, self).__{mth}__({", ".join(params)})',
             ]),
         )
 
     def generate(self, pl: FrozenPlan) -> ta.Iterable[Op]:
         return [
-            self._generate_one(pl, 'setattr', ['name', 'value']),
-            self._generate_one(pl, 'delattr', ['name']),
+            self._generate_one(
+                pl,
+                'setattr',
+                ['name', 'value'],
+                '(f"cannot assign to field {name!r}")',
+            ),
+            self._generate_one(
+                pl,
+                'delattr',
+                ['name'],
+                '(f"cannot delete field {name!r}")',
+            ),
         ]
