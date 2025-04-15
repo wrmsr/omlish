@@ -336,6 +336,8 @@ class InitGenerator(Generator[InitPlan]):
             object_ident=bs.self_param,
         )
         for f in bs.fields:
+            if f.field_type != FieldType.INSTANCE:
+                continue
             lines.extend([
                 f'    {l}'
                 for l in sab(f.name, f.name, frozen=bs.frozen, override=f.override)
