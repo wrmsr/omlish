@@ -61,10 +61,10 @@ class Node(
         except KeyError:
             pass
 
-        dc_info = dc.reflect(cls)
+        dc_rfl = dc.reflect(cls)
         fields = Node._Fields(
-            cmp_fields=tuple(f.name for f in dc_info.instance_fields if f.compare),
-            hash_fields=tuple(f.name for f in dc_info.instance_fields if (f.compare if f.hash is None else f.hash)),
+            cmp_fields=tuple(f.name for f in dc_rfl.instance_fields if f.compare),
+            hash_fields=tuple(f.name for f in dc_rfl.instance_fields if (f.compare if f.hash is None else f.hash)),
         )
 
         setattr(cls, '__node_fields__', fields)

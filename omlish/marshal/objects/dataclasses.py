@@ -50,7 +50,7 @@ def get_dataclass_field_infos(
 
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
-    dc_rf = dc.reflect(ty)
+    dc_rfl = dc.reflect(ty)
 
     fi_defaults = {
         k: v
@@ -66,7 +66,7 @@ def get_dataclass_field_infos(
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
-    for field in dc_rf.instance_fields:
+    for field in dc_rfl.instance_fields:
         if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
             um_name = translate_name(field.name, f_naming)
         else:
@@ -76,10 +76,10 @@ def get_dataclass_field_infos(
 
         f_ty: ta.Any
         if (
-                ((cpx := dc_rf.cls_params_extras) is not None and cpx.generic_init) or
+                ((cpx := dc_rfl.cls_params_extras) is not None and cpx.generic_init) or
                 (fmd is not None and fmd.options.generic_replace)
         ):
-            f_ty = rfl.to_annotation(dc_rf.generic_replaced_field_type(field.name))
+            f_ty = rfl.to_annotation(dc_rfl.generic_replaced_field_type(field.name))
         else:
             f_ty = type_hints[field.name]
 

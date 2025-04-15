@@ -9,8 +9,19 @@ from .classes.params import get_class_spec
 ##
 
 
-def reflect(cls: type) -> ClassSpec:
+class ClassReflection:
+    def __init__(self, spec: ClassSpec) -> None:
+        super().__init__()
+
+        self._spec = spec
+
+    @property
+    def spec(self) -> ClassSpec:
+        return self._spec
+
+
+def reflect(cls: type) -> ClassReflection:
     if (cs := get_class_spec(cls)) is not None:
-        return cs
+        return ClassReflection(cs)
 
     raise NotImplementedError
