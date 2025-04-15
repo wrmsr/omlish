@@ -9,13 +9,13 @@ import typing as ta
 from omlish import check
 
 from ..utils import repr_round_trip_value
+from .globals import FN_GLOBALS
+from .globals import FN_GLOBAL_IMPORTS
+from .globals import FUNCTION_TYPE_GLOBAL
+from .globals import PROPERTY_GLOBAL
+from .globals import TYPE_ERROR_GLOBAL
 from .idents import CLS_IDENT
-from .idents import FN_GLOBALS
-from .idents import FN_GLOBAL_IMPORTS
-from .idents import FUNCTION_TYPE_IDENT
 from .idents import IDENT_PREFIX
-from .idents import PROPERTY_IDENT
-from .idents import TYPE_ERROR_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import IfAttrPresent
@@ -118,7 +118,11 @@ class OpCompiler:
         elif if_present == 'error':
             return [
                 f'if {attr_name!r} in {CLS_IDENT}.__dict__:',
-                f'    raise {TYPE_ERROR_IDENT}(f"Cannot overwrite attribute {attr_name} in class {{{CLS_IDENT}.__name__}}")',  # noqa
+                (
+                    f'    '
+                    f'raise {TYPE_ERROR_GLOBAL.ident}'
+                    f'(f"Cannot overwrite attribute {attr_name} in class {{{CLS_IDENT}.__name__}}")'
+                ),
                 setattr_stmt,
             ]
 
@@ -137,7 +141,7 @@ class OpCompiler:
                 if isinstance(v := op.value, OpRef):
                     vs = v.ident()
                     body_lines.extend([
-                        f'if isinstance({vs}, {FUNCTION_TYPE_IDENT}):'
+                        f'if isinstance({vs}, {FUNCTION_TYPE_GLOBAL.ident}):'
                         f'    {vs}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{{{vs}.__name__}}"',
                     ])
                 else:
@@ -167,7 +171,7 @@ class OpCompiler:
 
                 gen_lines = [
                     f'def {gen_ident}():',
-                    f'    @{PROPERTY_IDENT}',
+                    f'    @{PROPERTY_GLOBAL.ident}',
                     *[
                         f'    {l}'
                         for l in check.not_none(op.get_src).splitlines()
@@ -211,9 +215,9 @@ class OpCompiler:
 
         params.extend([
             OpCompiler._FnParam(
-                k,
-                src=f'{k}={v.src}' if not v.src.startswith('.') else k,
-                noqa=k != k.lower() or not v.src.startswith('.'),
+                k.ident,
+                src=f'{k.ident}={v.src}' if not v.src.startswith('.') else k,
+                noqa=k.ident != k.ident.lower() or not v.src.startswith('.'),
             )
             for k, v in FN_GLOBALS.items()
         ])

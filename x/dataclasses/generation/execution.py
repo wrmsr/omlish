@@ -10,8 +10,8 @@ import typing as ta
 from omlish import lang
 
 from ..utils import repr_round_trip_value
+from .globals import FN_GLOBAL_VALUES
 from .idents import CLS_IDENT
-from .idents import FN_GLOBAL_VALUES
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
 from .ops import IfAttrPresent
@@ -62,8 +62,6 @@ class OpExecutor:
             **FN_GLOBAL_VALUES,
         }
         for r in refs:
-            if r in ns:
-                continue
             ns[r.ident()] = self._orm[r]
 
         exec(
