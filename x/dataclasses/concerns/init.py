@@ -151,7 +151,7 @@ class InitGenerator(Generator[InitPlan]):
         )
 
     def plan(self, ctx: ProcessingContext) -> PlanResult[InitPlan] | None:
-        if '__init__' in ctx.cls.__dict__:
+        if '__init__' in ctx.cls.__dict__ or not ctx.cs.init:
             return None
 
         init_fields = ctx[InitFields]
