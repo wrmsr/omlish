@@ -66,7 +66,7 @@ class OpExecutor:
 
         exec(
             src,
-            self._cls_globals(),
+            # self._cls_globals(),
             ns,
         )
         fn = ns[name]
