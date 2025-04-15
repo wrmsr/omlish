@@ -4,6 +4,7 @@ import typing as ta
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
+from ..generation.idents import REPRLIB_RECURSIVE_REPR_IDENT
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
@@ -78,6 +79,7 @@ class ReprGenerator(Generator[ReprPlan]):
             AddMethodOp(
                 '__repr__',
                 '\n'.join([
+                    f'@{REPRLIB_RECURSIVE_REPR_IDENT}()',
                     f'def __repr__(self):',
                     f'    parts = []',
                     *part_lines,

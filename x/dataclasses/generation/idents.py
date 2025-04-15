@@ -1,4 +1,5 @@
 import dataclasses as dc
+import reprlib
 import types
 import typing as ta
 
@@ -28,6 +29,7 @@ class FnGlobal(ta.NamedTuple):
 
 FN_GLOBAL_IMPORTS: ta.Mapping[str, types.ModuleType] = {
     'dataclasses': dc,
+    'reprlib': reprlib,
     'types': types,
 }
 
@@ -53,6 +55,11 @@ FN_GLOBALS: ta.Mapping[str, FnGlobal] = {
     (MISSING_IDENT := IDENT_PREFIX + 'MISSING'): FnGlobal(
         dc.MISSING,  # noqa
         'dataclasses.MISSING',
+    ),
+
+    (REPRLIB_RECURSIVE_REPR_IDENT := IDENT_PREFIX + '_recursive_repr'): FnGlobal(
+        reprlib.recursive_repr,
+        'reprlib.recursive_repr',
     ),
 
     (FUNCTION_TYPE_IDENT := IDENT_PREFIX + 'FunctionType'): FnGlobal(
