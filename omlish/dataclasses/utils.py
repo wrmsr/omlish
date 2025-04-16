@@ -102,14 +102,14 @@ def update_fields(
     return inner
 
 
-def update_fields_metadata(
-        nmd: ta.Mapping,
-        fields: ta.Iterable[str] | None = None,
-) -> ta.Callable[[type[T]], type[T]]:
-    def inner(a: str, f: dc.Field) -> dc.Field:
-        return update_field_metadata(f, nmd)
-
-    return update_fields(inner, fields)
+# def update_fields_metadata(
+#         nmd: ta.Mapping,
+#         fields: ta.Iterable[str] | None = None,
+# ) -> ta.Callable[[type[T]], type[T]]:
+#     def inner(a: str, f: dc.Field) -> dc.Field:
+#         return update_field_metadata(f, nmd)
+#
+#     return update_fields(inner, fields)
 
 
 ##

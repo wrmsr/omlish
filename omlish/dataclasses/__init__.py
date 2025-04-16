@@ -113,7 +113,7 @@ from .utils import (  # noqa
     update_field_metadata,
     update_field_extras,
     update_fields,
-    update_fields_metadata,
+    # update_fields_metadata,
 
     shallow_astuple,
     shallow_asdict,
