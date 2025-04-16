@@ -30,6 +30,7 @@ UNIMPORTANT_WS = TokenNames.UNIMPORTANT_WS  # noqa
 NON_CODING_TOKENS = TokenNames.NON_CODING_TOKENS  # noqa
 
 curly_escape = Tokenization.curly_escape  # noqa
+iter_src_to_tokens = Tokenization.iter_src_to_tokens  # noqa
 src_to_tokens = Tokenization.src_to_tokens  # noqa
 parse_string_literal = Tokenization.parse_string_literal  # noqa
 tokens_to_src = Tokenization.tokens_to_src  # noqa

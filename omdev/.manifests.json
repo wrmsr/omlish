@@ -204,6 +204,18 @@
     }
   },
   {
+    "module": ".py.srcheaders",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/srcheaders.py",
+    "line": 64,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/srcheaders",
+        "mod_name": "omdev.py.srcheaders"
+      }
+    }
+  },
+  {
     "module": ".py.tools.importscan",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/tools/importscan.py",

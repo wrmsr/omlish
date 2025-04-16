@@ -82,13 +82,12 @@ class Tokenization:
             return (s, '', '')
 
     @classmethod
-    def src_to_tokens(cls, src: str) -> ta.List[Token]:
+    def iter_src_to_tokens(cls, src: str) -> ta.Iterator[Token]:
         tokenize_target = io.StringIO(src)
         lines = ('', *tokenize_target)
 
         tokenize_target.seek(0)
 
-        tokens = []
         last_line = 1
         last_col = 0
         end_offset = 0
@@ -106,20 +105,20 @@ class Tokenization:
                 while cls._ESCAPED_NL_RE.search(newtok):
                     ws, nl, newtok = cls._re_partition(cls._ESCAPED_NL_RE, newtok)
                     if ws:
-                        tokens.append(Token(TokenNames.UNIMPORTANT_WS, ws, last_line, end_offset))
+                        yield Token(TokenNames.UNIMPORTANT_WS, ws, last_line, end_offset)
                         end_offset += len(ws.encode())
-                    tokens.append(Token(TokenNames.ESCAPED_NL, nl, last_line, end_offset))
+                    yield Token(TokenNames.ESCAPED_NL, nl, last_line, end_offset)
                     end_offset = 0
                     last_line += 1
                 if newtok:
-                    tokens.append(Token(TokenNames.UNIMPORTANT_WS, newtok, sline, 0))
+                    yield Token(TokenNames.UNIMPORTANT_WS, newtok, sline, 0)
                     end_offset = len(newtok.encode())
                 else:
                     end_offset = 0
 
             elif scol > last_col:
                 newtok = line[last_col:scol]
-                tokens.append(Token(TokenNames.UNIMPORTANT_WS, newtok, sline, end_offset))
+                yield Token(TokenNames.UNIMPORTANT_WS, newtok, sline, end_offset)
                 end_offset += len(newtok.encode())
 
             tok_name = tokenize.tok_name[tok_type]
@@ -130,14 +129,16 @@ class Tokenization:
                     ecol += len(new_tok_text) - len(tok_text)
                     tok_text = new_tok_text
 
-            tokens.append(Token(tok_name, tok_text, sline, end_offset))
+            yield Token(tok_name, tok_text, sline, end_offset)
             last_line, last_col = eline, ecol
             if sline != eline:
                 end_offset = len(lines[last_line][:last_col].encode())
             else:
                 end_offset += len(tok_text.encode())
 
-        return tokens
+    @classmethod
+    def src_to_tokens(cls, src: str) -> ta.List[Token]:
+        return list(cls.iter_src_to_tokens(src))
 
     @classmethod
     def parse_string_literal(cls, src: str) -> ta.Tuple[str, str]:

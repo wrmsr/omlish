@@ -172,6 +172,8 @@ if __name__ == '__main__':
         with open(args.file) as f:
             src = f.read()
 
+        #
+
         attr_docs = extract_attr_docs(src)
 
         #
