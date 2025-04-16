@@ -191,6 +191,6 @@ if __name__ == '__main__':
 
         import json
 
-        print(json.dumps(nested_attr_docs, sort_keys=True, indent=2))
+        print(json.dumps(nested_attr_docs, indent=2))
 
     _main()

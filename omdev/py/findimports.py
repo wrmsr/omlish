@@ -2,8 +2,10 @@
 # @omlish-script
 """
 TODO:
+ - !! FIX: from omlish import lang - try lang as a subpackage
  - multiple commands:
   - dumb cmp (a = set(sys.modules); import ...; print(set(sys.modules) - a)
+ - graphviz
 """
 import ast
 import importlib.machinery

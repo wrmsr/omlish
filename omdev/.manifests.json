@@ -159,7 +159,7 @@
     "module": ".py.findimports",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/findimports.py",
-    "line": 87,
+    "line": 89,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/findimports",
