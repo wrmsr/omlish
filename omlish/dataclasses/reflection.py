@@ -1,13 +1,13 @@
-"""
-TODO:
- - mutate dataclasses by default, installing reflected ClassSpec
-"""
 import dataclasses as dc
 import typing as ta
 
 from .. import check
 from .. import lang
+from .api.classes.conversion import std_params_to_class_spec
 from .api.classes.params import get_class_spec
+from .api.fields.conversion import std_field_to_field_spec
+from .concerns.fields import InitFields
+from .concerns.fields import calc_init_fields
 from .inspect import FieldsInspection
 from .inspect import inspect_fields
 from .internals import StdFieldType
@@ -30,14 +30,21 @@ class ClassReflection:
 
     @lang.cached_property
     def spec(self) -> ClassSpec:
-        return check.not_none(get_class_spec(self._cls))
+        if (cs := get_class_spec(self._cls)) is not None:
+            return cs
+        raise NotImplementedError
 
     @lang.cached_property
     def fields_inspection(self) -> FieldsInspection:
         return inspect_fields(self._cls)
 
-    ##
-    # back-compat
+    @lang.cached_property
+    def init_fields(self) -> InitFields:
+        return calc_init_fields(
+            self.spec.fields,
+            reorder=self.spec.reorder,
+            class_kw_only=self.spec.kw_only,
+        )
 
     @lang.cached_property
     def fields(self) -> ta.Mapping[str, dc.Field]:

@@ -98,17 +98,32 @@ class ClassMetadata:
     validate_fns: ta.Sequence[ta.Any] | None = None
 
 
-def extract_cls_metadata(cls: type) -> ClassMetadata:
-    cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
+def extract_cls_metadata(
+        cls: type,
+        *,
+        deep: bool,
+) -> ClassMetadata:
+    extra_params = {}
 
-    eps = {}
-    for kw in cls_md_dct.get(_ExtraClassParamsMetadata, []):
-        eps.update(kw)
+    user_metadata: list[ta.Any] = []
+    init_fns: list[InitFn | property] = []
+    validate_fns: list[ta.Any] = []
+
+    for b_cls in (cls.__mro__[-2::-1] if deep else (cls,)):
+        cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
+
+        if b_cls is cls:
+            for kw in cls_md_dct.get(_ExtraClassParamsMetadata, []):
+                extra_params.update(kw)
+
+        user_metadata.extend(cls_md_dct.get(_UserMetadata) or [])
+        init_fns.extend(cls_md_dct.get(_InitMetadata) or [])
+        validate_fns.extend(cls_md_dct.get(_ValidateMetadata) or [])
 
     return ClassMetadata(
-        extra_params=eps or None,
+        extra_params=extra_params or None,
 
-        user_metadata=cls_md_dct.get(_UserMetadata),
-        init_fns=cls_md_dct.get(_InitMetadata),
-        validate_fns=cls_md_dct.get(_ValidateMetadata),
+        user_metadata=user_metadata,
+        init_fns=init_fns,
+        validate_fns=validate_fns,
     )

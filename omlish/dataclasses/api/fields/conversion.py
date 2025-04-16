@@ -66,10 +66,22 @@ def spec_field_default_to_std_defaults(dfl: lang.Maybe[DefaultFactory | ta.Any])
 #
 
 
-def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
+def std_field_to_field_spec(
+        f: dc.Field,
+        *,
+        set_metadata: bool = False,
+) -> FieldSpec:
+    try:
+        fs = f.metadata[FieldSpec]
+    except KeyError:
+        pass
+    else:
+        check_field_spec_against_field(f, fs)
+        return fs
+
     efp = f.metadata.get(_ExtraFieldParamsMetadata, {})
 
-    return FieldSpec(
+    fs = FieldSpec(
         name=check.non_empty_str(f.name),
         annotation=check.is_not(f.type, dc.MISSING),
 
@@ -93,6 +105,11 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 
         field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
     )
+
+    if set_metadata:
+        set_field_spec_metadata(f, fs)
+
+    return fs
 
 
 ##
