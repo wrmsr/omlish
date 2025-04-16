@@ -22,7 +22,14 @@ def is_lambda(f: ta.Any) -> bool:
 ##
 
 
-def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs) -> ta.Any:
+def call_with(fn: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> ta.Callable[[T], T]:
+    def inner(obj):
+        fn(obj, *args, **kwargs)
+        return obj
+    return inner
+
+
+def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs: ta.Any) -> ta.Any:
     try:
         fn = getattr(obj, att)
     except AttributeError:

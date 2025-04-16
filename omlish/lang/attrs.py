@@ -1,6 +1,74 @@
 import abc
 import collections.abc
+import functools
 import typing as ta
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+class AttributePresentError(Exception):
+    pass
+
+
+SetAttrIfPresent: ta.TypeAlias = ta.Literal['overwrite', 'leave', 'raise']
+
+
+_NO_SET_ATTR_VALUE = object()
+
+
+@ta.overload
+def set_attr(
+        obj: ta.Any,
+        name: str,
+        *,
+        if_present: SetAttrIfPresent = 'overwrite',
+) -> ta.Callable[[T], T]:
+    ...
+
+
+@ta.overload
+def set_attr(
+        obj: ta.Any,
+        name: str,
+        value: T,
+        *,
+        if_present: SetAttrIfPresent = 'overwrite',
+) -> T:
+    ...
+
+
+def set_attr(
+        obj,
+        name,
+        value=_NO_SET_ATTR_VALUE,
+        *,
+        if_present='overwrite',
+):
+    if value is _NO_SET_ATTR_VALUE:
+        return functools.partial(
+            set_attr,
+            obj,
+            name,
+            if_present=if_present,
+        )
+
+    if hasattr(obj, name):
+        if if_present == 'overwrite':
+            pass
+        elif if_present == 'leave':
+            return value
+        elif if_present == 'raise':
+            raise AttributePresentError(name)
+        else:
+            raise ValueError(if_present)
+
+    setattr(obj, name, value)
+
+    return value
 
 
 ##
@@ -24,7 +92,7 @@ class AttrOps(abc.ABC):
         raise NotImplementedError
 
 
-##
+#
 
 
 class StdAttrOps(AttrOps):
@@ -44,7 +112,7 @@ class StdAttrOps(AttrOps):
 STD_ATTR_OPS = StdAttrOps()
 
 
-##
+#
 
 
 class DictAttrOps(AttrOps):
