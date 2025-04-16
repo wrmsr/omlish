@@ -18,7 +18,7 @@ Debuggers
 CPU Profilers
  - cProfile - https://docs.python.org/3/library/profile.html
  - pyinstrument - https://github.com/joerick/pyinstrument
- - py-pspy - https://github.com/benfred/py-spy
+ - py-spy - https://github.com/benfred/py-spy
  - austin-dist - https://github.com/P403n1x87/austin
  - yappi - https://github.com/sumerc/yappi
 
