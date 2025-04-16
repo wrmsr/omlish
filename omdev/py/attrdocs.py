@@ -44,7 +44,8 @@ class _AttrDocAstVisitor(ast.NodeVisitor):
         self._tok_lines = tok_lines
 
         self._attr_docs: dict[str, AttrDoc] = {}
-        self._target: str | None = None
+        self._class_stack: list[str] = []
+        self._attr_target: str | None = None
         self._prev_node_type: type[ast.AST] | None = None
 
     @property
@@ -63,6 +64,13 @@ class _AttrDocAstVisitor(ast.NodeVisitor):
 
     #
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> ta.Any:
+        self._class_stack.append(node.name)
+        self.generic_visit(node)
+        check.equal(self._class_stack.pop(), node.name)
+
+    #
+
     @staticmethod
     def _comment_tok_src(tok: tks.Token) -> str:
         check.state(tok.name == 'COMMENT')
@@ -70,8 +78,8 @@ class _AttrDocAstVisitor(ast.NodeVisitor):
         check.state(tc[0] == '#')
         return tc[1:].lstrip()
 
-    def _set_target(self, node: ast.Name) -> None:
-        self._target = node.id
+    def _set_attr_target(self, node: ast.Name) -> None:
+        self._attr_target = '.'.join([*self._class_stack, node.id])
 
         ad = _EMPTY_ATTR_DOC
 
@@ -97,15 +105,15 @@ class _AttrDocAstVisitor(ast.NodeVisitor):
                 ad = dc.replace(ad, preceding_comment='\n'.join(reversed(pll)))
 
         if ad is not _EMPTY_ATTR_DOC:
-            self._attr_docs[node.id] = ad
+            self._attr_docs[self._attr_target] = ad
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> ta.Any:
         if isinstance(target := node.target, ast.Name):
-            self._set_target(target)
+            self._set_attr_target(target)
 
     def visit_Assign(self, node: ast.Assign) -> ta.Any:
         if len(node.targets) == 1 and isinstance(target := node.targets[0], ast.Name):
-            self._set_target(target)  # noqa
+            self._set_attr_target(target)  # noqa
 
     #
 
@@ -115,12 +123,13 @@ class _AttrDocAstVisitor(ast.NodeVisitor):
                 isinstance(node.value.value, str) and
                 self._prev_node_type in (ast.Assign, ast.AnnAssign)
         ):
-            docstring = inspect.cleandoc(node.value.value)
-            if self._target:
-                ex = self._attr_docs.get(self._target, _EMPTY_ATTR_DOC)
+            if self._attr_target:
+                docstring = inspect.cleandoc(node.value.value)
+                ex = self._attr_docs.get(self._attr_target, _EMPTY_ATTR_DOC)
                 check.none(ex.docstring)
-                self._attr_docs[self._target] = dc.replace(ex, docstring=docstring)
-            self._target = None
+                self._attr_docs[self._attr_target] = dc.replace(ex, docstring=docstring)
+
+            self._attr_target = None
 
 
 def extract_attr_docs(src: str) -> ta.Mapping[str, AttrDoc]:
@@ -167,11 +176,19 @@ if __name__ == '__main__':
 
         #
 
+        nested_attr_docs: dict = {}
+        for k, v in attr_docs.items():
+            cur = nested_attr_docs
+            *kps, ekp = [f'.{kp}' for kp in k.split('.')]
+            for kp in kps:
+                cur = cur.setdefault(kp, {})
+            check.not_in(ekp, cur)
+            cur[ekp] = {k: v for k, v in dc.asdict(v).items() if v}
+
+        #
+
         import json
 
-        print(json.dumps({
-            a: {k: v for k, v in dc.asdict(ad).items() if v}
-            for a, ad in sorted(attr_docs.items(), key=lambda t: t[0])
-        }))
+        print(json.dumps(nested_attr_docs, sort_keys=True, indent=2))
 
     _main()

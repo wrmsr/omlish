@@ -63,13 +63,12 @@ def get_py_header_lines(src: str) -> list[PyHeaderLine]:
 ##
 
 
-def _main() -> None:
-    with open(__file__) as f:
-        src = f.read()
-
-    hls = get_py_header_lines(src)
-    print(hls)
-
-
 if __name__ == '__main__':
+    def _main() -> None:
+        with open(__file__) as f:
+            src = f.read()
+
+        hls = get_py_header_lines(src)
+        print(hls)
+
     _main()
