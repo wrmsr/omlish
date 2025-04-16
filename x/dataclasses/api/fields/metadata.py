@@ -82,11 +82,15 @@ def update_extra_field_params(
         unless_non_default: bool = False,
         **kwargs: ta.Any,
 ) -> dc.Field:
-    fe = get_field_extras(f)
+    fe = f.metadata.get(_ExtraFieldParamsMetadata, {})
     return set_field_metadata(f, {
         _ExtraFieldParamsMetadata: dc.replace(fe, **{
             k: v
             for k, v in kwargs.items()
-            if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
+            if not (
+                unless_non_default or
+                # v != getattr(DEFAULT_FIELD_EXTRAS, k)
+                k not in fe
+            )
         }),
     })
