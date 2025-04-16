@@ -207,7 +207,7 @@
     "module": ".py.srcheaders",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/srcheaders.py",
-    "line": 64,
+    "line": 65,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/srcheaders",

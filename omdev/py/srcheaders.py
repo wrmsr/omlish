@@ -2,8 +2,9 @@ import ast
 import dataclasses as dc
 import typing as ta
 
-from omdev.tokens import all as tks
 from omlish.lite.check import check
+
+from ..tokens import all as tks
 
 
 ##
