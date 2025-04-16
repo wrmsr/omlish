@@ -52,6 +52,10 @@ def dataclass(
         generic_init: bool | None = None,
         override: bool | None = None,
         repr_id: bool | None = None,
+
+        #
+
+        _plan_only: bool = False,
 ):
     if isinstance(metadata, ta.Mapping):
         raise TypeError(metadata)
@@ -158,4 +162,8 @@ def dataclass(
 
     #
 
-    return drive_cls_processing(cls, cs)
+    return drive_cls_processing(
+        cls,
+        cs,
+        plan_only=_plan_only,
+    )

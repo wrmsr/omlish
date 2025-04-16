@@ -7,6 +7,7 @@ TODO:
 """
 import typing as ta
 
+from ... import check
 from ... import lang
 from ..specs import ClassSpec
 
@@ -26,12 +27,20 @@ class ProcessingContext:
             cls: type,
             cs: ClassSpec,
             item_factories: ta.Mapping[type, ProcessingContextItemFactory],
+            *,
+            options: ta.Sequence[ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
         self._cls = cls
         self._cs = cs
         self._item_factories = item_factories
+
+        options_dct: dict = {}
+        for o in options or ():
+            check.not_in(type(o), options_dct)
+            options_dct[type(o)] = o
+        self._options_dct = options_dct
 
         self._items: dict = {}
 
@@ -53,6 +62,9 @@ class ProcessingContext:
         ret = fac(self)
         self._items[ty] = ret
         return ret
+
+    def option(self, ty: type[T]) -> T | None:
+        return self._options_dct.get(ty)
 
 
 ##

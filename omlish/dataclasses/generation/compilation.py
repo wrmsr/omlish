@@ -236,7 +236,7 @@ class OpCompiler:
             f'def {fn_name}(',
             f'    *,',
             *[
-                f'    {p.src if p.src is not None else p.name},{"  # noqa" if p.noqa  else ""}'
+                f'    {p.src if p.src is not None else p.name},{"  # noqa" if p.noqa else ""}'
                 for p in params
             ],
             f'):',

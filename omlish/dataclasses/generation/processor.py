@@ -32,6 +32,10 @@ from .registry import generator_type_for_plan_type
 ##
 
 
+class PlanOnly(ta.NamedTuple):
+    b: bool
+
+
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
     class Mode(abc.ABC):
@@ -163,5 +167,8 @@ class GeneratorProcessor(Processor):
     #
 
     def process(self, cls: type) -> type:
-        self._mode._process(self, cls)  # noqa
+        if (po := self._ctx.option(PlanOnly)) is not None and po.b:
+            self.prepare()
+        else:
+            self._mode._process(self, cls)  # noqa
         return cls

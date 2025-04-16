@@ -1,5 +1,8 @@
-from .. import concerns as _concerns # noqa
-from ..generation import processor as _generation_processor  # noqa
+import typing as ta
+
+from .. import concerns as _concerns  # noqa  # imported for registration
+from ..generation import processor as _generation_processor  # noqa  # imported for registration
+from ..generation.processor import PlanOnly
 from ..specs import ClassSpec
 from .base import ProcessingContext
 from .base import Processor
@@ -13,11 +16,18 @@ from .registry import ordered_processor_types
 def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
+        *,
+        plan_only: bool = False,
 ) -> type:
+    options: list[ta.Any] = []
+    if plan_only:
+        options.append(PlanOnly(True))
+
     ctx = ProcessingContext(
         cls,
         cs,
         all_processing_context_item_factories(),
+        options=options,
     )
 
     processors: list[Processor] = [

@@ -17,9 +17,9 @@ dc = dc2
 """
 import argparse
 import contextlib
+import functools
 import time
 import typing as ta
-
 
 
 ##
@@ -56,8 +56,8 @@ def yappi_profiling_context():
 ##
 
 
-def run_class(dc):
-    @dc.dataclass()
+def run_class(dc, dataclass):
+    @dataclass()
     class C:  # noqa
         x: int
         y: ta.Any
@@ -67,8 +67,8 @@ def run_class(dc):
             return self.x + 1,
 
 
-def run_make(dc):
-    dc.make_dataclass(
+def run_make(dc, make_dataclass):
+    make_dataclass(
         'C',
         [
             ('x', int),
@@ -88,8 +88,11 @@ def _main() -> None:
     parser.add_argument('mode', type=int, default=default_dc, nargs='?')
     parser.add_argument('-n', type=int, default=1000)
     parser.add_argument('-m', '--use-make', action='store_true')
+    parser.add_argument('-p', '--plan-only', action='store_true')
     parser.add_argument('-y', '--yappi', action='store_true')
     args = parser.parse_args()
+
+    # modules
 
     def dc0():
         import dataclasses as dc
@@ -111,11 +114,20 @@ def _main() -> None:
 
     dc = modules[args.mode]()
 
+    # function
+
     if args.use_make:
-        f = run_make
+        f = functools.partial(run_make, dc, dc.make_dataclass)
+
     else:
-        f = run_class
-    f(dc)
+        dataclass = dc.dataclass
+        if args.plan_only:
+            dataclass = functools.partial(dataclass, _plan_only=True)
+        f = functools.partial(run_class, dc, dataclass)
+
+    # loop
+
+    f()
 
     with contextlib.ExitStack() as es:
         if args.yappi:
@@ -124,7 +136,7 @@ def _main() -> None:
         es.enter_context(timing_context(args.n))
 
         for _ in range(args.n):
-            f(dc)
+            f()
 
 
 if __name__ == '__main__':
