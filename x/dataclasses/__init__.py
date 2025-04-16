@@ -53,6 +53,8 @@ globals()['make_dataclass'] = xmake_dataclass
 from .api import (  # noqa
     extra_class_params,
     init,
+    metadata,
+    update_class_metadata,
     validate,
 
     extra_field_params,

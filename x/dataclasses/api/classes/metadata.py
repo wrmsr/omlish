@@ -7,6 +7,9 @@ from omlish import lang
 from ...specs import InitFn
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -50,6 +53,13 @@ class _UserMetadata(lang.Marker):
 
 def metadata(*objs) -> None:
     _append_cls_dct_md(_InitMetadata, *objs)
+
+
+def update_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
+    check.isinstance(cls, type)
+    setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
+    md.setdefault(_UserMetadata, []).extend(args)
+    return cls
 
 
 #

@@ -9,6 +9,8 @@ from .classes.make import (  # noqa
 from .classes.metadata import (
     extra_class_params,
     init,
+    metadata,
+    update_class_metadata,
     validate,
 )
 

@@ -3,12 +3,12 @@
 #
 # from omlish import check
 #
+# from ..utils import chain_mapping_proxy
 # from .impl.metadata import METADATA_ATTR
 # from .impl.metadata import UserMetadata
 # from .impl.params import DEFAULT_FIELD_EXTRAS
 # from .impl.params import FieldExtras
 # from .impl.params import get_field_extras
-# from ..utils import chain_mapping_proxy
 #
 #
 # T = ta.TypeVar('T')
@@ -27,13 +27,6 @@
 #
 #     def __call__(self, f: T) -> T:
 #         return check.isinstance(self.fn(check.isinstance(f, dc.Field)), dc.Field)  # type: ignore
-#
-#
-# def update_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
-#     check.isinstance(cls, type)
-#     setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
-#     md.setdefault(UserMetadata, []).extend(args)
-#     return cls
 #
 #
 # def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
