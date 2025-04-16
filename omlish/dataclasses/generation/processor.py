@@ -63,8 +63,8 @@ class GeneratorProcessor(Processor):
                 gp.ops(),
             )
 
-            # print()
             # print(gp.prepare().plans.render())
+            # print()
             # print(comp.src)
             # print()
 

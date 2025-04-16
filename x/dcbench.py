@@ -82,7 +82,7 @@ def run_make(dc):
 
 
 def _main() -> None:
-    default_dc = 2
+    default_dc = 1
 
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', type=int, default=default_dc, nargs='?')
@@ -99,14 +99,14 @@ def _main() -> None:
         from omlish import dataclasses as dc
         return dc
 
-    def dc2():
-        from x import dataclasses as dc
-        return dc
+    # def dc2():
+    #     from x import dataclasses_ as dc
+    #     return dc
 
     modules = [
         dc0,
         dc1,
-        dc2,
+        # dc2,
     ]
 
     dc = modules[args.mode]()

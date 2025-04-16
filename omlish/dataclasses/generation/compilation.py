@@ -163,7 +163,6 @@ class OpCompiler:
                         op.name,
                         op.if_present,
                     ),
-                    f'setattr({CLS_IDENT}, {op.name!r}, {op.name})',
                 ])
 
             elif isinstance(op, AddPropertyOp):
