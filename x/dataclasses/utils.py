@@ -1,4 +1,5 @@
 import ast
+import collections
 import functools
 import types
 import typing as ta
@@ -77,3 +78,21 @@ def class_decorator(fn):
             return lambda cls: fn(cls, *args, **kwargs)  # noqa
         return fn(cls, *args, **kwargs)
     return inner
+
+
+##
+
+
+_EMPTY_MAPPING_PROXY: ta.Mapping = types.MappingProxyType({})
+
+
+def chain_mapping_proxy(*ms: ta.Mapping) -> types.MappingProxyType:
+    m: ta.Any
+    if len(ms) > 1:
+        m = collections.ChainMap(*ms)  # type: ignore[arg-type]
+    elif ms:
+        [m] = ms
+    else:
+        m = _EMPTY_MAPPING_PROXY
+
+    return types.MappingProxyType(m)

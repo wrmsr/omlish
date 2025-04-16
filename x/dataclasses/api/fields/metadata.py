@@ -1,12 +1,11 @@
-import collections
 import dataclasses as dc
-import types
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
 from ...specs import FieldSpec
+from ...utils import chain_mapping_proxy
 
 
 ##
@@ -49,12 +48,11 @@ def update_field_metadata(
         return
 
     if md is None:
-        md = mdu
+        ms = [mdu]
     else:
-        md = collections.ChainMap(mdu, md)
-    md = types.MappingProxyType(md)
+        ms = [mdu, md]
 
-    f.metadata = md
+    f.metadata = chain_mapping_proxy(*ms)
 
 
 def set_field_spec_metadata(

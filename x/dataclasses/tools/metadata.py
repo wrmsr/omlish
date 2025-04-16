@@ -3,7 +3,8 @@
 # import types
 # import typing as ta
 #
-# from .. import check
+# from omlish import check
+#
 # from .impl.metadata import METADATA_ATTR
 # from .impl.metadata import UserMetadata
 # from .impl.params import DEFAULT_FIELD_EXTRAS
@@ -27,10 +28,6 @@
 #
 #     def __call__(self, f: T) -> T:
 #         return check.isinstance(self.fn(check.isinstance(f, dc.Field)), dc.Field)  # type: ignore
-#
-#
-# def chain_metadata(*mds: ta.Mapping) -> types.MappingProxyType:
-#     return types.MappingProxyType(collections.ChainMap(*mds))  # type: ignore  # noqa
 #
 #
 # def update_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
