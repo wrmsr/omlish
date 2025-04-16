@@ -121,7 +121,7 @@ from .tools.static import (  # noqa
 ##
 # lite imports
 
-from omlish.lite.dataclasses import (  # noqa
+from ..lite.dataclasses import (  # noqa
     is_immediate_dataclass,
 
     dataclass_maybe_post_init as maybe_post_init,

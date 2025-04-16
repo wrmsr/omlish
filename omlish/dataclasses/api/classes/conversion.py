@@ -1,7 +1,6 @@
 import typing as ta
 
-from omlish import check
-
+from .... import check
 from ...internals import StdParams
 from ...specs import ClassSpec
 from ...specs import FieldSpec

@@ -8,9 +8,8 @@ import dataclasses as dc
 import sys
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from ... import check
+from ... import lang
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority

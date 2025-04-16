@@ -1,5 +1,4 @@
-from omlish import check
-
+from ... import check
 from ..internals import STD_PARAMS_ATTR
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority

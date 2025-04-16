@@ -1,4 +1,4 @@
-from omlish.text.mangle import StringMangler
+from ...text.mangle import StringMangler
 
 
 ##

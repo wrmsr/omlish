@@ -8,9 +8,8 @@ import copy
 import dataclasses as dc
 import typing as ta
 
-from omlish import lang
-from omlish.lite.dataclasses import is_immediate_dataclass
-
+from ... import lang
+from ...lite.dataclasses import is_immediate_dataclass
 from ..api.classes.decorator import dataclass
 
 

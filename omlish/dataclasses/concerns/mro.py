@@ -1,7 +1,6 @@
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from ..processing.base import ProcessingContext
 from ..processing.registry import register_processing_context_item_factory
 

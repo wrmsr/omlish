@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from ... import lang
 
 
 ##

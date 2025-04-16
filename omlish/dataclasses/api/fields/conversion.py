@@ -1,9 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from .... import check
+from .... import lang
 from ...debug import DEBUG
 from ...internals import StdFieldType
 from ...internals import std_field_type

@@ -7,8 +7,7 @@ import dataclasses as dc
 import typing as ta
 import weakref
 
-from omlish import check
-
+from ... import check
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult

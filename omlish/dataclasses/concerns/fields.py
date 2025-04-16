@@ -1,8 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-
+from ... import check
 from ..debug import DEBUG
 from ..generation.idents import IDENT_PREFIX
 from ..inspect import FieldsInspection

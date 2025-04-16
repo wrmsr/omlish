@@ -1,5 +1,4 @@
-from omlish import check
-
+from ... import check
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type

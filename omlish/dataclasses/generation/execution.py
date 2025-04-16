@@ -7,8 +7,7 @@ import sys
 import types
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_VALUES
 from .globals import FnGlobal

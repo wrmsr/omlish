@@ -7,8 +7,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from ..api.classes.decorator import dataclass
 from .confer import CONFER_METACLASS_PARAMS
 from .confer import confer_kwargs

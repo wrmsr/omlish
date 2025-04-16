@@ -2,12 +2,11 @@ import dataclasses as dc
 import typing as ta
 import weakref
 
-from omlish import cached
-from omlish import check
-from omlish import collections as col
-from omlish import lang
-from omlish import reflect as rfl
-
+from .. import cached
+from .. import check
+from .. import collections as col
+from .. import lang
+from .. import reflect as rfl
 from .internals import STD_FIELDS_ATTR
 from .internals import StdFieldType
 from .internals import std_field_type

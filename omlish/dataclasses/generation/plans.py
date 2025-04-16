@@ -6,8 +6,7 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .base import Plan
 
 

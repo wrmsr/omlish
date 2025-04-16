@@ -5,9 +5,8 @@ TODO:
 import inspect
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from .... import check
+from .... import lang
 from ...internals import STD_FIELDS_ATTR
 from ...internals import STD_PARAMS_ATTR
 from ...processing.driving import drive_cls_processing

@@ -2,8 +2,7 @@ import dataclasses as dc
 import types
 import typing as ta
 
-from omlish import check
-
+from .... import check
 from ...inspect import get_cls_annotations
 from ...internals import STD_FIELDS_ATTR
 from ...internals import StdFieldType

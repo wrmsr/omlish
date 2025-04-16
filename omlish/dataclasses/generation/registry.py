@@ -1,8 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from ... import check
+from ... import lang
 from ..utils import SealableRegistry
 from .base import Generator
 from .base import Plan

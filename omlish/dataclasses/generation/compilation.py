@@ -6,8 +6,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-
+from ... import check
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_IMPORTS
 from .globals import FN_GLOBALS

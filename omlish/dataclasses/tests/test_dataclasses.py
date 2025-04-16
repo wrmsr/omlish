@@ -7,11 +7,10 @@ import typing as ta
 
 import pytest
 
-from omlish import cached
-from omlish import lang
-from omlish import reflect as rfl  # noqa
-
+from ... import cached
 from ... import dataclasses as dc
+from ... import lang
+from ... import reflect as rfl  # noqa
 from ..inspect import inspect_fields  # noqa
 
 

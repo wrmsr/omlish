@@ -4,7 +4,7 @@ import functools
 import types
 import typing as ta
 
-from omlish import check
+from .. import check
 
 
 T = ta.TypeVar('T')
