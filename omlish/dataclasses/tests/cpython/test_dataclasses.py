@@ -2004,7 +2004,6 @@ class TestCase(unittest.TestCase):
 
         C.__setattr__ = setattr
         c = C(0, 1)
-        # [('a', 0), ('b', 1), ('c', []), ('d', []), ('e', 4), ('f', 4)]
         self.assertEqual(('a', 0), calls[0])
         self.assertEqual(('b', 1), calls[1])
         self.assertEqual(('c', []), calls[2])
