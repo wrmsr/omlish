@@ -21,7 +21,7 @@ class Plans:
     def __iter__(self) -> ta.Iterator[Plan]:
         return iter(self.tup)
 
-    @lang.cached_function
+    @lang.cached_function(no_wrapper_update=True)
     def render(self) -> str:
         return _render(self)
 

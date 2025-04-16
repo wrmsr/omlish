@@ -77,7 +77,7 @@ class FieldsInspection:
         fields: dict[str, dc.Field]
         field_owners: dict[str, type]
 
-    @lang.cached_function
+    @lang.cached_function(no_wrapper_update=True)
     def _find_fields(self) -> _FoundFields:
         fields: dict[str, dc.Field] = {}
         field_owners: dict[str, type] = {}

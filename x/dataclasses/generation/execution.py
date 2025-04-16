@@ -38,7 +38,7 @@ class OpExecutor:
 
     #
 
-    @lang.cached_function
+    @lang.cached_function(no_wrapper_update=True)
     def _cls_globals(self) -> dict[str, ta.Any]:
         if self._cls.__module__ in sys.modules:
             return sys.modules[self._cls.__module__].__dict__

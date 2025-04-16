@@ -1,0 +1,2 @@
+DEBUG = False
+# DEBUG = True

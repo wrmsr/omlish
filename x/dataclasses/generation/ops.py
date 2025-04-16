@@ -1,5 +1,6 @@
 import abc
 import dataclasses as dc
+import operator
 import typing as ta
 
 from .globals import FnGlobal
@@ -12,11 +13,36 @@ T = ta.TypeVar('T')
 ##
 
 
-class OpRef(ta.NamedTuple, ta.Generic[T]):
+# class OpRef(ta.NamedTuple, ta.Generic[T]):
+#     name: str
+#
+#     def ident(self) -> str:
+#         return IDENT_PREFIX + self.name.replace( '.', '__')
+
+
+class OpRef(tuple, ta.Generic[T]):  # noqa
     name: str
 
+    locals()['name'] = property(operator.itemgetter(0))
+
+    def __new__(cls, name: str) -> 'OpRef[T]':
+        return tuple.__new__(cls, (name,))  # noqa
+
+    def __repr__(self) -> str:
+        return f'OpRef(name={self.name!r})'
+
     def ident(self) -> str:
-        return IDENT_PREFIX + self.name.replace( '.', '__')
+        try:
+            return self._ident  # type: ignore[has-type]
+        except AttributeError:
+            pass
+
+        ident = IDENT_PREFIX + self.name.replace( '.', '__')
+        self._ident = ident  # noqa
+        return ident
+
+
+##
 
 
 OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]

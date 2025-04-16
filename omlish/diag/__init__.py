@@ -17,10 +17,10 @@ Debuggers
 
 CPU Profilers
  - cProfile - https://docs.python.org/3/library/profile.html
- - pyinstrument - https://github.com/joerick/pyinstrument
- - py-spy - https://github.com/benfred/py-spy
- - austin-dist - https://github.com/P403n1x87/austin
- - yappi - https://github.com/sumerc/yappi
+ - yappi - https://github.com/sumerc/yappi - tracing
+ - pyinstrument - https://github.com/joerick/pyinstrument - pretty
+ - py-spy - https://github.com/benfred/py-spy - busted on mac
+ - austin-dist - https://github.com/P403n1x87/austin - old
 
 Memory Profilers
  - tracemalloc - https://docs.python.org/3/library/tracemalloc.html

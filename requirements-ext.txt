@@ -57,7 +57,6 @@ blobfile==3.0.0
 # diag
 
 yappi==1.6.10
-py-spy==0.4.0
 pyinstrument==5.0.1
 
 

@@ -151,11 +151,12 @@ def _make_cache_key_maker(
 
 
 class _CachedFunction(ta.Generic[T], Abstract):
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class Opts:
         map_maker: ta.Callable[[], ta.MutableMapping] = dict
         lock: DefaultLockable = None
         transient: bool = False
+        no_wrapper_update: bool = False
 
     def __init__(
             self,
@@ -175,7 +176,8 @@ class _CachedFunction(ta.Generic[T], Abstract):
         self._lock = default_lock(opts.lock, False)() if opts.lock is not None else None
         self._values = values if values is not None else opts.map_maker()
         self._value_fn = value_fn if value_fn is not None else fn
-        functools.update_wrapper(self, fn)
+        if not self._opts.no_wrapper_update:
+            functools.update_wrapper(self, fn)
 
     @property
     def _fn(self):

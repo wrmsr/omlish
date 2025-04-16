@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import check
 
+from ..debug import DEBUG
 from ..generation.idents import IDENT_PREFIX
 from ..inspect import FieldsInspection
 from ..internals import STD_FIELDS_ATTR
@@ -90,7 +91,8 @@ StdFields = ta.NewType('StdFields', ta.Mapping[str, dc.Field])
 def _std_fields_processing_context_item_factory(ctx: ProcessingContext) -> StdFields:
     fld_dct = ctx.cls.__dict__[STD_FIELDS_ATTR]
     for fn, f in fld_dct.items():
-        check.isinstance(f, dc.Field)
+        if DEBUG:
+            check.isinstance(f, dc.Field)
         check.equal(f.name, fn)
     check.equal(set(fld_dct), set(ctx.cs.fields_by_name))
     return StdFields(fld_dct)

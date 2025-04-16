@@ -124,7 +124,7 @@ class GeneratorProcessor(Processor):
         def __post_init__(self) -> None:
             hash(self.plans)
 
-    @lang.cached_function
+    @lang.cached_function(no_wrapper_update=True)
     def prepare(self) -> Prepared:
         gs = [g_ty() for g_ty in all_generator_types()]
 
@@ -149,7 +149,7 @@ class GeneratorProcessor(Processor):
             orm,
         )
 
-    @lang.cached_function
+    @lang.cached_function(no_wrapper_update=True)
     def ops(self) -> ta.Sequence[Op]:
         prepared = self.prepare()
 

@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ...debug import DEBUG
 from ...internals import StdFieldType
 from ...internals import std_field_type
 from ...specs import DefaultFactory
@@ -74,12 +75,12 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 
         default=std_field_to_spec_field_default(f),
 
-        init=check.isinstance(f.init, bool),
-        repr=check.isinstance(f.repr, bool),
-        hash=check.isinstance(f.hash, (bool, None)),
-        compare=check.isinstance(f.compare, bool),
+        init=check.isinstance(f.init, bool) if DEBUG else f.init,
+        repr=check.isinstance(f.repr, bool) if DEBUG else f.repr,
+        hash=check.isinstance(f.hash, (bool, None)) if DEBUG else f.hash,
+        compare=check.isinstance(f.compare, bool) if DEBUG else f.compare,
         metadata=f.metadata,
-        kw_only=None if f.kw_only is dc.MISSING else check.isinstance(f.kw_only, bool),
+        kw_only=None if f.kw_only is dc.MISSING else (check.isinstance(f.kw_only, bool) if DEBUG else f.kw_only),
 
         field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
 
