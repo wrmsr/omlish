@@ -37,7 +37,7 @@ def update_object_metadata(
         **kwargs: ta.Any,
 ):
     def inner(cls):
-        return dc.update_class_metadata(cls, ObjectMetadata(**kwargs))
+        return dc.append_class_metadata(cls, ObjectMetadata(**kwargs))
 
     if cls is not None:
         inner(cls)

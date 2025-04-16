@@ -7,10 +7,10 @@ from .classes.make import (  # noqa
 )
 
 from .classes.metadata import (
+    append_class_metadata,
     extra_class_params,
     init,
     metadata,
-    update_class_metadata,
     validate,
 )
 

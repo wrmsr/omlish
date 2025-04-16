@@ -51,7 +51,7 @@ def chain_metadata(*mds: ta.Mapping) -> types.MappingProxyType:
     return types.MappingProxyType(collections.ChainMap(*mds))  # type: ignore  # noqa
 
 
-def update_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
+def append_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
     check.isinstance(cls, type)
     setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
     md.setdefault(UserMetadata, []).extend(args)

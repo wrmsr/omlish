@@ -106,12 +106,12 @@ from .utils import (  # noqa
     opt_repr,
     truthy_repr,
 
-    fields_dict,
-    field_modifier,
+    append_class_metadata,
     chain_metadata,
-    update_class_metadata,
-    update_field_metadata,
+    field_modifier,
+    fields_dict,
     update_field_extras,
+    update_field_metadata,
     update_fields,
     # update_fields_metadata,
 

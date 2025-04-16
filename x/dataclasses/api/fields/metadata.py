@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ...debug import DEBUG
 from ...specs import FieldSpec
 from ...utils import chain_mapping_proxy
 
@@ -37,7 +38,10 @@ def get_field_spec(f: dc.Field) -> FieldSpec | None:
 def update_field_metadata(
         f: dc.Field,
         metadata: ta.Mapping[ta.Any, ta.Any],
-) -> None:
+) -> dc.Field:
+    if DEBUG:
+        check.isinstance(f, dc.Field)
+
     md: ta.Any = f.metadata
 
     mdu: dict = {}
@@ -45,7 +49,7 @@ def update_field_metadata(
         if md is None or md.get(k) != v:
             mdu[k] = v  # noqa
     if not mdu:
-        return
+        return f
 
     if md is None:
         ms = [mdu]
@@ -53,6 +57,7 @@ def update_field_metadata(
         ms = [mdu, md]
 
     f.metadata = chain_mapping_proxy(*ms)
+    return f
 
 
 def set_field_spec_metadata(
@@ -66,3 +71,22 @@ def set_field_spec_metadata(
             _ExtraFieldParamsMetadata: {},
         },
     )
+
+
+##
+
+
+# def update_extra_field_params(
+#         f: dc.Field,
+#         *,
+#         unless_non_default: bool = False,
+#         **kwargs: ta.Any,
+# ) -> dc.Field:
+#     fe = get_field_extras(f)
+#     return update_field_metadata(f, {
+#         FieldExtras: dc.replace(fe, **{
+#             k: v
+#             for k, v in kwargs.items()
+#             if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
+#         }),
+#     })

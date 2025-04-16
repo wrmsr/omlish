@@ -51,10 +51,10 @@ globals()['make_dataclass'] = xmake_dataclass
 # additional interface
 
 from .api import (  # noqa
+    append_class_metadata,
     extra_class_params,
     init,
     metadata,
-    update_class_metadata,
     validate,
 
     extra_field_params,
@@ -93,6 +93,11 @@ from .tools.iter import (  # noqa
     iter_items,
     iter_keys,
     iter_values,
+)
+
+from .tools.modifiers import (  # noqa
+    field_modifier,
+    update_fields,
 )
 
 from .tools.replace import (  # noqa
