@@ -61,7 +61,7 @@ def yappi_profiling_context():
 
 def run_class(dc):
     @dc.dataclass()
-    class C:
+    class C:  # noqa
         x: int
         y: ta.Any
         z: int = dc.field(default=5)
@@ -91,6 +91,7 @@ def _main() -> None:
     parser.add_argument('mode', type=int, default=default_dc, nargs='?')
     parser.add_argument('-n', type=int, default=1000)
     parser.add_argument('-m', '--use-make', action='store_true')
+    parser.add_argument('-y', '--yappi', action='store_true')
     args = parser.parse_args()
 
     modules = [
@@ -108,7 +109,9 @@ def _main() -> None:
     f(dc)
 
     with contextlib.ExitStack() as es:
-        es.enter_context(yappi_profiling_context())
+        if args.yappi:
+            es.enter_context(yappi_profiling_context())
+
         es.enter_context(timing_context(args.n))
 
         for _ in range(args.n):
@@ -117,4 +120,3 @@ def _main() -> None:
 
 if __name__ == '__main__':
     _main()
-    
