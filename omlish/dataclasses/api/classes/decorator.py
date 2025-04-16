@@ -11,7 +11,6 @@ from ...internals import STD_FIELDS_ATTR
 from ...internals import STD_PARAMS_ATTR
 from ...processing.driving import drive_cls_processing
 from ...specs import ClassSpec
-from ...specs import InitFn
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields
 from ..fields.conversion import std_field_to_field_spec
@@ -84,7 +83,7 @@ def dataclass(
     cmd = extract_cls_metadata(cls, deep=True)
 
     vfp_lst: list[ClassSpec.ValidateFnWithParams] = []
-    for md_vf in cmd.validate_fns:
+    for md_vf in cmd.validate_fns or []:
         if isinstance(md_vf, staticmethod):
             md_vf = md_vf.__func__
         vfp_lst.append(ClassSpec.ValidateFnWithParams(

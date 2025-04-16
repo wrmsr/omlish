@@ -69,17 +69,22 @@ def spec_field_default_to_std_defaults(dfl: lang.Maybe[DefaultFactory | ta.Any])
 def std_field_to_field_spec(
         f: dc.Field,
         *,
+        ignore_metadata: bool = False,
+        ignore_extra_params: bool = False,
         set_metadata: bool = False,
 ) -> FieldSpec:
-    try:
-        fs = f.metadata[FieldSpec]
-    except KeyError:
-        pass
-    else:
-        check_field_spec_against_field(f, fs)
-        return fs
+    if not ignore_metadata:
+        try:
+            fs = f.metadata[FieldSpec]
+        except KeyError:
+            pass
+        else:
+            check_field_spec_against_field(f, fs)
+            return fs
 
-    efp = f.metadata.get(_ExtraFieldParamsMetadata, {})
+    extra_params = {}
+    if not ignore_extra_params:
+        extra_params.update(f.metadata.get(_ExtraFieldParamsMetadata, {}))
 
     fs = FieldSpec(
         name=check.non_empty_str(f.name),
@@ -95,12 +100,12 @@ def std_field_to_field_spec(
         kw_only=None if f.kw_only is dc.MISSING else (check.isinstance(f.kw_only, bool) if DEBUG else f.kw_only),
 
         **lang.opt_kw(
-            coerce=efp.get('coerce'),
-            validate=efp.get('validate'),
-            check_type=efp.get('check_type'),
-            override=efp.get('override'),
-            repr_fn=efp.get('repr_fn'),
-            repr_priority=efp.get('repr_priority'),
+            coerce=extra_params.get('coerce'),
+            validate=extra_params.get('validate'),
+            check_type=extra_params.get('check_type'),
+            override=extra_params.get('override'),
+            repr_fn=extra_params.get('repr_fn'),
+            repr_priority=extra_params.get('repr_priority'),
         ),
 
         field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
