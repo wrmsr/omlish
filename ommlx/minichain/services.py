@@ -57,7 +57,7 @@ class _ServiceTypedValuesHolder(tv.TypedValueGeneric[TypedValueT], lang.Abstract
 
 
 _SERVICE_TYPED_VALUES_HOLDER_FIELD_METADATA: ta.Mapping = {
-    dc.FieldExtras: dc.FieldExtras(
+    **dc.extra_field_params(
         repr_fn=dc.truthy_repr,
         repr_priority=100,
     ),

@@ -34,11 +34,7 @@ from .unmarshal import ObjectUnmarshaler
 
 
 def get_dataclass_metadata(ty: type) -> ObjectMetadata:
-    return check.opt_single(
-        e
-        for e in dc.get_merged_metadata(ty).get(dc.UserMetadata, [])
-        if isinstance(e, ObjectMetadata)
-    ) or ObjectMetadata()
+    return check.single(dc.reflect(ty).spec.metadata_by_type.get(ObjectMetadata) or [ObjectMetadata()])
 
 
 def get_dataclass_field_infos(
@@ -76,10 +72,10 @@ def get_dataclass_field_infos(
 
         f_ty: ta.Any
         if (
-                ((cpx := dc_rfl.cls_params_extras) is not None and cpx.generic_init) or
+                dc_rfl.spec.generic_init or
                 (fmd is not None and fmd.options.generic_replace)
         ):
-            f_ty = rfl.to_annotation(dc_rfl.generic_replaced_field_type(field.name))
+            f_ty = rfl.to_annotation(dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
         else:
             f_ty = type_hints[field.name]
 

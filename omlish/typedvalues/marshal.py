@@ -32,7 +32,7 @@ class TypedValueMarshalerFactory(msh.MarshalerFactoryMatchClass):
     ))
     def _build_scalar(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         dc_rfl = dc.reflect(check.isinstance(rty, type))
-        v_rty = check.single(dc_rfl.generic_replaced_field_annotations.values())
+        v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
         v_m = ctx.make(v_rty)
         return msh.WrappedMarshaler(lambda _, o: o.v, v_m)
 
@@ -58,7 +58,7 @@ class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     def _build_scalar(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         rty = check.isinstance(rty, type)
         dc_rfl = dc.reflect(rty)
-        v_rty = check.single(dc_rfl.generic_replaced_field_annotations.values())
+        v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
         v_u = ctx.make(v_rty)
         return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
 
