@@ -35,7 +35,7 @@ def get_field_spec(f: dc.Field) -> FieldSpec | None:
 ##
 
 
-def update_field_metadata(
+def set_field_metadata(
         f: dc.Field,
         metadata: ta.Mapping[ta.Any, ta.Any],
 ) -> dc.Field:
@@ -64,7 +64,7 @@ def set_field_spec_metadata(
         f: dc.Field,
         fs: FieldSpec,
 ) -> None:
-    update_field_metadata(
+    set_field_metadata(
         f,
         {
             FieldSpec: fs,
@@ -76,17 +76,17 @@ def set_field_spec_metadata(
 ##
 
 
-# def update_extra_field_params(
-#         f: dc.Field,
-#         *,
-#         unless_non_default: bool = False,
-#         **kwargs: ta.Any,
-# ) -> dc.Field:
-#     fe = get_field_extras(f)
-#     return update_field_metadata(f, {
-#         FieldExtras: dc.replace(fe, **{
-#             k: v
-#             for k, v in kwargs.items()
-#             if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
-#         }),
-#     })
+def update_extra_field_params(
+        f: dc.Field,
+        *,
+        unless_non_default: bool = False,
+        **kwargs: ta.Any,
+) -> dc.Field:
+    fe = get_field_extras(f)
+    return set_field_metadata(f, {
+        _ExtraFieldParamsMetadata: dc.replace(fe, **{
+            k: v
+            for k, v in kwargs.items()
+            if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
+        }),
+    })

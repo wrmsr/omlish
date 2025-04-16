@@ -110,7 +110,7 @@ from .utils import (  # noqa
     chain_metadata,
     field_modifier,
     fields_dict,
-    update_field_extras,
+    update_extra_field_params,
     update_field_metadata,
     update_fields,
     # update_fields_metadata,

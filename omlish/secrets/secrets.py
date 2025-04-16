@@ -79,7 +79,7 @@ def secret_repr(o: SecretRefOrStr | None) -> str | None:
 
 @dc.field_modifier
 def secret_field(f: dc.Field) -> dc.Field:
-    return dc.update_field_extras(
+    return dc.update_extra_field_params(
         f,
         repr_fn=secret_repr,
         unless_non_default=True,

@@ -64,7 +64,7 @@ def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
     return f
 
 
-def update_field_extras(f: dc.Field, *, unless_non_default: bool = False, **kwargs: ta.Any) -> dc.Field:
+def update_extra_field_params(f: dc.Field, *, unless_non_default: bool = False, **kwargs: ta.Any) -> dc.Field:
     fe = get_field_extras(f)
     return update_field_metadata(f, {
         FieldExtras: dc.replace(fe, **{
