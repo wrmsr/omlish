@@ -16,14 +16,15 @@ T = ta.TypeVar('T')
 METADATA_ATTR = '__dataclass_metadata__'
 
 
-def _get_cls_metadata_dct(cls):
+def _get_cls_metadata_dct(cls: type) -> dict:
     check.isinstance(cls, type)
     check.arg(not is_immediate_dataclass(cls))
     try:
         return cls.__dict__[METADATA_ATTR]
     except KeyError:
         pass
-    setattr(cls, METADATA_ATTR, dct := {})
+    dct: dict = {}
+    setattr(cls, METADATA_ATTR, dct)
     return dct
 
 
