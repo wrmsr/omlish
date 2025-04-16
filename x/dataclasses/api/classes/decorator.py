@@ -17,9 +17,9 @@ from ...specs import FieldSpec
 from ...specs import InitFn
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields
-from ..fields.metadata import set_field_spec_metadata
 from ..fields.conversion import check_field_spec_against_field
 from ..fields.conversion import std_field_to_field_spec
+from ..fields.metadata import set_field_spec_metadata
 from .metadata import extract_cls_metadata
 from .metadata import has_cls_metadata
 from .metadata import remove_cls_metadata

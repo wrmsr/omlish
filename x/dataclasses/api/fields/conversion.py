@@ -11,6 +11,7 @@ from ...specs import DefaultFactory
 from ...specs import FieldSpec
 from ...specs import FieldType
 from .metadata import _ExtraFieldParams
+from .metadata import set_field_spec_metadata
 
 
 ##
@@ -98,6 +99,34 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
 ##
 
 
+def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
+    sdf = spec_field_default_to_std_defaults(fs.default)
+
+    f = dc.Field(
+        default=sdf.default,
+        default_factory=sdf.default_factory,
+
+        init=fs.init,
+        repr=fs.repr,
+        hash=fs.hash,
+        compare=fs.compare,
+        **lang.opt_kw(metadata=fs.metadata),
+        kw_only=dc.MISSING if fs.kw_only is None else fs.kw_only,  # type: ignore[arg-type]
+    )
+
+    f.name = fs.name
+    f.type = fs.annotation
+
+    f._field_type = STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type].value  # type: ignore[attr-defined]  # noqa
+
+    set_field_spec_metadata(f, fs)
+
+    return f
+
+
+##
+
+
 def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
     f_tup = (
         f.name,
@@ -113,7 +142,7 @@ def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
         # f.metadata,
         f.kw_only,
 
-        f._field_type,  # noqa
+        f._field_type,  # type: ignore[attr-defined]  # noqa
     )
 
     fs_tup = (
