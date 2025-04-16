@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+import operator
 import typing as ta
 import unittest
 
@@ -91,3 +92,7 @@ class TestMinja(unittest.TestCase):
             print(render_minja_template(tmpl, **ctx))
             print('=== end minja ===')
             print()
+
+    def test_helper(self) -> None:
+        s = render_minja_template('{{ operator.add(x, 1) }}', operator=operator, x=1)
+        assert s == '2'
