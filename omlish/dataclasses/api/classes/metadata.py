@@ -3,6 +3,7 @@ import typing as ta
 
 from .... import check
 from .... import lang
+from ....lite.dataclasses import is_immediate_dataclass
 from ...specs import InitFn
 
 
@@ -17,7 +18,7 @@ METADATA_ATTR = '__dataclass_metadata__'
 
 def _append_cls_metadata(cls, k, v):
     check.isinstance(cls, type)
-    check.arg(not dc.is_dataclass(cls))
+    check.arg(not is_immediate_dataclass(cls))
     try:
         dct = cls.__dict__[METADATA_ATTR]
     except KeyError:

@@ -243,7 +243,7 @@ rfc3986==2.0.0
 rfc3986-validator==0.1.1
 rich==14.0.0
 rpds-py==0.24.0
-rsa==4.9
+rsa==4.9.1
 ruff==0.11.5
 s3transfer==0.11.4
 safetensors==0.5.3
