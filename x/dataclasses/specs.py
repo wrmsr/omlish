@@ -149,7 +149,7 @@ class ClassSpec(lang.Final):
     ##
     # ext
 
-    metadata: ta.Mapping[ta.Any, ta.Any] | None = None
+    metadata: ta.Sequence[ta.Any] | None = None
 
     reorder: bool = False
     cache_hash: bool = False

@@ -50,7 +50,7 @@ def dataclass(
 
         #
 
-        metadata: ta.Mapping[ta.Any, ta.Any] | None = None,
+        metadata: ta.Sequence[ta.Any] | None = None,
 
         reorder: bool | None = None,
         cache_hash: bool | None = None,

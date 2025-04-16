@@ -124,7 +124,7 @@ class Static(lang.Abstract):
                     new_fld.default_factory = (lambda v2: lambda: v2)(v)  # noqa
 
                 # FIXME
-                from ..api.fields.metadata import _ExtraFieldParams  # noqa
+                from ..api.fields.metadata import _ExtraFieldParamsMetadata  # noqa
                 from ..specs import FieldSpec
                 try:
                     x_fs = fld.metadata[FieldSpec]
@@ -134,9 +134,9 @@ class Static(lang.Abstract):
                     n_md = {
                         k: v
                         for k, v in fld.metadata.items()
-                        if k not in (FieldSpec, _ExtraFieldParams)
+                        if k not in (FieldSpec, _ExtraFieldParamsMetadata)
                     }
-                    n_md[_ExtraFieldParams] = {
+                    n_md[_ExtraFieldParamsMetadata] = {
                         fs_f.name: getattr(x_fs, fs_f.name)
                         for fs_f in dc.fields(FieldSpec)  # noqa
                         if fs_f not in dc.Field.__slots__  # type: ignore[attr-defined]

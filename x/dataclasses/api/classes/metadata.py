@@ -23,25 +23,36 @@ def _append_cls_md(cls, k, v):
     dct.setdefault(k, []).append(v)
 
 
-def _append_cls_dct_md(k, v):
-    lang.get_caller_cls_dct(1).setdefault(METADATA_ATTR, {}).setdefault(k, []).append(v)
+def _append_cls_dct_md(k, *vs):
+    lang.get_caller_cls_dct(1).setdefault(METADATA_ATTR, {}).setdefault(k, []).extend(vs)
 
 
 ##
 
 
-class _ExtraClassParams(lang.Marker):
+class _ExtraClassParamsMetadata(lang.Marker):
     pass
 
 
 def extra_class_params(**kwargs):
     def inner(cls):
-        _append_cls_md(cls, _ExtraClassParams, kwargs)
+        _append_cls_md(cls, _ExtraClassParamsMetadata, kwargs)
         return cls
     return inner
 
 
 ##
+
+
+class _UserMetadata(lang.Marker):
+    pass
+
+
+def metadata(*objs) -> None:
+    _append_cls_dct_md(_InitMetadata, *objs)
+
+
+#
 
 
 class _InitMetadata(lang.Marker):
@@ -79,7 +90,7 @@ def extract_cls_metadata(cls: type) -> ClassMetadata:
     cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
 
     eps = {}
-    for kw in cls_md_dct.get(_ExtraClassParams, []):
+    for kw in cls_md_dct.get(_ExtraClassParamsMetadata, []):
         eps.update(kw)
 
     return ClassMetadata(

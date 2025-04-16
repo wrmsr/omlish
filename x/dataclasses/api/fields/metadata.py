@@ -11,12 +11,12 @@ from ...utils import chain_mapping_proxy
 ##
 
 
-class _ExtraFieldParams(lang.Marker):
+class _ExtraFieldParamsMetadata(lang.Marker):
     pass
 
 
 def extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
-    return {_ExtraFieldParams: kwargs}
+    return {_ExtraFieldParamsMetadata: kwargs}
 
 
 ##
@@ -63,6 +63,6 @@ def set_field_spec_metadata(
         f,
         {
             FieldSpec: fs,
-            _ExtraFieldParams: {},
+            _ExtraFieldParamsMetadata: {},
         },
     )
