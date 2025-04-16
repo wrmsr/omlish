@@ -20,9 +20,6 @@ import contextlib
 import time
 import typing as ta
 
-import dataclasses as dc0
-from omlish import dataclasses as dc1
-from x import dataclasses as dc2
 
 
 ##
@@ -94,13 +91,25 @@ def _main() -> None:
     parser.add_argument('-y', '--yappi', action='store_true')
     args = parser.parse_args()
 
+    def dc0():
+        import dataclasses as dc
+        return dc
+
+    def dc1():
+        from omlish import dataclasses as dc
+        return dc
+
+    def dc2():
+        from x import dataclasses as dc
+        return dc
+
     modules = [
         dc0,
         dc1,
         dc2,
     ]
 
-    dc = modules[args.mode]
+    dc = modules[args.mode]()
 
     if args.use_make:
         f = run_make
