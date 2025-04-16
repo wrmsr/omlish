@@ -17,6 +17,7 @@ dc = dc2
 """
 import argparse
 import time
+import typing as ta
 
 import dataclasses as dc0
 from omlish import dataclasses as dc1
@@ -28,17 +29,28 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', type=int, default=0, nargs='?')
     parser.add_argument('-n', type=int, default=1000)
+    parser.add_argument('-m', '--use-make', action='store_true')
     args = parser.parse_args()
-    
+
     modules = [
         dc0,
         dc1,
         dc2,
     ]
-    
+
     dc = modules[args.mode]
-    
-    def f():
+
+    def run_class():
+        @dc.dataclass()
+        class C:
+            x: int
+            y: ta.Any
+            z: int = dc.field(default=5)
+
+            def add_one(self):
+                return self.x + 1,
+
+    def run_make():
         dc.make_dataclass(
             'C',
             [
@@ -50,12 +62,17 @@ def _main() -> None:
                 'add_one': lambda self: self.x + 1,
             },
         )
-    
+
+    if args.use_make:
+        f = run_make
+    else:
+        f = run_class
+
     st = time.time()
     for _ in range(args.n):
         f()
     et = time.time()
-    
+
     print(f'Time elapsed: {(et - st) * 1_000_000. / args.n:.2f} us')
 
 
