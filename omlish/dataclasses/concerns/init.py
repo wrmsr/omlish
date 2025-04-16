@@ -287,7 +287,9 @@ class InitGenerator(Generator[InitPlan]):
 
         # defaults
 
-        field_values: dict[str, str] = {}
+        values: dict[str, str] = {
+            plan.self_param: plan.self_param,
+        }
 
         for f in plan.fields:
             if f.default_factory is not None:
@@ -303,51 +305,51 @@ class InitGenerator(Generator[InitPlan]):
                     lines.append(
                         f'    {f.name} = {f.default_factory.ident()}()',
                     )
-                field_values[f.name] = f.name
+                values[f.name] = f.name
 
             elif f.init:
                 if f.default is not None:
                     check.none(f.default_factory)
-                    field_values[f.name] = f.name
+                    values[f.name] = f.name
 
                 else:
-                    field_values[f.name] = f.name
+                    values[f.name] = f.name
 
             elif plan.slots and f.default is not None:
                 refs.add(f.default)
                 lines.append(
                     f'    {f.name} = {f.default.ident()}',
                 )
-                field_values[f.name] = f.name
+                values[f.name] = f.name
 
         # coercion
 
         for f in plan.fields:
             if isinstance(f.coerce, bool) and f.coerce:
                 lines.append(
-                    f'    {f.name} = {f.annotation.ident()}({field_values[f.name]})',
+                    f'    {f.name} = {f.annotation.ident()}({values[f.name]})',
                 )
-                field_values[f.name] = f.name
+                values[f.name] = f.name
             elif isinstance(f.coerce, OpRef):
                 refs.add(f.coerce)
                 lines.append(
-                    f'    {f.name} = {f.coerce.ident()}({field_values[f.name]})',
+                    f'    {f.name} = {f.coerce.ident()}({values[f.name]})',
                 )
-                field_values[f.name] = f.name
+                values[f.name] = f.name
 
-        # validation
+        # field validation
 
         for f in plan.fields:
             if f.check_type is None:
                 continue
             refs.add(f.check_type)
             lines.extend([
-                f'    if not {ISINSTANCE_GLOBAL.ident}({field_values[f.name]}, {f.check_type.ident()}): ',
+                f'    if not {ISINSTANCE_GLOBAL.ident}({values[f.name]}, {f.check_type.ident()}): ',
                 f'        raise {FIELD_TYPE_VALIDATION_ERROR_GLOBAL.ident}(',
                 f'            obj={plan.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
-                f'            value={field_values[f.name]},',
+                f'            value={values[f.name]},',
                 f'        )',
             ])
             refs.add(ISINSTANCE_GLOBAL)
@@ -358,15 +360,36 @@ class InitGenerator(Generator[InitPlan]):
                 continue
             refs.add(f.validate)
             lines.extend([
-                f'    if not {f.validate.ident()}({field_values[f.name]}): ',
+                f'    if not {f.validate.ident()}({values[f.name]}): ',
                 f'        raise {FIELD_FN_VALIDATION_ERROR_GLOBAL.ident}(',
                 f'            obj={plan.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
-                f'            value={field_values[f.name]},',
+                f'            value={values[f.name]},',
                 f'        )',
             ])
             refs.add(FIELD_FN_VALIDATION_ERROR_GLOBAL)
+
+        # setattr
+
+        sab = SetattrSrcBuilder(
+            object_ident=plan.self_param,
+        )
+        for f in plan.fields:
+            if f.name not in values or f.field_type != FieldType.INSTANCE:
+                continue
+            lines.extend([
+                f'    {l}'
+                for l in sab(
+                    f.name,
+                    values[f.name],
+                    frozen=plan.frozen,
+                    override=f.override,
+                )
+            ])
+        refs.update(sab.refs)
+
+        # fn validation
 
         for vfn in plan.validate_fns or []:
             refs.add(vfn.fn)
@@ -374,7 +397,7 @@ class InitGenerator(Generator[InitPlan]):
                 lines.extend([
                     f'    if not {vfn.fn.ident()}(',
                     *[
-                        f'        {field_values[p]},'
+                        f'        {values[p]},'
                         for p in vfn.params
                     ],
                     f'    ):',
@@ -391,25 +414,6 @@ class InitGenerator(Generator[InitPlan]):
             ])
             refs.add(FN_VALIDATION_ERROR_GLOBAL)
 
-        # setattr
-
-        sab = SetattrSrcBuilder(
-            object_ident=plan.self_param,
-        )
-        for f in plan.fields:
-            if f.name not in field_values or f.field_type != FieldType.INSTANCE:
-                continue
-            lines.extend([
-                f'    {l}'
-                for l in sab(
-                    f.name,
-                    field_values[f.name],
-                    frozen=plan.frozen,
-                    override=f.override,
-                )
-            ])
-        refs.update(sab.refs)
-
         # post-init
 
         if (pia := plan.post_init_params) is not None:
@@ -417,7 +421,7 @@ class InitGenerator(Generator[InitPlan]):
                 lines.extend([
                     f'    {plan.self_param}.{STD_POST_INIT_NAME}(',
                     *[
-                        f'        {field_values[p]},'
+                        f'        {values[p]},'
                         for p in pia
                     ],
                     f'    )',
