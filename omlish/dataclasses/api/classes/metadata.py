@@ -16,14 +16,19 @@ T = ta.TypeVar('T')
 METADATA_ATTR = '__dataclass_metadata__'
 
 
-def _append_cls_metadata(cls, k, v):
+def _get_cls_metadata_dct(cls):
     check.isinstance(cls, type)
     check.arg(not is_immediate_dataclass(cls))
     try:
-        dct = cls.__dict__[METADATA_ATTR]
+        return cls.__dict__[METADATA_ATTR]
     except KeyError:
-        setattr(cls, METADATA_ATTR, dct := {})
-    dct.setdefault(k, []).append(v)
+        pass
+    setattr(cls, METADATA_ATTR, dct := {})
+    return dct
+
+
+def _append_cls_metadata(cls, k, v):
+    _get_cls_metadata_dct(cls).setdefault(k, []).append(v)
 
 
 def _append_cls_dct_metadata(k, *vs):
@@ -56,9 +61,7 @@ def metadata(*objs) -> None:
 
 
 def append_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
-    check.isinstance(cls, type)
-    setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
-    md.setdefault(_UserMetadata, []).extend(args)
+    _append_cls_metadata(cls, _UserMetadata, *args)
     return cls
 
 
@@ -110,7 +113,7 @@ def extract_cls_metadata(
     validate_fns: list[ta.Any] = []
 
     for b_cls in (cls.__mro__[-2::-1] if deep else (cls,)):
-        cls_md_dct = cls.__dict__.get(METADATA_ATTR, {})
+        cls_md_dct = b_cls.__dict__.get(METADATA_ATTR, {})
 
         if b_cls is cls:
             for kw in cls_md_dct.get(_ExtraClassParamsMetadata, []):
