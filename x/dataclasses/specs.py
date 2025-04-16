@@ -7,6 +7,9 @@ from omlish import check
 from omlish import lang
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -151,6 +154,31 @@ class ClassSpec(lang.Final):
 
     metadata: ta.Sequence[ta.Any] | None = None
 
+    @property
+    def metadata_by_type(self) -> ta.Mapping[type, ta.Sequence[ta.Any]]:
+        return self._metadata_by_type
+
+    _metadata_by_type: ta.ClassVar[ta.Mapping[type, ta.Sequence[ta.Any]]]
+
+    @ta.overload
+    def get_last_metadata(self, ty: type[T], default: T) -> T:
+        ...
+
+    @ta.overload
+    def get_last_metadata(self, ty: type[T], default: None = None) -> T | None:
+        ...
+
+    def get_last_metadata(self, ty, default=None):
+        try:
+            mdl = self._metadata_by_type[ty]
+        except KeyError:
+            return default
+        if not mdl:
+            return default
+        return mdl[-1]
+
+    #
+
     reorder: bool = False
     cache_hash: bool = False
     generic_init: bool = False
@@ -176,11 +204,21 @@ class ClassSpec(lang.Final):
     #
 
     def __post_init__(self) -> None:
-        dct: dict[str, FieldSpec] = {}
+        fields_by_name: dict[str, FieldSpec] = {}
         for f in self.fields:
-            check.not_in(f.name, dct)
-            dct[f.name] = f
-        object.__setattr__(self, '_fields_by_name', dct)
+            check.not_in(f.name, fields_by_name)
+            fields_by_name[f.name] = f
+        object.__setattr__(self, '_fields_by_name', fields_by_name)
+
+        metadata_by_type: dict[type, list[ta.Any]] = {}
+        for md in self.metadata or ():
+            mdt = type(md)
+            try:
+                mdl = metadata_by_type[mdt]
+            except KeyError:
+                mdl = metadata_by_type[mdt] = []
+            mdl.append(md)
+        object.__setattr__(self, '_metadata_by_type', metadata_by_type)
 
         if self.order and not self.eq:
             raise ValueError('eq must be true if order is true')

@@ -4,7 +4,6 @@ TODO:
  - Enum - enforce Abstract or Final
 """
 import abc
-import collections
 import dataclasses as dc
 import typing as ta
 
@@ -47,13 +46,10 @@ class DataMeta(abc.ABCMeta):
             if mpa in nkw
         })
 
-        mmd = {
-            MetaclassSpec: mcp,
-        }
-        if metadata is not None:
-            metadata = collections.ChainMap(mmd, metadata)
-        else:
-            metadata = mmd
+        metadata = [
+            *([metadata] if metadata is not None else []),
+            mcp,
+        ]
 
         #
 
@@ -113,4 +109,8 @@ class DataMeta(abc.ABCMeta):
 
         #
 
-        return dataclass(cls, metadata=metadata, **nkw)
+        return dataclass(
+            cls,
+            metadata=metadata,
+            **nkw,
+        )

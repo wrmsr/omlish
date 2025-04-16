@@ -36,7 +36,4 @@ def get_metaclass_spec(obj: type | ClassSpec) -> MetaclassSpec:
     else:
         raise TypeError(obj)
 
-    if (md := cs.metadata) is None:
-        return DEFAULT_METACLASS_SPEC
-
-    return md.get(MetaclassSpec, DEFAULT_METACLASS_SPEC)
+    return cs.get_last_metadata(MetaclassSpec, DEFAULT_METACLASS_SPEC)

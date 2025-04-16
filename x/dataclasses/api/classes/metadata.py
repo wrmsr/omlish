@@ -82,6 +82,8 @@ def validate(obj):
 @dc.dataclass(frozen=True, kw_only=True, eq=False)
 class ClassMetadata:
     extra_params: ta.Mapping[str, ta.Any] | None = None
+
+    user_metadata: ta.Sequence[ta.Any] | None = None
     init_fns: ta.Sequence[InitFn | property] | None = None
     validate_fns: ta.Sequence[ta.Any] | None = None
 
@@ -95,17 +97,8 @@ def extract_cls_metadata(cls: type) -> ClassMetadata:
 
     return ClassMetadata(
         extra_params=eps or None,
+
+        user_metadata=cls_md_dct.get(_UserMetadata),
         init_fns=cls_md_dct.get(_InitMetadata),
         validate_fns=cls_md_dct.get(_ValidateMetadata),
     )
-
-
-def remove_cls_metadata(cls: type) -> None:
-    try:
-        delattr(cls, METADATA_ATTR)
-    except AttributeError:
-        pass
-
-
-def has_cls_metadata(cls: type) -> bool:
-    return hasattr(cls, METADATA_ATTR)

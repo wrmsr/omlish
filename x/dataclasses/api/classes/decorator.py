@@ -2,7 +2,6 @@
 TODO:
  - collect init_fn's / validate_fns from superclass ClassSpecs
 """
-import dataclasses as dc
 import inspect
 import typing as ta
 
@@ -21,10 +20,7 @@ from ..fields.conversion import check_field_spec_against_field
 from ..fields.conversion import std_field_to_field_spec
 from ..fields.metadata import set_field_spec_metadata
 from .metadata import extract_cls_metadata
-from .metadata import has_cls_metadata
-from .metadata import remove_cls_metadata
 from .params import build_spec_std_params
-from .params import get_class_spec
 
 
 ##
@@ -58,6 +54,11 @@ def dataclass(
         override: bool | None = None,
         repr_id: bool | None = None,
 ):
+    if isinstance(metadata, ta.Mapping):
+        raise TypeError(metadata)
+
+    #
+
     cls = check.not_none(cls)
 
     #
@@ -87,27 +88,28 @@ def dataclass(
 
     #
 
-    cmd = extract_cls_metadata(cls)
-    remove_cls_metadata(cls)
-
+    user_metadata: list[ta.Any] = []
     init_fns: list[InitFn | property] = []
-    validate_fns: list[ClassSpec.ValidateFnWithParams] = []
+    validate_fns: list[ta.Any] = []
 
     bc: type
     for bc in cls.__mro__[-1:0:-1]:
-        if not dc.is_dataclass(bc):
-            check.state(not has_cls_metadata(bc))
-            continue
-        if (bcs := get_class_spec(bc)) is None:
-            continue
-        init_fns.extend(bcs.init_fns or [])
-        validate_fns.extend(bcs.validate_fns or [])
+        b_cmd = extract_cls_metadata(bc)
+        user_metadata.extend(b_cmd.user_metadata or [])
+        init_fns.extend(b_cmd.init_fns or [])
+        validate_fns.extend(b_cmd.validate_fns or [])
 
+    cmd = extract_cls_metadata(cls)
+
+    user_metadata.extend(cmd.user_metadata or [])
     init_fns.extend(cmd.init_fns or [])
-    for md_vf in cmd.validate_fns or []:
+    validate_fns.extend(cmd.validate_fns or [])
+
+    vfp_lst: list[ClassSpec.ValidateFnWithParams] = []
+    for md_vf in validate_fns:
         if isinstance(md_vf, staticmethod):
             md_vf = md_vf.__func__
-        validate_fns.append(ClassSpec.ValidateFnWithParams(
+        vfp_lst.append(ClassSpec.ValidateFnWithParams(
             md_vf,
             [p.name for p in inspect.signature(md_vf).parameters.values()],
         ))
@@ -129,7 +131,10 @@ def dataclass(
 
         #
 
-        metadata=metadata,
+        metadata=(
+            *(metadata or []),
+            *(cmd.user_metadata or []),
+        ) or None,
 
         **{
             **(cmd.extra_params or {}),
@@ -143,7 +148,7 @@ def dataclass(
         },
 
         init_fns=init_fns or None,
-        validate_fns=validate_fns or None,
+        validate_fns=vfp_lst or None,
     )
 
     #
