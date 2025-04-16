@@ -1,8 +1,7 @@
 import typing as ta
 
 from .. import concerns as _concerns  # noqa  # imported for registration
-from ..generation import processor as _generation_processor  # noqa  # imported for registration
-from ..generation.processor import PlanOnly
+from ..generation import processor as gp
 from ..specs import ClassSpec
 from .base import ProcessingContext
 from .base import Processor
@@ -18,10 +17,15 @@ def drive_cls_processing(
         cs: ClassSpec,
         *,
         plan_only: bool = False,
+        verbose: bool = False,
 ) -> type:
     options: list[ta.Any] = []
     if plan_only:
-        options.append(PlanOnly(True))
+        options.append(gp.PlanOnly(True))
+    if verbose:
+        options.append(gp.Verbose(True))
+
+    #
 
     ctx = ProcessingContext(
         cls,

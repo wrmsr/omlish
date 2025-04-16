@@ -1,9 +1,10 @@
 # flake8: noqa: E501
 # ruff: noqa: N801 S105
 # fmt: off
-import dataclasses as _dc  # noqa
 import enum as _enum  # noqa
 import typing as _ta  # noqa
+
+from omlish import dataclasses as _dc  # noqa
 
 from .. import base as _base  # noqa
 

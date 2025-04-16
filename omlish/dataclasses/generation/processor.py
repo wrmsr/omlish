@@ -36,6 +36,10 @@ class PlanOnly(ta.NamedTuple):
     b: bool
 
 
+class Verbose(ta.NamedTuple):
+    b: bool
+
+
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
     class Mode(abc.ABC):
@@ -67,10 +71,11 @@ class GeneratorProcessor(Processor):
                 gp.ops(),
             )
 
-            # print(gp.prepare().plans.render())
-            # print()
-            # print(comp.src)
-            # print()
+            if (vo := gp._ctx.option(Verbose)) is not None and vo.b:  # noqa
+                print(gp.prepare().plans.render(), file=sys.stderr)
+                print(file=sys.stderr)
+                print(comp.src, file=sys.stderr)
+                print(file=sys.stderr)
 
             ns: dict = {}
             ns.update(compiler.style.globals_ns())  # noqa
