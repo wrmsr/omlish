@@ -82,8 +82,6 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
         metadata=f.metadata,
         kw_only=None if f.kw_only is dc.MISSING else (check.isinstance(f.kw_only, bool) if DEBUG else f.kw_only),
 
-        field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
-
         **lang.opt_kw(
             coerce=efp.get('coerce'),
             validate=efp.get('validate'),
@@ -92,4 +90,47 @@ def std_field_to_field_spec(f: dc.Field) -> FieldSpec:
             repr_fn=efp.get('repr_fn'),
             repr_priority=efp.get('repr_priority'),
         ),
+
+        field_type=SPEC_FIELD_TYPE_BY_STD_FIELD_TYPE[std_field_type(f)],
     )
+
+
+##
+
+
+def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
+    f_tup = (
+        f.name,
+        f.type,
+
+        f.default,
+        f.default_factory,
+
+        f.repr,
+        f.hash,
+        f.init,
+        f.compare,
+        # f.metadata,
+        f.kw_only,
+
+        f._field_type,  # noqa
+    )
+
+    fs_tup = (
+        fs.name,
+        fs.annotation,
+
+        *spec_field_default_to_std_defaults(fs.default),
+
+        fs.repr,
+        fs.hash,
+        fs.init,
+        fs.compare,
+        # fs.metadata,
+        fs.kw_only,
+
+        STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type].value,
+    )
+
+    if f_tup != fs_tup:
+        raise RuntimeError(f'Field/FieldSpec mismatch: {f_tup!r} != {fs_tup!r}')

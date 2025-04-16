@@ -125,24 +125,24 @@ class Static(lang.Abstract):
                     # Use a default_factory to allow unsafe (mutable) values.
                     new_fld.default_factory = (lambda v2: lambda: v2)(v)  # noqa
 
-                try:
-                    x_fs = fld.metadata[FieldSpec]
-                except KeyError:
-                    pass
-                else:
-                    # FIXME: gross
-                    n_md = {
-                        k: v
-                        for k, v in fld.metadata.items()
-                        if k not in (FieldSpec, _ExtraFieldParams)
-                    }
-                    n_md[_ExtraFieldParams] = {
-                        fs_f.name: getattr(x_fs, fs_f.name)
-                        for fs_f in dc.fields(FieldSpec)  # noqa
-                        if fs_f not in dc.Field.__slots__  # type: ignore[attr-defined]
-                        and fs_f.name not in ('default', 'default_factory')
-                    }
-                    new_fld.metadata = n_md  # type: ignore[assignment]
+                # try:
+                #     x_fs = fld.metadata[FieldSpec]
+                # except KeyError:
+                #     pass
+                # else:
+                #     # FIXME: gross
+                #     n_md = {
+                #         k: v
+                #         for k, v in fld.metadata.items()
+                #         if k not in (FieldSpec, _ExtraFieldParams)
+                #     }
+                #     n_md[_ExtraFieldParams] = {
+                #         fs_f.name: getattr(x_fs, fs_f.name)
+                #         for fs_f in dc.fields(FieldSpec)  # noqa
+                #         if fs_f not in dc.Field.__slots__  # type: ignore[attr-defined]
+                #         and fs_f.name not in ('default', 'default_factory')
+                #     }
+                #     new_fld.metadata = n_md  # type: ignore[assignment]
 
                 setattr(cls, fld.name, new_fld)
                 new_anns[fld.name] = fld.type

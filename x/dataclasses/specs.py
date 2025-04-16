@@ -109,7 +109,10 @@ class FieldSpec(lang.Final):
                 not isinstance(dfv := self.default.must(), DefaultFactory) and
                 dfv.__class__.__hash__ is None  # noqa
         ):
-            raise ValueError(f'mutable default {type(dfv)} for field {self.name} is not allowed: use default_factory')
+            raise ValueError(
+                f'mutable default {type(dfv)} for field {self.name} '
+                f'is not allowed: use default_factory',
+            )
 
 
 ##
