@@ -127,38 +127,43 @@ def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
 
 
 def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
-    f_tup = (
-        f.name,
-        f.type,
+    f_dct = {
+        'name': f.name,
+        'type': f.type,
 
-        f.default,
-        f.default_factory,
+        'default': f.default,
+        'default_factory': f.default_factory,
 
-        f.repr,
-        f.hash,
-        f.init,
-        f.compare,
+        'repr': f.repr,
+        'hash': f.hash,
+        'init': f.init,
+        'compare': f.compare,
         # f.metadata,
-        f.kw_only,
+        'kw_only': f.kw_only if f.kw_only is not dc.MISSING else None,
 
-        f._field_type,  # type: ignore[attr-defined]  # noqa
-    )
+        'std_field_type': f._field_type,  # type: ignore[attr-defined]  # noqa
+    }
 
-    fs_tup = (
-        fs.name,
-        fs.annotation,
+    fs_dct = {
+        'name': fs.name,
+        'type': fs.annotation,
 
-        *spec_field_default_to_std_defaults(fs.default),
+        **spec_field_default_to_std_defaults(fs.default)._asdict(),
 
-        fs.repr,
-        fs.hash,
-        fs.init,
-        fs.compare,
+        'repr': fs.repr,
+        'hash': fs.hash,
+        'init': fs.init,
+        'compare': fs.compare,
         # fs.metadata,
-        fs.kw_only,
+        'kw_only': fs.kw_only,
 
-        STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type].value,
-    )
+        'std_field_type': STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type].value,
+    }
 
-    if f_tup != fs_tup:
-        raise RuntimeError(f'Field/FieldSpec mismatch: {f_tup!r} != {fs_tup!r}')
+    if f_dct != fs_dct:
+        diff_dct = {
+            k: (f_v, fs_v)
+            for k, f_v in f_dct.items()
+            if (fs_v := fs_dct[k]) != f_v
+        }
+        raise RuntimeError(f'Field/FieldSpec mismatch: {diff_dct!r}')

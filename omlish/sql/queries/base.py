@@ -29,7 +29,7 @@ class Node(
     lang.Abstract,
     eq=False,
     confer=frozenset([
-        *dc.get_metaclass_params(dc.Frozen).confer,
+        *dc.get_metaclass_spec(dc.Frozen).confer,
         'eq',
     ]),
 ):

@@ -82,6 +82,10 @@ from .metaclass.meta import (  # noqa
     DataMeta,
 )
 
+from .metaclass.specs import (  # noqa
+    get_metaclass_spec,
+)
+
 from .reflection import (  # noqa
     reflect,
 )

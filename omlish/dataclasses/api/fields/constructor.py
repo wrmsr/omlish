@@ -1,7 +1,3 @@
-"""
-TODO:
- - collect init_fn's / validate_fns from superclass ClassSpecs
-"""
 import collections
 import dataclasses as dc
 import typing as ta
