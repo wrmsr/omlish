@@ -4,6 +4,7 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import sys
 import typing as ta
 
 from omlish import check
@@ -71,13 +72,25 @@ class GeneratorProcessor(Processor):
             ns.update(compiler.style.globals_ns())  # noqa
 
             exec(comp.src, ns)
-            fn = ns[comp.fn_name]
+            o_fn = ns[comp.fn_name]
+
+            if cls.__module__ in sys.modules:
+                gl = sys.modules[cls.__module__].__dict__
+            else:
+                gl = {}
+
+            fn = lang.new_function(**{
+                **lang.new_function_kwargs(o_fn),
+                **dict(
+                    globals=gl,
+                ),
+            })
 
             kw: dict = {CLS_IDENT: cls}
             kw.update({
                 k.ident: v.value
                 for k, v in FN_GLOBALS.items()
-                if v.src.startswith('.')
+                # if v.src.startswith('.')
             })
             orm = gp.prepare().ref_map
             for r in comp.refs:
@@ -96,8 +109,8 @@ class GeneratorProcessor(Processor):
             self,
             ctx: ProcessingContext,
             *,
-            mode: Mode = ExecutorMode(),
-            # mode: Mode = CompilerMode(),
+            # mode: Mode = ExecutorMode(),
+            mode: Mode = CompilerMode(),
     ) -> None:
         super().__init__(ctx)
 
