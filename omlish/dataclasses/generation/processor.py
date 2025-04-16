@@ -1,5 +1,6 @@
 """
 TODO:
+ - untangle compilation from here
  - populate linecache
 """
 import abc

@@ -3,10 +3,11 @@ import dataclasses as dc
 import itertools
 import typing as ta
 
-from ... import lang
-from ...manifests.base import ModAttrManifest
-from ...manifests.base import NameAliasesManifest
-from ..static import Static
+from omlish import lang
+from omlish.manifests.base import ModAttrManifest
+from omlish.manifests.base import NameAliasesManifest
+
+from ..tools.static import Static
 
 
 ##

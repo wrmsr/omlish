@@ -1,3 +1,6 @@
+##
+# stdlib interface
+
 from dataclasses import (  # noqa
     FrozenInstanceError,
 
@@ -15,46 +18,28 @@ from dataclasses import (  # noqa
     fields,
 
     is_dataclass,
-
-    # asdict,
-    # astuple,
-
-    # replace,
 )
 
-from .impl.api import (  # noqa
-    field as xfield,
-
+from .api import (  # noqa
     dataclass as xdataclass,
+
     make_dataclass as xmake_dataclass,
 
-    extra_class_params,
+    field as xfield,
 )
 
-from .impl.as_ import (  # noqa
+from .tools.as_ import (  # noqa
     asdict,
     astuple,
 )
 
-from .impl.params import (  # noqa
-    FieldExtras,
-    get_field_extras,
-
-    get_params,
-
-    get_params_extras,
-
-    MetaclassParams,
-    get_metaclass_params,
-)
-
-from .impl.replace import (  # noqa
+from .concerns.replace import (  # noqa
     replace,
 )
 
 
 ##
-
+# globals hack
 
 globals()['field'] = xfield
 
@@ -63,71 +48,80 @@ globals()['make_dataclass'] = xmake_dataclass
 
 
 ##
+# additional interface
 
+from .api import (  # noqa
+    append_class_metadata,
+    extra_class_params,
+    init,
+    metadata,
+    validate,
 
-from .impl.errors import (  # noqa
+    extra_field_params,
+    set_field_metadata,
+    update_extra_field_params,
+)
+
+from .errors import (  # noqa
+    FieldFnValidationError,
+    FieldTypeValidationError,
     FieldValidationError,
+    FnValidationError,
+    TypeValidationError,
     ValidationError,
 )
 
-from .impl.metaclass import (  # noqa
-    DataMeta,
+from .metaclass.bases import (  # noqa
+    Box,
+    Case,
     Data,
     Frozen,
-    Case,
-    Box,
 )
 
-from .impl.metadata import (  # noqa
-    Metadata,
-
-    get_merged_metadata,
-
-    UserMetadata,
-    metadata,
-
-    Validate,
-    validate,
-
-    Init,
-    init,
+from .metaclass.meta import (  # noqa
+    DataMeta,
 )
 
-from .impl.reflect import (  # noqa
-    ClassInfo,
+from .reflection import (  # noqa
     reflect,
 )
 
-from .static import (  # noqa
-    Static,
+from .tools.as_ import (  # noqa
+    shallow_asdict,
+    shallow_astuple,
 )
 
-from .utils import (  # noqa
-    opt_repr,
-    truthy_repr,
-
-    append_class_metadata,
-    chain_metadata,
-    field_modifier,
+from .tools.iter import (  # noqa
     fields_dict,
-    update_extra_field_params,
-    update_field_metadata,
-    update_fields,
-    # update_fields_metadata,
-
-    shallow_astuple,
-    shallow_asdict,
-
-    deep_replace,
 
     iter_items,
     iter_keys,
     iter_values,
 )
 
-##
+from .tools.modifiers import (  # noqa
+    field_modifier,
+    update_fields,
+)
 
-from ..lite.dataclasses import (  # noqa
+from .tools.replace import (  # noqa
+    deep_replace,
+)
+
+from .tools.repr import (  # noqa
+    opt_repr,
+    truthy_repr,
+)
+
+from .tools.static import (  # noqa
+    Static,
+)
+
+
+##
+# lite imports
+
+from omlish.lite.dataclasses import (  # noqa
     is_immediate_dataclass,
 
     dataclass_maybe_post_init as maybe_post_init,

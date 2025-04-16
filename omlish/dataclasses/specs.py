@@ -185,8 +185,8 @@ class ClassSpec(lang.Final):
     override: bool = False
     repr_id: bool = False
 
-    ## callbacks
-    #
+    ##
+    # callbacks
 
     init_fns: ta.Sequence[InitFn | property] | None = None
 
@@ -200,8 +200,8 @@ class ClassSpec(lang.Final):
 
     validate_fns: ta.Sequence[ValidateFnWithParams] | None = None
 
-    ## validate
-    #
+    ##
+    # validate
 
     def __post_init__(self) -> None:
         fields_by_name: dict[str, FieldSpec] = {}

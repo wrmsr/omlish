@@ -26,7 +26,7 @@ ORIGIN_IGNORED_PACKAGES = frozenset([
     lang.functions.__name__,
 
     dc.__name__,
-    dc.impl.__name__,  # noqa
+    *[m for m in sys.modules if m.startswith(dc.__name__ + '.')],
 ])
 
 

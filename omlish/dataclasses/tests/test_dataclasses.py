@@ -7,10 +7,12 @@ import typing as ta
 
 import pytest
 
-from ... import cached
+from omlish import cached
+from omlish import lang
+from omlish import reflect as rfl  # noqa
+
 from ... import dataclasses as dc
-from ... import lang
-from ... import reflect as rfl  # noqa
+from ..inspect import inspect_fields  # noqa
 
 
 T = ta.TypeVar('T')
@@ -104,9 +106,9 @@ def test_reflect():
 
     ref = dc.reflect(Baz0)
     print(ref)
-    print(ref.params)
-    print(ref.params_extras)
-    print(ref.merged_metadata)
+    # print(ref.params)
+    # print(ref.params_extras)
+    # print(ref.merged_metadata)
 
 
 def test_abc():
@@ -235,8 +237,8 @@ def test_generics():
 
     assert IntBox(5).v == 5
 
-    info = dc.reflect(IntBox)
-    print(info.field_owners)
+    ifs = inspect_fields(IntBox)
+    print(ifs.field_owners)
 
 
 def test_generics2():
@@ -340,7 +342,7 @@ def test_cache_hash():
     assert o.c.n == 1
 
 
-def test_extra_class_params_deco():
+def test_extra_params_deco():
     @dc.dataclass(frozen=True)
     @dc.extra_class_params(cache_hash=True)
     class CacheDc:
@@ -467,3 +469,22 @@ def test_default_factory_coerce():
 
     assert C().x == 4
     assert C(3).x == 6
+
+
+def test_super_init():
+    @dc.dataclass()
+    class A:
+        c: int = 0
+
+        @dc.init
+        def _inc_c(self) -> None:
+            self.c += 1
+
+    @dc.dataclass()
+    class B(A):
+        @dc.init
+        def _inc_c_again(self) -> None:
+            self.c += 1
+
+    assert A().c == 1
+    assert B().c == 2

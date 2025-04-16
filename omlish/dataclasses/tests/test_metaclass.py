@@ -3,8 +3,9 @@ import typing as ta
 
 import pytest
 
+from omlish import lang
+
 from ... import dataclasses as dc
-from ... import lang
 
 
 ##
@@ -14,12 +15,12 @@ def test_confer_cache_hash():
     class A(dc.Frozen, lang.Abstract, cache_hash=True):
         pass
 
-    assert dc.reflect(A).params_extras.cache_hash
+    assert dc.reflect(A).spec.cache_hash
 
     class B(A, lang.Final):
         pass
 
-    assert dc.reflect(B).params_extras.cache_hash
+    assert dc.reflect(B).spec.cache_hash
 
 
 def test_frozen_meta_hash():

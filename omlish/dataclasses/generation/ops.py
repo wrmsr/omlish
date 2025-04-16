@@ -30,7 +30,7 @@ class OpRef(_OpRef[T]):
         except AttributeError:
             pass
 
-        ident = IDENT_PREFIX + self.name.replace( '.', '__')
+        ident = IDENT_PREFIX + self.name.replace('.', '__')
         self._ident = ident  # noqa
         return ident
 

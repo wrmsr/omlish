@@ -16,8 +16,8 @@ from .metadata import extra_field_params
 
 
 def field(
-        *,
         default=dc.MISSING,
+        *,
         default_factory=dc.MISSING,
         init=True,
         repr=True,  # noqa

@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 def update_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
     @dc.field_modifier
     def inner(f: dc.Field) -> dc.Field:
-        return dc.update_field_metadata(f, {
+        return dc.set_field_metadata(f, {
             FieldMetadata: f.metadata.get(FieldMetadata, FieldMetadata()).update(**kwargs),
         })
     return inner
@@ -25,7 +25,7 @@ def update_fields_metadata(
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[T]], type[T]]:
     def inner(a: str, f: dc.Field) -> dc.Field:
-        return dc.update_field_metadata(f, {
+        return dc.set_field_metadata(f, {
             FieldMetadata: f.metadata.get(FieldMetadata, FieldMetadata()).update(**kwargs),
         })
 

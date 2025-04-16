@@ -6,7 +6,7 @@ from .classes.make import (  # noqa
     make_dataclass,
 )
 
-from .classes.metadata import (
+from .classes.metadata import (  # noqa
     append_class_metadata,
     extra_class_params,
     init,
@@ -14,14 +14,12 @@ from .classes.metadata import (
     validate,
 )
 
-from .fields.metadata import (
+from .fields.metadata import (  # noqa
     extra_field_params,
+    set_field_metadata,
+    update_extra_field_params,
 )
 
 from .fields.constructor import (  # noqa
     field,
-)
-
-from .reflect import (  # noqa
-    reflect,
 )

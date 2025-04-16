@@ -1,153 +1,98 @@
+import ast
 import collections
-import dataclasses as dc
+import functools
 import types
 import typing as ta
 
-from .. import check
-from .impl.metadata import METADATA_ATTR
-from .impl.metadata import UserMetadata
-from .impl.params import DEFAULT_FIELD_EXTRAS
-from .impl.params import FieldExtras
-from .impl.params import get_field_extras
+from omlish import check
 
 
 T = ta.TypeVar('T')
 
-
-##
-
-
-def opt_repr(o: ta.Any) -> str | None:
-    return repr(o) if o is not None else None
-
-
-def truthy_repr(o: ta.Any) -> str | None:
-    return repr(o) if o else None
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 ##
 
 
-def fields_dict(cls_or_instance: ta.Any) -> dict[str, dc.Field]:
-    return {f.name: f for f in dc.fields(cls_or_instance)}
+def repr_round_trip_value(v: T) -> T:
+    r = repr(v)
+    v2 = ast.literal_eval(r)
+    if v != v2:
+        raise ValueError(v)
+    return v2
 
 
 ##
 
 
-class field_modifier:  # noqa
-    def __init__(self, fn: ta.Callable[[dc.Field], dc.Field]) -> None:
+def set_qualname(cls: type, value: T) -> T:
+    if isinstance(value, types.FunctionType):
+        value.__qualname__ = f'{cls.__qualname__}.{value.__name__}'
+    return value
+
+
+def set_new_attribute(cls: type, name: str, value: ta.Any) -> bool:
+    if name in cls.__dict__:
+        return True
+    set_qualname(cls, value)
+    setattr(cls, name, value)
+    return False
+
+
+##
+
+
+class SealableRegistry(ta.Generic[K, V]):
+    def __init__(self) -> None:
         super().__init__()
-        self.fn = fn
 
-    def __ror__(self, other: T) -> T:
-        return self(other)
+        self._dct: dict[K, V] = {}
+        self._sealed = False
 
-    def __call__(self, f: T) -> T:
-        return check.isinstance(self.fn(check.isinstance(f, dc.Field)), dc.Field)  # type: ignore
+    def seal(self) -> None:
+        self._sealed = True
 
+    def __setitem__(self, k: K, v: V) -> None:
+        check.state(not self._sealed)
+        check.not_in(k, self._dct)
+        self._dct[k] = v
 
-def chain_metadata(*mds: ta.Mapping) -> types.MappingProxyType:
-    return types.MappingProxyType(collections.ChainMap(*mds))  # type: ignore  # noqa
+    def __getitem__(self, k: K) -> V:
+        self.seal()
+        return self._dct[k]
 
-
-def append_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
-    check.isinstance(cls, type)
-    setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
-    md.setdefault(UserMetadata, []).extend(args)
-    return cls
-
-
-def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
-    check.isinstance(f, dc.Field)
-    f.metadata = chain_metadata(nmd, f.metadata)
-    return f
+    def items(self) -> ta.Iterator[tuple[K, V]]:
+        self.seal()
+        return iter(self._dct.items())
 
 
-def update_extra_field_params(f: dc.Field, *, unless_non_default: bool = False, **kwargs: ta.Any) -> dc.Field:
-    fe = get_field_extras(f)
-    return update_field_metadata(f, {
-        FieldExtras: dc.replace(fe, **{
-            k: v
-            for k, v in kwargs.items()
-            if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
-        }),
-    })
+##
 
 
-def update_fields(
-        fn: ta.Callable[[str, dc.Field], dc.Field],
-        fields: ta.Iterable[str] | None = None,
-) -> ta.Callable[[type[T]], type[T]]:
-    def inner(cls):
-        if fields is None:
-            for a, v in list(cls.__dict__.items()):
-                if isinstance(v, dc.Field):
-                    setattr(cls, a, fn(a, v))
-
-        else:
-            for a in fields:
-                try:
-                    v = cls.__dict__[a]
-                except KeyError:
-                    v = dc.field()
-                else:
-                    if not isinstance(v, dc.Field):
-                        v = dc.field(default=v)
-                setattr(cls, a, fn(a, v))
-
-        return cls
-
-    check.not_isinstance(fields, str)
+def class_decorator(fn):
+    @functools.wraps(fn)
+    def inner(cls=None, *args, **kwargs):
+        if cls is None:
+            return lambda cls: fn(cls, *args, **kwargs)  # noqa
+        return fn(cls, *args, **kwargs)
     return inner
 
 
-# def update_fields_metadata(
-#         nmd: ta.Mapping,
-#         fields: ta.Iterable[str] | None = None,
-# ) -> ta.Callable[[type[T]], type[T]]:
-#     def inner(a: str, f: dc.Field) -> dc.Field:
-#         return update_field_metadata(f, nmd)
-#
-#     return update_fields(inner, fields)
-
-
 ##
 
 
-def shallow_astuple(o: ta.Any) -> tuple[ta.Any, ...]:
-    return tuple(getattr(o, f.name) for f in dc.fields(o))
+_EMPTY_MAPPING_PROXY: ta.Mapping = types.MappingProxyType({})
 
 
-def shallow_asdict(o: ta.Any) -> dict[str, ta.Any]:
-    return {f.name: getattr(o, f.name) for f in dc.fields(o)}
-
-
-##
-
-
-def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]) -> T:
-    if not args:
-        return o
-    elif len(args) == 1:
-        return dc.replace(o, **args[0](o))  # type: ignore
+def chain_mapping_proxy(*ms: ta.Mapping) -> types.MappingProxyType:
+    m: ta.Any
+    if len(ms) > 1:
+        m = collections.ChainMap(*ms)  # type: ignore[arg-type]
+    elif ms:
+        [m] = ms
     else:
-        return dc.replace(o, **{args[0]: deep_replace(getattr(o, args[0]), *args[1:])})  # type: ignore
+        m = _EMPTY_MAPPING_PROXY
 
-
-##
-
-
-def iter_items(obj: ta.Any) -> ta.Iterator[tuple[str, ta.Any]]:
-    for f in dc.fields(obj):
-        yield (f.name, getattr(obj, f.name))
-
-
-def iter_keys(obj: ta.Any) -> ta.Iterator[str]:
-    for f in dc.fields(obj):
-        yield f.name
-
-
-def iter_values(obj: ta.Any) -> ta.Iterator[ta.Any]:
-    for f in dc.fields(obj):
-        yield getattr(obj, f.name)
+    return types.MappingProxyType(m)
