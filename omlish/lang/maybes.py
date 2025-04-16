@@ -1,6 +1,9 @@
 import abc
 import typing as ta
 
+from ..lite.maybes import Maybe as _LiteMaybe
+from ..lite.maybes import as_maybe as _as_lite_maybe
+
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
@@ -123,6 +126,9 @@ class _Maybe(Maybe[T], tuple):
         raise exception_supplier()
 
 
+#
+
+
 def just(v: T) -> Maybe[T]:
     return tuple.__new__(_Maybe, (v,))  # noqa
 
@@ -138,3 +144,14 @@ def maybe(o: T | None) -> Maybe[T]:
     if o is None:
         return _empty  # noqa
     return just(o)
+
+
+##
+
+
+@_as_lite_maybe.register
+def _(obj: Maybe) -> _LiteMaybe:
+    if obj.present:
+        return _LiteMaybe.just(obj.must())
+    else:
+        return _LiteMaybe.empty()

@@ -106,6 +106,10 @@ class Project(ProjectBase):
             'duckdb ~= 1.2',
         ],
 
+        'templates': [
+            'jinja2 ~= 3.1',
+        ],
+
         'testing': [
             'pytest ~= 8.3',
         ],

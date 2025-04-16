@@ -1,8 +1,12 @@
 import abc
+import functools
 import typing as ta
 
 
 T = ta.TypeVar('T')
+
+
+##
 
 
 class Maybe(ta.Generic[T]):
@@ -43,3 +47,16 @@ class _Maybe(Maybe[T], tuple):
 
 
 Maybe._empty = tuple.__new__(_Maybe, ())  # noqa
+
+
+##
+
+
+@functools.singledispatch
+def as_maybe(obj: ta.Any) -> Maybe:
+    raise TypeError(obj)
+
+
+@as_maybe.register
+def _(obj: Maybe) -> Maybe:
+    return obj
