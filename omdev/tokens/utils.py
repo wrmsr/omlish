@@ -28,6 +28,8 @@ def ignore_ws(
         *,
         keep: ta.Container[str] = (),
 ) -> ta.Iterable[Token]:
+    if isinstance(keep, str):
+        raise TypeError(keep)
     return (
         t
         for t in toks
