@@ -18,14 +18,23 @@ from .impls import get_impl_func_cls_set
 T = ta.TypeVar('T')
 
 
+##
+
+
 class Method:
-    def __init__(self, func: ta.Callable) -> None:
+    def __init__(
+            self,
+            func: ta.Callable,
+            *,
+            installable: bool = False,
+    ) -> None:
         super().__init__()
 
         if not callable(func) and not hasattr(func, '__get__'):  # type: ignore
             raise TypeError(f'{func!r} is not callable or a descriptor')
 
         self._func = func
+        self._installable = installable
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
 
@@ -159,7 +168,28 @@ class Method:
         return func.__get__(instance)(*args, **kwargs)  # noqa
 
 
-def method(func=None, /):  # noqa
+def method(func=None, /, *, installable=False):  # noqa
     if func is None:
-        return functools.partial(method)
+        return functools.partial(method, installable=installable)
     return Method(func)
+
+
+def install_method(mth: Method, *, name: str | None = None) -> ta.Callable[[T], T]:
+    check.isinstance(mth, Method)
+    if not mth._installable:  # noqa
+        raise TypeError(f'Method not installable: {mth}')
+
+    def inner(fn):
+        a = name
+        if a is None:
+            a = fn.__name__
+
+        cls = check.not_none(mth._owner)  # noqa
+        check.arg(not hasattr(cls, a))
+        setattr(cls, a, fn)
+
+        mth.register(fn)
+
+        return fn
+
+    return inner
