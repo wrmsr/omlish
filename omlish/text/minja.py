@@ -18,19 +18,6 @@ from ..lite.maybes import Maybe
 ##
 
 
-class MinjaTemplate:
-    def __init__(self, fn: ta.Callable) -> None:
-        super().__init__()
-
-        self._fn = fn
-
-    def __call__(self, **kwargs: ta.Any) -> str:
-        return self._fn(**kwargs)
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class MinjaTemplateParam:
     name: str
@@ -57,6 +44,28 @@ class MinjaTemplateParam:
         else:
             dfl = Maybe.empty()
         return cls(name, dfl)
+
+
+class MinjaTemplate:
+    def __init__(
+            self,
+            fn: ta.Callable,
+            params: ta.Sequence[MinjaTemplateParam],
+    ) -> None:
+        super().__init__()
+
+        self._fn = fn
+        self._params = params
+
+    @property
+    def params(self) -> ta.Sequence[MinjaTemplateParam]:
+        return self._params
+
+    def __call__(self, **kwargs: ta.Any) -> str:
+        return self._fn(**kwargs)
+
+
+##
 
 
 class MinjaTemplateCompiler:
@@ -261,7 +270,10 @@ class MinjaTemplateCompiler:
             rendered.ns,
         )
 
-        return MinjaTemplate(render_fn)
+        return MinjaTemplate(
+            render_fn,
+            self._params,
+        )
 
 
 ##
