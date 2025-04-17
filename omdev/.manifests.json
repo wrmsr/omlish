@@ -171,23 +171,11 @@
     "module": ".py.scripts.execstat",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/scripts/execstat.py",
-    "line": 49,
+    "line": 82,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/execstat",
         "mod_name": "omdev.py.scripts.execstat"
-      }
-    }
-  },
-  {
-    "module": ".py.scripts.exectime",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/py/scripts/exectime.py",
-    "line": 66,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/exectime",
-        "mod_name": "omdev.py.scripts.exectime"
       }
     }
   },

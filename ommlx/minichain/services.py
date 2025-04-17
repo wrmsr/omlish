@@ -221,7 +221,7 @@ class Service_(lang.Abstract, ta.Generic[RequestT, ResponseT]):  # noqa
             return self.invoke(req)
 
         req = args[0]
-        if not args and not kwargs and isinstance(req, req_cls):
+        if len(args) < 2 and not kwargs and isinstance(req, req_cls):
             return self.invoke(req)
 
         if not isinstance(req, req_cls):
