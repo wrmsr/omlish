@@ -73,8 +73,8 @@ def _build_args_parser() -> argparse.ArgumentParser:
 
     parser.add_argument('file', nargs='?')
 
-    parser.add_argument('--stream', action='store_true')
-    parser.add_argument('--stream-build', action='store_true')
+    parser.add_argument('-S', '--stream', action='store_true')
+    parser.add_argument('-B', '--stream-build', action='store_true')
 
     parser.add_argument('-l', '--lines', action='store_true')
 

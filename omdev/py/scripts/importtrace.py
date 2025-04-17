@@ -488,20 +488,20 @@ def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--python')
+    parser.add_argument('-x', '--exe')
     parser.add_argument('--sqlite')
     parser.add_argument('--pretty', action='store_true')
     parser.add_argument('mod')
     args = parser.parse_args()
 
-    if args.python:
+    if args.exe:
         import inspect
         import subprocess
 
         mod_src = inspect.getsource(sys.modules[__name__])
         subprocess.run(
             [
-                args.python,
+                args.exe,
                 '-',
                 *(['--sqlite', args.sqlite] if args.sqlite else []),
                 *(['--pretty'] if args.pretty else []),

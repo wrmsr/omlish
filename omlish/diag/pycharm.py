@@ -1,7 +1,6 @@
 import dataclasses as dc
 import json
 import os.path
-import plistlib
 import re
 import shutil
 import subprocess
@@ -13,9 +12,14 @@ from .. import lang
 
 
 if ta.TYPE_CHECKING:
-    docker = lang.proxy_import('..docker')
-else:
+    import plistlib
+
     from .. import docker
+
+else:
+    plistlib = lang.proxy_import('plistlib')
+
+    docker = lang.proxy_import('..docker')
 
 
 ##

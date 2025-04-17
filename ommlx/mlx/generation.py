@@ -22,6 +22,7 @@ import sys
 import time
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 
@@ -68,7 +69,7 @@ def wired_limit(model: 'mlx.nn.Module', streams: list['mlx.core.Stream'] | None 
     model_bytes = mlx.utils.tree_reduce(
         lambda acc, x: acc + x.nbytes if isinstance(x, mlx.core.array) else acc, model, 0,
     )
-    max_rec_size = mlx.core.metal.device_info()['max_recommended_working_set_size']
+    max_rec_size = int(mlx.core.metal.device_info()['max_recommended_working_set_size'])
     if model_bytes > 0.9 * max_rec_size:
         model_mb = model_bytes // 2**20
         max_rec_mb = max_rec_size // 2**20
@@ -147,7 +148,7 @@ def generate_step(
         kv_group_size: int = 64,
         quantized_kv_start: int = 0,
         prompt_progress_callback: ta.Callable[[int, int], None] | None = None,
-) -> ta.Generator[tuple['mlx.core.array', 'mlx.core.array'], None, None]:
+) -> ta.Generator[tuple[ta.Any, 'mlx.core.array'], None, None]:
     """
     A generator producing token ids based on the given prompt from the model.
 
@@ -263,7 +264,7 @@ def speculative_generate_step(
         kv_bits: int | None = None,
         kv_group_size: int = 64,
         quantized_kv_start: int = 0,
-) -> ta.Generator[tuple['mlx.core.array', 'mlx.core.array', bool], None, None]:
+) -> ta.Generator[tuple[ta.Any, 'mlx.core.array', bool], None, None]:
     """
     A generator producing token ids based on the given prompt from the model.
 
@@ -461,6 +462,7 @@ def stream_generate(
 
     detokenizer = tokenizer.detokenizer
 
+    token_generator: ta.Iterable[tuple[ta.Any, mlx.core.array, bool]]
     if draft_model is None:
         kwargs.pop('num_draft_tokens', None)
         # from_draft always false for non-speculative generation
@@ -489,6 +491,8 @@ def stream_generate(
                 prompt_time = time.perf_counter() - tic
                 prompt_tps = prompt.size / prompt_time
                 tic = time.perf_counter()
+
+            token = check.isinstance(token, int)
             if token in tokenizer.eos_token_ids:
                 break
 
@@ -562,7 +566,7 @@ def generate(
     text = ''
     for response in stream_generate(model, tokenizer, prompt, **kwargs):
         if verbose:
-            print(response.text, end='', flush=True, file=sys.stderr)
+            print(response.text, end='', flush=True)
 
         text += response.text
 

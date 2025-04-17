@@ -305,7 +305,7 @@ def _main() -> None:
         verbose=args.verbose,
         sampler=sampler,
         max_kv_size=args.max_kv_size,
-        prompt_cache=prompt_cache if using_cache else None,
+        prompt_cache=prompt_cache if using_cache else None,  # noqa
         kv_bits=args.kv_bits,
         kv_group_size=args.kv_group_size,
         quantized_kv_start=args.quantized_kv_start,
