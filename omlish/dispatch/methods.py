@@ -20,6 +20,8 @@ T = ta.TypeVar('T')
 
 class Method:
     def __init__(self, func: ta.Callable) -> None:
+        super().__init__()
+
         if not callable(func) and not hasattr(func, '__get__'):  # type: ignore
             raise TypeError(f'{func!r} is not callable or a descriptor')
 
@@ -47,6 +49,15 @@ class Method:
                     del cache[k]
 
         self._dispatch_func_cache_remove = dispatch_func_cache_remove
+
+        self._owner: type | None = None
+        self._name: str | None = None
+
+    def __set_name__(self, owner, name):
+        if self._owner is None:
+            self._owner = owner
+        if self._name is None:
+            self._name = name
 
     def __repr__(self) -> str:
         return f'<{type(self).__module__}.{type(self).__qualname__}:{self._func} at 0x{id(self):x}>'
@@ -148,5 +159,7 @@ class Method:
         return func.__get__(instance)(*args, **kwargs)  # noqa
 
 
-def method(func):  # noqa
+def method(func=None, /):  # noqa
+    if func is None:
+        return functools.partial(method)
     return Method(func)
