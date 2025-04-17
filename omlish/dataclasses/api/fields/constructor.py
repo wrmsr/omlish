@@ -2,9 +2,11 @@ import collections
 import dataclasses as dc
 import typing as ta
 
+from .... import lang
 from ...specs import CoerceFn
 from ...specs import ReprFn
 from ...specs import ValidateFn
+from .metadata import _ExtraFieldParamsMetadata
 from .metadata import extra_field_params
 
 
@@ -29,14 +31,17 @@ def field(
         repr_fn: ReprFn | None = None,
         repr_priority: int | None = None,
 ) -> ta.Any:
-    efp = extra_field_params(
-        coerce=coerce,
-        validate=validate,
-        check_type=check_type,
-        override=override,
-        repr_fn=repr_fn,
-        repr_priority=repr_priority,
-    )
+    efp = extra_field_params(**{
+        **(metadata.get(_ExtraFieldParamsMetadata) or {} if metadata is not None else {}),
+        **lang.opt_kw(
+            coerce=coerce,
+            validate=validate,
+            check_type=check_type,
+            override=override,
+            repr_fn=repr_fn,
+            repr_priority=repr_priority,
+        ),
+    })
 
     md: ta.Any = metadata
     if md is None:
