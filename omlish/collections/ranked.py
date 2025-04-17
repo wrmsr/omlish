@@ -15,7 +15,10 @@ class RankedSeq(ta.Sequence[T]):
         super().__init__()
 
         self._lst = list(it)
-        self._ranks: ta.Mapping[T, int] = (IdentityKeyDict if identity else dict)((e, i) for i, e in enumerate(self._lst))  # noqa
+        self._ranks: ta.Mapping[T, int] = (
+            (IdentityKeyDict if identity else dict)
+            ((e, i) for i, e in enumerate(self._lst))
+        )
         if len(self._ranks) != len(self._lst):
             raise ValueError(f'{len(self._ranks)} != {len(self._lst)}')
 
@@ -51,7 +54,10 @@ class RankedSetSeq(ta.Sequence[ta.AbstractSet[T]]):
         super().__init__()
 
         self._lst = [(IdentitySet if identity else set)(e) for e in it]
-        self._ranks: ta.Mapping[T, int] = (IdentityKeyDict if identity else dict)((e, i) for i, es in enumerate(self._lst) for e in es)  # noqa
+        self._ranks: ta.Mapping[T, int] = (
+            (IdentityKeyDict if identity else dict)
+            ((e, i) for i, es in enumerate(self._lst) for e in es)
+        )
         if len(self._ranks) != sum(map(len, self._lst)):
             raise ValueError(f'{len(self._ranks)} != {sum(map(len, self._lst))}')
 
