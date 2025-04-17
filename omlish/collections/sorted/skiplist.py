@@ -182,7 +182,7 @@ class SkipList(SortedCollection[T]):
             yield cur.value  # type: ignore
             cur = cur.next[0]
 
-    def riter(self, base: T | None = None) -> ta.Iterable[T]:
+    def iter_desc(self, base: T | None = None) -> ta.Iterable[T]:
         if base is not None:
             cur = self._find(base)
             while cur is not self._head and self._compare(base, cur.value) < 0:  # type: ignore

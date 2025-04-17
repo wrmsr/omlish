@@ -9,6 +9,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 def sliding_window(it: ta.Iterable[T], n: int) -> ta.Iterator[tuple[T, ...]]:
     # sliding_window('ABCDEFG', 4) -> ABCD BCDE CDEF DEFG
     iterator = iter(it)

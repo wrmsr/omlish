@@ -19,7 +19,7 @@ def test_treapmap():
     print(m)
     print('===')
 
-    it = m.iterate()
+    it = m.items()
     while it.has_next():
         print(it.next())
     print('===')
@@ -37,22 +37,22 @@ def test_treapmap():
     print(old[500])
     print('===')
 
-    it = m.iterate()
+    it = m.items()
     while it.has_next():
         print(it.next())
     print('===')
 
-    rit = m.reverse_iterate()
+    rit = m.items_desc()
     while rit.has_next():
         print(rit.next())
     print('===')
 
-    it = m.iterate_from(30)
+    it = m.items_from(30)
     while it.has_next():
         print(it.next())
     print('===')
 
-    rit = m.reverse_iterate_from(30)
+    rit = m.items_from_desc(30)
     while rit.has_next():
         print(rit.next())
     print('===')

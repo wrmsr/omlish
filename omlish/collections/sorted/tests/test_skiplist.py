@@ -15,7 +15,7 @@ def test_skiplist():
     assert lst.find(42) == 42
     assert lst.find(100) is None
     assert list(lst.iter()) == list(range(100))
-    assert list(lst.riter()) == list(reversed(range(100)))
+    assert list(lst.iter_desc()) == list(reversed(range(100)))
 
     lst.remove(42)
 
@@ -24,7 +24,7 @@ def test_skiplist():
     assert lst.find(43) == 43
     no42 = sorted(set(range(100)) - {42})
     assert list(lst.iter()) == list(no42)
-    assert list(lst.riter()) == list(reversed(no42))
+    assert list(lst.iter_desc()) == list(reversed(no42))
 
 
 def test_skiplistdict():
@@ -36,15 +36,15 @@ def test_skiplistdict():
     assert dct[2] == 'b'
     assert list(dct) == [2, 4, 5]
     assert list(dct.items()) == [(2, 'b'), (4, 'd'), (5, 'e')]
-    assert list(dct.ritems()) == [(5, 'e'), (4, 'd'), (2, 'b')]
+    assert list(dct.items_desc()) == [(5, 'e'), (4, 'd'), (2, 'b')]
 
-    assert list(dct.itemsfrom(3.9)) == [(4, 'd'), (5, 'e')]
-    assert list(dct.itemsfrom(4)) == [(4, 'd'), (5, 'e')]
-    assert list(dct.itemsfrom(4.1)) == [(5, 'e')]
+    assert list(dct.items_from(3.9)) == [(4, 'd'), (5, 'e')]
+    assert list(dct.items_from(4)) == [(4, 'd'), (5, 'e')]
+    assert list(dct.items_from(4.1)) == [(5, 'e')]
 
-    assert list(dct.ritemsfrom(4.1)) == [(4, 'd'), (2, 'b')]
-    assert list(dct.ritemsfrom(4)) == [(4, 'd'), (2, 'b')]
-    assert list(dct.ritemsfrom(3.9)) == [(2, 'b')]
+    assert list(dct.items_from_desc(4.1)) == [(4, 'd'), (2, 'b')]
+    assert list(dct.items_from_desc(4)) == [(4, 'd'), (2, 'b')]
+    assert list(dct.items_from_desc(3.9)) == [(2, 'b')]
 
 
 def test_sorted_list_dict():

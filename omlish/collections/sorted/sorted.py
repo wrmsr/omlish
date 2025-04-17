@@ -51,7 +51,7 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def riter(self, base: T | None = None) -> ta.Iterable[T]:
+    def iter_desc(self, base: T | None = None) -> ta.Iterable[T]:
         raise NotImplementedError
 
 
@@ -61,15 +61,15 @@ class SortedMapping(ta.Mapping[K, V]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ritems(self) -> ta.Iterator[tuple[K, V]]:
+    def items_desc(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def itemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
+    def items_from(self, key: K) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ritemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
+    def items_from_desc(self, key: K) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
 
@@ -115,11 +115,11 @@ class SortedListDict(SortedMutableMapping[K, V]):
     def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
         yield from self._impl.iter()
 
-    def ritems(self) -> ta.Iterator[tuple[K, V]]:
-        yield from self._impl.riter()
+    def items_desc(self) -> ta.Iterator[tuple[K, V]]:
+        yield from self._impl.iter_desc()
 
-    def itemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
+    def items_from(self, key: K) -> ta.Iterator[tuple[K, V]]:
         yield from self._impl.iter((key, None))
 
-    def ritemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
-        yield from self._impl.riter((key, None))
+    def items_from_desc(self, key: K) -> ta.Iterator[tuple[K, V]]:
+        yield from self._impl.iter_desc((key, None))
