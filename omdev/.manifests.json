@@ -168,14 +168,14 @@
     }
   },
   {
-    "module": ".py.scripts.execrss",
+    "module": ".py.scripts.execstat",
     "attr": "_CLI_MODULE",
-    "file": "omdev/py/scripts/execrss.py",
-    "line": 47,
+    "file": "omdev/py/scripts/execstat.py",
+    "line": 49,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/execstat",
-        "mod_name": "omdev.py.scripts.execrss"
+        "mod_name": "omdev.py.scripts.execstat"
       }
     }
   },

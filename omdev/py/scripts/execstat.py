@@ -35,8 +35,10 @@ def _run(
     end_modules = set(sys.modules)
 
     return {
-        'time_ms': (end_time - start_time) * 1000.,
-        'rss': end_rss - start_rss,
+        'time_ms': (time_ms := round((end_time - start_time) * 1000., 6)),
+        'time_ms_s': f'{time_ms:_}',
+        'rss': (rss := (end_rss - start_rss)),
+        'rss_s': f'{rss:_}',
         'modules': sorted(end_modules - start_modules),
     }
 
