@@ -171,10 +171,10 @@
     "module": ".py.scripts.execrss",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/scripts/execrss.py",
-    "line": 11,
+    "line": 47,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/execrss",
+        "cmd_name": "py/execstat",
         "mod_name": "omdev.py.scripts.execrss"
       }
     }
