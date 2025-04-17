@@ -169,13 +169,14 @@ class Method:
 
 
 def method(func=None, /, *, installable=False):  # noqa
+    kw = dict(installable=installable)
     if func is None:
-        return functools.partial(method, installable=installable)
-    return Method(func)
+        return functools.partial(Method, **kw)
+    return Method(func, **kw)
 
 
-def install_method(mth: Method, *, name: str | None = None) -> ta.Callable[[T], T]:
-    check.isinstance(mth, Method)
+def install_method(mth: ta.Any, *, name: str | None = None) -> ta.Callable[[T], T]:
+    mth = check.isinstance(mth, Method)
     if not mth._installable:  # noqa
         raise TypeError(f'Method not installable: {mth}')
 
@@ -184,7 +185,7 @@ def install_method(mth: Method, *, name: str | None = None) -> ta.Callable[[T], 
         if a is None:
             a = fn.__name__
 
-        cls = check.not_none(mth._owner)  # noqa
+        cls: type = check.not_none(mth._owner)  # noqa
         check.arg(not hasattr(cls, a))
         setattr(cls, a, fn)
 
