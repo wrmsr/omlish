@@ -15,7 +15,7 @@ pytest-xdist==3.6.1
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
-ruff==0.11.5
+ruff==0.11.6
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20240928  # @omlish-venv !13t

@@ -186,7 +186,12 @@ def method(func=None, /, *, installable=False):  # noqa
     return Method(func, **kw)
 
 
-def install_method(mth: ta.Any, *, name: str | None = None) -> ta.Callable[[T], T]:
+def install_method(
+        mth: ta.Any,
+        *,
+        name: str | None = None,
+        on: type | None = None,
+) -> ta.Callable[[T], T]:
     mth = check.isinstance(mth, Method)
     if not mth._installable:  # noqa
         raise TypeError(f'Method not installable: {mth}')
@@ -196,7 +201,12 @@ def install_method(mth: ta.Any, *, name: str | None = None) -> ta.Callable[[T], 
         if a is None:
             a = fn.__name__
 
-        cls: type = check.not_none(mth._owner)  # noqa
+        owner: type = check.not_none(mth._owner)  # noqa
+        if on is None:
+            cls = owner
+        else:
+            cls = check.issubclass(on, owner)
+
         check.arg(not hasattr(cls, a))
         setattr(cls, a, fn)
 

@@ -125,7 +125,7 @@ class DecoratorObjectMetadata(ObjectMetadata, lang.Abstract):
             tts = tuple(object_metadata_target_types)
             for tt in tts:
                 check.issubclass(tt, _VALID_OBJECT_METADATA_TARGET_TYPES)
-            setattr(cls, '_OBJECT_METADATA_TARGET_TYPES', tts)
+            cls._OBJECT_METADATA_TARGET_TYPES = tts
 
     def __call__(self, obj: T) -> T:
         tgt: ta.Any = obj

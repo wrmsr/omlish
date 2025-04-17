@@ -94,7 +94,7 @@ class MinjaTemplater(Templater):
 
 @dc.dataclass(frozen=True)
 class JinjaTemplater(Templater):
-    tmpl: jinja2.Template
+    tmpl: 'jinja2.Template'
 
     def render(self, ctx: Templater.Context) -> str:
         return self.tmpl.render(**(ctx.env or {}))
@@ -104,7 +104,7 @@ class JinjaTemplater(Templater):
             cls,
             src: str,
             *,
-            env: jinja2.Environment | None = None,
+            env: ta.Optional['jinja2.Environment'] = None,
             **kwargs: ta.Any,
     ) -> 'JinjaTemplater':
         if env is None:

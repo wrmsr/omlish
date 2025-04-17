@@ -55,7 +55,7 @@ docstring-to-markdown==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
 duckdb==1.2.2
-duckduckgo_search==8.0.0
+duckduckgo_search==8.0.1
 execnet==2.1.1
 executing==2.2.0
 fastjsonschema==2.21.1
@@ -183,7 +183,7 @@ pipdeptree==2.26.0
 platformdirs==4.3.7
 pluggy==1.5.0
 pprintpp==0.4.0
-primp==0.14.0
+primp==0.15.0
 priority==2.0.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.51
@@ -244,7 +244,7 @@ rfc3986-validator==0.1.1
 rich==14.0.0
 rpds-py==0.24.0
 rsa==4.9.1
-ruff==0.11.5
+ruff==0.11.6
 s3transfer==0.11.4
 safetensors==0.5.3
 scikit-image==0.25.2
@@ -317,6 +317,6 @@ wrapt==1.17.2
 wsproto==1.2.0
 xxhash==3.5.0
 yappi==1.6.10
-yarl==1.19.0
+yarl==1.20.0
 zipp==3.21.0
 zstandard==0.23.0
