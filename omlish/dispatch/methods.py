@@ -36,7 +36,7 @@ class Method:
         self._func = func
         self._installable = installable
 
-        self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
+        self._impls: ta.MutableMapping[ta.Callable, frozenset[type] | None] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
@@ -81,7 +81,7 @@ class Method:
         setattr(wrapper, '__isabstractmethod__', self._is_abstractmethod)  # noqa
         return wrapper
 
-    def register(self, impl: T) -> T:
+    def register(self, impl: T, cls_set: frozenset[type] | None = None) -> T:
         # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
         # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
         # singledispatches. So we add that just-in-time here.
@@ -90,7 +90,7 @@ class Method:
 
         check.callable(impl)
         if impl not in self._impls:
-            self._impls.add(impl)  # type: ignore
+            self._impls[impl] = cls_set  # type: ignore
             self._dispatch_func_cache.clear()
 
         return impl
@@ -105,14 +105,23 @@ class Method:
                 hash(att)
             except TypeError:
                 continue
-            if att in self._impls:
-                try:
-                    ex_nam = seen[att]
-                except KeyError:
-                    pass
-                else:
-                    raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {nam} {ex_nam}')
-                disp.register(nam, get_impl_func_cls_set(att))
+
+            if att not in self._impls:
+                continue
+            cls_set = self._impls[att]
+
+            if cls_set is None:
+                cls_set = get_impl_func_cls_set(att, arg_offset=1)
+                self._impls[att] = cls_set
+
+            try:
+                ex_nam = seen[att]
+            except KeyError:
+                pass
+            else:
+                raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {nam} {ex_nam}')
+
+            disp.register(nam, cls_set)
 
         return disp
 
@@ -126,9 +135,11 @@ class Method:
         def __call__(self, *args, **kwargs):  # noqa
             if not args:
                 raise TypeError(f'{func_name} requires at least 1 positional argument')
+
             if (impl_att := dispatch(type_(args[0]))) is not None:
                 fn = getattr_(self, impl_att)
                 return fn(*args, **kwargs)
+
             return base_func.__get__(self)(*args, **kwargs)  # noqa
 
         self.update_wrapper(__call__)

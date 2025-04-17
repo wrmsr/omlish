@@ -5,8 +5,8 @@ TODO:
  - multidispatch? never solved..
   - just generic on tuple[A0, A1, ...]
 """
+import inspect
 import typing as ta
-import weakref
 
 from .. import c3
 from .. import check
@@ -19,15 +19,7 @@ T = ta.TypeVar('T')
 ##
 
 
-_IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, frozenset[type]] = weakref.WeakKeyDictionary()
-
-
-def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
-    try:
-        return _IMPL_FUNC_CLS_SET_CACHE[func]
-    except KeyError:
-        pass
-
+def get_impl_func_cls_set(func: ta.Callable, *, arg_offset: int = 0) -> frozenset[type]:
     ann = getattr(func, '__annotations__', {})
     if not ann:
         raise TypeError(f'Invalid impl func: {func!r}')
@@ -39,8 +31,11 @@ def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
             return check.isinstance(a, type)
 
     # Exclude 'return' to support difficult to handle return types - they are unimportant.
-    # TODO: only get hints for first arg - requires inspection, which requires chopping off `self`, which can be tricky.
-    _, cls = next(iter(rfl.get_filtered_type_hints(func, exclude=['return']).items()))
+    th_dct = rfl.get_filtered_type_hints(func, exclude=['return'])
+
+    ps = inspect.signature(func).parameters
+    p = list(ps.values())[arg_offset]
+    cls = th_dct[p.name]
 
     rty = rfl.type_(cls)
     if isinstance(rty, rfl.Union):
@@ -48,8 +43,10 @@ def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
     else:
         ret = frozenset([erase(rty)])
 
-    _IMPL_FUNC_CLS_SET_CACHE[func] = ret
     return ret
+
+
+##
 
 
 def find_impl(cls: type, registry: ta.Mapping[type, T]) -> T | None:

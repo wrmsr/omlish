@@ -75,9 +75,12 @@ class StdFieldType(enum.Enum):
     INIT_VAR = dc._FIELD_INITVAR  # type: ignore  # noqa
 
 
+STD_FIELD_TYPE_MAP: ta.Mapping[ta.Any, StdFieldType] = {v.value: v for v in StdFieldType}
+
+
 def std_field_type(f: dc.Field) -> StdFieldType:
     if (ft := getattr(f, '_field_type')) is not None:
-        return StdFieldType(ft)
+        return STD_FIELD_TYPE_MAP[ft]
     else:
         return StdFieldType.INSTANCE
 
