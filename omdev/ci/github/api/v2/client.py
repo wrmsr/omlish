@@ -3,13 +3,38 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.check import check
+
+from ...env import register_github_env_var
+from ..clients import BaseGithubCacheClient
 from ..clients import GithubCacheClient
+from .api import GithubCacheServiceV2
 
 
 ##
 
 
-class GithubCacheServiceV2Client(GithubCacheClient):
+class GithubCacheServiceV2Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV2.get_service_url(base_url)
+
+        super().__init__(
+            service_url=service_url,
+            **kwargs,
+        )
+
+    #
+
     @dc.dataclass(frozen=True)
     class Entry(GithubCacheClient.Entry):
         pass

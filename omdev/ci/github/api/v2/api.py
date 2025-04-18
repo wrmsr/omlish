@@ -12,6 +12,12 @@ T = ta.TypeVar('T')
 class GithubCacheServiceV2:
     SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
 
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/{cls.SERVICE_NAME}/'
+
+    #
+
     @dc.dataclass(frozen=True)
     class Method:
         name: str

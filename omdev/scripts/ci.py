@@ -6098,15 +6098,20 @@ class FileCacheDataCache(DataCache):
 ##
 
 
-class BaseV1GithubCacheClient(BaseGithubCacheClient, abc.ABC):
+class GithubCacheServiceV1Client(BaseGithubCacheClient):
     BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
 
-    #
+    DEFAULT_CONCURRENCY = 4
+
+    DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
 
     def __init__(
             self,
             *,
             base_url: ta.Optional[str] = None,
+
+            concurrency: int = DEFAULT_CONCURRENCY,
+            chunk_size: int = DEFAULT_CHUNK_SIZE,
 
             **kwargs: ta.Any,
     ) -> None:
@@ -6118,6 +6123,12 @@ class BaseV1GithubCacheClient(BaseGithubCacheClient, abc.ABC):
             service_url=service_url,
             **kwargs,
         )
+
+        check.arg(concurrency > 0)
+        self._concurrency = concurrency
+
+        check.arg(chunk_size > 0)
+        self._chunk_size = chunk_size
 
     #
 
@@ -6164,30 +6175,6 @@ class BaseV1GithubCacheClient(BaseGithubCacheClient, abc.ABC):
         ])
 
     GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
-
-
-#
-
-
-class GithubCacheServiceV1Client(BaseV1GithubCacheClient):
-    DEFAULT_CONCURRENCY = 4
-
-    DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
-
-    def __init__(
-            self,
-            *,
-            concurrency: int = DEFAULT_CONCURRENCY,
-            chunk_size: int = DEFAULT_CHUNK_SIZE,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        check.arg(concurrency > 0)
-        self._concurrency = concurrency
-
-        check.arg(chunk_size > 0)
-        self._chunk_size = chunk_size
 
     #
 
@@ -6276,7 +6263,7 @@ class GithubCacheServiceV1Client(BaseV1GithubCacheClient):
         ):
             await self._download_file_chunk_urllib(chunk)
 
-    async def _download_file(self, entry: BaseV1GithubCacheClient.Entry, out_file: str) -> None:
+    async def _download_file(self, entry: Entry, out_file: str) -> None:
         key = check.non_empty_str(entry.artifact.cache_key)
         url = check.non_empty_str(entry.artifact.archive_location)
 
