@@ -46,7 +46,7 @@ class GithubCacheServiceV2:
 
     @classmethod
     def get_service_url(cls, base_url: str) -> str:
-        return f'{base_url.rstrip("/")}/twirp/{cls.SERVICE_NAME}/'
+        return f'{base_url.rstrip("/")}/twirp/{cls.SERVICE_NAME}'
 
     #
 
