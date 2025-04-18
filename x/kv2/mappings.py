@@ -1,7 +1,7 @@
 import typing as ta
 
-from .bases import FullKv
 from .bases import IterableSizedQueryableKv
+from .bases import MutableIterableSizedQueryableKv
 
 
 K = ta.TypeVar('K')
@@ -9,6 +9,7 @@ V = ta.TypeVar('V')
 
 
 MappingKvBase: ta.TypeAlias = IterableSizedQueryableKv[K, V]
+MutableMappingKvBase: ta.TypeAlias = MutableIterableSizedQueryableKv[K, V]
 
 
 ##
@@ -30,7 +31,7 @@ class MappingKv(MappingKvBase[K, V]):
         return iter(self._m.items())
 
 
-class MappingFullKv(MappingKv[K, V], FullKv[K, V]):
+class MutableMappingKv(MappingKv[K, V], MutableMappingKvBase[K, V]):
     def __init__(self, m: ta.MutableMapping[K, V]) -> None:
         super().__init__(m)
 
@@ -66,11 +67,11 @@ class KvMapping(ta.Mapping[K, V]):
         return (k for k, v in self.items())
 
 
-class KvMutableMapping(KvMapping[K, V], FullKv[K, V], ta.MutableMapping[K, V]):
-    def __init__(self, kv: FullKv[K, V]) -> None:
+class KvMutableMapping(KvMapping[K, V], MutableMappingKvBase[K, V], ta.MutableMapping[K, V]):
+    def __init__(self, kv: MutableMappingKvBase[K, V]) -> None:
         super().__init__(kv)
 
-    _kv: FullKv[K, V]
+    _kv: MutableMappingKvBase[K, V]
 
     def __setitem__(self, key: K, value: V, /) -> None:
         self._kv[key] = value

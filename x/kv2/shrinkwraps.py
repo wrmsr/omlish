@@ -9,17 +9,19 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .bases import KV_BASES_BY_MRO
 from .bases import FullKv
+from .bases import KV_BASES_BY_MRO
 from .bases import KvToKvFunc
-from .interfaces import KV_INTERFACE_MEMBERS
-from .interfaces import KV_INTERFACES
 from .interfaces import IterableKv
+from .interfaces import KV_INTERFACES
+from .interfaces import KV_INTERFACE_MEMBERS
 from .interfaces import Kv
 from .interfaces import KvMro
 from .interfaces import MutableKv
 from .interfaces import QueryableKv
 from .interfaces import SizedKv
+from .interfaces import SortDirection
+from .interfaces import SortedKv
 from .interfaces import check_kv_interface_mro
 from .interfaces import get_cls_kv_interface_mro
 from .wrappers import WrapperKv
@@ -111,6 +113,17 @@ class ShrinkwrapIterableKv(ShrinkwrapKv[K, V], lang.Abstract):
         return self._u.items()
 
 
+class ShrinkwrapSortedKv(ShrinkwrapKv[K, V], lang.Abstract):
+    _u: SortedKv[K, V]
+
+    def sorted_items(
+            self,
+            start: lang.Maybe[K] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[K, V]]:
+        return self._u.sorted_items(start, direction)
+
+
 class ShrinkwrapMutableKv(ShrinkwrapKv[K, V], lang.Abstract):
     _u: MutableKv[K, V]
 
@@ -126,6 +139,7 @@ class ShrinkwrapMutableKv(ShrinkwrapKv[K, V], lang.Abstract):
 
 SHRINKWRAPS_BY_INTERFACE: ta.Mapping[type[Kv], type[ShrinkwrapKv]] = {
     MutableKv: ShrinkwrapMutableKv,
+    SortedKv: ShrinkwrapSortedKv,
     IterableKv: ShrinkwrapIterableKv,
     SizedKv: ShrinkwrapSizedKv,
     QueryableKv: ShrinkwrapQueryableKv,
@@ -142,6 +156,7 @@ INTERFACES_BY_SHRINKWRAP: ta.Mapping[type[ShrinkwrapKv], type[Kv]] = {
 
 class ShrinkwrapFullKv(
     ShrinkwrapMutableKv[K, V],
+    ShrinkwrapSortedKv[K, V],
     ShrinkwrapIterableKv[K, V],
     ShrinkwrapSizedKv[K, V],
     ShrinkwrapQueryableKv[K, V],

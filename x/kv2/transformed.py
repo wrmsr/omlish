@@ -1,10 +1,12 @@
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from .bases import FullKv
-from .interfaces import Kv
 from .bases import KvToKvFunc2
+from .interfaces import Kv
+from .interfaces import SortDirection
 from .shrinkwraps import ShrinkwrapKv2
 from .shrinkwraps import shrinkwrap_factory_
 
@@ -40,23 +42,32 @@ class KeyTransformedKv(ShrinkwrapKv2[KA, V, KB, V], ta.Generic[KA, KB, V]):
     _u: FullKv[KB, V]
 
     def __getitem__(self, k: KA, /) -> V:
-        fn = check.not_none(self._a_to_b)
-        return self._u[fn(k)]
+        a_to_b = check.not_none(self._a_to_b)
+        return self._u[a_to_b(k)]
 
     def __len__(self) -> int:
         return len(self._u)
 
     def items(self) -> ta.Iterator[tuple[KA, V]]:
-        fn = check.not_none(self._b_to_a)
-        return ((fn(k), v) for k, v in self._u.items())
+        b_to_a = check.not_none(self._b_to_a)
+        return ((b_to_a(k), v) for k, v in self._u.items())
+
+    def sorted_items(
+            self,
+            start: lang.Maybe[KA] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[KA, V]]:
+        a_to_b = check.not_none(self._a_to_b)
+        b_to_a = check.not_none(self._b_to_a)
+        return ((b_to_a(k), v) for k, v in self._u.sorted_items(start.map(a_to_b), direction))
 
     def __setitem__(self, k: KA, v: V, /) -> None:
-        fn = check.not_none(self._a_to_b)
-        self._u[fn(k)] = v
+        a_to_b = check.not_none(self._a_to_b)
+        self._u[a_to_b(k)] = v
 
     def __delitem__(self, k: KA, /) -> None:
-        fn = check.not_none(self._a_to_b)
-        del self._u[fn(k)]
+        a_to_b = check.not_none(self._a_to_b)
+        del self._u[a_to_b(k)]
 
 
 def transform_keys(
@@ -90,19 +101,27 @@ class ValueTransformedKv(ShrinkwrapKv2[K, VA, K, VB], ta.Generic[K, VA, VB]):
     _u: FullKv[K, VB]
 
     def __getitem__(self, k: K, /) -> VA:
-        fn = check.not_none(self._b_to_a)
-        return fn(self._u[k])
+        b_to_a = check.not_none(self._b_to_a)
+        return b_to_a(self._u[k])
 
     def __len__(self) -> int:
         return len(self._u)
 
     def items(self) -> ta.Iterator[tuple[K, VA]]:
-        fn = check.not_none(self._b_to_a)
-        return ((k, fn(v)) for k, v in self._u.items())
+        b_to_a = check.not_none(self._b_to_a)
+        return ((k, b_to_a(v)) for k, v in self._u.items())
+
+    def sorted_items(
+            self,
+            start: lang.Maybe[K] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[K, VA]]:
+        b_to_a = check.not_none(self._b_to_a)
+        return ((k, b_to_a(v)) for k, v in self._u.sorted_items(start, direction))
 
     def __setitem__(self, k: K, v: VA, /) -> None:
-        fn = check.not_none(self._a_to_b)
-        self._u[k] = fn(v)
+        a_to_b = check.not_none(self._a_to_b)
+        self._u[k] = a_to_b(v)
 
     def __delitem__(self, k: K, /) -> None:
         del self._u[k]

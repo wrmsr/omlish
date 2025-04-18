@@ -7,6 +7,8 @@ from omlish import lang
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+SortDirection: ta.TypeAlias = ta.Literal['asc', 'desc']
+
 
 ##
 
@@ -78,6 +80,16 @@ class IterableKv(Kv[K, V], lang.Abstract):
         raise NotImplementedError
 
 
+class SortedKv(Kv[K, V], lang.Abstract):
+    @abc.abstractmethod
+    def sorted_items(
+            self,
+            start: lang.Maybe[K] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[K, V]]:
+        raise NotImplementedError
+
+
 class MutableKv(Kv[K, V], lang.Abstract):  # noqa
     @abc.abstractmethod
     def __setitem__(self, k: K, v: V, /) -> None:
@@ -96,6 +108,7 @@ KvMro: ta.TypeAlias = tuple[type[Kv], ...]
 
 KV_INTERFACES: KvMro = (
     MutableKv,
+    SortedKv,
     IterableKv,
     SizedKv,
     QueryableKv,

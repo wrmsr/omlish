@@ -42,12 +42,15 @@ from .filtered import (  # noqa
 )
 
 from .interfaces import (  # noqa
+    SortDirection,
+
     KvSubclassMustUseBaseTypeError,
     Kv,
 
     QueryableKv,
     SizedKv,
     IterableKv,
+    SortedKv,
     MutableKv,
 
     KvMro,
@@ -59,9 +62,10 @@ from .interfaces import (  # noqa
 
 from .mappings import (  # noqa
     MappingKvBase,
+    MutableMappingKvBase,
 
     MappingKv,
-    MappingFullKv,
+    MutableMappingKv,
 
     KvMapping,
     KvMutableMapping,
@@ -74,6 +78,7 @@ from .shrinkwraps import (  # noqa
     ShrinkwrapQueryableKv,
     ShrinkwrapSizedKv,
     ShrinkwrapIterableKv,
+    ShrinkwrapSortedKv,
     ShrinkwrapMutableKv,
 
     ShrinkwrapFullKv,

@@ -1,12 +1,12 @@
 import pytest
 
 from ..filtered import filter_keys
-from ..mappings import MappingFullKv
+from ..mappings import MutableMappingKv
 
 
 def test_filtered():
     d = {i: i for i in range(20)}
-    kv0 = MappingFullKv(d)
+    kv0 = MutableMappingKv(d)
     assert kv0[1] == 1
     assert kv0[2] == 2
 

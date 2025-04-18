@@ -4,6 +4,7 @@ from omlish import lang
 
 from .bases import KvToKvFunc
 from .interfaces import Kv
+from .interfaces import SortDirection
 from .shrinkwraps import ShrinkwrapFullKv
 from .shrinkwraps import shrinkwrap_factory_
 
@@ -36,6 +37,14 @@ class KeyFilteredKv(ShrinkwrapFullKv[K, V]):
     def items(self) -> ta.Iterator[tuple[K, V]]:
         fn = self._fn
         return filter(lambda t: fn(t[0]), self._u.items())
+
+    def sorted_items(
+            self,
+            start: lang.Maybe[K] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[K, V]]:
+        fn = self._fn
+        return filter(lambda t: fn(t[0]), self._u.sorted_items(start, direction))
 
     def __setitem__(self, k: K, v: V, /) -> None:
         if not self._fn(k):
@@ -81,6 +90,14 @@ class ValueFilteredKv(ShrinkwrapFullKv[K, V]):
     def items(self) -> ta.Iterator[tuple[K, V]]:
         fn = self._fn
         return ((k, v) for k, v in self._u.items() if fn(v))
+
+    def sorted_items(
+            self,
+            start: lang.Maybe[K] = lang.empty(),
+            direction: SortDirection = 'asc',
+    ) -> ta.Iterator[tuple[K, V]]:
+        fn = self._fn
+        return ((k, v) for k, v in self._u.sorted_items(start, direction) if fn(v))
 
     def __setitem__(self, k: K, v: V, /) -> None:
         if not self._fn(v):
