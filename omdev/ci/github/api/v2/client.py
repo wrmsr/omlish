@@ -9,6 +9,8 @@ from ...env import register_github_env_var
 from ..clients import BaseGithubCacheClient
 from ..clients import GithubCacheClient
 from .api import GithubCacheServiceV2
+from .api import GithubCacheServiceV2RequestT
+from .api import GithubCacheServiceV2ResponseT
 
 
 ##
@@ -35,16 +37,37 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
     #
 
+    async def _send_method_request(
+            self,
+            method: GithubCacheServiceV2.Method[
+                GithubCacheServiceV2RequestT,
+                GithubCacheServiceV2ResponseT,
+            ],
+            request: GithubCacheServiceV2RequestT,
+            **kwargs: ta.Any,
+    ) -> GithubCacheServiceV2ResponseT:
+        obj = await self._send_service_request(
+            method.name,
+            json_content=dc.asdict(request),  # type: ignore[call-overload]
+            **kwargs,
+        )
+        return method.response(**obj)  # type: ignore[arg-type]
+
+    #
+
     @dc.dataclass(frozen=True)
     class Entry(GithubCacheClient.Entry):
-        pass
+        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry2 = check.isinstance(entry, self.Entry)
+        return entry2.response.signed_download_url
+
+    #
 
     @abc.abstractmethod
     def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[GithubCacheClient.Entry]]:
         raise NotImplementedError
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        return None
 
     @abc.abstractmethod
     def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:

@@ -53,12 +53,12 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
     #
 
-    def build_request_headers(
+    def _build_request_headers(
             self,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             **kwargs: ta.Any,
     ) -> ta.Dict[str, str]:
-        return super().build_request_headers(
+        return super()._build_request_headers(
             {
                 'Accept': ';'.join([
                     'application/json',
@@ -81,7 +81,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
     #
 
-    def build_get_entry_url_path(self, *keys: str) -> str:
+    def _build_get_entry_url_path(self, *keys: str) -> str:
         qp = dict(
             keys=','.join(urllib.parse.quote_plus(k) for k in keys),
             version=str(self._cache_version),
@@ -100,8 +100,8 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
     #
 
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        obj = await self.send_service_request(
-            self.build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
+        obj = await self._send_service_request(
+            self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
         )
         if obj is None:
             return None
@@ -129,7 +129,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
             },
         )
 
-        _, buf_ = await self.send_url_request(req)
+        _, buf_ = await self._send_url_request(req)
 
         buf = check.not_none(buf_)
         check.equal(len(buf), chunk.size)
@@ -188,7 +188,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
         key = check.non_empty_str(entry.artifact.cache_key)
         url = check.non_empty_str(entry.artifact.archive_location)
 
-        head_resp, _ = await self.send_url_request(urllib.request.Request(  # noqa
+        head_resp, _ = await self._send_url_request(urllib.request.Request(  # noqa
             url,
             method='HEAD',
         ))
@@ -248,7 +248,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
             check.equal(len(buf), size)
 
-            await self.send_service_request(
+            await self._send_service_request(
                 f'caches/{cache_id}',
                 method='PATCH',
                 content_type='application/octet-stream',
@@ -273,7 +273,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
             cache_size=file_size,
             version=str(self._cache_version),
         )
-        reserve_resp_obj = await self.send_service_request(
+        reserve_resp_obj = await self._send_service_request(
             'caches',
             json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
             success_status_codes=[201],
@@ -308,7 +308,7 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
         commit_req = GithubCacheServiceV1.CommitCacheRequest(
             size=file_size,
         )
-        await self.send_service_request(
+        await self._send_service_request(
             f'caches/{cache_id}',
             json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
             success_status_codes=[204],

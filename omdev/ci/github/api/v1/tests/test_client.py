@@ -12,6 +12,6 @@ class TestClient(unittest.TestCase):
             key_suffix='test-suffix',
         )
 
-        path = client.build_get_entry_url_path('foo-x', 'foo-')
+        path = client._build_get_entry_url_path('foo-x', 'foo-')  # noqa
 
         print(path)

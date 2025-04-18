@@ -49,6 +49,11 @@ T = ta.TypeVar('T')
 
 
 class GithubCacheServiceV1:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
     API_VERSION = '6.0-preview.1'
 
     @classmethod

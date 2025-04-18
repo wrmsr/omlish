@@ -98,7 +98,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     #
 
-    def build_request_headers(
+    def _build_request_headers(
             self,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
@@ -122,14 +122,14 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     #
 
-    def load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
+    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
         if not b:
             return None
         return json.loads(b.decode('utf-8-sig'))
 
     #
 
-    async def send_url_request(
+    async def _send_url_request(
             self,
             req: urllib.request.Request,
     ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
@@ -150,7 +150,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         def __str__(self) -> str:
             return repr(self)
 
-    async def send_service_request(
+    async def _send_service_request(
             self,
             path: str,
             *,
@@ -179,7 +179,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         req = urllib.request.Request(  # noqa
             url,
             method=method,
-            headers=self.build_request_headers(
+            headers=self._build_request_headers(
                 headers,
                 content_type=content_type,
                 json_content=header_json_content,
@@ -187,7 +187,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             data=content,
         )
 
-        resp, body = await self.send_url_request(req)
+        resp, body = await self._send_url_request(req)
 
         #
 
@@ -198,7 +198,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         if not is_success:
             raise self.ServiceRequestError(resp.status, body)
 
-        return self.load_json_bytes(body)
+        return self._load_json_bytes(body)
 
     #
 
