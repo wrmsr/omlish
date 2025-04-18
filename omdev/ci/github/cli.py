@@ -10,7 +10,7 @@ from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.json import json_dumps_pretty
 
-from .client import GithubCacheServiceV1Client
+from .api.v1.client import GithubCacheServiceV1Client
 from .env import GITHUB_ENV_VARS
 
 

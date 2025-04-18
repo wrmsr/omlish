@@ -160,6 +160,33 @@ CI_CACHE_VERSION = 2
 
 
 ########################################
+# ../github/api/clients.py
+
+
+##
+
+
+class GithubCacheClient(abc.ABC):
+    class Entry(abc.ABC):  # noqa
+        pass
+
+    @abc.abstractmethod
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
+        raise NotImplementedError
+
+    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+        return None
+
+    @abc.abstractmethod
+    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+########################################
 # ../github/env.py
 
 
@@ -1985,7 +2012,7 @@ def read_docker_tar_image_id(tar_file: str) -> str:
 
 
 ########################################
-# ../github/api.py
+# ../github/api/v1/api.py
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
 
@@ -2096,93 +2123,6 @@ class GithubCacheServiceV1:
         compression_method: ta.Optional[str]  # CompressionMethod
         enable_cross_os_archive: ta.Optional[bool]
         cache_size: ta.Optional[int]
-
-
-class GithubCacheServiceV2:
-    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
-
-    @dc.dataclass(frozen=True)
-    class Method:
-        name: str
-        request: type
-        response: type
-
-    #
-
-    class CacheScopePermission:
-        READ = 1
-        WRITE = 2
-        ALL = READ | WRITE
-
-    @dc.dataclass(frozen=True)
-    class CacheScope:
-        scope: str
-        permission: int  # CacheScopePermission
-
-    @dc.dataclass(frozen=True)
-    class CacheMetadata:
-        repository_id: int
-        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryRequest:
-        key: str
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryResponse:
-        ok: bool
-        signed_upload_url: str
-
-    CREATE_CACHE_ENTRY_METHOD = Method(
-        'CreateCacheEntry',
-        CreateCacheEntryRequest,
-        CreateCacheEntryResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadRequest:
-        key: str
-        size_bytes: int
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadResponse:
-        ok: bool
-        entry_id: str
-
-    FINALIZE_CACHE_ENTRY_METHOD = Method(
-        'FinalizeCacheEntryUpload',
-        FinalizeCacheEntryUploadRequest,
-        FinalizeCacheEntryUploadResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlRequest:
-        key: str
-        restore_keys: ta.Sequence[str]
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlResponse:
-        ok: bool
-        signed_download_url: str
-        matched_key: str
-
-    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD = Method(
-        'GetCacheEntryDownloadURL',
-        GetCacheEntryDownloadUrlRequest,
-        GetCacheEntryDownloadUrlResponse,
-    )
 
 
 ########################################
@@ -5978,30 +5918,7 @@ class FileCacheDataCache(DataCache):
 
 
 ########################################
-# ../github/client.py
-
-
-##
-
-
-class GithubCacheClient(abc.ABC):
-    class Entry(abc.ABC):  # noqa
-        pass
-
-    @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
-        raise NotImplementedError
-
-    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
-        return None
-
-    @abc.abstractmethod
-    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
+# ../github/api/v1/client.py
 
 
 ##
@@ -6458,30 +6375,6 @@ class GithubCacheServiceV1Client(GithubCacheServiceV1BaseClient):
                 f'key {key}',
         ):
             await self._upload_file(key, in_file)
-
-
-##
-
-
-class GithubCacheServiceV2Client(GithubCacheClient):
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        pass
-
-    @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[GithubCacheClient.Entry]]:
-        raise NotImplementedError
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        return None
-
-    @abc.abstractmethod
-    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
 
 
 ########################################

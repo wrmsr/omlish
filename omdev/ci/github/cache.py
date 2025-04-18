@@ -11,8 +11,8 @@ from ..cache import DataCache
 from ..cache import DirectoryFileCache
 from ..cache import FileCache
 from ..cache import FileCacheDataCache
-from .client import GithubCacheClient
-from .client import GithubCacheServiceV1Client
+from .api.clients import GithubCacheClient
+from .api.v1.client import GithubCacheServiceV1Client
 
 
 ##
