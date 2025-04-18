@@ -24,6 +24,8 @@ class GithubCache(FileCache, DataCache):
     class Config:
         pass
 
+    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+
     DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
         1: GithubCacheServiceV1Client,
         2: GithubCacheServiceV2Client,
@@ -34,7 +36,7 @@ class GithubCache(FileCache, DataCache):
             config: Config = Config(),
             *,
             client: ta.Optional[GithubCacheClient] = None,
-            default_client_version: int = 1,
+            default_client_version: ta.Optional[int] = None,
 
             version: ta.Optional[CacheVersion] = None,
 
@@ -47,7 +49,7 @@ class GithubCache(FileCache, DataCache):
         self._config = config
 
         if client is None:
-            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version]
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
             client = client_cls(
                 cache_version=self._version,
             )

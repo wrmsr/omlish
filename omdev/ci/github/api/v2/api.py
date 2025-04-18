@@ -12,14 +12,15 @@ curl -s \
   -d '{"key": "foo", "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
   | jq .
 
-curl -v \
+curl -s \
   -X POST \
   "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL" \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"key": "foo", "restoreKeys": [], "version": "1" }'
+  -d '{"key": "foo", "restoreKeys": [], "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
+  | jq .
 
-"""
+"""  # noqa
 import dataclasses as dc
 import typing as ta
 

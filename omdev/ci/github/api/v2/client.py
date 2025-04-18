@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import abc
 import dataclasses as dc
 import typing as ta
 
@@ -45,13 +44,16 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
             ],
             request: GithubCacheServiceV2RequestT,
             **kwargs: ta.Any,
-    ) -> GithubCacheServiceV2ResponseT:
+    ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
         obj = await self._send_service_request(
             method.name,
             json_content=dc.asdict(request),  # type: ignore[call-overload]
             **kwargs,
         )
-        return method.response(**obj)  # type: ignore[arg-type]
+
+        if obj is None:
+            return None
+        return method.response(**obj)
 
     #
 
@@ -59,20 +61,32 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
     class Entry(GithubCacheClient.Entry):
         response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
 
+        def __post_init__(self) -> None:
+            check.state(self.response.ok)
+            check.non_empty_str(self.response.signed_download_url)
+
     def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
         entry2 = check.isinstance(entry, self.Entry)
-        return entry2.response.signed_download_url
+        return check.non_empty_str(entry2.response.signed_download_url)
 
     #
 
-    @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[GithubCacheClient.Entry]]:
-        raise NotImplementedError
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
+        resp = await self._send_method_request(
+            GithubCacheServiceV2.GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD,
+            GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest(
+                key=self.fix_key(key),
+                restore_keys=[self.fix_key(key, partial_suffix=True)],
+                version=str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH),
+            ),
+        )
+        if resp is None or not resp.ok:
+            return None
 
-    @abc.abstractmethod
+        return self.Entry(resp)
+
     def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
-    @abc.abstractmethod
     def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
