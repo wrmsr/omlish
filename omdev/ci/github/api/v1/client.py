@@ -5,7 +5,6 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
-from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.timing import log_timing_context
@@ -108,43 +107,13 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
                 f'version {entry1.artifact.cache_version} '
                 f'to {out_file}',
         ):
-            await self._download_file(
-                check.non_empty_str(entry1.artifact.cache_key),
-                check.non_empty_str(entry1.artifact.archive_location),
-                out_file,
+            await self._download_file_chunks(
+                key=check.non_empty_str(entry1.artifact.cache_key),
+                url=check.non_empty_str(entry1.artifact.archive_location),
+                out_file=out_file,
             )
 
     #
-
-    async def _upload_file_chunk(
-            self,
-            key: str,
-            cache_id: int,
-            in_file: str,
-            offset: int,
-            size: int,
-    ) -> None:
-        with log_timing_context(
-                f'Uploading github cache {key} '
-                f'file {in_file} '
-                f'chunk {offset} - {offset + size}',
-        ):
-            with open(in_file, 'rb') as f:  # noqa
-                f.seek(offset)
-                buf = f.read(size)
-
-            check.equal(len(buf), size)
-
-            await self._send_request(
-                path=f'caches/{cache_id}',
-                method='PATCH',
-                content_type='application/octet-stream',
-                headers={
-                    'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
-                },
-                content=buf,
-                success_status_codes=[204],
-            )
 
     async def _upload_file(self, key: str, in_file: str) -> None:
         fixed_key = self.fix_key(key)
@@ -175,20 +144,14 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
         #
 
-        upload_tasks = []
-        chunk_size = self._chunk_size
-        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            offset = i * chunk_size
-            size = min(chunk_size, file_size - offset)
-            upload_tasks.append(self._upload_file_chunk(
-                fixed_key,
-                cache_id,
-                in_file,
-                offset,
-                size,
-            ))
+        url = f'{self._service_url}/caches/{cache_id}'
 
-        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
+        await self._upload_file_chunks(
+            in_file=in_file,
+            url=url,
+            key=fixed_key,
+            file_size=file_size,
+        )
 
         #
 

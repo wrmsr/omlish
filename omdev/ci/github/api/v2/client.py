@@ -104,10 +104,10 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
                 f'version {entry2.request.version} '
                 f'to {out_file}',
         ):
-            await self._download_file(
-                check.non_empty_str(entry2.response.matched_key),
-                check.non_empty_str(entry2.response.signed_download_url),
-                out_file,
+            await self._download_file_chunks(
+                key=check.non_empty_str(entry2.response.matched_key),
+                url=check.non_empty_str(entry2.response.signed_download_url),
+                out_file=out_file,
             )
 
     #
