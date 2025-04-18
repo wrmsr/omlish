@@ -46,8 +46,8 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
             request: GithubCacheServiceV2RequestT,
             **kwargs: ta.Any,
     ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
-        obj = await self._send_service_request(
-            method.name,
+        obj = await self._send_request(
+            path=method.name,
             json_content=dc.asdict(request),  # type: ignore[call-overload]
             **kwargs,
         )

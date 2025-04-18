@@ -167,18 +167,27 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         def __str__(self) -> str:
             return repr(self)
 
-    async def _send_service_request(
+    async def _send_request(
             self,
-            path: str,
             *,
+            url: ta.Optional[str] = None,
+            path: ta.Optional[str] = None,
+
             method: ta.Optional[str] = None,
+
             headers: ta.Optional[ta.Mapping[str, str]] = None,
+
             content_type: ta.Optional[str] = None,
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
+
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
-        url = f'{self._service_url}/{path}'
+        if url is not None and path is not None:
+            raise RuntimeError('Must not pass both url and path')
+        elif path is not None:
+            url = f'{self._service_url}/{path}'
+        url = check.non_empty_str(url)
 
         if content is not None and json_content is not None:
             raise RuntimeError('Must not pass both content and json_content')

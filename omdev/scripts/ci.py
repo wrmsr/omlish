@@ -6193,18 +6193,27 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         def __str__(self) -> str:
             return repr(self)
 
-    async def _send_service_request(
+    async def _send_request(
             self,
-            path: str,
             *,
+            url: ta.Optional[str] = None,
+            path: ta.Optional[str] = None,
+
             method: ta.Optional[str] = None,
+
             headers: ta.Optional[ta.Mapping[str, str]] = None,
+
             content_type: ta.Optional[str] = None,
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
+
             success_status_codes: ta.Optional[ta.Container[int]] = None,
     ) -> ta.Optional[ta.Any]:
-        url = f'{self._service_url}/{path}'
+        if url is not None and path is not None:
+            raise RuntimeError('Must not pass both url and path')
+        elif path is not None:
+            url = f'{self._service_url}/{path}'
+        url = check.non_empty_str(url)
 
         if content is not None and json_content is not None:
             raise RuntimeError('Must not pass both content and json_content')
@@ -7688,8 +7697,8 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
     #
 
     async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        obj = await self._send_service_request(
-            self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
+        obj = await self._send_request(
+            path=self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
         )
         if obj is None:
             return None
@@ -7736,8 +7745,8 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
             check.equal(len(buf), size)
 
-            await self._send_service_request(
-                f'caches/{cache_id}',
+            await self._send_request(
+                path=f'caches/{cache_id}',
                 method='PATCH',
                 content_type='application/octet-stream',
                 headers={
@@ -7761,8 +7770,8 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
             cache_size=file_size,
             version=str(self._cache_version),
         )
-        reserve_resp_obj = await self._send_service_request(
-            'caches',
+        reserve_resp_obj = await self._send_request(
+            path='caches',
             json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
             success_status_codes=[201],
         )
@@ -7796,8 +7805,8 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
         commit_req = GithubCacheServiceV1.CommitCacheRequest(
             size=file_size,
         )
-        await self._send_service_request(
-            f'caches/{cache_id}',
+        await self._send_request(
+            path=f'caches/{cache_id}',
             json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
             success_status_codes=[204],
         )
@@ -7847,8 +7856,8 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
             request: GithubCacheServiceV2RequestT,
             **kwargs: ta.Any,
     ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
-        obj = await self._send_service_request(
-            method.name,
+        obj = await self._send_request(
+            path=method.name,
             json_content=dc.asdict(request),  # type: ignore[call-overload]
             **kwargs,
         )
