@@ -508,14 +508,14 @@ class GithubCacheServiceV2Client(GithubCacheClient):
         pass
 
     @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[GithubCacheClient.Entry]]:
         raise NotImplementedError
 
-    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
         return None
 
     @abc.abstractmethod
-    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
+    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
