@@ -103,6 +103,10 @@ TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['Timeo
 # ../../omlish/sockets/addresses.py
 SocketAddress = ta.Any
 
+# github/api/v2/api.py
+GithubCacheServiceV2RequestT = ta.TypeVar('GithubCacheServiceV2RequestT')
+GithubCacheServiceV2ResponseT = ta.TypeVar('GithubCacheServiceV2ResponseT')
+
 # ../../omlish/argparse/cli.py
 ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
@@ -2302,6 +2306,146 @@ class GithubCacheServiceV1:
         compression_method: ta.Optional[str]  # CompressionMethod
         enable_cross_os_archive: ta.Optional[bool]
         cache_size: ta.Optional[int]
+
+
+########################################
+# ../github/api/v2/api.py
+"""
+https://github.com/tonistiigi/go-actions-cache/blob/3e9a6642607fd6e4d5d4fdab7c91fe8bf4c36a25/cache_v2.go
+
+==
+
+curl -s \
+  -X POST \
+  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/CreateCacheEntry" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "foo", "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
+  | jq .
+
+curl -v \
+  -X POST \
+  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "foo", "restoreKeys": [], "version": "1" }'
+
+"""
+
+
+##
+
+
+class GithubCacheServiceV2:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
+
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/twirp/{cls.SERVICE_NAME}/'
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Method(ta.Generic[GithubCacheServiceV2RequestT, GithubCacheServiceV2ResponseT]):
+        name: str
+        request: ta.Type[GithubCacheServiceV2RequestT]
+        response: ta.Type[GithubCacheServiceV2ResponseT]
+
+    #
+
+    class CacheScopePermission:
+        READ = 1
+        WRITE = 2
+        ALL = READ | WRITE
+
+    @dc.dataclass(frozen=True)
+    class CacheScope:
+        scope: str
+        permission: int  # CacheScopePermission
+
+    @dc.dataclass(frozen=True)
+    class CacheMetadata:
+        repository_id: int
+        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
+
+    VERSION_LENGTH: int = 64
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryRequest:
+        key: str
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+        def __post_init__(self) -> None:
+            check.equal(len(self.version), GithubCacheServiceV2.VERSION_LENGTH)
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryResponse:
+        ok: bool
+        signed_upload_url: str
+
+    CREATE_CACHE_ENTRY_METHOD: Method[
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    ] = Method(
+        'CreateCacheEntry',
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadRequest:
+        key: str
+        size_bytes: int
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadResponse:
+        ok: bool
+        entry_id: str
+
+    FINALIZE_CACHE_ENTRY_METHOD: Method[
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    ] = Method(
+        'FinalizeCacheEntryUpload',
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlRequest:
+        key: str
+        restore_keys: ta.Sequence[str]
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlResponse:
+        ok: bool
+        signed_download_url: str
+        matched_key: str
+
+    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD: Method[
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    ] = Method(
+        'GetCacheEntryDownloadURL',
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    )
 
 
 ########################################
@@ -6407,6 +6551,75 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
 
 ########################################
+# ../github/api/v2/client.py
+
+
+##
+
+
+class GithubCacheServiceV2Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV2.get_service_url(base_url)
+
+        super().__init__(
+            service_url=service_url,
+            **kwargs,
+        )
+
+    #
+
+    async def _send_method_request(
+            self,
+            method: GithubCacheServiceV2.Method[
+                GithubCacheServiceV2RequestT,
+                GithubCacheServiceV2ResponseT,
+            ],
+            request: GithubCacheServiceV2RequestT,
+            **kwargs: ta.Any,
+    ) -> GithubCacheServiceV2ResponseT:
+        obj = await self._send_service_request(
+            method.name,
+            json_content=dc.asdict(request),  # type: ignore[call-overload]
+            **kwargs,
+        )
+        return method.response(**obj)  # type: ignore[arg-type]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry2 = check.isinstance(entry, self.Entry)
+        return entry2.response.signed_download_url
+
+    #
+
+    @abc.abstractmethod
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[GithubCacheClient.Entry]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+########################################
 # ../../dataserver/targets.py
 
 
@@ -7665,11 +7878,18 @@ class GithubCache(FileCache, DataCache):
     class Config:
         pass
 
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
     def __init__(
             self,
             config: Config = Config(),
             *,
             client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: int = 1,
+
             version: ta.Optional[CacheVersion] = None,
 
             local: DirectoryFileCache,
@@ -7681,7 +7901,8 @@ class GithubCache(FileCache, DataCache):
         self._config = config
 
         if client is None:
-            client = GithubCacheServiceV1Client(
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version]
+            client = client_cls(
                 cache_version=self._version,
             )
         self._client: GithubCacheClient = client

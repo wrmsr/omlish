@@ -13,6 +13,7 @@ from ..cache import FileCache
 from ..cache import FileCacheDataCache
 from .api.clients import GithubCacheClient
 from .api.v1.client import GithubCacheServiceV1Client
+from .api.v2.client import GithubCacheServiceV2Client
 
 
 ##
@@ -23,11 +24,18 @@ class GithubCache(FileCache, DataCache):
     class Config:
         pass
 
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
     def __init__(
             self,
             config: Config = Config(),
             *,
             client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: int = 1,
+
             version: ta.Optional[CacheVersion] = None,
 
             local: DirectoryFileCache,
@@ -39,7 +47,8 @@ class GithubCache(FileCache, DataCache):
         self._config = config
 
         if client is None:
-            client = GithubCacheServiceV1Client(
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version]
+            client = client_cls(
                 cache_version=self._version,
             )
         self._client: GithubCacheClient = client
