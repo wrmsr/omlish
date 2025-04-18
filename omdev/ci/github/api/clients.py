@@ -4,12 +4,15 @@ import asyncio
 import dataclasses as dc
 import http.client
 import json
+import os
 import typing as ta
 import urllib.parse
 import urllib.request
 
+from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.timing import log_timing_context
 
 from ...consts import CI_CACHE_VERSION
 from ..env import register_github_env_var
@@ -47,6 +50,9 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
 
+    DEFAULT_CONCURRENCY = 4
+    DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
+
     #
 
     def __init__(
@@ -62,6 +68,9 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             cache_version: int = CI_CACHE_VERSION,
 
             loop: ta.Optional[asyncio.AbstractEventLoop] = None,
+
+            concurrency: int = DEFAULT_CONCURRENCY,
+            chunk_size: int = DEFAULT_CHUNK_SIZE,
     ) -> None:
         super().__init__()
 
@@ -88,6 +97,14 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         #
 
         self._given_loop = loop
+
+        #
+
+        check.arg(concurrency > 0)
+        self._concurrency = concurrency
+
+        check.arg(chunk_size > 0)
+        self._chunk_size = chunk_size
 
     #
 
@@ -210,3 +227,114 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             s,
             ('' if partial_suffix else self._key_suffix),
         ])
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class _DownloadChunk:
+        key: str
+        url: str
+        out_file: str
+        offset: int
+        size: int
+
+    async def _download_file_chunk_urllib(self, chunk: _DownloadChunk) -> None:
+        req = urllib.request.Request(  # noqa
+            chunk.url,
+            headers={
+                'Range': f'bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+            },
+        )
+
+        _, buf_ = await self._send_url_request(req)
+
+        buf = check.not_none(buf_)
+        check.equal(len(buf), chunk.size)
+
+        #
+
+        def write_sync():
+            with open(chunk.out_file, 'r+b') as f:  # noqa
+                f.seek(chunk.offset, os.SEEK_SET)
+                f.write(buf)
+
+        await self._get_loop().run_in_executor(None, write_sync)  # noqa
+
+    # async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
+    #     async with contextlib.AsyncExitStack() as es:
+    #         f = open(chunk.out_file, 'r+b')
+    #         f.seek(chunk.offset, os.SEEK_SET)
+    #
+    #         tmp_file = es.enter_context(temp_file_context())  # noqa
+    #
+    #         proc = await es.enter_async_context(asyncio_subprocesses.popen(
+    #             'curl',
+    #             '-s',
+    #             '-w', '%{json}',
+    #             '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+    #             chunk.url,
+    #             output=subprocess.PIPE,
+    #         ))
+    #
+    #         futs = asyncio.gather(
+    #
+    #         )
+    #
+    #         await proc.wait()
+    #
+    #         with open(tmp_file, 'r') as f:  # noqa
+    #             curl_json = tmp_file.read()
+    #
+    #     curl_res = json.loads(curl_json.decode().strip())
+    #
+    #     status_code = check.isinstance(curl_res['response_code'], int)
+    #
+    #     if not (200 <= status_code <= 300):
+    #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
+
+    async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {chunk.key} '
+                f'file {chunk.out_file} '
+                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
+        ):
+            await self._download_file_chunk_urllib(chunk)
+
+    async def _download_file(
+            self,
+            key: str,
+            url: str,
+            out_file: str,
+    ) -> None:
+        check.non_empty_str(key)
+        check.non_empty_str(url)
+
+        head_resp, _ = await self._send_url_request(urllib.request.Request(  # noqa
+            url,
+            method='HEAD',
+        ))
+        file_size = int(head_resp.headers['Content-Length'])
+
+        #
+
+        with open(out_file, 'xb') as f:  # noqa
+            f.truncate(file_size)
+
+        #
+
+        download_tasks = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            chunk = self._DownloadChunk(
+                key,
+                url,
+                out_file,
+                offset,
+                size,
+            )
+            download_tasks.append(self._download_file_chunk(chunk))
+
+        await asyncio_wait_concurrent(download_tasks, self._concurrency)

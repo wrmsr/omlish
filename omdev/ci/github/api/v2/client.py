@@ -85,8 +85,8 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
         return self.Entry(resp)
 
-    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
         raise NotImplementedError
 
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
+    async def upload_file(self, key: str, in_file: str) -> None:
         raise NotImplementedError

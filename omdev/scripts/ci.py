@@ -1989,207 +1989,6 @@ def read_docker_tar_image_id(tar_file: str) -> str:
 
 
 ########################################
-# ../github/api/clients.py
-
-
-##
-
-
-class GithubCacheClient(abc.ABC):
-    @dc.dataclass(frozen=True)
-    class Entry(abc.ABC):  # noqa
-        pass
-
-    @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
-        raise NotImplementedError
-
-    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
-        return None
-
-    @abc.abstractmethod
-    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-##
-
-
-class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
-    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
-
-    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
-
-    #
-
-    def __init__(
-            self,
-            *,
-            service_url: str,
-
-            auth_token: ta.Optional[str] = None,
-
-            key_prefix: ta.Optional[str] = None,
-            key_suffix: ta.Optional[str] = None,
-
-            cache_version: int = CI_CACHE_VERSION,
-
-            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
-    ) -> None:
-        super().__init__()
-
-        #
-
-        self._service_url = check.non_empty_str(service_url)
-
-        if auth_token is None:
-            auth_token = self.AUTH_TOKEN_ENV_VAR()
-        self._auth_token = auth_token
-
-        #
-
-        self._key_prefix = key_prefix
-
-        if key_suffix is None:
-            key_suffix = self.KEY_SUFFIX_ENV_VAR()
-        self._key_suffix = check.non_empty_str(key_suffix)
-
-        #
-
-        self._cache_version = check.isinstance(cache_version, int)
-
-        #
-
-        self._given_loop = loop
-
-    #
-
-    def _get_loop(self) -> asyncio.AbstractEventLoop:
-        if (loop := self._given_loop) is not None:
-            return loop
-        return asyncio.get_running_loop()
-
-    #
-
-    def _build_request_headers(
-            self,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            *,
-            content_type: ta.Optional[str] = None,
-            json_content: bool = False,
-    ) -> ta.Dict[str, str]:
-        dct = {}
-
-        if (auth_token := self._auth_token):
-            dct['Authorization'] = f'Bearer {auth_token}'
-
-        if content_type is None and json_content:
-            content_type = 'application/json'
-        if content_type is not None:
-            dct['Content-Type'] = content_type
-
-        if headers:
-            dct.update(headers)
-
-        return dct
-
-    #
-
-    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
-        if not b:
-            return None
-        return json.loads(b.decode('utf-8-sig'))
-
-    #
-
-    async def _send_url_request(
-            self,
-            req: urllib.request.Request,
-    ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
-        def run_sync():
-            with urllib.request.urlopen(req) as resp:  # noqa
-                body = resp.read()
-            return (resp, body)
-
-        return await self._get_loop().run_in_executor(None, run_sync)  # noqa
-
-    #
-
-    @dc.dataclass()
-    class ServiceRequestError(RuntimeError):
-        status_code: int
-        body: ta.Optional[bytes]
-
-        def __str__(self) -> str:
-            return repr(self)
-
-    async def _send_service_request(
-            self,
-            path: str,
-            *,
-            method: ta.Optional[str] = None,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            content_type: ta.Optional[str] = None,
-            content: ta.Optional[bytes] = None,
-            json_content: ta.Optional[ta.Any] = None,
-            success_status_codes: ta.Optional[ta.Container[int]] = None,
-    ) -> ta.Optional[ta.Any]:
-        url = f'{self._service_url}/{path}'
-
-        if content is not None and json_content is not None:
-            raise RuntimeError('Must not pass both content and json_content')
-        elif json_content is not None:
-            content = json_dumps_compact(json_content).encode('utf-8')
-            header_json_content = True
-        else:
-            header_json_content = False
-
-        if method is None:
-            method = 'POST' if content is not None else 'GET'
-
-        #
-
-        req = urllib.request.Request(  # noqa
-            url,
-            method=method,
-            headers=self._build_request_headers(
-                headers,
-                content_type=content_type,
-                json_content=header_json_content,
-            ),
-            data=content,
-        )
-
-        resp, body = await self._send_url_request(req)
-
-        #
-
-        if success_status_codes is not None:
-            is_success = resp.status in success_status_codes
-        else:
-            is_success = (200 <= resp.status <= 300)
-        if not is_success:
-            raise self.ServiceRequestError(resp.status, body)
-
-        return self._load_json_bytes(body)
-
-    #
-
-    KEY_PART_SEPARATOR = '---'
-
-    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
-        return self.KEY_PART_SEPARATOR.join([
-            *([self._key_prefix] if self._key_prefix else []),
-            s,
-            ('' if partial_suffix else self._key_suffix),
-        ])
-
-
-########################################
 # ../github/api/v1/api.py
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
@@ -6242,37 +6041,90 @@ class FileCacheDataCache(DataCache):
 
 
 ########################################
-# ../github/api/v1/client.py
+# ../github/api/clients.py
 
 
 ##
 
 
-class GithubCacheServiceV1Client(BaseGithubCacheClient):
-    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
+class GithubCacheClient(abc.ABC):
+    @dc.dataclass(frozen=True)
+    class Entry(abc.ABC):  # noqa
+        pass
+
+    @abc.abstractmethod
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
+        raise NotImplementedError
+
+    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+        return None
+
+    @abc.abstractmethod
+    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
+    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
+
+    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
 
     DEFAULT_CONCURRENCY = 4
-
     DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
+
+    #
 
     def __init__(
             self,
             *,
-            base_url: ta.Optional[str] = None,
+            service_url: str,
+
+            auth_token: ta.Optional[str] = None,
+
+            key_prefix: ta.Optional[str] = None,
+            key_suffix: ta.Optional[str] = None,
+
+            cache_version: int = CI_CACHE_VERSION,
+
+            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
 
             concurrency: int = DEFAULT_CONCURRENCY,
             chunk_size: int = DEFAULT_CHUNK_SIZE,
-
-            **kwargs: ta.Any,
     ) -> None:
-        if base_url is None:
-            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
-        service_url = GithubCacheServiceV1.get_service_url(base_url)
+        super().__init__()
 
-        super().__init__(
-            service_url=service_url,
-            **kwargs,
-        )
+        #
+
+        self._service_url = check.non_empty_str(service_url)
+
+        if auth_token is None:
+            auth_token = self.AUTH_TOKEN_ENV_VAR()
+        self._auth_token = auth_token
+
+        #
+
+        self._key_prefix = key_prefix
+
+        if key_suffix is None:
+            key_suffix = self.KEY_SUFFIX_ENV_VAR()
+        self._key_suffix = check.non_empty_str(key_suffix)
+
+        #
+
+        self._cache_version = check.isinstance(cache_version, int)
+
+        #
+
+        self._given_loop = loop
+
+        #
 
         check.arg(concurrency > 0)
         self._concurrency = concurrency
@@ -6282,63 +6134,125 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
     #
 
+    def _get_loop(self) -> asyncio.AbstractEventLoop:
+        if (loop := self._given_loop) is not None:
+            return loop
+        return asyncio.get_running_loop()
+
+    #
+
     def _build_request_headers(
             self,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
-            **kwargs: ta.Any,
+            *,
+            content_type: ta.Optional[str] = None,
+            json_content: bool = False,
     ) -> ta.Dict[str, str]:
-        return super()._build_request_headers(
-            {
-                'Accept': ';'.join([
-                    'application/json',
-                    f'api-version={GithubCacheServiceV1.API_VERSION}',
-                ]),
-                **(headers or {}),
-            },
-            **kwargs,
-        )
+        dct = {}
+
+        if (auth_token := self._auth_token):
+            dct['Authorization'] = f'Bearer {auth_token}'
+
+        if content_type is None and json_content:
+            content_type = 'application/json'
+        if content_type is not None:
+            dct['Content-Type'] = content_type
+
+        if headers:
+            dct.update(headers)
+
+        return dct
 
     #
 
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        artifact: GithubCacheServiceV1.ArtifactCacheEntry
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        entry1 = check.isinstance(entry, self.Entry)
-        return entry1.artifact.archive_location
-
-    #
-
-    def _build_get_entry_url_path(self, *keys: str) -> str:
-        qp = dict(
-            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
-            version=str(self._cache_version),
-        )
-
-        return '?'.join([
-            'cache',
-            '&'.join([
-                f'{k}={v}'
-                for k, v in qp.items()
-            ]),
-        ])
-
-    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
-
-    #
-
-    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        obj = await self._send_service_request(
-            self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
-        )
-        if obj is None:
+    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
+        if not b:
             return None
+        return json.loads(b.decode('utf-8-sig'))
 
-        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
-            GithubCacheServiceV1.ArtifactCacheEntry,
-            obj,
-        ))
+    #
+
+    async def _send_url_request(
+            self,
+            req: urllib.request.Request,
+    ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
+        def run_sync():
+            with urllib.request.urlopen(req) as resp:  # noqa
+                body = resp.read()
+            return (resp, body)
+
+        return await self._get_loop().run_in_executor(None, run_sync)  # noqa
+
+    #
+
+    @dc.dataclass()
+    class ServiceRequestError(RuntimeError):
+        status_code: int
+        body: ta.Optional[bytes]
+
+        def __str__(self) -> str:
+            return repr(self)
+
+    async def _send_service_request(
+            self,
+            path: str,
+            *,
+            method: ta.Optional[str] = None,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            content_type: ta.Optional[str] = None,
+            content: ta.Optional[bytes] = None,
+            json_content: ta.Optional[ta.Any] = None,
+            success_status_codes: ta.Optional[ta.Container[int]] = None,
+    ) -> ta.Optional[ta.Any]:
+        url = f'{self._service_url}/{path}'
+
+        if content is not None and json_content is not None:
+            raise RuntimeError('Must not pass both content and json_content')
+        elif json_content is not None:
+            content = json_dumps_compact(json_content).encode('utf-8')
+            header_json_content = True
+        else:
+            header_json_content = False
+
+        if method is None:
+            method = 'POST' if content is not None else 'GET'
+
+        #
+
+        req = urllib.request.Request(  # noqa
+            url,
+            method=method,
+            headers=self._build_request_headers(
+                headers,
+                content_type=content_type,
+                json_content=header_json_content,
+            ),
+            data=content,
+        )
+
+        resp, body = await self._send_url_request(req)
+
+        #
+
+        if success_status_codes is not None:
+            is_success = resp.status in success_status_codes
+        else:
+            is_success = (200 <= resp.status <= 300)
+        if not is_success:
+            raise self.ServiceRequestError(resp.status, body)
+
+        return self._load_json_bytes(body)
+
+    #
+
+    KEY_PART_SEPARATOR = '---'
+
+    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
+        return self.KEY_PART_SEPARATOR.join([
+            *([self._key_prefix] if self._key_prefix else []),
+            s,
+            ('' if partial_suffix else self._key_suffix),
+        ])
 
     #
 
@@ -6413,9 +6327,14 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
         ):
             await self._download_file_chunk_urllib(chunk)
 
-    async def _download_file(self, entry: Entry, out_file: str) -> None:
-        key = check.non_empty_str(entry.artifact.cache_key)
-        url = check.non_empty_str(entry.artifact.archive_location)
+    async def _download_file(
+            self,
+            key: str,
+            url: str,
+            out_file: str,
+    ) -> None:
+        check.non_empty_str(key)
+        check.non_empty_str(url)
 
         head_resp, _ = await self._send_url_request(urllib.request.Request(  # noqa
             url,
@@ -6445,194 +6364,6 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
             download_tasks.append(self._download_file_chunk(chunk))
 
         await asyncio_wait_concurrent(download_tasks, self._concurrency)
-
-    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
-        entry1 = check.isinstance(entry, self.Entry)
-        with log_timing_context(
-                'Downloading github cache '
-                f'key {entry1.artifact.cache_key} '
-                f'version {entry1.artifact.cache_version} '
-                f'to {out_file}',
-        ):
-            await self._download_file(entry1, out_file)
-
-    #
-
-    async def _upload_file_chunk(
-            self,
-            key: str,
-            cache_id: int,
-            in_file: str,
-            offset: int,
-            size: int,
-    ) -> None:
-        with log_timing_context(
-                f'Uploading github cache {key} '
-                f'file {in_file} '
-                f'chunk {offset} - {offset + size}',
-        ):
-            with open(in_file, 'rb') as f:  # noqa
-                f.seek(offset)
-                buf = f.read(size)
-
-            check.equal(len(buf), size)
-
-            await self._send_service_request(
-                f'caches/{cache_id}',
-                method='PATCH',
-                content_type='application/octet-stream',
-                headers={
-                    'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
-                },
-                content=buf,
-                success_status_codes=[204],
-            )
-
-    async def _upload_file(self, key: str, in_file: str) -> None:
-        fixed_key = self.fix_key(key)
-
-        check.state(os.path.isfile(in_file))
-
-        file_size = os.stat(in_file).st_size
-
-        #
-
-        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
-            key=fixed_key,
-            cache_size=file_size,
-            version=str(self._cache_version),
-        )
-        reserve_resp_obj = await self._send_service_request(
-            'caches',
-            json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
-            success_status_codes=[201],
-        )
-        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
-            GithubCacheServiceV1.ReserveCacheResponse,
-            reserve_resp_obj,
-        )
-        cache_id = check.isinstance(reserve_resp.cache_id, int)
-
-        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
-
-        #
-
-        upload_tasks = []
-        chunk_size = self._chunk_size
-        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            offset = i * chunk_size
-            size = min(chunk_size, file_size - offset)
-            upload_tasks.append(self._upload_file_chunk(
-                fixed_key,
-                cache_id,
-                in_file,
-                offset,
-                size,
-            ))
-
-        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
-
-        #
-
-        commit_req = GithubCacheServiceV1.CommitCacheRequest(
-            size=file_size,
-        )
-        await self._send_service_request(
-            f'caches/{cache_id}',
-            json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
-            success_status_codes=[204],
-        )
-
-    async def upload_file(self, key: str, in_file: str) -> None:
-        with log_timing_context(
-                f'Uploading github cache file {os.path.basename(in_file)} '
-                f'key {key}',
-        ):
-            await self._upload_file(key, in_file)
-
-
-########################################
-# ../github/api/v2/client.py
-
-
-##
-
-
-class GithubCacheServiceV2Client(BaseGithubCacheClient):
-    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
-
-    def __init__(
-            self,
-            *,
-            base_url: ta.Optional[str] = None,
-
-            **kwargs: ta.Any,
-    ) -> None:
-        if base_url is None:
-            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
-        service_url = GithubCacheServiceV2.get_service_url(base_url)
-
-        super().__init__(
-            service_url=service_url,
-            **kwargs,
-        )
-
-    #
-
-    async def _send_method_request(
-            self,
-            method: GithubCacheServiceV2.Method[
-                GithubCacheServiceV2RequestT,
-                GithubCacheServiceV2ResponseT,
-            ],
-            request: GithubCacheServiceV2RequestT,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
-        obj = await self._send_service_request(
-            method.name,
-            json_content=dc.asdict(request),  # type: ignore[call-overload]
-            **kwargs,
-        )
-
-        if obj is None:
-            return None
-        return method.response(**obj)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
-
-        def __post_init__(self) -> None:
-            check.state(self.response.ok)
-            check.non_empty_str(self.response.signed_download_url)
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        entry2 = check.isinstance(entry, self.Entry)
-        return check.non_empty_str(entry2.response.signed_download_url)
-
-    #
-
-    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        resp = await self._send_method_request(
-            GithubCacheServiceV2.GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD,
-            GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest(
-                key=self.fix_key(key),
-                restore_keys=[self.fix_key(key, partial_suffix=True)],
-                version=str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH),
-            ),
-        )
-        if resp is None or not resp.ok:
-            return None
-
-        return self.Entry(resp)
-
-    def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
 
 
 ########################################
@@ -7883,128 +7614,283 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../github/cache.py
+# ../github/api/v1/client.py
 
 
 ##
 
 
-class GithubCache(FileCache, DataCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        pass
-
-    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
-
-    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
-        1: GithubCacheServiceV1Client,
-        2: GithubCacheServiceV2Client,
-    }
+class GithubCacheServiceV1Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
 
     def __init__(
             self,
-            config: Config = Config(),
             *,
-            client: ta.Optional[GithubCacheClient] = None,
-            default_client_version: ta.Optional[int] = None,
+            base_url: ta.Optional[str] = None,
 
-            version: ta.Optional[CacheVersion] = None,
-
-            local: DirectoryFileCache,
+            **kwargs: ta.Any,
     ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV1.get_service_url(base_url)
+
         super().__init__(
-            version=version,
+            service_url=service_url,
+            **kwargs,
         )
-
-        self._config = config
-
-        if client is None:
-            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
-            client = client_cls(
-                cache_version=self._version,
-            )
-        self._client: GithubCacheClient = client
-
-        self._local = local
 
     #
 
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
+    def _build_request_headers(
+            self,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Dict[str, str]:
+        return super()._build_request_headers(
+            {
+                'Accept': ';'.join([
+                    'application/json',
+                    f'api-version={GithubCacheServiceV1.API_VERSION}',
+                ]),
+                **(headers or {}),
+            },
+            **kwargs,
+        )
 
-        if (entry := await self._client.get_entry(key)) is None:
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry1 = check.isinstance(entry, self.Entry)
+        return entry1.artifact.archive_location
+
+    #
+
+    def _build_get_entry_url_path(self, *keys: str) -> str:
+        qp = dict(
+            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
+            version=str(self._cache_version),
+        )
+
+        return '?'.join([
+            'cache',
+            '&'.join([
+                f'{k}={v}'
+                for k, v in qp.items()
+            ]),
+        ])
+
+    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
+
+    #
+
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
+        obj = await self._send_service_request(
+            self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
+        )
+        if obj is None:
             return None
 
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with unlinking_if_exists(tmp_file):
-            await self._client.download_file(entry, tmp_file)
+        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        ))
 
-            os.replace(tmp_file, local_file)
+    #
 
-        return local_file
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        entry1 = check.isinstance(entry, self.Entry)
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {entry1.artifact.cache_key} '
+                f'version {entry1.artifact.cache_version} '
+                f'to {out_file}',
+        ):
+            await self._download_file(
+                check.non_empty_str(entry1.artifact.cache_key),
+                check.non_empty_str(entry1.artifact.archive_location),
+                out_file,
+            )
 
-    async def put_file(
+    #
+
+    async def _upload_file_chunk(
             self,
             key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = await self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
+            cache_id: int,
+            in_file: str,
+            offset: int,
+            size: int,
+    ) -> None:
+        with log_timing_context(
+                f'Uploading github cache {key} '
+                f'file {in_file} '
+                f'chunk {offset} - {offset + size}',
+        ):
+            with open(in_file, 'rb') as f:  # noqa
+                f.seek(offset)
+                buf = f.read(size)
+
+            check.equal(len(buf), size)
+
+            await self._send_service_request(
+                f'caches/{cache_id}',
+                method='PATCH',
+                content_type='application/octet-stream',
+                headers={
+                    'Content-Range': f'bytes {offset}-{offset + size - 1}/*',
+                },
+                content=buf,
+                success_status_codes=[204],
+            )
+
+    async def _upload_file(self, key: str, in_file: str) -> None:
+        fixed_key = self.fix_key(key)
+
+        check.state(os.path.isfile(in_file))
+
+        file_size = os.stat(in_file).st_size
+
+        #
+
+        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
+            key=fixed_key,
+            cache_size=file_size,
+            version=str(self._cache_version),
+        )
+        reserve_resp_obj = await self._send_service_request(
+            'caches',
+            json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
+            success_status_codes=[201],
+        )
+        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
+            GithubCacheServiceV1.ReserveCacheResponse,
+            reserve_resp_obj,
+        )
+        cache_id = check.isinstance(reserve_resp.cache_id, int)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
+
+        #
+
+        upload_tasks = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            upload_tasks.append(self._upload_file_chunk(
+                fixed_key,
+                cache_id,
+                in_file,
+                offset,
+                size,
+            ))
+
+        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
+
+        #
+
+        commit_req = GithubCacheServiceV1.CommitCacheRequest(
+            size=file_size,
+        )
+        await self._send_service_request(
+            f'caches/{cache_id}',
+            json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
+            success_status_codes=[204],
         )
 
-        await self._client.upload_file(key, cache_file_path)
-
-        return cache_file_path
-
-    #
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return DataCache.FileData(local_file)
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        await FileCacheDataCache(self).put_data(key, data)
+    async def upload_file(self, key: str, in_file: str) -> None:
+        with log_timing_context(
+                f'Uploading github cache file {os.path.basename(in_file)} '
+                f'key {key}',
+        ):
+            await self._upload_file(key, in_file)
 
 
 ########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
+# ../github/api/v2/client.py
 
 
-class GithubCli(ArgparseCli):
-    @argparse_cmd()
-    def list_referenced_env_vars(self) -> None:
-        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+##
 
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
-        entry = await client.get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
 
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
+class GithubCacheServiceV2Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV2.get_service_url(base_url)
+
+        super().__init__(
+            service_url=service_url,
+            **kwargs,
+        )
+
+    #
+
+    async def _send_method_request(
+            self,
+            method: GithubCacheServiceV2.Method[
+                GithubCacheServiceV2RequestT,
+                GithubCacheServiceV2ResponseT,
+            ],
+            request: GithubCacheServiceV2RequestT,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
+        obj = await self._send_service_request(
+            method.name,
+            json_content=dc.asdict(request),  # type: ignore[call-overload]
+            **kwargs,
+        )
+
+        if obj is None:
+            return None
+        return method.response(**obj)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
+
+        def __post_init__(self) -> None:
+            check.state(self.response.ok)
+            check.non_empty_str(self.response.signed_download_url)
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry2 = check.isinstance(entry, self.Entry)
+        return check.non_empty_str(entry2.response.signed_download_url)
+
+    #
+
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
+        resp = await self._send_method_request(
+            GithubCacheServiceV2.GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD,
+            GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest(
+                key=self.fix_key(key),
+                restore_keys=[self.fix_key(key, partial_suffix=True)],
+                version=str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH),
+            ),
+        )
+        if resp is None or not resp.ok:
+            return None
+
+        return self.Entry(resp)
+
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        raise NotImplementedError
+
+    async def upload_file(self, key: str, in_file: str) -> None:
         raise NotImplementedError
 
 
@@ -9804,20 +9690,129 @@ async def build_cache_served_docker_image_data_server_routes(
 
 
 ########################################
-# ../github/inject.py
+# ../github/cache.py
 
 
 ##
 
 
-def bind_github() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(GithubCache, singleton=True),
-        inj.bind(DataCache, to_key=GithubCache),
-        inj.bind(FileCache, to_key=GithubCache),
-    ]
+class GithubCache(FileCache, DataCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
 
-    return inj.as_bindings(*lst)
+    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
+    def __init__(
+            self,
+            config: Config = Config(),
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: ta.Optional[int] = None,
+
+            version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
+    ) -> None:
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+        if client is None:
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
+            client = client_cls(
+                cache_version=self._version,
+            )
+        self._client: GithubCacheClient = client
+
+        self._local = local
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with unlinking_if_exists(tmp_file):
+            await self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = await self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        await self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        await FileCacheDataCache(self).put_data(key, data)
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    async def get_cache_entry(self) -> None:
+        client = GithubCacheServiceV1Client()
+        entry = await client.get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
 
 
 ########################################
@@ -10508,6 +10503,23 @@ class Subprocesses(AbstractSubprocesses):
 subprocesses = Subprocesses()
 
 SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
+
+
+########################################
+# ../github/inject.py
+
+
+##
+
+
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(DataCache, to_key=GithubCache),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
