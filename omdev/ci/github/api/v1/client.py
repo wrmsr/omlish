@@ -119,7 +119,6 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
         fixed_key = self.fix_key(key)
 
         check.state(os.path.isfile(in_file))
-
         file_size = os.stat(in_file).st_size
 
         #
