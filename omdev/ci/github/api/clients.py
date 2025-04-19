@@ -13,6 +13,7 @@ import urllib.request
 from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.logs import log
 from omlish.lite.timing import log_timing_context
 
 from ...consts import CI_CACHE_VERSION
@@ -107,7 +108,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         check.arg(chunk_size > 0)
         self._chunk_size = chunk_size
 
-    #
+    ##
+    # misc
 
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         if (loop := self._given_loop) is not None:
@@ -115,6 +117,14 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         return asyncio.get_running_loop()
 
     #
+
+    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
+        if not b:
+            return None
+        return json.loads(b.decode('utf-8-sig'))
+
+    ##
+    # requests
 
     def _build_request_headers(
             self,
@@ -140,14 +150,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     #
 
-    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
-        if not b:
-            return None
-        return json.loads(b.decode('utf-8-sig'))
-
-    #
-
-    async def _send_url_request(
+    async def _send_urllib_request(
             self,
             req: urllib.request.Request,
     ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
@@ -220,7 +223,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
                 data=content,
             )
 
-            resp, body = await self._send_url_request(req)
+            resp, body = await self._send_urllib_request(req)
 
             #
 
@@ -232,6 +235,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
                 return self._load_json_bytes(body)
 
             #
+
+            log.debug(f'Request to url {url} got unsuccessful status code {resp.status}')  # noqa
 
             if not (
                 retry_status_codes is not None and
@@ -245,7 +250,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
         raise RuntimeError('Unreachable')
 
-    #
+    ##
+    # keys
 
     KEY_PART_SEPARATOR = '---'
 
@@ -256,7 +262,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             ('' if partial_suffix else self._key_suffix),
         ])
 
-    #
+    ##
+    # downloading
 
     @dc.dataclass(frozen=True)
     class _DownloadChunk:
@@ -274,7 +281,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             },
         )
 
-        _, buf_ = await self._send_url_request(req)
+        _, buf_ = await self._send_urllib_request(req)
 
         buf = check.not_none(buf_)
         check.equal(len(buf), chunk.size)
@@ -339,7 +346,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         check.non_empty_str(key)
         check.non_empty_str(url)
 
-        head_resp, _ = await self._send_url_request(urllib.request.Request(  # noqa
+        head_resp, _ = await self._send_urllib_request(urllib.request.Request(  # noqa
             url,
             method='HEAD',
         ))
@@ -368,7 +375,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
         await asyncio_wait_concurrent(download_tasks, self._concurrency)
 
-    #
+    ##
+    # uploading
 
     @dc.dataclass(frozen=True)
     class _UploadChunk:

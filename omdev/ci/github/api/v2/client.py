@@ -133,7 +133,7 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
         ))
         check.state(reserve_resp.ok)
 
-        log.debug(f'Github cache file {os.path.basename(in_file)} upload reserved')  # noqa
+        log.debug(f'Github cache file {os.path.basename(in_file)} upload reserved for file size {file_size}')  # noqa
 
         #
 
