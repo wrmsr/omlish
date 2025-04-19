@@ -6179,12 +6179,13 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             self,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
+            no_auth: bool = False,
             content_type: ta.Optional[str] = None,
             json_content: bool = False,
     ) -> ta.Dict[str, str]:
         dct = {}
 
-        if (auth_token := self._auth_token):
+        if not no_auth and (auth_token := self._auth_token):
             dct['Authorization'] = f'Bearer {auth_token}'
 
         if content_type is None and json_content:
@@ -6228,9 +6229,11 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             path: ta.Optional[str] = None,
 
             method: ta.Optional[str] = None,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
 
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            no_auth: bool = False,
             content_type: ta.Optional[str] = None,
+
             content: ta.Optional[bytes] = None,
             json_content: ta.Optional[ta.Any] = None,
 
@@ -6259,6 +6262,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
         headers = self._build_request_headers(
             headers,
+            no_auth=no_auth,
             content_type=content_type,
             json_content=header_json_content,
         )
@@ -6436,8 +6440,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         offset: int
         size: int
 
-    UPLOAD_CHUNK_NUM_RETRIES = 10
-    UPLOAD_CHUNK_RETRY_SLEEP = .5
+    # UPLOAD_CHUNK_NUM_RETRIES = 10
+    # UPLOAD_CHUNK_RETRY_SLEEP = .5
 
     async def _upload_file_chunk_(self, chunk: _UploadChunk) -> None:
         with open(chunk.in_file, 'rb') as f:  # noqa
@@ -6450,18 +6454,20 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             url=chunk.url,
 
             method='PATCH',
+
             headers={
                 'Content-Range': f'bytes {chunk.offset}-{chunk.offset + chunk.size - 1}/*',
             },
-
+            no_auth=True,
             content_type='application/octet-stream',
+
             content=buf,
 
             success_status_codes=[204],
 
-            retry_status_codes=[403],
-            num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
-            retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
+            # retry_status_codes=[403],
+            # num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
+            # retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
         )
 
     async def _upload_file_chunk(self, chunk: _UploadChunk) -> None:
