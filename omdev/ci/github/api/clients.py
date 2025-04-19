@@ -11,6 +11,7 @@ import urllib.parse
 import urllib.request
 
 from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
+from omlish.http.urllib import NonRaisingUrllibErrorProcessor
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
@@ -150,21 +151,12 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     #
 
-    class _NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
-        """https://stackoverflow.com/a/74844056"""
-
-        def http_response(self, request, response):
-            return response
-
-        def https_response(self, request, response):
-            return response
-
     async def _send_urllib_request(
             self,
             req: urllib.request.Request,
     ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
         def run_sync():
-            opener = urllib.request.build_opener(self._NonRaisingUrllibErrorProcessor)
+            opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
             with opener.open(req) as resp:  # noqa
                 body = resp.read()
             return (resp, body)

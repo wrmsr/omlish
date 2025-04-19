@@ -423,6 +423,31 @@ class DockerPortRelay:
 
 
 ########################################
+# ../../../omlish/http/urllib.py
+
+
+##
+
+
+class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
+    """
+    https://stackoverflow.com/a/74844056
+
+    Usage:
+
+        opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
+        with opener.open(req) as resp:
+            ...
+    """
+
+    def http_response(self, request, response):
+        return response
+
+    def https_response(self, request, response):
+        return response
+
+
+########################################
 # ../../../omlish/http/versions.py
 
 
@@ -6174,21 +6199,12 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
     #
 
-    class _NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
-        """https://stackoverflow.com/a/74844056"""
-
-        def http_response(self, request, response):
-            return response
-
-        def https_response(self, request, response):
-            return response
-
     async def _send_urllib_request(
             self,
             req: urllib.request.Request,
     ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
         def run_sync():
-            opener = urllib.request.build_opener(self._NonRaisingUrllibErrorProcessor)
+            opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
             with opener.open(req) as resp:  # noqa
                 body = resp.read()
             return (resp, body)
