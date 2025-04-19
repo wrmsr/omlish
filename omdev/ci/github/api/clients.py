@@ -54,7 +54,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
     KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
 
     DEFAULT_CONCURRENCY = 4
-    DEFAULT_CHUNK_SIZE = 32 * 1024 * 1024
+    DEFAULT_CHUNK_SIZE = 64 * 1024 * 1024
 
     #
 
@@ -417,7 +417,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
             success_status_codes=[204],
 
-            retry_status_codes=[405],
+            # retry_status_codes=[405],
             num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
             retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
         )
