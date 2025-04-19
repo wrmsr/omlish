@@ -6200,7 +6200,6 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             path: ta.Optional[str] = None,
 
             method: ta.Optional[str] = None,
-
             headers: ta.Optional[ta.Mapping[str, str]] = None,
 
             content_type: ta.Optional[str] = None,
@@ -6208,6 +6207,10 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
             json_content: ta.Optional[ta.Any] = None,
 
             success_status_codes: ta.Optional[ta.Container[int]] = None,
+
+            retry_status_codes: ta.Optional[ta.Container[int]] = None,
+            num_retries: int = 0,
+            retry_sleep: ta.Optional[float] = None,
     ) -> ta.Optional[ta.Any]:
         if url is not None and path is not None:
             raise RuntimeError('Must not pass both url and path')
@@ -6226,31 +6229,46 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         if method is None:
             method = 'POST' if content is not None else 'GET'
 
-        #
-
-        req = urllib.request.Request(  # noqa
-            url,
-            method=method,
-            headers=self._build_request_headers(
-                headers,
-                content_type=content_type,
-                json_content=header_json_content,
-            ),
-            data=content,
+        headers = self._build_request_headers(
+            headers,
+            content_type=content_type,
+            json_content=header_json_content,
         )
 
-        resp, body = await self._send_url_request(req)
-
         #
 
-        if success_status_codes is not None:
-            is_success = resp.status in success_status_codes
-        else:
-            is_success = (200 <= resp.status <= 300)
-        if not is_success:
-            raise self.ServiceRequestError(resp.status, body)
+        for n in itertools.count():
+            req = urllib.request.Request(  # noqa
+                url,
+                method=method,
+                headers=headers,
+                data=content,
+            )
 
-        return self._load_json_bytes(body)
+            resp, body = await self._send_url_request(req)
+
+            #
+
+            if success_status_codes is not None:
+                is_success = resp.status in success_status_codes
+            else:
+                is_success = (200 <= resp.status < 300)
+            if is_success:
+                return self._load_json_bytes(body)
+
+            #
+
+            if not (
+                retry_status_codes is not None and
+                resp.status in retry_status_codes and
+                n < num_retries
+            ):
+                raise self.ServiceRequestError(resp.status, body)
+
+            if retry_sleep is not None:
+                await asyncio.sleep(retry_sleep)
+
+        raise RuntimeError('Unreachable')
 
     #
 
@@ -6324,7 +6342,7 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
     #
     #     status_code = check.isinstance(curl_res['response_code'], int)
     #
-    #     if not (200 <= status_code <= 300):
+    #     if not (200 <= status_code < 300):
     #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
 
     async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
@@ -6385,6 +6403,9 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         offset: int
         size: int
 
+    UPLOAD_CHUNK_NUM_RETRIES = 10
+    UPLOAD_CHUNK_RETRY_SLEEP = .5
+
     async def _upload_file_chunk_(self, chunk: _UploadChunk) -> None:
         with open(chunk.in_file, 'rb') as f:  # noqa
             f.seek(chunk.offset)
@@ -6394,13 +6415,20 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
         await self._send_request(
             url=chunk.url,
+
             method='PATCH',
-            content_type='application/octet-stream',
             headers={
                 'Content-Range': f'bytes {chunk.offset}-{chunk.offset + chunk.size - 1}/*',
             },
+
+            content_type='application/octet-stream',
             content=buf,
+
             success_status_codes=[204],
+
+            retry_status_codes=[403],
+            num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
+            retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
         )
 
     async def _upload_file_chunk(self, chunk: _UploadChunk) -> None:
