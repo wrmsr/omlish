@@ -6440,8 +6440,8 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         offset: int
         size: int
 
-    # UPLOAD_CHUNK_NUM_RETRIES = 10
-    # UPLOAD_CHUNK_RETRY_SLEEP = .5
+    UPLOAD_CHUNK_NUM_RETRIES = 10
+    UPLOAD_CHUNK_RETRY_SLEEP = .5
 
     async def _upload_file_chunk_(self, chunk: _UploadChunk) -> None:
         with open(chunk.in_file, 'rb') as f:  # noqa
@@ -6465,9 +6465,9 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
             success_status_codes=[204],
 
-            # retry_status_codes=[403],
-            # num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
-            # retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
+            retry_status_codes=[405],
+            num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
+            retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
         )
 
     async def _upload_file_chunk(self, chunk: _UploadChunk) -> None:
