@@ -11,7 +11,6 @@ from .content import Content
 from .content import ExtendedContent
 from .content import SingleContent
 from .images import Image
-from .placeholders import Placeholder  # noqa
 
 
 ##

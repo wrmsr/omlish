@@ -25,7 +25,7 @@ Core packages have no required dependencies, but numerous optional ones - see th
 The CLI is installable through uvx or pipx via:
 
 ```bash
-curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py | python3 -
+curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -
 ```
 
 Additional deps to be injected may be appended to the command.
