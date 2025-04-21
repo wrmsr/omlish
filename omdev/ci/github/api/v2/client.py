@@ -2,6 +2,7 @@
 import dataclasses as dc
 import os
 import typing as ta
+import urllib.request
 
 from omlish.lite.check import check
 from omlish.lite.logs import log
@@ -155,7 +156,20 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
         ]
 
         async def az_make_request(req: AzureBlockBlobUploader.Request) -> AzureBlockBlobUploader.Response:
-            raise NotImplementedError
+            u_req = urllib.request.Request(  # noqa
+                req.url,
+                method=req.method,
+                headers=req.headers or {},
+                data=req.body,
+            )
+
+            u_resp, u_body = await self._send_urllib_request(u_req)
+
+            return AzureBlockBlobUploader.Response(
+                status=u_resp.status,
+                headers=dict(u_resp.headers),
+                data=u_body,
+            )
 
         az_uploader = AzureBlockBlobUploader(
             reserve_resp.signed_upload_url,
