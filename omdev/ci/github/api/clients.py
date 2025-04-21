@@ -430,6 +430,37 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
         ):
             await self._upload_file_chunk_(chunk)
 
+    def _generate_file_upload_chunks(
+            self,
+            *,
+            in_file: str,
+            url: str,
+            key: str,
+
+            file_size: ta.Optional[int] = None,
+    ) -> ta.List[_UploadChunk]:
+        check.state(os.path.isfile(in_file))
+
+        if file_size is None:
+            file_size = os.stat(in_file).st_size
+
+        #
+
+        upload_chunks: ta.List[BaseGithubCacheClient._UploadChunk] = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            upload_chunks.append(self._UploadChunk(
+                url=url,
+                key=key,
+                in_file=in_file,
+                offset=offset,
+                size=size,
+            ))
+
+        return upload_chunks
+
     async def _upload_file_chunks(
             self,
             *,
@@ -439,24 +470,13 @@ class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
 
             file_size: ta.Optional[int] = None,
     ) -> None:
-        check.state(os.path.isfile(in_file))
-
-        if file_size is None:
-            file_size = os.stat(in_file).st_size
-
-        #
-
         upload_tasks = []
-        chunk_size = self._chunk_size
-        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            offset = i * chunk_size
-            size = min(chunk_size, file_size - offset)
-            upload_tasks.append(self._upload_file_chunk(self._UploadChunk(
-                url=url,
-                key=key,
-                in_file=in_file,
-                offset=offset,
-                size=size,
-            )))
+        for chunk in self._generate_file_upload_chunks(
+            in_file=in_file,
+            url=url,
+            key=key,
+            file_size=file_size,
+        ):
+            upload_tasks.append(self._upload_file_chunk(chunk))
 
         await asyncio_wait_concurrent(upload_tasks, self._concurrency)
