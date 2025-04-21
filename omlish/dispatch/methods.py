@@ -16,12 +16,14 @@ from .impls import get_impl_func_cls_set
 
 
 T = ta.TypeVar('T')
+R = ta.TypeVar('R')
+P = ta.ParamSpec('P')
 
 
 ##
 
 
-class Method:
+class Method(ta.Generic[P, R]):
     def __init__(
             self,
             func: ta.Callable,
@@ -170,13 +172,27 @@ class Method:
             func = self.get_dispatch_func(instance_cls)
         return func.__get__(instance, owner)  # noqa
 
-    def __call__(self, instance, *args, **kwargs):
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        instance, *rest = args
         instance_cls = type(instance)
         try:
             func = self._dispatch_func_cache[weakref.ref(instance_cls)]
         except KeyError:
             func = self.get_dispatch_func(instance_cls)
-        return func.__get__(instance)(*args, **kwargs)  # noqa
+        return func.__get__(instance)(*rest, **kwargs)  # noqa
+
+
+##
+
+
+@ta.overload
+def method(func: ta.Callable[P, R], /, *, installable: bool = False) -> Method[P, R]:  # noqa
+    ...
+
+
+@ta.overload
+def method(func: None = None, /, *, installable: bool = False) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
+    ...
 
 
 def method(func=None, /, *, installable=False):  # noqa
@@ -184,6 +200,9 @@ def method(func=None, /, *, installable=False):  # noqa
     if func is None:
         return functools.partial(Method, **kw)
     return Method(func, **kw)
+
+
+#
 
 
 def install_method(
