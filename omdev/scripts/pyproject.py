@@ -7972,8 +7972,11 @@ class BasePyprojectPackageGenerator(abc.ABC):
     #
 
     _STANDARD_FILES: ta.Sequence[str] = [
-        'LICENSE',
-        'README.rst',
+        *[
+            ''.join([n, x])
+            for n in ('LICENSE', 'README')
+            for x in ('', '.txt', '.md', '.rst')
+        ],
     ]
 
     def _symlink_standard_files(self) -> None:
