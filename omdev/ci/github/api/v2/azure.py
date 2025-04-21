@@ -68,15 +68,11 @@ class AzureBlockBlobUploader:
         self._concurrency = concurrency
 
         parsed = urllib.parse.urlparse(blob_url_with_sas)
-        # split off the SAS token
-        path = parsed.path
-        sas = parsed.query
         self._base_url = f'{parsed.scheme}://{parsed.netloc}'
-        # the path starts with '/', so strip it
-        parts = path.lstrip('/').split('/', 1)
+        parts = parsed.path.lstrip('/').split('/', 1)
         self._container = parts[0]
         self._blob_name = parts[1]
-        self._sas = sas
+        self._sas = parsed.query
 
     def _headers(self) -> ta.Dict[str, str]:
         """Standard headers for Azure Blob REST calls."""
