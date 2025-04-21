@@ -184,7 +184,7 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
         commit_resp = check.not_none(await self._send_method_request(
             GithubCacheServiceV2.FINALIZE_CACHE_ENTRY_METHOD,  # type: ignore[arg-type]
             GithubCacheServiceV2.FinalizeCacheEntryUploadRequest(
-                key=key,
+                key=fixed_key,
                 size_bytes=file_size,
                 version=version,
             ),

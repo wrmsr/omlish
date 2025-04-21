@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
 from omlish.lite.logs import log
+from omlish.lite.timing import log_timing_context
 
 
 ##
@@ -92,7 +93,7 @@ class AzureBlockBlobUploader:
         offset: int
         size: int
 
-    async def _upload_file_chunk(
+    async def _upload_file_chunk_(
             self,
             block_id: str,
             chunk: FileChunk,
@@ -120,6 +121,17 @@ class AzureBlockBlobUploader:
         ))
         if resp.status not in (201, 202):
             raise RuntimeError(f'Put Block failed: {block_id=} {resp.status=}')
+
+    async def _upload_file_chunk(
+            self,
+            block_id: str,
+            chunk: FileChunk,
+    ) -> None:
+        with log_timing_context(f'Uploading azure blob chunk {chunk} with block id {block_id}'):
+            await self._upload_file_chunk_(
+                block_id,
+                chunk,
+            )
 
     async def upload_file(
             self,
