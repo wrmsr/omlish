@@ -13,6 +13,7 @@ from ..clients import GithubCacheClient
 from .api import GithubCacheServiceV2
 from .api import GithubCacheServiceV2RequestT
 from .api import GithubCacheServiceV2ResponseT
+from .azure import AzureBlockBlobUploader
 
 
 ##
@@ -137,12 +138,32 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
         #
 
-        await self._upload_file_chunks(
+        upload_chunks = self._generate_file_upload_chunks(
             in_file=in_file,
             url=reserve_resp.signed_upload_url,
             key=fixed_key,
             file_size=file_size,
         )
+
+        az_chunks = [
+            AzureBlockBlobUploader.FileChunk(
+                in_file=in_file,
+                offset=c.offset,
+                size=c.size,
+            )
+            for c in upload_chunks
+        ]
+
+        async def az_make_request(req: AzureBlockBlobUploader.Request) -> AzureBlockBlobUploader.Response:
+            raise NotImplementedError
+
+        az_uploader = AzureBlockBlobUploader(
+            reserve_resp.signed_upload_url,
+            az_make_request,
+            concurrency=self._concurrency,
+        )
+
+        await az_uploader.upload_file(az_chunks)
 
         #
 

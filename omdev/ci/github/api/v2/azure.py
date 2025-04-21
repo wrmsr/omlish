@@ -119,7 +119,10 @@ class AzureBlockBlobUploader:
         if resp.status not in (201, 202):
             raise RuntimeError(f'Put Block failed: {block_id=} {resp.status=}')
 
-    async def upload_file(self, chunks: ta.List[FileChunk]) -> ta.Dict[str, ta.Any]:
+    async def upload_file(
+            self,
+            chunks: ta.List[FileChunk],
+    ) -> ta.Dict[str, ta.Any]:
         block_ids = []
 
         # 1) Stage each block
