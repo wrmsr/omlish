@@ -2376,6 +2376,8 @@ class AzureBlockBlobUploader:
         query = self._sas + '&' + urllib.parse.urlencode(params)
         url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
 
+        log.debug(f'Uploading azure blob chunk {chunk} with block id {block_id}')  # noqa
+
         resp = await self._make_request(self.Request(
             'PUT',
             url,
@@ -2399,11 +2401,10 @@ class AzureBlockBlobUploader:
             block_id = base64.b64encode(raw_id).decode('utf-8')
             block_ids.append(block_id)
 
-            upload_tasks.append(functools.partial(
-                self._upload_file_chunk,
+            upload_tasks.append(self._upload_file_chunk(
                 block_id,
                 chunk,
-            )())
+            ))
 
         await asyncio_wait_concurrent(upload_tasks, self._concurrency)
 
@@ -2418,6 +2419,8 @@ class AzureBlockBlobUploader:
         query = self._sas + '&' + urllib.parse.urlencode(params)
         url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
 
+        log.debug(f'Putting azure blob chunk list block ids {block_ids}')  # noqa
+
         resp = await self._make_request(self.Request(
             'PUT',
             url,
@@ -2430,10 +2433,14 @@ class AzureBlockBlobUploader:
         if resp.status not in (200, 201):
             raise RuntimeError(f'Put Block List failed: {resp.status} {resp.data!r}')
 
-        return {
+        ret = {
             'status_code': resp.status,
             'etag': resp.get_header('ETag'),
         }
+
+        log.debug(f'Uploaded azure blob chunk {ret}')  # noqa
+
+        return ret
 
 
 ########################################
