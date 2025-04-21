@@ -1,5 +1,6 @@
 import inspect
 import os
+import shlex
 import subprocess
 import sys
 import typing as ta
@@ -76,6 +77,7 @@ class CliCli(ap.Cli):
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
         ap.arg('--no-deps', action='store_true'),
+        ap.arg('--dry-run', action='store_true'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
@@ -147,7 +149,7 @@ class CliCli(ap.Cli):
 
             reco_cmd = ' '.join([
                 'curl -LsSf',
-                url,
+                f"'{url}'" if (qu := shlex.quote(url)) == url else qu,
                 '| python3 -',
                 *deps,
             ])
@@ -155,6 +157,9 @@ class CliCli(ap.Cli):
 
             with urllib.request.urlopen(urllib.request.Request(url)) as resp:  # noqa
                 install_src = resp.read().decode('utf-8')
+
+        if self.args.dry_run:
+            return
 
         os.execl(
             sys.executable,
