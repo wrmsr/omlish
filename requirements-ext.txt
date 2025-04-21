@@ -32,7 +32,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-duckduckgo_search==8.0.1  # @omlish-venv !13t  # segfault lol
+duckduckgo-search==8.0.1  # @omlish-venv !13t  # segfault lol
 
 
 ##
@@ -48,7 +48,7 @@ watchdog==6.0.0
 
 pyright[nodejs]==1.1.399
 
-basedpyright==1.28.5
+basedpyright==1.29.0
 
 blobfile==3.0.0
 
