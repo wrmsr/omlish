@@ -41,6 +41,16 @@ from .chat.services import (  # noqa
     ChatService_,
 )
 
+from .chat.templating import (  # noqa
+    ChatTemplatePart,
+    ChatTemplate,
+
+    MessageTemplate,
+    MessagePlaceholder,
+
+    ChatTemplater,
+)
+
 from .chat.tools import (  # noqa
     Tool,
     ToolDtype,

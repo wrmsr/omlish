@@ -1,6 +1,11 @@
+"""
+TODO:
+ - Chat unpacking convenience
+"""
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text import templating as tpl
@@ -10,8 +15,6 @@ from ..envs import Env
 from ..envs import EnvKey
 from .messages import Chat
 from .messages import Message
-from .messages import SystemMessage
-from .messages import UserMessage
 
 
 MessageT = ta.TypeVar('MessageT', bound=Message)
@@ -41,10 +44,16 @@ class MessagePlaceholder:
 
 
 class ChatTemplater:
-    def __init__(self, chat_template: ChatTemplate) -> None:
+    def __init__(
+            self,
+            chat_template: ChatTemplate,
+            *,
+            template_factory: ta.Callable[[str], tpl.Templater] = tpl.JinjaTemplater.from_string,
+    ) -> None:
         super().__init__()
 
         self._chat_template = chat_template
+        self._template_factory = template_factory
 
         self._steps: list[ChatTemplater._Step] = [self._make_step(p) for p in chat_template]
 
@@ -79,7 +88,16 @@ class ChatTemplater:
         p: MessagePlaceholder
 
         def render(self, env: Env) -> Chat:
-            raise NotImplementedError
+            r = env[self.p.key]
+
+            if isinstance(r, Message):
+                return [r]
+
+            elif isinstance(r, ta.Iterable):
+                return [check.isinstance(e, Message) for e in r]
+
+            else:
+                raise TypeError(r)
 
     def _make_step(self, p: ChatTemplatePart) -> _Step:
         if isinstance(p, Message):
@@ -95,7 +113,7 @@ class ChatTemplater:
             transform_content_strings(visit_content_str, p.v)
 
             d: dict[str, tpl.Templater] = {
-                s: tpl.JinjaTemplater.from_string(s)
+                s: self._template_factory(s)
                 for s in content_strs
             }
 
@@ -114,17 +132,3 @@ class ChatTemplater:
             step.render(env)
             for step in self._steps
         ))
-
-
-##
-
-
-def _main() -> None:
-    print(ChatTemplater([
-        MessageTemplate(SystemMessage('You know {{name}}.')),
-        MessageTemplate(UserMessage('Hi, {{name}}!')),
-    ]).render(Env(name='Frank')))
-
-
-if __name__ == '__main__':
-    _main()
