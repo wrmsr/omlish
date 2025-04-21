@@ -120,22 +120,6 @@ class AsyncContextManager(abc.ABC, ta.Generic[T]):
 
 
 @contextlib.contextmanager
-def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
-    try:
-        yield fn
-    finally:
-        fn()
-
-
-@contextlib.asynccontextmanager
-async def a_defer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
-    try:
-        yield fn
-    finally:
-        await fn
-
-
-@contextlib.contextmanager
 def maybe_managing(obj: T) -> ta.Iterator[T]:
     if isinstance(obj, ta.ContextManager):
         with obj:

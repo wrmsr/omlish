@@ -5744,7 +5744,9 @@ class AsyncExitStacked:
 
 
 @contextlib.contextmanager
-def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+def defer(fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> ta.Generator[ta.Callable, None, None]:
+    if args or kwargs:
+        fn = functools.partial(fn, *args, **kwargs)
     try:
         yield fn
     finally:
@@ -5752,11 +5754,11 @@ def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
 
 
 @contextlib.asynccontextmanager
-async def adefer(fn: ta.Callable) -> ta.AsyncGenerator[ta.Callable, None]:
+async def adefer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
     try:
         yield fn
     finally:
-        await fn()
+        await fn
 
 
 ##

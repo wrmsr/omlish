@@ -47,7 +47,7 @@ def bind_dbs() -> inj.Elemental:
             sau.AsyncEngine,
             to_fn=inj.make_async_managed_provider(
                 _build_engine,
-                lambda e: lang.a_defer(e.dispose()),  # noqa
+                lambda e: lang.adefer(e.dispose()),  # noqa
             ),
             singleton=True,
         ),

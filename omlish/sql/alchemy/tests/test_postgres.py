@@ -85,7 +85,7 @@ def test_postgres_psycopg(harness) -> None:
 async def _test_postgres_async(url: str) -> None:
     async with contextlib.AsyncExitStack() as aes:
         engine = sa.ext.asyncio.create_async_engine(url, echo=True)  # noqa
-        await aes.enter_async_context(lang.a_defer(engine.dispose()))
+        await aes.enter_async_context(lang.adefer(engine.dispose()))
 
         async with engine.begin() as conn:
             await conn.run_sync(meta.drop_all)

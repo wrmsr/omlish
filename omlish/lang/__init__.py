@@ -96,12 +96,10 @@ from .contextmanagers import (  # noqa
     NOP_CONTEXT_MANAGER,
     NopContextManager,
     Timer,
-    a_defer,
     breakpoint_on_exception,
     context_var_setting,
     context_wrapped,
     default_lock,
-    defer,
     disposing,
     maybe_managing,
 )
@@ -296,9 +294,11 @@ from .typing import (  # noqa
 ##
 
 from ..lite.contextmanagers import (  # noqa
-    attr_setting,
     AsyncExitStacked,
     ExitStacked,
+    adefer,
+    attr_setting,
+    defer,
 )
 
 from ..lite.imports import (  # noqa

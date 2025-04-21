@@ -15,7 +15,7 @@ async def test_call_with_async_exit_stack():
             nonlocal c
             c += 1
 
-        await aes.enter_async_context(lang.a_defer(bar()))  # noqa
+        await aes.enter_async_context(lang.adefer(bar()))  # noqa
         return i + 1
 
     assert (await call_with_async_exit_stack(foo, 5)) == 6

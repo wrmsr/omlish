@@ -155,7 +155,7 @@ class DockerComposeRun(AsyncExitStacked):
 
         async with contextlib.AsyncExitStack() as es:
             if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
-                await es.enter_async_context(adefer(self._cleanup_dependencies))  # noqa
+                await es.enter_async_context(adefer(self._cleanup_dependencies()))  # noqa
 
             sh_cmd = ' '.join([
                 'docker',
