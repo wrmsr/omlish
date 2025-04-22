@@ -183,7 +183,11 @@ class ClassSpec(lang.Final):
     cache_hash: bool = False
     generic_init: bool = False
     override: bool = False
+
     repr_id: bool = False
+    terse_repr: bool = False
+
+    allow_redundant_decorator: bool = False
 
     ##
     # callbacks

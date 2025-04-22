@@ -175,3 +175,19 @@ def test_post_init():
     assert x == 1
     Foo()
     assert x == 2
+
+
+def test_allow_redundant_decorator():
+    with pytest.raises(TypeError):  # noqa
+        @dc.dataclass(frozen=True)
+        class Foo(dc.Box[int], allow_redundant_decorator=False):
+            pass
+
+    @dc.dataclass(frozen=True)
+    class Bar(dc.Box[int]):
+        pass
+
+    with pytest.raises(TypeError):  # noqa
+        @dc.dataclass()
+        class Baz(dc.Box[int]):
+            pass

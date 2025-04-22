@@ -17,6 +17,11 @@ CONFER_CLASS_PARAMS: tuple[str, ...] = (
     'cache_hash',
     'generic_init',
     'override',
+
+    'repr_id',
+    'terse_repr',
+
+    'allow_redundant_decorator',
 )
 
 CONFER_METACLASS_PARAMS: tuple[str, ...] = (

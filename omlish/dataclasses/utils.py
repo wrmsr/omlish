@@ -75,7 +75,7 @@ def class_decorator(fn):
     @functools.wraps(fn)
     def inner(cls=None, *args, **kwargs):
         if cls is None:
-            return lambda cls: fn(cls, *args, **kwargs)  # noqa
+            return lambda cls: fn(cls, *args, _kwargs=kwargs, **kwargs)  # noqa
         return fn(cls, *args, **kwargs)
     return inner
 

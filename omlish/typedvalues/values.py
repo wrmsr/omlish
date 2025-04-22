@@ -1,3 +1,7 @@
+"""
+TODO:
+ - dc.Box, or some other kind of meta
+"""
 import typing as ta
 
 from .. import dataclasses as dc
@@ -39,7 +43,7 @@ class UniqueTypedValue(TypedValue, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(generic_init=True)
+@dc.extra_class_params(generic_init=True, terse_repr=True)
 class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
     v: T
 
@@ -57,7 +61,7 @@ class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(generic_init=True)
+@dc.extra_class_params(generic_init=True, terse_repr=True)
 class UniqueScalarTypedValue(ScalarTypedValue[T], UniqueTypedValue, lang.Abstract, ta.Generic[T]):
     pass
 

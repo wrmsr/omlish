@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..api.classes.decorator import dataclass
 from ..concerns.frozen import unchecked_frozen_base
 from .meta import DataMeta
 from .specs import get_metaclass_spec
@@ -16,9 +17,11 @@ T = ta.TypeVar('T')
 class Data(
     eq=False,
     order=False,
+    allow_redundant_decorator=True,
     confer=frozenset([
         'confer',
         'final_subclasses',
+        'allow_redundant_decorator',
     ]),
     metaclass=DataMeta,
 ):
@@ -57,10 +60,12 @@ class Case(
     pass
 
 
+@dataclass(frozen=True)
 class Box(
     Frozen,
     ta.Generic[T],
     generic_init=True,
+    terse_repr=True,
     confer=frozenset([
         *get_metaclass_spec(Frozen).confer,
         'generic_init',

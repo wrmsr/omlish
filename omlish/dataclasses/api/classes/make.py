@@ -39,7 +39,11 @@ def make_dataclass(  # noqa
         cache_hash: bool | None = None,
         generic_init: bool | None = None,
         override: bool | None = None,
+
         repr_id: bool | None = None,
+        terse_repr: bool | None = None,
+
+        allow_redundant_decorator: bool | None = None,
 ):
     if namespace is None:
         namespace = {}
@@ -105,5 +109,9 @@ def make_dataclass(  # noqa
         cache_hash=cache_hash,
         generic_init=generic_init,
         override=override,
+
         repr_id=repr_id,
+        terse_repr=terse_repr,
+
+        allow_redundant_decorator=allow_redundant_decorator,
     )

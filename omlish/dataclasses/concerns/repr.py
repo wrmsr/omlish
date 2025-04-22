@@ -11,6 +11,7 @@ from ..generation.ops import OpRef
 from ..generation.ops import Ref
 from ..generation.registry import register_generator_type
 from ..processing.base import ProcessingContext
+from ..specs import FieldSpec
 from ..specs import FieldType
 from ..specs import ReprFn
 from .fields import InitFields
@@ -39,18 +40,26 @@ class ReprGenerator(Generator[ReprPlan]):
         if not ctx.cs.repr or '__repr__' in ctx.cls.__dict__:
             return None
 
-        fs = sorted(ctx.cs.fields, key=lambda f: f.repr_priority or 0)
         ifs = ctx[InitFields]
+        fs: ta.Sequence[FieldSpec]
+        if ctx.cs.terse_repr:
+            # If terse repr will match init param order
+            fs = ifs.all
+        else:
+            # Otherwise default to dc.fields() order
+            fs = sorted(ctx.cs.fields, key=lambda f: f.repr_priority or 0)
 
         orm = {}
         rfs: list[ReprPlan.Field] = []
         for i, f in enumerate(fs):
             if not (f.field_type is FieldType.INSTANCE and f.repr):
                 continue
+
             fnr: OpRef | None = None
             if f.repr_fn is not None:
-                fnr: OpRef | None = OpRef(f'repr.fns.{i}.fn')
+                fnr = OpRef(f'repr.fns.{i}.fn')
                 orm[fnr] = f.repr_fn
+
             rfs.append(ReprPlan.Field(
                 name=f.name,
                 kw_only=f in ifs.kw_only,
@@ -61,7 +70,7 @@ class ReprGenerator(Generator[ReprPlan]):
             ReprPlan(
                 fields=tuple(rfs),
                 id=ctx.cs.repr_id,
-                terse=False,
+                terse=ctx.cs.terse_repr,
             ),
             orm,
         )
@@ -72,15 +81,19 @@ class ReprGenerator(Generator[ReprPlan]):
         part_lines: list[str] = []
 
         for f in pl.fields:
+            pfx = ''
+            if not (pl.terse and not f.kw_only):
+                pfx = f'{f.name}='
+
             if f.fn is not None:
                 ors.add(f.fn)
                 part_lines.extend([
                     f'    if (s := {f.fn.ident()}(self.{f.name})) is not None:',
-                    f'        parts.append(f"{f.name}={{s}}")',
+                    f'        parts.append(f"{pfx}{{s}}")',
                 ])
             else:
                 part_lines.append(
-                    f'    parts.append(f"{f.name}={{self.{f.name}!r}}")',
+                    f'    parts.append(f"{pfx}{{self.{f.name}!r}}")',
                 )
 
         return [

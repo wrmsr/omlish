@@ -9,6 +9,26 @@ from ...specs import ClassSpec
 ##
 
 
+STD_PARAM_DEFAULTS: ta.Mapping[str, ta.Any] = dict(
+    init=True,
+    repr=True,  # noqa
+    eq=True,
+    order=False,
+    unsafe_hash=False,
+    frozen=False,
+
+    match_args=True,
+    kw_only=False,
+    slots=False,
+    weakref_slot=False,
+)
+
+STD_PARAM_ATTRS: tuple[str, ...] = tuple(STD_PARAM_DEFAULTS)
+
+
+##
+
+
 class SpecDataclassParams(StdParams):
     __slots__ = (*StdParams.__slots__, '_spec')
 
