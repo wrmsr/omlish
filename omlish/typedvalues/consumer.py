@@ -4,6 +4,7 @@ import typing as ta
 
 from .. import check
 from .. import lang
+from .values import ScalarTypedValue
 from .values import TypedValue
 from .values import UniqueTypedValue
 
@@ -168,3 +169,16 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
                 return default
             else:
                 raise
+
+    #
+
+    def pop_scalar_kwargs(self, **kwargs: type[TypedValueT]) -> dict[str, TypedValueT]:
+        dct: dict[str, TypedValueT] = {}
+        for k, vc in kwargs.items():
+            check.issubclass(vc, ScalarTypedValue)
+            try:
+                v = self.pop(vc)
+            except KeyError:
+                continue
+            dct[k] = v.v  # type: ignore[attr-defined]
+        return dct

@@ -125,10 +125,10 @@ class OpenaiChatRequestHandler:
         MaxTokens(1024),
     )
 
-    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[tv.ScalarTypedValue], str] = {
-        Temperature: 'temperature',
-        MaxTokens: 'max_tokens',
-    }
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOption | LlmRequestOption]]] = dict(
+        temperature=Temperature,
+        max_tokens=MaxTokens,
+    )
 
     class _ProcessedOptions(ta.NamedTuple):
         kwargs: dict[str, ta.Any]
@@ -143,20 +143,13 @@ class OpenaiChatRequestHandler:
 
         tools_by_name: dict[str, ToolSpec] = {}
 
-        for opt in self._options:
-            if (
-                    isinstance(opt, tv.ScalarTypedValue) and
-                    (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None
-            ):
-                kwargs[kwn] = opt.v
+        with tv.TypedValues(*self._options).consume() as oc:
+            kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
-            elif isinstance(opt, Tool):
-                if opt.spec.name in tools_by_name:
-                    raise NameError(opt.spec.name)
-                tools_by_name[opt.spec.name] = opt.spec
-
-            else:
-                raise TypeError(opt)
+            for t in oc.pop(Tool, []):
+                if t.spec.name in tools_by_name:
+                    raise NameError(t.spec.name)
+                tools_by_name[t.spec.name] = t.spec
 
         if (mk := self._mandatory_kwargs):
             for k, v in mk.items():
