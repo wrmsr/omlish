@@ -42,14 +42,7 @@ class UniqueTypedValue(TypedValue, lang.Abstract):
 ##
 
 
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(generic_init=True, terse_repr=True)
-class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
-    v: T
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.v!r})'
-
+class ScalarTypedValue(TypedValue, dc.Box[T], abstract=True):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -60,9 +53,7 @@ class ScalarTypedValue(TypedValue, lang.Abstract, ta.Generic[T]):
 ##
 
 
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(generic_init=True, terse_repr=True)
-class UniqueScalarTypedValue(ScalarTypedValue[T], UniqueTypedValue, lang.Abstract, ta.Generic[T]):
+class UniqueScalarTypedValue(ScalarTypedValue[T], UniqueTypedValue, abstract=True):
     pass
 
 

@@ -34,6 +34,9 @@ class Data(
         super().__init_subclass__(**kwargs)
 
 
+#
+
+
 class Frozen(
     Data,
     frozen=True,
@@ -50,6 +53,9 @@ class Frozen(
     pass
 
 
+#
+
+
 class Case(
     Frozen,
     abstract=True,
@@ -58,6 +64,9 @@ class Case(
     abstract_immediate_subclasses=True,
 ):
     pass
+
+
+#
 
 
 @dataclass(frozen=True)
@@ -69,6 +78,7 @@ class Box(
     confer=frozenset([
         *get_metaclass_spec(Frozen).confer,
         'generic_init',
+        'terse_repr',
     ]),
 ):
     v: T

@@ -15,15 +15,15 @@ class LlmRequestOption(RequestOption, lang.Abstract):
     pass
 
 
-class TopK(LlmRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+class TopK(LlmRequestOption, tv.UniqueScalarTypedValue[int]):
     pass
 
 
-class Temperature(LlmRequestOption, tv.ScalarTypedValue[float], tv.UniqueTypedValue, lang.Final):
+class Temperature(LlmRequestOption, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-class MaxTokens(LlmRequestOption, tv.ScalarTypedValue[int], tv.UniqueTypedValue, lang.Final):
+class MaxTokens(LlmRequestOption, tv.UniqueScalarTypedValue[int]):
     pass
 
 
@@ -42,7 +42,7 @@ class FinishReason(enum.Enum):
     OTHER = enum.auto()
 
 
-class FinishReasonOutput(LlmResponseOutput, tv.ScalarTypedValue[FinishReason], tv.UniqueTypedValue, lang.Final):
+class FinishReasonOutput(LlmResponseOutput, tv.UniqueScalarTypedValue[FinishReason]):
     pass
 
 
@@ -53,5 +53,5 @@ class TokenUsage(lang.Final):
     total: int
 
 
-class TokenUsageOutput(LlmResponseOutput, tv.ScalarTypedValue[TokenUsage], tv.UniqueTypedValue, lang.Final):
+class TokenUsageOutput(LlmResponseOutput, tv.UniqueScalarTypedValue[TokenUsage]):
     pass
