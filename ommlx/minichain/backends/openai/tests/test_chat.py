@@ -17,6 +17,7 @@ from ....chat.tools import ToolSpec
 from ....llms import MaxTokens
 from ....llms import Temperature
 from ....standard import ApiKey
+from ....standard import DefaultRequestOptions
 from ..chat import OpenaiChatService
 
 
@@ -91,3 +92,13 @@ def test_openai_chat_promote(harness):
 
     assert llm([UserMessage('Hi!')]).choices
     assert llm(ChatRequest([UserMessage('Hi!')])).choices
+
+
+def test_default_options(harness):
+    llm: ChatService_ = ta.cast(ChatService_, OpenaiChatService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        DefaultRequestOptions([MaxTokens(100)]),
+    ))
+
+    assert llm([UserMessage('Hi!')]).choices
+    assert llm([UserMessage('Hi!')], MaxTokens(101)).choices

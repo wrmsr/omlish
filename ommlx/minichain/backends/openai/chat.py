@@ -14,6 +14,7 @@ TODO:
 import typing as ta
 
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
@@ -22,6 +23,7 @@ from ...chat.services import ChatResponse
 from ...chat.services import ChatService
 from ...configs import consume_configs
 from ...standard import ApiKey
+from ...standard import DefaultRequestOptions
 from ...standard import ModelName
 from .format import OpenaiChatRequestHandler
 
@@ -43,19 +45,24 @@ class OpenaiChatService(
         # 'gpt-4o-mini'
     )
 
-    def __init__(self, *configs: ApiKey | ModelName) -> None:
+    def __init__(self, *configs: ApiKey | ModelName | DefaultRequestOptions) -> None:
         super().__init__()
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
+            self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
             request.chat,
-            *request.options,
+            *tv.TypedValues(
+                *self._default_options,
+                *request.options,
+                override=True,
+            ),
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=False,

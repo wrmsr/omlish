@@ -142,6 +142,8 @@ from .standard import (  # noqa
     ModelPath,
 
     ApiKey,
+
+    DefaultRequestOptions,
 )
 
 from .streaming import (  # noqa
