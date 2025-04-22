@@ -116,7 +116,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
         ...
 
     @ta.overload
-    def pop(  # type: ignore[overload-overlap]
+    def pop(
             self,
             cls: type[UniqueTypedValueU],
             /,
@@ -138,15 +138,6 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
             /,
             default: ta.Iterable[TypedValueU],
     ) -> ta.Sequence[TypedValueU]:
-        ...
-
-    @ta.overload
-    def pop(
-            self,
-            cls: type[TypedValueU],
-            /,
-            default: ta.Iterable[TypedValueU] | None,
-    ) -> ta.Sequence[TypedValueU] | None:
         ...
 
     def pop(self, key, /, default=_NOT_SET):
