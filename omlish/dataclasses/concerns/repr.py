@@ -13,23 +13,24 @@ from ..generation.registry import register_generator_type
 from ..processing.base import ProcessingContext
 from ..specs import FieldType
 from ..specs import ReprFn
+from .fields import InitFields
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ReprPlan(Plan):
-    fields: tuple[str, ...]
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Field:
+        name: str
+        kw_only: bool = False
+        fn: OpRef[ReprFn] | None = None
 
-    @dc.dataclass(frozen=True)
-    class Fn:
-        field: str
-        fn: OpRef[ReprFn]
-
-    fns: tuple[Fn, ...] = ()
+    fields: tuple[Field, ...]
 
     id: bool = False
+    terse: bool = False
 
 
 @register_generator_type(ReprPlan)
@@ -39,21 +40,28 @@ class ReprGenerator(Generator[ReprPlan]):
             return None
 
         fs = sorted(ctx.cs.fields, key=lambda f: f.repr_priority or 0)
+        ifs = ctx[InitFields]
 
         orm = {}
-        rfs: list[ReprPlan.Fn] = []
+        rfs: list[ReprPlan.Field] = []
         for i, f in enumerate(fs):
-            if f.repr_fn is None:
+            if not (f.field_type is FieldType.INSTANCE and f.repr):
                 continue
-            r: OpRef = OpRef(f'repr.fns.{i}.fn')
-            orm[r] = f.repr_fn
-            rfs.append(ReprPlan.Fn(f.name, r))
+            fnr: OpRef | None = None
+            if f.repr_fn is not None:
+                fnr: OpRef | None = OpRef(f'repr.fns.{i}.fn')
+                orm[fnr] = f.repr_fn
+            rfs.append(ReprPlan.Field(
+                name=f.name,
+                kw_only=f in ifs.kw_only,
+                fn=fnr,
+            ))
 
         return PlanResult(
             ReprPlan(
-                fields=tuple(f.name for f in fs if f.field_type is FieldType.INSTANCE and f.repr),
-                fns=tuple(rfs),
+                fields=tuple(rfs),
                 id=ctx.cs.repr_id,
+                terse=False,
             ),
             orm,
         )
@@ -63,17 +71,16 @@ class ReprGenerator(Generator[ReprPlan]):
 
         part_lines: list[str] = []
 
-        rfd = {rf.field: rf.fn for rf in pl.fns}
         for f in pl.fields:
-            if (rf := rfd.get(f)) is not None:
-                ors.add(rf)
+            if f.fn is not None:
+                ors.add(f.fn)
                 part_lines.extend([
-                    f'    if (s := {rf.ident()}(self.{f})) is not None:',
-                    f'        parts.append(f"{f}={{s}}")',
+                    f'    if (s := {f.fn.ident()}(self.{f.name})) is not None:',
+                    f'        parts.append(f"{f.name}={{s}}")',
                 ])
             else:
                 part_lines.append(
-                    f'    parts.append(f"{f}={{self.{f}!r}}")',
+                    f'    parts.append(f"{f.name}={{self.{f.name}!r}}")',
                 )
 
         return [
