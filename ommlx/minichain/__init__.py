@@ -41,6 +41,14 @@ from .chat.services import (  # noqa
     ChatService_,
 )
 
+from .chat.streaming import (  # noqa
+    ChatStreamRequest,
+    ChatStreamResponse,
+
+    ChatStreamService,
+    ChatStreamService_,
+)
+
 from .chat.templating import (  # noqa
     ChatTemplatePart,
     ChatTemplate,
@@ -120,6 +128,10 @@ from .services import (  # noqa
     ResponseOutput,
     Service,
     Service_,
+)
+
+from .streaming import (  # noqa
+    StreamResponse,
 )
 
 from .vectors.embeddings import (  # noqa

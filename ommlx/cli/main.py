@@ -80,6 +80,7 @@ def _run_chat(
         *,
         new: bool = False,
         backend: str | None = None,
+        stream: bool = False,
 ) -> None:
     prompt = check.isinstance(content, str)
 
@@ -104,15 +105,28 @@ def _run_chat(
         ],
     )
 
-    mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-    response = mdl.invoke(mc.ChatRequest.new(state.chat))
-    print(check.isinstance(response.choices[0].m.s, str).strip())
+    if stream:
+        st_mdl = mc.backend_of[mc.ChatStreamService].new('openai')
+        with st_mdl.invoke(mc.ChatStreamRequest(state.chat)) as st_resp:
+            resp_s = ''
+            for o in st_resp:
+                o_s = check.isinstance(o[0].m.s, str)
+                print(o_s, end='', flush=True)
+                resp_s += o_s
+            print()
+        resp_m = mc.AiMessage(resp_s)
+
+    else:
+        mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+        response = mdl.invoke(mc.ChatRequest.new(state.chat))
+        resp_m = response.choices[0].m
+        print(check.isinstance(resp_m.s, str).strip())
 
     state = dc.replace(
         state,
         chat=[
             *state.chat,
-            response.choices[0].m,
+            resp_m,
         ],
         updated_at=lang.utcnow(),
     )
@@ -225,6 +239,7 @@ def _main() -> None:
 
     parser.add_argument('-e', '--editor', action='store_true')
     parser.add_argument('-i', '--interactive', action='store_true')
+    parser.add_argument('-s', '--stream', action='store_true')
 
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
@@ -287,6 +302,7 @@ def _main() -> None:
             content,
             backend=args.backend,
             new=bool(args.new),
+            stream=bool(args.stream),
         )
 
     elif args.embed:

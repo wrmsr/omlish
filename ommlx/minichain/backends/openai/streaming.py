@@ -34,6 +34,8 @@ class OpenaiChatStreamService(ChatStreamService_):
         self._model = model or OpenaiChatService.DEFAULT_MODEL
         self._api_key = OpenaiChatService._default_api_key(api_key)  # noqa
 
+    READ_CHUNK_SIZE = 64 * 1024
+
     def invoke(self, request: ChatStreamRequest) -> ChatStreamResponse:
         check.isinstance(request, ChatStreamRequest)
 
@@ -66,7 +68,7 @@ class OpenaiChatStreamService(ChatStreamService_):
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
-                    b = http_response.stream.read()
+                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
