@@ -1,8 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish import reflect as rfl
-
+from .. import check
+from .. import reflect as rfl
 from .values import TypedValue
 
 

@@ -3,7 +3,6 @@ import dataclasses as dc
 import typing as ta
 
 from .base import Precheck
-from .base import PrecheckContext
 
 
 ##
@@ -23,8 +22,8 @@ class GitBlacklistPrecheck(Precheck['GitBlacklistPrecheck.Config']):
             'secrets.yml',
         )
 
-    def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
-        super().__init__(context, config)
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
         for f in self._config.files:

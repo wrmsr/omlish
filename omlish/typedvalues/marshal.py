@@ -1,10 +1,9 @@
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
-from omlish.funcs import match as mfs
-
+from .. import check
+from .. import dataclasses as dc
+from .. import lang
+from .. import marshal as msh
+from .. import reflect as rfl
+from ..funcs import match as mfs
 from .collection import TypedValues
 from .reflect import reflect_typed_values_impls
 from .values import ScalarTypedValue

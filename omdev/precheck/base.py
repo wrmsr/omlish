@@ -2,6 +2,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish import lang
+from omlish.configs import all as cfgs
+
 
 PrecheckConfigT = ta.TypeVar('PrecheckConfigT', bound='Precheck.Config')
 
@@ -17,15 +20,10 @@ class PrecheckContext:
 ##
 
 
-class Precheck(abc.ABC, ta.Generic[PrecheckConfigT]):
+class Precheck(cfgs.Configurable[PrecheckConfigT], lang.Abstract):
     @dc.dataclass(frozen=True)
-    class Config:
+    class Config(cfgs.Configurable.Config):
         pass
-
-    def __init__(self, context: PrecheckContext, config: PrecheckConfigT) -> None:
-        super().__init__()
-        self._context = context
-        self._config = config
 
     @dc.dataclass(frozen=True)
     class Violation:

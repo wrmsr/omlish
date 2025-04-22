@@ -8,6 +8,9 @@ from .. import lang
 ConfigurableConfigT = ta.TypeVar('ConfigurableConfigT', bound='Configurable.Config')
 
 
+##
+
+
 class Configurable(ta.Generic[ConfigurableConfigT], lang.Abstract):
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:

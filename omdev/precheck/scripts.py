@@ -17,8 +17,14 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
     class Config(Precheck.Config):
         pass
 
-    def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
-        super().__init__(context, config)
+    def __init__(
+            self,
+            context: PrecheckContext,
+            config: Config = Config(),
+    ) -> None:
+        super().__init__(config)
+
+        self._context = context
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
         for fp in magic.find_magic_files(

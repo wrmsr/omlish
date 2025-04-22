@@ -1,4 +1,8 @@
 # ruff: noqa: I001
+from .classes import (  # noqa
+    Configurable,
+)
+
 from .formats import (  # noqa
     ConfigData as Data,
 

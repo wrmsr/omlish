@@ -16,7 +16,9 @@ class ManifestsPrecheck(Precheck['ManifestsPrecheck.Config']):
         pass
 
     def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
-        super().__init__(context, config)
+        super().__init__(config)
+
+        self._context = context
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
         for src_root in self._context.src_roots:

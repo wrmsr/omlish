@@ -131,7 +131,7 @@ class TextFileCache:
 
     #
 
-    def _normalize_path(self, path: str) -> str:
+    def normalize_path(self, path: str) -> str:
         return abs_real_path(path)
 
     #
@@ -217,7 +217,7 @@ class TextFileCache:
             check_stat: bool = False,
             or_raise: bool = False,
     ) -> Entry:
-        path = self._normalize_path(path)
+        path = self.normalize_path(path)
 
         with self._lock:
             return self._get_entry(
@@ -229,7 +229,7 @@ class TextFileCache:
     #
 
     def invalidate(self, path: str) -> bool:
-        path = self._normalize_path(path)
+        path = self.normalize_path(path)
 
         with self._lock:
             return self._dct.pop(path, None) is not None

@@ -1,0 +1,189 @@
+-- https://github.com/python/cpython/blob/112b1704fa6165ce6386ce2d9363fb73dd799de5/Parser/Python.asdl
+
+-- PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+-- --------------------------------------------
+--
+-- 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
+-- ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
+-- documentation.
+--
+-- 2. Subject to the terms and conditions of this License Agreement, PSF hereby grants Licensee a nonexclusive,
+-- royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative
+-- works, distribute, and otherwise use Python alone or in any derivative version, provided, however, that PSF's License
+-- Agreement and PSF's notice of copyright, i.e., "Copyright (c) 2001-2024 Python Software Foundation; All Rights
+-- Reserved" are retained in Python alone or in any derivative version prepared by Licensee.
+--
+-- 3. In the event Licensee prepares a derivative work that is based on or incorporates Python or any part thereof, and
+-- wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in
+-- any such work a brief summary of the changes made to Python.
+--
+-- 4. PSF is making Python available to Licensee on an "AS IS" basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES,
+-- EXPRESS OR IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY
+-- OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
+-- RIGHTS.
+--
+-- 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
+-- DAMAGES OR LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON, OR ANY DERIVATIVE THEREOF, EVEN IF
+-- ADVISED OF THE POSSIBILITY THEREOF.
+--
+-- 6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
+--
+-- 7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint
+-- venture between PSF and Licensee.  This License Agreement does not grant permission to use PSF trademarks or trade
+-- name in a trademark sense to endorse or promote products or services of Licensee, or any third party.
+--
+-- 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
+-- License Agreement.
+
+-- ASDL's 4 builtin types are:
+-- identifier, int, string, constant
+
+module Python
+{
+    mod = Module(stmt* body, type_ignore* type_ignores)
+        | Interactive(stmt* body)
+        | Expression(expr body)
+        | FunctionType(expr* argtypes, expr returns)
+
+    stmt = FunctionDef(identifier name, arguments args,
+                       stmt* body, expr* decorator_list, expr? returns,
+                       string? type_comment, type_param* type_params)
+          | AsyncFunctionDef(identifier name, arguments args,
+                             stmt* body, expr* decorator_list, expr? returns,
+                             string? type_comment, type_param* type_params)
+
+          | ClassDef(identifier name,
+             expr* bases,
+             keyword* keywords,
+             stmt* body,
+             expr* decorator_list,
+             type_param* type_params)
+          | Return(expr? value)
+
+          | Delete(expr* targets)
+          | Assign(expr* targets, expr value, string? type_comment)
+          | TypeAlias(expr name, type_param* type_params, expr value)
+          | AugAssign(expr target, operator op, expr value)
+          -- 'simple' indicates that we annotate simple name without parens
+          | AnnAssign(expr target, expr annotation, expr? value, int simple)
+
+          -- use 'orelse' because else is a keyword in target languages
+          | For(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)
+          | AsyncFor(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)
+          | While(expr test, stmt* body, stmt* orelse)
+          | If(expr test, stmt* body, stmt* orelse)
+          | With(withitem* items, stmt* body, string? type_comment)
+          | AsyncWith(withitem* items, stmt* body, string? type_comment)
+
+          | Match(expr subject, match_case* cases)
+
+          | Raise(expr? exc, expr? cause)
+          | Try(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
+          | TryStar(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
+          | Assert(expr test, expr? msg)
+
+          | Import(alias* names)
+          | ImportFrom(identifier? module, alias* names, int? level)
+
+          | Global(identifier* names)
+          | Nonlocal(identifier* names)
+          | Expr(expr value)
+          | Pass | Break | Continue
+
+          -- col_offset is the byte offset in the utf8 string the parser uses
+          attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+          -- BoolOp() can use left & right?
+    expr = BoolOp(boolop op, expr* values)
+         | NamedExpr(expr target, expr value)
+         | BinOp(expr left, operator op, expr right)
+         | UnaryOp(unaryop op, expr operand)
+         | Lambda(arguments args, expr body)
+         | IfExp(expr test, expr body, expr orelse)
+         | Dict(expr* keys, expr* values)
+         | Set(expr* elts)
+         | ListComp(expr elt, comprehension* generators)
+         | SetComp(expr elt, comprehension* generators)
+         | DictComp(expr key, expr value, comprehension* generators)
+         | GeneratorExp(expr elt, comprehension* generators)
+         -- the grammar constrains where yield expressions can occur
+         | Await(expr value)
+         | Yield(expr? value)
+         | YieldFrom(expr value)
+         -- need sequences for compare to distinguish between
+         -- x < 4 < 3 and (x < 4) < 3
+         | Compare(expr left, cmpop* ops, expr* comparators)
+         | Call(expr func, expr* args, keyword* keywords)
+         | FormattedValue(expr value, int conversion, expr? format_spec)
+         | JoinedStr(expr* values)
+         | Constant(constant value, string? kind)
+
+         -- the following expression can appear in assignment context
+         | Attribute(expr value, identifier attr, expr_context ctx)
+         | Subscript(expr value, expr slice, expr_context ctx)
+         | Starred(expr value, expr_context ctx)
+         | Name(identifier id, expr_context ctx)
+         | List(expr* elts, expr_context ctx)
+         | Tuple(expr* elts, expr_context ctx)
+
+         -- can appear only in Subscript
+         | Slice(expr? lower, expr? upper, expr? step)
+
+          -- col_offset is the byte offset in the utf8 string the parser uses
+          attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    expr_context = Load | Store | Del
+
+    boolop = And | Or
+
+    operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift
+                 | RShift | BitOr | BitXor | BitAnd | FloorDiv
+
+    unaryop = Invert | Not | UAdd | USub
+
+    cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn
+
+    comprehension = (expr target, expr iter, expr* ifs, int is_async)
+
+    excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)
+                    attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    arguments = (arg* posonlyargs, arg* args, arg? vararg, arg* kwonlyargs,
+                 expr* kw_defaults, arg? kwarg, expr* defaults)
+
+    arg = (identifier arg, expr? annotation, string? type_comment)
+           attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    -- keyword arguments supplied to call (NULL identifier for **kwargs)
+    keyword = (identifier? arg, expr value)
+               attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    -- import name with optional 'as' alias.
+    alias = (identifier name, identifier? asname)
+             attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    withitem = (expr context_expr, expr? optional_vars)
+
+    match_case = (pattern pattern, expr? guard, stmt* body)
+
+    pattern = MatchValue(expr value)
+            | MatchSingleton(constant value)
+            | MatchSequence(pattern* patterns)
+            | MatchMapping(expr* keys, pattern* patterns, identifier? rest)
+            | MatchClass(expr cls, pattern* patterns, identifier* kwd_attrs, pattern* kwd_patterns)
+
+            | MatchStar(identifier? name)
+            -- The optional "rest" MatchMapping parameter handles capturing extra mapping keys
+
+            | MatchAs(pattern? pattern, identifier? name)
+            | MatchOr(pattern* patterns)
+
+             attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
+
+    type_ignore = TypeIgnore(int lineno, string tag)
+
+    type_param = TypeVar(identifier name, expr? bound, expr? default_value)
+               | ParamSpec(identifier name, expr? default_value)
+               | TypeVarTuple(identifier name, expr? default_value)
+               attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
+}

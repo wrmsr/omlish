@@ -29,7 +29,9 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         concurrency: int = 4
 
     def __init__(self, context: PrecheckContext, config: Config = Config()) -> None:
-        super().__init__(context, config)
+        super().__init__(config)
+
+        self._context = context
 
     #
 
