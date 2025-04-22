@@ -30,7 +30,7 @@ class OpenaiChatStreamService(ChatStreamService_):
         super().__init__()
 
         with consume_configs(*configs) as cc:
-            self._model_name = cc.pop(ModelName(OpenaiChatService.DEFAULT_MODEL))
+            self._model_name = cc.pop(ModelName(OpenaiChatService.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     READ_CHUNK_SIZE = 64 * 1024

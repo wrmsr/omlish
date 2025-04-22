@@ -11,6 +11,9 @@ from ..chat.messages import UserMessage
 from ..chat.services import ChatRequest
 from ..chat.services import ChatResponse
 from ..chat.services import ChatService
+from ..configs import Config
+from ..configs import consume_configs
+from ..standard import ModelName
 
 
 if ta.TYPE_CHECKING:
@@ -29,7 +32,7 @@ else:
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='mlx', type='ChatService')
 class MlxChatService(ChatService, lang.ExitStacked):
-    DEFAULT_MODEL = (
+    DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         'mlx-community/Llama-3.3-70B-Instruct-4bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
@@ -44,13 +47,11 @@ class MlxChatService(ChatService, lang.ExitStacked):
         # 'mlx-community/mamba-2.8b-hf-f16'
     )
 
-    def __init__(
-            self,
-            model: str = DEFAULT_MODEL,
-    ) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        self._model = model
+        with consume_configs(*configs) as cc:
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -71,7 +72,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'mlxu.LoadedModel':
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
-        return mlxu.load_model(self._model)
+        return mlxu.load_model(self._model_name.v)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         model, tokenizer = self._load_model()

@@ -6,6 +6,9 @@ from omlish import lang
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
 from ...completion import CompletionService
+from ...configs import Config
+from ...configs import consume_configs
+from ...standard import ModelPath
 
 
 if ta.TYPE_CHECKING:
@@ -29,7 +32,7 @@ class LlamacppCompletionService(CompletionService):
     #   repo_id='QuantFactory/Meta-Llama-3-8B-GGUF',
     #   filename='Meta-Llama-3-8B.Q8_0.gguf',
     # )
-    model_path = os.path.join(
+    DEFAULT_MODEL_PATH: ta.ClassVar[str] = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         'models--QuantFactory--Meta-Llama-3-8B-GGUF',
         'snapshots',
@@ -37,11 +40,17 @@ class LlamacppCompletionService(CompletionService):
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
+    def __init__(self, *configs: Config) -> None:
+        super().__init__()
+
+        with consume_configs(*configs) as cc:
+            self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
+
     def invoke(self, request: CompletionRequest) -> CompletionResponse:
         lcu.install_logging_hook()
 
         llm = llama_cpp.Llama(
-            model_path=self.model_path,
+            model_path=self._model_path.v,
         )
 
         output = llm.create_completion(

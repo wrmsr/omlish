@@ -39,7 +39,7 @@ class OpenaiChatService(
     request=ChatRequest,
     response=ChatResponse,
 ):
-    DEFAULT_MODEL: ta.ClassVar[str] = (
+    DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'
     )
@@ -48,7 +48,7 @@ class OpenaiChatService(
         super().__init__()
 
         with consume_configs(*configs) as cc:
-            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     def invoke(self, request: ChatRequest) -> ChatResponse:

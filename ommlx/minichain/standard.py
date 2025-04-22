@@ -3,6 +3,7 @@ import os
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish import typedvalues as tv
 from omlish.secrets import all as sec
 
@@ -13,7 +14,15 @@ from .services import RequestOption
 ##
 
 
-class ModelName(Config, tv.UniqueScalarTypedValue[str]):
+class ModelSpecifier(Config, tv.UniqueTypedValue, lang.Abstract):
+    pass
+
+
+class ModelName(tv.ScalarTypedValue[str], ModelSpecifier):
+    pass
+
+
+class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
     pass
 
 

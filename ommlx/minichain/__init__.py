@@ -137,8 +137,11 @@ from .services import (  # noqa
 )
 
 from .standard import (  # noqa
-    ApiKey,
+    ModelSpecifier,
     ModelName,
+    ModelPath,
+
+    ApiKey,
 )
 
 from .streaming import (  # noqa

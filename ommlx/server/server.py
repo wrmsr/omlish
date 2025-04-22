@@ -82,7 +82,7 @@ class McServer:
 
         elif self._config.backend == 'local':
             model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-            return MlxChatService(model)
+            return MlxChatService(mc.ModelName(model))
 
         else:
             raise ValueError(self._config.backend)

@@ -65,7 +65,7 @@
     "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/llamacpp/chat.py",
-    "line": 30,
+    "line": 33,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.llamacpp.chat",
@@ -80,7 +80,7 @@
     "module": ".minichain.backends.llamacpp.completion",
     "attr": null,
     "file": "ommlx/minichain/backends/llamacpp/completion.py",
-    "line": 25,
+    "line": 28,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.llamacpp.completion",
@@ -125,7 +125,7 @@
     "module": ".minichain.backends.mlx",
     "attr": null,
     "file": "ommlx/minichain/backends/mlx.py",
-    "line": 30,
+    "line": 33,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.mlx",

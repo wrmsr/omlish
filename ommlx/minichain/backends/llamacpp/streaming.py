@@ -41,7 +41,7 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'llama_cpp.Llama':
         return self._enter_context(contextlib.closing(llama_cpp.Llama(
-            model_path=LlamacppChatService.model_path,
+            model_path=LlamacppChatService.DEFAULT_MODEL_PATH,
             verbose=False,
         )))
 

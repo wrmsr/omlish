@@ -87,7 +87,7 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
         super().__init__(config)
 
     def _run_prompt(self, prompt: str) -> str:
-        with MlxChatService(self._config.model) as llm:
+        with MlxChatService(mc.ModelName(self._config.model)) as llm:
             resp = llm(
                 [mc.UserMessage(prompt)],
                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
