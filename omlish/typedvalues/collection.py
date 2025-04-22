@@ -4,6 +4,7 @@ from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .accessor import TypedValuesAccessor
+from .consumer import TypedValuesConsumer
 from .values import TypedValue
 from .values import UniqueTypedValue
 
@@ -172,6 +173,11 @@ class TypedValues(
 
     def items(self) -> ta.ItemsView[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]:
         return self._dct.items()
+
+    #
+
+    def consume(self) -> TypedValuesConsumer[TypedValueT]:
+        return TypedValuesConsumer(self._dct.items())
 
     #
 

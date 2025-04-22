@@ -67,10 +67,10 @@ class SecretRef:
 SecretRefOrStr: ta.TypeAlias = SecretRef | str
 
 
-def secret_repr(o: SecretRefOrStr | None) -> str | None:
+def secret_repr(o: Secret | SecretRef | str | None) -> str | None:
     if isinstance(o, str):
         return '...'
-    elif isinstance(o, SecretRef):
+    elif isinstance(o, (Secret, SecretRef)):
         return repr(o)
     elif o is None:
         return None

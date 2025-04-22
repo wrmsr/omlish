@@ -8,6 +8,10 @@ from .collection import (  # noqa
     TypedValues,
 )
 
+from .consumer import (  # noqa
+    TypedValuesConsumer,
+)
+
 from .generic import (  # noqa
     TypedValueGeneric,
 )
