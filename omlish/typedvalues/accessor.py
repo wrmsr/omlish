@@ -108,15 +108,14 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
                 raise RuntimeError('Must not provide both an instance key and a default')
             default = key
             key = type(default)
+        elif default is _NOT_SET:
+            default = None
 
         check.issubclass(key, TypedValue)
         try:
             return self._typed_value_getitem(key)
         except KeyError:
-            if default is not _NOT_SET:
-                return default
-            else:
-                raise
+            return default
 
     #
 

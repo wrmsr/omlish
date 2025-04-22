@@ -10,7 +10,6 @@ from ...completion import CompletionResponse
 from ...completion import CompletionService
 from ...configs import Config
 from ...configs import consume_configs
-from ...standard import ModelName
 from ...standard import ApiKey
 
 
@@ -25,8 +24,10 @@ class OpenaiCompletionService(CompletionService):
         super().__init__()
 
         with consume_configs(*configs) as cc:
-            if (ak := cc.pop(ApiKey)) is not None:
-            self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
+            if (ak := cc.pop(ApiKey, None)) is not None:
+                self._api_key = Secret.of(check.isinstance(ak.v, str))  # FIXME:
+            else:
+                self._api_key = Secret.of(os.environ['OPENAI_API_KEY'])
 
     def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(

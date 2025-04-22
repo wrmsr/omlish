@@ -207,10 +207,12 @@ class TypedValues(
         except AttributeError:
             any_dct = {}
             self._any_dct = any_dct
+
         try:
             return any_dct[cls]
         except KeyError:
             pass
+
         ret = tuple(tv for tv in self if isinstance(tv, cls))
         any_dct[cls] = ret
         return ret

@@ -2,6 +2,7 @@
 import dataclasses as dc
 import typing as ta
 
+from .. import lang
 from .values import TypedValue
 from .values import UniqueTypedValue
 
@@ -18,6 +19,10 @@ UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound=UniqueTypedValue)
 @dc.dataclass()
 class UnconsumedTypedValuesError(Exception):
     values: 'TypedValuesConsumer'
+
+
+class _NOT_SET(lang.Marker):  # noqa
+    pass
 
 
 class TypedValuesConsumer(ta.Generic[TypedValueT]):
@@ -93,7 +98,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
             self,
             cls: type[UniqueTypedValueU],
             /,
-            default: None = None,
+            default: UniqueTypedValueU | None = None,
     ) -> UniqueTypedValueU | None:
         ...
 
@@ -101,16 +106,38 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
     def pop(
             self,
             cls: type[TypedValueU],
-            /,
-            default: ta.Iterable[TypedValueU] | None = None,
     ) -> ta.Sequence[TypedValueU]:
         ...
 
-    def pop(self, key, /, default=None):
+    @ta.overload
+    def pop(
+            self,
+            cls: type[TypedValueU],
+            /,
+            default: ta.Iterable[TypedValueU],
+    ) -> ta.Sequence[TypedValueU]:
+        ...
+
+    @ta.overload
+    def pop(
+            self,
+            cls: type[TypedValueU],
+            /,
+            default: ta.Iterable[TypedValueU] | None,
+    ) -> ta.Sequence[TypedValueU] | None:
+        ...
+
+    def pop(self, key, /, default=_NOT_SET):
         if not isinstance(key, type):
             if default is not None:
                 raise RuntimeError('Must not provide both an instance key and a default')
             default = key
             key = type(default)
 
-        return self._dct.pop(key, default)
+        try:
+            return self._dct.pop(key)
+        except KeyError:
+            if default is not _NOT_SET:
+                return default
+            else:
+                raise

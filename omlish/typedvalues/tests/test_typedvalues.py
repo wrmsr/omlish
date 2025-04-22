@@ -2,6 +2,7 @@ import typing as ta
 
 import pytest
 
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..collection import DuplicateUniqueTypedValueError
@@ -154,6 +155,12 @@ def test_mro_check():
 
 def test_empty():
     assert TypedValues() is TypedValues()
+
+
+def test_get():
+    assert check.not_none(TypedValues(TopK(10)).get(TopK)).v == 10
+    assert TypedValues().get(TopK) is None
+    assert TypedValues().get(TopK(11)).v == 11
 
 
 def test_get_any():
