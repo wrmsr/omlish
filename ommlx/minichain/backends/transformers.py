@@ -4,9 +4,9 @@ import typing as ta
 
 from omlish import lang
 
-from ..prompt import PromptRequest
-from ..prompt import PromptResponse
-from ..prompt import PromptService
+from ..completion import CompletionRequest
+from ..completion import CompletionResponse
+from ..completion import CompletionService
 
 
 if ta.TYPE_CHECKING:
@@ -18,8 +18,8 @@ else:
 ##
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='PromptService')
-class TransformersPromptService(PromptService):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='CompletionService')
+class TransformersCompletionService(CompletionService):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
         # 'Qwen/Qwen2-0.5B'
@@ -39,7 +39,7 @@ class TransformersPromptService(PromptService):
         self._kwargs = kwargs
         self._token = token
 
-    def invoke(self, request: PromptRequest) -> PromptResponse:
+    def invoke(self, request: CompletionRequest) -> CompletionResponse:
         pipeline = transformers.pipeline(
             'text-generation',
             model=self._model,
@@ -52,4 +52,4 @@ class TransformersPromptService(PromptService):
             },
         )
         output = pipeline(request.prompt)
-        return PromptResponse(output)
+        return CompletionResponse(output)

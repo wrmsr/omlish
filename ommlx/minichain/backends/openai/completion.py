@@ -5,16 +5,16 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...prompt import PromptRequest
-from ...prompt import PromptResponse
-from ...prompt import PromptService
+from ...completion import CompletionRequest
+from ...completion import CompletionResponse
+from ...completion import CompletionService
 
 
 ##
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='PromptService')
-class OpenaiPromptService(PromptService):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='CompletionService')
+class OpenaiCompletionService(CompletionService):
     model = 'gpt-3.5-turbo-instruct'
 
     def __init__(
@@ -25,7 +25,7 @@ class OpenaiPromptService(PromptService):
         super().__init__()
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
-    def invoke(self, t: PromptRequest) -> PromptResponse:
+    def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(
             model=self.model,
             prompt=t.prompt,
@@ -49,4 +49,4 @@ class OpenaiPromptService(PromptService):
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
         choice = check.single(response['choices'])
-        return PromptResponse(choice['text'])
+        return CompletionResponse(choice['text'])

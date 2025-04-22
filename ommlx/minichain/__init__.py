@@ -72,6 +72,14 @@ from .chat.types import (  # noqa
     ChatResponseOutput,
 )
 
+from .completion import (  # noqa
+    CompletionRequest,
+    CompletionRequestOption,
+    CompletionResponse,
+    CompletionResponseOutput,
+    CompletionService,
+)
+
 from .content.content import (  # noqa
     Content,
     ExtendedContent,
@@ -111,14 +119,6 @@ from .llms import (  # noqa
 
     TokenUsage,
     TokenUsageOutput,
-)
-
-from .prompt import (  # noqa
-    PromptRequest,
-    PromptRequestOption,
-    PromptResponse,
-    PromptResponseOutput,
-    PromptService,
 )
 
 from .services import (  # noqa

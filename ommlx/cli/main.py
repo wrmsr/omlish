@@ -25,13 +25,13 @@ from .. import minichain as mc
 from ..minichain.backends.anthropic.chat import AnthropicChatService
 from ..minichain.backends.google.chat import GoogleChatService
 from ..minichain.backends.llamacpp.chat import LlamacppChatService
-from ..minichain.backends.llamacpp.prompt import LlamacppPromptService
+from ..minichain.backends.llamacpp.completion import LlamacppCompletionService
 from ..minichain.backends.mistral import MistralChatService
 from ..minichain.backends.openai.chat import OpenaiChatService
+from ..minichain.backends.openai.completion import OpenaiCompletionService
 from ..minichain.backends.openai.embedding import OpenaiEmbeddingService
-from ..minichain.backends.openai.prompt import OpenaiPromptService
 from ..minichain.backends.sentencetransformers import SentencetransformersEmbeddingService
-from ..minichain.backends.transformers import TransformersPromptService
+from ..minichain.backends.transformers import TransformersCompletionService
 from .state import load_state
 from .state import save_state
 
@@ -185,21 +185,21 @@ def _run_interactive(
 ##
 
 
-PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[mc.PromptService]] = {
-    'llamacpp': LlamacppPromptService,
-    'openai': OpenaiPromptService,
-    'transformers': TransformersPromptService,
+COMPLETION_MODEL_BACKENDS: ta.Mapping[str, type[mc.CompletionService]] = {
+    'llamacpp': LlamacppCompletionService,
+    'openai': OpenaiCompletionService,
+    'transformers': TransformersCompletionService,
 }
 
 
-def _run_prompt(
+def _run_completion(
         content: mc.Content,
         *,
         backend: str | None = None,
 ) -> None:
     prompt = check.isinstance(content, str)
-    mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-    response = mdl.invoke(mc.PromptRequest.new(prompt))
+    mdl = COMPLETION_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+    response = mdl.invoke(mc.CompletionRequest.new(prompt))
     print(response.text.strip())
 
 
@@ -234,7 +234,8 @@ def _main() -> None:
 
     parser.add_argument('-b', '--backend', default='openai')
 
-    parser.add_argument('-c', '--chat', action='store_true')
+    parser.add_argument('-C', '--completion', action='store_true')
+
     parser.add_argument('-n', '--new', action='store_true')
 
     parser.add_argument('-e', '--editor', action='store_true')
@@ -297,24 +298,24 @@ def _main() -> None:
             new=bool(args.new),
         )
 
-    elif args.chat:
-        _run_chat(
-            content,
-            backend=args.backend,
-            new=bool(args.new),
-            stream=bool(args.stream),
-        )
-
     elif args.embed:
         _run_embed(
             content,
             backend=args.backend,
         )
 
-    else:
-        _run_prompt(
+    elif args.completion:
+        _run_completion(
             content,
             backend=args.backend,
+        )
+
+    else:
+        _run_chat(
+            content,
+            backend=args.backend,
+            new=bool(args.new),
+            stream=bool(args.stream),
         )
 
 

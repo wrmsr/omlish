@@ -3,9 +3,9 @@ import typing as ta
 
 from omlish import lang
 
-from ...prompt import PromptRequest
-from ...prompt import PromptResponse
-from ...prompt import PromptService
+from ...completion import CompletionRequest
+from ...completion import CompletionResponse
+from ...completion import CompletionService
 
 
 if ta.TYPE_CHECKING:
@@ -22,8 +22,8 @@ else:
 ##
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='PromptService')
-class LlamacppPromptService(PromptService):
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='llamacpp', type='CompletionService')
+class LlamacppCompletionService(CompletionService):
     # hf.hf_hub_download(
     #   revision='1ca85c857dce892b673b988ad0aa83f2cb1bbd19',
     #   repo_id='QuantFactory/Meta-Llama-3-8B-GGUF',
@@ -37,7 +37,7 @@ class LlamacppPromptService(PromptService):
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
-    def invoke(self, request: PromptRequest) -> PromptResponse:
+    def invoke(self, request: CompletionRequest) -> CompletionResponse:
         lcu.install_logging_hook()
 
         llm = llama_cpp.Llama(
@@ -50,4 +50,4 @@ class LlamacppPromptService(PromptService):
             stop=['\n'],
         )
 
-        return PromptResponse(output['choices'][0]['text'])  # type: ignore
+        return CompletionResponse(output['choices'][0]['text'])  # type: ignore

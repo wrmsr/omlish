@@ -1,11 +1,11 @@
 from omlish.testing import pytest as ptu
 
-from ..prompt import LlamacppPromptService
+from ..completion import LlamacppCompletionService
 
 
 @ptu.skip.if_cant_import('llama_cpp')
-def test_llamacpp_prompt():
-    llm = LlamacppPromptService()
+def test_llamacpp_completion():
+    llm = LlamacppCompletionService()
     resp = llm(
         'Is water dry?',
         # Temperature(.1),

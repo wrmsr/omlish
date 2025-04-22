@@ -11,24 +11,24 @@ from .services import Service_
 ##
 
 
-class PromptRequestOption(RequestOption, lang.Abstract):
+class CompletionRequestOption(RequestOption, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PromptRequest(Request[PromptRequestOption]):
+class CompletionRequest(Request[CompletionRequestOption]):
     prompt: str
 
 
 ##
 
 
-class PromptResponseOutput(ResponseOutput, lang.Abstract):
+class CompletionResponseOutput(ResponseOutput, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PromptResponse(Response[PromptResponseOutput]):
+class CompletionResponse(Response[CompletionResponseOutput]):
     text: str
 
 
@@ -36,13 +36,13 @@ class PromptResponse(Response[PromptResponseOutput]):
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendTypeManifest
-class PromptService(  # noqa
+class CompletionService(  # noqa
     Service_[
-        PromptRequest,
-        PromptResponse,
+        CompletionRequest,
+        CompletionResponse,
     ],
     lang.Abstract,
-    request=PromptRequest,
-    response=PromptResponse,
+    request=CompletionRequest,
+    response=CompletionResponse,
 ):
     pass

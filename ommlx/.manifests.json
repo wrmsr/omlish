@@ -77,17 +77,17 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp.prompt",
+    "module": ".minichain.backends.llamacpp.completion",
     "attr": null,
-    "file": "ommlx/minichain/backends/llamacpp/prompt.py",
+    "file": "ommlx/minichain/backends/llamacpp/completion.py",
     "line": 25,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.llamacpp.prompt",
-        "attr_name": "LlamacppPromptService",
+        "mod_name": "ommlx.minichain.backends.llamacpp.completion",
+        "attr_name": "LlamacppCompletionService",
         "name": "llamacpp",
         "aliases": null,
-        "type": "PromptService"
+        "type": "CompletionService"
       }
     }
   },
@@ -152,6 +152,21 @@
     }
   },
   {
+    "module": ".minichain.backends.openai.completion",
+    "attr": null,
+    "file": "ommlx/minichain/backends/openai/completion.py",
+    "line": 16,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.openai.completion",
+        "attr_name": "OpenaiCompletionService",
+        "name": "openai",
+        "aliases": null,
+        "type": "CompletionService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.openai.embedding",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/embedding.py",
@@ -163,21 +178,6 @@
         "name": "openai",
         "aliases": null,
         "type": "EmbeddingService"
-      }
-    }
-  },
-  {
-    "module": ".minichain.backends.openai.prompt",
-    "attr": null,
-    "file": "ommlx/minichain/backends/openai/prompt.py",
-    "line": 16,
-    "value": {
-      "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.openai.prompt",
-        "attr_name": "OpenaiPromptService",
-        "name": "openai",
-        "aliases": null,
-        "type": "PromptService"
       }
     }
   },
@@ -221,10 +221,10 @@
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers",
-        "attr_name": "TransformersPromptService",
+        "attr_name": "TransformersCompletionService",
         "name": "transformers",
         "aliases": null,
-        "type": "PromptService"
+        "type": "CompletionService"
       }
     }
   },
@@ -253,14 +253,14 @@
     }
   },
   {
-    "module": ".minichain.prompt",
+    "module": ".minichain.completion",
     "attr": null,
-    "file": "ommlx/minichain/prompt.py",
+    "file": "ommlx/minichain/completion.py",
     "line": 38,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
-        "mod_name": "ommlx.minichain.prompt",
-        "attr_name": "PromptService"
+        "mod_name": "ommlx.minichain.completion",
+        "attr_name": "CompletionService"
       }
     }
   },
