@@ -24,6 +24,7 @@ class OpenaiEmbeddingService(EmbeddingService):
             api_key: Secret | str | None = None,
     ) -> None:
         super().__init__()
+
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:

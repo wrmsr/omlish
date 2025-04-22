@@ -140,7 +140,7 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/chat.py",
-    "line": 31,
+    "line": 35,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.chat",
@@ -155,7 +155,7 @@
     "module": ".minichain.backends.openai.completion",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/completion.py",
-    "line": 16,
+    "line": 19,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.completion",

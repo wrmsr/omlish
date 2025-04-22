@@ -78,7 +78,7 @@ class McServer:
     @cached.function
     def llm(self) -> mc.ChatService:
         if self._config.backend == 'openai':
-            return OpenaiChatService(api_key=load_secrets().get('openai_api_key').reveal())
+            return OpenaiChatService(mc.ApiKey(load_secrets().get('openai_api_key').reveal()))
 
         elif self._config.backend == 'local':
             model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'

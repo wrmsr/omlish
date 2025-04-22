@@ -24,8 +24,8 @@ from ...chat.services import ChatResponse
 from ...chat.services import ChatService
 from ...configs import Config
 from ...configs import consume_configs
-from ...standard import ModelName
 from ...standard import ApiKey
+from ...standard import ModelName
 from .format import OpenaiChatRequestHandler
 
 
@@ -56,7 +56,7 @@ class OpenaiChatService(
     @classmethod
     def _default_api_key(cls, api_key: ApiKey | Secret | str | None = None) -> Secret:
         if isinstance(api_key, ApiKey):
-            api_key = api_key.v
+            api_key = check.isinstance(api_key.v, str)  # FIXME
         return Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     def invoke(self, request: ChatRequest) -> ChatResponse:

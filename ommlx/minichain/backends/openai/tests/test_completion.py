@@ -1,9 +1,9 @@
 from omlish import marshal as msh
 from omlish.secrets.tests.harness import HarnessSecrets
 
-from ..completion import OpenaiCompletionService
 from ....completion import CompletionRequest
 from ....standard import ApiKey
+from ..completion import OpenaiCompletionService
 
 
 def test_openai(harness):
@@ -21,4 +21,3 @@ def test_openai(harness):
     resp = llm(req)
     print(resp)
     assert resp.text
-
