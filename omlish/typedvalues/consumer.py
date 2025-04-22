@@ -18,7 +18,7 @@ UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound=UniqueTypedValue)
 
 @dc.dataclass()
 class UnconsumedTypedValuesError(Exception):
-    values: 'TypedValuesConsumer'
+    values: ta.Sequence[TypedValue]
 
 
 class _NOT_SET(lang.Marker):  # noqa
@@ -41,7 +41,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
 
     def check_empty(self) -> None:
         if bool(self._dct):
-            raise UnconsumedTypedValuesError(self)
+            raise UnconsumedTypedValuesError(list(self))
 
     def __enter__(self) -> 'TypedValuesConsumer[TypedValueT]':
         return self
@@ -129,7 +129,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
 
     def pop(self, key, /, default=_NOT_SET):
         if not isinstance(key, type):
-            if default is not None:
+            if default is not _NOT_SET:
                 raise RuntimeError('Must not provide both an instance key and a default')
             default = key
             key = type(default)

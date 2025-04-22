@@ -1,3 +1,10 @@
+"""
+TODO:
+ - https://ashishb.net/programming/hermetic-docker-images-with-hugging-face-machine-learning-models/
+  - ENV TRANSFORMERS_OFFLINE=1
+  - ENV HF_HUB_DISABLE_TELEMETRY=1
+  - ENV HF_HUB_OFFLINE=1
+"""
 import typing as ta
 
 from omlish import check

@@ -51,7 +51,7 @@ class OpenaiChatService(
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
-            self._api_key = self._default_api_key(cc.pop(ApiKey))
+            self._api_key = self._default_api_key(cc.pop(ApiKey, None))
 
     @classmethod
     def _default_api_key(cls, api_key: ApiKey | Secret | str | None = None) -> Secret:
