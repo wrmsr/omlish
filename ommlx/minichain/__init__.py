@@ -80,10 +80,10 @@ from .completion import (  # noqa
     CompletionService,
 )
 
-from .config import (  # noqa
+from .configs import (  # noqa
     Config,
 
-    consume_config,
+    consume_configs,
 )
 
 from .content.content import (  # noqa

@@ -16,11 +16,12 @@ from ....chat.tools import ToolParam
 from ....chat.tools import ToolSpec
 from ....llms import MaxTokens
 from ....llms import Temperature
+from ....standard import ApiKey
 from ..chat import OpenaiChatService
 
 
 def test_openai(harness):
-    llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+    llm = OpenaiChatService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
 
     req: ChatRequest = ChatRequest.new(
         [UserMessage('Is water dry?')],
@@ -39,7 +40,7 @@ def test_openai(harness):
 
 
 def test_openai_tools(harness):
-    llm = OpenaiChatService(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
+    llm = OpenaiChatService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
 
     tool_spec = ToolSpec(
         'get_weather',
@@ -85,7 +86,7 @@ def test_openai_tools(harness):
 
 def test_openai_chat_promote(harness):
     llm: ChatService_ = ta.cast(ChatService_, OpenaiChatService(
-        api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal(),
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     ))
 
     assert llm([UserMessage('Hi!')]).choices

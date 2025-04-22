@@ -1,4 +1,5 @@
 # ruff: noqa: UP007
+import dataclasses as dc
 import typing as ta
 
 from .values import TypedValue
@@ -14,6 +15,11 @@ UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound=UniqueTypedValue)
 ##
 
 
+@dc.dataclass()
+class UnconsumedTypedValuesError(Exception):
+    values: 'TypedValuesConsumer'
+
+
 class TypedValuesConsumer(ta.Generic[TypedValueT]):
     def __init__(
             self,
@@ -25,6 +31,18 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
         super().__init__()
 
         self._dct = dict(src)
+
+    #
+
+    def check_empty(self) -> None:
+        if bool(self._dct):
+            raise UnconsumedTypedValuesError(self)
+
+    def __enter__(self) -> 'TypedValuesConsumer[TypedValueT]':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.check_empty()
 
     #
 

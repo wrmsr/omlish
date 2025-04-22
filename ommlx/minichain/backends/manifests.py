@@ -110,11 +110,11 @@ def _manifest_registry() -> _ManifestRegistry:
 ##
 
 
-def new_backend(cls: type[T], name: str, **kwargs: ta.Any) -> T:
+def new_backend(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
     mr = _manifest_registry()
     be_cls = mr.get_backend_cls(cls.__name__, name)
     be_cls = check.issubclass(be_cls, cls)
-    return be_cls(**kwargs)
+    return be_cls(*args, **kwargs)
 
 
 #
@@ -126,13 +126,13 @@ class backend_of(ta.Generic[T]):  # noqa
     class _bound(ta.Generic[U]):  # noqa
         cls: type[U]
 
-        def new(self, name: str, **kwargs: ta.Any) -> U:
-            return new_backend(self.cls, name, **kwargs)
+        def new(self, name: str, *args: ta.Any, **kwargs: ta.Any) -> U:
+            return new_backend(self.cls, name, *args, **kwargs)
 
     def __class_getitem__(cls, *args, **kwargs):
         [bind_cls] = args
         return backend_of._bound(bind_cls)
 
     @classmethod
-    def new(cls, name: str, **kwargs: ta.Any) -> T:  # noqa
+    def new(cls, name: str, *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
         raise TypeError

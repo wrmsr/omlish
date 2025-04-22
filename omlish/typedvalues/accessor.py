@@ -6,6 +6,7 @@ TODO:
 import abc
 import typing as ta
 
+from .. import check
 from .. import lang
 from .values import TypedValue  # noqa
 from .values import UniqueTypedValue  # noqa
@@ -20,6 +21,10 @@ UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
 
 
 ##
+
+
+class _NOT_SET(lang.Marker):  # noqa
+    pass
 
 
 class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
@@ -97,17 +102,21 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
         ...
 
     @ta.final
-    def get(self, key, /, default=None):
+    def get(self, key, /, default=_NOT_SET):
         if not isinstance(key, type):
-            if default is not None:
+            if default is not _NOT_SET:
                 raise RuntimeError('Must not provide both an instance key and a default')
             default = key
             key = type(default)
-        return self._typed_value_get(key, default)
 
-    @abc.abstractmethod
-    def _typed_value_get(self, key, /, default=None):
-        raise NotImplementedError
+        check.issubclass(key, TypedValue)
+        try:
+            return self._typed_value_getitem(key)
+        except KeyError:
+            if default is not _NOT_SET:
+                return default
+            else:
+                raise
 
     #
 

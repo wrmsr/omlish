@@ -199,18 +199,6 @@ class TypedValues(
         else:
             raise TypeError(key)
 
-    def _typed_value_get(self, key, /, default=None):
-        check.issubclass(key, TypedValue)
-        try:
-            return self._dct2[key]
-        except KeyError:
-            if issubclass(key, UniqueTypedValue):
-                return default
-            elif default is not None:
-                return tuple(default)
-            else:
-                return ()
-
     _any_dct: dict[type, tuple[TypedValueT, ...]]
 
     def _typed_value_get_any(self, cls):

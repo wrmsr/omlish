@@ -6,7 +6,7 @@ from omlish import dataclasses as dc
 from omlish import typedvalues as tv
 from omlish.secrets import all as sec
 
-from .config import Config
+from .configs import Config
 
 
 ##

@@ -22,6 +22,10 @@ from omlish.secrets.secrets import Secret
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
+from ...configs import Config
+from ...configs import consume_configs
+from ...standard import ModelName
+from ...standard import ApiKey
 from .format import OpenaiChatRequestHandler
 
 
@@ -42,19 +46,17 @@ class OpenaiChatService(
         # 'gpt-4o-mini'
     )
 
-    def __init__(
-            self,
-            *,
-            model: str | None = None,
-            api_key: Secret | str | None = None,
-    ) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        self._model = model or self.DEFAULT_MODEL
-        self._api_key = self._default_api_key(api_key)
+        with consume_configs(*configs) as cc:
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
+            self._api_key = self._default_api_key(cc.pop(ApiKey))
 
     @classmethod
-    def _default_api_key(cls, api_key: Secret | str | None = None) -> Secret:
+    def _default_api_key(cls, api_key: ApiKey | Secret | str | None = None) -> Secret:
+        if isinstance(api_key, ApiKey):
+            api_key = api_key.v
         return Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
@@ -63,7 +65,7 @@ class OpenaiChatService(
         rh = OpenaiChatRequestHandler(
             request.chat,
             *request.options,
-            model=self._model,
+            model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=False,
             ),

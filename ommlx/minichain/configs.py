@@ -16,7 +16,7 @@ class Config(tv.TypedValue, lang.Abstract):
 ##
 
 
-def consume_config(
+def consume_configs(
         *cfgs: Config,
         override: bool = False,
         check_type: type | tuple[type, ...] | None = None,

@@ -8,6 +8,10 @@ from omlish.secrets.secrets import Secret
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
 from ...completion import CompletionService
+from ...configs import Config
+from ...configs import consume_configs
+from ...standard import ModelName
+from ...standard import ApiKey
 
 
 ##
@@ -17,13 +21,12 @@ from ...completion import CompletionService
 class OpenaiCompletionService(CompletionService):
     model = 'gpt-3.5-turbo-instruct'
 
-    def __init__(
-            self,
-            *,
-            api_key: Secret | str | None = None,
-    ) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
-        self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
+
+        with consume_configs(*configs) as cc:
+            if (ak := cc.pop(ApiKey)) is not None:
+            self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(
