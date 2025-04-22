@@ -38,8 +38,13 @@ from .state import save_state
 
 if ta.TYPE_CHECKING:
     import PIL.Image as pimg  # noqa
+
+    from omdev import ptk
+
 else:
     pimg = lang.proxy_import('PIL.Image')
+
+    ptk = lang.proxy_import('omdev.ptk')
 
 
 ##
@@ -103,20 +108,64 @@ def _run_chat(
     response = mdl.invoke(mc.ChatRequest.new(state.chat))
     print(check.isinstance(response.choices[0].m.s, str).strip())
 
-    chat = dc.replace(
+    state = dc.replace(
         state,
         chat=[
             *state.chat,
             response.choices[0].m,
         ],
-    )
-
-    chat = dc.replace(
-        chat,
         updated_at=lang.utcnow(),
     )
 
-    save_state(chat_file, chat, ChatState)
+    save_state(chat_file, state, ChatState)
+
+
+##
+
+
+def _run_interactive(
+        *,
+        new: bool = False,
+        backend: str | None = None,
+) -> None:
+    state_dir = os.path.join(get_home_paths().state_dir, 'minichain', 'cli')
+    if not os.path.exists(state_dir):
+        os.makedirs(state_dir, exist_ok=True)
+        os.chmod(state_dir, 0o770)  # noqa
+
+    chat_file = os.path.join(state_dir, 'chat.json')
+    if new:
+        state = ChatState()
+    else:
+        state = load_state(chat_file, ChatState)  # type: ignore
+        if state is None:
+            state = ChatState()  # type: ignore
+
+    while True:
+        prompt = ptk.prompt('> ')
+
+        state = dc.replace(
+            state,
+            chat=[
+                *state.chat,
+                mc.UserMessage(prompt),
+            ],
+        )
+
+        mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+        response = mdl.invoke(mc.ChatRequest.new(state.chat))
+        print(check.isinstance(response.choices[0].m.s, str).strip())
+
+        state = dc.replace(
+            state,
+            chat=[
+                *state.chat,
+                response.choices[0].m,
+            ],
+            updated_at=lang.utcnow(),
+        )
+
+        save_state(chat_file, state, ChatState)
 
 
 ##
@@ -191,7 +240,13 @@ def _main() -> None:
 
     elif args.editor:
         check.arg(not args.prompt)
-        content = edit_text_with_user_editor('', subprocesses)
+        if (ec := edit_text_with_user_editor('', subprocesses)) is None:
+            return
+        content = ec
+
+    elif args.interactive:
+        if args.prompt:
+            raise ValueError('Must not provide prompt')
 
     elif not args.prompt:
         raise ValueError('Must provide prompt')
@@ -221,7 +276,13 @@ def _main() -> None:
 
     #
 
-    if args.chat:
+    if args.interactive:
+        _run_interactive(
+            backend=args.backend,
+            new=bool(args.new),
+        )
+
+    elif args.chat:
         _run_chat(
             content,
             backend=args.backend,
