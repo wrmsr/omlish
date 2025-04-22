@@ -2,9 +2,16 @@
 import dataclasses as dc
 import typing as ta
 
+from .. import check
 from .. import lang
 from .values import TypedValue
 from .values import UniqueTypedValue
+
+
+if ta.TYPE_CHECKING:
+    from . import collection as tvc
+else:
+    tvc = lang.proxy_import('.collection', __package__)
 
 
 TypedValueT = ta.TypeVar('TypedValueT', bound=TypedValue)
@@ -29,13 +36,27 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
     def __init__(
             self,
             src: ta.Union[
+                'tvc.TypedValues',
                 ta.Iterable[tuple[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]],
                 ta.Mapping[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]],
             ],
     ) -> None:
         super().__init__()
 
-        self._dct = dict(src)
+        kvs: ta.Iterable[tuple[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]]
+        if isinstance(src, tvc.TypedValues):
+            kvs = src.items()
+        elif isinstance(src, ta.Mapping):
+            kvs = src.items()
+        else:
+            kvs = src
+
+        dct: dict = {}
+        for k, v in kvs:
+            check.not_in(k, dct)
+            dct[k] = v
+
+        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = dct
 
     #
 
@@ -133,6 +154,12 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
                 raise RuntimeError('Must not provide both an instance key and a default')
             default = key
             key = type(default)
+
+        if (
+                issubclass(key, UniqueTypedValue) and
+                (utvc := key._unique_typed_value_cls) is not key  # noqa
+        ):
+            key = utvc
 
         try:
             return self._dct.pop(key)

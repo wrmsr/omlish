@@ -9,6 +9,8 @@ from .collection import (  # noqa
 )
 
 from .consumer import (  # noqa
+    UnconsumedTypedValuesError,
+
     TypedValuesConsumer,
 )
 
