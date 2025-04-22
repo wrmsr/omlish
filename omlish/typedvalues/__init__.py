@@ -26,6 +26,8 @@ from .values import (  # noqa
     UniqueTypedValue,
 
     ScalarTypedValue,
+
+    UniqueScalarTypedValue,
 )
 
 
