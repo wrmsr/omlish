@@ -1525,6 +1525,7 @@ SecurityGroupName = _ta.NewType('SecurityGroupName', str)
 class ServiceManaged(_enum.Enum):
     ALB = 'alb'
     NLB = 'nlb'
+    RNAT = 'rnat'
 
 
 class ShutdownBehavior(_enum.Enum):
