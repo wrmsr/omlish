@@ -20,7 +20,6 @@ from omlish.http import all as http
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
-from ...configs import Config
 from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import ModelName
@@ -44,7 +43,7 @@ class OpenaiChatService(
         # 'gpt-4o-mini'
     )
 
-    def __init__(self, *configs: Config) -> None:
+    def __init__(self, *configs: ApiKey | ModelName) -> None:
         super().__init__()
 
         with consume_configs(*configs) as cc:
