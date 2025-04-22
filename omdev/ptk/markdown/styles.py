@@ -1,4 +1,10 @@
-MARKDOWN_STYLE = [
+import typing as ta
+
+
+##
+
+
+MARKDOWN_STYLE: ta.Sequence[tuple[str, str]] = [
     ('md.h1', 'bold underline'),
     ('md.h1.border', 'fg:ansiyellow nounderline'),
     ('md.h2', 'bold'),

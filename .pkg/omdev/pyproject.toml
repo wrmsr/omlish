@@ -32,6 +32,7 @@ all = [
     'pcpp ~= 1.30',
     'docutils ~= 0.21',
     'markdown-it-py ~= 3.0',
+    'mdit-py-plugins ~= 0.4',
     'mypy ~= 1.15',
     'gprof2dot ~= 2025.4',
     'prompt-toolkit ~= 3.0',
@@ -47,6 +48,7 @@ c = [
 doc = [
     'docutils ~= 0.21',
     'markdown-it-py ~= 3.0',
+    'mdit-py-plugins ~= 0.4',
 ]
 mypy = [
     'mypy ~= 1.15',

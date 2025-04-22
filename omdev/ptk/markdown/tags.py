@@ -1,7 +1,6 @@
 import typing as ta
 
-from omdev import ptk
-
+from ... import ptk
 from .border import DoubleBorder
 from .border import SquareBorder
 from .utils import FormattedTextAlign

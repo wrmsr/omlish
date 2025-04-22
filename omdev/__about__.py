@@ -25,7 +25,7 @@ class Project(ProjectBase):
             'docutils ~= 0.21',
 
             'markdown-it-py ~= 3.0',
-            # 'mdit-py-plugins ~= 0.4',
+            'mdit-py-plugins ~= 0.4',
         ],
 
         'mypy': [

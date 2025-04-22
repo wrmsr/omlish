@@ -17,7 +17,9 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# Original: https://github.com/commonmark/commonmark-java/blob/749c0110cb48d8338b10593b849992d00d9d7611/commonmark-test-util/src/main/java/org/commonmark/testutil/example/ExampleReader.java
+#
+# Original:
+#  https://github.com/commonmark/commonmark-java/blob/749c0110cb48d8338b10593b849992d00d9d7611/commonmark-test-util/src/main/java/org/commonmark/testutil/example/ExampleReader.java
 import dataclasses as dc
 import enum
 import json
@@ -25,8 +27,9 @@ import os.path
 import re
 import typing as ta
 
-from omdev.cache import data as dcache
 from omlish import check
+
+from ....cache import data as dcache
 
 
 ##

@@ -4,8 +4,7 @@ import typing as ta
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
-from omdev import ptk
-
+from ... import ptk
 from .border import Border
 from .border import SquareBorder
 
@@ -27,7 +26,7 @@ def last_line_length(ft: ptk.StyleAndTextTuples) -> int:
     line: ptk.StyleAndTextTuples = []
     for style, text, *_ in ft[::-1]:
         index = text.find('\n')
-        line.append((style, text[index + 1 :]))
+        line.append((style, text[index + 1:]))
         if index > -1:
             break
 

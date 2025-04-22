@@ -291,7 +291,7 @@
     "module": ".tools.doc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/doc.py",
-    "line": 103,
+    "line": 106,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "doc",

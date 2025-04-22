@@ -1,8 +1,7 @@
 import itertools
 import typing as ta
 
-from omdev import ptk
-
+from ... import ptk
 from .border import Border
 from .border import SquareBorder
 from .parser import markdown_parser
@@ -117,7 +116,7 @@ class Markdown:
                 # Table require a lot of care
                 if token.tag == 'table':
                     ft += self.render_table(
-                        tokens[i : i + tokens_in_block + 1],
+                        tokens[i:i + tokens_in_block + 1],
                         width=width,
                         left=last_line_length(ft),
                     )
@@ -125,7 +124,7 @@ class Markdown:
                 # We need to keep track of item numbers in ordered lists
                 elif token.tag == 'ol':
                     ft += self.render_ordered_list(
-                        tokens[i : i + tokens_in_block + 1],
+                        tokens[i:i + tokens_in_block + 1],
                         width=width,
                         left=last_line_length(ft),
                     )
@@ -133,7 +132,7 @@ class Markdown:
                 # Otherwise all other blocks are rendered in the same way
                 else:
                     ft += self.render_block(
-                        tokens[i : i + tokens_in_block + 1],
+                        tokens[i:i + tokens_in_block + 1],
                         width=width,
                         left=last_line_length(ft),
                     )
@@ -252,7 +251,7 @@ class Markdown:
             elif token.type in ('th_open', 'td_open'):
                 for j, token in enumerate(tokens[i:]):
                     if token.type in ('th_close', 'td_close'):
-                        cell_tokens[-1].append(list(tokens[i : i + j + 1]))
+                        cell_tokens[-1].append(list(tokens[i:i + j + 1]))
                         break
                 i += j
             i += 1
