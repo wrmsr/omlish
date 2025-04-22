@@ -59,6 +59,7 @@ class Secret(lang.NotPicklable, lang.Sensitive, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class SecretRef:
     key: str
 

@@ -15,6 +15,8 @@ from .secrets import (  # noqa
     secret_repr,
 )
 
+ref = SecretRef
+
 
 ##
 
