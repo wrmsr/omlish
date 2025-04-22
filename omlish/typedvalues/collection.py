@@ -29,7 +29,12 @@ class TypedValues(
     lang.Final,
     ta.Generic[TypedValueT],
 ):
-    def __init__(self, *tvs: TypedValueT, override: bool = False) -> None:
+    def __init__(
+            self,
+            *tvs: TypedValueT,
+            override: bool = False,
+            check_type: type | tuple[type, ...] | None = None,
+    ) -> None:
         if hasattr(self, '_tup'):
             # When __new__ returns the empty singleton __init__ will still be called.
             if self is not self._EMPTY:
@@ -41,6 +46,8 @@ class TypedValues(
         tmp: list = []
         udct: dict = {}
         for tv in tvs:
+            if check_type is not None:
+                check.isinstance(tv, check_type)
             if isinstance(tv, UniqueTypedValue):
                 utvc = tv._unique_typed_value_cls  # noqa
                 if not override:

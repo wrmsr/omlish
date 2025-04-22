@@ -80,6 +80,12 @@ from .completion import (  # noqa
     CompletionService,
 )
 
+from .config import (  # noqa
+    Config,
+
+    consume_config,
+)
+
 from .content.content import (  # noqa
     Content,
     ExtendedContent,
@@ -128,6 +134,11 @@ from .services import (  # noqa
     ResponseOutput,
     Service,
     Service_,
+)
+
+from .standard import (  # noqa
+    ApiKey,
+    ModelName,
 )
 
 from .streaming import (  # noqa
