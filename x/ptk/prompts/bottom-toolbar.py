@@ -53,12 +53,10 @@ def main() -> None:
     print(f'You said: {text}')
 
     # Example 5: styling differently.
-    style = ptk.Style.from_dict(
-        {
-            'bottom-toolbar': '#aaaa00 bg:#ff0000',
-            'bottom-toolbar.text': '#aaaa44 bg:#aa4444',
-        },
-    )
+    style = ptk.Style.from_dict({
+        'bottom-toolbar': '#aaaa00 bg:#ff0000',
+        'bottom-toolbar.text': '#aaaa44 bg:#aa4444',
+    })
 
     text = ptk.prompt(
         'Say something: ',

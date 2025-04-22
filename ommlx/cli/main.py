@@ -18,6 +18,8 @@ from omlish import lang
 from omlish.diag import pycharm
 from omlish.formats import json
 from omlish.logs import all as logs
+from omlish.subprocesses.editor import edit_text_with_user_editor
+from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
 from ..minichain.backends.anthropic.chat import AnthropicChatService
@@ -165,15 +167,17 @@ def _main() -> None:
     #
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('prompt', nargs='+')
+    parser.add_argument('prompt', nargs='*')
 
     parser.add_argument('-b', '--backend', default='openai')
 
     parser.add_argument('-c', '--chat', action='store_true')
     parser.add_argument('-n', '--new', action='store_true')
+
+    parser.add_argument('-e', '--editor', action='store_true')
     parser.add_argument('-i', '--interactive', action='store_true')
 
-    parser.add_argument('-e', '--embed', action='store_true')
+    parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
 
     args = parser.parse_args()
@@ -184,6 +188,13 @@ def _main() -> None:
 
     if args.image:
         content = mc.Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
+
+    elif args.editor:
+        check.arg(not args.prompt)
+        content = edit_text_with_user_editor('', subprocesses)
+
+    elif not args.prompt:
+        raise ValueError('Must provide prompt')
 
     else:
         prompt = ' '.join(args.prompt)
