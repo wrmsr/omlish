@@ -65,7 +65,6 @@ class TypedValues(
                 if idx == len(ulst):
                     lst.append(tv)
                     dct[utvc] = tv
-                    dct[type(tv)] = tv
             else:
                 tv = obj
                 lst.append(tv)
@@ -75,6 +74,10 @@ class TypedValues(
         self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = {
             k: tuple(v) if isinstance(v, list) else v
             for k, v in dct.items()
+        }
+        self._dct2: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = {
+            **self._dct,
+            **{type(v): v for v in self._dct.values() if isinstance(v, UniqueTypedValue)},  # type: ignore[misc]
         }
 
     #
@@ -161,21 +164,32 @@ class TypedValues(
 
     #
 
+    def keys(self) -> ta.KeysView[type[TypedValueT]]:
+        return self._dct.keys()
+
+    def values(self) -> ta.ValuesView[TypedValueT | tuple[TypedValueT, ...]]:
+        return self._dct.values()
+
+    def items(self) -> ta.ItemsView[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]:
+        return self._dct.items()
+
+    #
+
     def _typed_value_contains(self, cls):
-        return cls in self._dct
+        return cls in self._dct2
 
     def _typed_value_getitem(self, key):
         if isinstance(key, int):
             return self._tup[key]
         elif isinstance(key, type):
-            return self._dct[check.issubclass(key, TypedValue)]
+            return self._dct2[check.issubclass(key, TypedValue)]
         else:
             raise TypeError(key)
 
     def _typed_value_get(self, key, /, default=None):
         check.issubclass(key, TypedValue)
         try:
-            return self._dct[key]
+            return self._dct2[key]
         except KeyError:
             if issubclass(key, UniqueTypedValue):
                 return default

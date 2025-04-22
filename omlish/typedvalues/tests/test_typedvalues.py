@@ -129,6 +129,12 @@ def test_typed_values():
     assert list(opts[Tool]) == [Tool(foo_tool), Tool(bar_tool)]
     assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
     assert opts[JsonResponseFormat] == JSON_RESPONSE_FORMAT
+    assert opts.get_any(JsonResponseFormat) == (JSON_RESPONSE_FORMAT,)
+
+    assert ResponseFormat in opts
+    assert JsonResponseFormat in opts
+    assert ResponseFormat in opts.keys()  # noqa
+    assert JsonResponseFormat not in opts.keys()  # noqa
 
     assert list(TypedValues(*opts.without(ResponseFormat))) == [Tool(foo_tool), TopK(10), Tool(bar_tool)]
     assert list(TypedValues(*opts.without(Tool))) == [JSON_RESPONSE_FORMAT, TopK(10)]

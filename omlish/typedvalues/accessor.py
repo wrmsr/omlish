@@ -32,7 +32,7 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
 
     @ta.final
     def __contains__(self, cls: type[TypedValueU]) -> bool:
-        raise NotImplementedError
+        return self._typed_value_contains(cls)
 
     @abc.abstractmethod
     def _typed_value_contains(self, cls):
