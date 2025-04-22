@@ -1,6 +1,5 @@
 # fmt: off
 
-
 from .backends.manifests import (  # noqa
     backend_of,
     new_backend,

@@ -111,11 +111,26 @@
     "module": ".ptk.apps.ncdu",
     "attr": "_CLI_MODULE",
     "file": "omdev/ptk/apps/ncdu.py",
-    "line": 159,
+    "line": 162,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "ptk/ncdu",
         "mod_name": "omdev.ptk.apps.ncdu"
+      }
+    }
+  },
+  {
+    "module": ".ptk.markdown.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/ptk/markdown/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "ptk/markdown",
+          "ptk/md"
+        ],
+        "mod_name": "omdev.ptk.markdown.__main__"
       }
     }
   },

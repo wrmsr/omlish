@@ -12,13 +12,16 @@ from ... import ptk
 from ...cli import CliModule
 
 
+##
+
+
 def get_directory_size(path: str) -> int:
     total_size = 0
     for dirpath, _, filenames in os.walk(path):
         for f in filenames:
             fp = os.path.join(dirpath, f)
             try:
-                total_size += os.path.getsize(fp)
+                total_size += os.path.getsize(fp)  # noqa
             except OSError:
                 pass
     return total_size
