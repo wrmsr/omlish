@@ -1,9 +1,6 @@
-import os
-
 from omlish import check
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.secrets.secrets import Secret
 
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
@@ -24,10 +21,7 @@ class OpenaiCompletionService(CompletionService):
         super().__init__()
 
         with consume_configs(*configs) as cc:
-            if (ak := cc.pop(ApiKey, None)) is not None:
-                self._api_key = Secret.of(check.isinstance(ak.v, str))  # FIXME:
-            else:
-                self._api_key = Secret.of(os.environ['OPENAI_API_KEY'])
+            self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(

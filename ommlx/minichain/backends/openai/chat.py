@@ -11,13 +11,11 @@ TODO:
      "top_p": 1
    }
 """
-import os
 import typing as ta
 
 from omlish import check
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.secrets.secrets import Secret
 
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
@@ -51,13 +49,7 @@ class OpenaiChatService(
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
-            self._api_key = self._default_api_key(cc.pop(ApiKey, None))
-
-    @classmethod
-    def _default_api_key(cls, api_key: ApiKey | Secret | str | None = None) -> Secret:
-        if isinstance(api_key, ApiKey):
-            api_key = check.isinstance(api_key.v, str)  # FIXME
-        return Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
+            self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         check.isinstance(request, ChatRequest)

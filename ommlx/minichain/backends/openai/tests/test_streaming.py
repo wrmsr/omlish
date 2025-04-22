@@ -2,12 +2,13 @@ from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
 from ....chat.streaming import ChatStreamRequest
+from ....standard import ApiKey
 from ..streaming import OpenaiChatStreamService
 
 
 def test_openai_chat_streaming_model(harness):
     llm = OpenaiChatStreamService(
-        api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal(),
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     )
 
     foo_req: ChatStreamRequest

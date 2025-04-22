@@ -1,10 +1,10 @@
-import os
-
 from omlish import check
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.secrets.secrets import Secret
 
+from ...configs import Config
+from ...configs import consume_configs
+from ...standard import ApiKey
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.embeddings import EmbeddingService
@@ -18,14 +18,11 @@ from ...vectors.vectors import Vector
 class OpenaiEmbeddingService(EmbeddingService):
     model = 'text-embedding-3-small'
 
-    def __init__(
-            self,
-            *,
-            api_key: Secret | str | None = None,
-    ) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
+        with consume_configs(*configs) as cc:
+            self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raw_request = dict(

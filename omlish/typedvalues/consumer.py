@@ -98,7 +98,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
             self,
             cls: type[UniqueTypedValueU],
             /,
-            default: UniqueTypedValueU | None = None,
+            default: UniqueTypedValueU | None,
     ) -> UniqueTypedValueU | None:
         ...
 

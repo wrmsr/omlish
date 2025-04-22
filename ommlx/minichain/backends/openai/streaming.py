@@ -5,7 +5,6 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
-from omlish.secrets.secrets import Secret
 
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
@@ -13,7 +12,11 @@ from ...chat.messages import AiMessage
 from ...chat.streaming import ChatStreamRequest
 from ...chat.streaming import ChatStreamResponse
 from ...chat.streaming import ChatStreamService_
+from ...configs import Config
+from ...configs import consume_configs
 from ...resources import Resources
+from ...standard import ApiKey
+from ...standard import ModelName
 from .chat import OpenaiChatService
 from .format import OpenaiChatRequestHandler
 
@@ -23,16 +26,12 @@ from .format import OpenaiChatRequestHandler
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='ChatStreamService')
 class OpenaiChatStreamService(ChatStreamService_):
-    def __init__(
-            self,
-            *,
-            model: str | None = None,
-            api_key: Secret | str | None = None,
-    ) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        self._model = model or OpenaiChatService.DEFAULT_MODEL
-        self._api_key = OpenaiChatService._default_api_key(api_key)  # noqa
+        with consume_configs(*configs) as cc:
+            self._model_name = cc.pop(ModelName(OpenaiChatService.DEFAULT_MODEL))
+            self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     READ_CHUNK_SIZE = 64 * 1024
 
@@ -42,7 +41,7 @@ class OpenaiChatStreamService(ChatStreamService_):
         rh = OpenaiChatRequestHandler(
             request.chat,
             *request.options,
-            model=self._model,
+            model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,
             ),

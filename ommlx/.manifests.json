@@ -140,7 +140,7 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/chat.py",
-    "line": 35,
+    "line": 33,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.chat",
@@ -155,7 +155,7 @@
     "module": ".minichain.backends.openai.completion",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/completion.py",
-    "line": 19,
+    "line": 16,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.completion",
@@ -185,7 +185,7 @@
     "module": ".minichain.backends.openai.streaming",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/streaming.py",
-    "line": 24,
+    "line": 27,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.streaming",
