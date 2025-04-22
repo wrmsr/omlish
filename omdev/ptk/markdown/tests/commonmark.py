@@ -28,6 +28,7 @@ import re
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from ....cache import data as dcache
 
@@ -137,14 +138,21 @@ COMMONMARK_SPEC_DATA = dcache.GitSpec(
 )
 
 
-def _main() -> None:
+@lang.cached_function
+def read_commonmark_spec_examples() -> ta.Sequence[SpecExample]:
     cs_dir = dcache.default().get(COMMONMARK_SPEC_DATA)
     spec_file = os.path.join(cs_dir, 'spec.txt')
 
     with open(spec_file) as f:
         er = SpecExampleReader(os.path.basename(spec_file))
-        exs = er.read(f)
+        return er.read(f)
 
+
+##
+
+
+def _main() -> None:
+    exs = read_commonmark_spec_examples()
     exs_json = json.dumps([dc.asdict(ex) for ex in exs])
     print(exs_json)
 
