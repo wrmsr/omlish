@@ -3,24 +3,55 @@ from .bits import (  # noqa
     get_bits,
     set_bit,
     set_bits,
-
-    FixedWidthInt,
-
-    Int8,
-    Int16,
-    Int32,
-    Int64,
-    Int128,
-    Uint8,
-    Uint16,
-    Uint32,
-    Uint64,
-    Uint128,
 )
 
 from .c import (  # noqa
     cdiv,
     cmod,
+)
+
+from .fixed import (  # noqa
+    CheckedFixedWidthIntError,
+    OverflowFixedWidthIntError,
+    UnderflowFixedWidthIntError,
+
+    FixedWidthInt,
+
+    SignedInt,
+    UnsignedInt,
+
+    CheckedInt,
+    ClampedInt,
+
+    AnyInt8,
+    AnyInt16,
+    AnyInt32,
+    AnyInt64,
+    AnyInt128,
+
+    CheckedInt8,
+    CheckedInt16,
+    CheckedInt32,
+    CheckedInt64,
+    CheckedInt128,
+
+    CheckedUInt8,
+    CheckedUInt16,
+    CheckedUInt32,
+    CheckedUInt64,
+    CheckedUInt128,
+
+    ClampedInt8,
+    ClampedInt16,
+    ClampedInt32,
+    ClampedInt64,
+    ClampedInt128,
+
+    ClampedUInt8,
+    ClampedUInt16,
+    ClampedUInt32,
+    ClampedUInt64,
+    ClampedUInt128,
 )
 
 from .floats import (  # noqa
