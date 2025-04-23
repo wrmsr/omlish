@@ -2,6 +2,7 @@ import os.path
 import sqlite3
 
 from omlish import sql
+from omlish.sql.queries import Q
 
 
 def test_new_state(tmp_path):
@@ -13,5 +14,5 @@ def test_new_state(tmp_path):
             sql.api.exec(conn, """create table if not exists "state" ("state")""")
             sql.api.exec(conn, """insert into "state" ("state") values ('I am state')""")
 
-            for row in sql.api.query_all(conn, 'select * from "state"'):
+            for row in sql.api.query_all(conn, Q.select([Q.star], Q.n.state)):
                 print(row)

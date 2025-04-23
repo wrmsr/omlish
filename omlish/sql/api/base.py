@@ -16,7 +16,14 @@ from .rows import Row
 
 
 class Closer(lang.Abstract):
+    _closed: bool = False
+
+    @ta.final
     def close(self) -> None:
+        self._closed = True
+        self._close()
+
+    def _close(self) -> None:
         pass
 
 

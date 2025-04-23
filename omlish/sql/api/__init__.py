@@ -47,3 +47,11 @@ from .queries import (  # noqa
 from .rows import (  # noqa
     Row,
 )
+
+
+##
+
+
+from ...lang.imports import _register_conditional_import  # noqa
+
+_register_conditional_import('..queries', '._queries', __package__)

@@ -41,9 +41,9 @@ class DbapiRows(Rows):
         self._cursor = cursor
         self._columns = columns
 
-    def close(self) -> None:
+    def _close(self) -> None:
         self._cursor.close()
-        super().close()
+        super()._close()
 
     @property
     def columns(self) -> Columns:
@@ -62,9 +62,9 @@ class DbapiConn(Conn):
 
         self._conn = conn
 
-    def close(self) -> None:
+    def _close(self) -> None:
         self._conn.close()
-        super().close()
+        super()._close()
 
     @property
     def adapter(self) -> Adapter:

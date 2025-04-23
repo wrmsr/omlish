@@ -66,3 +66,11 @@ def test_pg8000(harness) -> None:
                         print(row)
 
                 print(vals)
+
+
+def test_queries():
+    from ...queries import Q
+
+    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
+        with db.connect() as conn:
+            print(funcs.query(conn, Q.select([1])))
