@@ -194,6 +194,19 @@ class ModelGen:
 
     #
 
+    NAME_REPLACEMENTS: ta.ClassVar[ta.Sequence[tuple[str, str]]] = [
+        *[
+            (p + l, p + r)
+            for p in 'KMGTP '
+            for l, r in [
+                ('bps', 'bips'),
+                ('Bps', 'bps'),
+                ('ibps', 'ibips'),
+                ('iBps', 'ibps'),
+            ]
+        ],
+    ]
+
     DEMANGLE_PREFIXES: ta.ClassVar[ta.Sequence[str]] = [
 
         'AAAA',
@@ -217,7 +230,6 @@ class ModelGen:
         'IP',
         'JSON',
         'KMS',
-        'MBps',
         'MD5',
         'MFA',
         'NVME',
@@ -230,6 +242,9 @@ class ModelGen:
     ]
 
     def demangle_name(self, n: str) -> str:
+        for l, r in self.NAME_REPLACEMENTS:
+            n = n.replace(l, r)
+
         ps: list[str] = []
         while n:
             ms: list[tuple[str, int]] = []

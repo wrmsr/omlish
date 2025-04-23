@@ -2274,7 +2274,7 @@ class EbsOptimizedInfo(
     _base.Shape,
     shape_name='EbsOptimizedInfo',
 ):
-    baseline_bandwidth_in_mbps: BaselineBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    baseline_bandwidth_in_mbips: BaselineBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='BaselineBandwidthInMbps',
         serialization_name='baselineBandwidthInMbps',
         shape_name='BaselineBandwidthInMbps',
@@ -2292,7 +2292,7 @@ class EbsOptimizedInfo(
         shape_name='BaselineIops',
     ))
 
-    maximum_bandwidth_in_mbps: MaximumBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    maximum_bandwidth_in_mbips: MaximumBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MaximumBandwidthInMbps',
         serialization_name='maximumBandwidthInMbps',
         shape_name='MaximumBandwidthInMbps',
@@ -3059,13 +3059,13 @@ class NetworkCardInfo(
         shape_name='MaxNetworkInterfaces',
     ))
 
-    baseline_bandwidth_in_gbps: BaselineBandwidthInGbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    baseline_bandwidth_in_gbips: BaselineBandwidthInGbps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='BaselineBandwidthInGbps',
         serialization_name='baselineBandwidthInGbps',
         shape_name='BaselineBandwidthInGbps',
     ))
 
-    peak_bandwidth_in_gbps: PeakBandwidthInGbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+    peak_bandwidth_in_gbips: PeakBandwidthInGbps | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='PeakBandwidthInGbps',
         serialization_name='peakBandwidthInGbps',
         shape_name='PeakBandwidthInGbps',
