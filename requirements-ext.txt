@@ -17,8 +17,8 @@ google-cloud-compute==1.30.0
 
 matplotlib==3.10.1
 
-torch==2.6.0
-torchvision==0.21.0
+torch==2.7.0
+torchvision==0.22.0
 
 scipy==1.15.2
 scikit-learn==1.6.1
@@ -48,7 +48,7 @@ watchdog==6.0.0
 
 pyright[nodejs]==1.1.399
 
-basedpyright==1.29.0
+basedpyright==1.29.1
 
 blobfile==3.0.0
 
@@ -65,4 +65,4 @@ pyinstrument==5.0.1
 
 jupyter==1.1.1
 jupyterlab==4.4.1
-notebook==7.4.0
+notebook==7.4.1
