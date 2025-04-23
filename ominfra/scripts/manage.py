@@ -848,29 +848,33 @@ def _get_pyremote_env_info() -> PyremoteEnvInfo:
 ##
 
 
-_PYREMOTE_BOOTSTRAP_INPUT_FD = 100
-_PYREMOTE_BOOTSTRAP_SRC_FD = 101
+class _PyremoteBootstrapConsts:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
 
-_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CHILD_PID'
-_PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
-_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR = '_OPYR_CONTEXT_NAME'
-_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR = '_OPYR_SRC_FILE'
-_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR = '_OPYR_OPTIONS_JSON'
+    INPUT_FD = 100
+    SRC_FD = 101
 
-_PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
-_PYREMOTE_BOOTSTRAP_ACK1 = b'OPYR001\n'
-_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR002\n'
-_PYREMOTE_BOOTSTRAP_ACK3 = b'OPYR003\n'
+    CHILD_PID_VAR = '_OPYR_CHILD_PID'
+    ARGV0_VAR = '_OPYR_ARGV0'
+    CONTEXT_NAME_VAR = '_OPYR_CONTEXT_NAME'
+    SRC_FILE_VAR = '_OPYR_SRC_FILE'
+    OPTIONS_JSON_VAR = '_OPYR_OPTIONS_JSON'
 
-_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
+    ACK0 = b'OPYR000\n'
+    ACK1 = b'OPYR001\n'
+    ACK2 = b'OPYR002\n'
+    ACK3 = b'OPYR003\n'
 
-_PYREMOTE_BOOTSTRAP_IMPORTS = [
-    'base64',
-    'os',
-    'struct',
-    'sys',
-    'zlib',
-]
+    PROC_TITLE_FMT = '(pyremote:%s)'
+
+    IMPORTS = (
+        'base64',
+        'os',
+        'struct',
+        'sys',
+        'zlib',
+    )
 
 
 def _pyremote_bootstrap_main(context_name: str) -> None:
@@ -885,13 +889,13 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Parent process
 
         # Dup original stdin to comm_fd for use as comm channel
-        os.dup2(0, _PYREMOTE_BOOTSTRAP_INPUT_FD)
+        os.dup2(0, _PyremoteBootstrapConsts.INPUT_FD)
 
         # Overwrite stdin (fed to python repl) with first copy of src
         os.dup2(r0, 0)
 
         # Dup second copy of src to src_fd to recover after launch
-        os.dup2(r1, _PYREMOTE_BOOTSTRAP_SRC_FD)
+        os.dup2(r1, _PyremoteBootstrapConsts.SRC_FD)
 
         # Close remaining fd's
         for f in [r0, w0, r1, w1]:
@@ -900,18 +904,18 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Save vars
         env = os.environ
         exe = sys.executable
-        env[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
-        env[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = exe
-        env[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
+        env[_PyremoteBootstrapConsts.CHILD_PID_VAR] = str(cp)
+        env[_PyremoteBootstrapConsts.ARGV0_VAR] = exe
+        env[_PyremoteBootstrapConsts.CONTEXT_NAME_VAR] = context_name
 
         # Start repl reading stdin from r0
-        os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
+        os.execl(exe, exe + (_PyremoteBootstrapConsts.PROC_TITLE_FMT % (context_name,)))
 
     else:
         # Child process
 
         # Write first ack
-        os.write(1, _PYREMOTE_BOOTSTRAP_ACK0)
+        os.write(1, _PyremoteBootstrapConsts.ACK0)
 
         # Write pid
         os.write(1, struct.pack('<Q', pid))
@@ -930,7 +934,7 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
             fp.close()
 
         # Write second ack
-        os.write(1, _PYREMOTE_BOOTSTRAP_ACK1)
+        os.write(1, _PyremoteBootstrapConsts.ACK1)
 
         # Exit child
         sys.exit(0)
@@ -947,20 +951,8 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
     import textwrap
     bs_src = textwrap.dedent(inspect.getsource(_pyremote_bootstrap_main))
 
-    for gl in [
-        '_PYREMOTE_BOOTSTRAP_INPUT_FD',
-        '_PYREMOTE_BOOTSTRAP_SRC_FD',
-
-        '_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR',
-        '_PYREMOTE_BOOTSTRAP_ARGV0_VAR',
-        '_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR',
-
-        '_PYREMOTE_BOOTSTRAP_ACK0',
-        '_PYREMOTE_BOOTSTRAP_ACK1',
-
-        '_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT',
-    ]:
-        bs_src = bs_src.replace(gl, repr(globals()[gl]))
+    for an, av in sorted(_PyremoteBootstrapConsts.__dict__.items(), key=lambda kv: -len(kv[0])):
+        bs_src = bs_src.replace(f'_PyremoteBootstrapConsts.{an}', repr(av))
 
     bs_src = '\n'.join(
         cl
@@ -975,7 +967,7 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
         raise ValueError(bs_z85)
 
     stmts = [
-        f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
+        f'import {", ".join(_PyremoteBootstrapConsts.IMPORTS)}',
         f'exec(zlib.decompress(base64.b85decode(b"{bs_z85.decode("ascii")}")))',
         f'_pyremote_bootstrap_main("{context_name}")',
     ]
@@ -999,19 +991,19 @@ class PyremotePayloadRuntime:
 
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     # If src file var is not present we need to do initial finalization
-    if _PYREMOTE_BOOTSTRAP_SRC_FILE_VAR not in os.environ:
+    if _PyremoteBootstrapConsts.SRC_FILE_VAR not in os.environ:
         # Read second copy of payload src
-        r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
+        r1 = os.fdopen(_PyremoteBootstrapConsts.SRC_FD, 'rb', 0)
         payload_src = r1.read().decode('utf-8')
         r1.close()
 
         # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in
         # a pipe at once.
-        os.waitpid(int(os.environ.pop(_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR)), 0)
+        os.waitpid(int(os.environ.pop(_PyremoteBootstrapConsts.CHILD_PID_VAR)), 0)
 
         # Read options
-        options_json_len = struct.unpack('<I', os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, 4))[0]
-        if len(options_json := os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, options_json_len)) != options_json_len:
+        options_json_len = struct.unpack('<I', os.read(_PyremoteBootstrapConsts.INPUT_FD, 4))[0]
+        if len(options_json := os.read(_PyremoteBootstrapConsts.INPUT_FD, options_json_len)) != options_json_len:
             raise EOFError
         options = PyremoteBootstrapOptions(**json.loads(options_json.decode('utf-8')))
 
@@ -1024,29 +1016,29 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
             os.close(tfd)
 
             # Set vars
-            os.environ[_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR] = tfn
-            os.environ[_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR] = options_json.decode('utf-8')
+            os.environ[_PyremoteBootstrapConsts.SRC_FILE_VAR] = tfn
+            os.environ[_PyremoteBootstrapConsts.OPTIONS_JSON_VAR] = options_json.decode('utf-8')
 
             # Re-exec temp file
-            exe = os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR]
-            context_name = os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR]
-            os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)), tfn)
+            exe = os.environ[_PyremoteBootstrapConsts.ARGV0_VAR]
+            context_name = os.environ[_PyremoteBootstrapConsts.CONTEXT_NAME_VAR]
+            os.execl(exe, exe + (_PyremoteBootstrapConsts.PROC_TITLE_FMT % (context_name,)), tfn)
 
     else:
         # Load options json var
-        options_json_str = os.environ.pop(_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR)
+        options_json_str = os.environ.pop(_PyremoteBootstrapConsts.OPTIONS_JSON_VAR)
         options = PyremoteBootstrapOptions(**json.loads(options_json_str))
 
         # Read temp source file
-        with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
+        with open(os.environ.pop(_PyremoteBootstrapConsts.SRC_FILE_VAR)) as sf:
             payload_src = sf.read()
 
     # Restore vars
-    sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
-    context_name = os.environ.pop(_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR)
+    sys.executable = os.environ.pop(_PyremoteBootstrapConsts.ARGV0_VAR)
+    context_name = os.environ.pop(_PyremoteBootstrapConsts.CONTEXT_NAME_VAR)
 
     # Write third ack
-    os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
+    os.write(1, _PyremoteBootstrapConsts.ACK2)
 
     # Write env info
     env_info = _get_pyremote_env_info()
@@ -1055,7 +1047,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     os.write(1, env_info_json.encode('utf-8'))
 
     # Setup IO
-    input = os.fdopen(_PYREMOTE_BOOTSTRAP_INPUT_FD, 'rb', 0)  # noqa
+    input = os.fdopen(_PyremoteBootstrapConsts.INPUT_FD, 'rb', 0)  # noqa
     output = os.fdopen(os.dup(1), 'wb', 0)  # noqa
     os.dup2(nfd := os.open('/dev/null', os.O_WRONLY), 1)
     os.close(nfd)
@@ -1065,7 +1057,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         sys.modules[mn] = sys.modules['__main__']
 
     # Write fourth ack
-    output.write(_PYREMOTE_BOOTSTRAP_ACK3)
+    output.write(_PyremoteBootstrapConsts.ACK3)
 
     # Return
     return PyremotePayloadRuntime(
@@ -1139,7 +1131,7 @@ class PyremoteBootstrapDriver:
 
     def gen(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
         # Read first ack (after fork)
-        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
+        yield from self._expect(_PyremoteBootstrapConsts.ACK0)
 
         # Read pid
         d = yield from self._read(8)
@@ -1150,14 +1142,14 @@ class PyremoteBootstrapDriver:
         yield from self._write(self._payload_z)
 
         # Read second ack (after writing src copies)
-        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
+        yield from self._expect(_PyremoteBootstrapConsts.ACK1)
 
         # Write options
         yield from self._write(struct.pack('<I', len(self._options_json)))
         yield from self._write(self._options_json)
 
         # Read third ack (after reaping child process)
-        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK2)
+        yield from self._expect(_PyremoteBootstrapConsts.ACK2)
 
         # Read env info
         d = yield from self._read(4)
@@ -1167,7 +1159,7 @@ class PyremoteBootstrapDriver:
         env_info = PyremoteEnvInfo.from_dict(json.loads(env_info_json))
 
         # Read fourth ack (after finalization completed)
-        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK3)
+        yield from self._expect(_PyremoteBootstrapConsts.ACK3)
 
         # Return
         return self.Result(
