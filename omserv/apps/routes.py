@@ -6,6 +6,7 @@ TODO:
 import contextlib
 import dataclasses as dc
 import logging
+import re
 import typing as ta
 
 from omlish import check
@@ -23,6 +24,9 @@ from .markers import append_app_marker
 from .markers import get_app_markers
 
 
+PatOrStr: ta.TypeAlias = re.Pattern | str
+
+
 log = logging.getLogger(__name__)
 
 
@@ -31,22 +35,22 @@ log = logging.getLogger(__name__)
 
 class Route(ta.NamedTuple):
     method: str
-    path: str
+    path: PatOrStr
 
     @classmethod
-    def get(cls, path: str) -> 'Route':
+    def get(cls, path: PatOrStr) -> 'Route':
         return cls('GET', path)
 
     @classmethod
-    def post(cls, path: str) -> 'Route':
+    def post(cls, path: PatOrStr) -> 'Route':
         return cls('POST', path)
 
     @classmethod
-    def put(cls, path: str) -> 'Route':
+    def put(cls, path: PatOrStr) -> 'Route':
         return cls('PUT', path)
 
     @classmethod
-    def delete(cls, path: str) -> 'Route':
+    def delete(cls, path: PatOrStr) -> 'Route':
         return cls('DELETE', path)
 
 
@@ -147,10 +151,40 @@ def build_route_handler_map(
 ##
 
 
-@dc.dataclass(frozen=True)
 class RouteHandlerApp(asgi.App_):
-    route_handlers: ta.Mapping[Route, asgi.App]
-    base_server_url: BaseServerUrl | None = None
+    def __init__(
+            self,
+            route_handlers: ta.Mapping[Route, asgi.App],
+            base_server_url: BaseServerUrl | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._route_handlers = route_handlers
+        self._base_server_url = base_server_url
+
+        pat_dct: dict[str, list[tuple[Route, asgi.App]]] = {}
+        for r, a in route_handlers.items():
+            if not isinstance(r.path, re.Pattern):
+                continue
+            pat_dct.setdefault(r.method, []).append((r, a))
+        self._pat_route_handlers_by_method = pat_dct
+
+    def _get_route_app(self, *, method: str, path: str) -> asgi.App | None:
+        try:
+            return self._route_handlers[Route(method, path)]
+        except KeyError:
+            pass
+
+        if (pat_rts := self._pat_route_handlers_by_method.get(method)) is not None:
+            pat_apps = [
+                a
+                for r, a in pat_rts
+                if check.isinstance(r, re.Pattern).fullmatch(path)
+            ]
+            if pat_apps:
+                return check.single(pat_apps)
+
+        return None
 
     URL_SCHEME_PORT_PAIRS: ta.ClassVar[ta.Collection[tuple[str, int]]] = (
         ('http', 80),
@@ -167,8 +201,8 @@ class RouteHandlerApp(asgi.App_):
                     return
 
                 case 'http':
-                    if self.base_server_url is not None:
-                        bsu = self.base_server_url
+                    if self._base_server_url is not None:
+                        bsu = self._base_server_url
                     else:
                         sch = scope['scheme']
                         h, p = scope['server']
@@ -179,11 +213,13 @@ class RouteHandlerApp(asgi.App_):
                         bsu = BaseServerUrl(f'{sch}://{h}{ps}/')
                     es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))  # noqa
 
-                    route = Route(scope['method'], scope['raw_path'].decode())
-                    handler = self.route_handlers.get(route)
+                    app = self._get_route_app(
+                        method=scope['method'],
+                        path=scope['raw_path'].decode(),
+                    )
 
-                    if handler is not None:
-                        await handler(scope, recv, send)
+                    if app is not None:
+                        await app(scope, recv, send)
 
                     else:
                         await asgi.send_response(send, 404)
