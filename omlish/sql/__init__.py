@@ -5,9 +5,9 @@ from .. import lang as _lang
 
 
 if _ta.TYPE_CHECKING:
-    from . import api
+    from . import api  # noqa
 else:
-    api = _lang.proxy_import('.api', __package__)
+    globals()['api'] = _lang.proxy_import('.api', __package__)
 
 from .dbs import (  # noqa
     DbLoc,
@@ -24,6 +24,6 @@ from .qualifiedname import (  # noqa
 )
 
 if _ta.TYPE_CHECKING:
-    from . import queries
+    from . import queries  # noqa
 else:
-    queries = _lang.proxy_import('.queries', __package__)
+    globals()['queries'] = _lang.proxy_import('.queries', __package__)

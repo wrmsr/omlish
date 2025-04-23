@@ -38,6 +38,10 @@ class Closer(lang.Abstract):
             self.__repr = repr(self)
             self.__traceback = traceback.format_stack()[:-1]
 
+    @property
+    def _is_resourceless(self) -> bool:
+        return False
+
     @ta.final
     def close(self) -> None:
         self.__closed = True
@@ -47,7 +51,11 @@ class Closer(lang.Abstract):
         pass
 
     def __del__(self) -> None:
-        if self.__debug and not self.__closed:
+        if (
+                not self._is_resourceless and
+                self.__debug and
+                not self.__closed
+        ):
             warnings.warn(
                 f'\n\n{(sep := ("=" * 40))}\n'
                 f'{self.__class__.__name__} object {self.__repr} '

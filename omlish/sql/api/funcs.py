@@ -15,7 +15,12 @@ def query(
         obj: ta.Any,
         *args: ta.Any,
 ) -> Rows:
-    q = as_query(obj, *args, mode=QueryMode.QUERY)
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.QUERY,
+        querier=querier,
+    )
 
     return querier.query(q)
 
@@ -40,7 +45,12 @@ def exec(  # noqa
         obj: ta.Any,
         *args: ta.Any,
 ) -> None:
-    q = as_query(obj, *args, mode=QueryMode.EXEC)
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.EXEC,
+        querier=querier,
+    )
 
     with querier.query(q):
         pass
