@@ -30,7 +30,7 @@ from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder
 from .clip import FrozenOpenClipEmbedder
 from .unet import Downsample
-from .unet import UNetModel
+from .unet import UnetModel
 from .unet import Upsample
 from .unet import timestep_embedding
 
@@ -175,7 +175,7 @@ class DiffusionModel:
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-        self.diffusion_model = UNetModel(*args, **kwargs)
+        self.diffusion_model = UnetModel(*args, **kwargs)
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L913

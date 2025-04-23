@@ -15,7 +15,7 @@ from tinygrad.nn import Linear
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/util.py#L207
-def timestep_embedding(timesteps: Tensor, dim: int, max_period=10000):
+def timestep_embedding(timesteps: Tensor, dim: int, max_period: int = 10000):
     half = dim // 2
     freqs = (
         -math.log(max_period) * Tensor.arange(half, device=timesteps.device) / half
@@ -26,19 +26,19 @@ def timestep_embedding(timesteps: Tensor, dim: int, max_period=10000):
 
 
 class ResBlock:
-    def __init__(self, channels: int, emb_channels: int, out_channels: int):
+    def __init__(self, channels: int, emb_channels: int, out_channels: int) -> None:
         super().__init__()
 
-        self.in_layers = [
+        self.in_layers: list = [
             GroupNorm(32, channels),
             Tensor.silu,
             Conv2d(channels, out_channels, 3, padding=1),
         ]
-        self.emb_layers = [
+        self.emb_layers: list = [
             Tensor.silu,
             Linear(emb_channels, out_channels),
         ]
-        self.out_layers = [
+        self.out_layers: list = [
             GroupNorm(32, out_channels),
             Tensor.silu,
             lambda x: x,  # needed for weights loading code to work
@@ -65,7 +65,7 @@ class CrossAttention:
             ctx_dim: int,
             n_heads: int,
             d_head: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.to_q = Linear(query_dim, n_heads * d_head, bias=False)
@@ -73,7 +73,7 @@ class CrossAttention:
         self.to_v = Linear(ctx_dim, n_heads * d_head, bias=False)
         self.num_heads = n_heads
         self.head_size = d_head
-        self.to_out = [Linear(n_heads * d_head, query_dim)]
+        self.to_out: list = [Linear(n_heads * d_head, query_dim)]
 
     def __call__(self, x: Tensor, ctx: Tensor | None = None) -> Tensor:
         ctx = x if ctx is None else ctx
@@ -87,8 +87,8 @@ class CrossAttention:
         return h_.sequential(self.to_out)
 
 
-class GEGLU:
-    def __init__(self, dim_in: int, dim_out: int):
+class Geglu:
+    def __init__(self, dim_in: int, dim_out: int) -> None:
         super().__init__()
 
         self.proj = Linear(dim_in, dim_out * 2)
@@ -100,11 +100,11 @@ class GEGLU:
 
 
 class FeedForward:
-    def __init__(self, dim: int, mult: int = 4):
+    def __init__(self, dim: int, mult: int = 4) -> None:
         super().__init__()
 
-        self.net = [
-            GEGLU(dim, dim * mult),
+        self.net: list = [
+            Geglu(dim, dim * mult),
             lambda x: x,  # needed for weights loading code to work
             Linear(dim * mult, dim),
         ]
@@ -120,7 +120,7 @@ class BasicTransformerBlock:
             ctx_dim: int,
             n_heads: int,
             d_head: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.attn1 = CrossAttention(dim, dim, n_heads, d_head)
@@ -147,7 +147,7 @@ class SpatialTransformer:
         ctx_dim: int | list[int],
         use_linear: bool,
         depth: int = 1,
-    ):
+    ) -> None:
         super().__init__()
 
         if isinstance(ctx_dim, int):
@@ -188,7 +188,7 @@ class SpatialTransformer:
 
 
 class Downsample:
-    def __init__(self, channels: int):
+    def __init__(self, channels: int) -> None:
         super().__init__()
 
         self.op = Conv2d(channels, channels, 3, stride=2, padding=1)
@@ -198,7 +198,7 @@ class Downsample:
 
 
 class Upsample:
-    def __init__(self, channels: int):
+    def __init__(self, channels: int) -> None:
         super().__init__()
 
         self.conv = Conv2d(channels, channels, 3, padding=1)
@@ -214,7 +214,7 @@ class Upsample:
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/openaimodel.py#L472
-class UNetModel:
+class UnetModel:
     def __init__(
         self,
         adm_in_ch: int | None,
@@ -229,7 +229,7 @@ class UNetModel:
         use_linear: bool = False,
         d_head: int | None = None,
         n_heads: int | None = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.model_ch = model_ch
@@ -242,7 +242,7 @@ class UNetModel:
         def get_d_and_n_heads(dims: int) -> tuple[int, int]:
             if self.d_head is None:
                 check.state(self.n_heads is not None, f'd_head and n_heads cannot both be None')
-                return dims // self.n_heads, self.n_heads
+                return dims // self.n_heads, self.n_heads  # type: ignore
             else:
                 check.state(self.n_heads is None, f'd_head and n_heads cannot both be non-None')
                 return self.d_head, dims // self.d_head
@@ -255,7 +255,7 @@ class UNetModel:
         ]
 
         if adm_in_ch is not None:
-            self.label_emb = [
+            self.label_emb: list = [
                 [
                     Linear(adm_in_ch, time_embed_dim),
                     Tensor.silu,
@@ -334,7 +334,7 @@ class UNetModel:
                     ds //= 2
                 self.output_blocks.append(layers)
 
-        self.out = [
+        self.out: list = [
             GroupNorm(32, ch),
             Tensor.silu,
             Conv2d(model_ch, out_ch, 3, padding=1),
@@ -348,7 +348,7 @@ class UNetModel:
             y: Tensor | None = None,
     ) -> Tensor:
         t_emb = timestep_embedding(tms, self.model_ch)
-        emb = t_emb.sequential(self.time_embed)
+        emb: ta.Any = t_emb.sequential(self.time_embed)
 
         if y is not None:
             check.state(y.shape[0] == x.shape[0])
@@ -359,7 +359,7 @@ class UNetModel:
             ctx = ctx.cast(dtypes.float16)
             x = x.cast(dtypes.float16)
 
-        def run(x: Tensor, bb) -> Tensor:
+        def run(x: Tensor, bb: ta.Any) -> Tensor:
             if isinstance(bb, ResBlock):
                 x = bb(x, emb)
             elif isinstance(bb, SpatialTransformer):
