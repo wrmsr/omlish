@@ -40,6 +40,8 @@ from .funcs import (  # noqa
 from .queries import (  # noqa
     QueryMode,
     Query,
+
+    as_query,
 )
 
 from .rows import (  # noqa

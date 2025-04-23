@@ -1,5 +1,6 @@
 import dataclasses as dc
 import enum
+import functools
 import typing as ta
 
 from ... import check
@@ -13,6 +14,21 @@ class QueryMode(enum.Enum):
     QUERY = enum.auto()
     EXEC = enum.auto()
 
+    @classmethod
+    def of(
+            cls,
+            o: ta.Union[str, 'QueryMode', None],
+            default: ta.Optional['QueryMode'] = None,
+    ) -> 'QueryMode':
+        if o is None:
+            return check.not_none(check.isinstance(default, cls))
+        elif isinstance(o, str):
+            return cls[o.upper()]  # noqa
+        elif isinstance(o, cls):
+            return o
+        else:
+            raise TypeError(o)
+
 
 @dc.dataclass(frozen=True)
 class Query(lang.Final):
@@ -20,44 +36,40 @@ class Query(lang.Final):
     text: str
     args: ta.Sequence[ta.Any]
 
-    #
 
-    @classmethod
-    @ta.overload
-    def of(
-            cls,
-            query: 'Query',
-    ) -> 'Query':
-        ...
+##
 
-    @classmethod
-    @ta.overload
-    def of(
-            cls,
-            text: str,
-            *args: ta.Any,
-            mode: str | QueryMode = QueryMode.QUERY,
-    ) -> 'Query':
-        ...
 
-    @classmethod  # type: ignore[misc]
-    def of(cls, obj, *args, **kwargs):
-        if isinstance(obj, Query):
-            check.arg(not args)
-            check.arg(not kwargs)
-            return obj
+@functools.singledispatch
+def as_query(
+        obj: ta.Any,
+        *args: ta.Any,
+        mode: QueryMode | str | None = None,
+        **kwargs: ta.Any,
+) -> Query:
+    raise TypeError(obj)
 
-        elif isinstance(obj, str):
-            mode = kwargs.pop('mode', QueryMode.QUERY)
-            if isinstance(mode, str):
-                mode = QueryMode[mode.upper()]
-            check.arg(not kwargs)
 
-            return cls(
-                mode=mode,
-                text=obj,
-                args=args,
-            )
+@as_query.register
+def _(
+        q: Query,
+        *,
+        mode: QueryMode | str | None = None,
+) -> Query:
+    if mode is not None:
+        check.arg(q.mode is QueryMode.of(mode))
 
-        else:
-            raise TypeError(obj)
+    return q
+
+
+@as_query.register
+def _(
+        s: str,
+        *args: ta.Any,
+        mode: QueryMode | str | None = None,
+) -> Query:
+    return Query(
+        mode=QueryMode.of(mode, QueryMode.QUERY),
+        text=s,
+        args=args,
+    )

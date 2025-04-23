@@ -1,10 +1,11 @@
 import typing as ta
 
 from .base import Querier
-from .base import Row
 from .base import Rows
 from .queries import Query
 from .queries import QueryMode
+from .queries import as_query
+from .rows import Row
 
 
 ##
@@ -32,10 +33,7 @@ def query(
         obj,
         *args,
 ):
-    if isinstance(obj, Query):
-        q = obj
-    else:
-        q = Query.of(obj, *args, mode=QueryMode.QUERY)
+    q = as_query(obj, *args, mode=QueryMode.QUERY)
 
     return querier.query(q)
 
@@ -76,10 +74,7 @@ def exec(  # noqa
     obj,
     *args,
 ):
-    if isinstance(obj, Query):
-        q = obj
-    else:
-        q = Query.of(obj, *args, mode=QueryMode.EXEC)
+    q = as_query(obj, *args, mode=QueryMode.EXEC)
 
     with querier.query(q):
         pass
