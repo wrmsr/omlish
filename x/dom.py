@@ -152,6 +152,9 @@ class Dom:
         return self
 
 
+
+
+
 ##
 
 
@@ -202,6 +205,18 @@ def check_content(c: ContentT) -> ContentT:
     return c
 
 
+def iter_content(c: Content) -> ta.Iterator[Dom | String]:
+    if isinstance(c, list):
+        for e in c:
+            yield from iter_content(e)
+    elif isinstance(c, (Dom, *STRING_TYPES)):
+        yield c
+    elif c is None:
+        pass
+    else:
+        raise TypeError(c)
+
+
 ##
 
 
@@ -245,6 +260,7 @@ class Renderer:
             *,
             forbid_str: bool = False,
             escape: ta.Callable[[str], str] | None = None,
+            indent: str | int | None = None,
     ) -> None:
         super().__init__()
 
@@ -254,6 +270,12 @@ class Renderer:
 
         self._forbid_str = forbid_str
         self._escape_fn = escape
+        if isinstance(indent, int):
+            indent = ' ' * indent
+        self._indent_str: str | None = indent
+
+        self._level = 0
+        self._indent_cache: dict[int, str] = {}
 
     def _escape(self, s: str) -> str:
         if _HAS_MARKUPSAFE and isinstance(s, ms.Markup):
@@ -268,6 +290,17 @@ class Renderer:
         if self._escape(s) != s:
             raise InvalidTagError(s)
         return s
+
+    #
+
+    def _write_indent(self) -> None:
+        if not (s := self._indent_str):
+            return
+        try:
+            ls = self._indent_cache[self._level]
+        except KeyError:
+            ls = self._indent_cache[self._level] = s * self._level
+        self._sb.write(ls)
 
     #
 
@@ -311,11 +344,13 @@ class Renderer:
 
     def _render_attr_value(self, v: ta.Any) -> None:
         self._sb.write('"')
-        self.render(v)
+        self._sb.write(check.isinstance(v, str))  # FIXME
         self._sb.write('"')
 
     @render.register  # noqa
     def _render_dom(self, n: Dom) -> None:
+        self._write_indent()
+
         self._sb.write('<')
         self._render_tag(n.tag)
 
@@ -326,9 +361,23 @@ class Renderer:
                 self._sb.write('=')
                 self._render_attr_value(v)
 
-        if n.body is not None:
-            self._sb.write('>')
-            self.render(n.body)
+        i = -1
+        for i, c in enumerate(iter_content(n.body)):
+            if not i:
+                self._sb.write('>')
+
+            if self._indent_str:
+                self._sb.write('\n')
+
+            self._level += 1
+            self.render(c)
+            self._level -= 1
+
+        if i >= 0:
+            if self._indent_str:
+                self._sb.write('\n')
+                self._write_indent()
+
             self._sb.write('</')
             self._render_tag(n.tag)
             self._sb.write('>')
@@ -353,6 +402,10 @@ def _main() -> None:
 
     print(root)
     print(Renderer.render_str(root))
+    print(Renderer.render_str(root, indent=2))
+    print()
+
+    #
 
     root = D.html(
         D.head(
@@ -366,6 +419,30 @@ def _main() -> None:
 
     print(root)
     print(Renderer.render_str(root))
+    print(Renderer.render_str(root, indent=2))
+    print()
+
+    #
+
+    root = D.html(
+        D.head(
+            D.script(src="..."),
+            D.script(
+                "alert('Hello World')"
+            ),
+        ),
+        D.body(
+            D.div(
+                D.h1(id="title").add("This is a title"),
+                D.p("This is a big paragraph of text"),
+            ),
+        ),
+    )
+
+    print(root)
+    print(Renderer.render_str(root))
+    print(Renderer.render_str(root, indent=2))
+    print()
 
 
 if __name__ == '__main__':
