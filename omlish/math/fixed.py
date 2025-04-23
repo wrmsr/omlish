@@ -6,6 +6,9 @@ from .. import check
 from .. import lang
 
 
+FixedWidthIntT = ta.TypeVar('FixedWidthIntT', bound='FixedWidthInt')
+
+
 ##
 
 
@@ -22,6 +25,10 @@ class UnderflowFixedWidthIntError(CheckedFixedWidthIntError):
 
 
 ##
+
+
+def _get_exclusive_base_cls(cls: type, base_classes: ta.Iterable[type]) -> type:
+    return check.single(bcls for bcls in base_classes if issubclass(cls, bcls))
 
 
 def _gen_scalar_proxy_method(name):
@@ -46,8 +53,9 @@ class FixedWidthInt(int, lang.Abstract):
     #
 
     class Mode(enum.StrEnum):
-        CHECKED = enum.auto()
-        CLAMPED = enum.auto()
+        CHECK = enum.auto()
+        CLAMP = enum.auto()
+        WRAP = enum.auto()
 
     MODE: ta.ClassVar[Mode]
 
@@ -68,6 +76,8 @@ class FixedWidthInt(int, lang.Abstract):
         if lang.is_abstract_class(cls):
             return
 
+        #
+
         bits = check.single({
             check.isinstance(bbits, int)
             for bcls in cls.__mro__
@@ -76,14 +86,30 @@ class FixedWidthInt(int, lang.Abstract):
 
         #
 
-        if issubclass(cls, SignedInt):
-            check.not_issubclass(cls, UnsignedInt)
+        mode_base = _get_exclusive_base_cls(cls, _MODE_BASE_CLASSES)
+
+        if mode_base is CheckedInt:
+            cls.MODE = cls.Mode.CHECK
+
+        elif mode_base is ClampedInt:
+            cls.MODE = cls.Mode.CLAMP
+
+        elif mode_base is WrappedInt:
+            cls.MODE = cls.Mode.WRAP
+
+        else:
+            raise TypeError(cls)
+
+        #
+
+        sign_base = _get_exclusive_base_cls(cls, _SIGN_BASE_CLASSES)
+
+        if sign_base is SignedInt:
             cls.SIGNED = True
             cls.MIN = -(1 << (bits - 1))
             cls.MAX = (1 << (bits - 1)) - 1
 
-        elif issubclass(cls, UnsignedInt):
-            check.not_issubclass(cls, SignedInt)
+        elif sign_base is UnsignedInt:
             cls.SIGNED = False
             cls.MIN = 0
             cls.MAX = (1 << bits) - 1
@@ -93,27 +119,27 @@ class FixedWidthInt(int, lang.Abstract):
 
         #
 
-        if issubclass(cls, CheckedInt):
-            check.not_issubclass(cls, ClampedInt)
-            cls.MODE = cls.Mode.CHECKED
+        cls.MASK = (1 << bits) - 1
 
-        elif issubclass(cls, ClampedInt):
-            check.not_issubclass(cls, CheckedInt)
-            cls.MODE = cls.Mode.CLAMPED
-
-        else:
-            raise TypeError(cls)
-
-        #
-
-        cls.MASK = (1 << cls.BITS) - 1
+    #
 
     @classmethod
     def clamp(cls, value: int) -> int:
+        return max(min(value, cls.MAX), cls.MIN)
+
+    @classmethod
+    def check(cls, value: int) -> int:
+        if value > cls.MAX:
+            raise OverflowFixedWidthIntError(value)
+        elif value < cls.MIN:
+            raise UnderflowFixedWidthIntError(value)
+        return value
+
+    @classmethod
+    def wrap(cls, value: int) -> int:
         return ((value - cls.MIN) & cls.MASK) + cls.MIN
 
-    def __new__(cls, value: int) -> 'FixedWidthInt':
-        return super().__new__(cls, cls.clamp(value))  # noqa
+    #
 
     _SCALAR_PROXY_METHODS = frozenset([
         '__abs__',
@@ -172,15 +198,35 @@ class UnsignedInt(FixedWidthInt, lang.Abstract):
     pass
 
 
+_SIGN_BASE_CLASSES: tuple[type[FixedWidthInt], ...] = (
+    SignedInt,
+    UnsignedInt,
+)
+
+
 #
 
 
 class CheckedInt(FixedWidthInt, lang.Abstract):
-    pass
+    def __new__(cls: type[FixedWidthIntT], value: int) -> FixedWidthIntT:
+        return super().__new__(cls, cls.check(value))  # type: ignore[misc]
 
 
 class ClampedInt(FixedWidthInt, lang.Abstract):
-    pass
+    def __new__(cls: type[FixedWidthIntT], value: int) -> FixedWidthIntT:
+        return super().__new__(cls, cls.clamp(value))  # type: ignore[misc]
+
+
+class WrappedInt(FixedWidthInt, lang.Abstract):
+    def __new__(cls: type[FixedWidthIntT], value: int) -> FixedWidthIntT:
+        return super().__new__(cls, cls.wrap(value))  # type: ignore[misc]
+
+
+_MODE_BASE_CLASSES: tuple[type[FixedWidthInt], ...] = (
+    CheckedInt,
+    ClampedInt,
+    WrappedInt,
+)
 
 
 #
@@ -295,4 +341,50 @@ class ClampedUInt64(ClampedInt, UnsignedInt, AnyInt64):
 
 
 class ClampedUInt128(ClampedInt, UnsignedInt, AnyInt128):
+    pass
+
+
+#
+
+
+class WrappedInt8(WrappedInt, SignedInt, AnyInt8):
+    pass
+
+
+class WrappedInt16(WrappedInt, SignedInt, AnyInt16):
+    pass
+
+
+class WrappedInt32(WrappedInt, SignedInt, AnyInt32):
+    pass
+
+
+class WrappedInt64(WrappedInt, SignedInt, AnyInt64):
+    pass
+
+
+class WrappedInt128(WrappedInt, SignedInt, AnyInt128):
+    pass
+
+
+#
+
+
+class WrappedUInt8(WrappedInt, UnsignedInt, AnyInt8):
+    pass
+
+
+class WrappedUInt16(WrappedInt, UnsignedInt, AnyInt16):
+    pass
+
+
+class WrappedUInt32(WrappedInt, UnsignedInt, AnyInt32):
+    pass
+
+
+class WrappedUInt64(WrappedInt, UnsignedInt, AnyInt64):
+    pass
+
+
+class WrappedUInt128(WrappedInt, UnsignedInt, AnyInt128):
     pass

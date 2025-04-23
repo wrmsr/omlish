@@ -52,6 +52,18 @@ from .fixed import (  # noqa
     ClampedUInt32,
     ClampedUInt64,
     ClampedUInt128,
+
+    WrappedInt8,
+    WrappedInt16,
+    WrappedInt32,
+    WrappedInt64,
+    WrappedInt128,
+
+    WrappedUInt8,
+    WrappedUInt16,
+    WrappedUInt32,
+    WrappedUInt64,
+    WrappedUInt128,
 )
 
 from .floats import (  # noqa

@@ -1,3 +1,10 @@
+"""
+TODO:
+ - reservoir
+ - dep tdigest?
+ - struct-of-arrays - array.array('f', ...) - backed SamplingHistogram
+ - https://docs.python.org/3/library/statistics.html
+"""
 import contextlib
 import dataclasses as dc
 import operator
