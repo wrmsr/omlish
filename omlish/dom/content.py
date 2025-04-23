@@ -1,3 +1,4 @@
+import keyword
 import typing as ta
 
 from .. import check
@@ -35,7 +36,7 @@ ContentT = ta.TypeVar('ContentT', bound=Content)
 
 
 ATTR_NAMES_BY_KWARG: ta.Mapping[str, str] = {
-    'class_': 'class',
+    **{f'{k}_': k for k in keyword.kwlist if k == k.lower()},
 }
 
 ATTR_KWARGS_BY_NAME: ta.Mapping[str, str] = {v: k for k, v in ATTR_NAMES_BY_KWARG.items()}
