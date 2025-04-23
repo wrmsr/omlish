@@ -322,9 +322,7 @@ class FrozenClosedClipEmbedder(Embedder):
 
 
 class Open:
-    """
-    Namespace for OpenCLIP model components.
-    """
+    """Namespace for OpenCLIP model components."""
 
     class MultiheadAttention:
         def __init__(self, dims: int, n_heads: int):
@@ -339,25 +337,25 @@ class Open:
             self.out_proj = Linear(dims, dims)
 
         def __call__(self, x: Tensor, attn_mask: Tensor | None = None) -> Tensor:
-            T, B, C = x.shape
+            t, b, c = x.shape
 
             proj = x.linear(self.in_proj_weight.T, self.in_proj_bias)
-            proj = proj.unflatten(-1, (3, C)).unsqueeze(0).transpose(0, -2)
+            proj = proj.unflatten(-1, (3, c)).unsqueeze(0).transpose(0, -2)
 
             q, k, v = [
-                y.reshape(T, B * self.n_heads, self.d_head)
+                y.reshape(t, b * self.n_heads, self.d_head)
                 .transpose(0, 1)
-                .reshape(B, self.n_heads, T, self.d_head)
+                .reshape(b, self.n_heads, t, self.d_head)
                 for y in proj.chunk(3)
             ]
 
             attn_output = Tensor.scaled_dot_product_attention(
                 q, k, v, attn_mask=attn_mask,
             )
-            attn_output = attn_output.permute(2, 0, 1, 3).reshape(T * B, C)
+            attn_output = attn_output.permute(2, 0, 1, 3).reshape(t * b, c)
 
             attn_output = self.out_proj(attn_output)
-            attn_output = attn_output.reshape(T, B, C)
+            attn_output = attn_output.reshape(t, b, c)
 
             return attn_output
 
@@ -605,20 +603,20 @@ class OpenClipEncoder:
     # Should be doable in pure tinygrad, would just require some work and verification.
     # This is very desirable since it would allow for full generation->evaluation in a single JIT call.
     def prepare_image(self, image: Image.Image) -> Tensor:
-        SIZE = 224
+        size = 224
         w, h = image.size
-        scale = min(SIZE / h, SIZE / w)
+        scale = min(size / h, size / w)
         image = image.resize(
-            (max(int(w * scale), SIZE), max(int(h * scale), SIZE)),
+            (max(int(w * scale), size), max(int(h * scale), size)),
             Image.Resampling.BICUBIC,
         )
         w, h = image.size
-        if w > SIZE:
-            left = (w - SIZE) // 2
-            image = image.crop((left, left + SIZE, 0, SIZE))
-        elif h > SIZE:
-            top = (h - SIZE) // 2
-            image = image.crop((0, SIZE, top, top + SIZE))
+        if w > size:
+            left = (w - size) // 2
+            image = image.crop((left, left + size, 0, size))
+        elif h > size:
+            top = (h - size) // 2
+            image = image.crop((0, size, top, top + size))
 
         x = Tensor(np.array(image.convert('RGB')), device=self.std.device)
         x = x.permute(2, 0, 1).cast(dtypes.float32) / 255.0

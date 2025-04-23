@@ -14,6 +14,13 @@ from .columns import (  # noqa
     Columns,
 )
 
+from .dbapi import (  # noqa
+    DbapiRows,
+    DbapiConn,
+    DbapiDb,
+    DbapiAdapter,
+)
+
 from .errors import (  # noqa
     Error,
 
