@@ -2,9 +2,7 @@ import abc
 import functools
 import gzip
 import re
-
-import numpy as np
-from PIL import Image
+import typing as ta
 
 from omlish import check
 from tinygrad import Tensor
@@ -34,10 +32,11 @@ class Tokenizer:
     @staticmethod
     def get_pairs(word):
         """
-        Return set of symbol pairs in a word.
-        Word is represented as tuple of symbols (symbols being variable-length strings).
+        Return set of symbol pairs in a word. Word is represented as tuple of symbols (symbols being variable-length
+        strings).
         """
-        return set(zip(word, word[1:]))
+
+        return set(zip(word, word[1:]))  # noqa
 
     @staticmethod
     def whitespace_clean(text):
@@ -48,19 +47,18 @@ class Tokenizer:
     @staticmethod
     def bytes_to_unicode():
         """
-        Returns list of utf-8 byte and a corresponding list of unicode strings.
-        The reversible bpe codes work on unicode strings.
-        This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.
-        When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.
-        This is a significant percentage of your normal, say, 32K bpe vocab.
-        To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
-        And avoids mapping to whitespace/control characters the bpe code barfs on.
+        Returns list of utf-8 byte and a corresponding list of unicode strings. The reversible bpe codes work on unicode
+        strings. This means you need a large # of unicode characters in your vocab if you want to avoid UNKs. When
+        you're at something like a 10B token dataset you end up needing around 5K for decent coverage. This is a
+        significant percentage of your normal, say, 32K bpe vocab. To avoid that, we want lookup tables between utf-8
+        0bytes and unicode strings. And avoids mapping to whitespace/control characters the bpe code barfs on.
         """
-        bs = (
-            list(range(ord('!'), ord('~') + 1))
-            + list(range(ord('¡'), ord('¬') + 1))
-            + list(range(ord('®'), ord('ÿ') + 1))
-        )
+
+        bs = [
+            *range(ord('!'), ord('~') + 1),
+            *range(ord('¡'), ord('¬') + 1),
+            *range(ord('®'), ord('ÿ') + 1),
+        ]
         cs = bs[:]
         n = 0
         for b in range(2**8):
@@ -72,13 +70,14 @@ class Tokenizer:
         return dict(zip(bs, cs))
 
     class ClipTokenizer:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             self.byte_encoder = Tokenizer.bytes_to_unicode()
-            merges = gzip.open(default_bpe()).read().decode('utf-8').split('\n')
-            merges = merges[1 : 49152 - 256 - 2 + 1]
-            merges = [tuple(merge.split()) for merge in merges]
+            with gzip.open(default_bpe()) as gf:
+                merge_lines = gf.read().decode('utf-8').split('\n')
+            merge_lines = merge_lines[1:49152 - 256 - 2 + 1]
+            merges = [tuple(merge_line.split()) for merge_line in merge_lines]
             vocab = list(Tokenizer.bytes_to_unicode().values())
             vocab = vocab + [v + '</w>' for v in vocab]
             for merge in merges:
@@ -98,8 +97,8 @@ class Tokenizer:
         def bpe(self, token):
             if token in self.cache:
                 return self.cache[token]
-            word = tuple(token[:-1]) + (token[-1] + '</w>',)
-            pairs = Tokenizer.get_pairs(word)
+            word_tup = (*token[:-1], token[-1] + '</w>')
+            pairs = Tokenizer.get_pairs(word_tup)
 
             if not pairs:
                 return token + '</w>'
@@ -113,32 +112,32 @@ class Tokenizer:
                     break
 
                 first, second = bigram
-                new_word = []
+                new_word: ta.Any = []
                 i = 0
-                while i < len(word):
+                while i < len(word_tup):
                     try:
-                        j = word.index(first, i)
-                        new_word.extend(word[i:j])
+                        j = word_tup.index(first, i)
+                        new_word.extend(word_tup[i:j])
                         i = j
-                    except Exception:
-                        new_word.extend(word[i:])
+                    except Exception:  # noqa  # FIXME
+                        new_word.extend(word_tup[i:])
                         break
 
-                    if word[i] == first and i < len(word) - 1 and word[i + 1] == second:
+                    if word_tup[i] == first and i < len(word_tup) - 1 and word_tup[i + 1] == second:
                         new_word.append(first + second)
                         i += 2
                     else:
-                        new_word.append(word[i])
+                        new_word.append(word_tup[i])
                         i += 1
 
                 new_word = tuple(new_word)
-                word = new_word
-                if len(word) == 1:
+                word_tup = new_word
+                if len(word_tup) == 1:
                     break
 
-                pairs = Tokenizer.get_pairs(word)
+                pairs = Tokenizer.get_pairs(word_tup)
 
-            word = ' '.join(word)
+            word = ' '.join(word_tup)
             self.cache[token] = word
             return word
 
@@ -161,6 +160,9 @@ class Tokenizer:
             ]
 
 
+##
+
+
 class Embedder(abc.ABC):
     input_key: str
 
@@ -169,11 +171,14 @@ class Embedder(abc.ABC):
         pass
 
 
+#
+
+
 class Closed:
     """Namespace for OpenAI CLIP model components."""
 
     class ClipMlp:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             self.fc1 = Linear(768, 3072)
@@ -186,7 +191,7 @@ class Closed:
             return h
 
     class ClipAttention:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             self.embed_dim = 768
@@ -198,7 +203,7 @@ class Closed:
             self.out_proj = Linear(self.embed_dim, self.embed_dim)
 
         def __call__(
-            self, hidden_states: Tensor, causal_attention_mask: Tensor,
+                self, hidden_states: Tensor, causal_attention_mask: Tensor,
         ) -> Tensor:
             bsz, tgt_len, embed_dim = hidden_states.shape
             q, k, v = (
@@ -218,7 +223,7 @@ class Closed:
             )
 
     class ClipEncoderLayer:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             self.self_attn = Closed.ClipAttention()
@@ -227,7 +232,9 @@ class Closed:
             self.layer_norm2 = LayerNorm(768)
 
         def __call__(
-            self, hidden_states: Tensor, causal_attention_mask: Tensor,
+                self,
+                hidden_states: Tensor,
+                causal_attention_mask: Tensor,
         ) -> Tensor:
             residual = hidden_states
             hidden_states = self.layer_norm1(hidden_states)
@@ -242,39 +249,35 @@ class Closed:
             return hidden_states
 
     class ClipTextEmbeddings:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             self.token_embedding = Embedding(49408, 768)
             self.position_embedding = Embedding(77, 768)
 
         def __call__(self, input_ids: Tensor, position_ids: Tensor) -> Tensor:
-            return self.token_embedding(input_ids) + self.position_embedding(
-                position_ids,
-            )
+            return self.token_embedding(input_ids) + self.position_embedding(position_ids)
 
     class ClipEncoder:
-        def __init__(self, layer_count: int = 12):
+        def __init__(self, layer_count: int = 12) -> None:
             super().__init__()
 
             self.layers = [Closed.ClipEncoderLayer() for _ in range(layer_count)]
 
         def __call__(
-            self,
-            x: Tensor,
-            causal_attention_mask: Tensor,
-            ret_layer_idx: int | None = None,
+                self,
+                x: Tensor,
+                causal_attention_mask: Tensor,
+                ret_layer_idx: int | None = None,
         ) -> Tensor:
             # the indexing of layers is NOT off by 1, the original code considers the "input" as the first hidden state
-            layers = (
-                self.layers if ret_layer_idx is None else self.layers[:ret_layer_idx]
-            )
+            layers = self.layers if ret_layer_idx is None else self.layers[:ret_layer_idx]
             for l in layers:
                 x = l(x, causal_attention_mask)
             return x
 
     class ClipTextTransformer:
-        def __init__(self, ret_layer_idx: int | None = None):
+        def __init__(self, ret_layer_idx: int | None = None) -> None:
             super().__init__()
 
             self.embeddings = Closed.ClipTextEmbeddings()
@@ -284,7 +287,8 @@ class Closed:
 
         def __call__(self, input_ids: Tensor) -> Tensor:
             x = self.embeddings(
-                input_ids, Tensor.arange(input_ids.shape[1]).reshape(1, -1),
+                input_ids,
+                Tensor.arange(input_ids.shape[1]).reshape(1, -1),
             )
             x = self.encoder(
                 x,
@@ -294,7 +298,7 @@ class Closed:
             return self.final_layer_norm(x) if (self.ret_layer_idx is None) else x
 
     class ClipTextModel:
-        def __init__(self, ret_layer_idx: int | None):
+        def __init__(self, ret_layer_idx: int | None) -> None:
             super().__init__()
 
             self.text_model = Closed.ClipTextTransformer(ret_layer_idx=ret_layer_idx)
@@ -302,30 +306,31 @@ class Closed:
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L331
 class FrozenClosedClipEmbedder(Embedder):
-    def __init__(self, ret_layer_idx: int | None = None):
+    def __init__(self, ret_layer_idx: int | None = None) -> None:
         super().__init__()
 
         self.tokenizer = Tokenizer.ClipTokenizer()
         self.transformer = Closed.ClipTextModel(ret_layer_idx)
         self.input_key = 'txt'
 
-    def __call__(
-        self, texts: str | list[str] | Tensor,
-    ) -> Tensor | tuple[Tensor, ...]:
+    def __call__(self, texts: str | list[str] | Tensor) -> Tensor | tuple[Tensor, ...]:
         if isinstance(texts, str):
             texts = [texts]
         check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
         tokens = Tensor.cat(
-            *[Tensor(self.tokenizer.encode(text)) for text in texts], dim=0,
+            *[Tensor(self.tokenizer.encode(text)) for text in texts], dim=0,  # type: ignore[union-attr]
         )
         return self.transformer.text_model(tokens.reshape(len(texts), -1))
+
+
+#
 
 
 class Open:
     """Namespace for OpenCLIP model components."""
 
     class MultiheadAttention:
-        def __init__(self, dims: int, n_heads: int):
+        def __init__(self, dims: int, n_heads: int) -> None:
             super().__init__()
 
             self.dims = dims
@@ -340,7 +345,7 @@ class Open:
             t, b, c = x.shape
 
             proj = x.linear(self.in_proj_weight.T, self.in_proj_bias)
-            proj = proj.unflatten(-1, (3, c)).unsqueeze(0).transpose(0, -2)
+            proj = proj.unflatten(-1, (3, c)).unsqueeze(0).transpose(0, -2)  # type: ignore[arg-type]
 
             q, k, v = [
                 y.reshape(t, b * self.n_heads, self.d_head)
@@ -360,7 +365,7 @@ class Open:
             return attn_output
 
     class Mlp:
-        def __init__(self, dims, hidden_dims):
+        def __init__(self, dims, hidden_dims) -> None:
             super().__init__()
 
             self.c_fc = Linear(dims, hidden_dims)
@@ -376,7 +381,7 @@ class Open:
                 dims: int,
                 n_heads: int,
                 mlp_ratio: float,
-        ):
+        ) -> None:
             super().__init__()
 
             self.ln_1 = LayerNorm(dims)
@@ -386,7 +391,7 @@ class Open:
             self.mlp = Open.Mlp(dims, int(dims * mlp_ratio))
 
         def __call__(
-            self, x: Tensor, attn_mask: Tensor | None = None, transpose: bool = False,
+                self, x: Tensor, attn_mask: Tensor | None = None, transpose: bool = False,
         ) -> Tensor:
             q_x = self.ln_1(x)
             attn_out = self.attn(
@@ -405,7 +410,7 @@ class Open:
                 layers: int,
                 n_heads: int,
                 mlp_ratio: float = 4.0,
-        ):
+        ) -> None:
             super().__init__()
 
             self.resblocks = [
@@ -422,13 +427,13 @@ class Open:
     # https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/src/open_clip/transformer.py#L661
     class ClipTextTransformer:
         def __init__(
-            self,
-            width: int,
-            n_heads: int,
-            layers: int,
-            vocab_size: int = 49408,
-            ctx_length: int = 77,
-        ):
+                self,
+                width: int,
+                n_heads: int,
+                layers: int,
+                vocab_size: int = 49408,
+                ctx_length: int = 77,
+        ) -> None:
             super().__init__()
 
             self.token_embedding = Embedding(vocab_size, width)
@@ -442,11 +447,11 @@ class Open:
             seq_len = text.shape[1]
 
             x = self.token_embedding(text)
-            x = x + self.positional_embedding[:seq_len]
+            x = x + self.positional_embedding[:ta.cast(int, seq_len)]
             x = self.transformer(x, attn_mask=self.attn_mask)
             x = self.ln_final(x)
 
-            pooled = x[:, text.argmax(dim=-1)] @ self.text_projection
+            pooled = x[:, text.argmax(axis=-1)] @ self.text_projection
             return pooled
 
     class ClipVisionTransformer:
@@ -457,7 +462,7 @@ class Open:
                 d_head: int,
                 image_size: int,
                 patch_size: int,
-        ):
+        ) -> None:
             super().__init__()
 
             grid_size = image_size // patch_size
@@ -465,7 +470,11 @@ class Open:
             check.state(n_heads * d_head == width)
 
             self.conv1 = Conv2d(
-                3, width, kernel_size=patch_size, stride=patch_size, bias=False,
+                3,
+                width,
+                kernel_size=patch_size,
+                stride=patch_size,
+                bias=False,
             )
 
             self.class_embedding = Tensor.empty(width)
@@ -479,7 +488,8 @@ class Open:
             x = self.conv1(x)
             x = x.reshape(x.shape[0], x.shape[1], -1).permute(0, 2, 1)
             x = (
-                self.class_embedding.reshape(1, 1, -1)
+                self.class_embedding
+                .reshape(1, 1, -1)
                 .expand(x.shape[0], 1, -1)
                 .cat(x, dim=1)
             )
@@ -497,13 +507,13 @@ class Open:
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L498
 class FrozenOpenClipEmbedder(Embedder):
     def __init__(
-        self,
-        dims: int,
-        n_heads: int,
-        layers: int,
-        return_pooled: bool,
-        ln_penultimate: bool = False,
-    ):
+            self,
+            dims: int,
+            n_heads: int,
+            layers: int,
+            return_pooled: bool,
+            ln_penultimate: bool = False,
+    ) -> None:
         super().__init__()
 
         self.tokenizer = Tokenizer.ClipTokenizer()
@@ -530,9 +540,7 @@ class FrozenOpenClipEmbedder(Embedder):
             .add(self.model.positional_embedding)
             .permute(1, 0, 2)
         )
-        x, penultimate = self.text_transformer_forward(
-            x, attn_mask=self.model.attn_mask,
-        )
+        x, penultimate = self.text_transformer_forward(x, attn_mask=self.model.attn_mask)
 
         if self.ln_penultimate:
             penultimate = self.model.ln_final(penultimate)
@@ -549,97 +557,9 @@ class FrozenOpenClipEmbedder(Embedder):
         else:
             return penultimate
 
-    def __call__(
-        self, texts: str | list[str] | Tensor,
-    ) -> Tensor | tuple[Tensor, ...]:
+    def __call__(self, texts: str | list[str] | Tensor) -> Tensor | tuple[Tensor, ...]:
         if isinstance(texts, str):
             texts = [texts]
         check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
-        tokens = Tensor.cat(*[self.tokenize(text) for text in texts], dim=0)
+        tokens = Tensor.cat(*[self.tokenize(text) for text in texts], dim=0)  # type: ignore[union-attr]
         return self.embed_tokens(tokens)
-
-
-clip_configs: dict = {
-    'ViT-H-14': {
-        'dims': 1024,
-        'vision_cfg': {
-            'width': 1280,
-            'layers': 32,
-            'd_head': 80,
-            'image_size': 224,
-            'patch_size': 14,
-        },
-        'text_cfg': {
-            'width': 1024,
-            'n_heads': 16,
-            'layers': 24,
-            'ctx_length': 77,
-            'vocab_size': 49408,
-        },
-        'return_pooled': False,
-        'ln_penultimate': True,
-    },
-}
-
-
-class OpenClipEncoder:
-    def __init__(self, dims: int, text_cfg: dict, vision_cfg: dict, **_):
-        super().__init__()
-
-        self.visual = Open.ClipVisionTransformer(**vision_cfg)
-
-        text = Open.ClipTextTransformer(**text_cfg)
-        self.transformer = text.transformer
-        self.token_embedding = text.token_embedding
-        self.positional_embedding = text.positional_embedding
-        self.ln_final = text.ln_final
-        self.text_projection = text.text_projection
-
-        self.attn_mask = Tensor.full((77, 77), float('-inf')).triu(1).realize()
-        self.mean = Tensor([0.48145466, 0.45782750, 0.40821073]).reshape(-1, 1, 1)
-        self.std = Tensor([0.26862954, 0.26130258, 0.27577711]).reshape(-1, 1, 1)
-
-    # TODO:
-    # Should be doable in pure tinygrad, would just require some work and verification.
-    # This is very desirable since it would allow for full generation->evaluation in a single JIT call.
-    def prepare_image(self, image: Image.Image) -> Tensor:
-        size = 224
-        w, h = image.size
-        scale = min(size / h, size / w)
-        image = image.resize(
-            (max(int(w * scale), size), max(int(h * scale), size)),
-            Image.Resampling.BICUBIC,
-        )
-        w, h = image.size
-        if w > size:
-            left = (w - size) // 2
-            image = image.crop((left, left + size, 0, size))
-        elif h > size:
-            top = (h - size) // 2
-            image = image.crop((0, size, top, top + size))
-
-        x = Tensor(np.array(image.convert('RGB')), device=self.std.device)
-        x = x.permute(2, 0, 1).cast(dtypes.float32) / 255.0
-        return (x - self.mean) / self.std
-
-    def encode_tokens(self, tokens: Tensor) -> Tensor:
-        x = self.token_embedding(tokens)
-        x = x + self.positional_embedding
-        x = self.transformer(x, attn_mask=self.attn_mask)
-        x = self.ln_final(x)
-        x = x[:, tokens.argmax(axis=-1)]
-        x = x @ self.text_projection
-        return x
-
-    def get_clip_score(self, tokens: Tensor, image: Tensor) -> Tensor:
-        image_features: Tensor = self.visual(image)
-        image_features /= (
-            image_features.square().sum(-1, keepdim=True).sqrt()
-        )  # Frobenius Norm
-
-        text_features = self.encode_tokens(tokens)
-        text_features /= (
-            text_features.square().sum(-1, keepdim=True).sqrt()
-        )  # Frobenius Norm
-
-        return (image_features * text_features).sum(axis=-1)

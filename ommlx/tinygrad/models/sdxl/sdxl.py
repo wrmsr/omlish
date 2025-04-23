@@ -1,16 +1,51 @@
-# This file incorporates code from the following:
-# Github Name                    | License | Link
-# Stability-AI/generative-models | MIT     | https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/LICENSE-CODE
-# mlfoundations/open_clip        | MIT     | https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/LICENSE
-import argparse
-import dataclasses as dc
-import tempfile
+"""
+This file incorporates code from the following:
+ - Github Name                    | License | Link
+ - Stability-AI/generative-models | MIT     | https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/LICENSE-CODE
+ - mlfoundations/open_clip        | MIT     | https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/LICENSE
+"""  # noqa
+####
+# Stability-AI/generative-models
+# MIT License
+#
+# Copyright (c) 2023 Stability AI
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+####
+# mlfoundations/open_clip
+#
+# Copyright (c) 2012-2021 Gabriel Ilharco, Mitchell Wortsman, Nicholas Carlini, Rohan Taori, Achal Dave, Vaishaal
+# Shankar, John Miller, Hongseok Namkoong, Hannaneh Hajishirzi, Ali Farhadi, Ludwig Schmidt
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import abc
+import dataclasses as dc
 import typing as ta
-import pathlib
 
 import numpy as np
-from PIL import Image
 
 from omlish import check
 from tinygrad import GlobalCounters
@@ -18,13 +53,9 @@ from tinygrad import Tensor
 from tinygrad import TinyJit
 from tinygrad import dtypes
 from tinygrad.helpers import Timing
-from tinygrad.helpers import colored
-from tinygrad.helpers import fetch
 from tinygrad.helpers import trange
 from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
-from tinygrad.nn.state import load_state_dict
-from tinygrad.nn.state import safe_load
 
 from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder
@@ -39,7 +70,7 @@ from .unet import timestep_embedding
 
 
 class AttnBlock:
-    def __init__(self, in_channels):
+    def __init__(self, in_channels) -> None:
         super().__init__()
 
         self.norm = GroupNorm(32, in_channels)
@@ -65,7 +96,7 @@ class AttnBlock:
 
 
 class ResnetBlock:
-    def __init__(self, in_channels, out_channels=None):
+    def __init__(self, in_channels, out_channels=None) -> None:
         super().__init__()
 
         self.norm1 = GroupNorm(32, in_channels)
@@ -85,7 +116,7 @@ class ResnetBlock:
 
 
 class Mid:
-    def __init__(self, block_in):
+    def __init__(self, block_in) -> None:
         super().__init__()
 
         self.block_1 = ResnetBlock(block_in, block_in)
@@ -96,98 +127,30 @@ class Mid:
         return x.sequential([self.block_1, self.attn_1, self.block_2])
 
 
-# configs:
-# https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/configs/inference/sd_xl_base.yaml
-# https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/configs/inference/sd_xl_refiner.yaml
-configs: dict = {
-    'SDXL_Base': {
-        'model': {
-            'adm_in_ch': 2816,
-            'in_ch': 4,
-            'out_ch': 4,
-            'model_ch': 320,
-            'attention_resolutions': [4, 2],
-            'num_res_blocks': 2,
-            'channel_mult': [1, 2, 4],
-            'd_head': 64,
-            'transformer_depth': [1, 2, 10],
-            'ctx_dim': 2048,
-            'use_linear': True,
-        },
-        'conditioner': {
-            'concat_embedders': [
-                'original_size_as_tuple',
-                'crop_coords_top_left',
-                'target_size_as_tuple',
-            ],
-        },
-        'first_stage_model': {
-            'ch': 128,
-            'in_ch': 3,
-            'out_ch': 3,
-            'z_ch': 4,
-            'ch_mult': [1, 2, 4, 4],
-            'num_res_blocks': 2,
-            'resolution': 256,
-        },
-        'denoiser': {'num_idx': 1000},
-    },
-    'SDXL_Refiner': {
-        'model': {
-            'adm_in_ch': 2560,
-            'in_ch': 4,
-            'out_ch': 4,
-            'model_ch': 384,
-            'attention_resolutions': [4, 2],
-            'num_res_blocks': 2,
-            'channel_mult': [1, 2, 4, 4],
-            'd_head': 64,
-            'transformer_depth': [4, 4, 4, 4],
-            'ctx_dim': [1280, 1280, 1280, 1280],
-            'use_linear': True,
-        },
-        'conditioner': {
-            'concat_embedders': [
-                'original_size_as_tuple',
-                'crop_coords_top_left',
-                'aesthetic_score',
-            ],
-        },
-        'first_stage_model': {
-            'ch': 128,
-            'in_ch': 3,
-            'out_ch': 3,
-            'z_ch': 4,
-            'ch_mult': [1, 2, 4, 4],
-            'num_res_blocks': 2,
-            'resolution': 256,
-        },
-        'denoiser': {'num_idx': 1000},
-    },
-}
-
-
-def tensor_identity(x: Tensor) -> Tensor:
-    return x
+##
 
 
 class DiffusionModel:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__()
 
         self.diffusion_model = UnetModel(*args, **kwargs)
 
 
+##
+
+
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L913
-class ConcatTimestepEmbedderND(Embedder):
-    def __init__(self, outdim: int, input_key: str):
+class ConcatTimestepEmbedderNd(Embedder):
+    def __init__(self, outdim: int, input_key: str) -> None:
         super().__init__()
 
         self.outdim = outdim
         self.input_key = input_key
 
     def __call__(self, x: str | list[str] | Tensor):
-        check.state(isinstance(x, Tensor) and len(x.shape) == 2)
+        x = check.isinstance(x, Tensor)
+        check.state(len(x.shape) == 2)
         emb = timestep_embedding(x.flatten(), self.outdim)
         emb = emb.reshape((x.shape[0], -1))
         return emb
@@ -195,36 +158,43 @@ class ConcatTimestepEmbedderND(Embedder):
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L71
 class Conditioner:
-    OUTPUT_DIM2KEYS = {
+    OUTPUT_DIM2KEYS: ta.ClassVar[ta.Mapping[int, str]] = {
         2: 'vector',
         3: 'crossattn',
         4: 'concat',
         5: 'concat',
     }
-    KEY2CATDIM = {
+
+    KEY2CATDIM: ta.ClassVar[ta.Mapping[str, int]] = {
         'vector': 1,
         'crossattn': 2,
         'concat': 1,
     }
+
     embedders: list[Embedder]
 
-    def __init__(self, concat_embedders: list[str]):
+    def __init__(self, concat_embedders: list[str]) -> None:
         super().__init__()
 
         self.embedders = [
             FrozenClosedClipEmbedder(ret_layer_idx=11),
             FrozenOpenClipEmbedder(
-                dims=1280, n_heads=20, layers=32, return_pooled=True,
+                dims=1280,
+                n_heads=20,
+                layers=32,
+                return_pooled=True,
             ),
         ]
         for input_key in concat_embedders:
-            self.embedders.append(ConcatTimestepEmbedderND(256, input_key))
+            self.embedders.append(ConcatTimestepEmbedderNd(256, input_key))
 
     def get_keys(self) -> set[str]:
-        return set(e.input_key for e in self.embedders)
+        return {e.input_key for e in self.embedders}
 
     def __call__(
-        self, batch: dict, force_zero_embeddings: list = [],
+            self,
+            batch: dict,
+            force_zero_embeddings: list | None = None,
     ) -> dict[str, Tensor]:
         output: dict[str, Tensor] = {}
 
@@ -236,18 +206,27 @@ class Conditioner:
             check.state(isinstance(emb_out, (list, tuple)))
 
             for emb in emb_out:
-                if embedder.input_key in force_zero_embeddings:
+                if embedder.input_key in (force_zero_embeddings or []):
                     emb = Tensor.zeros_like(emb)
 
                 out_key = self.OUTPUT_DIM2KEYS[len(emb.shape)]
                 if out_key in output:
                     output[out_key] = Tensor.cat(
-                        output[out_key], emb, dim=self.KEY2CATDIM[out_key],
+                        output[out_key],
+                        emb,
+                        dim=self.KEY2CATDIM[out_key],
                     )
                 else:
                     output[out_key] = emb
 
         return output
+
+
+##
+
+
+def tensor_identity(x: Tensor) -> Tensor:
+    return x
 
 
 class FirstStage:
@@ -256,7 +235,7 @@ class FirstStage:
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/model.py#L487
     class Encoder:
         class BlockEntry:
-            def __init__(self, block: list[ResnetBlock], downsample):
+            def __init__(self, block: list[ResnetBlock], downsample) -> None:
                 super().__init__()
 
                 self.block = block
@@ -271,11 +250,11 @@ class FirstStage:
             ch_mult: list[int],
             num_res_blocks: int,
             resolution: int,
-        ):
+        ) -> None:
             super().__init__()
 
             self.conv_in = Conv2d(in_ch, ch, kernel_size=3, stride=1, padding=1)
-            in_ch_mult = (1,) + tuple(ch_mult)
+            in_ch_mult = (1, *ch_mult)
 
             self.down: list[FirstStage.Encoder.BlockEntry] = []
             for i_level in range(len(ch_mult)):
@@ -327,7 +306,7 @@ class FirstStage:
             ch_mult: list[int],
             num_res_blocks: int,
             resolution: int,
-        ):
+        ) -> None:
             super().__init__()
 
             block_in = ch * ch_mult[-1]
@@ -347,7 +326,7 @@ class FirstStage:
                     block_in = block_out
 
                 upsample = tensor_identity if i_level == 0 else Upsample(block_in)
-                self.up.insert(0, self.BlockEntry(block, upsample))  # type: ignore
+                self.up.insert(0, self.BlockEntry(block, upsample))
 
             self.norm_out = GroupNorm(32, block_in)
             self.conv_out = Conv2d(block_in, out_ch, kernel_size=3, stride=1, padding=1)
@@ -370,7 +349,7 @@ class FirstStage:
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/models/autoencoder.py#L437
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/models/autoencoder.py#L508
 class FirstStageModel:
-    def __init__(self, embed_dim: int = 4, **kwargs):
+    def __init__(self, embed_dim: int = 4, **kwargs) -> None:
         super().__init__()
 
         self.encoder = FirstStage.Encoder(**kwargs)
@@ -382,14 +361,17 @@ class FirstStageModel:
         return z.sequential([self.post_quant_conv, self.decoder])
 
 
+##
+
+
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/discretizer.py#L42
-class LegacyDDPMDiscretization:
+class LegacyDdpmDiscretization:
     def __init__(
         self,
         linear_start: float = 0.00085,
         linear_end: float = 0.0120,
         num_timesteps: int = 1000,
-    ):
+    ) -> None:
         super().__init__()
 
         self.num_timesteps = num_timesteps
@@ -417,6 +399,9 @@ class LegacyDDPMDiscretization:
         )  # sigmas is "pre-flipped", need to do oposite of flag
 
 
+##
+
+
 def append_dims(x: Tensor, t: Tensor) -> Tensor:
     dims_to_append = len(t.shape) - len(x.shape)
     check.state(dims_to_append >= 0)
@@ -429,15 +414,15 @@ def run(model, x, tms, ctx, y, c_out, add):
 
 
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/models/diffusion.py#L19
-class SDXL:
-    def __init__(self, config: dict):
+class Sdxl:
+    def __init__(self, config: dict) -> None:
         super().__init__()
 
         self.conditioner = Conditioner(**config['conditioner'])
         self.first_stage_model = FirstStageModel(**config['first_stage_model'])
         self.model = DiffusionModel(**config['model'])
 
-        self.discretization = LegacyDDPMDiscretization()
+        self.discretization = LegacyDdpmDiscretization()
         self.sigmas = self.discretization(config['denoiser']['num_idx'], flip=True)
 
     # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/inference/helpers.py#L173
@@ -493,8 +478,11 @@ class SDXL:
         return self.first_stage_model.decode(1.0 / 0.13025 * x)
 
 
+##
+
+
 class Guider(abc.ABC):
-    def __init__(self, scale: float):
+    def __init__(self, scale: float) -> None:
         super().__init__()
 
         self.scale = scale
@@ -504,7 +492,7 @@ class Guider(abc.ABC):
         pass
 
 
-class VanillaCFG(Guider):
+class VanillaCfg(Guider):
     def __call__(self, denoiser, x: Tensor, s: Tensor, c: dict, uc: dict) -> Tensor:
         c_out = {}
         for k in c:
@@ -516,7 +504,7 @@ class VanillaCFG(Guider):
         return x_pred
 
 
-class SplitVanillaCFG(Guider):
+class SplitVanillaCfg(Guider):
     def __call__(self, denoiser, x: Tensor, s: Tensor, c: dict, uc: dict) -> Tensor:
         x_u = denoiser(x, s, uc).clone().realize()
         x_c = denoiser(x, s, c)
@@ -524,13 +512,16 @@ class SplitVanillaCFG(Guider):
         return x_pred
 
 
+#
+
+
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/sampling.py#L21
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/sampling.py#L287
-class DPMPP2MSampler:
-    def __init__(self, cfg_scale: float, guider_cls: type[Guider] = VanillaCFG):
+class Dpmpp2mSampler:
+    def __init__(self, cfg_scale: float, guider_cls: type[Guider] = VanillaCfg) -> None:
         super().__init__()
 
-        self.discretization = LegacyDDPMDiscretization()
+        self.discretization = LegacyDdpmDiscretization()
         self.guider = guider_cls(cfg_scale)
 
     def sampler_step(
@@ -565,7 +556,13 @@ class DPMPP2MSampler:
         return x, denoised
 
     def __call__(
-        self, denoiser, x: Tensor, c: dict, uc: dict, num_steps: int, timing=False,
+            self,
+            denoiser,
+            x: Tensor,
+            c: dict,
+            uc: dict,
+            num_steps: int,
+            timing=False,
     ) -> Tensor:
         sigmas = self.discretization(num_steps).to(x.device)
         x *= Tensor.sqrt(1.0 + sigmas[0] ** 2.0)
@@ -576,7 +573,7 @@ class DPMPP2MSampler:
             with Timing(
                 'step in ',
                 enabled=timing,
-                on_exit=lambda _: f', using {GlobalCounters.mem_used/1e9:.2f} GB',
+                on_exit=lambda _: f', using {GlobalCounters.mem_used / 1e9:.2f} GB',
             ):
                 GlobalCounters.reset()
                 x, old_denoised = self.sampler_step(
@@ -593,153 +590,3 @@ class DPMPP2MSampler:
                 old_denoised.realize()
 
         return x
-
-
-##
-
-
-def _main() -> None:
-    default_prompt = 'elon musk eating poop'
-    parser = argparse.ArgumentParser(
-        description='Run SDXL',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument(
-        '--steps',
-        type=int,
-        default=10,
-        help='The number of diffusion steps',
-    )
-    parser.add_argument(
-        '--prompt',
-        type=str,
-        default=default_prompt,
-        help='Description of image to generate',
-    )
-    parser.add_argument(
-        '--out',
-        type=str,
-        default=pathlib.Path(tempfile.gettempdir()) / 'rendered.png',
-        help='Output filename',
-    )
-    parser.add_argument(
-        '--seed',
-        type=int,
-        help='Set the random latent seed',
-    )
-    parser.add_argument(
-        '--guidance',
-        type=float,
-        default=6.0,
-        help='Prompt strength',
-    )
-    parser.add_argument(
-        '--width',
-        type=int,
-        default=1024,
-        help='The output image width',
-    )
-    parser.add_argument(
-        '--height',
-        type=int,
-        default=1024,
-        help='The output image height',
-    )
-    parser.add_argument(
-        '--weights',
-        type=str,
-        help='Custom path to weights',
-    )
-    parser.add_argument(
-        '--timing',
-        action='store_true',
-        help='Print timing per step',
-    )
-    parser.add_argument(
-        '--noshow',
-        action='store_true',
-        help="Don't show the image",
-    )
-    args = parser.parse_args()
-
-    Tensor.no_grad = True
-    if args.seed is not None:
-        Tensor.manual_seed(args.seed)
-
-    model = SDXL(configs['SDXL_Base'])
-
-    default_weight_url = 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors'
-    weights = (
-        args.weights
-        if args.weights
-        else fetch(default_weight_url, 'sd_xl_base_1.0.safetensors')
-    )
-    load_state_dict(model, safe_load(weights), strict=False)
-
-    n = 1
-    C = 4
-    F = 8
-
-    check.state(args.width % F == 0, f'img_width must be multiple of {F}, got {args.width}')
-    check.state(args.height % F == 0, f'img_height must be multiple of {F}, got {args.height}')
-
-    c, uc = model.create_conditioning([args.prompt], args.width, args.height)
-    del model.conditioner
-    for v in c.values():
-        v.realize()
-    for v in uc.values():
-        v.realize()
-    print('created batch')
-
-    # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/inference/helpers.py#L101
-    shape = (n, C, args.height // F, args.width // F)
-    randn = Tensor.randn(shape)
-
-    sampler = DPMPP2MSampler(args.guidance)
-    z = sampler(model.denoise, randn, c, uc, args.steps, timing=args.timing)
-    print('created samples')
-    x = model.decode(z).realize()
-    print('decoded samples')
-
-    # make image correct size and scale
-    x = (x + 1.0) / 2.0
-    x = (
-        x
-        .reshape(3, args.height, args.width)
-        .permute(1, 2, 0)
-        .clip(0, 1)
-        .mul(255)
-        .cast(dtypes.uint8)
-    )
-    print(x.shape)
-
-    im = Image.fromarray(x.numpy())
-    print(f'saving {args.out}')
-    im.save(args.out)
-
-    if not args.noshow:
-        im.show()
-
-    # validation!
-    if (
-        args.prompt == default_prompt
-        and args.steps == 10
-        and args.seed == 0
-        and args.guidance == 6.0
-        and args.width == args.height == 1024
-        and not args.weights
-    ):
-        ref_image = Tensor(
-            np.array(Image.open(pathlib.Path(__file__).parent / 'sdxl_seed0.png')),
-        )
-        distance = (
-            (((x.cast(dtypes.float) - ref_image.cast(dtypes.float)) / ref_image.max()) ** 2)
-            .mean()
-            .item()
-        )
-        check.state(distance < 4e-3, f'validation failed with {distance=}')
-        print(colored(f'output validated with {distance=}', 'green'))
-
-
-if __name__ == '__main__':
-    _main()
