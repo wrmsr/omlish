@@ -19,6 +19,7 @@ from omlish.subprocesses.editor import edit_text_with_user_editor
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
+from .inject import bind_main
 from .sessions.base import Session
 from .sessions.chat import InteractiveChatSession
 from .sessions.chat import PromptChatSession
@@ -134,15 +135,9 @@ def _main() -> None:
 
     #
 
-    els: list[inj.Elemental] = [
-        inj.bind(session_cfg),
-        inj.bind(session_cfg.configurable_cls, singleton=True),
-        inj.bind(Session, to_key=session_cfg.configurable_cls),
-    ]
-
-    #
-
-    with inj.create_managed_injector(inj.as_elements(*els)) as injector:
+    with inj.create_managed_injector(bind_main(
+            session_cfg,
+    )) as injector:
         injector[Session].run()
 
 

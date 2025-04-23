@@ -1,9 +1,7 @@
 import dataclasses as dc
 import datetime
-import os.path
 import typing as ta
 
-from omdev.home.paths import get_home_paths
 from omlish import check
 from omlish import lang
 
@@ -13,7 +11,7 @@ from ...minichain.backends.google.chat import GoogleChatService
 from ...minichain.backends.llamacpp.chat import LlamacppChatService
 from ...minichain.backends.mistral import MistralChatService
 from ...minichain.backends.openai.chat import OpenaiChatService
-from ..state import JsonFileStateStorage
+from ..state import StateStorage
 from .base import Session
 
 
@@ -65,22 +63,23 @@ class PromptChatSession(Session['PromptChatSession.Config']):
         backend: str | None = None
         stream: bool = False
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            config: Config,
+            *,
+            state_storage: StateStorage,
+    ) -> None:
         super().__init__(config)
+
+        self._state_storage = state_storage
 
     def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
-        state_dir = os.path.join(get_home_paths().state_dir, 'minichain', 'cli')
-        if not os.path.exists(state_dir):
-            os.makedirs(state_dir, exist_ok=True)
-            os.chmod(state_dir, 0o770)  # noqa
-
-        chat_file = os.path.join(state_dir, 'chat.json')
         if self._config.new:
             state = ChatState()
         else:
-            state = JsonFileStateStorage(chat_file).load_state('chat', ChatState)  # type: ignore
+            state = self._state_storage.load_state('chat', ChatState)  # type: ignore
             if state is None:
                 state = ChatState()  # type: ignore
 
@@ -118,7 +117,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             updated_at=lang.utcnow(),
         )
 
-        JsonFileStateStorage(chat_file).save_state('chat', state, ChatState)
+        self._state_storage.save_state('chat', state, ChatState)
 
 
 ##
@@ -132,20 +131,21 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
         new: bool = False
         backend: str | None = None
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            config: Config,
+            *,
+            state_storage: StateStorage,
+    ) -> None:
         super().__init__(config)
 
-    def run(self) -> None:
-        state_dir = os.path.join(get_home_paths().state_dir, 'minichain', 'cli')
-        if not os.path.exists(state_dir):
-            os.makedirs(state_dir, exist_ok=True)
-            os.chmod(state_dir, 0o770)  # noqa
+        self._state_storage = state_storage
 
-        chat_file = os.path.join(state_dir, 'chat.json')
+    def run(self) -> None:
         if self._config.new:
             state = ChatState()
         else:
-            state = JsonFileStateStorage(chat_file).load_state('chat', ChatState)  # type: ignore
+            state = self._state_storage.load_state('chat', ChatState)  # type: ignore
             if state is None:
                 state = ChatState()  # type: ignore
 
@@ -173,4 +173,4 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
                 updated_at=lang.utcnow(),
             )
 
-            JsonFileStateStorage(chat_file).save_state('chat', state, ChatState)
+            self._state_storage.save_state('chat', state, ChatState)
