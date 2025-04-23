@@ -67,6 +67,8 @@ Content: ta.TypeAlias = ta.Union[
     None,
 ]
 
+ContentT = ta.TypeVar('ContentT', bound=Content)
+
 
 ##
 
@@ -103,6 +105,8 @@ class Dom:
     def add(self, *contents: Content) -> 'Dom':
         if self.body is None:
             self.body = []
+        for c in contents:
+            check_content(c)
         self.body.extend(contents)
         return self
 
@@ -120,14 +124,14 @@ class Dom:
         return self
 
 
+##
+
+
 def dom(
         tag: str,
-        *attrs_and_contents: ta.Union[
-            tuple[str, ta.Any],
-            Content,
-        ],
+        *attrs_and_contents: tuple[str, ta.Any] | Content,
         **kwargs: ta.Any,
-) -> 'Dom':
+) -> Dom:
     c = []
     for a in attrs_and_contents:
         if isinstance(a, tuple):
@@ -137,11 +141,55 @@ def dom(
             kwargs[k] = v
         else:
             c.append(a)
+
     return Dom(
         tag,
         attrs=kwargs_to_attrs(**kwargs) or None,
         body=c or None,
     )
+
+
+##
+
+
+CONTENT_TYPES: tuple[type, ...] = (
+    list,
+    Dom,
+    str,
+    type(None),
+)
+
+
+def check_content(c: ContentT) -> ContentT:
+    if isinstance(c, list):
+        for e in c:
+            check_content(e)
+    else:
+        check.isinstance(c, CONTENT_TYPES)
+    return c
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DomBuilder:
+    tag: str
+
+    def __call__(
+            self,
+            *attrs_and_contents: tuple[str, ta.Any] | Content,
+            **kwargs: ta.Any,
+    ) -> Dom:
+        return dom(self.tag, *attrs_and_contents, **kwargs)
+
+
+class DomAccessor:
+    def __getattr__(self, tag: str) -> DomBuilder:
+        return DomBuilder(tag)
+
+
+D = DomAccessor()
 
 
 ##
@@ -221,6 +269,19 @@ def _main() -> None:
         dom('body').add(
             dom('svg', id='chart', width='600', height='300'),
             dom('div', id='tooltip', class_='tooltip')
+        ),
+    )
+
+    print(root)
+    print(Renderer.render_str(root))
+
+    root = D.html(
+        D.head(
+            D.title('hi'),
+        ),
+        D.body(
+            D.svg(id='chart', width='600', height='300'),
+            D.div(id='tooltip', class_='tooltip'),
         ),
     )
 
