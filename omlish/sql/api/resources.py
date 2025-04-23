@@ -11,6 +11,10 @@ from ... import lang
 DEBUG = __debug__
 
 
+def get_resource_debug() -> bool:
+    return DEBUG
+
+
 def set_resource_debug(debug: bool) -> None:
     global DEBUG
     DEBUG = debug
@@ -25,7 +29,7 @@ class UnclosedResourceWarning(Warning):
 
 class Closer(lang.Abstract):
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.__closed = False
 
@@ -59,9 +63,26 @@ class Closer(lang.Abstract):
 ##
 
 
+class ResourceNotEnteredError(Exception):
+    pass
+
+
 class ContextCloser(Closer):
+    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.__entered = False
+
     def __enter__(self) -> ta.Self:
+        self.__entered = True
         return self
+
+    def _is_entered(self) -> bool:
+        return self.__entered
+
+    def _check_entered(self) -> None:
+        if not self.__entered:
+            raise ResourceNotEnteredError(self)
 
     @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):

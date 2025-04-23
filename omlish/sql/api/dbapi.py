@@ -50,6 +50,7 @@ class DbapiRows(Rows):
         return self._columns
 
     def __next__(self) -> Row:
+        self._check_entered()
         values = self._cursor.fetchone()
         if values is None:
             raise StopIteration
@@ -71,6 +72,7 @@ class DbapiConn(Conn):
         raise NotImplementedError
 
     def query(self, query: Query) -> Rows:
+        self._check_entered()
         cursor = self._conn.cursor()
         try:
             cursor.execute(query.text)
@@ -97,6 +99,7 @@ class DbapiDb(Db):
         self._adapter = adapter
 
     def connect(self) -> Conn:
+        self._check_entered()
         dbapi_conn = self._conn_fac()
         return DbapiConn(dbapi_conn)
 

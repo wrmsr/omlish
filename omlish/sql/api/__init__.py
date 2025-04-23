@@ -42,11 +42,13 @@ from .queries import (  # noqa
 )
 
 from .resources import (  # noqa
+    get_resource_debug,
     set_resource_debug,
 
     UnclosedResourceWarning,
-
     Closer,
+
+    ResourceNotEnteredError,
     ContextCloser,
 )
 

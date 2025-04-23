@@ -1,12 +1,15 @@
 import sqlite3
 import urllib.parse
 
+import pytest
+
 from .... import check
 from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...tests.harness import HarnessDbs
 from .. import funcs
 from ..dbapi import DbapiDb
+from ..resources import ResourceNotEnteredError
 
 
 ##
@@ -74,5 +77,10 @@ def test_queries():
     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
         with db.connect() as conn:
             print(funcs.query_all(conn, Q.select([1])))
-            print(list(funcs.query(conn, Q.select([1]))))
-            print(funcs.query(conn, Q.select([1])))
+
+
+def test_check_entered():
+    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
+        with db.connect() as conn:
+            with pytest.raises(ResourceNotEnteredError):
+                print(list(funcs.query(conn, 'select 1')))
