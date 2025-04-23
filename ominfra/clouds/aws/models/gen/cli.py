@@ -8,7 +8,7 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
-from omlish.configs import all as configs
+from omlish.configs import all as cfgs
 
 from .gen import ModelGen
 
@@ -98,9 +98,9 @@ class Cli(ap.Cli):
         if config_file is None:
             config_file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../services/services.toml'))
 
-        cfg_dct = dict(configs.DEFAULT_FILE_LOADER.load_file(config_file).as_map())
-        cfg_dct = configs.processing.matched_rewrite(
-            configs.processing.build_named_children,
+        cfg_dct = dict(cfgs.DEFAULT_FILE_LOADER.load_file(config_file).as_map())
+        cfg_dct = cfgs.processing.matched_rewrite(
+            cfgs.processing.build_named_children,
             cfg_dct,
             ('services',),
         )

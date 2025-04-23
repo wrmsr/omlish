@@ -5,7 +5,7 @@ import typing as ta
 from omlish import cached
 from omlish import lang
 from omlish import marshal as msh
-from omlish.configs import all as configs
+from omlish.configs import all as cfgs
 
 
 @dc.dataclass(frozen=True)
@@ -45,7 +45,7 @@ class Cdep:
 
 
 def process_marshaled_cdep(obj: ta.Any) -> ta.Any:
-    obj = configs.processing.matched_rewrite(
+    obj = cfgs.processing.matched_rewrite(
         lambda s: s if isinstance(s, str) else ''.join(s),
         obj,
         ('sources', None),
