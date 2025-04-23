@@ -1,4 +1,5 @@
 import io
+import textwrap
 import typing as ta
 
 from omlish import check
@@ -42,6 +43,7 @@ class Renderer:
             forbid_str: bool = False,
             escape: ta.Callable[[str], str] | None = None,
             indent: str | int | None = None,
+            indent_string_content: bool = False,
     ) -> None:
         super().__init__()
 
@@ -53,7 +55,8 @@ class Renderer:
         self._escape_fn = escape
         if isinstance(indent, int):
             indent = ' ' * indent
-        self._indent_str: str | None = indent
+        self._indent_unit: str | None = indent
+        self._indent_string_content = indent_string_content
 
         self._level = 0
         self._indent_cache: dict[int, str] = {}
@@ -82,14 +85,19 @@ class Renderer:
 
     #
 
-    def _write_indent(self) -> None:
-        if not (s := self._indent_str):
-            return
+    def _indent_str(self) -> str | None:
+        if not (s := self._indent_unit):
+            return None
         try:
-            ls = self._indent_cache[self._level]
+            return self._indent_cache[self._level]
         except KeyError:
-            ls = self._indent_cache[self._level] = s * self._level
-        self._sb.write(ls)
+            pass
+        ls = self._indent_cache[self._level] = s * self._level
+        return ls
+
+    def _write_indent(self) -> None:
+        if (s := self._indent_str()):
+            self._sb.write(s)
 
     #
 
@@ -99,11 +107,16 @@ class Renderer:
 
     #
 
+    def _write_string_content(self, s: str) -> None:
+        if self._indent_string_content and (ls := self._indent_str()):
+            s = textwrap.indent(s, ls)
+        self._sb.write(s)
+
     @render.register  # noqa
     def _render_str(self, s: str) -> None:
         if self._forbid_str:
             raise StrForbiddenError(s)
-        self._sb.write(s)
+        self._write_string_content(s)
 
     @render.register  # noqa
     def _render_sequence(self, l: ta.Sequence) -> None:
@@ -115,7 +128,7 @@ class Renderer:
     if _HAS_MARKUPSAFE:
         @render.register
         def _render_markup(self, m: ms.Markup) -> None:
-            self._sb.write(m)
+            self._write_string_content(m)
 
     #
 
@@ -149,7 +162,7 @@ class Renderer:
             if not i:
                 self._sb.write('>')
 
-            if self._indent_str:
+            if self._indent_unit:
                 self._sb.write('\n')
 
             self._level += 1
@@ -157,7 +170,7 @@ class Renderer:
             self._level -= 1
 
         if i >= 0:
-            if self._indent_str:
+            if self._indent_unit:
                 self._sb.write('\n')
                 self._write_indent()
 

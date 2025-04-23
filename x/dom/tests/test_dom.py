@@ -28,12 +28,14 @@ def test_dom():
         D.body(
             D.svg(id='chart', width='600', height='300'),
             D.div(id='tooltip', class_='tooltip', x_data='{}'),
+            D.div('abcd', 'efgh'),
         ),
     )
 
     print(root)
     print(Renderer.render_to_str(root))
     print(Renderer.render_to_str(root, indent=2))
+    print(Renderer.render_to_str(root, indent=2, indent_string_content=True))
     print()
 
     #
@@ -56,4 +58,5 @@ def test_dom():
     print(root)
     print(Renderer.render_to_str(root))
     print(Renderer.render_to_str(root, indent=2))
+    print(Renderer.render_to_str(root, indent=2, indent_string_content=True))
     print()
