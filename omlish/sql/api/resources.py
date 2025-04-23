@@ -73,9 +73,14 @@ class ContextCloser(Closer):
 
         self.__entered = False
 
+    @ta.final
     def __enter__(self) -> ta.Self:
         self.__entered = True
+        self._enter()
         return self
+
+    def _enter(self) -> None:
+        pass
 
     def _is_entered(self) -> bool:
         return self.__entered
