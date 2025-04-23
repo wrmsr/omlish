@@ -107,6 +107,8 @@ class Project(ProjectBase):
         ],
 
         'templates': [
+            'markupsafe ~= 3.0',
+
             'jinja2 ~= 3.1',
         ],
 

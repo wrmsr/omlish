@@ -66,10 +66,26 @@ from omlish import dispatch
 from omlish import lang
 
 
+if ta.TYPE_CHECKING:
+    import markupsafe as ms
+
+    _HAS_MARKUPSAFE = True
+
+else:
+    ms = lang.proxy_import('markupsafe')
+
+    _HAS_MARKUPSAFE = lang.can_import('markupsafe')
+
+
+String: ta.TypeAlias = ta.Union[
+    str,
+    'ms.Markup',
+]
+
 Content: ta.TypeAlias = ta.Union[
     list['Content'],
     'Dom',
-    str,
+    String,
     None,
 ]
 
@@ -164,10 +180,15 @@ def d(
 ##
 
 
+STRING_TYPES: tuple[type, ...] = (
+    str,
+    *([ms.Markup] if _HAS_MARKUPSAFE else []),
+)
+
 CONTENT_TYPES: tuple[type, ...] = (
     list,
     Dom,
-    str,
+    *STRING_TYPES,
     type(None),
 )
 
@@ -207,13 +228,48 @@ D = DomAccessor()
 ##
 
 
+@dc.dataclass()
+class InvalidTagError(Exception):
+    pass
+
+
+@dc.dataclass()
+class StrForbiddenError(Exception):
+    pass
+
+
 class Renderer:
-    def __init__(self, sb: io.StringIO | None) -> None:
+    def __init__(
+            self,
+            sb: io.StringIO | None,
+            *,
+            forbid_str: bool = False,
+            escape: ta.Callable[[str], str] | None = None,
+    ) -> None:
         super().__init__()
 
         if sb is None:
             sb = io.StringIO()
         self._sb = sb
+
+        self._forbid_str = forbid_str
+        self._escape_fn = escape
+
+    def _escape(self, s: str) -> str:
+        if _HAS_MARKUPSAFE and isinstance(s, ms.Markup):
+            return s
+        if type(s) is not str:
+            raise TypeError(s)
+        if (fn := self._escape_fn) is None:
+            return s
+        return fn(s)
+
+    def _check_tag(self, s: str) -> str:
+        if self._escape(s) != s:
+            raise InvalidTagError(s)
+        return s
+
+    #
 
     @dispatch.method
     def render(self, o: ta.Any) -> None:
@@ -229,23 +285,34 @@ class Renderer:
 
     @render.register  # noqa
     def _render_str(self, s: str) -> None:
+        if self._forbid_str:
+            raise StrForbiddenError(s)
         self._sb.write(s)
 
     @render.register  # noqa
-    def _render_seq(self, l: ta.Sequence) -> None:
+    def _render_sequence(self, l: ta.Sequence) -> None:
         for e in l:
             self.render(e)
 
     #
 
+    if _HAS_MARKUPSAFE:
+        @render.register
+        def _render_markup(self, m: ms.Markup) -> None:
+            self._sb.write(m)
+
+    #
+
     def _render_tag(self, tag: str) -> None:
-        self._sb.write(tag)
+        self._sb.write(self._check_tag(tag))
 
     def _render_attr_key(self, k: str) -> None:
-        self._sb.write(k)
+        self._sb.write(self._check_tag(k))
 
     def _render_attr_value(self, v: ta.Any) -> None:
-        self._sb.write(f'"{check.isinstance(v, str)}"')
+        self._sb.write('"')
+        self.render(v)
+        self._sb.write('"')
 
     @render.register  # noqa
     def _render_dom(self, n: Dom) -> None:
