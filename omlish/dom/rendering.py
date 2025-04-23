@@ -2,11 +2,10 @@ import io
 import textwrap
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import dispatch
-from omlish import lang
-
+from .. import check
+from .. import dataclasses as dc
+from .. import dispatch
+from .. import lang
 from .content import Dom
 from .content import iter_content
 

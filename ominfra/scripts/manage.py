@@ -7887,7 +7887,7 @@ class SubprocessRunnable(abc.ABC, ta.Generic[T]):
 
 
 class IndentWriter:
-    DEFAULT_INDENT = ' ' * 4
+    DEFAULT_INDENT: ta.ClassVar[str] = ' ' * 4
 
     def __init__(
             self,
@@ -7900,6 +7900,7 @@ class IndentWriter:
         self._buf = buf if buf is not None else io.StringIO()
         self._indent = check.isinstance(indent, str) if indent is not None else self.DEFAULT_INDENT
         self._level = 0
+        self._cache: ta.Dict[int, str] = {}
         self._has_indented = False
 
     @contextlib.contextmanager
@@ -7911,7 +7912,10 @@ class IndentWriter:
             self._level -= num
 
     def write(self, s: str) -> None:
-        indent = self._indent * self._level
+        try:
+            indent = self._cache[self._level]
+        except KeyError:
+            indent = self._cache[self._level] = self._indent * self._level
         i = 0
         while i < len(s):
             if not self._has_indented:

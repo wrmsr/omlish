@@ -1,10 +1,9 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-
+from .. import dataclasses as dc
 from .content import Content
-from .content import kwargs_to_attrs
 from .content import Dom
+from .content import kwargs_to_attrs
 
 
 ##

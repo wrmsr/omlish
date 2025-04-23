@@ -53,6 +53,7 @@ all = [
     'apsw ~= 3.49',
     'sqlean.py ~= 3.47',
     'duckdb ~= 1.2',
+    'markupsafe ~= 3.0',
     'jinja2 ~= 3.1',
     'pytest ~= 8.3',
     'anyio ~= 4.9',
@@ -111,6 +112,7 @@ sqldrivers = [
     'duckdb ~= 1.2',
 ]
 templates = [
+    'markupsafe ~= 3.0',
     'jinja2 ~= 3.1',
 ]
 testing = [

@@ -42,15 +42,15 @@ def test_dom():
 
     root = D.html(
         D.head(
-            D.script(src="..."),
+            D.script(src='...'),
             D.script(
-                "alert('Hello World')"
+                "alert('Hello World')",
             ),
         ),
         D.body(
             D.div(
-                D.h1(id="title").add("This is a title"),
-                D.p("This is a big paragraph of text"),
+                D.h1(id='title').add('This is a title'),
+                D.p('This is a big paragraph of text'),
             ),
         ),
     )

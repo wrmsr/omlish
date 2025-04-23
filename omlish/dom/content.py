@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
+from .. import check
+from .. import dataclasses as dc
+from .. import lang
 
 
 if ta.TYPE_CHECKING:
@@ -41,7 +41,7 @@ ATTR_NAMES_BY_KWARG: ta.Mapping[str, str] = {
 ATTR_KWARGS_BY_NAME: ta.Mapping[str, str] = {v: k for k, v in ATTR_NAMES_BY_KWARG.items()}
 
 
-def kwargs_to_attrs(**kwargs: ta.Any) -> dict[str, str]:
+def kwargs_to_attrs(**kwargs: ta.Any) -> dict[str, ta.Any]:
     return {
         ATTR_NAMES_BY_KWARG.get(k, k).replace('_', '-'): v
         for k, v in kwargs.items()
@@ -55,7 +55,7 @@ def kwargs_to_attrs(**kwargs: ta.Any) -> dict[str, str]:
 class Dom:
     tag: str
     attrs: dict[str, ta.Any | None] | None = dc.xfield(None, repr_fn=lang.opt_repr)
-    body: list[Content] = dc.xfield(None, repr_fn=lang.opt_repr)
+    body: list[Content] | None = dc.xfield(None, repr_fn=lang.opt_repr)
 
     def set(self, **kwargs: ta.Any) -> 'Dom':
         if self.attrs is None:
@@ -121,7 +121,7 @@ def iter_content(c: Content) -> ta.Iterator[Dom | String]:
         for e in c:
             yield from iter_content(e)
     elif isinstance(c, (Dom, *STRING_TYPES)):
-        yield c
+        yield c  # type: ignore[misc]
     elif c is None:
         pass
     else:
