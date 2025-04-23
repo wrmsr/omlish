@@ -1,4 +1,10 @@
 """
+TODO:
+ - escaping
+ - lang.can_import('markupsafe') like http.json
+
+==
+
 https://github.com/bloodearnest/hdom
 html = h.div(h.p("Hello"), h.table(h.tr(h.td("foo"), h.td("bar"))))
 
@@ -81,7 +87,13 @@ ATTR_KWARGS_BY_NAME: ta.Mapping[str, str] = {v: k for k, v in ATTR_NAMES_BY_KWAR
 
 
 def kwargs_to_attrs(**kwargs: ta.Any) -> dict[str, str]:
-    return {ATTR_NAMES_BY_KWARG.get(k, k): v for k, v in kwargs.items()}
+    return {
+        ATTR_NAMES_BY_KWARG.get(k, k).replace('_', '-'): v
+        for k, v in kwargs.items()
+    }
+
+
+##
 
 
 @dc.dataclass()
@@ -127,7 +139,7 @@ class Dom:
 ##
 
 
-def dom(
+def d(
         tag: str,
         *attrs_and_contents: tuple[str, ta.Any] | Content,
         **kwargs: ta.Any,
@@ -181,7 +193,7 @@ class DomBuilder:
             *attrs_and_contents: tuple[str, ta.Any] | Content,
             **kwargs: ta.Any,
     ) -> Dom:
-        return dom(self.tag, *attrs_and_contents, **kwargs)
+        return d(self.tag, *attrs_and_contents, **kwargs)
 
 
 class DomAccessor:
@@ -262,13 +274,13 @@ class Renderer:
 
 
 def _main() -> None:
-    root = dom('html').add(
-        dom('head').add(
-            dom('title', 'hi'),
+    root = d('html').add(
+        d('head').add(
+            d('title', 'hi'),
         ),
-        dom('body').add(
-            dom('svg', id='chart', width='600', height='300'),
-            dom('div', id='tooltip', class_='tooltip')
+        d('body').add(
+            d('svg', id='chart', width='600', height='300'),
+            d('div', id='tooltip', class_='tooltip', x_data='{}'),
         ),
     )
 
@@ -281,7 +293,7 @@ def _main() -> None:
         ),
         D.body(
             D.svg(id='chart', width='600', height='300'),
-            D.div(id='tooltip', class_='tooltip'),
+            D.div(id='tooltip', class_='tooltip', x_data='{}'),
         ),
     )
 
