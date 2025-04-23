@@ -13,7 +13,30 @@ V = ta.TypeVar('V')
 ##
 
 
-class SortedCollection(lang.Abstract, ta.Collection[T]):
+class SortedIter(lang.Abstract, ta.Generic[T]):
+    @abc.abstractmethod
+    def iter(self) -> ta.Iterator[T]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def iter_desc(self) -> ta.Iterator[T]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def iter_from(self, base: T) -> ta.Iterator[T]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def iter_from_desc(self, base: T) -> ta.Iterator[T]:
+        raise NotImplementedError
+
+
+class SortedCollection(
+    SortedIter[T],
+    ta.Collection[T],
+    lang.Abstract,
+    ta.Generic[T],
+):
     Comparator = ta.Callable[[U, U], int]
 
     @staticmethod
@@ -46,18 +69,13 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
     def remove(self, value: T) -> bool:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def iter(self, base: T | None = None) -> ta.Iterable[T]:
-        raise NotImplementedError
 
-    @abc.abstractmethod
-    def iter_desc(self, base: T | None = None) -> ta.Iterable[T]:
-        raise NotImplementedError
+#
 
 
-class SortedMapping(ta.Mapping[K, V]):
+class SortedItems(lang.Abstract, ta.Generic[K, V]):
     @abc.abstractmethod
-    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
+    def items(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -73,8 +91,27 @@ class SortedMapping(ta.Mapping[K, V]):
         raise NotImplementedError
 
 
-class SortedMutableMapping(ta.MutableMapping[K, V], SortedMapping[K, V]):
+class SortedMapping(
+    SortedItems[K, V],
+    ta.Mapping[K, V],
+    lang.Abstract,
+    ta.Generic[K, V],
+):
+    @abc.abstractmethod
+    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore[override]  # FIXME: ItemsView
+        raise NotImplementedError
+
+
+class SortedMutableMapping(
+    ta.MutableMapping[K, V],
+    SortedMapping[K, V],
+    lang.Abstract,
+    ta.Generic[K, V],
+):
     pass
+
+
+##
 
 
 class SortedListDict(SortedMutableMapping[K, V]):
@@ -119,7 +156,7 @@ class SortedListDict(SortedMutableMapping[K, V]):
         yield from self._impl.iter_desc()
 
     def items_from(self, key: K) -> ta.Iterator[tuple[K, V]]:
-        yield from self._impl.iter((key, None))
+        yield from self._impl.iter_from((key, None))
 
     def items_from_desc(self, key: K) -> ta.Iterator[tuple[K, V]]:
-        yield from self._impl.iter_desc((key, None))
+        yield from self._impl.iter_from_desc((key, None))

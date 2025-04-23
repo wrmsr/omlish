@@ -170,30 +170,38 @@ class SkipList(SortedCollection[T]):
 
     #
 
-    def iter(self, base: T | None = None) -> ta.Iterable[T]:
-        if base is not None:
-            cur = self._find(base)
-            while cur is not None and self._compare(base, cur.value) > 0:  # type: ignore
-                cur = cur.next[0]
-        else:
-            cur = self._head.next[0]
+    def iter(self) -> ta.Iterator[T]:
+        cur = self._head.next[0]
 
         while cur is not None:
             yield cur.value  # type: ignore
             cur = cur.next[0]
 
-    def iter_desc(self, base: T | None = None) -> ta.Iterable[T]:
-        if base is not None:
-            cur = self._find(base)
-            while cur is not self._head and self._compare(base, cur.value) < 0:  # type: ignore
-                cur = cur.prev  # type: ignore
-        else:
-            cur = self._head.next[self._height - 1]
-            while True:
-                next = cur.next[cur.next.index(None) - 1 if None in cur.next else -1]  # type: ignore  # noqa
-                if next is None:
-                    break
-                cur = next
+    def iter_desc(self) -> ta.Iterator[T]:
+        cur = self._head.next[self._height - 1]
+        while True:
+            next = cur.next[cur.next.index(None) - 1 if None in cur.next else -1]  # type: ignore  # noqa
+            if next is None:
+                break
+            cur = next
+
+        while cur is not self._head:
+            yield cur.value  # type: ignore
+            cur = cur.prev  # type: ignore
+
+    def iter_from(self, base: T) -> ta.Iterator[T]:
+        cur = self._find(base)
+        while cur is not None and self._compare(base, cur.value) > 0:  # type: ignore
+            cur = cur.next[0]
+
+        while cur is not None:
+            yield cur.value  # type: ignore
+            cur = cur.next[0]
+
+    def iter_from_desc(self, base: T) -> ta.Iterator[T]:
+        cur = self._find(base)
+        while cur is not self._head and self._compare(base, cur.value) < 0:  # type: ignore
+            cur = cur.prev  # type: ignore
 
         while cur is not self._head:
             yield cur.value  # type: ignore

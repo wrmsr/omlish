@@ -77,11 +77,14 @@ from .ordered import (  # noqa
 
 from .persistent.persistent import (  # noqa
     PersistentMap,
+    PersistentMapping,
 )
 
 if _ta.TYPE_CHECKING:
     from .persistent.treapmap import (  # noqa
+        TreapDict,
         TreapMap,
+        new_treap_dict,
         new_treap_map,
     )
 else:
@@ -108,6 +111,8 @@ else:
 
 from .sorted.sorted import (  # noqa
     SortedCollection,
+    SortedItems,
+    SortedIter,
     SortedListDict,
     SortedMapping,
     SortedMutableMapping,

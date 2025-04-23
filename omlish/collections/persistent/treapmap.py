@@ -20,8 +20,10 @@ import abc
 import random
 import typing as ta
 
+from ..sorted.sorted import SortedItems
 from . import treap
 from .persistent import PersistentMap
+from .persistent import PersistentMapping
 
 
 K = ta.TypeVar('K')
@@ -31,7 +33,7 @@ V = ta.TypeVar('V')
 ##
 
 
-class TreapMap(PersistentMap[K, V]):
+class TreapMap(PersistentMap[K, V], SortedItems[K, V]):
     __slots__ = ('_n', '_c')
 
     def __init__(
@@ -69,10 +71,10 @@ class TreapMap(PersistentMap[K, V]):
             raise KeyError(item)
         return n.value
 
-    def __iter__(self) -> ta.Iterator[tuple[K, V]]:
+    def __iter__(self) -> ta.Iterator[K]:
         i = self.items()
         while i.has_next():
-            yield i.next()
+            yield i.next()[0]
 
     def items(self) -> 'TreapMapIterator[K, V]':
         i = TreapMapIterator(
@@ -84,14 +86,6 @@ class TreapMap(PersistentMap[K, V]):
             i._n = n.left  # noqa
         return i
 
-    def items_from(self, k: K) -> 'TreapMapIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c)  # type: ignore
-        i = TreapMapIterator(
-            _st=lst,
-            _n=lst.pop(),
-        )
-        return i
-
     def items_desc(self) -> 'TreapMapReverseIterator[K, V]':
         i = TreapMapReverseIterator(
             _st=[],
@@ -100,6 +94,14 @@ class TreapMap(PersistentMap[K, V]):
         while (n := i._n) is not None and n.right is not None:  # noqa
             i._st.append(n)  # noqa
             i._n = n.right  # noqa
+        return i
+
+    def items_from(self, k: K) -> 'TreapMapIterator[K, V]':
+        lst = treap.place(self._n, (k, None), self._c)  # type: ignore
+        i = TreapMapIterator(
+            _st=lst,
+            _n=lst.pop(),
+        )
         return i
 
     def items_from_desc(self, k: K) -> 'TreapMapReverseIterator[K, V]':
@@ -137,7 +139,22 @@ def new_treap_map(cmp: ta.Callable[[tuple[K, V], tuple[K, V]], int]) -> Persiste
     return TreapMap(_n=None, _c=cmp)
 
 
-class BaseTreapMapIterator(abc.ABC, ta.Generic[K, V]):
+#
+
+
+class TreapDict(TreapMap[K, V], PersistentMapping[K, V]):
+    __contains__ = TreapMap.__contains__
+    items = TreapMap.items
+
+
+def new_treap_dict(cmp: ta.Callable[[tuple[K, V], tuple[K, V]], int]) -> PersistentMapping[K, V]:
+    return TreapDict(_n=None, _c=cmp)
+
+
+##
+
+
+class BaseTreapMapIterator(abc.ABC, ta.Iterator[tuple[K, V]], ta.Generic[K, V]):
     __slots__ = ('_st', '_n')
 
     def __init__(
@@ -150,6 +167,12 @@ class BaseTreapMapIterator(abc.ABC, ta.Generic[K, V]):
 
         self._st = _st
         self._n = _n
+
+    def __iter__(self) -> ta.Self:
+        return self
+
+    def __next__(self) -> tuple[K, V]:
+        return self.next()
 
     def has_next(self) -> bool:
         return self._n is not None
