@@ -82,7 +82,11 @@ class ContextCloser(Closer):
 
     def _check_entered(self) -> None:
         if not self.__entered:
-            raise ResourceNotEnteredError(self)
+            try:
+                raise ResourceNotEnteredError(self)  # noqa
+            except Exception:
+                self.close()
+                raise
 
     @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):
