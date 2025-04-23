@@ -33,7 +33,7 @@ class Row(lang.Final, ta.Generic[T]):
     def __contains__(self, item: str | int) -> bool:
         raise TypeError('Row.__contains__ is ambiguous - use .columns.__contains__ or .values.__contains__')
 
-    def __getitem__(self, item) -> T:
+    def __getitem__(self, item: str | int) -> T:
         if isinstance(item, str):
             return self.values[self.columns.index(item)]
         elif isinstance(item, int):
@@ -46,3 +46,6 @@ class Row(lang.Final, ta.Generic[T]):
             return self.values[idx]
         else:
             return None
+
+    def to_dict(self) -> dict[str, ta.Any]:
+        return {c.name: v for c, v in self}

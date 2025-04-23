@@ -1,6 +1,7 @@
 import typing as ta
 
 from .base import Querier
+from .base import Row
 from .base import Rows
 from .queries import Query
 from .queries import QueryMode
@@ -37,6 +38,17 @@ def query(
         q = Query.of(obj, *args, mode=QueryMode.QUERY)
 
     return querier.query(q)
+
+
+#
+
+
+def query_all(
+        querier: Querier,
+        *args: ta.Any,
+) -> list[Row]:
+    with query(querier, *args) as rows:
+        return list(rows)
 
 
 ##

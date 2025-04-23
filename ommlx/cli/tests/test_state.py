@@ -10,11 +10,8 @@ def test_new_state(tmp_path):
 
     with sql.api.DbapiDb(lambda: sqlite3.connect(db_file)) as db:
         with db.connect() as conn:
-            with sql.api.query(
-                    conn,
-                    'select 1',  # noqa
-            ) as rows:
-                vals = []
-                for row in rows:
-                    vals.append(tuple(row.values))
-                    print(row)
+            sql.api.exec(conn, """create table if not exists "state" ("state")""")
+            sql.api.exec(conn, """insert into "state" ("state") values ('I am state')""")
+
+            for row in sql.api.query_all(conn, 'select * from "state"'):
+                print(row)

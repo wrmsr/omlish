@@ -41,6 +41,10 @@ class DbapiRows(Rows):
         self._cursor = cursor
         self._columns = columns
 
+    def close(self) -> None:
+        self._cursor.close()
+        super().close()
+
     @property
     def columns(self) -> Columns:
         return self._columns
@@ -58,6 +62,10 @@ class DbapiConn(Conn):
 
         self._conn = conn
 
+    def close(self) -> None:
+        self._conn.close()
+        super().close()
+
     @property
     def adapter(self) -> Adapter:
         raise NotImplementedError
@@ -72,9 +80,6 @@ class DbapiConn(Conn):
         except Exception:  # noqa
             cursor.close()
             raise
-
-    def close(self) -> None:
-        self._conn.close()
 
 
 class DbapiDb(Db):

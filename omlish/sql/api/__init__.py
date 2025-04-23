@@ -33,6 +33,7 @@ from .errors import (  # noqa
 
 from .funcs import (  # noqa
     query,
+    query_all,
     exec,  # noqa
 )
 
