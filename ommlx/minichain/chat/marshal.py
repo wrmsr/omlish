@@ -1,3 +1,7 @@
+"""
+TODO:
+ - externally attach msh metadata one way or another to add omit_if_empty to Message fields
+"""
 from omlish import lang
 from omlish import marshal as msh
 

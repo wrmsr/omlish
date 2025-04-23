@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - late load marshal, late configure generic_replace
+"""
 import abc
 import typing as ta
 
@@ -61,6 +65,7 @@ _SERVICE_TYPED_VALUES_HOLDER_FIELD_METADATA: ta.Mapping = {
         repr_fn=dc.truthy_repr,
         repr_priority=100,
     ),
+    # FIXME:
     msh.FieldMetadata: msh.FieldMetadata(
         options=msh.FieldOptions(
             generic_replace=True,
