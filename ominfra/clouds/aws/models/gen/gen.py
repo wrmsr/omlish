@@ -349,6 +349,8 @@ class ModelGen:
                 lines.append('    pass')
 
             ms: botocore.model.Shape
+            seen_fns: set[str] = set()
+
             for i, (mn, ms) in enumerate(shape.members.items()):
                 mds = [
                     f'member_name={mn!r}',
@@ -396,6 +398,8 @@ class ModelGen:
                     fd = 'default=None, '
 
                 fn = self.sanitize_local_name(self.demangle_name(mn))
+                check.not_in(fn, seen_fns)
+                seen_fns.add(fn)
 
                 fls = [
                     f'{fn}: {fa} = _dc.field({fd}metadata=_base.field_metadata(',
