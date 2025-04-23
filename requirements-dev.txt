@@ -94,6 +94,8 @@ docutils==0.21.2
 markdown-it-py==3.0.0
 mdit-py-plugins==0.4.2
 
+pygments==2.19.1
+
 mwparserfromhell==0.6.6  # @omlish-venv !13t
 wikitextparser==0.56.3  # !! GPL
 
