@@ -211,6 +211,9 @@ class Args:
         self.args = args
         self.kwargs = kwargs
 
+    def __bool__(self) -> bool:
+        return bool(self.args) or bool(self.kwargs)
+
     def update(self, *args: ta.Any, **kwargs: ta.Any) -> 'Args':
         return Args(
             *self.args,

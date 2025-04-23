@@ -2433,6 +2433,7 @@ TODO:
  - auto match all underscores to hyphens
  - pre-run, post-run hooks
  - exitstack?
+ - suggestion - difflib.get_close_matches
 """
 
 

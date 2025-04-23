@@ -1,3 +1,9 @@
+from .asquery import (  # noqa
+    AsQueryParams,
+    as_query,
+    as_query_,
+)
+
 from .base import (  # noqa
     Querier,
     Rows,
@@ -37,8 +43,6 @@ from .funcs import (  # noqa
 from .queries import (  # noqa
     QueryMode,
     Query,
-
-    as_query,
 )
 
 from .resources import (  # noqa

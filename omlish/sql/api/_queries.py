@@ -1,10 +1,12 @@
 """
 TODO:
  - dialect lol
+ - args lol
 """
 from ..queries import Stmt
 from ..queries.rendering import render
-from .funcs import as_query
+from .asquery import AsQueryParams
+from .asquery import as_query_
 from .queries import Query
 from .queries import QueryMode
 
@@ -12,17 +14,19 @@ from .queries import QueryMode
 ##
 
 
-@as_query.register
+@as_query_.register
 def _(
         stmt: Stmt,
         *,
-        mode: QueryMode | str | None = None,
+        params: AsQueryParams,
 ) -> Query:
     rq = render(stmt)
 
-    # FIXME: rq.args
+    if rq.args:
+        raise NotImplementedError
+
     return Query(
-        mode=QueryMode.of(mode, QueryMode.QUERY),
+        mode=QueryMode.of(params.mode, QueryMode.QUERY),
         text=rq.s,
         args=[],
     )

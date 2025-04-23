@@ -1,9 +1,9 @@
 import typing as ta
 
+from .asquery import as_query
 from .base import Querier
 from .base import Rows
 from .queries import QueryMode
-from .queries import as_query
 from .rows import Row
 
 
