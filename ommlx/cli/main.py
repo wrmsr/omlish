@@ -32,8 +32,7 @@ from ..minichain.backends.openai.completion import OpenaiCompletionService
 from ..minichain.backends.openai.embedding import OpenaiEmbeddingService
 from ..minichain.backends.sentencetransformers import SentencetransformersEmbeddingService
 from ..minichain.backends.transformers import TransformersCompletionService
-from .state import load_state
-from .state import save_state
+from .state import JsonFileStateStorage
 
 
 if ta.TYPE_CHECKING:
@@ -93,7 +92,7 @@ def _run_chat(
     if new:
         state = ChatState()
     else:
-        state = load_state(chat_file, ChatState)  # type: ignore
+        state = JsonFileStateStorage(chat_file).load_state('chat', ChatState)  # type: ignore
         if state is None:
             state = ChatState()  # type: ignore
 
@@ -131,7 +130,7 @@ def _run_chat(
         updated_at=lang.utcnow(),
     )
 
-    save_state(chat_file, state, ChatState)
+    JsonFileStateStorage(chat_file).save_state('chat', state, ChatState)
 
 
 ##
@@ -151,7 +150,7 @@ def _run_interactive(
     if new:
         state = ChatState()
     else:
-        state = load_state(chat_file, ChatState)  # type: ignore
+        state = JsonFileStateStorage(chat_file).load_state('chat', ChatState)  # type: ignore
         if state is None:
             state = ChatState()  # type: ignore
 
@@ -179,7 +178,7 @@ def _run_interactive(
             updated_at=lang.utcnow(),
         )
 
-        save_state(chat_file, state, ChatState)
+        JsonFileStateStorage(chat_file).save_state('chat', state, ChatState)
 
 
 ##
