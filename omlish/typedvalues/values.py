@@ -1,7 +1,3 @@
-"""
-TODO:
- - dc.Box, or some other kind of meta
-"""
 import typing as ta
 
 from .. import dataclasses as dc

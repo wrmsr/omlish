@@ -11,6 +11,7 @@ import typing as ta
 from ... import check
 from ... import lang
 from ..processing.base import ProcessingContext
+from ..processing.base import ProcessingOption
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type
@@ -32,11 +33,13 @@ from .registry import generator_type_for_plan_type
 ##
 
 
-class PlanOnly(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class PlanOnly(ProcessingOption):
     b: bool
 
 
-class Verbose(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class Verbose(ProcessingOption):
     b: bool
 
 

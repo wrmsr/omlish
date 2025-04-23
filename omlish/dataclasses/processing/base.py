@@ -13,12 +13,17 @@ from ..specs import ClassSpec
 
 
 T = ta.TypeVar('T')
+ProcessingOptionT = ta.TypeVar('ProcessingOptionT', bound='ProcessingOption')
 
 
 ##
 
 
 ProcessingContextItemFactory: ta.TypeAlias = ta.Callable[['ProcessingContext'], ta.Any]
+
+
+class ProcessingOption(lang.Abstract):
+    pass
 
 
 class ProcessingContext:
@@ -28,7 +33,7 @@ class ProcessingContext:
             cs: ClassSpec,
             item_factories: ta.Mapping[type, ProcessingContextItemFactory],
             *,
-            options: ta.Sequence[ta.Any] | None = None,
+            options: ta.Sequence[ProcessingOption] | None = None,
     ) -> None:
         super().__init__()
 
@@ -63,7 +68,7 @@ class ProcessingContext:
         self._items[ty] = ret
         return ret
 
-    def option(self, ty: type[T]) -> T | None:
+    def option(self, ty: type[ProcessingOptionT]) -> ProcessingOptionT | None:
         return self._options_dct.get(ty)
 
 

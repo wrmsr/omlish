@@ -1,9 +1,9 @@
-import typing as ta
 
 from .. import concerns as _concerns  # noqa  # imported for registration
 from ..generation import processor as gp
 from ..specs import ClassSpec
 from .base import ProcessingContext
+from .base import ProcessingOption
 from .base import Processor
 from .registry import all_processing_context_item_factories
 from .registry import ordered_processor_types
@@ -19,7 +19,7 @@ def drive_cls_processing(
         plan_only: bool = False,
         verbose: bool = False,
 ) -> type:
-    options: list[ta.Any] = []
+    options: list[ProcessingOption] = []
     if plan_only:
         options.append(gp.PlanOnly(True))
     if verbose:
