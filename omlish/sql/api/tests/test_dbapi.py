@@ -74,3 +74,5 @@ def test_queries():
     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
         with db.connect() as conn:
             print(funcs.query_all(conn, Q.select([1])))
+            print(list(funcs.query(conn, Q.select([1]))))
+            print(funcs.query(conn, Q.select([1])))

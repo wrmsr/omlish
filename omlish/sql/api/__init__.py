@@ -1,7 +1,4 @@
 from .base import (  # noqa
-    Closer,
-    ContextCloser,
-
     Querier,
     Rows,
     Conn,
@@ -42,6 +39,15 @@ from .queries import (  # noqa
     Query,
 
     as_query,
+)
+
+from .resources import (  # noqa
+    set_resource_debug,
+
+    UnclosedResourceWarning,
+
+    Closer,
+    ContextCloser,
 )
 
 from .rows import (  # noqa

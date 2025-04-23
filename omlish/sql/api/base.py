@@ -9,31 +9,8 @@ from ... import lang
 from .columns import Column
 from .columns import Columns
 from .queries import Query
+from .resources import ContextCloser
 from .rows import Row
-
-
-##
-
-
-class Closer(lang.Abstract):
-    _closed: bool = False
-
-    @ta.final
-    def close(self) -> None:
-        self._closed = True
-        self._close()
-
-    def _close(self) -> None:
-        pass
-
-
-class ContextCloser(Closer):
-    def __enter__(self) -> ta.Self:
-        return self
-
-    @ta.final
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
 
 
 ##
