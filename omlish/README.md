@@ -119,18 +119,18 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 # Lite code
 
-A subset of this codebase is written in a 'lite' style - while most of the code is written for python 3.12+, 'lite' code
+A subset of this codebase is written in a 'lite' style. While most of the code is written for python 3.12+, 'lite' code
 is written for 3.8+, and is written in a style conducive to
-[amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation), in which multiple python source files are
+[amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
 
 Code written in this style has notable differences from standard code, including (but not limited to):
 
-- No name mangling is done in this process, which means (among other things) that code must be written expecting to be
+- No name mangling is done in amalgamation, which means (among other things) that code must be written expecting to be
   all dumped into the same giant namespace. Where a non-lite class might be [`omlish.inject.keys.Key`](inject/keys.py),
   a lite equivalent might be [`omlish.lite.inject.InjectorKey`](lite/inject.py).
-- All internal imports import each individual item out of modules rather than importing the modules and referencing
-  their contents. Where non-lite code would `from .. import x; x.y`, lite code would `from ..x import y`. As a result
+- All internal imports `import` each individual item out of modules rather than importing the modules and referencing
+  their contents. Where non-lite code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
   there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
   stuff with shortened names.
 - As lite code is tested in 3.8+ but core code requires 3.12+, packages containing lite code can't import anything
@@ -142,7 +142,7 @@ Code written in this style has notable differences from standard code, including
 
 # Dependencies
 
-This package has no required dependencies of any kind, but there are numerous optional integrations - see
+This library has no required dependencies of any kind, but there are numerous optional integrations - see
 [`__about__.py`](__about__.py) for a full list, but some specific examples are:
 
 - **anyio** - While lite code must use only asyncio, non-trivial async non-lite code prefers to be written to anyio.

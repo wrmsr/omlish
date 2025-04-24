@@ -2,14 +2,14 @@
 
 My python monorepo, the successor to my previous one `omnibus`(... 'ish').
 
-Core packages begin with `om`, scratch app is in `app`, temp / dump code is in `x`.
+Core libraries begin with `om`, scratch app is in `app`, temp / dump code is in `x`.
 
-The packages have no required dependencies besides each other, but there are numerous optional ones - see their
+The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
 respective `pyproject.toml` files for details.
 
 General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' code for 3.8+.
 
-# Core packages
+# Core libraries
 
 - **[omlish](omlish#readme)** - Core foundational code
 - **[omdev](omdev#readme)** - Development utilities
@@ -19,7 +19,7 @@ General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' co
 
 # Installation
 
-Core packages installable by name from pypi:
+Core libraries installable by name from pypi:
 
 ```bash
 pip install omlish
