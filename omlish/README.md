@@ -112,7 +112,8 @@ Core utilities and foundational code. It's relatively large but completely self-
   self-contained, significantly simplified 'lite' equivalents of some major core packages:
 
   - **[lite/inject.py](lite/inject.py)** - The lite injector, which is more conservative with features and reflection
-    than the core injector.
+    than the core injector. The codebase's
+    [MiniGuice](https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c).
   - **[lite/marshal.py](lite/marshal.py)** - The lite marshalling system, which is a classic canned setup of simple
     type-specific 2-method classes and limited generic handling.
 
