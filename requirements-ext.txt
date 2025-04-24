@@ -8,7 +8,7 @@
 ##
 # infra
 
-google-api-python-client==2.167.0
+google-api-python-client==2.168.0
 google-cloud-compute==1.30.0
 
 
@@ -46,7 +46,7 @@ tree-sitter-python==0.23.6
 
 watchdog==6.0.0
 
-pyright[nodejs]==1.1.399
+pyright[nodejs]==1.1.400
 
 basedpyright==1.29.1
 
