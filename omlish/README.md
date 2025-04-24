@@ -54,7 +54,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
   - **[json](formats/json)** - Tools for json, including abstraction over various backends and a self-contained streaming
     / incremental parser.
-  - **[json5](formats/json5)** - A self-contained, tested [Json5](https://json5.org/) parser.
+  - **[json5](formats/json5)** - A self-contained and tested [Json5](https://json5.org/) parser.
   - **[toml](formats/toml)** - Toml tools, including a [lite](#lite-code) version of the stdlib parser (for use in older
     pythons).
 
@@ -114,7 +114,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 A subset of this codebase is written in a 'lite' style - while most of the code is written for python 3.12+, 'lite' code
 is written for 3.8+, and is written in a style conducive to
-[amalgamation](https://github.com/wrmsr/omlish/omdev/README.md#amalgamation), in which multiple python source files are
+[amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation), in which multiple python source files are
 stitched together into one single self-contained python script.
 
 Code written in this style has notable differences from standard code, including (but not limited to):
