@@ -1,10 +1,21 @@
 """
-https://github.com/kubernetes/kubernetes/blob/60c4c2b2521fb454ce69dee737e3eb91a25e0535/pkg/controller/volume/persistentvolume/pv_controller.go#L60-L63
+A system for bridging sync and async code. Supports nesting / reentrancy. Robust, but not the most efficient
+implementation - its primary usecase are heavy and init-time ops like lock management and connection establishment, not
+so much for packet-level ops.
 
-==================================================================
-PLEASE DO NOT ATTEMPT TO SIMPLIFY THIS CODE.
-KEEP THE SPACE SHUTTLE FLYING.
-==================================================================
+==
+
+The code is written in a very dumb, simple, explicit style to keep the bookkeeping center-stage and front-of-mind. To
+quote kubernetes:
+
+  https://github.com/kubernetes/kubernetes/blob/60c4c2b2521fb454ce69dee737e3eb91a25e0535/pkg/controller/volume/persistentvolume/pv_controller.go#L60-L63
+
+  ==================================================================
+  PLEASE DO NOT ATTEMPT TO SIMPLIFY THIS CODE.
+  KEEP THE SPACE SHUTTLE FLYING.
+  ==================================================================
+
+==
 
 TODO:
  - reuse greenlet if nested somehow?
