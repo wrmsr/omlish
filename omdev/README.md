@@ -13,5 +13,5 @@ Development utilities and support code.
 # Amalgamation
 
 Amalgamation is the process of stitching together multiple python source files into a single self-contained python
-script. ['lite'](https://github.com/wrmsr/omlish/blob/master/omlish/README.md#lite-code) code is written in a style
-conducive to this.
+script. ['lite'](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code) code is written in a style conducive to
+this.
