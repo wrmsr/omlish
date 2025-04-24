@@ -1463,6 +1463,7 @@ class TomlDecodeError(ValueError):
 
 def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> ta.Dict[str, ta.Any]:
     """Parse TOML from a binary file object."""
+
     b = fp.read()
     try:
         s = b.decode()
@@ -10883,7 +10884,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
         async with self.popen(*run.cmd, **kwargs) as proc:
             stdout, stderr = await self.communicate(proc, run.input, run.timeout)
 
-        if check and proc.returncode:
+        if run.check and proc.returncode:
             raise subprocess.CalledProcessError(
                 proc.returncode,
                 run.cmd,

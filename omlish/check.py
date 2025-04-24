@@ -1,3 +1,8 @@
+"""
+While the core functionality lives in `lite/check.py` and is available in lite code, this module re-exports the contents
+of its `check` API object as module-globals for convenience. It also sets up some non-lite integration, most notably
+`ArgsRenderer` for rendering the AST's and values of failed checks (if the necessary optional dependencies are present).
+"""
 import typing as ta
 
 from .lite.check import CheckArgsRenderer as ArgsRenderer  # noqa

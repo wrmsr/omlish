@@ -4610,7 +4610,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
         async with self.popen(*run.cmd, **kwargs) as proc:
             stdout, stderr = await self.communicate(proc, run.input, run.timeout)
 
-        if check and proc.returncode:
+        if run.check and proc.returncode:
             raise subprocess.CalledProcessError(
                 proc.returncode,
                 run.cmd,

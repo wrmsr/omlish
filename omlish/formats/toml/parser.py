@@ -95,6 +95,7 @@ class TomlDecodeError(ValueError):
 
 def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> ta.Dict[str, ta.Any]:
     """Parse TOML from a binary file object."""
+
     b = fp.read()
     try:
         s = b.decode()

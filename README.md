@@ -1,26 +1,29 @@
-It's like my previous python monorepo-ey thing [`omnibus`](https://github.com/wrmsr/omnibus/tree/wrmsr_exp_split)... ish.
+# Overview
+
+My python monorepo, the successor to my previous one `omnibus`(... 'ish').
 
 Core packages begin with `om`, scratch app is in `app`, temp / dump code is in `x`.
 
-----
+The packages have no required dependencies besides each other, but there are numerous optional ones - see their
+respective `pyproject.toml` files for details.
 
-The core packages are:
+General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' code for 3.8+.
 
-- **omlish**: core foundational code
-- **omdev**: development utilities
-- **omserv**: production web server
-- **ominfra**: infrastructure and cloud code
-- **ommlx**: ml / ai code
+# Core packages
 
-----
+- **[omlish](omlish)** - Core foundational code
+- **[omdev](omdev)** - Development utilities
+- **[omserv](omserv)** - Production web server
+- **[ominfra](ominfra)** - Infrastructure and cloud code
+- **[ommlx](ommlx)** - ML / AI code
+
+# Installation
 
 Core packages installable from pypi, or from git via:
 
 ```bash
 pip install 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pkg/<pkg>'
 ```
-
-Core packages have no required dependencies, but numerous optional ones - see their respective `pyproject.toml` files for details.
 
 The CLI is installable through uvx or pipx via:
 

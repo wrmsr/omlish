@@ -2,7 +2,7 @@
 # @omlish-lite
 # @omlish-script
 """
-curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py | python3 -
+curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -
 """
 import abc
 import argparse
@@ -13,6 +13,9 @@ import shutil
 import subprocess
 import sys
 import typing as ta
+
+
+##
 
 
 DEFAULT_CLI_PKG = 'omdev-cli'
