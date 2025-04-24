@@ -4347,6 +4347,9 @@ class IncrementalWriteBuffer:
 # ../../../omlish/io/fdio/handlers.py
 
 
+##
+
+
 class FdioHandler(abc.ABC):
     @abc.abstractmethod
     def fd(self) -> int:
@@ -4409,6 +4412,9 @@ class SocketFdioHandler(FdioHandler, abc.ABC):
 
 ########################################
 # ../../../omlish/io/fdio/kqueue.py
+
+
+##
 
 
 KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]

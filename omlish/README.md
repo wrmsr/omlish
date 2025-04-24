@@ -44,7 +44,7 @@ Core utilities and foundational code. It's relatively large but completely self-
     inheritance of dataclass parameters like `frozen`), and some basic [base classes](dataclasses/metaclass/bases.py).
   - (Nearly finished) support for ahead-of-time / build-time code generation, greatly reducing import times.
 
-  The stdlib-equivalent API is exported in such a way as to be direct aliases for the stdlib API itself, simplifying
+  The stdlib-equivalent api is exported in such a way as to be direct aliases for the stdlib api itself, simplifying
   tool support.
 
 - **[dispatch](dispatch)** - A beefed-up version of [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch),
@@ -70,7 +70,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 - **[io](io)** - IO tools, including:
 
   - **[compress](io/compress)** - Abstraction over various compression schemes, with particular attention to incremental
-    operation. For example it includes an incremental reformulation of stdlib's [gzip](io/compress/gzip.py).
+    operation. For example it includes [an incremental reformulation of stdlib's gzip](io/compress/gzip.py).
   - **[coro](io/coro)** - Utilities for coroutine / sans-io style code.
   - **[fdio](io/fdio)** - An implementation of classic [selector](https://docs.python.org/3/library/selectors.html)-style
     IO dispatch, akin to the deprecated [asyncore](https://docs.python.org/3.11/library/asyncore.html). While more
@@ -94,7 +94,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
   - **[alchemy](sql/alchemy)** - SQLAlchemy utilities. The codebase is moving away from SQLAlchemy however in favor of
     its own internal SQL api.
-  - **[api](sql/api)** - An abstracted API for SQL interaction, with support for dbapi compatible drivers (and a 
+  - **[api](sql/api)** - An abstracted api for SQL interaction, with support for dbapi compatible drivers (and a 
     SQLAlchemy adapter).
   - **[queries](sql/queries)** - A SQL query builder with a fluent interface.
 
@@ -130,7 +130,7 @@ Code written in this style has notable differences from standard code, including
   a lite equivalent might be [`omlish.lite.inject.InjectorKey`](lite/inject.py).
 - All internal imports import each individual item out of modules rather than importing the modules and referencing
   their contents. Where non-lite code would `from .. import x; x.y`, lite code would `from ..x import y`. As a result
-  there are frequently 'API' non-instantiated namespace classes serving the purpose of modules - just handy bags of
+  there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
   stuff with shortened names.
 - As lite code is tested in 3.8+ but core code requires 3.12+, packages containing lite code can't import anything
   non-lite in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in

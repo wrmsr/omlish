@@ -19,7 +19,13 @@ General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' co
 
 # Installation
 
-Core packages installable from pypi, or from git via:
+Core packages installable by name from pypi:
+
+```bash
+pip install omlish
+```
+
+Or directly from git via:
 
 ```bash
 pip install 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pkg/<pkg>'
