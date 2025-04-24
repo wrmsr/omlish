@@ -7983,8 +7983,14 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
     def _symlink_standard_files(self) -> None:
         for fn in self._STANDARD_FILES:
-            if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
+            for tp in [
+                [self._pkg_dir(), self._dir_name],
+                [],
+            ]:
+                fp = os.path.join(*tp, fn)
+                if os.path.exists(fp):
+                    os.symlink(os.path.relpath(fp, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
+                    break
 
     #
 

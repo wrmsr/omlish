@@ -11,8 +11,8 @@ General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' co
 
 # Core packages
 
-- **[omlish](omlish)** - Core foundational code
-- **[omdev](omdev)** - Development utilities
+- **[omlish](omlish#readme)** - Core foundational code
+- **[omdev](omdev#readme)** - Development utilities
 - **[omserv](omserv)** - Production web server
 - **[ominfra](ominfra)** - Infrastructure and cloud code
 - **[ommlx](ommlx)** - ML / AI code

@@ -25,7 +25,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 - **[collections](collections)** - A handful of collection utilities and simple implementations, including:
 
-  - **[cache](collections/cache)** - A configurable LRU/LFU cache with options like ttl and  max size/weight.
+  - **[cache](collections/cache)** - A configurable LRU / LFU cache with options like ttl and  max size / weight.
   - **[hasheq](collections/hasheq.py)** - A dict taking an external `__hash__` / `__eq__` implementation.
   - **[identity](collections/identity.py)** - Identity-keyed collections.
   - **[sorted](collections/sorted)** - interfaces for value-sorted collections and mappings, and a simple but correct
@@ -44,8 +44,8 @@ Core utilities and foundational code. It's relatively large but completely self-
     inheritance of dataclass parameters like `frozen`), and some basic [base classes](dataclasses/metaclass/bases.py).
   - (Nearly finished) support for ahead-of-time / build-time code generation, greatly reducing import times.
 
-  The stdlib-equivalent API is exported in such a way as to be aliases for the stdlib API itself, simplifying tool
-  support.
+  The stdlib-equivalent API is exported in such a way as to be direct aliases for the stdlib API itself, simplifying
+  tool support.
 
 - **[dispatch](dispatch)** - A beefed-up version of [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch),
   most notably supporting MRO-honoring method impl dispatch.
@@ -98,8 +98,14 @@ Core utilities and foundational code. It's relatively large but completely self-
     SQLAlchemy adapter).
   - **[queries](sql/queries)** - A SQL query builder with a fluent interface.
 
-- **[testing](testing)** - Test - primarily pytest - helpers, including an all-in-one 'harness' fixture marrying it to
-  the codebase's dependency injector, as well as various other plugins.
+- **[testing](testing)** - Test - primarily pytest - helpers, including:
+
+  - **['harness'](testing/pytest/inject/harness.py)** - An all-in-one fixture marrying it to the codebase's dependency
+    injector.
+  - **[plugins/async](testing/pytest/plugins/asyncs)** - An in-house async-backend abstraction plugin, capable of
+    handling all of asyncio / trio / trio-asyncio / *any-future-event-loop-impl* without having multiple fighting plugins 
+    (*[I know, I know](https://xkcd.com/927/)*).
+  - **[plugins](testing/pytest/plugins)** - Various other plugins.
 
 - **[lite](lite)** - The standard library of 'lite' code, this is the only package beneath `lang`, and parts of it are
   re-exported by it for deduplication. On top of miscellaneous utilities it contains a handful of independent,
