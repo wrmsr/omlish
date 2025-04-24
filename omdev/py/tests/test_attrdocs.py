@@ -4,6 +4,11 @@ import pprint
 from ..attrdocs import extract_attr_docs
 
 
+# Blah
+SOME_GLOBAL = 42  # Huh
+"""What?"""
+
+
 class Foo:
     class Bar:
         x: int = 5
@@ -40,9 +45,6 @@ class Baz:
 
 
 def test_attr_docs():
-
-    #
-
     dsd = extract_attr_docs(inspect.getsource(Foo))
     pprint.pprint(dsd)
     print()
