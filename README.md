@@ -7,7 +7,7 @@ Core libraries begin with `om`, scratch app is in `app`, temp / dump code is in 
 The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
 respective `pyproject.toml` files for details.
 
-General code is written for python 3.12+, '[lite](omlish/README.md#lite-code' code for 3.8+.
+General code is written for python 3.12+, '[lite](omlish#lite-code)' code for 3.8+.
 
 # Core libraries
 
