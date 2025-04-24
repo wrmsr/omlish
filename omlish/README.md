@@ -107,7 +107,7 @@ Core utilities and foundational code. It's relatively large but completely self-
     (*[I know, I know](https://xkcd.com/927/)*).
   - **[plugins](testing/pytest/plugins)** - Various other plugins.
 
-- **[lite](lite)** - The standard library of 'lite' code, this is the only package beneath `lang`, and parts of it are
+- **[lite](lite)** - The standard library of 'lite' code. This is the only package beneath `lang`, and parts of it are
   re-exported by it for deduplication. On top of miscellaneous utilities it contains a handful of independent,
   self-contained, significantly simplified 'lite' equivalents of some major core packages:
 
