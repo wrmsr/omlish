@@ -1,6 +1,6 @@
 - Environment
   - Target cpython 3.12 - use the modern language and library features it includes.
-  - Code should run on modern macOS and Linux - windows support is not necessary, but still prefer things like
+  - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` to `'/'.join` where reasonable.
 
 - Imports
@@ -21,8 +21,7 @@
   - Prefer frozen dataclasses.
 
 - Type Annotation
-  - Type annotate wherever possible, even if it is simply `ta.Any`, but use the most specific annotation wherever
-    feasible.
+  - Type annotate wherever possible, even if it is simply `ta.Any`, but use the most specific annotation feasible.
   - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
     than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly. 
   - When returning values, prefer to use the full type if the caller 'owns' the value, and use a less-specific, usually

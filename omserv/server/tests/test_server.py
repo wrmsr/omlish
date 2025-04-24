@@ -67,8 +67,8 @@ async def test_server_simple():
                     ],
                 ),
             )))
-            await conn.send(client.send(h11.Data(data=SANITY_REQUEST_BODY)))  # type: ignore
-            await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
+            await conn.send(client.send(h11.Data(data=SANITY_REQUEST_BODY)))
+            await conn.send(client.send(h11.EndOfMessage()))
             # await conn.send_eof()
 
             events = []
