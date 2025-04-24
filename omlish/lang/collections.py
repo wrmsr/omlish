@@ -12,16 +12,27 @@ V = ta.TypeVar('V')
 def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
     if len(args) > 1:
         raise TypeError
+
     if args:
         [src] = args
+
+        # Prefer .items() as it's potentially faster.
         if isinstance(src, collections.abc.Mapping):
-            for k in src:
+            yield from src.items()
+
+        # Support keys() duck-typed dict init behavior:
+        #  https://docs.python.org/3/library/stdtypes.html#dict
+        #  https://github.com/python/cpython/blob/95d9dea1c4ed1b1de80074b74301cee0b38d5541/Objects/dictobject.c#L2671
+        elif hasattr(src, 'keys'):
+            # https://github.com/python/cpython/blob/95d9dea1c4ed1b1de80074b74301cee0b38d5541/Objects/dictobject.c#L2927
+            for k in src.keys():  # noqa
                 yield (k, src[k])
+
         else:
             for k, v in src:
                 yield (k, v)
-    for k, v in kwargs.items():
-        yield (k, v)
+
+    yield from kwargs.items()
 
 
 def merge_dicts(
