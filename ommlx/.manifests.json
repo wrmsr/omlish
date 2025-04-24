@@ -50,7 +50,7 @@
     "module": ".minichain.backends.google.chat",
     "attr": null,
     "file": "ommlx/minichain/backends/google/chat.py",
-    "line": 24,
+    "line": 26,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.google.chat",

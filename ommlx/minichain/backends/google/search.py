@@ -67,6 +67,15 @@ class CseSearchResponse(lang.Final):
     x: ta.Mapping[str, ta.Any] | None = dc.field(default=None, repr=False)
 
 
+##
+
+
+# @dc.dataclass(frozen=True)
+# class CseCreds(tv.UniqueTypedValue, Config):
+#     cse_id: str
+#     cse_api_key: sec.Secret
+
+
 class CseSearchService(SearchService):
     def __init__(
             self,

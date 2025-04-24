@@ -1,7 +1,6 @@
 """
 https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
 """
-import os
 import typing as ta
 
 from omlish import check
@@ -16,6 +15,9 @@ from ...chat.messages import UserMessage
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
+from ...configs import consume_configs
+from ...standard import ApiKey
+from ...standard import ModelName
 
 
 ##
@@ -23,19 +25,16 @@ from ...chat.services import ChatService
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='google', type='ChatService')
 class GoogleChatService(ChatService):
-    model: ta.ClassVar[str] = (
+    DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gemini-2.0-flash'
     )
 
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
-        SystemMessage: 'system',
-        UserMessage: 'user',
-        AiMessage: 'assistant',
-    }
-
-    def __init__(self, *, api_key: str | None = None) -> None:
+    def __init__(self, *configs: ApiKey | ModelName) -> None:
         super().__init__()
-        self._api_key = api_key
+
+        with consume_configs(*configs) as cc:
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
+            self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
@@ -49,12 +48,17 @@ class GoogleChatService(ChatService):
 
     BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
+        SystemMessage: 'system',
+        UserMessage: 'user',
+        AiMessage: 'assistant',
+    }
+
     def invoke(
             self,
             request: ChatRequest,
     ) -> ChatResponse:
-        if not (key := self._api_key):
-            key = os.environ['GEMINI_API_KEY']
+        key = check.not_none(self._api_key).reveal()
 
         req_dct = {
             'contents': [
@@ -71,7 +75,7 @@ class GoogleChatService(ChatService):
         }
 
         resp = http.request(
-            f'{self.BASE_URL.rstrip("/")}/{self.model}:generateContent?key={key}',
+            f'{self.BASE_URL.rstrip("/")}/{self._model_name.v}:generateContent?key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),
             method='POST',
