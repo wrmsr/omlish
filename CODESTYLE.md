@@ -50,7 +50,7 @@
     interface in type annotations unless it must specifically refer to a given implementation.
   - When naming interface classes, the interface should be the 'bare' name, and implementations should have prefixes and
     suffixes. For example, a user service interface would be `UserService`, with a `DbUserService` or `DictUserService`
-    subclass, or evan a `UserServiceImpl` subclass if there is only one sensible initial implementation but it still
+    subclass, or even a `UserServiceImpl` subclass if there is only one sensible initial implementation but it still
     justifies being abstracted.
 
 - Modules

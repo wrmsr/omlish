@@ -18,7 +18,9 @@ def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterable[tuple[ta.Any
 
         # Prefer .items() as it's potentially faster.
         if isinstance(src, collections.abc.Mapping):
-            yield from src.items()
+            # Not yield-from, explicitly enforce 2ple-ness
+            for k, v in src.items():
+                yield (k, v)
 
         # Support keys() duck-typed dict init behavior:
         #  https://docs.python.org/3/library/stdtypes.html#dict

@@ -1,7 +1,6 @@
 """
 TODO:
  - 'edit', default cwd - use git's
-  - git var GIT_EDITOR
  - delete?
  - 'purge'?
  - 'validate' - at least formats
@@ -12,6 +11,7 @@ import shutil
 from omlish import check
 from omlish.argparse import all as ap
 from omlish.configs.shadow import FileShadowConfigs
+from omlish.subprocesses.editor import get_user_text_editor
 
 from ..cli.types import CliModule
 from ..home.shadow import get_shadow_configs
@@ -36,7 +36,11 @@ class ShadowCli(ap.Cli):
     def edit(self) -> None:
         shd_file = self._get_shadow_file(self._args.path)
         os.makedirs(os.path.dirname(shd_file), exist_ok=True)
-        os.execl(check.not_none(shutil.which('vim')), 'vim', shd_file)
+
+        ed = get_user_text_editor()
+        ed_exe = check.not_none(shutil.which(ed))
+
+        os.execl(ed_exe, ed_exe, shd_file)
 
     @ap.cmd(
         ap.arg('path', nargs='?'),

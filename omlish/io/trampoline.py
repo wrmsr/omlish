@@ -24,8 +24,8 @@ T = ta.TypeVar('T')
 
 BytesLike: ta.TypeAlias = ta.Any
 
-BufferedReader = io.BufferedReader
-# BufferedReader = pyio.BufferedReader
+BufferedReader: ta.TypeAlias = io.BufferedReader
+# BufferedReader: ta.TypeAlias = pyio.BufferedReader
 
 
 ##

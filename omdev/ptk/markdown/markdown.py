@@ -34,10 +34,10 @@ class Markdown:
     """A markdown formatted text renderer. Accepts a markdown string and renders it at a given width."""
 
     def __init__(
-        self,
-        markup: str,
-        width: int | None = None,
-        strip_trailing_lines: bool = True,
+            self,
+            markup: str,
+            width: int | None = None,
+            strip_trailing_lines: bool = True,
     ) -> None:
         """
         Initialize the markdown formatter.
@@ -73,7 +73,7 @@ class Markdown:
             )
 
     def render(
-        self,
+            self,
             tokens: ta.Sequence['Token'],
             width: int = 80,
             left: int = 0,
@@ -142,10 +142,10 @@ class Markdown:
         return ft
 
     def render_block(
-        self,
-        tokens: ta.Sequence['Token'],
-        width: int,
-        left: int = 0,
+            self,
+            tokens: ta.Sequence['Token'],
+            width: int,
+            left: int = 0,
     ) -> ptk.StyleAndTextTuples:
         """
         Render a list of parsed markdown tokens representing a block element.
@@ -191,10 +191,10 @@ class Markdown:
         return ft
 
     def render_ordered_list(
-        self,
-        tokens: ta.Sequence['Token'],
-        width: int,
-        left: int = 0,
+            self,
+            tokens: ta.Sequence['Token'],
+            width: int,
+            left: int = 0,
     ) -> ptk.StyleAndTextTuples:
         """Render an ordered list by adding indices to the child list items."""
 
@@ -220,11 +220,11 @@ class Markdown:
         )
 
     def render_table(
-        self,
-        tokens: ta.Sequence['Token'],
-        width: int,
-        left: int = 0,
-        border: type[Border] = SquareBorder,
+            self,
+            tokens: ta.Sequence['Token'],
+            width: int,
+            left: int = 0,
+            border: type[Border] = SquareBorder,
     ) -> ptk.StyleAndTextTuples:
         """
         Render a list of parsed markdown tokens representing a table element.

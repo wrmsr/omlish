@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
+"""
+TODO:
+  - git var GIT_EDITOR ?
+"""
 import dataclasses as dc
 import os
 import tempfile
@@ -11,6 +15,18 @@ from ..lite.contextmanagers import defer
 from .run import SubprocessRun
 from .run import SubprocessRunnable
 from .run import SubprocessRunOutput
+
+
+##
+
+
+DEFAULT_USER_TEXT_EDITOR = 'vi'
+
+
+def get_user_text_editor(default: ta.Optional[str] = None) -> str:
+    if default is None:
+        default = DEFAULT_USER_TEXT_EDITOR
+    return os.environ.get('EDITOR', default)
 
 
 ##
@@ -46,11 +62,10 @@ class EditTextWithUserEditor(SubprocessRunnable, ExitStacked):
 
     def make_run(self) -> SubprocessRun:
         tf = self._temp_file()
-
-        editor = os.environ.get('EDITOR', 'vi')
+        ed = get_user_text_editor()
 
         return SubprocessRun.of(
-            editor,
+            ed,
             tf.path,
         )
 

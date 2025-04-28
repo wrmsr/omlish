@@ -18,6 +18,7 @@ Freestanding options:
 TODO:
  - cext interop
  - gen cmake
+  - nanobind
  - fix CFLAGS/CCFLAGS/CPPFLAGS/CXXFLAGS
  - jit-gen cmake mode? multi-src builds
 """

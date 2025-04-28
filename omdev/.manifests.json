@@ -477,7 +477,7 @@
     "module": ".tools.shadow",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/shadow.py",
-    "line": 64,
+    "line": 68,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "shadow",
