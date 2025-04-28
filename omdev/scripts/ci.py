@@ -656,7 +656,15 @@ class Checks:
             spec = (object,)
         return spec
 
-    def isinstance(self, v: ta.Any, spec: ta.Union[ta.Type[T], tuple], msg: CheckMessage = None) -> T:  # noqa
+    @ta.overload
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None) -> T:
+        ...
+
+    @ta.overload
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None) -> ta.Any:
+        ...
+
+    def isinstance(self, v, spec, msg=None):
         if not isinstance(v, self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
@@ -668,7 +676,15 @@ class Checks:
 
         return v
 
-    def of_isinstance(self, spec: ta.Union[ta.Type[T], tuple], msg: CheckMessage = None) -> ta.Callable[[ta.Any], T]:
+    @ta.overload
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None) -> ta.Callable[[ta.Any], T]:
+        ...
+
+    @ta.overload
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[ta.Any], ta.Any]:
+        ...
+
+    def of_isinstance(self, spec, msg=None):
         def inner(v):
             return self.isinstance(v, self._unpack_isinstance_spec(spec), msg)
 

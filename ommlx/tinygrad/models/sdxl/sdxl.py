@@ -46,8 +46,6 @@ import dataclasses as dc
 import typing as ta
 
 import numpy as np
-
-from omlish import check
 from tinygrad import GlobalCounters
 from tinygrad import Tensor
 from tinygrad import TinyJit
@@ -56,6 +54,8 @@ from tinygrad.helpers import Timing
 from tinygrad.helpers import trange
 from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
+
+from omlish import check
 
 from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder
@@ -149,7 +149,7 @@ class ConcatTimestepEmbedderNd(Embedder):
         self.input_key = input_key
 
     def __call__(self, x: str | list[str] | Tensor):
-        x = check.isinstance(x, Tensor)
+        x = ta.cast(Tensor, check.isinstance(x, Tensor))
         check.state(len(x.shape) == 2)
         emb = timestep_embedding(x.flatten(), self.outdim)
         emb = emb.reshape((x.shape[0], -1))

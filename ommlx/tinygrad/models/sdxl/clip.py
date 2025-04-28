@@ -4,7 +4,6 @@ import gzip
 import re
 import typing as ta
 
-from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad.helpers import fetch
@@ -12,6 +11,8 @@ from tinygrad.nn import Conv2d
 from tinygrad.nn import Embedding
 from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
+
+from omlish import check
 
 
 ##
@@ -318,7 +319,7 @@ class FrozenClosedClipEmbedder(Embedder):
             texts = [texts]
         check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
         tokens = Tensor.cat(
-            *[Tensor(self.tokenizer.encode(text)) for text in texts], dim=0,  # type: ignore[union-attr]
+            *[Tensor(self.tokenizer.encode(text)) for text in texts], dim=0,
         )
         return self.transformer.text_model(tokens.reshape(len(texts), -1))
 
@@ -345,7 +346,7 @@ class Open:
             t, b, c = x.shape
 
             proj = x.linear(self.in_proj_weight.T, self.in_proj_bias)
-            proj = proj.unflatten(-1, (3, c)).unsqueeze(0).transpose(0, -2)  # type: ignore[arg-type]
+            proj = proj.unflatten(-1, (3, c)).unsqueeze(0).transpose(0, -2)
 
             q, k, v = [
                 y.reshape(t, b * self.n_heads, self.d_head)
@@ -561,5 +562,5 @@ class FrozenOpenClipEmbedder(Embedder):
         if isinstance(texts, str):
             texts = [texts]
         check.isinstance(texts, (list, tuple), f'expected list of strings, got {type(texts).__name__}')
-        tokens = Tensor.cat(*[self.tokenize(text) for text in texts], dim=0)  # type: ignore[union-attr]
+        tokens = Tensor.cat(*[self.tokenize(text) for text in texts], dim=0)
         return self.embed_tokens(tokens)

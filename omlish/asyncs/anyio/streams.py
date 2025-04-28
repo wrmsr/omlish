@@ -54,8 +54,8 @@ def staple_memory_object_stream(
 ) -> MemoryStapledObjectStream[T]:
     send, receive = args
     return MemoryStapledObjectStream(
-        check.isinstance(send, MemoryObjectSendStream),  # type: ignore
-        check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
+        check.isinstance(send, MemoryObjectSendStream),
+        check.isinstance(receive, MemoryObjectReceiveStream),
     )
 
 
@@ -64,6 +64,6 @@ def staple_memory_object_stream(
 def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> MemoryStapledObjectStream[T]:
     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
     return MemoryStapledObjectStream(
-        check.isinstance(send, MemoryObjectSendStream),  # type: ignore
-        check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
+        check.isinstance(send, MemoryObjectSendStream),
+        check.isinstance(receive, MemoryObjectReceiveStream),
     )
