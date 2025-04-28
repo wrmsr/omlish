@@ -88,15 +88,15 @@ fresh-venv:
 
 .PHONY: tg
 tg:
-	git submodule update --init tinygrad
+	git submodule update --init tinygrad_
 
 	# FIXME: ${PYTHON} -m pip install -e tinygrad --use-pep517
 	ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
-	(cd tinygrad && "$$ABS_PYTHON" -m pip install -e .)
+	(cd tinygrad_ && "$$ABS_PYTHON" -m pip install -e .)
 
 .PHONY: tg-update
 tg-update:
-	(cd tinygrad && git pull origin master)
+	(cd tinygrad_ && git pull origin master)
 
 
 ### Deps

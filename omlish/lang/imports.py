@@ -1,6 +1,7 @@
 """
 TODO:
  - proxy_init 'as' alias support - attrs of (src, dst)
+ - use importlib.util.resolve_name
 """
 import contextlib
 import functools
@@ -189,6 +190,7 @@ def try_import(spec: str) -> types.ModuleType | None:
 
 
 def resolve_import_name(name: str, package: str | None = None) -> str:
+    # FIXME: importlib.util.resolve_name
     level = 0
 
     if name.startswith('.'):

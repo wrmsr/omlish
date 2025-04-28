@@ -1,3 +1,0 @@
-[submodule "tinygrad"]
-	path = tinygrad
-	url = https://github.com/tinygrad/tinygrad
