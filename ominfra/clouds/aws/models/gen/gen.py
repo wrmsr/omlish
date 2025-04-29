@@ -12,6 +12,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 from omlish.algorithm import all as alg
+from omlish.lite.strings import snake_case
 
 
 if ta.TYPE_CHECKING:
@@ -271,7 +272,7 @@ class ModelGen:
 
             n = r
 
-        return '_'.join(lang.snake_case(*lang.split_string_casing(p)) for p in ps)
+        return '_'.join(snake_case(p) for p in ps)
 
     #
 
