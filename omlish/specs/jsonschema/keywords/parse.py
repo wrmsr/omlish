@@ -3,14 +3,18 @@ import typing as ta
 from .... import check
 from .... import collections as col
 from .... import lang
+from .base import AnyArrayKeyword
+from .base import AnyKeyword
 from .base import BooleanKeyword
+from .base import BooleanOrKeywordsKeyword
 from .base import Keyword
 from .base import Keywords
+from .base import KeywordsArrayKeyword
 from .base import KeywordsKeyword
 from .base import KnownKeyword
 from .base import NumberKeyword
 from .base import StrKeyword
-from .base import StrOrStrsKeyword
+from .base import StrOrStrArrayKeyword
 from .base import StrToKeywordsKeyword
 from .core import CoreKeyword
 from .format import FormatKeyword
@@ -69,8 +73,20 @@ class KeywordParser:
         self._allow_unknown = allow_unknown
 
     def parse_keyword(self, cls: type[KeywordT], v: ta.Any) -> KeywordT:
-        if issubclass(cls, BooleanKeyword):
+        if issubclass(cls, AnyKeyword):
+            return cls(v)  # type: ignore
+
+        elif issubclass(cls, AnyArrayKeyword):
+            return cls(tuple(check.isinstance(v, ta.Sequence)))  # type: ignore
+
+        elif issubclass(cls, BooleanKeyword):
             return cls(check.isinstance(v, bool))  # type: ignore
+
+        elif issubclass(cls, BooleanOrKeywordsKeyword):
+            if isinstance(v, bool):
+                return cls(v)  # type: ignore
+            else:
+                return cls(self.parse_keywords(v))  # type: ignore
 
         elif issubclass(cls, NumberKeyword):
             return cls(check.isinstance(v, (int, float)))  # type: ignore
@@ -78,7 +94,7 @@ class KeywordParser:
         elif issubclass(cls, StrKeyword):
             return cls(check.isinstance(v, str))  # type: ignore
 
-        elif issubclass(cls, StrOrStrsKeyword):
+        elif issubclass(cls, StrOrStrArrayKeyword):
             ss: str | ta.Sequence[str]
             if isinstance(v, str):
                 ss = v
@@ -90,6 +106,9 @@ class KeywordParser:
 
         elif issubclass(cls, KeywordsKeyword):
             return cls(self.parse_keywords(v))  # type: ignore
+
+        elif issubclass(cls, KeywordsArrayKeyword):
+            return cls(tuple(self.parse_keywords(e) for e in v))  # type: ignore
 
         elif issubclass(cls, StrToKeywordsKeyword):
             return cls({k: self.parse_keywords(mv) for k, mv in v.items()})  # type: ignore

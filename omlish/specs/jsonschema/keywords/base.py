@@ -76,6 +76,16 @@ class Keywords(lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class AnyKeyword(Keyword, lang.Abstract):
+    v: ta.Any
+
+
+@dc.dataclass(frozen=True)
+class AnyArrayKeyword(Keyword, lang.Abstract):
+    vs: ta.Sequence[ta.Any]
+
+
+@dc.dataclass(frozen=True)
 class BooleanKeyword(Keyword, lang.Abstract):
     b: bool
 
@@ -91,7 +101,7 @@ class StrKeyword(Keyword, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class StrOrStrsKeyword(Keyword, lang.Abstract):
+class StrOrStrArrayKeyword(Keyword, lang.Abstract):
     ss: str | ta.Sequence[str]
 
 
@@ -101,5 +111,15 @@ class KeywordsKeyword(Keyword, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+class KeywordsArrayKeyword(Keyword, lang.Abstract):
+    kws: ta.Sequence[Keywords]
+
+
+@dc.dataclass(frozen=True)
 class StrToKeywordsKeyword(Keyword, lang.Abstract):
     m: ta.Mapping[str, Keywords]
+
+
+@dc.dataclass(frozen=True)
+class BooleanOrKeywordsKeyword(Keyword, lang.Abstract):
+    bk: bool | Keywords

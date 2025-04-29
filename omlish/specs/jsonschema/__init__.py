@@ -44,6 +44,10 @@ from .keywords.unknown import (  # noqa
 )
 
 from .keywords.validation import (  # noqa
+    AdditionalProperties,
+    AnyOf,
+    Const,
+    Enum,
     ExclusiveMaximum,
     ExclusiveMinimum,
     Items,
@@ -51,6 +55,7 @@ from .keywords.validation import (  # noqa
     Maximum,
     MinItems,
     Minimum,
+    OneOf,
     Properties,
     Required,
     Type,

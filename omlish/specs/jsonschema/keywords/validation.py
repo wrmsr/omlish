@@ -1,9 +1,13 @@
 from .... import lang
+from .base import AnyArrayKeyword
+from .base import AnyKeyword
 from .base import BooleanKeyword
+from .base import BooleanOrKeywordsKeyword
+from .base import KeywordsArrayKeyword
 from .base import KeywordsKeyword
 from .base import KnownKeyword
 from .base import NumberKeyword
-from .base import StrOrStrsKeyword
+from .base import StrOrStrArrayKeyword
 from .base import StrToKeywordsKeyword
 
 
@@ -17,7 +21,15 @@ class ValidationKeyword(KnownKeyword, lang.Abstract, lang.Sealed):
 ##
 
 
-class Type(StrOrStrsKeyword, ValidationKeyword, lang.Final, tag='type'):
+class Type(StrOrStrArrayKeyword, ValidationKeyword, lang.Final, tag='type'):
+    pass
+
+
+class Const(AnyKeyword, ValidationKeyword, lang.Final, tag='const'):
+    pass
+
+
+class Enum(AnyArrayKeyword, ValidationKeyword, lang.Final, tag='enum'):
     pass
 
 
@@ -25,11 +37,15 @@ class Items(KeywordsKeyword, ValidationKeyword, lang.Final, tag='items'):
     pass
 
 
-class Required(StrOrStrsKeyword, ValidationKeyword, lang.Final, tag='required'):
+class Required(StrOrStrArrayKeyword, ValidationKeyword, lang.Final, tag='required'):
     pass
 
 
 class Properties(StrToKeywordsKeyword, ValidationKeyword, lang.Final, tag='properties'):
+    pass
+
+
+class AdditionalProperties(BooleanOrKeywordsKeyword, ValidationKeyword, lang.Final, tag='additionalProperties'):
     pass
 
 
@@ -64,4 +80,15 @@ class Minimum(NumberKeyword, ValidationKeyword, lang.Final, tag='minimum'):
 
 
 class ExclusiveMinimum(NumberKeyword, ValidationKeyword, lang.Final, tag='exclusiveMinimum'):
+    pass
+
+
+#
+
+
+class AnyOf(KeywordsArrayKeyword, ValidationKeyword, lang.Final, tag='anyOf'):
+    pass
+
+
+class OneOf(KeywordsArrayKeyword, ValidationKeyword, lang.Final, tag='oneOf'):
     pass

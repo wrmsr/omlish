@@ -1,12 +1,16 @@
 import typing as ta
 
+from .base import AnyArrayKeyword
+from .base import AnyKeyword
 from .base import BooleanKeyword
+from .base import BooleanOrKeywordsKeyword
 from .base import Keyword
 from .base import Keywords
+from .base import KeywordsArrayKeyword
 from .base import KeywordsKeyword
 from .base import NumberKeyword
 from .base import StrKeyword
-from .base import StrOrStrsKeyword
+from .base import StrOrStrArrayKeyword
 from .base import StrToKeywordsKeyword
 from .unknown import UnknownKeyword
 
@@ -15,8 +19,20 @@ from .unknown import UnknownKeyword
 
 
 def render_keyword(kw: Keyword) -> dict[str, ta.Any]:
-    if isinstance(kw, BooleanKeyword):
+    if isinstance(kw, AnyKeyword):
+        return {kw.tag: kw.v}
+
+    elif isinstance(kw, AnyArrayKeyword):
+        return {kw.tag: kw.vs}
+
+    elif isinstance(kw, BooleanKeyword):
         return {kw.tag: kw.b}
+
+    elif isinstance(kw, BooleanOrKeywordsKeyword):
+        if isinstance(kw.bk, bool):
+            return {kw.tag: kw.bk}
+        else:
+            return {kw.tag: render_keywords(kw.bk)}
 
     elif isinstance(kw, NumberKeyword):
         return {kw.tag: kw.n}
@@ -24,7 +40,7 @@ def render_keyword(kw: Keyword) -> dict[str, ta.Any]:
     elif isinstance(kw, StrKeyword):
         return {kw.tag: kw.s}
 
-    elif isinstance(kw, StrOrStrsKeyword):
+    elif isinstance(kw, StrOrStrArrayKeyword):
         if isinstance(kw.ss, str):
             return {kw.tag: kw.ss}
         else:
@@ -32,6 +48,9 @@ def render_keyword(kw: Keyword) -> dict[str, ta.Any]:
 
     elif isinstance(kw, KeywordsKeyword):
         return {kw.tag: render_keywords(kw.kw)}
+
+    elif isinstance(kw, KeywordsArrayKeyword):
+        return {kw.tag: [render_keywords(c) for c in kw.kws]}
 
     elif isinstance(kw, StrToKeywordsKeyword):
         return {kw.tag: {k: render_keywords(v) for k, v in kw.m.items()}}
