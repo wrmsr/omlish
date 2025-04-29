@@ -106,7 +106,7 @@ numpy>=1.20
 
 prompt-toolkit==3.0.51
 
-snowflake-connector-python[secure-local-storage]==3.14.1; python_version < "3.13"
+snowflake-connector-python[secure-local-storage]==3.15.0; python_version < "3.13"
 snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
 huggingface-hub==0.30.2
