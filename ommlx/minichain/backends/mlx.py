@@ -34,9 +34,9 @@ else:
 class MlxChatService(ChatService, lang.ExitStacked):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
-        'mlx-community/Llama-3.3-70B-Instruct-4bit'
+        # 'mlx-community/Llama-3.3-70B-Instruct-4bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
-        # 'mlx-community/Llama-3.3-70B-Instruct-8bit'
+        'mlx-community/Llama-3.3-70B-Instruct-8bit'
         # 'mlx-community/Mistral-Small-3.1-Text-24B-Instruct-2503-8bit'
         # 'mlx-community/Mixtral-8x7B-Instruct-v0.1'
         # 'mlx-community/QwQ-32B-Preview-8bit'
@@ -45,6 +45,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
         # 'mlx-community/Qwen2.5-32B-Instruct-8bit'
         # 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
         # 'mlx-community/mamba-2.8b-hf-f16'
+        # 'mlx-community/Qwen3-30B-A3B-6bit'
     )
 
     def __init__(self, *configs: Config) -> None:

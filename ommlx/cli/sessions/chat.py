@@ -10,6 +10,7 @@ from ...minichain.backends.anthropic.chat import AnthropicChatService
 from ...minichain.backends.google.chat import GoogleChatService
 from ...minichain.backends.llamacpp.chat import LlamacppChatService
 from ...minichain.backends.mistral import MistralChatService
+from ...minichain.backends.mlx import MlxChatService
 from ...minichain.backends.openai.chat import OpenaiChatService
 from ..state import StateStorage
 from .base import Session
@@ -43,9 +44,10 @@ DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatService]] = {
     'anthropic': AnthropicChatService,
     'google': GoogleChatService,
-    'mistral': MistralChatService,
-    'openai': OpenaiChatService,
     'llamacpp': LlamacppChatService,
+    'mistral': MistralChatService,
+    'mlx': MlxChatService,
+    'openai': OpenaiChatService,
 }
 
 
@@ -61,6 +63,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
         new: bool = False
         backend: str | None = None
+        model_name: str | None = None
         stream: bool = False
 
     def __init__(
@@ -103,7 +106,10 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             resp_m = mc.AiMessage(resp_s)
 
         else:
-            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()
+            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
+                *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
+            )
+
             response = mdl.invoke(mc.ChatRequest.new(state.chat))
             resp_m = response.choices[0].m
             print(check.isinstance(resp_m.s, str).strip())
@@ -130,6 +136,7 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
 
         new: bool = False
         backend: str | None = None
+        model_name: str | None = None
 
     def __init__(
             self,
@@ -160,7 +167,10 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
                 ],
             )
 
-            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()
+            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
+                *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
+            )
+
             response = mdl.invoke(mc.ChatRequest.new(state.chat))
             print(check.isinstance(response.choices[0].m.s, str).strip())
 

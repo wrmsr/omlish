@@ -47,6 +47,8 @@ def _main() -> None:
 
     parser.add_argument('-b', '--backend', default='openai')
 
+    parser.add_argument('-m', '--model-name')
+
     parser.add_argument('-C', '--completion', action='store_true')
 
     parser.add_argument('-n', '--new', action='store_true')
@@ -110,6 +112,7 @@ def _main() -> None:
     if args.interactive:
         session_cfg = InteractiveChatSession.Config(
             backend=args.backend,
+            model_name=args.model_name,
             new=bool(args.new),
         )
 
@@ -129,6 +132,7 @@ def _main() -> None:
         session_cfg = PromptChatSession.Config(
             content,  # noqa
             backend=args.backend,
+            model_name=args.model_name,
             new=bool(args.new),
             stream=bool(args.stream),
         )
