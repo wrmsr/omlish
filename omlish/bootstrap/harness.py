@@ -35,7 +35,7 @@ from .base import SimpleBootstrap
 
 
 BOOTSTRAP_TYPES_BY_NAME: ta.Mapping[str, ta.Type[Bootstrap]] = {  # noqa
-    lang.snake_case(cls.__name__[:-len('Bootstrap')]): cls
+    lang.snake_case(*lang.split_string_casing(cls.__name__[:-len('Bootstrap')])): cls
     for cls in lang.deep_subclasses(Bootstrap, concrete_only=True)
 }
 

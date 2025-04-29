@@ -104,7 +104,7 @@ def _is_actual_number(x: ta.Any) -> bool:
 
 
 def node_type(n: Node) -> str:
-    return lang.snake_case(type(n).__name__)
+    return lang.snake_case(*lang.split_string_casing(type(n).__name__))
 
 
 ##

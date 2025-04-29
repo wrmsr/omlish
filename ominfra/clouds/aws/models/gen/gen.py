@@ -271,7 +271,7 @@ class ModelGen:
 
             n = r
 
-        return '_'.join(lang.snake_case(p) for p in ps)
+        return '_'.join(lang.snake_case(*lang.split_string_casing(p)) for p in ps)
 
     #
 

@@ -23,6 +23,33 @@ from .cached.property import (  # noqa
     cached_property,
 )
 
+from .casing import (  # noqa
+    StringCasingError,
+    ImproperStringCasingError,
+    UnknownStringCasingError,
+    AmbiguousStringCasingError,
+
+    StringCasing,
+    CamelCase,
+    LowCamelCase,
+    SnakeCase,
+    UpSnakeCase,
+
+    STRING_CASINGS,
+    CAMEL_CASE,
+    LOW_CAMEL_CASE,
+    SNAKE_CASE,
+    UP_SNAKE_CASE,
+
+    camel_case,
+    low_camel_case,
+    snake_case,
+    up_snake_case,
+
+    get_string_casing,
+    split_string_casing,
+)
+
 from .classes.abstract import (  # noqa
     Abstract,
     AbstractTypeError,
@@ -260,7 +287,6 @@ from .strings import (  # noqa
     BOOL_STRINGS,
     BOOL_TRUE_STRINGS,
     STRING_BOOL_VALUES,
-    camel_case,
     find_any,
     indent_lines,
     is_dunder,
@@ -272,7 +298,6 @@ from .strings import (  # noqa
     prefix_lines,
     replace_many,
     rfind_any,
-    snake_case,
     strip_prefix,
     strip_suffix,
 )

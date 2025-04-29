@@ -17,10 +17,9 @@ class Naming(Option, enum.Enum):
 
 def translate_name(n: str, e: Naming) -> str:
     if e is Naming.SNAKE:
-        return lang.snake_case(n)
+        return lang.snake_case(*lang.split_string_casing(n))
     if e is Naming.CAMEL:
-        return lang.camel_case(n)
+        return lang.camel_case(*lang.split_string_casing(n))
     if e is Naming.LOW_CAMEL:
-        r = lang.camel_case(n)
-        return (r[0].lower() + r[1:]) if r else r
+        return lang.low_camel_case(*lang.split_string_casing(n))
     raise ValueError(e)

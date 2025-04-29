@@ -84,23 +84,6 @@ def rfind_any(
 ##
 
 
-def camel_case(name: str, *, lower: bool = False) -> str:
-    if not name:
-        return ''
-    s = ''.join(map(str.capitalize, name.split('_')))  # noqa
-    if lower:
-        s = s[0].lower() + s[1:]
-    return s
-
-
-def snake_case(name: str) -> str:
-    uppers: list[int | None] = [i for i, c in enumerate(name) if c.isupper()]
-    return '_'.join([name[l:r].lower() for l, r in zip([None, *uppers], [*uppers, None])]).strip('_')
-
-
-##
-
-
 def is_dunder(name: str) -> bool:
     return (
         name[:2] == name[-2:] == '__' and
