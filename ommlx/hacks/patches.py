@@ -1,3 +1,8 @@
+"""
+TODO:
+ - patch lock
+ - thread / context local gating
+"""
 import contextlib
 import functools
 import typing as ta
