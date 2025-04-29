@@ -201,6 +201,22 @@ class LspSpec:
 ##
 
 
+@lang.static_init
+def _install_lsp_marshalling() -> None:
+    extended_content_poly = msh.polymorphism_from_subclasses(
+        LspType,
+        naming=msh.Naming.LOW_CAMEL,
+        strip_suffix=True,
+    )
+    msh.install_standard_factories(
+        msh.PolymorphismMarshalerFactory(extended_content_poly, msh.FieldTypeTagging('kind')),
+        msh.PolymorphismUnmarshalerFactory(extended_content_poly, msh.FieldTypeTagging('kind')),
+    )
+
+
+##
+
+
 LSP_SPEC_DATA = dcache.GitSpec(
     'https://github.com/microsoft/lsprotocol',
     rev='a79f4dc86bcf3f8655dbc7171952c7dcf6931f37',
@@ -212,16 +228,6 @@ LSP_SPEC_DATA = dcache.GitSpec(
 
 
 def _main() -> None:
-    extended_content_poly = msh.polymorphism_from_subclasses(
-        LspType,
-        naming=msh.Naming.LOW_CAMEL,
-        strip_suffix=True,
-    )
-    msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(extended_content_poly, msh.FieldTypeTagging('kind')),
-        msh.PolymorphismUnmarshalerFactory(extended_content_poly, msh.FieldTypeTagging('kind')),
-    )
-
     spec_dir = dcache.default().get(LSP_SPEC_DATA)
 
     with open(os.path.join(spec_dir, 'generator', 'lsp.json')) as f:
