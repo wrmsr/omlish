@@ -1,3 +1,7 @@
+"""
+TODO:
+ - clamp down on as_ident / CanIdent - no strs allowed
+"""
 import abc
 import functools
 import typing as ta
