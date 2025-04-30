@@ -231,6 +231,7 @@ from .maybes import (  # noqa
 )
 
 from .objects import (  # noqa
+    Identity,
     SimpleProxy,
     anon_object,
     arg_repr,
@@ -267,6 +268,12 @@ from .params import (  # noqa
     ValParam,
     VarParam,
     param_render,
+)
+
+from .recursion import (  # noqa
+    LimitedRecursionError,
+    recursion_limiting,
+    recursion_limiting_context,
 )
 
 from .resolving import (  # noqa

@@ -15,6 +15,8 @@ TODO:
    - and must be transient?
  - use __transient_dict__ to support common state nuking
  - use __set_name__ ?
+ - on_compute
+ - max_recursion?
 """
 import dataclasses as dc
 import functools
@@ -201,6 +203,9 @@ class _CachedFunction(ta.Generic[T], Abstract):
         except KeyError:
             pass
 
+        def call_value_fn():
+            return self._value_fn(*args, **kwargs)
+
         if self._lock is not None:
             with self._lock:
                 try:
@@ -208,10 +213,10 @@ class _CachedFunction(ta.Generic[T], Abstract):
                 except KeyError:
                     pass
 
-                value = self._value_fn(*args, **kwargs)
+                value = call_value_fn()
 
         else:
-            value = self._value_fn(*args, **kwargs)
+            value = call_value_fn()
 
         self._values[k] = value
         return value

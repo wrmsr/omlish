@@ -1,4 +1,7 @@
+import typing as ta
+
 from ...testing import assert_dicts_equal_ordered
+from ..objects import Identity
 from ..objects import SimpleProxy
 from ..objects import mro_dict
 
@@ -90,3 +93,43 @@ def test_test_mro_dict2():
     assert_dicts_equal_ordered(md(B, B), {'x': 'B.x', 'z': 'B.z', 'y': 'A.y'})
     assert_dicts_equal_ordered(md(B, A), {'x': 'A.x', 'y': 'A.y', 'z': 'A.z'})
     assert_dicts_equal_ordered(md(A, A), {'x': 'A.x', 'y': 'A.y', 'z': 'A.z'})
+
+
+##
+
+
+def test_identity_object():
+    class Pt(ta.NamedTuple):
+        x: int
+        y: int
+
+    p1 = Pt(1, 2)
+    p2 = Pt(1, 2)
+    p3 = Pt(1, 3)
+
+    assert p1 == p1  # noqa
+    assert p1 == p2
+    assert p1 != p3
+
+    dct: dict = {}
+
+    dct[p1] = 1
+    dct[p3] = 3
+    assert dct[p1] == 1
+    assert dct[p2] == 1
+    assert dct[p3] == 3
+
+    dct[Identity(p1)] = 10
+    assert dct[p1] == 1
+    assert dct[Identity(p1)] == 10
+    assert Identity(p2) not in dct
+
+    dct[Identity(p2)] = 20
+    assert dct[p1] == 1
+    assert dct[Identity(p1)] == 10
+    assert dct[Identity(p2)] == 20
+
+    del dct[Identity(p1)]
+    assert dct[p1] == 1
+    assert Identity(p1) not in dct
+    assert dct[Identity(p2)] == 20

@@ -222,3 +222,31 @@ class _AnonObject:
 
 def anon_object(**attrs: ta.Any) -> ta.Any:
     return _AnonObject(**attrs)
+
+
+##
+
+
+class Identity(ta.Generic[T]):
+    def __init__(self, obj: T) -> None:
+        super().__init__()
+
+        self._obj = obj
+
+    def __bool__(self):
+        raise TypeError
+
+    @property
+    def obj(self) -> T:
+        return self._obj
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._obj!r})'
+
+    def __hash__(self) -> int:
+        return id(self._obj)
+
+    def __eq__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        return self._obj is other._obj  # noqa
