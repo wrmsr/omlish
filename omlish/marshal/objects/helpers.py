@@ -11,7 +11,7 @@ T = ta.TypeVar('T')
 ##
 
 
-def update_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
+def with_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
     @dc.field_modifier
     def inner(f: dc.Field) -> dc.Field:
         return dc.set_field_metadata(f, {

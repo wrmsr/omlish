@@ -1,5 +1,6 @@
 from .base import (  # noqa
     Builder,
+    HasQn,
     Node,
     NodeComparisonTypeError,
     Value,
@@ -56,6 +57,8 @@ from .params import (  # noqa
 from .relations import (  # noqa
     CanRelation,
     CanTable,
+    Join,
+    JoinKind,
     Relation,
     RelationBuilder,
     Table,

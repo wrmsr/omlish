@@ -2,9 +2,12 @@ import abc
 import functools
 import typing as ta
 
+from ... import cached
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
+from ..qualifiedname import QualifiedName
+from .base import HasQn
 from .base import Node
 from .idents import CanIdent
 from .idents import Ident
@@ -27,8 +30,12 @@ def _coerce_name_parts(o: ta.Iterable[Ident]) -> ta.Sequence[Ident]:
     return check.not_empty(tuple(check.isinstance(e, Ident) for e in o))
 
 
-class Name(Node, NameLike, lang.Final):
+class Name(Node, NameLike, HasQn, lang.Final):
     ps: ta.Sequence[Ident] = dc.xfield(coerce=_coerce_name_parts)
+
+    @cached.property
+    def qn(self) -> QualifiedName:
+        return QualifiedName(tuple(p.s for p in self.ps))
 
 
 ##

@@ -82,9 +82,9 @@ from .objects.dataclasses import (  # noqa
 )
 
 from .objects.helpers import (  # noqa
-    update_field_metadata,
     update_fields_metadata,
     update_object_metadata,
+    with_field_metadata,
 )
 
 from .objects.marshal import (  # noqa

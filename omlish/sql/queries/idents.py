@@ -2,8 +2,11 @@ import abc
 import functools
 import typing as ta
 
+from ... import cached
 from ... import lang
+from ..qualifiedname import QualifiedName
 from .base import Builder
+from .base import HasQn
 from .base import Node
 
 
@@ -17,8 +20,12 @@ class IdentLike(abc.ABC):  # noqa
 ##
 
 
-class Ident(Node, IdentLike, lang.Final):
+class Ident(Node, IdentLike, HasQn, lang.Final):
     s: str
+
+    @cached.property
+    def qn(self) -> QualifiedName:
+        return QualifiedName((self.s,))
 
 
 ##

@@ -1,8 +1,10 @@
+import abc
 import types
 import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
+from ..qualifiedname import QualifiedName
 
 
 ##
@@ -130,3 +132,13 @@ class Node(
 
 class Builder(lang.Abstract):
     pass
+
+
+##
+
+
+class HasQn(lang.Abstract):
+    @property
+    @abc.abstractmethod
+    def qn(self) -> QualifiedName:
+        raise NotImplementedError

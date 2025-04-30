@@ -23,12 +23,12 @@ _IP_V4_PAT = re.compile(r'\d{1,3}(\.\d{1,3}){3}')
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
 class CliNode:
-    id: str = dc.xfield() | msh.update_field_metadata(name='ID')
+    id: str = dc.xfield() | msh.with_field_metadata(name='ID')
     public_key: str = dc.xfield()
     host_name: str = dc.xfield()
-    dns_name: str | None = dc.xfield(None) | msh.update_field_metadata(name='DNSName')
-    tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
-    allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='AllowedPs')
+    dns_name: str | None = dc.xfield(None) | msh.with_field_metadata(name='DNSName')
+    tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.with_field_metadata(name='TailscaleIPs')
+    allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.with_field_metadata(name='AllowedPs')
     tags: ta.Sequence[str] | None = None
 
     @property
@@ -43,9 +43,9 @@ class CliNode:
 class CliStatus:
     version: str | None = None
     backend_state: str | None = None
-    tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
+    tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.with_field_metadata(name='TailscaleIPs')
     self: CliNode | None = None
-    peers: ta.Mapping[str, CliNode] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
+    peers: ta.Mapping[str, CliNode] | None = dc.xfield(None) | msh.with_field_metadata(name='Peer')
 
     @cached.property
     def nodes(self) -> ta.Sequence[CliNode]:

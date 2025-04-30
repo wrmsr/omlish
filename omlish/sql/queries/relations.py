@@ -39,11 +39,8 @@ class JoinKind(enum.Enum):
     DEFAULT = enum.auto()
     INNER = enum.auto()
     LEFT = enum.auto()
-    LEFT_OUTER = enum.auto()
     RIGHT = enum.auto()
-    RIGHT_OUTER = enum.auto()
     FULL = enum.auto()
-    FULL_OUTER = enum.auto()
     CROSS = enum.auto()
     NATURAL = enum.auto()
 
@@ -95,20 +92,11 @@ class RelationBuilder(MultiBuilder):
     def left_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
         return self.join(JoinKind.LEFT, l, r, *cs)
 
-    def left_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinKind.LEFT_OUTER, l, r, *cs)
-
     def right_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
         return self.join(JoinKind.RIGHT, l, r, *cs)
 
-    def right_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinKind.RIGHT_OUTER, l, r, *cs)
-
     def full_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
         return self.join(JoinKind.FULL, l, r, *cs)
-
-    def full_outer_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
-        return self.join(JoinKind.FULL_OUTER, l, r, *cs)
 
     def cross_join(self, l: CanRelation, r: CanRelation, *cs: CanExpr) -> Join:
         return self.join(JoinKind.CROSS, l, r, *cs)

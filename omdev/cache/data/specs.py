@@ -63,7 +63,7 @@ class UrlSpec(Spec):
 
     _: dc.KW_ONLY
 
-    headers: ta.Mapping[str, str] | None = dc.field(default=None) | msh.update_field_metadata(omit_if=operator.not_)
+    headers: ta.Mapping[str, str] | None = dc.field(default=None) | msh.with_field_metadata(omit_if=operator.not_)
 
     @cached.property
     def file_name_or_default(self) -> str:

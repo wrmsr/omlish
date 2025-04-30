@@ -5,6 +5,7 @@ from .... import check
 from .... import lang
 from ...debug import DEBUG
 from ...specs import FieldSpec
+from ...tools.modifiers import field_modifier
 from ...utils import chain_mapping_proxy
 
 
@@ -92,3 +93,10 @@ def update_extra_field_params(
             **(fe if unless_non_default else {}),
         },
     })
+
+
+def with_extra_field_params(**kwargs: ta.Any) -> field_modifier:
+    @field_modifier
+    def inner(f: dc.Field) -> dc.Field:
+        return update_extra_field_params(f, **kwargs)
+    return inner

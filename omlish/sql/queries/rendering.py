@@ -225,11 +225,8 @@ class StdRenderer(Renderer):
         JoinKind.DEFAULT: 'join',
         JoinKind.INNER: 'inner join',
         JoinKind.LEFT: 'left join',
-        JoinKind.LEFT_OUTER: 'left outer join',
         JoinKind.RIGHT: 'right join',
-        JoinKind.RIGHT_OUTER: 'right outer join',
         JoinKind.FULL: 'full join',
-        JoinKind.FULL_OUTER: 'full outer join',
         JoinKind.CROSS: 'cross join',
         JoinKind.NATURAL: 'natural join',
     }

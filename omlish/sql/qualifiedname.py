@@ -1,23 +1,31 @@
 import collections.abc
-import dataclasses as dc
 import typing as ta
+
+from .. import dataclasses as dc
+from .. import lang
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class QualifiedName(ta.Sequence[str]):
-    parts: ta.Sequence[str]
+def coerce_parts(parts: ta.Sequence[str]) -> tuple[str, ...]:
+    if not parts:
+        raise ValueError
+    if isinstance(parts, str):
+        raise TypeError(parts)
+    if not isinstance(parts, tuple):
+        parts = tuple(parts)
+    if not all(parts) and all(isinstance(p, str) for p in parts):
+        raise ValueError(parts)
+    return parts
 
-    def __post_init__(self) -> None:
-        if not (
-                self.parts and
-                not isinstance(self.parts, str) and
-                all(self.parts) and
-                all(isinstance(p, str) for p in self.parts)
-        ):
-            raise ValueError(self)
+
+#
+
+
+@dc.dataclass(frozen=True)
+class QualifiedName(ta.Sequence[str], lang.Final):
+    parts: ta.Sequence[str] = dc.field() | dc.with_extra_field_params(coerce=coerce_parts)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}([{", ".join(map(repr, self.parts))}])'

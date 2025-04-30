@@ -60,6 +60,7 @@ from .api import (  # noqa
     extra_field_params,
     set_field_metadata,
     update_extra_field_params,
+    with_extra_field_params,
 )
 
 from .errors import (  # noqa
