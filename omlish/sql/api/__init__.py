@@ -35,9 +35,16 @@ from .errors import (  # noqa
 )
 
 from .funcs import (  # noqa
+    exec,  # noqa
+
     query,
     query_all,
-    exec,  # noqa
+    query_first,
+    query_opt_first,
+    query_one,
+    query_opt_one,
+    query_scalar,
+    query_maybe_scalar,
 )
 
 from .queries import (  # noqa

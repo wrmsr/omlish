@@ -30,7 +30,7 @@ class Querier(ContextCloser, lang.Abstract):
 ##
 
 
-class Rows(ContextCloser, lang.Abstract):
+class Rows(ContextCloser, ta.Iterator[Row], lang.Abstract):
     @property
     @abc.abstractmethod
     def columns(self) -> Columns:
