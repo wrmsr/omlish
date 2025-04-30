@@ -10,58 +10,61 @@ from omlish.lite.check import check
 from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 
-_GIT_STATUS_LINE_ESCAPE_CODES: ta.Mapping[str, str] = {
-    '\\': '\\',
-    '"': '"',
-    'n': '\n',
-    't': '\t',
+_GIT_STATUS_LINE_ESCAPE_CODES: ta.Mapping[int, bytes] = {
+    ord('\\'): b'\\',
+    ord('"'): b'"',
+    ord('n'): b'\n',
+    ord('t'): b'\t',
 }
 
 
-def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
-    def find_any(chars: str, start: int = 0) -> int:
-        ret = -1
-        for c in chars:
-            if (found := l.find(c, start)) >= 0 and (ret < 0 or ret > found):
-                ret = found
-        return ret
+def yield_git_status_line_fields(l_: str) -> ta.Iterator[str]:
+    l = l_.encode('utf-8')
+
+    def find_any(chars: ta.Iterable[int], start: int = 0) -> int:
+        return min([f for c in chars if (f := l.find(c, start)) >= 0], default=-1)
 
     p = 0
     while True:
-        if l[p] == '"':
+        if l[p] == ord('"'):
             p += 1
-            s = []
-            while (n := find_any('\\"', p)) > 0:
-                if (c := l[n]) == '\\':
+            s: list[bytes] = []
+            while (n := find_any(b'\\"', p)) > 0:
+                if (c := l[n]) == ord('\\'):
                     s.append(l[p:n])
-                    s.append(_GIT_STATUS_LINE_ESCAPE_CODES[l[n + 1]])
-                    p = n + 2
-                elif c == '"':
+                    if ord('0') <= (x := l[n + 1]) <= ord('9'):
+                        check.state(n + 4 <= len(l))
+                        s.append(bytes([int(l[n + 1:n + 4].decode('ascii'), 8)]))
+                        p = n + 4
+                    else:
+                        s.append(_GIT_STATUS_LINE_ESCAPE_CODES[x])
+                        p = n + 2
+                elif c == ord('"'):
                     s.append(l[p:n])
                     p = n
                     break
                 else:
                     raise ValueError(l)
 
-            if l[p] != '"':
+            if l[p] != ord('"'):
                 raise ValueError(l)
 
-            yield ''.join(s)
+            yield b''.join(s).decode('utf-8')
 
             p += 1
             if p == len(l):
                 return
-            elif l[p] != ' ':
+            elif l[p] != ord(' '):
                 raise ValueError(l)
 
             p += 1
 
         else:
-            if (e := l.find(' ', p)) < 0:
-                yield l[p:]
+            if (e := l.find(b' ', p)) < 0:
+                yield l[p:].decode('utf-8')
                 return
 
-            yield l[p:e]
+            yield l[p:e].decode('utf-8')
             p = e + 1
 
 

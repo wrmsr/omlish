@@ -78,7 +78,7 @@ class LowCamelCase(StringCasing):
     """fooBarBaz"""
 
     _MATCH_PAT: ta.ClassVar[re.Pattern] = re.compile(r'[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*')
-    _SPLIT_PAT: ta.ClassVar[re.Pattern] = re.compile(r'^[a-z0-9]+')
+    _FIRST_PAT: ta.ClassVar[re.Pattern] = re.compile(r'^[a-z0-9]+')
     _UPPER_PAT: ta.ClassVar[re.Pattern] = re.compile(r'[A-Z][a-z0-9]*')
 
     def match(self, s: str) -> bool:
@@ -88,7 +88,7 @@ class LowCamelCase(StringCasing):
         if not self.match(s):
             raise ImproperStringCasingError(f'Not valid lowCamelCase: {s!r}')
         parts: list[str] = []
-        m0 = self._SPLIT_PAT.match(s)
+        m0 = self._FIRST_PAT.match(s)
         if m0:
             parts.append(m0.group(0))
             start = m0.end()

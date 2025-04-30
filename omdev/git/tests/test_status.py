@@ -7,6 +7,7 @@ from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 from ..status import GitStatusItem
 from ..status import GitStatusState
 from ..status import get_git_status
+from ..status import parse_git_status_line
 
 
 def test_parse_git_status():
@@ -160,3 +161,14 @@ def test_parse_git_status():
 
     run('git', 'commit', '-m', '--')
     assert status() == []
+
+
+def test_parse_git_status_line_weird():
+    l = 'R  "copier/tests/demo/doc/ma\\303\\261ana.txt" -> "external/copier/tests/demo/doc/ma\\303\\261ana.txt"'
+    gsi = parse_git_status_line(l)
+    assert gsi == GitStatusItem(
+        x=GitStatusState.RENAMED,
+        y=GitStatusState.UNMODIFIED,
+        a='copier/tests/demo/doc/mañana.txt',
+        b='external/copier/tests/demo/doc/mañana.txt',
+    )
