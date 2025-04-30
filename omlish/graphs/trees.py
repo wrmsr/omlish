@@ -19,6 +19,9 @@ NodeWalker = ta.Callable[[NodeT], ta.Iterable[NodeT]]
 NodeGenerator = ta.Generator[NodeT, None, None]
 
 
+##
+
+
 class NodeError(ta.Generic[NodeT], Exception):
     def __init__(self, node: NodeT, msg: str, *args, **kwargs) -> None:
         super().__init__(msg, *args, **kwargs)  # noqa
@@ -37,6 +40,9 @@ class DuplicateNodeError(NodeError[NodeT]):
 class UnknownNodeError(NodeError[NodeT]):
     def __init__(self, node: NodeT, *args, **kwargs) -> None:
         super().__init__(node, f'Unknown node: {node!r}', *args, **kwargs)
+
+
+#
 
 
 class BasicTreeAnalysis(ta.Generic[NodeT]):

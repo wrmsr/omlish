@@ -1,4 +1,4 @@
-from .. import parts as r
+from .. import parts as tp
 
 
 def test_rendering():
@@ -6,9 +6,9 @@ def test_rendering():
     for p in [
         'foo',
         ['foo', 'bar'],
-        ['foo', r.Block(['bar', 'baz']), 'qux'],
+        ['foo', tp.Block(['bar', 'baz']), 'qux'],
         None,
     ]:
         print(p)
-        print(r.render(p))  # type: ignore
+        print(tp.render(p))  # type: ignore
         print()
