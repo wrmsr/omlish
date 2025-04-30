@@ -24,7 +24,10 @@ DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
 
 #
 
-_DEFAULT_PTH_FILE_NAME = 'omlish-pycharm-runhack.pth'
+# This hack must run first, before things like '__editable__.foo.pth' files installed by setuptools. pth file processing
+# is sorted by name, so prepend with underscores:
+#   https://github.com/python/cpython/blob/aeb3a6f61af53ed3fbf31f0b3704f49b71ac553c/Lib/site.py#L246
+_DEFAULT_PTH_FILE_NAME = '___omlish-pycharm-runhack.pth'
 
 _DEFAULT_DEBUG = False
 _DEFAULT_ENABLED = True
