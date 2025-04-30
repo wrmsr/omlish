@@ -47,6 +47,10 @@ class Node(
     def __ne__(self, other) -> ta.NoReturn:
         raise NodeComparisonTypeError(type(self))
 
+    @ta.final
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
     #
 
     @dc.dataclass(frozen=True)
