@@ -6,7 +6,7 @@ from omlish import check
 from ... import minichain as mc
 from ...minichain.backends.llamacpp.completion import LlamacppCompletionService
 from ...minichain.backends.openai.completion import OpenaiCompletionService
-from ...minichain.backends.transformers import TransformersCompletionService
+from ...minichain.backends.transformers.transformers import TransformersCompletionService
 from .base import Session
 
 

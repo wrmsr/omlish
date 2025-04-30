@@ -1,9 +1,10 @@
 import typing as ta
 
-from omlish import check
 from tinygrad import Device
 from tinygrad import Tensor
 from tinygrad import dtypes
+
+from omlish import check
 
 
 ##

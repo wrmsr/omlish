@@ -14,12 +14,12 @@ from ...standard import ModelPath
 if ta.TYPE_CHECKING:
     import llama_cpp
 
-    from .... import llamacpp as lcu
+    from ....backends import llamacpp as lcu
 
 else:
     llama_cpp = lang.proxy_import('llama_cpp')
 
-    lcu = lang.proxy_import('....llamacpp', __package__)
+    lcu = lang.proxy_import('....backends.llamacpp', __package__)
 
 
 ##

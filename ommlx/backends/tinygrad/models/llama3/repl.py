@@ -1,8 +1,9 @@
 import argparse
 import pathlib
 
-from omlish import check
 from tinygrad import Tensor
+
+from omlish import check
 
 from .fetch import fetch_model
 from .llm import Llama3Llm

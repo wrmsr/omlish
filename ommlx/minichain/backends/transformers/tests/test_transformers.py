@@ -2,7 +2,7 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
-from ...completion import CompletionRequest
+from ....completion import CompletionRequest
 from ..transformers import TransformersCompletionService
 
 

@@ -4,21 +4,25 @@ import typing as ta
 
 from omlish import lang
 
-from ..completion import CompletionRequest
-from ..completion import CompletionResponse
-from ..completion import CompletionService
+from ...completion import CompletionRequest
+from ...completion import CompletionResponse
+from ...completion import CompletionService
 
 
 if ta.TYPE_CHECKING:
-    import transformers
+    import transformers as tfm
 else:
-    transformers = lang.proxy_import('transformers')
+    tfm = lang.proxy_import('transformers')
 
 
 ##
 
 
-# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='transformers', type='CompletionService')
+# @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
+#     name='transformers',
+#     aliases=['tfm'],
+#     type='CompletionService',
+# )
 class TransformersCompletionService(CompletionService):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
@@ -40,7 +44,7 @@ class TransformersCompletionService(CompletionService):
         self._token = token
 
     def invoke(self, request: CompletionRequest) -> CompletionResponse:
-        pipeline = transformers.pipeline(
+        pipeline = tfm.pipeline(
             'text-generation',
             model=self._model,
             **{

@@ -1,7 +1,6 @@
 import math
 import typing as ta
 
-from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad.device import is_dtype_supported
@@ -9,6 +8,8 @@ from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
 from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
+
+from omlish import check
 
 
 ##

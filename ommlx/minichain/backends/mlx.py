@@ -19,12 +19,12 @@ from ..standard import ModelName
 if ta.TYPE_CHECKING:
     import mlx_lm.utils
 
-    from ... import mlx as mlxu
+    from ...backends import mlx as mlxu
 
 else:
     mlx_lm = lang.proxy_import('mlx_lm', extras=['utils'])
 
-    mlxu = lang.proxy_import('...mlx', __package__)
+    mlxu = lang.proxy_import('...backends.mlx', __package__)
 
 
 ##

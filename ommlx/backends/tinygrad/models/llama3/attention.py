@@ -1,10 +1,11 @@
 import typing as ta
 
-from omlish import check
 from tinygrad import Tensor
 from tinygrad import UOp
 from tinygrad import nn
 from tinygrad.helpers import getenv
+
+from omlish import check
 
 
 Variable_: ta.TypeAlias = UOp

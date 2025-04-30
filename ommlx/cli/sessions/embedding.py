@@ -5,7 +5,7 @@ from omlish.formats import json
 
 from ... import minichain as mc
 from ...minichain.backends.openai.embedding import OpenaiEmbeddingService
-from ...minichain.backends.sentencetransformers import SentencetransformersEmbeddingService
+from ...minichain.backends.transformers.sentence import SentenceTransformersEmbeddingService
 from .base import Session
 
 
@@ -16,7 +16,7 @@ DEFAULT_EMBEDDING_MODEL_BACKEND = 'openai'
 
 EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[mc.EmbeddingService]] = {
     'openai': OpenaiEmbeddingService,
-    'sentencetransformers': SentencetransformersEmbeddingService,
+    'stfm': SentenceTransformersEmbeddingService,
 }
 
 

@@ -197,33 +197,35 @@
     }
   },
   {
-    "module": ".minichain.backends.sentencetransformers",
+    "module": ".minichain.backends.transformers.sentence",
     "attr": null,
-    "file": "ommlx/minichain/backends/sentencetransformers.py",
+    "file": "ommlx/minichain/backends/transformers/sentence.py",
     "line": 21,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.sentencetransformers",
-        "attr_name": "SentencetransformersEmbeddingService",
-        "name": "sentencetransformers",
+        "mod_name": "ommlx.minichain.backends.transformers.sentence",
+        "attr_name": "SentenceTransformersEmbeddingService",
+        "name": "sentence_transformers",
         "aliases": [
-          "st"
+          "stfm"
         ],
         "type": "EmbeddingService"
       }
     }
   },
   {
-    "module": ".minichain.backends.transformers",
+    "module": ".minichain.backends.transformers.transformers",
     "attr": null,
-    "file": "ommlx/minichain/backends/transformers.py",
+    "file": "ommlx/minichain/backends/transformers/transformers.py",
     "line": 21,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlx.minichain.backends.transformers",
+        "mod_name": "ommlx.minichain.backends.transformers.transformers",
         "attr_name": "TransformersCompletionService",
         "name": "transformers",
-        "aliases": null,
+        "aliases": [
+          "tfm"
+        ],
         "type": "CompletionService"
       }
     }

@@ -4,14 +4,14 @@ import tempfile
 
 import numpy as np
 from PIL import Image
-
-from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad.helpers import colored
 from tinygrad.helpers import fetch
 from tinygrad.nn.state import load_state_dict
 from tinygrad.nn.state import safe_load
+
+from omlish import check
 
 from .sdxl import Dpmpp2mSampler
 from .sdxl import Sdxl

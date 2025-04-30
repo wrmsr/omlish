@@ -2,32 +2,32 @@ import typing as ta
 
 from omlish import lang
 
-from ..content.images import Image
-from ..vectors.embeddings import EmbeddingRequest
-from ..vectors.embeddings import EmbeddingResponse
-from ..vectors.embeddings import EmbeddingService
-from ..vectors.vectors import Vector
+from ...content.images import Image
+from ...vectors.embeddings import EmbeddingRequest
+from ...vectors.embeddings import EmbeddingResponse
+from ...vectors.embeddings import EmbeddingService
+from ...vectors.vectors import Vector
 
 
 if ta.TYPE_CHECKING:
-    import sentence_transformers as st
+    import sentence_transformers as stfm
 else:
-    st = lang.proxy_import('sentence_transformers')
+    stfm = lang.proxy_import('sentence_transformers')
 
 
 ##
 
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(
-#     name='sentencetransformers',
-#     aliases=['st'],
+#     name='sentence_transformers',
+#     aliases=['stfm'],
 #     type='EmbeddingService',
 # )
-class SentencetransformersEmbeddingService(EmbeddingService):
+class SentenceTransformersEmbeddingService(EmbeddingService):
     model = 'clip-ViT-B-32'
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
-        mdl = st.SentenceTransformer(self.model)
+        mdl = stfm.SentenceTransformer(self.model)
 
         obj: ta.Any
         v = request.content

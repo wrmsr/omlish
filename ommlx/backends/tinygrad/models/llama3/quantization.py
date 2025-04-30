@@ -1,6 +1,7 @@
-from omlish import check
 from tinygrad import Tensor
 from tinygrad import dtypes
+
+from omlish import check
 
 
 ##
