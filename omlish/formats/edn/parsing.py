@@ -1,3 +1,7 @@
+"""
+TODO:
+ - reader meta - ^:foo
+"""
 # https://github.com/jorinvo/edn-data/blob/1e5824f63803eb58f35e98839352000053d47115/test/parse.test.ts
 import datetime
 import enum

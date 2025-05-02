@@ -31,6 +31,9 @@ class Scalar(Value, lang.Abstract):
 class Keyword(Scalar, lang.Final):
     s: str
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.s!r})'
+
     if _DEBUG:
         def __post_init__(self) -> None:
             check.isinstance(self.s, str)
@@ -40,6 +43,9 @@ class Keyword(Scalar, lang.Final):
 @dc.dataclass(frozen=True)
 class Char(Scalar, lang.Final):
     c: str
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.c!r})'
 
     if _DEBUG:
         def __post_init__(self) -> None:
@@ -51,6 +57,9 @@ class Char(Scalar, lang.Final):
 @dc.dataclass(frozen=True)
 class Symbol(Scalar, lang.Final):
     n: str
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.n!r})'
 
     if _DEBUG:
         def __post_init__(self) -> None:
@@ -70,6 +79,9 @@ class Collection(Value, lang.Abstract):
 class List(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.items!r})'
+
     if _DEBUG:
         def __post_init__(self) -> None:
             check.isinstance(self.items, tuple)
@@ -83,6 +95,9 @@ class List(Collection, lang.Final):
 @dc.dataclass(frozen=True)
 class Vector(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.items!r})'
 
     if _DEBUG:
         def __post_init__(self) -> None:
@@ -98,6 +113,9 @@ class Vector(Collection, lang.Final):
 class Set(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.items!r})'
+
     if _DEBUG:
         def __post_init__(self) -> None:
             check.isinstance(self.items, tuple)
@@ -110,12 +128,15 @@ class Set(Collection, lang.Final):
 @dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Map(Collection, lang.Final):
-    map: ta.Sequence[tuple[ta.Any, ta.Any]]
+    items: ta.Sequence[tuple[ta.Any, ta.Any]]
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.items!r})'
 
     if _DEBUG:
         def __post_init__(self) -> None:
-            check.isinstance(self.map, tuple)
-            for t in self.map:
+            check.isinstance(self.items, tuple)
+            for t in self.items:
                 check.isinstance(t, tuple)
                 check.equal(len(t), 2)
 
@@ -132,6 +153,9 @@ class Map(Collection, lang.Final):
 class TaggedVal(Value, lang.Final):
     t: str
     v: ta.Any
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.t!r}, {self.v!r})'
 
     if _DEBUG:
         def __post_init__(self) -> None:

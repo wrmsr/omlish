@@ -441,10 +441,10 @@ def test_map_with_single_string():
 def test_map_of_two():
     result = parse('{"a" true, "b" false }')
     assert isinstance(result, Map)
-    assert len(result.map) == 2
+    assert len(result.items) == 2
     # Check both key-value pairs exist
-    assert ('a', True) in result.map
-    assert ('b', False) in result.map
+    assert ('a', True) in result.items
+    assert ('b', False) in result.items
 
 
 def test_map_of_maps():
@@ -625,9 +625,9 @@ def test_multiple_discards():
 def test_crux_tx_response():
     result = parse('{:crux.tx/tx-id 2, :crux.tx/tx-time #inst "2020-04-13T08:01:14.261-00:00"}')
     assert isinstance(result, Map)
-    assert len(result.map) == 2
+    assert len(result.items) == 2
 
-    key_vals = {k.s if isinstance(k, Keyword) else k: v for k, v in result.map}
+    key_vals = {k.s if isinstance(k, Keyword) else k: v for k, v in result.items}
     assert 'crux.tx/tx-id' in key_vals
     assert key_vals['crux.tx/tx-id'] == 2
 
@@ -653,12 +653,12 @@ def test_crux_tx_response_as_object():
 def test_readme_example():
     result1 = parse('{:key "value" :list [1 2 3]}')
     assert isinstance(result1, Map)
-    assert len(result1.map) == 2
+    assert len(result1.items) == 2
 
     found_key_value = False
     found_list_value = False
 
-    for k, v in result1.map:
+    for k, v in result1.items:
         if isinstance(k, Keyword) and k.s == 'key':
             assert v == 'value'
             found_key_value = True
