@@ -1,0 +1,138 @@
+import dataclasses as dc
+import typing as ta
+
+from ... import check
+from ... import lang
+from ...lite.dataclasses import dataclass_cache_hash
+
+
+##
+
+
+_DEBUG = __debug__
+# _DEBUG = True
+
+
+@dc.dataclass(frozen=True)
+class Value(lang.Abstract, lang.Sealed):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class Scalar(Value, lang.Abstract):
+    pass
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Keyword(Scalar, lang.Final):
+    s: str
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.s, str)
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Char(Scalar, lang.Final):
+    c: str
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.c, str)
+            check.equal(len(self.c), 1)
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Symbol(Scalar, lang.Final):
+    n: str
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.non_empty_str(self.n)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class Collection(Value, lang.Abstract):
+    pass
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class List(Collection, lang.Final):
+    items: ta.Sequence[ta.Any]
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.items, tuple)
+
+    @classmethod
+    def new(cls, items: ta.Iterable[ta.Any]) -> 'List':
+        return cls(tuple(items))
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Vector(Collection, lang.Final):
+    items: ta.Sequence[ta.Any]
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.items, tuple)
+
+    @classmethod
+    def new(cls, items: ta.Iterable[ta.Any]) -> 'Vector':
+        return cls(tuple(items))
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Set(Collection, lang.Final):
+    items: ta.Sequence[ta.Any]
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.items, tuple)
+
+    @classmethod
+    def new(cls, items: ta.Iterable[ta.Any]) -> 'Set':
+        return cls(tuple(items))
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class Map(Collection, lang.Final):
+    map: ta.Sequence[tuple[ta.Any, ta.Any]]
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.isinstance(self.map, tuple)
+            for t in self.map:
+                check.isinstance(t, tuple)
+                check.equal(len(t), 2)
+
+    @classmethod
+    def new(cls, items: ta.Iterable[ta.Iterable[ta.Any]]) -> 'Map':
+        return cls(tuple((k, v) for k, v in items))
+
+
+#
+
+
+@dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class TaggedVal(Value, lang.Final):
+    t: str
+    v: ta.Any
+
+    if _DEBUG:
+        def __post_init__(self) -> None:
+            check.non_empty_str(self.t)

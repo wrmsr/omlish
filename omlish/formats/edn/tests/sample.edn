@@ -1,0 +1,48 @@
+;; Complex sample .edn file for a distributed build system
+
+{:build-config
+ {:version "1.2.3"
+  :enabled? true
+  :targets
+  [{:name :core-lib
+    :src ["src/core" "src/shared"]
+    :deps #{:utils :logging}
+    :compiler {:lang :clojure
+               :opt-level :advanced
+               :features #{:aot :warnings-as-errors}}}
+
+   {:name :web-app
+    :src ["src/web" "src/shared"]
+    :deps #{:core-lib :http :templating}
+    :compiler {:lang :clojurescript
+               :target :browser
+               :optimizations :simple}}]}
+
+ :env
+ {:dev {:log-level :debug
+        :db {:uri #uri "jdbc:postgresql://localhost/dev"
+             :user "dev"
+             :pass #env/DB_PASSWORD}}
+  :prod {:log-level :warn
+         :db {:uri #uri "jdbc:postgresql://prod-db/prod"
+              :user "prod"
+              :pass #env/DB_PASSWORD}}}
+
+ :users
+ #{{:user/id 1 :name "Alice" :roles #{:admin :dev}}
+   {:user/id 2 :name "Bob" :roles #{:qa}}
+   {:user/id 3 :name "Carol" :roles #{:dev}}}
+
+ :schedules
+ [{:task 'build.core/clean
+   :cron "0 3 * * *"
+   :meta ^:critical {:timeout-ms 30000}}
+
+  {:task 'build.core/deploy!
+   :cron "0 5 * * 1"
+   :enabled? false}]
+
+ :meta
+ {:generated-at #inst "2024-12-25T00:00:00.000Z"
+  :checksum #uuid "2e8f6b84-df22-4af6-8bfc-f4cb2a6e768a"
+  :tags #{:example :complex :demo}}}
