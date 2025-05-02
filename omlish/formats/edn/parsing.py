@@ -233,9 +233,12 @@ class ListParser:
                         stack_item, prev_state = self._stack.pop()
 
                         if stack_item == ListParser._StackItem.MAP:
+                            check.empty(prev_state[1])
                             self._result = self._map_maker(prev_state[0])
 
                         else:  # Set
+                            # FIXME:
+                            # check.state(stack_item == ListParser._StackItem.SET)
                             self._result = self._set_maker(prev_state)
 
                     self._update_stack()

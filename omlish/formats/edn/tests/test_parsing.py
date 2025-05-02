@@ -1,6 +1,8 @@
 # https://github.com/jorinvo/edn-data/blob/1e5824f63803eb58f35e98839352000053d47115/test/parse.test.ts
 import datetime
 
+import pytest
+
 from ..parsing import parse
 from ..values import Char
 from ..values import Keyword
@@ -686,3 +688,12 @@ def test_object_keys():
 
 def test_unicode_escape():
     assert parse('\\u1234') == Char('\u1234')
+
+
+def test_map_key_pairs():
+    with pytest.raises(Exception):  # noqa
+        parse('{:a}')
+    with pytest.raises(Exception):  # noqa
+        parse('{:a :b :c}')
+    with pytest.raises(Exception):  # noqa
+        parse('{:a :b :c :d :e}')
