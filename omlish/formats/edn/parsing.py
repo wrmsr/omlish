@@ -159,7 +159,7 @@ class ListParser:
 
         elif self._state.startswith('\\'):
             # Char
-            # TODO: invalid if nothing follows the \
+            check.state(len(self._state) > 1)
             if self._state == '\\space':
                 c = ' '
             elif self._state == '\\newline':
@@ -170,7 +170,11 @@ class ListParser:
                 c = '\t'
             elif self._state == '\\\\':
                 c = '\\'
+            elif self._state.startswith('\\u'):
+                check.state(len(self._state) == 6)
+                c = chr(int(self._state[2:], 16))
             else:
+                check.state(len(self._state) == 2)
                 c = self._state[1:]
 
             self._result = self._char_maker(c)

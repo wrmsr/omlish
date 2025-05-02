@@ -11,7 +11,7 @@ extensible data notation [eed-n]
 by Datomic and other applications as a data transfer format. This spec describes **edn** in isolation from those and
 other specific use cases, to help facilitate implementation of readers and writers in other languages, and for other
 uses.
-
+/\
 **edn** supports a rich set of built-in elements, and the definition of extension elements in terms of the others. Users
 of data formats without such facilities must rely on either convention or context to convey elements not included in the
 base set. This greatly complicates application logic, betraying the apparent simplicity of the format. **edn** is

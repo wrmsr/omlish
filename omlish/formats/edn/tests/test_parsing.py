@@ -110,7 +110,7 @@ def test_char_backslash():
 
 
 def test_char_as_string():
-    assert parse('\\abc', char_maker=str) == 'abc'
+    assert parse('\\a', char_maker=str) == 'a'
 
 
 def test_int():
@@ -682,3 +682,7 @@ def test_object_keys():
     result = parse('{[407 {:someKey "lovely-value"}] #{123}}')
 
     assert result == Map(((Vector((407, Map(((Keyword('someKey'), 'lovely-value'),)))), Set((123,))),))
+
+
+def test_unicode_escape():
+    assert parse('\\u1234') == Char('\u1234')
