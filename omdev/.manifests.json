@@ -48,6 +48,18 @@
     }
   },
   {
+    "module": ".cmdlog.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/cmdlog/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "cmdlog",
+        "mod_name": "omdev.cmdlog.__main__"
+      }
+    }
+  },
+  {
     "module": ".imgur",
     "attr": "_FOO_CLI_MODULE",
     "file": "omdev/imgur.py",
