@@ -549,7 +549,7 @@ class HttpResponse:
             return b''
 
         if self.chunked:
-            return (yield from self._peek_chunked(n))
+            return self._peek_chunked(n)
 
         # return self.fp.peek(n)
         raise NotImplementedError
