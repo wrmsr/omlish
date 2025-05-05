@@ -128,41 +128,44 @@ class StreamParser(GenMachine[Token, ta.Any]):
         super().__init__(self._do_main())
 
     class _StackSpecial(enum.Enum):  # noqa
-        HASH_UNDERSCORE = enum.auto()
-        TAGGED = enum.auto()
+        DISCARD = enum.auto()
+        TAG = enum.auto()
 
     def _emit_value(self, value: ta.Any) -> tuple[ta.Any, ...]:
-        ret: tuple[ta.Any, ...] = ()
+        while self._stack and self._stack[-1][0] is StreamParser._StackSpecial.TAG:
+            cc, cl = self._stack.pop()
+            ts = check.non_empty_str(check.single(cl))
+            value = Tagged(ts, value)
 
-        if self._stack:
-            cc, cl = self._stack[-1]
+        if not self._stack:
+            return (value,)
 
-            if cc is StreamParser._StackSpecial.HASH_UNDERSCORE:
-                check.empty(cl)
-                self._stack.pop()
+        cc, cl = self._stack[-1]
 
-            elif cc is StreamParser._StackSpecial.TAGGED:
-                ts = check.non_empty_str(check.single(cl))
-                self._stack.pop()
-                tv = Tagged(ts, value)
-                ret = (tv,)
+        if cc is StreamParser._StackSpecial.DISCARD:
+            check.empty(cl)
+            self._stack.pop()
+            return ()
 
-            elif cc is Map:
-                if cl and len(cl[-1]) < 2:
-                    cl[-1] = (*cl[-1], value)
-                else:
-                    cl.append((value,))
+        elif cc is StreamParser._StackSpecial.TAG:
+            ts = check.non_empty_str(check.single(cl))
+            self._stack.pop()
+            tv = Tagged(ts, value)
+            return (tv,)
 
-            elif isinstance(cc, type) and issubclass(cc, Collection):
-                cl.append(value)
-
+        elif cc is Map:
+            if cl and len(cl[-1]) < 2:
+                cl[-1] = (*cl[-1], value)
             else:
-                raise RuntimeError(cc)
+                cl.append((value,))
+            return ()
+
+        elif isinstance(cc, type) and issubclass(cc, Collection):
+            cl.append(value)
+            return ()
 
         else:
-            ret = (value,)
-
-        return ret
+            raise RuntimeError(cc)
 
     def _do_main(self):
         while True:
@@ -187,7 +190,8 @@ class StreamParser(GenMachine[Token, ta.Any]):
 
             elif tok.kind == 'WORD':
                 if tok.src.startswith('#'):
-                    self._stack.append((StreamParser._StackSpecial.TAGGED, [tok.src[1:]]))
+                    # FIXME: more dispatching
+                    self._stack.append((StreamParser._StackSpecial.TAG, [tok.src[1:]]))
                     continue
 
                 else:
@@ -215,7 +219,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
                 continue
 
             elif tok.kind == 'HASH_UNDERSCORE':
-                self._stack.append((StreamParser._StackSpecial.HASH_UNDERSCORE, []))
+                self._stack.append((StreamParser._StackSpecial.DISCARD, []))
                 continue
 
             # close
@@ -328,16 +332,13 @@ class StreamParser(GenMachine[Token, ta.Any]):
         check.state(tok.kind == 'WORD')
         src = tok.src
         check.non_empty_str(src)
+        check.state(not src.startswith('#'))
 
         if src in WORD_CONST_VALUES:
             return WORD_CONST_VALUES[src]
 
         elif src.startswith(':'):
             return self._keyword_maker(src[1:])
-
-        elif src.startswith('#'):
-            # FIXME: tagged values
-            raise NotImplementedError
 
         elif self._INT_PAT.fullmatch(src):
             # FIXME: numbers lol
