@@ -70,7 +70,7 @@ class Parser:
 
         self._stack: list[tuple[Parser._ParseMode | Parser._StackItem, ta.Any]] = []
         self._mode: Parser._ParseMode = Parser._ParseMode.IDLE
-        self._state = ''
+        self._buffer = ''
         self._result: ta.Any = self._UNDEFINED
 
     #
@@ -86,10 +86,10 @@ class Parser:
         COMMENT = 3
 
     class _StackItem(enum.Enum):
-        VECTOR = 0
-        LIST = 1
-        MAP = 2
-        SET = 3
+        LIST = 0
+        VECTOR = 1
+        SET = 2
+        MAP = 3
         TAG = 4
 
     #
@@ -111,10 +111,10 @@ class Parser:
 
         stack_item, prev_state = self._stack_peek()
 
-        if stack_item == Parser._StackItem.VECTOR:
+        if stack_item == Parser._StackItem.LIST:
             prev_state.append(self._result)
 
-        elif stack_item == Parser._StackItem.LIST:
+        elif stack_item == Parser._StackItem.VECTOR:
             prev_state.append(self._result)
 
         elif stack_item == Parser._StackItem.SET:
@@ -151,64 +151,64 @@ class Parser:
     _BIGINT_PAT = re.compile(r'^[-+]?(0|[1-9][0-9]*)N$')
     _FLOAT_PAT = re.compile(r'^[-+]?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?(0|[1-9][0-9]*))?M?$')
 
-    def _match(self) -> None:
-        if self._state == 'nil':
+    def _match_buffer(self) -> None:
+        if self._buffer == 'nil':
             self._result = None
 
-        elif self._state == 'true':
+        elif self._buffer == 'true':
             self._result = True
 
-        elif self._state == 'false':
+        elif self._buffer == 'false':
             self._result = False
 
-        elif self._state.startswith(':'):
+        elif self._buffer.startswith(':'):
             # Keyword
-            self._result = self._keyword_maker(self._state[1:])
+            self._result = self._keyword_maker(self._buffer[1:])
 
-        elif self._state.startswith('#'):
+        elif self._buffer.startswith('#'):
             # Tag
-            self._stack_push(Parser._StackItem.TAG, self._state[1:])
+            self._stack_push(Parser._StackItem.TAG, self._buffer[1:])
             self._result = self._UNDEFINED
 
-        elif self._INT_PAT.match(self._state):
+        elif self._INT_PAT.match(self._buffer):
             # Int
-            self._result = int(self._state)
+            self._result = int(self._buffer)
 
-        elif self._FLOAT_PAT.match(self._state):
+        elif self._FLOAT_PAT.match(self._buffer):
             # Float
-            self._result = float(self._state)
+            self._result = float(self._buffer)
 
-        elif self._BIGINT_PAT.match(self._state):
+        elif self._BIGINT_PAT.match(self._buffer):
             # BigInt
-            self._result = int(self._state[:-1])  # In Python we don't need special handling for bigint
+            self._result = int(self._buffer[:-1])  # In Python we don't need special handling for bigint
 
-        elif self._state.startswith('\\'):
+        elif self._buffer.startswith('\\'):
             # Char
-            check.state(len(self._state) > 1)
-            if self._state == '\\space':
+            check.state(len(self._buffer) > 1)
+            if self._buffer == '\\space':
                 c = ' '
-            elif self._state == '\\newline':
+            elif self._buffer == '\\newline':
                 c = '\n'
-            elif self._state == '\\return':
+            elif self._buffer == '\\return':
                 c = '\r'
-            elif self._state == '\\tab':
+            elif self._buffer == '\\tab':
                 c = '\t'
-            elif self._state == '\\\\':
+            elif self._buffer == '\\\\':
                 c = '\\'
-            elif self._state.startswith('\\u'):
-                check.state(len(self._state) == 6)
-                c = chr(int(self._state[2:], 16))
+            elif self._buffer.startswith('\\u'):
+                check.state(len(self._buffer) == 6)
+                c = chr(int(self._buffer[2:], 16))
             else:
-                check.state(len(self._state) == 2)
-                c = self._state[1:]
+                check.state(len(self._buffer) == 2)
+                c = self._buffer[1:]
 
             self._result = self._char_maker(c)
 
-        elif self._state:
+        elif self._buffer:
             # Symbol
-            self._result = self._symbol_maker(self._state)
+            self._result = self._symbol_maker(self._buffer)
 
-        self._state = ''
+        self._buffer = ''
 
     #
 
@@ -227,10 +227,10 @@ class Parser:
 
         if self._mode == Parser._ParseMode.IDLE:
             if char == '"':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 self._mode = Parser._ParseMode.STRING
-                self._state = ''
+                self._buffer = ''
                 return
 
             if char == ';':
@@ -238,12 +238,12 @@ class Parser:
                 return
 
             if char in self._SPACE_CHARS:
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 return
 
             if char == '}':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
 
                 if self._stack:
@@ -262,7 +262,7 @@ class Parser:
                 return
 
             if char == ']':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 stack_item, prev_state = self._stack_pop()
                 self._result = self._vector_maker(tuple(prev_state))
@@ -270,7 +270,7 @@ class Parser:
                 return
 
             if char == ')':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 stack_item, prev_state = self._stack_pop()
                 self._result = self._list_maker(prev_state)
@@ -278,64 +278,64 @@ class Parser:
                 return
 
             if char == '[':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 self._stack_push(Parser._StackItem.VECTOR, [])
                 return
 
             if char == '(':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 self._stack_push(Parser._StackItem.LIST, [])
                 return
 
-            state_plus_char = self._state + char
+            state_plus_char = self._buffer + char
             if state_plus_char == '#_':
                 self._stack_push(Parser._StackItem.TAG, char)
                 self._result = self._UNDEFINED
-                self._state = ''
+                self._buffer = ''
                 return
 
             if state_plus_char.endswith('#{'):
-                self._state = self._state[:-1]  # Remove the '#'
-                self._match()
+                self._buffer = self._buffer[:-1]  # Remove the '#'
+                self._match_buffer()
                 self._update_stack()
                 self._stack_push(Parser._StackItem.SET, [])
-                self._state = ''
+                self._buffer = ''
                 return
 
             if char == '{':
-                self._match()
+                self._match_buffer()
                 self._update_stack()
                 self._stack_push(Parser._StackItem.MAP, [[], []])
-                self._state = ''
+                self._buffer = ''
                 return
 
-            self._state += char
+            self._buffer += char
             return
 
         elif self._mode == Parser._ParseMode.STRING:  # noqa
             if char == '\\':
-                self._stack_push(self._mode, self._state)
+                self._stack_push(self._mode, self._buffer)
                 self._mode = Parser._ParseMode.ESCAPE
-                self._state = ''
+                self._buffer = ''
                 return
 
             if char == '"':
                 self._mode = Parser._ParseMode.IDLE
-                self._result = self._state
+                self._result = self._buffer
                 self._update_stack()
-                self._state = ''
+                self._buffer = ''
                 return
 
-            self._state += char
+            self._buffer += char
 
         elif self._mode == Parser._ParseMode.ESCAPE:
             # TODO what should happen when escaping other char
             escaped_char = self._STRING_ESCAPE_MAP.get(char, char)
             stack_item, prev_state = self._stack_pop()
             self._mode = check.isinstance(stack_item, Parser._ParseMode)
-            self._state = prev_state + escaped_char
+            self._buffer = prev_state + escaped_char
 
         elif self._mode == Parser._ParseMode.COMMENT:
             if char == '\n':
@@ -369,7 +369,7 @@ class Parser:
                 self._parse_one(char)
 
         if i >= 0:
-            self._match()
+            self._match_buffer()
             self._update_stack()
 
         check.state(not self._stack)
