@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from .... import lang
-from .build import JsonObjectBuilder
+from .building import JsonObjectBuilder
 from .lexing import JsonStreamLexer
 from .parsing import JsonStreamParser
 

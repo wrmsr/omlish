@@ -8,12 +8,12 @@ TODO:
 """
 import dataclasses as dc
 import datetime
+import enum
 import io
 import re
 import typing as ta
 
 from ... import check
-from ... import lang
 from ...funcs.genmachine import GenMachine
 from .lexing import Position
 from .lexing import StreamLexer
@@ -25,6 +25,7 @@ from .values import List
 from .values import Map
 from .values import Set
 from .values import Symbol
+from .values import Tagged
 from .values import Vector
 
 
@@ -81,10 +82,6 @@ class MetaMaker:
         return self.fn(*args, meta=meta)
 
 
-class _HASH_UNDERSCORE(lang.Marker):  # noqa
-    pass
-
-
 class StreamParser(GenMachine[Token, ta.Any]):
     DEFAULT_TAG_HANDLERS: ta.ClassVar[ta.Mapping[str, ta.Callable[..., ta.Any]]] = {
         'inst': lambda val: datetime.datetime.fromisoformat(val) if isinstance(val, str) else None,
@@ -122,7 +119,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
             tuple[
                 ta.Union[
                     type[Collection],
-                    type[_HASH_UNDERSCORE],
+                    StreamParser._StackSpecial,
                 ],
                 list[ta.Any],
             ],
@@ -130,13 +127,25 @@ class StreamParser(GenMachine[Token, ta.Any]):
 
         super().__init__(self._do_main())
 
+    class _StackSpecial(enum.Enum):  # noqa
+        HASH_UNDERSCORE = enum.auto()
+        TAGGED = enum.auto()
+
     def _emit_value(self, value: ta.Any) -> tuple[ta.Any, ...]:
+        ret: tuple[ta.Any, ...] = ()
+
         if self._stack:
             cc, cl = self._stack[-1]
 
-            if cc is _HASH_UNDERSCORE:
+            if cc is StreamParser._StackSpecial.HASH_UNDERSCORE:
                 check.empty(cl)
                 self._stack.pop()
+
+            elif cc is StreamParser._StackSpecial.TAGGED:
+                ts = check.non_empty_str(check.single(cl))
+                self._stack.pop()
+                tv = Tagged(ts, value)
+                ret = (tv,)
 
             elif cc is Map:
                 if cl and len(cl[-1]) < 2:
@@ -150,10 +159,10 @@ class StreamParser(GenMachine[Token, ta.Any]):
             else:
                 raise RuntimeError(cc)
 
-            return ()
-
         else:
-            return (value,)
+            ret = (value,)
+
+        return ret
 
     def _do_main(self):
         while True:
@@ -177,7 +186,12 @@ class StreamParser(GenMachine[Token, ta.Any]):
                 value = self._parse_char(tok)
 
             elif tok.kind == 'WORD':
-                value = self._parse_word(tok)
+                if tok.src.startswith('#'):
+                    self._stack.append((StreamParser._StackSpecial.TAGGED, [tok.src[1:]]))
+                    continue
+
+                else:
+                    value = self._parse_word(tok)
 
             elif tok.kind == 'COMMENT':
                 continue
@@ -201,7 +215,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
                 continue
 
             elif tok.kind == 'HASH_UNDERSCORE':
-                self._stack.append((_HASH_UNDERSCORE, []))
+                self._stack.append((StreamParser._StackSpecial.HASH_UNDERSCORE, []))
                 continue
 
             # close
@@ -230,9 +244,12 @@ class StreamParser(GenMachine[Token, ta.Any]):
                 else:
                     raise RuntimeError(cc)
 
-            # meta
+            # nyi
 
             elif tok.kind == 'META':
+                raise NotImplementedError
+
+            elif tok.kind == 'QUOTE':
                 raise NotImplementedError
 
             # failure
@@ -316,7 +333,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
             return WORD_CONST_VALUES[src]
 
         elif src.startswith(':'):
-            return self._keyword_maker(src)
+            return self._keyword_maker(src[1:])
 
         elif src.startswith('#'):
             # FIXME: tagged values

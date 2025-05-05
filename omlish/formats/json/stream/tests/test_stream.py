@@ -4,11 +4,11 @@ import typing as ta
 from ..... import check
 from ...tests.helpers import TEST_DOCS
 from ...tests.helpers import assert_json_eq
-from ..build import JsonObjectBuilder
+from ..building import JsonObjectBuilder
 from ..lexing import JsonStreamLexer
 from ..parsing import JsonStreamParser
 from ..parsing import yield_parser_events
-from ..render import StreamJsonRenderer
+from ..rendering import StreamJsonRenderer
 from ..utils import stream_parse_one_object
 
 

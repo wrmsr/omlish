@@ -3,9 +3,9 @@ import json
 import pytest
 
 from .... import lang
-from ..render import JsonRenderer
-from ..stream.parse import yield_parser_events
-from ..stream.render import StreamJsonRenderer
+from ..rendering import JsonRenderer
+from ..stream.parsing import yield_parser_events
+from ..stream.rendering import StreamJsonRenderer
 from .helpers import TEST_DOCS
 
 

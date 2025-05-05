@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish.formats.json.stream.build import JsonObjectBuilder
+from omlish.formats.json.stream.building import JsonObjectBuilder
 from omlish.formats.json.stream.lexing import JsonStreamLexer
 from omlish.formats.json.stream.parsing import JsonStreamParser
 from omlish.formats.json.stream.parsing import JsonStreamParserEvent

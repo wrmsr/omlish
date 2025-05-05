@@ -1,7 +1,7 @@
 import io
 import typing as ta
 
-from ..render import AbstractJsonRenderer
+from ..rendering import AbstractJsonRenderer
 from ..types import SCALAR_TYPES
 from .parsing import BeginArray
 from .parsing import BeginObject

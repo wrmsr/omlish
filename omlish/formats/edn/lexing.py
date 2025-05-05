@@ -31,6 +31,7 @@ TokenKind: ta.TypeAlias = ta.Literal[
 
     'HASH_UNDERSCORE',
     'META',
+    'QUOTE',
 ]
 
 
@@ -62,7 +63,9 @@ SINGLE_TOKENS: ta.Mapping[str, TokenKind] = {
     '}': 'RBRACE',
 
     '^': 'META',
+    "'": 'QUOTE',
 }
+
 
 HASH_TOKENS: ta.Mapping[str, TokenKind] = {
     '{': 'HASH_LBRACE',
@@ -71,7 +74,7 @@ HASH_TOKENS: ta.Mapping[str, TokenKind] = {
 
 
 WORD_FIRST_SPECIAL_CHARS = ':.*+!-_?$%&=<>.'
-WORD_BODY_SPECIAL_CHARS = '#'
+WORD_BODY_SPECIAL_CHARS = '/'
 
 
 ##
@@ -267,16 +270,17 @@ class StreamLexer(GenMachine[str, Token]):
 
         elif (
                 c.isalnum() or
+                c == '#' or
                 c in WORD_FIRST_SPECIAL_CHARS
         ):
-            return self._do_word(c, pos=pos)
+            return self._do_word('#' + c, pos=pos)
 
         else:
             self._raise(f'Unexpected input: {c}')
 
-    def _do_word(self, c: str, *, pos: Position | None = None):
+    def _do_word(self, pfx: str, *, pos: Position | None = None):
         check.state(self._buf.tell() == 0)
-        self._buf.write(c)
+        self._buf.write(pfx)
 
         if pos is None:
             pos = self.pos

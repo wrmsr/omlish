@@ -3,9 +3,9 @@ import json
 import typing as ta
 
 from omlish import lang
-from omlish.formats.json.render import JsonRenderer
-from omlish.formats.json.stream.parse import JsonStreamParserEvent
-from omlish.formats.json.stream.render import StreamJsonRenderer
+from omlish.formats.json.rendering import JsonRenderer
+from omlish.formats.json.stream.parsing import JsonStreamParserEvent
+from omlish.formats.json.stream.rendering import StreamJsonRenderer
 from omlish.term import codes as tc
 
 

@@ -1,7 +1,7 @@
 import os.path
 import typing as ta
 
-from ...build import JsonObjectBuilder
+from ...building import JsonObjectBuilder
 from ...errors import JsonStreamError
 from ...lexing import JsonStreamLexer
 from ...parsing import JsonStreamParser

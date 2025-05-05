@@ -35,11 +35,11 @@ from .json import (  # noqa
 )
 
 if _ta.TYPE_CHECKING:
-    from .render import (  # noqa
+    from .rendering import (  # noqa
         JsonRenderer,
     )
 else:
-    _lang.proxy_init(globals(), '.render', [
+    _lang.proxy_init(globals(), '.rendering', [
         'JsonRenderer',
     ])
 
