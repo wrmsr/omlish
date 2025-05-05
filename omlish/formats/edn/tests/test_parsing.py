@@ -697,3 +697,7 @@ def test_map_key_pairs():
         parse('{:a :b :c}')
     with pytest.raises(Exception):  # noqa
         parse('{:a :b :c :d :e}')
+
+
+# def test_meta():
+#     print(parse('^{:a 1 :b 2} [1 2 3]'))

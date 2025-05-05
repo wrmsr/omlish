@@ -1,10 +1,12 @@
 """
 TODO:
+ - \u0123 in strings
  - https://clojure.org/reference/reader
  - reader meta - ^:foo
  - read table
+ - rewrite.
 """
-# https://github.com/jorinvo/edn-data/blob/1e5824f63803eb58f35e98839352000053d47115/test/parse.test.ts
+# https://github.com/jorinvo/edn-data/blob/1e5824f63803eb58f35e98839352000053d47115/src/parse.ts
 import dataclasses as dc
 import datetime
 import enum
