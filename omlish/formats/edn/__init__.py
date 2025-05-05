@@ -1,5 +1,6 @@
 from .parsing import (  # Noqa
     MetaMaker,
+    Parser,
     parse,
     parse_list,
 )

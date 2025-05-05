@@ -1,6 +1,5 @@
 """
 TODO:
- - incremental feed
  - https://clojure.org/reference/reader
  - reader meta - ^:foo
  - read table
@@ -95,11 +94,22 @@ class Parser:
 
     #
 
+    def _stack_push(self, key: _ParseMode | _StackItem, arg: ta.Any) -> None:
+        self._stack.append((key, arg))
+
+    def _stack_pop(self) -> tuple[_ParseMode | _StackItem, ta.Any]:
+        return self._stack.pop()
+
+    def _stack_peek(self) -> tuple[_ParseMode | _StackItem, ta.Any]:
+        return self._stack[-1]
+
+    #
+
     def _update_stack(self) -> None:
         if not self._stack or self._result is self._UNDEFINED:
             return
 
-        stack_item, prev_state = self._stack[-1]
+        stack_item, prev_state = self._stack_peek()
 
         if stack_item == Parser._StackItem.VECTOR:
             prev_state.append(self._result)
@@ -117,7 +127,7 @@ class Parser:
                 prev_state[1].append(self._result)
 
         elif stack_item == Parser._StackItem.TAG:
-            self._stack.pop()
+            self._stack_pop()
 
             if prev_state == '_':
                 self._result = self._UNDEFINED
@@ -157,7 +167,7 @@ class Parser:
 
         elif self._state.startswith('#'):
             # Tag
-            self._stack.append((Parser._StackItem.TAG, self._state[1:]))
+            self._stack_push(Parser._StackItem.TAG, self._state[1:])
             self._result = self._UNDEFINED
 
         elif self._INT_PAT.match(self._state):
@@ -237,7 +247,7 @@ class Parser:
                 self._update_stack()
 
                 if self._stack:
-                    stack_item, prev_state = self._stack.pop()
+                    stack_item, prev_state = self._stack_pop()
 
                     if stack_item == Parser._StackItem.MAP:
                         check.empty(prev_state[1])
@@ -254,7 +264,7 @@ class Parser:
             if char == ']':
                 self._match()
                 self._update_stack()
-                stack_item, prev_state = self._stack.pop()
+                stack_item, prev_state = self._stack_pop()
                 self._result = self._vector_maker(tuple(prev_state))
                 self._update_stack()
                 return
@@ -262,7 +272,7 @@ class Parser:
             if char == ')':
                 self._match()
                 self._update_stack()
-                stack_item, prev_state = self._stack.pop()
+                stack_item, prev_state = self._stack_pop()
                 self._result = self._list_maker(prev_state)
                 self._update_stack()
                 return
@@ -270,18 +280,18 @@ class Parser:
             if char == '[':
                 self._match()
                 self._update_stack()
-                self._stack.append((Parser._StackItem.VECTOR, []))
+                self._stack_push(Parser._StackItem.VECTOR, [])
                 return
 
             if char == '(':
                 self._match()
                 self._update_stack()
-                self._stack.append((Parser._StackItem.LIST, []))
+                self._stack_push(Parser._StackItem.LIST, [])
                 return
 
             state_plus_char = self._state + char
             if state_plus_char == '#_':
-                self._stack.append((Parser._StackItem.TAG, char))
+                self._stack_push(Parser._StackItem.TAG, char)
                 self._result = self._UNDEFINED
                 self._state = ''
                 return
@@ -290,14 +300,14 @@ class Parser:
                 self._state = self._state[:-1]  # Remove the '#'
                 self._match()
                 self._update_stack()
-                self._stack.append((Parser._StackItem.SET, []))
+                self._stack_push(Parser._StackItem.SET, [])
                 self._state = ''
                 return
 
             if char == '{':
                 self._match()
                 self._update_stack()
-                self._stack.append((Parser._StackItem.MAP, [[], []]))
+                self._stack_push(Parser._StackItem.MAP, [[], []])
                 self._state = ''
                 return
 
@@ -306,7 +316,7 @@ class Parser:
 
         elif self._mode == Parser._ParseMode.STRING:  # noqa
             if char == '\\':
-                self._stack.append((self._mode, self._state))
+                self._stack_push(self._mode, self._state)
                 self._mode = Parser._ParseMode.ESCAPE
                 self._state = ''
                 return
@@ -323,7 +333,7 @@ class Parser:
         elif self._mode == Parser._ParseMode.ESCAPE:
             # TODO what should happen when escaping other char
             escaped_char = self._STRING_ESCAPE_MAP.get(char, char)
-            stack_item, prev_state = self._stack.pop()
+            stack_item, prev_state = self._stack_pop()
             self._mode = check.isinstance(stack_item, Parser._ParseMode)
             self._state = prev_state + escaped_char
 
@@ -336,18 +346,27 @@ class Parser:
 
     #
 
-    def parse_list(self, src: str) -> list[ta.Any]:
-        values = []
-
+    def parse_gen(self) -> ta.Generator[list[ta.Any], str, None]:
         i = -1
-        for i in range(len(src)):
-            if not self._stack and self._result is not self._UNDEFINED:
-                values.append(self._result)
-                self._result = self._UNDEFINED
+        values: list[ta.Any] = []
+        while True:
+            try:
+                src = yield values
+            except GeneratorExit:
+                raise RuntimeError('Unexpected end of input') from None
 
-            char = src[i]
+            values = []
+            if not src:
+                break
 
-            self._parse_one(char)
+            for char in src:
+                i += 1
+
+                if not self._stack and self._result is not self._UNDEFINED:
+                    values.append(self._result)
+                    self._result = self._UNDEFINED
+
+                self._parse_one(char)
 
         if i >= 0:
             self._match()
@@ -356,7 +375,21 @@ class Parser:
         check.state(not self._stack)
 
         if self._result is not self._UNDEFINED:
-            values.append(self._result)
+            yield [self._result]
+        else:
+            yield []
+
+    def parse_list(self, src: str) -> list[ta.Any]:
+        if not src:
+            return []
+
+        gen = self.parse_gen()
+        next(gen)
+        values = [
+            *gen.send(src),
+            *gen.send(''),
+        ]
+        gen.close()
         return values
 
 
