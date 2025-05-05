@@ -327,13 +327,13 @@ class StreamParser(GenMachine[Token, ta.Any]):
             # 2r101010, 052, 8r52, 0x2a, 36r16, and 42 are all the same Long.
             # Floating point numbers are read as Doubles; with M suffix they are read as BigDecimals.
             # Ratios are supported, e.g. 22/7.
-            self._result = int(src)
+            return int(src)
 
         elif self._BIGINT_PAT.fullmatch(src):
-            self._result = int(src[:-1])
+            return int(src[:-1])
 
         elif self._FLOAT_PAT.fullmatch(src):
-            self._result = float(src)
+            return float(src)
 
         else:
             return self._symbol_maker(src)

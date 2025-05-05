@@ -239,7 +239,10 @@ class StreamLexer(GenMachine[str, Token]):
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
-            if not c or not c.isalnum():
+            if not c or not (
+                    c.isalnum() or
+                    c == '\\'
+            ):
                 break
 
             self._buf.write(c)
@@ -284,10 +287,7 @@ class StreamLexer(GenMachine[str, Token]):
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
-            if not c:
-                break
-
-            if not (
+            if not c or not (
                     c.isalnum() or
                     c in WORD_FIRST_SPECIAL_CHARS or
                     c in WORD_BODY_SPECIAL_CHARS
