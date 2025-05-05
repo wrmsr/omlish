@@ -10,7 +10,7 @@ from ..values import List
 from ..values import Map
 from ..values import Set
 from ..values import Symbol
-from ..values import TaggedVal
+from ..values import Tagged
 from ..values import Vector
 
 
@@ -503,24 +503,24 @@ def test_ignore_comments():
 
 
 def test_tagged_key():
-    assert parse('#ns.a/tag :key') == TaggedVal('ns.a/tag', Keyword('key'))
+    assert parse('#ns.a/tag :key') == Tagged('ns.a/tag', Keyword('key'))
 
 
 def test_tagged_int():
-    assert parse('#my/tag 555') == TaggedVal('my/tag', 555)
+    assert parse('#my/tag 555') == Tagged('my/tag', 555)
 
 
 def test_tag_tagged_value():
-    assert parse('#ns.a/tag2 #ns.a/tag1 :key') == TaggedVal('ns.a/tag2', TaggedVal('ns.a/tag1', Keyword('key')))
+    assert parse('#ns.a/tag2 #ns.a/tag1 :key') == Tagged('ns.a/tag2', Tagged('ns.a/tag1', Keyword('key')))
 
 
 def test_tag_tagged_value_nested():
     assert parse('(:a [#ns.a/tag2 #ns.a/tag1 :key "hi"] 1)') == List((
         Keyword('a'),
         Vector((
-            TaggedVal(
+            Tagged(
                 'ns.a/tag2',
-                TaggedVal(
+                Tagged(
                     'ns.a/tag1',
                     Keyword('key'),
                 ),

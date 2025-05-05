@@ -15,7 +15,7 @@ _DEBUG = __debug__
 
 @dc.dataclass(frozen=True)
 class Value(lang.Abstract, lang.Sealed):
-    pass
+    meta: ta.Any | None = dc.field(default=None, kw_only=True)
 
 
 #
@@ -87,8 +87,8 @@ class List(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any]) -> 'List':
-        return cls(tuple(items))
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'List':
+        return cls(tuple(items), meta=meta)
 
 
 @dataclass_cache_hash()
@@ -104,8 +104,8 @@ class Vector(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any]) -> 'Vector':
-        return cls(tuple(items))
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'Vector':
+        return cls(tuple(items), meta=meta)
 
 
 @dataclass_cache_hash()
@@ -121,8 +121,8 @@ class Set(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any]) -> 'Set':
-        return cls(tuple(items))
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'Set':
+        return cls(tuple(items), meta=meta)
 
 
 @dataclass_cache_hash()
@@ -141,8 +141,8 @@ class Map(Collection, lang.Final):
                 check.equal(len(t), 2)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Iterable[ta.Any]]) -> 'Map':
-        return cls(tuple((k, v) for k, v in items))
+    def new(cls, items: ta.Iterable[ta.Iterable[ta.Any]], *, meta: ta.Any | None = None) -> 'Map':
+        return cls(tuple((k, v) for k, v in items), meta=meta)
 
 
 #
@@ -150,7 +150,7 @@ class Map(Collection, lang.Final):
 
 @dataclass_cache_hash()
 @dc.dataclass(frozen=True)
-class TaggedVal(Value, lang.Final):
+class Tagged(Value, lang.Final):
     t: str
     v: ta.Any
 
