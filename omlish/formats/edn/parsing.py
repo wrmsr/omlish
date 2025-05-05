@@ -122,11 +122,11 @@ class Parser:
             if prev_state == '_':
                 self._result = self._UNDEFINED
 
+            elif (tag_handler := self._tag_handlers.get(prev_state)) is not None:
+                self._result = tag_handler(self._result)
+
             else:
-                if (tag_handler := self._tag_handlers.get(prev_state)) is not None:
-                    self._result = tag_handler(self._result)
-                else:
-                    self._result = Tagged(prev_state, self._result)
+                self._result = Tagged(prev_state, self._result)
 
             self._update_stack()
             return
