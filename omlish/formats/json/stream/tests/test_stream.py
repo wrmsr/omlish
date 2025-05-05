@@ -5,9 +5,9 @@ from ..... import check
 from ...tests.helpers import TEST_DOCS
 from ...tests.helpers import assert_json_eq
 from ..build import JsonObjectBuilder
-from ..lex import JsonStreamLexer
-from ..parse import JsonStreamParser
-from ..parse import yield_parser_events
+from ..lexing import JsonStreamLexer
+from ..parsing import JsonStreamParser
+from ..parsing import yield_parser_events
 from ..render import StreamJsonRenderer
 from ..utils import stream_parse_one_object
 

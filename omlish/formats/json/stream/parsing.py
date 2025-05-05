@@ -4,11 +4,11 @@ import typing as ta
 from .... import lang
 from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
-from .lex import SCALAR_VALUE_TYPES
-from .lex import VALUE_TOKEN_KINDS
-from .lex import Position
-from .lex import ScalarValue
-from .lex import Token
+from .lexing import SCALAR_VALUE_TYPES
+from .lexing import VALUE_TOKEN_KINDS
+from .lexing import Position
+from .lexing import ScalarValue
+from .lexing import Token
 
 
 ##

@@ -3,8 +3,8 @@ import typing as ta
 
 from .... import lang
 from .build import JsonObjectBuilder
-from .lex import JsonStreamLexer
-from .parse import JsonStreamParser
+from .lexing import JsonStreamLexer
+from .parsing import JsonStreamParser
 
 
 ##

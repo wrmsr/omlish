@@ -1,13 +1,13 @@
 import typing as ta
 
-from .lex import SCALAR_VALUE_TYPES
-from .parse import BeginArray
-from .parse import BeginObject
-from .parse import EndArray
-from .parse import EndObject
-from .parse import JsonStreamObject
-from .parse import JsonStreamParserEvent
-from .parse import Key
+from .lexing import SCALAR_VALUE_TYPES
+from .parsing import BeginArray
+from .parsing import BeginObject
+from .parsing import EndArray
+from .parsing import EndObject
+from .parsing import JsonStreamObject
+from .parsing import JsonStreamParserEvent
+from .parsing import Key
 
 
 ##
