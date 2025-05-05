@@ -185,6 +185,7 @@ class Parser:
         elif self._buffer.startswith('\\'):
             # Char
             check.state(len(self._buffer) > 1)
+
             if self._buffer == '\\space':
                 c = ' '
             elif self._buffer == '\\newline':
@@ -253,10 +254,11 @@ class Parser:
                         check.empty(prev_state[1])
                         self._result = self._map_maker(prev_state[0])
 
-                    else:  # Set
-                        # FIXME:
-                        # check.state(stack_item == Parser._StackItem.SET)
+                    elif stack_item == Parser._StackItem.SET:
                         self._result = self._set_maker(prev_state)
+
+                    else:
+                        raise RuntimeError(stack_item)
 
                 self._update_stack()
                 return
