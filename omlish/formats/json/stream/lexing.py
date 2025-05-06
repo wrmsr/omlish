@@ -40,7 +40,14 @@ ControlTokenKind: ta.TypeAlias = ta.Literal[
     'COLON',
 ]
 
-TokenKind: ta.TypeAlias = ValueTokenKind | ControlTokenKind
+SpaceTokenKind: ta.TypeAlias = ta.Literal['SPACE']
+
+TokenKind: ta.TypeAlias = ta.Union[  # noqa
+    ValueTokenKind,
+    ControlTokenKind,
+    SpaceTokenKind,
+]
+
 
 #
 
@@ -109,8 +116,10 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self,
             *,
             include_raw: bool = False,
+            include_space: bool = False,
     ) -> None:
         self._include_raw = include_raw
+        self._include_space = include_space
 
         self._ofs = 0
         self._line = 1
@@ -174,6 +183,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 return None
 
             if c.isspace():
+                if self._include_space:
+                    yield self._make_tok('SPACE', c, c, self.pos)
                 continue
 
             if c in CONTROL_TOKENS:
@@ -282,7 +293,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
         if c in CONTROL_TOKENS:
             yield self._make_tok(CONTROL_TOKENS[c], c, c, pos)
 
-        elif not c.isspace():
+        elif c.isspace():
+            if self._include_space:
+                yield self._make_tok('SPACE', c, c, self.pos)
+
+        else:
             self._raise(f'Unexpected character after number: {c}')
 
         return self._do_main()

@@ -178,9 +178,14 @@ class StreamParser(GenMachine[Token, ta.Any]):
                 else:
                     raise
 
-            value: ta.Any
+            # ignored
+
+            if tok.kind in ('SPACE', 'COMMENT'):
+                continue
 
             # scalars
+
+            value: ta.Any
 
             if tok.kind == 'STRING':
                 value = self._parse_string(tok)
@@ -196,9 +201,6 @@ class StreamParser(GenMachine[Token, ta.Any]):
 
                 else:
                     value = self._parse_word(tok)
-
-            elif tok.kind == 'COMMENT':
-                continue
 
             # open
 
@@ -324,8 +326,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
 
         return self._char_maker(c)
 
-    _INT_PAT = re.compile(r'[-+]?(0|[1-9][0-9]*)')
-    _BIGINT_PAT = re.compile(r'[-+]?(0|[1-9][0-9]*)N')
+    _INT_PAT = re.compile(r'[-+]?(0|[1-9][0-9]*)N?')
     _FLOAT_PAT = re.compile(r'[-+]?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?(0|[1-9][0-9]*))?M?')
 
     def _parse_word(self, tok: Token) -> ta.Any:
@@ -345,10 +346,11 @@ class StreamParser(GenMachine[Token, ta.Any]):
             # 2r101010, 052, 8r52, 0x2a, 36r16, and 42 are all the same Long.
             # Floating point numbers are read as Doubles; with M suffix they are read as BigDecimals.
             # Ratios are supported, e.g. 22/7.
-            return int(src)
+            if src.endswith('N'):
+                return int(src[:-1])
 
-        elif self._BIGINT_PAT.fullmatch(src):
-            return int(src[:-1])
+            else:
+                return int(src)
 
         elif self._FLOAT_PAT.fullmatch(src):
             return float(src)

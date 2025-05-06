@@ -102,6 +102,15 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     #
 
+    def _next_tok(self):
+        while True:
+            tok = yield None
+
+            if tok.kind != 'SPACE':
+                return tok
+
+    #
+
     def _emit_event(self, v):
         if not self._stack:
             return ((v,), self._do_value())
@@ -129,7 +138,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _do_value(self, *, must_be_present: bool = False):
         try:
-            tok = yield None
+            tok = yield from self._next_tok()
         except GeneratorExit:
             if self._stack:
                 raise JsonStreamParseError('Expected value') from None
@@ -180,7 +189,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _do_object_body(self, *, must_be_present: bool = False):
         try:
-            tok = yield None
+            tok = yield from self._next_tok()
         except GeneratorExit:
             raise JsonStreamParseError('Expected object body') from None
 
@@ -188,7 +197,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             k = tok.value
 
             try:
-                tok = yield None
+                tok = yield from self._next_tok()
             except GeneratorExit:
                 raise JsonStreamParseError('Expected key') from None
             if tok.kind != 'COLON':
@@ -211,7 +220,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _do_after_pair(self):
         try:
-            tok = yield None
+            tok = yield from self._next_tok()
         except GeneratorExit:
             raise JsonStreamParseError('Expected continuation') from None
 
@@ -244,7 +253,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _do_after_element(self):
         try:
-            tok = yield None
+            tok = yield from self._next_tok()
         except GeneratorExit:
             raise JsonStreamParseError('Expected continuation') from None
 

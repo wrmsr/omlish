@@ -32,6 +32,8 @@ TokenKind: ta.TypeAlias = ta.Literal[
     'HASH_UNDERSCORE',
     'META',
     'QUOTE',
+
+    'SPACE',
 ]
 
 
@@ -88,7 +90,13 @@ class StreamLexError(Exception):
 
 
 class StreamLexer(GenMachine[str, Token]):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            include_space: bool = False,
+    ) -> None:
+        self._include_space = include_space
+
         self._ofs = 0
         self._line = 1
         self._col = 0
@@ -155,6 +163,8 @@ class StreamLexer(GenMachine[str, Token]):
                 return None
 
             if c.isspace() or c == ',':
+                if self._include_space:
+                    yield self._make_tok('SPACE', c, self.pos)
                 continue
 
             if c in SINGLE_TOKENS:

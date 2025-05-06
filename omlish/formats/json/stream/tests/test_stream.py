@@ -1,6 +1,8 @@
 import json
 import typing as ta
 
+import pytest
+
 from ..... import check
 from ...tests.helpers import TEST_DOCS
 from ...tests.helpers import assert_json_eq
@@ -12,14 +14,17 @@ from ..rendering import StreamJsonRenderer
 from ..utils import stream_parse_one_object
 
 
-def test_stream():
+@pytest.mark.parametrize('include_space', [False, True])
+def test_stream(include_space):
     verbose = False
 
     for i, s in enumerate(TEST_DOCS):  # noqa
         ts = []
         es = []
         vs = []
-        with JsonStreamLexer() as lex:
+        with JsonStreamLexer(
+                include_space=include_space,
+        ) as lex:
             with JsonStreamParser() as parse:
                 with JsonObjectBuilder() as build:
                     for c in [*s, '']:
