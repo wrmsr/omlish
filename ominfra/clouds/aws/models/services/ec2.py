@@ -2270,6 +2270,11 @@ class EbsBlockDevice(
         shape_name='Boolean',
     ))
 
+    volume_initialization_rate: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VolumeInitializationRate',
+        shape_name='Integer',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class EbsOptimizedInfo(
