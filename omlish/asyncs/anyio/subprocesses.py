@@ -50,11 +50,11 @@ class AnyioSubprocesses(AbstractAsyncSubprocesses):
                         stderr = io.BytesIO()
                         tg.start_soon(read_output, proc.stderr, stderr)
 
-                if proc.stdin and run.input is not None:
-                    await proc.stdin.send(run.input)
-                    await proc.stdin.aclose()
+                    if proc.stdin and run.input is not None:
+                        await proc.stdin.send(run.input)
+                        await proc.stdin.aclose()
 
-                await proc.wait()
+                    await proc.wait()
 
         if run.check and proc.returncode != 0:
             raise subprocess.CalledProcessError(

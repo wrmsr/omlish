@@ -42,6 +42,11 @@ def _create_id() -> str:
     return str(uuid.uuid4())
 
 
+CONNECTION_CLOSED_EXCEPTIONS: tuple[type[Exception], ...] = (
+    anyio.ClosedResourceError,
+    anyio.EndOfStream,
+)
+
 CONNECTION_ERROR_EXCEPTIONS: tuple[type[Exception], ...] = (
     OSError,
     anyio.BrokenResourceError,
@@ -86,6 +91,8 @@ class JsonrpcClient:
         while True:
             try:
                 data = await self._stream.receive()
+            except CONNECTION_CLOSED_EXCEPTIONS:
+                data = ''
             except CONNECTION_ERROR_EXCEPTIONS as e:
                 raise JsonrpcConnectionError('Failed to receive message') from e
 
@@ -159,7 +166,7 @@ class JsonrpcClient:
     async def _send(self, msg: jr.Message) -> None:
         async with self._send_lock:
             try:
-                await self._stream.send(json.dumps(msh.marshal(msg)).encode())
+                await self._stream.send(json.dumps(msh.marshal(msg)).encode() + b'\n')
             except CONNECTION_ERROR_EXCEPTIONS as e:
                 raise JsonrpcConnectionError('Failed to send message') from e
 
