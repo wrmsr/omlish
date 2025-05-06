@@ -148,13 +148,13 @@ This library has no required dependencies of any kind, but there are numerous op
 - **anyio** - While lite code must use only asyncio, non-trivial async non-lite code prefers to be written to anyio.
 - **pytest** - What is used for all non-lite testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
-- **sqlalchemy** - Parts of the codebase use SQLAlchemy for db stuff, but it is being migrated away from in favor of the
-  internal api. It will however likely still remain as an optional dep for the api adapter.
 - **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
   capability of [check](check.py).
 - **wrapt** - For (optionally-enabled) injector circular proxies.
 - **greenlet** - For some gnarly stuff like the [sync<->async bridge](asyncs/bridge.py) and the
   [io trampoline](io/trampoline.py).
+- **sqlalchemy** - Parts of the codebase use SQLAlchemy for db stuff, but it is being migrated away from in favor of the
+  internal api. It will however likely still remain as an optional dep for the api adapter.
 
 Additionally, some catchall dep categories include:
 
