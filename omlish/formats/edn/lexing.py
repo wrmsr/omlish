@@ -303,23 +303,3 @@ class StreamLexer(GenMachine[str, Token]):
         src = self._flip_buf()
         yield self._make_tok('WORD', src, pos)
         return self._do_main(c)
-
-
-##
-
-
-def test_lex():
-    for s in [
-        '"abc"',
-        '{"a" "b"}',
-        '1',
-        '-1',
-        '{a :b c 420}',
-        '#{a}',
-    ]:
-        print(s)
-        with StreamLexer() as lex:
-            for c in [*s, '']:
-                for t in lex(c):
-                    print(t)
-        print()

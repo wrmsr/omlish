@@ -376,25 +376,3 @@ def parse(src: str, **kwargs: ta.Any) -> ta.Any | None:
     if not values:
         return None
     return check.single(values)
-
-
-##
-
-
-def test_parse():
-    for s in [
-        '"abc"',
-        '"a\\bc"',
-        '{"a" "b"}',
-        '1',
-        '-1',
-        '{a :b c 420}',
-        '#{a}',
-        '(1 #_ 2 3)',
-        '"foo\u1234bar"',
-        '\\x',
-        '\\u1234',
-    ]:
-        print(s)
-        print(parse(s))
-        print()
