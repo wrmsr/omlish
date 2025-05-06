@@ -5,8 +5,7 @@ from omlish.asyncs import anyio as aiu
 from omlish.formats import json
 from omlish import marshal as msh
 from omlish.specs import jsonrpc as jr
-
-from ..client import JsonrpcClient
+from omlish.specs.jsonrpc.conn import JsonrpcConnection
 
 
 @pytest.mark.asyncs('asyncio')
