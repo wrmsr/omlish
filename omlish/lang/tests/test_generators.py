@@ -2,11 +2,11 @@ import typing as ta
 
 import pytest
 
-from ..generators import Generator
 from ..generators import GeneratorLike_
 from ..generators import adapt_generator_like
 from ..generators import autostart
-from ..generators import corogen
+from ..generators import capture_coroutine
+from ..generators import capture_generator
 from ..generators import genmap
 from ..generators import nextgen
 
@@ -16,7 +16,7 @@ def test_generator():
         yield 1
         yield 2
         return 3
-    gen = Generator(test())
+    gen = capture_generator(test())
     l = list(gen)
     assert l == [1, 2]
     assert gen.value == 3
@@ -34,7 +34,7 @@ def test_generator_send():
 
         return x + 3
 
-    gen = Generator(test())
+    gen = capture_generator(test())
 
     assert next(gen) is None
     assert gen.send(1) == 2
@@ -48,7 +48,7 @@ def test_generator_send():
     assert gen.value == 6
 
 
-def test_corogen():
+def test_capture_coroutine():
     def foo(n: int) -> ta.Generator[int, int, int]:
         c = 0
         x = yield  # type: ignore
@@ -73,12 +73,12 @@ def test_corogen():
 
     #
 
-    with corogen(foo(3)) as g:
+    with capture_coroutine(foo(3)) as g:
         g.send()
-        assert g.send(2) == corogen.Yield(4)
-        assert g.send(3) == corogen.Yield(6)
-        assert g.send(4) == corogen.Yield(8)
-        assert g.send(5) == corogen.Return(14)
+        assert g.send(2) == capture_coroutine.Yield(4)
+        assert g.send(3) == capture_coroutine.Yield(6)
+        assert g.send(4) == capture_coroutine.Yield(8)
+        assert g.send(5) == capture_coroutine.Return(14)
 
 
 def test_generator_like():

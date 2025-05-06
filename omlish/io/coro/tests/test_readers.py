@@ -23,7 +23,7 @@ def test_prependable_coro_reader():
 
         return 'done'
 
-    cg = lang.corogen(f())
+    cg = lang.capture_coroutine(f())
     assert cg.send() == cg.Yield(2)
     assert cg.send('ab') == cg.Yield(2)
     assert cg.send('de') == cg.Yield(1)
@@ -54,7 +54,7 @@ def test_buffered_coro_reader():
 
         return 'done'
 
-    cg = lang.corogen(f())
+    cg = lang.capture_coroutine(f())
     assert cg.send() == cg.Yield(4)
     assert cg.send('abcd') == cg.Yield(4)
     assert cg.send('efgh') == cg.Yield(4)

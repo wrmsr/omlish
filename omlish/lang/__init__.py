@@ -184,12 +184,11 @@ from .functions import (  # noqa
 )
 
 from .generators import (  # noqa
-    CoroutineGenerator,
-    Generator,
     GeneratorLike,
     GeneratorMappedIterator,
     autostart,
-    corogen,
+    capture_coroutine,
+    capture_generator,
     genmap,
     nextgen,
 )

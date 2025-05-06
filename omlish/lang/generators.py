@@ -2,6 +2,7 @@ import abc
 import functools
 import typing as ta
 
+from .classes.restrict import Abstract
 from .maybes import Maybe
 from .maybes import empty
 from .maybes import just
@@ -79,15 +80,29 @@ def adapt_generator_like(gl):
 ##
 
 
-class Generator(ta.Generator[O, I, R]):
+class AbstractGeneratorCapture(Abstract, ta.Generic[O, I, R]):
     def __init__(self, g: ta.Generator[O, I, R]) -> None:
         super().__init__()
+
         self._g = g
 
     @property
     def g(self) -> ta.Generator[O, I, R]:
         return self._g
 
+    #
+
+    def close(self) -> None:
+        self._g.close()
+
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._g.close()
+
+
+class GeneratorCapture(AbstractGeneratorCapture[O, I, R], ta.Generator[O, I, R]):
     value: R
 
     def __iter__(self):
@@ -114,35 +129,11 @@ class Generator(ta.Generator[O, I, R]):
             self.value = e.value
             raise
 
-    def close(self):
-        self._g.close()
+
+capture_generator = GeneratorCapture
 
 
-##
-
-
-class CoroutineGenerator(ta.Generic[O, I, R]):
-    def __init__(self, g: ta.Generator[O, I, R]) -> None:
-        super().__init__()
-        self._g = g
-
-    @property
-    def g(self) -> ta.Generator[O, I, R]:
-        return self._g
-
-    #
-
-    def close(self) -> None:
-        self._g.close()
-
-    def __enter__(self) -> ta.Self:
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._g.close()
-
-    #
-
+class CoroutineGeneratorCapture(AbstractGeneratorCapture[O, I, R]):
     class Output(ta.NamedTuple, ta.Generic[T]):
         v: T
 
@@ -192,7 +183,7 @@ class CoroutineGenerator(ta.Generic[O, I, R]):
             return self.Yield(o)
 
 
-corogen = CoroutineGenerator
+capture_coroutine = CoroutineGeneratorCapture
 
 
 ##
