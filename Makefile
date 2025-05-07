@@ -162,6 +162,10 @@ gen-manifest:
 gen-pkg:
 	PYTHONPATH=. ${PYPROJECT} pkg gen
 
+.PHONY: gen-antlr
+gen-antlr:
+	${PYTHON} -m omdev.tools.antlr gen ${SRCS} x
+
 
 ### Check
 

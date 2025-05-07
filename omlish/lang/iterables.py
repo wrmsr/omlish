@@ -45,11 +45,7 @@ def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
 
 
 def common_prefix_len(*its: ta.Iterable) -> int:
-    return ilen(
-        None
-        for t in zip(*its)
-        if all(e == t[0] for e in t[1:])
-    )
+    return ilen(itertools.takewhile(lambda t: all(e == t[0] for e in t[1:]), zip(*its)))
 
 
 ##

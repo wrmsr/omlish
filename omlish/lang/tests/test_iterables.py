@@ -42,3 +42,4 @@ def test_common_prefix_len():
     assert common_prefix_len('ab', 'abc', 'ab') == 2
     assert common_prefix_len('ab', 'abc', 'abd') == 2
     assert common_prefix_len('abc', 'abce', 'abcd') == 3
+    assert common_prefix_len('aba', 'aca') == 1

@@ -1,5 +1,6 @@
 """
 TODO:
+ - mtime cmp
  - parallelism
 """
 import logging
@@ -11,6 +12,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish.os.paths import is_path_in_dir
 
 from ...cache import data as dcache
 from .consts import ANTLR_JAR_URL
@@ -76,6 +78,13 @@ class GenPy:
 
     #
 
+    def _rmtree(self, tgt: str) -> None:  # noqa
+        if not any(is_path_in_dir(rd, tgt) for rd in self._root_dirs):
+            raise RuntimeError(f'Refusing to delete {tgt!r} outside of {self._root_dirs!r}')
+        shutil.rmtree(tgt)
+
+    #
+
     @lang.cached_function
     def jar_path(self) -> str:
         if (gjp := self._given_jar_path) is not None:
@@ -88,10 +97,10 @@ class GenPy:
         ap = os.path.abspath(g4_file)
         check.state(os.path.isfile(ap))
 
-        cd = os.path.join(os.path.dirname(ap), self._out_subdir)
-        os.makedirs(cd, exist_ok=True)
+        od = os.path.join(os.path.dirname(ap), self._out_subdir)
+        os.makedirs(od, exist_ok=True)
 
-        log.info(f'Compiling grammar %s', g4_file)
+        log.info('Compiling grammar %s', g4_file)
 
         try:
             subprocess.check_call([
@@ -100,11 +109,11 @@ class GenPy:
                 '-Dlanguage=Python3',
                 '-visitor',
                 '-o', self._out_subdir,
-                ap,
-            ], cwd=cd)
+                os.path.basename(g4_file),
+            ], cwd=os.path.dirname(ap))
 
         except Exception:  # noqa
-            log.exception(f'Exception in grammar %s', g4_file)
+            log.exception('Exception in grammar %s', g4_file)
             raise
 
     def process_py(self, py_file: str) -> None:
@@ -112,10 +121,11 @@ class GenPy:
         with open(ap) as f:
             in_lines = list(f)
 
-        pfp = os.path.split(py_file)
+        pfp = py_file.split(os.sep)
         arp = ANTLR_RUNTIME_VENDOR.split('.')
-        if (pkg_depth := lang.common_prefix_len(pfp, arp)) > 0:
-            antlr_imp = f'from {"." * pkg_depth}_vendor.antlr4'
+        if (cpl := lang.common_prefix_len(pfp, arp)) > 0:
+            pkg_depth = len(os.path.normpath(py_file).split(os.path.sep))
+            antlr_imp = '.'.join([*([''] * (pkg_depth - cpl)), *arp[cpl:]])
         else:
             antlr_imp = ANTLR_RUNTIME_VENDOR
 
@@ -137,14 +147,14 @@ class GenPy:
 
         ad = os.path.join(dir, self._out_subdir)
         if os.path.exists(ad):
-            shutil.rmtree(ad)
+            self._rmtree(ad)
 
         for f in os.listdir(dir):
             fp = os.path.join(dir, f)
             if not os.path.isfile(fp) or not f.endswith('.g4'):
                 continue
 
-            self.process_g4(f)
+            self.process_g4(fp)
 
         if not os.path.exists(ad):
             return
@@ -161,7 +171,7 @@ class GenPy:
                 os.unlink(fp)
 
             elif f != '__init__.py' and f.endswith('.py'):
-                self.process_py(f)
+                self.process_py(fp)
 
         with open(ip, 'w'):
             pass
@@ -169,11 +179,9 @@ class GenPy:
     def run(self) -> None:
         dns = _find_dirs(*self._root_dirs, filter=lambda dn: os.path.basename(dn) == '_antlr')
         for dn in dns:
-            # shutil.rmtree(dn)
-            print(dn)
+            self._rmtree(dn)
 
         fns = _find_files(*self._root_dirs, filter=lambda fn: fn.endswith('.g4'))
-        fds = set(os.path.dirname(fn) for fn in fns)
+        fds = {os.path.dirname(fn) for fn in fns}
         for dn in sorted(fds):
-            # self.process_dir(dn)
-            print(dn)
+            self.process_dir(dn)

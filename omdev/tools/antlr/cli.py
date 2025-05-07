@@ -43,12 +43,13 @@ class Cli(ap.Cli):
     #
 
     @ap.cmd(
-        ap.arg('')
+        ap.arg('roots', nargs='+'),
     )
     def gen(self) -> None:
         gp = GenPy(
-
+            self.args.roots,
         )
+        gp.run()
 
 
 def _main() -> None:
