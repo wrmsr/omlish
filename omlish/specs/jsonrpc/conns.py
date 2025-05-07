@@ -1,3 +1,7 @@
+"""
+TODO:
+ - kill receive loop on __aexit__
+"""
 import builtins
 import json
 import typing as ta
@@ -35,13 +39,15 @@ class JsonrpcConnection:
             tg: anyio.abc.TaskGroup,
             stream: anyio.abc.ByteStream,
             *,
-            notification_handler: ta.Callable[[Request], ta.Awaitable[None]] | None = None,
-            default_timeout: float | None = 30.0,
+            request_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
+            notification_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
+            default_timeout: float | None = 30.,
     ) -> None:
         super().__init__()
 
         self._tg = tg
         self._stream = stream
+        self._request_handler = request_handler
         self._notification_handler = notification_handler
         self._default_timeout = default_timeout
 
@@ -88,10 +94,11 @@ class JsonrpcConnection:
         elif isinstance(msg, Request):
             if msg.is_notification:
                 if (mh := self._notification_handler) is not None:
-                    await mh(msg)
+                    await mh(self, msg)
 
-            else:
-                raise NotImplementedError
+            else:  # noqa
+                if (rh := self._request_handler) is not None:
+                    await rh(self, msg)
 
         else:
             raise TypeError(msg)

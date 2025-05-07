@@ -18,6 +18,8 @@ from ... import lang
 from ... import marshal as msh
 
 
+T = ta.TypeVar('T')
+
 NUMBER_TYPES: tuple[type, ...] = (int, float)
 Number: ta.TypeAlias = int | float
 
@@ -42,6 +44,11 @@ class NotSpecified(lang.Marker):
 
 def is_not_specified(v: ta.Any) -> bool:
     return v is NotSpecified
+
+
+def check_not_not_specified(v: T | type[NotSpecified]) -> T:
+    check.arg(not is_not_specified(v))
+    return ta.cast(T, v)
 
 
 ##
@@ -87,9 +94,21 @@ class Response(lang.Final):
 
     _: dc.KW_ONLY
 
+    #
+
     result: ta.Any = dc.field(default=NotSpecified)
     error: ta.Union['Error', type[NotSpecified]] = dc.field(default=NotSpecified)
     dc.validate(lambda self: is_not_specified(self.result) ^ is_not_specified(self.error))
+
+    @property
+    def is_result(self) -> bool:
+        return not is_not_specified(self.result)
+
+    @property
+    def is_error(self) -> bool:
+        return not is_not_specified(self.error)
+
+    #
 
     jsonrpc: str = dc.field(default=VERSION)
     dc.validate(lambda self: self.jsonrpc == VERSION)
