@@ -7,13 +7,14 @@ from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
 from .consts import ANTLR_RUNTIME_PACKAGE
+from .gen import GenPy
 from .gen import get_jar_path
 
 
-##
-
-
 log = logging.getLogger(__name__)
+
+
+##
 
 
 class Cli(ap.Cli):
@@ -38,6 +39,16 @@ class Cli(ap.Cli):
             raise ValueError(f'Failed to parse version: {tl}')
         v = m.groupdict()['version']
         print(v)
+
+    #
+
+    @ap.cmd(
+        ap.arg('')
+    )
+    def gen(self) -> None:
+        gp = GenPy(
+
+        )
 
 
 def _main() -> None:

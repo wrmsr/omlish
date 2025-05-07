@@ -209,6 +209,7 @@ from .imports import (  # noqa
 
 from .iterables import (  # noqa
     asrange,
+    common_prefix_len,
     exhaust,
     flatmap,
     flatten,

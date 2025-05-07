@@ -40,6 +40,21 @@ def interleave(vs: ta.Iterable[T], d: T) -> ta.Iterable[T]:
         yield v
 
 
+def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
+    return ((e, i) for i, e in enumerate(it))
+
+
+def common_prefix_len(*its: ta.Iterable) -> int:
+    return ilen(
+        None
+        for t in zip(*its)
+        if all(e == t[0] for e in t[1:])
+    )
+
+
+##
+
+
 @ta.overload
 def readiter(f: ta.TextIO, sz: int) -> ta.Iterator[str]:
     ...
@@ -59,6 +74,9 @@ def readiter(f, sz):
     return iter(functools.partial(f.read, sz), None)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class IterGen(ta.Generic[T]):
     fn: ta.Callable[[], ta.Iterable[T]]
@@ -70,8 +88,7 @@ class IterGen(ta.Generic[T]):
 itergen = IterGen
 
 
-def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
-    return ((e, i) for i, e in enumerate(it))
+##
 
 
 flatten = itertools.chain.from_iterable
