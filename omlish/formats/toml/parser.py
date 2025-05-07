@@ -156,29 +156,37 @@ class TomlFlags:
     def set(self, key: TomlKey, flag: int, *, recursive: bool) -> None:  # noqa: A003
         cont = self._flags
         key_parent, key_stem = key[:-1], key[-1]
+
         for k in key_parent:
             if k not in cont:
                 cont[k] = {'flags': set(), 'recursive_flags': set(), 'nested': {}}
             cont = cont[k]['nested']
+
         if key_stem not in cont:
             cont[key_stem] = {'flags': set(), 'recursive_flags': set(), 'nested': {}}
+
         cont[key_stem]['recursive_flags' if recursive else 'flags'].add(flag)
 
     def is_(self, key: TomlKey, flag: int) -> bool:
         if not key:
             return False  # document root has no flags
+
         cont = self._flags
         for k in key[:-1]:
             if k not in cont:
                 return False
+
             inner_cont = cont[k]
             if flag in inner_cont['recursive_flags']:
                 return True
+
             cont = inner_cont['nested']
+
         key_stem = key[-1]
         if key_stem in cont:
             cont = cont[key_stem]
             return flag in cont['flags'] or flag in cont['recursive_flags']
+
         return False
 
 
@@ -196,24 +204,31 @@ class TomlNestedDict:
             access_lists: bool = True,
     ) -> dict:
         cont: ta.Any = self.dict
+
         for k in key:
             if k not in cont:
                 cont[k] = {}
+
             cont = cont[k]
+
             if access_lists and isinstance(cont, list):
                 cont = cont[-1]
+
             if not isinstance(cont, dict):
                 raise KeyError('There is no nest behind this key')
+
         return cont
 
     def append_nest_to_list(self, key: TomlKey) -> None:
         cont = self.get_or_create_nest(key[:-1])
+
         last_key = key[-1]
         if last_key in cont:
             list_ = cont[last_key]
             if not isinstance(list_, list):
                 raise KeyError('An object other than list found behind this key')
             list_.append({})
+
         else:
             cont[last_key] = [{}]
 
@@ -283,23 +298,30 @@ class TomlParser:
                 char = self.src[self.pos]
             except IndexError:
                 break
+
             if char == '\n':
                 self.pos += 1
                 continue
+
             if char in self.KEY_INITIAL_CHARS:
                 self.key_value_rule(header)
                 self.skip_chars(self.WS)
+
             elif char == '[':
                 try:
                     second_char: ta.Optional[str] = self.src[self.pos + 1]
                 except IndexError:
                     second_char = None
+
                 self.flags.finalize_pending()
+
                 if second_char == '[':
                     header = self.create_list_rule()
                 else:
                     header = self.create_dict_rule()
+
                 self.skip_chars(self.WS)
+
             elif char != '#':
                 raise self.suffixed_err('Invalid statement')
 
@@ -311,8 +333,10 @@ class TomlParser:
                 char = self.src[self.pos]
             except IndexError:
                 break
+
             if char != '\n':
                 raise self.suffixed_err('Expected newline or end of document after a statement')
+
             self.pos += 1
 
         return self.data.dict
@@ -341,7 +365,9 @@ class TomlParser:
         if not error_on.isdisjoint(self.src[self.pos:new_pos]):
             while self.src[self.pos] not in error_on:
                 self.pos += 1
+
             raise self.suffixed_err(f'Found invalid character {self.src[self.pos]!r}')
+
         self.pos = new_pos
 
     def skip_comment(self) -> None:
@@ -349,6 +375,7 @@ class TomlParser:
             char: ta.Optional[str] = self.src[self.pos]
         except IndexError:
             char = None
+
         if char == '#':
             self.pos += 1
             self.skip_until(
@@ -372,7 +399,9 @@ class TomlParser:
 
         if self.flags.is_(key, TomlFlags.EXPLICIT_NEST) or self.flags.is_(key, TomlFlags.FROZEN):
             raise self.suffixed_err(f'Cannot declare {key} twice')
+
         self.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
+
         try:
             self.data.get_or_create_nest(key)
         except KeyError:
@@ -380,20 +409,25 @@ class TomlParser:
 
         if not self.src.startswith(']', self.pos):
             raise self.suffixed_err("Expected ']' at the end of a table declaration")
+
         self.pos += 1
         return key
 
     def create_list_rule(self) -> TomlKey:
         self.pos += 2  # Skip "[["
         self.skip_chars(self.WS)
+
         key = self.parse_key()
 
         if self.flags.is_(key, TomlFlags.FROZEN):
             raise self.suffixed_err(f'Cannot mutate immutable namespace {key}')
+
         # Free the namespace now that it points to another empty list item...
         self.flags.unset_all(key)
+
         # ...but this key precisely is still prohibited from table declaration
         self.flags.set(key, TomlFlags.EXPLICIT_NEST, recursive=False)
+
         try:
             self.data.append_nest_to_list(key)
         except KeyError:
@@ -401,6 +435,7 @@ class TomlParser:
 
         if not self.src.startswith(']]', self.pos):
             raise self.suffixed_err("Expected ']]' at the end of an array declaration")
+
         self.pos += 2
         return key
 
@@ -414,6 +449,7 @@ class TomlParser:
             # Check that dotted key syntax does not redefine an existing table
             if self.flags.is_(cont_key, TomlFlags.EXPLICIT_NEST):
                 raise self.suffixed_err(f'Cannot redefine namespace {cont_key}')
+
             # Containers in the relative path can't be opened with the table syntax or dotted key/value syntax in
             # following table sections.
             self.flags.add_pending(cont_key, TomlFlags.EXPLICIT_NEST)
@@ -425,41 +461,54 @@ class TomlParser:
             nest = self.data.get_or_create_nest(abs_key_parent)
         except KeyError:
             raise self.suffixed_err('Cannot overwrite a value') from None
+
         if key_stem in nest:
             raise self.suffixed_err('Cannot overwrite a value')
+
         # Mark inline table and array namespaces recursively immutable
         if isinstance(value, (dict, list)):
             self.flags.set(header + key, TomlFlags.FROZEN, recursive=True)
+
         nest[key_stem] = value
 
     def parse_key_value_pair(self) -> ta.Tuple[TomlKey, ta.Any]:
         key = self.parse_key()
+
         try:
             char: ta.Optional[str] = self.src[self.pos]
         except IndexError:
             char = None
+
         if char != '=':
             raise self.suffixed_err("Expected '=' after a key in a key/value pair")
+
         self.pos += 1
         self.skip_chars(self.WS)
+
         value = self.parse_value()
         return key, value
 
     def parse_key(self) -> TomlKey:
         key_part = self.parse_key_part()
         key: TomlKey = (key_part,)
+
         self.skip_chars(self.WS)
+
         while True:
             try:
                 char: ta.Optional[str] = self.src[self.pos]
             except IndexError:
                 char = None
+
             if char != '.':
                 return key
+
             self.pos += 1
             self.skip_chars(self.WS)
+
             key_part = self.parse_key_part()
             key += (key_part,)
+
             self.skip_chars(self.WS)
 
     def parse_key_part(self) -> str:
@@ -467,14 +516,18 @@ class TomlParser:
             char: ta.Optional[str] = self.src[self.pos]
         except IndexError:
             char = None
+
         if char in self.BARE_KEY_CHARS:
             start_pos = self.pos
             self.skip_chars(self.BARE_KEY_CHARS)
             return self.src[start_pos:self.pos]
+
         if char == "'":
             return self.parse_literal_str()
+
         if char == '"':
             return self.parse_one_line_basic_str()
+
         raise self.suffixed_err('Invalid initial character for a key part')
 
     def parse_one_line_basic_str(self) -> str:
@@ -489,6 +542,7 @@ class TomlParser:
         if self.src.startswith(']', self.pos):
             self.pos += 1
             return array
+
         while True:
             val = self.parse_value()
             array.append(val)
@@ -498,11 +552,14 @@ class TomlParser:
             if c == ']':
                 self.pos += 1
                 return array
+
             if c != ',':
                 raise self.suffixed_err('Unclosed array')
+
             self.pos += 1
 
             self.skip_comments_and_array_ws()
+
             if self.src.startswith(']', self.pos):
                 self.pos += 1
                 return array
@@ -513,54 +570,72 @@ class TomlParser:
         flags = TomlFlags()
 
         self.skip_chars(self.WS)
+
         if self.src.startswith('}', self.pos):
             self.pos += 1
             return nested_dict.dict
+
         while True:
             key, value = self.parse_key_value_pair()
             key_parent, key_stem = key[:-1], key[-1]
+
             if flags.is_(key, TomlFlags.FROZEN):
                 raise self.suffixed_err(f'Cannot mutate immutable namespace {key}')
+
             try:
                 nest = nested_dict.get_or_create_nest(key_parent, access_lists=False)
             except KeyError:
                 raise self.suffixed_err('Cannot overwrite a value') from None
+
             if key_stem in nest:
                 raise self.suffixed_err(f'Duplicate inline table key {key_stem!r}')
+
             nest[key_stem] = value
             self.skip_chars(self.WS)
+
             c = self.src[self.pos:self.pos + 1]
             if c == '}':
                 self.pos += 1
                 return nested_dict.dict
+
             if c != ',':
                 raise self.suffixed_err('Unclosed inline table')
+
             if isinstance(value, (dict, list)):
                 flags.set(key, TomlFlags.FROZEN, recursive=True)
+
             self.pos += 1
             self.skip_chars(self.WS)
 
     def parse_basic_str_escape(self, multiline: bool = False) -> str:
         escape_id = self.src[self.pos:self.pos + 2]
         self.pos += 2
+
         if multiline and escape_id in {'\\ ', '\\\t', '\\\n'}:
             # Skip whitespace until next non-whitespace character or end of the doc. Error if non-whitespace is found
             # before newline.
             if escape_id != '\\\n':
                 self.skip_chars(self.WS)
+
                 try:
                     char = self.src[self.pos]
                 except IndexError:
                     return ''
+
                 if char != '\n':
                     raise self.suffixed_err("Unescaped '\\' in a string")
+
                 self.pos += 1
+
             self.skip_chars(self.WS_AND_NEWLINE)
             return ''
+
         if escape_id == '\\u':
             return self.parse_hex_char(4)
+
         if escape_id == '\\U':
             return self.parse_hex_char(8)
+
         try:
             return self.BASIC_STR_ESCAPE_REPLACEMENTS[escape_id]
         except KeyError:
@@ -575,12 +650,16 @@ class TomlParser:
 
     def parse_hex_char(self, hex_len: int) -> str:
         hex_str = self.src[self.pos:self.pos + hex_len]
+
         if len(hex_str) != hex_len or not self.HEXDIGIT_CHARS.issuperset(hex_str):
             raise self.suffixed_err('Invalid hex value')
+
         self.pos += hex_len
         hex_int = int(hex_str, 16)
+
         if not self.is_unicode_scalar_value(hex_int):
             raise self.suffixed_err('Escaped character is not a Unicode scalar value')
+
         return chr(hex_int)
 
     def parse_literal_str(self) -> str:
@@ -606,6 +685,7 @@ class TomlParser:
             )
             result = self.src[start_pos:self.pos]
             self.pos += 3
+
         else:
             delim = '"'
             result = self.parse_basic_str(multiline=True)
@@ -613,9 +693,11 @@ class TomlParser:
         # Add at maximum two extra apostrophes/quotes if the end sequence is 4 or 5 chars long instead of just 3.
         if not self.src.startswith(delim, self.pos):
             return result
+
         self.pos += 1
         if not self.src.startswith(delim, self.pos):
             return result + delim
+
         self.pos += 1
         return result + (delim * 2)
 
@@ -626,6 +708,7 @@ class TomlParser:
         else:
             error_on = self.ILLEGAL_BASIC_STR_CHARS
             parse_escapes = self.parse_basic_str_escape
+
         result = ''
         start_pos = self.pos
         while True:
@@ -633,25 +716,31 @@ class TomlParser:
                 char = self.src[self.pos]
             except IndexError:
                 raise self.suffixed_err('Unterminated string') from None
+
             if char == '"':
                 if not multiline:
                     end_pos = self.pos
                     self.pos += 1
                     return result + self.src[start_pos:end_pos]
+
                 if self.src.startswith('"""', self.pos):
                     end_pos = self.pos
                     self.pos += 3
                     return result + self.src[start_pos:end_pos]
+
                 self.pos += 1
                 continue
+
             if char == '\\':
                 result += self.src[start_pos:self.pos]
                 parsed_escape = parse_escapes()
                 result += parsed_escape
                 start_pos = self.pos
                 continue
+
             if char in error_on:
                 raise self.suffixed_err(f'Illegal character {char!r}')
+
             self.pos += 1
 
     def parse_value(self) -> ta.Any:  # noqa: C901
@@ -679,6 +768,7 @@ class TomlParser:
             if self.src.startswith('true', self.pos):
                 self.pos += 4
                 return True
+
         if char == 'f':
             if self.src.startswith('false', self.pos):
                 self.pos += 5
@@ -699,8 +789,10 @@ class TomlParser:
                 datetime_obj = self.match_to_datetime(datetime_match)
             except ValueError as e:
                 raise self.suffixed_err('Invalid date or datetime') from e
+
             self.pos = datetime_match.end()
             return datetime_obj
+
         localtime_match = self.RE_LOCALTIME.match(self.src, self.pos)
         if localtime_match:
             self.pos = localtime_match.end()
@@ -718,6 +810,7 @@ class TomlParser:
         if first_three in {'inf', 'nan'}:
             self.pos += 3
             return self.parse_float(first_three)
+
         first_four = self.src[self.pos:self.pos + 4]
         if first_four in {'-inf', '+inf', '-nan', '+nan'}:
             self.pos += 4
@@ -728,11 +821,13 @@ class TomlParser:
     def coord_repr(self, pos: TomlPos) -> str:
         if pos >= len(self.src):
             return 'end of document'
+
         line = self.src.count('\n', 0, pos) + 1
         if line == 1:
             column = pos + 1
         else:
             column = pos - self.src.rindex('\n', 0, pos)
+
         return f'line {line}, column {column}'
 
     def suffixed_err(self, msg: str, *, pos: ta.Optional[TomlPos] = None) -> TomlDecodeError:
@@ -799,11 +894,16 @@ class TomlParser:
             offset_hour_str,
             offset_minute_str,
         ) = match.groups()
+
         year, month, day = int(year_str), int(month_str), int(day_str)
+
         if hour_str is None:
             return datetime.date(year, month, day)
+
         hour, minute, sec = int(hour_str), int(minute_str), int(sec_str)
+
         micros = int(micros_str.ljust(6, '0')) if micros_str else 0
+
         if offset_sign_str:
             tz: ta.Optional[datetime.tzinfo] = toml_cached_tz(
                 offset_hour_str, offset_minute_str, offset_sign_str,
@@ -812,6 +912,7 @@ class TomlParser:
             tz = datetime.UTC
         else:  # local date-time
             tz = None
+
         return datetime.datetime(year, month, day, hour, minute, sec, micros, tzinfo=tz)
 
     @classmethod
