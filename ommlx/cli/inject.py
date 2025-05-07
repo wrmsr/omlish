@@ -26,10 +26,17 @@ def _provide_state_storage() -> StateStorage:
 ##
 
 
-def bind_main(session_cfg: Session.Config) -> inj.Elements:
+def bind_main(
+        session_cfg: Session.Config,
+        *,
+        enable_test_weather_tool: bool = False,
+) -> inj.Elements:
     els: list[inj.Elemental] = [
         bind_sessions(session_cfg),
-        bind_tools(),
+
+        bind_tools(
+            enable_test_weather_tool=enable_test_weather_tool,
+        ),
     ]
 
     #

@@ -42,7 +42,10 @@ def provide_tool_map(its: ta.AbstractSet[InjectedTool]) -> ToolMap:
 ##
 
 
-def bind_tools() -> inj.Elements:
+def bind_tools(
+        *,
+        enable_test_weather_tool: bool = False,
+) -> inj.Elements:
     els: list[inj.Elemental] = [
         inj.set_binder[InjectedTool](),
         inj.bind(provide_tool_map, singleton=True),
@@ -50,10 +53,8 @@ def bind_tools() -> inj.Elements:
 
     #
 
-    for tool in [
-        WEATHER_TOOL,
-    ]:
-        els.append(bind_tool(tool))
+    if enable_test_weather_tool:
+        els.append(bind_tool(WEATHER_TOOL))
 
     #
 

@@ -61,6 +61,8 @@ def _main() -> None:
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
 
+    parser.add_argument('--enable-test-weather-tool', action='store_true')
+
     args = parser.parse_args()
 
     #
@@ -143,6 +145,7 @@ def _main() -> None:
 
     with inj.create_managed_injector(bind_main(
             session_cfg,
+            enable_test_weather_tool=args.enable_test_weather_tool,
     )) as injector:
         injector[Session].run()
 
