@@ -131,7 +131,7 @@ class AsyncioProcessCommunicator:
     async def communicate(
             self,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
     ) -> Communication:
         return await asyncio_maybe_timeout(self._communicate(input), timeout)
 
@@ -144,7 +144,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             self,
             proc: asyncio.subprocess.Process,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
     ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
         return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
@@ -155,7 +155,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             self,
             *cmd: str,
             shell: bool = False,
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             **kwargs: ta.Any,
     ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
         with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa

@@ -64,7 +64,7 @@ class PidfilePinner(abc.ABC):
             self,
             path: str,
             *,
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             inheritable: bool = False,  # Present to match Pidfile kwargs for convenience, but enforced to be False.
             **kwargs: ta.Any,
     ) -> ta.Iterator[int]:

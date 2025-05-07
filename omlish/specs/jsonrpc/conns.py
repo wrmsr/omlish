@@ -202,7 +202,7 @@ class JsonrpcConnection:
             method: str,
             params: Object | None = None,
             *,
-            timeout: float | None = None,
+            timeout: lang.TimeoutLike | None = lang.Timeout.DEFAULT,
     ) -> ta.Any:
         msg_id = _create_id()
         req = request(msg_id, method, params)
@@ -213,9 +213,9 @@ class JsonrpcConnection:
         try:
             await self.send_message(req)
 
-            timeout_val = timeout if timeout is not None else self._default_timeout
+            timeout_val = lang.Timeout.of(timeout, self._default_timeout)
             try:
-                with anyio.fail_after(timeout_val):
+                with anyio.fail_after(timeout_val.or_(None)):
                     await fut
             except TimeoutError as e:
                 raise JsonrpcConnection.TimeoutError(f'Request timed out after {timeout_val} seconds') from e

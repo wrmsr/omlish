@@ -8,7 +8,7 @@ import time
 import typing as ta
 
 
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
 
 
 ##
@@ -54,7 +54,7 @@ class Timeout(abc.ABC):
 
     #
 
-    class Default:
+    class DEFAULT:  # Noqa
         def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError
 
@@ -65,7 +65,7 @@ class Timeout(abc.ABC):
     @classmethod
     def of(
             cls,
-            obj: ta.Optional[TimeoutLike],
+            obj: TimeoutLike,
             default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
     ) -> 'Timeout':
         if obj is None:
@@ -80,8 +80,8 @@ class Timeout(abc.ABC):
         elif isinstance(obj, ta.Iterable):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
-        elif obj is Timeout.Default:
-            if default is Timeout._NOT_SPECIFIED or default is Timeout.Default:
+        elif obj is Timeout.DEFAULT:
+            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
                 raise RuntimeError('Must specify a default timeout')
 
             else:

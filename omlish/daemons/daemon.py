@@ -109,7 +109,7 @@ class Daemon:
 
     def wait_sync(
             self,
-            timeout: lang.TimeoutLike = lang.Timeout.Default,
+            timeout: lang.TimeoutLike = lang.Timeout.DEFAULT,
             *,
             max_tries: int | None = None,
     ) -> None:
@@ -140,7 +140,7 @@ class Daemon:
 
         return launcher.launch()
 
-    def launch(self, timeout: lang.TimeoutLike = lang.Timeout.Default) -> None:
+    def launch(self, timeout: lang.TimeoutLike = lang.Timeout.DEFAULT) -> None:
         self.launch_no_wait()
 
         self.wait_sync(timeout)

@@ -72,7 +72,7 @@ CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.Default'], ta.Iterable['TimeoutLike'], float]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
 
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
@@ -1378,7 +1378,7 @@ class Timeout(abc.ABC):
 
     #
 
-    class Default:
+    class DEFAULT:  # Noqa
         def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError
 
@@ -1389,7 +1389,7 @@ class Timeout(abc.ABC):
     @classmethod
     def of(
             cls,
-            obj: ta.Optional[TimeoutLike],
+            obj: TimeoutLike,
             default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
     ) -> 'Timeout':
         if obj is None:
@@ -1404,8 +1404,8 @@ class Timeout(abc.ABC):
         elif isinstance(obj, ta.Iterable):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
-        elif obj is Timeout.Default:
-            if default is Timeout._NOT_SPECIFIED or default is Timeout.Default:
+        elif obj is Timeout.DEFAULT:
+            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
                 raise RuntimeError('Must specify a default timeout')
 
             else:
@@ -2464,7 +2464,7 @@ class ArgparseCli:
 
 def asyncio_maybe_timeout(
         fut: AwaitableT,
-        timeout: ta.Optional[TimeoutLike] = None,
+        timeout: TimeoutLike = None,
 ) -> AwaitableT:
     if timeout is not None:
         fut = asyncio.wait_for(fut, Timeout.of(timeout)())  # type: ignore
@@ -3649,7 +3649,7 @@ class SubprocessRunOutput(ta.Generic[T]):
 class SubprocessRun:
     cmd: ta.Sequence[str]
     input: ta.Any = None
-    timeout: ta.Optional[TimeoutLike] = None
+    timeout: TimeoutLike = None
     check: bool = False
     capture_output: ta.Optional[bool] = None
     kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
@@ -3685,7 +3685,7 @@ class SubprocessRun:
             cls,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             check: bool = False,  # noqa
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,
@@ -4376,7 +4376,7 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             self,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             check: bool = False,
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,
@@ -4566,7 +4566,7 @@ class AsyncioProcessCommunicator:
     async def communicate(
             self,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
     ) -> Communication:
         return await asyncio_maybe_timeout(self._communicate(input), timeout)
 
@@ -4579,7 +4579,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             self,
             proc: asyncio.subprocess.Process,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
     ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
         return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
@@ -4590,7 +4590,7 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             self,
             *cmd: str,
             shell: bool = False,
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             **kwargs: ta.Any,
     ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
         with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa

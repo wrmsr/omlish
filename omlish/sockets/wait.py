@@ -14,7 +14,7 @@ from ..lite.timeouts import TimeoutLike
 def socket_can_connect(
         address: ta.Any,
         *,
-        timeout: ta.Optional[TimeoutLike] = None,
+        timeout: TimeoutLike = None,
         on_fail: ta.Optional[ta.Callable[[BaseException], None]] = None,
         exception: ta.Union[ta.Type[BaseException], ta.Tuple[ta.Type[BaseException], ...]] = (ConnectionRefusedError,),
 ) -> bool:
@@ -36,7 +36,7 @@ def socket_can_connect(
 def socket_wait_until_can_connect(
         address: ta.Any,
         *,
-        timeout: ta.Optional[TimeoutLike] = None,
+        timeout: TimeoutLike = None,
         on_fail: ta.Optional[ta.Callable[[BaseException], None]] = None,
         sleep_s: float = .1,
         exception: ta.Union[ta.Type[BaseException], ta.Tuple[ta.Type[BaseException], ...]] = (ConnectionRefusedError,),

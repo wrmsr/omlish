@@ -14,7 +14,7 @@ async def asyncio_wait_until_can_connect(
         host: ta.Any = None,
         port: ta.Any = None,
         *,
-        timeout: ta.Optional[TimeoutLike] = None,
+        timeout: TimeoutLike = None,
         on_fail: ta.Optional[ta.Callable[[BaseException], None]] = None,
         sleep_s: float = .1,
         exception: ta.Union[ta.Type[BaseException], ta.Tuple[ta.Type[BaseException], ...]] = (Exception,),

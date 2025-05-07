@@ -31,7 +31,7 @@ class SubprocessRunOutput(ta.Generic[T]):
 class SubprocessRun:
     cmd: ta.Sequence[str]
     input: ta.Any = None
-    timeout: ta.Optional[TimeoutLike] = None
+    timeout: TimeoutLike = None
     check: bool = False
     capture_output: ta.Optional[bool] = None
     kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None
@@ -67,7 +67,7 @@ class SubprocessRun:
             cls,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             check: bool = False,  # noqa
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,

@@ -28,7 +28,7 @@ class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
             self,
             *cmd: str,
             input: ta.Any = None,  # noqa
-            timeout: ta.Optional[TimeoutLike] = None,
+            timeout: TimeoutLike = None,
             check: bool = False,
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,

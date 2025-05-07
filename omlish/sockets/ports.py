@@ -38,7 +38,7 @@ def get_available_ports(
         *,
         host: ta.Optional[str] = None,
         exclude: ta.Optional[ta.Iterable[int]] = None,
-        timeout: ta.Optional[TimeoutLike] = None,
+        timeout: TimeoutLike = None,
 ) -> ta.List[int]:
     exclude = set(exclude or [])
 
