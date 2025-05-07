@@ -23,7 +23,6 @@ import dataclasses as dc
 import logging
 import os
 import re
-import sys
 import typing as ta
 import urllib.parse
 
@@ -380,6 +379,8 @@ class Cli(ap.Cli):
     )
     def update_submodule_branches(self) -> None:
         def run_submodule(submodule: str, cwd: str | None) -> None:
+            log.info('Updating submodule %s', submodule)
+
             submodule_path = submodule if cwd is None else os.path.join(cwd, submodule)
 
             # Get the HEAD branch from origin
@@ -401,20 +402,28 @@ class Cli(ap.Cli):
             subprocesses.check_call('git', 'checkout', head_branch, cwd=submodule_path)
             subprocesses.check_call('git', 'pull', cwd=submodule_path)
 
+        failed: set[str] = set()
+
         def run(cwd: str | None) -> None:
             submodules = subprocesses.check_output(
                 'git', 'submodule', 'foreach', '-q', 'echo $name',
                 cwd=cwd,
             ).decode().strip().splitlines()
 
-            for submodule in submodules:
+            for submodule in sorted(submodules):
                 try:
                     run_submodule(submodule, cwd)
-                except Exception as e:
+
+                except Exception:  # noqa
+                    failed.add(submodule)
+
                     if self.args.on_error_resume_next:
-                        print(e, file=sys.stderr)
+                        log.exception('Failed to update submodule %s', submodule)
                     else:
                         raise
+
+            if failed:
+                log.error('The following submodules failed to update:\n\n%s', '\n'.join(failed))
 
         if not self.args.dir:
             run(None)
