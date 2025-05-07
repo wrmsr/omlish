@@ -1,7 +1,7 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from ... import antlr
+from ...text import antlr
 from ._antlr.Json5Lexer import Json5Lexer  # type: ignore
 from ._antlr.Json5Parser import Json5Parser  # type: ignore
 from ._antlr.Json5Visitor import Json5Visitor  # type: ignore

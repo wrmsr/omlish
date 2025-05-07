@@ -1,7 +1,7 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from .. import check
+from ... import check
 from . import runtime as antlr4
 from .errors import SilentRaisingErrorListener
 

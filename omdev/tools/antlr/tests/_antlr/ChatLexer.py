@@ -2,7 +2,7 @@
 # ruff: noqa
 # flake8: noqa
 # Generated from Chat.g4 by ANTLR 4.13.2
-from omlish.antlr._runtime._all import *
+from omlish.text.antlr._runtime._all import *
 from io import StringIO
 import sys
 if sys.version_info[1] > 5:

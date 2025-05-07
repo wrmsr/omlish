@@ -12,7 +12,7 @@ import subprocess
 from omlish import check
 from omlish import lang
 
-from ..cache import data as dcache
+from ...cache import data as dcache
 from .consts import ANTLR_JAR_URL
 from .consts import ANTLR_RUNTIME_VENDOR
 

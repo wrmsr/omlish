@@ -3,7 +3,7 @@
 # flake8: noqa
 # Generated from Minisql.g4 by ANTLR 4.13.2
 # encoding: utf-8
-from omlish.antlr._runtime._all import *
+from ....text.antlr._runtime._all import *
 from io import StringIO
 import sys
 if sys.version_info[1] > 5:

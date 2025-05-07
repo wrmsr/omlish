@@ -2,8 +2,8 @@
 import typing as ta
 
 from ... import check
-from ...antlr import runtime as antlr4
-from ...antlr.errors import SilentRaisingErrorListener
+from ...text.antlr import runtime as antlr4
+from ...text.antlr.errors import SilentRaisingErrorListener
 from . import nodes as no
 from ._antlr.Protobuf3Lexer import Protobuf3Lexer  # type: ignore
 from ._antlr.Protobuf3Parser import Protobuf3Parser  # type: ignore

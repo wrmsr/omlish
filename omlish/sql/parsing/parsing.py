@@ -2,9 +2,9 @@
 import typing as ta
 
 from ... import check
-from ...antlr import runtime as antlr4
-from ...antlr.delimit import DelimitingLexer
-from ...antlr.errors import SilentRaisingErrorListener
+from ...text.antlr import runtime as antlr4
+from ...text.antlr.delimit import DelimitingLexer
+from ...text.antlr.errors import SilentRaisingErrorListener
 from .. import queries as no
 from ._antlr.MinisqlLexer import MinisqlLexer  # type: ignore
 from ._antlr.MinisqlParser import MinisqlParser  # type: ignore

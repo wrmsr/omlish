@@ -2,7 +2,7 @@
 # ruff: noqa
 # flake8: noqa
 # Generated from Json5.g4 by ANTLR 4.13.2
-from omlish.antlr._runtime._all import *
+from ....text.antlr._runtime._all import *
 if "." in __name__:
     from .Json5Parser import Json5Parser
 else:
