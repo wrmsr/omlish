@@ -104,18 +104,15 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             if state is None:
                 state = ChatState()  # type: ignore
 
-        state = dc.replace(
-            state,
-            chat=[
-                *state.chat,
-                mc.UserMessage(prompt),
-            ],
-        )
+        chat: list[mc.Message] = [
+            *state.chat,
+            mc.UserMessage(prompt),
+        ]
 
         if self._config.stream:
             st_mdl = mc.backend_of[mc.ChatStreamService].new('openai')
             with st_mdl.invoke(mc.ChatStreamRequest.new(
-                    state.chat,
+                    chat,
                     *(self._chat_options or []),
             )) as st_resp:
                 resp_s = ''
@@ -124,7 +121,9 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     print(o_s, end='', flush=True)
                     resp_s += o_s
                 print()
+
             resp_m = mc.AiMessage(resp_s)
+            chat.append(resp_m)
 
         else:
             mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
@@ -132,10 +131,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             )
 
             response = mdl.invoke(mc.ChatRequest.new(
-                state.chat,
+                chat,
                 *(self._chat_options or []),
             ))
+
             resp_m = response.choices[0].m
+            chat.append(resp_m)
 
             if (trs := resp_m.tool_exec_requests):
                 check.state(resp_m.s is None)
@@ -155,16 +156,15 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     raise ToolExecutionRequestDeniedError
 
                 tool_res = tool.fn(**tool_args)
+                chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
 
                 response = mdl.invoke(mc.ChatRequest.new(
-                    [
-                        *state.chat,
-                        resp_m,
-                        mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)),
-                    ],
+                    chat,
                     *(self._chat_options or []),
                 ))
+
                 resp_m = response.choices[0].m
+                chat.append(resp_m)
 
             resp_s = check.isinstance(resp_m.s, str).strip()
 
@@ -179,10 +179,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
         state = dc.replace(
             state,
-            chat=[
-                *state.chat,
-                resp_m,
-            ],
+            chat=tuple(chat),
             updated_at=lang.utcnow(),
         )
 
