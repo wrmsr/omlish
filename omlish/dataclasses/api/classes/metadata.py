@@ -18,7 +18,8 @@ METADATA_ATTR = '__dataclass_metadata__'
 
 def _get_cls_metadata_dct(cls: type) -> dict:
     check.isinstance(cls, type)
-    check.arg(not is_immediate_dataclass(cls))
+    if is_immediate_dataclass(cls):
+        raise TypeError(f'Cannot alter dataclass metadata on already processed class {cls!r}')
     try:
         return cls.__dict__[METADATA_ATTR]
     except KeyError:
