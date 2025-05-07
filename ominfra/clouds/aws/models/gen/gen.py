@@ -294,6 +294,7 @@ class ModelGen:
         '# flake8: noqa: E501',
         '# ruff: noqa: N801 S105',
         '# fmt: off',
+        '# @omlish-generated',
         'import enum as _enum  # noqa',
         'import typing as _ta  # noqa',
         '',
