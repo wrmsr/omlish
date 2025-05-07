@@ -1,14 +1,12 @@
-"""
-TODO:
- - kill receive loop on __aexit__
-"""
 import builtins
+import functools
 import json
 import typing as ta
 import uuid
 
 import anyio.abc
 
+from ... import check
 from ... import lang
 from ... import marshal as msh
 from ...asyncs import anyio as aiu
@@ -54,8 +52,8 @@ class JsonrpcConnection:
         self._buf = DelimitingBuffer(b'\n')
         self._response_futures_by_id: dict[Id, aiu.Future[Response]] = {}
         self._send_lock = anyio.Lock()
+        self._shutdown_event = anyio.Event()
         self._received_eof = False
-        self._running = True
 
     #
 
@@ -78,7 +76,7 @@ class JsonrpcConnection:
         return self
 
     async def __aexit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
-        self._running = False
+        self._shutdown_event.set()
 
     ##
 
@@ -116,12 +114,28 @@ class JsonrpcConnection:
     )
 
     async def _receive_message_batch(self) -> list[Message] | None:
-        if self._received_eof:
+        check.state(not self._received_eof)
+
+        if self._shutdown_event.is_set():
             return None
 
         while True:
+            maybe_shutdown: lang.Maybe[bool]
+            maybe_data: lang.Maybe[lang.Outcome[bytes]]
+            (
+                maybe_shutdown,
+                maybe_data,
+            ) = await aiu.gather(  # type: ignore
+                self._shutdown_event.wait,
+                functools.partial(lang.acapture, self._stream.receive),
+                take_first=True,
+            )
+
+            if self._shutdown_event.is_set():
+                return None
+
             try:
-                data = await self._stream.receive()
+                data = maybe_data.must().unwrap()
             except self.CLOSED_EXCEPTIONS:
                 data = b''
             except self.ERROR_EXCEPTIONS as e:
@@ -164,7 +178,7 @@ class JsonrpcConnection:
     ) -> None:
         task_status.started()
 
-        while self._running:
+        while not self._shutdown_event.is_set():
             msgs = await self._receive_message_batch()
             if msgs is None:
                 break

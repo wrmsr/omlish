@@ -9,7 +9,8 @@ from ..conns import JsonrpcConnection
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_conns():
+@pytest.mark.parametrize('close_queues', [False, True])
+async def test_conns(close_queues):
     async def request_handler(conn: JsonrpcConnection, req: jr.Request) -> None:
         await conn.send_message(jr.result(jr.check_not_not_specified(req.id), 'hello'))  # type: ignore
 
@@ -27,20 +28,20 @@ async def test_conns():
                 ),
                 request_handler=request_handler,
         ) as client:  # noqa
-            try:
-                msg = jr.request(1, 'hi')
-                mm = msh.marshal(msg)
-                mj = json.dumps_compact(mm)
-                mb = mj.encode('utf-8') + b'\n'
+            msg = jr.request(1, 'hi')
+            mm = msh.marshal(msg)
+            mj = json.dumps_compact(mm)
+            mb = mj.encode('utf-8') + b'\n'
 
-                await send_queue_tx.send(mb)
+            await send_queue_tx.send(mb)
 
-                resp_buf = await receive_queue_rx.receive()
-                resp_dct = json.loads(resp_buf.decode('utf-8'))
-                resp: jr.Response = msh.unmarshal(resp_dct, jr.detect_message_type(resp_dct))  # type: ignore
-                assert resp.is_result
-                assert resp.result == 'hello'
+            resp_buf = await receive_queue_rx.receive()
+            resp_dct = json.loads(resp_buf.decode('utf-8'))
+            resp: jr.Response = msh.unmarshal(resp_dct, jr.detect_message_type(resp_dct))  # type: ignore
+            assert resp.is_result
+            assert resp.result == 'hello'
 
-            finally:
+            if close_queues:
                 send_queue_tx.close()
                 receive_queue_tx.close()
+                await anyio.sleep(.1)  # FIXME: anyio.lowlevel.checkpoint() doesn't trigger the close
