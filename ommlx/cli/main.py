@@ -56,6 +56,7 @@ def _main() -> None:
     parser.add_argument('-e', '--editor', action='store_true')
     parser.add_argument('-i', '--interactive', action='store_true')
     parser.add_argument('-s', '--stream', action='store_true')
+    parser.add_argument('-M', '--markdown', action='store_true')
 
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
@@ -135,6 +136,7 @@ def _main() -> None:
             model_name=args.model_name,
             new=bool(args.new),
             stream=bool(args.stream),
+            markdown=bool(args.markdown),
         )
 
     #

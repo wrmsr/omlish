@@ -18,9 +18,11 @@ from .base import Session
 
 if ta.TYPE_CHECKING:
     from omdev import ptk
+    from omdev.ptk import markdown as ptk_md
 
 else:
     ptk = lang.proxy_import('omdev.ptk')
+    ptk_md = lang.proxy_import('omdev.ptk.markdown')
 
 
 ##
@@ -65,6 +67,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
         backend: str | None = None
         model_name: str | None = None
         stream: bool = False
+        markdown: bool = False
 
     def __init__(
             self,
@@ -112,7 +115,15 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
             response = mdl.invoke(mc.ChatRequest.new(state.chat))
             resp_m = response.choices[0].m
-            print(check.isinstance(resp_m.s, str).strip())
+            resp_s = check.isinstance(resp_m.s, str).strip()
+
+            if self._config.markdown:
+                ptk.print_formatted_text(
+                    ptk_md.Markdown(resp_s),
+                    style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
+                )
+            else:
+                print(resp_s)
 
         state = dc.replace(
             state,
