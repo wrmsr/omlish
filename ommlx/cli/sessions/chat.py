@@ -4,6 +4,8 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish import marshal as msh
+from omlish.formats import json
 
 from ... import minichain as mc
 from ...minichain.backends.anthropic.chat import AnthropicChatService
@@ -13,6 +15,7 @@ from ...minichain.backends.mistral import MistralChatService
 from ...minichain.backends.mlx import MlxChatService
 from ...minichain.backends.openai.chat import OpenaiChatService
 from ..state import StateStorage
+from ..tools.tools import ToolMap
 from .base import Session
 
 
@@ -60,6 +63,10 @@ ChatOption: ta.TypeAlias = mc.ChatRequestOption | mc.LlmRequestOption
 ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
 
 
+class ToolExecutionRequestDeniedError(Exception):
+    pass
+
+
 class PromptChatSession(Session['PromptChatSession.Config']):
     @dc.dataclass(frozen=True)
     class Config(Session.Config):
@@ -79,11 +86,13 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             *,
             state_storage: StateStorage,
             chat_options: ChatOptions | None = None,
+            tool_map: ToolMap | None = None,
     ) -> None:
         super().__init__(config)
 
         self._state_storage = state_storage
         self._chat_options = chat_options
+        self._tool_map = tool_map
 
     def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
@@ -127,6 +136,36 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 *(self._chat_options or []),
             ))
             resp_m = response.choices[0].m
+
+            if (trs := resp_m.tool_exec_requests):
+                check.state(resp_m.s is None)
+
+                tr: mc.ToolExecRequest = check.single(check.not_none(trs))
+                tool = check.not_none(self._tool_map)[tr.spec.name]
+                tool_args = json.loads(tr.args)
+
+                tr_dct = dict(
+                    id=tr.id,
+                    spec=msh.marshal(tr.spec),
+                    args=tool_args,
+                )
+                cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+
+                if not cr:
+                    raise ToolExecutionRequestDeniedError
+
+                tool_res = tool.fn(**tool_args)
+
+                response = mdl.invoke(mc.ChatRequest.new(
+                    [
+                        *state.chat,
+                        resp_m,
+                        mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)),
+                    ],
+                    *(self._chat_options or []),
+                ))
+                resp_m = response.choices[0].m
+
             resp_s = check.isinstance(resp_m.s, str).strip()
 
             if self._config.markdown:

@@ -19,6 +19,7 @@ class InjectedChatOptions:
 def bind_chat_options(*cos: ChatOption) -> inj.Elements:
     ico = InjectedChatOptions(ChatOptions(cos))
     ico_k: inj.Key = inj.Key(InjectedChatOptions, tag=inj.Id(id(ico)))
+
     return inj.as_elements(
         inj.bind(ico_k, to_const=ico),
         inj.set_binder[InjectedChatOptions]().bind(ico_k),
@@ -46,8 +47,8 @@ def bind_sessions(session_cfg: Session.Config) -> inj.Elements:
     #
 
     els.extend([
-        inj.set_binder[InjectedChatOptions]().bind(),
-        inj.bind(ChatOptions, to_fn=provide_chat_options, singleton=True),
+        inj.set_binder[InjectedChatOptions](),
+        inj.bind(provide_chat_options, singleton=True),
     ])
 
     #

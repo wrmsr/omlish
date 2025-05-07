@@ -1,8 +1,7 @@
 # ruff: noqa: F401
 # flake8: noqa: F401
 
-from prompt_toolkit import Application
-from prompt_toolkit import prompt
+from prompt_toolkit.application import Application
 from prompt_toolkit.application import get_app
 from prompt_toolkit.application import get_app_session
 from prompt_toolkit.application import run_in_terminal
@@ -80,7 +79,9 @@ from prompt_toolkit.output import DummyOutput
 from prompt_toolkit.output import Output
 from prompt_toolkit.search import SearchDirection
 from prompt_toolkit.selection import SelectionType
+from prompt_toolkit.shortcuts import confirm
 from prompt_toolkit.shortcuts import print_formatted_text
+from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.styles import BaseStyle
 from prompt_toolkit.styles import DynamicStyle
 from prompt_toolkit.styles import Style
@@ -95,3 +96,5 @@ from prompt_toolkit.widgets.toolbars import FormattedTextToolbar
 from prompt_toolkit.widgets.toolbars import SearchToolbar
 from prompt_toolkit.widgets.toolbars import SystemToolbar
 from prompt_toolkit.widgets.toolbars import ValidationToolbar
+
+from .confirm import strict_confirm

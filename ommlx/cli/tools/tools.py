@@ -1,10 +1,29 @@
+import dataclasses as dc
+import typing as ta
+
 from ... import minichain as mc
 
 
 ##
 
 
-WEATHER_TOOL_SPEC = mc.ToolSpec(
+@dc.dataclass(frozen=True)
+class Tool:
+    spec: mc.ToolSpec
+    fn: ta.Callable
+
+
+ToolMap = ta.NewType('ToolMap', ta.Mapping[str, Tool])
+
+
+##
+
+
+def _get_weather(location: str) -> str:
+    return f'Foggy in {location}.'
+
+
+_WEATHER_TOOL_SPEC = mc.ToolSpec(
     'get_weather',
     [
         mc.ToolParam('location', 'string', desc='The location to get the weather for.'),
@@ -12,4 +31,8 @@ WEATHER_TOOL_SPEC = mc.ToolSpec(
     desc='Gets the weather in the given location.',
 )
 
-WEATHER_TOOL = mc.Tool(WEATHER_TOOL_SPEC)
+
+WEATHER_TOOL = Tool(
+    _WEATHER_TOOL_SPEC,
+    _get_weather,
+)
