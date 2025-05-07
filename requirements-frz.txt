@@ -183,7 +183,7 @@ pgcli==4.3.0
 pgspecial==2.2.1
 pillow==11.2.1
 pipdeptree==2.26.1
-platformdirs==4.3.7
+platformdirs==4.3.8
 pluggy==1.5.0
 pprintpp==0.4.0
 primp==0.15.0
@@ -307,7 +307,7 @@ uritemplate==4.1.1
 urllib3==2.4.0
 urwid==3.0.2
 urwid_readline==0.15.1
-uv==0.7.2
+uv==0.7.3
 watchdog==6.0.0
 wcwidth==0.2.13
 webcolors==24.11.1
