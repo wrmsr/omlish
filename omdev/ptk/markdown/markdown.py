@@ -1,3 +1,8 @@
+"""
+TODO:
+ - accept pre-parsed tokens
+ - provide live view in this pkg
+"""
 import itertools
 import typing as ta
 
@@ -36,6 +41,7 @@ class Markdown:
     def __init__(
             self,
             markup: str,
+            *,
             width: int | None = None,
             strip_trailing_lines: bool = True,
     ) -> None:

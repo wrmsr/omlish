@@ -4,8 +4,10 @@ from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 
 from .sessions.base import Session
+from .sessions.inject import bind_sessions
 from .state import JsonFileStateStorage
 from .state import StateStorage
+from .tools.inject import bind_tools
 
 
 ##
@@ -26,9 +28,8 @@ def _provide_state_storage() -> StateStorage:
 
 def bind_main(session_cfg: Session.Config) -> inj.Elements:
     els: list[inj.Elemental] = [
-        inj.bind(session_cfg),
-        inj.bind(session_cfg.configurable_cls, singleton=True),
-        inj.bind(Session, to_key=session_cfg.configurable_cls),
+        bind_sessions(session_cfg),
+        bind_tools(),
     ]
 
     #

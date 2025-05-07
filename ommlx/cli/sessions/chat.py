@@ -56,6 +56,10 @@ CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatService]] = {
 ##
 
 
+ChatOption: ta.TypeAlias = mc.ChatRequestOption | mc.LlmRequestOption
+ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
+
+
 class PromptChatSession(Session['PromptChatSession.Config']):
     @dc.dataclass(frozen=True)
     class Config(Session.Config):
@@ -74,10 +78,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             config: Config,
             *,
             state_storage: StateStorage,
+            chat_options: ChatOptions | None = None,
     ) -> None:
         super().__init__(config)
 
         self._state_storage = state_storage
+        self._chat_options = chat_options
 
     def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
@@ -99,7 +105,10 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
         if self._config.stream:
             st_mdl = mc.backend_of[mc.ChatStreamService].new('openai')
-            with st_mdl.invoke(mc.ChatStreamRequest(state.chat)) as st_resp:
+            with st_mdl.invoke(mc.ChatStreamRequest.new(
+                    state.chat,
+                    *(self._chat_options or []),
+            )) as st_resp:
                 resp_s = ''
                 for o in st_resp:
                     o_s = check.isinstance(o[0].m.s, str)
@@ -113,7 +122,10 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )
 
-            response = mdl.invoke(mc.ChatRequest.new(state.chat))
+            response = mdl.invoke(mc.ChatRequest.new(
+                state.chat,
+                *(self._chat_options or []),
+            ))
             resp_m = response.choices[0].m
             resp_s = check.isinstance(resp_m.s, str).strip()
 
@@ -122,6 +134,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     ptk_md.Markdown(resp_s),
                     style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
                 )
+
             else:
                 print(resp_s)
 
