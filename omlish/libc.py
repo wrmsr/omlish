@@ -8,6 +8,9 @@ import sys
 import typing as ta
 
 
+##
+
+
 LINUX_PLATFORMS = ('linux',)
 DARWIN_PLATFORMS = ('darwin',)
 
@@ -38,14 +41,14 @@ def lasterr() -> tuple[int, str]:
 
 
 # int raise(int sig);
-libc._raise = libc['raise']  # type: ignore  # noqa
-libc._raise.restype = ct.c_int  # noqa
-libc._raise.argtypes = [ct.c_int]  # noqa
-_raise = libc._raise  # noqa
+libc.raise_ = libc['raise']  # type: ignore  # noqa
+libc.raise_.restype = ct.c_int  # noqa
+libc.raise_.argtypes = [ct.c_int]  # noqa
+raise_ = libc.raise_  # noqa
 
 
 def sigtrap() -> None:
-    libc._raise(signal.SIGTRAP)  # noqa
+    libc.raise_(signal.SIGTRAP)  # noqa
 
 
 ##

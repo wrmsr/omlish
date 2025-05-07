@@ -109,11 +109,11 @@ prompt-toolkit==3.0.51
 snowflake-connector-python[secure-local-storage]==3.15.0; python_version < "3.13"
 snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
-huggingface-hub==0.30.2
+huggingface-hub==0.31.1
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==3.5.1; python_version < "3.13"  # !! includes arrow and pandas and shit
+datasets==3.6.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 transformers==4.51.3; python_version < "3.13"
 sentence-transformers==4.1.0; python_version < "3.13"

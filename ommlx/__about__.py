@@ -23,8 +23,8 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 0.30',
-            'datasets ~= 3.5',
+            'huggingface-hub ~= 0.31',
+            'datasets ~= 3.6',
         ],
 
         'llamacpp': [

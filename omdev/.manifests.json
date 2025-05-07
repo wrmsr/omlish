@@ -291,6 +291,18 @@
     }
   },
   {
+    "module": ".tools.antlr.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/antlr/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "antlr",
+        "mod_name": "omdev.tools.antlr.__main__"
+      }
+    }
+  },
+  {
     "module": ".tools.cloc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/cloc.py",

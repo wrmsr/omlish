@@ -17,7 +17,18 @@ from .consts import ANTLR_JAR_URL
 from .consts import ANTLR_RUNTIME_VENDOR
 
 
+##
+
+
 ANTLR_JAR_CACHE = dcache.UrlSpec(ANTLR_JAR_URL)
+
+
+@lang.cached_function
+def get_jar_path() -> str:
+    return dcache.default().get(ANTLR_JAR_CACHE)
+
+
+##
 
 
 class GenPy:
@@ -27,22 +38,29 @@ class GenPy:
             *,
             out_subdir: str = '_antlr',
             runtime_import: str = ANTLR_RUNTIME_VENDOR,
+            jar_path: str | None = None,
     ) -> None:
         super().__init__()
+
         check.arg(not os.path.isabs(out_subdir) and '..' not in out_subdir)
+
         self._dir = dir
         self._out_subdir = out_subdir
         self._runtime_import = runtime_import
+        self._given_jar_path = jar_path
+
         self._out_dir = os.path.join(dir, out_subdir)
 
     @lang.cached_function
-    def jar(self) -> str:
-        return dcache.default().get(ANTLR_JAR_CACHE)
+    def jar_path(self) -> str:
+        if (gjp := self._given_jar_path) is not None:
+            return gjp
+        return get_jar_path()
 
     def process_g4(self, g4_file: str) -> None:
         subprocess.check_call([
             'java',
-            '-jar', self.jar(),
+            '-jar', self.jar_path(),
             '-Dlanguage=Python3',
             '-visitor',
             '-o', self._out_subdir,
