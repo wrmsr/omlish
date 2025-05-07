@@ -423,7 +423,10 @@ class Cli(ap.Cli):
                         raise
 
             if failed:
-                log.error('The following submodules failed to update:\n\n%s', '\n'.join(failed))
+                log.error(
+                    'The following submodules failed to update:\n%s',
+                    '\n'.join([f'  {f}' for f in failed]),
+                )
 
         if not self.args.dir:
             run(None)
