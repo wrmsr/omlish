@@ -20,6 +20,8 @@ matplotlib==3.10.1
 torch==2.7.0
 torchvision==0.22.0
 
+diffusers==0.33.1
+
 scipy==1.15.2
 scikit-learn==1.6.1
 scikit-image==0.25.2

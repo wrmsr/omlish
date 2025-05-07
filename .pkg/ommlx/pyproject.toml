@@ -31,6 +31,7 @@ all = [
     'mlx-lm ~= 0.24; sys_platform == "darwin"',
     'transformers ~= 4.51',
     'sentence-transformers ~= 4.1',
+    'diffusers ~= 0.33.1',
     'huggingface-hub ~= 0.30',
     'datasets ~= 3.5',
     'llama-cpp-python ~= 0.3',
@@ -49,6 +50,7 @@ backends = [
     'mlx-lm ~= 0.24; sys_platform == "darwin"',
     'transformers ~= 4.51',
     'sentence-transformers ~= 4.1',
+    'diffusers ~= 0.33.1',
 ]
 huggingface = [
     'huggingface-hub ~= 0.30',

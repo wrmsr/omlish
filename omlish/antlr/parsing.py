@@ -10,6 +10,9 @@ LexerT = ta.TypeVar('LexerT', bound=antlr4.Lexer)
 ParserT = ta.TypeVar('ParserT', bound=antlr4.Parser)
 
 
+##
+
+
 def is_eof_context(ctx: antlr4.ParserRuleContext) -> bool:
     return ctx.getChildCount() == 1 and ctx.getChild(0).getSymbol().type == antlr4.Token.EOF
 
