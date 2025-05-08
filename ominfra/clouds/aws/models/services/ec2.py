@@ -108,6 +108,8 @@ DITMaxResults = _ta.NewType('DITMaxResults', int)
 
 DedicatedHostFlag = _ta.NewType('DedicatedHostFlag', bool)
 
+DefaultEnaQueueCountPerInterface = _ta.NewType('DefaultEnaQueueCountPerInterface', int)
+
 DefaultNetworkCardIndex = _ta.NewType('DefaultNetworkCardIndex', int)
 
 DescribeInternetGatewaysMaxResults = _ta.NewType('DescribeInternetGatewaysMaxResults', int)
@@ -184,6 +186,11 @@ class EphemeralNvmeSupport(_enum.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
     REQUIRED = 'required'
+
+
+class FlexibleEnaQueuesSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
 
 
 FpgaDeviceCount = _ta.NewType('FpgaDeviceCount', int)
@@ -1268,6 +1275,10 @@ MaxNetworkInterfaces = _ta.NewType('MaxNetworkInterfaces', int)
 MaximumBandwidthInMbps = _ta.NewType('MaximumBandwidthInMbps', int)
 
 MaximumEfaInterfaces = _ta.NewType('MaximumEfaInterfaces', int)
+
+MaximumEnaQueueCount = _ta.NewType('MaximumEnaQueueCount', int)
+
+MaximumEnaQueueCountPerInterface = _ta.NewType('MaximumEnaQueueCountPerInterface', int)
 
 MaximumIops = _ta.NewType('MaximumIops', int)
 
@@ -3079,6 +3090,24 @@ class NetworkCardInfo(
         shape_name='PeakBandwidthInGbps',
     ))
 
+    default_ena_queue_count_per_interface: DefaultEnaQueueCountPerInterface | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DefaultEnaQueueCountPerInterface',
+        serialization_name='defaultEnaQueueCountPerInterface',
+        shape_name='DefaultEnaQueueCountPerInterface',
+    ))
+
+    maximum_ena_queue_count: MaximumEnaQueueCount | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumEnaQueueCount',
+        serialization_name='maximumEnaQueueCount',
+        shape_name='MaximumEnaQueueCount',
+    ))
+
+    maximum_ena_queue_count_per_interface: MaximumEnaQueueCountPerInterface | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumEnaQueueCountPerInterface',
+        serialization_name='maximumEnaQueueCountPerInterface',
+        shape_name='MaximumEnaQueueCountPerInterface',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class NetworkInterfaceAssociation(
@@ -4823,6 +4852,12 @@ class InstanceNetworkInterfaceAttachment(
         shape_name='InstanceAttachmentEnaSrdSpecification',
     ))
 
+    ena_queue_count: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EnaQueueCount',
+        serialization_name='enaQueueCount',
+        shape_name='Integer',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class InstanceNetworkInterfaceSpecification(
@@ -4956,6 +4991,11 @@ class InstanceNetworkInterfaceSpecification(
     connection_tracking_specification: ConnectionTrackingSpecificationRequest | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ConnectionTrackingSpecification',
         shape_name='ConnectionTrackingSpecificationRequest',
+    ))
+
+    ena_queue_count: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EnaQueueCount',
+        shape_name='Integer',
     ))
 
 
@@ -5173,6 +5213,12 @@ class NetworkInfo(
         shape_name='BandwidthWeightingTypeList',
     ))
 
+    flexible_ena_queues_support: FlexibleEnaQueuesSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='FlexibleEnaQueuesSupport',
+        serialization_name='flexibleEnaQueuesSupport',
+        shape_name='FlexibleEnaQueuesSupport',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class NetworkInterfaceAttachment(
@@ -5231,6 +5277,12 @@ class NetworkInterfaceAttachment(
         member_name='EnaSrdSpecification',
         serialization_name='enaSrdSpecification',
         shape_name='AttachmentEnaSrdSpecification',
+    ))
+
+    ena_queue_count: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EnaQueueCount',
+        serialization_name='enaQueueCount',
+        shape_name='Integer',
     ))
 
 

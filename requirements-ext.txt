@@ -15,14 +15,14 @@ google-cloud-compute==1.30.0
 ##
 # ml
 
-matplotlib==3.10.1
+matplotlib==3.10.3
 
 torch==2.7.0
 torchvision==0.22.0
 
 diffusers==0.33.1
 
-scipy==1.15.2
+scipy==1.15.3
 scikit-learn==1.6.1
 scikit-image==0.25.2
 

@@ -23,6 +23,7 @@ services:
       # - 'omlish-neo4j'
       - 'omlish-pgvector'
       - 'omlish-redis'
+      - 'omlish-trino'
     expose:
       - '22'
       - '8000'
@@ -102,7 +103,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.26.5-community'
+    image: 'neo4j:5.26.6-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
@@ -131,3 +132,11 @@ services:
       - '6379'
     ports:
       - '35232:6379'
+
+  omlish-trino:
+    image: 'trinodb/trino'
+    restart: 'unless-stopped'
+    expose:
+      - '8080'
+    ports:
+      - '35233:8080'
