@@ -1,9 +1,14 @@
 - Environment
   - Target cpython 3.12 - use the modern language and library features it includes.
+    - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` to `'/'.join` where reasonable.
 
 - Imports
+  - **Always** use relative imports within a package. **Never** reference the name of the root package from within
+    itself. For example, within the `omlish` package, it's `from . import lang`, not `from omlish import lang`. Within
+    the `omlish` root package there should never be an import line containing the word `omlish` - and references to the
+    root name should be avoided in general.
   - Use the following import aliases for the following modules if they are used:
     - `import dataclasses as dc`
     - `import typing as ta`
@@ -12,7 +17,13 @@
     `from typing import Callable; fn: Callable ...`, and `import dataclasses as dc; @dc.dataclass() ...` as opposed to
     `from dataclasses import dataclass; @dataclass() ...`.
   - Unless instructed or unavoidable, prefer to use only the standard library and the current existing codebase.
-    - A notable exception is pytest - write tests in pytest-style, and assume it is available.
+    - Notable exceptions include:
+      - anyio - In general async code should write to anyio rather than asyncio (or trio) unless it is specifically
+        being written for a particular backend.
+      - pytest - Write tests in pytest-style, and assume it is available.
+    - \[**lite**\] 'lite' code can have no external dependencies of any kind, and can only reference other 'lite' code.
+      - Lite async code uses only asyncio, and only uses functionality available in python 3.8.
+      - Lite tests are written with the unittest package.
   - Avoid `pathlib` - use `os.path` instead.
 
 - Dataclasses
@@ -63,6 +74,8 @@
 - Errors
   - Never use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
     necessary.
+    - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
+      code) where `assert` would otherwise be used.
   - Outside of `TypeError`, `ValueError`, and `RuntimeError`, prefer to create custom subclasses of `Exception` for more
     specific errors. Use inheritance where beneficial to communicate subtypes of errors.
     - `KeyError` should however not be raised except in the specific and rare case of implementing a `ta.Mapping` or
