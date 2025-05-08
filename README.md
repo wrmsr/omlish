@@ -2,7 +2,7 @@
 
 My python monorepo, the successor to my previous one `omnibus`(... 'ish').
 
-Core libraries begin with `om`, scratch app is in `app`, temp / dump code is in `x`.
+Core libraries begin with `om`, scratch app is in `app`, temp / dump / wip code is in `x`.
 
 The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
 respective `pyproject.toml` files for details.
@@ -38,3 +38,9 @@ curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/inst
 ```
 
 Additional deps to be injected may be appended to the command.
+
+Once installed the CLI can be updated via:
+
+```bash
+om cli reinstall
+```
