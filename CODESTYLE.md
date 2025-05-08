@@ -9,8 +9,8 @@
     - `import typing as ta`
   - For standard and external libraries, strongly prefer to import a module or package, rather than importing specific
     items from it. So for example, use `import typing as ta; fn: ta.Callable ...` as opposed to
-    `from typing import Callable; fn: Callable ...`, and `import dataclasses as dc; @dc.dataclass ...` as opposed to
-    `from dataclasses import dataclass; @dataclass ...`.
+    `from typing import Callable; fn: Callable ...`, and `import dataclasses as dc; @dc.dataclass() ...` as opposed to
+    `from dataclasses import dataclass; @dataclass() ...`.
   - Unless instructed or unavoidable, prefer to use only the standard library and the current existing codebase.
     - A notable exception is pytest - write tests in pytest-style, and assume it is available.
   - Avoid `pathlib` - use `os.path` instead.
@@ -38,6 +38,8 @@
     definition.
   - Prefer to use dataclasses for even moderately complex usecases - if there are, say, more than a 2-element tuple, a
     dataclass should probably be used.
+  - `ta.NamedTuple` still has usecases, such as replacing a function's return type from an anonymous tuple to a named
+    one (to allow it to be destructured by callers as before), but in general almost always prefer dataclasses.
   - Don't be shy about creating new classes with methods to reduce the number of arguments being passed around to
     related functions, even if the class is considered implementation detail and not part of any public api.
   - For any necessary global state, consider encapsulating it in a class, even if it's only a singleton.
