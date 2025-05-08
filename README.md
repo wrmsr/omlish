@@ -7,6 +7,11 @@ Core libraries begin with `om`, scratch app is in `app`, temp / dump / wip code 
 The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
 respective `pyproject.toml` files for details.
 
+The structure of the repo is managed by the internal [pyproject](omdev/pyproject) tool, which generates the
+[`.pkg`](.pkg) directories (which map to published packages) and their `pyproject.toml`'s from each library's
+[`__about__.py`](omlish/__about__.py). The root-level [`pyproject.toml`](pyproject.toml) does not actually contain a
+PEP-621 project.
+
 General code is written for python 3.12+, '[lite](omlish#lite-code)' code for 3.8+.
 
 # Core libraries

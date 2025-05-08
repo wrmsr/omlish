@@ -11,10 +11,12 @@ Development utilities and support code.
 - **[amalg](amalg)** - The [amalgamator](#amalgamation).
 
 - **[pyproject](pyproject)** ([amalg](scripts/pyproject.py)) - python project management tool. wrangles but does not
-  replace tools like venv, pip, setuptools, and uv. this should grow to eat more and more of the Makefile. as it is
-  amalgamated it requires no installation and can just be dropped into other projects / repos.
+  replace tools like venv, pip, setuptools, and uv. does things like sets up venvs, generates [`.pkg`](https://github.com/wrmsr/omlish/blob/master/.pkg)
+  directories and their `pyproject.toml`'s (from their `__about__.py`'s), and packages them. this should grow to eat
+  more and more of the Makefile. as it is amalgamated it requires no installation and can just be dropped into other
+  projects / repos.
 
-- **[ci](ci)** ([amalg](scripts/ci.py)) - ci runner. given a [compose.yml](https://github.com/wrmsr/omlish/blob/master/docker/compose.yml)
+- **[ci](ci)** ([amalg](scripts/ci.py)) - ci runner. given a [`compose.yml`](https://github.com/wrmsr/omlish/blob/master/docker/compose.yml)
   and requirements.txt files, takes care of building and caching of containers and venvs and execution of required ci
   commands. detects and [natively uses](ci/github/api/v2) github-action's caching system. unifies ci execution between
   local dev and github runners.

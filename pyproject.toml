@@ -1,4 +1,5 @@
 ##
+# pyproject
 
 [tool.omlish.pyproject]
 pkgs = [
@@ -95,6 +96,7 @@ requires = ['-rrequirements.txt']
 
 
 ##
+# mypy
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -114,6 +116,7 @@ check_untyped_defs = true
 
 
 ##
+# pytest
 
 [tool.pytest.ini_options]
 addopts = [
@@ -132,6 +135,7 @@ session_timeout = 600
 
 
 ##
+# ruff
 
 [tool.ruff]
 target-version = 'py312'
@@ -272,6 +276,7 @@ lines-after-imports = 2
 
 
 ##
+# flake8
 
 [tool.flake8]
 max-line-length = 120
@@ -306,6 +311,7 @@ ignore = [
 
 
 ##
+# pyright
 
 [tool.pyright]
 include = [
