@@ -129,6 +129,11 @@ class Vector(lang.Final, ta.Sequence[float]):
 
     #
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{hex(id(self))[2:]}<{self._s!r}>'
+
+    #
+
     def __iter__(self) -> ta.Iterator[float]:
         return iter(self._s)
 
