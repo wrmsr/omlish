@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 import os
 import typing as ta
 
@@ -34,8 +34,7 @@ class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(terse_repr=True)
-class ApiKey(Config, tv.UniqueTypedValue):
+class SecretConfig(Config, lang.Abstract):
     v: sec.SecretRefOrStr = dc.field() | sec.secret_field
 
     @classmethod
@@ -43,7 +42,7 @@ class ApiKey(Config, tv.UniqueTypedValue):
             cls,
             consumer: tv.TypedValuesConsumer,
             default: ta.Union[
-                'ApiKey',
+                ta.Self,
                 sec.Secret,
                 sec.SecretRef,
                 str,
@@ -53,7 +52,9 @@ class ApiKey(Config, tv.UniqueTypedValue):
             *,
             env: str | None = None,
     ) -> sec.Secret | None:
-        if (ak := consumer.pop(cls, None)) is not None:
+        check.issubclass(cls, tv.UniqueTypedValue)
+
+        if (ak := consumer.pop(cls, None)) is not None:  # type: ignore[type-var]
             if isinstance(ak.v, str):
                 return sec.Secret.of(ak.v)
             elif isinstance(ak.v, sec.SecretRef):
@@ -80,6 +81,15 @@ class ApiKey(Config, tv.UniqueTypedValue):
                 return sec.Secret.of(ev)
 
         return None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
+class ApiKey(SecretConfig, tv.UniqueTypedValue):
+    pass
 
 
 ##

@@ -217,7 +217,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers/transformers.py",
-    "line": 21,
+    "line": 36,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers.transformers",
@@ -258,7 +258,7 @@
     "module": ".minichain.completion",
     "attr": null,
     "file": "ommlx/minichain/completion.py",
-    "line": 38,
+    "line": 54,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlx.minichain.completion",
