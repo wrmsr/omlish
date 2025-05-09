@@ -45,3 +45,19 @@ def test_transformers_chat():
     resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
     print(resp)
     assert resp
+
+
+# @pytest.mark.not_docker_guest
+# @ptu.skip.if_cant_import('transformers')
+# def test_transformers_chat_phi4_tools():
+#     llm = TransformersChatService(
+#         ModelPath('microsoft/Phi-4-mini-instruct'),
+#         TransformersPipelineKwargs(dict(
+#             max_new_tokens=20,
+#             # device=None,
+#         )),
+#     )
+#
+#     resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
+#     print(resp)
+#     assert resp

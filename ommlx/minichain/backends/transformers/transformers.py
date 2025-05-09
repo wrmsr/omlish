@@ -12,6 +12,7 @@ from omlish import typedvalues as tv
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
+from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
@@ -94,17 +95,17 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
         return dict(
             role='assistant',
             content=m.s,
-            # **(dict(tool_calls=[
-            #     dict(
-            #         id=te.id,
-            #         function=dict(
-            #             arguments=te.args,
-            #             name=te.spec.name,
-            #         ),
-            #         type='function',
-            #     )
-            #     for te in m.tool_exec_requests
-            # ]) if m.tool_exec_requests else {}),
+            **(dict(tool_calls=[
+                dict(
+                    id=te.id,
+                    function=dict(
+                        arguments=te.args,
+                        name=te.spec.name,
+                    ),
+                    type='function',
+                )
+                for te in m.tool_exec_requests
+            ]) if m.tool_exec_requests else {}),
         )
 
     elif isinstance(m, UserMessage):
@@ -113,12 +114,12 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
             content=check.isinstance(m.c, str),
         )
 
-    # elif isinstance(m, ToolExecResultMessage):
-    #     return dict(
-    #         role='tool',
-    #         tool_call_id=m.id,
-    #         content=m.s,
-    #     )
+    elif isinstance(m, ToolExecResultMessage):
+        return dict(
+            role='tool',
+            tool_call_id=m.id,
+            content=m.s,
+        )
 
     else:
         raise TypeError(m)
