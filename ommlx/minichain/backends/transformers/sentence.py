@@ -2,7 +2,10 @@ import typing as ta
 
 from omlish import lang
 
+from ...configs import Config
+from ...configs import consume_configs
 from ...content.images import Image
+from ...standard import ModelPath
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.embeddings import EmbeddingService
@@ -24,10 +27,20 @@ else:
 #     type='EmbeddingService',
 # )
 class SentenceTransformersEmbeddingService(EmbeddingService):
-    model = 'clip-ViT-B-32'
+    DEFAULT_MODEL: ta.ClassVar[str] = (
+        'clip-ViT-B-32'
+    )
+
+    def __init__(self, *configs: Config) -> None:
+        super().__init__()
+
+        with consume_configs(*configs) as cc:
+            self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL))
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
-        mdl = stfm.SentenceTransformer(self.model)
+        mdl = stfm.SentenceTransformer(
+            self._model_path.v,
+        )
 
         obj: ta.Any
         v = request.content
