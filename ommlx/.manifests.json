@@ -217,7 +217,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers/transformers.py",
-    "line": 44,
+    "line": 45,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers.transformers",
@@ -234,7 +234,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers/transformers.py",
-    "line": 127,
+    "line": 128,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers.transformers",
