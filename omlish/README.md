@@ -30,12 +30,14 @@ Core utilities and foundational code. It's relatively large but completely self-
   - **[identity](collections/identity.py)** - Identity-keyed collections.
   - **[sorted](collections/sorted)** - Interfaces for value-sorted collections and mappings, and a simple but correct
     skiplist-backed implementation.
-  - **[persistent](collections/persistent)** - Interfaces for [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure)
-    maps, and a simple but correct treap-backed implementation.
+  - **[persistent](collections/persistent)** - Interfaces for
+    [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) maps, and a simple but correct treap-backed
+    implementation.
 
-- **[dataclasses](dataclasses)** - A fully-compatible reimplementation of stdlib [dataclasses](https://docs.python.org/3/library/dataclasses.html)
-  with numerous enhancements and additional features. The [full stdlib test suite](dataclasses/tests/cpython) is run
-  against it ensuring compatibility - they *are* dataclasses. Current enhancements include:
+- **[dataclasses](dataclasses)** - A fully-compatible reimplementation of stdlib
+  [dataclasses](https://docs.python.org/3/library/dataclasses.html) with numerous enhancements and additional features.
+  The [full stdlib test suite](dataclasses/tests/cpython) is run against it ensuring compatibility - they *are*
+  dataclasses. Current enhancements include:
 
   - Simple field coercion and validation.
   - Any number of `@dc.init` or `@dc.validate` methods, not just a central `__post_init__`.
@@ -47,13 +49,14 @@ Core utilities and foundational code. It's relatively large but completely self-
   The stdlib-equivalent api is exported in such a way as to be direct aliases for the stdlib api itself, simplifying
   tool support.
 
-- **[dispatch](dispatch)** - A beefed-up version of [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch),
-  most notably supporting MRO-honoring method impl dispatch.
+- **[dispatch](dispatch)** - A beefed-up version of
+  [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch), most notably
+  supporting MRO-honoring method impl dispatch.
 
 - **[formats](formats)** - Tools for various data formats, including:
 
-  - **[json](formats/json)** - Tools for json, including abstraction over various backends and a self-contained streaming
-    / incremental parser.
+  - **[json](formats/json)** - Tools for json, including abstraction over various backends and a self-contained
+    streaming / incremental parser.
   - **[json5](formats/json5)** - A self-contained and tested [Json5](https://json5.org/) parser.
   - **[toml](formats/toml)** - Toml tools, including a [lite](#lite-code) version of the stdlib parser (for use in older
     pythons).
@@ -79,8 +82,9 @@ Core utilities and foundational code. It's relatively large but completely self-
     making it [unsuitable for forking processes](https://rachelbythebay.com/w/2011/06/07/forked/) like
     [process supervisors](https://github.com/wrmsr/omlish/tree/master/ominfra/supervisor).
 
-- **[jmespath](specs/jmespath)** - A vendoring of [jmespath community edition](https://github.com/jmespath-community/python-jmespath),
-  modernized and adapted to this codebase.
+- **[jmespath](specs/jmespath)** - A vendoring of
+  [jmespath community edition](https://github.com/jmespath-community/python-jmespath), modernized and adapted to this
+  codebase.
 
 - **[marshal](marshal)** - A [jackson](https://github.com/FasterXML/jackson)-style serde system.
 
@@ -103,8 +107,8 @@ Core utilities and foundational code. It's relatively large but completely self-
   - **['harness'](testing/pytest/inject/harness.py)** - An all-in-one fixture marrying it to the codebase's dependency
     injector.
   - **[plugins/async](testing/pytest/plugins/asyncs)** - An in-house async-backend abstraction plugin, capable of
-    handling all of asyncio / trio / trio-asyncio / *any-future-event-loop-impl* without having multiple fighting plugins 
-    (*[I know, I know](https://xkcd.com/927/)*).
+    handling all of asyncio / trio / trio-asyncio / *any-future-event-loop-impl* without having multiple fighting
+    plugins (*[I know, I know](https://xkcd.com/927/)*).
   - **[plugins](testing/pytest/plugins)** - Various other plugins.
 
 - **[lite](lite)** - The standard library of 'lite' code. This is the only package beneath `lang`, and parts of it are
