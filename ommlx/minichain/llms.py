@@ -1,3 +1,7 @@
+"""
+TODO:
+ - substantial docstrings for what each common config maps to in backends
+"""
 import enum
 
 from omlish import dataclasses as dc

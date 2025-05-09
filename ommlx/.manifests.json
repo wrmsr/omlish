@@ -155,7 +155,7 @@
     "module": ".minichain.backends.openai.completion",
     "attr": null,
     "file": "ommlx/minichain/backends/openai/completion.py",
-    "line": 16,
+    "line": 18,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.openai.completion",
@@ -217,7 +217,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers/transformers.py",
-    "line": 36,
+    "line": 44,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.transformers.transformers",
@@ -227,6 +227,23 @@
           "tfm"
         ],
         "type": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.transformers",
+    "attr": null,
+    "file": "ommlx/minichain/backends/transformers/transformers.py",
+    "line": 127,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.transformers.transformers",
+        "attr_name": "TransformersChatService",
+        "name": "transformers",
+        "aliases": [
+          "tfm"
+        ],
+        "type": "ChatService"
       }
     }
   },

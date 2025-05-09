@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 from omlish.formats import json
 from omlish.http import all as http
@@ -15,7 +17,7 @@ from ...standard import ApiKey
 
 # @omlish-manifest ommlx.minichain.backends.manifests.BackendManifest(name='openai', type='CompletionService')
 class OpenaiCompletionService(CompletionService):
-    model = 'gpt-3.5-turbo-instruct'
+    DEFAULT_MODEL_NAME: ta.ClassVar[str] = 'gpt-3.5-turbo-instruct'
 
     def __init__(self, *configs: Config) -> None:
         super().__init__()
@@ -25,7 +27,7 @@ class OpenaiCompletionService(CompletionService):
 
     def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(
-            model=self.model,
+            model=self.DEFAULT_MODEL_NAME,
             prompt=t.prompt,
             temperature=0,
             max_tokens=1024,

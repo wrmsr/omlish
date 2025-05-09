@@ -2,15 +2,18 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
+from ....chat.messages import UserMessage
+from ....chat.services import ChatRequest
 from ....completion import CompletionRequest
 from ....standard import ModelPath
+from ..transformers import TransformersChatService
 from ..transformers import TransformersCompletionService
 from ..transformers import TransformersPipelineKwargs
 
 
 @pytest.mark.not_docker_guest
 @ptu.skip.if_cant_import('transformers')
-def test_transformers():
+def test_transformers_completion():
     llm = TransformersCompletionService(
         ModelPath('Qwen/Qwen2-0.5B'),
         TransformersPipelineKwargs(dict(
@@ -26,3 +29,19 @@ def test_transformers():
     resp = llm('Is water dry?')
     print(resp)
     assert resp.text
+
+
+@pytest.mark.not_docker_guest
+@ptu.skip.if_cant_import('transformers')
+def test_transformers_chat():
+    llm = TransformersChatService(
+        ModelPath('meta-llama/Llama-3.2-1B-Instruct'),
+        TransformersPipelineKwargs(dict(
+            max_new_tokens=20,
+            # device=None,
+        )),
+    )
+
+    resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
+    print(resp)
+    assert resp
