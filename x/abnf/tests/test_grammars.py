@@ -4,12 +4,12 @@ import types
 
 import pytest
 
-import abnf.grammars
+from .. import grammars
 
 
 @pytest.mark.parametrize('rfc', map(importlib.import_module, [
-    f'{abnf.grammars.__name__}.{x[1]}'
-    for x in pkgutil.walk_packages(abnf.grammars.__path__)
+    f'{grammars.__name__}.{x[1]}'
+    for x in pkgutil.walk_packages(grammars.__path__)
     if x[1] == 'cors' or x[1].startswith('rfc')
 ]))
 def test_grammar(rfc: types.ModuleType):
