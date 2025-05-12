@@ -58,19 +58,21 @@ class LlamacppCompletionService(CompletionService):
     )
 
     def invoke(self, request: CompletionRequest) -> CompletionResponse:
+        kwargs: dict = dict(
+            # temperature=0,
+            max_tokens=1024,
+            # stop=['\n'],
+        )
+
+        with tv.TypedValues(*request.options).consume() as oc:
+            kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
+
         lcu.install_logging_hook()
 
-        with contextlib.closing(llama_cpp.Llama(
-            model_path=self._model_path.v,
-        )) as llm:
-            kwargs: dict = dict(
-                # temperature=0,
-                max_tokens=1024,
-                # stop=['\n'],
-            )
-
-            with tv.TypedValues(*request.options).consume() as oc:
-                kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
+        with contextlib.ExitStack() as es:
+            llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
+                model_path=self._model_path.v,
+            )))
 
             output = llm.create_completion(
                 request.prompt,
