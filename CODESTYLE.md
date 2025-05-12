@@ -87,6 +87,9 @@
       statically typed (usually because it is particularly dynamic).
     - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
       function parameter annotations due to the dynamic nature of pytest fixtures.
+  - Use PEP-585 style annotations for builtin types - use `list[int]` instead of `ta.List[int]`, and `int | None`
+    instead of `ta.Optional[int]`.
+  - Use `typing` aliases for non-builtin types - use `ta.Sequence[int]` instead of `collections.abc.Sequence[int]`.
   - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
     than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly.
   - When returning values, prefer to use the full type if the caller 'owns' the value, and use a less-specific, usually
@@ -95,8 +98,6 @@
     integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
   - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
     will suffice.
-  - Use PEP-585 style annotations - use `list[int]` instead of `ta.List[int]`, and `int | None` instead of
-    `ta.Optional[int]`.
 
 - Comments
   - Avoid unnecessary and frivolous comments. Most semantic meaning should be able to be inferred from package / module
