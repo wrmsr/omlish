@@ -65,8 +65,10 @@ json5==0.12.0
 
 ##
 
+# c/libpq
 psycopg2==2.9.10
-psycopg==3.2.7
+# py/cy
+psycopg==3.2.8
 
 mysql-connector-python==9.3.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...

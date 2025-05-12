@@ -37,7 +37,7 @@ certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.2
 cli_helpers==2.4.0
-click==8.1.8
+click==8.2.0
 cloudpickle==3.1.1
 coloredlogs==15.0.1
 comm==0.2.2
@@ -119,7 +119,7 @@ jupyter-events==0.12.0
 jupyter-lsp==2.2.5
 jupyter_client==8.6.3
 jupyter_core==5.7.2
-jupyter_server==2.15.0
+jupyter_server==2.16.0
 jupyter_server_terminals==0.5.3
 jupyterlab==4.4.2
 jupyterlab_pygments==0.3.0
@@ -194,7 +194,7 @@ propcache==0.3.1
 proto-plus==1.26.1
 protobuf==5.29.4
 psutil==7.0.0
-psycopg==3.2.7
+psycopg==3.2.8
 psycopg2==2.9.10
 ptyprocess==0.7.0
 pudb==2025.1
