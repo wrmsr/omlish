@@ -57,6 +57,7 @@ class SkipList(SortedCollection[T]):
             comparator = SortedCollection.default_comparator
         self._compare = comparator
         self._max_height = max_height
+
         self._head = SkipList._Node(None, self._max_height)
         self._height = 1
         self._head.next = [None] * self._max_height
