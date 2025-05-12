@@ -7,6 +7,7 @@ TODO:
   - also just riic
  - !! reconcile A().f() with A.f(A())
   - unbound descriptor *should* still hit instance cache
+ - significant_kwargs_order=False - stdlib has significant kwarg order
  - integrate / expose with collections.cache
  - weakrefs (selectable by arg)
  - more rigorous descriptor pickling

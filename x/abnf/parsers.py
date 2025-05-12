@@ -517,7 +517,11 @@ class Rule(Parser):
 
         if rule_source[-2:] != '\r\n':
             rule_source = rule_source + '\r\n'
-        parse_tree, start = GrammarRule('rule').parse(rule_source, start)
+        grule = GrammarRule('rule')
+        try:
+            parse_tree, start = grule.parse(rule_source, start)
+        except ParseError:
+            raise
         visitor = GrammarNodeVisitor(cls)
         rule = visitor.visit(parse_tree)
         return rule

@@ -171,6 +171,7 @@ from .functions import (  # noqa
     maybe_call,
     new_function,
     new_function_kwargs,
+    nullary_constant,
     opt_coalesce,
     opt_fn,
     opt_kw,
@@ -178,7 +179,6 @@ from .functions import (  # noqa
     raise_,
     raising,
     recurse,
-    strict_constant,
     try_,
     void,
 )

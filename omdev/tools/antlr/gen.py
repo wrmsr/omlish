@@ -133,6 +133,7 @@ class GenPy:
             '# type: ignore\n',
             '# ruff: noqa\n',
             '# flake8: noqa\n',
+            '# @omlish-generated\n',
         ]
 
         for l in in_lines:

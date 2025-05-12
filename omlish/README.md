@@ -4,9 +4,9 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 # Notable packages
 
-- **[lang](lang)** - The standard library of this standard library. Usually imported as a whole `as lang`, it contains
-  an array of general purpose utilities used practically everywhere. It is kept relatively lightweight: its heaviest
-  import is stdlib dataclasses and its transitives. Some of its contents include:
+- **[lang](lang)** - The standard library of this standard library. Usually imported as a whole
+  (`from omlish import lang`), it contains an array of general purpose utilities used practically everywhere. It is kept
+  relatively lightweight: its heaviest import is stdlib dataclasses and its transitives. Some of its contents include:
 
   - **[cached](lang/cached)** - The standard `cached_function` / `cached_property` tools, which are more capable than
     [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache).

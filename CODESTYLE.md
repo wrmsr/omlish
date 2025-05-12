@@ -4,6 +4,19 @@
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` to `'/'.join` where reasonable.
 
+- Naming
+  - Module names should be nouns (usually plural or gerunds), not verbs, so as to not clash with function names. A
+    module should be named `parsing.py`, not `parse.py`, so `__init__.py` could `from .parsing import parse` without
+    shadowing the module itself.
+  - Function names should be verbs.
+  - When naming interface classes, the interface should be the 'bare' name, and implementations should have prefixes and
+    suffixes. For example, a user service interface would be `UserService`, with a `DbUserService` or `DictUserService`
+    subclass, or even a `UserServiceImpl` subclass if there is only one sensible initial implementation but it still
+    justifies being abstracted.
+  - When using acronyms, only the first letter of the acronym should be uppercased when it appears in CamelCased names
+    so as to distinguish it from adjacent acronyms. For example, a class to parse ABNF grammars would be `AbnfParser`,
+    and a class to parse the JSON ABNF grammar would be `JsonAbnfParser`.
+
 - Imports
   - **Always** use relative imports within a package. **Never** reference the name of the root package from within
     itself. For example, within the `omlish` package, it's `from . import lang`, not `from omlish import lang`. Within
@@ -26,23 +39,10 @@
       - Lite tests are written with the unittest package.
   - Avoid `pathlib` - use `os.path` instead.
 
-- Dataclasses
-  - Do not use zero-argument `@dc.dataclass` as a decorator - always use `@dc.dataclass()` even if there are no
-    arguments.
-  - Prefer frozen dataclasses.
-
-- Type Annotation
-  - Type annotate wherever possible, even if it is simply `ta.Any`, but use the most specific annotation feasible.
-  - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
-    than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly. 
-  - When returning values, prefer to use the full type if the caller 'owns' the value, and use a less-specific, usually
-    immutable type when the caller does not. For example, a utility function filtering out odd numbers from a
-    `ta.Iterable[int]` can return a new `list[int]`, but a getter property on a class exposing some internal set of
-    integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
-  - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
-    will suffice.
-  - Use PEP-585 style annotations - use `list[int]` instead of `ta.List[int]`, and `int | None` instead of
-    `ta.Optional[int]`.
+- Modules
+  - Avoid global state in general. Constants are however fine.
+  - Avoid code execution in module bodies. If necessary, add a `def _main() -> None:` and conditional
+    `if __name__ == '__main__':` call to it.
 
 - Classes
   - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their
@@ -61,17 +61,15 @@
   - For situations in which different behaviors are necessary, prefer to define an `abc.ABC` interface with
     `@abc.abstractmethod` members, and write multiple implementations of them as warranted. Prefer to refer to the
     interface in type annotations unless it must specifically refer to a given implementation.
-  - When naming interface classes, the interface should be the 'bare' name, and implementations should have prefixes and
-    suffixes. For example, a user service interface would be `UserService`, with a `DbUserService` or `DictUserService`
-    subclass, or even a `UserServiceImpl` subclass if there is only one sensible initial implementation but it still
-    justifies being abstracted.
+  - Properties should be free of side-effects. Many utilities eagerly inspect properties at runtime, even private
+    (underscore-prefixed) ones, so they cannot alter state.
 
-- Modules
-  - Avoid global state in general. Constants are however fine.
-  - Avoid code execution in module bodies. If necessary, add a `def _main() -> None:` and conditional
-    `if __name__ == '__main__':` call to it.
+- Dataclasses
+  - Do not use bare, un-called `@dc.dataclass` as a decorator - always use `@dc.dataclass()` even if it is given no
+    arguments.
+  - Prefer frozen dataclasses.
 
-- Errors
+- Exceptions
   - Never use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
     necessary.
     - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
@@ -82,10 +80,31 @@
       direct equivalent. For example, a `UserService` `get_user` method should raise a `UserNotFoundError`, not
       `KeyError`, when a given user is not found.
 
+- Type Annotation
+  - Type annotate functions and class fields wherever possible, even if it is simply `ta.Any`, but use the most specific
+    annotation feasible.
+    - Lack of type annotation is an explicit choice communicating that that particular code cannot or should not be
+      statically typed (usually because it is particularly dynamic).
+    - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
+      function parameter annotations due to the dynamic nature of pytest fixtures.
+  - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
+    than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly.
+  - When returning values, prefer to use the full type if the caller 'owns' the value, and use a less-specific, usually
+    immutable type when the caller does not. For example, a utility function filtering out odd numbers from a
+    `ta.Iterable[int]` can return a new `list[int]`, but a getter property on a class exposing some internal set of
+    integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
+  - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
+    will suffice.
+  - Use PEP-585 style annotations - use `list[int]` instead of `ta.List[int]`, and `int | None` instead of
+    `ta.Optional[int]`.
+
 - Comments
   - Avoid unnecessary and frivolous comments. Most semantic meaning should be able to be inferred from package / module
     / type / method / function / parameter names and annotations. For example a function like
     `def add_two_floats(x: float, y: float) -> float:` does not need a docstring or comments.
+  - Do not repeat typing information in function docstrings. In general function and parameter names and types should be 
+    clear enough to not require explicitly listing them in docstrings. Do not use google-style or equivalent docstrings.
+  - Both opening and closing docstring triple-quotes should be alone on their own dedicated line.
   - Reserve inline comments for 'surprising' or dangerous things, such as invariants which must be maintained. A comment
     like `self._ensure_user_exists()  # ensure user exists` is worthless, but a comment like
     `self._ensure_user_exists()  # safe because we already hold the user lock` is valuable.

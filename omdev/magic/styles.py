@@ -20,14 +20,21 @@ class MagicStyle:
 
 PY_MAGIC_STYLE = MagicStyle(
     name='py',
-    exts=frozenset(['py']),
+    exts=frozenset([
+        'py',
+    ]),
     line_prefix='# ',
 )
 
 
 C_MAGIC_STYLE = MagicStyle(
     name='c',
-    exts=frozenset(['c', 'cc', 'cpp', 'cu']),
+    exts=frozenset([
+        'c',
+        'cc',
+        'cpp',
+        'cu',
+    ]),
     line_prefix='// ',
     block_prefix_suffix=('/* ', '*/'),
 )

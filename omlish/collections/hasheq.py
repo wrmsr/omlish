@@ -118,6 +118,8 @@ class HashEqMap(ta.MutableMapping[K, V]):
         for i, e in enumerate(l):
             if self._hash_eq.eq(k, e.k):
                 del l[i]
+                if not l:
+                    del self._dct[h]
                 self._len -= 1
                 return
         raise KeyError(k)

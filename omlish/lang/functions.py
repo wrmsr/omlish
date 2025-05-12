@@ -26,6 +26,7 @@ def call_with(fn: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> ta.Callable[[T], T
     def inner(obj):
         fn(obj, *args, **kwargs)
         return obj
+
     return inner
 
 
@@ -55,6 +56,7 @@ def raise_(o: BaseException) -> ta.NoReturn:
 def raising(o: BaseException) -> ta.Callable[..., ta.NoReturn]:
     def inner(*args, **kwargs):
         raise o
+
     return inner
 
 
@@ -97,6 +99,7 @@ def opt_fn(fn: ta.Callable[[F], T]) -> ta.Callable[[F | None], T | None]:
             return fn(v)
         else:
             return None
+
     return inner
 
 
@@ -115,7 +118,7 @@ class constant(_constant[T]):  # noqa
         return self._obj
 
 
-class strict_constant(_constant[T]):  # noqa
+class nullary_constant(_constant[T]):  # noqa
     def __call__(self) -> T:
         return self._obj
 
@@ -165,6 +168,7 @@ def as_async(fn: ta.Callable[P, T]) -> ta.Callable[P, ta.Awaitable[T]]:
     @functools.wraps(fn)
     async def inner(*args, **kwargs):
         return fn(*args, **kwargs)
+
     return inner
 
 
@@ -180,19 +184,20 @@ def periodically(
         initial: ta.Any = _MISSING,
         *,
         include_runtime: bool = False,
+        clock: ta.Callable[[], float] = time.monotonic,
 ) -> CallableT:
-    nxt = time.time() + interval_s
+    nxt = clock() + interval_s
     ret = initial
 
     @functools.wraps(fn)
     def inner(*args, **kwargs):
         nonlocal nxt, ret
-        if time.time() >= nxt or ret is _MISSING:
+        if clock() >= nxt or ret is _MISSING:
             if include_runtime:
-                nxt = time.time() + interval_s
+                nxt = clock() + interval_s
             ret = fn(*args, **kwargs)
             if not include_runtime:
-                nxt = time.time() + interval_s
+                nxt = clock() + interval_s
         return ret
 
     return inner  # type: ignore
@@ -208,6 +213,7 @@ class Args:
 
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__()
+
         self.args = args
         self.kwargs = kwargs
 

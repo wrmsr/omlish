@@ -254,8 +254,6 @@ HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
 
 @load_grammar_rules()
 class Rule(_Rule):
-    """Rule objects generated from ABNF in RFC 5322."""
-
     GRAMMAR: ta.ClassVar[list[str] | str] = [
         l
         for l_ in GRAMMAR_SRC.splitlines()
