@@ -1,13 +1,19 @@
+import contextlib
 import os.path
 import typing as ta
 
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ...completion import CompletionRequest
+from ...completion import CompletionRequestOption
 from ...completion import CompletionResponse
 from ...completion import CompletionService
 from ...configs import Config
 from ...configs import consume_configs
+from ...llms import LlmRequestOption
+from ...llms import MaxTokens
+from ...llms import Temperature
 from ...standard import ModelPath
 
 
@@ -46,17 +52,29 @@ class LlamacppCompletionService(CompletionService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[CompletionRequestOption | LlmRequestOption]]] = dict(
+        max_tokens=MaxTokens,
+        temperatur=Temperature,
+    )
+
     def invoke(self, request: CompletionRequest) -> CompletionResponse:
         lcu.install_logging_hook()
 
-        llm = llama_cpp.Llama(
+        with contextlib.closing(llama_cpp.Llama(
             model_path=self._model_path.v,
-        )
+        )) as llm:
+            kwargs: dict = dict(
+                # temperature=0,
+                max_tokens=1024,
+                # stop=['\n'],
+            )
 
-        output = llm.create_completion(
-            request.prompt,
-            max_tokens=1024,
-            stop=['\n'],
-        )
+            with tv.TypedValues(*request.options).consume() as oc:
+                kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
-        return CompletionResponse(output['choices'][0]['text'])  # type: ignore
+            output = llm.create_completion(
+                request.prompt,
+                **kwargs,
+            )
+
+            return CompletionResponse(output['choices'][0]['text'])  # type: ignore

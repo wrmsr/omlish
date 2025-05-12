@@ -80,7 +80,7 @@
     "module": ".minichain.backends.llamacpp.completion",
     "attr": null,
     "file": "ommlx/minichain/backends/llamacpp/completion.py",
-    "line": 28,
+    "line": 34,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.llamacpp.completion",

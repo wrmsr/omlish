@@ -28,7 +28,7 @@ CompletionRequestOptionT = ta.TypeVar('CompletionRequestOptionT', bound=Completi
 
 
 @dc.dataclass(frozen=True)
-class CompletionRequest(Request[CompletionRequestOption]):
+class CompletionRequest(Request[CompletionRequestOptionT]):
     prompt: str
 
 
@@ -44,7 +44,7 @@ CompletionResponseOutputT = ta.TypeVar('CompletionResponseOutputT', bound=Comple
 
 
 @dc.dataclass(frozen=True)
-class CompletionResponse(Response[CompletionResponseOutput]):
+class CompletionResponse(Response[CompletionResponseOutputT]):
     text: str
 
 

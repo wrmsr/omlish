@@ -1,5 +1,6 @@
 from omlish.testing import pytest as ptu
 
+from ....llms import MaxTokens
 from ..completion import LlamacppCompletionService
 
 
@@ -9,7 +10,7 @@ def test_llamacpp_completion():
     resp = llm(
         'Is water dry?',
         # Temperature(.1),
-        # MaxTokens(64),
+        MaxTokens(64),
     )
     print(resp)
     assert resp.text

@@ -11,6 +11,7 @@ if ta.TYPE_CHECKING:
 class Match:
     def __init__(self, nodes: 'Nodes', start: int) -> None:
         super().__init__()
+
         self.nodes = nodes
         self.start = start
 
@@ -19,7 +20,7 @@ class Match:
         return hash((value, self.start))
 
     def __str__(self) -> str:
-        return f'Match(value={"".join(n.value for n in self.nodes)}, start={self.start})'
+        return f'Match({"".join(n.value for n in self.nodes)}, {self.start})'
 
     def __eq__(self, /, o: object) -> bool:
         return isinstance(o, self.__class__) and hash(self) == hash(o)
