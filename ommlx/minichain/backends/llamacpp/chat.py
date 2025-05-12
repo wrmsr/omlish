@@ -3,14 +3,20 @@ import os.path
 import typing as ta
 
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
+from ...chat.tools import Tool
+from ...completion import CompletionRequestOption
 from ...configs import Config
 from ...configs import consume_configs
+from ...llms import LlmRequestOption
+from ...llms import MaxTokens
+from ...llms import Temperature
 from ...standard import ModelPath
 from .format import ROLES_MAP
 from .format import get_msg_content
@@ -45,7 +51,47 @@ class LlamacppChatService(ChatService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[CompletionRequestOption | LlmRequestOption]]] = dict(
+        max_tokens=MaxTokens,
+        temperatur=Temperature,
+    )
+
     def invoke(self, request: ChatRequest) -> ChatResponse:
+        kwargs: dict = dict(
+            # temperature=0,
+            max_tokens=1024,
+            # stop=['\n'],
+        )
+
+        tools_by_name: dict[str, dict] = {}
+
+        with tv.TypedValues(*request.options).consume() as oc:
+            kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
+
+            for t in oc.pop(Tool, []):
+                if t.spec.name in tools_by_name:
+                    raise NameError(t.spec.name)
+
+                tools_by_name[t.spec.name] = dict(
+                    name=t.spec.name,
+
+                    **lang.opt_kw(description=t.spec.desc),
+
+                    parameters=dict(
+                        type='object',
+                        properties={
+                            tp.name: dict(
+                                type=tp.dtype,
+                                **lang.opt_kw(description=tp.desc),
+                            )
+                            for tp in t.spec.params
+                        },
+                    ),
+                )
+
+        if tools_by_name:
+            kwargs['tools'] = list(tools_by_name.values())
+
         lcu.install_logging_hook()
 
         with contextlib.ExitStack() as es:
@@ -62,8 +108,7 @@ class LlamacppChatService(ChatService):
                     )
                     for m in request.chat
                 ],
-                max_tokens=1024,
-                # stop=['\n'],
+                **kwargs,
             )
 
             return ChatResponse([

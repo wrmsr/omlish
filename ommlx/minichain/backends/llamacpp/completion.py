@@ -72,6 +72,7 @@ class LlamacppCompletionService(CompletionService):
         with contextlib.ExitStack() as es:
             llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
                 model_path=self._model_path.v,
+                verbose=False,
             )))
 
             output = llm.create_completion(

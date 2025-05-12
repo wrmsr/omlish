@@ -13,6 +13,11 @@ def test_llamacpp_completion():
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
+    # model_path = os.path.join(
+    #     os.path.expanduser('~/Library/Caches/llama.cpp'),
+    #     'bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q4_K_M.gguf',
+    # )
+
     from ..logging import install_logging_hook
     install_logging_hook()
 

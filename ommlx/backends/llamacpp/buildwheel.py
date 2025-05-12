@@ -1,6 +1,9 @@
 """
 https://stackoverflow.com/a/78339316
 
+TODO:
+ - cmake .. -DLLAMA_CURL=1
+
 git clone --single-branch --branch=master --filter=blob:none --sparse --depth=1 https://github.com/ggerganov/llama.cpp
 cd llama.cpp
 git sparse-checkout set --no-cone '/*' '!/models/*'
