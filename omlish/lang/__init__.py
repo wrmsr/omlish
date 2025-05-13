@@ -160,6 +160,7 @@ from .functions import (  # noqa
     as_async,
     call_with,
     coalesce,
+    cond_kw,
     constant,
     finally_,
     identity,
@@ -179,6 +180,7 @@ from .functions import (  # noqa
     raise_,
     raising,
     recurse,
+    truthy_kw,
     try_,
     void,
 )

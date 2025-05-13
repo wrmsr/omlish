@@ -254,8 +254,16 @@ def opt_coalesce(*vs: T | None) -> T | None:
 ##
 
 
-def opt_kw(**kwargs: ta.Any) -> dict[str, ta.Any]:
+def cond_kw(cond: ta.Callable[[T], bool], **kwargs: T) -> dict[str, T]:
+    return {k: v for k, v in kwargs.items() if cond(v)}
+
+
+def opt_kw(**kwargs: T | None) -> dict[str, T]:
     return {k: v for k, v in kwargs.items() if v is not None}
+
+
+def truthy_kw(**kwargs: T) -> dict[str, T]:
+    return {k: v for k, v in kwargs.items() if v}
 
 
 ##

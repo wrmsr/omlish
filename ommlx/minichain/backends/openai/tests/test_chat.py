@@ -12,12 +12,12 @@ from ....chat.messages import UserMessage
 from ....chat.services import ChatRequest
 from ....chat.services import ChatService_
 from ....chat.tools import Tool
-from ....chat.tools import ToolParam
-from ....chat.tools import ToolSpec
 from ....llms import MaxTokens
 from ....llms import Temperature
 from ....standard import ApiKey
 from ....standard import DefaultRequestOptions
+from ....tools import ToolParam
+from ....tools import ToolSpec
 from ..chat import OpenaiChatService
 
 

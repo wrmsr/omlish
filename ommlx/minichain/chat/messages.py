@@ -6,7 +6,7 @@ from omlish import lang
 
 from ..content.content import Content
 from ..content.transforms import ContentTransform
-from .tools import ToolExecRequest
+from ..tools import ToolExecRequest
 
 
 ##

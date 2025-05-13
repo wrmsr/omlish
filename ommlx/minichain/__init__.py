@@ -60,10 +60,6 @@ from .chat.templating import (  # noqa
 
 from .chat.tools import (  # noqa
     Tool,
-    ToolDtype,
-    ToolExecRequest,
-    ToolParam,
-    ToolSpec,
 )
 
 from .chat.types import (  # noqa
@@ -147,6 +143,13 @@ from .standard import (  # noqa
 
 from .streaming import (  # noqa
     StreamResponse,
+)
+
+from .tools import (  # noqa
+    ToolDtype,
+    ToolExecRequest,
+    ToolParam,
+    ToolSpec,
 )
 
 from .vectors.embeddings import (  # noqa

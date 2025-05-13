@@ -10,48 +10,23 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
-from ...chat.messages import ToolExecRequest
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...chat.services import ChatRequestOption
 from ...chat.services import ChatResponse
 from ...chat.tools import Tool
-from ...chat.tools import ToolSpec
 from ...llms import LlmRequestOption
 from ...llms import MaxTokens
 from ...llms import Temperature
 from ...llms import TokenUsage
 from ...llms import TokenUsageOutput
 from ...services import RequestOption
+from ...tools import ToolExecRequest
+from ...tools import ToolSpec
+from ...tools import build_tool_spec_json_schema
 
 
 ##
-
-
-def _opt_dct_fld(k, v):
-    return {k: v} if v else {}
-
-
-def render_tool_spec(ts: ToolSpec) -> ta.Mapping[str, ta.Any]:
-    return dict(
-        name=ts.name,
-
-        **_opt_dct_fld('description', ts.desc),
-
-        parameters=dict(
-            type='object',
-            properties={
-                tp.name: {
-                    'type': tp.dtype,
-                    **_opt_dct_fld('description', tp.desc),
-                }
-                for tp in ts.params
-            },
-
-            required=[tp.name for tp in ts.params if tp.required],
-            additionalProperties=False,
-        ),
-    )
 
 
 def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
@@ -168,7 +143,7 @@ class OpenaiChatRequestHandler:
         tools = [
             dict(
                 type='function',
-                function=render_tool_spec(ts),
+                function=build_tool_spec_json_schema(ts),
             )
             for ts in po.tools_by_name.values()
         ]

@@ -4,9 +4,9 @@ from omlish.testing import pytest as ptu
 
 from ....chat.messages import UserMessage
 from ....chat.tools import Tool
-from ....chat.tools import ToolParam
-from ....chat.tools import ToolSpec
 from ....standard import ModelPath
+from ....tools import ToolParam
+from ....tools import ToolSpec
 from ..chat import LlamacppChatService
 
 
