@@ -21,6 +21,10 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
+from ....tools import ToolParam
+from ....tools import ToolSpec
+from ....tools import build_tool_spec_json_schema
+
 
 @pytest.mark.not_docker_guest
 @ptu.skip.if_cant_import('mlx_lm')
@@ -48,26 +52,48 @@ def test_mlx():
 
         return a * b
 
-    # multiply_tool = {
-    #     'function': {
-    #         'description': 'A function that multiplies two numbers', 'name': 'multiply',
-    #         'parameters': {
-    #             'properties': {
-    #                 'a': {
-    #                     'description': 'The first number to multiply',
-    #                     'type': 'number',
-    #                 },
-    #                 'b': {
-    #                     'description': 'The second number to multiply',
-    #                     'type': 'number',
-    #                 },
-    #             },
-    #             'required': ['a', 'b'],
-    #             'type': 'object',
-    #         },
-    #     },
-    #     'type': 'function',
-    # }
+    multiply_tool = ToolSpec(
+        'multiply',
+        [
+            ToolParam(
+                'a',
+                'number',
+                desc='The first number to multiply',
+                required=True,
+            ),
+            ToolParam(
+                'b',
+                'number',
+                desc='The second number to multiply',
+                required=True,
+            ),
+        ],
+        desc='A function that multiplies two numbers',
+    )
+
+    multiply_tool_json_schema = build_tool_spec_json_schema(
+        multiply_tool,
+        omit_additional_properties_keyword=True,
+    )
+
+    assert multiply_tool_json_schema == {
+        'description': 'A function that multiplies two numbers',
+        'name': 'multiply',
+        'parameters': {
+            'properties': {
+                'a': {
+                    'description': 'The first number to multiply',
+                    'type': 'number',
+                },
+                'b': {
+                    'description': 'The second number to multiply',
+                    'type': 'number',
+                },
+            },
+            'required': ['a', 'b'],
+            'type': 'object',
+        },
+    }
 
     tools = {'multiply': multiply}
 

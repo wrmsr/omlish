@@ -66,7 +66,11 @@ class ToolSpecJsonSchema(ta.TypedDict, total=False):
     parameters: ToolSpecParametersJsonSchema
 
 
-def build_tool_spec_json_schema(ts: ToolSpec) -> ToolSpecJsonSchema:
+def build_tool_spec_json_schema(
+        ts: ToolSpec,
+        *,
+        omit_additional_properties_keyword: bool = False,
+) -> ToolSpecJsonSchema:
     return dict(
         name=ts.name,
 
@@ -85,6 +89,7 @@ def build_tool_spec_json_schema(ts: ToolSpec) -> ToolSpecJsonSchema:
             },
 
             required=[tp.name for tp in ts.params if tp.required],
-            additionalProperties=False,
+
+            **(dict(additionalProperties=False) if not omit_additional_properties_keyword else {}),
         ),
     )
