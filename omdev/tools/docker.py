@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import typing as ta
 
 from omlish import check
@@ -216,14 +217,18 @@ class Cli(ap.Cli):
                 continue
 
             repo, _, base = img.partition(':')
-            if (info := dck.get_hub_repo_info(repo)) is None:
-                continue
+            try:
+                if (info := dck.get_hub_repo_info(repo)) is None:
+                    continue
 
-            lt = dck.select_latest_tag(info.tags, base=base)
-            if f'{repo}:{lt}' == img:
-                continue
+                lt = dck.select_latest_tag(info.tags, base=base)
+                if f'{repo}:{lt}' == img:
+                    continue
 
-            print(f'{svc_name}: {lt}')
+                print(f'{svc_name}: {lt}')
+
+            except Exception as e:  # noqa
+                print(f'Error checking docker update for {svc_name}: {e!r}', file=sys.stderr)
 
     #
 
