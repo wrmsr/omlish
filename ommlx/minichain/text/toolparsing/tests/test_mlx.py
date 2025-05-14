@@ -34,6 +34,7 @@ def test_mlx():
     import mlx_lm.utils
 
     # checkpoint = 'mlx-community/Qwen2.5-7B-Instruct-8bit'
+    # checkpoint = 'mlx-community/Qwen2.5-Coder-7B-Instruct-8bit'
     # checkpoint = 'mlx-community/Qwen2.5-32B-Instruct-4bit'
     checkpoint = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
 
