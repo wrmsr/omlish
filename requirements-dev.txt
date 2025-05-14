@@ -89,6 +89,7 @@ pycparser==2.22
 cffi==1.17.1
 pcpp==1.30
 
+# !! LGPL
 paramiko==3.5.1  # @omlish-venv !13t
 
 docutils==0.21.2
@@ -99,7 +100,7 @@ mdit-py-plugins==0.4.2
 pygments==2.19.1
 
 mwparserfromhell==0.6.6  # @omlish-venv !13t
-wikitextparser==0.56.3  # !! GPL
+wikitextparser==0.56.4  # !! GPL
 
 executing==2.2.0
 asttokens==3.0.0
@@ -130,12 +131,12 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.15
+boto3>=1.38.16
 
 antlr4-python3-runtime==4.13.2
 
 mlx==0.25.2; sys_platform == "darwin"  # @omlish-venv !13t
-mlx-lm==0.24.0; sys_platform == "darwin" and python_version < "3.13"
+mlx-lm==0.24.1; sys_platform == "darwin" and python_version < "3.13"
 
 apsw==3.49.2.0
 

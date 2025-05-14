@@ -16,10 +16,10 @@ from .base import NumberKeyword
 from .base import StrKeyword
 from .base import StrOrStrArrayKeyword
 from .base import StrToKeywordsKeyword
+from .base import UnknownKeyword
 from .core import CoreKeyword
 from .format import FormatKeyword
 from .metadata import MetadataKeyword
-from .unknown import UnknownKeyword
 from .validation import ValidationKeyword
 
 

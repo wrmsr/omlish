@@ -2,6 +2,7 @@ from .keywords.base import (  # noqa
     Keyword,
     Keywords,
     KnownKeyword,
+    UnknownKeyword,
 )
 
 from .keywords.core import (  # noqa
@@ -37,10 +38,6 @@ from .keywords.parse import (  # noqa
 from .keywords.render import (  # noqa
     render_keyword,
     render_keywords,
-)
-
-from .keywords.unknown import (  # noqa
-    UnknownKeyword,
 )
 
 from .keywords.validation import (  # noqa

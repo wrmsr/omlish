@@ -256,7 +256,7 @@ def test_multiply_tool_json_schema():
 ##
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 @ptu.skip.if_cant_import('mlx_lm')
 def test_dump_chat_templates():
     tools = {'multiply': multiply}

@@ -12,7 +12,7 @@ from .base import NumberKeyword
 from .base import StrKeyword
 from .base import StrOrStrArrayKeyword
 from .base import StrToKeywordsKeyword
-from .unknown import UnknownKeyword
+from .base import UnknownKeyword
 
 
 ##

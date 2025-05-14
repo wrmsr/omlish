@@ -50,13 +50,22 @@ class KnownKeyword(Keyword, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+class UnknownKeyword(Keyword, lang.Final):
+    tag: str  # type: ignore[misc]
+    value: ta.Any
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class Keywords(lang.Final):
     lst: ta.Sequence[Keyword]
 
     @cached.property
     @dc.init
     def by_type(self) -> ta.Mapping[type[Keyword], Keyword]:
-        return col.make_map_by(type, self.lst, strict=True)  # noqa
+        return col.make_map_by(type, (k for k in self.lst if not isinstance(k, UnknownKeyword)), strict=True)  # noqa
 
     @cached.property
     @dc.init
