@@ -1,6 +1,7 @@
 """
 TODO:
  - metadata?
+  - ContentDetail, TypedValues as RequestOption
  - ListOfContent? what to name
 """
 import typing as ta
