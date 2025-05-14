@@ -2,7 +2,6 @@ import typing as ta
 
 from omlish import check
 from omlish import marshal as msh
-from omlish.formats import json
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import Message
@@ -70,7 +69,7 @@ def test_openai_tools(harness):
 
     tr = check.single(check.not_none(resp.choices[0].m.tool_exec_requests))
     assert tr.spec.name == 'get_weather'
-    assert json.loads(tr.args) == {'location': 'Seattle'}
+    assert tr.args == {'location': 'Seattle'}
 
     chat.append(ToolExecResultMessage(tr.id, tr.spec.name, '"rain"'))
 

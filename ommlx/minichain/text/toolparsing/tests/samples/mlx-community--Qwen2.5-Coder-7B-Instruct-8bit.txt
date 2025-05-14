@@ -1,0 +1,5 @@
+```xml
+<function_call>
+  {"name": "multiply", "arguments": {"a": 12234585, "b": 48838483920}}
+</function_call>
+```<|im_end|>

@@ -1,0 +1,3 @@
+<tools>
+{"name": "multiply", "arguments": {"a": 12234585, "b": 48838483920}}
+</tools>

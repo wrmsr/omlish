@@ -42,7 +42,11 @@ class ToolSpec(lang.Final):
 class ToolExecRequest(lang.Final):
     id: str
     spec: ToolSpec
-    args: str
+    args: ta.Mapping[str, ta.Any]
+
+    _: dc.KW_ONLY
+
+    raw_args: str | None = None
 
 
 ##

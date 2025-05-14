@@ -4,6 +4,7 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
+from omlish.formats import json
 
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
@@ -44,7 +45,7 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
                 dict(
                     id=te.id,
                     function=dict(
-                        arguments=te.args,
+                        arguments=check.not_none(te.raw_args),
                         name=te.spec.name,
                     ),
                     type='function',
@@ -172,7 +173,8 @@ class OpenaiChatRequestHandler:
                         ToolExecRequest(
                             id=tc['id'],
                             spec=po.tools_by_name[tc['function']['name']],
-                            args=tc['function']['arguments'],
+                            args=json.loads(tc['function']['arguments']),
+                            raw_args=tc['function']['arguments'],
                         )
                         for tc in choice['message'].get('tool_calls', [])
                     ],
