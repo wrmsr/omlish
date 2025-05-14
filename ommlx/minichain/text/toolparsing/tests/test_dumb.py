@@ -14,7 +14,9 @@ def test_dumb_tool_exec_parser():
         '</tools>',
     )
 
-    assert dp.parse_tool_exec(MODEL_RESPONSE) == [
+    pts = dp.parse_tool_execs(MODEL_RESPONSE)
+    assert pts is not None
+    assert pts.tool_execs == [
         ParsedToolExec(
             'multiply',
             {

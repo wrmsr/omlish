@@ -1,3 +1,6 @@
+"""
+Primary authored by gemini-2.5-pro
+"""
 # MIT License
 #
 # Copyright (c) 2023-2024 The ggml authors
@@ -20,6 +23,8 @@ import json
 import logging
 import re
 import typing as ta
+
+from omlish import lang
 
 
 log = logging.getLogger(__name__)
@@ -323,6 +328,202 @@ def parse_hermes_2_pro(
         return msg
 
 
+def parse_json_tool_calls(
+        input_str: str,
+        trigger_opt: re.Pattern | None = None,
+        function_regex: re.Pattern = re.compile(r''),  # Must be provided if used
+        close_regex: re.Pattern = re.compile(r''),  # Must be provided if used
+        allow_raw_python: bool = False,
+) -> ChatMsg:
+    """
+    Parses input assuming tool calls are marked by function_regex, contain JSON, and end with close_regex. An optional
+    trigger_opt starts the process.
+
+    Args:
+        input_str: The string potentially containing tool calls.
+        trigger_opt: Optional regex to find the start of the tool call section.
+        function_regex: Regex with one capture group for the function name.
+        close_regex: Regex marking the end of the tool call arguments.
+        allow_raw_python: Special handling for raw python code blocks.
+
+    Returns:
+        A ChatMsg object with parsed content and tool calls.
+    """
+
+    result = ChatMsg()
+    current_pos = 0
+    end_pos = len(input_str)
+
+    if trigger_opt:
+        match = trigger_opt.search(input_str)
+        if not match:
+            result.content = input_str
+            return result
+        result.content = input_str[:match.start()]
+        current_pos = match.end()
+    else:
+        result.content = ''  # Start with empty content if no trigger
+
+    while current_pos < end_pos:
+        # Find the next function call start
+        func_match = function_regex.search(input_str, current_pos)
+        if not func_match:
+            # No more function calls found, append the rest
+            result.content += input_str[current_pos:]
+            break
+
+        # Append content before this function call
+        result.content += input_str[current_pos:func_match.start()]
+
+        name = func_match.group(1)  # Assumes group 1 is the name
+        parse_start_pos = func_match.end()  # Start looking for JSON after the name match
+
+        # Try to parse JSON arguments
+        arguments_obj, next_pos = _parse_json_from_string(input_str, parse_start_pos)
+
+        if arguments_obj is not None:
+            # Successfully parsed JSON, now look for the closing pattern
+            close_match = close_regex.search(input_str, next_pos)
+            if not close_match:
+                # This should ideally not happen if format is guaranteed, but handle defensively. Treat rest as content?
+                # Or error? C++ throws, Python can raise or log and treat as content. Let's treat the rest as content
+                # for robustness.
+                log.warning(
+                    'Malformed input: Missing closing pattern after JSON for tool %r. Input: %s',
+                    name,
+                    input_str[current_pos:],
+                )
+                result.content += input_str[func_match.start():]  # Add the failed block as content
+                current_pos = end_pos  # Stop processing
+                break
+
+            # Found JSON and close pattern
+            arguments_str = json.dumps(arguments_obj) if not isinstance(arguments_obj, str) else arguments_obj
+            result.tool_calls.append(ChatToolCall(name=name, arguments=arguments_str, id=''))
+            current_pos = close_match.end()  # Move past the closing pattern
+
+        elif allow_raw_python and name == 'python':
+            # Special case: if JSON parsing fails but it's a 'python' tool, capture remaining text as code. This assumes
+            # close_regex isn't needed. NOTE: C++ version captures till end. This might need refinement depending on
+            # exact expected format. Does 'python' have a closer? Assuming it consumes the rest of the string here.
+            code_content = input_str[parse_start_pos:]
+            arguments_obj = {'code': code_content}
+            arguments_str = json.dumps(arguments_obj)
+            result.tool_calls.append(ChatToolCall(name=name, arguments=arguments_str, id=''))
+            current_pos = end_pos  # Consumed the rest
+            break
+        else:
+            # Failed to parse JSON, and not the special python case. Treat the function regex match and subsequent text
+            # as literal content. Or raise error like C++? Let's log and add as content.
+            log.warning(
+                "Failed to parse JSON arguments for tool '%s'. Input: %s",
+                name,
+                input_str[current_pos:],
+            )
+            result.content += input_str[func_match.start():]  # Add the failed block
+            current_pos = end_pos  # Stop processing
+            break
+
+    # If tool calls were generated, check if there's non-whitespace content left
+    if result.tool_calls and result.content.strip():
+        log.warning('Content found along with tool calls: %r', result.content)
+        # Original C++ clears content here. Let's keep it but log warning. If clearing is desired uncomment below:
+        # result.content = ""
+
+    return result
+
+
+class Llama31ToolExecParser:
+    # std::regex("\\s*\\{\\s*(?:\"type\"\\s*:\\s*\"function\"\\s*,\\s*)?\"name\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"parameters\"\\s*: ");  # noqa
+    FUNCTION_REGEX_PATTERN: ta.ClassVar[re.Pattern[str]] = re.compile(
+        r'\s*\{\s*(?:"type"\s*:\s*"function"\s*,\s*)?"name"\s*:\s*"([^"]+)"\s*,\s*"parameters"\s*:\s*',
+    )
+
+    # static const std::regex close_regex("\\}\\s*");
+    CLOSE_REGEX_PATTERN: ta.ClassVar[re.Pattern[str]] = re.compile(r'\}\s*')
+
+    # std::regex("<\\|python_tag\\|>\\s*([^.(]+)\\s*\\.\\s*call\\s*\\(\\s*([\\w]+)\\s*=\\s*([\\s\\S]*?)\\)");
+    # Group 1: tool name (e.g., "my_tool" from "my_tool.call")
+    # Group 2: argument name (e.g., "query" from "query = ...")
+    # Group 3: argument value string (e.g., '"hello"' or '{"a": 1}')
+    BUILTIN_CALL_REGEX_PATTERN: ta.ClassVar[re.Pattern[str]] = re.compile(
+        r'<\|python_tag\|>\s*([^.(]+)\s*\.\s*call\s*\(\s*([\w]+)\s*=\s*([\s\S]*?)\s*\)',
+        # Added optional whitespace \s* before the final parenthesis for robustness, which is common in such patterns.
+        # The C++ version didn't have it, but it's a minor defensive addition. If strict adherence is needed, remove it.
+    )
+
+    def parse(
+            self,
+            input_str: str,
+            with_builtin_tools: bool = False,
+    ) -> ChatMsg:
+        """
+        Parses an input string that might represent a message from a Llama 3.1 model,
+        potentially containing built-in tool calls or general JSON tool calls.
+
+        Args:
+            input_str: The input string to parse.
+            with_builtin_tools: If True, attempts to parse a specific "<|python_tag|>tool.call(arg=value)" format first.
+
+        Returns:
+            A ChatMessage object.
+        """
+        # TODO: tighten & simplify the parser, don't accept leading text context.
+        # (This TODO is from the original C++ code)
+
+        if with_builtin_tools:
+            # std::regex_match checks if the *entire* string matches.
+            # re.fullmatch() is the Python equivalent.
+            # Strip input to match C++ behavior potentially more closely if regex_match on unstripped input was implicit
+            match = self.BUILTIN_CALL_REGEX_PATTERN.fullmatch(input_str.strip())
+            if match:
+                try:
+                    name = match.group(1).strip()
+                    arg_name = match.group(2).strip()
+                    arg_value_str = match.group(3).strip()
+
+                    # Parse the argument value string as JSON
+                    # (std::string -> json -> C++ type)
+                    # (str -> Python dict/list/str/int/etc.)
+                    arg_value = json.loads(arg_value_str)
+
+                    msg = ChatMsg()
+                    tool_call_id = f'call_{name}_{arg_name}'  # Generating a simple ID
+
+                    msg.tool_calls.append(ChatToolCall(
+                        id=tool_call_id,  # Original C++ set this to ""
+                        name=name,
+                        # arguments must be a JSON string
+                        arguments=json.dumps({arg_name: arg_value}),
+                    ))
+                    return msg
+
+                except json.JSONDecodeError as e:
+                    log.warning(
+                        'Failed to parse builtin tool call arguments JSON (%s): %s',
+                        str(e),
+                        input_str,
+                    )
+
+                except Exception as e:  # noqa
+                    log.warning(
+                        'Failed to parse builtin tool call for other reasons (%s): %s',
+                        str(e),
+                        input_str,
+                    )
+
+            # If regex doesn't match or an exception occurred, fall through
+            # to the generic JSON tool call parser.
+
+        # Fallback to general JSON tool call parsing
+        return parse_json_tool_calls(
+            input_str,
+            None,  # Corresponds to std::nullopt
+            self.FUNCTION_REGEX_PATTERN,
+            self.CLOSE_REGEX_PATTERN,
+        )
+
+
 ##
 
 
@@ -425,3 +626,17 @@ def test_usage():
             ),
         ],
     )
+
+
+def test_samples():
+    samples = {
+        n: r.read_text()
+        for n, r in lang.get_relative_resources('...tests.samples', globals=globals()).items()
+        if r.is_file and n.endswith('.txt')
+    }
+
+    for n, s in sorted(samples.items(), key=lambda kv: kv[0]):
+        print(n)
+        print(s)
+        print(parse_hermes_2_pro(s, extract_reasoning=False))
+        print()
