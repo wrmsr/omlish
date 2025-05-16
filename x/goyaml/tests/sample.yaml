@@ -1,0 +1,42 @@
+# Sample configuration
+name: "Example App"
+version: 1.0
+description: >
+  This is a sample YAML document that
+  demonstrates commonly used features.
+
+metadata:
+  created_by: 'Barf Barferton'
+  tags: [demo, yaml, example]
+  active: true
+  license: MIT
+
+paths:
+  - /usr/local/bin
+  - /opt/example
+  - /home/user/.config/example
+
+# Escaped characters inside double quotes
+welcome_message: "Welcome to the \"Example App\"!\nEnjoy your stay."
+
+# Block-style list of users
+users:
+  - name: Alice
+    role: admin
+    email: alice@example.com
+  - name: Bob
+    role: user
+    email: bob@example.com
+
+# Inline dictionary
+thresholds: {cpu: 80, memory: 70, disk: 90}
+
+# Special characters in keys using `?` syntax
+? "[complex-key]-with:special_chars"
+: "Handled safely"
+
+# Multiline string using literal style
+changelog: |
+  v1.0.0:
+    - Initial release
+    - Added basic features
