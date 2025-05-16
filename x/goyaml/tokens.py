@@ -158,56 +158,56 @@ class Indicator(enum.Enum):
 
 
 RESERVED_NULL_KEYWORDS = (
-    "null",
-    "Null",
-    "NULL",
-    "~",
+    'null',
+    'Null',
+    'NULL',
+    '~',
 )
 
 RESERVED_BOOL_KEYWORDS = (
-    "true",
-    "True",
-    "TRUE",
-    "false",
-    "False",
-    "FALSE",
+    'true',
+    'True',
+    'TRUE',
+    'false',
+    'False',
+    'FALSE',
 )
 
 # For compatibility with other YAML 1.1 parsers.
 # Note that we use these solely for encoding the bool value with quotes. go-yaml should not treat these as reserved
 # keywords at parsing time. as go-yaml is supposed to be compliant only with YAML 1.2.
 RESERVED_LEGACY_BOOL_KEYWORDS = (
-    "y",
-    "Y",
-    "yes",
-    "Yes",
-    "YES",
-    "n",
-    "N",
-    "no",
-    "No",
-    "NO",
-    "on",
-    "On",
-    "ON",
-    "off",
-    "Off",
-    "OFF",
+    'y',
+    'Y',
+    'yes',
+    'Yes',
+    'YES',
+    'n',
+    'N',
+    'no',
+    'No',
+    'NO',
+    'on',
+    'On',
+    'ON',
+    'off',
+    'Off',
+    'OFF',
 )
 
 RESERVED_INF_KEYWORDS = (
-    ".inf",
-    ".Inf",
-    ".INF",
-    "-.inf",
-    "-.Inf",
-    "-.INF",
+    '.inf',
+    '.Inf',
+    '.INF',
+    '-.inf',
+    '-.Inf',
+    '-.INF',
 )
 
 RESERVED_NAN_KEYWORDS = (
-    ".nan",
-    ".NaN",
-    ".NAN",
+    '.nan',
+    '.NaN',
+    '.NAN',
 )
 
 
@@ -226,7 +226,7 @@ RESERVED_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'Position'], 'Token
     **{keyword: functools.partial(reserved_keyword_token, Type.NULL) for keyword in RESERVED_NULL_KEYWORDS},
     **{keyword: functools.partial(reserved_keyword_token, Type.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
     **{keyword: functools.partial(reserved_keyword_token, Type.INFINITY) for keyword in RESERVED_INF_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.NAN) for keyword in RESERVED_NAN_KEYWORDS}
+    **{keyword: functools.partial(reserved_keyword_token, Type.NAN) for keyword in RESERVED_NAN_KEYWORDS},
 }
 
 # RESERVED_ENC_KEYWORD_MAP contains is the keyword map used at encoding time.
@@ -247,29 +247,29 @@ ReservedTagKeyword: ta.TypeAlias = str
 
 class ReservedTagKeywords:
     # INTEGER `!!int` tag
-    INTEGER = "!!int"
+    INTEGER = '!!int'
     # FLOAT `!!float` tag
-    FLOAT = "!!float"
+    FLOAT = '!!float'
     # NULL `!!null` tag
-    NULL = "!!null"
+    NULL = '!!null'
     # SEQUENCE `!!seq` tag
-    SEQUENCE = "!!seq"
+    SEQUENCE = '!!seq'
     # MAPPING `!!map` tag
-    MAPPING = "!!map"
+    MAPPING = '!!map'
     # STRING `!!str` tag
-    STRING = "!!str"
+    STRING = '!!str'
     # BINARY `!!binary` tag
-    BINARY = "!!binary"
+    BINARY = '!!binary'
     # ORDERED_MAP `!!omap` tag
-    ORDERED_MAP = "!!omap"
+    ORDERED_MAP = '!!omap'
     # SET `!!set` tag
-    SET = "!!set"
+    SET = '!!set'
     # TIMESTAMP `!!timestamp` tag
-    TIMESTAMP = "!!timestamp"
+    TIMESTAMP = '!!timestamp'
     # BOOLEAN `!!bool` tag
-    BOOLEAN = "!!bool"
+    BOOLEAN = '!!bool'
     # MERGE `!!merge` tag
-    MERGE = "!!merge"
+    MERGE = '!!merge'
 
 
 # RESERVED_TAG_KEYWORD_MAP map for reserved tag keywords
@@ -415,32 +415,32 @@ def _to_number(value: str) -> tuple[NumberValue | None, str | None]:
     if not value:
         return None, None
 
-    if value.startswith("_"):
+    if value.startswith('_'):
         return None, None
 
-    dot_count = value.count(".")
+    dot_count = value.count('.')
     if dot_count > 1:
         return None, None
 
-    is_negative = value.startswith("-")
-    normalized = value.lstrip("+").lstrip("-").replace("_", "")
+    is_negative = value.startswith('-')
+    normalized = value.lstrip('+').lstrip('-').replace('_', '')
 
     typ: NumberType
     base = 0
 
-    if normalized.startswith("0x"):
-        normalized = normalized.lstrip("0x")
+    if normalized.startswith('0x'):
+        normalized = normalized.lstrip('0x')
         base = 16
         typ = NumberType.HEX
-    elif normalized.startswith("0o"):
-        normalized = normalized.lstrip("0o")
+    elif normalized.startswith('0o'):
+        normalized = normalized.lstrip('0o')
         base = 8
         typ = NumberType.OCTET
-    elif normalized.startswith("0b"):
-        normalized = normalized.lstrip("0b")
+    elif normalized.startswith('0b'):
+        normalized = normalized.lstrip('0b')
         base = 2
         typ = NumberType.BINARY
-    elif normalized.startswith("0") and len(normalized) > 1 and dot_count == 0:
+    elif normalized.startswith('0') and len(normalized) > 1 and dot_count == 0:
         base = 8
         typ = NumberType.OCTET
     elif dot_count == 1:
@@ -451,7 +451,7 @@ def _to_number(value: str) -> tuple[NumberValue | None, str | None]:
 
     text = normalized
     if is_negative:
-        text = "-" + text
+        text = '-' + text
 
     v: ta.Any
     if typ == NumberType.FLOAT:
@@ -478,13 +478,13 @@ def _to_number(value: str) -> tuple[NumberValue | None, str | None]:
 # This is a subset of the formats permitted by the regular expression defined at http:#yaml.org/type/timestamp.html.
 # Note that time.Parse cannot handle: "2001-12-14 21:59:43.10 -5" from the examples.
 TIMESTAMP_FORMATS = (
-    "%Y-%m-%dT%H:%M:%S.%fZ",  # RFC3339Nano
-    "%Y-%m-%dt%H:%M:%S.%fZ",  # RFC3339Nano with lower-case "t"
-    "%Y-%m-%d %H:%M:%S",      # DateTime
-    "%Y-%m-%d",               # DateOnly
+    '%Y-%m-%dT%H:%M:%S.%fZ',  # RFC3339Nano
+    '%Y-%m-%dt%H:%M:%S.%fZ',  # RFC3339Nano with lower-case "t"
+    '%Y-%m-%d %H:%M:%S',      # DateTime
+    '%Y-%m-%d',               # DateOnly
 
     # Not in examples, but to preserve backward compatibility by quoting time values
-    "%H:%M"
+    '%H:%M',
 )
 
 def _is_timestamp(value: str) -> bool:
@@ -511,7 +511,7 @@ def is_need_quoted(value: str) -> bool:
     if _is_number(value):
         return True
 
-    if value == "-":
+    if value == '-':
         return True
 
     if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`'):
@@ -538,13 +538,13 @@ def literal_block_header(value: str) -> str:
     lbc = detect_line_break_char(value)
 
     if lbc not in value:
-        return ""
+        return ''
     elif value.endswith(lbc + lbc):
-        return "|+"
+        return '|+'
     elif value.endswith(lbc):
-        return "|"
+        return '|'
     else:
-        return "|-"
+        return '|-'
 
 
 ##
@@ -589,7 +589,7 @@ class Position:
 
     # String position to text
     def __str__(self) -> str:
-        return "[level:%d,line:%d,column:%d,offset:%d]" % (self.indent_level, self.line, self.column, self.offset)
+        return '[level:%d,line:%d,column:%d,offset:%d]' % (self.indent_level, self.line, self.column, self.offset)
 
 
 # Token type for token
@@ -917,7 +917,7 @@ def new_merge_key(org: str, pos: Position) -> Token:
         type=Type.MERGE_KEY,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
-        value="<<",
+        value='<<',
         origin=org,
         position=pos,
     )
@@ -929,7 +929,7 @@ def new_document_header(org: str, pos: Position) -> Token:
         type=Type.DOCUMENT_HEADER,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
-        value="---",
+        value='---',
         origin=org,
         position=pos,
     )
@@ -941,7 +941,7 @@ def new_document_end(org: str, pos: Position) -> Token:
         type=Type.DOCUMENT_END,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
-        value="...",
+        value='...',
         origin=org,
         position=pos,
     )
@@ -964,12 +964,12 @@ def new_invalid(err: str, org: str, pos: Position) -> Token:
 
 # detect_line_break_char detect line break character in only one inside scalar content scope.
 def detect_line_break_char(src: str) -> str:
-    nc = src.count("\n")
-    rc = src.count("\r")
-    rnc = src.count("\r\n")
+    nc = src.count('\n')
+    rc = src.count('\r')
+    rnc = src.count('\r\n')
     if nc == rnc and rc == rnc:
-        return "\r\n"
+        return '\r\n'
     elif rc > nc:
-        return "\r"
+        return '\r'
     else:
-        return "\n"
+        return '\n'

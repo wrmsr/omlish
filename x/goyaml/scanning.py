@@ -179,7 +179,7 @@ class Context:
             # https://yaml.org/spec/1.2.2/#8112-block-chomping-indicator
             if mstate.has_trim_all_end_newline_opt():
                 # If the '-' flag is specified, all trailing newline characters will be removed.
-                src = src.rstrip("\n")
+                src = src.rstrip('\n')
 
             elif not mstate.has_keep_all_end_newline_opt():
                 # Normally, all but one of the trailing newline characters are removed.
@@ -192,14 +192,14 @@ class Context:
 
                 removed_new_line_char_count = new_line_char_count - 1
                 while removed_new_line_char_count > 0:
-                    src = src.rstrip("\n")
+                    src = src.rstrip('\n')
                     removed_new_line_char_count -= 1
 
             # If the text ends with a space character, remove all of them.
             if mstate.has_trim_all_end_newline_opt():
-                src = src.rstrip(" ")
+                src = src.rstrip(' ')
 
-            if src == "\n":
+            if src == '\n':
                 # If the content consists only of a newline, it can be considered as the document ending without any
                 # specified value, so it is treated as an empty string.
                 src = ''
@@ -289,14 +289,14 @@ class MultiLineState:
         if self.first_line_indent_column != 0:
             return None
         if self.space_only_indent_column > column:
-            return "invalid number of indent is specified after space only"
+            return 'invalid number of indent is specified after space only'
         return None
 
     def validate_indent_column(self) -> str | None:
         if first_line_indent_column_by_opt(self.opt) == 0:
             return None
         if self.first_line_indent_column > self.line_indent_column:
-            return "invalid number of indent is specified in the multi-line header"
+            return 'invalid number of indent is specified in the multi-line header'
         return None
 
     def update_new_line_state(self) -> None:
@@ -369,20 +369,20 @@ class MultiLineState:
         self.folded_new_line = False
 
     def has_trim_all_end_newline_opt(self) -> bool:
-        return self.opt.startswith("-") or self.opt.endswith("-") or self.is_raw_folded
+        return self.opt.startswith('-') or self.opt.endswith('-') or self.is_raw_folded
 
     def has_keep_all_end_newline_opt(self) -> bool:
-        return self.opt.startswith("+") or self.opt.endswith("+")
+        return self.opt.startswith('+') or self.opt.endswith('+')
 
 
 ##
 
 
 def first_line_indent_column_by_opt(opt: str) -> int:
-    opt = opt.lstrip("-")
-    opt = opt.lstrip("+")
-    opt = opt.rstrip("-")
-    opt = opt.rstrip("+")
+    opt = opt.lstrip('-')
+    opt = opt.lstrip('+')
+    opt = opt.rstrip('-')
+    opt = opt.rstrip('+')
     try:
         return int(opt, 10)
     except ValueError:
@@ -609,14 +609,14 @@ class Scanner:
 
                 continue
 
-            elif is_first_line_char and c == ' ':
+            if is_first_line_char and c == ' ':
                 continue
 
-            elif is_first_line_char and c == '\t':
+            if is_first_line_char and c == '\t':
                 if self.last_delim_column >= self.column:
                     return None, repr(err_invalid_token(
                         tokens.new_invalid(
-                            "tab character cannot be used for indentation in single-quoted text",
+                            'tab character cannot be used for indentation in single-quoted text',
                             ctx.obuf,
                             self.pos(),
                         ),
@@ -624,12 +624,12 @@ class Scanner:
 
                 continue
 
-            elif c != "'":
+            if c != "'":
                 value += c
                 is_first_line_char = False
                 continue
 
-            elif idx + 1 < len(ctx.src) and ctx.src[idx + 1] == '\'':
+            if idx + 1 < len(ctx.src) and ctx.src[idx + 1] == '\'':
                 # '' handle as ' character
                 value += c
                 ctx.add_origin_buf(c)
@@ -643,7 +643,7 @@ class Scanner:
         self.progress_column(ctx, 1)
         return None, repr(err_invalid_token(
             tokens.new_invalid(
-                "could not find end character of single-quoted text",
+                'could not find end character of single-quoted text',
                 ctx.obuf,
                 srcpos,
             ),
@@ -697,14 +697,14 @@ class Scanner:
 
                 continue
 
-            elif is_first_line_char and c == ' ':
+            if is_first_line_char and c == ' ':
                 continue
 
-            elif is_first_line_char and c == '\t':
+            if is_first_line_char and c == '\t':
                 if self.last_delim_column >= self.column:
                     return None, repr(err_invalid_token(
                         tokens.new_invalid(
-                            "tab character cannot be used for indentation in double-quoted text",
+                            'tab character cannot be used for indentation in double-quoted text',
                             ctx.obuf,
                             self.pos(),
                         ),
@@ -712,7 +712,7 @@ class Scanner:
 
                 continue
 
-            elif c == '\\':
+            if c == '\\':
                 is_first_line_char = False
                 if idx + 1 >= size:
                     value += c
@@ -805,7 +805,7 @@ class Scanner:
                     if idx + 5 >= size:
                         return None, repr(err_invalid_token(
                             tokens.new_invalid(
-                                "not enough length for escaped UTF-16 character",
+                                'not enough length for escaped UTF-16 character',
                                 ctx.obuf,
                                 self.pos(),
                             ),
@@ -822,7 +822,7 @@ class Scanner:
                         if idx + 11 >= size:
                             return None, repr(err_invalid_token(
                                 tokens.new_invalid(
-                                    "not enough length for escaped UTF-16 surrogate pair",
+                                    'not enough length for escaped UTF-16 surrogate pair',
                                     ctx.obuf,
                                     self.pos(),
                                 ),
@@ -831,7 +831,7 @@ class Scanner:
                         if src[idx + 6] != '\\' or src[idx + 7] != 'u':
                             return None, repr(err_invalid_token(
                                 tokens.new_invalid(
-                                    "found unexpected character after high surrogate for UTF-16 surrogate pair",
+                                    'found unexpected character after high surrogate for UTF-16 surrogate pair',
                                     ctx.obuf,
                                     self.pos(),
                                 ),
@@ -841,7 +841,7 @@ class Scanner:
                         if low < 0xDC00 or low > 0xDFFF:
                             return None, repr(err_invalid_token(
                                 tokens.new_invalid(
-                                    "found unexpected low surrogate after high surrogate",
+                                    'found unexpected low surrogate after high surrogate',
                                     ctx.obuf,
                                     self.pos(),
                                 ),
@@ -857,7 +857,7 @@ class Scanner:
                     if idx + 9 >= size:
                         return None, repr(err_invalid_token(
                             tokens.new_invalid(
-                                "not enough length for escaped UTF-32 character",
+                                'not enough length for escaped UTF-32 character',
                                 ctx.obuf,
                                 self.pos(),
                             ),
@@ -885,7 +885,7 @@ class Scanner:
                     self.progress_column(ctx, 1)
                     return None, repr(err_invalid_token(
                         tokens.new_invalid(
-                            "found unknown escape character %r" % (next_char,),
+                            'found unknown escape character %r' % (next_char,),
                             ctx.obuf,
                             self.pos(),
                         ),
@@ -895,7 +895,7 @@ class Scanner:
                 self.progress_column(ctx, progress)
                 continue
 
-            elif c == '\t':
+            if c == '\t':
                 found_not_space_char = False
                 progress = 0
 
@@ -920,7 +920,7 @@ class Scanner:
 
                 continue
 
-            elif c != '"':
+            if c != '"':
                 value += c
                 is_first_line_char = False
                 continue
@@ -931,7 +931,7 @@ class Scanner:
         self.progress_column(ctx, 1)
         return None, repr(err_invalid_token(
             tokens.new_invalid(
-                "could not find end character of double-quoted text",
+                'could not find end character of double-quoted text',
                 ctx.obuf,
                 srcpos,
             ),
@@ -940,7 +940,7 @@ class Scanner:
     def validate_document_separator_marker(self, ctx: Context, src: str) -> str | None:
         if self.found_document_separator_marker(src):
             return repr(err_invalid_token(
-                tokens.new_invalid("found unexpected document separator", ctx.obuf, self.pos()),
+                tokens.new_invalid('found unexpected document separator', ctx.obuf, self.pos()),
             ))
 
         return None
@@ -955,7 +955,7 @@ class Scanner:
         else:
             marker = trim_right_func(src[:4], lambda r: r == ' ' or r == '\t' or r == '\n' or r == '\r')
 
-        return marker == "---" or marker == "..."
+        return marker == '---' or marker == '...'
 
     def scan_quote(self, ctx: Context, ch: str) -> tuple[bool, str | None]:
         if ctx.exists_buffer():
@@ -1064,7 +1064,7 @@ class Scanner:
             elif c in ('{', '}'):
                 ctx.add_origin_buf(c)
                 self.progress_column(ctx, progress)
-                invalid_tk = tokens.new_invalid("found invalid tag character %r" % (c,), ctx.obuf, self.pos())
+                invalid_tk = tokens.new_invalid('found invalid tag character %r' % (c,), ctx.obuf, self.pos())
                 return False, repr(err_invalid_token(invalid_tk))
 
             else:
@@ -1148,7 +1148,7 @@ class Scanner:
         elif self.is_first_char_at_line and c == '\t' and state.is_indent_column(self.column):
             err = repr(err_invalid_token(
                 tokens.new_invalid(
-                    "found a tab character where an indentation space is expected",
+                    'found a tab character where an indentation space is expected',
                     ctx.obuf,
                     self.pos(),
                 ),
@@ -1306,8 +1306,8 @@ class Scanner:
             if tk is not None and tk.type == tokens.Type.MAPPING_VALUE:
                 return False, None
 
-        if ctx.obuf.lstrip(" ").startswith("\t") and not ctx.buf.startswith("\t"):
-            invalid_tk = tokens.new_invalid("tab character cannot use as a map key directly", ctx.obuf, self.pos())
+        if ctx.obuf.lstrip(' ').startswith('\t') and not ctx.buf.startswith('\t'):
+            invalid_tk = tokens.new_invalid('tab character cannot use as a map key directly', ctx.obuf, self.pos())
             self.progress_column(ctx, 1)
             return False, repr(err_invalid_token(invalid_tk))
 
@@ -1344,7 +1344,7 @@ class Scanner:
                 return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(tokens.new_document_header(ctx.obuf+"---", self.pos()))
+        ctx.add_token(tokens.new_document_header(ctx.obuf+'---', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         self.clear_state()
@@ -1361,7 +1361,7 @@ class Scanner:
             return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(tokens.new_document_end(ctx.obuf+"...", self.pos()))
+        ctx.add_token(tokens.new_document_end(ctx.obuf+'...', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         return True
@@ -1371,7 +1371,7 @@ class Scanner:
             return False
 
         self.last_delim_column = self.column
-        ctx.add_token(tokens.new_merge_key(ctx.obuf+"<<", self.pos()))
+        ctx.add_token(tokens.new_merge_key(ctx.obuf+'<<', self.pos()))
         self.progress_column(ctx, 2)
         ctx.clear()
         return True
@@ -1397,8 +1397,8 @@ class Scanner:
         if nc != 0 and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
             return False, None
 
-        if ctx.obuf.lstrip(" ").startswith("\t"):
-            invalid_tk = tokens.new_invalid("tab character cannot use as a sequence delimiter", ctx.obuf, self.pos())
+        if ctx.obuf.lstrip(' ').startswith('\t'):
+            invalid_tk = tokens.new_invalid('tab character cannot use as a sequence delimiter', ctx.obuf, self.pos())
             self.progress_column(ctx, 1)
             return False, repr(err_invalid_token(invalid_tk))
 
@@ -1426,22 +1426,22 @@ class Scanner:
             return None
 
         org_opt = opt
-        opt = opt.lstrip("-")
-        opt = opt.lstrip("+")
-        opt = opt.rstrip("-")
-        opt = opt.rstrip("+")
+        opt = opt.lstrip('-')
+        opt = opt.lstrip('+')
+        opt = opt.rstrip('-')
+        opt = opt.rstrip('+')
         if len(opt) == 0:
             return None
 
-        if opt == "0":
-            return "invalid header option: %r" % (org_opt,)
+        if opt == '0':
+            return 'invalid header option: %r' % (org_opt,)
 
         i, err = int(opt, 10)
         if err is not None:
-            return "invalid header option: %r" % (org_opt,)
+            return 'invalid header option: %r' % (org_opt,)
 
         if i > 9:
-            return "invalid header option: %r" % (org_opt,)
+            return 'invalid header option: %r' % (org_opt,)
 
         return None
 
@@ -1457,8 +1457,8 @@ class Scanner:
             if self.is_new_line_char(c):
                 break
 
-        value = ctx.source(ctx.idx, ctx.idx+progress).rstrip(" ")
-        comment_value_index = value.find("#")
+        value = ctx.source(ctx.idx, ctx.idx+progress).rstrip(' ')
+        comment_value_index = value.find('#')
         opt = value
         if comment_value_index > 0:
             opt = value[:comment_value_index]
@@ -1474,16 +1474,16 @@ class Scanner:
         if self.column == 1:
             self.last_delim_column = 1
 
-        comment_index = ctx.obuf.find("#")
+        comment_index = ctx.obuf.find('#')
         header_buf = ctx.obuf
         if comment_index > 0:
             header_buf = header_buf[:comment_index]
 
         if header == '|':
-            ctx.add_token(tokens.new_literal("|"+opt, header_buf, self.pos()))
+            ctx.add_token(tokens.new_literal('|'+opt, header_buf, self.pos()))
             ctx.set_literal(self.last_delim_column, opt)
         elif header == '>':
-            ctx.add_token(tokens.new_folded(">"+opt, header_buf, self.pos()))
+            ctx.add_token(tokens.new_folded('>'+opt, header_buf, self.pos()))
             ctx.set_folded(self.last_delim_column, opt)
 
         if comment_index > 0:
@@ -1558,7 +1558,7 @@ class Scanner:
         ctx.add_origin_buf(c)
         err = err_invalid_token(
             tokens.new_invalid(
-                "%r is a reserved character" % (c,),
+                '%r is a reserved character' % (c,),
                 ctx.obuf,
                 self.pos(),
             ),
@@ -1609,14 +1609,14 @@ class Scanner:
                         if tk.position.column == 1:
                             return repr(err_invalid_token(
                                 tokens.new_invalid(
-                                    "could not find multi-line content",
+                                    'could not find multi-line content',
                                     ctx.obuf,
                                     self.pos(),
                                 ),
                             ))
 
                         if tk.type != tokens.Type.STRING:
-                            ctx.add_token(tokens.new_string("", "", self.pos()))
+                            ctx.add_token(tokens.new_string('', '', self.pos()))
 
                     self.break_multi_line(ctx)
 

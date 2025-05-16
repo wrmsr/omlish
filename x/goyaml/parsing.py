@@ -56,12 +56,12 @@ class Context:
 
     def with_child(self, path: str) -> 'Context':
         ctx = copy.copy(self)
-        ctx.path = self.path + "." + normalize_path(path)
+        ctx.path = self.path + '.' + normalize_path(path)
         return ctx
 
     def with_index(self, idx: int) -> 'Context':
         ctx = copy.copy(self)
-        ctx.path = self.path + "[" + str(idx) + "]"
+        ctx.path = self.path + '[' + str(idx) + ']'
         return ctx
 
     def with_flow(self, is_flow: bool) -> 'Context':
@@ -72,7 +72,7 @@ class Context:
     @staticmethod
     def new_context() -> 'Context':
         return Context(
-            path= "$",
+            path= '$',
         )
 
     def go_next(self) -> None:
@@ -107,7 +107,7 @@ class Context:
     def create_null_token(self, base: 'Token') -> 'Token':
         pos = copy.copy(base.raw_token().position)
         pos.column+=1
-        return Token(token=tokens.new("null", " null", pos))
+        return Token(token=tokens.new('null', ' null', pos))
 
     def insert_token(self, tk: 'Token') -> None:
         ref = self.token_ref
@@ -156,7 +156,7 @@ class TokenRef:
 
 
 PATH_SPECIAL_CHARS = (
-    "$", "*", ".", "[", "]",
+    '$', '*', '.', '[', ']',
 )
 
 
@@ -406,9 +406,9 @@ def create_anchor_and_alias_token_groups(tokens: list[Token]) -> tuple[list[Toke
         tk = tokens[i]
         if tk.type() == tokens_.Type.ANCHOR:
             if i + 1 >= len(tokens):
-                return None, err_syntax("undefined anchor name", tk.raw_token())
+                return None, err_syntax('undefined anchor name', tk.raw_token())
             if i + 2 >= len(tokens):
-                return None, err_syntax("undefined anchor value", tk.raw_token())
+                return None, err_syntax('undefined anchor value', tk.raw_token())
             anchor_name = Token(
                 group=TokenGroup(
                     type=TokenGroupType.ANCHOR_NAME,
@@ -418,7 +418,7 @@ def create_anchor_and_alias_token_groups(tokens: list[Token]) -> tuple[list[Toke
             value_tk = tokens[i + 2]
             if tk.line() == value_tk.line() and value_tk.type() == tokens_.Type.SEQUENCE_ENTRY:
                 return None, err_syntax(
-                    "sequence entries are not allowed after anchor on the same line",
+                    'sequence entries are not allowed after anchor on the same line',
                     value_tk.raw_token(),
                 )
             if tk.line() == value_tk.line() and is_scalar_type(value_tk):
@@ -434,7 +434,7 @@ def create_anchor_and_alias_token_groups(tokens: list[Token]) -> tuple[list[Toke
             i += 1
         elif tk.type() == tokens_.Type.ALIAS:
             if i + 1 == len(tokens):
-                return None, err_syntax("undefined alias name", tk.raw_token())
+                return None, err_syntax('undefined alias name', tk.raw_token())
             ret.append(Token(
                 group=TokenGroup(
                     type=TokenGroupType.ALIAS,
@@ -459,7 +459,7 @@ def create_scalar_tag_token_groups(tokens: list[Token]) -> tuple[list[Token] | N
             ret.append(tk)
             continue
         tag = tk.raw_token()
-        if tag.value.startswith("!!"):
+        if tag.value.startswith('!!'):
             # secondary tag.
             if tag.value in (
                     tokens_.ReservedTagKeywords.INTEGER,
@@ -500,7 +500,7 @@ def create_scalar_tag_token_groups(tokens: list[Token]) -> tuple[list[Token] | N
                     ret.append(tk)
                     continue
                 if tokens[i + 1].type() != tokens_.Type.MERGE_KEY:
-                    return None, err_syntax("could not find merge key", tokens[i + 1].raw_token())
+                    return None, err_syntax('could not find merge key', tokens[i + 1].raw_token())
                 ret.append(Token(
                     group=TokenGroup(
                         type=TokenGroupType.SCALAR_TAG,
@@ -543,7 +543,7 @@ def create_anchor_with_scalar_tag_token_groups(tokens: list[Token]) -> tuple[lis
         tk = tokens[i]
         if tk.group_type() == TokenGroupType.ANCHOR_NAME:
             if i + 1 >= len(tokens):
-                return None, err_syntax("undefined anchor value", tk.raw_token())
+                return None, err_syntax('undefined anchor value', tk.raw_token())
             value_tk = tokens[i + 1]
             if tk.line() == value_tk.line() and value_tk.group_type() == TokenGroupType.SCALAR_TAG:
                 ret.append(Token(
@@ -577,7 +577,7 @@ def create_map_key_by_mapping_key(tokens: list[Token]) -> tuple[list[Token] | No
         tk = tokens[i]
         if tk.type() == tokens_.Type.MAPPING_KEY:
             if i + 1 >= len(tokens):
-                return None, err_syntax("undefined map key", tk.raw_token())
+                return None, err_syntax('undefined map key', tk.raw_token())
             ret.append(Token(
                 group=TokenGroup(
                     type=TokenGroupType.MAP_KEY,
@@ -600,10 +600,10 @@ def create_map_key_by_mapping_value(tokens: list[Token]) -> tuple[list[Token] | 
         tk = tokens[i]
         if tk.type() == tokens_.Type.MAPPING_VALUE:
             if i == 0:
-                return None, err_syntax("unexpected key name", tk.raw_token())
+                return None, err_syntax('unexpected key name', tk.raw_token())
             map_key_tk = tokens[i - 1]
             if is_not_map_key_type(map_key_tk):
-                return None, err_syntax("found an invalid key for this map", tokens[i].raw_token())
+                return None, err_syntax('found an invalid key for this map', tokens[i].raw_token())
             new_tk = Token(
                 token=map_key_tk.token,
                 group=map_key_tk.group,
@@ -667,7 +667,7 @@ def create_directive_token_groups(tokens: list[Token]) -> tuple[list[Token] | No
         tk = tokens[i]
         if tk.type() == tokens_.Type.DIRECTIVE:
             if i + 1 >= len(tokens):
-                return None, err_syntax("undefined directive value", tk.raw_token())
+                return None, err_syntax('undefined directive value', tk.raw_token())
             directive_name = Token(
                 group=TokenGroup(
                     type=TokenGroupType.DIRECTIVE_NAME,
@@ -682,7 +682,7 @@ def create_directive_token_groups(tokens: list[Token]) -> tuple[list[Token] | No
                 value_tks.append(tokens[j])
                 i += 1
             if i + 1 >= len(tokens) or tokens[i + 1].type() != tokens_.Type.DOCUMENT_HEADER:
-                return None, err_syntax("unexpected directive value. document not started", tk.raw_token())
+                return None, err_syntax('unexpected directive value. document not started', tk.raw_token())
             if len(value_tks) != 0:
                 ret.append(Token(
                     group=TokenGroup(
@@ -733,12 +733,12 @@ def create_document_tokens(tokens: list[Token]) -> tuple[list[Token] | None, str
                         TokenGroupType.MAP_KEY_VALUE,
                 ):
                     return None, err_syntax(
-                        "value cannot be placed after document separator",
+                        'value cannot be placed after document separator',
                         tokens[i + 1].raw_token(),
                     )
                 if tokens[i + 1].type() == tokens_.Type.SEQUENCE_ENTRY:
                     return None, err_syntax(
-                        "value cannot be placed after document separator",
+                        'value cannot be placed after document separator',
                         tokens[i + 1].raw_token(),
                     )
             tks, err = create_document_tokens(tokens[i + 1:])
@@ -767,7 +767,7 @@ def create_document_tokens(tokens: list[Token]) -> tuple[list[Token] | None, str
             if i + 1 == len(tokens):
                 return ret, None
             if is_scalar_type(tokens[i + 1]):
-                return None, err_syntax("unexpected end content", tokens[i + 1].raw_token())
+                return None, err_syntax('unexpected end content', tokens[i + 1].raw_token())
 
             tks, err = create_document_tokens(tokens[i + 1:])
             if err is not None:
@@ -1000,13 +1000,13 @@ def new_tag_default_scalar_value_node(ctx: Context, tag: tokens_.Token) -> tuple
     node: ast.ScalarNode | None = None
 
     if tag.value == tokens_.ReservedTagKeywords.INTEGER:
-        tk = Token(token=tokens.new("0", "0", pos))
+        tk = Token(token=tokens.new('0', '0', pos))
         n, err = new_integer_node(ctx, tk)
         if err is not None:
             return None, err
         node = n
     elif tag.value == tokens_.ReservedTagKeywords.FLOAT:
-        tk = Token(token=tokens_.new("0", "0", pos))
+        tk = Token(token=tokens_.new('0', '0', pos))
         n, err = new_float_node(ctx, tk)
         if err is not None:
             return None, err
@@ -1016,25 +1016,25 @@ def new_tag_default_scalar_value_node(ctx: Context, tag: tokens_.Token) -> tuple
             tokens_.ReservedTagKeywords.BINARY,
             tokens_.ReservedTagKeywords.TIMESTAMP,
     ):
-        tk = Token(token=tokens_.new("", "", pos))
+        tk = Token(token=tokens_.new('', '', pos))
         n, err = new_string_node(ctx, tk)
         if err is not None:
             return None, err
         node = n
     elif tag.value == tokens_.ReservedTagKeywords.BOOLEAN:
-        tk = Token(token=tokens_.new("false", "false", pos))
+        tk = Token(token=tokens_.new('false', 'false', pos))
         n, err = new_bool_node(ctx, tk)
         if err is not None:
             return None, err
         node = n
     elif tag.value == tokens_.ReservedTagKeywords.NULL:
-        tk = Token(token=tokens_.new("null", "null", pos))
+        tk = Token(token=tokens_.new('null', 'null', pos))
         n, err = new_null_node(ctx, tk)
         if err is not None:
             return None, err
         node = n
     else:
-        return None, err_syntax("cannot assign default value for %r tag" % (tag.value,), tag)
+        return None, err_syntax('cannot assign default value for %r tag' % (tag.value,), tag)
     ctx.insert_token(tk)
     ctx.go_next()
     return node, None
@@ -1107,16 +1107,16 @@ def parse(
 
 YAMLVersion: ta.TypeAlias = str
 
-YAML10 = YAMLVersion("1.0")
-YAML11 = YAMLVersion("1.1")
-YAML12 = YAMLVersion("1.2")
-YAML13 = YAMLVersion("1.3")
+YAML10 = YAMLVersion('1.0')
+YAML11 = YAMLVersion('1.1')
+YAML12 = YAMLVersion('1.2')
+YAML13 = YAMLVersion('1.3')
 
 YAML_VERSION_MAP: ta.Mapping[str, YAMLVersion] = {
-    "1.0": YAML10,
-    "1.1": YAML11,
-    "1.2": YAML12,
-    "1.3": YAML13,
+    '1.0': YAML10,
+    '1.1': YAML11,
+    '1.2': YAML12,
+    '1.3': YAML13,
 }
 
 
@@ -1202,14 +1202,14 @@ class Parser:
 
         finally:
             if clear_yaml_version:
-                self.yaml_version = ""
+                self.yaml_version = ''
 
     def parse_document_body(self, ctx: Context) -> tuple[ast.Node | None, str | None]:
         node, err = self.parse_token(ctx, ctx.current_token())
         if err is not None:
             return None, err
         if ctx.next():
-            return None, err_syntax("value is not allowed in this context", ctx.current_token().raw_token())
+            return None, err_syntax('value is not allowed in this context', ctx.current_token().raw_token())
         return node, None
 
     def parse_token(self, ctx: Context, tk: Token) -> tuple[ast.Node | None, str | None]:
@@ -1242,12 +1242,12 @@ class Parser:
                 return None, err
             ctx.go_next()
             if ctx.is_token_not_found():
-                return None, err_syntax("could not find anchor value", tk.raw_token())
+                return None, err_syntax('could not find anchor value', tk.raw_token())
             value, err = self.parse_token(ctx, ctx.current_token())
             if err is not None:
                 return None, err
             if isinstance(value, ast.AnchorNode):
-                return None, err_syntax("anchors cannot be used consecutively", value.get_token())
+                return None, err_syntax('anchors cannot be used consecutively', value.get_token())
             anchor.Value = value
             return anchor, None
         elif tk.group_type() == TokenGroupType.ALIAS:
@@ -1290,7 +1290,7 @@ class Parser:
             # Therefore, if this is found in other cases, it is treated as a syntax error.
             return None, err_syntax("could not find '{' character corresponding to '}'", tk.raw_token())
         elif tk.type() == tokens_.Type.MAPPING_VALUE:
-            return None, err_syntax("found an invalid key for this map", tk.raw_token())
+            return None, err_syntax('found an invalid key for this map', tk.raw_token())
         node, err = self.parse_scalar_value(ctx, tk)
         if err is not None:
             return None, err
@@ -1307,12 +1307,12 @@ class Parser:
                     return None, err
                 ctx.go_next()
                 if ctx.is_token_not_found():
-                    return None, err_syntax("could not find anchor value", tk.raw_token())
+                    return None, err_syntax('could not find anchor value', tk.raw_token())
                 value, err = self.parse_token(ctx, ctx.current_token())
                 if err is not None:
                     return None, err
                 if isinstance(value, ast.AnchorNode):
-                    return None, err_syntax("anchors cannot be used consecutively", value.get_token())
+                    return None, err_syntax('anchors cannot be used consecutively', value.get_token())
                 anchor.value = value
                 return anchor, None
             elif tk.group_type() == TokenGroupType.ALIAS:
@@ -1325,7 +1325,7 @@ class Parser:
             elif tk.group_type() == TokenGroupType.SCALAR_TAG:
                 return self.parse_tag(ctx.with_group(tk.group))
             else:
-                return None, err_syntax("unexpected scalar value", tk.raw_token())
+                return None, err_syntax('unexpected scalar value', tk.raw_token())
         if tk.type() == tokens_.Type.MERGE_KEY:
             return new_merge_key_node(ctx, tk)
         if tk.type() == tokens_.Type.NULL:
@@ -1355,7 +1355,7 @@ class Parser:
             # this case applies when it is a scalar tag and its value does not exist.
             # Examples of cases where the value does not exist include cases like `key: !!str,` or `!!str : value`.
             return self.parse_scalar_tag(ctx)
-        return None, err_syntax("unexpected scalar value type", tk.raw_token())
+        return None, err_syntax('unexpected scalar value type', tk.raw_token())
 
     def parse_flow_map(self, ctx: Context) -> tuple[ast.MappingNode | None, str | None]:
         node, err = new_mapping_node(ctx, ctx.current_token(), True)
@@ -1408,7 +1408,7 @@ class Parser:
                 else:
                     ctx.go_next()
                     if ctx.is_token_not_found():
-                        return None, err_syntax("could not find map value", colon_tk.raw_token())
+                        return None, err_syntax('could not find map value', colon_tk.raw_token())
                     value, err = self.parse_token(ctx, ctx.current_token())
                     if err is not None:
                         return None, err
@@ -1418,7 +1418,7 @@ class Parser:
                     node.values.append(map_value)
             else:
                 if not self.is_flow_map_delim(ctx.next_token()):
-                    return None, err_syntax("could not find flow map content", map_key_tk.raw_token())
+                    return None, err_syntax('could not find flow map content', map_key_tk.raw_token())
                 key, err = self.parse_scalar_value(ctx, map_key_tk)
                 if err is not None:
                     return None, err
@@ -1442,7 +1442,7 @@ class Parser:
     def parse_map(self, ctx: Context) -> tuple[ast.MappingNode | None, str | None]:
         key_tk = ctx.current_token()
         if key_tk.group is None:
-            return None, err_syntax("unexpected map key", key_tk.raw_token())
+            return None, err_syntax('unexpected map key', key_tk.raw_token())
         key_value_node: ast.MappingValueNode
         if key_tk.group_type() == TokenGroupType.MAP_KEY_VALUE:
             node, err = self.parse_map_key_value(ctx.with_group(key_tk.group), key_tk.group, None)
@@ -1460,7 +1460,7 @@ class Parser:
 
             value_tk = ctx.current_token()
             if key_tk.line() == value_tk.line() and value_tk.type() == tokens_.Type.SEQUENCE_ENTRY:
-                return None, err_syntax("block sequence entries are not allowed in this context", value_tk.raw_token())
+                return None, err_syntax('block sequence entries are not allowed in this context', value_tk.raw_token())
             ctx = ctx.with_child(self.map_key_text(key))
             value, err = self.parse_map_value(ctx, key, key_tk.group.last())
             if err is not None:
@@ -1485,7 +1485,7 @@ class Parser:
                 # ] <=
                 break
             if not self.is_map_token(tk):
-                return None, err_syntax("non-map value is specified", tk.raw_token())
+                return None, err_syntax('non-map value is specified', tk.raw_token())
             cm = self.parse_head_comment(ctx)
             if typ == tokens_.Type.MAPPING_END:
                 # a: {
@@ -1524,7 +1524,7 @@ class Parser:
             return None
         # a: b
         #  c <= this token is invalid.
-        return err_syntax("value is not allowed in this context. map key-value is pre-defined", tk.raw_token())
+        return err_syntax('value is not allowed in this context. map key-value is pre-defined', tk.raw_token())
 
     def is_map_token(self, tk: Token) -> bool:
         if tk.group is None:
@@ -1539,9 +1539,9 @@ class Parser:
             entry_tk: Token | None,
     ) -> tuple[ast.MappingValueNode | None, str | None]:
         if g.type != TokenGroupType.MAP_KEY_VALUE:
-            return None, err_syntax("unexpected map key-value pair", g.raw_token())
+            return None, err_syntax('unexpected map key-value pair', g.raw_token())
         if g.first().group is None:
-            return None, err_syntax("unexpected map key", g.raw_token())
+            return None, err_syntax('unexpected map key', g.raw_token())
         key_group = g.first().group
         key, err = self.parse_map_key(ctx.with_group(key_group), key_group)
         if err is not None:
@@ -1555,7 +1555,7 @@ class Parser:
 
     def parse_map_key(self, ctx: Context, g: TokenGroup) -> tuple[ast.MapKeyNode | None, str | None]:
         if g.type != TokenGroupType.MAP_KEY:
-            return None, err_syntax("unexpected map key", g.raw_token())
+            return None, err_syntax('unexpected map key', g.raw_token())
         if g.first().type() == tokens_.Type.MAPPING_KEY:
             map_key_tk = g.first()
             if map_key_tk.group is not None:
@@ -1565,7 +1565,7 @@ class Parser:
                 return None, err
             ctx.go_next()  # skip mapping key token
             if ctx.is_token_not_found():
-                return None, err_syntax("could not find value for mapping key", map_key_tk.raw_token())
+                return None, err_syntax('could not find value for mapping key', map_key_tk.raw_token())
 
             scalar, err = self.parse_scalar_value(ctx, ctx.current_token())
             if err is not None:
@@ -1585,7 +1585,7 @@ class Parser:
         if err is not None:
             return None, err
         if not isinstance(key := scalar, ast.MapKeyNode):
-            return None, err_syntax("cannot take map-key node", scalar.get_token())
+            return None, err_syntax('cannot take map-key node', scalar.get_token())
         key_text = self.map_key_text(key)
         key_path = ctx.with_child(key_text).path
         key.set_path(key_path)
@@ -1599,7 +1599,7 @@ class Parser:
             if (n := self.path_map.get(key_path)) is not None:
                 pos = n.get_token().position
                 return err_syntax(
-                    "mapping key %q already defined at [%d:%d]" % (tk.value, pos.line, pos.column),
+                    'mapping key %q already defined at [%d:%d]' % (tk.value, pos.line, pos.column),
                     tk,
                 )
         origin = self.remove_left_white_space(tk.origin)
@@ -1607,7 +1607,7 @@ class Parser:
             if tk.type == tokens_.Type.STRING:
                 origin = self.remove_right_white_space(origin)
                 if tk.position.line + self.new_line_character_num(origin) != colon_tk.line():
-                    return err_syntax("map key definition includes an implicit line break", tk)
+                    return err_syntax('map key definition includes an implicit line break', tk)
             return None
         if (
                 tk.type != tokens_.Type.STRING and
@@ -1616,7 +1616,7 @@ class Parser:
         ):
             return None
         if self.exists_new_line_character(origin):
-            return err_syntax("unexpected key name", tk)
+            return err_syntax('unexpected key name', tk)
         return None
 
     def remove_left_white_space(self, src: str) -> str:
@@ -1647,7 +1647,7 @@ class Parser:
 
     def map_key_text(self, n: ast.Node | None) -> str:
         if n is None:
-            return ""
+            return ''
         nn = n
         if isinstance(nn, ast.MappingKeyNode):
             return self.map_key_text(nn.value)
@@ -1679,7 +1679,7 @@ class Parser:
             #
             # a: b: c
             #    ^
-            return None, err_syntax("mapping value is not allowed in this context", tk.raw_token())
+            return None, err_syntax('mapping value is not allowed in this context', tk.raw_token())
 
         if tk.column() == key_col and self.is_map_token(tk):
             # in this case,
@@ -1711,11 +1711,11 @@ class Parser:
         if tk.column() <= key_col and tk.group_type() == TokenGroupType.ANCHOR_NAME:
             # key: <value does not defined>
             # &anchor
-            return None, err_syntax("anchor is not allowed in this context", tk.raw_token())
+            return None, err_syntax('anchor is not allowed in this context', tk.raw_token())
         if tk.column() <= key_col and tk.type() == tokens_.Type.TAG:
             # key: <value does not defined>
             # !!tag
-            return None, err_syntax("tag is not allowed in this context", tk.raw_token())
+            return None, err_syntax('tag is not allowed in this context', tk.raw_token())
 
         if tk.column() < key_col:
             # in this case,
@@ -1773,7 +1773,7 @@ class Parser:
             #
             # - &anchor
             # !!tag
-            return err_syntax("tag is not allowed in this context", tag_tk)
+            return err_syntax('tag is not allowed in this context', tag_tk)
         return None
 
     def parse_anchor(self, ctx: Context, g: TokenGroup) -> tuple[ast.AnchorNode | None, str | None]:
@@ -1783,13 +1783,13 @@ class Parser:
             return None, err
         ctx.go_next()
         if ctx.is_token_not_found():
-            return None, err_syntax("could not find anchor value", anchor.get_token())
+            return None, err_syntax('could not find anchor value', anchor.get_token())
 
         value, err = self.parse_token(ctx, ctx.current_token())
         if err is not None:
             return None, err
         if isinstance(value, ast.AnchorNode):
-            return None, err_syntax("anchors cannot be used consecutively", value.get_token())
+            return None, err_syntax('anchors cannot be used consecutively', value.get_token())
         anchor.value = value
         return anchor, None
 
@@ -1799,14 +1799,14 @@ class Parser:
             return None, err
         ctx.go_next()
         if ctx.is_token_not_found():
-            return None, err_syntax("could not find anchor value", anchor.get_token())
+            return None, err_syntax('could not find anchor value', anchor.get_token())
 
         anchor_name, err = self.parse_scalar_value(ctx, ctx.current_token())
         if err is not None:
             return None, err
         if anchor_name is None:
             return None, err_syntax(
-                "unexpected anchor. anchor name is not scalar value",
+                'unexpected anchor. anchor name is not scalar value',
                 ctx.current_token().raw_token(),
             )
         anchor.name = anchor_name
@@ -1818,13 +1818,13 @@ class Parser:
             return None, err
         ctx.go_next()
         if ctx.is_token_not_found():
-            return None, err_syntax("could not find alias value", alias.get_token())
+            return None, err_syntax('could not find alias value', alias.get_token())
 
         aliasName, err = self.parse_scalar_value(ctx, ctx.current_token())
         if err is not None:
             return None, err
         if aliasName is None:
-            return None, err_syntax("unexpected alias. alias name is not scalar value", ctx.current_token().raw_token())
+            return None, err_syntax('unexpected alias. alias name is not scalar value', ctx.current_token().raw_token())
         alias.value = aliasName
         return alias, None
 
@@ -1836,7 +1836,7 @@ class Parser:
 
         tk = ctx.current_token()
         if tk is None:
-            value, err = new_string_node(ctx, Token(token=tokens.new("", "", node.start.position)))
+            value, err = new_string_node(ctx, Token(token=tokens.new('', '', node.start.position)))
             if err is not None:
                 return None, err
             node.value = value
@@ -1845,7 +1845,7 @@ class Parser:
         if err is not None:
             return None, err
         if not isinstance(s := value, ast.StringNode):
-            return None, err_syntax("unexpected token. required string token", value.get_token())
+            return None, err_syntax('unexpected token. required string token', value.get_token())
         node.value = s
         return node, None
 
@@ -1854,9 +1854,9 @@ class Parser:
         if err is not None:
             return None, err
         if tag.value is None:
-            return None, err_syntax("specified not scalar tag", tag.get_token())
+            return None, err_syntax('specified not scalar tag', tag.get_token())
         if not isinstance(tag.value, ast.ScalarNode):
-            return None, err_syntax("specified not scalar tag", tag.get_token())
+            return None, err_syntax('specified not scalar tag', tag.get_token())
         return tag, None
 
     def parse_tag(self, ctx: Context) -> tuple[ast.TagNode | None, str | None]:
@@ -1899,7 +1899,7 @@ class Parser:
                 tokens_.ReservedTagKeywords.SET,
         ):
             if not self.is_map_token(tk):
-                return None, err_syntax("could not find map", tk.raw_token())
+                return None, err_syntax('could not find map', tk.raw_token())
             if tk.type() == tokens_.Type.MAPPING_START:
                 return self.parse_flow_map(ctx.with_flow(True))
             return self.parse_map(ctx)
@@ -2060,11 +2060,11 @@ class Parser:
         if tk.column() <= seq_col and tk.group_type() == TokenGroupType.ANCHOR_NAME:
             # - <value does not defined>
             # &anchor
-            return None, err_syntax("anchor is not allowed in this sequence context", tk.raw_token())
+            return None, err_syntax('anchor is not allowed in this sequence context', tk.raw_token())
         if tk.column() <= seq_col and tk.type() == tokens_.Type.TAG:
             # - <value does not defined>
             # !!tag
-            return None, err_syntax("tag is not allowed in this sequence context", tk.raw_token())
+            return None, err_syntax('tag is not allowed in this sequence context', tk.raw_token())
 
         if tk.column() < seq_col:
             # in this case,
@@ -2105,41 +2105,40 @@ class Parser:
         if err is not None:
             return None, err
 
-        if directive.name == "YAML":
+        if directive.name == 'YAML':
             if len(g.tokens) != 2:
-                return None, err_syntax("unexpected format YAML directive", g.first().raw_token())
+                return None, err_syntax('unexpected format YAML directive', g.first().raw_token())
             value_tk = g.tokens[1]
             value_raw_tk = value_tk.raw_token()
             value = value_raw_tk.value
             ver, exists = YAML_VERSION_MAP[value]
             if not exists:
-                return None, err_syntax("unknown YAML version %r" % (value,), value_raw_tk)
-            if self.yaml_version != "":
-                return None, err_syntax("YAML version has already been specified", value_raw_tk)
+                return None, err_syntax('unknown YAML version %r' % (value,), value_raw_tk)
+            if self.yaml_version != '':
+                return None, err_syntax('YAML version has already been specified', value_raw_tk)
             self.yaml_version = ver
             version_node, err = new_string_node(ctx, value_tk)
             if err is not None:
                 return None, err
             directive.values.append(version_node)
-        elif directive.name == "TAG":
+        elif directive.name == 'TAG':
             if len(g.tokens) != 3:
-                return None, err_syntax("unexpected format TAG directive", g.first().raw_token())
+                return None, err_syntax('unexpected format TAG directive', g.first().raw_token())
             tag_key, err = new_string_node(ctx, g.tokens[1])
             if err is not None:
                 return None, err
-            if tag_key.value == "!!":
+            if tag_key.value == '!!':
                 self.secondary_tag_directive = directive
             tag_value, err = new_string_node(ctx, g.tokens[2])
             if err is not None:
                 return None, err
             directive.values.extend([tag_key, tag_value])
-        else:
-            if len(g.tokens) > 1:
-                for tk in g.tokens[1:]:
-                    value, err = new_string_node(ctx, tk)
-                    if err is not None:
-                        return None, err
-                    directive.values.append(value)
+        elif len(g.tokens) > 1:
+            for tk in g.tokens[1:]:
+                value, err = new_string_node(ctx, tk)
+                if err is not None:
+                    return None, err
+                directive.values.append(value)
         return directive, None
 
     def parse_directive_name(self, ctx: Context) -> tuple[ast.DirectiveNode | None, str | None]:
@@ -2148,14 +2147,14 @@ class Parser:
             return None, err
         ctx.go_next()
         if ctx.is_token_not_found():
-            return None, err_syntax("could not find directive value", directive.get_token())
+            return None, err_syntax('could not find directive value', directive.get_token())
 
         directive_name, err = self.parse_scalar_value(ctx, ctx.current_token())
         if err is not None:
             return None, err
         if directive_name is None:
             return None, err_syntax(
-                "unexpected directive. directive name is not scalar value",
+                'unexpected directive. directive name is not scalar value',
                 ctx.current_token().raw_token(),
             )
         directive.name = directive_name

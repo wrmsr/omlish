@@ -65,28 +65,28 @@ class NodeType(enum.Enum):
 
 # String node type identifier to YAML Structure name based on https://yaml.org/spec/1.2/spec.html
 NODE_TYPE_YAML_NAMES: ta.Mapping[NodeType, str] = {
-    NodeType.UNKNOWN: "unknown",
-    NodeType.DOCUMENT: "document",
-    NodeType.NULL: "null",
-    NodeType.BOOL: "boolean",
-    NodeType.INTEGER: "int",
-    NodeType.FLOAT: "float",
-    NodeType.INFINITY: "inf",
-    NodeType.NAN: "nan",
-    NodeType.STRING: "string",
-    NodeType.MERGE_KEY: "merge key",
-    NodeType.LITERAL: "scalar",
-    NodeType.MAPPING: "mapping",
-    NodeType.MAPPING_KEY: "key",
-    NodeType.MAPPING_VALUE: "value",
-    NodeType.SEQUENCE: "sequence",
-    NodeType.SEQUENCE_ENTRY: "value",
-    NodeType.ANCHOR: "anchor",
-    NodeType.ALIAS: "alias",
-    NodeType.DIRECTIVE: "directive",
-    NodeType.TAG: "tag",
-    NodeType.COMMENT: "comment",
-    NodeType.COMMENT_GROUP: "comment",
+    NodeType.UNKNOWN: 'unknown',
+    NodeType.DOCUMENT: 'document',
+    NodeType.NULL: 'null',
+    NodeType.BOOL: 'boolean',
+    NodeType.INTEGER: 'int',
+    NodeType.FLOAT: 'float',
+    NodeType.INFINITY: 'inf',
+    NodeType.NAN: 'nan',
+    NodeType.STRING: 'string',
+    NodeType.MERGE_KEY: 'merge key',
+    NodeType.LITERAL: 'scalar',
+    NodeType.MAPPING: 'mapping',
+    NodeType.MAPPING_KEY: 'key',
+    NodeType.MAPPING_VALUE: 'value',
+    NodeType.SEQUENCE: 'sequence',
+    NodeType.SEQUENCE_ENTRY: 'value',
+    NodeType.ANCHOR: 'anchor',
+    NodeType.ALIAS: 'alias',
+    NodeType.DIRECTIVE: 'directive',
+    NodeType.TAG: 'tag',
+    NodeType.COMMENT: 'comment',
+    NodeType.COMMENT_GROUP: 'comment',
 }
 
 
@@ -198,7 +198,7 @@ class BaseNode(Node, abc.ABC):
     # get_path returns YAMLPath for the current node.
     def get_path(self) -> str:
         if self is None:
-            return ""
+            return ''
         return self.path
 
     # set_path set YAMLPath for the current node.
@@ -214,11 +214,10 @@ class BaseNode(Node, abc.ABC):
     # set_comment set comment token
     def set_comment(self, node: ta.Optional['CommentGroupNode']) -> None:
         self.comment = node
-        return None
 
 
 def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
-    return "%s %s" % (base, str(node))
+    return '%s %s' % (base, str(node))
 
 
 ##
@@ -290,8 +289,8 @@ def null(tk: tokens.Token) -> 'NullNode':
     )
 
 
-_BOOL_TRUE_STRS = {"1", "t", "T", "true", "TRUE", "True"}
-_BOOL_FALSE_STRS = {"0", "f", "F", "false", "FALSE", "False"}
+_BOOL_TRUE_STRS = {'1', 't', 'T', 'true', 'TRUE', 'True'}
+_BOOL_FALSE_STRS = {'0', 'f', 'F', 'false', 'FALSE', 'False'}
 
 
 def _parse_bool(s: str) -> bool:
@@ -341,9 +340,9 @@ def infinity(tk: tokens.Token) -> 'InfinityNode':
     node = InfinityNode(
         token=tk,
     )
-    if tk.value in (".inf", ".Inf", ".INF"):
+    if tk.value in ('.inf', '.Inf', '.INF'):
         node.value = float('inf')
-    elif tk.value in ("-.inf", "-.Inf", "-.INF"):
+    elif tk.value in ('-.inf', '-.Inf', '-.INF'):
         node.value = float('-inf')
     return node
 
@@ -486,7 +485,7 @@ class File:
         if len(docs) > 0:
             return '\n'.join(docs) + '\n'
         else:
-            return ""
+            return ''
 
 
 ##
@@ -724,16 +723,15 @@ def strconv_quote(s: str) -> str:
         elif 0x20 <= char_ord < 0x7F:  # Printable ASCII (already handled \, ")
             res.append(char_val)
         # Unicode characters (char_ord >= 0x80) and C1 controls (0x80-0x9F)
+        elif _go_is_print(char_ord):
+            res.append(char_val)
+        elif char_ord <= 0xFFFF:
+            res.append(f'\\u{char_ord:04x}')
         else:
-            if _go_is_print(char_ord):
-                res.append(char_val)
-            elif char_ord <= 0xFFFF:
-                res.append(f'\\u{char_ord:04x}')
-            else:
-                res.append(f'\\U{char_ord:08x}')
+            res.append(f'\\U{char_ord:08x}')
 
     res.append('"')
-    return "".join(res)
+    return ''.join(res)
 
 
 ##
@@ -787,13 +785,13 @@ class StringNode(ScalarNode, BaseNode):
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
             header = tokens.literal_block_header(self.value)
-            space = " " * (self.token.position.column - 1)
-            indent = " " * self.token.position.indent_num
+            space = ' ' * (self.token.position.column - 1)
+            indent = ' ' * self.token.position.indent_num
             values: list[str] = []
             for v in self.value.split(lbc):
-                values.append("%s%s%s" % (space, indent, v))
-            block = lbc.join(values).rstrip("%s%s%s" % (lbc, indent, space)).rstrip("%s%s" % (indent, space))
-            return "%s%s%s" % (header, lbc, block)
+                values.append('%s%s%s' % (space, indent, v))
+            block = lbc.join(values).rstrip('%s%s%s' % (lbc, indent, space)).rstrip('%s%s' % (indent, space))
+            return '%s%s%s' % (header, lbc, block)
         elif len(self.value) > 0 and (self.value[0] == '{' or self.value[0] == '['):
             return "'%s'" % (self.value,)
         if self.comment is not None:
@@ -813,13 +811,13 @@ class StringNode(ScalarNode, BaseNode):
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
             header = tokens.literal_block_header(self.value)
-            space = " " * (self.token.position.column - 1)
-            indent = " " * self.token.position.indent_num
+            space = ' ' * (self.token.position.column - 1)
+            indent = ' ' * self.token.position.indent_num
             values: list[str] = []
             for v in self.value.split(lbc):
-                values.append("%s%s%s" % (space, indent, v))
-            block = lbc.join(values).rstrip("%s%s%s" % (lbc, indent, space)).rstrip("  %s" % (space,))
-            return "%s%s%s" % (header, lbc, block)
+                values.append('%s%s%s' % (space, indent, v))
+            block = lbc.join(values).rstrip('%s%s%s' % (lbc, indent, space)).rstrip('  %s' % (space,))
+            return '%s%s%s' % (header, lbc, block)
         elif len(self.value) > 0 and (self.value[0] == '{' or self.value[0] == '['):
             return "'%s'" % (self.value,)
         return self.value
@@ -877,10 +875,10 @@ class LiteralNode(ScalarNode, BaseNode):
     # String literal to text
     def __str__(self) -> str:
         origin = self.value.get_token().origin
-        lit = origin.rstrip(" ").rstrip("\n")
+        lit = origin.rstrip(' ').rstrip('\n')
         if self.comment is not None:
-            return "%s %s\n%s" % (self.start.value, str(self.comment), lit)
-        return "%s\n%s" % (self.start.value, lit)
+            return '%s %s\n%s' % (self.start.value, str(self.comment), lit)
+        return '%s\n%s' % (self.start.value, lit)
 
     def string_without_comment(self) -> str:
         return str(self)
@@ -1181,8 +1179,8 @@ class MappingNode(BaseNode):
     def flow_style_string(self, comment_mode: bool) -> str:
         values: list[str] = []
         for value in self.values:
-            values.append(str(value).lstrip(" "))
-        map_text = "{%s}" % (', '.join(values),)
+            values.append(str(value).lstrip(' '))
+        map_text = '{%s}' % (', '.join(values),)
         if comment_mode and self.comment is not None:
             return add_comment_string(map_text, self.comment)
         return map_text
@@ -1200,15 +1198,15 @@ class MappingNode(BaseNode):
                     break
                 space_num += 1
             comment = self.comment.string_with_space(space_num)
-            return "%s\n%s" % (comment, map_text)
+            return '%s\n%s' % (comment, map_text)
         return map_text
 
     # String mapping values to text
     def __str__(self) -> str:
         if len(self.values) == 0:
             if self.comment is not None:
-                return add_comment_string("{}", self.comment)
-            return "{}"
+                return add_comment_string('{}', self.comment)
+            return '{}'
 
         comment_mode = True
         if self.is_flow_style or len(self.values) == 0:
@@ -1260,7 +1258,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
-        return "%s %s" % (self.start.value, str(self.value))
+        return '%s %s' % (self.start.value, str(self.value))
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1330,7 +1328,7 @@ class MappingValueNode(BaseNode):
     def __str__(self) -> str:
         text = ''
         if self.comment is not None:
-            text = "%s\n%s" % (
+            text = '%s\n%s' % (
                 self.comment.string_with_space(self.key.get_token().position.column - 1),
                 self.to_string(),
             )
@@ -1338,50 +1336,50 @@ class MappingValueNode(BaseNode):
             text = self.to_string()
 
         if self.foot_comment is not None:
-            text += "\n%s" % (self.foot_comment.string_with_space(self.key.get_token().position.column - 1),)
+            text += '\n%s' % (self.foot_comment.string_with_space(self.key.get_token().position.column - 1),)
 
         return text
 
     def to_string(self) -> str:
-        space = " " * (self.key.get_token().position.column - 1)
+        space = ' ' * (self.key.get_token().position.column - 1)
         if check_line_break(self.key.get_token()):
-            space = "%s%s" % ("\n", space)
+            space = '%s%s' % ('\n', space)
 
         key_indent_level = self.key.get_token().position.indent_level
         value_indent_level = self.value.get_token().position.indent_level
         key_comment = self.key.get_comment()
 
         if isinstance(self.value, ScalarNode):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         elif key_indent_level < value_indent_level and not self.is_flow_style:
             if key_comment is not None:
-                return "%s%s: %s\n%s" % (
+                return '%s%s: %s\n%s' % (
                     space,
                     self.key.string_without_comment(),
                     str(key_comment),
                     str(self.value),
                 )
 
-            return "%s%s:\n%s" % (space, str(self.key), str(self.value))
+            return '%s%s:\n%s' % (space, str(self.key), str(self.value))
 
         elif isinstance(self.value, MappingNode) and (self.value.is_flow_style or len(self.value.values) == 0):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         elif isinstance(self.value, SequenceNode) and (self.value.is_flow_style or len(self.value.values) == 0):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         elif isinstance(self.value, AnchorNode):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         elif isinstance(self.value, AliasNode):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         elif isinstance(self.value, TagNode):
-            return "%s%s: %s" % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, str(self.key), str(self.value))
 
         if key_comment is not None:
-            return "%s%s: %s\n%s" % (
+            return '%s%s: %s\n%s' % (
                 space,
                 self.key.string_without_comment(),
                 str(key_comment),
@@ -1389,13 +1387,13 @@ class MappingValueNode(BaseNode):
             )
 
         if isinstance(self.value, MappingNode) and self.value.comment is not None:
-            return "%s%s: %s" % (
+            return '%s%s: %s' % (
                 space,
                 str(self.key),
-                str(self.value).lstrip(" "),
+                str(self.value).lstrip(' '),
             )
 
-        return "%s%s:\n%s" % (space, str(self.key), str(self.value))
+        return '%s%s:\n%s' % (space, str(self.key), str(self.value))
 
     # map_range implements MapNode protocol
     def map_range(self) -> MapNodeIter:
@@ -1458,7 +1456,7 @@ class SequenceNode(BaseNode):
     # Replace replace value node.
     def replace(self, idx: int, value: Node) -> str | None:
         if len(self.values) <= idx:
-            return "invalid index for sequence: sequence length is %d, but specified %d index" % (
+            return 'invalid index for sequence: sequence length is %d, but specified %d index' % (
                 len(self.values),
                 idx,
             )
@@ -1514,10 +1512,10 @@ class SequenceNode(BaseNode):
         for value in self.values:
             values.append(str(value))
 
-        return "[%s]" % (', '.join(values),)
+        return '[%s]' % (', '.join(values),)
 
     def block_style_string(self) -> str:
-        space = " " * (self.start.position.column - 1)
+        space = ' ' * (self.start.position.column - 1)
         values: list[str] = []
         if self.comment is not None:
             values.append(self.comment.string_with_space(self.start.position.column - 1))
@@ -1527,17 +1525,17 @@ class SequenceNode(BaseNode):
                 continue
 
             value_str = str(value)
-            new_line_prefix = ""
-            if value_str.startswith("\n"):
+            new_line_prefix = ''
+            if value_str.startswith('\n'):
                 value_str = value_str[1:]
-                new_line_prefix = "\n"
+                new_line_prefix = '\n'
 
-            splitted_values = value_str.split("\n")
-            trimmed_first_value = splitted_values[0].lstrip(" ")
+            splitted_values = value_str.split('\n')
+            trimmed_first_value = splitted_values[0].lstrip(' ')
             diff_length = len(splitted_values[0]) - len(trimmed_first_value)
-            if len(splitted_values) > 1 and value.type() == NodeType.STRING or value.type() == NodeType.LITERAL:
+            if (len(splitted_values) > 1 and value.type() == NodeType.STRING) or value.type() == NodeType.LITERAL:
                 # If multi-line string, the space characters for indent have already been added, so delete them.
-                prefix = space + "  "
+                prefix = space + '  '
                 for i in range(1, len(splitted_values)):
                     splitted_values[i] = splitted_values[i].lstrip(prefix)
 
@@ -1545,21 +1543,21 @@ class SequenceNode(BaseNode):
             for i in range(1, len(splitted_values)):
                 if len(splitted_values[i]) <= diff_length:
                     # this line is \n or white space only
-                    new_values.append("")
+                    new_values.append('')
                     continue
 
                 trimmed = splitted_values[i][diff_length:]
-                new_values.append("%s  %s" % (space, trimmed))
+                new_values.append('%s  %s' % (space, trimmed))
 
             new_value = '\n'.join(new_values)
             if len(self.value_head_comments) == len(self.values) and self.value_head_comments[idx] is not None:
-                values.append("%s%s" % (
+                values.append('%s%s' % (
                     new_line_prefix,
                     self.value_head_comments[idx].string_with_space(self.start.position.column - 1),
                 ))
-                new_line_prefix = ""
+                new_line_prefix = ''
 
-            values.append("%s%s- %s" % (new_line_prefix, space, new_value))
+            values.append('%s%s- %s' % (new_line_prefix, space, new_value))
 
         if self.foot_comment is not None:
             values.append(self.foot_comment.string_with_space(self.start.position.column - 1))
@@ -1597,7 +1595,7 @@ class SequenceEntryNode(BaseNode):
 
     # String node to text
     def __str__(self) -> str:
-        return ""  # TODO
+        return ''  # TODO
 
     # get_token returns token instance
     def get_token(self) -> tokens.Token:
@@ -1714,10 +1712,10 @@ class AnchorNode(ScalarNode, BaseNode):
     def __str__(self) -> str:
         value = str(self.value)
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
-            return "&%s\n%s" % (str(self.name), value)
+            return '&%s\n%s' % (str(self.name), value)
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
-            return "&%s\n%s" % (str(self.name), value)
-        return "&%s %s" % (str(self.name), value)
+            return '&%s\n%s' % (str(self.name), value)
+        return '&%s %s' % (str(self.name), value)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1776,7 +1774,7 @@ class AliasNode(ScalarNode, BaseNode):
 
     # String alias to text
     def __str__(self) -> str:
-        return "*%s" % (str(self.value),)
+        return '*%s' % (str(self.value),)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1824,7 +1822,7 @@ class DirectiveNode(BaseNode):
         values: list[str] = []
         for val in self.values:
             values.append(str(val))
-        return " ".join(["%" + str(self.name), *values])
+        return ' '.join(['%' + str(self.name), *values])
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1871,11 +1869,11 @@ class TagNode(ScalarNode, BaseNode):
     def __str__(self) -> str:
         value = str(self.value)
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
-            return "%s\n%s" % (self.start.value, value)
+            return '%s\n%s' % (self.start.value, value)
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
-            return "%s\n%s" % (self.start.value, value)
+            return '%s\n%s' % (self.start.value, value)
 
-        return "%s %s" % (self.start.value, value)
+        return '%s %s' % (self.start.value, value)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1925,7 +1923,7 @@ class CommentNode(BaseNode):
 
     # String comment to text
     def __str__(self) -> str:
-        return "#%s" % (self.token.value,)
+        return '#%s' % (self.token.value,)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
@@ -1968,11 +1966,11 @@ class CommentGroupNode(BaseNode):
 
     def string_with_space(self, col: int) -> str:
         values: list[str] = []
-        space = " " * col
+        space = ' ' * col
         for comment in self.comments:
             spc = space
             if check_line_break(comment.token):
-                spc = "%s%s" % ("\n", spc)
+                spc = '%s%s' % ('\n', spc)
             values.append(spc + str(comment))
         return '\n'.join(values)
 
@@ -2178,7 +2176,7 @@ class ErrInvalidMergeType:
     src: Node
 
     def error(self) -> str:
-        return "cannot merge %s into %s" % (self.src.type(), self.dst.type())
+        return 'cannot merge %s into %s' % (self.src.type(), self.dst.type())
 
 
 # Merge merge document, map, sequence node.
