@@ -157,7 +157,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                 try:
                     resource.setrlimit(res, (min_limit, hard))  # type: ignore
                     log.info('Increased %s limit to %s', name, min_limit)
-                except (resource.error, ValueError):
+                except (OSError, ValueError):
                     raise RuntimeError(msg % dict(  # type: ignore  # noqa
                         min_limit=min_limit,
                         res=res,

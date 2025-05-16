@@ -128,7 +128,7 @@ dep-dry-run: venv
 
 .PHONY: dep-refresh
 dep-refresh: venv
-	${PYTHON} -m uv pip install --upgrade pip setuptools wheel
+	${PYTHON} -m uv pip install --upgrade pip setuptools uv wheel
 	${PYTHON} -m uv pip install --upgrade -r requirements-ext.txt
 
 
