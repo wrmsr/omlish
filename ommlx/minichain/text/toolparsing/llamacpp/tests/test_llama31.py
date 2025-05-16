@@ -1,3 +1,5 @@
+from omlish import lang
+
 from ..llama31 import parse_llama_3_1
 from ..types import ChatMsg
 from ..types import ChatToolCall
@@ -83,3 +85,17 @@ def test_usage():
             ),
         ],
     )
+
+
+def test_samples():
+    samples = {
+        n: r.read_text()
+        for n, r in lang.get_relative_resources('...tests.samples', globals=globals()).items()
+        if r.is_file and n.endswith('.txt')
+    }
+
+    for n, s in sorted(samples.items(), key=lambda kv: kv[0]):
+        print(n)
+        print(s)
+        print(parse_llama_3_1(s, with_builtin_tools=True))
+        print()
