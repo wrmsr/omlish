@@ -1,4 +1,3 @@
-# https://github.com/goccy/go-yaml/blob/55ca11205f051fe5daa6dfe631ac30dc08a0dab7/token/token.go
 import copy
 import dataclasses as dc
 import datetime

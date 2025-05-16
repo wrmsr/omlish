@@ -1670,8 +1670,8 @@ class SequenceMergeValueNode(MapNode):
 @dc.dataclass(kw_only=True)
 class AnchorNode(ScalarNode, BaseNode):
     start: tokens.Token
-    name: Node
-    value: Node
+    name: Node | None = None
+    value: Node | None = None
 
     def string_without_comment(self) -> str:
         return str(self.value)
@@ -1738,7 +1738,7 @@ class AnchorNode(ScalarNode, BaseNode):
 @dc.dataclass(kw_only=True)
 class AliasNode(ScalarNode, BaseNode):
     start: tokens.Token
-    value: Node
+    value: Node | None = None
 
     def string_without_comment(self) -> str:
         return str(self.value)

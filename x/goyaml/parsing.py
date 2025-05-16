@@ -1075,7 +1075,7 @@ PARSE_COMMENTS = ParseMode(1)  # parse comments and add them to AST
 # ParseBytes parse from byte slice, and returns ast.File
 def parse_str(
         s: str,
-        mode: ParseMode,
+        mode: ParseMode = ParseMode(0),
         *opts: Option,
 ) -> tuple[ast.File | None, str | None]:
     tokens = scanning.tokenize(s)
@@ -1088,7 +1088,7 @@ def parse_str(
 # Parse parse from token instances, and returns ast.File
 def parse(
         tokens: tokens_.Tokens,
-        mode: ParseMode,
+        mode: ParseMode = ParseMode(0),
         *opts: Option,
 ) -> tuple[ast.File | None, str | None]:
     if (tk := tokens.invalid_token()) is not None:
@@ -1989,7 +1989,7 @@ class Parser:
             return None, err
 
         tk = seq_tk
-        while tk.type() == tokens_.Type.SEQUENCE_ENTRY and tk.column() == seq_tk.column():
+        while Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY and tk.column() == seq_tk.column():
             seq_tk = tk
             head_comment = self.parse_head_comment(ctx)
             ctx.go_next()  # skip sequence entry token
