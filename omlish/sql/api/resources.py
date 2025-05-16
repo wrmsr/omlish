@@ -44,8 +44,10 @@ class Closer(lang.Abstract):
 
     @ta.final
     def close(self) -> None:
-        self.__closed = True
-        self._close()
+        try:
+            self._close()
+        finally:
+            self.__closed = True
 
     def _close(self) -> None:
         pass
