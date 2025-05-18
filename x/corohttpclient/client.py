@@ -534,8 +534,8 @@ class HttpResponse:
             raise
 
     def _read_and_discard_trailer(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
-        # read and discard trailer up to the CRLF terminator
-        ### note: we shouldn't have any trailers!
+        # Read and discard trailer up to the CRLF terminator
+        # NOTE: we shouldn't have any trailers!
         while True:
             line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
             if len(line) > _MAX_LINE:
@@ -549,7 +549,7 @@ class HttpResponse:
                 break
 
     def _get_chunk_left(self) -> ta.Generator[Io, ta.Optional[bytes], ta.Any]:
-        # return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
+        # Return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
         # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
         # None if the last chunk has been read.
         chunk_left = self.chunk_left
@@ -801,12 +801,12 @@ class HttpConnection:
     def _get_hostport(self, host: str, port: ta.Optional[int]) -> ta.Tuple[str, int]:
         if port is None:
             i = host.rfind(':')
-            j = host.rfind(']')         # ipv6 addresses have [...]
+            j = host.rfind(']')  # ipv6 addresses have [...]
             if i > j:
                 try:
                     port = int(host[i+1:])
                 except ValueError:
-                    if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
+                    if host[i+1:] == '':  # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
                         raise InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
@@ -1219,7 +1219,8 @@ class HttpConnection:
             *,
             encode_chunked: bool = False,
     ) -> ta.Generator[Io, ta.Optional[bytes], None]:
-        """Indicate that the last header line has been sent to the server.
+        """
+        Indicate that the last header line has been sent to the server.
 
         This method sends the request to the server. The optional message_body argument can be used to pass a message
         body associated with the request.
