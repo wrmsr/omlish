@@ -642,7 +642,7 @@ class HttpResponse:
             try:
                 size_index = size.__index__
             except AttributeError:
-                raise TypeError(f'{size!r} is not an integer')
+                raise TypeError(f'{size!r} is not an integer') from None
             else:
                 size = size_index()
 
@@ -1031,13 +1031,15 @@ class HttpConnection:
                     # this is solely to check to see if message_body implements the buffer API. it /would/ be easier to
                     # capture if PyObject_CheckBuffer was exposed to Python.
                     memoryview(message_body)
+
                 except TypeError:
                     try:
                         chunks = iter(message_body)
-                    except TypeError:
+                    except TypeError as e:
                         raise TypeError(
                             f'message_body should be a bytes-like object or an iterable, got {type(message_body)!r}',
-                        )
+                        ) from e
+
                 else:
                     # the object implements the buffer interface and can be passed directly into socket methods
                     chunks = (message_body,)
@@ -1389,7 +1391,7 @@ class HttpConnection:
 def _main3() -> None:
     import urllib.request
     req = urllib.request.Request('https://www.baidu.com')
-    with urllib.request.urlopen(req) as resp:
+    with urllib.request.urlopen(req) as resp:  # noqa
         print(resp.read())
 
 
@@ -1439,6 +1441,7 @@ def _main() -> None:
 
         elif isinstance(o, CloseIo):
             check.not_none(sock).close()
+            return None
 
         elif isinstance(o, WriteIo):
             check.not_none(sock).sendall(o.data)
