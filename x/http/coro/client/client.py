@@ -12,6 +12,8 @@ import urllib.parse
 from omlish.lite.check import check
 from omlish.lite.maybes import Maybe
 
+from .consts import MAX_HEADERS
+from .consts import MAX_LINE
 from .errors import BadStatusLineError
 from .errors import CannotSendHeaderError
 from .errors import CannotSendRequestError
@@ -20,7 +22,6 @@ from .errors import IncompleteReadError
 from .errors import InvalidUrlError
 from .errors import LineTooLongError
 from .errors import NotConnectedError
-from .errors import RemoteDisconnectedError
 from .errors import ResponseNotReadyError
 from .errors import UnknownProtocolError
 from .io import CloseIo
@@ -29,7 +30,10 @@ from .io import Io
 from .io import ReadIo
 from .io import ReadLineIo
 from .io import WriteIo
+from .status import StatusLine
+from .status import read_status_line
 from .validation import HttpClientValidation
+
 
 
 ##
@@ -42,26 +46,23 @@ _UNKNOWN = 'UNKNOWN'
 
 _METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
 
-_MAX_LINE = 65536
-_MAX_HEADERS = 100
-
 
 def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
     """
     Reads potential header lines into a list from a file pointer.
 
-    Length of line is limited by _MAX_LINE, and number of headers is limited by _MAX_HEADERS.
+    Length of line is limited by MAX_LINE, and number of headers is limited by MAX_HEADERS.
     """
 
     headers = []
     while True:
-        line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
-        if len(line) > _MAX_LINE:
+        line = check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes)
+        if len(line) > MAX_LINE:
             raise LineTooLongError('header line')
 
         headers.append(line)
-        if len(headers) > _MAX_HEADERS:
-            raise ClientError(f'got more than {_MAX_HEADERS} headers')
+        if len(headers) > MAX_HEADERS:
+            raise ClientError(f'got more than {MAX_HEADERS} headers')
 
         if line in (b'\r\n', b'\n', b''):
             break
@@ -162,47 +163,12 @@ class HttpResponse:
     def will_close(self) -> Maybe[bool]:
         return self._will_close
 
-    #
-
-    class _StatusLine(ta.NamedTuple):
-        version: str
-        status: int
-        reason: str
-
-    def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], _StatusLine]:
-        line = str(check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes), 'iso-8859-1')
-        if len(line) > _MAX_LINE:
-            raise LineTooLongError('status line')
-        if not line:
-            # Presumably, the server closed the connection before sending a valid response.
-            raise RemoteDisconnectedError('Remote end closed connection without response')
-
-        version = ''
-        reason = ''
-        status_str = ''
+    def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], StatusLine]:
         try:
-            version, status_str, reason = line.split(None, 2)
-        except ValueError:
-            try:
-                version, status_str = line.split(None, 1)
-            except ValueError:
-                # empty version will cause next test to fail.
-                pass
-
-        if not version.startswith('HTTP/'):
+            return (yield from read_status_line())
+        except BadStatusLineError:
             self._close_conn()
-            raise BadStatusLineError(line)
-
-        # The status code is a three-digit number
-        try:
-            status = int(status_str)
-        except ValueError:
-            raise BadStatusLineError(line) from None
-
-        if status < 100 or status > 999:
-            raise BadStatusLineError(line)
-
-        return self._StatusLine(version, status, reason)
+            raise
 
     def _check_close(self) -> bool:
         conn = self.headers.get('connection')
@@ -239,13 +205,6 @@ class HttpResponse:
             self._close_conn()
 
     # These implementations are for the benefit of io.BufferedReader.
-
-    # XXX This class should probably be revised to act more like the 'raw stream' that BufferedReader expects.
-
-    def readable(self) -> bool:
-        """Always returns True"""
-
-        return True
 
     # End of "raw stream" methods
 
@@ -310,8 +269,8 @@ class HttpResponse:
 
     def _read_next_chunk_size(self) -> ta.Generator[Io, ta.Optional[bytes], int]:
         # Read the next chunk size from the file
-        line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
-        if len(line) > _MAX_LINE:
+        line = check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes)
+        if len(line) > MAX_LINE:
             raise LineTooLongError('chunk size')
 
         i = line.find(b';')
@@ -329,8 +288,8 @@ class HttpResponse:
         # Read and discard trailer up to the CRLF terminator
         # NOTE: we shouldn't have any trailers!
         while True:
-            line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
-            if len(line) > _MAX_LINE:
+            line = check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes)
+            if len(line) > MAX_LINE:
                 raise LineTooLongError('trailer line')
 
             if not line:
