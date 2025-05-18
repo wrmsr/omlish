@@ -267,18 +267,24 @@ class HttpResponse:
         self.headers: ta.Optional[email.message.Message] = None
 
         # from the Status-Line of the response
-        self.version = _UNKNOWN  # HTTP-Version
-        self.status = _UNKNOWN   # Status-Code
-        self.reason = _UNKNOWN   # Reason-Phrase
+        self._version: Maybe[int] = Maybe.empty()  # HTTP-Version
+        self.status = _UNKNOWN  # Status-Code
+        self.reason = _UNKNOWN  # Reason-Phrase
 
-        self.chunked = _UNKNOWN     # is "chunked" being used?
+        self.chunked = _UNKNOWN  # is "chunked" being used?
         self.chunk_left = _UNKNOWN  # bytes left to read in current chunk
-        self.length = _UNKNOWN      # number of bytes left in response
+        self.length = _UNKNOWN  # number of bytes left in response
         self._will_close: Maybe[bool] = Maybe.empty()  # conn will close at end of response
+
+    @property
+    def version(self) -> Maybe[int]:
+        return self._version
 
     @property
     def will_close(self) -> Maybe[bool]:
         return self._will_close
+
+    #
 
     class _StatusLine(ta.NamedTuple):
         version: str
@@ -340,9 +346,9 @@ class HttpResponse:
         self.reason = reason.strip()
         if version in ('HTTP/1.0', 'HTTP/0.9'):
             # Some servers might still return '0.9', treat it as 1.0 anyway
-            self.version = 10
+            self._version = Maybe.just(10)
         elif version.startswith('HTTP/1.'):
-            self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
+            self._version = Maybe.just(11)   # use HTTP/1.1 code for HTTP/1.x where x>=1
         else:
             raise UnknownProtocolError(version)
 
@@ -389,7 +395,7 @@ class HttpResponse:
 
     def _check_close(self) -> bool:
         conn = self.headers.get('connection')
-        if self.version == 11:
+        if self._version.or_else(None) == 11:
             # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
             if conn and 'close' in conn.lower():
                 return True
