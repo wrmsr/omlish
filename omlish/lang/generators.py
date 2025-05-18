@@ -2,10 +2,8 @@ import abc
 import functools
 import typing as ta
 
+from ..lite.maybes import Maybe
 from .classes.restrict import Abstract
-from .maybes import Maybe
-from .maybes import empty
-from .maybes import just
 
 
 T = ta.TypeVar('T')
@@ -203,7 +201,7 @@ class GeneratorMappedIterator(ta.Generic[O, I, R]):
 
         self._g = g
         self._it = it
-        self._value: Maybe[R] = empty()
+        self._value: Maybe[R] = Maybe.empty()
 
     @property
     def g(self) -> ta.Generator[O, I, R]:
@@ -225,7 +223,7 @@ class GeneratorMappedIterator(ta.Generic[O, I, R]):
         try:
             o = self._g.send(i)
         except StopIteration as e:
-            self._value = just(e.value)
+            self._value = Maybe.just(e.value)
             raise StopIteration from e
         return o
 

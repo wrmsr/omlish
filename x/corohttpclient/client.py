@@ -50,6 +50,7 @@ import typing as ta
 import urllib.parse
 
 from omlish.lite.check import check
+from omlish.lite.maybes import Maybe
 
 from .validation import HttpClientValidation
 
@@ -203,7 +204,7 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> email.message.Messa
     return email.parser.Parser().parsestr(text)
 
 
-def parse_headers() -> ta.Generator[Io, ta.Optional[bytes], email.message.Message]:
+def _parse_headers() -> ta.Generator[Io, ta.Optional[bytes], email.message.Message]:
     """Parses only RFC2822 headers from a file pointer."""
 
     headers = yield from _read_headers()
@@ -273,7 +274,11 @@ class HttpResponse:
         self.chunked = _UNKNOWN     # is "chunked" being used?
         self.chunk_left = _UNKNOWN  # bytes left to read in current chunk
         self.length = _UNKNOWN      # number of bytes left in response
-        self.will_close = _UNKNOWN  # conn will close at end of response
+        self._will_close: Maybe[bool] = Maybe.empty()  # conn will close at end of response
+
+    @property
+    def will_close(self) -> Maybe[bool]:
+        return self._will_close
 
     class _StatusLine(ta.NamedTuple):
         version: str
@@ -341,7 +346,7 @@ class HttpResponse:
         else:
             raise UnknownProtocolError(version)
 
-        self.headers = yield from parse_headers()
+        self.headers = yield from _parse_headers()
 
         # are we using the chunked-style of transfer encoding?
         tr_enc = self.headers.get('transfer-encoding')
@@ -352,7 +357,7 @@ class HttpResponse:
             self.chunked = False
 
         # will the connection close at the end of the response?
-        self.will_close = self._check_close()
+        self._will_close = Maybe.just(self._check_close())
 
         # do we have a Content-Length?
         # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
@@ -379,8 +384,8 @@ class HttpResponse:
 
         # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
         # assume that the connection WILL close.
-        if not self.will_close and not self.chunked and self.length is None:
-            self.will_close = True
+        if not self._will_close.must() and not self.chunked and self.length is None:
+            self._will_close = Maybe.just(True)
 
     def _check_close(self) -> bool:
         conn = self.headers.get('connection')
@@ -1341,10 +1346,10 @@ class HttpConnection:
                 yield from self.close()
                 raise
 
-            check.not_equal(response.will_close, _UNKNOWN)
+            check.state(response.will_close.present)
             self._state = self._State.IDLE
 
-            if response.will_close:
+            if response.will_close.must():
                 # this effectively passes the connection to the response
                 yield from self.close()
             else:

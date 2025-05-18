@@ -7,12 +7,10 @@ import enum
 import inspect
 import typing as ta
 
+from ..lite.maybes import Maybe
 from .classes.abstract import Abstract
 from .classes.restrict import Final
 from .classes.restrict import Sealed
-from .maybes import Maybe
-from .maybes import empty
-from .maybes import just
 
 
 T = ta.TypeVar('T')
@@ -25,7 +23,7 @@ T = ta.TypeVar('T')
 class Param(Sealed, Abstract):
     name: str
 
-    annotation: Maybe = empty()
+    annotation: Maybe = Maybe.empty()
 
     prefix: ta.ClassVar[str] = ''
 
@@ -57,7 +55,7 @@ class KwargsParam(VarParam, Final):
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
 class ValParam(Param):
-    default: Maybe = empty()
+    default: Maybe = Maybe.empty()
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
@@ -83,9 +81,9 @@ class ParamSeparator(enum.Enum):
 
 def _inspect_empty_to_maybe(o: T) -> Maybe[T]:
     if o is inspect.Parameter.empty:
-        return empty()
+        return Maybe.empty()
     else:
-        return just(o)
+        return Maybe.just(o)
 
 
 class ParamSpec(ta.Sequence[Param], Final):
@@ -119,8 +117,8 @@ class ParamSpec(ta.Sequence[Param], Final):
             if i < offset:
                 continue
 
-            ann = _inspect_empty_to_maybe(ip.annotation) if not strip_annotations else empty()
-            dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else empty()
+            ann = _inspect_empty_to_maybe(ip.annotation) if not strip_annotations else Maybe.empty()
+            dfl = _inspect_empty_to_maybe(ip.default) if not strip_defaults else Maybe.empty()
 
             if ip.kind == inspect.Parameter.POSITIONAL_ONLY:
                 ps.append(PosOnlyParam(ip.name, ann, dfl))

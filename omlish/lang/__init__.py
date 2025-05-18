@@ -225,13 +225,6 @@ from .iterables import (  # noqa
     take,
 )
 
-from .maybes import (  # noqa
-    Maybe,
-    empty,
-    just,
-    maybe,
-)
-
 from .objects import (  # noqa
     Identity,
     SimpleProxy,
@@ -340,6 +333,13 @@ from ..lite.imports import (  # noqa
     import_module,
     import_module_attr,
 )
+
+from ..lite.maybes import (  # noqa
+    Maybe,
+)
+
+empty = Maybe.empty
+just = Maybe.just
 
 from ..lite.reprs import (  # noqa
     AttrRepr,
