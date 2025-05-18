@@ -17,9 +17,9 @@
 # wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in
 # any such work a brief summary of the changes made to Python.
 #
-# 4. PSF is making Python available to Licensee on an "AS IS" basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES,
-# EXPRESS OR IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY
-# OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
+# 4. PSF is making Python available to Licensee on an "AS IS" basis. PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS
+# OR IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY OF
+# MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
 # RIGHTS.
 #
 # 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
@@ -29,8 +29,8 @@
 # 6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
 #
 # 7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint
-# venture between PSF and Licensee.  This License Agreement does not grant permission to use PSF trademarks or trade
-# name in a trademark sense to endorse or promote products or services of Licensee, or any third party.
+# venture between PSF and Licensee. This License Agreement does not grant permission to use PSF trademarks or trade name
+# in a trademark sense to endorse or promote products or services of Licensee, or any third party.
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
@@ -47,28 +47,12 @@ import io
 import socket
 import typing as ta
 import urllib.parse
-
-from http import HTTPStatus
+import http.client
+import http
 
 from http.client import HTTPMessage
 
-# Exceptions
-from http.client import (
-    HTTPException,
-
-    BadStatusLine,
-    CannotSendHeader,
-    CannotSendRequest,
-    IncompleteRead,
-    InvalidURL,
-    LineTooLong,
-    NotConnected,
-    RemoteDisconnected,
-    ResponseNotReady,
-    UnknownProtocol,
-)
-
-from omlish import check
+from omlish.lite.check import check
 
 from .validation import HttpClientValidation
 
@@ -131,7 +115,7 @@ _MAX_LINE = 65536
 _MAX_HEADERS = 100
 
 
-def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], list[bytes]]:
+def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
     """
     Reads potential header lines into a list from a file pointer.
 
@@ -142,11 +126,11 @@ def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], list[bytes]]:
     while True:
         line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
-            raise LineTooLong('header line')
+            raise http.client.LineTooLong('header line')
 
         headers.append(line)
         if len(headers) > _MAX_HEADERS:
-            raise HTTPException(f'got more than {_MAX_HEADERS} headers')
+            raise http.client.HTTPException(f'got more than {_MAX_HEADERS} headers')
 
         if line in (b'\r\n', b'\n', b''):
             break
@@ -208,7 +192,7 @@ class HttpResponse:
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
-    # MIME-encoded text following RFC 2047.  The basic status line parsing only accepts iso-8859-1.
+    # MIME-encoded text following RFC 2047. The basic status line parsing only accepts iso-8859-1.
 
     def __init__(
             self,
@@ -219,14 +203,14 @@ class HttpResponse:
         self._closed = False
 
         # If the response includes a content-length header, we need to make sure that the client doesn't read more than
-        # the specified number of bytes.  If it does, it will block until the server times out and closes the
-        # connection.  This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not.
-        # So, no self.fp.read() by clients unless they know what they are doing.
+        # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
+        # This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not. So, no
+        # self.fp.read() by clients unless they know what they are doing.
         self._method = method
 
-        # The HttpResponse object is returned via urllib.  The clients of http and urllib expect different attributes
-        # for the headers.  headers is used here and supports urllib.  msg is provided as a backwards compatibility
-        # layer for http clients.
+        # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
+        # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
+        # http clients.
         self.headers: ta.Optional[HTTPMessage] = None
 
         # from the Status-Line of the response
@@ -247,10 +231,10 @@ class HttpResponse:
     def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], _StatusLine]:
         line = str(check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes), 'iso-8859-1')
         if len(line) > _MAX_LINE:
-            raise LineTooLong('status line')
+            raise http.client.LineTooLong('status line')
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
-            raise RemoteDisconnected('Remote end closed connection without response')
+            raise http.client.RemoteDisconnected('Remote end closed connection without response')
 
         version = ''
         reason = ''
@@ -266,16 +250,16 @@ class HttpResponse:
 
         if not version.startswith('HTTP/'):
             self._close_conn()
-            raise BadStatusLine(line)
+            raise http.client.BadStatusLine(line)
 
         # The status code is a three-digit number
         try:
             status = int(status_str)
         except ValueError:
-            raise BadStatusLine(line) from None
+            raise http.client.BadStatusLine(line) from None
 
         if status < 100 or status > 999:
-            raise BadStatusLine(line)
+            raise http.client.BadStatusLine(line)
 
         return self._StatusLine(version, status, reason)
 
@@ -287,7 +271,7 @@ class HttpResponse:
         # read until we get a non-100 response
         while True:
             version, status, reason = yield from self._read_status()
-            if status != HTTPStatus.CONTINUE:
+            if status != http.HTTPStatus.CONTINUE:
                 break
 
             # skip the header from the 100 response
@@ -303,7 +287,7 @@ class HttpResponse:
         elif version.startswith('HTTP/1.'):
             self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
         else:
-            raise UnknownProtocol(version)
+            raise http.client.UnknownProtocol(version)
 
         self.headers = yield from parse_headers()
 
@@ -335,7 +319,7 @@ class HttpResponse:
 
         # does the body have a fixed length? (of zero)
         if (
-                status in (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED) or
+                status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
                 100 <= status < 200 or # 1xx codes
                 self._method == 'HEAD'
         ):
@@ -395,10 +379,10 @@ class HttpResponse:
         """True if the connection is closed."""
 
         # NOTE: it is possible that we will not ever call self.close(). This case occurs when will_close is TRUE, length
-        #       is None, and we read up to the last byte, but NOT past it.
+        #   is None, and we read up to the last byte, but NOT past it.
         #
         # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.isclosed() is
-        #          meaningful.
+        #   meaningful.
         return self._closed
 
     def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
@@ -441,7 +425,7 @@ class HttpResponse:
             else:
                 try:
                     s = yield from self._safe_read(self.length)
-                except IncompleteRead:
+                except http.client.IncompleteRead:
                     self._close_conn()
                     raise
 
@@ -454,7 +438,7 @@ class HttpResponse:
         # Read the next chunk size from the file
         line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
-            raise LineTooLong('chunk size')
+            raise http.client.LineTooLong('chunk size')
 
         i = line.find(b';')
         if i >= 0:
@@ -473,7 +457,7 @@ class HttpResponse:
         while True:
             line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
             if len(line) > _MAX_LINE:
-                raise LineTooLong('trailer line')
+                raise http.client.LineTooLong('trailer line')
 
             if not line:
                 # a vanishingly small number of sites EOF without sending the trailer
@@ -495,7 +479,7 @@ class HttpResponse:
             try:
                 chunk_left = yield from self._read_next_chunk_size()
             except ValueError:
-                raise IncompleteRead(b'') from None
+                raise http.client.IncompleteRead(b'') from None
 
             if chunk_left == 0:
                 # last chunk: 1*('0') [ chunk-extension ] CRLF
@@ -527,8 +511,8 @@ class HttpResponse:
 
             return b''.join(value)
 
-        except IncompleteRead as exc:
-            raise IncompleteRead(b''.join(value)) from exc
+        except http.client.IncompleteRead as exc:
+            raise http.client.IncompleteRead(b''.join(value)) from exc
 
     def _safe_read(self, amt: int) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """
@@ -540,7 +524,7 @@ class HttpResponse:
 
         data = check.isinstance((yield ReadIo(amt)), bytes)
         if len(data) < amt:
-            raise IncompleteRead(data, amt-len(data))
+            raise http.client.IncompleteRead(data, amt-len(data))
         return data
 
     def peek(self, n: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
@@ -619,13 +603,13 @@ class HttpResponse:
         # the chunked protocol.
         try:
             chunk_left = self._get_chunk_left()
-        except IncompleteRead:
+        except http.client.IncompleteRead:
             return b'' # peek doesn't worry about protocol
 
         if chunk_left is None:
             return b'' # eof
 
-        # peek is allowed to return more than requested.  Just request the entire chunk, and truncate what we get.
+        # peek is allowed to return more than requested. Just request the entire chunk, and truncate what we get.
         return self.fp.peek(chunk_left)[:chunk_left]
 
 
@@ -743,7 +727,7 @@ class HttpConnection:
                     if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -820,7 +804,7 @@ class HttpConnection:
 
             self._raw_proxy_headers = yield from _read_headers()
 
-            if code != HTTPStatus.OK:
+            if code != http.HTTPStatus.OK:
                 yield from self.close()
                 raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
@@ -898,11 +882,11 @@ class HttpConnection:
             if self._auto_open:
                 yield from self.connect()
             else:
-                raise NotConnected
+                raise http.client.NotConnected
 
         check.state(self._connected)
 
-        if hasattr(data, 'read') :
+        if hasattr(data, 'read'):
             encode = self._is_text_io(data)
             while data_block := data.read(self._block_size):
                 if encode:
@@ -929,7 +913,7 @@ class HttpConnection:
 
         self._buffer.append(s)
 
-    def _read_readable(self, readable: ta.IO | ta.TextIO) -> ta.Iterator[bytes]:
+    def _read_readable(self, readable: ta.Union[ta.IO, ta.TextIO]) -> ta.Iterator[bytes]:
         while data := readable.read(self._block_size):
             if isinstance(data, str):
                 yield data.encode('iso-8859-1')
@@ -956,20 +940,22 @@ class HttpConnection:
         if message_body is not None:
             # create a consistent interface to message_body
             if hasattr(message_body, 'read'):
-                # Let file-like take precedence over byte-like.  This is needed to allow the current position of mmap'ed
+                # Let file-like take precedence over byte-like. This is needed to allow the current position of mmap'ed
                 # files to be taken into account.
                 chunks = self._read_readable(message_body)
 
             else:
                 try:
-                    # this is solely to check to see if message_body implements the buffer API.  it /would/ be easier to
+                    # this is solely to check to see if message_body implements the buffer API. it /would/ be easier to
                     # capture if PyObject_CheckBuffer was exposed to Python.
                     memoryview(message_body)
                 except TypeError:
                     try:
                         chunks = iter(message_body)
                     except TypeError:
-                        raise TypeError('message_body should be a bytes-like object or an iterable, got %r' % type(message_body))  # noqa
+                        raise TypeError(
+                            f'message_body should be a bytes-like object or an iterable, got {type(message_body)!r}',
+                        )
                 else:
                     # the object implements the buffer interface and can be passed directly into socket methods
                     chunks = (message_body,)
@@ -1010,13 +996,12 @@ class HttpConnection:
         if self._response and self._response.isclosed():
             self._response = None
 
-
         # in certain cases, we cannot issue another request on this connection.
         # this occurs when:
-        #   1) we are in the process of sending a request.   (_CS_REQ_STARTED)
+        #   1) we are in the process of sending a request. (_CS_REQ_STARTED)
         #   2) a response to a previous request has signalled that it is going to close the connection upon completion.
         #   3) the headers for the previous response have not been read, thus we cannot determine whether point (2) is
-        #      true.   (_CS_REQ_SENT)
+        #      true. (_CS_REQ_SENT)
         #
         # if there is no prior response, then we can request at will.
         #
@@ -1029,7 +1014,7 @@ class HttpConnection:
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise CannotSendRequest(self._state)
+            raise http.client.CannotSendRequest(self._state)
 
         HttpClientValidation.validate_method(method)
 
@@ -1052,7 +1037,7 @@ class HttpConnection:
                 # and those clients may be issuing this header themselves. we should NOT issue it twice; some web
                 # servers (such as Apache) barf when they see two Host: headers
 
-                # If we need a non-standard port,include it in the header.  If the request is going through a proxy, but
+                # If we need a non-standard port,include it in the header. If the request is going through a proxy, but
                 # the host of the actual URL, not the host of the proxy.
                 netloc = ''
                 if url.startswith('http'):
@@ -1113,7 +1098,7 @@ class HttpConnection:
 
     #
 
-    def put_header(self, header: str | bytes, *values: bytes | str | int) -> None:
+    def put_header(self, header: ta.Union[str, bytes], *values: ta.Union[bytes, str, int]) -> None:
         """
         Send a request header line to the server.
 
@@ -1121,7 +1106,7 @@ class HttpConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise CannotSendHeader
+            raise http.client.CannotSendHeader
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -1154,14 +1139,14 @@ class HttpConnection:
     ) -> ta.Generator[Io, ta.Optional[bytes], None]:
         """Indicate that the last header line has been sent to the server.
 
-        This method sends the request to the server.  The optional message_body argument can be used to pass a message
+        This method sends the request to the server. The optional message_body argument can be used to pass a message
         body associated with the request.
         """
 
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise CannotSendHeader
+            raise http.client.CannotSendHeader
 
         yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -1271,9 +1256,9 @@ class HttpConnection:
         If the HTTPConnection is in the correct state, returns an instance of HttpResponse or of whatever object is
         returned by the response_class variable.
 
-        If a request has not been sent or if a previous response has not be handled, ResponseNotReady is raised.  If the
+        If a request has not been sent or if a previous response has not be handled, ResponseNotReady is raised. If the
         HTTP response indicates that the connection should be closed, then it will be closed before the response is
-        returned.  When the connection is closed, the underlying socket is closed.
+        returned. When the connection is closed, the underlying socket is closed.
         """
 
         # if a prior response has been completed, then forget about it.
@@ -1290,7 +1275,7 @@ class HttpConnection:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
         #   2) persistent: the response was retained and we await its isclosed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise ResponseNotReady(self._state)
+            raise http.client.ResponseNotReady(self._state)
 
         response = HttpResponse(method=self._method)
 
