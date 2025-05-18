@@ -163,7 +163,6 @@ _UNKNOWN = 'UNKNOWN'
 
 _METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
 
-
 _MAX_LINE = 65536
 _MAX_HEADERS = 100
 
@@ -191,36 +190,7 @@ def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
     return headers
 
 
-class HttpMessage(email.message.Message):
-    # XXX The only usage of this method is in http.server.CGIHTTPRequestHandler. Maybe move the code there so that it
-    # doesn't need to be part of the public API. The API has never been defined so this could cause backwards
-    # compatibility issues.
-
-    def getallmatchingheaders(self, name):
-        """
-        Find all header lines matching a given header name.
-
-        Look through the list of headers and find all lines matching a given header name (and their continuation lines).
-        A list of the lines is returned, without interpretation. If the header does not occur, an empty list is
-        returned. If the header occurs multiple times, all occurrences are returned. Case is not important in the header
-        name.
-        """
-
-        name = name.lower() + ':'
-        n = len(name)
-        lst = []
-        hit = 0
-        for line in self.keys():
-            if line[:n].lower() == name:
-                hit = 1
-            elif not line[:1].isspace():
-                hit = 0
-            if hit:
-                lst.append(line)
-        return lst
-
-
-def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HttpMessage:
+def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> email.message.Message:
     """
     Parses only RFC2822 headers from header lines.
 
@@ -229,11 +199,11 @@ def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> HttpMessage:
     email Parser to parse.
     """
 
-    hstring = b''.join(header_lines).decode('iso-8859-1')
-    return email.parser.Parser(_class=HttpMessage).parsestr(hstring)
+    text = b''.join(header_lines).decode('iso-8859-1')
+    return email.parser.Parser().parsestr(text)
 
 
-def parse_headers() -> ta.Generator[Io, ta.Optional[bytes], HttpMessage]:
+def parse_headers() -> ta.Generator[Io, ta.Optional[bytes], email.message.Message]:
     """Parses only RFC2822 headers from a file pointer."""
 
     headers = yield from _read_headers()
@@ -293,7 +263,7 @@ class HttpResponse:
         # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
         # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
         # http clients.
-        self.headers: ta.Optional[HttpMessage] = None
+        self.headers: ta.Optional[email.message.Message] = None
 
         # from the Status-Line of the response
         self.version = _UNKNOWN  # HTTP-Version
@@ -893,7 +863,7 @@ class HttpConnection:
         finally:
             response.close()
 
-    def get_proxy_response_headers(self) -> ta.Optional[HttpMessage]:
+    def get_proxy_response_headers(self) -> ta.Optional[email.message.Message]:
         """
         Returns a dictionary with the headers of the response received from the proxy server to the CONNECT request sent
         to set the tunnel.
