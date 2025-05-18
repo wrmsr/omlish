@@ -1,4 +1,4 @@
-# ruff: noqa: I001
+# ruff: noqa: I001 UP006 UP007
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
