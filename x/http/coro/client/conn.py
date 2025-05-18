@@ -47,7 +47,7 @@ class RawHttpConnection:
         # Read the next chunk size from the file
         line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
-            raise LineTooLongError('chunk size')
+            raise LineTooLongError(LineTooLongError.LineType.CHUNK_SIZE)
 
         i = line.find(b';')
         if i >= 0:
@@ -66,7 +66,7 @@ class RawHttpConnection:
         while True:
             line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
             if len(line) > _MAX_LINE:
-                raise LineTooLongError('trailer line')
+                raise LineTooLongError(LineTooLongError.LineType.TRAILER)
 
             if not line:
                 # a vanishingly small number of sites EOF without sending the trailer

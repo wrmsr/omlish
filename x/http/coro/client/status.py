@@ -21,7 +21,7 @@ class StatusLine(ta.NamedTuple):
 def read_status_line() -> ta.Generator[Io, ta.Optional[bytes], StatusLine]:
     line = str(check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes), 'iso-8859-1')
     if len(line) > MAX_LINE:
-        raise LineTooLongError('status line')
+        raise LineTooLongError(LineTooLongError.LineType.STATUS)
     if not line:
         # Presumably, the server closed the connection before sending a valid response.
         raise RemoteDisconnectedError('Remote end closed connection without response')

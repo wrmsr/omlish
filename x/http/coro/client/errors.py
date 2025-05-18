@@ -1,4 +1,5 @@
 import dataclasses as dc
+import enum
 import typing as ta
 
 
@@ -55,4 +56,10 @@ class RemoteDisconnectedError(BadStatusLineError, ConnectionResetError):
 
 @dc.dataclass()
 class LineTooLongError(ClientError):
-    line_type: str
+    class LineType(enum.Enum):
+        STATUS = enum.auto()
+        HEADER = enum.auto()
+        CHUNK_SIZE = enum.auto()
+        TRAILER = enum.auto()
+
+    line_type: LineType

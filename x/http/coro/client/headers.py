@@ -1,3 +1,4 @@
+import email.message
 import email.parser
 import typing as ta
 
@@ -25,7 +26,7 @@ def read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
     while True:
         line = check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes)
         if len(line) > MAX_LINE:
-            raise LineTooLongError('header line')
+            raise LineTooLongError(LineTooLongError.LineType.HEADER)
 
         headers.append(line)
         if len(headers) > MAX_HEADERS:
