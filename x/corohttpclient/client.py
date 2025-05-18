@@ -326,73 +326,6 @@ class HttpResponse:
 
         return self._StatusLine(version, status, reason)
 
-    def begin(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
-        if self.headers is not None:
-            # we've already started reading the response
-            return
-
-        # read until we get a non-100 response
-        while True:
-            version, status, reason = yield from self._read_status()
-            if status != http.HTTPStatus.CONTINUE:
-                break
-
-            # skip the header from the 100 response
-            skipped_headers = yield from _read_headers()
-
-            del skipped_headers
-
-        self.code = self.status = status
-        self.reason = reason.strip()
-        if version in ('HTTP/1.0', 'HTTP/0.9'):
-            # Some servers might still return '0.9', treat it as 1.0 anyway
-            self._version = Maybe.just(10)
-        elif version.startswith('HTTP/1.'):
-            self._version = Maybe.just(11)   # use HTTP/1.1 code for HTTP/1.x where x>=1
-        else:
-            raise UnknownProtocolError(version)
-
-        self.headers = yield from _parse_headers()
-
-        # are we using the chunked-style of transfer encoding?
-        tr_enc = self.headers.get('transfer-encoding')
-        if tr_enc and tr_enc.lower() == 'chunked':
-            self.chunked = True
-            self.chunk_left = None
-        else:
-            self.chunked = False
-
-        # will the connection close at the end of the response?
-        self._will_close = Maybe.just(self._check_close())
-
-        # do we have a Content-Length?
-        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
-        self.length = None
-        length = self.headers.get('content-length')
-        if length and not self.chunked:
-            try:
-                self.length = int(length)
-            except ValueError:
-                self.length = None
-            else:
-                if self.length < 0:  # ignore nonsensical negative lengths
-                    self.length = None
-        else:
-            self.length = None
-
-        # does the body have a fixed length? (of zero)
-        if (
-                status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
-                100 <= status < 200 or # 1xx codes
-                self._method == 'HEAD'
-        ):
-            self.length = 0
-
-        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
-        # assume that the connection WILL close.
-        if not self._will_close.must() and not self.chunked and self.length is None:
-            self._will_close = Maybe.just(True)
-
     def _check_close(self) -> bool:
         conn = self.headers.get('connection')
         if self._version.or_else(None) == 11:
@@ -1315,6 +1248,73 @@ class HttpConnection:
 
         yield from self.end_headers(body, encode_chunked=encode_chunked)
 
+    def _begin_response(self, resp: HttpResponse) -> ta.Generator[Io, ta.Optional[bytes], None]:
+        if resp.headers is not None:
+            # we've already started reading the response
+            return
+
+        # read until we get a non-100 response
+        while True:
+            version, status, reason = yield from resp._read_status()
+            if status != http.HTTPStatus.CONTINUE:
+                break
+
+            # skip the header from the 100 response
+            skipped_headers = yield from _read_headers()
+
+            del skipped_headers
+
+        resp.code = resp.status = status
+        resp.reason = reason.strip()
+        if version in ('HTTP/1.0', 'HTTP/0.9'):
+            # Some servers might still return '0.9', treat it as 1.0 anyway
+            resp._version = Maybe.just(10)
+        elif version.startswith('HTTP/1.'):
+            resp._version = Maybe.just(11)   # use HTTP/1.1 code for HTTP/1.x where x>=1
+        else:
+            raise UnknownProtocolError(version)
+
+        resp.headers = yield from _parse_headers()
+
+        # are we using the chunked-style of transfer encoding?
+        tr_enc = resp.headers.get('transfer-encoding')
+        if tr_enc and tr_enc.lower() == 'chunked':
+            resp.chunked = True
+            resp.chunk_left = None
+        else:
+            resp.chunked = False
+
+        # will the connection close at the end of the response?
+        resp._will_close = Maybe.just(resp._check_close())
+
+        # do we have a Content-Length?
+        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
+        resp.length = None
+        length = resp.headers.get('content-length')
+        if length and not resp.chunked:
+            try:
+                resp.length = int(length)
+            except ValueError:
+                resp.length = None
+            else:
+                if resp.length < 0:  # ignore nonsensical negative lengths
+                    resp.length = None
+        else:
+            resp.length = None
+
+        # does the body have a fixed length? (of zero)
+        if (
+                status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
+                100 <= status < 200 or # 1xx codes
+                resp._method == 'HEAD'
+        ):
+            resp.length = 0
+
+        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
+        # assume that the connection WILL close.
+        if not resp._will_close.must() and not resp.chunked and resp.length is None:
+            resp._will_close = Maybe.just(True)
+
     def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
         """
         Get the response from the server.
@@ -1347,7 +1347,7 @@ class HttpConnection:
 
         try:
             try:
-                yield from response.begin()
+                yield from self._begin_response(response)
             except ConnectionError:
                 yield from self.close()
                 raise
