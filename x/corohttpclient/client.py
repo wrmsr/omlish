@@ -43,18 +43,73 @@ import dataclasses as dc
 import email.parser
 import enum
 import errno
+import http
 import io
 import socket
 import typing as ta
 import urllib.parse
-import http.client
-import http
-
-from http.client import HTTPMessage
 
 from omlish.lite.check import check
 
 from .validation import HttpClientValidation
+
+from http.client import HTTPMessage
+
+
+##
+
+
+class ClientError(Exception):
+    pass
+
+
+class NotConnectedError(ClientError):
+    pass
+
+
+class InvalidUrlError(ClientError):
+    pass
+
+
+@dc.dataclass()
+class UnknownProtocolError(ClientError):
+    version: str
+
+
+@dc.dataclass()
+class IncompleteReadError(ClientError):
+    partial: bytes
+    expected: ta.Optional[int] = None
+
+
+class ImproperConnectionStateError(ClientError):
+    pass
+
+
+class CannotSendRequestError(ImproperConnectionStateError):
+    pass
+
+
+class CannotSendHeaderError(ImproperConnectionStateError):
+    pass
+
+
+class ResponseNotReadyError(ImproperConnectionStateError):
+    pass
+
+
+@dc.dataclass()
+class BadStatusLineError(ClientError):
+    line: str
+
+
+class RemoteDisconnectedError(BadStatusLineError, ConnectionResetError):
+    pass
+
+
+@dc.dataclass()
+class LineTooLongError(ClientError):
+    line_type: str
 
 
 ##
@@ -126,11 +181,11 @@ def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
     while True:
         line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
-            raise http.client.LineTooLong('header line')
+            raise LineTooLongError('header line')
 
         headers.append(line)
         if len(headers) > _MAX_HEADERS:
-            raise http.client.HTTPException(f'got more than {_MAX_HEADERS} headers')
+            raise ClientError(f'got more than {_MAX_HEADERS} headers')
 
         if line in (b'\r\n', b'\n', b''):
             break
@@ -231,10 +286,10 @@ class HttpResponse:
     def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], _StatusLine]:
         line = str(check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes), 'iso-8859-1')
         if len(line) > _MAX_LINE:
-            raise http.client.LineTooLong('status line')
+            raise LineTooLongError('status line')
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
-            raise http.client.RemoteDisconnected('Remote end closed connection without response')
+            raise RemoteDisconnectedError('Remote end closed connection without response')
 
         version = ''
         reason = ''
@@ -250,16 +305,16 @@ class HttpResponse:
 
         if not version.startswith('HTTP/'):
             self._close_conn()
-            raise http.client.BadStatusLine(line)
+            raise BadStatusLineError(line)
 
         # The status code is a three-digit number
         try:
             status = int(status_str)
         except ValueError:
-            raise http.client.BadStatusLine(line) from None
+            raise BadStatusLineError(line) from None
 
         if status < 100 or status > 999:
-            raise http.client.BadStatusLine(line)
+            raise BadStatusLineError(line)
 
         return self._StatusLine(version, status, reason)
 
@@ -287,7 +342,7 @@ class HttpResponse:
         elif version.startswith('HTTP/1.'):
             self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
         else:
-            raise http.client.UnknownProtocol(version)
+            raise UnknownProtocolError(version)
 
         self.headers = yield from parse_headers()
 
@@ -425,7 +480,7 @@ class HttpResponse:
             else:
                 try:
                     s = yield from self._safe_read(self.length)
-                except http.client.IncompleteRead:
+                except IncompleteReadError:
                     self._close_conn()
                     raise
 
@@ -438,7 +493,7 @@ class HttpResponse:
         # Read the next chunk size from the file
         line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
         if len(line) > _MAX_LINE:
-            raise http.client.LineTooLong('chunk size')
+            raise LineTooLongError('chunk size')
 
         i = line.find(b';')
         if i >= 0:
@@ -457,7 +512,7 @@ class HttpResponse:
         while True:
             line = check.isinstance((yield ReadLineIo(_MAX_LINE + 1)), bytes)
             if len(line) > _MAX_LINE:
-                raise http.client.LineTooLong('trailer line')
+                raise LineTooLongError('trailer line')
 
             if not line:
                 # a vanishingly small number of sites EOF without sending the trailer
@@ -479,7 +534,7 @@ class HttpResponse:
             try:
                 chunk_left = yield from self._read_next_chunk_size()
             except ValueError:
-                raise http.client.IncompleteRead(b'') from None
+                raise IncompleteReadError(b'') from None
 
             if chunk_left == 0:
                 # last chunk: 1*('0') [ chunk-extension ] CRLF
@@ -511,8 +566,8 @@ class HttpResponse:
 
             return b''.join(value)
 
-        except http.client.IncompleteRead as exc:
-            raise http.client.IncompleteRead(b''.join(value)) from exc
+        except IncompleteReadError as exc:
+            raise IncompleteReadError(b''.join(value)) from exc
 
     def _safe_read(self, amt: int) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """
@@ -524,7 +579,7 @@ class HttpResponse:
 
         data = check.isinstance((yield ReadIo(amt)), bytes)
         if len(data) < amt:
-            raise http.client.IncompleteRead(data, amt-len(data))
+            raise IncompleteReadError(data, amt-len(data))
         return data
 
     def peek(self, n: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
@@ -603,7 +658,7 @@ class HttpResponse:
         # the chunked protocol.
         try:
             chunk_left = self._get_chunk_left()
-        except http.client.IncompleteRead:
+        except IncompleteReadError:
             return b'' # peek doesn't worry about protocol
 
         if chunk_left is None:
@@ -727,7 +782,7 @@ class HttpConnection:
                     if host[i+1:] == '': # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise http.client.InvalidURL(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -882,7 +937,7 @@ class HttpConnection:
             if self._auto_open:
                 yield from self.connect()
             else:
-                raise http.client.NotConnected
+                raise NotConnectedError
 
         check.state(self._connected)
 
@@ -1014,7 +1069,7 @@ class HttpConnection:
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise http.client.CannotSendRequest(self._state)
+            raise CannotSendRequestError(self._state)
 
         HttpClientValidation.validate_method(method)
 
@@ -1106,7 +1161,7 @@ class HttpConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise http.client.CannotSendHeader
+            raise CannotSendHeaderError
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -1146,7 +1201,7 @@ class HttpConnection:
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise http.client.CannotSendHeader
+            raise CannotSendHeaderError
 
         yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -1275,7 +1330,7 @@ class HttpConnection:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
         #   2) persistent: the response was retained and we await its isclosed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise http.client.ResponseNotReady(self._state)
+            raise ResponseNotReadyError(self._state)
 
         response = HttpResponse(method=self._method)
 

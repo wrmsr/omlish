@@ -56,8 +56,7 @@ import abc
 import dataclasses as dc
 import email.utils
 import html
-import http.client
-import http.server
+import http
 import io
 import textwrap
 import time
