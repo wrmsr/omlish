@@ -12,18 +12,20 @@ import urllib.parse
 from omlish.lite.check import check
 from omlish.lite.maybes import Maybe
 
-from .consts import MAX_HEADERS
+from .consts import HTTP_PORT
 from .consts import MAX_LINE
 from .errors import BadStatusLineError
 from .errors import CannotSendHeaderError
 from .errors import CannotSendRequestError
-from .errors import ClientError
 from .errors import IncompleteReadError
 from .errors import InvalidUrlError
 from .errors import LineTooLongError
 from .errors import NotConnectedError
 from .errors import ResponseNotReadyError
 from .errors import UnknownProtocolError
+from .headers import parse_header_lines
+from .headers import parse_headers
+from .headers import read_headers
 from .io import CloseIo
 from .io import ConnectIo
 from .io import Io
@@ -35,59 +37,12 @@ from .status import read_status_line
 from .validation import HttpClientValidation
 
 
-
 ##
 
-
-HTTP_PORT = 80
-HTTPS_PORT = 443
 
 _UNKNOWN = 'UNKNOWN'
 
 _METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
-
-
-def _read_headers() -> ta.Generator[Io, ta.Optional[bytes], ta.List[bytes]]:
-    """
-    Reads potential header lines into a list from a file pointer.
-
-    Length of line is limited by MAX_LINE, and number of headers is limited by MAX_HEADERS.
-    """
-
-    headers = []
-    while True:
-        line = check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes)
-        if len(line) > MAX_LINE:
-            raise LineTooLongError('header line')
-
-        headers.append(line)
-        if len(headers) > MAX_HEADERS:
-            raise ClientError(f'got more than {MAX_HEADERS} headers')
-
-        if line in (b'\r\n', b'\n', b''):
-            break
-
-    return headers
-
-
-def _parse_header_lines(header_lines: ta.Sequence[bytes]) -> email.message.Message:
-    """
-    Parses only RFC2822 headers from header lines.
-
-    email Parser wants to see strings rather than bytes. But a TextIOWrapper around self.rfile would buffer too many
-    bytes from the stream, bytes which we later need to read as bytes. So we read the correct bytes here, as bytes, for
-    email Parser to parse.
-    """
-
-    text = b''.join(header_lines).decode('iso-8859-1')
-    return email.parser.Parser().parsestr(text)
-
-
-def _parse_headers() -> ta.Generator[Io, ta.Optional[bytes], email.message.Message]:
-    """Parses only RFC2822 headers from a file pointer."""
-
-    headers = yield from _read_headers()
-    return _parse_header_lines(headers)
 
 
 def _encode(data: str, name: str = 'data') -> bytes:
@@ -635,7 +590,7 @@ class HttpConnection:
             # FIXME
             (version, code, message) = yield from response._read_status()  # noqa
 
-            self._raw_proxy_headers = yield from _read_headers()
+            self._raw_proxy_headers = yield from read_headers()
 
             if code != http.HTTPStatus.OK:
                 yield from self.close()
@@ -653,7 +608,7 @@ class HttpConnection:
         """
 
         return (
-            _parse_header_lines(self._raw_proxy_headers)
+            parse_header_lines(self._raw_proxy_headers)
             if self._raw_proxy_headers is not None
             else None
         )
@@ -1097,7 +1052,7 @@ class HttpConnection:
                 break
 
             # skip the header from the 100 response
-            skipped_headers = yield from _read_headers()
+            skipped_headers = yield from read_headers()
 
             del skipped_headers
 
@@ -1111,7 +1066,7 @@ class HttpConnection:
         else:
             raise UnknownProtocolError(version)
 
-        resp.headers = yield from _parse_headers()
+        resp.headers = yield from parse_headers()
 
         # are we using the chunked-style of transfer encoding?
         tr_enc = resp.headers.get('transfer-encoding')
