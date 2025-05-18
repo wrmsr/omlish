@@ -1,157 +1,35 @@
-# ruff: noqa: I001 UP006 UP007
-# PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
-# --------------------------------------------
-#
-# 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
-# ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
-# documentation.
-#
-# 2. Subject to the terms and conditions of this License Agreement, PSF hereby grants Licensee a nonexclusive,
-# royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative
-# works, distribute, and otherwise use Python alone or in any derivative version, provided, however, that PSF's License
-# Agreement and PSF's notice of copyright, i.e., "Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-# 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Python Software Foundation; All Rights Reserved" are retained in Python
-# alone or in any derivative version prepared by Licensee.
-#
-# 3. In the event Licensee prepares a derivative work that is based on or incorporates Python or any part thereof, and
-# wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in
-# any such work a brief summary of the changes made to Python.
-#
-# 4. PSF is making Python available to Licensee on an "AS IS" basis. PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS
-# OR IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY OF
-# MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
-# RIGHTS.
-#
-# 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
-# DAMAGES OR LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON, OR ANY DERIVATIVE THEREOF, EVEN IF
-# ADVISED OF THE POSSIBILITY THEREOF.
-#
-# 6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
-#
-# 7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint
-# venture between PSF and Licensee. This License Agreement does not grant permission to use PSF trademarks or trade name
-# in a trademark sense to endorse or promote products or services of Licensee, or any third party.
-#
-# 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
-# License Agreement.
 """
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
 """
-import abc
 import collections.abc
-import dataclasses as dc
 import email.parser
 import enum
-import errno
 import http
 import io
-import socket
 import typing as ta
 import urllib.parse
 
 from omlish.lite.check import check
 from omlish.lite.maybes import Maybe
 
+from .errors import BadStatusLineError
+from .errors import CannotSendHeaderError
+from .errors import CannotSendRequestError
+from .errors import ClientError
+from .errors import IncompleteReadError
+from .errors import InvalidUrlError
+from .errors import LineTooLongError
+from .errors import NotConnectedError
+from .errors import RemoteDisconnectedError
+from .errors import ResponseNotReadyError
+from .errors import UnknownProtocolError
+from .io import CloseIo
+from .io import ConnectIo
+from .io import Io
+from .io import ReadIo
+from .io import ReadLineIo
+from .io import WriteIo
 from .validation import HttpClientValidation
-
-
-##
-
-
-class ClientError(Exception):
-    pass
-
-
-class NotConnectedError(ClientError):
-    pass
-
-
-class InvalidUrlError(ClientError):
-    pass
-
-
-@dc.dataclass()
-class UnknownProtocolError(ClientError):
-    version: str
-
-
-@dc.dataclass()
-class IncompleteReadError(ClientError):
-    partial: bytes
-    expected: ta.Optional[int] = None
-
-
-class ImproperConnectionStateError(ClientError):
-    pass
-
-
-class CannotSendRequestError(ImproperConnectionStateError):
-    pass
-
-
-class CannotSendHeaderError(ImproperConnectionStateError):
-    pass
-
-
-class ResponseNotReadyError(ImproperConnectionStateError):
-    pass
-
-
-@dc.dataclass()
-class BadStatusLineError(ClientError):
-    line: str
-
-
-class RemoteDisconnectedError(BadStatusLineError, ConnectionResetError):
-    pass
-
-
-@dc.dataclass()
-class LineTooLongError(ClientError):
-    line_type: str
-
-
-##
-
-
-class Io(abc.ABC):  # noqa
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class ConnectIo(Io):
-    args: ta.Tuple[ta.Any, ...]
-    kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
-
-
-class CloseIo(Io):
-    pass
-
-
-#
-
-class AnyReadIo(Io):  # noqa
-    pass
-
-
-@dc.dataclass(frozen=True)
-class ReadIo(AnyReadIo):
-    sz: ta.Optional[int]
-
-
-@dc.dataclass(frozen=True)
-class ReadLineIo(AnyReadIo):
-    sz: int
-
-
-#
-
-@dc.dataclass(frozen=True)
-class WriteIo(Io):
-    data: bytes
 
 
 ##
@@ -1367,114 +1245,3 @@ class HttpConnection:
         except:
             response.close()
             raise
-
-
-def _main3() -> None:
-    import urllib.request
-    req = urllib.request.Request('https://www.baidu.com')
-    with urllib.request.urlopen(req) as resp:  # noqa
-        print(resp.read())
-
-
-def _main2() -> None:
-    conn_cls = __import__('http.client').client.HTTPConnection
-
-    url = 'www.example.com'
-    conn = conn_cls(url)
-
-    conn.request('GET', '/')
-    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
-    print((r1.status, r1.reason))
-
-    # data1 = r1.read()
-
-    while chunk := r1.read(200):
-        print(repr(chunk))
-
-
-def _main() -> None:
-    conn_cls = HttpConnection
-
-    url = 'www.example.com'
-    conn = conn_cls(url)
-
-    sock: ta.Optional[socket.socket] = None
-    sock_file: ta.Optional = None
-
-    def handle_io(o: Io) -> ta.Any:
-        nonlocal sock
-        nonlocal sock_file
-
-        if isinstance(o, ConnectIo):
-            check.none(sock)
-            sock = socket.create_connection(*o.args, **o.kwargs)
-
-            # Might fail in OSs that don't implement TCP_NODELAY
-            try:
-                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except OSError as e:
-                if e.errno != errno.ENOPROTOOPT:
-                    raise
-
-            sock_file = sock.makefile('rb')
-
-            return None
-
-        elif isinstance(o, CloseIo):
-            check.not_none(sock).close()
-            return None
-
-        elif isinstance(o, WriteIo):
-            check.not_none(sock).sendall(o.data)
-            return None
-
-        elif isinstance(o, ReadIo):
-            if (sz := o.sz) is not None:
-                return check.not_none(sock_file).read(sz)
-            else:
-                return check.not_none(sock_file).read()
-
-        elif isinstance(o, ReadLineIo):
-            return check.not_none(sock_file).readline(o.sz)
-
-        else:
-            raise TypeError(o)
-
-    resp: ta.Optional[HttpResponse] = None
-
-    def get_resp():
-        nonlocal resp
-        resp = yield from conn.get_response()
-
-    def print_resp():
-        d = yield from check.not_none(resp).read()
-        print(d)
-
-    for f in [
-        conn.connect,
-        lambda: conn.request('GET', '/'),
-        get_resp,
-        print_resp,
-        conn.close,
-    ]:
-        g = f()
-        i = None
-        while True:
-            try:
-                o = g.send(i)
-            except StopIteration:
-                break
-            i = handle_io(o)
-
-    # conn.request('GET', '/')
-    # r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
-    # print((r1.status, r1.reason))
-    #
-    # # data1 = r1.read()
-    #
-    # while chunk := r1.read(200):
-    #     print(repr(chunk))
-
-
-if __name__ == '__main__':
-    _main()
