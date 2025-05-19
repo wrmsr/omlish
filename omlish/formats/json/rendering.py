@@ -12,10 +12,11 @@ from .types import Scalar
 
 I = ta.TypeVar('I')
 
-MULTILINE_SEPARATORS = consts.Separators(',', ': ')
-
 
 ##
+
+
+MULTILINE_SEPARATORS = consts.Separators(',', ': ')
 
 
 class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):

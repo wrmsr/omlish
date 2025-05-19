@@ -15,6 +15,7 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# https://github.com/simplejson/simplejson/blob/6932004966ab70ef47250a2b3152acd8c904e6b5/simplejson/encoder.py
 # https://github.com/simplejson/simplejson/blob/6932004966ab70ef47250a2b3152acd8c904e6b5/simplejson/scanner.py
 import json
 import re
@@ -86,7 +87,7 @@ def parse_string(
         prev_end = end
         end = chunk.end()
         content, terminator = chunk.groups()
-        # Content is contains zero or more unescaped string characters
+        # Content contains zero or more unescaped string characters
         if content:
             chunks.append(content)
 
@@ -150,6 +151,75 @@ def try_parse_string(
         return None
 
     return parse_string(s, idx, strict=strict)
+
+
+##
+
+
+_ESCAPE_PAT = re.compile(r'[\x00-\x1f\\"]')
+_ESCAPE_ASCII_PAT = re.compile(r'([\\"]|[^\ -~])')
+
+_ESCAPE_DCT = {
+    **{
+        chr(i): f'\\u{i:04x}'
+        for i in range(0x20)
+    },
+    '\\': '\\\\',
+    '"': '\\"',
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t',
+}
+
+
+def _convert_to_string(s: str | bytes) -> str:
+    if isinstance(s, bytes):
+        return str(s, 'utf-8')
+
+    elif type(s) is not str:
+        # Convert a str subclass instance to exact str. Raise a TypeError otherwise.
+        return str.__str__(s)
+
+    else:
+        return s
+
+
+def encode_string(s: str | bytes, q: str = '"') -> str:
+    """Return a JSON representation of a Python string"""
+
+    s = _convert_to_string(s)
+
+    def replace(m):
+        return _ESCAPE_DCT[m.group(0)]
+
+    return q + _ESCAPE_PAT.sub(replace, s) + q
+
+
+def encode_string_ascii(s: str | bytes, q: str = '"') -> str:
+    """Return an ASCII-only JSON representation of a Python string"""
+
+    s = _convert_to_string(s)
+
+    def replace(m):
+        s = m.group(0)
+
+        try:
+            return _ESCAPE_DCT[s]
+
+        except KeyError:
+            n = ord(s)
+            if n < 0x10000:
+                return f'\\u{n:04x}'
+
+            # surrogate pair
+            n -= 0x10000
+            s1 = 0xD800 | ((n >> 10) & 0x3FF)
+            s2 = 0xDC00 | (n & 0x3FF)
+            return f'\\u{s1:04x}\\u{s2:04x}'
+
+    return q + str(_ESCAPE_ASCII_PAT.sub(replace, s)) + q
 
 
 ##
