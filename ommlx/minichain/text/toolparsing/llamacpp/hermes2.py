@@ -62,6 +62,39 @@ class Hermes2ProParser:
 
         self._extract_reasoning = extract_reasoning
 
+    def _parse_inner(
+            self,
+            content_to_parse: str,
+            *,
+            pos_after_args: int,
+            close_tag: str,
+            block_end: str,
+    ) -> int:
+        # Check for closing tags (</function> and potential ```)
+        remaining_str = content_to_parse[pos_after_args:]
+        remaining_str_lstrip = remaining_str.lstrip()
+        advance = len(remaining_str) - len(remaining_str_lstrip)
+        pos_after_args += advance  # Account for stripped whitespace
+
+        if close_tag:
+            if content_to_parse.startswith(close_tag, pos_after_args):
+                pos_after_args += len(close_tag)
+            else:
+                raise ValueError(f"Missing close tag '{close_tag}'")  # noqa
+
+        remaining_str = content_to_parse[pos_after_args:]
+        remaining_str_lstrip = remaining_str.lstrip()
+        advance = len(remaining_str) - len(remaining_str_lstrip)
+        pos_after_args += advance  # Account for stripped whitespace
+
+        if block_end:
+            if content_to_parse.startswith(block_end, pos_after_args):
+                pos_after_args += len(block_end)
+            else:
+                raise ValueError(f"Missing block end '{block_end}'")  # noqa
+
+        return pos_after_args
+
     def _parse(self, content_to_parse: str) -> ChatMsg:
         """Inner function to parse the content after <think> tags are handled."""
 
@@ -107,34 +140,12 @@ class Hermes2ProParser:
                         # Valid tool call found
                         msg.tool_calls.append(process_tool_call(json_obj))
                         tool_call_processed = True
-                        pos_after_json = json_end_idx_abs
-
-                        # Check for closing tags
-                        remaining_str = content_to_parse[pos_after_json:]
-                        remaining_str_lstrip = remaining_str.lstrip()
-                        advance = len(remaining_str) - len(remaining_str_lstrip)
-                        pos_after_json += advance  # Account for stripped whitespace
-
-                        if close_tag:
-                            if content_to_parse.startswith(close_tag, pos_after_json):
-                                pos_after_json += len(close_tag)
-                            else:
-                                raise ValueError(f"Missing close tag '{close_tag}'")  # noqa
-
-                        remaining_str = content_to_parse[pos_after_json:]
-                        remaining_str_lstrip = remaining_str.lstrip()
-                        advance = len(remaining_str) - len(remaining_str_lstrip)
-                        pos_after_json += advance  # Account for stripped whitespace
-
-                        if block_end:
-                            if content_to_parse.startswith(block_end, pos_after_json):
-                                pos_after_json += len(block_end)
-                            else:
-                                raise ValueError(f"Missing block end '{block_end}'")  # noqa
-
-                        next_parse_pos = pos_after_json
-
-                    # else: Not a valid tool call JSON, treat whole match as content later
+                        next_parse_pos = self._parse_inner(
+                            content_to_parse,
+                            pos_after_args=json_end_idx_abs,
+                            close_tag=close_tag,
+                            block_end=block_end,
+                        )
 
                 elif func_name1 or func_name2:
                     # Case 2: Looks like a <function...> tag
@@ -153,32 +164,12 @@ class Hermes2ProParser:
                         }
                         msg.tool_calls.append(process_tool_call(tool_data))
                         tool_call_processed = True
-                        pos_after_args = args_end_idx_abs
-
-                        # Check for closing tags (</function> and potential ```)
-                        remaining_str = content_to_parse[pos_after_args:]
-                        remaining_str_lstrip = remaining_str.lstrip()
-                        advance = len(remaining_str) - len(remaining_str_lstrip)
-                        pos_after_args += advance
-
-                        if close_tag:
-                            if content_to_parse.startswith(close_tag, pos_after_args):
-                                pos_after_args += len(close_tag)
-                            else:
-                                raise ValueError(f"Missing close tag '{close_tag}'")  # noqa
-
-                        remaining_str = content_to_parse[pos_after_args:]
-                        remaining_str_lstrip = remaining_str.lstrip()
-                        advance = len(remaining_str) - len(remaining_str_lstrip)
-                        pos_after_args += advance
-
-                        if block_end:
-                            if content_to_parse.startswith(block_end, pos_after_args):
-                                pos_after_args += len(block_end)
-                            else:
-                                raise ValueError(f"Missing block end '{block_end}'")  # noqa
-
-                        next_parse_pos = pos_after_args
+                        next_parse_pos = self._parse_inner(
+                            content_to_parse,
+                            pos_after_args=args_end_idx_abs,
+                            close_tag=close_tag,
+                            block_end=block_end,
+                        )
 
                     # else: Failed to parse arguments JSON, treat whole match as content later
 
