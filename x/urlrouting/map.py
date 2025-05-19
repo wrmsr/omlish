@@ -307,11 +307,11 @@ class MapAdapter(ta.Generic[T]):
             try:
                 endpoint, args = self.match(path_info, method)
             except RequestRedirect as e:
-                return e
+                return e  # type: ignore[return-value]  # FIXME
             return view_func(endpoint, args)
         except HttpException as e:
             if catch_http_exceptions:
-                return e
+                return e  # type: ignore[return-value]  # FIXME
             raise
 
     @ta.overload

@@ -241,7 +241,7 @@ class RuleTemplate:
     parameters.
     """
 
-    def __init__(self, rules: ta.Iterable['Rule']) -> None:
+    def __init__(self, rules: ta.Iterable[RuleFactory]) -> None:
         super().__init__()
 
         self.rules = list(rules)
