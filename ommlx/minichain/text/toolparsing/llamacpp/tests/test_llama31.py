@@ -1,8 +1,17 @@
 from omlish import lang
 
-from ..llama31 import parse_llama_3_1
+from ..llama31 import Llama31Parser
 from ..types import ChatMsg
 from ..types import ChatToolCall
+
+
+##
+
+
+def parse_llama_3_1(input_str: str, *, with_builtin_tools: bool) -> ChatMsg:
+    return Llama31Parser(
+        with_builtin_tools=with_builtin_tools,
+    ).parse(input_str)
 
 
 def test_usage():

@@ -1,11 +1,17 @@
 from omlish import lang
 
-from ..hermes2 import parse_hermes_2_pro
+from ..hermes2 import Hermes2ProParser
 from ..types import ChatMsg
 from ..types import ChatToolCall
 
 
 ##
+
+
+def parse_hermes_2_pro(input_str: str, *, extract_reasoning: bool) -> ChatMsg:
+    return Hermes2ProParser(
+        extract_reasoning=extract_reasoning,
+    ).parse(input_str)
 
 
 def test_usage():

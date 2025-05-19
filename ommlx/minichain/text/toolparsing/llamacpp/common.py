@@ -55,19 +55,19 @@ def process_tool_call(tool_call_data: dict[str, ta.Any]) -> ChatToolCall:
 def parse_json_tool_calls(
         input_str: str,
         trigger_opt: re.Pattern | None = None,
-        function_regex: re.Pattern = re.compile(r''),  # Must be provided if used
-        close_regex: re.Pattern = re.compile(r''),  # Must be provided if used
+        function_pat: re.Pattern = re.compile(r''),  # Must be provided if used
+        close_pat: re.Pattern = re.compile(r''),  # Must be provided if used
         allow_raw_python: bool = False,
 ) -> ChatMsg:
     """
-    Parses input assuming tool calls are marked by function_regex, contain JSON, and end with close_regex. An optional
+    Parses input assuming tool calls are marked by function_pat, contain JSON, and end with close_pat. An optional
     trigger_opt starts the process.
 
     Args:
         input_str: The string potentially containing tool calls.
         trigger_opt: Optional regex to find the start of the tool call section.
-        function_regex: Regex with one capture group for the function name.
-        close_regex: Regex marking the end of the tool call arguments.
+        function_pat: Regex with one capture group for the function name.
+        close_pat: Regex marking the end of the tool call arguments.
         allow_raw_python: Special handling for raw python code blocks.
 
     Returns:
@@ -90,7 +90,7 @@ def parse_json_tool_calls(
 
     while current_pos < end_pos:
         # Find the next function call start
-        func_match = function_regex.search(input_str, current_pos)
+        func_match = function_pat.search(input_str, current_pos)
         if not func_match:
             # No more function calls found, append the rest
             result.content += input_str[current_pos:]
@@ -107,7 +107,7 @@ def parse_json_tool_calls(
 
         if arguments_obj is not None:
             # Successfully parsed JSON, now look for the closing pattern
-            close_match = close_regex.search(input_str, next_pos)
+            close_match = close_pat.search(input_str, next_pos)
             if not close_match:
                 # This should ideally not happen if format is guaranteed, but handle defensively. Treat rest as content?
                 # Or error? C++ throws, Python can raise or log and treat as content. Let's treat the rest as content
@@ -128,7 +128,7 @@ def parse_json_tool_calls(
 
         elif allow_raw_python and name == 'python':
             # Special case: if JSON parsing fails but it's a 'python' tool, capture remaining text as code. This assumes
-            # close_regex isn't needed. NOTE: C++ version captures till end. This might need refinement depending on
+            # close_pat isn't needed. NOTE: C++ version captures till end. This might need refinement depending on
             # exact expected format. Does 'python' have a closer? Assuming it consumes the rest of the string here.
             code_content = input_str[parse_start_pos:]
             arguments_obj = {'code': code_content}
@@ -137,7 +137,7 @@ def parse_json_tool_calls(
             current_pos = end_pos  # Consumed the rest
             break
         else:
-            # Failed to parse JSON, and not the special python case. Treat the function regex match and subsequent text
+            # Failed to parse JSON, and not the special python case. Treat the function pat match and subsequent text
             # as literal content. Or raise error like C++? Let's log and add as content.
             log.warning(
                 "Failed to parse JSON arguments for tool '%s'. Input: %s",
@@ -157,6 +157,12 @@ def parse_json_tool_calls(
     return result
 
 
+_REASONING_PAT = re.compile(
+    r'^\s*(?:<think>([\s\S]*?)</think>\s*)?([\s\S]*)$',
+    re.DOTALL,
+)
+
+
 def handle_think_tag_prelude(
         input_str: str,
         extract_reasoning: bool,
@@ -166,11 +172,7 @@ def handle_think_tag_prelude(
 
     # Regex to capture optional <think> block and the rest of the content. Handles potential whitespace around tags.
     # DOTALL allows '.' to match newline characters.
-    reasoning_regex = re.compile(
-        r'^\s*(?:<think>([\s\S]*?)</think>\s*)?([\s\S]*)$',
-        re.DOTALL,
-    )
-    match = reasoning_regex.match(input_str)
+    match = _REASONING_PAT.match(input_str)
 
     if match:
         thinking_content = match.group(1)  # Content inside <think> tags (can be None)

@@ -13,64 +13,65 @@ log = logging.getLogger(__name__)
 ##
 
 
-def parse_hermes_2_pro(
-        input_str: str,
-        *,
-        extract_reasoning: bool,
-) -> ChatMsg:
-    """
-    Parses the Hermes 2 Pro format, handling <think> tags and various tool call syntaxes (JSON objects, <function>
-    tags).
-    """
+# Regex to find potential tool calls (JSON or function tags). Combined the variations into one regex with
+# alternatives. Using non-capturing groups (?:...) where possible. DOTALL allows '.' to match newlines within
+# arguments etc.
+_OPEN_PAT = re.compile(
+    # Group 1: Optional code block start (e.g., ```json\n)
+    r'('
+    r'```(?:xml|json)?\s*\n\s*'
+    r')?'
 
-    def _parse_hermes_content(content_to_parse: str) -> ChatMsg:
+    # Group 2: Optional opening tag
+    r'('
+    r'<tool_call>'
+    r'|<function_call>'
+    r'|<tool>'
+    r'|<tools>'
+    r'|<response>'
+    r'|<json>'
+    r'|<xml>'
+    r'|<JSON>'
+    r')?'
+
+    # Group 3: JSON object starting with "name"
+    r'(\s*\{\s*\"name\"\s*:[\s\S]*)'
+
+    r'|'
+
+    # Group 4: <function=name>
+    r'(?:<function=([^>]+)>'
+
+    # Group 5: <function name="name">
+    r'|<function name=\"([^\"]+)\">)'
+
+    # Group 6: Arguments for function tag + rest
+    r'([\s\S]*)',
+
+    re.DOTALL,
+)
+
+
+class Hermes2ProParser:
+    def __init__(
+            self,
+            *,
+            extract_reasoning: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._extract_reasoning = extract_reasoning
+
+    def _parse(self, content_to_parse: str) -> ChatMsg:
         """Inner function to parse the content after <think> tags are handled."""
 
         msg = ChatMsg()
         current_pos = 0
         end_pos = len(content_to_parse)
 
-        # Regex to find potential tool calls (JSON or function tags). Combined the variations into one regex with
-        # alternatives. Using non-capturing groups (?:...) where possible. DOTALL allows '.' to match newlines within
-        # arguments etc.
-        open_regex = re.compile(
-            # Group 1: Optional code block start (e.g., ```json\n)
-            r'('
-            r'```(?:xml|json)?\s*\n\s*'
-            r')?'
-
-            # Group 2: Optional opening tag
-            r'('
-            r'<tool_call>'
-            r'|<function_call>'
-            r'|<tool>'
-            r'|<tools>'
-            r'|<response>'
-            r'|<json>'
-            r'|<xml>'
-            r'|<JSON>'
-            r')?'
-
-            # Group 3: JSON object starting with "name"
-            r'(\s*\{\s*\"name\"\s*:[\s\S]*)'
-
-            r'|'
-
-            # Group 4: <function=name>
-            r'(?:<function=([^>]+)>'
-
-            # Group 5: <function name="name">
-            r'|<function name=\"([^\"]+)\">)'
-
-            # Group 6: Arguments for function tag + rest
-            r'([\s\S]*)',
-
-            re.DOTALL,
-        )
-
         while current_pos < end_pos:
             # Search from the current position
-            match = open_regex.search(content_to_parse, current_pos)
+            match = _OPEN_PAT.search(content_to_parse, current_pos)
 
             if not match:
                 # No more potential tool calls found
@@ -200,13 +201,19 @@ def parse_hermes_2_pro(
         # msg.content = msg.content.strip()
         return msg
 
-    try:
-        # First, handle the optional <think> prelude
-        return handle_think_tag_prelude(input_str, extract_reasoning, _parse_hermes_content)
+    def parse(self, input_str: str) -> ChatMsg:
+        """
+        Parses the Hermes 2 Pro format, handling <think> tags and various tool call syntaxes (JSON objects, <function>
+        tags).
+        """
 
-    except Exception:  # noqa
-        log.exception('Failed to parse Hermes 2 Pro input: Input: %r', input_str)
+        try:
+            # First, handle the optional <think> prelude
+            return handle_think_tag_prelude(input_str, self._extract_reasoning, self._parse)
 
-        # Return a message with the original input as content on failure
-        msg = ChatMsg(content=input_str)
-        return msg
+        except Exception:  # noqa
+            log.exception('Failed to parse Hermes 2 Pro input: Input: %r', input_str)
+
+            # Return a message with the original input as content on failure
+            msg = ChatMsg(content=input_str)
+            return msg
