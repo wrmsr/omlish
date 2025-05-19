@@ -26,6 +26,75 @@ import typing as ta
 ##
 
 
+_ESCAPE_PAT = re.compile(r'[\x00-\x1f\\"]')
+_ESCAPE_ASCII_PAT = re.compile(r'([\\"]|[^\ -~])')
+
+_ESCAPE_DCT = {
+    **{
+        chr(i): f'\\u{i:04x}'
+        for i in range(0x20)
+    },
+    '\\': '\\\\',
+    '"': '\\"',
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t',
+}
+
+
+def _convert_to_string(s: str | bytes) -> str:
+    if isinstance(s, bytes):
+        return str(s, 'utf-8')
+
+    elif type(s) is not str:
+        # Convert a str subclass instance to exact str. Raise a TypeError otherwise.
+        return str.__str__(s)
+
+    else:
+        return s
+
+
+def encode_string(s: str | bytes, q: str = '"') -> str:
+    """Return a JSON representation of a Python string"""
+
+    s = _convert_to_string(s)
+
+    def replace(m):
+        return _ESCAPE_DCT[m.group(0)]
+
+    return q + _ESCAPE_PAT.sub(replace, s) + q
+
+
+def encode_string_ascii(s: str | bytes, q: str = '"') -> str:
+    """Return an ASCII-only JSON representation of a Python string"""
+
+    s = _convert_to_string(s)
+
+    def replace(m):
+        s = m.group(0)
+
+        try:
+            return _ESCAPE_DCT[s]
+
+        except KeyError:
+            n = ord(s)
+            if n < 0x10000:
+                return f'\\u{n:04x}'
+
+            # surrogate pair
+            n -= 0x10000
+            s1 = 0xD800 | ((n >> 10) & 0x3FF)
+            s2 = 0xDC00 | (n & 0x3FF)
+            return f'\\u{s1:04x}\\u{s2:04x}'
+
+    return q + str(_ESCAPE_ASCII_PAT.sub(replace, s)) + q
+
+
+##
+
+
 _FOUR_DIGIT_HEX_PAT = re.compile(r'^[0-9a-fA-F]{4}$')
 
 
@@ -151,75 +220,6 @@ def try_parse_string(
         return None
 
     return parse_string(s, idx, strict=strict)
-
-
-##
-
-
-_ESCAPE_PAT = re.compile(r'[\x00-\x1f\\"]')
-_ESCAPE_ASCII_PAT = re.compile(r'([\\"]|[^\ -~])')
-
-_ESCAPE_DCT = {
-    **{
-        chr(i): f'\\u{i:04x}'
-        for i in range(0x20)
-    },
-    '\\': '\\\\',
-    '"': '\\"',
-    '\b': '\\b',
-    '\f': '\\f',
-    '\n': '\\n',
-    '\r': '\\r',
-    '\t': '\\t',
-}
-
-
-def _convert_to_string(s: str | bytes) -> str:
-    if isinstance(s, bytes):
-        return str(s, 'utf-8')
-
-    elif type(s) is not str:
-        # Convert a str subclass instance to exact str. Raise a TypeError otherwise.
-        return str.__str__(s)
-
-    else:
-        return s
-
-
-def encode_string(s: str | bytes, q: str = '"') -> str:
-    """Return a JSON representation of a Python string"""
-
-    s = _convert_to_string(s)
-
-    def replace(m):
-        return _ESCAPE_DCT[m.group(0)]
-
-    return q + _ESCAPE_PAT.sub(replace, s) + q
-
-
-def encode_string_ascii(s: str | bytes, q: str = '"') -> str:
-    """Return an ASCII-only JSON representation of a Python string"""
-
-    s = _convert_to_string(s)
-
-    def replace(m):
-        s = m.group(0)
-
-        try:
-            return _ESCAPE_DCT[s]
-
-        except KeyError:
-            n = ord(s)
-            if n < 0x10000:
-                return f'\\u{n:04x}'
-
-            # surrogate pair
-            n -= 0x10000
-            s1 = 0xD800 | ((n >> 10) & 0x3FF)
-            s2 = 0xDC00 | (n & 0x3FF)
-            return f'\\u{s1:04x}\\u{s2:04x}'
-
-    return q + str(_ESCAPE_ASCII_PAT.sub(replace, s)) + q
 
 
 ##
