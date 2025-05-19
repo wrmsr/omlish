@@ -205,20 +205,36 @@ def parse_tool_cals(output: str, jinja_template: str) -> list[ToolCallFunction]:
 def test_parse_objects():
     tests: list = [
         {
-            'input': '[{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}},{"name": "get_current_weather", "arguments": {"format":"celsius","location":"Toronto, Canada"}}]',  # noqa
+            'input': (
+                '['
+                '{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}},'
+                '{"name": "get_current_weather", "arguments": {"format":"celsius","location":"Toronto, Canada"}}'
+                ']'
+            ),
             'want': [
                 {'name': 'get_current_weather', 'arguments': {'format': 'fahrenheit', 'location': 'San Francisco, CA'}},
                 {'name': 'get_current_weather', 'arguments': {'format': 'celsius', 'location': 'Toronto, Canada'}},
             ],
         },
         {
-            'input': '<toolcall>{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}} </toolcall>',  # noqa
+            'input': (
+                '<toolcall>'
+                '{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}} '
+                '</toolcall>'
+            ),
             'want': [
                 {'name': 'get_current_weather', 'arguments': {'format': 'fahrenheit', 'location': 'San Francisco, CA'}},
             ],
         },
         {
-            'input': '<toolcall>{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}} </toolcall> <toolcall>{"name": "get_current_weather", "arguments": {"format":"celsius","location":"Toronto, ON"}} </toolcall>',  # noqa
+            'input': (
+                '<toolcall>'
+                '{"name": "get_current_weather", "arguments": {"format":"fahrenheit","location":"San Francisco, CA"}} '
+                '</toolcall> '
+                '<toolcall>'
+                '{"name": "get_current_weather", "arguments": {"format":"celsius","location":"Toronto, ON"}} '
+                '</toolcall>'
+            ),
             'want': [
                 {'name': 'get_current_weather', 'arguments': {'format': 'fahrenheit', 'location': 'San Francisco, CA'}},
                 {'name': 'get_current_weather', 'arguments': {'format': 'celsius', 'location': 'Toronto, ON'}},
