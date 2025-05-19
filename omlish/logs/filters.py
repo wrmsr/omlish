@@ -4,7 +4,14 @@ import logging
 import threading
 
 
+##
+
+
 class TidLogFilter(logging.Filter):
     def filter(self, record):
-        record.tid = threading.get_native_id()
+        # FIXME: handle better - missing from wasm and cosmos
+        if hasattr(threading, 'get_native_id'):
+            record.tid = threading.get_native_id()
+        else:
+            record.tid = '?'
         return True

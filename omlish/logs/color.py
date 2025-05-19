@@ -6,6 +6,9 @@ from ..term import codes as tc
 from .standard import StandardLogFormatter
 
 
+##
+
+
 class ColorLogFormatter(StandardLogFormatter):
     LEVEL_COLORS: ta.Mapping[int, tc.SGRs.FG] = {
         logging.WARNING: tc.SGRs.FG.BRIGHT_YELLOW,

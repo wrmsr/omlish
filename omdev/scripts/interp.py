@@ -1674,14 +1674,24 @@ class PredicateTimeout(Timeout):
 # ../../../omlish/logs/filters.py
 
 
+##
+
+
 class TidLogFilter(logging.Filter):
     def filter(self, record):
-        record.tid = threading.get_native_id()
+        # FIXME: handle better - missing from wasm and cosmos
+        if hasattr(threading, 'get_native_id'):
+            record.tid = threading.get_native_id()
+        else:
+            record.tid = '?'
         return True
 
 
 ########################################
 # ../../../omlish/logs/proxy.py
+
+
+##
 
 
 class ProxyLogFilterer(logging.Filterer):
@@ -3721,6 +3731,9 @@ def check_lite_runtime_version() -> None:
 TODO:
  - translate json keys
 """
+
+
+##
 
 
 class JsonLogFormatter(logging.Formatter):
