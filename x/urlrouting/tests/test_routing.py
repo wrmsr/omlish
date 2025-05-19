@@ -22,15 +22,13 @@ from ..utils import MultiDict
 
 
 def test_basic_routing():
-    m = Map(
-        [
-            Rule('/', endpoint='index'),
-            Rule('/foo', endpoint='foo'),
-            Rule('/bar/', endpoint='bar'),
-            Rule('/ws', endpoint='ws', websocket=True),
-            Rule('/', endpoint='indexws', websocket=True),
-        ],
-    )
+    m = Map([
+        Rule('/', endpoint='index'),
+        Rule('/foo', endpoint='foo'),
+        Rule('/bar/', endpoint='bar'),
+        Rule('/ws', endpoint='ws', websocket=True),
+        Rule('/', endpoint='indexws', websocket=True),
+    ])
     adapter = m.bind('example.org', '/')
     assert adapter.match('/') == ('index', {})
     assert adapter.match('/foo') == ('foo', {})
@@ -70,15 +68,13 @@ def test_basic_routing():
 
 
 def test_merge_slashes_match():
-    url_map = Map(
-        [
-            Rule('/no/tail', endpoint='no_tail'),
-            Rule('/yes/tail/', endpoint='yes_tail'),
-            Rule('/with/<path:path>', endpoint='with_path'),
-            Rule('/no//merge', endpoint='no_merge', merge_slashes=False),
-            Rule('/no/merging', endpoint='no_merging', merge_slashes=False),
-        ],
-    )
+    url_map = Map([
+        Rule('/no/tail', endpoint='no_tail'),
+        Rule('/yes/tail/', endpoint='yes_tail'),
+        Rule('/with/<path:path>', endpoint='with_path'),
+        Rule('/no//merge', endpoint='no_merge', merge_slashes=False),
+        Rule('/no/merging', endpoint='no_merging', merge_slashes=False),
+    ])
     adapter = url_map.bind('localhost', '/')
 
     with pytest.raises(RequestRedirect) as excinfo:
@@ -117,11 +113,9 @@ def test_merge_slashes_match():
 def test_merge_slash_encoding(path, expected):
     """This test is to make sure URLs are not double-encoded
     when a redirect is thrown with `merge_slash = True`"""
-    url_map = Map(
-        [
-            Rule('/merge/<some>/path'),
-        ],
-    )
+    url_map = Map([
+        Rule('/merge/<some>/path'),
+    ])
     adapter = url_map.bind('localhost', '/')
 
     with pytest.raises(RequestRedirect) as excinfo:
@@ -131,26 +125,22 @@ def test_merge_slash_encoding(path, expected):
 
 
 def test_merge_slashes_build():
-    url_map = Map(
-        [
-            Rule('/yes//merge', endpoint='yes_merge'),
-            Rule('/no//merge', endpoint='no_merge', merge_slashes=False),
-        ],
-    )
+    url_map = Map([
+        Rule('/yes//merge', endpoint='yes_merge'),
+        Rule('/no//merge', endpoint='no_merge', merge_slashes=False),
+    ])
     adapter = url_map.bind('localhost', '/')
     assert adapter.build('yes_merge') == '/yes/merge'
     assert adapter.build('no_merge') == '/no//merge'
 
 
 def test_strict_slashes_redirect():
-    m = Map(
-        [
-            Rule('/bar/', endpoint='get', methods=['GET']),
-            Rule('/bar', endpoint='post', methods=['POST']),
-            Rule('/foo/', endpoint='foo', methods=['POST']),
-            Rule('/<path:var>/', endpoint='path', methods=['GET']),
-        ],
-    )
+    m = Map([
+        Rule('/bar/', endpoint='get', methods=['GET']),
+        Rule('/bar', endpoint='post', methods=['POST']),
+        Rule('/foo/', endpoint='foo', methods=['POST']),
+        Rule('/<path:var>/', endpoint='path', methods=['GET']),
+    ])
     adapter = m.bind('example.org', '/')
 
     # Check if the actual routes works
@@ -169,12 +159,10 @@ def test_strict_slashes_redirect():
     assert error_info.value.new_url == 'http://example.org/abc/'
 
     # Check differently defined order
-    m = Map(
-        [
-            Rule('/bar', endpoint='post', methods=['POST']),
-            Rule('/bar/', endpoint='get', methods=['GET']),
-        ],
-    )
+    m = Map([
+        Rule('/bar', endpoint='post', methods=['POST']),
+        Rule('/bar/', endpoint='get', methods=['GET']),
+    ])
     adapter = m.bind('example.org', '/')
 
     # Check if the actual routes works
@@ -228,18 +216,16 @@ def test_strict_slashes_leaves_dont_consume():
 
 
 def test_basic_building():
-    m = Map(
-        [
-            Rule('/', endpoint='index'),
-            Rule('/foo', endpoint='foo'),
-            Rule('/bar/<baz>', endpoint='bar'),
-            Rule('/bar/<int:bazi>', endpoint='bari'),
-            Rule('/bar/<float:bazf>', endpoint='barf'),
-            Rule('/bar/<path:bazp>', endpoint='barp'),
-            Rule('/hehe', endpoint='blah', subdomain='blah'),
-            Rule('/ws', endpoint='ws', websocket=True),
-        ],
-    )
+    m = Map([
+        Rule('/', endpoint='index'),
+        Rule('/foo', endpoint='foo'),
+        Rule('/bar/<baz>', endpoint='bar'),
+        Rule('/bar/<int:bazi>', endpoint='bari'),
+        Rule('/bar/<float:bazf>', endpoint='barf'),
+        Rule('/bar/<path:bazp>', endpoint='barp'),
+        Rule('/hehe', endpoint='blah', subdomain='blah'),
+        Rule('/ws', endpoint='ws', websocket=True),
+    ])
     adapter = m.bind('example.org', '/', subdomain='blah')
 
     assert adapter.build('index', {}) == 'http://example.org/'
@@ -257,9 +243,7 @@ def test_basic_building():
     assert adapter.build('bar', {'baz': 'blub'}) == 'http://example.org/test/bar/blub'
     assert adapter.build('bari', {'bazi': 50}) == 'http://example.org/test/bar/50'
     assert adapter.build('barf', {'bazf': 0.815}) == 'http://example.org/test/bar/0.815'
-    assert (
-        adapter.build('barp', {'bazp': 'la/di'}) == 'http://example.org/test/bar/la/di'
-    )
+    assert adapter.build('barp', {'bazp': 'la/di'}) == 'http://example.org/test/bar/la/di'
     assert adapter.build('blah', {}) == '/test/hehe'
 
     adapter = m.bind('example.org')
@@ -282,15 +266,13 @@ def test_basic_building():
 
 def test_long_build():
     long_args = {f'v{x}': x for x in range(10000)}
-    m = Map(
-        [
-            Rule(
-                ''.join(f'/<{k}>' for k in long_args),
-                endpoint='bleep',
-                build_only=True,
-            ),
-        ],
-    )
+    m = Map([
+        Rule(
+            ''.join(f'/<{k}>' for k in long_args),
+            endpoint='bleep',
+            build_only=True,
+        ),
+    ])
     adapter = m.bind('localhost', '/')
     url = f"{adapter.build('bleep', long_args)}/"
     for v in long_args.values():
@@ -298,12 +280,10 @@ def test_long_build():
 
 
 def test_defaults():
-    m = Map(
-        [
-            Rule('/foo/', defaults={'page': 1}, endpoint='foo'),
-            Rule('/foo/<int:page>', endpoint='foo'),
-        ],
-    )
+    m = Map([
+        Rule('/foo/', defaults={'page': 1}, endpoint='foo'),
+        Rule('/foo/<int:page>', endpoint='foo'),
+    ])
     adapter = m.bind('example.org', '/')
 
     assert adapter.match('/foo/') == ('foo', {'page': 1})
@@ -315,14 +295,12 @@ def test_defaults():
 
 
 def test_negative():
-    m = Map(
-        [
-            Rule('/foos/<int(signed=True):page>', endpoint='foos'),
-            Rule('/bars/<float(signed=True):page>', endpoint='bars'),
-            Rule('/foo/<int:page>', endpoint='foo'),
-            Rule('/bar/<float:page>', endpoint='bar'),
-        ],
-    )
+    m = Map([
+        Rule('/foos/<int(signed=True):page>', endpoint='foos'),
+        Rule('/bars/<float(signed=True):page>', endpoint='bars'),
+        Rule('/foo/<int:page>', endpoint='foo'),
+        Rule('/bar/<float:page>', endpoint='bar'),
+    ])
     adapter = m.bind('example.org', '/')
 
     assert adapter.match('/foos/-2') == ('foos', {'page': -2})
@@ -338,13 +316,11 @@ def test_negative():
 
 
 def test_greedy():
-    m = Map(
-        [
-            Rule('/foo', endpoint='foo'),
-            Rule('/<path:bar>', endpoint='bar'),
-            Rule('/<path:bar>/<path:blub>', endpoint='bar'),
-        ],
-    )
+    m = Map([
+        Rule('/foo', endpoint='foo'),
+        Rule('/<path:bar>', endpoint='bar'),
+        Rule('/<path:bar>/<path:blub>', endpoint='bar'),
+    ])
     adapter = m.bind('example.org', '/')
 
     assert adapter.match('/foo') == ('foo', {})
@@ -357,28 +333,23 @@ def test_greedy():
 
 
 def test_path():
-    m = Map(
-        [
-            Rule('/', defaults={'name': 'FrontPage'}, endpoint='page'),
-            Rule('/Special', endpoint='special'),
-            Rule('/<int:year>', endpoint='year'),
-            Rule('/<path:name>:foo', endpoint='foopage'),
-            Rule('/<path:name>:<path:name2>', endpoint='twopage'),
-            Rule('/<path:name>', endpoint='page'),
-            Rule('/<path:name>/edit', endpoint='editpage'),
-            Rule('/<path:name>/silly/<path:name2>', endpoint='sillypage'),
-            Rule('/<path:name>/silly/<path:name2>/edit', endpoint='editsillypage'),
-            Rule('/Talk:<path:name>', endpoint='talk'),
-            Rule('/User:<username>', endpoint='user'),
-            Rule('/User:<username>/<path:name>', endpoint='userpage'),
-            Rule(
-                '/User:<username>/comment/<int:id>-<int:replyId>',
-                endpoint='usercomment',
-            ),
-            Rule('/Files/<path:file>', endpoint='files'),
-            Rule('/<admin>/<manage>/<things>', endpoint='admin'),
-        ],
-    )
+    m = Map([
+        Rule('/', defaults={'name': 'FrontPage'}, endpoint='page'),
+        Rule('/Special', endpoint='special'),
+        Rule('/<int:year>', endpoint='year'),
+        Rule('/<path:name>:foo', endpoint='foopage'),
+        Rule('/<path:name>:<path:name2>', endpoint='twopage'),
+        Rule('/<path:name>', endpoint='page'),
+        Rule('/<path:name>/edit', endpoint='editpage'),
+        Rule('/<path:name>/silly/<path:name2>', endpoint='sillypage'),
+        Rule('/<path:name>/silly/<path:name2>/edit', endpoint='editsillypage'),
+        Rule('/Talk:<path:name>', endpoint='talk'),
+        Rule('/User:<username>', endpoint='user'),
+        Rule('/User:<username>/<path:name>', endpoint='userpage'),
+        Rule('/User:<username>/comment/<int:id>-<int:replyId>', endpoint='usercomment'),
+        Rule('/Files/<path:file>', endpoint='files'),
+        Rule('/<admin>/<manage>/<things>', endpoint='admin'),
+    ])
     adapter = m.bind('example.org', '/')
 
     assert adapter.match('/') == ('page', {'name': 'FrontPage'})
@@ -419,7 +390,11 @@ def test_path():
 
 def test_adapter_url_parameter_sorting():
     m = Map(
-        [Rule('/', endpoint='index')], sort_parameters=True, sort_key=lambda x: x[1],
+        [
+            Rule('/', endpoint='index'),
+        ],
+        sort_parameters=True,
+        sort_key=lambda x: x[1],
     )
     adapter = m.bind('localhost', '/')
     assert (
@@ -447,12 +422,10 @@ def test_request_redirect_default():
 
 
 def test_request_redirect_default_subdomain():
-    m = Map(
-        [
-            Rule('/foo', defaults={'bar': 42}, subdomain='test'),
-            Rule('/foo/<int:bar>', subdomain='other'),
-        ],
-    )
+    m = Map([
+        Rule('/foo', defaults={'bar': 42}, subdomain='test'),
+        Rule('/foo/<int:bar>', subdomain='other'),
+    ])
     adapter = m.bind('localhost', '/', subdomain='other')
 
     with pytest.raises(RequestRedirect) as excinfo:
@@ -517,14 +490,12 @@ def test_rule_templates():
         ],
     )
 
-    url_map = Map(
-        [
-            testcase(app='test1'),
-            testcase(app='test2'),
-            testcase(app='test3'),
-            testcase(app='test4'),
-        ],
-    )
+    url_map = Map([
+        testcase(app='test1'),
+        testcase(app='test2'),
+        testcase(app='test3'),
+        testcase(app='test4'),
+    ])
 
     out = sorted((x.rule, x.subdomain, x.endpoint) for x in url_map.iter_rules())
 
@@ -567,21 +538,19 @@ def test_non_string_parts():
 
 
 def test_complex_routing_rules():
-    m = Map(
-        [
-            Rule('/', endpoint='index'),
-            Rule('/<int:blub>', endpoint='an_int'),
-            Rule('/<blub>', endpoint='a_string'),
-            Rule('/foo/', endpoint='nested'),
-            Rule('/foobar/', endpoint='nestedbar'),
-            Rule('/foo/<path:testing>/', endpoint='nested_show'),
-            Rule('/foo/<path:testing>/edit', endpoint='nested_edit'),
-            Rule('/users/', endpoint='users', defaults={'page': 1}),
-            Rule('/users/page/<int:page>', endpoint='users'),
-            Rule('/foox', endpoint='foox'),
-            Rule('/<path:bar>/<path:blub>', endpoint='barx_path_path'),
-        ],
-    )
+    m = Map([
+        Rule('/', endpoint='index'),
+        Rule('/<int:blub>', endpoint='an_int'),
+        Rule('/<blub>', endpoint='a_string'),
+        Rule('/foo/', endpoint='nested'),
+        Rule('/foobar/', endpoint='nestedbar'),
+        Rule('/foo/<path:testing>/', endpoint='nested_show'),
+        Rule('/foo/<path:testing>/edit', endpoint='nested_edit'),
+        Rule('/users/', endpoint='users', defaults={'page': 1}),
+        Rule('/users/page/<int:page>', endpoint='users'),
+        Rule('/foox', endpoint='foox'),
+        Rule('/<path:bar>/<path:blub>', endpoint='barx_path_path'),
+    ])
     a = m.bind('example.com')
 
     assert a.match('/') == ('index', {})
@@ -656,7 +625,9 @@ def test_converter_with_tuples():
             return f'{values[0]}/{values[1]}'
 
     m = Map(
-        [Rule('/<two:foo>/', endpoint='handler')],
+        [
+            Rule('/<two:foo>/', endpoint='handler'),
+        ],
         converters={'two': TwoValueConverter},
     )
     a = m.bind('example.org', '/')
@@ -694,12 +665,10 @@ def test_nested_regex_groups():
 
 
 def test_anyconverter():
-    m = Map(
-        [
-            Rule('/<any(a1, a2):a>', endpoint='no_dot'),
-            Rule('/<any(a.1, a.2):a>', endpoint='yes_dot'),
-        ],
-    )
+    m = Map([
+        Rule('/<any(a1, a2):a>', endpoint='no_dot'),
+        Rule('/<any(a.1, a.2):a>', endpoint='yes_dot'),
+    ])
     a = m.bind('example.org', '/')
     assert a.match('/a1') == ('no_dot', {'a': 'a1'})
     assert a.match('/a2') == ('no_dot', {'a': 'a2'})
@@ -728,7 +697,10 @@ def test_part_isolating_default() -> None:
             return value.split('/')
 
     m = Map(
-        [Rule('/<two:values>/', endpoint='two')], converters={'two': TwoConverter},
+        [
+            Rule('/<two:values>/', endpoint='two'),
+        ],
+        converters={'two': TwoConverter},
     )
     a = m.bind('localhost')
     assert a.match('/a/b/') == ('two', {'values': ['a', 'b']})
@@ -751,7 +723,10 @@ def test_build_values_dict(endpoint, value, expect):
             return super().to_url('.'.join(map(str, value)))
 
     url_map = Map(
-        [Rule('/<int:v>', endpoint='int'), Rule('/<list:v>', endpoint='list')],
+        [
+            Rule('/<int:v>', endpoint='int'),
+            Rule('/<list:v>', endpoint='list'),
+        ],
         converters={'list': ListConverter},
     )
     adapter = url_map.bind('localhost')
@@ -783,7 +758,10 @@ def test_build_values_multidict(endpoint, value, expect):
             return super().to_url('.'.join(map(str, value)))
 
     url_map = Map(
-        [Rule('/<int:v>', endpoint='int'), Rule('/<list:v>', endpoint='list')],
+        [
+            Rule('/<int:v>', endpoint='int'),
+            Rule('/<list:v>', endpoint='list'),
+        ],
         converters={'list': ListConverter},
     )
     adapter = url_map.bind('localhost')
@@ -852,15 +830,13 @@ def test_build_drop_none():
 
 
 def test_method_fallback():
-    m = Map(
-        [
-            Rule('/', endpoint='index', methods=['GET']),
-            Rule('/<name>', endpoint='hello_name', methods=['GET']),
-            Rule('/select', endpoint='hello_select', methods=['POST']),
-            Rule('/search_get', endpoint='search', methods=['GET']),
-            Rule('/search_post', endpoint='search', methods=['POST']),
-        ],
-    )
+    m = Map([
+        Rule('/', endpoint='index', methods=['GET']),
+        Rule('/<name>', endpoint='hello_name', methods=['GET']),
+        Rule('/select', endpoint='hello_select', methods=['POST']),
+        Rule('/search_get', endpoint='search', methods=['GET']),
+        Rule('/search_post', endpoint='search', methods=['POST']),
+    ])
     adapter = m.bind('example.com')
     assert adapter.build('index') == '/'
     assert adapter.build('index', method='GET') == '/'
@@ -873,12 +849,10 @@ def test_method_fallback():
 
 
 def test_implicit_head():
-    url_map = Map(
-        [
-            Rule('/get', methods=['GET'], endpoint='a'),
-            Rule('/post', methods=['POST'], endpoint='b'),
-        ],
-    )
+    url_map = Map([
+        Rule('/get', methods=['GET'], endpoint='a'),
+        Rule('/post', methods=['POST'], endpoint='b'),
+    ])
     adapter = url_map.bind('example.org')
     assert adapter.match('/get', method='HEAD') == ('a', {})
     pytest.raises(MethodNotAllowed, adapter.match, '/post', method='HEAD')
@@ -897,9 +871,10 @@ def test_protocol_joining_bug():
 
 
 def test_allowed_methods_querying():
-    m = Map(
-        [Rule('/<foo>', methods=['GET', 'HEAD']), Rule('/foo', methods=['POST'])],
-    )
+    m = Map([
+        Rule('/<foo>', methods=['GET', 'HEAD']),
+        Rule('/foo', methods=['POST']),
+    ])
     a = m.bind('example.org')
     assert sorted(a.allowed_methods('/foo')) == ['GET', 'HEAD', 'POST']
 
@@ -943,18 +918,14 @@ def test_converter_parser():
 
 
 def test_alias_redirects():
-    m = Map(
-        [
-            Rule('/', endpoint='index'),
-            Rule('/index.html', endpoint='index', alias=True),
-            Rule('/users/', defaults={'page': 1}, endpoint='users'),
-            Rule(
-                '/users/index.html', defaults={'page': 1}, alias=True, endpoint='users',
-            ),
-            Rule('/users/page/<int:page>', endpoint='users'),
-            Rule('/users/page-<int:page>.html', alias=True, endpoint='users'),
-        ],
-    )
+    m = Map([
+        Rule('/', endpoint='index'),
+        Rule('/index.html', endpoint='index', alias=True),
+        Rule('/users/', defaults={'page': 1}, endpoint='users'),
+        Rule('/users/index.html', defaults={'page': 1}, alias=True, endpoint='users'),
+        Rule('/users/page/<int:page>', endpoint='users'),
+        Rule('/users/page-<int:page>.html', alias=True, endpoint='users'),
+    ])
     a = m.bind('example.com')
 
     def ensure_redirect(path, new_url, args=None):
@@ -975,14 +946,12 @@ def test_alias_redirects():
 
 @pytest.mark.parametrize('prefix', ['', '/aaa'])
 def test_double_defaults(prefix):
-    m = Map(
-        [
-            Rule(f'{prefix}/', defaults={'foo': 1, 'bar': False}, endpoint='x'),
-            Rule(f'{prefix}/<int:foo>', defaults={'bar': False}, endpoint='x'),
-            Rule(f'{prefix}/bar/', defaults={'foo': 1, 'bar': True}, endpoint='x'),
-            Rule(f'{prefix}/bar/<int:foo>', defaults={'bar': True}, endpoint='x'),
-        ],
-    )
+    m = Map([
+        Rule(f'{prefix}/', defaults={'foo': 1, 'bar': False}, endpoint='x'),
+        Rule(f'{prefix}/<int:foo>', defaults={'bar': False}, endpoint='x'),
+        Rule(f'{prefix}/bar/', defaults={'foo': 1, 'bar': True}, endpoint='x'),
+        Rule(f'{prefix}/bar/<int:foo>', defaults={'bar': True}, endpoint='x'),
+    ])
     a = m.bind('example.com')
 
     assert a.match(f'{prefix}/') == ('x', {'foo': 1, 'bar': False})
@@ -1047,9 +1016,10 @@ def test_host_matching_building():
 
 
 def test_unicode_rules():
-    m = Map(
-        [Rule('/войти/', endpoint='enter'), Rule('/foo+bar/', endpoint='foobar')],
-    )
+    m = Map([
+        Rule('/войти/', endpoint='enter'),
+        Rule('/foo+bar/', endpoint='foobar'),
+    ])
     a = m.bind('☃.example.com')
     with pytest.raises(RequestRedirect) as excinfo:
         a.match('/войти')
@@ -1118,13 +1088,11 @@ def test_empty_subclass_rules_with_custom_kwargs():
 
 
 def test_finding_closest_match_by_endpoint():
-    m = Map(
-        [
-            Rule('/foo/', endpoint='users.here'),
-            Rule('/wat/', endpoint='admin.users'),
-            Rule('/woop', endpoint='foo.users'),
-        ],
-    )
+    m = Map([
+        Rule('/foo/', endpoint='users.here'),
+        Rule('/wat/', endpoint='admin.users'),
+        Rule('/woop', endpoint='foo.users'),
+    ])
     adapter = m.bind('example.com')
     assert BuildError(
         'admin.user',
@@ -1270,12 +1238,10 @@ def test_rule_websocket_methods():
 
 
 def test_path_weighting():
-    m = Map(
-        [
-            Rule('/<path:path>/c', endpoint='simple'),
-            Rule('/<path:path>/<a>/<b>', endpoint='complex'),
-        ],
-    )
+    m = Map([
+        Rule('/<path:path>/c', endpoint='simple'),
+        Rule('/<path:path>/<a>/<b>', endpoint='complex'),
+    ])
     a = m.bind('localhost', path_info='/a/b/c')
 
     assert a.match() == ('simple', {'path': 'a/b'})
@@ -1290,12 +1256,10 @@ def test_newline_match():
 
 
 def test_weighting():
-    m = Map(
-        [
-            Rule('/<int:value>', endpoint='int'),
-            Rule('/<uuid:value>', endpoint='uuid'),
-        ],
-    )
+    m = Map([
+        Rule('/<int:value>', endpoint='int'),
+        Rule('/<uuid:value>', endpoint='uuid'),
+    ])
     a = m.bind('localhost')
 
     assert a.match('/2b5b0911-fdcf-4dd2-921b-28ace88db8a0') == (
@@ -1305,15 +1269,11 @@ def test_weighting():
 
 
 def test_strict_slashes_false():
-    m = Map(
-        [
-            Rule('/path1', endpoint='leaf_path', strict_slashes=False),
-            Rule('/path2/', endpoint='branch_path', strict_slashes=False),
-            Rule(
-                '/<path:path>', endpoint='leaf_path_converter', strict_slashes=False,
-            ),
-        ],
-    )
+    m = Map([
+        Rule('/path1', endpoint='leaf_path', strict_slashes=False),
+        Rule('/path2/', endpoint='branch_path', strict_slashes=False),
+        Rule('/<path:path>', endpoint='leaf_path_converter', strict_slashes=False),
+    ])
 
     adapter = m.bind('example.org', '/')
 
@@ -1321,14 +1281,8 @@ def test_strict_slashes_false():
     assert adapter.match('/path1/', method='GET') == ('leaf_path', {})
     assert adapter.match('/path2', method='GET') == ('branch_path', {})
     assert adapter.match('/path2/', method='GET') == ('branch_path', {})
-    assert adapter.match('/any', method='GET') == (
-        'leaf_path_converter',
-        {'path': 'any'},
-    )
-    assert adapter.match('/any/', method='GET') == (
-        'leaf_path_converter',
-        {'path': 'any/'},
-    )
+    assert adapter.match('/any', method='GET') == ('leaf_path_converter', {'path': 'any'})
+    assert adapter.match('/any/', method='GET') == ('leaf_path_converter', {'path': 'any/'})
 
 
 def test_invalid_rule():
@@ -1337,21 +1291,17 @@ def test_invalid_rule():
 
 
 def test_multiple_converters_per_part():
-    map_ = Map(
-        [
-            Rule('/v<int:major>.<int:minor>', endpoint='version'),
-        ],
-    )
+    map_ = Map([
+        Rule('/v<int:major>.<int:minor>', endpoint='version'),
+    ])
     adapter = map_.bind('localhost')
     assert adapter.match('/v1.2') == ('version', {'major': 1, 'minor': 2})
 
 
 def test_static_regex_escape():
-    map_ = Map(
-        [
-            Rule('/.<int:value>', endpoint='dotted'),
-        ],
-    )
+    map_ = Map([
+        Rule('/.<int:value>', endpoint='dotted'),
+    ])
     adapter = map_.bind('localhost')
     assert adapter.match('/.2') == ('dotted', {'value': 2})
     with pytest.raises(NotFound):
