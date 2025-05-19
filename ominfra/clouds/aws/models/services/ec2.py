@@ -1498,6 +1498,7 @@ class ResourceType(_enum.Enum):
     INSTANCE_CONNECT_ENDPOINT = 'instance-connect-endpoint'
     VERIFIED_ACCESS_ENDPOINT_TARGET = 'verified-access-endpoint-target'
     IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
+    MAC_MODIFICATION_TASK = 'mac-modification-task'
 
 
 class RootDeviceType(_enum.Enum):
