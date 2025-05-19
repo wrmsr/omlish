@@ -1,4 +1,3 @@
-import io
 import typing as ta
 
 from omlish import check
@@ -36,33 +35,34 @@ class DumbToolExecParser(ToolExecParser):
         self._tool_args_key = check.non_empty_str(tool_args_key)
 
     def parse_tool_execs(self, text: str) -> ParsedToolExecs | None:
-        out: io.StringIO = io.StringIO()
-        lst: list[ParsedToolExec] = []
+        lst: list[str | ParsedToolExec] = []
 
         start_pos = 0
         while (open_pos := text.find(self._open_tag, start_pos)) >= 0:
-            out.write(text[start_pos:open_pos])
+            if start_pos != open_pos:
+                lst.append(text[start_pos:open_pos])
 
-            body_pos = open_pos + len(self._open_tag)
-            close_pos = text.index(self._close_tag, body_pos)
+            body_open_pos = open_pos + len(self._open_tag)
+            body_close_pos = text.index(self._close_tag, body_open_pos)
 
-            body = text[body_pos:close_pos]
+            close_pos = body_close_pos + len(self._close_tag)
+
+            body = text[body_open_pos:body_close_pos]
             obj = json.loads(body.strip())
 
             lst.append(ParsedToolExec(
                 check.non_empty_str(obj[self._tool_name_key]),
                 check.isinstance(obj[self._tool_args_key], ta.Mapping),
-                raw_args=body,
+                raw_text=text[open_pos:close_pos],
+                raw_body=body,
             ))
 
-            start_pos = close_pos + len(self._close_tag)
+            start_pos = close_pos
 
         if not lst:
             return None
 
-        out.write(text[start_pos:])
+        if start_pos != len(text):
+            lst.append(text[start_pos:])
 
-        return ParsedToolExecs(
-            lst,
-            stripped_text=out.getvalue(),
-        )
+        return lst

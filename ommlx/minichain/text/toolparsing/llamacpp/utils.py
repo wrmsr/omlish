@@ -54,18 +54,19 @@ def process_tool_call(tool_call_data: dict[str, ta.Any]) -> ChatToolCall:
 
 def parse_json_tool_calls(
         input_str: str,
-        trigger_opt: re.Pattern | None = None,
+        *,
+        trigger_pat: re.Pattern | None = None,
         function_pat: re.Pattern = re.compile(r''),  # Must be provided if used
         close_pat: re.Pattern = re.compile(r''),  # Must be provided if used
         allow_raw_python: bool = False,
 ) -> ChatMsg:
     """
     Parses input assuming tool calls are marked by function_pat, contain JSON, and end with close_pat. An optional
-    trigger_opt starts the process.
+    trigger_pat starts the process.
 
     Args:
         input_str: The string potentially containing tool calls.
-        trigger_opt: Optional regex to find the start of the tool call section.
+        trigger_pat: Optional regex to find the start of the tool call section.
         function_pat: Regex with one capture group for the function name.
         close_pat: Regex marking the end of the tool call arguments.
         allow_raw_python: Special handling for raw python code blocks.
@@ -78,8 +79,8 @@ def parse_json_tool_calls(
     current_pos = 0
     end_pos = len(input_str)
 
-    if trigger_opt:
-        match = trigger_opt.search(input_str)
+    if trigger_pat:
+        match = trigger_pat.search(input_str)
         if not match:
             result.content = input_str
             return result
@@ -157,6 +158,9 @@ def parse_json_tool_calls(
     return result
 
 
+##
+
+
 _REASONING_PAT = re.compile(
     r'^\s*(?:<think>([\s\S]*?)</think>\s*)?([\s\S]*)$',
     re.DOTALL,
@@ -165,8 +169,9 @@ _REASONING_PAT = re.compile(
 
 def handle_think_tag_prelude(
         input_str: str,
-        extract_reasoning: bool,
         rest_parser: ta.Callable[[str], ChatMsg],
+        *,
+        extract_reasoning: bool,
 ) -> ChatMsg:
     """Checks for <think>...</think> tags at the beginning of the input and processes the rest using rest_parser."""
 

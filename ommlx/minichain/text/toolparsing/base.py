@@ -15,18 +15,15 @@ class ParsedToolExec:
 
     _: dc.KW_ONLY
 
+    raw_text: str | None = None
+    raw_body: str | None = None
+
     id: str | None = None
-    raw_args: str | None = None
+
     reasoning: str | None = None
 
 
-@dc.dataclass(frozen=True)
-class ParsedToolExecs:
-    tool_execs: ta.Sequence[ParsedToolExec]
-
-    _: dc.KW_ONLY
-
-    stripped_text: str | None = None
+ParsedToolExecs: ta.TypeAlias = ta.Sequence[str | ParsedToolExec]
 
 
 class ToolExecParser(lang.Abstract):

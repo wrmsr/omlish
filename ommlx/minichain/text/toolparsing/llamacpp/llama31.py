@@ -2,9 +2,9 @@ import json
 import logging
 import re
 
-from .common import parse_json_tool_calls
 from .types import ChatMsg
 from .types import ChatToolCall
+from .utils import parse_json_tool_calls
 
 
 log = logging.getLogger(__name__)
@@ -43,24 +43,10 @@ class Llama31Parser:
         self._with_builtin_tools = with_builtin_tools
 
     def parse(self, input_str: str) -> ChatMsg:
-        """
-        Parses an input string that might represent a message from a Llama 3.1 model,
-        potentially containing built-in tool calls or general JSON tool calls.
-
-        Args:
-            input_str: The input string to parse.
-            with_builtin_tools: If True, attempts to parse a specific "<|python_tag|>tool.call(arg=value)" format first.
-
-        Returns:
-            A ChatMessage object.
-        """
-
         # TODO: tighten & simplify the parser, don't accept leading text context.
         # (This TODO is from the original C++ code)
 
         if self._with_builtin_tools:
-            # std::regex_match checks if the *entire* string matches.
-            # re.fullmatch() is the Python equivalent.
             # Strip input to match C++ behavior potentially more closely if regex_match on unstripped input was implicit
             match = _BUILTIN_CALL_PAT.fullmatch(input_str.strip())
             if match:
@@ -104,7 +90,7 @@ class Llama31Parser:
         # Fallback to general JSON tool call parsing
         return parse_json_tool_calls(
             input_str,
-            None,  # Corresponds to std::nullopt
-            _FUNCTION_PAT,
-            _CLOSE_PAT,
+            trigger_pat=None,
+            function_pat=_FUNCTION_PAT,
+            close_pat=_CLOSE_PAT,
         )

@@ -1,10 +1,10 @@
 import logging
 import re
 
-from .common import handle_think_tag_prelude
-from .common import parse_json_from_string
-from .common import process_tool_call
 from .types import ChatMsg
+from .utils import handle_think_tag_prelude
+from .utils import parse_json_from_string
+from .utils import process_tool_call
 
 
 log = logging.getLogger(__name__)
@@ -184,7 +184,11 @@ class Hermes2ProParser:
 
             except Exception as e:  # noqa
                 # If parsing tool call or checking tags fails, treat block as content
-                log.warning('Failed processing potential tool call: %r. Treating as content: %r', e, match.group(0))  # noqa
+                log.warning(
+                    'Failed processing potential tool call: %r. Treating as content: %r',
+                    e,
+                    match.group(0),
+                )
                 tool_call_processed = False  # Ensure it falls through to content append
 
             # Update position
@@ -209,7 +213,11 @@ class Hermes2ProParser:
 
         try:
             # First, handle the optional <think> prelude
-            return handle_think_tag_prelude(input_str, self._extract_reasoning, self._parse)
+            return handle_think_tag_prelude(
+                input_str,
+                self._parse,
+                extract_reasoning=self._extract_reasoning,
+            )
 
         except Exception:  # noqa
             log.exception('Failed to parse Hermes 2 Pro input: Input: %r', input_str)
