@@ -120,8 +120,8 @@ class Hermes2ProParser:
 
             open_tag = match.group(2) or ''
             json_candidate_text = match.group(3)  # Potential JSON starting with { "name": ...
-            func_name1 = match.group(4)           # <function=...> name
-            func_name2 = match.group(5)           # <function name="..."> name
+            func_name1 = match.group(4)  # <function=...> name
+            func_name2 = match.group(5)  # <function name="..."> name
 
             tool_call_processed = False
             next_parse_pos = -1  # Where to continue parsing after a successful tool call
@@ -136,7 +136,11 @@ class Hermes2ProParser:
                     json_end_idx_abs = json_end_idx_rel + match.start()
 
                     # Check if it's a valid tool call structure
-                    if isinstance(json_obj, dict) and 'name' in json_obj and 'arguments' in json_obj:
+                    if (
+                            isinstance(json_obj, dict) and
+                            'name' in json_obj and
+                            'arguments' in json_obj
+                    ):
                         # Valid tool call found
                         msg.tool_calls.append(process_tool_call(json_obj))
                         tool_call_processed = True
