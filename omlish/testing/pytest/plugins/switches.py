@@ -4,29 +4,87 @@ TODO:
  - dynamic registration
  - dynamic switching (skip docker if not running, skip online if not online, ...)
 """
+import dataclasses as dc
 import typing as ta
 
 import pytest
 
 from .... import check
 from .... import collections as col
-from .... import lang
 from ....docker import all as docker
 from ._registry import register
 
 
-Configable = pytest.FixtureRequest | pytest.Config
+Configable: ta.TypeAlias = pytest.FixtureRequest | pytest.Config
 
 
-SWITCHES: ta.Mapping[str, bool | ta.Callable[[], bool]] = {
-    'docker': docker.has_cli,
-    'docker-guest': docker.is_likely_in_docker,
-    'online': True,
-    'integration': True,
-    'slow': False,
-}
+##
 
-SWITCH_ATTRS = {k.replace('-', '_'): k for k in SWITCHES}
+
+@dc.dataclass(frozen=True, eq=False)
+class Switch:
+    name: str
+    _default_enabled: bool | ta.Callable[[], bool]
+
+    _: dc.KW_ONLY
+
+    add_marks: ta.Sequence[ta.Any] | None = None
+
+    def default_enabled(self) -> bool:
+        if isinstance(e := self._default_enabled, bool):
+            return e
+        elif callable(e):
+            return check.isinstance(e(), bool)
+        else:
+            raise TypeError(e)
+
+    @property
+    def attr(self) -> str:
+        return self.name.replace('-', '_')
+
+
+SWITCHES: ta.Sequence[Switch] = [
+    Switch(
+        'name',
+        docker.has_cli,
+    ),
+
+    Switch(
+        'docker-guest',
+        docker.is_likely_in_docker,
+    ),
+
+    Switch(
+        'online',
+        True,
+    ),
+
+    Switch(
+        'integration',
+        True,
+    ),
+
+    Switch(
+        'high-mem',
+        True,
+        add_marks=[
+            # https://pytest-xdist.readthedocs.io/en/latest/distribution.html
+            pytest.mark.xdist_group('high-mem'),
+        ],
+    ),
+
+    Switch(
+        'slow',
+        False,
+    ),
+]
+
+
+SWITCHES_BY_NAME: ta.Mapping[str, Switch] = col.make_map_by(lambda sw: sw.name, SWITCHES, strict=True)
+SWITCHES_BY_ATTR: ta.Mapping[str, Switch] = col.make_map_by(lambda sw: sw.attr, SWITCHES, strict=True)
+
+
+##
 
 
 SwitchState: ta.TypeAlias = bool | ta.Literal['only']
@@ -49,7 +107,7 @@ def _get_obj_config(obj: Configable) -> pytest.Config:
 
 def is_disabled(obj: Configable | None, name: str) -> bool:
     check.isinstance(name, str)
-    check.in_(name, SWITCHES)
+    check.in_(name, SWITCHES_BY_NAME)
     return obj is not None and _get_obj_config(obj).getoption(f'--no-{name}')
 
 
@@ -58,17 +116,17 @@ def skip_if_disabled(obj: Configable | None, name: str) -> None:
         pytest.skip(f'{name} disabled')
 
 
-def get_specified_switches(obj: Configable) -> ta.Mapping[str, SwitchState]:
-    ret: dict[str, SwitchState] = {}
+def get_specified_switches(obj: Configable) -> dict[Switch, SwitchState]:
+    ret: dict[Switch, SwitchState] = {}
     for sw in SWITCHES:
         sts = {
             st
             for st, pfx in SWITCH_STATE_OPT_PREFIXES.items()
-            if _get_obj_config(obj).getoption(pfx + sw)
+            if _get_obj_config(obj).getoption(pfx + sw.name)
         }
         if sts:
             if len(sts) > 1:
-                raise Exception(f'Multiple switches specified for {sw}')
+                raise Exception(f'Multiple switches specified for {sw.name}')
             ret[sw] = check.single(sts)
     return ret
 
@@ -76,49 +134,50 @@ def get_specified_switches(obj: Configable) -> ta.Mapping[str, SwitchState]:
 @register
 class SwitchesPlugin:
     def pytest_configure(self, config):
-        for sw in SWITCH_ATTRS:
-            config.addinivalue_line('markers', f'{sw}: mark test as {sw}')
-            config.addinivalue_line('markers', f'not_{sw}: mark test as not {sw}')
+        for sw in SWITCHES:
+            config.addinivalue_line('markers', f'{sw.attr}: mark test as {sw.attr}')
+            config.addinivalue_line('markers', f'not_{sw.attr}: mark test as not {sw.attr}')
 
     def pytest_addoption(self, parser):
         for sw in SWITCHES:
-            parser.addoption(f'--no-{sw}', action='store_true', default=False, help=f'disable {sw} tests')
-            parser.addoption(f'--{sw}', action='store_true', default=False, help=f'enables {sw} tests')
-            parser.addoption(f'--only-{sw}', action='store_true', default=False, help=f'enables only {sw} tests')
-
-    @lang.cached_function
-    def get_switches(self) -> ta.Mapping[str, SwitchState]:
-        return {
-            k: v() if callable(v) else v
-            for k, v in SWITCHES.items()
-        }
+            parser.addoption(f'--no-{sw.name}', action='store_true', default=False, help=f'disable {sw.name} tests')
+            parser.addoption(f'--{sw.name}', action='store_true', default=False, help=f'enables {sw.name} tests')
+            parser.addoption(f'--only-{sw.name}', action='store_true', default=False, help=f'enables only {sw.name} tests')  # noqa
 
     def pytest_collection_modifyitems(self, config, items):
-        sts = {
-            **self.get_switches(),
+        switch_states: dict[Switch, SwitchState] = {
+            **{
+                sw: sw.default_enabled()
+                for sw in SWITCHES
+            },
             **get_specified_switches(config),
         }
 
-        stx = col.multi_map(map(reversed, sts.items()))  # type: ignore
-        ts, fs, onlys = (stx.get(k, ()) for k in (True, False, 'only'))
+        inv_switch_states: dict[SwitchState, list[Switch]] = col.multi_map((st, sw) for sw, st in switch_states.items())
+        true_switches = inv_switch_states.get(True, ())
+        false_switches = inv_switch_states.get(False, ())
+        only_switches = inv_switch_states.get('only', ())
 
         def process(item):
-            sws = {sw for swa, sw in SWITCH_ATTRS.items() if swa in item.keywords}
-            nsws = {sw for swa, sw in SWITCH_ATTRS.items() if ('not_' + swa) in item.keywords}
+            item_switches = {sw for sw in SWITCHES if sw.attr in item.keywords}
+            item_not_switches = {sw for sw in SWITCHES if ('not_' + sw.attr) in item.keywords}
 
-            if onlys:
-                if not any(sw in onlys for sw in sws):
-                    item.add_marker(pytest.mark.skip(reason=f'skipping switches {sws}'))
+            for sw in item_switches:
+                for mk in sw.add_marks or []:
+                    item.add_marker(mk)
+
+            if only_switches:
+                if not any(sw in only_switches for sw in item_switches):
+                    item.add_marker(pytest.mark.skip(reason=f'skipping switches {item_switches}'))
                     return
 
-            else:
-                for sw in sws:
-                    if sw in fs:
-                        item.add_marker(pytest.mark.skip(reason=f'skipping switches {sw}'))
+            for sw in item_switches:
+                if sw in false_switches:
+                    item.add_marker(pytest.mark.skip(reason=f'skipping switches {sw}'))
 
-                for nsw in nsws:
-                    if nsw in ts:
-                        item.add_marker(pytest.mark.skip(reason=f'skipping switches {nsw}'))
+            for sw in item_not_switches:
+                if sw in true_switches:
+                    item.add_marker(pytest.mark.skip(reason=f'skipping switches {sw}'))
 
         for item in items:
             process(item)

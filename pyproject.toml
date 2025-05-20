@@ -128,10 +128,16 @@ addopts = [
     '--durations-min=2',
     # '--log=info',
 ]
+
 junit_family = 'xunit2'
 junit_duration_report = 'call'
+
+# pytest-timeout
 timeout = 60
 session_timeout = 600
+
+# pytest-xdist
+dist = 'loadgroup'
 
 
 ##

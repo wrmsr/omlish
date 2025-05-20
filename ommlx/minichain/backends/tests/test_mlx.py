@@ -8,6 +8,7 @@ from ...standard import ModelName
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('mlx_lm')
 def test_mlx():
     with MlxChatService(ModelName('mlx-community/Qwen2.5-0.5B-4bit')) as llm:

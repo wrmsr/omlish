@@ -58,13 +58,33 @@ def unique(
 ##
 
 
+@ta.overload
+def make_map(
+        kvs: ta.Iterable[tuple[K, V]],
+        *,
+        identity: ta.Literal[False] = False,
+        strict: bool = False,
+) -> dict[K, V]:
+    ...
+
+
+@ta.overload
 def make_map(
         kvs: ta.Iterable[tuple[K, V]],
         *,
         identity: bool = False,
         strict: bool = False,
 ) -> ta.MutableMapping[K, V]:
-    d: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
+    ...
+
+
+def make_map(
+        kvs,
+        *,
+        identity=False,
+        strict=False,
+):
+    d: ta.MutableMapping = IdentityKeyDict() if identity else {}
     for k, v in kvs:
         if k in d:
             if strict:
@@ -74,6 +94,21 @@ def make_map(
     return d
 
 
+#
+
+
+@ta.overload
+def make_map_by(
+        fn: ta.Callable[[V], K],
+        vs: ta.Iterable[V],
+        *,
+        identity: ta.Literal[False] = False,
+        strict: bool = False,
+) -> dict[K, V]:
+    ...
+
+
+@ta.overload
 def make_map_by(
         fn: ta.Callable[[V], K],
         vs: ta.Iterable[V],
@@ -81,6 +116,16 @@ def make_map_by(
         identity: bool = False,
         strict: bool = False,
 ) -> ta.MutableMapping[K, V]:
+    ...
+
+
+def make_map_by(
+        fn,
+        vs,
+        *,
+        identity=False,
+        strict=False,
+):
     return make_map(
         ((fn(v), v) for v in vs),
         identity=identity,
@@ -91,9 +136,30 @@ def make_map_by(
 ##
 
 
-def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:
-    d: ta.MutableMapping[K, list[V]] = IdentityKeyDict() if identity else {}
-    l: list[V]
+@ta.overload
+def multi_map(
+        kvs: ta.Iterable[tuple[K, V]],
+        *,
+        identity: ta.Literal[False] = False,
+) -> dict[K, list[V]]:
+    ...
+
+
+@ta.overload
+def multi_map(
+        kvs: ta.Iterable[tuple[K, V]],
+        *,
+        identity: bool = False,
+) -> ta.MutableMapping[K, list[V]]:
+    ...
+
+
+def multi_map(
+        kvs,
+        *,
+        identity=False,
+):
+    d: ta.MutableMapping = IdentityKeyDict() if identity else {}
     for k, v in kvs:
         try:
             l = d[k]
@@ -103,7 +169,35 @@ def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.Mu
     return d
 
 
-def multi_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:  # noqa
+#
+
+
+@ta.overload
+def multi_map_by(
+        fn: ta.Callable[[V], K],
+        vs: ta.Iterable[V],
+        *,
+        identity: ta.Literal[False] = False,
+) -> dict[K, list[V]]:  # noqa
+    ...
+
+
+@ta.overload
+def multi_map_by(
+        fn: ta.Callable[[V], K],
+        vs: ta.Iterable[V],
+        *,
+        identity: bool = False,
+) -> ta.MutableMapping[K, list[V]]:  # noqa
+    ...
+
+
+def multi_map_by(
+        fn,
+        vs,
+        *,
+        identity=False,
+):
     return multi_map(((fn(v), v) for v in vs), identity=identity)
 
 

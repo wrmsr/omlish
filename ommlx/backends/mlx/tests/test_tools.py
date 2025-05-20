@@ -17,6 +17,7 @@ else:
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('mlx_lm')
 def test_tools():
     model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'

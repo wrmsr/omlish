@@ -12,6 +12,7 @@ from ..transformers import TransformersPipelineKwargs
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('transformers')
 def test_transformers_completion():
     llm = TransformersCompletionService(
@@ -32,6 +33,7 @@ def test_transformers_completion():
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('transformers')
 def test_transformers_chat():
     llm = TransformersChatService(
@@ -48,6 +50,7 @@ def test_transformers_chat():
 
 
 # @pytest.mark.not_docker_guest
+# @pytest.mark.high_mem
 # @ptu.skip.if_cant_import('transformers')
 # def test_transformers_chat_phi4_tools():
 #     llm = TransformersChatService(

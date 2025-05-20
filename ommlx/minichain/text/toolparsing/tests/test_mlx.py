@@ -309,6 +309,7 @@ def test_dump_chat_templates():
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('mlx_lm')
 def test_mlx():
     import mlx.nn  # noqa
@@ -348,8 +349,12 @@ def test_mlx():
 
     tool_open = '<tools>'
     tool_close = '</tools>'
-    start_tool = response.find(tool_open) + len(tool_open)
-    end_tool = response.find(tool_close)
+    tool_open_pos = response.find(tool_open)
+    assert tool_open_pos >= 0
+    start_tool = tool_open_pos + len(tool_open)
+    tool_close_pos = response.find(tool_close, start_tool)
+    assert tool_close_pos > 0
+    end_tool = tool_close_pos
     tool_call = json.loads(response[start_tool:end_tool].strip())
     tool_result = tools[tool_call['name']](**tool_call['arguments'])
 

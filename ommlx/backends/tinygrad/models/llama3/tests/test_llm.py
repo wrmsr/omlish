@@ -7,6 +7,7 @@ from ..llm import Llama3Llm
 
 
 @pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('tinygrad')
 def test_llama3_llm():
     from tinygrad import Tensor

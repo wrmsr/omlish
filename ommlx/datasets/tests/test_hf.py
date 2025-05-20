@@ -64,7 +64,7 @@ def test_tokenize():
 @pytest.mark.slow
 def test_audio():
     feature_extractor = transformers.AutoFeatureExtractor.from_pretrained('facebook/wav2vec2-base-960h')
-    dataset = hfds.load_dataset('PolyAI/minds14', 'en-US', split='train')
+    dataset = hfds.load_dataset('PolyAI/minds14', 'en-US', split='train', trust_remote_code=True)
 
     dataset = dataset.cast_column('audio', hfds.Audio(sampling_rate=16_000))
     print(dataset[0]['audio'])
