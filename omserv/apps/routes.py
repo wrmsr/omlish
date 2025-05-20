@@ -24,6 +24,28 @@ from .markers import append_app_marker
 from .markers import get_app_markers
 
 
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+
+KnownMethod: ta.TypeAlias = ta.Literal[
+    'DELETE',
+    'GET',
+    'HEAD',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+KNOWN_METHODS: tuple[str, ...] = (
+    'DELETE',
+    'GET',
+    'HEAD',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+
+
 PatOrStr: ta.TypeAlias = re.Pattern | str
 
 
@@ -33,13 +55,36 @@ log = logging.getLogger(__name__)
 ##
 
 
-class Route(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class Route(lang.Final):
     method: str
     path: PatOrStr
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.method)
+        check.equal(self.method, self.method.upper())
+        if isinstance(self.path, str):
+            check.arg(self.path.startswith('/'))
+        else:
+            check.isinstance(self.path, re.Pattern)
+
+    #
+
+    @classmethod
+    def delete(cls, path: PatOrStr) -> 'Route':
+        return cls('DELETE', path)
 
     @classmethod
     def get(cls, path: PatOrStr) -> 'Route':
         return cls('GET', path)
+
+    @classmethod
+    def head(cls, path: PatOrStr) -> 'Route':
+        return cls('HEAD', path)
+
+    @classmethod
+    def patch(cls, path: PatOrStr) -> 'Route':
+        return cls('PATCH', path)
 
     @classmethod
     def post(cls, path: PatOrStr) -> 'Route':
@@ -49,14 +94,13 @@ class Route(ta.NamedTuple):
     def put(cls, path: PatOrStr) -> 'Route':
         return cls('PUT', path)
 
-    @classmethod
-    def delete(cls, path: PatOrStr) -> 'Route':
-        return cls('DELETE', path)
-
 
 class RouteHandler(ta.NamedTuple):
     route: Route
     handler: asgi.App
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -64,12 +108,30 @@ class _HandlesAppMarker(AppMarker, lang.Final):
     routes: ta.Sequence[Route]
 
 
-def handles(*routes: Route):
+@ta.overload
+def handles(method: KnownMethod, path: PatOrStr) -> ta.Callable[[CallableT], CallableT]:
+    ...
+
+
+@ta.overload
+def handles(*routes: Route) -> ta.Callable[[CallableT], CallableT]:
+    ...
+
+
+def handles(*args):
+    routes: list[Route]
+    if any(isinstance(a, Route) for a in args):
+        routes = [check.isinstance(a, Route) for a in args]
+    elif args:
+        method, path = args
+        routes = [Route(check.in_(method, KNOWN_METHODS), path)]
+    else:
+        routes = []
+
     def inner(fn):
         append_app_marker(fn, _HandlesAppMarker(routes))
         return fn
 
-    routes = tuple(map(check.of_isinstance(Route), routes))
     return inner
 
 
@@ -105,6 +167,9 @@ def get_marked_route_handlers(h: RouteHandlerHolder) -> ta.Sequence[RouteHandler
         ret.extend(RouteHandler(r, app) for r in rs)
 
     return ret
+
+
+##
 
 
 @dc.dataclass()

@@ -15,6 +15,7 @@ import wsproto
 
 from omlish import lang
 from omlish.asyncs.anyio import eof_to_empty as anyio_eof_to_empty
+from omlish.sockets.ports import get_available_port
 
 from ..config import Config
 from ..default import serve
@@ -22,7 +23,6 @@ from ..types import AsgiWrapper
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import sanity_framework
 from .utils import CONNECTION_REFUSED_EXCEPTION_TYPES
-from .utils import get_free_port
 from .utils import get_timeout_s
 from .utils import headers_time_patch  # noqa
 from .utils import is_connection_refused_exception
@@ -30,7 +30,7 @@ from .utils import is_connection_refused_exception
 
 @pytest.mark.asyncs
 async def test_server_websocket():
-    port = get_free_port()
+    port = get_available_port()
     sev = anyio.Event()
 
     async def inner():

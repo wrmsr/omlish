@@ -1,4 +1,3 @@
-import socket
 import typing as ta
 
 import pytest
@@ -24,14 +23,7 @@ def get_timeout_s() -> float | None:
         return DEFAULT_TIMEOUT_S
 
 
-def get_free_port(address: str = '') -> int:
-    """Find a free TCP port (entirely at random)"""
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((address, 0))
-    port = s.getsockname()[1]
-    s.close()
-    return port
+##
 
 
 def get_exception_chain(ex: BaseException) -> list[BaseException]:
@@ -43,11 +35,19 @@ def get_exception_chain(ex: BaseException) -> list[BaseException]:
     return ret
 
 
-CONNECTION_REFUSED_EXCEPTION_TYPES: tuple[type[Exception], ...] = (OSError, ConnectionRefusedError)
+CONNECTION_REFUSED_EXCEPTION_TYPES: tuple[type[Exception], ...] = (
+    # Note: This *is* an OSError, it's here for switchability and explicitness.
+    ConnectionRefusedError,
+
+    OSError,
+)
 
 
 def is_connection_refused_exception(e: Exception) -> bool:
     return any(isinstance(ce, ConnectionRefusedError) for ce in get_exception_chain(e))
+
+
+##
 
 
 @pytest.fixture(autouse=True)

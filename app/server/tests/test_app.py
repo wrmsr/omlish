@@ -13,10 +13,10 @@ from omlish import inject as inj
 from omlish import lang
 from omlish.asyncs import all as au
 from omlish.http import asgi
+from omlish.sockets.ports import get_available_port
 from omlish.testing import pytest as ptu
 from omserv.server.config import Config
 from omserv.server.default import serve
-from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s
 from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
@@ -43,7 +43,7 @@ async def test_auth(harness):
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('DEBUG')  # noqa
 
-    port = get_free_port()
+    port = get_available_port()
     server_bind = f'127.0.0.1:{port}'
     base_url = f'http://{server_bind}/'
 

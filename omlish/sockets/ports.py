@@ -16,21 +16,38 @@ DEFAULT_AVAILABLE_PORT_HOST: str = '127.0.0.1'
 
 
 @contextlib.contextmanager
-def get_available_port_context(host: ta.Optional[str] = None) -> ta.Iterator[int]:
+def get_available_port_context(
+        host: ta.Optional[str] = None,
+        family: int = socket.AF_INET,
+        type: int = socket.SOCK_STREAM,  # noqa
+        *,
+        listen: ta.Union[bool, int, None] = False,
+) -> ta.Iterator[int]:
     if host is None:
         host = DEFAULT_AVAILABLE_PORT_HOST
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    if listen is not None:
+        if listen is True:
+            listen = 1
+        elif listen is False:
+            listen = None
+        else:
+            listen = check.isinstance(listen, int)
+
+    with socket.socket(family, type) as sock:
         sock.bind((host, 0))
-        sock.listen(1)
+
+        if listen is not None:
+            sock.listen(listen)
+
         port = sock.getsockname()[1]
+
         yield port
 
 
-def get_available_port(host: ta.Optional[str] = None) -> int:
-    with get_available_port_context(host) as port:
-        pass
-    return port
+def get_available_port(*args: ta.Any, **kwargs: ta.Any) -> int:
+    with get_available_port_context(*args, **kwargs) as port:
+        return port
 
 
 def get_available_ports(

@@ -44,14 +44,15 @@ async def _a_main() -> None:
 
     import anyio
 
+    from omlish.sockets.ports import get_available_port
+
     from ...server.config import Config
     from ...server.default import serve
-    from ...server.tests.utils import get_free_port
     from ...server.types import AsgiWrapper
 
     app = build_foo_app()
 
-    port = get_free_port()
+    port = get_available_port()
     server_bind = f'127.0.0.1:{port}'
     base_url = f'http://{server_bind}/'
 

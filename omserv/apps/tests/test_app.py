@@ -7,10 +7,10 @@ import pytest
 
 from omlish import lang
 from omlish.asyncs import all as au
+from omlish.sockets.ports import get_available_port
 
 from ...server.config import Config
 from ...server.default import serve
-from ...server.tests.utils import get_free_port
 from ...server.tests.utils import get_timeout_s
 from ...server.tests.utils import headers_time_patch  # noqa
 from ...server.types import AsgiWrapper
@@ -25,7 +25,7 @@ from .foo import build_foo_app
 )
 @au.with_adapter_loop(wait=True)
 async def test_foo():
-    port = get_free_port()
+    port = get_available_port()
     server_bind = f'127.0.0.1:{port}'
     base_url = f'http://{server_bind}/'
 
