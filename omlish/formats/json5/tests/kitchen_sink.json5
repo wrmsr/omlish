@@ -4,7 +4,8 @@
   singleQuotes: 'I can use "double quotes" here',
   lineBreaks: "Look, Mom! \
 No \\n's!",
-  newlines: 'This is\n  mul\ttiple\nlines',
+  newlines: 'This is\n  mul\ttiple\n\
+lines',
   unicodeSnowman: "☃",
   hexadecimal: 0xdecaf,
   leadingDecimalPoint: .8675309, andTrailing: 8675309.,
