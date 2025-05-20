@@ -39,3 +39,52 @@ def load_secrets() -> sec.Secrets:
     except FileNotFoundError:
         pass
     return sec.MappingSecrets(dct)
+
+
+##
+
+
+def install_env_secrets(
+        *keys: str | tuple[str, str],
+        secrets: sec.Secrets | None = None,
+        environ: ta.MutableMapping[str, str] | None = None,
+        non_strict: bool = False,
+) -> None:
+    """This should not be used outside of being forced to interact with external code."""
+
+    if not keys:
+        raise ValueError('Must specify keys')
+
+    sk_ek_tups: list[tuple[str, str]] = []
+    for k in keys:
+        if isinstance(k, tuple):
+            sk, ek = k
+
+        elif isinstance(k, str):
+            if k.lower() == k:
+                sk, ek = k, k.upper()
+            elif k.upper() == k:
+                sk, ek = k.lower(), k
+            else:
+                raise ValueError(k)
+
+        else:
+            raise TypeError(k)
+
+        sk_ek_tups.append((sk, ek))
+
+    if secrets is None:
+        secrets = load_secrets()
+
+    if environ is None:
+        environ = os.environ
+
+    for sk, ek in sk_ek_tups:
+        try:
+            sv = secrets.get(sk)
+        except KeyError:
+            if non_strict:
+                continue
+            raise
+
+        environ[ek] = sv.reveal()

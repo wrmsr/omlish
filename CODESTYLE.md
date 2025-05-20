@@ -119,3 +119,7 @@
     be used where a mock would otherwise. For example, for a some `UserService` interface with an `add_user` method, for
     which a `RemoteUserService` would usually make a remote service call, prefer to implement a `DictUserService` class
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
+
+- Runtime
+  - Unless forced to through interaction with external code, not use environment variables for anything. Configuration
+    should be injected, usually as class constructor arguments.

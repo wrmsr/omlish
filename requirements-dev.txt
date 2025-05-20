@@ -120,7 +120,7 @@ huggingface-hub==0.31.4
 
 datasets==3.6.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-transformers==4.52.0; python_version < "3.13"
+transformers==4.52.1; python_version < "3.13"
 sentence-transformers==4.1.0; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
