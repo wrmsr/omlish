@@ -1,6 +1,5 @@
 """
 TODO:
- - !! cache_exceptions=False
  - !!! lighter weight bound methods
   - keymaker overhead less important than not rebuilding a whole dc every __get__ on a new instance
  - !! specialize nullary, explicit kwarg
@@ -23,6 +22,7 @@ TODO:
 import dataclasses as dc
 import functools
 import inspect
+import types
 import typing as ta
 
 from ..classes.abstract import Abstract
@@ -154,6 +154,10 @@ def _make_cache_key_maker(
 ##
 
 
+class _CachedException(ta.NamedTuple):
+    ex: BaseException
+
+
 class _CachedFunction(ta.Generic[T], Abstract):
     @dc.dataclass(frozen=True, kw_only=True)
     class Opts:
@@ -161,6 +165,19 @@ class _CachedFunction(ta.Generic[T], Abstract):
         lock: DefaultLockable = None
         transient: bool = False
         no_wrapper_update: bool = False
+        cache_exceptions: type[BaseException] | tuple[type[BaseException], ...] | None = None
+
+        def __post_init__(self) -> None:
+            if (ce := self.cache_exceptions) is not None:
+                if isinstance(ce, type):
+                    if not issubclass(ce, BaseException):
+                        raise TypeError(ce)
+                elif isinstance(ce, tuple):
+                    for e in ce:
+                        if not issubclass(e, BaseException):
+                            raise TypeError(e)
+                else:
+                    raise TypeError(ce)
 
     def __init__(
             self,
@@ -200,13 +217,33 @@ class _CachedFunction(ta.Generic[T], Abstract):
     def __call__(self, *args, **kwargs) -> T:
         k = self._key_maker(*args, **kwargs)
 
-        try:
-            return self._values[k]
-        except KeyError:
-            pass
+        if (ce := self._opts.cache_exceptions) is None:
+            try:
+                return self._values[k]
+            except KeyError:
+                pass
 
-        def call_value_fn():
-            return self._value_fn(*args, **kwargs)
+        else:
+            try:
+                hit = self._values[k]
+            except KeyError:
+                pass
+            else:
+                if isinstance(hit, _CachedException):
+                    raise hit.ex
+                else:
+                    return hit
+
+        if ce is None:
+            def call_value_fn():
+                return self._value_fn(*args, **kwargs)
+
+        else:
+            def call_value_fn():
+                try:
+                    return self._value_fn(*args, **kwargs)
+                except ce as ex:  # type: ignore[misc]
+                    return _CachedException(ex)
 
         if self._lock is not None:
             with self._lock:
@@ -221,7 +258,11 @@ class _CachedFunction(ta.Generic[T], Abstract):
             value = call_value_fn()
 
         self._values[k] = value
-        return value
+
+        if isinstance(value, _CachedException):
+            raise value.ex
+        else:
+            return value
 
 
 #
@@ -370,12 +411,27 @@ def cached_function(fn=None, **kwargs):  # noqa
 
     opts = _CachedFunction.Opts(**kwargs)
 
+    if isinstance(fn, types.MethodType):
+        return _FreeCachedFunction(
+            fn,
+            opts=opts,
+            key_maker=_make_cache_key_maker(fn, bound=True),
+        )
+
     if isinstance(fn, staticmethod):
-        return _FreeCachedFunction(fn, opts=opts, value_fn=unwrap_func(fn))
+        return _FreeCachedFunction(
+            fn,
+            opts=opts,
+            value_fn=unwrap_func(fn),
+        )
 
     scope = classmethod if isinstance(fn, classmethod) else None
 
-    return _DescriptorCachedFunction(fn, scope, opts=opts)
+    return _DescriptorCachedFunction(
+        fn,
+        scope,
+        opts=opts,
+    )
 
 
 def static_init(fn: CallableT) -> CallableT:

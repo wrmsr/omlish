@@ -1,11 +1,13 @@
+import dataclasses as dc
 import functools
-import pickle
 import time
+import typing as ta
+
+import pytest
 
 from .... import testing as tu
 from ...contextmanagers import context_wrapped
 from ..function import cached_function
-from ..property import cached_property
 
 
 def test_cached_function_nullary():
@@ -139,23 +141,6 @@ def test_cached_function_locked():
     assert c == 1
 
 
-def test_property():
-    n = 0
-
-    class C:
-        @cached_property
-        def x(self) -> int:
-            nonlocal n
-            n += 1
-            return n
-
-    c = C()
-    assert c.x == 1
-    assert c.x == 1
-    assert C().x == 2
-    assert C().x == 3
-
-
 def test_collections_cache():
     from ....collections import cache
 
@@ -231,48 +216,6 @@ def test_context_wrapped():
     assert c._lock.exit_count == 4  # noqa
 
 
-class _PickleTestClass:
-    _c = 0
-
-    @classmethod
-    def c(cls) -> int:
-        c = cls._c
-        cls._c += 1
-        return c
-
-    @cached_function()
-    def d_func(self) -> int:
-        return self.c()
-
-    @cached_function(transient=True)
-    def t_func(self) -> int:
-        return self.c()
-
-    @cached_property()
-    def d_prop(self) -> int:
-        return self.c()
-
-    @cached_property(transient=True)
-    def t_prop(self) -> int:
-        return self.c()
-
-
-def test_pickling():
-    c = _PickleTestClass()
-    for _ in range(2):
-        assert c.d_func() == 0
-        assert c.t_func() == 1
-        assert c.d_prop == 2
-        assert c.t_prop == 3
-
-    c2 = pickle.loads(pickle.dumps(c))  # noqa
-    for _ in range(2):
-        assert c2.d_func() == 0
-        assert c2.t_func() == 4
-        assert c2.d_prop == 2
-        assert c2.t_prop == 5
-
-
 def test_func_only_kws():
     c = 0
 
@@ -314,3 +257,100 @@ def test_partials():
         assert pf() == 2
         assert f(1) == 2
         assert c == 1
+
+
+class Thingy(ta.NamedTuple):
+    v: ta.Any
+
+
+class _TypeEq:
+    def __eq__(self, other):
+        return type(other) is type(self)
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+@dc.dataclass()
+class Ex1(Exception):  # noqa
+    pass
+
+
+@dc.dataclass()
+class Ex2(Ex1):  # noqa
+    pass
+
+
+@dc.dataclass()
+class Ex3(Exception):  # noqa
+    pass
+
+
+def test_no_cache_exceptions():
+    c = 0
+
+    @cached_function
+    def fn(v):
+        nonlocal c
+        c += 1
+        if isinstance(v, type) and issubclass(v, Exception):
+            raise v
+        return v
+
+    assert c == 0
+    assert fn(5) == 5
+    assert c == 1
+
+    for i in range(2):
+        with pytest.raises(Ex1):
+            fn(Ex1)
+        assert c == 2 + i
+
+
+def test_cache_exceptions():
+    c = 0
+
+    @cached_function(cache_exceptions=(Ex1,))
+    def fn(v):
+        nonlocal c
+        c += 1
+        if isinstance(v, type) and issubclass(v, Exception):
+            raise v
+        return v
+
+    assert c == 0
+    assert fn(5) == 5
+    assert c == 1
+
+    for _ in range(2):
+        with pytest.raises(Ex1):
+            fn(Ex1)
+        assert c == 2
+
+    for _ in range(2):
+        with pytest.raises(Ex2):
+            fn(Ex2)
+        assert c == 3
+
+    for i in range(2):
+        with pytest.raises(Ex3):
+            fn(Ex3)
+        assert c == 4 + i
+
+
+def test_bound_method():
+    class Foo:
+        c = 0
+
+        def f(self, x):
+            self.c += 1
+            return x + 1
+
+    foo = Foo()
+    f = cached_function(foo.f)
+    assert foo.c == 0
+    for _ in range(2):
+        assert f(5) == 6
+        assert foo.c == 1
+    assert f(6) == 7
+    assert foo.c == 2
