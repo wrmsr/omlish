@@ -1,5 +1,6 @@
 """
 TODO:
+ - !! cache_exceptions=False
  - !!! lighter weight bound methods
   - keymaker overhead less important than not rebuilding a whole dc every __get__ on a new instance
  - !! specialize nullary, explicit kwarg

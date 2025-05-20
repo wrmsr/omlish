@@ -6,6 +6,9 @@ from omserv.apps.routes import handles
 from omserv.server.resources import favicon_bytes
 
 
+##
+
+
 class FaviconHandler(RouteHandlerHolder):
     @handles(Route.get('/favicon.ico'))
     async def handle_get_favicon_ico(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:

@@ -23,11 +23,17 @@ else:
     tiktoken = lang.proxy_import('tiktoken')
 
 
+##
+
+
 def _gpt2_enc() -> 'tiktoken.Encoding':
     return tiktoken.get_encoding('gpt2')
 
 
 gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
+
+
+##
 
 
 @dc.dataclass(frozen=True)

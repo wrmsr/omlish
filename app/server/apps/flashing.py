@@ -2,6 +2,9 @@ from omserv.apps.sessions import SESSION
 from omserv.apps.templates import jinja_helper
 
 
+##
+
+
 @jinja_helper
 def get_flashed_messages() -> list[str]:
     session = SESSION.get()

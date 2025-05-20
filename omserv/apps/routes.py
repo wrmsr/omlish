@@ -244,7 +244,7 @@ class RouteHandlerApp(asgi.App_):
             pat_apps = [
                 a
                 for r, a in pat_rts
-                if check.isinstance(r, re.Pattern).fullmatch(path)
+                if check.isinstance(r.path, re.Pattern).fullmatch(path)
             ]
             if pat_apps:
                 return check.single(pat_apps)

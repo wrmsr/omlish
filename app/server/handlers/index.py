@@ -13,6 +13,9 @@ from omserv.apps.templates import JinjaTemplates
 from ..apps.users import with_user
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class IndexHandler(RouteHandlerHolder):
     _current_session: ta.Callable[[], Session]

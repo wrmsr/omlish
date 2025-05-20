@@ -11,6 +11,9 @@ from ...users import UserStore
 from ..apps.users import get_auth_user
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class AuthHandler(RouteHandlerHolder):
     _users: UserStore

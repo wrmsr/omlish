@@ -10,6 +10,9 @@ from ..apps.login import login_required
 from ..apps.users import with_user
 
 
+##
+
+
 class LogoutHandler(RouteHandlerHolder):
     @handles(Route.get('/logout'))
     @with_session
