@@ -125,7 +125,7 @@
     "module": ".minichain.backends.mlx",
     "attr": null,
     "file": "ommlx/minichain/backends/mlx.py",
-    "line": 33,
+    "line": 38,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlx.minichain.backends.mlx",

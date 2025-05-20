@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ..chat.choices import AiChoice
 from ..chat.messages import AiMessage
@@ -11,8 +12,12 @@ from ..chat.messages import UserMessage
 from ..chat.services import ChatRequest
 from ..chat.services import ChatResponse
 from ..chat.services import ChatService
+from ..chat.types import ChatRequestOption
 from ..configs import Config
 from ..configs import consume_configs
+from ..llms import LlmRequestOption
+from ..llms import MaxTokens
+from ..standard import DefaultRequestOptions
 from ..standard import ModelName
 
 
@@ -53,6 +58,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
+            self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -75,6 +81,10 @@ class MlxChatService(ChatService, lang.ExitStacked):
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         return mlxu.load_model(self._model_name.v)
 
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOption | LlmRequestOption]]] = dict(
+        max_tokens=MaxTokens,
+    )
+
     def invoke(self, request: ChatRequest) -> ChatResponse:
         model, tokenizer = self._load_model()
 
@@ -96,9 +106,19 @@ class MlxChatService(ChatService, lang.ExitStacked):
             add_generation_prompt=True,
         )
 
+        kwargs = dict()
+
+        with tv.TypedValues(
+                *self._default_options,
+                *request.options,
+                override=True,
+        ).consume() as oc:
+            kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
+
         response = mlx_lm.generate(
             model,
             tokenizer,
+            **kwargs,
             prompt=prompt,
             # verbose=True,
         )
