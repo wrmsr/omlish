@@ -154,9 +154,9 @@ class SwitchesPlugin:
         }
 
         inv_switch_states: dict[SwitchState, list[Switch]] = col.multi_map((st, sw) for sw, st in switch_states.items())
-        true_switches = inv_switch_states.get(True, ())
-        false_switches = inv_switch_states.get(False, ())
-        only_switches = inv_switch_states.get('only', ())
+        true_switches = frozenset(inv_switch_states.get(True, ()))
+        false_switches = frozenset(inv_switch_states.get(False, ()))
+        only_switches = frozenset(inv_switch_states.get('only', ()))
 
         def process(item):
             item_switches = {sw for sw in SWITCHES if sw.attr in item.keywords}

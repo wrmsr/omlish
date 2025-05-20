@@ -260,13 +260,36 @@ class MapAdapter(ta.Generic[T]):
         self.query_args = query_args
         self.websocket = self.url_scheme in {'ws', 'wss'}
 
+    @ta.overload
     def dispatch(
             self,
             view_func: ta.Callable[[str, ta.Mapping[str, ta.Any]], T],
+            *,
+            path_info: str | None = None,
+            method: str | None = None,
+            catch_http_exceptions: ta.Literal[False] = False,
+    ) -> T:
+        ...
+
+    @ta.overload
+    def dispatch(
+            self,
+            view_func: ta.Callable[[str, ta.Mapping[str, ta.Any]], T],
+            *,
             path_info: str | None = None,
             method: str | None = None,
             catch_http_exceptions: bool = False,
-    ) -> T:
+    ) -> T | HttpException:
+        ...
+
+    def dispatch(
+            self,
+            view_func,
+            *,
+            path_info=None,
+            method=None,
+            catch_http_exceptions=False,
+    ):
         """
         Does the complete dispatching process.  `view_func` is called with the endpoint and a dict with the values for
         the view.  It should look up the view function, call it, and return a response object or WSGI application.  http
@@ -307,11 +330,11 @@ class MapAdapter(ta.Generic[T]):
             try:
                 endpoint, args = self.match(path_info, method)
             except RequestRedirect as e:
-                return e  # type: ignore[return-value]  # FIXME
+                return e
             return view_func(endpoint, args)
         except HttpException as e:
             if catch_http_exceptions:
-                return e  # type: ignore[return-value]  # FIXME
+                return e
             raise
 
     @ta.overload
@@ -319,6 +342,7 @@ class MapAdapter(ta.Generic[T]):
             self,
             path_info: str | None = None,
             method: str | None = None,
+            *,
             return_rule: ta.Literal[False] = False,
             query_args: ta.Mapping[str, ta.Any] | str | None = None,
             websocket: bool | None = None,
@@ -330,6 +354,7 @@ class MapAdapter(ta.Generic[T]):
             self,
             path_info: str | None = None,
             method: str | None = None,
+            *,
             return_rule: ta.Literal[True] = True,
             query_args: ta.Mapping[str, ta.Any] | str | None = None,
             websocket: bool | None = None,
@@ -340,6 +365,7 @@ class MapAdapter(ta.Generic[T]):
             self,
             path_info: str | None = None,
             method: str | None = None,
+            *,
             return_rule: bool = False,
             query_args: ta.Mapping[str, ta.Any] | str | None = None,
             websocket: bool | None = None,
@@ -491,7 +517,11 @@ class MapAdapter(ta.Generic[T]):
             else:
                 return rule.endpoint, rv
 
-    def test(self, path_info: str | None = None, method: str | None = None) -> bool:
+    def test(
+            self,
+            path_info: str | None = None,
+            method: str | None = None,
+    ) -> bool:
         """
         Test if a rule would match.  Works like `match` but returns `True` if the URL matches, or `False` if it does not
         exist.
@@ -590,7 +620,7 @@ class MapAdapter(ta.Generic[T]):
         scheme = self.url_scheme or 'http'
         host = self.get_host(domain_part)
         path = '/'.join((self.script_name.strip('/'), path_info.lstrip('/')))
-        return urllib.parse.urlunsplit((scheme, host, path, query_str, None))
+        return urllib.parse.urlunsplit((scheme, host, path, query_str, None))  # noqa
 
     def make_alias_redirect_url(
             self,
@@ -664,6 +694,7 @@ class MapAdapter(ta.Generic[T]):
             endpoint: ta.Any,
             values: ta.Mapping[str, ta.Any] | None = None,
             method: str | None = None,
+            *,
             force_external: bool = False,
             append_unknown: bool = True,
             url_scheme: str | None = None,
@@ -738,7 +769,12 @@ class MapAdapter(ta.Generic[T]):
         else:
             values = {}
 
-        rv = self._partial_build(endpoint, values, method, append_unknown)
+        rv = self._partial_build(
+            endpoint,
+            values,
+            method,
+            append_unknown,
+        )
         if rv is None:
             raise BuildError(endpoint, values, method, self)
 
