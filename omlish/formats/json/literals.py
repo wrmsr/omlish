@@ -29,7 +29,7 @@ import typing as ta
 _ESCAPE_PAT = re.compile(r'[\x00-\x1f\\"]')
 _ESCAPE_ASCII_PAT = re.compile(r'([\\"]|[^\ -~])')
 
-_ESCAPE_DCT = {
+ESCAPE_MAP: ta.Mapping[str, str] = {
     **{
         chr(i): f'\\u{i:04x}'
         for i in range(0x20)
@@ -56,19 +56,35 @@ def _convert_to_string(s: str | bytes) -> str:
         return s
 
 
-def encode_string(s: str | bytes, q: str = '"') -> str:
-    """Return a JSON representation of a Python string"""
+def encode_string(
+        s: str | bytes,
+        q: str = '"',
+        *,
+        escape_map: ta.Mapping[str, str] | None = None,
+) -> str:
+    """Return a JSON representation of a Python string."""
+
+    if escape_map is None:
+        escape_map = ESCAPE_MAP
 
     s = _convert_to_string(s)
 
     def replace(m):
-        return _ESCAPE_DCT[m.group(0)]
+        return escape_map[m.group(0)]
 
     return q + _ESCAPE_PAT.sub(replace, s) + q
 
 
-def encode_string_ascii(s: str | bytes, q: str = '"') -> str:
-    """Return an ASCII-only JSON representation of a Python string"""
+def encode_string_ascii(
+        s: str | bytes,
+        q: str = '"',
+        *,
+        escape_map: ta.Mapping[str, str] | None = None,
+) -> str:
+    """Return an ASCII-only JSON representation of a Python string."""
+
+    if escape_map is None:
+        escape_map = ESCAPE_MAP
 
     s = _convert_to_string(s)
 
@@ -76,7 +92,7 @@ def encode_string_ascii(s: str | bytes, q: str = '"') -> str:
         s = m.group(0)
 
         try:
-            return _ESCAPE_DCT[s]
+            return escape_map[s]
 
         except KeyError:
             n = ord(s)
@@ -102,7 +118,7 @@ def _scan_four_digit_hex(
         s: str,
         end: int,
 ):
-    """Scan a four digit hex number from s[end:end + 4]"""
+    """Scan a four digit hex number from s[end:end + 4]."""
 
     msg = 'Invalid \\uXXXX escape sequence'
     esc = s[end: end + 4]
@@ -117,7 +133,7 @@ def _scan_four_digit_hex(
 
 _STRING_CHUNK_PAT = re.compile(r'(.*?)(["\\\x00-\x1f])', re.VERBOSE | re.MULTILINE | re.DOTALL)
 
-_BACKSLASH_MAP = {
+BACKSLASH_MAP: ta.Mapping[str, str] = {
     '"': '"',
     '\\': '\\',
     '/': '/',
@@ -180,7 +196,7 @@ def parse_string(
         # If not a unicode escape sequence, must be in the lookup table
         if esc != 'u':
             try:
-                char = _BACKSLASH_MAP[esc]
+                char = BACKSLASH_MAP[esc]
             except KeyError:
                 msg = 'Invalid \\X escape sequence %r'
                 raise json.JSONDecodeError(msg, s, end) from None

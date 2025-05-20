@@ -26,6 +26,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
 
     def __init__(
             self,
+            *,
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
             sort_keys: bool = False,

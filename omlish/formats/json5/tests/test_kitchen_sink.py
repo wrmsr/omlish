@@ -8,6 +8,8 @@ KITCHEN_SINK_OBJ = {
     'unquoted': 'and you can quote me on that',
     'singleQuotes': 'I can use "double quotes" here',
     'lineBreaks': "Look, Mom! No \\n's!",
+    'newlines': 'This is\n  mul\ttiple\nlines',
+    'unicodeSnowman': '☃',
     'hexadecimal': 912559,
     'leadingDecimalPoint': 0.8675309,
     'andTrailing': 8675309.0,
