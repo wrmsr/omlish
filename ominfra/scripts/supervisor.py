@@ -2699,9 +2699,11 @@ class _JustMaybe(_Maybe[T]):
     def __repr__(self) -> str:
         return f'just({self._v!r})'
 
+    _hash: int
+
     def __hash__(self) -> int:
         try:
-            return self._hash  # type: ignore[has-type]
+            return self._hash
         except AttributeError:
             pass
         h = self._hash = hash((_JustMaybe, self._v))

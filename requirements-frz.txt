@@ -259,7 +259,7 @@ Send2Trash==1.8.3
 sentence-transformers==4.1.0
 sentencepiece==0.2.0
 setproctitle==1.3.6
-setuptools==80.7.1
+setuptools==80.8.0
 shapely==2.1.1
 six==1.17.0
 sniffio==1.3.1
