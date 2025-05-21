@@ -33,7 +33,7 @@ if ta.TYPE_CHECKING:
     import mlx_lm.models.cache
     import mlx_lm.tokenizer_utils
     import mlx_lm.utils
-    import transformers
+    import transformers as tfm
 else:
     mlx = lang.proxy_import('mlx', extras=[
         'core',
@@ -45,7 +45,7 @@ else:
         'tokenizer_utils',
         'utils',
     ])
-    transformers = lang.proxy_import('transformers')
+    tfm = lang.proxy_import('transformers')
 
 
 ##
@@ -426,7 +426,7 @@ def speculative_generate_step(
 
 def stream_generate(
         model: 'mlx.nn.Module',
-        tokenizer: ta.Union['transformers.PreTrainedTokenizer', 'mlx_lm.tokenizer_utils.TokenizerWrapper'],
+        tokenizer: ta.Union['tfm.PreTrainedTokenizer', 'mlx_lm.tokenizer_utils.TokenizerWrapper'],
         prompt: ta.Union[str, 'mlx.core.array', list[int]],
         *,
         draft_model: ta.Optional['mlx.nn.Module'] = None,
@@ -535,7 +535,7 @@ def stream_generate(
 
 def generate(
         model: 'mlx.nn.Module',
-        tokenizer: ta.Union['transformers.PreTrainedTokenizer', 'mlx_lm.tokenizer_utils.TokenizerWrapper'],
+        tokenizer: ta.Union['tfm.PreTrainedTokenizer', 'mlx_lm.tokenizer_utils.TokenizerWrapper'],
         prompt: str | list[int],
         verbose: bool = False,
         formatter: ta.Callable | None = None,
