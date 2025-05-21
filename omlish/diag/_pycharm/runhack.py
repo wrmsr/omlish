@@ -59,6 +59,9 @@ class _cached_nullary:  # noqa
 #
 
 
+_repr = repr
+
+
 def _attr_repr(obj, *atts):
     return f'{obj.__class__.__name__}({", ".join(f"{a}={getattr(obj, a)!r}" for a in atts)})'
 
@@ -127,6 +130,109 @@ class AsJson:
 ##
 
 
+class SysModule(AttrsClass, AsJson):
+    def __init__(
+            self,
+            name,  # type: str
+            *,
+            seq=None,  # type: int | None
+            repr=None,  # type: str | None  # noqa
+
+            origin=None,  # type: str | None
+            file=None,  # type: str | None
+    ) -> None:
+        super().__init__()
+
+        self._name = name
+
+        self._seq = seq
+        self._repr = repr
+
+        self._origin = origin
+        self._file = file
+
+    __attrs__ = (
+        'name',
+
+        'seq',
+        'repr',
+
+        'origin',
+        'file',
+    )
+
+    @property
+    def name(self):  # type: () -> str
+        return self._name
+
+    @property
+    def seq(self):  # type: () -> int | None
+        return self._seq
+
+    @property
+    def repr(self):  # type: () -> str | None
+        return self._repr
+
+    @property
+    def origin(self):  # type: () -> str | None
+        return self._origin
+
+    @property
+    def file(self):  # type: () -> str | None
+        return self._file
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return self.attrs_dict()
+
+
+def build_sys_module(
+        name,  # type: str
+        mod,
+        *,
+        seq=None,  # type: int | None
+) -> SysModule:
+    kwargs = dict()  # type: dict
+    kwargs.update(
+        name=name,
+
+        seq=seq,
+        repr=_repr(mod),
+    )
+
+    try:
+        spec = mod.__spec__
+    except AttributeError:
+        pass
+    else:
+        if spec is not None:
+            kwargs.update(origin=spec.origin)
+
+    try:
+        file = mod.__file__
+    except AttributeError:
+        pass
+    else:
+        kwargs.update(file=file)
+
+    return SysModule(**kwargs)
+
+
+def build_sys_modules(dct=None):  # type: (dict[str, object] | None) -> list[SysModule]
+    if dct is None:
+        dct_ = sys.modules
+    else:
+        dct_ = dct  # type: ignore
+
+    lst = []  # type: list[SysModule]
+    for i, (n, m) in enumerate(dct_.items()):
+        lst.append(build_sys_module(n, m, seq=i))
+
+    return lst
+
+
+##
+
+
 class RunEnv(AttrsClass, AsJson):
     def __init__(
             self,
@@ -143,6 +249,7 @@ class RunEnv(AttrsClass, AsJson):
             pycharm_hosted=None,  # type: bool | None
 
             sys_path=None,  # type: list[str] | None
+            sys_modules=None,  # type: list[SysModule] | None
     ) -> None:
         super().__init__()
 
@@ -182,6 +289,10 @@ class RunEnv(AttrsClass, AsJson):
             sys_path = list(sys.path)
         self._sys_path = sys_path
 
+        if sys_modules is None:
+            sys_modules = build_sys_modules()
+        self._sys_modules = sys_modules
+
     __attrs__ = (
         'argv',
         'orig_argv',
@@ -195,6 +306,7 @@ class RunEnv(AttrsClass, AsJson):
         'pycharm_hosted',
 
         'sys_path',
+        'sys_modules',
     )
 
     @property
@@ -233,8 +345,15 @@ class RunEnv(AttrsClass, AsJson):
     def sys_path(self):  # type: () -> list[str]
         return self._sys_path
 
+    @property
+    def sys_modules(self):  # type: () -> list[SysModule]
+        return self._sys_modules
+
     def as_json(self):  # type: () -> dict[str, object]
-        return self.attrs_dict()
+        return {
+            **self.attrs_dict(),
+            'sys_modules': [m.as_json() for m in self.sys_modules],
+        }
 
 
 ##
