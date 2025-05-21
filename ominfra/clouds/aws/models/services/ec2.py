@@ -3188,6 +3188,12 @@ class NetworkInterfaceIpv6Address(
         shape_name='String',
     ))
 
+    public_ipv6_dns_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicIpv6DnsName',
+        serialization_name='publicIpv6DnsName',
+        shape_name='String',
+    ))
+
     is_primary_ipv6: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='IsPrimaryIpv6',
         serialization_name='isPrimaryIpv6',
@@ -3454,6 +3460,36 @@ class PropagatingVgw(
     gateway_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='GatewayId',
         serialization_name='gatewayId',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class PublicIpDnsNameOptions(
+    _base.Shape,
+    shape_name='PublicIpDnsNameOptions',
+):
+    dns_hostname_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DnsHostnameType',
+        serialization_name='dnsHostnameType',
+        shape_name='String',
+    ))
+
+    public_ipv4_dns_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicIpv4DnsName',
+        serialization_name='publicIpv4DnsName',
+        shape_name='String',
+    ))
+
+    public_ipv6_dns_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicIpv6DnsName',
+        serialization_name='publicIpv6DnsName',
+        shape_name='String',
+    ))
+
+    public_dual_stack_dns_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicDualStackDnsName',
+        serialization_name='publicDualStackDnsName',
         shape_name='String',
     ))
 
@@ -6320,6 +6356,18 @@ class NetworkInterface(
         shape_name='String',
     ))
 
+    public_dns_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicDnsName',
+        serialization_name='publicDnsName',
+        shape_name='String',
+    ))
+
+    public_ip_dns_name_options: PublicIpDnsNameOptions | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicIpDnsNameOptions',
+        serialization_name='publicIpDnsNameOptions',
+        shape_name='PublicIpDnsNameOptions',
+    ))
+
     private_ip_address: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='PrivateIpAddress',
         serialization_name='privateIpAddress',
@@ -8015,6 +8063,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     ProcessorInfo,
     ProductCode,
     PropagatingVgw,
+    PublicIpDnsNameOptions,
     RebootInstancesRequest,
     Reservation,
     Route,
