@@ -8,8 +8,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .services import RequestOption
-from .services import ResponseOutput
+from ..services import RequestOption
+from ..services import ResponseOutput
 
 
 ##

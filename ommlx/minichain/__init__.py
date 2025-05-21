@@ -106,7 +106,12 @@ from .envs import (  # noqa
     EnvKey,
 )
 
-from .llms import (  # noqa
+from .llms.tokens import (  # noqa
+    Token,
+    Tokens,
+)
+
+from .llms.services import (  # noqa
     LlmRequestOption,
 
     TopK,
@@ -206,3 +211,4 @@ from omlish.lang.imports import _register_conditional_import  # noqa
 
 _register_conditional_import('omlish.marshal', '.chat.marshal', __package__)
 _register_conditional_import('omlish.marshal', '.content.marshal', __package__)
+_register_conditional_import('omlish.marshal', '.llms.marshal', __package__)

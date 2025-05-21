@@ -15,8 +15,8 @@ from ..chat.services import ChatService
 from ..chat.types import ChatRequestOption
 from ..configs import Config
 from ..configs import consume_configs
-from ..llms import LlmRequestOption
-from ..llms import MaxTokens
+from ..llms.services import LlmRequestOption
+from ..llms.services import MaxTokens
 from ..standard import DefaultRequestOptions
 from ..standard import ModelName
 

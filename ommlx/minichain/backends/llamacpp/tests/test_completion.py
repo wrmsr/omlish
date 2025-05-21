@@ -1,6 +1,6 @@
 from omlish.testing import pytest as ptu
 
-from ....llms import MaxTokens
+from ....llms.services import MaxTokens
 from ..completion import LlamacppCompletionService
 
 

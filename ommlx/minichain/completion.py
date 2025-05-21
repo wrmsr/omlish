@@ -3,8 +3,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .llms import LlmRequestOption
-from .llms import LlmResponseOutput
+from .llms.services import LlmRequestOption
+from .llms.services import LlmResponseOutput
 from .services import Request
 from .services import RequestOption
 from .services import Response
