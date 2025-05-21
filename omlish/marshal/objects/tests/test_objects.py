@@ -1,19 +1,21 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from ... import dataclasses as dc
-from ...lite import marshal as lmsh
-from ..base import MarshalContext
-from ..base import UnmarshalContext
-from ..global_ import marshal
-from ..global_ import unmarshal
-from ..objects.helpers import update_fields_metadata
-from ..objects.marshal import ObjectMarshaler
-from ..objects.metadata import FieldInfo
-from ..objects.metadata import ObjectSpecials
-from ..objects.unmarshal import ObjectUnmarshaler
-from ..registries import Registry
-from ..trivial.nop import NOP_MARSHALER_UNMARSHALER
+from .... import dataclasses as dc
+from ....lite import marshal as lmsh
+from ...base import MarshalContext
+from ...base import UnmarshalContext
+from ...global_ import marshal
+from ...global_ import unmarshal
+from ...registries import Registry
+from ...standard import new_standard_unmarshaler_factory
+from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
+from ..helpers import update_fields_metadata
+from ..helpers import update_object_metadata
+from ..marshal import ObjectMarshaler
+from ..metadata import FieldInfo
+from ..metadata import ObjectSpecials
+from ..unmarshal import ObjectUnmarshaler
 
 
 @dc.dataclass()
@@ -53,6 +55,37 @@ def test_unknown_fields():
     )
     o = om.marshal(MarshalContext(Registry()), c)
     assert o == {'i': 420, 's': 'foo', 'qqq': 'huh'}
+
+
+def test_decorated_unknown_field():
+    @dc.dataclass(frozen=True)
+    @update_object_metadata(unknown_field='x')
+    class ImageUploadResponse:
+        status: int
+        success: bool
+
+        x: ta.Mapping[str, ta.Any] | None = None
+
+    d = {
+        'status': 420,
+        'success': True,
+        'barf': True,
+        'frab': False,
+    }
+
+    uc = UnmarshalContext(Registry(), factory=new_standard_unmarshaler_factory())
+    u = uc.make(ImageUploadResponse)
+
+    o = u.unmarshal(uc, d)
+
+    assert o == ImageUploadResponse(
+        status=420,
+        success=True,
+        x=dict(
+            barf=True,
+            frab=False,
+        ),
+    )
 
 
 def test_source_fields():

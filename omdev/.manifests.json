@@ -63,7 +63,7 @@
     "module": ".imgur",
     "attr": "_FOO_CLI_MODULE",
     "file": "omdev/imgur.py",
-    "line": 133,
+    "line": 136,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "imgur",

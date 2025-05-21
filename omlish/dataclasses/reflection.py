@@ -3,6 +3,7 @@ import typing as ta
 
 from .. import lang
 from .api.classes.conversion import std_params_to_class_spec
+from .api.classes.metadata import extract_cls_metadata
 from .api.classes.params import get_class_spec
 from .api.fields.conversion import std_field_to_field_spec
 from .concerns.fields import InitFields
@@ -49,9 +50,12 @@ class ClassReflection:
             for f in dc.fields(self._cls)  # noqa
         ]
 
+        cmd = extract_cls_metadata(self._cls, deep=True)
+
         cs = std_params_to_class_spec(
             p,
             fsl,
+            metadata=cmd.user_metadata or None,
         )
 
         return cs

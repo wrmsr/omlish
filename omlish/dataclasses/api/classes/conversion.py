@@ -12,6 +12,8 @@ from ...specs import FieldSpec
 def std_params_to_class_spec(
         p: StdParams,
         fields: ta.Sequence[FieldSpec],
+        *,
+        metadata: ta.Sequence[ta.Any] | None = None,
 ) -> ClassSpec:
     return ClassSpec(
         fields=fields,
@@ -27,4 +29,6 @@ def std_params_to_class_spec(
         kw_only=check.isinstance(p.kw_only, bool),
         slots=check.isinstance(p.slots, bool),
         weakref_slot=check.isinstance(p.weakref_slot, bool),
+
+        metadata=metadata,
     )

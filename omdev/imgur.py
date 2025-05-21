@@ -66,10 +66,13 @@ class ImageUploadData:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(unknown_field='x')
 class ImageUploadResponse:
     status: int
     success: bool
     data: ImageUploadData
+
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 DEFAULT_UPLOAD_IMAGE_URL = 'https://api.imgur.com/3/upload'

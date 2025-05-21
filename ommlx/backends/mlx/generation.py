@@ -121,16 +121,22 @@ class GenerationResponse:
     finish_reason: str | None = None
 
 
-def maybe_quantize_kv_cache(prompt_cache, quantized_kv_start, kv_group_size, kv_bits):
+def maybe_quantize_kv_cache(
+        prompt_cache: ta.Any,
+        quantized_kv_start: int,
+        kv_group_size: int,
+        kv_bits: int | None,
+):
     if (
-        kv_bits is not None
-        and not isinstance(prompt_cache[0], mlx_lm.models.cache.QuantizedKVCache)
-        and prompt_cache[0].offset > quantized_kv_start
+            kv_bits is not None and
+            not isinstance(prompt_cache[0], mlx_lm.models.cache.QuantizedKVCache) and
+            prompt_cache[0].offset > quantized_kv_start
     ):
         for i in range(len(prompt_cache)):
             if isinstance(prompt_cache[i], mlx_lm.models.cache.KVCache):
                 prompt_cache[i] = prompt_cache[i].to_quantized(
-                    group_size=kv_group_size, bits=kv_bits,
+                    group_size=kv_group_size,
+                    bits=kv_bits,
                 )
 
 
