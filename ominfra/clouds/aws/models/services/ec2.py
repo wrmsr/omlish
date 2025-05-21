@@ -313,6 +313,11 @@ class InstanceMetadataTagsState(_enum.Enum):
     ENABLED = 'enabled'
 
 
+class InstanceRebootMigrationState(_enum.Enum):
+    DISABLED = 'disabled'
+    DEFAULT = 'default'
+
+
 class InstanceStateName(_enum.Enum):
     PENDING = 'pending'
     RUNNING = 'running'
@@ -1401,6 +1406,11 @@ class ProductCodeValues(_enum.Enum):
 
 
 RamdiskId = _ta.NewType('RamdiskId', str)
+
+
+class RebootMigrationSupport(_enum.Enum):
+    UNSUPPORTED = 'unsupported'
+    SUPPORTED = 'supported'
 
 
 class ResourceType(_enum.Enum):
@@ -2655,6 +2665,12 @@ class InstanceMaintenanceOptions(
         member_name='AutoRecovery',
         serialization_name='autoRecovery',
         shape_name='InstanceAutoRecoveryState',
+    ))
+
+    reboot_migration: InstanceRebootMigrationState | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='RebootMigration',
+        serialization_name='rebootMigration',
+        shape_name='InstanceRebootMigrationState',
     ))
 
 
@@ -6959,6 +6975,12 @@ class InstanceTypeInfo(
         member_name='PhcSupport',
         serialization_name='phcSupport',
         shape_name='PhcSupport',
+    ))
+
+    reboot_migration_support: RebootMigrationSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='RebootMigrationSupport',
+        serialization_name='rebootMigrationSupport',
+        shape_name='RebootMigrationSupport',
     ))
 
 

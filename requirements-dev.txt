@@ -82,7 +82,7 @@ redis==6.1.0
 sqlean.py==3.49.1  # @omlish-venv !13t
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.2.2
+duckdb==1.3.0
 
 
 pycparser==2.22
@@ -120,7 +120,7 @@ huggingface-hub==0.31.4
 
 datasets==3.6.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-transformers==4.52.1; python_version < "3.13"
+transformers==4.52.2; python_version < "3.13"
 sentence-transformers==4.1.0; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
@@ -131,7 +131,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.19
+boto3>=1.38.20
 
 antlr4-python3-runtime==4.13.2
 

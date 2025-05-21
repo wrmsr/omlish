@@ -121,12 +121,19 @@ check_untyped_defs = true
 [tool.pytest.ini_options]
 addopts = [
     '-v',
+
     '--tb=short',
     # '--showlocals',
+
     '--strict-markers',
+
     '--durations=5',
     '--durations-min=2',
+
     # '--log=info',
+
+    # pytest-xdist
+    '--dist=loadgroup',
 ]
 
 junit_family = 'xunit2'
@@ -135,9 +142,6 @@ junit_duration_report = 'call'
 # pytest-timeout
 timeout = 60
 session_timeout = 600
-
-# pytest-xdist
-dist = 'loadgroup'
 
 
 ##
