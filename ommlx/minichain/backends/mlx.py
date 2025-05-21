@@ -115,7 +115,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
         ).consume() as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
-        response = mlx_lm.generate(
+        response = mlxu.generate(
             model,
             tokenizer,
             **kwargs,

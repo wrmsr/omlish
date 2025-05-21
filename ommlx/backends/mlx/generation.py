@@ -14,7 +14,7 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# https://github.com/ml-explore/mlx-lm/blob/455cdac5dfd7cdd5f6318885647a86bcdbe79000/mlx_lm/generate.py
+# https://github.com/ml-explore/mlx-lm/blob/ce2358d297af245b002e690623f00195b6507da0/mlx_lm/generate.py
 import contextlib
 import dataclasses as dc
 import functools
@@ -170,7 +170,7 @@ def generate_step(
         kv_group_size (int): Group size for KV cache quantization. Default: ``64``.
         quantized_kv_start (int): Step to begin using a quantized KV cache. when ``kv_bits`` is non-None. Default:
           ``0``.
-        prompt_prorgress_callback (Callable[int, int]): A call-back which takes the prompt tokens processed so far and
+        prompt_progress_callback (Callable[int, int]): A call-back which takes the prompt tokens processed so far and
           the total number of prompt tokens.
 
     Yields:

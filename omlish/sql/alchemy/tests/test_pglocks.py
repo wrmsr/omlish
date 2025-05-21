@@ -38,9 +38,11 @@ import sqlalchemy.ext.compiler
 from .... import check
 from .... import lang
 from ....diag import pydevd as pdu  # noqa
+from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...dbs import set_url_engine
 from ...tests.harness import HarnessDbs
+from ...tests.utils import mark_sql_backend
 
 
 def make_pg_lock_name(s: str) -> int:
@@ -61,6 +63,8 @@ def _compile_pg_lock_name(
         (element.element._compiler_dispatch(compiler),)  # noqa
 
 
+@ptu.skip.if_cant_import('pg8000')
+@mark_sql_backend('postgres')
 def test_pglocks(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+pg8000')

@@ -11,6 +11,7 @@ from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...dbs import set_url_engine
 from ...tests.harness import HarnessDbs
+from ...tests.utils import mark_sql_backend
 
 
 ##
@@ -63,6 +64,7 @@ def _test_mysql(url: str) -> None:
 
 
 @ptu.skip.if_cant_import('mysql.connector')
+@mark_sql_backend('mysql')
 def test_mysql_mysql_connector_python(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqlconnector')
@@ -70,6 +72,7 @@ def test_mysql_mysql_connector_python(harness) -> None:
 
 
 @ptu.skip.if_cant_import('MySQLdb')
+@mark_sql_backend('mysql')
 def test_mysql_mysqlclient(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqldb')
@@ -77,6 +80,7 @@ def test_mysql_mysqlclient(harness) -> None:
 
 
 @ptu.skip.if_cant_import('pymysql')
+@mark_sql_backend('mysql')
 def test_mysql_pymysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+pymysql')
@@ -115,6 +119,7 @@ async def _test_mysql_async(url: str) -> None:
 @ptu.skip.if_cant_import('aiomysql')
 @ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncs('asyncio')
+@mark_sql_backend('mysql')
 async def test_async_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')
@@ -125,6 +130,7 @@ async def test_async_mysql_aiomysql(harness) -> None:
 @ptu.skip.if_cant_import('trio')
 @ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.asyncs('trio')
+@mark_sql_backend('mysql')
 async def test_trio_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')

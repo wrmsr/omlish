@@ -11,6 +11,7 @@ from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...dbs import set_url_engine
 from ...tests.harness import HarnessDbs
+from ...tests.utils import mark_sql_backend
 
 
 ##
@@ -59,6 +60,7 @@ def _test_postgres(url: str) -> None:
 
 
 @ptu.skip.if_cant_import('pg8000')
+@mark_sql_backend('postgres')
 def test_postgres_pg8000(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+pg8000')
@@ -66,6 +68,7 @@ def test_postgres_pg8000(harness) -> None:
 
 
 @ptu.skip.if_cant_import('psycopg2')
+@mark_sql_backend('postgres')
 def test_postgres_psycopg2(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+psycopg2')
@@ -73,6 +76,7 @@ def test_postgres_psycopg2(harness) -> None:
 
 
 @ptu.skip.if_cant_import('psycopg')
+@mark_sql_backend('postgres')
 def test_postgres_psycopg(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+psycopg')
@@ -107,6 +111,7 @@ async def _test_postgres_async(url: str) -> None:
 
 @ptu.skip.if_cant_import('asyncpg')
 @pytest.mark.asyncs('asyncio')
+@mark_sql_backend('postgres')
 async def test_async_postgres_asyncpg(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')
@@ -117,6 +122,7 @@ async def test_async_postgres_asyncpg(harness) -> None:
 @ptu.skip.if_cant_import('trio')
 @ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.asyncs('trio')
+@mark_sql_backend('postgres')
 async def test_trio_postgres_asyncpg(harness) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')

@@ -14,7 +14,7 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# https://github.com/ml-explore/mlx-lm/blob/455cdac5dfd7cdd5f6318885647a86bcdbe79000/mlx_lm/generate.py
+# https://github.com/ml-explore/mlx-lm/blob/ce2358d297af245b002e690623f00195b6507da0/mlx_lm/generate.py
 import argparse
 import json
 import sys
@@ -48,7 +48,10 @@ DEFAULT_PROMPT = 'hello'
 DEFAULT_MAX_TOKENS = 100
 DEFAULT_TEMP = 0.0
 DEFAULT_TOP_P = 1.0
+DEFAULT_XTC_PROBABILITY = 0.0
+DEFAULT_XTC_THRESHOLD = 0.0
 DEFAULT_MIN_P = 0.0
+DEFAULT_TOP_K = 0
 DEFAULT_MIN_TOKENS_TO_KEEP = 1
 DEFAULT_SEED = None
 DEFAULT_MODEL = 'mlx-community/Llama-3.2-3B-Instruct-4bit'
@@ -115,6 +118,21 @@ def setup_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         '--min-p', type=float, default=DEFAULT_MIN_P, help='Sampling min-p',
+    )
+    parser.add_argument(
+        '--top-k', type=int, default=DEFAULT_TOP_K, help='Sampling top-k',
+    )
+    parser.add_argument(
+        '--xtc-probability',
+        type=float,
+        default=DEFAULT_XTC_PROBABILITY,
+        help='Probability of XTC sampling to happen each next token',
+    )
+    parser.add_argument(
+        '--xtc-threshold',
+        type=float,
+        default=0.0,
+        help='Threshold the probs of each next token candidate to be sampled by XTC',
     )
     parser.add_argument(
         '--min-tokens-to-keep',
@@ -295,7 +313,16 @@ def _main() -> None:
     else:
         draft_model = None
 
-    sampler = mlx_lm.sample_utils.make_sampler(args.temp, args.top_p, args.min_p, args.min_tokens_to_keep)
+    sampler = mlx_lm.sample_utils.make_sampler(
+        args.temp,
+        args.top_p,
+        args.min_p,
+        args.min_tokens_to_keep,
+        top_k=args.top_k,
+        xtc_threshold=args.xtc_threshold,
+        xtc_probability=args.xtc_probability,
+        xtc_special_tokens=tokenizer.encode('\n') + list(tokenizer.eos_token_ids),
+    )
 
     response = generate(
         model,

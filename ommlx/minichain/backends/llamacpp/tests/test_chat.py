@@ -1,5 +1,7 @@
 import os.path
 
+import pytest
+
 from omlish.testing import pytest as ptu
 
 from ....chat.messages import UserMessage
@@ -10,6 +12,8 @@ from ....tools import ToolSpec
 from ..chat import LlamacppChatService
 
 
+@pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('llama_cpp')
 def test_llamacpp_chat_model():
     llm = LlamacppChatService()
@@ -22,6 +26,8 @@ def test_llamacpp_chat_model():
     assert resp.choices[0].m.s
 
 
+@pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('llama_cpp')
 def test_llamacpp_chat_model_tools():
     model_path = os.path.join(

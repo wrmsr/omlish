@@ -1,3 +1,5 @@
+import pytest
+
 from omlish.testing import pytest as ptu
 
 from ....chat.messages import UserMessage
@@ -5,6 +7,8 @@ from ....chat.streaming import ChatStreamRequest
 from ..streaming import LlamacppChatStreamService
 
 
+@pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('llama_cpp')
 def test_llamacpp_chat_streaming_model():
     with LlamacppChatStreamService() as foo_svc:

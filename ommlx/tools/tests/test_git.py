@@ -43,6 +43,8 @@ def test_git_message_generator_openai(harness):
     _test_git_message_generator(OpenaiGitAiBackend())
 
 
+@pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 @ptu.skip.if_cant_import('mlx_lm')
 def test_git_message_generator_mlxlm():
     bg_cfg = MlxGitAiBackend.Config()
