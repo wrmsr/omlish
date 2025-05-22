@@ -39,7 +39,23 @@ def is_override(obj: ta.Any) -> bool:
 
 
 class RequiresOverrideError(TypeError):
-    pass
+    def __init__(
+            self,
+            att: str,
+            cls: type,
+            base_cls: type,
+            owner_cls: type,
+    ) -> None:
+        super().__init__(
+            f'Attribute {att!r} '
+            f'on class {cls} '
+            f'(from base class {base_cls}) '
+            f'is not marked as a @typing.override from owning class {owner_cls}',
+            att,
+            cls,
+            base_cls,
+            owner_cls,
+        )
 
 
 class RequiresOverride:
@@ -51,8 +67,10 @@ class RequiresOverride:
             for a, o in m_cls.__dict__.items():
                 if a in req_ovr_dct and not is_override(o):
                     raise RequiresOverrideError(
-                        f'Attribute {a!r} on class {cls} (from base class {m_cls} is not marked as a @typing.override '
-                        f'from base class {req_ovr_dct[a]}',
+                        a,
+                        cls,
+                        m_cls,
+                        req_ovr_dct[a],
                     )
 
             if RequiresOverride in m_cls.__bases__:

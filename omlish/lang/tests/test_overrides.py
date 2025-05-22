@@ -3,6 +3,7 @@ import typing as ta
 import pytest
 
 from ..overrides import RequiresOverride
+from ..overrides import RequiresOverrideError
 
 
 def test_requires_override():

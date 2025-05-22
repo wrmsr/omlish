@@ -10,6 +10,7 @@ import typing as ta
 import weakref
 
 from .. import check
+from .. import lang
 from .dispatch import Dispatcher
 from .impls import get_impl_func_cls_set
 
@@ -98,6 +99,14 @@ class Method(ta.Generic[P, R]):
 
         return impl
 
+    def _is_impl(self, obj: ta.Any) -> bool:
+        try:
+            hash(obj)
+        except TypeError:
+            return False
+
+        return obj in self._impls
+
     def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
         if owner_cls is None:
             owner_cls = instance_cls
@@ -112,12 +121,7 @@ class Method(ta.Generic[P, R]):
         for cur_cls in mro[:mro_pos + 1]:
             for att, obj in cur_cls.__dict__.items():
                 if att not in mro_dct:
-                    try:
-                        hash(obj)
-                    except TypeError:
-                        continue
-
-                    if obj not in self._impls:
+                    if not self._is_impl(obj):
                         continue
 
                 try:
@@ -126,19 +130,29 @@ class Method(ta.Generic[P, R]):
                     lst = mro_dct[att] = []
                 lst.append((cur_cls, obj))
 
+        #
+
         disp: Dispatcher[str] = Dispatcher()
 
         seen: dict[ta.Any, str] = {}
-        for att, [(_, obj), *__] in mro_dct.items():
-            try:
-                hash(obj)
-            except TypeError:
+        for att, lst in mro_dct.items():
+            if not lst:
+                raise RuntimeError
+            _, obj = lst[-1]
+
+            if len(lst) > 1:
+                if self._requires_override and not lang.is_override(obj):
+                   raise lang.RequiresOverrideError(
+                       att,
+                       instance_cls,
+                       lst[-1][0],
+                       lst[0][0],
+                   )
+
+            if not self._is_impl(obj):
                 continue
 
-            if obj not in self._impls:
-                continue
             cls_set = self._impls[obj]
-
             if cls_set is None:
                 cls_set = get_impl_func_cls_set(obj, arg_offset=1)
                 self._impls[obj] = cls_set
