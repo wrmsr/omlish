@@ -1,8 +1,8 @@
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
 from omlish import dispatch
+from omlish import lang
 
 
 C = ta.TypeVar('C')
@@ -79,31 +79,74 @@ class MappingItemsVisitor(Visitor[C]):
 ##
 
 
-@dc.dataclass()
 class _FnReducer(
     MappingValuesVisitor[None],
     IterableVisitor[None],
     StrLeafVisitor[None],
     ta.Generic[T],
 ):
-    fn: ta.Callable[[ta.Any, T], T]
+    def __init__(
+            self,
+            fn: ta.Callable[[T, ta.Any], T],
+            init: lang.Maybe[T],
+    ) -> None:
+        super().__init__()
+
+        self.fn = fn
+
+        if init.present:
+            self.v = init.must()
+
     v: T
 
     @ta.override
     def leaf_visit(self, obj: ta.Any, ctx: None) -> None:
-        self.v = self.fn(obj, self.v)
+        try:
+            v = self.v
+        except AttributeError:
+            self.v = obj
+        else:
+            self.v = self.fn(v, obj)
         return None
 
 
-def reduce(fn: ta.Callable[[ta.Any, T], T], obj: ta.Any, init: T) -> T:
-    fr = _FnReducer(fn, init)
+class EmptyReduceError(TypeError):
+    pass
+
+
+class _NO_INIT(lang.Marker):  # noqa
+    pass
+
+
+def reduce(
+        fn: ta.Callable[[ta.Any, T], T],
+        obj: ta.Any,
+        init: T | type[_NO_INIT] = _NO_INIT,
+) -> T:
+    fr = _FnReducer(
+        fn,
+        lang.just(init) if init is not _NO_INIT else lang.empty(),
+    )
+
     fr.visit(obj, None)
-    return fr.v
+
+    try:
+        return fr.v
+    except AttributeError:
+        raise EmptyReduceError from None
 
 
 #
 
 
 def test_reduce():
-    tree = {'a': [1, 2, 3], 'b': [4, 5]}
-    assert reduce(lambda acc, x: acc + x, tree, 0) == 15
+    assert reduce(
+        lambda acc, x: acc + x,
+        {'a': [1, 2, 3], 'b': [4, 5]},
+    ) == 15
+
+    assert reduce(
+        lambda acc, x: acc + x,
+        {'a': [1, 2, 3], 'b': [4, 5]},
+        0,
+    ) == 15
