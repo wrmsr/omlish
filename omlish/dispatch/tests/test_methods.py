@@ -1,5 +1,8 @@
+import typing as ta
+
 import pytest  # noqa
 
+from ... import lang
 from .. import methods
 
 
@@ -94,7 +97,7 @@ def test_method_mro():
         obj = E()
         assert obj.f(None) == 'A:object'
         assert obj.f(1) == 'B:int'
-        # D.f_str is not visible in E.__dict__, so it is not registered
+        # D.f_str is not visible in mro_dict(E), so it is not registered
         assert obj.f('') == 'A:object'
         assert obj.f_str('') == 'E:D:B:str'
 
@@ -164,8 +167,25 @@ def test_requires_override():
 
     assert C().f(0) == 'C:int'
 
-    class D(B, A):
+    class D(C, A):
         def f_int(self, x: int):
             return 'D:int'
 
-    assert D().f(0) == 'D:int'
+    with pytest.raises(lang.RequiresOverrideError):
+        D().f(0)
+
+    class E(C, A):
+        @ta.override
+        def f_int(self, x: int):
+            return 'E:int'
+
+    # C.f_int is not present in mro_dict(E), so it is not registered
+    assert E().f(0) == 'A:object'
+
+    class F(C, A):
+        @C.f.register
+        @ta.override
+        def f_int(self, x: int):
+            return 'F:int'
+
+    assert F().f(0) == 'F:int'

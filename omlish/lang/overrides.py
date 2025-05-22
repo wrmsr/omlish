@@ -41,21 +41,24 @@ def is_override(obj: ta.Any) -> bool:
 class RequiresOverrideError(TypeError):
     def __init__(
             self,
-            att: str,
-            cls: type,
-            base_cls: type,
-            owner_cls: type,
+            att: str | None = None,
+            cls: type | None = None,
+            mro_cls: type | None = None,
+            owner_cls: type | None = None,
     ) -> None:
-        super().__init__(
-            f'Attribute {att!r} '
-            f'on class {cls} '
-            f'(from base class {base_cls}) '
-            f'is not marked as a @typing.override from owning class {owner_cls}',
-            att,
-            cls,
-            base_cls,
-            owner_cls,
-        )
+        super().__init__(' '.join([
+            'Attribute',
+            *([f'{att!r}'] if att is not None else []),
+            *([f'on class {cls.__qualname__}'] if cls is not None else []),
+            *([f'from mro class {mro_cls.__qualname__}'] if mro_cls is not None and mro_cls is not cls else []),
+            f'is not marked as a @typing.override',
+            *([f'from owning class {owner_cls.__qualname__}'] if owner_cls is not None else []),
+        ]))
+
+        self.att = att
+        self.cls = cls
+        self.mro_cls = mro_cls
+        self.owner_cls = owner_cls
 
 
 class RequiresOverride:

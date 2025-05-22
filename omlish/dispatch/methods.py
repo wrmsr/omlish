@@ -142,12 +142,12 @@ class Method(ta.Generic[P, R]):
 
             if len(lst) > 1:
                 if self._requires_override and not lang.is_override(obj):
-                   raise lang.RequiresOverrideError(
-                       att,
-                       instance_cls,
-                       lst[-1][0],
-                       lst[0][0],
-                   )
+                    raise lang.RequiresOverrideError(
+                        att,
+                        instance_cls,
+                        lst[-1][0],
+                        lst[0][0],
+                    )
 
             if not self._is_impl(obj):
                 continue
