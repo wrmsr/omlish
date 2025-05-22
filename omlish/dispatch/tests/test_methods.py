@@ -86,6 +86,16 @@ def test_method_mro():
         assert obj.f(1) == 'B:int'
         assert obj.f('') == 'D:B:str'
 
+    # class E(D):
+    #     def f_str(self, x: str):
+    #         return 'E:' + super().f_str(x)
+    #
+    # for _ in range(2):
+    #     obj = E()
+    #     assert obj.f(None) == 'A:object'
+    #     assert obj.f(1) == 'B:int'
+    #     assert obj.f('') == 'E:D:B:str'
+
     # class E(B):
     #     @A.f.register
     #     def f_str(self, x: str):
@@ -129,3 +139,31 @@ def test_accessor_wrapper_atts():
 
     assert A.f.__doc__ == 'foo'
     assert B.f.__doc__ == 'foo'
+
+
+def test_requires_override():
+    class A:
+        @methods.method(requires_override=True)
+        def f(self, x: object):
+            return 'A:object'
+
+    class B(A):
+        @A.f.register
+        def f_str(self, x: str):
+            return 'B:str'
+
+    assert A().f('') == 'A:object'
+    assert B().f('') == 'B:str'
+
+    class C(B, A):
+        @A.f.register
+        def f_int(self, x: int):
+            return 'C:int'
+
+    assert C().f(0) == 'C:int'
+
+    class D(B, A):
+        def f_int(self, x: int):
+            return 'D:int'
+
+    assert D().f(0) == 'D:int'

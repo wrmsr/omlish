@@ -3,7 +3,6 @@ TODO:
  - .super(instance[_cls], owner)
  - ALT: A.f(super(), ... ? :/
  - classmethod/staticmethod
- - optionally required @ta.override
 """
 import contextlib
 import functools
@@ -11,7 +10,6 @@ import typing as ta
 import weakref
 
 from .. import check
-from .. import lang
 from .dispatch import Dispatcher
 from .impls import get_impl_func_cls_set
 
@@ -30,6 +28,7 @@ class Method(ta.Generic[P, R]):
             func: ta.Callable,
             *,
             installable: bool = False,
+            requires_override: bool = False,
     ) -> None:
         super().__init__()
 
@@ -38,6 +37,7 @@ class Method(ta.Generic[P, R]):
 
         self._func = func
         self._installable = installable
+        self._requires_override = requires_override
 
         self._impls: ta.MutableMapping[ta.Callable, frozenset[type] | None] = weakref.WeakKeyDictionary()
 
@@ -99,14 +99,17 @@ class Method(ta.Generic[P, R]):
         return impl
 
     def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
+        if owner_cls is None:
+            owner_cls = instance_cls
+
         mro = instance_cls.__mro__[-2::-1]
         try:
             mro_pos = mro.index(owner_cls)
         except ValueError:
             raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
 
-        mro_dct: dict[str, tuple[type, ta.Any]] = {}
-        for cur_cls in mro[:mro_pos + 1][::-1]:
+        mro_dct: dict[str, list[tuple[type, ta.Any]]] = {}
+        for cur_cls in mro[:mro_pos + 1]:
             for att, obj in cur_cls.__dict__.items():
                 if att not in mro_dct:
                     try:
@@ -117,15 +120,16 @@ class Method(ta.Generic[P, R]):
                     if obj not in self._impls:
                         continue
 
-                else:
-                    raise NotImplementedError
-
-                mro_dct[att] = (cur_cls, obj)
+                try:
+                    lst = mro_dct[att]
+                except KeyError:
+                    lst = mro_dct[att] = []
+                lst.append((cur_cls, obj))
 
         disp: Dispatcher[str] = Dispatcher()
 
         seen: dict[ta.Any, str] = {}
-        for att, obj in mro_dct.items():
+        for att, [(_, obj), *__] in mro_dct.items():
             try:
                 hash(obj)
             except TypeError:
@@ -215,6 +219,7 @@ def method(
         /,
         *,
         installable: bool = False,
+        requires_override: bool = False,
 ) -> Method[P, R]:  # noqa
     ...
 
@@ -225,6 +230,7 @@ def method(
         /,
         *,
         installable: bool = False,
+        requires_override: bool = False,
 ) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
     ...
 
@@ -234,10 +240,16 @@ def method(
         /,
         *,
         installable=False,
+        requires_override=False,
 ):
-    kw = dict(installable=installable)
+    kw = dict(
+        installable=installable,
+        requires_override=requires_override,
+    )
+
     if func is None:
         return functools.partial(Method, **kw)
+
     return Method(func, **kw)
 
 
