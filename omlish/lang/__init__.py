@@ -252,6 +252,15 @@ from .outcomes import (  # noqa
     value,
 )
 
+from .overrides import (  # noqa
+    needs_override,
+
+    is_override,
+
+    RequiresOverrideError,
+    RequiresOverride,
+)
+
 from .params import (  # noqa
     ArgsParam,
     KwOnlyParam,

@@ -99,32 +99,55 @@ class Method(ta.Generic[P, R]):
         return impl
 
     def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
+        mro = instance_cls.__mro__[-2::-1]
+        try:
+            mro_pos = mro.index(owner_cls)
+        except ValueError:
+            raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
+
+        mro_dct: dict[str, tuple[type, ta.Any]] = {}
+        for cur_cls in mro[:mro_pos + 1][::-1]:
+            for att, obj in cur_cls.__dict__.items():
+                if att not in mro_dct:
+                    try:
+                        hash(obj)
+                    except TypeError:
+                        continue
+
+                    if obj not in self._impls:
+                        continue
+
+                else:
+                    raise NotImplementedError
+
+                mro_dct[att] = (cur_cls, obj)
+
         disp: Dispatcher[str] = Dispatcher()
 
-        mro_dct = lang.mro_dict(instance_cls, owner_cls)
-        seen: ta.Mapping[ta.Any, str] = {}
-        for nam, att in mro_dct.items():
+        seen: dict[ta.Any, str] = {}
+        for att, obj in mro_dct.items():
             try:
-                hash(att)
+                hash(obj)
             except TypeError:
                 continue
 
-            if att not in self._impls:
+            if obj not in self._impls:
                 continue
-            cls_set = self._impls[att]
+            cls_set = self._impls[obj]
 
             if cls_set is None:
-                cls_set = get_impl_func_cls_set(att, arg_offset=1)
-                self._impls[att] = cls_set
+                cls_set = get_impl_func_cls_set(obj, arg_offset=1)
+                self._impls[obj] = cls_set
 
             try:
-                ex_nam = seen[att]
+                ex_att = seen[obj]
             except KeyError:
                 pass
             else:
-                raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {nam} {ex_nam}')
+                raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {att} {ex_att}')
+            seen[obj] = att
 
-            disp.register(nam, cls_set)
+            disp.register(att, cls_set)
 
         return disp
 
