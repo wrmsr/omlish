@@ -217,6 +217,13 @@ class Method(ta.Generic[P, R]):
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         instance, *rest = args
         instance_cls = type(instance)
+
+        # if instance_cls is super:
+        #     owner = instance.__self_class__.__mro__[instance.__self_class__.__mro__.index(instance.__thisclass__) + 1]
+        #     att_disp = self.build_attr_dispatcher(instance.__self_class__, owner)
+        #     func = self.build_dispatch_func(att_disp)
+        #     return func.__get__(instance, instance.__thisclass__)(*rest, **kwargs)
+
         try:
             func = self._dispatch_func_cache[weakref.ref(instance_cls)]
         except KeyError:

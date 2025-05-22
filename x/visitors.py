@@ -81,6 +81,94 @@ class MappingItemsVisitor(Visitor[C]):
 ##
 
 
+def test_basic():
+    class V0(
+        IterableVisitor[None],
+        StrLeafVisitor[None],
+    ):
+        def __init__(self) -> None:
+            super().__init__()
+            self.l: list = []
+
+        def leaf_visit(self, obj: ta.Any, ctx: C) -> None:
+            self.l.append(obj)
+
+        @classmethod
+        def run(cls, obj: ta.Any) -> list:
+            v = cls()
+            v.visit(obj, None)
+            return v.l
+
+    assert V0.run('foo') == ['foo']
+    assert V0.run(['foo']) == ['foo']
+    assert V0.run(['foo', 'bar']) == ['foo', 'bar']
+    assert V0.run([['foo'], 'bar', ['baz']]) == ['foo', 'bar', 'baz']
+    assert V0.run([[['foo']], 'bar', ['baz']]) == ['foo', 'bar', 'baz']
+    assert V0.run(('foo',)) == ['foo']
+    assert V0.run((('foo',),)) == ['foo']
+    assert V0.run(([('foo',),])) == ['foo']
+
+    #
+
+    class V1(V0):
+        def leaf_visit(self, obj: ta.Any, ctx: C) -> None:
+            super().leaf_visit(obj, ctx)
+            self.l.append('!')
+
+    assert V1.run([['foo'], 'bar', ['baz']]) == ['foo', '!', 'bar', '!', 'baz', '!']
+
+    #
+
+    class V2(V0):
+        # Not @registered, does nothing
+        def visit_list(self, obj: list, ctx: C) -> None:
+            raise RuntimeError
+
+    assert V2.run([['foo'], 'bar', ['baz']]) == ['foo', 'bar', 'baz']
+
+    #
+
+    class V3(V0):
+        @Visitor.register
+        def visit_list(self, obj: list, ctx: C) -> None:
+            return self.visit_iterable(['V3!', *obj], ctx)
+
+    assert V3.run([['foo'], 'bar', ['baz']]) == ['V3!', 'V3!', 'foo', 'bar', 'V3!', 'baz']
+
+    #
+
+    class V4(V3):
+        @Visitor.register
+        def visit_iterable(self, obj: ta.Iterable, ctx: C) -> None:
+            return super().visit_iterable(['V4!', *obj], ctx)
+
+    with pytest.raises(lang.RequiresOverrideError):
+        V4.run([['foo'], 'bar', ['baz']])
+
+    #
+
+    class V5(V3):
+        @Visitor.register
+        @ta.override
+        def visit_iterable(self, obj: ta.Iterable, ctx: C) -> None:
+            return super().visit_iterable(['V5!', *obj], ctx)
+
+    assert V5.run([['foo'], 'bar', ['baz']]) == ['V5!', 'V3!', 'V5!', 'V3!', 'foo', 'bar', 'V5!', 'V3!', 'baz']
+
+    # #
+    #
+    # class V6(V3):
+    #     @Visitor.register
+    #     @ta.override
+    #     def visit_iterable(self, obj: ta.Iterable, ctx: C) -> None:
+    #         return Visitor.visit(super(), ['V6!', *obj], ctx)
+    #
+    # assert V6.run([['foo'], 'bar', ['baz']]) == ['V6!', 'V3!', 'V6!', 'V3!', 'foo', 'bar', 'V6!', 'V3!', 'baz']
+
+
+#
+
+
 class _FnReducer(
     MappingValuesVisitor[None],
     IterableVisitor[None],
@@ -136,9 +224,6 @@ def reduce(
         return fr.v
     except AttributeError:
         raise EmptyReduceError from None
-
-
-#
 
 
 def test_reduce():
