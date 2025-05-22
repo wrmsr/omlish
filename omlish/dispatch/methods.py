@@ -3,6 +3,7 @@ TODO:
  - .super(instance[_cls], owner)
  - ALT: A.f(super(), ... ? :/
  - classmethod/staticmethod
+ - optionally required @ta.override
 """
 import contextlib
 import functools
@@ -186,16 +187,31 @@ class Method(ta.Generic[P, R]):
 
 
 @ta.overload
-def method(func: ta.Callable[P, R], /, *, installable: bool = False) -> Method[P, R]:  # noqa
+def method(
+        func: ta.Callable[P, R],
+        /,
+        *,
+        installable: bool = False,
+) -> Method[P, R]:  # noqa
     ...
 
 
 @ta.overload
-def method(func: None = None, /, *, installable: bool = False) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
+def method(
+        func: None = None,
+        /,
+        *,
+        installable: bool = False,
+) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
     ...
 
 
-def method(func=None, /, *, installable=False):  # noqa
+def method(
+        func=None,
+        /,
+        *,
+        installable=False,
+):
     kw = dict(installable=installable)
     if func is None:
         return functools.partial(Method, **kw)
