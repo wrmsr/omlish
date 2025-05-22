@@ -1,54 +1,74 @@
-import typing as ta
+import dataclasses as dc
+import pathlib
 
-from omlish import check
+import mlx_lm.utils
+from mlx import nn
+
 from omlish import lang
 
-
-if ta.TYPE_CHECKING:
-    import mlx.nn
-    import mlx_lm.utils
-    import transformers
-else:
-    mlx = lang.proxy_import('mlx', extras=['nn'])
-    mlx_lm = lang.proxy_import('mlx_lm', extras=['utils'])
-    transformers = lang.proxy_import('transformers')
+from .tokenization import Tokenization
+from .tokenization import load_tokenization
 
 
 ##
 
 
-class LoadedModel(ta.NamedTuple):
-    model: 'mlx.nn.Module'
-    tokenizer: 'mlx_lm.utils.TokenizerWrapper'
+@dc.dataclass(frozen=True, kw_only=True)
+class LoadedModel:
+    path: pathlib.Path
 
-    @property
-    def as_pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
-        return ta.cast(transformers.PreTrainedTokenizerBase, self.tokenizer)
+    model: nn.Module
+    config: dict
 
-    @property
-    def check_pre_trained_tokenizer(self) -> 'transformers.PreTrainedTokenizerBase':
-        tw: ta.Any = check.isinstance(self.tokenizer, mlx_lm.utils.TokenizerWrapper)
-        return check.isinstance(tw._tokenizer, transformers.PreTrainedTokenizerBase)  # noqa
+    #
+
+    tokenizer_config_extra: dict | None = None
+    tokenization: Tokenization
+
+    @lang.cached_function
+    def tokenizer_wrapper(self) -> mlx_lm.utils.TokenizerWrapper:
+        return mlx_lm.utils.load_tokenizer(
+            self.path,
+            self.tokenizer_config_extra or {},
+            eos_token_ids=self.config.get('eos_token_id', None),
+        )
 
 
 def load_model(
         path_or_hf_repo: str,
         *,
-        tokenizer_config: ta.Any = None,
-        model_config: ta.Any = None,
+        tokenizer_config: dict | None = None,
+        model_config: dict | None = None,
         adapter_path: str | None = None,
         lazy: bool = False,
-        **kwargs: ta.Any,
 ) -> LoadedModel:
-    model, tokenizer = mlx_lm.load(
-        path_or_hf_repo,
-        **lang.opt_kw(
-            tokenizer_config=tokenizer_config,
-            model_config=model_config,
-        ),
-        adapter_path=adapter_path,
+    model_path = mlx_lm.utils.get_model_path(path_or_hf_repo)
+
+    model, config = mlx_lm.utils.load_model(
+        model_path,
         lazy=lazy,
-        **kwargs,
+        model_config=model_config or {},
     )
 
-    return LoadedModel(model, tokenizer)
+    if adapter_path is not None:
+        model = mlx_lm.utils.load_adapters(
+            model,
+            adapter_path,
+        )
+        model.eval()
+
+    tokenization = load_tokenization(
+        model_path,
+        tokenizer_config or {},
+        eos_token_ids=config.get('eos_token_id', None),
+    )
+
+    return LoadedModel(
+        path=model_path,
+
+        model=model,
+        config=config,
+
+        tokenizer_config_extra=tokenizer_config,
+        tokenization=tokenization,
+    )

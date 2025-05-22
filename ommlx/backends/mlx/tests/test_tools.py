@@ -6,14 +6,9 @@ import pytest
 from omlish import lang
 from omlish.testing import pytest as ptu
 
+from ..generation import GenerationParams
 from ..generation import generate
 from ..loading import load_model
-
-
-if ta.TYPE_CHECKING:
-    import mlx_lm.models.cache  # noqa
-else:
-    mlx_lm = lang.proxy_import('mlx_lm', extras=['models.cache'])
 
 
 @pytest.mark.not_docker_guest
@@ -41,7 +36,7 @@ def test_tools():
         {'role': 'user', 'content': 'Add 123 and 4568319.'},
     ]
 
-    prompt = loaded.check_pre_trained_tokenizer.apply_chat_template(
+    prompt = loaded.tokenization.tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         tools=list(tools.values()),
@@ -50,13 +45,17 @@ def test_tools():
     prompt_cache: ta.Any = None
     # prompt_cache = mlx_lm.models.cache.make_prompt_cache(loaded.model)
 
-    response = generate(
-        model=loaded.model,
-        tokenizer=loaded.tokenizer,
-        prompt=prompt,  # type: ignore
+    gp = GenerationParams(
         max_tokens=2048,
-        # verbose=True,
         **lang.opt_kw(prompt_cache=prompt_cache),
+    )
+
+    response = generate(
+        loaded.model,
+        loaded.tokenization,
+        prompt,  # type: ignore
+        gp,
+        # verbose=True,
     )
 
     tool_open = '<tools>'
@@ -71,17 +70,16 @@ def test_tools():
         {'role': 'tool', 'name': tool_call['name'], 'content': tool_result},
     ]
 
-    prompt = loaded.check_pre_trained_tokenizer.apply_chat_template(
+    prompt = loaded.tokenization.tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
     )
 
     response = generate(  # noqa
-        model=loaded.model,
-        tokenizer=loaded.tokenizer,
-        prompt=prompt,  # type: ignore
-        max_tokens=2048,
+        loaded.model,
+        loaded.tokenization,
+        prompt,  # type: ignore
+        gp,
         # verbose=True,
-        **lang.opt_kw(prompt_cache=prompt_cache),
     )
     assert response

@@ -22,13 +22,9 @@ from ..standard import ModelName
 
 
 if ta.TYPE_CHECKING:
-    import mlx_lm.utils
-
     from ...backends import mlx as mlxu
 
 else:
-    mlx_lm = lang.proxy_import('mlx_lm', extras=['utils'])
-
     mlxu = lang.proxy_import('...backends.mlx', __package__)
 
 
@@ -86,7 +82,8 @@ class MlxChatService(ChatService, lang.ExitStacked):
     )
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        model, tokenizer = self._load_model()
+        loaded_model = self._load_model()
+        tokenizer = loaded_model.tokenization.tokenizer
 
         if not (
                 hasattr(tokenizer, 'apply_chat_template') and
@@ -116,10 +113,10 @@ class MlxChatService(ChatService, lang.ExitStacked):
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
         response = mlxu.generate(
-            model,
-            tokenizer,
-            **kwargs,
-            prompt=prompt,
+            loaded_model.model,
+            loaded_model.tokenization,
+            prompt,
+            mlxu.GenerationParams(**kwargs),
             # verbose=True,
         )
 
