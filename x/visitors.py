@@ -1,5 +1,7 @@
 import typing as ta
 
+import pytest
+
 from omlish import check
 from omlish import dispatch
 from omlish import lang
@@ -150,3 +152,10 @@ def test_reduce():
         {'a': [1, 2, 3], 'b': [4, 5]},
         0,
     ) == 15
+
+    assert reduce(lambda acc, x: acc + x, [1]) == 1
+    assert reduce(lambda acc, x: acc + x, [1, 2]) == 3
+    assert reduce(lambda acc, x: acc + x, [1], 2) == 3
+
+    with pytest.raises(EmptyReduceError):
+        reduce(lambda acc, x: acc + x, [])
