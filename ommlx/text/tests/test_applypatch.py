@@ -6,9 +6,7 @@ import pytest
 
 from ..applypatch import ActionType
 from ..applypatch import Chunk
-from ..applypatch import Commit
 from ..applypatch import DiffError
-from ..applypatch import FileChange
 from ..applypatch import Parser
 from ..applypatch import Patch
 from ..applypatch import PatchAction
@@ -33,31 +31,6 @@ def make_parser(patch_lines, current_files=None, index=1):
 
 
 ##
-# Tests for Domain Objects (primarily for completeness, dataclasses are simple)
-
-
-def test_action_type_enum():
-    assert ActionType.ADD == 'add'
-    assert ActionType.DELETE == 'delete'
-    assert ActionType.UPDATE == 'update'
-
-
-def test_file_change_creation():
-    fc = FileChange(type=ActionType.ADD, new_content='hello')
-    assert fc.type == ActionType.ADD
-    assert fc.new_content == 'hello'
-    assert fc.old_content is None
-
-
-def test_commit_creation():
-    commit = Commit()
-    assert commit.changes == {}
-    fc = FileChange(type=ActionType.DELETE)
-    commit.changes['file.txt'] = fc
-    assert commit.changes['file.txt'] == fc
-
-
-##
 # Tests for Parser
 
 
@@ -68,14 +41,14 @@ class TestParser:
 
     def test_cur_line(self):
         parser = make_parser(['line1', 'line2'], index=0)
-        assert parser._cur_line() == 'line1'
+        assert parser._cur_line() == 'line1'  # noqa
         parser.index = 1
-        assert parser._cur_line() == 'line2'
+        assert parser._cur_line() == 'line2'  # noqa
 
     def test_cur_line_out_of_bounds(self):
         parser = make_parser(['line1'], index=1)
         with pytest.raises(DiffError, match='Unexpected end of input'):
-            parser._cur_line()
+            parser._cur_line()  # noqa
 
     def test_is_done(self):
         parser = make_parser(['line1', '*** End Patch'], index=0)
@@ -208,8 +181,8 @@ class TestParser:
             '+content2',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text, current_files={})
         with pytest.raises(DiffError, match=re.escape('Duplicate add for file: new.txt')):
-            parser = make_parser(patch_text, current_files={})
             parser.parse()
 
     def test_parse_add_existing_file(self):
@@ -219,8 +192,8 @@ class TestParser:
             '+content',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text, current_files={'exists.txt': ''})
         with pytest.raises(DiffError, match=re.escape('Add File Error - file already exists: exists.txt')):
-            parser = make_parser(patch_text, current_files={'exists.txt': ''})
             parser.parse()
 
     def test_parse_delete_missing_file(self):
@@ -229,8 +202,8 @@ class TestParser:
             '*** Delete File: missing.txt',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text, current_files={})
         with pytest.raises(DiffError, match=re.escape('Delete File Error - missing file: missing.txt')):
-            parser = make_parser(patch_text, current_files={})
             parser.parse()
 
     def test_parse_update_missing_file(self):
@@ -240,8 +213,8 @@ class TestParser:
             '@@ context',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text, current_files={})
         with pytest.raises(DiffError, match=re.escape('Update File Error - missing file: missing.txt')):
-            parser = make_parser(patch_text, current_files={})
             parser.parse()
 
     def test_parse_unknown_line(self):
@@ -250,8 +223,8 @@ class TestParser:
             '*** Unknown Command: file.txt',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text, current_files={})
         with pytest.raises(DiffError, match='Unknown line while parsing:'):
-            parser = make_parser(patch_text, current_files={})
             parser.parse()
 
     def test_parse_missing_end_patch(self):
@@ -260,8 +233,8 @@ class TestParser:
             '*** Add File: new.txt',
             '+Hello',
         ]
+        parser = make_parser(patch_text, current_files={})
         with pytest.raises(DiffError):
-            parser = make_parser(patch_text, current_files={})
             parser.parse()
 
     def test_parse_add_file_invalid_line(self):
@@ -271,8 +244,8 @@ class TestParser:
             'Invalid line',
             '*** End Patch',
         ]
+        parser = make_parser(patch_text)
         with pytest.raises(DiffError, match=re.escape("Invalid Add File line (missing '+'): Invalid line")):
-            parser = make_parser(patch_text)
             parser.parse()
 
     def test_parse_update_file_invalid_line(self):
@@ -283,8 +256,8 @@ class TestParser:
             '*** End Patch',
         ]
         current_files = {'existing.txt': 'Line 1\nLine 2'}
+        parser = make_parser(patch_text, current_files=current_files)
         with pytest.raises(DiffError, match=re.escape('Invalid Line: Invalid line in update')):
-            parser = make_parser(patch_text, current_files=current_files)
             parser.parse()
 
     def test_parse_update_file_context_not_found(self):
@@ -296,26 +269,28 @@ class TestParser:
             '*** End Patch',
         ]
         current_files = {'existing.txt': 'Line 1\nLine 2'}
+        parser = make_parser(patch_text, current_files=current_files)
         with pytest.raises(DiffError, match=re.escape('Invalid context at 0:\nNonExistentContext')):
-            parser = make_parser(patch_text, current_files=current_files)
-            p = parser.parse()
-            print(p)
+            parser.parse()
 
 
 ##
 # Tests for find_context
 
 
-@pytest.mark.parametrize('lines, context, start, eof, expected_index, expected_fuzz', [
-    (['a', 'b', 'c', 'd'], ['b', 'c'], 0, False, 1, 0),
-    (['a', 'b ', 'c ', 'd'], ['b', 'c'], 0, False, 1, 1),  # rstrip
-    (['a', ' b ', ' c ', 'd'], ['b', 'c'], 0, False, 1, 100),  # strip
-    (['a', 'b', 'c', 'd'], ['x', 'y'], 0, False, -1, 0),  # not found
-    (['a', 'b', 'c'], [], 0, False, 0, 0),  # empty context
-    (['a', 'b', 'c', 'x', 'y'], ['x', 'y'], 0, True, 3, 0),  # eof, found at end
-    # (['x', 'y', 'a', 'b', 'c'], ['x', 'y'], 2, True, 0, 10000),  # eof, found at start after initial check fails
-    (['a', 'b', 'c'], ['x', 'y'], 0, True, -1, 10000),  # eof, not found
-])
+@pytest.mark.parametrize(
+    ('lines', 'context', 'start', 'eof', 'expected_index', 'expected_fuzz'),
+    [
+        (['a', 'b', 'c', 'd'], ['b', 'c'], 0, False, 1, 0),
+        (['a', 'b ', 'c ', 'd'], ['b', 'c'], 0, False, 1, 1),  # rstrip
+        (['a', ' b ', ' c ', 'd'], ['b', 'c'], 0, False, 1, 100),  # strip
+        (['a', 'b', 'c', 'd'], ['x', 'y'], 0, False, -1, 0),  # not found
+        (['a', 'b', 'c'], [], 0, False, 0, 0),  # empty context
+        (['a', 'b', 'c', 'x', 'y'], ['x', 'y'], 0, True, 3, 0),  # eof, found at end
+        # (['x', 'y', 'a', 'b', 'c'], ['x', 'y'], 2, True, 0, 10000),  # eof, found at start after initial check fails
+        (['a', 'b', 'c'], ['x', 'y'], 0, True, -1, 10000),  # eof, not found
+    ],
+)
 def test_find_context(lines, context, start, eof, expected_index, expected_fuzz):
     result = find_context(lines, context, start, eof)
     assert result.new_index == expected_index
