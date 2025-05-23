@@ -10,42 +10,96 @@ V = ta.TypeVar('V')
 ##
 
 
-class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
-    __namespace_value_type__: ta.ClassVar[type | tuple[type, ...] | None] = None
+_NOT_SET = object()
 
+
+class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
+    __namespace_check_values__: type | tuple[type, ...] | None = None
+    __namespace_case_insensitive__: bool = False
+
+    def __init_subclass__(
+            mcls,
+            *,
+            check_values=_NOT_SET,
+            case_insensitive=_NOT_SET,
+            **kwargs,
+    ):
+        super().__init_subclass__(**kwargs)
+
+        if check_values is not _NOT_SET:
+            mcls.__namespace_check_values__ = check_values  # noqa
+        if case_insensitive is not _NOT_SET:
+            mcls.__namespace_case_insensitive__ = case_insensitive  # noqa
+
+    __namespace_attrs__: dict[str, V]
     __namespace_values__: dict[str, V]
 
-    def __new__(mcls, name, bases, namespace):
+    def __new__(
+            mcls,
+            name,
+            bases,
+            namespace,
+            *,
+            check_values=_NOT_SET,
+            case_insensitive=_NOT_SET,
+            **kwargs,
+    ):
         if bases:
             for nc in (NotInstantiable,):
                 if nc not in bases:
                     bases += (nc,)
 
-        cls = super().__new__(mcls, name, bases, namespace)
+        if check_values is _NOT_SET:
+            check_values = mcls.__namespace_check_values__
+        if case_insensitive is _NOT_SET:
+            case_insensitive = mcls.__namespace_case_insensitive__
 
-        vt = cls.__namespace_value_type__
+        cls = super().__new__(
+            mcls,
+            name,
+            bases,
+            namespace,
+            **kwargs,
+        )
 
-        dct: dict[str, V] = {}
-        for b_cls in reversed(cls.__mro__):
+        cls.__namespace_check_values__ = check_values
+        cls.__namespace_case_insensitive__ = case_insensitive
+
+        a_dct: dict[str, V] = {}
+        v_dct: dict[str, V] = {}
+        for b_cls in cls.__mro__[-2::-1]:
             # FIXME: must list() to avoid `RuntimeError: dictionary changed size during iteration`
             for att in list(b_cls.__dict__):
-                if att.startswith('_') or att in dct:
+                if att.startswith('_') or att in a_dct:
                     continue
 
+                name = att
+                if case_insensitive:
+                    name = att.lower()
+                    if name in v_dct:
+                        raise NameError(f'Ambiguous case-insensitive namespace attr: {name!r}, {att!r}')
+
                 obj = getattr(cls, att)
-                if vt is not None and not isinstance(obj, vt):
+                if check_values is not None and not isinstance(obj, check_values):
                     raise TypeError(obj)
 
-                dct[att] = obj
+                a_dct[att] = obj
+                v_dct[name] = obj
 
-        cls.__namespace_values__ = dct
+        cls.__namespace_attrs__ = a_dct
+        cls.__namespace_values__ = v_dct
 
         return cls
 
     def __iter__(cls) -> ta.Iterator[tuple[str, V]]:
-        return iter(cls.__namespace_values__.items())
+        return iter(cls.__namespace_attrs__.items())
+
+    def __contains__(self, n: str) -> bool:
+        return n in self.__namespace_values__
 
     def __getitem__(cls, n: str) -> V:
+        if cls.__namespace_case_insensitive__:
+            n = n.lower()
         return cls.__namespace_values__[n]
 
 
