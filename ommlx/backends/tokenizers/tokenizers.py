@@ -4,32 +4,28 @@ import tokenizers as tos
 
 from omlish import check
 
-from ..specials import SpecialTokens
-from ..types import Token
-from ..types import TokenStr
-from ..vocabs import Vocab
-from .base import BaseTokenizer
+from ... import tokens as tks
 
 
 ##
 
 
-def build_vocab(tos_tokenizer: tos.Tokenizer) -> Vocab:
-    return Vocab([
-        (ta.cast(Token, i), TokenStr(s))
+def build_vocab(tos_tokenizer: tos.Tokenizer) -> tks.Vocab:
+    return tks.Vocab([
+        (ta.cast(tks.Token, i), tks.TokenStr(s))
         for s, i in tos_tokenizer.get_vocab().items()
     ])
 
 
-def build_specials(tos_tokenizer: tos.Tokenizer) -> SpecialTokens:
+def build_specials(tos_tokenizer: tos.Tokenizer) -> tks.SpecialTokens:
     # FIXME
-    return SpecialTokens([])
+    return tks.SpecialTokens([])
 
 
 ##
 
 
-class TokenizersTokenizer(BaseTokenizer):
+class TokenizersTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
             tos_tokenizer: tos.Tokenizer,
@@ -50,13 +46,13 @@ class TokenizersTokenizer(BaseTokenizer):
     def _encode(
             self,
             text: str,
-    ) -> list[Token]:
+    ) -> list[tks.Token]:
         enc = self._tos_tokenizer.encode(text)
         return enc.ids
 
     def _decode(
             self,
-            tokens: ta.Iterable[Token],
+            tokens: ta.Iterable[tks.Token],
     ) -> str:
         return self._tos_tokenizer.decode(tokens)
 

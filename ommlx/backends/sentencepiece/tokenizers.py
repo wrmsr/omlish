@@ -4,32 +4,28 @@ import sentencepiece as spm
 
 from omlish import check
 
-from ..specials import SpecialTokens
-from ..types import Token
-from ..types import TokenStr
-from ..vocabs import Vocab
-from .base import BaseTokenizer
+from ... import tokens as tks
 
 
 ##
 
 
-def build_vocab(spm_tokenizer: spm.SentencePieceProcessor) -> Vocab:
-    return Vocab([
-        (ta.cast(Token, i), TokenStr(spm_tokenizer.id_to_piece(i)))  # noqa
+def build_vocab(spm_tokenizer: spm.SentencePieceProcessor) -> tks.Vocab:
+    return tks.Vocab([
+        (ta.cast(tks.Token, i), tks.TokenStr(spm_tokenizer.id_to_piece(i)))  # noqa
         for i in range(spm_tokenizer.get_piece_size())  # noqa
     ])
 
 
-def build_specials(spm_tokenizer: spm.SentencePieceProcessor) -> SpecialTokens:
+def build_specials(spm_tokenizer: spm.SentencePieceProcessor) -> tks.SpecialTokens:
     # FIXME
-    return SpecialTokens([])
+    return tks.SpecialTokens([])
 
 
 ##
 
 
-class SentencepieceTokenizer(BaseTokenizer):
+class SentencepieceTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
             spm_tokenizer: spm.SentencePieceProcessor,
@@ -50,12 +46,12 @@ class SentencepieceTokenizer(BaseTokenizer):
     def _encode(
             self,
             text: str,
-    ) -> list[Token]:
+    ) -> list[tks.Token]:
         return self._spm_tokenizer.encode(text)
 
     def _decode(
             self,
-            tokens: ta.Iterable[Token],
+            tokens: ta.Iterable[tks.Token],
     ) -> str:
         return self._spm_tokenizer.decode(tokens)
 

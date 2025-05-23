@@ -5,21 +5,15 @@ import transformers as tfm
 from omlish import check
 from omlish import collections as col
 
-from ..specials import SpecialToken
-from ..specials import SpecialTokens
-from ..specials import StandardSpecialTokens
-from ..types import Token
-from ..types import TokenStr
-from ..vocabs import Vocab
-from .base import BaseTokenizer
+from ... import tokens as tks
 
 
 ##
 
 
-def build_vocab(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> Vocab:
-    return Vocab([
-        (ta.cast(Token, i), TokenStr(s))
+def build_vocab(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> tks.Vocab:
+    return tks.Vocab([
+        (ta.cast(tks.Token, i), tks.TokenStr(s))
         for s, i in tfm_tokenizer.get_vocab().items()
     ])
 
@@ -27,19 +21,19 @@ def build_vocab(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> Vocab:
 #
 
 
-SPECIAL_TOKEN_ATTR_MAP: col.BiMap[type[SpecialToken], str] = col.make_bi_map({
-    StandardSpecialTokens.Bos: 'bos_token_id',
-    StandardSpecialTokens.Eos: 'eos_token_id',
-    StandardSpecialTokens.Unk: 'unk_token_id',
-    StandardSpecialTokens.Sep: 'sep_token_id',
-    StandardSpecialTokens.Pad: 'pad_token_id',
-    StandardSpecialTokens.Cls: 'cls_token_id',
-    StandardSpecialTokens.Mask: 'mask_token_id',
+SPECIAL_TOKEN_ATTR_MAP: col.BiMap[type[tks.SpecialToken], str] = col.make_bi_map({
+    tks.Bos: 'bos_token_id',
+    tks.Eos: 'eos_token_id',
+    tks.Unk: 'unk_token_id',
+    tks.Sep: 'sep_token_id',
+    tks.Pad: 'pad_token_id',
+    tks.Cls: 'cls_token_id',
+    tks.Mask: 'mask_token_id',
 })
 
 
-def build_specials(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> SpecialTokens:
-    return SpecialTokens.from_dict({
+def build_specials(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> tks.SpecialTokens:
+    return tks.SpecialTokens.from_dict({
         st: getattr(tfm_tokenizer, a)
         for st, a in SPECIAL_TOKEN_ATTR_MAP.items()
     })
@@ -48,7 +42,7 @@ def build_specials(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> SpecialTokens:
 ##
 
 
-class TransformersTokenizer(BaseTokenizer):
+class TransformersTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
             tfm_tokenizer: tfm.PreTrainedTokenizerBase,
@@ -69,14 +63,14 @@ class TransformersTokenizer(BaseTokenizer):
     def _encode(
             self,
             text: str,
-    ) -> list[Token]:
+    ) -> list[tks.Token]:
         ts = self._tfm_tokenizer.tokenize(text)
         ids = self._tfm_tokenizer.convert_tokens_to_ids(ts)
         return ids
 
     def _decode(
             self,
-            tokens: ta.Iterable[Token],
+            tokens: ta.Iterable[tks.Token],
     ) -> str:
         return self._tfm_tokenizer.decode(tokens)
 

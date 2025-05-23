@@ -7,6 +7,8 @@ from .specials import (  # noqa
 
 from .tokenizers import (  # noqa
     Tokenizer,
+
+    BaseTokenizer,
 )
 
 from .types import (  # noqa
@@ -18,6 +20,11 @@ from .types import (  # noqa
     check_token,
 
     TokenStr,
+)
+
+from .vocabs import (  # noqa
+    NotSeqVocabError,
+    Vocab,
 )
 
 #
