@@ -228,6 +228,9 @@ class Parser:
                             found = True
                             break
 
+                if not found:
+                    raise DiffError(f'Invalid context at {index}:\n{def_str}')
+
             next_ctx, chunks, end_idx, eof = peek_next_section(self.lines, self.index)
             new_index, fuzz = find_context(lines, next_ctx, index, eof)
             if new_index == -1:

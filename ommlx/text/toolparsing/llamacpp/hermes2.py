@@ -1,3 +1,4 @@
+# @omlish-llm-author gemini-2.5-pro
 import logging
 import re
 
