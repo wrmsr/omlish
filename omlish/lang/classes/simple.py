@@ -25,35 +25,6 @@ class SimpleMetaDict(dict):
 ##
 
 
-class _NamespaceMeta(abc.ABCMeta):
-    def __new__(mcls, name, bases, namespace):
-        if bases:
-            for nc in (NotInstantiable,):
-                if nc not in bases:
-                    bases += (nc,)
-        return super().__new__(mcls, name, bases, namespace)
-
-    def __iter__(cls) -> ta.Iterator[tuple[str, ta.Any]]:
-        seen: set[str] = set()
-        for bcls in reversed(cls.__mro__):
-            for a in bcls.__dict__:
-                if a in seen:
-                    continue
-                seen.add(a)
-                if not a.startswith('_'):
-                    yield (a, getattr(cls, a))
-
-    def __getitem__(cls, n: str) -> ta.Any:
-        return getattr(cls, n)
-
-
-class Namespace(metaclass=_NamespaceMeta):
-    pass
-
-
-##
-
-
 _MARKER_NAMESPACE_KEYS: set[str] | None = None
 
 

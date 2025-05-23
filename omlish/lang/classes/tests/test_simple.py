@@ -3,7 +3,6 @@ import pytest
 from ..restrict import FinalTypeError
 from ..simple import LazySingleton
 from ..simple import Marker
-from ..simple import Namespace
 from ..simple import Singleton
 
 
@@ -57,15 +56,3 @@ def test_singletons():
         assert Foo2() is Foo2()
         assert foo2_init_calls == 1
         assert foo_init_calls == 2
-
-
-def test_namespace():
-    class Foo(Namespace):
-        X = 1
-        Y = '2'
-
-    with pytest.raises(TypeError):
-        Foo()
-
-    assert list(Foo) == [('X', 1), ('Y', '2')]
-    assert Foo['X'] == 1

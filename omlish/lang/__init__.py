@@ -61,6 +61,12 @@ from .classes.abstract import (  # noqa
     unabstract_class,
 )
 
+from .classes.namespaces import (  # noqa
+    GenericNamespaceMeta,
+    Namespace,
+    NamespaceMeta,
+)
+
 from .classes.restrict import (  # noqa
     AnySensitive,
     Final,
@@ -79,7 +85,6 @@ from .classes.restrict import (  # noqa
 from .classes.simple import (  # noqa
     LazySingleton,
     Marker,
-    Namespace,
     SimpleMetaDict,
     Singleton,
 )
