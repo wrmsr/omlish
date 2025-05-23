@@ -52,7 +52,11 @@ class Abstract(abc.ABC):  # noqa
 
         super().__init_subclass__(**kwargs)
 
-        if not _DISABLE_CHECKS and Abstract not in cls.__bases__:
+        if (
+                not _DISABLE_CHECKS and
+                Abstract not in cls.__bases__ and
+                abc.ABC not in cls.__bases__
+        ):
             ams = {a for a, o in cls.__dict__.items() if is_abstract_method(o)}
             seen = set(cls.__dict__)
             for b in cls.__bases__:
