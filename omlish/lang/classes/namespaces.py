@@ -10,29 +10,34 @@ V = ta.TypeVar('V')
 ##
 
 
-_NOT_SET = object()
+class _NOT_SET:  # noqa
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+
+NamespaceCheckValue: ta.TypeAlias = type | tuple[type, ...] | ta.Callable[[ta.Any], bool]
 
 
 class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
-    __namespace_check_values__: type | tuple[type, ...] | None = None
+    __namespace_check_values__: NamespaceCheckValue | None = None
     __namespace_case_insensitive__: bool = False
 
     def __init_subclass__(
             mcls,
             *,
-            check_values=_NOT_SET,
-            case_insensitive=_NOT_SET,
+            check_values: NamespaceCheckValue | None | type[_NOT_SET] = _NOT_SET,
+            case_insensitive: bool | type[_NOT_SET] = _NOT_SET,
             **kwargs,
     ):
         super().__init_subclass__(**kwargs)
 
         if check_values is not _NOT_SET:
-            mcls.__namespace_check_values__ = check_values  # noqa
+            mcls.__namespace_check_values__ = check_values
         if case_insensitive is not _NOT_SET:
-            mcls.__namespace_case_insensitive__ = case_insensitive  # noqa
+            mcls.__namespace_case_insensitive__ = case_insensitive  # type: ignore
 
-    __namespace_attrs__: dict[str, V]
-    __namespace_values__: dict[str, V]
+    __namespace_attrs__: ta.Mapping[str, V]
+    __namespace_values__: ta.Mapping[str, V]
 
     def __new__(
             mcls,
@@ -40,8 +45,8 @@ class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
             bases,
             namespace,
             *,
-            check_values=_NOT_SET,
-            case_insensitive=_NOT_SET,
+            check_values: NamespaceCheckValue | None | type[_NOT_SET] = _NOT_SET,
+            case_insensitive: bool | type[_NOT_SET] = _NOT_SET,
             **kwargs,
     ):
         if bases:
@@ -63,7 +68,17 @@ class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
         )
 
         cls.__namespace_check_values__ = check_values
-        cls.__namespace_case_insensitive__ = case_insensitive
+        cls.__namespace_case_insensitive__ = case_insensitive  # type: ignore
+
+        if isinstance(check_values, (type, tuple)):
+            cvt = check_values
+
+            def _cv(o):
+                if not isinstance(o, cvt):
+                    raise TypeError(o, cvt)
+                return True
+
+            check_values = _cv
 
         a_dct: dict[str, V] = {}
         v_dct: dict[str, V] = {}
@@ -80,8 +95,8 @@ class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
                         raise NameError(f'Ambiguous case-insensitive namespace attr: {name!r}, {att!r}')
 
                 obj = getattr(cls, att)
-                if check_values is not None and not isinstance(obj, check_values):
-                    raise TypeError(obj)
+                if check_values is not None and not check_values(obj):
+                    raise ValueError(obj)
 
                 a_dct[att] = obj
                 v_dct[name] = obj
