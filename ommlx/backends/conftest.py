@@ -57,5 +57,6 @@ def pytest_addhooks(pluginmanager):
         [r'ommlx/backends/transformers/.*\.py'],
         [
             r'transformers(\..*)?',
+            r'sentencetransformers(\..*)?',
         ],
     )
