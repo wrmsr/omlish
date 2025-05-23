@@ -80,7 +80,9 @@ class SpecialTokens:
             check.not_in(type(stk), by_type)
             all_.add(stk)
             by_type[type(stk)] = stk
+
         check.equal(len(all_), len(by_type))
+
         self._all = all_
         self._by_type = by_type
 

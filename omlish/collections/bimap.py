@@ -47,6 +47,9 @@ class _BaseBiMapImpl(BiMap[K, V], lang.Abstract):
     def __iter__(self):
         return iter(self._dct)
 
+    def __repr__(self) -> str:
+        return f'BiMap({self._dct!r})'
+
 
 class _BiMapImpl(_BaseBiMapImpl[K, V]):
     def __init__(self, *args, **kwargs) -> None:
