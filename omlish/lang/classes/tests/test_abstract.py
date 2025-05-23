@@ -53,6 +53,12 @@ def test_abstract2():
     with pytest.raises(TypeError):
         B()  # type: ignore
 
+    class B2(A, abc.ABC):
+        pass
+
+    with pytest.raises(TypeError):
+        B2()  # type: ignore
+
     class C(B):
         f = 0
 
@@ -75,7 +81,6 @@ def test_is_abstract():
     assert not is_abstract(B)
 
     class C(Abstract):
-
         def __init_subclass__(cls, **kwargs: ta.Any) -> None:
             super().__init_subclass__(**kwargs)
             if cls.__name__ == 'D':
