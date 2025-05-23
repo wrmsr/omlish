@@ -15,7 +15,7 @@ class Tokenizer:
         r"\s+"
     )
 
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str) -> None:
         super().__init__()
 
         mergeable_ranks = tiktoken.load.load_tiktoken_bpe(model_path)

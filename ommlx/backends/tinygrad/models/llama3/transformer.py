@@ -24,7 +24,7 @@ def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0) -> Tensor:
 
 
 class FeedForward:
-    def __init__(self, dim: int, hidden_dim: int, linear=nn.Linear):
+    def __init__(self, dim: int, hidden_dim: int, linear=nn.Linear) -> None:
         super().__init__()
 
         self.w1 = linear(dim, hidden_dim, bias=False)
@@ -49,7 +49,7 @@ class TransformerBlock:
             linear=nn.Linear,
             feed_forward=FeedForward,
             qk_norm=None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.attention = Attention(
@@ -87,7 +87,7 @@ class Transformer:
             jit=True,
             feed_forward=FeedForward,
             qk_norm=None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.layers = [

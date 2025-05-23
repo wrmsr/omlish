@@ -13,7 +13,7 @@ class Int8Linear:
             in_features,
             out_features,
             bias=False,
-    ):
+    ) -> None:
         super().__init__()
 
         check.arg(not bias)
@@ -33,9 +33,9 @@ class Int8Linear:
         new_tensors = {}
         for name, v in tensors.items():
             if (
-                    'feed_forward' in name
-                    or 'attention.w' in name
-                    or (quantize_embeds and 'tok_embeddings.weight' in name)
+                    'feed_forward' in name or
+                    'attention.w' in name or
+                    (quantize_embeds and 'tok_embeddings.weight' in name)
             ):
                 check.in_('weight', name)
                 v = v.cast(scale_dtype)
@@ -62,7 +62,7 @@ class Int8Linear:
 
 
 class Int8Embedding:
-    def __init__(self, vocab_size: int, embed_size: int):
+    def __init__(self, vocab_size: int, embed_size: int) -> None:
         super().__init__()
 
         self.vocab_sz, self.embed_sz = vocab_size, embed_size
@@ -112,7 +112,7 @@ def nf4_linear(block_size):
                 in_features,
                 out_features,
                 bias=False,
-        ):
+        ) -> None:
             super().__init__()
 
             check.arg(not bias, 'bias not supported')

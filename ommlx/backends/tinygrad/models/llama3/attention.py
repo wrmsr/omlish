@@ -61,7 +61,7 @@ class Attention:
             max_context,
             linear=nn.Linear,
             qk_norm: float | None = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.n_heads = n_heads
