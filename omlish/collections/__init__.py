@@ -4,6 +4,12 @@ import typing as _ta
 from .. import lang as _lang
 
 
+from .bimap import (  # noqa
+    BiMap,
+
+    make_bi_map,
+)
+
 from .coerce import (  # noqa
     abs_set,
     abs_set_of,
