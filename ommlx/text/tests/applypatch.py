@@ -260,28 +260,33 @@ class Parser:
 # Helper functions
 
 
-def find_context_core(
+class FindContextResult(ta.NamedTuple):
+    new_index: int
+    fuzz: int
+
+
+def _find_context_core(
         lines: list[str],
         context: list[str],
         start: int,
-) -> tuple[int, int]:
+) -> FindContextResult:
     if not context:
-        return start, 0
+        return FindContextResult(start, 0)
 
     for i in range(start, len(lines)):
         if lines[i: i + len(context)] == context:
-            return i, 0
+            return FindContextResult(i, 0)
     for i in range(start, len(lines)):
         if [s.rstrip() for s in lines[i: i + len(context)]] == [
             s.rstrip() for s in context
         ]:
-            return i, 1
+            return FindContextResult(i, 1)
     for i in range(start, len(lines)):
         if [s.strip() for s in lines[i: i + len(context)]] == [
             s.strip() for s in context
         ]:
-            return i, 100
-    return -1, 0
+            return FindContextResult(i, 100)
+    return FindContextResult(-1, 0)
 
 
 def find_context(
@@ -289,25 +294,35 @@ def find_context(
         context: list[str],
         start: int,
         eof: bool,
-) -> tuple[int, int]:
+) -> FindContextResult:
     if eof:
-        new_index, fuzz = find_context_core(lines, context, len(lines) - len(context))
+        new_index, fuzz = _find_context_core(lines, context, len(lines) - len(context))
         if new_index != -1:
-            return new_index, fuzz
-        new_index, fuzz = find_context_core(lines, context, start)
-        return new_index, fuzz + 10_000
-    return find_context_core(lines, context, start)
+            return FindContextResult(new_index, fuzz)
+        new_index, fuzz = _find_context_core(lines, context, start)
+        return FindContextResult(new_index, fuzz + 10_000)
+    return _find_context_core(lines, context, start)
+
+
+#
+
+
+class PeekNextSectionResult(ta.NamedTuple):
+    section: list[str]
+    chunks: list[Chunk]
+    idx: int
+    eof: bool
 
 
 def peek_next_section(
         lines: list[str],
         index: int,
-) -> tuple[list[str], list[Chunk], int, bool]:
+) -> PeekNextSectionResult:
     old: list[str] = []
     del_lines: list[str] = []
     ins_lines: list[str] = []
     chunks: list[Chunk] = []
-    mode = 'keep'
+    mode: ta.Literal['keep', 'add', 'delete'] = 'keep'
     orig_index = index
 
     while index < len(lines):
@@ -366,11 +381,11 @@ def peek_next_section(
 
     if index < len(lines) and lines[index] == '*** End of File':
         index += 1
-        return old, chunks, index, True
+        return PeekNextSectionResult(old, chunks, index, True)
 
     if index == orig_index:
         raise DiffError('Nothing in this section')
-    return old, chunks, index, False
+    return PeekNextSectionResult(old, chunks, index, False)
 
 
 ##
@@ -484,9 +499,9 @@ def identify_files_added(text: str) -> list[str]:
 
 def load_files(
         paths: list[str],
-        open_fn: ta.Callable[[str], str],
+        read_fn: ta.Callable[[str], str],
 ) -> dict[str, str]:
-    return {path: open_fn(path) for path in paths}
+    return {path: read_fn(path) for path in paths}
 
 
 def apply_commit(
@@ -512,38 +527,18 @@ def apply_commit(
 
 def process_patch(
         text: str,
-        open_fn: ta.Callable[[str], str],
+        read_fn: ta.Callable[[str], str],
         write_fn: ta.Callable[[str, str], None],
         remove_fn: ta.Callable[[str], None],
 ) -> str:
     if not text.startswith('*** Begin Patch'):
         raise DiffError('Patch text must start with *** Begin Patch')
     paths = identify_files_needed(text)
-    orig = load_files(paths, open_fn)
+    orig = load_files(paths, read_fn)
     patch, _fuzz = text_to_patch(text, orig)
     commit = patch_to_commit(patch, orig)
     apply_commit(commit, write_fn, remove_fn)
     return 'Done!'
-
-
-##
-#  Default FS helpers
-
-
-def open_file(path: str) -> str:
-    with open(path, encoding='utf-8') as fh:
-        return fh.read()
-
-
-def write_file(path: str, content: str) -> None:
-    target = pathlib.Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with target.open('wt', encoding='utf-8') as fh:
-        fh.write(content)
-
-
-def remove_file(path: str) -> None:
-    pathlib.Path(path).unlink(missing_ok=True)
 
 
 ##
@@ -554,14 +549,34 @@ def main() -> None:
     import sys
 
     patch_text = sys.stdin.read()
+
     if not patch_text:
         print('Please pass patch text through stdin', file=sys.stderr)
         return
+
+    #  Default FS helpers
+
+    def read_file(path: str) -> str:
+        with open(path, encoding='utf-8') as fh:
+            return fh.read()
+
+    def write_file(path: str, content: str) -> None:
+        target = pathlib.Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open('wt', encoding='utf-8') as fh:
+            fh.write(content)
+
+    def remove_file(path: str) -> None:
+        pathlib.Path(path).unlink(missing_ok=True)
+
+    #
+
     try:
-        result = process_patch(patch_text, open_file, write_file, remove_file)
+        result = process_patch(patch_text, read_file, write_file, remove_file)
     except DiffError as exc:
         print(exc, file=sys.stderr)
         return
+
     print(result)
 
 
