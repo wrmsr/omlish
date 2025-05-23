@@ -30,6 +30,14 @@ def pytest_addhooks(pluginmanager):
 
     ptp.depskip.register(
         pluginmanager,
+        [r'ommlx/backends/tiktoken/.*\.py'],
+        [
+            r'tiktoken(\..*)?',
+        ],
+    )
+
+    ptp.depskip.register(
+        pluginmanager,
         [r'ommlx/backends/tinygrad/.*\.py'],
         [
             r'tinygrad(\..*)?',

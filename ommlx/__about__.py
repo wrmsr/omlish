@@ -14,25 +14,31 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
+            # 'diffusers ~= 0.33.1',
+
+            'llama-cpp-python ~= 0.3',
+
+            'mlx ~= 0.25',
             'mlx-lm ~= 0.24; sys_platform == "darwin"',
+
+            'sentencepiece ~= 0.2',
+
+            'tiktoken ~= 0.9',
+
+            # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
+            'tinygrad ~= 0.10',
+
+            'tokenizers ~= 0.21',
+
+            'torch ~= 2.7',
 
             'transformers ~= 4.52',
             'sentence-transformers ~= 4.1',
-
-            'diffusers ~= 0.33.1',
-
-            'sentencepiece ~= 0.2',
-            'tiktoken ~= 0.9',
-            'tokenizers ~= 0.21',
         ],
 
         'huggingface': [
             'huggingface-hub ~= 0.32',
             'datasets ~= 3.6',
-        ],
-
-        'llamacpp': [
-            'llama-cpp-python ~= 0.3',
         ],
 
         'numpy': [
@@ -51,15 +57,6 @@ class Project(ProjectBase):
 
         'search': [
             'duckduckgo-search ~= 8.0',
-        ],
-
-        'tinygrad': [
-            # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
-            'tinygrad ~= 0.10',
-        ],
-
-        'torch': [
-            'torch ~= 2.7',
         ],
 
         'wiki': [
