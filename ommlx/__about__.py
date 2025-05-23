@@ -20,6 +20,10 @@ class Project(ProjectBase):
             'sentence-transformers ~= 4.1',
 
             'diffusers ~= 0.33.1',
+
+            'sentencepiece ~= 0.2',
+            'tiktoken ~= 0.9',
+            'tokenizers ~= 0.21',
         ],
 
         'huggingface': [

@@ -125,6 +125,7 @@ sentence-transformers==4.1.0; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"
+tokenizers==0.21.1; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 

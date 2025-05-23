@@ -187,9 +187,8 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
-from ....tools import ToolParam
-from ....tools import ToolSpec
-from ....tools import build_tool_spec_json_schema
+from .... import minichain as mc
+from ....minichain.tools import build_tool_spec_json_schema
 
 
 ##
@@ -207,16 +206,16 @@ def multiply(a: float, b: float) -> float:
     return a * b
 
 
-MULTIPLY_TOOL = ToolSpec(
+MULTIPLY_TOOL = mc.ToolSpec(
     'multiply',
     [
-        ToolParam(
+        mc.ToolParam(
             'a',
             'number',
             desc='The first number to multiply',
             required=True,
         ),
-        ToolParam(
+        mc.ToolParam(
             'b',
             'number',
             desc='The second number to multiply',
