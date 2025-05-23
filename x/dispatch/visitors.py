@@ -169,6 +169,10 @@ def test_basic():
 #
 
 
+class _NO_INIT(lang.Marker):  # noqa
+    pass
+
+
 class _FnReducer(
     MappingValuesVisitor[None],
     IterableVisitor[None],
@@ -178,14 +182,13 @@ class _FnReducer(
     def __init__(
             self,
             fn: ta.Callable[[T, ta.Any], T],
-            init: lang.Maybe[T],
+            init: T | type[_NO_INIT],
     ) -> None:
         super().__init__()
 
         self.fn = fn
-
-        if init.present:
-            self.v = init.must()
+        if init is not _NO_INIT:
+            self.v = init
 
     v: T
 
@@ -204,22 +207,13 @@ class EmptyReduceError(TypeError):
     pass
 
 
-class _NO_INIT(lang.Marker):  # noqa
-    pass
-
-
 def reduce(
         fn: ta.Callable[[ta.Any, T], T],
         obj: ta.Any,
         init: T | type[_NO_INIT] = _NO_INIT,
 ) -> T:
-    fr = _FnReducer(
-        fn,
-        lang.just(init) if init is not _NO_INIT else lang.empty(),
-    )
-
+    fr = _FnReducer(fn, init)
     fr.visit(obj, None)
-
     try:
         return fr.v
     except AttributeError:
