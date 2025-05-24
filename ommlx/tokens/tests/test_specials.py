@@ -2,6 +2,7 @@ import pytest
 
 from omlish import lang
 
+from ..specials import SpecialTokens
 from ..specials import StandardSpecialToken
 from ..specials import StandardSpecialTokens
 
@@ -32,3 +33,11 @@ def test_namespace():
     bos2 = StandardSpecialTokens.__getitem__('bos')
     # reveal_type(bos2)
     assert bos2 is Bos
+
+
+def test_collection():
+    sts = SpecialTokens([
+        Bos(420),
+        Eos(531),
+    ])
+    print(sts)
