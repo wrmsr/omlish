@@ -62,7 +62,6 @@ class _BiMapImpl(_BaseBiMapImpl[K, V]):
             inv_dct[v] = k
 
         self._dct = dct
-        self._inv_dct = inv_dct
 
         super().__init__(dct, _BiMapImpl._Inverse(inv_dct, self))
 
