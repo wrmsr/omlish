@@ -33,6 +33,7 @@ from .io import PeekIo
 from .io import ReadIo
 from .io import ReadLineIo
 from .io import WriteIo
+from .state import ResponseState
 from .status import StatusLine
 from .status import read_status_line
 from .validation import HttpClientValidation
@@ -103,17 +104,25 @@ class HttpResponse:
 
         # from the Status-Line of the response
         self._version: Maybe[int] = Maybe.empty()  # HTTP-Version
-        self.status = _UNKNOWN  # Status-Code
-        self.reason = _UNKNOWN  # Reason-Phrase
+        self._status: Maybe[int] = Maybe.empty()  # Status-Code
+        self._reason: Maybe[str] = Maybe.empty()  # Reason-Phrase
 
-        self.chunked = _UNKNOWN  # is "chunked" being used?
-        self.chunk_left = _UNKNOWN  # bytes left to read in current chunk
+        self._chunked: Maybe[bool] = Maybe.empty()  # is "chunked" being used?
+        self._chunk_left: Maybe[int | None] = Maybe.empty()  # bytes left to read in current chunk
         self.length = _UNKNOWN  # number of bytes left in response
         self._will_close: Maybe[bool] = Maybe.empty()  # conn will close at end of response
 
     @property
     def version(self) -> Maybe[int]:
         return self._version
+
+    @property
+    def status(self) -> Maybe[int]:
+        return self._status
+
+    @property
+    def reason(self) -> Maybe[str]:
+        return self._reason
 
     @property
     def will_close(self) -> Maybe[bool]:
@@ -184,7 +193,7 @@ class HttpResponse:
             self._close_conn()
             return b''
 
-        if self.chunked:
+        if self._chunked.must():
             return (yield from self._read_chunked(amt))
 
         if amt is not None:
@@ -259,7 +268,7 @@ class HttpResponse:
         # Return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
         # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
         # None if the last chunk has been read.
-        chunk_left = self.chunk_left
+        chunk_left = self._chunk_left.must()
         if not chunk_left:  # Can be 0 or None
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
@@ -279,24 +288,24 @@ class HttpResponse:
 
                 chunk_left = None
 
-            self.chunk_left = chunk_left
+            self._chunk_left = Maybe.just(chunk_left)
 
         return chunk_left
 
     def _read_chunked(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
-        check.not_equal(self.chunked, _UNKNOWN)
+        check.state(self._chunked.present)
         value = []
         try:
             while (chunk_left := (yield from self._get_chunk_left())) is not None:
                 if amt is not None and amt <= chunk_left:
                     value.append((yield from self._safe_read(amt)))
-                    self.chunk_left = chunk_left - amt
+                    self._chunk_left = Maybe.just(chunk_left - amt)
                     break
 
                 value.append((yield from self._safe_read(chunk_left)))
                 if amt is not None:
                     amt -= chunk_left
-                self.chunk_left = 0
+                self._chunk_left = Maybe.just(0)
 
             return b''.join(value)
 
@@ -321,7 +330,7 @@ class HttpResponse:
         if self._closed or self._method == 'HEAD':
             return b''
 
-        if self.chunked:
+        if self._chunked.must():
             return (yield from self._peek_chunked(n))
 
         return check.isinstance((yield PeekIo(n)), bytes)
@@ -362,7 +371,7 @@ class HttpResponse:
         if self._closed or self._method == 'HEAD':
             return b''
 
-        if self.chunked:
+        if self._chunked.must():
             # Fallback to IOBase readline which uses peek() and read()
             return (yield from self._readline(limit))
 
@@ -1047,12 +1056,12 @@ class HttpConnection:
                 break
 
             # skip the header from the 100 response
-            skipped_headers = yield from read_headers()
+            skipped_headers = yield from read_headers()  # noqa
 
             del skipped_headers
 
-        resp.code = resp.status = status
-        resp.reason = reason.strip()
+        resp._status = Maybe.just(status)
+        resp._reason = Maybe.just(reason.strip())
         if version in ('HTTP/1.0', 'HTTP/0.9'):
             # Some servers might still return '0.9', treat it as 1.0 anyway
             resp._version = Maybe.just(10)
@@ -1066,10 +1075,10 @@ class HttpConnection:
         # are we using the chunked-style of transfer encoding?
         tr_enc = resp.headers.get('transfer-encoding')
         if tr_enc and tr_enc.lower() == 'chunked':
-            resp.chunked = True
-            resp.chunk_left = None
+            resp._chunked = Maybe.just(True)
+            resp._chunk_left = Maybe.just(None)
         else:
-            resp.chunked = False
+            resp._chunked = Maybe.just(False)
 
         # will the connection close at the end of the response?
         resp._will_close = Maybe.just(resp._check_close())
@@ -1078,7 +1087,7 @@ class HttpConnection:
         # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
         resp.length = None
         length = resp.headers.get('content-length')
-        if length and not resp.chunked:
+        if length and not resp._chunked.must():
             try:
                 resp.length = int(length)
             except ValueError:
@@ -1099,7 +1108,11 @@ class HttpConnection:
 
         # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
         # assume that the connection WILL close.
-        if not resp._will_close.must() and not resp.chunked and resp.length is None:
+        if (
+                not resp._will_close.must() and
+                not resp._chunked.must() and
+                resp.length is None
+        ):
             resp._will_close = Maybe.just(True)
 
     def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
