@@ -1,3 +1,4 @@
+# @omlish-lite
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 import enum

@@ -1,3 +1,4 @@
+# @omlish-lite
 # ruff: noqa: UP006 UP007
 """
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
