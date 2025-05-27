@@ -3,6 +3,7 @@
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
 """
 import collections.abc
+import contextlib
 import email.parser
 import enum
 import http
@@ -196,6 +197,8 @@ class HttpResponse:
         ):
             state.will_close = True
 
+    #
+
     def _check_close(self) -> bool:
         conn = self._state.headers.get('connection')
         if getattr(self._state, 'version', None) == 11:
@@ -229,19 +232,17 @@ class HttpResponse:
         if not self._state.closed:
             self._close_conn()
 
-    # These implementations are for the benefit of io.BufferedReader.
-
-    # End of "raw stream" methods
-
-    def isclosed(self) -> bool:
+    def is_closed(self) -> bool:
         """True if the connection is closed."""
 
         # NOTE: it is possible that we will not ever call self.close(). This case occurs when will_close is TRUE, length
         #   is None, and we read up to the last byte, but NOT past it.
         #
-        # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.isclosed() is
+        # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.is_closed() is
         #   meaningful.
         return self._state.closed
+
+    #
 
     def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """Read and return the response body, or up to the next amt bytes."""
@@ -556,6 +557,7 @@ class HttpConnection:
         self._response: ta.Optional[HttpResponse] = None
         self._state = self._State.IDLE
         self._method: ta.Optional[str] = None
+        self._response: ta.Optional[HttpResponse] = None
 
         self._tunnel_host: ta.Optional[str] = None
         self._tunnel_port: ta.Optional[int] = None
@@ -565,6 +567,23 @@ class HttpConnection:
         (self._host, self._port) = self._get_hostport(host, port)
 
         HttpClientValidation.validate_host(self._host)
+
+    #
+
+    @contextlib.contextmanager
+    def _new_response_context(self) -> ta.Iterator:
+        check.state(self._response is None)
+        method = check.not_none(self._method)
+
+        resp_state = HttpResponseState()
+        resp_state.method = check.not_none(method)
+        resp = HttpResponse(resp_state)
+
+        self._response = resp
+        try:
+            yield resp
+        finally:
+            self._response = None
 
     #
 
@@ -649,19 +668,19 @@ class HttpConnection:
         yield from self.send(b''.join(headers))
         del headers
 
-        response = HttpResponse(method=self._method)
-        try:
-            # FIXME
-            (version, code, message) = yield from response._read_status()  # noqa
+        with self._new_response_context() as resp:
+            try:
+                # FIXME
+                (version, code, message) = yield from resp._read_status()  # noqa
 
-            self._raw_proxy_headers = yield from read_headers()
+                self._raw_proxy_headers = yield from read_headers()
 
-            if code != http.HTTPStatus.OK:
-                yield from self.close()
-                raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
+                if code != http.HTTPStatus.OK:
+                    yield from self.close()
+                    raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
-        finally:
-            response.close()
+            finally:
+                resp.close()
 
     def get_proxy_response_headers(self) -> ta.Optional[email.message.Message]:
         """
@@ -847,7 +866,7 @@ class HttpConnection:
         """
 
         # If a prior response has been completed, then forget about it.
-        if self._response and self._response.isclosed():
+        if self._response and self._response.is_closed():
             self._response = None
 
         # In certain cases, we cannot issue another request on this connection.
@@ -1117,7 +1136,7 @@ class HttpConnection:
         """
 
         # If a prior response has been completed, then forget about it.
-        if self._response and self._response.isclosed():
+        if self._response and self._response.is_closed():
             self._response = None
 
         # If a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
@@ -1128,33 +1147,32 @@ class HttpConnection:
         #
         # This means the prior response had one of two states:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
-        #   2) persistent: the response was retained and we await its isclosed() status to become true.
+        #   2) persistent: the response was retained and we await its is_closed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReadyError(self._state)
 
-        resp_state = HttpResponseState()
-        resp_state.method = check.not_none(self._method)
-        resp = HttpResponse(resp_state)
+        with self._new_response_context() as resp:
+            resp_state = resp._state  # noqa
 
-        try:
             try:
-                yield from resp._begin()  # noqa
-            except ConnectionError:
-                yield from self.close()
+                try:
+                    yield from resp._begin()  # noqa
+                except ConnectionError:
+                    yield from self.close()
+                    raise
+
+                check.state(hasattr(resp_state, 'will_close'))
+                self._state = self._State.IDLE
+
+                if resp_state.will_close:
+                    # This effectively passes the connection to the response
+                    yield from self.close()
+                else:
+                    # Remember this, so we can tell when it is complete
+                    self._response = resp
+
+                return resp
+
+            except:
+                resp.close()
                 raise
-
-            check.state(hasattr(resp_state, 'will_close'))
-            self._state = self._State.IDLE
-
-            if resp_state.will_close:
-                # This effectively passes the connection to the response
-                yield from self.close()
-            else:
-                # Remember this, so we can tell when it is complete
-                self._response = resp
-
-            return resp
-
-        except:
-            resp.close()
-            raise
