@@ -1,3 +1,4 @@
+import operator
 import types
 import typing as ta
 
@@ -6,6 +7,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 from omlish import reflect as rfl
 
 
@@ -117,6 +119,8 @@ class EnumToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['desc', 'type'], omit_if=lang.is_none)
+@msh.update_fields_metadata(['required'], omit_if=operator.not_)
 class ToolParam:
     name: str
 
@@ -138,6 +142,8 @@ class ToolParam:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
+@msh.update_fields_metadata(['allow_additional_params'], omit_if=operator.not_)
 class ToolSpec:
     name: str
 

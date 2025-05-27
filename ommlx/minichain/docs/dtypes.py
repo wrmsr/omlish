@@ -3,7 +3,7 @@ import enum
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..vectors.vectors import Vector
+from ..vectors.types import Vector
 
 
 ##

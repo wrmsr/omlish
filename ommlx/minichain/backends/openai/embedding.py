@@ -8,7 +8,7 @@ from ...standard import ApiKey
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.embeddings import EmbeddingService
-from ...vectors.vectors import Vector
+from ...vectors.types import Vector
 
 
 ##

@@ -13,7 +13,7 @@ from ..vectors.search import VectorSearch
 from ..vectors.similarity import CALC_NP_SIMILARITIES_FUNCS
 from ..vectors.similarity import Similarity
 from ..vectors.stores import VectorStore
-from ..vectors.vectors import Vector
+from ..vectors.types import Vector
 
 
 ##
