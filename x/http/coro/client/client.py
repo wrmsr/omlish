@@ -89,15 +89,15 @@ class HttpResponseState:
     # http clients.
     headers: email.message.Message
 
-    # from the Status-Line of the response
+    # From the Status-Line of the response
     version: int  # HTTP-Version
     status: int  # Status-Code
     reason: str  # Reason-Phrase
 
-    chunked: bool  # is "chunked" being used?
-    chunk_left: ta.Optional[int]  # bytes left to read in current chunk
-    length: ta.Optional[int]  # number of bytes left in response
-    will_close: bool  # conn will close at end of response
+    chunked: bool  # Is "chunked" being used?
+    chunk_left: ta.Optional[int]  # Bytes left to read in current chunk
+    length: ta.Optional[int]  # Number of bytes left in response
+    will_close: bool  # Conn will close at end of response
 
 
 class HttpResponse:
@@ -123,20 +123,18 @@ class HttpResponse:
             self._close_conn()
             raise
 
-    def _begin_response(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    def _begin(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         state = self._state
 
-        if hasattr(state, 'headers'):
-            # we've already started reading the response
-            return
+        check.state(not hasattr(state, 'headers'))
 
-        # read until we get a non-100 response
+        # Read until we get a non-100 response
         while True:
             version, status, reason = yield from self._read_status()
             if status != http.HTTPStatus.CONTINUE:
                 break
 
-            # skip the header from the 100 response
+            # Skip the header from the 100 response
             skipped_headers = yield from read_headers()  # noqa
 
             del skipped_headers
@@ -147,13 +145,14 @@ class HttpResponse:
             # Some servers might still return '0.9', treat it as 1.0 anyway
             state.version = 10
         elif version.startswith('HTTP/1.'):
-            state.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
+            # Use HTTP/1.1 code for HTTP/1.x where x>=1
+            state.version = 11
         else:
             raise UnknownProtocolError(version)
 
         state.headers = yield from parse_headers()
 
-        # are we using the chunked-style of transfer encoding?
+        # Are we using the chunked-style of transfer encoding?
         tr_enc = state.headers.get('transfer-encoding')
         if tr_enc and tr_enc.lower() == 'chunked':
             state.chunked = True
@@ -161,10 +160,10 @@ class HttpResponse:
         else:
             state.chunked = False
 
-        # will the connection close at the end of the response?
+        # Will the connection close at the end of the response?
         state.will_close = self._check_close()
 
-        # do we have a Content-Length?
+        # Do we have a Content-Length?
         # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
         state.length = None
         length = state.headers.get('content-length')
@@ -174,12 +173,12 @@ class HttpResponse:
             except ValueError:
                 state.length = None
             else:
-                if state.length < 0:  # ignore nonsensical negative lengths
+                if state.length < 0:  # Ignore nonsensical negative lengths
                     state.length = None
         else:
             state.length = None
 
-        # does the body have a fixed length? (of zero)
+        # Does the body have a fixed length? (of zero)
         if (
                 status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
                 100 <= status < 200 or # 1xx codes
@@ -187,7 +186,7 @@ class HttpResponse:
         ):
             state.length = 0
 
-        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
+        # If the connection remains open, and we aren't using chunked, and a content-length was not provided, then
         # assume that the connection WILL close.
         if (
                 not state.will_close and
@@ -210,8 +209,7 @@ class HttpResponse:
         if self._state.headers.get('keep-alive'):
             return False
 
-        # At least Akamai returns a 'Connection: Keep-Alive' header,
-        # which was supposed to be sent by the client.
+        # At least Akamai returns a 'Connection: Keep-Alive' header, which was supposed to be sent by the client.
         if conn and 'keep-alive' in conn.lower():
             return False
 
@@ -220,7 +218,7 @@ class HttpResponse:
         if pconn and 'keep-alive' in pconn.lower():
             return False
 
-        # otherwise, assume it will close
+        # Otherwise, assume it will close
         return True
 
     def _close_conn(self) -> None:
@@ -259,7 +257,7 @@ class HttpResponse:
 
         if amt is not None:
             if self._state.length is not None and amt > self._state.length:
-                # clip the read to the "end of response"
+                # Clip the read to the "end of response"
                 amt = self._state.length
 
             s = check.isinstance((yield ReadIo(amt)), bytes)
@@ -290,7 +288,7 @@ class HttpResponse:
 
                 self._state.length = 0
 
-            self._close_conn()        # we read everything
+            self._close_conn()  # We read everything
             return s
 
     def _read_next_chunk_size(self) -> ta.Generator[Io, ta.Optional[bytes], int]:
@@ -301,12 +299,12 @@ class HttpResponse:
 
         i = line.find(b';')
         if i >= 0:
-            line = line[:i] # strip chunk-extensions
+            line = line[:i]  # Strip chunk-extensions
 
         try:
             return int(line, 16)
         except ValueError:
-            # close the connection as protocol synchronisation is probably lost
+            # Close the connection as protocol synchronisation is probably lost
             self._close_conn()
             raise
 
@@ -319,7 +317,7 @@ class HttpResponse:
                 raise LineTooLongError(LineTooLongError.LineType.TRAILER)
 
             if not line:
-                # a vanishingly small number of sites EOF without sending the trailer
+                # A vanishingly small number of sites EOF without sending the trailer
                 break
 
             if line in (b'\r\n', b'\n', b''):
@@ -333,7 +331,7 @@ class HttpResponse:
         if not chunk_left:  # Can be 0 or None
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
-                yield from self._safe_read(2)  # toss the CRLF at the end of the chunk
+                yield from self._safe_read(2)  # Toss the CRLF at the end of the chunk
 
             try:
                 chunk_left = yield from self._read_next_chunk_size()
@@ -341,10 +339,10 @@ class HttpResponse:
                 raise IncompleteReadError(b'') from None
 
             if chunk_left == 0:
-                # last chunk: 1*('0') [ chunk-extension ] CRLF
+                # Last chunk: 1*('0') [ chunk-extension ] CRLF
                 yield from self._read_and_discard_trailer()
 
-                # we read everything; close the 'file'
+                # We read everything; close the 'file'
                 self._close_conn()
 
                 chunk_left = None
@@ -457,12 +455,12 @@ class HttpResponse:
         try:
             chunk_left = yield from self._get_chunk_left()
         except IncompleteReadError:
-            return b'' # peek doesn't worry about protocol
+            return b''  # Peek doesn't worry about protocol
 
         if chunk_left is None:
-            return b'' # eof
+            return b''  # Eof
 
-        # peek is allowed to return more than requested. Just request the entire chunk, and truncate what we get.
+        # Peek is allowed to return more than requested. Just request the entire chunk, and truncate what we get.
         return check.isinstance((yield PeekIo(chunk_left)), bytes)[:chunk_left]
 
 
@@ -708,7 +706,7 @@ class HttpConnection:
 
         try:
             if self._connected:
-                yield CloseIo()   # close it manually... there may be other refs
+                yield CloseIo()  # Close it manually... there may be other refs
                 self._connected = False
 
         finally:
@@ -791,7 +789,7 @@ class HttpConnection:
 
         chunks: ta.Iterable[bytes]
         if message_body is not None:
-            # create a consistent interface to message_body
+            # Create a consistent interface to message_body
             if hasattr(message_body, 'read'):
                 # Let file-like take precedence over byte-like. This is needed to allow the current position of mmap'ed
                 # files to be taken into account.
@@ -799,7 +797,7 @@ class HttpConnection:
 
             else:
                 try:
-                    # this is solely to check to see if message_body implements the buffer API. it /would/ be easier to
+                    # This is solely to check to see if message_body implements the buffer API. it /would/ be easier to
                     # capture if PyObject_CheckBuffer was exposed to Python.
                     memoryview(message_body)
 
@@ -812,7 +810,7 @@ class HttpConnection:
                         ) from e
 
                 else:
-                    # the object implements the buffer interface and can be passed directly into socket methods
+                    # The object implements the buffer interface and can be passed directly into socket methods
                     chunks = (message_body,)
 
             for chunk in chunks:
@@ -820,12 +818,12 @@ class HttpConnection:
                     continue
 
                 if encode_chunked and self._http_version == 11:
-                    # chunked encoding
+                    # Chunked encoding
                     chunk = f'{len(chunk):X}\r\n'.encode('ascii') + chunk + b'\r\n'
                 yield from self.send(chunk)
 
             if encode_chunked and self._http_version == 11:
-                # end chunked transfer
+                # End chunked transfer
                 yield from self.send(b'0\r\n\r\n')
 
     #
@@ -847,20 +845,20 @@ class HttpConnection:
         `skip_accept_encoding' if True does not add automatically an 'Accept-Encoding:' header
         """
 
-        # if a prior response has been completed, then forget about it.
+        # If a prior response has been completed, then forget about it.
         if self._response and self._response.isclosed():
             self._response = None
 
-        # in certain cases, we cannot issue another request on this connection.
+        # In certain cases, we cannot issue another request on this connection.
         # this occurs when:
         #   1) we are in the process of sending a request. (_CS_REQ_STARTED)
         #   2) a response to a previous request has signalled that it is going to close the connection upon completion.
         #   3) the headers for the previous response have not been read, thus we cannot determine whether point (2) is
         #      true. (_CS_REQ_SENT)
         #
-        # if there is no prior response, then we can request at will.
+        # If there is no prior response, then we can request at will.
         #
-        # if point (2) is true, then we will have passed the socket to the response (effectively meaning, "there is no
+        # If point (2) is true, then we will have passed the socket to the response (effectively meaning, "there is no
         # prior response"), and will open a new one when a new request is made.
         #
         # Note: if a prior response exists, then we *can* start a new request. We are not allowed to begin fetching the
@@ -887,7 +885,7 @@ class HttpConnection:
             # Issue some standard headers for better HTTP/1.1 compliance
 
             if not skip_host:
-                # this header is issued *only* for HTTP/1.1 connections. more specifically, this means it is only issued
+                # This header is issued *only* for HTTP/1.1 connections. more specifically, this means it is only issued
                 # when the client uses the new HTTPConnection() class. backwards-compat clients will be using HTTP/1.0
                 # and those clients may be issuing this header themselves. we should NOT issue it twice; some web
                 # servers (such as Apache) barf when they see two Host: headers
@@ -927,20 +925,20 @@ class HttpConnection:
                     else:
                         self.put_header('Host', f"{host_enc.decode('ascii')}:{port}")
 
-            # NOTE: we are assuming that clients will not attempt to set these headers since *this* library must deal
+            # NOTE: We are assuming that clients will not attempt to set these headers since *this* library must deal
             # with the consequences. this also means that when the supporting libraries are updated to recognize other
             # forms, then this code should be changed (removed or updated).
 
-            # we only want a Content-Encoding of "identity" since we don't support encodings such as x-gzip or
+            # We only want a Content-Encoding of "identity" since we don't support encodings such as x-gzip or
             # x-deflate.
             if not skip_accept_encoding:
                 self.put_header('Accept-Encoding', 'identity')
 
-            # we can accept "chunked" Transfer-Encodings, but no others
+            # We can accept "chunked" Transfer-Encodings, but no others.
             # NOTE: no TE header implies *only* "chunked"
             #self.put_header('TE', 'chunked')
 
-            # if TE is supplied in the header, then it must appear in a Connection header.
+            # If TE is supplied in the header, then it must appear in a Connection header.
             #self.put_header('Connection', 'TE')
 
         else:
@@ -1034,18 +1032,18 @@ class HttpConnection:
         """
 
         if body is None:
-            # do an explicit check for not None here to distinguish between unset and set but empty
+            # Do an explicit check for not None here to distinguish between unset and set but empty
             if method.upper() in _METHODS_EXPECTING_BODY:
                 return 0
             else:
                 return None
 
         if hasattr(body, 'read'):
-            # file-like object.
+            # File-like object.
             return None
 
         try:
-            # does it implement the buffer protocol (bytes, bytearray, array)?
+            # Does it implement the buffer protocol (bytes, bytearray, array)?
             mv = memoryview(body)
             return mv.nbytes
         except TypeError:
@@ -1074,17 +1072,17 @@ class HttpConnection:
 
         self.put_request(method, url, **skips)
 
-        # chunked encoding will happen if HTTP/1.1 is used and either the caller passes encode_chunked=True or the
+        # Chunked encoding will happen if HTTP/1.1 is used and either the caller passes encode_chunked=True or the
         # following conditions hold:
-        # 1. content-length has not been explicitly set
-        # 2. the body is a file or iterable, but not a str or bytes-like
+        # 1. Content-Length has not been explicitly set
+        # 2. The body is a file or iterable, but not a str or bytes-like
         # 3. Transfer-Encoding has NOT been explicitly set by the caller
 
         if 'content-length' not in header_names:
-            # only chunk body if not explicitly set for backwards compatibility, assuming the client code is already
+            # Only chunk body if not explicitly set for backwards compatibility, assuming the client code is already
             # handling the chunking
             if 'transfer-encoding' not in header_names:
-                # if content-length cannot be automatically determined, fall back to chunked encoding
+                # If Content-Length cannot be automatically determined, fall back to chunked encoding
                 encode_chunked = False
                 content_length = self._get_content_length(body, method)
                 if content_length is None:
@@ -1117,17 +1115,17 @@ class HttpConnection:
         returned. When the connection is closed, the underlying socket is closed.
         """
 
-        # if a prior response has been completed, then forget about it.
+        # If a prior response has been completed, then forget about it.
         if self._response and self._response.isclosed():
             self._response = None
 
-        # if a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
+        # If a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
         # determine the connection-close behavior)
         #
         # NOTE: if a prior response existed, but was connection-close, then the socket and response were made
         # independent of this HTTPConnection object since a new request requires that we open a whole new connection
         #
-        # this means the prior response had one of two states:
+        # This means the prior response had one of two states:
         #   1) will_close: this connection was reset and the prior socket and response operate independently
         #   2) persistent: the response was retained and we await its isclosed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
@@ -1139,7 +1137,7 @@ class HttpConnection:
 
         try:
             try:
-                yield from resp._begin_response()  # noqa
+                yield from resp._begin()  # noqa
             except ConnectionError:
                 yield from self.close()
                 raise
@@ -1148,10 +1146,10 @@ class HttpConnection:
             self._state = self._State.IDLE
 
             if resp_state.will_close:
-                # this effectively passes the connection to the response
+                # This effectively passes the connection to the response
                 yield from self.close()
             else:
-                # remember this, so we can tell when it is complete
+                # Remember this, so we can tell when it is complete
                 self._response = resp
 
             return resp
