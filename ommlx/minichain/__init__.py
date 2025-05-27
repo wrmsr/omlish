@@ -150,6 +150,14 @@ from .streaming import (  # noqa
     StreamResponse,
 )
 
+from .tools.jsonschema import (  # noqa
+    build_tool_spec_json_schema,
+)
+
+from .tools.reflection import (  # noqa
+    reflect_tool_spec,
+)
+
 from .tools.types import (  # noqa
     ToolDtype,
 
@@ -208,13 +216,13 @@ from .vectors.similarity import (  # noqa
     calc_np_similarities,
 )
 
-from .vectors.vectors import (  # noqa
-    Vector,
-    Vectorable,
-)
-
 from .vectors.stores import (  # noqa
     VectorStore,
+)
+
+from .vectors.types import (  # noqa
+    Vector,
+    Vectorable,
 )
 
 

@@ -9,7 +9,7 @@ from ..services import RequestOption
 from ..services import Response
 from ..services import ResponseOutput
 from ..services import Service_
-from .vectors import Vector
+from .types import Vector
 
 
 ##
