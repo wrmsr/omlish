@@ -1094,9 +1094,9 @@ class HttpConnection:
 
         # Chunked encoding will happen if HTTP/1.1 is used and either the caller passes encode_chunked=True or the
         # following conditions hold:
-        # 1. Content-Length has not been explicitly set
-        # 2. The body is a file or iterable, but not a str or bytes-like
-        # 3. Transfer-Encoding has NOT been explicitly set by the caller
+        #  1) Content-Length has not been explicitly set
+        #  2) The body is a file or iterable, but not a str or bytes-like
+        #  3) Transfer-Encoding has NOT been explicitly set by the caller
 
         if 'content-length' not in header_names:
             # Only chunk body if not explicitly set for backwards compatibility, assuming the client code is already
@@ -1140,14 +1140,14 @@ class HttpConnection:
             self._response = None
 
         # If a prior response exists, then it must be completed (otherwise, we cannot read this response's header to
-        # determine the connection-close behavior)
+        # determine the connection-close behavior).
         #
-        # NOTE: if a prior response existed, but was connection-close, then the socket and response were made
-        # independent of this HTTPConnection object since a new request requires that we open a whole new connection
+        # NOTE: If a prior response existed, but was connection-close, then the socket and response were made
+        # independent of this HTTPConnection object since a new request requires that we open a whole new connection.
         #
         # This means the prior response had one of two states:
-        #   1) will_close: this connection was reset and the prior socket and response operate independently
-        #   2) persistent: the response was retained and we await its is_closed() status to become true.
+        #  1) will_close: this connection was reset and the prior socket and response operate independently
+        #  2) persistent: the response was retained and we await its is_closed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReadyError(self._state)
 
