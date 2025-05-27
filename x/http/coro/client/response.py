@@ -16,39 +16,13 @@ from .io import Io
 from .io import PeekIo
 from .io import ReadIo
 from .io import ReadLineIo
-from .status import StatusLine
-from .status import read_status_line
+from .status import CoroHttpClientStatusLine
 
 
 ##
 
 
-class HttpResponseState:
-    closed: bool = False
-
-    # If the response includes a content-length header, we need to make sure that the client doesn't read more than
-    # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
-    # This will happen if a read is done (without a size) whether self.fp is buffered or not. So, no read by clients
-    # unless they know what they are doing.
-    method: str
-
-    # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
-    # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
-    # http clients.
-    headers: email.message.Message
-
-    # From the Status-Line of the response
-    version: int  # HTTP-Version
-    status: int  # Status-Code
-    reason: str  # Reason-Phrase
-
-    chunked: bool  # Is "chunked" being used?
-    chunk_left: ta.Optional[int]  # Bytes left to read in current chunk
-    length: ta.Optional[int]  # Number of bytes left in response
-    will_close: bool  # Conn will close at end of response
-
-
-class HttpResponse:
+class CoroHttpClientResponse:
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
@@ -57,15 +31,39 @@ class HttpResponse:
     def __init__(self, method: str) -> None:
         super().__init__()
 
-        state = HttpResponseState()
+        state = self._State()
         state.method = method
         self._state = state
 
+    class _State:
+        closed: bool = False
+
+        # If the response includes a content-length header, we need to make sure that the client doesn't read more than
+        # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
+        # This will happen if a read is done (without a size) whether self.fp is buffered or not. So, no read by clients
+        # unless they know what they are doing.
+        method: str
+
+        # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
+        # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
+        # http clients.
+        headers: email.message.Message
+
+        # From the Status-Line of the response
+        version: int  # HTTP-Version
+        status: int  # Status-Code
+        reason: str  # Reason-Phrase
+
+        chunked: bool  # Is "chunked" being used?
+        chunk_left: ta.Optional[int]  # Bytes left to read in current chunk
+        length: ta.Optional[int]  # Number of bytes left in response
+        will_close: bool  # Conn will close at end of response
+
     #
 
-    def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], StatusLine]:
+    def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHttpClientStatusLine]:
         try:
-            return (yield from read_status_line())
+            return (yield from CoroHttpClientStatusLine.read())
         except BadStatusLineError:
             self._close_conn()
             raise

@@ -25,15 +25,15 @@ from .io import CloseIo
 from .io import ConnectIo
 from .io import Io
 from .io import WriteIo
-from .response import HttpResponse
-from .status import read_status_line
+from .response import CoroHttpClientResponse
+from .status import CoroHttpClientStatusLine
 from .validation import HttpClientValidation
 
 
 ##
 
 
-class HttpConnection:
+class CoroHttpClientConnection:
     """
     HTTPConnection goes through a number of "states", which define when a client may legally make another request or
     fetch the response for a particular request. This diagram details these state transitions:
@@ -121,7 +121,7 @@ class HttpConnection:
 
         self._connected = False
         self._buffer: ta.List[bytes] = []
-        self._response: ta.Optional[HttpResponse] = None
+        self._response: ta.Optional[CoroHttpClientResponse] = None
         self._state = self._State.IDLE
         self._method: ta.Optional[str] = None
 
@@ -219,7 +219,7 @@ class HttpConnection:
         del headers
 
         try:
-            (version, code, message) = (yield from read_status_line())
+            (version, code, message) = (yield from CoroHttpClientStatusLine.read())
         except BadStatusLineError:  # noqa
             # self._close_conn()
             raise
@@ -706,10 +706,10 @@ class HttpConnection:
 
     #
 
-    def _new_response(self) -> HttpResponse:
-        return HttpResponse(check.not_none(self._method))
+    def _new_response(self) -> CoroHttpClientResponse:
+        return CoroHttpClientResponse(check.not_none(self._method))
 
-    def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
+    def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHttpClientResponse]:
         """
         Get the response from the server.
 

@@ -6,8 +6,8 @@ import urllib.parse
 
 from omlish.lite.check import check
 
-from .client import HttpConnection
-from .client import HttpResponse
+from .client import CoroHttpClientConnection
+from .client import CoroHttpClientResponse
 from .io import CloseIo
 from .io import ConnectIo
 from .io import Io
@@ -51,7 +51,7 @@ def run_stdlib(
 def run_coro(
         url: str,
 ) -> None:
-    conn_cls = HttpConnection
+    conn_cls = CoroHttpClientConnection
 
     ups = urllib.parse.urlparse(url)
     conn = conn_cls(check.not_none(ups.hostname))
@@ -98,7 +98,7 @@ def run_coro(
         else:
             raise TypeError(o)
 
-    resp: ta.Optional[HttpResponse] = None
+    resp: ta.Optional[CoroHttpClientResponse] = None
 
     def get_resp():
         nonlocal resp
