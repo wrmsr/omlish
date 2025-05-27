@@ -1133,29 +1133,29 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReadyError(self._state)
 
-        state = HttpResponseState()
-        state.method = check.not_none(self._method)
-        response = HttpResponse(state)
+        resp_state = HttpResponseState()
+        resp_state.method = check.not_none(self._method)
+        resp = HttpResponse(resp_state)
 
         try:
             try:
-                yield from response._begin_response()  # noqa
+                yield from resp._begin_response()  # noqa
             except ConnectionError:
                 yield from self.close()
                 raise
 
-            check.state(hasattr(state, 'will_close'))
+            check.state(hasattr(resp_state, 'will_close'))
             self._state = self._State.IDLE
 
-            if state.will_close:
+            if resp_state.will_close:
                 # this effectively passes the connection to the response
                 yield from self.close()
             else:
                 # remember this, so we can tell when it is complete
-                self._response = response
+                self._response = resp
 
-            return response
+            return resp
 
         except:
-            response.close()
+            resp.close()
             raise
