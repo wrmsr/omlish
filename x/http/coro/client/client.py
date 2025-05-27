@@ -29,6 +29,7 @@ from .headers import read_headers
 from .io import CloseIo
 from .io import ConnectIo
 from .io import Io
+from .io import PeekIo
 from .io import ReadIo
 from .io import ReadLineIo
 from .io import WriteIo
@@ -91,8 +92,8 @@ class HttpResponse:
 
         # If the response includes a content-length header, we need to make sure that the client doesn't read more than
         # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
-        # This will happen if a self.fp.read() is done (without a size) whether self.fp is buffered or not. So, no
-        # self.fp.read() by clients unless they know what they are doing.
+        # This will happen if a read is done (without a size) whether self.fp is buffered or not. So, no read by clients
+        # unless they know what they are doing.
         self._method = method
 
         # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
@@ -254,12 +255,12 @@ class HttpResponse:
             if line in (b'\r\n', b'\n', b''):
                 break
 
-    def _get_chunk_left(self) -> ta.Generator[Io, ta.Optional[bytes], ta.Any]:
+    def _get_chunk_left(self) -> ta.Generator[Io, ta.Optional[bytes], ta.Optional[int]]:
         # Return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
         # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
         # None if the last chunk has been read.
         chunk_left = self.chunk_left
-        if not chunk_left: # Can be 0 or None
+        if not chunk_left:  # Can be 0 or None
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
                 yield from self._safe_read(2)  # toss the CRLF at the end of the chunk
@@ -321,25 +322,20 @@ class HttpResponse:
             return b''
 
         if self.chunked:
-            return self._peek_chunked(n)
+            return (yield from self._peek_chunked(n))
 
-        return self.fp.peek(n)
+        return check.isinstance((yield PeekIo(n)), bytes)
 
-    def _readline(self, size=-1):
+    def _readline(self, size: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         # For backwards compatibility, a (slowish) readline().
-        if hasattr(self, 'peek'):
-            def nreadahead():
-                readahead = self.peek(1)
-                if not readahead:
-                    return 1
-                n = (readahead.find(b'\n') + 1) or len(readahead)
-                if size >= 0:
-                    n = min(n, size)
-                return n
-
-        else:
-            def nreadahead():
+        def nreadahead():
+            readahead = yield from self.peek(1)
+            if not readahead:
                 return 1
+            n = (readahead.find(b'\n') + 1) or len(readahead)
+            if size >= 0:
+                n = min(n, size)
+            return n
 
         if size is None:
             size = -1
@@ -353,7 +349,7 @@ class HttpResponse:
 
         res = bytearray()
         while size < 0 or len(res) < size:
-            b = self.read(nreadahead())
+            b = self.read((yield from nreadahead()))
             if not b:
                 break
             res += b
@@ -362,18 +358,18 @@ class HttpResponse:
 
         return bytes(res)
 
-    def readline(self, limit: int = -1) -> bytes:
-        if self.fp is None or self._method == 'HEAD':
+    def readline(self, limit: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
+        if self._closed or self._method == 'HEAD':
             return b''
 
         if self.chunked:
             # Fallback to IOBase readline which uses peek() and read()
-            return self._readline(limit)
+            return (yield from self._readline(limit))
 
         if self.length is not None and (limit < 0 or limit > self.length):
             limit = self.length
 
-        result = self.fp.readline(limit)
+        result = check.isinstance((yield ReadLineIo(limit)), bytes)
 
         if not result and limit:
             self._close_conn()
@@ -385,11 +381,11 @@ class HttpResponse:
 
         return result
 
-    def _peek_chunked(self, n: int) -> bytes:
+    def _peek_chunked(self, n: int) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         # Strictly speaking, _get_chunk_left() may cause more than one read, but that is ok, since that is to satisfy
         # the chunked protocol.
         try:
-            chunk_left = self._get_chunk_left()
+            chunk_left = yield from self._get_chunk_left()
         except IncompleteReadError:
             return b'' # peek doesn't worry about protocol
 
@@ -397,7 +393,7 @@ class HttpResponse:
             return b'' # eof
 
         # peek is allowed to return more than requested. Just request the entire chunk, and truncate what we get.
-        return self.fp.peek(chunk_left)[:chunk_left]
+        return check.isinstance((yield PeekIo(chunk_left)), bytes)[:chunk_left]
 
 
 class HttpConnection:

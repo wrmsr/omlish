@@ -39,6 +39,11 @@ class ReadLineIo(AnyReadIo):
     sz: int
 
 
+@dc.dataclass(frozen=True)
+class PeekIo(AnyReadIo):
+    sz: int
+
+
 #
 
 @dc.dataclass(frozen=True)
