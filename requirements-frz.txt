@@ -269,7 +269,7 @@ sortedcontainers==2.4.0
 soupsieve==2.7
 SQLAlchemy==2.0.41
 sqlean.py==3.49.1
-sqlglot==26.21.0
+sqlglot==26.22.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3
