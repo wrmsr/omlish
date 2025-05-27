@@ -6,7 +6,7 @@ import re
 ##
 
 
-class HttpClientValidation:
+class CoroHttpClientValidation:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 

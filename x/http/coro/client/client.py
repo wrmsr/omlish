@@ -25,7 +25,7 @@ from .io import Io
 from .io import WriteIo
 from .response import CoroHttpClientResponse
 from .status import CoroHttpClientStatusLine
-from .validation import HttpClientValidation
+from .validation import CoroHttpClientValidation
 
 
 ##
@@ -133,7 +133,7 @@ class CoroHttpClientConnection:
 
         (self._host, self._port) = self._get_hostport(host, port)
 
-        HttpClientValidation.validate_host(self._host)
+        CoroHttpClientValidation.validate_host(self._host)
 
     #
 
@@ -448,13 +448,13 @@ class CoroHttpClientConnection:
         else:
             raise CannotSendRequestError(self._state)
 
-        HttpClientValidation.validate_method(method)
+        CoroHttpClientValidation.validate_method(method)
 
         # Save the method for use later in the response phase
         self._method = method
 
         url = url or '/'
-        HttpClientValidation.validate_path(url)
+        CoroHttpClientValidation.validate_path(url)
 
         request = f'{method} {url} {self._http_version_str}'
 
@@ -545,7 +545,7 @@ class CoroHttpClientConnection:
         else:
             bh = header
 
-        HttpClientValidation.validate_header_name(bh)
+        CoroHttpClientValidation.validate_header_name(bh)
 
         bvs = []
         for one_value in values:
@@ -556,7 +556,7 @@ class CoroHttpClientConnection:
             else:
                 bv = one_value
 
-            HttpClientValidation.validate_header_value(bv)
+            CoroHttpClientValidation.validate_header_value(bv)
             bvs.append(bv)
 
         value = b'\r\n\t'.join(bvs)
