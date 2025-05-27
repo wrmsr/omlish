@@ -1,3 +1,8 @@
+"""
+TODO:
+ - ta.Annotated
+ - @dataclass class Params + omdev.py.attrdocs
+"""
 import collections.abc
 import inspect
 import types
@@ -34,11 +39,10 @@ class Reflector:
         else:
             is_nullable = False
 
-        ret: Type
-        if not args:
-            raise RuntimeError
+        check.not_empty(args)
 
-        elif len(args) == 1:
+        ret: Type
+        if len(args) == 1:
             ret = self.make_type(check.single(args))
 
         else:
