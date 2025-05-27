@@ -5,13 +5,12 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from .consts import MAX_LINE
 from .errors import BadStatusLineError
 from .errors import IncompleteReadError
 from .errors import LineTooLongError
 from .errors import UnknownProtocolError
-from .headers import parse_headers
-from .headers import read_headers
+from .headers import CoroHttpClientHeaders
+from .io import MAX_LINE
 from .io import Io
 from .io import PeekIo
 from .io import ReadIo
@@ -80,7 +79,7 @@ class CoroHttpClientResponse:
                 break
 
             # Skip the header from the 100 response
-            skipped_headers = yield from read_headers()  # noqa
+            skipped_headers = yield from CoroHttpClientHeaders.read_headers()  # noqa
 
             del skipped_headers
 
@@ -95,7 +94,7 @@ class CoroHttpClientResponse:
         else:
             raise UnknownProtocolError(version)
 
-        state.headers = yield from parse_headers()
+        state.headers = yield from CoroHttpClientHeaders.parse_headers()
 
         # Are we using the chunked-style of transfer encoding?
         tr_enc = state.headers.get('transfer-encoding')

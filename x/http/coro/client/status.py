@@ -3,10 +3,10 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from .consts import MAX_LINE
 from .errors import BadStatusLineError
 from .errors import LineTooLongError
 from .errors import RemoteDisconnectedError
+from .io import MAX_LINE
 from .io import Io
 from .io import ReadLineIo
 

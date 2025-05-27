@@ -12,15 +12,13 @@ import urllib.parse
 
 from omlish.lite.check import check
 
-from .consts import HTTP_PORT
 from .errors import BadStatusLineError
 from .errors import CannotSendHeaderError
 from .errors import CannotSendRequestError
 from .errors import InvalidUrlError
 from .errors import NotConnectedError
 from .errors import ResponseNotReadyError
-from .headers import parse_header_lines
-from .headers import read_headers
+from .headers import CoroHttpClientHeaders
 from .io import CloseIo
 from .io import ConnectIo
 from .io import Io
@@ -91,7 +89,10 @@ class CoroHttpClientConnection:
     _http_version = 11
     _http_version_str = 'HTTP/1.1'
 
-    default_port = HTTP_PORT
+    http_port: ta.ClassVar[int] = 80
+    https_port: ta.ClassVar[int] = 443
+
+    default_port = http_port
 
     class _NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
@@ -224,7 +225,7 @@ class CoroHttpClientConnection:
             # self._close_conn()
             raise
 
-        self._raw_proxy_headers = yield from read_headers()
+        self._raw_proxy_headers = yield from CoroHttpClientHeaders.read_headers()
 
         if code != http.HTTPStatus.OK:
             yield from self.close()
@@ -239,7 +240,7 @@ class CoroHttpClientConnection:
         """
 
         return (
-            parse_header_lines(self._raw_proxy_headers)
+            CoroHttpClientHeaders.parse_header_lines(self._raw_proxy_headers)
             if self._raw_proxy_headers is not None
             else None
         )

@@ -7,6 +7,12 @@ import typing as ta
 ##
 
 
+MAX_LINE: int = 65536
+
+
+##
+
+
 class Io(abc.ABC):  # noqa
     pass
 
