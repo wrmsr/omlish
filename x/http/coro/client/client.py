@@ -109,7 +109,7 @@ class HttpResponse:
 
         self._chunked: Maybe[bool] = Maybe.empty()  # is "chunked" being used?
         self._chunk_left: Maybe[int | None] = Maybe.empty()  # bytes left to read in current chunk
-        self.length = _UNKNOWN  # number of bytes left in response
+        self._length: Maybe[int | None] = Maybe.empty()  # number of bytes left in response
         self._will_close: Maybe[bool] = Maybe.empty()  # conn will close at end of response
 
     @property
@@ -197,9 +197,9 @@ class HttpResponse:
             return (yield from self._read_chunked(amt))
 
         if amt is not None:
-            if self.length is not None and amt > self.length:
+            if self._length.must() is not None and amt > self._length.must():
                 # clip the read to the "end of response"
-                amt = self.length
+                amt = self._length.must()
 
             s = check.isinstance((yield ReadIo(amt)), bytes)
 
@@ -208,26 +208,26 @@ class HttpResponse:
                 # compatibility.
                 self._close_conn()
 
-            elif self.length is not None:
-                self.length -= len(s)
-                if not self.length:
+            elif self._length.must() is not None:
+                self._length = self._length.map(lambda l: l - len(s))
+                if not self._length.must():
                     self._close_conn()
 
             return s
 
         else:
             # Amount is not given (unbounded read) so we must check self.length
-            if self.length is None:
+            if self._length.must() is None:
                 s = check.isinstance((yield ReadIo(None)), bytes)
 
             else:
                 try:
-                    s = yield from self._safe_read(self.length)
+                    s = yield from self._safe_read(self._length.must())
                 except IncompleteReadError:
                     self._close_conn()
                     raise
 
-                self.length = 0
+                self._length = Maybe.just(0)
 
             self._close_conn()        # we read everything
             return s
@@ -375,17 +375,17 @@ class HttpResponse:
             # Fallback to IOBase readline which uses peek() and read()
             return (yield from self._readline(limit))
 
-        if self.length is not None and (limit < 0 or limit > self.length):
-            limit = self.length
+        if self._length.must() is not None and (limit < 0 or limit > self._length.must()):
+            limit = self._length.must()
 
         result = check.isinstance((yield ReadLineIo(limit)), bytes)
 
         if not result and limit:
             self._close_conn()
 
-        elif self.length is not None:
-            self.length -= len(result)
-            if not self.length:
+        elif self._length.must() is not None:
+            self._length.map(lambda l: l - len(result))
+            if not self._length.must():
                 self._close_conn()
 
         return result
@@ -1085,18 +1085,18 @@ class HttpConnection:
 
         # do we have a Content-Length?
         # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
-        resp.length = None
+        resp._length = Maybe.just(None)
         length = resp.headers.get('content-length')
         if length and not resp._chunked.must():
             try:
-                resp.length = int(length)
+                resp._length = Maybe.just(int(length))
             except ValueError:
-                resp.length = None
+                resp._length = Maybe.just(None)
             else:
-                if resp.length < 0:  # ignore nonsensical negative lengths
-                    resp.length = None
+                if resp._length.must() < 0:  # ignore nonsensical negative lengths
+                    resp._length = Maybe.just(None)
         else:
-            resp.length = None
+            resp._length = Maybe.just(None)
 
         # does the body have a fixed length? (of zero)
         if (
@@ -1104,14 +1104,14 @@ class HttpConnection:
                 100 <= status < 200 or # 1xx codes
                 resp._method == 'HEAD'
         ):
-            resp.length = 0
+            resp._length = Maybe.just(0)
 
         # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
         # assume that the connection WILL close.
         if (
                 not resp._will_close.must() and
                 not resp._chunked.must() and
-                resp.length is None
+                resp._length.must() is None
         ):
             resp._will_close = Maybe.just(True)
 
