@@ -247,7 +247,7 @@ class HttpResponse:
     def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """Read and return the response body, or up to the next amt bytes."""
 
-        if self._state.closed is None:
+        if self._state.closed:
             return b''
 
         if self._state.method == 'HEAD':
@@ -396,17 +396,7 @@ class HttpResponse:
 
         return check.isinstance((yield PeekIo(n)), bytes)
 
-    def _readline(self, size: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
-        # For backwards compatibility, a (slowish) readline().
-        def nreadahead():
-            readahead = yield from self.peek(1)
-            if not readahead:
-                return 1
-            n = (readahead.find(b'\n') + 1) or len(readahead)
-            if size >= 0:
-                n = min(n, size)
-            return n
-
+    def _readline(self, size: ta.Optional[int] = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         if size is None:
             size = -1
         else:
@@ -417,9 +407,19 @@ class HttpResponse:
             else:
                 size = size_index()
 
+        # For backwards compatibility, a (slowish) readline().
+        def nreadahead():
+            readahead = yield from self.peek(1)
+            if not readahead:
+                return 1
+            n = (readahead.find(b'\n') + 1) or len(readahead)
+            if size >= 0:
+                n = min(n, size)
+            return n
+
         res = bytearray()
         while size < 0 or len(res) < size:
-            b = self.read((yield from nreadahead()))
+            b = (yield from self.read((yield from nreadahead())))
             if not b:
                 break
             res += b
@@ -557,7 +557,6 @@ class HttpConnection:
         self._response: ta.Optional[HttpResponse] = None
         self._state = self._State.IDLE
         self._method: ta.Optional[str] = None
-        self._response: ta.Optional[HttpResponse] = None
 
         self._tunnel_host: ta.Optional[str] = None
         self._tunnel_port: ta.Optional[int] = None
@@ -570,20 +569,13 @@ class HttpConnection:
 
     #
 
-    @contextlib.contextmanager
-    def _new_response_context(self) -> ta.Iterator:
-        check.state(self._response is None)
+    def _new_response(self) -> HttpResponse:
         method = check.not_none(self._method)
 
         resp_state = HttpResponseState()
         resp_state.method = check.not_none(method)
-        resp = HttpResponse(resp_state)
 
-        self._response = resp
-        try:
-            yield resp
-        finally:
-            self._response = None
+        return HttpResponse(resp_state)
 
     #
 
@@ -668,19 +660,19 @@ class HttpConnection:
         yield from self.send(b''.join(headers))
         del headers
 
-        with self._new_response_context() as resp:
-            try:
-                # FIXME
-                (version, code, message) = yield from resp._read_status()  # noqa
+        resp = self._new_response()
+        try:
+            # FIXME
+            (version, code, message) = yield from resp._read_status()  # noqa
 
-                self._raw_proxy_headers = yield from read_headers()
+            self._raw_proxy_headers = yield from read_headers()
 
-                if code != http.HTTPStatus.OK:
-                    yield from self.close()
-                    raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
+            if code != http.HTTPStatus.OK:
+                yield from self.close()
+                raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
-            finally:
-                resp.close()
+        finally:
+            resp.close()
 
     def get_proxy_response_headers(self) -> ta.Optional[email.message.Message]:
         """
@@ -708,7 +700,7 @@ class HttpConnection:
             ((self._host, self._port),),
             dict(
                 source_address=self._source_address,
-                **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),  # type: ignore
+                **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),
             ),
         )))
 
@@ -1151,28 +1143,28 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReadyError(self._state)
 
-        with self._new_response_context() as resp:
-            resp_state = resp._state  # noqa
+        resp = self._new_response()
+        resp_state = resp._state  # noqa
 
+        try:
             try:
-                try:
-                    yield from resp._begin()  # noqa
-                except ConnectionError:
-                    yield from self.close()
-                    raise
-
-                check.state(hasattr(resp_state, 'will_close'))
-                self._state = self._State.IDLE
-
-                if resp_state.will_close:
-                    # This effectively passes the connection to the response
-                    yield from self.close()
-                else:
-                    # Remember this, so we can tell when it is complete
-                    self._response = resp
-
-                return resp
-
-            except:
-                resp.close()
+                yield from resp._begin()  # noqa
+            except ConnectionError:
+                yield from self.close()
                 raise
+
+            check.state(hasattr(resp_state, 'will_close'))
+            self._state = self._State.IDLE
+
+            if resp_state.will_close:
+                # This effectively passes the connection to the response
+                yield from self.close()
+            else:
+                # Remember this, so we can tell when it is complete
+                self._response = resp
+
+            return resp
+
+        except:
+            resp.close()
+            raise

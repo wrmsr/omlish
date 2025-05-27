@@ -54,10 +54,10 @@ def run_coro(
     conn_cls = HttpConnection
 
     ups = urllib.parse.urlparse(url)
-    conn = conn_cls(ups.hostname)
+    conn = conn_cls(check.not_none(ups.hostname))
 
     sock: ta.Optional[socket.socket] = None
-    sock_file: ta.Optional = None
+    sock_file: ta.Optional[ta.Any] = None
 
     def handle_io(o: Io) -> ta.Any:
         nonlocal sock
@@ -65,7 +65,7 @@ def run_coro(
 
         if isinstance(o, ConnectIo):
             check.none(sock)
-            sock = socket.create_connection(*o.args, **o.kwargs)
+            sock = socket.create_connection(*o.args, **(o.kwargs or {}))
 
             # Might fail in OSs that don't implement TCP_NODELAY
             try:
@@ -88,12 +88,12 @@ def run_coro(
 
         elif isinstance(o, ReadIo):
             if (sz := o.sz) is not None:
-                return check.not_none(sock_file).read(sz)
+                return check.not_none(sock_file).read(sz)  # type: ignore[attr-defined]
             else:
-                return check.not_none(sock_file).read()
+                return check.not_none(sock_file).read()  # type: ignore[attr-defined]
 
         elif isinstance(o, ReadLineIo):
-            return check.not_none(sock_file).readline(o.sz)
+            return check.not_none(sock_file).readline(o.sz)  # type: ignore[attr-defined]
 
         else:
             raise TypeError(o)
