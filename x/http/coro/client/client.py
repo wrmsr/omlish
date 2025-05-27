@@ -639,6 +639,7 @@ class HttpConnection:
             check.not_none(self._tunnel_port),
             self._http_version_str.encode('ascii'),
         )
+
         headers = [connect]
         for header, value in self._tunnel_headers.items():
             headers.append(f'{header}: {value}\r\n'.encode('latin-1'))
@@ -649,7 +650,6 @@ class HttpConnection:
         yield from self.send(b''.join(headers))
         del headers
 
-        # FIXME
         try:
             (version, code, message) = (yield from read_status_line())
         except BadStatusLineError:  # noqa
