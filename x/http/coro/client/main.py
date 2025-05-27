@@ -50,7 +50,8 @@ def run_coro(
 ) -> None:
     conn_cls = HttpConnection
 
-    conn = conn_cls(url)
+    ups = urllib.parse.urlparse(url)
+    conn = conn_cls(ups.hostname)
 
     sock: ta.Optional[socket.socket] = None
     sock_file: ta.Optional = None
@@ -106,7 +107,7 @@ def run_coro(
 
     for f in [
         conn.connect,
-        lambda: conn.request('GET', '/'),
+        lambda: conn.request('GET', ups.path or '/'),
         get_resp,
         print_resp,
         conn.close,
@@ -133,8 +134,8 @@ def _main() -> None:
     #     print(repr(chunk))
 
     # run = run_urllib
-    run = run_stdlib
-    # run = run_coro
+    # run = run_stdlib
+    run = run_coro
 
     for url in [
         'http://www.example.com',
