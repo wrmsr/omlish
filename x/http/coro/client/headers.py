@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import email.message
 import email.parser
 import typing as ta

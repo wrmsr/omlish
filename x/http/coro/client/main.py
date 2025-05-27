@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import errno
 import socket
 import typing as ta
@@ -22,7 +23,9 @@ def run_urllib(
         url: str,
 ) -> None:
     import urllib.request
-    req = urllib.request.Request(url)
+
+    req = urllib.request.Request(url)  # noqa
+
     with urllib.request.urlopen(req) as resp:  # noqa
         print(resp.read())
 

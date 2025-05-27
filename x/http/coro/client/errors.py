@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import enum
 import typing as ta
