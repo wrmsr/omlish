@@ -10,7 +10,6 @@ import typing as ta
 import urllib.parse
 
 from omlish.lite.check import check
-from omlish.lite.maybes import Maybe
 
 from .consts import HTTP_PORT
 from .consts import MAX_LINE
@@ -33,7 +32,6 @@ from .io import PeekIo
 from .io import ReadIo
 from .io import ReadLineIo
 from .io import WriteIo
-from .state import ResponseState
 from .status import StatusLine
 from .status import read_status_line
 from .validation import HttpClientValidation
@@ -77,6 +75,31 @@ def _strip_ipv6_iface(enc_name: bytes) -> bytes:
     return enc_name
 
 
+class HttpResponseState:
+    closed: bool = False
+
+    # If the response includes a content-length header, we need to make sure that the client doesn't read more than
+    # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
+    # This will happen if a read is done (without a size) whether self.fp is buffered or not. So, no read by clients
+    # unless they know what they are doing.
+    method: str
+
+    # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
+    # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
+    # http clients.
+    headers: email.message.Message
+
+    # from the Status-Line of the response
+    version: int  # HTTP-Version
+    status: int  # Status-Code
+    reason: str  # Reason-Phrase
+
+    chunked: bool  # is "chunked" being used?
+    chunk_left: ta.Optional[int]  # bytes left to read in current chunk
+    length: ta.Optional[int]  # number of bytes left in response
+    will_close: bool  # conn will close at end of response
+
+
 class HttpResponse:
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
@@ -85,48 +108,13 @@ class HttpResponse:
 
     def __init__(
             self,
-            method: ta.Optional[str] = None,
+            state: HttpResponseState,
     ) -> None:
         super().__init__()
 
-        self._closed = False
+        self._state = state
 
-        # If the response includes a content-length header, we need to make sure that the client doesn't read more than
-        # the specified number of bytes. If it does, it will block until the server times out and closes the connection.
-        # This will happen if a read is done (without a size) whether self.fp is buffered or not. So, no read by clients
-        # unless they know what they are doing.
-        self._method = method
-
-        # The HttpResponse object is returned via urllib. The clients of http and urllib expect different attributes for
-        # the headers. headers is used here and supports urllib. msg is provided as a backwards compatibility layer for
-        # http clients.
-        self.headers: ta.Optional[email.message.Message] = None
-
-        # from the Status-Line of the response
-        self._version: Maybe[int] = Maybe.empty()  # HTTP-Version
-        self._status: Maybe[int] = Maybe.empty()  # Status-Code
-        self._reason: Maybe[str] = Maybe.empty()  # Reason-Phrase
-
-        self._chunked: Maybe[bool] = Maybe.empty()  # is "chunked" being used?
-        self._chunk_left: Maybe[int | None] = Maybe.empty()  # bytes left to read in current chunk
-        self._length: Maybe[int | None] = Maybe.empty()  # number of bytes left in response
-        self._will_close: Maybe[bool] = Maybe.empty()  # conn will close at end of response
-
-    @property
-    def version(self) -> Maybe[int]:
-        return self._version
-
-    @property
-    def status(self) -> Maybe[int]:
-        return self._status
-
-    @property
-    def reason(self) -> Maybe[str]:
-        return self._reason
-
-    @property
-    def will_close(self) -> Maybe[bool]:
-        return self._will_close
+    #
 
     def _read_status(self) -> ta.Generator[Io, ta.Optional[bytes], StatusLine]:
         try:
@@ -135,9 +123,82 @@ class HttpResponse:
             self._close_conn()
             raise
 
+    def _begin_response(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+        state = self._state
+
+        if hasattr(state, 'headers'):
+            # we've already started reading the response
+            return
+
+        # read until we get a non-100 response
+        while True:
+            version, status, reason = yield from self._read_status()
+            if status != http.HTTPStatus.CONTINUE:
+                break
+
+            # skip the header from the 100 response
+            skipped_headers = yield from read_headers()  # noqa
+
+            del skipped_headers
+
+        state.status = status
+        state.reason = reason.strip()
+        if version in ('HTTP/1.0', 'HTTP/0.9'):
+            # Some servers might still return '0.9', treat it as 1.0 anyway
+            state.version = 10
+        elif version.startswith('HTTP/1.'):
+            state.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
+        else:
+            raise UnknownProtocolError(version)
+
+        state.headers = yield from parse_headers()
+
+        # are we using the chunked-style of transfer encoding?
+        tr_enc = state.headers.get('transfer-encoding')
+        if tr_enc and tr_enc.lower() == 'chunked':
+            state.chunked = True
+            state.chunk_left = None
+        else:
+            state.chunked = False
+
+        # will the connection close at the end of the response?
+        state.will_close = self._check_close()
+
+        # do we have a Content-Length?
+        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
+        state.length = None
+        length = state.headers.get('content-length')
+        if length and not state.chunked:
+            try:
+                state.length = int(length)
+            except ValueError:
+                state.length = None
+            else:
+                if state.length < 0:  # ignore nonsensical negative lengths
+                    state.length = None
+        else:
+            state.length = None
+
+        # does the body have a fixed length? (of zero)
+        if (
+                status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
+                100 <= status < 200 or # 1xx codes
+                state.method == 'HEAD'
+        ):
+            state.length = 0
+
+        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
+        # assume that the connection WILL close.
+        if (
+                not state.will_close and
+                not state.chunked and
+                state.length is None
+        ):
+            state.will_close = True
+
     def _check_close(self) -> bool:
-        conn = self.headers.get('connection')
-        if self._version.or_else(None) == 11:
+        conn = self._state.headers.get('connection')
+        if getattr(self._state, 'version', None) == 11:
             # An HTTP/1.1 proxy is assumed to stay open unless explicitly closed.
             if conn and 'close' in conn.lower():
                 return True
@@ -146,7 +207,7 @@ class HttpResponse:
         # Some HTTP/1.0 implementations have support for persistent connections, using rules different than HTTP/1.1.
 
         # For older HTTP, Keep-Alive indicates persistent connection.
-        if self.headers.get('keep-alive'):
+        if self._state.headers.get('keep-alive'):
             return False
 
         # At least Akamai returns a 'Connection: Keep-Alive' header,
@@ -155,7 +216,7 @@ class HttpResponse:
             return False
 
         # Proxy-Connection is a netscape hack.
-        pconn = self.headers.get('proxy-connection')
+        pconn = self._state.headers.get('proxy-connection')
         if pconn and 'keep-alive' in pconn.lower():
             return False
 
@@ -163,10 +224,10 @@ class HttpResponse:
         return True
 
     def _close_conn(self) -> None:
-        self._closed = True
+        self._state.closed = True
 
     def close(self) -> None:
-        if not self._closed:
+        if not self._state.closed:
             self._close_conn()
 
     # These implementations are for the benefit of io.BufferedReader.
@@ -181,25 +242,25 @@ class HttpResponse:
         #
         # IMPLIES: if will_close is FALSE, then self.close() will ALWAYS be called, meaning self.isclosed() is
         #   meaningful.
-        return self._closed
+        return self._state.closed
 
     def read(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         """Read and return the response body, or up to the next amt bytes."""
 
-        if self._closed is None:
+        if self._state.closed is None:
             return b''
 
-        if self._method == 'HEAD':
+        if self._state.method == 'HEAD':
             self._close_conn()
             return b''
 
-        if self._chunked.must():
+        if self._state.chunked:
             return (yield from self._read_chunked(amt))
 
         if amt is not None:
-            if self._length.must() is not None and amt > self._length.must():
+            if self._state.length is not None and amt > self._state.length:
                 # clip the read to the "end of response"
-                amt = self._length.must()
+                amt = self._state.length
 
             s = check.isinstance((yield ReadIo(amt)), bytes)
 
@@ -208,26 +269,26 @@ class HttpResponse:
                 # compatibility.
                 self._close_conn()
 
-            elif self._length.must() is not None:
-                self._length = self._length.map(lambda l: l - len(s))
-                if not self._length.must():
+            elif self._state.length is not None:
+                self._state.length -= len(s)
+                if not self._state.length:
                     self._close_conn()
 
             return s
 
         else:
             # Amount is not given (unbounded read) so we must check self.length
-            if self._length.must() is None:
+            if self._state.length is None:
                 s = check.isinstance((yield ReadIo(None)), bytes)
 
             else:
                 try:
-                    s = yield from self._safe_read(self._length.must())
+                    s = yield from self._safe_read(self._state.length)
                 except IncompleteReadError:
                     self._close_conn()
                     raise
 
-                self._length = Maybe.just(0)
+                self._state.length = 0
 
             self._close_conn()        # we read everything
             return s
@@ -268,7 +329,7 @@ class HttpResponse:
         # Return self.chunk_left, reading a new chunk if necessary. chunk_left == 0: at the end of the current chunk,
         # need to close it chunk_left == None: No current chunk, should read next. This function returns non-zero or
         # None if the last chunk has been read.
-        chunk_left = self._chunk_left.must()
+        chunk_left = self._state.chunk_left
         if not chunk_left:  # Can be 0 or None
             if chunk_left is not None:
                 # We are at the end of chunk, discard chunk end
@@ -288,24 +349,24 @@ class HttpResponse:
 
                 chunk_left = None
 
-            self._chunk_left = Maybe.just(chunk_left)
+            self._state.chunk_left = chunk_left
 
         return chunk_left
 
     def _read_chunked(self, amt: ta.Optional[int] = None) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
-        check.state(self._chunked.present)
+        check.state(hasattr(self._state, 'chunked'))
         value = []
         try:
             while (chunk_left := (yield from self._get_chunk_left())) is not None:
                 if amt is not None and amt <= chunk_left:
                     value.append((yield from self._safe_read(amt)))
-                    self._chunk_left = Maybe.just(chunk_left - amt)
+                    self._state.chunk_left = chunk_left - amt
                     break
 
                 value.append((yield from self._safe_read(chunk_left)))
                 if amt is not None:
                     amt -= chunk_left
-                self._chunk_left = Maybe.just(0)
+                self._state.chunk_left = 0
 
             return b''.join(value)
 
@@ -327,10 +388,10 @@ class HttpResponse:
 
     def peek(self, n: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
         # Having this enables IOBase.readline() to read more than one byte at a time
-        if self._closed or self._method == 'HEAD':
+        if self._state.closed or self._state.method == 'HEAD':
             return b''
 
-        if self._chunked.must():
+        if self._state.chunked:
             return (yield from self._peek_chunked(n))
 
         return check.isinstance((yield PeekIo(n)), bytes)
@@ -368,24 +429,24 @@ class HttpResponse:
         return bytes(res)
 
     def readline(self, limit: int = -1) -> ta.Generator[Io, ta.Optional[bytes], bytes]:
-        if self._closed or self._method == 'HEAD':
+        if self._state.closed or self._state.method == 'HEAD':
             return b''
 
-        if self._chunked.must():
+        if self._state.chunked:
             # Fallback to IOBase readline which uses peek() and read()
             return (yield from self._readline(limit))
 
-        if self._length.must() is not None and (limit < 0 or limit > self._length.must()):
-            limit = self._length.must()
+        if self._state.length is not None and (limit < 0 or limit > self._state.length):
+            limit = self._state.length
 
         result = check.isinstance((yield ReadLineIo(limit)), bytes)
 
         if not result and limit:
             self._close_conn()
 
-        elif self._length.must() is not None:
-            self._length.map(lambda l: l - len(result))
-            if not self._length.must():
+        elif self._state.length is not None:
+            self._state.length -= len(result)
+            if not self._state.length:
                 self._close_conn()
 
         return result
@@ -1044,77 +1105,6 @@ class HttpConnection:
 
         yield from self.end_headers(body, encode_chunked=encode_chunked)
 
-    def _begin_response(self, resp: HttpResponse) -> ta.Generator[Io, ta.Optional[bytes], None]:
-        if resp.headers is not None:
-            # we've already started reading the response
-            return
-
-        # read until we get a non-100 response
-        while True:
-            version, status, reason = yield from resp._read_status()
-            if status != http.HTTPStatus.CONTINUE:
-                break
-
-            # skip the header from the 100 response
-            skipped_headers = yield from read_headers()  # noqa
-
-            del skipped_headers
-
-        resp._status = Maybe.just(status)
-        resp._reason = Maybe.just(reason.strip())
-        if version in ('HTTP/1.0', 'HTTP/0.9'):
-            # Some servers might still return '0.9', treat it as 1.0 anyway
-            resp._version = Maybe.just(10)
-        elif version.startswith('HTTP/1.'):
-            resp._version = Maybe.just(11)   # use HTTP/1.1 code for HTTP/1.x where x>=1
-        else:
-            raise UnknownProtocolError(version)
-
-        resp.headers = yield from parse_headers()
-
-        # are we using the chunked-style of transfer encoding?
-        tr_enc = resp.headers.get('transfer-encoding')
-        if tr_enc and tr_enc.lower() == 'chunked':
-            resp._chunked = Maybe.just(True)
-            resp._chunk_left = Maybe.just(None)
-        else:
-            resp._chunked = Maybe.just(False)
-
-        # will the connection close at the end of the response?
-        resp._will_close = Maybe.just(resp._check_close())
-
-        # do we have a Content-Length?
-        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is 'chunked'
-        resp._length = Maybe.just(None)
-        length = resp.headers.get('content-length')
-        if length and not resp._chunked.must():
-            try:
-                resp._length = Maybe.just(int(length))
-            except ValueError:
-                resp._length = Maybe.just(None)
-            else:
-                if resp._length.must() < 0:  # ignore nonsensical negative lengths
-                    resp._length = Maybe.just(None)
-        else:
-            resp._length = Maybe.just(None)
-
-        # does the body have a fixed length? (of zero)
-        if (
-                status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
-                100 <= status < 200 or # 1xx codes
-                resp._method == 'HEAD'
-        ):
-            resp._length = Maybe.just(0)
-
-        # if the connection remains open, and we aren't using chunked, and a content-length was not provided, then
-        # assume that the connection WILL close.
-        if (
-                not resp._will_close.must() and
-                not resp._chunked.must() and
-                resp._length.must() is None
-        ):
-            resp._will_close = Maybe.just(True)
-
     def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
         """
         Get the response from the server.
@@ -1143,19 +1133,21 @@ class HttpConnection:
         if self._state != self._State.REQ_SENT or self._response:
             raise ResponseNotReadyError(self._state)
 
-        response = HttpResponse(method=self._method)
+        state = HttpResponseState()
+        state.method = check.not_none(self._method)
+        response = HttpResponse(state)
 
         try:
             try:
-                yield from self._begin_response(response)
+                yield from response._begin_response()  # noqa
             except ConnectionError:
                 yield from self.close()
                 raise
 
-            check.state(response.will_close.present)
+            check.state(hasattr(state, 'will_close'))
             self._state = self._State.IDLE
 
-            if response.will_close.must():
+            if state.will_close:
                 # this effectively passes the connection to the response
                 yield from self.close()
             else:
