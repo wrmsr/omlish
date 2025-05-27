@@ -1,6 +1,7 @@
 import errno
 import socket
 import typing as ta
+import urllib.parse
 
 from omlish.lite.check import check
 
@@ -17,20 +18,24 @@ from .io import WriteIo
 ##
 
 
-def _main3() -> None:
+def run_urllib(
+        url: str,
+) -> None:
     import urllib.request
-    req = urllib.request.Request('https://www.baidu.com')
+    req = urllib.request.Request(url)
     with urllib.request.urlopen(req) as resp:  # noqa
         print(resp.read())
 
 
-def _main2() -> None:
+def run_stdlib(
+        url: str,
+) -> None:
     conn_cls = __import__('http.client').client.HTTPConnection
 
-    url = 'www.example.com'
-    conn = conn_cls(url)
+    ups = urllib.parse.urlparse(url)
+    conn = conn_cls(ups.hostname)
 
-    conn.request('GET', '/')
+    conn.request('GET', ups.path or '/')
     r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
     print((r1.status, r1.reason))
 
@@ -40,10 +45,11 @@ def _main2() -> None:
         print(repr(chunk))
 
 
-def _main() -> None:
+def run_coro(
+        url: str,
+) -> None:
     conn_cls = HttpConnection
 
-    url = 'www.example.com'
     conn = conn_cls(url)
 
     sock: ta.Optional[socket.socket] = None
@@ -114,6 +120,9 @@ def _main() -> None:
                 break
             i = handle_io(o)
 
+
+
+def _main() -> None:
     # conn.request('GET', '/')
     # r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
     # print((r1.status, r1.reason))
@@ -122,6 +131,17 @@ def _main() -> None:
     #
     # while chunk := r1.read(200):
     #     print(repr(chunk))
+
+    # run = run_urllib
+    run = run_stdlib
+    # run = run_coro
+
+    for url in [
+        'http://www.example.com',
+        'https://www.baidu.com',
+        'https://anglesharp.azurewebsites.net/Chunked',
+    ]:
+        run(url)
 
 
 if __name__ == '__main__':
