@@ -3,7 +3,6 @@
 https://github.com/python/cpython/blob/9b335cc8104dd83a5a1343dc649d1f3606682098/Lib/http/client.py
 """
 import collections.abc
-import contextlib
 import email.parser
 import enum
 import http
@@ -653,7 +652,7 @@ class HttpConnection:
         # FIXME
         try:
             (version, code, message) = (yield from read_status_line())
-        except BadStatusLineError:
+        except BadStatusLineError:  # noqa
             # self._close_conn()
             raise
 
