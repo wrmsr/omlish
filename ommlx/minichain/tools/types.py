@@ -34,6 +34,7 @@ class ToolDtype(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class PrimitiveToolDtype(ToolDtype):
     type: str
 
@@ -73,6 +74,7 @@ PRIMITIVE_TOOL_DTYPE_MAP: ta.Mapping[rfl.Type, PrimitiveToolDtype] = {
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class UnionToolDtype(ToolDtype):
     args: ta.Sequence[ToolDtype]
 
@@ -83,6 +85,7 @@ class UnionToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class NullableToolDtype(ToolDtype):
     type: ToolDtype
 
@@ -91,17 +94,20 @@ class NullableToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class SequenceToolDtype(ToolDtype):
     element: ToolDtype
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class MappingToolDtype(ToolDtype):
     key: ToolDtype
     value: ToolDtype
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class TupleToolDtype(ToolDtype):
     elements: ta.Sequence[ToolDtype]
 
@@ -110,6 +116,7 @@ class TupleToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class EnumToolDtype(ToolDtype):
     type: ToolDtype
     values: ta.Sequence[ta.Any]

@@ -63,7 +63,6 @@ class ToolJsonschemaRenderer:
             req_lst = []
             for p in fn.params or []:
                 pr_dct[p.name] = {
-                    'name': p.name,
                     **({'description': p.desc} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
                 }
@@ -84,16 +83,11 @@ class ToolJsonschemaRenderer:
             **({'type': self.render_type(fn.returns_type)} if fn.returns_type is not None else {}),
         }
 
-        fn_dct = {
+        return {
             'name': fn.name,
             **({'description': fn.desc} if fn.desc is not None else {}),
             **({'parameters': pa_dct} if pa_dct else {}),
             **({'return': ret_dct} if ret_dct else {}),
-        }
-
-        return {
-            'type': 'function',
-            'function': fn_dct,
         }
 
 

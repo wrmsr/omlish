@@ -248,6 +248,7 @@ def test_multiply_tool_json_schema():
             },
             'required': ['a', 'b'],
             'type': 'object',
+            'additionalProperties': False,
         },
     }
 

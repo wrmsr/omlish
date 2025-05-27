@@ -40,69 +40,60 @@ def test_reflection():
     print(json.dumps(js, indent=2, separators=(', ', ': ')))
 
     assert js == {
-        'type': 'function',
-        'function': {
-            'name': 'foo',
-            'description': "Foo's some params.\n",
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'i': {
-                        'name': 'i',
-                        'description': 'Some int',
-                        'type': 'integer',
-                    },
-                    's': {
-                        'name': 's',
-                        'description': 'A string',
-                        'type': 'string',
-                    },
-                    'lit': {
-                        'name': 'lit',
-                        'description': 'A literal of some kind',
-                        'type': 'string',
-                        'enum': [
-                            'foo',
-                            'bar',
-                        ],
-                    },
-                    'q_s': {
-                        'name': 'q_s',
-                        'description': (
-                            'A sequence of strings. This is a long docstring to test word wrapping. This is a long '
-                            'docstring to test\nword wrapping. This is a long docstring to test word wrapping. This is '
-                            'a long docstring to test word\nwrapping. This is a long docstring to test word wrapping. '
-                            'This is a long docstring to test word wrapping.\nThis is a long docstring to test word '
-                            'wrapping.'
-                        ),
-                        'type': 'array',
-                        'items': {
-                            'type': 'string',
-                        },
-                    },
-                    'o_q_s': {
-                        'name': 'o_q_s',
-                        'description': 'An *optional* sequence of strings',
-                        'type': 'array',
-                        'items': {
-                            'type': 'string',
-                        },
-                        'nullable': True,
-                    },
+        'name': 'foo',
+        'description': "Foo's some params.\n",
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'i': {
+                    'description': 'Some int',
+                    'type': 'integer',
                 },
-                'required': [
-                    'i',
-                    's',
-                    'lit',
-                    'q_s',
-                ],
-                'additionalProperties': False,
-            },
-            'return': {
-                'description': "The foo'd params.",
-                'type': {
+                's': {
+                    'description': 'A string',
                     'type': 'string',
                 },
+                'lit': {
+                    'description': 'A literal of some kind',
+                    'type': 'string',
+                    'enum': [
+                        'foo',
+                        'bar',
+                    ],
+                },
+                'q_s': {
+                    'description': (
+                        'A sequence of strings. This is a long docstring to test word wrapping. This is a long '
+                        'docstring to test\nword wrapping. This is a long docstring to test word wrapping. This is a '
+                        'long docstring to test word\nwrapping. This is a long docstring to test word wrapping. This '
+                        'is a long docstring to test word wrapping.\nThis is a long docstring to test word wrapping.'
+                    ),
+                    'type': 'array',
+                    'items': {
+                        'type': 'string',
+                    },
+                },
+                'o_q_s': {
+                    'description': 'An *optional* sequence of strings',
+                    'type': 'array',
+                    'items': {
+                        'type': 'string',
+                    },
+                    'nullable': True,
+                },
+            },
+            'required': [
+                'i',
+                's',
+                'lit',
+                'q_s',
+            ],
+            'additionalProperties': False,
+        },
+        'return': {
+            'description': "The foo'd params.",
+            'type': {
+                'type': 'string',
             },
         },
     }
