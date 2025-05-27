@@ -152,9 +152,23 @@ from .streaming import (  # noqa
 
 from .tools.types import (  # noqa
     ToolDtype,
-    ToolExecRequest,
+
+    PrimitiveToolDtype,
+
+    UnionToolDtype,
+    NullableToolDtype,
+
+    SequenceToolDtype,
+    MappingToolDtype,
+    TupleToolDtype,
+
+    EnumToolDtype,
+
     ToolParam,
+
     ToolSpec,
+
+    ToolExecRequest,
 )
 
 from .vectors.embeddings import (  # noqa

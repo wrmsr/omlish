@@ -188,7 +188,8 @@ import pytest
 from omlish.testing import pytest as ptu
 
 from .... import minichain as mc
-from ....minichain.tools.types import build_tool_spec_json_schema
+from ....minichain.tools.jsonschema import build_tool_spec_json_schema
+from ....minichain.tools.types import PrimitiveToolDtype
 
 
 ##
@@ -208,16 +209,16 @@ def multiply(a: float, b: float) -> float:
 
 MULTIPLY_TOOL = mc.ToolSpec(
     'multiply',
-    [
+    params=[
         mc.ToolParam(
             'a',
-            'number',
+            type=PrimitiveToolDtype.of(float),
             desc='The first number to multiply',
             required=True,
         ),
         mc.ToolParam(
             'b',
-            'number',
+            type=PrimitiveToolDtype.of(float),
             desc='The second number to multiply',
             required=True,
         ),
@@ -227,7 +228,6 @@ MULTIPLY_TOOL = mc.ToolSpec(
 
 MULTIPLY_TOOL_JSON_SCHEMA = build_tool_spec_json_schema(
     MULTIPLY_TOOL,
-    omit_additional_properties_keyword=True,
 )
 
 

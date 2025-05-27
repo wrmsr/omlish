@@ -15,6 +15,7 @@ from ....llms.services import MaxTokens
 from ....llms.services import Temperature
 from ....standard import ApiKey
 from ....standard import DefaultRequestOptions
+from ....tools.types import ToolDtype
 from ....tools.types import ToolParam
 from ....tools.types import ToolSpec
 from ..chat import OpenaiChatService
@@ -44,8 +45,12 @@ def test_openai_tools(harness):
 
     tool_spec = ToolSpec(
         'get_weather',
-        [
-            ToolParam('location', 'string', desc='The location to get the weather for.'),
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+                desc='The location to get the weather for.',
+            ),
         ],
         desc='Gets the weather in the given location.',
     )

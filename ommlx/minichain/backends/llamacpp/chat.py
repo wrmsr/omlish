@@ -2,6 +2,7 @@ import contextlib
 import os.path
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
@@ -18,6 +19,7 @@ from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...standard import ModelPath
+from ...tools.types import PrimitiveToolDtype
 from .format import ROLES_MAP
 from .format import get_msg_content
 
@@ -81,10 +83,10 @@ class LlamacppChatService(ChatService):
                         type='object',
                         properties={
                             tp.name: dict(
-                                type=tp.dtype,
+                                type=check.isinstance(tp.type, PrimitiveToolDtype).type,
                                 **lang.opt_kw(description=tp.desc),
                             )
-                            for tp in t.spec.params
+                            for tp in t.spec.params or []
                         },
                     ),
                 )

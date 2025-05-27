@@ -56,21 +56,24 @@ class ToolJsonschemaRenderer:
         raise TypeError(t)
 
     def render_tool(self, fn: ToolSpec) -> dict:
-        pr_dct: dict[str, dict] = {}
-        req_lst: list[str] = []
-        for p in fn.params or []:
-            pr_dct[p.name] = {
-                'name': p.name,
-                **({'description': p.desc} if p.desc is not None else {}),
-                **(self.render_type(p.type) if p.type is not None else {}),
-            }
-            if p.required:
-                req_lst.append(p.name)
+        pr_dct: dict[str, dict] | None = None
+        req_lst: list[str] | None = None
+        if fn.params is not None:
+            pr_dct = {}
+            req_lst = []
+            for p in fn.params or []:
+                pr_dct[p.name] = {
+                    'name': p.name,
+                    **({'description': p.desc} if p.desc is not None else {}),
+                    **(self.render_type(p.type) if p.type is not None else {}),
+                }
+                if p.required:
+                    req_lst.append(p.name)
 
         pa_dct = {
             'type': 'object',
-            **({'properties': pr_dct} if pr_dct else {}),
-            **({'required': req_lst} if req_lst else {}),
+            **({'properties': pr_dct} if pr_dct is not None else {}),
+            **({'required': req_lst} if req_lst is not None else {}),
             # By default any additional properties are allowed.
             # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
             **({'additionalProperties': False} if not fn.allow_additional_params else {}),

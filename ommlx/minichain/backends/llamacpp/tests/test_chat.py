@@ -7,6 +7,7 @@ from omlish.testing import pytest as ptu
 from ....chat.messages import UserMessage
 from ....chat.tools import Tool
 from ....standard import ModelPath
+from ....tools.types import ToolDtype
 from ....tools.types import ToolParam
 from ....tools.types import ToolSpec
 from ..chat import LlamacppChatService
@@ -41,8 +42,12 @@ def test_llamacpp_chat_model_tools():
 
     tool_spec = ToolSpec(
         'get_weather',
-        [
-            ToolParam('location', 'string', desc='The location to get the weather for.'),
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+                desc='The location to get the weather for.',
+            ),
         ],
         desc='Gets the weather in the given location.',
     )

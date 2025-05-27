@@ -1,41 +1,171 @@
+import types
 import typing as ta
 
 from omlish import cached
+from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-
-
-ToolDtype: ta.TypeAlias = str
+from omlish import reflect as rfl
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class ToolParam(lang.Final):
+class ToolDtype(lang.Abstract, lang.Sealed):
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'ToolDtype':
+        """Only supports the simplest cases - use reflection by default."""
+
+        if isinstance(obj, ToolDtype):
+            return obj
+
+        elif isinstance(obj, str):
+            return PrimitiveToolDtype(obj)
+
+        else:
+            return PrimitiveToolDtype.of(obj)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class PrimitiveToolDtype(ToolDtype):
+    type: str
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.type)
+
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'PrimitiveToolDtype':
+        if isinstance(obj, PrimitiveToolDtype):
+            return obj
+
+        rty = rfl.type_(obj)
+
+        if isinstance(rty, (type, rfl.Any)):
+            return PRIMITIVE_TOOL_DTYPE_MAP.get(rty, OBJECT_PRIMITIVE_TOOL_DTYPE)
+
+        else:
+            raise TypeError(rty)
+
+
+OBJECT_PRIMITIVE_TOOL_DTYPE = PrimitiveToolDtype('object')
+
+NULL_PRIMITIVE_TOOL_DTYPE = PrimitiveToolDtype('null')
+
+PRIMITIVE_TOOL_DTYPE_MAP: ta.Mapping[rfl.Type, PrimitiveToolDtype] = {
+    int: PrimitiveToolDtype('integer'),
+    float: PrimitiveToolDtype('number'),
+    str: PrimitiveToolDtype('string'),
+    bool: PrimitiveToolDtype('boolean'),
+    types.NoneType: NULL_PRIMITIVE_TOOL_DTYPE,
+
+    rfl.type_(ta.Any): PrimitiveToolDtype('any'),
+}
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class UnionToolDtype(ToolDtype):
+    args: ta.Sequence[ToolDtype]
+
+    def __post_init__(self) -> None:
+        check.arg(len(self.args) > 1)
+        check.unique(self.args)
+        check.not_in(NULL_PRIMITIVE_TOOL_DTYPE, self.args)
+
+
+@dc.dataclass(frozen=True)
+class NullableToolDtype(ToolDtype):
+    type: ToolDtype
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SequenceToolDtype(ToolDtype):
+    element: ToolDtype
+
+
+@dc.dataclass(frozen=True)
+class MappingToolDtype(ToolDtype):
+    key: ToolDtype
+    value: ToolDtype
+
+
+@dc.dataclass(frozen=True)
+class TupleToolDtype(ToolDtype):
+    elements: ta.Sequence[ToolDtype]
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class EnumToolDtype(ToolDtype):
+    type: ToolDtype
+    values: ta.Sequence[ta.Any]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ToolParam:
     name: str
-    dtype: ToolDtype
 
     _: dc.KW_ONLY
 
     desc: str | None = None
-    required: bool | None = None
+
+    type: ToolDtype | None = None
+
+    required: bool = False
+
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+##
 
 
 @dc.dataclass(frozen=True)
-class ToolSpec(lang.Final):
+class ToolSpec:
     name: str
-    params: ta.Sequence[ToolParam]
 
     _: dc.KW_ONLY
 
-    desc: str
+    desc: str | None = None
+
+    params: ta.Sequence[ToolParam] | None = None
+    allow_additional_params: bool = False
+
+    returns_desc: str | None = None
+    returns_type: ToolDtype | None = None
+
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
 
     @cached.property
     @dc.init
     def params_by_name(self) -> ta.Mapping[str, ToolParam]:
-        return col.make_map_by(lambda p: p.name, self.params, strict=True)
+        return col.make_map_by(
+            lambda p: p.name,
+            self.params or [],
+            strict=True,
+        )
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -47,53 +177,3 @@ class ToolExecRequest(lang.Final):
     _: dc.KW_ONLY
 
     raw_args: str | None = None
-
-
-##
-
-
-class ToolParamJsonSchema(ta.TypedDict, total=False):
-    type: str
-    description: str
-
-
-class ToolSpecParametersJsonSchema(ta.TypedDict, total=False):
-    type: ta.Required[ta.Literal['object']]
-    properties: dict[str, ToolParamJsonSchema]
-    required: list[str]
-    additionalProperties: bool
-
-
-class ToolSpecJsonSchema(ta.TypedDict, total=False):
-    name: ta.Required[str]
-    description: str
-    parameters: ToolSpecParametersJsonSchema
-
-
-def build_tool_spec_json_schema(
-        ts: ToolSpec,
-        *,
-        omit_additional_properties_keyword: bool = False,
-) -> ToolSpecJsonSchema:
-    return dict(
-        name=ts.name,
-
-        **lang.truthy_kw(description=ts.desc),  # type: ignore[typeddict-item]
-
-        parameters=dict(
-            type='object',
-
-            properties={
-                tp.name: dict(
-                    type=tp.dtype,
-
-                    **lang.truthy_kw(description=tp.desc),
-                )
-                for tp in ts.params
-            },
-
-            required=[tp.name for tp in ts.params if tp.required],
-
-            **(dict(additionalProperties=False) if not omit_additional_properties_keyword else {}),
-        ),
-    )

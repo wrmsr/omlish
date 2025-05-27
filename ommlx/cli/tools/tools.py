@@ -25,8 +25,12 @@ def _get_weather(location: str) -> str:
 
 _WEATHER_TOOL_SPEC = mc.ToolSpec(
     'get_weather',
-    [
-        mc.ToolParam('location', 'string', desc='The location to get the weather for.'),
+    params=[
+        mc.ToolParam(
+            'location',
+            type=mc.ToolDtype.of(str),
+            desc='The location to get the weather for.',
+        ),
     ],
     desc='Gets the weather in the given location.',
 )

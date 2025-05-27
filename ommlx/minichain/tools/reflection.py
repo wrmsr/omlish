@@ -13,11 +13,10 @@ from omlish import check
 from omlish import collections as col
 from omlish import reflect as rfl
 
-from .types import OBJECT_PRIMITIVE_TYPE
-from .types import PRIMITIVE_TYPE_MAP
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
+from .types import PrimitiveToolDtype
 from .types import SequenceToolDtype
 from .types import ToolDtype
 from .types import ToolParam
@@ -67,8 +66,8 @@ class ToolReflector:
     ])
 
     def make_type(self, rty: rfl.Type) -> ToolDtype:
-        if isinstance(rty, type):
-            return PRIMITIVE_TYPE_MAP.get(rty, OBJECT_PRIMITIVE_TYPE)
+        if isinstance(rty, (type, rfl.Any)):
+            return PrimitiveToolDtype.of(rty)
 
         if isinstance(rty, rfl.Union):
             return self.make_union_type(*rty.args)
