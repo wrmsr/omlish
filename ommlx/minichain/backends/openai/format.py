@@ -22,9 +22,9 @@ from ...llms.services import Temperature
 from ...llms.services import TokenUsage
 from ...llms.services import TokenUsageOutput
 from ...services import RequestOption
-from ...tools import ToolExecRequest
-from ...tools import ToolSpec
-from ...tools import build_tool_spec_json_schema
+from ...tools.types import ToolExecRequest
+from ...tools.types import ToolSpec
+from ...tools.types import build_tool_spec_json_schema
 
 
 ##

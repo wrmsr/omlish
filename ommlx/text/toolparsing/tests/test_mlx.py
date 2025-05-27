@@ -188,7 +188,7 @@ import pytest
 from omlish.testing import pytest as ptu
 
 from .... import minichain as mc
-from ....minichain.tools import build_tool_spec_json_schema
+from ....minichain.tools.types import build_tool_spec_json_schema
 
 
 ##

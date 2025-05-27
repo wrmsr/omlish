@@ -134,6 +134,28 @@ class SpecialTokens:
         else:
             raise TypeError(item)
 
+    @ta.overload
+    def get(
+            self,
+            item: SpecialTokenT | type[SpecialTokenT],
+            default: SpecialTokenT,
+    ) -> SpecialTokenT:
+        ...
+
+    @ta.overload
+    def get(
+            self,
+            item: SpecialTokenT | type[SpecialTokenT],
+            default: ta.Optional[SpecialTokenT] = None,  # noqa
+    ) -> ta.Optional[SpecialTokenT]:  # noqa
+        ...
+
+    def get(self, item, default=None):
+        try:
+            return self[item]
+        except KeyError:
+            return default
+
     #
 
     _any_dct: dict[type, tuple[SpecialToken, ...]]

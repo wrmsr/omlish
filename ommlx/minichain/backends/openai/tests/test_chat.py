@@ -15,8 +15,8 @@ from ....llms.services import MaxTokens
 from ....llms.services import Temperature
 from ....standard import ApiKey
 from ....standard import DefaultRequestOptions
-from ....tools import ToolParam
-from ....tools import ToolSpec
+from ....tools.types import ToolParam
+from ....tools.types import ToolSpec
 from ..chat import OpenaiChatService
 
 
