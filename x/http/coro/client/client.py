@@ -41,41 +41,6 @@ from .validation import HttpClientValidation
 ##
 
 
-_UNKNOWN = 'UNKNOWN'
-
-_METHODS_EXPECTING_BODY = {'PATCH', 'POST', 'PUT'}
-
-
-def _encode(data: str, name: str = 'data') -> bytes:
-    """Call data.encode("latin-1") but show a better error message."""
-
-    try:
-        return data.encode('latin-1')
-
-    except UnicodeEncodeError as err:
-        raise UnicodeEncodeError(
-            err.encoding,
-            err.object,
-            err.start,
-            err.end,
-            "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') if you want to send it encoded in UTF-8." % (  # noqa
-                name.title(),
-                data[err.start:err.end],
-                name,
-            ),
-        ) from None
-
-
-def _strip_ipv6_iface(enc_name: bytes) -> bytes:
-    """Remove interface scope from IPv6 address."""
-
-    enc_name, percent, _ = enc_name.partition(b'%')
-    if percent:
-        check.state(enc_name.startswith(b'['))
-        enc_name += b']'
-    return enc_name
-
-
 class HttpResponseState:
     closed: bool = False
 
@@ -828,6 +793,16 @@ class HttpConnection:
 
     #
 
+    @staticmethod
+    def _strip_ipv6_iface(enc_name: bytes) -> bytes:
+        """Remove interface scope from IPv6 address."""
+
+        enc_name, percent, _ = enc_name.partition(b'%')
+        if percent:
+            check.state(enc_name.startswith(b'['))
+            enc_name += b']'
+        return enc_name
+
     def put_request(
             self,
             method: str,
@@ -901,7 +876,7 @@ class HttpConnection:
                         netloc_enc = netloc.encode('ascii')
                     except UnicodeEncodeError:
                         netloc_enc = netloc.encode('idna')
-                    self.put_header('Host', _strip_ipv6_iface(netloc_enc))
+                    self.put_header('Host', self._strip_ipv6_iface(netloc_enc))
                 else:
                     if self._tunnel_host:
                         host = self._tunnel_host
@@ -918,7 +893,7 @@ class HttpConnection:
                     # As per RFC 273, IPv6 address should be wrapped with [] when used as Host header
                     host_enc = self._wrap_ipv6(host_enc)
                     if ':' in host:
-                        host_enc = _strip_ipv6_iface(host_enc)
+                        host_enc = self._strip_ipv6_iface(host_enc)
 
                     if port == self.default_port:
                         self.put_header('Host', host_enc)
@@ -1019,8 +994,11 @@ class HttpConnection:
 
         yield from self._send_request(method, url, body, dict(headers or {}), encode_chunked)
 
-    @staticmethod
+    _METHODS_EXPECTING_BODY: ta.ClassVar[ta.Container[str]] = {'PATCH', 'POST', 'PUT'}
+
+    @classmethod
     def _get_content_length(
+            cls,
             body: ta.Optional[ta.Any],
             method: str,
     ) -> ta.Optional[int]:
@@ -1033,7 +1011,7 @@ class HttpConnection:
 
         if body is None:
             # Do an explicit check for not None here to distinguish between unset and set but empty
-            if method.upper() in _METHODS_EXPECTING_BODY:
+            if method.upper() in cls._METHODS_EXPECTING_BODY:
                 return 0
             else:
                 return None
@@ -1053,6 +1031,27 @@ class HttpConnection:
             return len(body)
 
         return None
+
+    @staticmethod
+    def _encode(data: str, name: str = 'data') -> bytes:
+        """Call data.encode("latin-1") but show a better error message."""
+
+        try:
+            return data.encode('latin-1')
+
+        except UnicodeEncodeError as err:
+            raise UnicodeEncodeError(
+                err.encoding,
+                err.object,
+                err.start,
+                err.end,
+                "%s (%.20r) is not valid Latin-1. Use %s.encode('utf-8') if you want to send it encoded in UTF-8." % (
+                # noqa
+                    name.title(),
+                    data[err.start:err.end],
+                    name,
+                ),
+            ) from None
 
     def _send_request(
             self,
@@ -1099,7 +1098,7 @@ class HttpConnection:
 
         if isinstance(body, str):
             # RFC 2616 Section 3.7.1 says that text default has a default charset of iso-8859-1.
-            body = _encode(body, 'body')
+            body = self._encode(body, 'body')
 
         yield from self.end_headers(body, encode_chunked=encode_chunked)
 
