@@ -6,9 +6,9 @@ import urllib.parse
 
 from omlish.lite.check import check
 
-from .client import CoroHttpClientConnection
-from .client import CoroHttpClientResponse
-from .io import CoroHttpClientIo
+from ..client import CoroHttpClientConnection
+from ..client import CoroHttpClientResponse
+from ..io import CoroHttpClientIo
 
 
 ##

@@ -3,9 +3,7 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from .errors import BadStatusLineError
-from .errors import LineTooLongError
-from .errors import RemoteDisconnectedError
+from .errors import CoroHttpClientErrors
 from .io import CoroHttpClientIo
 
 
@@ -21,10 +19,10 @@ class CoroHttpClientStatusLine(ta.NamedTuple):
     def read(cls) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], 'CoroHttpClientStatusLine']:
         line = str(check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes), 'iso-8859-1')  # noqa
         if len(line) > CoroHttpClientIo.MAX_LINE:
-            raise LineTooLongError(LineTooLongError.LineType.STATUS)
+            raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.STATUS)
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
-            raise RemoteDisconnectedError('Remote end closed connection without response')
+            raise CoroHttpClientErrors.RemoteDisconnectedError('Remote end closed connection without response')
 
         version = ''
         reason = ''
@@ -39,15 +37,15 @@ class CoroHttpClientStatusLine(ta.NamedTuple):
                 pass
 
         if not version.startswith('HTTP/'):
-            raise BadStatusLineError(line)
+            raise CoroHttpClientErrors.BadStatusLineError(line)
 
         # The status code is a three-digit number
         try:
             status = int(status_str)
         except ValueError:
-            raise BadStatusLineError(line) from None
+            raise CoroHttpClientErrors.BadStatusLineError(line) from None
 
         if status < 100 or status > 999:
-            raise BadStatusLineError(line)
+            raise CoroHttpClientErrors.BadStatusLineError(line)
 
         return cls(version, status, reason)

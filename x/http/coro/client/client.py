@@ -12,12 +12,7 @@ import urllib.parse
 
 from omlish.lite.check import check
 
-from .errors import BadStatusLineError
-from .errors import CannotSendHeaderError
-from .errors import CannotSendRequestError
-from .errors import InvalidUrlError
-from .errors import NotConnectedError
-from .errors import ResponseNotReadyError
+from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
 from .io import CoroHttpClientIo
 from .response import CoroHttpClientResponse
@@ -145,7 +140,7 @@ class CoroHttpClientConnection:
                     if host[i+1:] == '':  # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise CoroHttpClientErrors.InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -218,7 +213,7 @@ class CoroHttpClientConnection:
 
         try:
             (version, code, message) = (yield from CoroHttpClientStatusLine.read())
-        except BadStatusLineError:  # noqa
+        except CoroHttpClientErrors.BadStatusLineError:  # noqa
             # self._close_conn()
             raise
 
@@ -299,7 +294,7 @@ class CoroHttpClientConnection:
             if self._auto_open:
                 yield from self.connect()
             else:
-                raise NotConnectedError
+                raise CoroHttpClientErrors.NotConnectedError
 
         check.state(self._connected)
 
@@ -443,7 +438,7 @@ class CoroHttpClientConnection:
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise CannotSendRequestError(self._state)
+            raise CoroHttpClientErrors.CannotSendRequestError(self._state)
 
         CoroHttpClientValidation.validate_method(method)
 
@@ -535,7 +530,7 @@ class CoroHttpClientConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise CannotSendHeaderError
+            raise CoroHttpClientErrors.CannotSendHeaderError
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -576,7 +571,7 @@ class CoroHttpClientConnection:
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise CannotSendHeaderError
+            raise CoroHttpClientErrors.CannotSendHeaderError
 
         yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -733,7 +728,7 @@ class CoroHttpClientConnection:
         #  1) will_close: this connection was reset and the prior socket and response operate independently
         #  2) persistent: the response was retained and we await its is_closed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise ResponseNotReadyError(self._state)
+            raise CoroHttpClientErrors.ResponseNotReadyError(self._state)
 
         resp = self._new_response()
         resp_state = resp._state  # noqa

@@ -5,8 +5,7 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from .errors import ClientError
-from .errors import LineTooLongError
+from .errors import CoroHttpClientErrors
 from .io import CoroHttpClientIo
 
 
@@ -33,11 +32,11 @@ class CoroHttpClientHeaders:
         while True:
             line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
             if len(line) > CoroHttpClientIo.MAX_LINE:
-                raise LineTooLongError(LineTooLongError.LineType.HEADER)
+                raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.HEADER)
 
             headers.append(line)
             if len(headers) > cls.MAX_HEADERS:
-                raise ClientError(f'got more than {cls.MAX_HEADERS} headers')
+                raise CoroHttpClientErrors.ClientError(f'got more than {cls.MAX_HEADERS} headers')
 
             if line in (b'\r\n', b'\n', b''):
                 break

@@ -5,10 +5,7 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from .errors import BadStatusLineError
-from .errors import IncompleteReadError
-from .errors import LineTooLongError
-from .errors import UnknownProtocolError
+from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
 from .io import CoroHttpClientIo
 from .status import CoroHttpClientStatusLine
@@ -59,7 +56,7 @@ class CoroHttpClientResponse:
     def _read_status(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], CoroHttpClientStatusLine]:
         try:
             return (yield from CoroHttpClientStatusLine.read())
-        except BadStatusLineError:
+        except CoroHttpClientErrors.BadStatusLineError:
             self._close_conn()
             raise
 
@@ -88,7 +85,7 @@ class CoroHttpClientResponse:
             # Use HTTP/1.1 code for HTTP/1.x where x>=1
             state.version = 11
         else:
-            raise UnknownProtocolError(version)
+            raise CoroHttpClientErrors.UnknownProtocolError(version)
 
         state.headers = yield from CoroHttpClientHeaders.parse_headers()
 
@@ -222,7 +219,7 @@ class CoroHttpClientResponse:
             else:
                 try:
                     s = yield from self._safe_read(self._state.length)
-                except IncompleteReadError:
+                except CoroHttpClientErrors.IncompleteReadError:
                     self._close_conn()
                     raise
 
@@ -235,7 +232,7 @@ class CoroHttpClientResponse:
         # Read the next chunk size from the file
         line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
         if len(line) > CoroHttpClientIo.MAX_LINE:
-            raise LineTooLongError(LineTooLongError.LineType.CHUNK_SIZE)
+            raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.CHUNK_SIZE)
 
         i = line.find(b';')
         if i >= 0:
@@ -254,7 +251,7 @@ class CoroHttpClientResponse:
         while True:
             line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
             if len(line) > CoroHttpClientIo.MAX_LINE:
-                raise LineTooLongError(LineTooLongError.LineType.TRAILER)
+                raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.TRAILER)
 
             if not line:
                 # A vanishingly small number of sites EOF without sending the trailer
@@ -276,7 +273,7 @@ class CoroHttpClientResponse:
             try:
                 chunk_left = yield from self._read_next_chunk_size()
             except ValueError:
-                raise IncompleteReadError(b'') from None
+                raise CoroHttpClientErrors.IncompleteReadError(b'') from None
 
             if chunk_left == 0:
                 # Last chunk: 1*('0') [ chunk-extension ] CRLF
@@ -311,8 +308,8 @@ class CoroHttpClientResponse:
 
             return b''.join(value)
 
-        except IncompleteReadError as exc:
-            raise IncompleteReadError(b''.join(value)) from exc
+        except CoroHttpClientErrors.IncompleteReadError as exc:
+            raise CoroHttpClientErrors.IncompleteReadError(b''.join(value)) from exc
 
     def _safe_read(self, amt: int) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], bytes]:
         """
@@ -324,7 +321,7 @@ class CoroHttpClientResponse:
 
         data = check.isinstance((yield CoroHttpClientIo.ReadIo(amt)), bytes)
         if len(data) < amt:
-            raise IncompleteReadError(data, amt-len(data))
+            raise CoroHttpClientErrors.IncompleteReadError(data, amt-len(data))
         return data
 
     def peek(self, n: int = -1) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], bytes]:
@@ -400,7 +397,7 @@ class CoroHttpClientResponse:
         # the chunked protocol.
         try:
             chunk_left = yield from self._get_chunk_left()
-        except IncompleteReadError:
+        except CoroHttpClientErrors.IncompleteReadError:
             return b''  # Peek doesn't worry about protocol
 
         if chunk_left is None:
