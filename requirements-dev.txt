@@ -4,14 +4,14 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.7.7
+uv>=0.7.8
 
 pytest==8.3.5
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.4.0
-pytest-xdist==3.6.1
+pytest-xdist==3.7.0
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
@@ -114,7 +114,7 @@ snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
 trino==0.334.0
 
-huggingface-hub==0.32.0
+huggingface-hub==0.32.1
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 

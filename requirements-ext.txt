@@ -28,7 +28,7 @@ scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.7.2
+tavily-python==0.7.3
 
 sqlite-vec==0.1.6
 
@@ -59,12 +59,12 @@ blobfile==3.0.0
 # diag
 
 yappi==1.6.10
-pyinstrument==5.0.1
+pyinstrument==5.0.2
 
 
 ##
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.4.2
-notebook==7.4.2
+jupyterlab==4.4.3
+notebook==7.4.3

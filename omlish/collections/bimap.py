@@ -57,11 +57,9 @@ class _BiMapImpl(_BaseBiMapImpl[K, V]):
         inv_dct: dict[V, K] = {}
         for k, v in lang.yield_dict_init(*args, **kwargs):
             check.not_in(k, dct)
-            check.not_in(v, dct)
+            check.not_in(v, inv_dct)
             dct[k] = v
             inv_dct[v] = k
-
-        self._dct = dct
 
         super().__init__(dct, _BiMapImpl._Inverse(inv_dct, self))
 
@@ -73,17 +71,17 @@ class _BiMapImpl(_BaseBiMapImpl[K, V]):
 
 
 @ta.overload
+def make_bi_map(**kwargs: V) -> BiMap[V, str]:
+    ...
+
+
+@ta.overload
 def make_bi_map(dct: ta.Mapping[K, V]) -> BiMap[K, V]:
     ...
 
 
 @ta.overload
 def make_bi_map(items: ta.Iterable[tuple[K, V]]) -> BiMap[K, V]:
-    ...
-
-
-@ta.overload
-def make_bi_map(**kwargs: str) -> BiMap[str, str]:
     ...
 
 
