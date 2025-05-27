@@ -182,7 +182,7 @@ class HttpResponse:
         # Does the body have a fixed length? (of zero)
         if (
                 status in (http.HTTPStatus.NO_CONTENT, http.HTTPStatus.NOT_MODIFIED) or
-                100 <= status < 200 or # 1xx codes
+                100 <= status < 200 or  # 1xx codes
                 state.method == 'HEAD'
         ):
             state.length = 0
