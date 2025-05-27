@@ -1,41 +1,45 @@
 import json
 import typing as ta
 
-from ..reflection import Reflector
-from ..rendering import Renderer
+from ..jsonschema import ToolJsonschemaRenderer
+from ..reflection import ToolReflector
+
+
+def foo(
+        i: int,
+        s: str,
+        lit: ta.Literal['foo', 'bar'],
+        q_s: ta.Sequence[str],
+        o_q_s: ta.Sequence[str] | None = None,
+) -> str:
+    """
+    Foo's some params.
+
+    Args:
+        i: Some int
+        s: A string
+        lit: A literal of some kind
+        q_s: A sequence of strings. This is a long docstring to test word wrapping. This is a long docstring to test
+            word wrapping. This is a long docstring to test word wrapping. This is a long docstring to test word
+            wrapping. This is a long docstring to test word wrapping. This is a long docstring to test word wrapping.
+            This is a long docstring to test word wrapping.
+        o_q_s: An *optional* sequence of strings
+
+    Returns:
+        The foo'd params.
+    """
+
+    return repr((i, s, lit, q_s, o_q_s))
 
 
 def test_reflection():
-    def foo(
-            i: int,
-            s: str,
-            lit: ta.Literal['foo', 'bar'],
-            q_s: ta.Sequence[str],
-            o_q_s: ta.Sequence[str] | None = None,
-    ) -> str:
-        """
-        Foo's some params.
+    ts = ToolReflector().make_function(foo)
+    print(ts)
 
-        Args:
-            i: Some int
-            s: A string
-            lit: A literal of some kind
-            q_s: A sequence of strings
-            o_q_s: An *optional* sequence of strings
+    js = ToolJsonschemaRenderer().render_tool(ts)
+    print(json.dumps(js, indent=2, separators=(', ', ': ')))
 
-        Returns:
-            The foo'd params.
-        """
-
-        return repr((i, s, lit, q_s, o_q_s))
-
-    fn = Reflector().make_function(foo)
-    print(fn)
-
-    rf = Renderer().render_function(fn)
-    print(json.dumps(rf, indent=2, separators=(', ', ': ')))
-
-    assert rf == {
+    assert js == {
         'type': 'function',
         'function': {
             'name': 'foo',
@@ -64,7 +68,13 @@ def test_reflection():
                     },
                     'q_s': {
                         'name': 'q_s',
-                        'description': 'A sequence of strings',
+                        'description': (
+                            'A sequence of strings. This is a long docstring to test word wrapping. This is a long '
+                            'docstring to test\nword wrapping. This is a long docstring to test word wrapping. This is '
+                            'a long docstring to test word\nwrapping. This is a long docstring to test word wrapping. '
+                            'This is a long docstring to test word wrapping.\nThis is a long docstring to test word '
+                            'wrapping.'
+                        ),
                         'type': 'array',
                         'items': {
                             'type': 'string',
@@ -86,6 +96,7 @@ def test_reflection():
                     'lit',
                     'q_s',
                 ],
+                'additionalProperties': False,
             },
             'return': {
                 'description': "The foo'd params.",

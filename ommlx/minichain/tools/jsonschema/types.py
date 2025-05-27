@@ -11,7 +11,7 @@ from omlish import reflect as rfl
 
 
 @dc.dataclass(frozen=True)
-class Type(lang.Abstract, lang.Sealed):
+class ToolDtype(lang.Abstract, lang.Sealed):
     pass
 
 
@@ -19,22 +19,22 @@ class Type(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True)
-class Primitive(Type):
+class PrimitiveToolDtype(ToolDtype):
     type: str
 
 
-OBJECT_PRIMITIVE_TYPE = Primitive('object')
+OBJECT_PRIMITIVE_TYPE = PrimitiveToolDtype('object')
 
-NULL_PRIMITIVE_TYPE = Primitive('null')
+NULL_PRIMITIVE_TYPE = PrimitiveToolDtype('null')
 
-PRIMITIVE_TYPE_MAP: ta.Mapping[rfl.Type, Type] = {
-    int: Primitive('integer'),
-    float: Primitive('number'),
-    str: Primitive('string'),
-    bool: Primitive('boolean'),
+PRIMITIVE_TYPE_MAP: ta.Mapping[rfl.Type, ToolDtype] = {
+    int: PrimitiveToolDtype('integer'),
+    float: PrimitiveToolDtype('number'),
+    str: PrimitiveToolDtype('string'),
+    bool: PrimitiveToolDtype('boolean'),
     types.NoneType: NULL_PRIMITIVE_TYPE,
 
-    rfl.type_(ta.Any): Primitive('any'),
+    rfl.type_(ta.Any): PrimitiveToolDtype('any'),
 }
 
 
@@ -42,8 +42,8 @@ PRIMITIVE_TYPE_MAP: ta.Mapping[rfl.Type, Type] = {
 
 
 @dc.dataclass(frozen=True)
-class Union(Type):
-    args: ta.Sequence[Type]
+class UnionToolDtype(ToolDtype):
+    args: ta.Sequence[ToolDtype]
 
     def __post_init__(self) -> None:
         check.arg(len(self.args) > 1)
@@ -52,35 +52,35 @@ class Union(Type):
 
 
 @dc.dataclass(frozen=True)
-class Nullable(Type):
-    type: Type
+class NullableToolDtype(ToolDtype):
+    type: ToolDtype
 
 
 #
 
 
 @dc.dataclass(frozen=True)
-class Sequence(Type):
-    element: Type
+class SequenceToolDtype(ToolDtype):
+    element: ToolDtype
 
 
 @dc.dataclass(frozen=True)
-class Mapping(Type):
-    key: Type
-    value: Type
+class MappingToolDtype(ToolDtype):
+    key: ToolDtype
+    value: ToolDtype
 
 
 @dc.dataclass(frozen=True)
-class Tuple(Type):
-    elements: ta.Sequence[Type]
+class TupleToolDtype(ToolDtype):
+    elements: ta.Sequence[ToolDtype]
 
 
 #
 
 
 @dc.dataclass(frozen=True)
-class Enum(Type):
-    type: Type
+class EnumToolDtype(ToolDtype):
+    type: ToolDtype
     values: ta.Sequence[ta.Any]
 
 
@@ -88,14 +88,14 @@ class Enum(Type):
 
 
 @dc.dataclass(frozen=True)
-class Param:
+class ToolParam:
     name: str
 
     _: dc.KW_ONLY
 
-    description: str | None = None
+    desc: str | None = None
 
-    type: Type | None = None
+    type: ToolDtype | None = None
 
     required: bool = False
 
@@ -104,14 +104,29 @@ class Param:
 
 
 @dc.dataclass(frozen=True)
-class Function:
+class ToolSpec:
     name: str
 
     _: dc.KW_ONLY
 
-    description: str | None = None
+    desc: str | None = None
 
-    params: ta.Sequence[Param] | None = None
+    params: ta.Sequence[ToolParam] | None = None
+    allow_additional_params: bool = False
 
-    returns_description: str | None = None
-    returns_type: Type | None = None
+    returns_desc: str | None = None
+    returns_type: ToolDtype | None = None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ToolExecRequest(lang.Final):
+    id: str
+    spec: ToolSpec
+    args: ta.Mapping[str, ta.Any]
+
+    _: dc.KW_ONLY
+
+    raw_args: str | None = None

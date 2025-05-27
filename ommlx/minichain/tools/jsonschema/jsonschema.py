@@ -1,53 +1,53 @@
-from .types import Enum
-from .types import Function
-from .types import Mapping
-from .types import Nullable
-from .types import Primitive
-from .types import Sequence
-from .types import Tuple
-from .types import Type
-from .types import Union
+from .types import EnumToolDtype
+from .types import MappingToolDtype
+from .types import NullableToolDtype
+from .types import PrimitiveToolDtype
+from .types import SequenceToolDtype
+from .types import ToolDtype
+from .types import ToolSpec
+from .types import TupleToolDtype
+from .types import UnionToolDtype
 
 
 ##
 
 
-class Renderer:
-    def render_type(self, t: Type) -> dict:
-        if isinstance(t, Primitive):
+class ToolJsonschemaRenderer:
+    def render_type(self, t: ToolDtype) -> dict:
+        if isinstance(t, PrimitiveToolDtype):
             return {'type': t.type}
 
-        if isinstance(t, Union):
+        if isinstance(t, UnionToolDtype):
             return {
                 'anyOf': [self.render_type(a) for a in t.args],
             }
 
-        if isinstance(t, Nullable):
+        if isinstance(t, NullableToolDtype):
             return {
                 **self.render_type(t.type),
                 'nullable': True,
             }
 
-        if isinstance(t, Sequence):
+        if isinstance(t, SequenceToolDtype):
             return {
                 'type': 'array',
                 'items': self.render_type(t.element),
             }
 
-        if isinstance(t, Mapping):
+        if isinstance(t, MappingToolDtype):
             # FIXME: t.key
             return {
                 'type': 'object',
                 'additionalProperties': self.render_type(t.value),
             }
 
-        if isinstance(t, Tuple):
+        if isinstance(t, TupleToolDtype):
             return {
                 'type': 'array',
                 'prefixItems': [self.render_type(e) for e in t.elements],
             }
 
-        if isinstance(t, Enum):
+        if isinstance(t, EnumToolDtype):
             return {
                 **self.render_type(t.type),
                 'enum': list(t.values),
@@ -55,13 +55,13 @@ class Renderer:
 
         raise TypeError(t)
 
-    def render_function(self, fn: Function) -> dict:
+    def render_tool(self, fn: ToolSpec) -> dict:
         pr_dct: dict[str, dict] = {}
         req_lst: list[str] = []
         for p in fn.params or []:
             pr_dct[p.name] = {
                 'name': p.name,
-                **({'description': p.description} if p.description is not None else {}),
+                **({'description': p.desc} if p.desc is not None else {}),
                 **(self.render_type(p.type) if p.type is not None else {}),
             }
             if p.required:
@@ -71,16 +71,19 @@ class Renderer:
             'type': 'object',
             **({'properties': pr_dct} if pr_dct else {}),
             **({'required': req_lst} if req_lst else {}),
+            # By default any additional properties are allowed.
+            # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
+            **({'additionalProperties': False} if not fn.allow_additional_params else {}),
         }
 
         ret_dct = {
-            **({'description': fn.returns_description} if fn.returns_description is not None else {}),
+            **({'description': fn.returns_desc} if fn.returns_desc is not None else {}),
             **({'type': self.render_type(fn.returns_type)} if fn.returns_type is not None else {}),
         }
 
         fn_dct = {
             'name': fn.name,
-            **({'description': fn.description} if fn.description is not None else {}),
+            **({'description': fn.desc} if fn.desc is not None else {}),
             **({'parameters': pa_dct} if pa_dct else {}),
             **({'return': ret_dct} if ret_dct else {}),
         }
@@ -89,3 +92,10 @@ class Renderer:
             'type': 'function',
             'function': fn_dct,
         }
+
+
+##
+
+
+def build_tool_spec_json_schema(ts: ToolSpec) -> dict:
+    return ToolJsonschemaRenderer().render_tool(ts)

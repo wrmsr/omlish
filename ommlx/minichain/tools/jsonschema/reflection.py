@@ -15,22 +15,22 @@ from omlish import reflect as rfl
 
 from .types import OBJECT_PRIMITIVE_TYPE
 from .types import PRIMITIVE_TYPE_MAP
-from .types import Enum
-from .types import Function
-from .types import Mapping
-from .types import Nullable
-from .types import Param
-from .types import Sequence
-from .types import Tuple
-from .types import Type
-from .types import Union
+from .types import EnumToolDtype
+from .types import MappingToolDtype
+from .types import NullableToolDtype
+from .types import SequenceToolDtype
+from .types import ToolDtype
+from .types import ToolParam
+from .types import ToolSpec
+from .types import TupleToolDtype
+from .types import UnionToolDtype
 
 
 ##
 
 
-class Reflector:
-    def make_union_type(self, *args: rfl.Type) -> Type:
+class ToolReflector:
+    def make_union_type(self, *args: rfl.Type) -> ToolDtype:
         check.unique(args)
 
         if types.NoneType in args:
@@ -41,18 +41,18 @@ class Reflector:
 
         check.not_empty(args)
 
-        ret: Type
+        ret: ToolDtype
         if len(args) == 1:
             ret = self.make_type(check.single(args))
 
         else:
-            ret = Union(tuple(
+            ret = UnionToolDtype(tuple(
                 self.make_type(a_rty)
                 for a_rty in args
             ))
 
         if is_nullable:
-            ret = Nullable(ret)
+            ret = NullableToolDtype(ret)
 
         return ret
 
@@ -66,7 +66,7 @@ class Reflector:
         dict,
     ])
 
-    def make_type(self, rty: rfl.Type) -> Type:
+    def make_type(self, rty: rfl.Type) -> ToolDtype:
         if isinstance(rty, type):
             return PRIMITIVE_TYPE_MAP.get(rty, OBJECT_PRIMITIVE_TYPE)
 
@@ -78,23 +78,23 @@ class Reflector:
 
             if g_cls in self.SEQUENCE_TYPES:
                 a_rty = check.single(rty.args)
-                return Sequence(self.make_type(a_rty))
+                return SequenceToolDtype(self.make_type(a_rty))
 
             if g_cls in self.MAPPING_TYPES:
                 k_rty, v_rty = rty.args
-                return Mapping(
+                return MappingToolDtype(
                     self.make_type(k_rty),
                     self.make_type(v_rty),
                 )
 
             if g_cls is tuple:
-                return Tuple(tuple(
+                return TupleToolDtype(tuple(
                     self.make_type(a_rty)
                     for a_rty in rty.args
                 ))
 
         if isinstance(rty, rfl.Literal):
-            return Enum(
+            return EnumToolDtype(
                 self.make_union_type(*col.unique(
                     rfl.type_(type(a))
                     for a in rty.args
@@ -104,7 +104,7 @@ class Reflector:
 
         raise TypeError(rty)
 
-    def make_function(self, fn: ta.Callable) -> Function:
+    def make_function(self, fn: ta.Callable) -> ToolSpec:
         ds: docstrings.Docstring | None = None
         if (doc := inspect.getdoc(fn)) is not None:
             ds = docstrings.parse(doc)
@@ -117,27 +117,34 @@ class Reflector:
         th = ta.get_type_hints(fn)
         sig = inspect.signature(fn)
 
-        params: dict[str, Param] = {}
+        params: dict[str, ToolParam] = {}
         for sig_p in sig.parameters.values():
             ds_p = ds_p_dct.get(sig_p.name)
 
-            params[sig_p.name] = Param(
+            params[sig_p.name] = ToolParam(
                 sig_p.name,
 
-                description=ds_p.description if ds_p is not None else None,
+                desc=ds_p.description if ds_p is not None else None,
 
                 type=self.make_type(rfl.type_(th[sig_p.name])) if sig_p.name in th else None,
 
                 required=sig_p.default is inspect.Parameter.empty,
             )
 
-        return Function(
+        return ToolSpec(
             fn.__name__,
 
-            description=ds.description if ds is not None else None,
+            desc=ds.description if ds is not None else None,
 
             params=tuple(params.values()) if params else None,
 
-            returns_description=ds.returns.description if ds is not None and ds.returns is not None else None,
+            returns_desc=ds.returns.description if ds is not None and ds.returns is not None else None,
             returns_type=self.make_type(rfl.type_(th['return'])) if 'return' in th else None,
         )
+
+
+##
+
+
+def reflect_tool_spec(fn: ta.Callable) -> ToolSpec:
+    return ToolReflector().make_function(fn)
