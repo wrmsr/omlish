@@ -569,16 +569,6 @@ class HttpConnection:
 
     #
 
-    def _new_response(self) -> HttpResponse:
-        method = check.not_none(self._method)
-
-        resp_state = HttpResponseState()
-        resp_state.method = check.not_none(method)
-
-        return HttpResponse(resp_state)
-
-    #
-
     def _get_hostport(self, host: str, port: ta.Optional[int]) -> ta.Tuple[str, int]:
         if port is None:
             i = host.rfind(':')
@@ -660,19 +650,18 @@ class HttpConnection:
         yield from self.send(b''.join(headers))
         del headers
 
-        resp = self._new_response()
+        # FIXME
         try:
-            # FIXME
-            (version, code, message) = yield from resp._read_status()  # noqa
+            (version, code, message) = (yield from read_status_line())
+        except BadStatusLineError:
+            # self._close_conn()
+            raise
 
-            self._raw_proxy_headers = yield from read_headers()
+        self._raw_proxy_headers = yield from read_headers()
 
-            if code != http.HTTPStatus.OK:
-                yield from self.close()
-                raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
-
-        finally:
-            resp.close()
+        if code != http.HTTPStatus.OK:
+            yield from self.close()
+            raise OSError(f'Tunnel connection failed: {code} {message.strip()}')
 
     def get_proxy_response_headers(self) -> ta.Optional[email.message.Message]:
         """
@@ -1114,6 +1103,16 @@ class HttpConnection:
             body = _encode(body, 'body')
 
         yield from self.end_headers(body, encode_chunked=encode_chunked)
+
+    #
+
+    def _new_response(self) -> HttpResponse:
+        method = check.not_none(self._method)
+
+        resp_state = HttpResponseState()
+        resp_state.method = check.not_none(method)
+
+        return HttpResponse(resp_state)
 
     def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], HttpResponse]:
         """
