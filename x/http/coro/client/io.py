@@ -7,52 +7,48 @@ import typing as ta
 ##
 
 
-MAX_LINE: int = 65536
+class CoroHttpClientIo:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
 
+    #
 
-##
+    MAX_LINE: ta.ClassVar[int] = 65536
 
+    #
 
-class Io(abc.ABC):  # noqa
-    pass
+    class Io(abc.ABC):  # noqa
+        pass
 
+    #
 
-#
+    @dc.dataclass(frozen=True)
+    class ConnectIo(Io):
+        args: ta.Tuple[ta.Any, ...]
+        kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
 
+    class CloseIo(Io):
+        pass
 
-@dc.dataclass(frozen=True)
-class ConnectIo(Io):
-    args: ta.Tuple[ta.Any, ...]
-    kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
+    #
 
+    class AnyReadIo(Io):  # noqa
+        pass
 
-class CloseIo(Io):
-    pass
+    @dc.dataclass(frozen=True)
+    class ReadIo(AnyReadIo):
+        sz: ta.Optional[int]
 
+    @dc.dataclass(frozen=True)
+    class ReadLineIo(AnyReadIo):
+        sz: int
 
-#
+    @dc.dataclass(frozen=True)
+    class PeekIo(AnyReadIo):
+        sz: int
 
-class AnyReadIo(Io):  # noqa
-    pass
+    #
 
-
-@dc.dataclass(frozen=True)
-class ReadIo(AnyReadIo):
-    sz: ta.Optional[int]
-
-
-@dc.dataclass(frozen=True)
-class ReadLineIo(AnyReadIo):
-    sz: int
-
-
-@dc.dataclass(frozen=True)
-class PeekIo(AnyReadIo):
-    sz: int
-
-
-#
-
-@dc.dataclass(frozen=True)
-class WriteIo(Io):
-    data: bytes
+    @dc.dataclass(frozen=True)
+    class WriteIo(Io):
+        data: bytes

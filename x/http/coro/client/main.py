@@ -8,12 +8,7 @@ from omlish.lite.check import check
 
 from .client import CoroHttpClientConnection
 from .client import CoroHttpClientResponse
-from .io import CloseIo
-from .io import ConnectIo
-from .io import Io
-from .io import ReadIo
-from .io import ReadLineIo
-from .io import WriteIo
+from .io import CoroHttpClientIo
 
 
 ##
@@ -59,11 +54,11 @@ def run_coro(
     sock: ta.Optional[socket.socket] = None
     sock_file: ta.Optional[ta.Any] = None
 
-    def handle_io(o: Io) -> ta.Any:
+    def handle_io(o: CoroHttpClientIo.Io) -> ta.Any:
         nonlocal sock
         nonlocal sock_file
 
-        if isinstance(o, ConnectIo):
+        if isinstance(o, CoroHttpClientIo.ConnectIo):
             check.none(sock)
             sock = socket.create_connection(*o.args, **(o.kwargs or {}))
 
@@ -78,21 +73,21 @@ def run_coro(
 
             return None
 
-        elif isinstance(o, CloseIo):
+        elif isinstance(o, CoroHttpClientIo.CloseIo):
             check.not_none(sock).close()
             return None
 
-        elif isinstance(o, WriteIo):
+        elif isinstance(o, CoroHttpClientIo.WriteIo):
             check.not_none(sock).sendall(o.data)
             return None
 
-        elif isinstance(o, ReadIo):
+        elif isinstance(o, CoroHttpClientIo.ReadIo):
             if (sz := o.sz) is not None:
                 return check.not_none(sock_file).read(sz)  # type: ignore[attr-defined]
             else:
                 return check.not_none(sock_file).read()  # type: ignore[attr-defined]
 
-        elif isinstance(o, ReadLineIo):
+        elif isinstance(o, CoroHttpClientIo.ReadLineIo):
             return check.not_none(sock_file).readline(o.sz)  # type: ignore[attr-defined]
 
         else:

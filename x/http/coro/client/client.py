@@ -19,10 +19,7 @@ from .errors import InvalidUrlError
 from .errors import NotConnectedError
 from .errors import ResponseNotReadyError
 from .headers import CoroHttpClientHeaders
-from .io import CloseIo
-from .io import ConnectIo
-from .io import Io
-from .io import WriteIo
+from .io import CoroHttpClientIo
 from .response import CoroHttpClientResponse
 from .status import CoroHttpClientStatusLine
 from .validation import CoroHttpClientValidation
@@ -202,7 +199,7 @@ class CoroHttpClientConnection:
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
             self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
-    def _tunnel(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    def _tunnel(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
             check.not_none(self._tunnel_port),
@@ -247,13 +244,13 @@ class CoroHttpClientConnection:
 
     #
 
-    def connect(self) -> ta.Generator[Io, None, None]:
+    def connect(self) -> ta.Generator[CoroHttpClientIo.Io, None, None]:
         """Connect to the host and port specified in __init__."""
 
         if self._connected:
             return
 
-        check.none((yield ConnectIo(
+        check.none((yield CoroHttpClientIo.ConnectIo(
             ((self._host, self._port),),
             dict(
                 source_address=self._source_address,
@@ -268,14 +265,14 @@ class CoroHttpClientConnection:
 
     #
 
-    def close(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    def close(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         """Close the connection to the HTTP server."""
 
         self._state = self._State.IDLE
 
         try:
             if self._connected:
-                yield CloseIo()  # Close it manually... there may be other refs
+                yield CoroHttpClientIo.CloseIo()  # Close it manually... there may be other refs
                 self._connected = False
 
         finally:
@@ -292,7 +289,7 @@ class CoroHttpClientConnection:
 
         return isinstance(stream, io.TextIOBase)
 
-    def send(self, data: ta.Any) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    def send(self, data: ta.Any) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
@@ -311,15 +308,15 @@ class CoroHttpClientConnection:
             while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                check.none((yield WriteIo(data_block)))
+                check.none((yield CoroHttpClientIo.WriteIo(data_block)))
             return
 
         if isinstance(data, (bytes, bytearray)):
-            check.none((yield WriteIo(data)))
+            check.none((yield CoroHttpClientIo.WriteIo(data)))
 
         elif isinstance(data, collections.abc.Iterable):
             for d in data:
-                check.none((yield WriteIo(d)))
+                check.none((yield CoroHttpClientIo.WriteIo(d)))
 
         else:
             raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
@@ -344,7 +341,7 @@ class CoroHttpClientConnection:
             self,
             message_body: ta.Optional[ta.Any] = None,
             encode_chunked: bool = False,
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         """
         Send the currently buffered request and clear the buffer.
 
@@ -568,7 +565,7 @@ class CoroHttpClientConnection:
             message_body: ta.Optional[ta.Any] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         """
         Indicate that the last header line has been sent to the server.
 
@@ -593,7 +590,7 @@ class CoroHttpClientConnection:
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         """Send a complete request to the server."""
 
         yield from self._send_request(method, url, body, dict(headers or {}), encode_chunked)
@@ -663,7 +660,7 @@ class CoroHttpClientConnection:
             body: ta.Optional[ta.Any],
             headers: ta.Mapping[str, str],
             encode_chunked: bool,
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
         # Honor explicitly requested Host: and Accept-Encoding: headers.
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
@@ -710,7 +707,7 @@ class CoroHttpClientConnection:
     def _new_response(self) -> CoroHttpClientResponse:
         return CoroHttpClientResponse(check.not_none(self._method))
 
-    def get_response(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHttpClientResponse]:
+    def get_response(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], CoroHttpClientResponse]:
         """
         Get the response from the server.
 

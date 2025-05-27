@@ -6,9 +6,7 @@ from omlish.lite.check import check
 from .errors import BadStatusLineError
 from .errors import LineTooLongError
 from .errors import RemoteDisconnectedError
-from .io import MAX_LINE
-from .io import Io
-from .io import ReadLineIo
+from .io import CoroHttpClientIo
 
 
 #
@@ -20,9 +18,9 @@ class CoroHttpClientStatusLine(ta.NamedTuple):
     reason: str
 
     @classmethod
-    def read(cls) -> ta.Generator[Io, ta.Optional[bytes], 'CoroHttpClientStatusLine']:
-        line = str(check.isinstance((yield ReadLineIo(MAX_LINE + 1)), bytes), 'iso-8859-1')
-        if len(line) > MAX_LINE:
+    def read(cls) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], 'CoroHttpClientStatusLine']:
+        line = str(check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes), 'iso-8859-1')  # noqa
+        if len(line) > CoroHttpClientIo.MAX_LINE:
             raise LineTooLongError(LineTooLongError.LineType.STATUS)
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
