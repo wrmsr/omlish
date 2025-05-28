@@ -70,6 +70,7 @@ SWITCHES: ta.Sequence[Switch] = [
         add_marks=[
             # https://pytest-xdist.readthedocs.io/en/latest/distribution.html
             pytest.mark.xdist_group('high-mem'),
+            pytest.mark.gc_collect_after(),
         ],
     ),
 

@@ -1,7 +1,7 @@
-import dataclasses as dc
 import os
 import typing as ta
 
+from .. import dataclasses as dc
 from .. import lang
 
 
@@ -35,7 +35,7 @@ def times() -> Times:
 class ProcStats:
     pid: int
 
-    rss: int
+    rss: int = dc.xfield(repr_fn=lambda i: f'{i:_}')
 
 
 def get_psutil_procstats(pid: int | None = None) -> ProcStats:
