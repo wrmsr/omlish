@@ -47,7 +47,7 @@ class TransformersPipelineKwargs(Config, tv.ScalarTypedValue[ta.Mapping[str, ta.
 #     aliases=['tfm'],
 #     type='CompletionService',
 # )
-class TransformersCompletionService(CompletionService):
+class TransformersCompletionService(CompletionService, lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
         # 'Qwen/Qwen2-0.5B'
@@ -130,7 +130,7 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
 #     aliases=['tfm'],
 #     type='ChatService',
 # )
-class TransformersChatService(ChatService):
+class TransformersChatService(ChatService, lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'meta-llama/Llama-3.2-1B-Instruct'
     )
@@ -143,7 +143,11 @@ class TransformersChatService(ChatService):
             self._pipeline_kwargs = cc.pop(TransformersPipelineKwargs, [])
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    @lang.cached_function(transient=True)
+    def _load_pipeline(self) -> 'tfm.Pipeline':
+        # FIXME: unload
+        check.not_none(self._exit_stack)
+
         pkw: dict[str, ta.Any] = dict(
             model=self._model_path.v,
             device='mps' if sys.platform == 'darwin' else 'cuda',
@@ -153,12 +157,16 @@ class TransformersChatService(ChatService):
         for pkw_cfg in self._pipeline_kwargs:
             pkw.update(pkw_cfg.v)
 
-        check.empty(request.options)
-
-        pipeline = tfm.pipeline(
+        return tfm.pipeline(
             'text-generation',
             **pkw,
         )
+
+    def invoke(self, request: ChatRequest) -> ChatResponse:
+        check.empty(request.options)
+
+        pipeline = self._load_pipeline()
+
         output = pipeline(
             [
                 build_chat_message(m)

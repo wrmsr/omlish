@@ -75,6 +75,8 @@ class MlxChatService(ChatService, lang.ExitStacked):
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'mlxu.LoadedModel':
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
+        check.not_none(self._exit_stack)
+
         return mlxu.load_model(self._model_name.v)
 
     _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOption | LlmRequestOption]]] = dict(
@@ -83,6 +85,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
         loaded_model = self._load_model()
+
         tokenizer = loaded_model.tokenization.tokenizer
 
         if not (

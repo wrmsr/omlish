@@ -15,38 +15,36 @@ from ..transformers import TransformersPipelineKwargs
 @pytest.mark.high_mem
 @ptu.skip.if_cant_import('transformers')
 def test_transformers_completion():
-    llm = TransformersCompletionService(
+    with TransformersCompletionService(
         ModelPath('Qwen/Qwen2-0.5B'),
         TransformersPipelineKwargs(dict(
             max_new_tokens=20,
             # device=None,
         )),
-    )
+    ) as llm:
+        resp = llm.invoke(CompletionRequest.new('Is water dry?'))
+        print(resp)
+        assert resp.text
 
-    resp = llm.invoke(CompletionRequest.new('Is water dry?'))
-    print(resp)
-    assert resp.text
-
-    resp = llm('Is water dry?')
-    print(resp)
-    assert resp.text
+        resp = llm('Is water dry?')
+        print(resp)
+        assert resp.text
 
 
 @pytest.mark.not_docker_guest
 @pytest.mark.high_mem
 @ptu.skip.if_cant_import('transformers')
 def test_transformers_chat():
-    llm = TransformersChatService(
+    with TransformersChatService(
         ModelPath('meta-llama/Llama-3.2-1B-Instruct'),
         TransformersPipelineKwargs(dict(
             max_new_tokens=20,
             # device=None,
         )),
-    )
-
-    resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
-    print(resp)
-    assert resp
+    ) as llm:
+        resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
+        print(resp)
+        assert resp
 
 
 # @pytest.mark.not_docker_guest

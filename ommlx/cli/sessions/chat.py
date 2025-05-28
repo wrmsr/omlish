@@ -110,53 +110,25 @@ class PromptChatSession(Session['PromptChatSession.Config']):
         ]
 
         if self._config.stream:
-            st_mdl = mc.backend_of[mc.ChatStreamService].new('openai')
-            with st_mdl.invoke(mc.ChatStreamRequest.new(
-                    chat,
-                    *(self._chat_options or []),
-            )) as st_resp:
-                resp_s = ''
-                for o in st_resp:
-                    o_s = check.isinstance(o[0].m.s, str)
-                    print(o_s, end='', flush=True)
-                    resp_s += o_s
-                print()
+            with lang.maybe_managing(mc.backend_of[mc.ChatStreamService].new('openai')) as st_mdl:
+                with st_mdl.invoke(mc.ChatStreamRequest.new(
+                        chat,
+                        *(self._chat_options or []),
+                )) as st_resp:
+                    resp_s = ''
+                    for o in st_resp:
+                        o_s = check.isinstance(o[0].m.s, str)
+                        print(o_s, end='', flush=True)
+                        resp_s += o_s
+                    print()
 
-            resp_m = mc.AiMessage(resp_s)
-            chat.append(resp_m)
+                resp_m = mc.AiMessage(resp_s)
+                chat.append(resp_m)
 
         else:
-            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
+            with lang.maybe_managing(CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
-            )
-
-            response = mdl.invoke(mc.ChatRequest.new(
-                chat,
-                *(self._chat_options or []),
-            ))
-
-            resp_m = response.choices[0].m
-            chat.append(resp_m)
-
-            if (trs := resp_m.tool_exec_requests):
-                check.state(resp_m.s is None)
-
-                tr: mc.ToolExecRequest = check.single(check.not_none(trs))
-                tool = check.not_none(self._tool_map)[tr.spec.name]
-
-                tr_dct = dict(
-                    id=tr.id,
-                    spec=msh.marshal(tr.spec),
-                    args=tr.args,
-                )
-                cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
-
-                if not cr:
-                    raise ToolExecutionRequestDeniedError
-
-                tool_res = tool.fn(**tr.args)
-                chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
-
+            )) as mdl:
                 response = mdl.invoke(mc.ChatRequest.new(
                     chat,
                     *(self._chat_options or []),
@@ -165,16 +137,43 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 resp_m = response.choices[0].m
                 chat.append(resp_m)
 
-            resp_s = check.isinstance(resp_m.s, str).strip()
+                if (trs := resp_m.tool_exec_requests):
+                    check.state(resp_m.s is None)
 
-            if self._config.markdown:
-                ptk.print_formatted_text(
-                    ptk_md.Markdown(resp_s),
-                    style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
-                )
+                    tr: mc.ToolExecRequest = check.single(check.not_none(trs))
+                    tool = check.not_none(self._tool_map)[tr.spec.name]
 
-            else:
-                print(resp_s)
+                    tr_dct = dict(
+                        id=tr.id,
+                        spec=msh.marshal(tr.spec),
+                        args=tr.args,
+                    )
+                    cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+
+                    if not cr:
+                        raise ToolExecutionRequestDeniedError
+
+                    tool_res = tool.fn(**tr.args)
+                    chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
+
+                    response = mdl.invoke(mc.ChatRequest.new(
+                        chat,
+                        *(self._chat_options or []),
+                    ))
+
+                    resp_m = response.choices[0].m
+                    chat.append(resp_m)
+
+                resp_s = check.isinstance(resp_m.s, str).strip()
+
+                if self._config.markdown:
+                    ptk.print_formatted_text(
+                        ptk_md.Markdown(resp_s),
+                        style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
+                    )
+
+                else:
+                    print(resp_s)
 
         state = dc.replace(
             state,

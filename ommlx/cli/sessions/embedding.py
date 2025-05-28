@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish import lang
 from omlish.formats import json
 
 from ... import minichain as mc
@@ -36,6 +37,8 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
         super().__init__(config)
 
     def run(self) -> None:
-        mdl = EMBEDDING_MODEL_BACKENDS[self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND]()
-        response = mdl.invoke(mc.EmbeddingRequest.new(self._config.content))
-        print(json.dumps_compact(response.vector))
+        with lang.maybe_managing(
+                EMBEDDING_MODEL_BACKENDS[self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND](),
+        ) as mdl:
+            response = mdl.invoke(mc.EmbeddingRequest.new(self._config.content))
+            print(json.dumps_compact(response.vector))
