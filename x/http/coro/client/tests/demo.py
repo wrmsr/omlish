@@ -73,8 +73,11 @@ def run_coro(
         resp = yield from conn.get_response()
 
     def print_resp():
-        d = yield from check.not_none(resp).read()
-        print(d)
+        while True:
+            d = yield from check.not_none(resp).read(1024)
+            if not d:
+                break
+            print(d)
 
     for f in [
         conn.connect,
