@@ -15,7 +15,10 @@ from .status import CoroHttpClientStatusLine
 ##
 
 
-class CoroHttpClientResponse:
+class CoroHttpClientResponse(
+    CoroHttpClientErrors,
+    CoroHttpClientIo,
+):
     # See RFC 2616 sec 19.6 and RFC 1945 sec 6 for details.
 
     # The bytes from the socket object are iso-8859-1 strings. See RFC 2616 sec 2.2 which notes an exception for
@@ -57,7 +60,7 @@ class CoroHttpClientResponse:
     def _read_status(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], CoroHttpClientStatusLine]:
         try:
             return (yield from CoroHttpClientStatusLine.read())
-        except CoroHttpClientErrors.BadStatusLineError:
+        except self.BadStatusLineError:
             self._close_conn()
             raise
 
@@ -86,7 +89,7 @@ class CoroHttpClientResponse:
             # Use HTTP/1.1 code for HTTP/1.x where x>=1
             state.version = 11
         else:
-            raise CoroHttpClientErrors.UnknownProtocolError(version)
+            raise self.UnknownProtocolError(version)
 
         state.headers = yield from CoroHttpClientHeaders.parse_headers()
 
@@ -198,7 +201,7 @@ class CoroHttpClientResponse:
                 # Clip the read to the "end of response"
                 amt = self._state.length
 
-            s = check.isinstance((yield CoroHttpClientIo.ReadIo(amt)), bytes)
+            s = check.isinstance((yield self.ReadIo(amt)), bytes)
 
             if not s and amt:
                 # Ideally, we would raise IncompleteRead if the content-length wasn't satisfied, but it might break
@@ -215,12 +218,12 @@ class CoroHttpClientResponse:
         else:
             # Amount is not given (unbounded read) so we must check self.length
             if self._state.length is None:
-                s = check.isinstance((yield CoroHttpClientIo.ReadIo(None)), bytes)
+                s = check.isinstance((yield self.ReadIo(None)), bytes)
 
             else:
                 try:
                     s = yield from self._safe_read(self._state.length)
-                except CoroHttpClientErrors.IncompleteReadError:
+                except self.IncompleteReadError:
                     self._close_conn()
                     raise
 
@@ -231,9 +234,9 @@ class CoroHttpClientResponse:
 
     def _read_next_chunk_size(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], int]:
         # Read the next chunk size from the file
-        line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
-        if len(line) > CoroHttpClientIo.MAX_LINE:
-            raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.CHUNK_SIZE)
+        line = check.isinstance((yield self.ReadLineIo(self.MAX_LINE + 1)), bytes)
+        if len(line) > self.MAX_LINE:
+            raise self.LineTooLongError(self.LineTooLongError.LineType.CHUNK_SIZE)
 
         i = line.find(b';')
         if i >= 0:
@@ -250,9 +253,9 @@ class CoroHttpClientResponse:
         # Read and discard trailer up to the CRLF terminator
         # NOTE: we shouldn't have any trailers!
         while True:
-            line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
-            if len(line) > CoroHttpClientIo.MAX_LINE:
-                raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.TRAILER)
+            line = check.isinstance((yield self.ReadLineIo(self.MAX_LINE + 1)), bytes)
+            if len(line) > self.MAX_LINE:
+                raise self.LineTooLongError(self.LineTooLongError.LineType.TRAILER)
 
             if not line:
                 # A vanishingly small number of sites EOF without sending the trailer
@@ -274,7 +277,7 @@ class CoroHttpClientResponse:
             try:
                 chunk_left = yield from self._read_next_chunk_size()
             except ValueError:
-                raise CoroHttpClientErrors.IncompleteReadError(b'') from None
+                raise self.IncompleteReadError(b'') from None
 
             if chunk_left == 0:
                 # Last chunk: 1*('0') [ chunk-extension ] CRLF
@@ -309,8 +312,8 @@ class CoroHttpClientResponse:
 
             return b''.join(value)
 
-        except CoroHttpClientErrors.IncompleteReadError as exc:
-            raise CoroHttpClientErrors.IncompleteReadError(b''.join(value)) from exc
+        except self.IncompleteReadError as exc:
+            raise self.IncompleteReadError(b''.join(value)) from exc
 
     def _safe_read(self, amt: int) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], bytes]:
         """
@@ -320,9 +323,9 @@ class CoroHttpClientResponse:
         available (due to EOF), then the IncompleteRead exception can be used to detect the problem.
         """
 
-        data = check.isinstance((yield CoroHttpClientIo.ReadIo(amt)), bytes)
+        data = check.isinstance((yield self.ReadIo(amt)), bytes)
         if len(data) < amt:
-            raise CoroHttpClientErrors.IncompleteReadError(data, amt-len(data))
+            raise self.IncompleteReadError(data, amt-len(data))
         return data
 
     def peek(self, n: int = -1) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], bytes]:
@@ -333,7 +336,7 @@ class CoroHttpClientResponse:
         if self._state.chunked:
             return (yield from self._peek_chunked(n))
 
-        return check.isinstance((yield CoroHttpClientIo.PeekIo(n)), bytes)
+        return check.isinstance((yield self.PeekIo(n)), bytes)
 
     def _readline(
             self,
@@ -381,7 +384,7 @@ class CoroHttpClientResponse:
         if self._state.length is not None and (limit < 0 or limit > self._state.length):
             limit = self._state.length
 
-        result = check.isinstance((yield CoroHttpClientIo.ReadLineIo(limit)), bytes)
+        result = check.isinstance((yield self.ReadLineIo(limit)), bytes)
 
         if not result and limit:
             self._close_conn()
@@ -398,11 +401,11 @@ class CoroHttpClientResponse:
         # the chunked protocol.
         try:
             chunk_left = yield from self._get_chunk_left()
-        except CoroHttpClientErrors.IncompleteReadError:
+        except self.IncompleteReadError:
             return b''  # Peek doesn't worry about protocol
 
         if chunk_left is None:
             return b''  # Eof
 
         # Peek is allowed to return more than requested. Just request the entire chunk, and truncate what we get.
-        return check.isinstance((yield CoroHttpClientIo.PeekIo(chunk_left)), bytes)[:chunk_left]
+        return check.isinstance((yield self.PeekIo(chunk_left)), bytes)[:chunk_left]

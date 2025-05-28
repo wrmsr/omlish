@@ -9,11 +9,6 @@ import typing as ta
 
 
 class CoroHttpClientIo:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    #
-
     MAX_LINE: ta.ClassVar[int] = 65536
 
     #

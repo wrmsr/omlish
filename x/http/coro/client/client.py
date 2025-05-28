@@ -24,7 +24,10 @@ from .validation import CoroHttpClientValidation
 ##
 
 
-class CoroHttpClientConnection:
+class CoroHttpClientConnection(
+    CoroHttpClientErrors,
+    CoroHttpClientIo,
+):
     """
     HTTPConnection goes through a number of "states", which define when a client may legally make another request or
     fetch the response for a particular request. This diagram details these state transitions:
@@ -141,7 +144,7 @@ class CoroHttpClientConnection:
                     if host[i+1:] == '':  # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise CoroHttpClientErrors.InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise self.InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -214,7 +217,7 @@ class CoroHttpClientConnection:
 
         try:
             (version, code, message) = (yield from CoroHttpClientStatusLine.read())
-        except CoroHttpClientErrors.BadStatusLineError:  # noqa
+        except self.BadStatusLineError:  # noqa
             # self._close_conn()
             raise
 
@@ -246,7 +249,7 @@ class CoroHttpClientConnection:
         if self._connected:
             return
 
-        check.none((yield CoroHttpClientIo.ConnectIo(
+        check.none((yield self.ConnectIo(
             ((self._host, self._port),),
             dict(
                 source_address=self._source_address,
@@ -268,7 +271,7 @@ class CoroHttpClientConnection:
 
         try:
             if self._connected:
-                yield CoroHttpClientIo.CloseIo()  # Close it manually... there may be other refs
+                yield self.CloseIo()  # Close it manually... there may be other refs
                 self._connected = False
 
         finally:
@@ -295,7 +298,7 @@ class CoroHttpClientConnection:
             if self._auto_open:
                 yield from self.connect()
             else:
-                raise CoroHttpClientErrors.NotConnectedError
+                raise self.NotConnectedError
 
         check.state(self._connected)
 
@@ -304,15 +307,15 @@ class CoroHttpClientConnection:
             while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                check.none((yield CoroHttpClientIo.WriteIo(data_block)))
+                check.none((yield self.WriteIo(data_block)))
             return
 
         if isinstance(data, (bytes, bytearray)):
-            check.none((yield CoroHttpClientIo.WriteIo(data)))
+            check.none((yield self.WriteIo(data)))
 
         elif isinstance(data, collections.abc.Iterable):
             for d in data:
-                check.none((yield CoroHttpClientIo.WriteIo(d)))
+                check.none((yield self.WriteIo(d)))
 
         else:
             raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
@@ -439,7 +442,7 @@ class CoroHttpClientConnection:
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise CoroHttpClientErrors.CannotSendRequestError(self._state)
+            raise self.CannotSendRequestError(self._state)
 
         CoroHttpClientValidation.validate_method(method)
 
@@ -531,7 +534,7 @@ class CoroHttpClientConnection:
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise CoroHttpClientErrors.CannotSendHeaderError
+            raise self.CannotSendHeaderError
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -572,7 +575,7 @@ class CoroHttpClientConnection:
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise CoroHttpClientErrors.CannotSendHeaderError
+            raise self.CannotSendHeaderError
 
         yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -729,7 +732,7 @@ class CoroHttpClientConnection:
         #  1) will_close: this connection was reset and the prior socket and response operate independently
         #  2) persistent: the response was retained and we await its is_closed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise CoroHttpClientErrors.ResponseNotReadyError(self._state)
+            raise self.ResponseNotReadyError(self._state)
 
         resp = self._new_response()
         resp_state = resp._state  # noqa

@@ -44,25 +44,28 @@ class StandardSpecialToken(
 
 class StandardSpecialTokens(SpecialTokenNamespace, lang.Final):
     class Bos(StandardSpecialToken):
-        pass
+        """The beginning of a sentence."""
 
     class Eos(StandardSpecialToken):
-        pass
+        """The end of a sentence."""
 
     class Unk(StandardSpecialToken):
-        pass
+        """An out-of-vocabulary token."""
 
     class Sep(StandardSpecialToken):
-        pass
+        """Separates two different sentences in the same input (used by BERT for instance)."""
 
     class Pad(StandardSpecialToken):
-        pass
+        """
+        Used to make arrays of tokens the same size for batching purpose. Will then be ignored by attention mechanisms
+        or loss computation.
+        """
 
     class Cls(StandardSpecialToken):
-        pass
+        """The class of the input (used by BERT for instance)."""
 
     class Mask(StandardSpecialToken):
-        pass
+        """A masked token (used by masked-language modeling pretraining objectives, like BERT)."""
 
 
 ##

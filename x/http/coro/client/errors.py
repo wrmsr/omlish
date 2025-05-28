@@ -9,11 +9,6 @@ import typing as ta
 
 
 class CoroHttpClientErrors:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    #
-
     class ClientError(Exception):
         pass
 
