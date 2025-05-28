@@ -75,35 +75,40 @@ class SpecialTokens:
     def __init__(self, stks: ta.Iterable[SpecialToken]) -> None:
         super().__init__()
 
-        all_: set[SpecialToken] = set()
-        by_type: dict[type[SpecialToken], SpecialToken] = {}
+        all_: list[SpecialToken] = []
+        by_type: dict[type[SpecialToken], list[SpecialToken]] = {}
+        by_int: dict[int, list[SpecialToken]] = {}
         for stk in stks:
             check.isinstance(stk, SpecialToken)
-            check.not_in(stk, all_)
-            check.not_in(type(stk), by_type)
-            all_.add(stk)
-            by_type[type(stk)] = stk
-
-        check.equal(len(all_), len(by_type))
+            all_.append(stk)
+            by_type.setdefault(type(stk), []).append(stk)
+            by_int.setdefault(int(stk), []).append(stk)
 
         self._all = all_
         self._by_type = by_type
+        self._by_int = by_int
 
     @classmethod
     def from_dict(cls, dct: ta.Mapping[type[SpecialToken], int | None]) -> 'SpecialTokens':
-        return cls([
-            check.issubclass(ty, SpecialToken)(i)
-            for ty, i in dct.items()
-            if i is not None
-        ])
+        lst: list[SpecialToken] = []
+        for ty, i in dct.items():
+            if i is None:
+                continue
+            check.is_(type(i), int)
+            lst.append(check.issubclass(ty, SpecialToken)(i))
+        return cls(lst)
 
     @property
-    def by_type(self) -> ta.Mapping[type[SpecialToken], SpecialToken]:
+    def all(self) -> ta.Sequence[SpecialToken]:
+        return self._all
+
+    @property
+    def by_type(self) -> ta.Mapping[type[SpecialToken], ta.Sequence[SpecialToken]]:
         return self._by_type
 
     @property
-    def all(self) -> ta.AbstractSet[SpecialToken]:
-        return self._all
+    def by_int(self) -> ta.Mapping[int, ta.Sequence[SpecialToken]]:
+        return self._by_int
 
     #
 
@@ -120,20 +125,20 @@ class SpecialTokens:
 
     def __contains__(self, item: SpecialToken | type[SpecialToken]) -> bool:
         if isinstance(item, SpecialToken):
-            return item in self._all
+            return item in self._by_int
         elif isinstance(item, type):
             check.issubclass(item, SpecialToken)
             return item in self._by_type
         else:
             raise TypeError(item)
 
-    def __getitem__(self, item: SpecialTokenT | type[SpecialTokenT]) -> SpecialTokenT:
+    def __getitem__(self, item: SpecialTokenT | type[SpecialTokenT]) -> ta.Sequence[SpecialTokenT]:
         if isinstance(item, SpecialToken):
-            if item not in self._all:
+            if item not in self._by_int:
                 raise KeyError(item)
-            return ta.cast(SpecialTokenT, item)
+            return ta.cast('ta.Sequence[SpecialTokenT]', item)
         elif isinstance(item, type):
-            return ta.cast(SpecialTokenT, self._by_type[check.issubclass(item, SpecialToken)])
+            return ta.cast('ta.Sequence[SpecialTokenT]', self._by_type[check.issubclass(item, SpecialToken)])
         else:
             raise TypeError(item)
 
@@ -155,9 +160,11 @@ class SpecialTokens:
 
     def get(self, item, default=None):
         try:
-            return self[item]
+            seq = self[item]
         except KeyError:
             return default
+        else:
+            return seq[0]
 
     #
 

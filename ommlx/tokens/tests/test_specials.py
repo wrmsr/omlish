@@ -9,6 +9,7 @@ from ..specials import StandardSpecialTokens
 
 Bos = StandardSpecialTokens.Bos
 Eos = StandardSpecialTokens.Eos
+Unk = StandardSpecialTokens.Unk
 
 
 def test_standard():
@@ -41,3 +42,14 @@ def test_collection():
         Eos(531),
     ])
     print(sts)
+
+    assert list(sts[Bos]) == [Bos(420)]
+    with pytest.raises(KeyError):
+        sts[Unk]  # noqa
+
+    assert sts.get(Bos) == Bos(420)
+    assert sts.get(Bos, Bos(421)) == Bos(420)
+    assert sts.get(Bos(421)) is None
+
+    assert sts.get(Unk) is None
+    assert sts.get(Unk, Unk(422)) == Unk(422)
