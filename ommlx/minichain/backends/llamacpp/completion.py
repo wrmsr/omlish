@@ -18,12 +18,12 @@ from ...standard import ModelPath
 
 
 if ta.TYPE_CHECKING:
-    import llama_cpp
+    import llama_cpp as lcc
 
     from ....backends import llamacpp as lcu
 
 else:
-    llama_cpp = lang.proxy_import('llama_cpp')
+    lcc = lang.proxy_import('llama_cpp')
 
     lcu = lang.proxy_import('....backends.llamacpp', __package__)
 
@@ -70,7 +70,7 @@ class LlamacppCompletionService(CompletionService):
         lcu.install_logging_hook()
 
         with contextlib.ExitStack() as es:
-            llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
+            llm = es.enter_context(contextlib.closing(lcc.Llama(
                 model_path=self._model_path.v,
                 verbose=False,
             )))

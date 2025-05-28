@@ -18,12 +18,12 @@ from .format import get_msg_content
 
 
 if ta.TYPE_CHECKING:
-    import llama_cpp.llama_types
+    import llama_cpp as lcc
 
     from ....backends import llamacpp as lcu
 
 else:
-    llama_cpp = lang.proxy_import('llama_cpp', extras=['llama_types'])
+    lcc = lang.proxy_import('llama_cpp', extras=['llama_types'])
 
     lcu = lang.proxy_import('....backends.llamacpp', __package__)
 
@@ -39,8 +39,8 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
         self._lock = threading.Lock()
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'llama_cpp.Llama':
-        return self._enter_context(contextlib.closing(llama_cpp.Llama(
+    def _load_model(self) -> 'lcc.Llama':
+        return self._enter_context(contextlib.closing(lcc.Llama(
             model_path=LlamacppChatService.DEFAULT_MODEL_PATH,
             verbose=False,
         )))
@@ -69,7 +69,7 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            def handle_chunk(chunk: 'llama_cpp.llama_types.ChatCompletionChunk') -> ta.Iterator[AiChoices]:
+            def handle_chunk(chunk: 'lcc.llama_types.ChatCompletionChunk') -> ta.Iterator[AiChoices]:
                 check.state(chunk['object'] == 'chat.completion.chunk')
                 l: list[AiChoice] = []
                 for choice in chunk['choices']:
