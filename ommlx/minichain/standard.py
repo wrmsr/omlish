@@ -33,6 +33,13 @@ class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
 ##
 
 
+class Device(tv.UniqueScalarTypedValue[ta.Any], Config):
+    pass
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class SecretConfig(Config, lang.Abstract):
     v: sec.SecretRefOrStr = dc.field() | sec.secret_field
