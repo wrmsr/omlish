@@ -77,7 +77,7 @@ ujson==5.10.0
 
 markupsafe==3.0.2
 
-redis==6.1.0
+redis==6.2.0
 
 sqlean.py==3.49.1  # @omlish-venv !13t
 # git+https://github.com/wrmsr/sqlean.py.git
