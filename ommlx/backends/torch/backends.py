@@ -27,7 +27,7 @@ class MemoryStats:
         return dc.replace(self, **{
             f.name: ((l or 0) + (r or 0)) if l is not None or r is not None else None
             for f in dc.fields(MemoryStats)  # noqa
-            for l, r in [getattr(o, f.name) for o in [self, other]]
+            for l, r in [[getattr(o, f.name) for o in [self, other]]]
         })
 
 
