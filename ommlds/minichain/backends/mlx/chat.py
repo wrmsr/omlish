@@ -4,28 +4,28 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ..chat.choices import AiChoice
-from ..chat.messages import AiMessage
-from ..chat.messages import Message
-from ..chat.messages import SystemMessage
-from ..chat.messages import UserMessage
-from ..chat.services import ChatRequest
-from ..chat.services import ChatResponse
-from ..chat.services import ChatService
-from ..chat.types import ChatRequestOption
-from ..configs import Config
-from ..configs import consume_configs
-from ..llms.services import LlmRequestOption
-from ..llms.services import MaxTokens
-from ..standard import DefaultRequestOptions
-from ..standard import ModelName
+from ...chat.choices import AiChoice
+from ...chat.messages import AiMessage
+from ...chat.messages import Message
+from ...chat.messages import SystemMessage
+from ...chat.messages import UserMessage
+from ...chat.services import ChatRequest
+from ...chat.services import ChatResponse
+from ...chat.services import ChatService
+from ...chat.types import ChatRequestOption
+from ...configs import Config
+from ...configs import consume_configs
+from ...llms.services import LlmRequestOption
+from ...llms.services import MaxTokens
+from ...standard import DefaultRequestOptions
+from ...standard import ModelName
 
 
 if ta.TYPE_CHECKING:
-    from ...backends import mlx as mlxu
+    from ....backends import mlx as mlxu
 
 else:
-    mlxu = lang.proxy_import('...backends.mlx', __package__)
+    mlxu = lang.proxy_import('....backends.mlx', __package__)
 
 
 ##

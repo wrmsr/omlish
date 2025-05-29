@@ -122,13 +122,13 @@
     }
   },
   {
-    "module": ".minichain.backends.mlx",
+    "module": ".minichain.backends.mlx.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/mlx.py",
+    "file": "ommlds/minichain/backends/mlx/chat.py",
     "line": 34,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlds.minichain.backends.mlx",
+        "mod_name": "ommlds.minichain.backends.mlx.chat",
         "attr_name": "MlxChatService",
         "name": "mlx",
         "aliases": null,
@@ -197,13 +197,13 @@
     }
   },
   {
-    "module": ".minichain.backends.tinygrad",
+    "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/tinygrad.py",
+    "file": "ommlds/minichain/backends/tinygrad/chat.py",
     "line": 24,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
-        "mod_name": "ommlds.minichain.backends.tinygrad",
+        "mod_name": "ommlds.minichain.backends.tinygrad.chat",
         "attr_name": "TinygradLlama3ChatService",
         "name": "tinygrad_llama3",
         "aliases": null,
@@ -365,7 +365,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlds/tools/git.py",
-    "line": 167,
+    "line": 172,
     "value": {
       "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "mod_name": "ommlds.tools.git",

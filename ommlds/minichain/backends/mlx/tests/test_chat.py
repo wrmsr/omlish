@@ -2,9 +2,9 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
-from ...backends.mlx import MlxChatService
-from ...chat.messages import UserMessage
-from ...standard import ModelName
+from ....chat.messages import UserMessage
+from ....standard import ModelName
+from ..chat import MlxChatService
 
 
 @pytest.mark.not_docker_guest

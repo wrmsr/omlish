@@ -11,6 +11,7 @@ import typing as ta
 from omdev.home.secrets import load_secrets
 from omlish import cached
 from omlish import check
+from omlish import lang
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import ExceptionLoggingHttpHandler
 from omlish.http.handlers import HttpHandler_
@@ -22,8 +23,13 @@ from omlish.sockets.bind import SocketBinder
 from omlish.sockets.server.server import SocketServer
 
 from .. import minichain as mc
-from ..minichain.backends.mlx import MlxChatService
 from ..minichain.backends.openai.chat import OpenaiChatService
+
+
+if ta.TYPE_CHECKING:
+    from ..minichain.backends.mlx import chat as mc_mlx_chat
+else:
+    mc_mlx_chat = lang.proxy_import('..minichain.backends.mlxchat', __package__)
 
 
 log = logging.getLogger(__name__)
@@ -82,7 +88,7 @@ class McServer:
 
         elif self._config.backend == 'local':
             model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-            return MlxChatService(mc.ModelName(model))
+            return mc_mlx_chat.MlxChatService(mc.ModelName(model))
 
         else:
             raise ValueError(self._config.backend)

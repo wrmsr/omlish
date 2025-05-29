@@ -3,19 +3,19 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..chat.choices import AiChoice
-from ..chat.messages import AiMessage
-from ..chat.messages import SystemMessage
-from ..chat.messages import UserMessage
-from ..chat.services import ChatRequest
-from ..chat.services import ChatResponse
-from ..chat.services import ChatService
+from ...chat.choices import AiChoice
+from ...chat.messages import AiMessage
+from ...chat.messages import SystemMessage
+from ...chat.messages import UserMessage
+from ...chat.services import ChatRequest
+from ...chat.services import ChatResponse
+from ...chat.services import ChatService
 
 
 if ta.TYPE_CHECKING:
-    from ...backends.tinygrad.models import llama3 as tgl3
+    from ....backends.tinygrad.models import llama3 as tgl3
 else:
-    tgl3 = lang.proxy_import('...backends.tinygrad.models.llama3', __package__)
+    tgl3 = lang.proxy_import('....backends.tinygrad.models.llama3', __package__)
 
 
 ##
@@ -41,7 +41,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
     def _load_model(self) -> 'tgl3.Llama3Llm':
         check.not_none(self._exit_stack)
 
-        from ...backends.tinygrad.models.llama3.repl import fetch_model
+        from ....backends.tinygrad.models.llama3.repl import fetch_model
         model = fetch_model(self._size)
 
         llm = tgl3.Llama3Llm(

@@ -19,9 +19,14 @@ from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
-from ..minichain.backends.mlx import MlxChatService
 from ..minichain.backends.openai.chat import OpenaiChatService
 from ..server.client import McServerClient
+
+
+if ta.TYPE_CHECKING:
+    from ..minichain.backends.mlx import chat as mc_mlx_chat
+else:
+    mc_mlx_chat = lang.proxy_import('..minichain.backends.mlx.chat', __package__)
 
 
 GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')
@@ -87,7 +92,7 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
         super().__init__(config)
 
     def _run_prompt(self, prompt: str) -> str:
-        with MlxChatService(mc.ModelName(self._config.model)) as llm:
+        with mc_mlx_chat.MlxChatService(mc.ModelName(self._config.model)) as llm:
             resp = llm(
                 [mc.UserMessage(prompt)],
                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),

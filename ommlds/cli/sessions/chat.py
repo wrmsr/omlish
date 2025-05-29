@@ -12,7 +12,7 @@ from ...minichain.backends.anthropic.chat import AnthropicChatService
 from ...minichain.backends.google.chat import GoogleChatService
 from ...minichain.backends.llamacpp.chat import LlamacppChatService
 from ...minichain.backends.mistral import MistralChatService
-from ...minichain.backends.mlx import MlxChatService
+from ...minichain.backends.mlx.chat import MlxChatService
 from ...minichain.backends.openai.chat import OpenaiChatService
 from ..state import StateStorage
 from ..tools.tools import ToolMap
