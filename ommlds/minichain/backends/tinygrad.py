@@ -38,7 +38,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
         self._temperature = temperature if temperature is not None else self.DEFAULT_TEMPERATURE
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> tgl3.Llama3Llm:
+    def _load_model(self) -> 'tgl3.Llama3Llm':
         check.not_none(self._exit_stack)
 
         from ...backends.tinygrad.models.llama3.repl import fetch_model
