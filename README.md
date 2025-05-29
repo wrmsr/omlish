@@ -19,7 +19,7 @@ General code is written for python 3.12+, '[lite](omlish#lite-code)' code for 3.
 - **[omlish](omlish#readme)** - Core foundational code
 - **[omdev](omdev#readme)** - Development utilities
 - **[ominfra](ominfra)** - Infrastructure and cloud code
-- **[ommlx](ommlx)** - ML / AI code
+- **[ommlds](ommlds)** - ML / Data Science code
 - **[omserv](omserv)** - Request serving code
 
 # Installation

@@ -202,28 +202,28 @@ class RunConfigs(lang.Namespace):
         argv=[
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
         orig_argv=[
             PYTHON,
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
-        cwd='ommlx',
+        cwd='ommlds',
     )
 
     RUN_TEST_MODULE = RunConfig(
         argv=[
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
         orig_argv=[
             PYTHON,
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
     )
 
@@ -239,7 +239,7 @@ class RunConfigs(lang.Namespace):
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        cwd='ommlx',
+        cwd='ommlds',
     )
 
     #
@@ -256,7 +256,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
         orig_argv=[
             PYTHON,
@@ -272,7 +272,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
         ],
     )
 
@@ -306,7 +306,7 @@ class RunConfigs(lang.Namespace):
             '--path',
             'test_strings.py',
         ],
-        cwd='ommlx/minichain/tests',
+        cwd='ommlds/minichain/tests',
     )
 
     DEBUG_TEST_SINGLE = RunConfig(
@@ -339,7 +339,7 @@ class RunConfigs(lang.Namespace):
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        cwd='ommlx',
+        cwd='ommlds',
     )
 
     #
@@ -356,7 +356,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
             '--',
             '-v',
         ],
@@ -374,7 +374,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             TEST_RUNNER,
             '--path',
-            'ommlx/minichain/tests/test_strings.py',
+            'ommlds/minichain/tests/test_strings.py',
             '--',
             '-v',
         ],

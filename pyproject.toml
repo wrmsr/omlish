@@ -6,7 +6,7 @@ pkgs = [
     'omdev',
     'ominfra',
     'omlish',
-    'ommlx',
+    'ommlds',
     'omserv',
 ]
 
@@ -16,7 +16,7 @@ main = [
 
     'omdev',
     'ominfra',
-    'ommlx',
+    'ommlds',
     'omserv',
 
     'app',

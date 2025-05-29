@@ -1,7 +1,7 @@
 """
 TODO:
  - lxml abstraction
- - stuff from ommlx/wiki
+ - stuff from ommlds/wiki
 """
 import typing as ta
 

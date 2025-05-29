@@ -3,9 +3,9 @@ import typing as ta
 
 from omdev.home.secrets import load_secrets
 from omlish import check
-from ommlx import minichain as mc
-from ommlx.minichain.backends.anthropic import AnthropicChatModel
-from ommlx.minichain.backends.openai import OpenaiChatModel
+from ommlds import minichain as mc
+from ommlds.minichain.backends.anthropic import AnthropicChatModel
+from ommlds.minichain.backends.openai import OpenaiChatModel
 
 
 def _main() -> None:
