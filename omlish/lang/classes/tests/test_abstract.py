@@ -60,7 +60,7 @@ def test_abstract2():
         B2()  # type: ignore
 
     class C(B):
-        f = 0
+        f = 0  # type: ignore
 
     assert C()
 

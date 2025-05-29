@@ -209,6 +209,10 @@ fix: venv
 mypy: venv
 	${PYTHON} -m mypy --check-untyped-defs ${SRCS}
 
+.PHONY: mypy-stats
+mypy-stats: venv
+	${PYTHON} -m omdev.mypy.report --check-untyped-defs ${SRCS}
+
 .PHONY: precheck
 precheck: venv
 	${PYTHON} -m omdev.precheck check ${SRCS}

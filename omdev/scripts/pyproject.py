@@ -3203,7 +3203,7 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
         self._underlying.set_name(name)
 
     @property
-    def name(self):
+    def name(self):  # type: ignore[override]
         return self._underlying.name
 
     @property
@@ -3667,7 +3667,7 @@ class Specifier(BaseSpecifier):
 
         self._prereleases = prereleases
 
-    @property  # type: ignore
+    @property
     def prereleases(self) -> bool:
         if self._prereleases is not None:
             return self._prereleases

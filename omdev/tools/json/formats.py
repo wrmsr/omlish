@@ -1,12 +1,14 @@
 """
 TODO:
  - options lol - csv header, newline, etc
+ - edn
 """
 import dataclasses as dc
 import enum
 import json
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 
@@ -44,6 +46,12 @@ class Format:
     load: ta.Callable[[ta.TextIO], ta.Any]
 
 
+def _load_xml(f: ta.TextIO) -> dict[str, ta.Any]:
+    tree = xml.parse_tree(f.read())
+    sel = xml.build_simple_element(check.not_none(tree.getroot()))
+    return sel.se_dict()
+
+
 class Formats(enum.Enum):
     JSON = Format(['json'], json.load)
 
@@ -59,7 +67,7 @@ class Formats(enum.Enum):
 
     PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
 
-    XML = Format(['xml'], lambda f: xml.build_simple_element(xml.parse_tree(f.read()).getroot()).se_dict())
+    XML = Format(['xml'], _load_xml)
 
     CSV = Format(['csv'], lambda f: list(csv.DictReader(f)))
     TSV = Format(['tsv'], lambda f: list(csv.DictReader(f, delimiter='\t')))

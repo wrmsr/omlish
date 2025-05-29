@@ -210,7 +210,7 @@ class ImportTracer:
 
         for child in node.children:
             seq = self._fixup_node(child, depth=depth + 1, seq=seq + 1)
-            node.child_stats += child.stats  # type: ignore
+            node.child_stats += child.stats
 
         node.self_stats = node.stats - node.child_stats  # type: ignore
         return seq

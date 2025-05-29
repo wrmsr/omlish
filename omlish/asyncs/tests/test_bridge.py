@@ -208,8 +208,8 @@ class AtoSLock(SLock):
     def __init__(self, alock: ALock) -> None:
         self.alock = alock
 
-    lc = property(lambda self: self.alock.lc)  # type: ignore
-    uc = property(lambda self: self.alock.uc)  # type: ignore
+    lc = property(lambda self: self.alock.lc)
+    uc = property(lambda self: self.alock.uc)
 
     def lock(self):
         return br.a_to_s(self.alock.lock)()
@@ -222,8 +222,8 @@ class StoALock(ALock):
     def __init__(self, slock: SLock) -> None:
         self.slock = slock
 
-    lc = property(lambda self: self.slock.lc)  # type: ignore
-    uc = property(lambda self: self.slock.uc)  # type: ignore
+    lc = property(lambda self: self.slock.lc)
+    uc = property(lambda self: self.slock.uc)
 
     async def lock(self):
         return await br.s_to_a(self.slock.lock)()

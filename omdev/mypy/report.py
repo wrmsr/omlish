@@ -32,6 +32,7 @@ def _report_build_result(
         max_code_len = max(map(len, count_by_code))
         for code, count in sorted(count_by_code.items(), key=lambda kv: -kv[1]):
             print(f'{code.rjust(max_code_len)} : {count}')
+        print()
 
 
 ##

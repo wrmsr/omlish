@@ -149,7 +149,7 @@ multidict==6.4.4
 multiprocess==0.70.16
 mwparserfromhell==0.6.6
 mycli==1.29.2
-mypy==1.15.0
+mypy==1.16.0
 mypy_extensions==1.1.0
 mysql-connector-python==9.3.0
 mysqlclient==2.2.7
@@ -157,7 +157,7 @@ nbclient==0.10.2
 nbconvert==7.16.6
 nbformat==5.10.4
 nest-asyncio==1.6.0
-networkx==3.4.2
+networkx==3.5
 nh3==0.2.21
 nodeenv==1.9.1
 nodejs-wheel-binaries==22.16.0
@@ -247,7 +247,7 @@ rfc3986-validator==0.1.1
 rich==14.0.0
 rpds-py==0.25.1
 rsa==4.9.1
-ruff==0.11.11
+ruff==0.11.12
 s3transfer==0.13.0
 safetensors==0.5.3
 scikit-image==0.25.2
@@ -269,7 +269,7 @@ sortedcontainers==2.4.0
 soupsieve==2.7
 SQLAlchemy==2.0.41
 sqlean.py==3.49.1
-sqlglot==26.22.1
+sqlglot==26.23.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3

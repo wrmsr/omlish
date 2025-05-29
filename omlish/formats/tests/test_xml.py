@@ -1,3 +1,4 @@
+from ... import check
 from ..xml import build_simple_element
 from ..xml import parse_tree
 
@@ -32,7 +33,7 @@ DOC = """
 def test_simple_element() -> None:
     tree = parse_tree(DOC)
 
-    el = build_simple_element(tree.getroot())
+    el = build_simple_element(check.not_none(tree.getroot()))
     print(el)
 
     print(el.se_dict())

@@ -66,7 +66,7 @@ class AsyncsPlugin:
                 warnings.warn(message, *args, **kwargs)
 
             aio_plugin.warnings = lang.proxy_import('warnings')  # type: ignore
-            aio_plugin.warnings.warn = aio_plugin_warn  # type: ignore
+            aio_plugin.warnings.warn = aio_plugin_warn
 
     def pytest_configure(self, config):
         config.addinivalue_line('markers', f'{ASYNCS_MARK}: marks for all async backends')

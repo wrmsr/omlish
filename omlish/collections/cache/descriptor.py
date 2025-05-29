@@ -186,4 +186,4 @@ def cache(
     def inner(fn):
         return _CacheDescriptor(fn, scope, typed, **kwargs)  # type: ignore
 
-    return ta.cast(CC, inner)
+    return inner

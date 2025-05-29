@@ -247,7 +247,7 @@ class H11Protocol(Protocol):
         else:
             headers = list(request.headers)
 
-        await self.stream.handle(  # type: ignore
+        await self.stream.handle(
             Request(
                 stream_id=STREAM_ID,
                 headers=headers,

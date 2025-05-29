@@ -15,7 +15,7 @@ pytest-xdist==3.7.0
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
-ruff==0.11.11
+ruff==0.11.12
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20250516  # @omlish-venv !13t
@@ -23,7 +23,7 @@ types-pyyaml==6.0.12.20250516
 types-ujson==5.10.0.20250326
 
 black==25.1.0
-mypy==1.15.0
+mypy==1.16.0
 pipdeptree==2.26.1
 
 astpretty==3.0.0

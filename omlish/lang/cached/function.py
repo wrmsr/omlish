@@ -242,7 +242,7 @@ class _CachedFunction(ta.Generic[T], Abstract):
             def call_value_fn():
                 try:
                     return self._value_fn(*args, **kwargs)
-                except ce as ex:  # type: ignore[misc]
+                except ce as ex:
                     return _CachedException(ex)
 
         if self._lock is not None:

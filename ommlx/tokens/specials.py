@@ -183,5 +183,5 @@ class SpecialTokens:
             pass
 
         ret = tuple(tv for tv in self._all if isinstance(tv, cls))
-        any_dct[cls] = ret
+        any_dct[cls] = ret  # type: ignore[assignment]
         return ret

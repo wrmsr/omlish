@@ -87,11 +87,11 @@ def _url_retrieve(
     if size >= 0 and read < size:
         raise urllib.error.ContentTooShortError(
             f'retrieval incomplete: got only {read} out of {size} bytes',
-            result,  # type: ignore
+            result,
         )
 
     success = True
-    return result  # type: ignore
+    return result
 
 
 class Cache:

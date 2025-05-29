@@ -76,7 +76,7 @@ class ContextManager(abc.ABC, ta.Generic[T]):
 
     def __enter__(self) -> T:
         self._contextmanager = self.__contextmanager__()
-        return self._contextmanager.__enter__()  # type: ignore
+        return self._contextmanager.__enter__()
 
     def __exit__(
             self,
@@ -105,7 +105,7 @@ class AsyncContextManager(abc.ABC, ta.Generic[T]):
 
     async def __aenter__(self) -> T:
         self._asynccontextmanager = self.__asynccontextmanager__()
-        return await self._asynccontextmanager.__aenter__()  # type: ignore
+        return await self._asynccontextmanager.__aenter__()
 
     async def __aexit__(
             self,

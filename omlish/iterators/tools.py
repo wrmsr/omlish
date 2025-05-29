@@ -19,7 +19,7 @@ def unzip(it: ta.Iterable[T], width: int | None = None) -> list:
         if not isinstance(it, PeekIterator):
             it = PeekIterator(iter(it))
         try:
-            width = len(it.peek())
+            width = len(it.peek())  # type: ignore[arg-type]
         except StopIteration:
             return []
 

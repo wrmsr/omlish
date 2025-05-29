@@ -95,7 +95,7 @@ class GenMachine(ta.Generic[I, O]):
         gi: I | None = i
         while True:
             try:
-                while (o := self._gen.send(gi)) is not None:  # type: ignore[union-attr]
+                while (o := self._gen.send(gi)) is not None:
                     gi = None
                     yield from o
 
