@@ -91,20 +91,20 @@ class Llama3Llm:
 
         return start_pos
 
-    def encode_role(self, role: str):
-        return (
-            [self.tokenizer.special_tokens['<|start_header_id|>']]  # noqa
-            + self.tokenizer.encode(role)
-            + [self.tokenizer.special_tokens['<|end_header_id|>']]
-            + self.tokenizer.encode('\n\n')
-        )
+    def encode_role(self, role: str) -> list[int]:
+        return [
+            self.tokenizer.special_tokens['<|start_header_id|>'],
+            *self.tokenizer.encode(role),
+            self.tokenizer.special_tokens['<|end_header_id|>'],
+            *self.tokenizer.encode('\n\n'),
+        ]
 
-    def encode_message(self, role: str, content: str):
-        return (
-            self.encode_role(role)
-            + self.tokenizer.encode(content.strip())
-            + [self.tokenizer.special_tokens['<|eot_id|>']]
-        )
+    def encode_message(self, role: str, content: str) -> list[int]:
+        return [
+            *self.encode_role(role),
+            *self.tokenizer.encode(content.strip()),
+            self.tokenizer.special_tokens['<|eot_id|>'],
+        ]
 
     def feed(self, toks, start_pos):
         return self.model(

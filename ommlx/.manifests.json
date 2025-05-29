@@ -197,6 +197,21 @@
     }
   },
   {
+    "module": ".minichain.backends.tinygrad",
+    "attr": null,
+    "file": "ommlx/minichain/backends/tinygrad.py",
+    "line": 24,
+    "value": {
+      "$.minichain.backends.manifests.BackendManifest": {
+        "mod_name": "ommlx.minichain.backends.tinygrad",
+        "attr_name": "TinygradLlama3ChatService",
+        "name": "tinygrad_llama3",
+        "aliases": null,
+        "type": "ChatService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.transformers.sentence",
     "attr": null,
     "file": "ommlx/minichain/backends/transformers/sentence.py",
