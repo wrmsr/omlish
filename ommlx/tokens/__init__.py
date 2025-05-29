@@ -2,7 +2,11 @@ from .specials import (  # noqa
     StandardSpecialToken,
     StandardSpecialTokens,
 
+    SpecialTokenError,
+    SpecialTokenKeyError,
     AmbiguousSpecialTokenError,
+    MismatchedSpecialTokenError,
+
     SpecialTokens,
 )
 

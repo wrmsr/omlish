@@ -1,9 +1,12 @@
+import dataclasses as dc
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
+from .types import NonSpecialToken
 from .types import SpecialToken
+from .types import Token
 
 
 T = ta.TypeVar('T')
@@ -71,8 +74,23 @@ class StandardSpecialTokens(SpecialTokenNamespace, lang.Final):
 ##
 
 
-class AmbiguousSpecialTokenError(Exception):
+class SpecialTokenError(Exception):
     pass
+
+
+class SpecialTokenKeyError(SpecialTokenError, KeyError):
+    pass
+
+
+@dc.dataclass()
+class AmbiguousSpecialTokenError(SpecialTokenError):
+    tokens: ta.Sequence[SpecialToken]
+
+
+@dc.dataclass()
+class MismatchedSpecialTokenError(SpecialTokenError):
+    given: SpecialToken
+    expected: SpecialToken | None
 
 
 class SpecialTokens:
@@ -130,9 +148,11 @@ class SpecialTokens:
     def __contains__(self, item: SpecialToken | type[SpecialToken]) -> bool:
         if isinstance(item, SpecialToken):
             return item in self._by_int
+
         elif isinstance(item, type):
             check.issubclass(item, SpecialToken)
             return item in self._by_type
+
         else:
             raise TypeError(item)
 
@@ -144,10 +164,17 @@ class SpecialTokens:
     def __getitem__(self, item: SpecialTokenT | type[SpecialTokenT]) -> SpecialTokenT:
         if isinstance(item, SpecialToken):
             if item not in self._by_int:
-                raise KeyError(item)
+                raise SpecialTokenKeyError(item)
             return self._check_single(*item)  # type: ignore[misc]
+
         elif isinstance(item, type):
-            return self._check_single(*self._by_type[check.issubclass(item, SpecialToken)])  # type: ignore[return-value]  # noqa
+            item = check.issubclass(item, SpecialToken)
+            try:
+                lst = self._by_type[item]
+            except KeyError:
+                raise SpecialTokenKeyError(item) from None
+            return self._check_single(*lst)  # type: ignore[return-value]
+
         else:
             raise TypeError(item)
 
@@ -192,3 +219,44 @@ class SpecialTokens:
         ret = tuple(tv for tv in self._all if isinstance(tv, cls))
         any_dct[cls] = ret  # type: ignore[assignment]
         return ret
+
+    #
+
+    def _fix_one(self, i: int) -> Token:
+        if isinstance(i, SpecialToken):
+            try:
+                sts = self._by_int[i]
+            except KeyError:
+                raise MismatchedSpecialTokenError(i, None) from None
+            ex = self._check_single(*sts)
+            if not (type(ex) is type(i) and ex == i):
+                raise MismatchedSpecialTokenError(i, ex)
+            return ex
+
+        elif isinstance(i, int):
+            try:
+                sts = self._by_int[i]
+            except KeyError:
+                return ta.cast(NonSpecialToken, i)
+            return self._check_single(*sts)
+
+        else:
+            raise TypeError(i)
+
+    @ta.overload
+    def fix(self, i: int) -> Token:
+        ...
+
+    @ta.overload
+    def fix(self, i: ta.Iterable[int]) -> list[Token]:
+        ...
+
+    def fix(self, i):
+        if isinstance(i, int):
+            return self._fix_one(i)
+
+        elif isinstance(i, ta.Iterable):
+            return [self._fix_one(i) for i in i]
+
+        else:
+            raise TypeError(i)

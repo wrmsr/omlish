@@ -142,6 +142,10 @@ def issubclass_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
     return lambda o: issubclass(o, class_or_tuple)
 
 
+def strict_eq(l: ta.Any, r: ta.Any) -> bool:
+    return type(l) is type(r) and l == r
+
+
 ##
 
 

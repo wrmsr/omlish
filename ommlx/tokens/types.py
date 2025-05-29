@@ -16,6 +16,7 @@ class SpecialToken(int):
 
 
 Token: ta.TypeAlias = SpecialToken | NonSpecialToken
+
 TokenT = ta.TypeVar('TokenT', bound=Token)
 
 

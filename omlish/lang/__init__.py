@@ -185,6 +185,7 @@ from .functions import (  # noqa
     raise_,
     raising,
     recurse,
+    strict_eq,
     truthy_kw,
     try_,
     void,

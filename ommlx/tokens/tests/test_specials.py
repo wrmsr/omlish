@@ -3,6 +3,8 @@ import pytest
 from omlish import lang
 
 from ..specials import AmbiguousSpecialTokenError
+from ..specials import MismatchedSpecialTokenError
+from ..specials import SpecialTokenKeyError
 from ..specials import SpecialTokens
 from ..specials import StandardSpecialToken
 from ..specials import StandardSpecialTokens
@@ -49,7 +51,7 @@ def test_collection():
 
     assert sts[Bos] == Bos(420)
     assert list(sts.by_type[Bos]) == [Bos(420)]
-    with pytest.raises(KeyError):
+    with pytest.raises(SpecialTokenKeyError):
         sts[Unk]  # noqa
     assert list(sts.by_type[Sep]) == [Sep(1024), Sep(1025)]
     with pytest.raises(AmbiguousSpecialTokenError):
@@ -61,3 +63,12 @@ def test_collection():
 
     assert sts.get(Unk) is None
     assert sts.get(Unk, Unk(422)) == Unk(422)
+
+    assert lang.strict_eq(sts.fix(419), 419)
+    assert lang.strict_eq(sts.fix(420), Bos(420))
+    assert lang.strict_eq(sts.fix(Bos(420)), Bos(420))
+    assert lang.strict_eq(sts.fix(Sep(1024)), Sep(1024))
+    l, r = sts.fix([420, Eos(531)]), [Bos(420), Eos(531)]
+    assert all(lang.strict_eq(le, re) for le, re in zip(l, r, strict=True))
+    with pytest.raises(MismatchedSpecialTokenError):
+        sts.fix(Eos(532))

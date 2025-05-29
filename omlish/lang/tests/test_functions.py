@@ -5,6 +5,7 @@ from ..functions import as_async
 from ..functions import coalesce
 from ..functions import finally_
 from ..functions import opt_coalesce
+from ..functions import strict_eq
 from ..functions import try_
 
 
@@ -66,3 +67,26 @@ def test_coalesce():
     assert opt_coalesce(oi1, 2) == 1
     assert opt_coalesce(oi0, oi1, 2) == 1
     assert opt_coalesce(oi0, None) is None
+
+
+def test_strict_eq():
+    class MyStr(str):  # noqa
+        pass
+
+    assert 'foo' == MyStr('foo')  # noqa
+    assert MyStr('foo') == 'foo'
+    assert strict_eq(MyStr('foo'), MyStr('foo'))
+    assert strict_eq('foo', 'foo')
+    assert not strict_eq(MyStr('foo'), 'foo')
+    assert not strict_eq('foo', MyStr('foo'))
+    assert not strict_eq(MyStr('foo'), MyStr('bar'))
+
+    class MyOtherStr(str):  # noqa
+        def __eq__(self, other):
+            return False
+
+        def __ne__(self, other):
+            return not self == other
+
+    assert not strict_eq(MyStr('foo'), MyOtherStr('foo'))
+    assert not strict_eq(MyOtherStr('foo'), MyOtherStr('foo'))
