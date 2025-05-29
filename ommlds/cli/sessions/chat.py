@@ -8,12 +8,6 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from ... import minichain as mc
-from ...minichain.backends.anthropic.chat import AnthropicChatService
-from ...minichain.backends.google.chat import GoogleChatService
-from ...minichain.backends.llamacpp.chat import LlamacppChatService
-from ...minichain.backends.mistral import MistralChatService
-from ...minichain.backends.mlx.chat import MlxChatService
-from ...minichain.backends.openai.chat import OpenaiChatService
 from ..state import StateStorage
 from ..tools.tools import ToolMap
 from .base import Session
@@ -23,9 +17,23 @@ if ta.TYPE_CHECKING:
     from omdev import ptk
     from omdev.ptk import markdown as ptk_md
 
+    from ...minichain.backends import mistral as mc_mistral
+    from ...minichain.backends.anthropic import chat as mc_anthropic
+    from ...minichain.backends.google import chat as mc_google
+    from ...minichain.backends.llamacpp import chat as mc_lcc
+    from ...minichain.backends.mlx import chat as mc_mlx
+    from ...minichain.backends.openai import chat as mc_openai
+
 else:
     ptk = lang.proxy_import('omdev.ptk')
     ptk_md = lang.proxy_import('omdev.ptk.markdown')
+
+    mc_mistral = lang.proxy_import('...minichain.backends.mistral', __package__)
+    mc_anthropic = lang.proxy_import('...minichain.backends.anthropic.chat', __package__)
+    mc_google = lang.proxy_import('...minichain.backends.google.chat', __package__)
+    mc_lcc = lang.proxy_import('...minichain.backends.llamacpp.chat', __package__)
+    mc_mlx = lang.proxy_import('...minichain.backends.mlx.chat', __package__)
+    mc_openai = lang.proxy_import('...minichain.backends.openai.chat', __package__)
 
 
 ##
@@ -46,13 +54,13 @@ class ChatState:
 
 DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
-CHAT_MODEL_BACKENDS: ta.Mapping[str, type[mc.ChatService]] = {
-    'anthropic': AnthropicChatService,
-    'google': GoogleChatService,
-    'llamacpp': LlamacppChatService,
-    'mistral': MistralChatService,
-    'mlx': MlxChatService,
-    'openai': OpenaiChatService,
+CHAT_MODEL_BACKENDS: ta.Mapping[str, ta.Callable[[], type[mc.ChatService]]] = {
+    'anthropic': lambda: mc_anthropic.AnthropicChatService,
+    'google': lambda: mc_google.GoogleChatService,
+    'llamacpp': lambda: mc_lcc.LlamacppChatService,
+    'mistral': lambda: mc_mistral.MistralChatService,
+    'mlx': lambda: mc_mlx.MlxChatService,
+    'openai': lambda: mc_openai.OpenaiChatService,
 }
 
 
@@ -126,7 +134,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 chat.append(resp_m)
 
         else:
-            with lang.maybe_managing(CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
+            with lang.maybe_managing(CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()(
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )) as mdl:
                 response = mdl.invoke(mc.ChatRequest.new(
@@ -225,7 +233,7 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
                 ],
             )
 
-            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND](
+            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()(
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )
 
