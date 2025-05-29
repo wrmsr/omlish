@@ -125,7 +125,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 34,
+    "line": 28,
     "value": {
       "$.minichain.backends.manifests.BackendManifest": {
         "mod_name": "ommlds.minichain.backends.mlx.chat",

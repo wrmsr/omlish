@@ -4,6 +4,7 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ....backends import mlx as mlxu
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -19,13 +20,6 @@ from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...standard import DefaultRequestOptions
 from ...standard import ModelName
-
-
-if ta.TYPE_CHECKING:
-    from ....backends import mlx as mlxu
-
-else:
-    mlxu = lang.proxy_import('....backends.mlx', __package__)
 
 
 ##
@@ -73,7 +67,7 @@ class MlxChatService(ChatService, lang.ExitStacked):
             raise TypeError(m)
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'mlxu.LoadedModel':
+    def _load_model(self) -> mlxu.LoadedModel:
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         check.not_none(self._exit_stack)
 
