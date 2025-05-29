@@ -185,11 +185,10 @@ import json
 
 import pytest
 
-from omlish.testing import pytest as ptu
-
-from .... import minichain as mc
-from ....minichain.tools.jsonschema import build_tool_spec_json_schema
-from ....minichain.tools.types import PrimitiveToolDtype
+from ....tools.jsonschema import build_tool_spec_json_schema
+from ....tools.types import PrimitiveToolDtype
+from ....tools.types import ToolParam
+from ....tools.types import ToolSpec
 
 
 ##
@@ -207,16 +206,16 @@ def multiply(a: float, b: float) -> float:
     return a * b
 
 
-MULTIPLY_TOOL = mc.ToolSpec(
+MULTIPLY_TOOL = ToolSpec(
     'multiply',
     params=[
-        mc.ToolParam(
+        ToolParam(
             'a',
             type=PrimitiveToolDtype.of(float),
             desc='The first number to multiply',
             required=True,
         ),
-        mc.ToolParam(
+        ToolParam(
             'b',
             type=PrimitiveToolDtype.of(float),
             desc='The second number to multiply',
@@ -257,7 +256,6 @@ def test_multiply_tool_json_schema():
 
 
 @pytest.mark.skip
-@ptu.skip.if_cant_import('mlx_lm')
 def test_dump_chat_templates():
     tools = {'multiply': multiply}
 
@@ -310,7 +308,6 @@ def test_dump_chat_templates():
 
 @pytest.mark.not_docker_guest
 @pytest.mark.high_mem
-@ptu.skip.if_cant_import('mlx_lm')
 def test_mlx():
     import mlx.nn  # noqa
     import mlx_lm.models.cache
