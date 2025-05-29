@@ -71,6 +71,10 @@ class StandardSpecialTokens(SpecialTokenNamespace, lang.Final):
 ##
 
 
+class AmbiguousSpecialTokenError(Exception):
+    pass
+
+
 class SpecialTokens:
     def __init__(self, stks: ta.Iterable[SpecialToken]) -> None:
         super().__init__()
@@ -132,13 +136,18 @@ class SpecialTokens:
         else:
             raise TypeError(item)
 
-    def __getitem__(self, item: SpecialTokenT | type[SpecialTokenT]) -> ta.Sequence[SpecialTokenT]:
+    def _check_single(self, ret: SpecialTokenT, *rest: SpecialTokenT) -> SpecialTokenT:
+        if rest:
+            raise AmbiguousSpecialTokenError([ret, *rest])
+        return ret
+
+    def __getitem__(self, item: SpecialTokenT | type[SpecialTokenT]) -> SpecialTokenT:
         if isinstance(item, SpecialToken):
             if item not in self._by_int:
                 raise KeyError(item)
-            return ta.cast('ta.Sequence[SpecialTokenT]', item)
+            return self._check_single(*item)  # type: ignore[misc]
         elif isinstance(item, type):
-            return ta.cast('ta.Sequence[SpecialTokenT]', self._by_type[check.issubclass(item, SpecialToken)])
+            return self._check_single(*self._by_type[check.issubclass(item, SpecialToken)])  # type: ignore[return-value]  # noqa
         else:
             raise TypeError(item)
 
@@ -160,11 +169,9 @@ class SpecialTokens:
 
     def get(self, item, default=None):
         try:
-            seq = self[item]
+            return self[item]
         except KeyError:
             return default
-        else:
-            return seq[0]
 
     #
 

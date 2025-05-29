@@ -2,6 +2,7 @@ import pytest
 
 from omlish import lang
 
+from ..specials import AmbiguousSpecialTokenError
 from ..specials import SpecialTokens
 from ..specials import StandardSpecialToken
 from ..specials import StandardSpecialTokens
@@ -10,6 +11,7 @@ from ..specials import StandardSpecialTokens
 Bos = StandardSpecialTokens.Bos
 Eos = StandardSpecialTokens.Eos
 Unk = StandardSpecialTokens.Unk
+Sep = StandardSpecialTokens.Sep
 
 
 def test_standard():
@@ -40,12 +42,18 @@ def test_collection():
     sts = SpecialTokens([
         Bos(420),
         Eos(531),
+        Sep(1024),
+        Sep(1025),
     ])
     print(sts)
 
-    assert list(sts[Bos]) == [Bos(420)]
+    assert sts[Bos] == Bos(420)
+    assert list(sts.by_type[Bos]) == [Bos(420)]
     with pytest.raises(KeyError):
         sts[Unk]  # noqa
+    assert list(sts.by_type[Sep]) == [Sep(1024), Sep(1025)]
+    with pytest.raises(AmbiguousSpecialTokenError):
+        sts[Sep]  # noqa
 
     assert sts.get(Bos) == Bos(420)
     assert sts.get(Bos, Bos(421)) == Bos(420)
