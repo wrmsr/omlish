@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP037
 import typing as ta
 
 
@@ -7,6 +7,27 @@ class _ModuleManifestDumper:
         super().__init__()
 
         self._spec = spec
+        self._imported_mod: 'ta.Optional[ta.Any]' = None
+
+    def _mod(self) -> 'ta.Any':
+        if (mod := self._imported_mod) is not None:
+            return mod
+
+        import importlib
+
+        mod = importlib.import_module(self._spec)
+
+        self._imported_mod = mod
+        return mod
+
+    class _LazyGlobals(dict):
+        def __init__(self, get_missing: 'ta.Callable[[str], ta.Any]') -> None:
+            super().__init__()
+
+            self.__get_missing = get_missing
+
+        def __missing__(self, key):
+            return self.__get_missing(key)
 
     def __call__(self, *targets: dict) -> None:
         import collections.abc
@@ -15,9 +36,7 @@ class _ModuleManifestDumper:
         import importlib
         import json
 
-        mod = importlib.import_module(self._spec)
-
-        cls: ta.Any
+        cls: 'ta.Any'
 
         out = []
         for target in targets:
@@ -25,7 +44,7 @@ class _ModuleManifestDumper:
 
             if target['kind'] == 'attr':
                 attr = target['attr']
-                manifest = getattr(mod, attr)
+                manifest = getattr(self._mod(), attr)
 
                 if dc.is_dataclass(manifest):
                     # Support static dataclasses
@@ -70,10 +89,12 @@ class _ModuleManifestDumper:
 
                 cls_fac = functools.partial(cls, **target['kwargs'])
                 eval_attr_name = '__manifest_factory__'
-                inl_glo = {
-                    **mod.__dict__,
+
+                inl_glo = self._LazyGlobals(lambda k: getattr(self._mod(), k))
+                inl_glo.update({
                     eval_attr_name: cls_fac,
-                }
+                })
+
                 inl_src = eval_attr_name + target['init_src']
                 inl_code = compile(inl_src, '<magic>', 'eval')
                 manifest = eval(inl_code, inl_glo)  # noqa
