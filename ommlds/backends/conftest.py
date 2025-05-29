@@ -2,69 +2,57 @@ from omlish.testing.pytest import plugins as ptp
 
 
 def pytest_addhooks(pluginmanager):
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/llamacpp/.*\.py'],
+        [__package__ + '.llamacpp'],
+        ['llama_cpp'],
+    )
+
+    ptp.depskip.module_register(
+        pluginmanager,
+        [__package__ + '.mlx'],
         [
-            r'llama_cpp(\..*)?',
+            'mlx',
+            'mlx_lm',
+            'transformers',
         ],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/mlx/.*\.py'],
-        [
-            r'mlx(\..*)?',
-            r'mlx_lm(\..*)?',
-            r'transformers(\..*)?',
-        ],
+        [__package__ + '.sentencepiece'],
+        ['sentencepiece'],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/sentencepiece/.*\.py'],
-        [
-            r'sentencepiece(\..*)?',
-        ],
+        [__package__ + '.tiktoken'],
+        ['tiktoken'],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/tiktoken/.*\.py'],
-        [
-            r'tiktoken(\..*)?',
-        ],
+        [__package__ + '.tinygrad'],
+        ['tinygrad'],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/tinygrad/.*\.py'],
-        [
-            r'tinygrad(\..*)?',
-        ],
+        [__package__ + '.tokenizers'],
+        ['tokenizers'],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/tokenizers/.*\.py'],
-        [
-            r'tokenizers(\..*)?',
-        ],
+        [__package__ + '.torch'],
+        ['torch'],
     )
 
-    ptp.depskip.register(
+    ptp.depskip.module_register(
         pluginmanager,
-        [r'ommlds/backends/torch/.*\.py'],
+        [__package__ + '.transformers'],
         [
-            r'torch(\..*)?',
-        ],
-    )
-
-    ptp.depskip.register(
-        pluginmanager,
-        [r'ommlds/backends/transformers/.*\.py'],
-        [
-            r'transformers(\..*)?',
-            r'sentencetransformers(\..*)?',
+            'sentencetransformers',
+            'transformers',
         ],
     )

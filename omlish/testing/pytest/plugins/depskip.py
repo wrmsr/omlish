@@ -66,7 +66,7 @@ class DepSkipPlugin:
             collector._getobj = _patched_getobj  # type: ignore  # noqa
 
 
-def register(
+def regex_register(
         pm: pytest.PytestPluginManager,
         file_pats: ta.Iterable[str],
         imp_pats: ta.Iterable[str],
@@ -79,3 +79,22 @@ def register(
         [re.compile(fp) for fp in file_pats],
         [re.compile(ip) for ip in imp_pats],
     ))
+
+
+def module_register(
+        pm: pytest.PytestPluginManager,
+        mods: ta.Iterable[str],
+        imp_mods: ta.Iterable[str],
+) -> None:
+    check.not_isinstance(mods, str)
+    check.not_isinstance(imp_mods, str)
+
+    for m in [*mods, *imp_mods]:
+        check.non_empty_str(m)
+        check.arg(all(p.isidentifier() for p in m.split('.')), m)
+
+    regex_register(
+        pm,
+        [rf'{re.escape(m.replace(".", "/"))}/.*\.py' for m in mods],
+        [rf'{re.escape(m.replace(".", "/"))}(\..*)?' for m in imp_mods],
+    )

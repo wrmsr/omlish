@@ -14,12 +14,12 @@ from .. import lang
 if ta.TYPE_CHECKING:
     import plistlib
 
-    from .. import docker
+    from ..docker import all as docker
 
 else:
     plistlib = lang.proxy_import('plistlib')
 
-    docker = lang.proxy_import('..docker')
+    docker = lang.proxy_import('..docker.all')
 
 
 ##
