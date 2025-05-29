@@ -1,4 +1,9 @@
+"""
+TODO:
+ - alt mode: --output=json, subprocess / tee
+"""
 import collections
+import dataclasses as dc
 import typing as ta
 
 from .debug import install_debug_path_finder
@@ -8,6 +13,20 @@ from .debug import run_mypy_main
 if ta.TYPE_CHECKING:
     import mypy.build
     import mypy.errors
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class JsonOutputError:
+    file: str
+    line: int
+    column: int
+    message: str
+    hint: ta.Any | None
+    code: str
+    severity: str  # 'error' | 'note'
 
 
 ##
