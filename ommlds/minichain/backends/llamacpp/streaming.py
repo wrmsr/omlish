@@ -2,9 +2,12 @@ import contextlib
 import threading
 import typing as ta  # noqa
 
+import llama_cpp as lcc
+
 from omlish import check
 from omlish import lang
 
+from ....backends import llamacpp as lcu
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
 from ...chat.messages import AiMessage
@@ -15,17 +18,6 @@ from ...resources import Resources
 from .chat import LlamacppChatService
 from .format import ROLES_MAP
 from .format import get_msg_content
-
-
-if ta.TYPE_CHECKING:
-    import llama_cpp as lcc
-
-    from ....backends import llamacpp as lcu
-
-else:
-    lcc = lang.proxy_import('llama_cpp', extras=['llama_types'])
-
-    lcu = lang.proxy_import('....backends.llamacpp', __package__)
 
 
 ##

@@ -2,9 +2,11 @@ import contextlib
 import os.path
 import typing as ta
 
-from omlish import lang
+import llama_cpp as lcc
+
 from omlish import typedvalues as tv
 
+from ....backends import llamacpp as lcu
 from ...completion import CompletionRequest
 from ...completion import CompletionRequestOption
 from ...completion import CompletionResponse
@@ -15,17 +17,6 @@ from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...standard import ModelPath
-
-
-if ta.TYPE_CHECKING:
-    import llama_cpp as lcc
-
-    from ....backends import llamacpp as lcu
-
-else:
-    lcc = lang.proxy_import('llama_cpp')
-
-    lcu = lang.proxy_import('....backends.llamacpp', __package__)
 
 
 ##

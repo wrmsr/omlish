@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+import sentence_transformers as stfm
 
 from ...configs import Config
 from ...configs import consume_configs
@@ -10,12 +10,6 @@ from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
 from ...vectors.embeddings import EmbeddingService
 from ...vectors.types import Vector
-
-
-if ta.TYPE_CHECKING:
-    import sentence_transformers as stfm
-else:
-    stfm = lang.proxy_import('sentence_transformers')
 
 
 ##

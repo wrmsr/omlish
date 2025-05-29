@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ....backends.tinygrad.models import llama3 as tgl3
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import SystemMessage
@@ -10,12 +11,6 @@ from ...chat.messages import UserMessage
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
-
-
-if ta.TYPE_CHECKING:
-    from ....backends.tinygrad.models import llama3 as tgl3
-else:
-    tgl3 = lang.proxy_import('....backends.tinygrad.models.llama3', __package__)
 
 
 ##
@@ -38,7 +33,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
         self._temperature = temperature if temperature is not None else self.DEFAULT_TEMPERATURE
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'tgl3.Llama3Llm':
+    def _load_model(self) -> tgl3.Llama3Llm:
         check.not_none(self._exit_stack)
 
         from ....backends.tinygrad.models.llama3.repl import fetch_model

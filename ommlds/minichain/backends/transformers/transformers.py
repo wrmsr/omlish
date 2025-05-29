@@ -5,6 +5,8 @@ TODO:
 import sys
 import typing as ta
 
+import transformers as tfm
+
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
@@ -24,12 +26,6 @@ from ...configs import Config
 from ...configs import consume_configs
 from ...standard import ModelPath
 from ..huggingface import HuggingfaceHubToken
-
-
-if ta.TYPE_CHECKING:
-    import transformers as tfm
-else:
-    tfm = lang.proxy_import('transformers')
 
 
 ##
@@ -144,7 +140,7 @@ class TransformersChatService(ChatService, lang.ExitStacked):
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
 
     @lang.cached_function(transient=True)
-    def _load_pipeline(self) -> 'tfm.Pipeline':
+    def _load_pipeline(self) -> tfm.Pipeline:
         # FIXME: unload
         check.not_none(self._exit_stack)
 
