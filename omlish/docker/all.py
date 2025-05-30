@@ -13,6 +13,10 @@ from .compose import (  # noqa
     get_compose_port,
 )
 
+from .consts import (  # noqa
+    DOCKER_FOR_MAC_HOSTNAME,
+)
+
 from .detect import (  # noqa
     DOCKER_HOST_PLATFORM_KEY,
     get_docker_host_platform,

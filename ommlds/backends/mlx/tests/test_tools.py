@@ -53,7 +53,7 @@ def test_tools():
     response = generate(
         loaded.model,
         loaded.tokenization,
-        prompt,  # type: ignore
+        ta.cast(ta.Any, prompt),
         gp,
         # verbose=True,
     )
@@ -78,7 +78,7 @@ def test_tools():
     response = generate(  # noqa
         loaded.model,
         loaded.tokenization,
-        prompt,  # type: ignore
+        ta.cast(ta.Any, prompt),
         gp,
         # verbose=True,
     )
