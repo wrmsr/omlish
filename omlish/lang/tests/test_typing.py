@@ -38,11 +38,11 @@ def test_copy_type():
 
 static_check_isinstance[list]([])
 static_check_isinstance[ta.Sequence]([])
-# static_check_isinstance[ta.Sequence]({})
+# static_check_isinstance[ta.Sequence]({})  # FAILS
 
 static_check_issubclass[list](list)
 static_check_issubclass[ta.Sequence](list)
-# static_check_issubclass[ta.Sequence](dict)
+# static_check_issubclass[ta.Sequence](dict)  # FAILS
 
 
 class Foo:
@@ -58,6 +58,6 @@ def test_bar():
     assert isinstance(Bar(), Bar)
 
 
-# @static_check_issubclass[Foo]
+# @static_check_issubclass[Foo]()  # FAILS
 # class Baz:
 #     pass
