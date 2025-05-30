@@ -58,6 +58,25 @@ def test_hi(tmpdir):
     assert lines[3] == 'argv[2]: baz'
 
 
+def test_c(tmpdir):
+    _compile_and_run(
+        str(tmpdir),
+        os.path.join(os.path.dirname(__file__), 'src/c.c'),
+    )
+
+
+def test_std(tmpdir):
+    _compile_and_run(
+        str(tmpdir),
+        os.path.join(os.path.dirname(__file__), 'src/c17.c'),
+    )
+
+    _compile_and_run(
+        str(tmpdir),
+        os.path.join(os.path.dirname(__file__), 'src/cc20.cc'),
+    )
+
+
 @pytest.mark.online
 def test_json(tmpdir):
     for file in ['json.cc', 'json2.cc']:

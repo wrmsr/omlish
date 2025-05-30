@@ -39,12 +39,17 @@ from ..cache import data as dcache
 from .cdeps import Cdep
 from .cdeps import load_cdeps
 from .cdeps import process_marshaled_cdep
+from .srclangs import SRC_LANGS_BY_EXT
+from .srclangs import SrcLangs
+
+
+##
 
 
 class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('--cwd'),
-        ap.arg('--cc'),
+        ap.arg('--cmd'),
         ap.arg('src-file'),
         ap.arg('args', nargs=ap.REMAINDER),
     )
@@ -90,6 +95,9 @@ class Cli(ap.Cli):
                         check.state(os.path.isdir(inc_dir))
                         include_dirs.append(inc_dir)
 
+            elif src_magic.key == '@omlish-llm-author':
+                pass
+
             else:
                 raise KeyError(src_magic.key)
 
@@ -97,8 +105,15 @@ class Cli(ap.Cli):
 
         src_file_name = os.path.basename(src_file)
 
+        sl = SrcLangs.CPP
+        if '.' in src_file:
+            ext = src_file.rpartition('.')[2]
+            sl = SRC_LANGS_BY_EXT.get(ext, sl)
+
+        #
+
         sh_parts: list[str] = [
-            self.args.cc or 'clang++',
+            self.args.cmd or sl.cmd,
         ]
 
         for inc_dir in include_dirs:
@@ -110,8 +125,10 @@ class Cli(ap.Cli):
         if ldflags := os.environ.get('LDFLAGS'):
             sh_parts.append(ldflags)  # Explicitly shell-unquoted
 
+        if sl.std is not None:
+            sh_parts.append(f'-std={sl.std}')
+
         sh_parts.extend([
-            '-std=c++20',
             shlex.quote(os.path.abspath(src_file)),
             '-o',
             shlex.quote(src_file_name),
