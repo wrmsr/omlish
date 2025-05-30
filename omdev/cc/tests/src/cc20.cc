@@ -54,34 +54,34 @@ int main() {
     // print_item(NonPrintable{});
 
 
-    std::cout << "\n## C++20 Ranges ##\n";
-    std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    // std::cout << "\n## C++20 Ranges ##\n";
+    // std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-    // 2. Using ranges to filter, transform, and take elements
-    //    - 'std::views::filter' takes even numbers
-    //    - 'std::views::transform' squares each of those elements
-    //    - 'std::views::take' takes the first 3 such results
-    auto results = numbers
-                 | std::views::filter([](int n){ return n % 2 == 0; }) // Keep even numbers
-                 | std::views::transform([](int n){ return n * n; })   // Square them
-                 | std::views::take(3);                                // Take the first 3
+    // // 2. Using ranges to filter, transform, and take elements
+    // //    - 'std::views::filter' takes even numbers
+    // //    - 'std::views::transform' squares each of those elements
+    // //    - 'std::views::take' takes the first 3 such results
+    // auto results = numbers
+    //              | std::views::filter([](int n){ return n % 2 == 0; }) // Keep even numbers
+    //              | std::views::transform([](int n){ return n * n; })   // Square them
+    //              | std::views::take(3);                                // Take the first 3
 
-    std::cout << "First 3 squares of even numbers: ";
-    for (int num : results) { // The operations are lazily evaluated here
-        std::cout << num << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "First 3 squares of even numbers: ";
+    // for (int num : results) { // The operations are lazily evaluated here
+    //     std::cout << num << " ";
+    // }
+    // std::cout << std::endl;
 
-    // Example: Find all numbers greater than 5 and drop the first one found
-    auto greater_than_5_drop_1 = numbers
-                               | std::views::filter([](int n){ return n > 5; })
-                               | std::views::drop(1);
+    // // Example: Find all numbers greater than 5 and drop the first one found
+    // auto greater_than_5_drop_1 = numbers
+    //                            | std::views::filter([](int n){ return n > 5; })
+    //                            | std::views::drop(1);
 
-    std::cout << "Numbers greater than 5, dropping the first one: ";
-    for (int num : greater_than_5_drop_1) {
-        std::cout << num << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Numbers greater than 5, dropping the first one: ";
+    // for (int num : greater_than_5_drop_1) {
+    //     std::cout << num << " ";
+    // }
+    // std::cout << std::endl;
 
     return 0;
 }
