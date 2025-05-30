@@ -98,6 +98,10 @@ class Cli(ap.Cli):
             elif src_magic.key == '@omlish-llm-author':
                 pass
 
+            elif src_magic.key == '@omlish-cext':
+                # FIXME: lol - usecase for non-cext bins?
+                pass
+
             else:
                 raise KeyError(src_magic.key)
 
