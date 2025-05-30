@@ -328,7 +328,10 @@ from .sys import (  # noqa
 from .typing import (  # noqa
     BytesLike,
 
+    static_check_isinstance,
+    static_check_issubclass,
     copy_type,
+
     protocol_check,
 
     typed_lambda,

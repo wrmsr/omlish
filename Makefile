@@ -455,6 +455,13 @@ ci:
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
 		${SRCS}
 
+.PHONY: ci-bash
+ci-bash:
+	${CI_RUN} \
+		${CI_PROJECT_DIR} \
+		${CI_SERVICE} \
+		bash
+
 
 ### Package
 

@@ -1,8 +1,13 @@
 import typing as ta
 
 from ..typing import copy_type
+from ..typing import static_check_isinstance
+from ..typing import static_check_issubclass
 from ..typing import typed_lambda
 from ..typing import typed_partial
+
+
+##
 
 
 def test_tl():
@@ -26,3 +31,29 @@ def test_copy_type():
     r = foo2(1, 's')
     if not isinstance(r, float):
         ta.assert_never(r)
+
+
+##
+
+
+static_check_isinstance[list]([])
+static_check_isinstance[ta.Sequence]([])
+# static_check_isinstance[ta.Sequence]({})
+
+static_check_issubclass[list](list)
+static_check_issubclass[ta.Sequence](list)
+# static_check_issubclass[ta.Sequence](dict)
+
+
+class Foo:
+    pass
+
+
+@static_check_issubclass[Foo]
+class Bar(Foo):
+    pass
+
+
+# @static_check_issubclass[Foo]
+# class Baz:
+#     pass

@@ -23,10 +23,23 @@ BytesLike: ta.TypeAlias = bytes | bytearray
 ##
 
 
+class static_check_isinstance(ta.Generic[T]):  # noqa
+    def __init__(self, o: T) -> None:
+        pass
+
+
+class static_check_issubclass(ta.Generic[T]):  # noqa
+    def __init__(self, t: type[T]) -> None:
+        pass
+
+
 def copy_type(o: T) -> ta.Callable[[ta.Any], T]:
     """https://github.com/python/typing/issues/769#issuecomment-903760354"""
 
     return lambda x: x
+
+
+##
 
 
 def protocol_check(proto: type) -> ta.Callable[[Ty], Ty]:
