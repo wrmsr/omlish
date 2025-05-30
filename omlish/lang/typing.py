@@ -16,10 +16,17 @@ T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
 T_contra = ta.TypeVar('T_contra', contravariant=True)
 
+# FIXME: remove? ducktyped by mypy (with memoryview)
 BytesLike: ta.TypeAlias = bytes | bytearray
 
 
 ##
+
+
+def copy_type(o: T) -> ta.Callable[[ta.Any], T]:
+    """https://github.com/python/typing/issues/769#issuecomment-903760354"""
+
+    return lambda x: x
 
 
 def protocol_check(proto: type) -> ta.Callable[[Ty], Ty]:

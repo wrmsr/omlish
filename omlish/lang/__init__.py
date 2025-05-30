@@ -327,10 +327,14 @@ from .sys import (  # noqa
 
 from .typing import (  # noqa
     BytesLike,
-    SequenceNotStr,
+
+    copy_type,
     protocol_check,
+
     typed_lambda,
     typed_partial,
+
+    SequenceNotStr,
 )
 
 ##
