@@ -24,13 +24,19 @@ BytesLike: ta.TypeAlias = bytes | bytearray
 
 
 class static_check_isinstance(ta.Generic[T]):  # noqa
-    def __init__(self, o: T) -> None:
+    def __init__(self, *o: T) -> None:
         pass
+
+    def __call__(self, o: T) -> T:
+        return o
 
 
 class static_check_issubclass(ta.Generic[T]):  # noqa
-    def __init__(self, t: type[T]) -> None:
+    def __init__(self, *t: type[T]) -> None:
         pass
+
+    def __call__(self, t: type[T]) -> type[T]:
+        return t
 
 
 def copy_type(o: T) -> ta.Callable[[ta.Any], T]:

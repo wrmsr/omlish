@@ -49,9 +49,13 @@ class Foo:
     pass
 
 
-@static_check_issubclass[Foo]
+@static_check_issubclass[Foo]()
 class Bar(Foo):
     pass
+
+
+def test_bar():
+    assert isinstance(Bar(), Bar)
 
 
 # @static_check_issubclass[Foo]
