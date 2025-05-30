@@ -11,7 +11,10 @@ BACKEND_DEPSKIP_MODULES: ta.Mapping[str, ta.Sequence[str]] = {
     'sentencepiece': ['sentencepiece'],
     'tinygrad': BASE_BACKEND_DEPSKIP_MODULES['tinygrad'],
     'tokenizers': ['tokenizers'],
-    'transformers': BASE_BACKEND_DEPSKIP_MODULES['transformers'],
+    'transformers': [
+        'sentencetransformers',
+        'transformers',
+    ],
 }
 
 

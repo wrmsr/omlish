@@ -10,15 +10,8 @@ BACKEND_DEPSKIP_MODULES: ta.Mapping[str, ta.Sequence[str]] = {
         'mlx_lm',
         'transformers',
     ],
-    'sentencepiece': ['sentencepiece'],
-    'tiktoken': ['tiktoken'],
     'tinygrad': ['tinygrad'],
-    'tokenizers': ['tokenizers'],
     'torch': ['torch'],
-    'transformers': [
-        'sentencetransformers',
-        'transformers',
-    ],
 }
 
 
