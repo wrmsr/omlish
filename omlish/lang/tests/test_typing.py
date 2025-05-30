@@ -17,11 +17,11 @@ def test_tl():
 
 def test_copy_type():
     def foo(i: int, s: str) -> float:
-        raise NotImplementedError
+        return 0.
 
     @copy_type(foo)
     def foo2(*args, **kwargs):
-        raise NotImplementedError
+        return 0.
 
     r = foo2(1, 's')
     if not isinstance(r, float):
