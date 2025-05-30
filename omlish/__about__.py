@@ -99,7 +99,7 @@ class Project(ProjectBase):
             'aiosqlite ~= 0.21',
             'asyncpg ~= 0.30',
 
-            'apsw ~= 3.49',
+            'apsw ~= 3.50',
 
             'sqlean.py ~= 3.49',
 
