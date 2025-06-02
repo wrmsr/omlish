@@ -65,9 +65,10 @@ def check_frozen_bases(cls: type, frozen: bool) -> None:
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class FrozenPlan(Plan):
     fields: tuple[str, ...]
+    allow_dynamic_dunder_attrs: bool
 
 
 @register_generator_type(FrozenPlan)
@@ -78,7 +79,10 @@ class FrozenGenerator(Generator[FrozenPlan]):
         if not ctx.cs.frozen:
             return None
 
-        return PlanResult(FrozenPlan(tuple(f.name for f in ctx.cs.fields)))
+        return PlanResult(FrozenPlan(
+            fields=tuple(f.name for f in ctx.cs.fields),
+            allow_dynamic_dunder_attrs=ctx.cs.allow_dynamic_dunder_attrs,
+        ))
 
     def _generate_one(
             self,
@@ -88,8 +92,20 @@ class FrozenGenerator(Generator[FrozenPlan]):
             exc_args: str,
     ) -> AddMethodOp:
         preamble = []
+        condition = []
+
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5
-        condition = f'type(self) is {CLS_IDENT}'
+        base_condition = f'type(self) is {CLS_IDENT}'
+
+        if plan.allow_dynamic_dunder_attrs:
+            condition.extend([
+                f'(',
+                f'    {base_condition}',
+                f'    and not (len(name) > 4 and name[:2] == name[-2:] == "__")',
+                f')',
+            ])
+        else:
+            condition.append(base_condition)
 
         if plan.fields:
             set_ident = f'{IDENT_PREFIX}_{mth}_frozen_fields'
@@ -102,14 +118,19 @@ class FrozenGenerator(Generator[FrozenPlan]):
                 f'}}',
                 f'',
             ])
-            condition += f' or name in {set_ident}'
+            condition.append(f' or name in {set_ident}')
 
         return AddMethodOp(
             f'__{mth}__',
             '\n'.join([
                 *preamble,
                 f'def __{mth}__(self, {", ".join(params)}):',
-                f'    if {condition}:',
+                f'    if (',
+                *[
+                    f'        {l}'
+                    for l in condition
+                ],
+                f'    ):',
                 f'        raise {FROZEN_INSTANCE_ERROR_GLOBAL.ident}{exc_args}',
                 f'    super({CLS_IDENT}, self).__{mth}__({", ".join(params)})',
             ]),

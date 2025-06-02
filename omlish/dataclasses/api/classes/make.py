@@ -39,6 +39,7 @@ def make_dataclass(  # noqa
         cache_hash: bool | None = None,
         generic_init: bool | None = None,
         override: bool | None = None,
+        allow_dynamic_dunder_attrs: bool | None = None,
 
         repr_id: bool | None = None,
         terse_repr: bool | None = None,
@@ -109,6 +110,7 @@ def make_dataclass(  # noqa
         cache_hash=cache_hash,
         generic_init=generic_init,
         override=override,
+        allow_dynamic_dunder_attrs=allow_dynamic_dunder_attrs,
 
         repr_id=repr_id,
         terse_repr=terse_repr,

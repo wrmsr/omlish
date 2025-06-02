@@ -487,3 +487,28 @@ def test_super_init():
 
     assert A().c == 1
     assert B().c == 2
+
+
+def test_allow_dynamic_dunder_attrs():
+    @dc.dataclass(frozen=True)
+    class A:
+        s: str
+
+    a = A('foo')
+    assert a.s == 'foo'
+    with pytest.raises(dc.FrozenInstanceError):
+        a.s = 'bar'  # type: ignore  # noqa
+    with pytest.raises(dc.FrozenInstanceError):
+        a.__s__ = 'bar'  # type: ignore  # noqa
+
+    @dc.dataclass(frozen=True)
+    @dc.extra_class_params(allow_dynamic_dunder_attrs=True)
+    class B:
+        s: str
+
+    b = B('foo')
+    assert b.s == 'foo'
+    with pytest.raises(dc.FrozenInstanceError):
+        b.s = 'bar'  # type: ignore  # noqa
+    b.__s__ = 'bar'  # type: ignore  # noqa
+    assert b.__s__ == 'bar'  # type: ignore
