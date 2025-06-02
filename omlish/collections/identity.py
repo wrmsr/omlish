@@ -115,31 +115,87 @@ class IdentitySet(ta.MutableSet[T]):
         return iter(self._dict.values())
 
 
+##
+
+
+class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
+    """
+    https://ideone.com/G4iIri
+    https://stackoverflow.com/questions/75314250/python-weakkeydictionary-for-unhashable-types#comment135919973_77100606
+    """
+
+    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
+        super().__init__()
+
+        self._keys: ta.MutableMapping[IdentityWeakKeyDictionary._Id[K], K] = weakref.WeakValueDictionary()
+        self._values: ta.MutableMapping[IdentityWeakKeyDictionary._Id[K], V] = weakref.WeakKeyDictionary()
+
+        for k, v in lang.yield_dict_init(*args, **kwargs):
+            self[k] = v
+
+    def __len__(self) -> int:
+        return len(self._keys)
+
+    def __iter__(self) -> ta.Iterator[K]:
+        return iter(self._keys.values())
+
+    class _Id(ta.Generic[T]):
+        def __init__(self, key: T) -> None:
+            super().__init__()
+
+            self._id = id(key)
+            self._key_ref = weakref.ref(key)
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}<id={self._id}>'
+
+        def __hash__(self) -> int:
+            return self._id
+
+        def __eq__(self, other: object) -> bool:
+            return (
+                type(other) is type(self) and
+                self._id == other._id and  # type: ignore
+                self._key_ref() is other._key_ref()  # type: ignore
+            )
+
+        def __ne__(self, other: object) -> bool:
+            return not (self == other)
+
+    def __getitem__(self, key: K) -> V:
+        return self._values.__getitem__(self._Id(key))
+
+    def __setitem__(self, key: K, value: V) -> None:
+        id_obj = self._Id(key)
+        self._keys.__setitem__(id_obj, key)
+        self._values.__setitem__(id_obj, value)
+
+    def __delitem__(self, key: K) -> None:
+        self._values.__delitem__(self._Id(key))
+        self._keys.__delitem__(self._Id(key))
+
+
 class IdentityWeakSet(ta.MutableSet[T]):
     def __init__(self, init: ta.Iterable[T] | None = None) -> None:
         super().__init__()
 
-        self._dict: weakref.WeakValueDictionary[int, T] = weakref.WeakValueDictionary()
+        self._dict: IdentityWeakKeyDictionary[T, None] = IdentityWeakKeyDictionary()
+
+        if init is not None:
+            for e in init:
+                self._dict[e] = None
 
     def add(self, value):
-        # FIXME: race with weakref callback?
-        self._dict[id(value)] = value
+        self._dict[value] = None
 
     def discard(self, value):
-        try:
-            del self._dict[id(value)]
-        except KeyError:
-            pass
+        del self._dict[value]
 
     def __contains__(self, x):
-        try:
-            o = self._dict[id(x)]
-        except KeyError:
-            return False
-        return x is o
+        return x in self._dict
 
     def __len__(self):
         return len(self._dict)
 
     def __iter__(self):
-        return self._dict.values()
+        return self._dict.keys()

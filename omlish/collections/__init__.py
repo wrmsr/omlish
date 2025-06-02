@@ -59,8 +59,9 @@ from .hasheq import (  # noqa
 from .identity import (  # noqa
     IdentityKeyDict,
     IdentitySet,
-    IdentityWrapper,
+    IdentityWeakKeyDictionary,
     IdentityWeakSet,
+    IdentityWrapper,
 )
 
 if _ta.TYPE_CHECKING:

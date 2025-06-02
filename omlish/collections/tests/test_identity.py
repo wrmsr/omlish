@@ -5,7 +5,11 @@ import pytest
 
 from ..identity import IdentityKeyDict
 from ..identity import IdentitySet
+from ..identity import IdentityWeakKeyDictionary
 from ..identity import IdentityWeakSet
+
+
+##
 
 
 class Incomparable:
@@ -90,12 +94,46 @@ def test_pickle():
     assert c2.a is not c.a
 
 
+##
+
+
 class NoHe:
     def __hash__(self):
         raise TypeError
 
     def __eq__(self, other):
         raise TypeError
+
+
+def test_key_dict():
+    d: ta.MutableMapping[NoHe, str] = IdentityWeakKeyDictionary()
+    k0 = NoHe()
+    k1 = NoHe()
+    d[k0] = '0'
+    assert d[k0] == '0'
+    with pytest.raises(KeyError):
+        d[k1]  # noqa
+    d[k1] = '1'
+    assert d[k0] == '0'
+    assert d[k1] == '1'
+    del d[k0]
+    with pytest.raises(KeyError):
+        d[k0]  # noqa
+    with pytest.raises(KeyError):
+        del d[k0]
+    assert d[k1] == '1'
+
+
+def test_iter_key_dict():
+    d: IdentityWeakKeyDictionary[NoHe, int] = IdentityWeakKeyDictionary()
+    l = [NoHe(), NoHe(), NoHe()]
+    d[l[0]] = 1
+    d[l[1]] = 2
+
+    for k in d:
+        l.remove(k)
+        with pytest.raises(KeyError):
+            d[NoHe()]  # noqa
 
 
 def test_identity_weak_set():
