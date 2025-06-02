@@ -250,3 +250,8 @@ class Identity(ta.Generic[T]):
         if type(other) is not type(self):
             return NotImplemented
         return self._obj is other._obj  # noqa
+
+    def __ne__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        return self._obj is not other._obj  # noqa

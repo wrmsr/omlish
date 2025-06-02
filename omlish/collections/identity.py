@@ -13,29 +13,6 @@ V = ta.TypeVar('V')
 ##
 
 
-class IdentityWrapper(ta.Generic[T]):
-    def __init__(self, value: T) -> None:
-        super().__init__()
-
-        self._value = value
-
-    def __repr__(self) -> str:
-        return lang.attr_repr(self, 'value')
-
-    @property
-    def value(self) -> T:
-        return self._value
-
-    def __eq__(self, other):
-        return isinstance(other, IdentityWrapper) and other._value is self._value
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __hash__(self):
-        return id(self._value)
-
-
 class IdentityKeyDict(ta.MutableMapping[K, V]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
@@ -122,6 +99,9 @@ class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
     """
     https://ideone.com/G4iIri
     https://stackoverflow.com/questions/75314250/python-weakkeydictionary-for-unhashable-types#comment135919973_77100606
+
+    See also:
+    https://github.com/python-trio/trio/blob/efd785a20721707b52a6e2289a65e25722b30c96/src/trio/_core/_ki.py#L81
     """
 
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
@@ -155,8 +135,8 @@ class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
         def __eq__(self, other: object) -> bool:
             return (
                 type(other) is type(self) and
-                self._id == other._id and  # type: ignore
-                self._key_ref() is other._key_ref()  # type: ignore
+                self._id == other._id and  # type: ignore  # noqa
+                self._key_ref() is other._key_ref()  # type: ignore  # noqa
             )
 
         def __ne__(self, other: object) -> bool:

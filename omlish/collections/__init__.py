@@ -61,7 +61,6 @@ from .identity import (  # noqa
     IdentitySet,
     IdentityWeakKeyDictionary,
     IdentityWeakSet,
-    IdentityWrapper,
 )
 
 if _ta.TYPE_CHECKING:
