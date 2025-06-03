@@ -18,7 +18,7 @@ class Project(ProjectBase):
 
             'llama-cpp-python ~= 0.3',
 
-            'mlx ~= 0.25',
+            'mlx ~= 0.26',
             'mlx-lm ~= 0.25; sys_platform == "darwin"',
 
             'sentencepiece ~= 0.2',

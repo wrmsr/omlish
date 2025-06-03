@@ -14,7 +14,7 @@ from .values import UniqueTypedValue  # noqa
 
 T = ta.TypeVar('T')
 
-TypedValueT = ta.TypeVar('TypedValueT', bound='TypedValue')
+TypedValueT0 = ta.TypeVar('TypedValueT0', bound='TypedValue')
 TypedValueU = ta.TypeVar('TypedValueU', bound='TypedValue')
 
 UniqueTypedValueU = ta.TypeVar('UniqueTypedValueU', bound='UniqueTypedValue')
@@ -27,7 +27,7 @@ class _NOT_SET(lang.Marker):  # noqa
     pass
 
 
-class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
+class TypedValuesAccessor(lang.Abstract, ta.Sequence[TypedValueT0]):
     def __iter__(self):
         raise TypeError(
             'TypedValuesAccessor does not implement __iter__ - it is reserved for implementation by subclasses.',
@@ -36,7 +36,7 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
     #
 
     @ta.final
-    def __contains__(self, cls: type[TypedValueU]) -> bool:
+    def __contains__(self, cls: type[TypedValueU]) -> bool:  # type: ignore[override]
         return self._typed_value_contains(cls)
 
     @abc.abstractmethod
@@ -45,8 +45,8 @@ class TypedValuesAccessor(lang.Abstract, ta.Generic[TypedValueT]):
 
     #
 
-    @ta.overload
-    def __getitem__(self, idx: int) -> TypedValueT:
+    @ta.overload  # type: ignore[override]
+    def __getitem__(self, idx: int) -> TypedValueT0:
         ...
 
     @ta.overload

@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0
 wheel>=0.45.1
 
-uv>=0.7.9
+uv>=0.7.10
 
 pytest==8.4.0
 pytest-benchmark==5.1.0
@@ -114,7 +114,7 @@ snowflake-sqlalchemy==1.7.3; python_version < "3.13"
 
 trino==0.334.0
 
-huggingface-hub==0.32.3
+huggingface-hub==0.32.4
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
@@ -136,7 +136,7 @@ boto3>=1.38.28
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.25.2; sys_platform == "darwin"  # @omlish-venv !13t
+mlx==0.26.0; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.25.0; sys_platform == "darwin" and python_version < "3.13"
 
 apsw==3.50.0.0

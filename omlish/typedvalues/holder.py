@@ -8,20 +8,20 @@ from .generic import TypedValueGeneric
 from .values import TypedValue
 
 
-TypedValueT = ta.TypeVar('TypedValueT', bound=TypedValue)
+TypedValueT1 = ta.TypeVar('TypedValueT1', bound=TypedValue)
 
 
 ##
 
 
 class TypedValueHolder(
-    TypedValuesAccessor[TypedValueT],
-    TypedValueGeneric[TypedValueT],
+    TypedValuesAccessor[TypedValueT1],
+    TypedValueGeneric[TypedValueT1],
     lang.Abstract,
 ):
     @property
     @abc.abstractmethod
-    def _typed_values(self) -> TypedValues[TypedValueT] | None:
+    def _typed_values(self) -> TypedValues[TypedValueT1] | None:
         raise NotImplementedError
 
     #

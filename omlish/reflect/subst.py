@@ -43,13 +43,14 @@ def replace_type_vars(
             args = tuple(rec(a) for a in cur.args)
             if update_aliases:
                 obj = cur.obj
-                if (ops := get_params(obj)):
-                    nargs = [to_annotation(rpl[p]) for p in ops]
-                    if ta.get_origin(obj) is ta.Generic:
-                        # FIXME: None? filter_typing_generic in get_generic_bases?
-                        pass
-                    else:
-                        obj = cur.obj[*nargs]
+                if (og := ta.get_origin(obj)) is ta.Generic:
+                    # FIXME: None? filter_typing_generic in get_generic_bases?
+                    pass
+                elif (ops := get_params(og)):
+                    if len(ops) != len(args):
+                        raise RuntimeError
+                    nargs = [to_annotation(a) for a in args]
+                    obj = og[*nargs]
             else:
                 obj = None
             return dc.replace(cur, args=args, obj=obj)
@@ -89,6 +90,7 @@ class GenericSubstitution:
                 if isinstance(bty, Generic) and isinstance(b, type):
                     # FIXME: throws away relative types, but can't use original vars as they're class-contextual
                     bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
+                # rpl2 = {p: rpl[a] for p, a in zip(bty.params, bty.args)}
                 rty = replace_type_vars(bty, rpl, update_aliases=self._update_aliases)
                 ret.append(rty)
             return tuple(ret)
