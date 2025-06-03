@@ -81,12 +81,18 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
     gty = check.isinstance(rty, rfl.Generic)
     check.is_(gty.cls, TypedValues)
 
-    tv_cls_set = reflect_typed_values_impls(check.single(gty.args))
+    tv_cls_set = reflect_typed_values_impls(
+        check.single(gty.args),
+        find_abstract_subclasses=True,
+    )
 
-    tv_impls: list[msh.Impl] = []
-    for tv_cls in tv_cls_set:
-        tv_impls.extend(_build_typed_value_poly(tv_cls).impls)
-
+    tv_impls: list[msh.Impl] = [
+        msh.Impl(
+            tv_cls,
+            msh.translate_name(tv_cls.__name__, msh.Naming.SNAKE),
+        )
+        for tv_cls in tv_cls_set
+    ]
     return msh.Impls(tv_impls)
 
 
