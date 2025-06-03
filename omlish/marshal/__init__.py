@@ -119,6 +119,7 @@ from .polymorphism.metadata import (  # noqa
     Polymorphism,
     TypeTagging,
     WrapperTypeTagging,
+    polymorphism_from_impls,
     polymorphism_from_subclasses,
 )
 

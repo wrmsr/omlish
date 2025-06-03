@@ -105,25 +105,14 @@ class Polymorphism:
         return self._impls
 
 
-def polymorphism_from_subclasses(
+def polymorphism_from_impls(
         ty: type,
+        impls: ta.Iterable[type],
         *,
         naming: Naming | None = None,
         strip_suffix: bool | ta.Literal['auto'] = False,
 ) -> Polymorphism:
-    seen: set[type] = set()
-    todo: list[type] = [ty]
-    impls: set[type] = set()
-    while todo:
-        cur = todo.pop()
-        seen.add(cur)
-
-        todo.extend(nxt for nxt in cur.__subclasses__() if nxt not in seen)
-
-        if lang.is_abstract_class(cur):
-            continue
-
-        impls.add(cur)
+    impls = set(impls)
 
     if strip_suffix == 'auto':
         strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impls)
@@ -144,3 +133,17 @@ def polymorphism_from_subclasses(
         )
 
     return Polymorphism(ty, dct.values())
+
+
+def polymorphism_from_subclasses(
+        ty: type,
+        *,
+        naming: Naming | None = None,
+        strip_suffix: bool | ta.Literal['auto'] = False,
+) -> Polymorphism:
+    return polymorphism_from_impls(
+        ty,
+        lang.deep_subclasses(ty, concrete_only=True),
+        naming=naming,
+        strip_suffix=strip_suffix,
+    )
