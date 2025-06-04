@@ -10,6 +10,7 @@ from .chat import RemoteChatServiceImpl
 
 SelectorT_contra = ta.TypeVar('SelectorT_contra', contravariant=True)
 
+ServiceT = ta.TypeVar('ServiceT', bound=Service)
 ServiceT_co = ta.TypeVar('ServiceT_co', bound=Service, covariant=True)
 
 
@@ -51,3 +52,22 @@ def test_factory():
     lang.static_check_isinstance[SelectorServiceFactory[str, ChatService]](fn)
     ssf: SelectorServiceFactory[str, ChatService] = fn  # noqa
     assert isinstance(ssf('local'), LocalChatServiceImpl)
+
+
+##
+
+
+def test_factory2():
+    def fn(ty: type[ServiceT], name: str) -> ServiceT:
+        if ty == ChatService:
+            if name == 'local':
+                return ta.cast(ServiceT, LocalChatServiceImpl())
+            elif name == 'remote':
+                return ta.cast(ServiceT, RemoteChatServiceImpl())
+            else:
+                raise ValueError(name)
+        else:
+            raise TypeError(ty)
+
+    cs: ChatService = fn(ChatService, 'local')  # type: ignore[type-abstract]
+    assert isinstance(cs, LocalChatServiceImpl)
