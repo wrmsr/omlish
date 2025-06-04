@@ -11,9 +11,9 @@ from ....backends import llamacpp as lcu
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
 from ...chat.messages import AiMessage
-from ...chat.streaming import ChatStreamRequest
+from ...chat.services import ChatRequest
 from ...chat.streaming import ChatStreamResponse
-from ...chat.streaming import ChatStreamService_
+from ...chat.streaming import ChatStreamService
 from ...resources import Resources
 from .chat import LlamacppChatService
 from .format import ROLES_MAP
@@ -24,7 +24,7 @@ from .format import get_msg_content
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatStreamService')
-class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
+class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
     def __init__(self) -> None:
         super().__init__()
 
@@ -37,11 +37,10 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
             verbose=False,
         )))
 
-    def invoke(self, request: ChatStreamRequest) -> ChatStreamResponse:
+    def invoke(self, request: ChatRequest) -> ChatStreamResponse:
         lcu.install_logging_hook()
 
-        rs = Resources()
-        try:
+        with Resources.new() as rs:
             rs.enter_context(self._lock)
 
             output = self._load_model().create_chat_completion(
@@ -50,14 +49,14 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
                         role=ROLES_MAP[type(m)],
                         content=get_msg_content(m),  # noqa
                     )
-                    for m in request.chat
+                    for m in request.v
                 ],
                 max_tokens=1024,
                 stream=True,
             )
 
             def close_output():
-                output.close()
+                output.close()  # noqa
 
             rs.enter_context(lang.defer(close_output))
 
@@ -74,11 +73,4 @@ class LlamacppChatStreamService(ChatStreamService_, lang.ExitStacked):
                     l.append(AiChoice(AiMessage(content)))  # type: ignore
                 yield l
 
-            return ChatStreamResponse(
-                _iterator=iter(lang.flatmap(handle_chunk, output)),
-                _resources=rs,
-            )
-
-        except Exception:
-            rs.close()
-            raise
+            return ChatStreamResponse(rs.new_managed(iter(lang.flatmap(handle_chunk, output))))

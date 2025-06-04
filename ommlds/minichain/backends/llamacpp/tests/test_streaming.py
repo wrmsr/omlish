@@ -1,7 +1,7 @@
 import pytest
 
 from ....chat.messages import UserMessage
-from ....chat.streaming import ChatStreamRequest
+from ....chat.services import ChatRequest
 from ..streaming import LlamacppChatStreamService
 
 
@@ -9,14 +9,13 @@ from ..streaming import LlamacppChatStreamService
 @pytest.mark.high_mem
 def test_llamacpp_chat_streaming_model():
     with LlamacppChatStreamService() as foo_svc:
-        foo_req: ChatStreamRequest
+        foo_req: ChatRequest
         for foo_req in [
-            ChatStreamRequest([UserMessage('Is water dry?')]),
-            ChatStreamRequest([UserMessage('Is air wet?')]),
+            ChatRequest([UserMessage('Is water dry?')]),
+            ChatRequest([UserMessage('Is air wet?')]),
         ]:
             print(foo_req)
 
-            with foo_svc.invoke(foo_req) as foo_resp:
-                print(foo_resp)
-                for o in foo_resp:
+            with foo_svc.invoke(foo_req).v as it:
+                for o in it:
                     print(o)
