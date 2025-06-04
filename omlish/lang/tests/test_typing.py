@@ -38,11 +38,15 @@ def test_copy_type():
 
 static_check_isinstance[list]([])
 static_check_isinstance[ta.Sequence]([])
-# static_check_isinstance[ta.Sequence]({})  # FAILS
+
+# Negative test - mypy will report unused ignores via warn_unused_ignores
+static_check_isinstance[ta.Sequence]({})  # type: ignore[arg-type]
 
 static_check_issubclass[list](list)
 static_check_issubclass[ta.Sequence](list)
-# static_check_issubclass[ta.Sequence](dict)  # FAILS
+
+# Negative test - mypy will report unused ignores via warn_unused_ignores
+static_check_issubclass[ta.Sequence](dict)  # type: ignore[arg-type]
 
 
 class Foo:
