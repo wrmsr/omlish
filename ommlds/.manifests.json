@@ -266,7 +266,7 @@
     "module": ".minichain.chat.services",
     "attr": null,
     "file": "ommlds/minichain/chat/services.py",
-    "line": 42,
+    "line": 35,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.chat.services",
@@ -278,7 +278,7 @@
     "module": ".minichain.chat.streaming",
     "attr": null,
     "file": "ommlds/minichain/chat/streaming.py",
-    "line": 45,
+    "line": 20,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.chat.streaming",
@@ -290,7 +290,7 @@
     "module": ".minichain.completion",
     "attr": null,
     "file": "ommlds/minichain/completion.py",
-    "line": 54,
+    "line": 43,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.completion",
@@ -302,7 +302,7 @@
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlds/minichain/search.py",
-    "line": 64,
+    "line": 54,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.search",
@@ -314,7 +314,7 @@
     "module": ".minichain.vectors.embeddings",
     "attr": null,
     "file": "ommlds/minichain/vectors/embeddings.py",
-    "line": 42,
+    "line": 37,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.embeddings",
@@ -326,7 +326,7 @@
     "module": ".minichain.vectors.index",
     "attr": null,
     "file": "ommlds/minichain/vectors/index.py",
-    "line": 53,
+    "line": 46,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.index",
@@ -338,7 +338,7 @@
     "module": ".minichain.vectors.search",
     "attr": null,
     "file": "ommlds/minichain/vectors/search.py",
-    "line": 76,
+    "line": 66,
     "value": {
       "$.minichain.backends.manifests.BackendTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.search",

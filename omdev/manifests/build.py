@@ -4,6 +4,7 @@ TODO:
  - verify classes instantiate
  - embed in pyproject
  - roundtrip flexibility regarding json-ness - tuples vs lists vs sets vs frozensets etc
+ - kill _MANIFEST_GLOBAL_PATS lol, ast walk
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -49,12 +50,13 @@ T = ta.TypeVar('T')
 MANIFEST_MAGIC_KEY = '@omlish-manifest'
 
 
-_MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
-    # _FOO_MANIFEST = FooManifest(...
-    r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*',
+_IDENT_PAT_PART = r'[A-Za-z_][A-Za-z0-9_]*'
+_NAME_PAT_PART = rf'(?P<name>{_IDENT_PAT_PART})'
 
-    # class _FOO_MANIFEST(StaticFooManifest): ...
-    r'^class (?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(\(|$)',
+_MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
+    rf'^{_NAME_PAT_PART}\s*=.*',
+    rf'^class {_NAME_PAT_PART}\s*(\(|$)',
+    rf'^{_NAME_PAT_PART}:\s+(ta\.|typing\.||)TypeAlias\s+=.*',
 ])
 
 
