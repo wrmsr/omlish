@@ -54,7 +54,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
 
         toks = [llm.tokenizer.bos_id]
 
-        for msg in request.chat:
+        for msg in request.v:
             if isinstance(msg, SystemMessage):
                 role = 'system'
                 msg_s = msg.s
