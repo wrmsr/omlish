@@ -40,18 +40,18 @@ log = logging.getLogger(__name__)
 
 @dc.dataclass(frozen=True)
 class McServerHandler(HttpHandler_):
-    llm: mc.ChatService_
+    llm: mc.ChatService
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         prompt = check.not_none(req.data).decode('utf-8')
 
         log.info('Server got prompt: %s', prompt)
 
-        resp = self.llm(
+        resp = self.llm.invoke(mc.ChatRequest(
             [mc.UserMessage(prompt)],
             # Temperature(.1),
-        )
-        resp_txt = check.not_none(resp.choices[0].m.s)
+        ))
+        resp_txt = check.not_none(resp.v[0].m.s)
 
         log.info('Server got response: %s', resp_txt)
 

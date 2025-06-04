@@ -7,12 +7,12 @@ from ... import minichain as mc
 def test_requests():
     req: mc.ChatRequest
     for req in [
-        mc.ChatRequest.new(
+        mc.ChatRequest(
             [mc.UserMessage('foo')],
         ),
-        mc.ChatRequest.new(
+        mc.ChatRequest(
             [mc.UserMessage('foo')],
-            # mc.MaxTokens(420),
+            [mc.MaxTokens(420)],
         ),
     ]:
         print(req)
