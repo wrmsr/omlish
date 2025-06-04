@@ -1,6 +1,7 @@
 import pytest
 
 from ....standard import ModelPath
+from ....services import Request
 from ..sentence import SentenceTransformersEmbeddingService
 
 
@@ -10,5 +11,5 @@ def test_sentence_transformers_embedding():
     mdl = SentenceTransformersEmbeddingService(
         ModelPath('clip-ViT-B-32'),
     )
-    e = mdl('hi')
+    e = mdl.invoke(Request('hi'))
     print(e)

@@ -3,6 +3,7 @@ import pytest
 from ....chat.messages import UserMessage
 from ....chat.services import ChatRequest
 from ....completion import CompletionRequest
+from ....services import Request
 from ....standard import ModelPath
 from ..transformers import TransformersChatService
 from ..transformers import TransformersCompletionService
@@ -19,13 +20,13 @@ def test_transformers_completion():
             # device=None,
         )),
     ) as llm:
-        resp = llm.invoke(CompletionRequest.new('Is water dry?'))
+        resp = llm.invoke(CompletionRequest('Is water dry?'))
         print(resp)
-        assert resp.text
+        assert resp.v
 
-        resp = llm('Is water dry?')
+        resp = llm.invoke(Request('Is water dry?'))
         print(resp)
-        assert resp.text
+        assert resp.v
 
 
 @pytest.mark.not_docker_guest
@@ -38,7 +39,7 @@ def test_transformers_chat():
             # device=None,
         )),
     ) as llm:
-        resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
+        resp = llm.invoke(ChatRequest([UserMessage('Is water dry?')]))
         print(resp)
         assert resp
 

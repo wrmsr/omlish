@@ -37,7 +37,7 @@ class SentenceTransformersEmbeddingService(EmbeddingService):
         )
 
         obj: ta.Any
-        v = request.content
+        v = request.v
         if isinstance(v, str):
             obj = v
         elif isinstance(v, Image):

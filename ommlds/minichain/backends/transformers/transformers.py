@@ -72,7 +72,7 @@ class TransformersCompletionService(CompletionService, lang.ExitStacked):
             'text-generation',
             **pkw,
         )
-        output = pipeline(request.prompt)
+        output = pipeline(request.v)
 
         return CompletionResponse(output)
 
@@ -166,7 +166,7 @@ class TransformersChatService(ChatService, lang.ExitStacked):
         output = pipeline(
             [
                 build_chat_message(m)
-                for m in request.chat
+                for m in request.v
             ],
         )
 
