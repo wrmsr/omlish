@@ -100,7 +100,7 @@ class LlamacppChatService(ChatService):
                         role=ROLES_MAP[type(m)],
                         content=get_msg_content(m),
                     )
-                    for m in request.chat
+                    for m in request.v
                 ],
                 **kwargs,
             )

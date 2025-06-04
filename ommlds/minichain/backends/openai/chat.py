@@ -32,14 +32,7 @@ from .format import OpenaiChatRequestHandler
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
-class OpenaiChatService(
-    ChatService[
-        ChatRequest,
-        ChatResponse,
-    ],
-    request=ChatRequest,
-    response=ChatResponse,
-):
+class OpenaiChatService(ChatService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'
@@ -57,7 +50,7 @@ class OpenaiChatService(
         check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
-            request.chat,
+            request.v,
             *tv.TypedValues(
                 *self._default_options,
                 *request.options,

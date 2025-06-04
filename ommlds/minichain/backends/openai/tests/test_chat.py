@@ -9,7 +9,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.services import ChatRequest
-from ....chat.services import ChatService_
+from ....chat.services import ChatService
 from ....chat.tools import Tool
 from ....llms.services import MaxTokens
 from ....llms.services import Temperature
@@ -24,10 +24,12 @@ from ..chat import OpenaiChatService
 def test_openai(harness):
     llm = OpenaiChatService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
 
-    req: ChatRequest = ChatRequest.new(
+    req = ChatRequest(
         [UserMessage('Is water dry?')],
-        Temperature(.1),
-        MaxTokens(64),
+        [
+            Temperature(.1),
+            MaxTokens(64),
+        ],
     )
 
     rm = msh.marshal(req)
@@ -35,9 +37,9 @@ def test_openai(harness):
     req2 = msh.unmarshal(rm, ChatRequest)
     print(req2)
 
-    resp = llm(req)
+    resp = llm.invoke(req)
     print(resp)
-    assert resp.choices
+    assert resp.v
 
 
 def test_openai_tools(harness):
@@ -60,49 +62,53 @@ def test_openai_tools(harness):
         UserMessage('What is the weather in Seattle?'),
     ]
 
-    resp = llm(
+    resp = llm.invoke(ChatRequest(
         chat,
-        Temperature(.1),
-        MaxTokens(64),
-        Tool(tool_spec),
-    )
+        [
+            Temperature(.1),
+            MaxTokens(64),
+            Tool(tool_spec),
+        ],
+    ))
 
     print(resp)
-    assert resp.choices
+    assert resp.v
 
-    chat.append(resp.choices[0].m)
+    chat.append(resp.v[0].m)
 
-    tr = check.single(check.not_none(resp.choices[0].m.tool_exec_requests))
+    tr = check.single(check.not_none(resp.v[0].m.tool_exec_requests))
     assert tr.spec.name == 'get_weather'
     assert tr.args == {'location': 'Seattle'}
 
     chat.append(ToolExecResultMessage(tr.id, tr.spec.name, '"rain"'))
 
-    resp = llm(
+    resp = llm.invoke(ChatRequest(
         chat,
-        Temperature(.1),
-        MaxTokens(64),
-        Tool(tool_spec),
-    )
+        [
+            Temperature(.1),
+            MaxTokens(64),
+            Tool(tool_spec),
+        ],
+    ))
 
     print(resp)
-    assert resp.choices
+    assert resp.v
 
 
 def test_openai_chat_promote(harness):
-    llm: ChatService_ = ta.cast(ChatService_, OpenaiChatService(
+    llm: ChatService = ta.cast(ChatService, OpenaiChatService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     ))
 
-    assert llm([UserMessage('Hi!')]).choices
-    assert llm(ChatRequest([UserMessage('Hi!')])).choices
+    assert llm.invoke(ChatRequest([UserMessage('Hi!')])).v
+    assert llm.invoke(ChatRequest(ChatRequest([UserMessage('Hi!')]))).v
 
 
 def test_default_options(harness):
-    llm: ChatService_ = ta.cast(ChatService_, OpenaiChatService(
+    llm: ChatService = ta.cast(ChatService, OpenaiChatService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
         DefaultRequestOptions([MaxTokens(100)]),
     ))
 
-    assert llm([UserMessage('Hi!')]).choices
-    assert llm([UserMessage('Hi!')], MaxTokens(101)).choices
+    assert llm.invoke(ChatRequest([UserMessage('Hi!')])).v
+    assert llm.invoke(ChatRequest([UserMessage('Hi!')], [MaxTokens(101)])).v

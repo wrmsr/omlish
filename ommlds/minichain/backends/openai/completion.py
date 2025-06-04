@@ -28,7 +28,7 @@ class OpenaiCompletionService(CompletionService):
     def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(
             model=self.DEFAULT_MODEL_NAME,
-            prompt=t.prompt,
+            prompt=t.v,
             temperature=0,
             max_tokens=1024,
             top_p=1,

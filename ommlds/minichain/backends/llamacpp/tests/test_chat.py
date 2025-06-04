@@ -4,6 +4,7 @@ import pytest
 
 from ....chat.messages import UserMessage
 from ....chat.tools import Tool
+from ....services import Request
 from ....standard import ModelPath
 from ....tools.types import ToolDtype
 from ....tools.types import ToolParam
@@ -15,13 +16,13 @@ from ..chat import LlamacppChatService
 @pytest.mark.high_mem
 def test_llamacpp_chat_model():
     llm = LlamacppChatService()
-    resp = llm(
+    resp = llm.invoke(Request(
         [UserMessage('Is water dry?')],
         # Temperature(.1),
         # MaxTokens(64),
-    )
+    ))
     print(resp)
-    assert resp.choices[0].m.s
+    assert resp.v[0].m.s
 
 
 @pytest.mark.not_docker_guest
@@ -48,12 +49,12 @@ def test_llamacpp_chat_model_tools():
         desc='Gets the weather in the given location.',
     )
 
-    resp = llm(
+    resp = llm.invoke(Request(
         [UserMessage('What is the weather in Seattle?')],
         # Temperature(.1),
         # MaxTokens(64),
         Tool(tool_spec),
-    )
+    ))
 
     print(resp)
-    assert resp.choices[0].m
+    assert resp.v[0].m

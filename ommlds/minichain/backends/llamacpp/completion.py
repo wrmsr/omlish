@@ -67,7 +67,7 @@ class LlamacppCompletionService(CompletionService):
             )))
 
             output = llm.create_completion(
-                request.prompt,
+                request.v,
                 **kwargs,
             )
 
