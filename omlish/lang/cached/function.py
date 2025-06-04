@@ -331,13 +331,23 @@ class _DescriptorCachedFunction(_CachedFunction[T]):
             raise RuntimeError
         obj = type(instance)
 
-        desc: _DescriptorCachedFunction = object.__getattribute__(obj, name)
+        desc: _DescriptorCachedFunction
+        for bc in obj.__mro__[:-1]:
+            try:
+                desc = bc.__dict__[name]
+            except KeyError:
+                continue
+            break
+        else:
+            raise AttributeError(name)
+
         if not isinstance(desc, cls):
             raise TypeError(desc)
-        if (desc._instance is not None or desc._owner is not None):
+
+        if (desc._instance is not None or desc._owner is not None):  # noqa
             raise RuntimeError
 
-        return desc._bind(
+        return desc._bind(  # noqa
             instance,
             owner,
             values=values,

@@ -1,4 +1,5 @@
 import pickle
+import typing as ta
 
 from ..function import cached_function
 from ..property import cached_property
@@ -30,17 +31,27 @@ class _PickleTestClass:
         return self.c()
 
 
-def test_pickling():
-    c = _PickleTestClass()
-    for _ in range(2):
-        assert c.d_func() == 0
-        assert c.t_func() == 1
-        assert c.d_prop == 2
-        assert c.t_prop == 3
+class _PickleTestClass2(_PickleTestClass):
+    _c = 0
 
-    c2 = pickle.loads(pickle.dumps(c))  # noqa
-    for _ in range(2):
-        assert c2.d_func() == 0
-        assert c2.t_func() == 4
-        assert c2.d_prop == 2
-        assert c2.t_prop == 5
+
+def test_pickling():
+    c: ta.Any
+    for c in [
+        _PickleTestClass(),
+        _PickleTestClass2(),
+    ]:
+        for _ in range(2):
+            assert c.d_func() == 0
+            assert c.t_func() == 1
+            assert c.d_prop == 2
+            assert c.t_prop == 3
+
+        c2 = pickle.loads(pickle.dumps(c))  # noqa
+        assert type(c2) is type(c)
+
+        for _ in range(2):
+            assert c2.d_func() == 0
+            assert c2.t_func() == 4
+            assert c2.d_prop == 2
+            assert c2.t_prop == 5
