@@ -55,4 +55,4 @@ SearchResponse: ta.TypeAlias = Response[SearchHits, SearchResponseOutput]
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 SearchService: ta.TypeAlias = Service[SearchRequest, SearchResponse]
 
-register_type(SearchService)
+register_type(SearchService, module=__name__)

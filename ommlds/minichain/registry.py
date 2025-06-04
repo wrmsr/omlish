@@ -1,4 +1,9 @@
+"""
+TODO:
+ - queue register_types + late load manifests ? less urgent than late loading marshal lol
+"""
 import os
+import threading
 import typing as ta
 
 from omlish import cached
@@ -50,13 +55,15 @@ def _load_registry_manifests() -> ta.Sequence[RegistryManifest]:
 ##
 
 
-class _ManifestRegistry:
+class _Registry:
     def __init__(
             self,
             registry_type_manifests: ta.Iterable[RegistryTypeManifest],
             registry_manifests: ta.Iterable[RegistryManifest],
     ) -> None:
         super().__init__()
+
+        self._lock = threading.RLock()
 
         self._registry_type_manifests = list(registry_type_manifests)
         self._registry_manifests = list(registry_manifests)
@@ -65,6 +72,7 @@ class _ManifestRegistry:
             ((m.attr_name, m) for m in self._registry_type_manifests),
             strict=True,
         )
+        # self._registry_type_manifests_by_module = col
 
         self._registry_manifests_by_name_by_type = {
             t: RegistryManifest.build_name_dict(l)
@@ -74,34 +82,45 @@ class _ManifestRegistry:
         self._registry_type_cls_by_name: dict[str, type] = {}
         self._registry_cls_by_name_by_type: dict[str, dict[str, type]] = {}
 
-    def get_registry_type_cls(self, name: str) -> type:
-        try:
-            return self._registry_type_cls_by_name[name]
-        except KeyError:
+    def register_type(
+            self,
+            cls: ta.Any,
+            *,
+            module: str | None = None,
+    ) -> None:
+        with self._lock:
             pass
-        m = self._registry_type_manifests_by_name[name]
-        cls = m.load()
-        self._registry_type_cls_by_name[name] = cls
-        return cls
+
+    def get_registry_type_cls(self, name: str) -> type:
+        with self._lock:
+            try:
+                return self._registry_type_cls_by_name[name]
+            except KeyError:
+                pass
+            m = self._registry_type_manifests_by_name[name]
+            cls = m.load()
+            self._registry_type_cls_by_name[name] = cls
+            return cls
 
     def get_registry_cls(self, type_name: str, name: str) -> type:
-        try:
-            d = self._registry_cls_by_name_by_type[type_name]
-        except KeyError:
-            d = self._registry_cls_by_name_by_type[type_name] = {}
-        try:
-            return d[name]
-        except KeyError:
-            pass
-        m = self._registry_manifests_by_name_by_type[type_name][name]
-        cls = m.load()
-        d[name] = cls
-        return cls
+        with self._lock:
+            try:
+                d = self._registry_cls_by_name_by_type[type_name]
+            except KeyError:
+                d = self._registry_cls_by_name_by_type[type_name] = {}
+            try:
+                return d[name]
+            except KeyError:
+                pass
+            m = self._registry_manifests_by_name_by_type[type_name][name]
+            cls = m.load()
+            d[name] = cls
+            return cls
 
 
 @cached.function(lock=True)
-def _manifest_registry() -> _ManifestRegistry:
-    return _ManifestRegistry(
+def _registry() -> _Registry:
+    return _Registry(
         _load_registry_type_manifests(),
         _load_registry_manifests(),
     )
@@ -110,13 +129,20 @@ def _manifest_registry() -> _ManifestRegistry:
 ##
 
 
-def register_type(cls: T) -> T:
+def register_type(
+        cls: T,
+        *,
+        module: str | None = None,
+) -> T:
+    _registry().register_type(
+        cls,
+        module=module,
+    )
     return cls
 
 
 def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-    mr = _manifest_registry()
-    be_cls = mr.get_registry_cls(cls.__name__, name)
+    be_cls = _registry().get_registry_cls(cls.__name__, name)
     be_cls = check.issubclass(be_cls, cls)
     return be_cls(*args, **kwargs)
 
@@ -125,9 +151,9 @@ def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
 
 
 # PEP695 / https://github.com/python/mypy/issues/4717 workaround
-class registry_of(ta.Generic[T]):  # noqa
+class RegistryOf(ta.Generic[T]):  # noqa
     @dc.dataclass(frozen=True)
-    class _bound(ta.Generic[U]):  # noqa
+    class _Bound(ta.Generic[U]):  # noqa
         cls: type[U]
 
         def new(self, name: str, *args: ta.Any, **kwargs: ta.Any) -> U:
@@ -135,8 +161,11 @@ class registry_of(ta.Generic[T]):  # noqa
 
     def __class_getitem__(cls, *args, **kwargs):
         [bind_cls] = args
-        return registry_of._bound(bind_cls)
+        return RegistryOf._Bound(bind_cls)
 
     @classmethod
     def new(cls, name: str, *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
         raise TypeError
+
+
+registry_of = RegistryOf

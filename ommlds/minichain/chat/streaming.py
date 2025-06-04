@@ -21,4 +21,4 @@ ChatStreamResponse: ta.TypeAlias = Response[ResourceManaged[ta.Iterator[AiChoice
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 ChatStreamService: ta.TypeAlias = Service[ChatRequest, ChatStreamResponse]
 
-register_type(ChatStreamService)
+register_type(ChatStreamService, module=__name__)

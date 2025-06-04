@@ -44,4 +44,4 @@ CompletionResponse: ta.TypeAlias = Response[str, CompletionResponseOutputs]
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 CompletionService: ta.TypeAlias = Service[CompletionRequest, CompletionResponse]
 
-register_type(CompletionService)
+register_type(CompletionService, module=__name__)
