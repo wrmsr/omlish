@@ -22,7 +22,12 @@ class ServiceFactory(ta.Protocol[ServiceT_co]):
 
 
 class SelectorServiceFactory(ta.Protocol[SelectorT_contra, ServiceT_co]):
-    def __call__(self, selector: SelectorT_contra, *args: ta.Any, **kwargs: ta.Any) -> ServiceT_co:
+    def __call__(
+            self,
+            __selector: SelectorT_contra,  # ? Mypy handles '__' param names differently?
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ServiceT_co:
         ...
 
 
@@ -36,7 +41,13 @@ def test_factory():
             raise ValueError(name)
 
     lang.static_check_isinstance[ServiceFactory](fn)
-
+    lang.static_check_isinstance[ServiceFactory[Service]](fn)
+    lang.static_check_isinstance[ServiceFactory[ChatService]](fn)
     sf: ServiceFactory[ChatService] = fn  # noqa
-
     assert isinstance(sf('local'), LocalChatServiceImpl)
+
+    lang.static_check_isinstance[SelectorServiceFactory](fn)
+    lang.static_check_isinstance[SelectorServiceFactory[str, Service]](fn)
+    lang.static_check_isinstance[SelectorServiceFactory[str, ChatService]](fn)
+    ssf: SelectorServiceFactory[str, ChatService] = fn  # noqa
+    assert isinstance(ssf('local'), LocalChatServiceImpl)
