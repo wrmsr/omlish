@@ -11,8 +11,10 @@ def test_llamacpp_completion():
     llm = LlamacppCompletionService()
     resp = llm.invoke(Request(
         'Is water dry?',
-        # Temperature(.1),
-        MaxTokens(64),
+        [
+            # Temperature(.1),
+            MaxTokens(64),
+        ],
     ))
     print(resp)
     assert resp.v

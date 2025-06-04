@@ -9,7 +9,7 @@ from ..completion import OpenaiCompletionService
 def test_openai(harness):
     llm = OpenaiCompletionService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
 
-    req: CompletionRequest = CompletionRequest.new(
+    req: CompletionRequest = CompletionRequest(
         'Is water dry?',
     )
 
@@ -18,6 +18,6 @@ def test_openai(harness):
     req2 = msh.unmarshal(rm, CompletionRequest)
     print(req2)
 
-    resp = llm(req)
+    resp = llm.invoke(req)
     print(resp)
-    assert resp.text
+    assert resp.v
