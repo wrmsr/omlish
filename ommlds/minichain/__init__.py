@@ -37,15 +37,12 @@ from .chat.services import (  # noqa
     ChatRequest,
     ChatResponse,
     ChatService,
-    ChatService_,
 )
 
 from .chat.streaming import (  # noqa
-    ChatStreamRequest,
     ChatStreamResponse,
 
     ChatStreamService,
-    ChatStreamService_,
 )
 
 from .chat.templating import (  # noqa
