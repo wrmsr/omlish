@@ -59,7 +59,7 @@ class MistralChatService(ChatService):
                     'role': self.ROLES_MAP[type(m)],
                     'content': self._get_msg_content(m),
                 }
-                for m in request.chat
+                for m in request.v
             ],
         }
 

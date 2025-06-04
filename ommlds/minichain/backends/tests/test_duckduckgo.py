@@ -6,6 +6,7 @@ from omlish import lang
 from omlish.testing import pytest as ptu
 
 from ...search import SearchService
+from ...services import Request
 from ..duckduckgo import DuckduckgoSearchService
 from ..manifests import new_backend
 
@@ -20,7 +21,7 @@ else:
 @pytest.mark.online
 def test_search():
     try:
-        res = DuckduckgoSearchService()('the disco biscuits')
+        res = DuckduckgoSearchService().invoke(Request('the disco biscuits'))
     except (duckduckgo_search.exceptions.RatelimitException, TimeoutError) as e:
         print(e)
         return

@@ -24,12 +24,9 @@ else:
 #     type='SearchService',
 # )
 class DuckduckgoSearchService(SearchService):
-    def invoke(
-            self,
-            request: SearchRequest,
-    ) -> SearchResponse:
+    def invoke(self, request: SearchRequest) -> SearchResponse:
         ddgs = duckduckgo_search.DDGS()
-        res = ddgs.text(request.query)
+        res = ddgs.text(request.v)
         return SearchResponse(SearchHits(
             l=[
                 SearchHit(
