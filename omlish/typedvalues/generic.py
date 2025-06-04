@@ -22,10 +22,6 @@ class TypedValueGeneric(lang.Abstract, ta.Generic[TypedValueT]):
             return
 
         g_mro = rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(cls)
-        g_tvg = check.single(
-            gb
-            for gb in g_mro
-            if isinstance(gb, rfl.Generic) and gb.cls is TypedValueGeneric
-        )
+        g_tvg = check.single(gb for gb in g_mro if isinstance(gb, rfl.Generic) and gb.cls is TypedValueGeneric)
         tvt = check.single(g_tvg.args)
         cls._typed_value_type = tvt

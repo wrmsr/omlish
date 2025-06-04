@@ -6,6 +6,7 @@ from .types import Generic
 from .types import NewType
 from .types import Type
 from .types import Union
+from .types import get_type_var_bound
 from .types import type_
 
 
@@ -52,20 +53,33 @@ def get_underlying(nt: NewType) -> Type:
     return type_(nt.obj.__supertype__)  # noqa
 
 
-def get_concrete_type(ty: Type) -> type | None:
-    if isinstance(ty, type):
-        return ty
+def get_concrete_type(
+        ty: Type,
+        *,
+        use_type_var_bound: bool = False,
+) -> type | None:
+    def rec(cur: Type) -> type | None:
+        if isinstance(cur, type):
+            return cur
 
-    if isinstance(ty, Generic):
-        return ty.cls
+        if isinstance(cur, Generic):
+            return cur.cls
 
-    if isinstance(ty, NewType):
-        return get_concrete_type(get_underlying(ty))
+        if isinstance(cur, NewType):
+            return rec(get_underlying(cur))
 
-    if isinstance(ty, (Union, ta.TypeVar, Any)):
-        return None
+        if isinstance(cur, ta.TypeVar):
+            if use_type_var_bound is not None and (tvb := get_type_var_bound(cur)) is not None:
+                return rec(type_(tvb))
 
-    raise TypeError(ty)
+            return None
+
+        if isinstance(cur, (Union, Any)):
+            return None
+
+        raise TypeError(cur)
+
+    return rec(ty)
 
 
 def to_annotation(ty: Type) -> ta.Any:

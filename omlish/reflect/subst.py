@@ -85,12 +85,12 @@ class GenericSubstitution:
         if (cty := get_concrete_type(ty)) is not None:
             rpl = get_type_var_replacements(ty)
             ret: list[Type] = []
-            for b in types.get_original_bases(cty):
+            obs = types.get_original_bases(cty)
+            for b in obs:
                 bty = type_(b)
                 if isinstance(bty, Generic) and isinstance(b, type):
                     # FIXME: throws away relative types, but can't use original vars as they're class-contextual
                     bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
-                # rpl2 = {p: rpl[a] for p, a in zip(bty.params, bty.args)}
                 rty = replace_type_vars(bty, rpl, update_aliases=self._update_aliases)
                 ret.append(rty)
             return tuple(ret)
