@@ -2,8 +2,11 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
+import yaml
+
 from omdev.cache import data as dcache
 from omlish import lang
+from omlish import marshal as msh
 
 from .. import parsing
 
@@ -33,13 +36,19 @@ def get_yts_files() -> ta.Sequence[str]:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(unknown_field='x')
 class YtsItem:
-    name: str
-    from_: str
-    tags: str
-    fail: bool
-    yaml: str
-    tree: str
+    name: str | None = None
+
+    from_: str | None = dc.field(default=None, metadata={msh.FieldMetadata: msh.FieldMetadata(name='from')})
+    tags: str | None = None
+
+    fail: bool = False
+
+    yaml: str | None = None
+    json: str | None = None
+
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 def test_spec() -> None:
@@ -47,12 +56,28 @@ def test_spec() -> None:
         with open(yts_f) as f:
             src = f.read()
 
-        # doc = yaml.safe_load(src)  # noqa
+        doc = yaml.safe_load(src)  # noqa
+        items: list[YtsItem] = msh.unmarshal(doc, list[YtsItem])
 
-        obj, err = parsing.parse_str(
-            src,
-            parsing.ParseMode(0),
-        )
+        for item in items:
+            print(yts_f)
 
-        print(obj)
-        print(repr(obj))
+            try:
+                obj, err = parsing.parse_str(  # noqa
+                    item.yaml,
+                    parsing.ParseMode(0),
+                )
+
+                if err:
+                    if item.fail:
+                        print(f'SUCCESS: {err}')
+                    else:
+                        print(f'FAILURE: {err}')
+                else:
+                    if not item.fail:
+                        print(f'SUCCESS: {obj}')
+                    else:
+                        print(f'FAILURE: {obj}')
+
+            except Exception as e:
+                print(f'ERROR: {e}')
