@@ -1,11 +1,11 @@
 import typing as ta
 
-from ..services import Service
-from .services import ChatResponseOutputs
-from .choices import AiChoices
-from .services import ChatRequest
 from ..resources import ResourceManaged
 from ..services import Response
+from ..services import Service
+from .choices import AiChoices
+from .services import ChatRequest
+from .services import ChatResponseOutputs
 
 
 ##

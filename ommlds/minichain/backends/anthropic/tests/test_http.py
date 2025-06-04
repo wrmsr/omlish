@@ -7,9 +7,9 @@ from omlish.formats import json
 from omlish.http import all as hu
 from omlish.secrets.tests.harness import HarnessSecrets
 
-from ..chat import AnthropicChatService
-from ....services import Request
 from ....chat.messages import UserMessage
+from ....services import Request
+from ..chat import AnthropicChatService
 
 
 @pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])

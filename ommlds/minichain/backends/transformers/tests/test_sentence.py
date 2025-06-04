@@ -1,7 +1,7 @@
 import pytest
 
-from ....standard import ModelPath
 from ....services import Request
+from ....standard import ModelPath
 from ..sentence import SentenceTransformersEmbeddingService
 
 
