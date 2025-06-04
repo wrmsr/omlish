@@ -1,59 +1,36 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-
 from ..llms.services import LlmRequestOption
 from ..llms.services import LlmResponseOutput
 from ..services import Request
 from ..services import Response
-from ..services import Service_
+from ..services import Service
 from .choices import AiChoices
 from .messages import Chat
 from .types import ChatRequestOption
 from .types import ChatResponseOutput
 
 
-ChatRequestOptionT = ta.TypeVar('ChatRequestOptionT', bound=ChatRequestOption | LlmRequestOption)
-ChatRequestT = ta.TypeVar('ChatRequestT', bound='ChatRequest')
-ChatResponseOutputT = ta.TypeVar('ChatResponseOutputT', bound=ChatResponseOutput | LlmResponseOutput)
-ChatResponseT = ta.TypeVar('ChatResponseT', bound='ChatResponse')
+##
+
+
+ChatRequestOptions = ChatRequestOption | LlmRequestOption
+
+
+ChatRequest: ta.TypeAlias = Request[Chat, ChatRequestOptions]
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class ChatRequest(Request[ChatRequestOptionT]):
-    chat: Chat
+ChatResponseOutputs = ChatResponseOutput | LlmResponseOutput
 
 
-##
-
-
-@dc.dataclass(frozen=True)
-class ChatResponse(Response[ChatResponseOutputT]):
-    choices: AiChoices
+ChatResponse: ta.TypeAlias = Response[AiChoices, ChatResponseOutputs]
 
 
 ##
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
-class ChatService(  # noqa
-    Service_[
-        ChatRequestT,
-        ChatResponseT,
-    ],
-    lang.Abstract,
-    ta.Generic[
-        ChatRequestT,
-        ChatResponseT,
-    ],
-    request=ChatRequest,
-    response=ChatResponse,
-):
-    pass
-
-
-ChatService_: ta.TypeAlias = ChatService[ChatRequest, ChatResponse]
+ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
