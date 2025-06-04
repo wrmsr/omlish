@@ -1436,8 +1436,9 @@ class Scanner:
         if opt == '0':
             return 'invalid header option: %r' % (org_opt,)
 
-        i, err = int(opt, 10)
-        if err is not None:
+        try:
+            i = int(opt, 10)
+        except ValueError:
             return 'invalid header option: %r' % (org_opt,)
 
         if i > 9:
