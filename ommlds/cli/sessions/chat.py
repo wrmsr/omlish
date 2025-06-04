@@ -119,10 +119,10 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
         if self._config.stream:
             with lang.maybe_managing(mc.backend_of[mc.ChatStreamService].new('openai')) as st_mdl:
-                with st_mdl.invoke(mc.ChatStreamRequest.new(
+                with st_mdl.invoke(mc.ChatRequest(
                         chat,
-                        *(self._chat_options or []),
-                )) as st_resp:
+                        (self._chat_options or []),
+                )).v as st_resp:
                     resp_s = ''
                     for o in st_resp:
                         o_s = check.isinstance(o[0].m.s, str)
@@ -137,12 +137,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             with lang.maybe_managing(CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()(
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )) as mdl:
-                response = mdl.invoke(mc.ChatRequest.new(
+                response = mdl.invoke(mc.ChatRequest(
                     chat,
-                    *(self._chat_options or []),
+                    (self._chat_options or []),
                 ))
 
-                resp_m = response.choices[0].m
+                resp_m = response.v[0].m
                 chat.append(resp_m)
 
                 if (trs := resp_m.tool_exec_requests):
@@ -164,12 +164,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     tool_res = tool.fn(**tr.args)
                     chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
 
-                    response = mdl.invoke(mc.ChatRequest.new(
+                    response = mdl.invoke(mc.ChatRequest(
                         chat,
-                        *(self._chat_options or []),
+                        (self._chat_options or []),
                     ))
 
-                    resp_m = response.choices[0].m
+                    resp_m = response.v[0].m
                     chat.append(resp_m)
 
                 resp_s = check.isinstance(resp_m.s, str).strip()
@@ -237,14 +237,14 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )
 
-            response = mdl.invoke(mc.ChatRequest.new(state.chat))
-            print(check.isinstance(response.choices[0].m.s, str).strip())
+            response = mdl.invoke(mc.ChatRequest(state.chat))
+            print(check.isinstance(response.v[0].m.s, str).strip())
 
             state = dc.replace(
                 state,
                 chat=[
                     *state.chat,
-                    response.choices[0].m,
+                    response.v[0].m,
                 ],
                 updated_at=lang.utcnow(),
             )
