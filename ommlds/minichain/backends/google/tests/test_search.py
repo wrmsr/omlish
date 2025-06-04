@@ -1,5 +1,6 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
+from ....services import Request
 from ..search import CseSearchService
 
 
@@ -11,7 +12,7 @@ def test_search(harness):
     res = CseSearchService(
         cse_id=cse_id.reveal(),
         cse_api_key=cse_api_key.reveal(),
-    )('lectures')
+    ).invoke(Request('lectures'))
 
     print(res)
-    assert res
+    assert res.v

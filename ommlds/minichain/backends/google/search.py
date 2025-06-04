@@ -94,7 +94,7 @@ class CseSearchService(SearchService):
         qs = urllib.parse.urlencode(dict(
             key=check.non_empty_str(self._cse_api_key),
             cx=check.non_empty_str(self._cse_id),
-            q=request.query,
+            q=request.v,
         ))
         resp = http.request(
             f'https://www.googleapis.com/customsearch/v1?{qs}',

@@ -70,7 +70,7 @@ class GoogleChatService(ChatService):
                         },
                     ],
                 }
-                for m in request.chat
+                for m in request.v
             ],
         }
 
