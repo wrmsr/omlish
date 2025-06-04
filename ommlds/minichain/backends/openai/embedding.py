@@ -27,7 +27,7 @@ class OpenaiEmbeddingService(EmbeddingService):
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raw_request = dict(
             model=self.model,
-            input=check.isinstance(request.content, str),
+            input=check.isinstance(request.v, str),
         )
 
         raw_response = http.request(

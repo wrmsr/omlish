@@ -51,9 +51,11 @@ def test_llamacpp_chat_model_tools():
 
     resp = llm.invoke(Request(
         [UserMessage('What is the weather in Seattle?')],
-        # Temperature(.1),
-        # MaxTokens(64),
-        Tool(tool_spec),
+        [
+            # Temperature(.1),
+            # MaxTokens(64),
+            Tool(tool_spec),
+        ],
     ))
 
     print(resp)

@@ -12,6 +12,7 @@ from ....backends import llamacpp as lcu
 from ...chat.choices import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.services import ChatRequest
+from ...chat.services import ChatRequestOptions
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
 from ...chat.tools import Tool
@@ -45,7 +46,7 @@ class LlamacppChatService(ChatService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[CompletionRequestOption | LlmRequestOption]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOptions]]] = dict(
         max_tokens=MaxTokens,
         temperatur=Temperature,
     )

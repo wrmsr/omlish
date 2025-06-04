@@ -66,7 +66,8 @@ class OpenaiChatStreamService(ChatStreamService):
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # FIXME: read1 not on response stream protocol
+                    # FIXME: read1 not on response stream protocol
+                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
