@@ -61,7 +61,6 @@ class OpenaiChatStreamService(ChatStreamService):
         with Resources.new() as rs:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
-            rs.enter_context(foo())
 
             def yield_choices() -> ta.Iterator[AiChoices]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
