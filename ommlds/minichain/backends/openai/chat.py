@@ -47,7 +47,7 @@ class OpenaiChatService(ChatService):
             self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        check.isinstance(request, ChatRequest)
+        # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
             request.v,

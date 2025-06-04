@@ -182,7 +182,7 @@ class OpenaiChatRequestHandler:
                 for choice in raw_response['choices']
             ],
 
-            outputs=tv.TypedValues(
+            tv.TypedValues(
                 *([TokenUsageOutput(TokenUsage(
                     input=tu['prompt_tokens'],
                     output=tu['completion_tokens'],

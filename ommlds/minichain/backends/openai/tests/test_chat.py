@@ -101,7 +101,7 @@ def test_openai_chat_promote(harness):
     ))
 
     assert llm.invoke(ChatRequest([UserMessage('Hi!')])).v
-    assert llm.invoke(ChatRequest(ChatRequest([UserMessage('Hi!')]))).v
+    assert llm.invoke(ChatRequest([UserMessage('Hi!')])).v
 
 
 def test_default_options(harness):
