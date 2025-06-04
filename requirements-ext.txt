@@ -17,8 +17,8 @@ google-cloud-compute==1.30.0
 
 matplotlib==3.10.3
 
-torch==2.7.0
-torchvision==0.22.0
+torch==2.7.1
+torchvision==0.22.1
 
 diffusers==0.33.1
 
@@ -28,7 +28,7 @@ scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.7.3
+tavily-python==0.7.4
 
 sqlite-vec==0.1.6
 
