@@ -46,6 +46,7 @@ class AnthropicChatService(ChatService):
             api_key: Secret | str | None = None,
     ) -> None:
         super().__init__()
+
         self._api_key = Secret.of(api_key if api_key is not None else os.environ['ANTHROPIC_API_KEY'])
 
     def _get_msg_content(self, m: Message) -> str | None:
@@ -66,7 +67,7 @@ class AnthropicChatService(ChatService):
     ) -> ChatResponse:
         messages = []
         system: str | None = None
-        for i, m in enumerate(request.chat):
+        for i, m in enumerate(request.v):
             if isinstance(m, SystemMessage):
                 if i != 0 or system is not None:
                     raise Exception('Only supports one system message and must be first')

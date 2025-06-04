@@ -7,6 +7,10 @@ from omlish.formats import json
 from omlish.http import all as hu
 from omlish.secrets.tests.harness import HarnessSecrets
 
+from ..chat import AnthropicChatService
+from ....services import Request
+from ....chat.messages import UserMessage
+
 
 @pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])
 def test_anthropic_http(harness, cli_cls):
@@ -31,3 +35,10 @@ def test_anthropic_http(harness, cli_cls):
                 ],
             )).encode('utf-8'),
         )).data)
+
+
+def test_anthropic_chat(harness):
+    key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
+    svc = AnthropicChatService(api_key=key.reveal())
+    resp = svc.invoke(Request([UserMessage('hi')]))
+    print(resp.v)
