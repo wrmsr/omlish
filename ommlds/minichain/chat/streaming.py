@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..registry import register_type
 from ..resources import ResourceManaged
 from ..services import Response
 from ..services import Service
@@ -19,3 +20,5 @@ ChatStreamResponse: ta.TypeAlias = Response[ResourceManaged[ta.Iterator[AiChoice
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 ChatStreamService: ta.TypeAlias = Service[ChatRequest, ChatStreamResponse]
+
+register_type(ChatStreamService)

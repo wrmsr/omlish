@@ -4,6 +4,7 @@ from omlish import lang
 
 from .llms.services import LlmRequestOption
 from .llms.services import LlmResponseOutput
+from .registry import register_type
 from .services import Request
 from .services import RequestOption
 from .services import Response
@@ -42,3 +43,5 @@ CompletionResponse: ta.TypeAlias = Response[str, CompletionResponseOutputs]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 CompletionService: ta.TypeAlias = Service[CompletionRequest, CompletionResponse]
+
+register_type(CompletionService)

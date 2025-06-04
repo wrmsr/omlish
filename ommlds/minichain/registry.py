@@ -110,6 +110,10 @@ def _manifest_registry() -> _ManifestRegistry:
 ##
 
 
+def register_type(cls: T) -> T:
+    return cls
+
+
 def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
     mr = _manifest_registry()
     be_cls = mr.get_registry_cls(cls.__name__, name)

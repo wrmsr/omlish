@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..registry import register_type
 from ..services import Request
 from ..services import RequestOption
 from ..services import Response
@@ -45,3 +46,5 @@ VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexResponseOutput]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 VectorIndexService: ta.TypeAlias = Service[VectorIndexRequest, VectorIndexResponse]
+
+register_type(VectorIndexService)

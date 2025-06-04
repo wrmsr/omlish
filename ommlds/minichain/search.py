@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .registry import register_type
 from .services import Request
 from .services import RequestOption
 from .services import Response
@@ -53,3 +54,5 @@ SearchResponse: ta.TypeAlias = Response[SearchHits, SearchResponseOutput]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 SearchService: ta.TypeAlias = Service[SearchRequest, SearchResponse]
+
+register_type(SearchService)

@@ -3,6 +3,7 @@ import typing as ta
 from omlish import lang
 
 from ..content.content import Content
+from ..registry import register_type
 from ..services import Request
 from ..services import RequestOption
 from ..services import Response
@@ -36,3 +37,5 @@ EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingResponseOutput]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 EmbeddingService: ta.TypeAlias = Service[EmbeddingRequest, EmbeddingResponse]
+
+register_type(EmbeddingService)

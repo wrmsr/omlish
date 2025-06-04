@@ -1,6 +1,7 @@
 # fmt: off
 
 from .registry import (  # noqa
+    register_type,
     registry_new,
     registry_of,
 )
