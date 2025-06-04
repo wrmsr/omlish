@@ -98,9 +98,11 @@ class Node(abc.ABC):
     # io.Reader
 
     # String node to text
-    @abc.abstractmethod
     def __str__(self) -> str:
-        raise NotImplementedError
+        raise TypeError
+
+    def string(self) -> str:
+        return self.__str__()
 
     # get_token returns token instance
     @abc.abstractmethod
@@ -217,14 +219,14 @@ class BaseNode(Node, abc.ABC):
 
 
 def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
-    return '%s %s' % (base, str(node))
+    return '%s %s' % (base, node.string())
 
 
 ##
 
 
 def read_node(p: str, node: Node) -> tuple[int, str | None]:
-    s = str(node)
+    s = node.string()
     read_len = node.read_len()
     remain = len(s) - read_len
     if remain == 0:
@@ -481,7 +483,7 @@ class File:
     def __str__(self) -> str:
         docs: list[str] = []
         for doc in self.docs:
-            docs.append(str(doc))
+            docs.append(doc.string())
         if len(docs) > 0:
             return '\n'.join(docs) + '\n'
         else:
@@ -521,14 +523,14 @@ class DocumentNode(BaseNode):
         if self.start is not None:
             doc.append(self.start.value)
         if self.body is not None:
-            doc.append(str(self.body))
+            doc.append(self.body.string())
         if self.end is not None:
             doc.append(self.end.value)
         return '\n'.join(doc)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -570,7 +572,7 @@ class NullNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -618,7 +620,7 @@ class IntegerNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -666,7 +668,7 @@ class FloatNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -824,7 +826,7 @@ class StringNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 # escape_single_quote escapes s to a single quoted scalar.
@@ -870,22 +872,22 @@ class LiteralNode(ScalarNode, BaseNode):
 
     # get_value returns string value
     def get_value(self) -> ta.Any:
-        return str(self)
+        return self.string()
 
     # String literal to text
     def __str__(self) -> str:
         origin = self.value.get_token().origin
         lit = origin.rstrip(' ').rstrip('\n')
         if self.comment is not None:
-            return '%s %s\n%s' % (self.start.value, str(self.comment), lit)
+            return '%s %s\n%s' % (self.start.value, self.comment.string(), lit)
         return '%s\n%s' % (self.start.value, lit)
 
     def string_without_comment(self) -> str:
-        return str(self)
+        return self.string()
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -976,7 +978,7 @@ class BoolNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1023,7 +1025,7 @@ class InfinityNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1069,7 +1071,7 @@ class NanNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1137,13 +1139,13 @@ class MappingNode(BaseNode):
     def merge(self, target: 'MappingNode') -> None:
         key_to_map_value_map: dict[str, MappingValueNode] = {}
         for value in self.values:
-            key = str(value.key)
+            key = value.key.string()
             key_to_map_value_map[key] = value
         column = self.start_pos().column - target.start_pos().column
         target.add_column(column)
         for value in target.values:
             try:
-                map_value, exists = key_to_map_value_map[str(value.key)], True
+                map_value, exists = key_to_map_value_map[value.key.string()], True
             except KeyError:
                 map_value, exists = None, False
             if exists:
@@ -1179,7 +1181,7 @@ class MappingNode(BaseNode):
     def flow_style_string(self, comment_mode: bool) -> str:
         values: list[str] = []
         for value in self.values:
-            values.append(str(value).lstrip(' '))
+            values.append(value.string().lstrip(' '))
         map_text = '{%s}' % (', '.join(values),)
         if comment_mode and self.comment is not None:
             return add_comment_string(map_text, self.comment)
@@ -1188,7 +1190,7 @@ class MappingNode(BaseNode):
     def block_style_string(self, comment_mode: bool) -> str:
         values: list[str] = []
         for value in self.values:
-            values.append(str(value))
+            values.append(value.string())
         map_text = '\n'.join(values)
         if comment_mode and self.comment is not None:
             value = values[0]
@@ -1223,7 +1225,7 @@ class MappingNode(BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -1258,11 +1260,11 @@ class MappingKeyNode(MapKeyNode, BaseNode):
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
-        return '%s %s' % (self.start.value, str(self.value))
+        return '%s %s' % (self.start.value, self.value.string())
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1350,50 +1352,50 @@ class MappingValueNode(BaseNode):
         key_comment = self.key.get_comment()
 
         if isinstance(self.value, ScalarNode):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         elif key_indent_level < value_indent_level and not self.is_flow_style:
             if key_comment is not None:
                 return '%s%s: %s\n%s' % (
                     space,
                     self.key.string_without_comment(),
-                    str(key_comment),
-                    str(self.value),
+                    key_comment.string(),
+                    self.value.string(),
                 )
 
-            return '%s%s:\n%s' % (space, str(self.key), str(self.value))
+            return '%s%s:\n%s' % (space, self.key.string(), self.value.string())
 
         elif isinstance(self.value, MappingNode) and (self.value.is_flow_style or len(self.value.values) == 0):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         elif isinstance(self.value, SequenceNode) and (self.value.is_flow_style or len(self.value.values) == 0):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         elif isinstance(self.value, AnchorNode):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         elif isinstance(self.value, AliasNode):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         elif isinstance(self.value, TagNode):
-            return '%s%s: %s' % (space, str(self.key), str(self.value))
+            return '%s%s: %s' % (space, self.key.string(), self.value.string())
 
         if key_comment is not None:
             return '%s%s: %s\n%s' % (
                 space,
                 self.key.string_without_comment(),
-                str(key_comment),
-                str(self.value),
+                key_comment.string(),
+                self.value.string(),
             )
 
         if isinstance(self.value, MappingNode) and self.value.comment is not None:
             return '%s%s: %s' % (
                 space,
-                str(self.key),
-                str(self.value).lstrip(' '),
+                self.key.string(),
+                self.value.string().lstrip(' '),
             )
 
-        return '%s%s:\n%s' % (space, str(self.key), str(self.value))
+        return '%s%s:\n%s' % (space, self.key.string(), self.value.string())
 
     # map_range implements MapNode protocol
     def map_range(self) -> MapNodeIter:
@@ -1404,7 +1406,7 @@ class MappingValueNode(BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -1510,7 +1512,7 @@ class SequenceNode(BaseNode):
     def flow_style_string(self) -> str:
         values: list[str] = []
         for value in self.values:
-            values.append(str(value))
+            values.append(value.string())
 
         return '[%s]' % (', '.join(values),)
 
@@ -1524,7 +1526,7 @@ class SequenceNode(BaseNode):
             if value is None:
                 continue
 
-            value_str = str(value)
+            value_str = value.string()
             new_line_prefix = ''
             if value_str.startswith('\n'):
                 value_str = value_str[1:]
@@ -1579,7 +1581,7 @@ class SequenceNode(BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -1620,7 +1622,7 @@ class SequenceEntryNode(BaseNode):
 
     # marshal_yaml
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     def read(self, p: str) -> tuple[int, str | None]:
         return read_node(p, self)
@@ -1674,7 +1676,7 @@ class AnchorNode(ScalarNode, BaseNode):
     value: Node | None = None
 
     def string_without_comment(self) -> str:
-        return str(self.value)
+        return self.value.string()
 
     def set_name(self, name: str) -> str | None:
         if self.name is None:
@@ -1710,16 +1712,16 @@ class AnchorNode(ScalarNode, BaseNode):
 
     # String anchor to text
     def __str__(self) -> str:
-        value = str(self.value)
+        value = self.value.string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
-            return '&%s\n%s' % (str(self.name), value)
+            return '&%s\n%s' % (self.name.string(), value)
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
-            return '&%s\n%s' % (str(self.name), value)
-        return '&%s %s' % (str(self.name), value)
+            return '&%s\n%s' % (self.name.string(), value)
+        return '&%s %s' % (self.name.string(), value)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1741,7 +1743,7 @@ class AliasNode(ScalarNode, BaseNode):
     value: Node | None = None
 
     def string_without_comment(self) -> str:
-        return str(self.value)
+        return self.value.string()
 
     def set_name(self, name: str) -> str | None:
         if self.value is None:
@@ -1774,11 +1776,11 @@ class AliasNode(ScalarNode, BaseNode):
 
     # String alias to text
     def __str__(self) -> str:
-        return '*%s' % (str(self.value),)
+        return '*%s' % (self.value.string(),)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1821,12 +1823,12 @@ class DirectiveNode(BaseNode):
     def __str__(self) -> str:
         values: list[str] = []
         for val in self.values:
-            values.append(str(val))
-        return ' '.join(['%' + str(self.name), *values])
+            values.append(val.string())
+        return ' '.join(['%' + self.name.string(), *values])
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -1845,7 +1847,7 @@ class TagNode(ScalarNode, BaseNode):
         return self.value.get_value()
 
     def string_without_comment(self) -> str:
-        return str(self.value)
+        return self.value.string()
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> tuple[int, str | None]:
@@ -1867,7 +1869,7 @@ class TagNode(ScalarNode, BaseNode):
 
     # String tag to text
     def __str__(self) -> str:
-        value = str(self.value)
+        value = self.value.string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
             return '%s\n%s' % (self.start.value, value)
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
@@ -1877,7 +1879,7 @@ class TagNode(ScalarNode, BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1927,7 +1929,7 @@ class CommentNode(BaseNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -1961,7 +1963,7 @@ class CommentGroupNode(BaseNode):
     def __str__(self) -> str:
         values: list[str] = []
         for comment in self.comments:
-            values.append(str(comment))
+            values.append(comment.string())
         return '\n'.join(values)
 
     def string_with_space(self, col: int) -> str:
@@ -1971,12 +1973,12 @@ class CommentGroupNode(BaseNode):
             spc = space
             if check_line_break(comment.token):
                 spc = '%s%s' % ('\n', spc)
-            values.append(spc + str(comment))
+            values.append(spc + comment.string())
         return '\n'.join(values)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> tuple[str, str | None]:
-        return str(self), None
+        return self.string(), None
 
 
 ##
@@ -2202,4 +2204,4 @@ def merge(dst: Node, src: Node) -> str | None:
             return err
         node.merge(target)
         return None
-    return str(err)
+    return err.string()
