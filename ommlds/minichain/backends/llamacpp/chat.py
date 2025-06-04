@@ -16,10 +16,8 @@ from ...chat.services import ChatRequestOptions
 from ...chat.services import ChatResponse
 from ...chat.services import ChatService
 from ...chat.tools import Tool
-from ...completion import CompletionRequestOption
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...standard import ModelPath
