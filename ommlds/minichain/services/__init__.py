@@ -1,7 +1,7 @@
 # ruff: noqa: I001
 
 
-from .facades import (
+from .facades import (  # noqa
     ServiceFacade,
 )
 

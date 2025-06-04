@@ -48,7 +48,7 @@ class ChatHistoryService(ChatService):
             self,
             underlying: ChatService,
             history: ChatHistory,
-    ) -> None   :
+    ) -> None:
         super().__init__()
         self._underlying = underlying
         self._history = history

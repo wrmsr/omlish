@@ -1,8 +1,8 @@
 # fmt: off
 
-from .backends.manifests import (  # noqa
-    backend_of,
-    new_backend,
+from .registry import (  # noqa
+    registry_new,
+    registry_of,
 )
 
 from .chat.formats import (  # noqa

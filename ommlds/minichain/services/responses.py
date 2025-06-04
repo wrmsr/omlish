@@ -49,5 +49,4 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
         return check.isinstance(self._outputs, tv.TypedValues)
 
 
-
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

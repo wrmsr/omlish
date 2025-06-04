@@ -118,7 +118,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
         ]
 
         if self._config.stream:
-            with lang.maybe_managing(mc.backend_of[mc.ChatStreamService].new('openai')) as st_mdl:
+            with lang.maybe_managing(mc.registry_of[mc.ChatStreamService].new('openai')) as st_mdl:
                 with st_mdl.invoke(mc.ChatRequest(
                         chat,
                         (self._chat_options or []),

@@ -26,7 +26,7 @@ class ServiceFactory(ta.Protocol[ServiceT_co]):
 class SelectorServiceFactory(ta.Protocol[SelectorT_contra, ServiceT_co]):
     def __call__(
             self,
-            __selector: SelectorT_contra,  # ? Mypy handles '__' param names differently?
+            __selector: SelectorT_contra,  # ? Mypy handles '__' param names differently?  # noqa
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> ServiceT_co:

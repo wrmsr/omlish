@@ -28,6 +28,6 @@ class CheckedBox(_OrigClassCapture, ta.Generic[T]):
 
 
 def test_orig_class_capture():
-    assert not(hasattr(CheckedBox(5), 'is_valid'))
+    assert not hasattr(CheckedBox(5), 'is_valid')
     assert CheckedBox[int](5).is_valid
     assert not CheckedBox[str](5).is_valid  # type: ignore[arg-type]

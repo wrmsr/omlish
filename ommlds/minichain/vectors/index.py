@@ -44,4 +44,4 @@ VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexResponseOutput]
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
-VectorIndexService: ta.TypeAlias = Service[ VectorIndexRequest, VectorIndexResponse]
+VectorIndexService: ta.TypeAlias = Service[VectorIndexRequest, VectorIndexResponse]

@@ -110,7 +110,7 @@ def _manifest_registry() -> _ManifestRegistry:
 ##
 
 
-def new_registry(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
     mr = _manifest_registry()
     be_cls = mr.get_registry_cls(cls.__name__, name)
     be_cls = check.issubclass(be_cls, cls)
@@ -127,7 +127,7 @@ class registry_of(ta.Generic[T]):  # noqa
         cls: type[U]
 
         def new(self, name: str, *args: ta.Any, **kwargs: ta.Any) -> U:
-            return new_registry(self.cls, name, *args, **kwargs)
+            return registry_new(self.cls, name, *args, **kwargs)
 
     def __class_getitem__(cls, *args, **kwargs):
         [bind_cls] = args

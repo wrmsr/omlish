@@ -16,8 +16,8 @@ from .responses import Response
 
 def _is_rr_rty(rty: rfl.Type) -> bool:
     return (
-            isinstance(rty, (type, rfl.Generic)) and
-            issubclass(check.not_none(rfl.get_concrete_type(rty)), (Request, Response))
+        isinstance(rty, (type, rfl.Generic)) and
+        issubclass(check.not_none(rfl.get_concrete_type(rty)), (Request, Response))
     )
 
 
