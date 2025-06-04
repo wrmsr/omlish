@@ -27,7 +27,7 @@ from ...chat.services import ChatService
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='anthropic', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='anthropic', type='ChatService')
 class AnthropicChatService(ChatService):
     model: ta.ClassVar[str] = (
         'claude-3-5-sonnet-20241022'

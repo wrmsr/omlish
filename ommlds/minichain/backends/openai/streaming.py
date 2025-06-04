@@ -24,7 +24,7 @@ from .format import OpenaiChatRequestHandler
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='ChatStreamService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatStreamService')
 class OpenaiChatStreamService(ChatStreamService):
     def __init__(self, *configs: Config) -> None:
         super().__init__()

@@ -17,5 +17,5 @@ ChatStreamResponse: ta.TypeAlias = Response[ResourceManaged[ta.Iterator[AiChoice
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 ChatStreamService: ta.TypeAlias = Service[ChatRequest, ChatStreamResponse]

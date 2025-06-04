@@ -23,7 +23,7 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatStreamService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatStreamService')
 class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
     def __init__(self) -> None:
         super().__init__()

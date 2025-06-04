@@ -40,5 +40,5 @@ CompletionResponse: ta.TypeAlias = Response[str, CompletionResponseOutputs]
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 CompletionService: ta.TypeAlias = Service[CompletionRequest, CompletionResponse]

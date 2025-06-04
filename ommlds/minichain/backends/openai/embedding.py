@@ -14,7 +14,7 @@ from ...vectors.types import Vector
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='EmbeddingService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='EmbeddingService')
 class OpenaiEmbeddingService(EmbeddingService):
     model = 'text-embedding-3-small'
 

@@ -38,7 +38,7 @@ class TransformersPipelineKwargs(Config, tv.ScalarTypedValue[ta.Mapping[str, ta.
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(
 #     name='transformers',
 #     aliases=['tfm'],
 #     type='CompletionService',
@@ -121,7 +121,7 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
         raise TypeError(m)
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(
 #     name='transformers',
 #     aliases=['tfm'],
 #     type='ChatService',

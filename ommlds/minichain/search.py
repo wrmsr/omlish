@@ -51,5 +51,5 @@ SearchResponse: ta.TypeAlias = Response[SearchHits, SearchResponseOutput]
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 SearchService: ta.TypeAlias = Service[SearchRequest, SearchResponse]

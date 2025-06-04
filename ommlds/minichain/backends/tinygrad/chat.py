@@ -16,7 +16,7 @@ from ...chat.services import ChatService
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='tinygrad_llama3', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatService')
 class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
     DEFAULT_SIZE: ta.ClassVar[str] = '1B'
     DEFAULT_TEMPERATURE: ta.ClassVar[float] = .85

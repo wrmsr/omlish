@@ -23,7 +23,7 @@ from ...standard import ModelName
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='google', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='google', type='ChatService')
 class GoogleChatService(ChatService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gemini-2.0-flash'

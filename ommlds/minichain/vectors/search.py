@@ -63,5 +63,5 @@ VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchResponseOu
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 VectorSearchService: ta.TypeAlias = Service[VectorSearchRequest, VectorSearchResponse]

@@ -31,7 +31,7 @@ from .format import OpenaiChatRequestHandler
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatService')
 class OpenaiChatService(ChatService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gpt-4o'

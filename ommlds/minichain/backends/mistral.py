@@ -21,7 +21,7 @@ from ..chat.services import ChatService
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='mistral', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mistral', type='ChatService')
 class MistralChatService(ChatService):
     model: ta.ClassVar[str] = 'mistral-large-latest'
 

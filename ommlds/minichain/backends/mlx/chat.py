@@ -25,7 +25,7 @@ from ...standard import ModelName
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='mlx', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mlx', type='ChatService')
 class MlxChatService(ChatService, lang.ExitStacked):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'

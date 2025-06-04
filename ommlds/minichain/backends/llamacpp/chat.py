@@ -29,7 +29,7 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='llamacpp', type='ChatService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatService')
 class LlamacppChatService(ChatService):
     DEFAULT_MODEL_PATH: ta.ClassVar[str] = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),

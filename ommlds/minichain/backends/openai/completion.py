@@ -15,7 +15,7 @@ from ...standard import ApiKey
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='CompletionService')
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='CompletionService')
 class OpenaiCompletionService(CompletionService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = 'gpt-3.5-turbo-instruct'
 

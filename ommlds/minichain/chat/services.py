@@ -32,5 +32,5 @@ ChatResponse: ta.TypeAlias = Response[AiChoices, ChatResponseOutputs]
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]

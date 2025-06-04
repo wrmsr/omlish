@@ -43,5 +43,5 @@ VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexResponseOutput]
 ##
 
 
-# @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
+# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 VectorIndexService: ta.TypeAlias = Service[ VectorIndexRequest, VectorIndexResponse]
