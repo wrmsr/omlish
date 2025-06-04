@@ -15,7 +15,7 @@ from ..services import ResponseOutput
 ##
 
 
-class LlmRequestOption(RequestOption, lang.Abstract):
+class LlmRequestOption(RequestOption, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -34,7 +34,7 @@ class MaxTokens(LlmRequestOption, tv.UniqueScalarTypedValue[int]):
 ##
 
 
-class LlmResponseOutput(ResponseOutput, lang.Abstract):
+class LlmResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
     pass
 
 

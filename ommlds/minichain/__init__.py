@@ -133,7 +133,6 @@ from .services import (  # noqa
     Response,
     ResponseOutput,
     Service,
-    Service_,
 )
 
 from .standard import (  # noqa
@@ -144,10 +143,6 @@ from .standard import (  # noqa
     ApiKey,
 
     DefaultRequestOptions,
-)
-
-from .streaming import (  # noqa
-    StreamResponse,
 )
 
 from .tools.jsonschema import (  # noqa

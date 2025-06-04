@@ -7,7 +7,7 @@ from .services import Request
 from .services import RequestOption
 from .services import Response
 from .services import ResponseOutput
-from .services import Service_
+from .services import Service
 
 
 ##
@@ -31,44 +31,25 @@ class SearchHits(lang.Final):
 ##
 
 
-class SearchRequestOption(RequestOption, lang.Abstract):
+class SearchRequestOption(RequestOption, lang.Abstract, lang.Sealed):
     pass
 
 
-#
-
-
-@dc.dataclass(frozen=True)
-class SearchRequest(Request[SearchRequestOption]):
-    query: str
+SearchRequest: ta.TypeAlias = Request[str, SearchRequestOption]
 
 
 ##
 
 
-class SearchResponseOutput(ResponseOutput, lang.Abstract):
+class SearchResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
     pass
 
 
-#
-
-
-@dc.dataclass(frozen=True)
-class SearchResponse(Response[SearchResponseOutput]):
-    hits: SearchHits
+SearchResponse: ta.TypeAlias = Response[SearchHits, SearchResponseOutput]
 
 
 ##
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
-class SearchService(  # noqa
-    Service_[
-        SearchRequest,
-        SearchResponse,
-    ],
-    lang.Abstract,
-    request=SearchRequest,
-    response=SearchResponse,
-):
-    pass
+SearchService: ta.TypeAlias = Service[SearchRequest, SearchResponse]

@@ -1,23 +1,14 @@
-"""
-TODO:
- - refcount? ref.close drops self-ref, resources delete if at 0?
- - lock, probably
-"""
-import abc
 import contextlib
 import logging
+import threading
 import typing as ta
 
 from omlish import check
 from omlish import collections as col
-from omlish import dataclasses as dc
 from omlish import lang
 
-from .services import Response
-from .services import ResponseOutput
 
-
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
+T = ta.TypeVar('T')
 
 
 log = logging.getLogger(__name__)
@@ -26,65 +17,108 @@ log = logging.getLogger(__name__)
 ##
 
 
-class ResourcesReference(lang.Abstract):
-    @property
-    @abc.abstractmethod
-    def resources(self) -> 'Resources':
-        raise NotImplementedError
-
-    def _close(self) -> None:
-        pass
-
-    @ta.final
-    def close(self) -> None:
-        try:
-            self._close()
-        finally:
-            check.state(self.resources.has_reference(self))
-            self.resources.close()
-
-    @ta.final
-    def __enter__(self) -> ta.Self:
-        return self
-
-    @ta.final
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+class ResourcesRef(lang.Abstract):
+    pass
 
 
-##
+class ResourcesRefNotRegisteredError(Exception):
+    pass
 
 
-class Resources:
-    def __init__(self) -> None:
+class Resources(lang.Final, lang.NotPicklable):
+    def __init__(
+            self,
+            *,
+            init_ref: ResourcesRef | None = None,
+            no_autoclose: bool = False,
+    ) -> None:
         super().__init__()
+
+        self._no_autoclose = no_autoclose
+
+        self._lock = threading.RLock()
 
         self._closed = False
 
-        self._refs: ta.MutableSet[ResourcesReference] = col.IdentityWeakSet()
+        self._refs: ta.MutableSet[ResourcesRef] = col.IdentitySet()
 
         self._es = contextlib.ExitStack()
         self._es.__enter__()
 
+        if init_ref is not None:
+            self.add_ref(init_ref)
+
+    @property
+    def autoclose(self) -> bool:
+        return not self._no_autoclose
+
+    @property
+    def num_refs(self) -> int:
+        with self._lock:
+            return len(self._refs)
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
     def __repr__(self) -> str:
-        return lang.attr_repr(self, '_closed', with_id=True)
+        return lang.attr_repr(self, 'closed', 'num_refs', with_id=True)
 
-    def enter_context(self, cm):
-        check.state(not self._closed)
-        return self._es.enter_context(cm)
+    #
 
-    def add_reference(self, ref: ResourcesReference) -> None:
-        check.state(not self._closed)
-        self._refs.add(ref)
+    class _InitRef(ResourcesRef):
+        pass
 
-    def has_reference(self, ref: ResourcesReference) -> bool:
-        return ref in self._refs
+    @classmethod
+    def new(cls, **kwargs: ta.Any) -> ta.ContextManager['Resources']:
+        @contextlib.contextmanager
+        def inner():
+            init_ref = Resources._InitRef()
+            res = Resources(init_ref=init_ref, **kwargs)
+            try:
+                yield res
+            finally:
+                res.remove_ref(init_ref)
+
+        return inner()
+
+    #
+
+    def add_ref(self, ref: ResourcesRef) -> None:
+        check.isinstance(ref, ResourcesRef)
+        with self._lock:
+            check.state(not self._closed)
+            self._refs.add(ref)
+
+    def has_ref(self, ref: ResourcesRef) -> bool:
+        with self._lock:
+            return ref in self._refs
+
+    def remove_ref(self, ref: ResourcesRef) -> None:
+        check.isinstance(ref, ResourcesRef)
+        with self._lock:
+            try:
+                self._refs.remove(ref)
+            except KeyError:
+                raise ResourcesRefNotRegisteredError(ref) from None
+            if not self._no_autoclose and not self._refs:
+                self.close()
+
+    #
+
+    def enter_context(self, cm: ta.ContextManager[T]) -> T:
+        with self._lock:
+            check.state(not self._closed)
+            return self._es.enter_context(cm)
+
+    #
 
     def close(self) -> None:
-        try:
-            self._es.__exit__(None, None, None)
-        finally:
-            self._closed = True
+        with self._lock:
+            try:
+                self._es.__exit__(None, None, None)
+            finally:
+                self._closed = True
 
     def __del__(self) -> None:
         if not self._closed:
@@ -101,21 +135,17 @@ class Resources:
 ##
 
 
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(repr_id=True)
-class ResourcesResponse(
-    Response[ResponseOutputT],
-    ResourcesReference,
-    lang.Abstract,
-    ta.Generic[ResponseOutputT],
-):
-    _resources: Resources = dc.field(kw_only=True)
+class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]):
+    def __init__(self, v: T, resources: Resources) -> None:
+        super().__init__()
 
-    @dc.init
-    def _register_resources_reference(self) -> None:
-        self._resources.add_reference(self)
+        self._v = v
+        self._resources = resources
 
-    @property
-    @ta.final
-    def resources(self) -> 'Resources':
-        return self._resources
+        resources.add_ref(self)
+
+    def __enter__(self) -> T:
+        return self._v
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._resources.remove_ref(self)
