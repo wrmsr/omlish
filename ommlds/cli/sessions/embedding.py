@@ -45,5 +45,5 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
         with lang.maybe_managing(
                 EMBEDDING_MODEL_BACKENDS[self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND]()(),
         ) as mdl:
-            response = mdl.invoke(mc.EmbeddingRequest.new(self._config.content))
-            print(json.dumps_compact(response.vector))
+            response = mdl.invoke(mc.EmbeddingRequest(self._config.content))
+            print(json.dumps_compact(response.v))

@@ -50,5 +50,5 @@ class CompletionSession(Session['CompletionSession.Config']):
         with lang.maybe_managing(
                 COMPLETION_MODEL_BACKENDS[self._config.backend or DEFAULT_COMPLETION_MODEL_BACKEND]()(),
         ) as mdl:
-            response = mdl.invoke(mc.CompletionRequest.new(prompt))
-            print(response.text.strip())
+            response = mdl.invoke(mc.CompletionRequest(prompt))
+            print(response.v.strip())
