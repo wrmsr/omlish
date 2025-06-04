@@ -26,12 +26,12 @@ bitsandbytes==0.42.0
 black==25.1.0
 bleach==6.2.0
 blobfile==3.0.0
-boto3==1.38.29
-botocore==1.38.29
+boto3==1.38.30
+botocore==1.38.30
 Brotli==1.1.0
 build==1.2.2.post1
 cachetools==5.5.2
-cattrs==25.1.0
+cattrs==25.1.1
 cbor2==5.6.5
 certifi==2025.4.26
 cffi==1.17.1
@@ -308,7 +308,7 @@ uritemplate==4.2.0
 urllib3==2.4.0
 urwid==3.0.2
 urwid_readline==0.15.1
-uv==0.7.10
+uv==0.7.11
 watchdog==6.0.0
 wcwidth==0.2.13
 webcolors==24.11.1
