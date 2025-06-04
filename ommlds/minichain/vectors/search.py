@@ -7,7 +7,7 @@ from ..services import Request
 from ..services import RequestOption
 from ..services import Response
 from ..services import ResponseOutput
-from ..services import Service_
+from ..services import Service
 from .similarity import Similarity
 from .types import Vector
 
@@ -38,7 +38,7 @@ class VectorHits(lang.Final):
 ##
 
 
-class VectorSearchRequestOption(RequestOption, lang.Abstract):
+class VectorSearchRequestOption(RequestOption, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -47,40 +47,21 @@ class VectorSearchSimilarity(VectorSearchRequestOption, lang.Final):
     similarity: Similarity
 
 
-#
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class VectorSearchRequest(Request[VectorSearchRequestOption]):
-    search: VectorSearch
+VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchRequestOption]
 
 
 ##
 
 
-class VectorSearchResponseOutput(ResponseOutput, lang.Abstract):
+class VectorSearchResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
     pass
 
 
-#
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class VectorSearchResponse(Response[VectorSearchResponseOutput]):
-    hits: VectorHits
+VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchResponseOutput]
 
 
 ##
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendTypeManifest
-class VectorSearchService(  # noqa
-    Service_[
-        VectorSearchRequest,
-        VectorSearchResponse,
-    ],
-    lang.Abstract,
-    request=VectorSearchRequest,
-    response=VectorSearchResponse,
-):
-    pass
+VectorSearchService: ta.TypeAlias = Service[VectorSearchRequest, VectorSearchResponse]
