@@ -113,6 +113,11 @@ class Resources(lang.Final, lang.NotPicklable):
 
     #
 
+    def new_managed(self, v: T) -> 'ResourceManaged[T]':
+        return ResourceManaged(v, self)
+
+    #
+
     def close(self) -> None:
         with self._lock:
             try:

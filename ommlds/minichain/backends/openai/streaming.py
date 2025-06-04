@@ -9,9 +9,9 @@ from omlish.io.buffers import DelimitingBuffer
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
 from ...chat.messages import AiMessage
-from ...chat.streaming import ChatStreamRequest
+from ...chat.services import ChatRequest
 from ...chat.streaming import ChatStreamResponse
-from ...chat.streaming import ChatStreamService_
+from ...chat.streaming import ChatStreamService
 from ...configs import Config
 from ...configs import consume_configs
 from ...resources import Resources
@@ -25,7 +25,7 @@ from .format import OpenaiChatRequestHandler
 
 
 # @omlish-manifest ommlds.minichain.backends.manifests.BackendManifest(name='openai', type='ChatStreamService')
-class OpenaiChatStreamService(ChatStreamService_):
+class OpenaiChatStreamService(ChatStreamService):
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
@@ -35,11 +35,11 @@ class OpenaiChatStreamService(ChatStreamService_):
 
     READ_CHUNK_SIZE = 64 * 1024
 
-    def invoke(self, request: ChatStreamRequest) -> ChatStreamResponse:
-        check.isinstance(request, ChatStreamRequest)
+    def invoke(self, request: ChatRequest) -> ChatStreamResponse:
+        # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
-            request.chat,
+            request.v,
             *request.options,
             model=self._model_name.v,
             mandatory_kwargs=dict(
@@ -58,8 +58,7 @@ class OpenaiChatStreamService(ChatStreamService_):
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        rs = Resources()
-        try:
+        with Resources.new() as rs:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
@@ -98,11 +97,4 @@ class OpenaiChatStreamService(ChatStreamService_):
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return ChatStreamResponse(
-                _iterator=yield_choices(),
-                _resources=rs,
-            )
-
-        except Exception:
-            rs.close()
-            raise
+            return ChatStreamResponse(rs.new_managed(yield_choices()))

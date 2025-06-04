@@ -48,16 +48,16 @@ class ChatHistoryService(ChatService):
             self,
             underlying: ChatService,
             history: ChatHistory,
-    ) -> None:
+    ) -> None   :
         super().__init__()
         self._underlying = underlying
         self._history = history
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        new_req = dc.replace(request, chat=[*self._history.get(), *request.chat])
+        new_req = dc.replace(request, chat=[*self._history.get(), *request.v])
         response = self._underlying.invoke(new_req)
         self._history.add(
-            *request.chat,
-            response.choices[0].m,
+            *request.v,
+            response.v[0].m,
         )
         return response
