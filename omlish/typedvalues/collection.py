@@ -35,74 +35,62 @@ class TypedValues(
             override: bool = False,
             check_type: type | tuple[type, ...] | None = None,
     ) -> None:
-        if hasattr(self, '_tup'):
-            # When __new__ returns the empty singleton __init__ will still be called.
-            if self is not self._EMPTY:
-                raise RuntimeError
-            return
-
         super().__init__()
 
-        tmp: list = []
-        udct: dict = {}
-        for tv in tvs:
-            if check_type is not None:
-                check.isinstance(tv, check_type)
-            if isinstance(tv, UniqueTypedValue):
-                utvc = tv._unique_typed_value_cls  # noqa
-                if not override:
-                    try:
-                        exu = udct[utvc]
-                    except KeyError:
-                        pass
-                    else:
-                        raise DuplicateUniqueTypedValueError(utvc, tv, check.single(exu))
-                ulst = udct.setdefault(utvc, [])
-                ulst.append(tv)
-                tmp.append((utvc, tv, ulst, len(ulst)))
-            elif isinstance(tv, TypedValue):
-                tmp.append(tv)
-            else:
-                raise TypeError(tv)
+        if tvs:
+            tmp: list = []
+            udct: dict = {}
+            for tv in tvs:
+                if check_type is not None:
+                    check.isinstance(tv, check_type)
+                if isinstance(tv, UniqueTypedValue):
+                    utvc = tv._unique_typed_value_cls  # noqa
+                    if not override:
+                        try:
+                            exu = udct[utvc]
+                        except KeyError:
+                            pass
+                        else:
+                            raise DuplicateUniqueTypedValueError(utvc, tv, check.single(exu))
+                    ulst = udct.setdefault(utvc, [])
+                    ulst.append(tv)
+                    tmp.append((utvc, tv, ulst, len(ulst)))
+                elif isinstance(tv, TypedValue):
+                    tmp.append(tv)
+                else:
+                    raise TypeError(tv)
 
-        lst: list = []
-        dct: dict = {}
-        for obj in tmp:
-            if isinstance(obj, tuple):
-                utvc, tv, ulst, idx = obj
-                if idx == len(ulst):
+            lst: list = []
+            dct: dict = {}
+            for obj in tmp:
+                if isinstance(obj, tuple):
+                    utvc, tv, ulst, idx = obj
+                    if idx == len(ulst):
+                        lst.append(tv)
+                        dct[utvc] = tv
+                else:
+                    tv = obj
                     lst.append(tv)
-                    dct[utvc] = tv
-            else:
-                tv = obj
-                lst.append(tv)
-                dct.setdefault(type(tv), []).append(tv)
+                    dct.setdefault(type(tv), []).append(tv)
 
-        self._tup: tuple[TypedValueT, ...] = tuple(lst)
-        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = {
-            k: tuple(v) if isinstance(v, list) else v
-            for k, v in dct.items()
-        }
-        self._dct2: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = {
-            **self._dct,
-            **{type(v): v for v in self._dct.values() if isinstance(v, UniqueTypedValue)},  # type: ignore[misc]
-        }
+            tup = tuple(lst)
+            dct = {
+                k: tuple(v) if isinstance(v, list) else v
+                for k, v in dct.items()
+            }
+            dct2 = {
+                **dct,
+                **{type(v): v for v in dct.values() if isinstance(v, UniqueTypedValue)},
+            }
 
-    #
+        else:
+            tup = ()
+            dct = {}
+            dct2 = {}
 
-    _EMPTY: ta.ClassVar['TypedValues']
-
-    @classmethod
-    def empty(cls) -> 'TypedValues':
-        return cls._EMPTY
-
-    def __new__(cls, *tvs, **kwargs):  # noqa
-        if not tvs:
-            try:
-                return cls._EMPTY
-            except AttributeError:
-                pass
-        return super().__new__(cls)
+        self._tup: tuple[TypedValueT, ...] = tup
+        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = dct
+        self._dct2: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = dct2
 
     #
 
@@ -216,6 +204,3 @@ class TypedValues(
         ret = tuple(tv for tv in self if isinstance(tv, cls))
         any_dct[cls] = ret
         return ret
-
-
-TypedValues._EMPTY = TypedValues()  # noqa

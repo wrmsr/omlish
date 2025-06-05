@@ -153,10 +153,6 @@ def test_mro_check():
             pass
 
 
-def test_empty():
-    assert TypedValues() is TypedValues()
-
-
 def test_get():
     assert check.not_none(TypedValues(TopK(10)).get(TopK)).v == 10
     assert TypedValues().get(TopK) is None

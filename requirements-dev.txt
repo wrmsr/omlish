@@ -15,7 +15,7 @@ pytest-xdist==3.7.0
 
 flake8==7.2.0
 flake8-pyproject==1.2.3
-ruff==0.11.12
+ruff==0.11.13
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20250516  # @omlish-venv !13t
@@ -132,7 +132,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.30
+boto3>=1.38.31
 
 antlr4-python3-runtime==4.13.2
 

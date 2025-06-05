@@ -106,6 +106,10 @@ class TypedValuesMarshalerFactory(msh.MarshalerFactoryMatchClass):
         )
         return msh.IterableMarshaler(tv_m)
 
+    @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
+    def _build_concrete(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
+        raise NotImplementedError
+
 
 class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
@@ -116,6 +120,10 @@ class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
             ctx,
         )
         return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
+
+    @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
+    def _build_concrete(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
+        raise NotImplementedError
 
 
 ##
