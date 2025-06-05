@@ -1,5 +1,6 @@
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 
 from .requests import Request
@@ -53,24 +54,21 @@ class ServiceFacade(
         ],
     ]
 
-    def invoke(
-            self,
-            request: Request[
-                RequestV,
-                RequestOptionT,
-            ],
-    ) -> Response[
-        ResponseV,
-        ResponseOutputT,
-    ]:
+    def invoke(self, request: Request[RequestV, RequestOptionT]) -> Response[ResponseV, ResponseOutputT]:
         return self.service.invoke(request)
 
-    def __call__(
-            self,
-            v: RequestV,
-            *options: RequestOptionT,
-    ) -> Response[
-        ResponseV,
-        ResponseOutputT,
-    ]:
-        return self.invoke(Request(v, options))
+    @ta.overload
+    def __call__(self, request: Request[RequestV, RequestOptionT]) -> Response[ResponseV, ResponseOutputT]:
+        ...
+
+    @ta.overload
+    def __call__(self, v: RequestV, *options: RequestOptionT) -> Response[ResponseV, ResponseOutputT]:
+        ...
+
+    def __call__(self, o, *args):
+        if isinstance(o, Request):
+            check.empty(args)
+            request = o
+        else:
+            request = Request(o, args)
+        return self.invoke(request)
