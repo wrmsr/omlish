@@ -149,6 +149,9 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
 
         resources.add_ref(self)
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{self._v!r}>'
+
     def __enter__(self) -> T:
         return self._v
 

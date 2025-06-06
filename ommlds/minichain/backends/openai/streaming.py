@@ -46,6 +46,7 @@ class OpenaiChatStreamService(ChatStreamService):
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,
+                include_usage=True,
             ),
         )
 

@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import check
+from omlish import lang
 from omlish import typedvalues as tv
 
 from .resources import ResourceManaged
@@ -16,12 +17,15 @@ StreamResponseOutputT = ta.TypeVar('StreamResponseOutputT', bound=ResponseOutput
 ##
 
 
-class ResponseGenerator(ta.Generic[V, ResponseOutputT]):
+class ResponseGenerator(lang.Final, ta.Generic[V, ResponseOutputT]):
     def __init__(self, g: ta.Generator[V, None, ta.Sequence[ResponseOutputT] | None]) -> None:
         super().__init__()
 
         self._g = g
         self._is_done = False
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{self._g!r}>'
 
     _outputs: tv.TypedValues[ResponseOutputT]
 

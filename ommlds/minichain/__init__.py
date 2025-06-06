@@ -35,8 +35,14 @@ from .chat.choices import (  # noqa
 )
 
 from .chat.services import (  # noqa
+    ChatRequestOption,
+    ChatRequestOptions,
     ChatRequest,
+
+    ChatResponseOutput,
+    ChatResponseOutputs,
     ChatResponse,
+
     ChatService,
 )
 
@@ -131,6 +137,7 @@ from .services import (  # noqa
     Response,
     ResponseOutput,
     Service,
+    ServiceFacade,
 )
 
 from .standard import (  # noqa
