@@ -185,7 +185,7 @@
     "module": ".minichain.backends.openai.streaming",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/streaming.py",
-    "line": 29,
+    "line": 28,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.openai.streaming",

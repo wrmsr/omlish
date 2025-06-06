@@ -8,7 +8,6 @@ from omlish.io.buffers import DelimitingBuffer
 
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
-from ...chat.messages import AiMessage
 from ...chat.services import ChatRequest
 from ...chat.services import ChatResponseOutputs
 from ...chat.streaming import ChatStreamResponse
@@ -46,7 +45,9 @@ class OpenaiChatStreamService(ChatStreamService):
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,
-                include_usage=True,
+                stream_options=dict(
+                    include_usage=True,
+                ),
             ),
         )
 
@@ -82,16 +83,12 @@ class OpenaiChatStreamService(ChatStreamService):
                                 if ss == '[DONE]':
                                     return []
 
-                                sj = json.loads(ss)
+                                sj = json.loads(ss)  # ChatCompletionChunk
 
                                 check.state(sj['object'] == 'chat.completion.chunk')
 
                                 yield [
-                                    AiChoice(
-                                        AiMessage(
-                                            choice['delta'].get('content', ''),
-                                        ),
-                                    )
+                                    AiChoice(rh.build_ai_message(choice['delta']))
                                     for choice in sj['choices']
                                 ]
 

@@ -162,23 +162,24 @@ class OpenaiChatRequestHandler:
             **po.kwargs,
         )
 
-    def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatResponse:
-        po = self._process_options()
+    def build_ai_message(self, message_or_delta: ta.Mapping[str, ta.Any]) -> AiMessage:
+        return AiMessage(
+            message_or_delta['content'],
+            tool_exec_requests=[
+                ToolExecRequest(
+                    id=tc['id'],
+                    spec=self._process_options().tools_by_name[tc['function']['name']],
+                    args=json.loads(tc['function']['arguments'] or '{}'),
+                    raw_args=tc['function']['arguments'],
+                )
+                for tc in message_or_delta.get('tool_calls', [])
+            ],
+        )
 
+    def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatResponse:
         return ChatResponse(
             [
-                AiChoice(AiMessage(
-                    choice['message']['content'],
-                    tool_exec_requests=[
-                        ToolExecRequest(
-                            id=tc['id'],
-                            spec=po.tools_by_name[tc['function']['name']],
-                            args=json.loads(tc['function']['arguments']),
-                            raw_args=tc['function']['arguments'],
-                        )
-                        for tc in choice['message'].get('tool_calls', [])
-                    ],
-                ))
+                AiChoice(self.build_ai_message(choice))
                 for choice in raw_response['choices']
             ],
 
