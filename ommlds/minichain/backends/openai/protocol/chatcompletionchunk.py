@@ -6,23 +6,35 @@ from .chatcompletiontokenlogprob import ChatCompletionTokenLogprob
 ##
 
 
-class ChatCompletionChoiceDeltaToolCallFunction(ta.TypedDict, total=False):
+class ChatCompletionChunkChoiceDeltaToolCallFunction(ta.TypedDict, total=False):
     arguments: str
     name: str
 
 
-class ChatCompletionChoiceDeltaToolCall(ta.TypedDict):
+class ChatCompletionChunkChoiceDeltaToolCall(ta.TypedDict):
     index: int
     id: ta.NotRequired[str]
-    function: ta.NotRequired[ChatCompletionChoiceDeltaToolCallFunction]
+    function: ta.NotRequired[ChatCompletionChunkChoiceDeltaToolCallFunction]
     type: ta.Literal['function']
 
 
-class ChatCompletionChoiceDelta(ta.TypedDict, total=False):
+#
+
+
+class ChatCompletionChunkChoiceDelta(ta.TypedDict, total=False):
     content: str
     refusal: str
-    role: ta.Literal['developer', 'system', 'user', 'assistant', 'tool']
-    tool_calls: ta.Sequence[ChatCompletionChoiceDeltaToolCall]
+    role: ta.Literal[
+        'developer',
+        'system',
+        'user',
+        'assistant',
+        'tool',
+    ]
+    tool_calls: ta.Sequence[ChatCompletionChunkChoiceDeltaToolCall]
+
+
+#
 
 
 class ChatCompletionChunkChoiceLogprobs(ta.TypedDict, total=False):
@@ -31,10 +43,19 @@ class ChatCompletionChunkChoiceLogprobs(ta.TypedDict, total=False):
 
 
 class ChatCompletionChunkChoice(ta.TypedDict):
-    delta: ChatCompletionChoiceDelta
-    finish_reason: ta.NotRequired[ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call']]
+    delta: ChatCompletionChunkChoiceDelta
+    finish_reason: ta.NotRequired[ta.Literal[
+        'stop',
+        'length',
+        'tool_calls',
+        'content_filter',
+        'function_call',
+    ]]
     index: int
     logprobs: ta.NotRequired[ChatCompletionChunkChoiceLogprobs]
+
+
+#
 
 
 class ChatCompletionChunk(ta.TypedDict):
@@ -43,5 +64,9 @@ class ChatCompletionChunk(ta.TypedDict):
     created: int
     model: str
     object: ta.Literal['chat.completion.chunk']
-    service_tier: ta.NotRequired[ta.Literal['auto', 'default', 'flex']]
-    system_fingerprint:ta.NotRequired[str]
+    service_tier: ta.NotRequired[ta.Literal[
+        'auto',
+        'default',
+        'flex',
+    ]]
+    system_fingerprint: ta.NotRequired[str]
