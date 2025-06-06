@@ -164,7 +164,7 @@ class OpenaiChatRequestHandler:
 
     def build_ai_message(self, message_or_delta: ta.Mapping[str, ta.Any]) -> AiMessage:
         return AiMessage(
-            message_or_delta['content'],
+            message_or_delta.get('content'),
             tool_exec_requests=[
                 ToolExecRequest(
                     id=tc['id'],
@@ -173,7 +173,7 @@ class OpenaiChatRequestHandler:
                     raw_args=tc['function']['arguments'],
                 )
                 for tc in message_or_delta.get('tool_calls', [])
-            ],
+            ] or None,
         )
 
     def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatResponse:
