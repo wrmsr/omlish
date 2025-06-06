@@ -1,6 +1,6 @@
 import typing as ta
 
-from .chatcompletiontokenlogprob import ChatCompletionTokenLogprob
+from .tokenlogprob import ChatCompletionTokenLogprob
 
 
 ##

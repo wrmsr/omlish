@@ -1,9 +1,9 @@
 # ruff: noqa: UP007
 import typing as ta
 
-from .chatcompletioncontentpart import ChatCompletionContentPart
-from .chatcompletioncontentpart import RefusalChatCompletionContentPart
-from .chatcompletioncontentpart import TextChatCompletionContentPart
+from .contentpart import ChatCompletionContentPart
+from .contentpart import RefusalChatCompletionContentPart
+from .contentpart import TextChatCompletionContentPart
 
 
 ##
