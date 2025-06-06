@@ -179,7 +179,7 @@ class OpenaiChatRequestHandler:
     def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatResponse:
         return ChatResponse(
             [
-                AiChoice(self.build_ai_message(choice))
+                AiChoice(self.build_ai_message(choice['message']))
                 for choice in raw_response['choices']
             ],
 

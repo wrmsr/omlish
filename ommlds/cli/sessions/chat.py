@@ -1,5 +1,6 @@
 import dataclasses as dc
 import datetime
+import functools
 import typing as ta
 
 from omlish import check
@@ -54,13 +55,7 @@ class ChatState:
 
 DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
-CHAT_MODEL_BACKENDS: ta.Mapping[str, ta.Callable[[], type[mc.ChatService]]] = {
-    'anthropic': lambda: mc_anthropic.AnthropicChatService,
-    'google': lambda: mc_google.GoogleChatService,
-    'llamacpp': lambda: mc_lcc.LlamacppChatService,
-    'mistral': lambda: mc_mistral.MistralChatService,
-    'mlx': lambda: mc_mlx.MlxChatService,
-    'openai': lambda: mc_openai.OpenaiChatService,
+CHAT_MODEL_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatService]] = {
 }
 
 
@@ -117,8 +112,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             mc.UserMessage(prompt),
         ]
 
+        backend = self._config.backend
+        if backend is None:
+            backend = DEFAULT_CHAT_MODEL_BACKEND
+
         if self._config.stream:
-            with lang.maybe_managing(mc.registry_of[mc.ChatStreamService].new('openai')) as st_mdl:
+            with lang.maybe_managing(mc.registry_of[mc.ChatStreamService].new(backend)) as st_mdl:
                 with st_mdl.invoke(mc.ChatRequest(
                         chat,
                         (self._chat_options or []),
@@ -134,8 +133,14 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 chat.append(resp_m)
 
         else:
-            with lang.maybe_managing(CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()(
-                *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
+            csf: ta.Callable[..., mc.ChatService]
+            if (bf := CHAT_MODEL_FACTORIES.get(backend)) is not None:
+                csf = bf
+            else:
+                csf = functools.partial(mc.registry_of[mc.ChatService].new, backend)
+
+            with lang.maybe_managing(csf(
+                    *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )) as mdl:
                 response = mdl.invoke(mc.ChatRequest(
                     chat,
@@ -222,31 +227,40 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
             if state is None:
                 state = ChatState()  # type: ignore
 
-        while True:
-            prompt = ptk.prompt('> ')
+        backend = self._config.backend
+        if backend is None:
+            backend = DEFAULT_CHAT_MODEL_BACKEND
 
-            state = dc.replace(
-                state,
-                chat=[
-                    *state.chat,
-                    mc.UserMessage(prompt),
-                ],
-            )
+        csf: ta.Callable[..., mc.ChatService]
+        if (bf := CHAT_MODEL_FACTORIES.get(backend)) is not None:
+            csf = bf
+        else:
+            csf = functools.partial(mc.registry_of[mc.ChatService].new, backend)
 
-            mdl = CHAT_MODEL_BACKENDS[self._config.backend or DEFAULT_CHAT_MODEL_BACKEND]()(
+        with lang.maybe_managing(csf(
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
-            )
+        )) as mdl:
+            while True:
+                prompt = ptk.prompt('> ')
 
-            response = mdl.invoke(mc.ChatRequest(state.chat))
-            print(check.isinstance(response.v[0].m.s, str).strip())
+                state = dc.replace(
+                    state,
+                    chat=[
+                        *state.chat,
+                        mc.UserMessage(prompt),
+                    ],
+                )
 
-            state = dc.replace(
-                state,
-                chat=[
-                    *state.chat,
-                    response.v[0].m,
-                ],
-                updated_at=lang.utcnow(),
-            )
+                response = mdl.invoke(mc.ChatRequest(state.chat))
+                print(check.isinstance(response.v[0].m.s, str).strip())
 
-            self._state_storage.save_state('chat', state, ChatState)
+                state = dc.replace(
+                    state,
+                    chat=[
+                        *state.chat,
+                        response.v[0].m,
+                    ],
+                    updated_at=lang.utcnow(),
+                )
+
+                self._state_storage.save_state('chat', state, ChatState)
