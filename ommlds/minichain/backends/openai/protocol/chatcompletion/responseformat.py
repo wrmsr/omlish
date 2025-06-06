@@ -12,22 +12,22 @@ class TextChatCompletionResponseFormat(ta.TypedDict):
 #
 
 
-class JsonSchemaResponseFormatJsonSchema(ta.TypedDict, total=False):
+class JsonSchemaChatCompletionResponseFormatJsonSchema(ta.TypedDict, total=False):
     name: ta.Required[str]
     description: str
     schema: ta.Mapping[str, object]
     strict: bool
 
 
-class JsonSchemaResponseFormat(ta.TypedDict):
-    json_schema: JsonSchemaResponseFormatJsonSchema
+class JsonSchemaChatCompletionResponseFormat(ta.TypedDict):
+    json_schema: JsonSchemaChatCompletionResponseFormatJsonSchema
     type: ta.Literal['json_schema']
 
 
 #
 
 
-class JsonObjectResponseFormat(ta.TypedDict):
+class JsonObjectChatCompletionResponseFormat(ta.TypedDict):
     type: ta.Literal['json_object']
 
 
@@ -36,6 +36,6 @@ class JsonObjectResponseFormat(ta.TypedDict):
 
 ChatCompletionResponseFormat: ta.TypeAlias = ta.Union[
     TextChatCompletionResponseFormat,
-    JsonSchemaResponseFormat,
-    JsonObjectResponseFormat,
+    JsonSchemaChatCompletionResponseFormat,
+    JsonObjectChatCompletionResponseFormat,
 ]

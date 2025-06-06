@@ -32,18 +32,15 @@ class ChatCompletionResponseAudio(ta.TypedDict):
 #
 
 
-class ChatCompletionResponseFunction(ta.TypedDict):
+class ChatCompletionResponseMessageToolCallFunction(ta.TypedDict):
     arguments: str
     name: str
 
 
 class ChatCompletionResponseMessageToolCall(ta.TypedDict):
     id: str
-    function: ChatCompletionResponseFunction
+    function: ChatCompletionResponseMessageToolCallFunction
     type: ta.Literal['function']
-
-
-#
 
 
 class ChatCompletionResponseMessage(ta.TypedDict, total=False):
