@@ -13,11 +13,11 @@ from .chat import ModelPath
 def test_pickling1():
     lcr = LocalChatRequest([Message('user', 'hi')], [MaxTokens(10), ModelPath('my_model')])
     assert lcr.options[MaxTokens] == MaxTokens(10)
-    lcr._check_typed_values()  # noqa
+    lcr.validate()
 
     lcr2 = pickle.loads(pickle.dumps(lcr))  # noqa
     assert lcr == lcr2
-    lcr2._check_typed_values()  # noqa
+    lcr2.validate()
 
 
 def test_pickling2():
@@ -27,4 +27,4 @@ def test_pickling2():
     lcr2 = pickle.loads(pickle.dumps(lcr))  # noqa
     assert lcr == lcr2
     with pytest.raises(_TypedValuesTypeError):
-        lcr2._check_typed_values()  # noqa
+        lcr2.validate()

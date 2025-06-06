@@ -48,5 +48,9 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     def _typed_values(self) -> tv.TypedValues[ResponseOutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)
 
+    def validate(self) -> ta.Self:
+        self._check_typed_values()
+        return self
+
 
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

@@ -1,3 +1,7 @@
+"""
+TODO:
+ - unify with omlish.sql.api.resources -> omlish.resources
+"""
 import contextlib
 import logging
 import threading
@@ -131,8 +135,8 @@ class Resources(lang.Final, lang.NotPicklable):
             log.error(
                 f'{__package__}.{self.__class__.__name__}.__del__: '  # noqa
                 f'%r deleted without being closed! '
-                f'refs: %r',
-                self,
+                f'refs: %s',
+                repr(self),
                 ref_lst,
             )
 

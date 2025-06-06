@@ -125,11 +125,11 @@ def test_reflect():
 
 def test_check_tvs():
     lcr = LocalChatRequest([Message('user', 'hi')], [ModelPath('my_model'), MaxTokens(10)])
-    lcr._check_typed_values()  # noqa
+    lcr.validate()
 
     lcr = LocalChatRequest([Message('user', 'hi')], [ApiKey('secret'), MaxTokens(10)])  # type: ignore[list-item]
     with pytest.raises(_TypedValuesTypeError):
-        lcr._check_typed_values()  # noqa
+        lcr.validate()
 
 
 def test_orig_class_abuse():

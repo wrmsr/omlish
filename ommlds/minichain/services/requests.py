@@ -48,5 +48,9 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def _typed_values(self) -> tv.TypedValues[RequestOptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
+    def validate(self) -> ta.Self:
+        self._check_typed_values()
+        return self
+
 
 RequestT_contra = ta.TypeVar('RequestT_contra', bound=Request, contravariant=True)
