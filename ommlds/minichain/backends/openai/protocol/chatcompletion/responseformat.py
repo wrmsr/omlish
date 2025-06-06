@@ -15,7 +15,7 @@ class TextChatCompletionResponseFormat(ta.TypedDict):
 class JsonSchemaChatCompletionResponseFormatJsonSchema(ta.TypedDict, total=False):
     name: ta.Required[str]
     description: str
-    schema: ta.Mapping[str, object]
+    schema: ta.Mapping[str, ta.Any]
     strict: bool
 
 

@@ -60,7 +60,7 @@ class ChatCompletionChunkChoice(ta.TypedDict):
 
 class ChatCompletionChunk(ta.TypedDict):
     id: str
-    choices: list[ChatCompletionChunkChoice]
+    choices: ta.Sequence[ChatCompletionChunkChoice]
     created: int
     model: str
     object: ta.Literal['chat.completion.chunk']

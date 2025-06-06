@@ -27,17 +27,17 @@ class SystemChatCompletionMessage(ta.TypedDict):
 #
 
 
-class UserChatCompletionMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | ta.Iterable[ChatCompletionContentPart]]
-    role: ta.Required[ta.Literal['user']]
-    name: str
+class UserChatCompletionMessage(ta.TypedDict):
+    content: str | ta.Iterable[ChatCompletionContentPart]
+    role: ta.Literal['user']
+    name: ta.NotRequired[str]
 
 
 #
 
 
-class AssistantChatCompletionMessageAudio(ta.TypedDict, total=False):
-    id: ta.Required[str]
+class AssistantChatCompletionMessageAudio(ta.TypedDict):
+    id: str
 
 
 class AssistantChatCompletionMessageToolCallFunction(ta.TypedDict):
@@ -63,19 +63,19 @@ class AssistantChatCompletionMessage(ta.TypedDict, total=False):
 #
 
 
-class ToolChatCompletionMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | ta.Iterable[TextChatCompletionContentPart]]
-    role: ta.Required[ta.Literal['tool']]
-    tool_call_id: ta.Required[str]
+class ToolChatCompletionMessage(ta.TypedDict):
+    content: str | ta.Iterable[TextChatCompletionContentPart]
+    role: ta.Literal['tool']
+    tool_call_id: str
 
 
 #
 
 
-class FunctionChatCompletionMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | None]
-    name: ta.Required[str]
-    role: ta.Required[ta.Literal['function']]
+class FunctionChatCompletionMessage(ta.TypedDict):
+    content: str | None
+    name: str
+    role: ta.Literal['function']
 
 
 #

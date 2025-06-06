@@ -13,13 +13,13 @@ class TextChatCompletionContentPart(ta.TypedDict):
 #
 
 
-class ImageChatCompletionContentPartImageUrl(ta.TypedDict, total=False):
+class ImageChatCompletionContentPartImageUrl(ta.TypedDict):
     url: ta.Required[str]
-    detail: ta.Literal[
+    detail: ta.NotRequired[ta.Literal[
         'auto',
         'low',
         'high',
-    ]
+    ]]
 
 
 class ImageChatCompletionContentPart(ta.TypedDict):

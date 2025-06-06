@@ -44,7 +44,7 @@ class ChatCompletionRequestPrediction(ta.TypedDict):
 class ChatCompletionRequestToolFunction(ta.TypedDict, total=False):
     name: ta.Required[str]
     description: str
-    parameters: ta.Mapping[str, object]
+    parameters: ta.Mapping[str, ta.Any]
     strict: bool
 
 
