@@ -72,10 +72,14 @@ from .chat.types import (  # noqa
 )
 
 from .completion import (  # noqa
-    CompletionRequest,
     CompletionRequestOption,
-    CompletionResponse,
+    CompletionRequestOptions,
+    CompletionRequest,
+
     CompletionResponseOutput,
+    CompletionResponseOutputs,
+    CompletionResponse,
+
     CompletionService,
 )
 
@@ -152,6 +156,7 @@ from .standard import (  # noqa
 
 from .streaming import (  # noqa
     ResponseGenerator,
+
     StreamResponse,
 )
 
