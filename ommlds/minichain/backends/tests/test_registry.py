@@ -5,7 +5,7 @@ from ...chat.services import ChatRequest
 from ...chat.services import ChatService
 from ...registry import registry_new
 from ...registry import registry_of
-from ...services import Service
+from ...services import ServiceFacade
 from ...standard import ApiKey
 
 
@@ -21,10 +21,10 @@ def test_new_backend_openai(harness):
 
 
 def test_new_backend_openai2(harness):
-    llm = registry_of[ChatService].new(
+    llm = ServiceFacade(registry_of[ChatService].new(
         'openai',
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
-    )
+    ))
 
-    # assert isinstance(llm, ChatService)
-    assert isinstance(llm, Service)
+    resp = llm([UserMessage('what is 2 + 2?')])
+    print(resp.v)
