@@ -9,7 +9,7 @@
 # infra
 
 google-api-python-client==2.171.0
-google-cloud-compute==1.30.0
+google-cloud-compute==1.31.0
 
 
 ##
@@ -23,12 +23,12 @@ torchvision==0.22.1
 diffusers==0.33.1
 
 scipy==1.15.3
-scikit-learn==1.6.1
+scikit-learn==1.7.0
 scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.7.4
+tavily-python==0.7.5
 
 sqlite-vec==0.1.6
 

@@ -10,6 +10,7 @@ from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
 from ...chat.messages import AiMessage
 from ...chat.services import ChatRequest
+from ...chat.services import ChatResponseOutputs
 from ...chat.streaming import ChatStreamResponse
 from ...chat.streaming import ChatStreamService
 from ...configs import Config
@@ -17,6 +18,7 @@ from ...configs import consume_configs
 from ...resources import Resources
 from ...standard import ApiKey
 from ...standard import ModelName
+from ...streaming import ResponseGenerator
 from .chat import OpenaiChatService
 from .format import OpenaiChatRequestHandler
 
@@ -62,7 +64,7 @@ class OpenaiChatStreamService(ChatStreamService):
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Iterator[AiChoices]:
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatResponseOutputs] | None]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -71,13 +73,13 @@ class OpenaiChatStreamService(ChatStreamService):
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return
+                            return []
 
                         for so in sd.process_line(l):
                             if isinstance(so, sse.SseEvent) and so.type == b'message':
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':
-                                    return
+                                    return []
 
                                 sj = json.loads(ss)
 
@@ -93,9 +95,9 @@ class OpenaiChatStreamService(ChatStreamService):
                                 ]
 
                     if not b:
-                        return
+                        return []
 
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return ChatStreamResponse(rs.new_managed(yield_choices()))
+            return ChatStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))

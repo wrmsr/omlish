@@ -21,3 +21,4 @@ def test_openai_chat_streaming_model(harness):
         with llm.invoke(foo_req).v as it:
             for o in it:
                 print(o)
+            print(it.outputs)

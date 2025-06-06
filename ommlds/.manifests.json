@@ -95,7 +95,7 @@
     "module": ".minichain.backends.llamacpp.streaming",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/streaming.py",
-    "line": 26,
+    "line": 28,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.streaming",
@@ -185,7 +185,7 @@
     "module": ".minichain.backends.openai.streaming",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/streaming.py",
-    "line": 27,
+    "line": 29,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.openai.streaming",
@@ -278,7 +278,7 @@
     "module": ".minichain.chat.streaming",
     "attr": null,
     "file": "ommlds/minichain/chat/streaming.py",
-    "line": 21,
+    "line": 27,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.chat.streaming",

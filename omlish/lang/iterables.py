@@ -121,3 +121,37 @@ def prodrange(*dims: Rangeable) -> ta.Iterable[ta.Sequence[int]]:
     if not dims:
         return []
     return itertools.product(*map(asrange, dims))
+
+
+##
+
+
+class IteratorWithReturn(ta.Generic[T, R]):
+    """Overlap with stuff in generators.py, but intentionally restricted to iteration (no send/throw)."""
+
+    def __init__(self, it: ta.Iterator[T]) -> None:
+        super().__init__()
+
+        self._it = it
+        self._has_value = False
+
+    _value: R
+
+    @property
+    def has_value(self) -> bool:
+        return self._has_value
+
+    @property
+    def value(self) -> R:
+        return self._value
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return next(self._it)
+        except StopIteration as e:
+            self._has_value = True
+            self._value = e.value
+            raise

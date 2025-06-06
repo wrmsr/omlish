@@ -12,9 +12,11 @@ from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
 from ...chat.messages import AiMessage
 from ...chat.services import ChatRequest
+from ...chat.services import ChatResponseOutputs
 from ...chat.streaming import ChatStreamResponse
 from ...chat.streaming import ChatStreamService
 from ...resources import Resources
+from ...streaming import ResponseGenerator
 from .chat import LlamacppChatService
 from .format import ROLES_MAP
 from .format import get_msg_content
@@ -60,17 +62,19 @@ class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            def handle_chunk(chunk: 'lcc.llama_types.ChatCompletionChunk') -> ta.Iterator[AiChoices]:
-                check.state(chunk['object'] == 'chat.completion.chunk')
-                l: list[AiChoice] = []
-                for choice in chunk['choices']:
-                    # FIXME: check role is assistant
-                    # FIXME: stop reason
-                    if not (delta := choice.get('delta', {})):
-                        continue
-                    if not (content := delta.get('content', '')):
-                        continue
-                    l.append(AiChoice(AiMessage(content)))  # type: ignore
-                yield l
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatResponseOutputs] | None]:
+                for chunk in output:
+                    check.state(chunk['object'] == 'chat.completion.chunk')
+                    l: list[AiChoice] = []
+                    for choice in chunk['choices']:
+                        # FIXME: check role is assistant
+                        # FIXME: stop reason
+                        if not (delta := choice.get('delta', {})):
+                            continue
+                        if not (content := delta.get('content', '')):
+                            continue
+                        l.append(AiChoice(AiMessage(content)))
+                    yield l
+                return None
 
-            return ChatStreamResponse(rs.new_managed(iter(lang.flatmap(handle_chunk, output))))
+            return ChatStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))

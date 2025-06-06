@@ -216,6 +216,7 @@ from .imports import (  # noqa
 )
 
 from .iterables import (  # noqa
+    IteratorWithReturn,
     asrange,
     common_prefix_len,
     exhaust,

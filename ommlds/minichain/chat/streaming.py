@@ -1,9 +1,11 @@
 import typing as ta
 
+from omlish import lang
+
 from ..registry import register_type
-from ..resources import ResourceManaged
-from ..services import Response
+from ..services import ResponseOutput
 from ..services import Service
+from ..streaming import StreamResponse
 from .choices import AiChoices
 from .services import ChatRequest
 from .services import ChatResponseOutputs
@@ -12,7 +14,11 @@ from .services import ChatResponseOutputs
 ##
 
 
-ChatStreamResponse: ta.TypeAlias = Response[ResourceManaged[ta.Iterator[AiChoices]], ChatResponseOutputs]
+class ChatStreamResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+    pass
+
+
+ChatStreamResponse: ta.TypeAlias = StreamResponse[AiChoices, ChatResponseOutputs, ChatStreamResponseOutput]
 
 
 ##
