@@ -108,14 +108,17 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                         chat,
                         (self._chat_options or []),
                 )).v as st_resp:
-                    resp_s = ''
+                    lst: list[str] = []
                     for o in st_resp:
-                        o_s = check.isinstance(o[0].m.s, str)
-                        print(o_s, end='', flush=True)
-                        resp_s += o_s
+                        if o:
+                            m = check.isinstance(check.single(o).m, mc.AiMessage)
+                            if m.s is not None:
+                                print(m.s, end='', flush=True)
+                                lst.append(m.s)
+                            check.none(m.tool_exec_requests)
                     print()
 
-                resp_m = mc.AiMessage(resp_s)
+                resp_m = mc.AiMessage(''.join(lst))
                 chat.append(resp_m)
 
         else:
