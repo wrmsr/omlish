@@ -18,23 +18,9 @@ if ta.TYPE_CHECKING:
     from omdev import ptk
     from omdev.ptk import markdown as ptk_md
 
-    from ...minichain.backends import mistral as mc_mistral
-    from ...minichain.backends.anthropic import chat as mc_anthropic
-    from ...minichain.backends.google import chat as mc_google
-    from ...minichain.backends.llamacpp import chat as mc_lcc
-    from ...minichain.backends.mlx import chat as mc_mlx
-    from ...minichain.backends.openai import chat as mc_openai
-
 else:
     ptk = lang.proxy_import('omdev.ptk')
     ptk_md = lang.proxy_import('omdev.ptk.markdown')
-
-    mc_mistral = lang.proxy_import('...minichain.backends.mistral', __package__)
-    mc_anthropic = lang.proxy_import('...minichain.backends.anthropic.chat', __package__)
-    mc_google = lang.proxy_import('...minichain.backends.google.chat', __package__)
-    mc_lcc = lang.proxy_import('...minichain.backends.llamacpp.chat', __package__)
-    mc_mlx = lang.proxy_import('...minichain.backends.mlx.chat', __package__)
-    mc_openai = lang.proxy_import('...minichain.backends.openai.chat', __package__)
 
 
 ##
