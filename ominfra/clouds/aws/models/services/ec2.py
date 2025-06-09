@@ -1640,6 +1640,8 @@ class SubnetState(_enum.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
     UNAVAILABLE = 'unavailable'
+    FAILED = 'failed'
+    FAILED_INSUFFICIENT_CAPACITY = 'failed-insufficient-capacity'
 
 
 class SupportedAdditionalProcessorFeature(_enum.Enum):
@@ -1823,6 +1825,12 @@ class Address(
         shape_name='String',
     ))
 
+    subnet_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SubnetId',
+        serialization_name='subnetId',
+        shape_name='String',
+    ))
+
     service_managed: ServiceManaged | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ServiceManaged',
         serialization_name='serviceManaged',
@@ -1845,6 +1853,8 @@ class Address(
 AllocationIdList: _ta.TypeAlias = _ta.Sequence[AllocationId]
 
 ArchitectureTypeList: _ta.TypeAlias = _ta.Sequence[ArchitectureType]
+
+AssociatedSubnetList: _ta.TypeAlias = _ta.Sequence[SubnetId]
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
@@ -6517,6 +6527,13 @@ class NetworkInterface(
         shape_name='OperatorResponse',
     ))
 
+    associated_subnets: AssociatedSubnetList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AssociatedSubnets',
+        serialization_name='associatedSubnetSet',
+        value_type=_base.ListValueType(SubnetId),
+        shape_name='AssociatedSubnetList',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class NeuronInfo(
@@ -6704,6 +6721,12 @@ class Subnet(
         member_name='BlockPublicAccessStates',
         serialization_name='blockPublicAccessStates',
         shape_name='BlockPublicAccessStates',
+    ))
+
+    type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Type',
+        serialization_name='type',
+        shape_name='String',
     ))
 
     subnet_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
