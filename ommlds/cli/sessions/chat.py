@@ -41,8 +41,7 @@ class ChatState:
 
 DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
-CHAT_MODEL_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatService]] = {
-}
+CHAT_MODEL_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatService]] = {}
 
 
 ##
