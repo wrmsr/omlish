@@ -170,7 +170,7 @@ class Transformer:
         ):
             return self.forward_jit(
                 tokens,
-                Variable('start_pos', 1, self.max_context).bind(start_pos),
+                Variable('start_pos', 1, self.max_context - 1).bind(start_pos),
                 temperature,
                 top_k,
                 top_p,

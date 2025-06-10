@@ -57,8 +57,8 @@ class Attention:
             self,
             dim,
             n_heads,
-            n_kv_heads,
-            max_context,
+            n_kv_heads=None,
+            max_context=0,
             linear=nn.Linear,
             qk_norm: float | None = None,
     ) -> None:
@@ -85,7 +85,7 @@ class Attention:
             x: Tensor,
             start_pos: Variable_ | int,
             freqs_cis: Tensor,
-            mask: Tensor | None,
+            mask: Tensor | None = None,
     ) -> Tensor:
         if getenv('WQKV'):
             if not hasattr(self, 'wqkv'):
@@ -114,34 +114,71 @@ class Attention:
         bsz, seqlen, _, _ = xq.shape
 
         # create kv cache
-        if not hasattr(self, 'cache_kv'):
-            self.cache_kv = (
-                Tensor.zeros(
-                    2,
-                    bsz,
-                    self.max_context,
-                    self.n_kv_heads,
-                    self.head_dim,
-                    dtype=x.dtype,
+        # if not hasattr(self, 'cache_kv'):
+        #     self.cache_kv = (
+        #         Tensor.zeros(
+        #             2,
+        #             bsz,
+        #             self.max_context,
+        #             self.n_kv_heads,
+        #             self.head_dim,
+        #             dtype=x.dtype,
+        #         )
+        #         .contiguous()
+        #         .realize()
+        #     )
+        #     if isinstance(x.device, tuple):
+        #         # TODO: instead of specifying how to shard, it can follow how xk and xv are being sharded
+        #         self.cache_kv.shard_(
+        #             (x.device), axis=3 if getenv('SHARD_KVCACHE') else None,
+        #         ).realize()
+        #
+        # # update the cache
+        # check.state(xk.dtype == xv.dtype == self.cache_kv.dtype, f'{xk.dtype=}, {xv.dtype=}, {self.cache_kv.dtype=}')
+        #
+        # self.cache_kv[:, :, start_pos:start_pos + seqlen, :, :].assign(Tensor.stack(xk, xv)).realize()
+        #
+        # keys = self.cache_kv[0, :, 0:start_pos + seqlen, :, :]
+        # values = self.cache_kv[1, :, 0:start_pos + seqlen, :, :]
+
+        if self.max_context:
+            if not hasattr(self, 'cache_kv'):
+                self.cache_kv = (
+                    Tensor.zeros(
+                        2,
+                        bsz,
+                        self.max_context,
+                        self.n_kv_heads,
+                        self.head_dim,
+                        dtype=x.dtype,
+                    )
+                    .contiguous()
+                    .realize()
                 )
-                .contiguous()
-                .realize()
+                if isinstance(x.device, tuple):
+                    # TODO: instead of specifying how to shard, it can follow how xk and xv are being sharded
+                    self.cache_kv.shard_(
+                        (x.device),
+                        axis=3 if getenv('SHARD_KVCACHE') else None,
+                    ).realize()
+
+            # update the cache
+            check.state(
+                xk.dtype == xv.dtype == self.cache_kv.dtype,
+                f'{xk.dtype=}, {xv.dtype=}, {self.cache_kv.dtype=}',
             )
-            if isinstance(x.device, tuple):
-                # TODO: instead of specifying how to shard, it can follow how xk and xv are being sharded
-                self.cache_kv.shard_(
-                    (x.device), axis=3 if getenv('SHARD_KVCACHE') else None,
-                ).realize()
+            self.cache_kv[:, :, start_pos:start_pos + seqlen, :, :].assign(Tensor.stack(xk, xv)).realize()
 
-        # update the cache
-        check.state(xk.dtype == xv.dtype == self.cache_kv.dtype, f'{xk.dtype=}, {xv.dtype=}, {self.cache_kv.dtype=}')
+            keys = self.cache_kv[0, :, 0:start_pos + seqlen, :, :]
+            values = self.cache_kv[1, :, 0:start_pos + seqlen, :, :]
 
-        self.cache_kv[:, :, start_pos:start_pos + seqlen, :, :].assign(Tensor.stack(xk, xv)).realize()
+        else:
+            check.state(start_pos == 0)
+            keys, values = xk, xv
 
-        keys = self.cache_kv[0, :, 0:start_pos + seqlen, :, :]
-        values = self.cache_kv[1, :, 0:start_pos + seqlen, :, :]
+        keys = repeat_kv(keys, self.n_rep)
+        values = repeat_kv(values, self.n_rep)
 
-        keys, values = repeat_kv(keys, self.n_rep), repeat_kv(values, self.n_rep)
         xq, keys, values = (
             xq.transpose(1, 2),
             keys.transpose(1, 2),
