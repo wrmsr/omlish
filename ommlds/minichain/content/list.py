@@ -6,10 +6,10 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..metadata import MetadataContainer
 from .content import Content
 from .content import ExtendedContent
-from .metadata import ContentMetadata
-from .metadata import MetadataContent
+from .metadata import ContentMetadatas
 
 
 ##
@@ -17,20 +17,20 @@ from .metadata import MetadataContent
 
 @dc.dataclass(frozen=True)
 class ListContent(
-    MetadataContent,
+    MetadataContainer[ContentMetadatas],
     ExtendedContent,
     lang.Final,
 ):
     l: ta.Sequence[Content]
 
-    _metadata: ta.Sequence[ContentMetadata] = dc.field(
+    _metadata: ta.Sequence[ContentMetadatas] = dc.field(
         default=(),
         metadata=_tv_field_metadata(
-            ContentMetadata,
+            ContentMetadatas,
             marshal_name='metadata',
         ),
     )
 
     @property
-    def metadata(self) -> tv.TypedValues[ContentMetadata]:
+    def metadata(self) -> tv.TypedValues[ContentMetadatas]:
         return check.isinstance(self._metadata, tv.TypedValues)

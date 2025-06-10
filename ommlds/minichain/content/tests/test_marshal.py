@@ -3,10 +3,10 @@ import uuid
 from omlish import dataclasses as dc
 from omlish import marshal as msh
 
+from ...metadata import Uuid
 from .._marshal import MarshalContent
 from ..content import Content
 from ..list import ListContent
-from ..metadata import ContentUuid
 from ..text import TextContent
 
 
@@ -24,4 +24,4 @@ def test_marshal():
     assert msh.marshal(ListContent(['hi', [TextContent('bye')]]), Content) == {'list': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi', [ContentUuid(u)]), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi', [Uuid(u)]), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}

@@ -196,9 +196,7 @@ cached = CachedMatchFn
 class MatchFnClass(MatchFn[P, T]):
     _cls_match_fn: ta.ClassVar[MultiMatchFn]
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.__match_fn: MatchFn[P, T] | None = None
+    __match_fn: MatchFn[P, T] | None = None
 
     @property
     def _match_fn(self) -> MatchFn[P, T]:

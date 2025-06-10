@@ -96,30 +96,44 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
     return msh.Impls(tv_impls)
 
 
+#
+
+
+def build_typed_values_marshaler(ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
+    tv_m = msh.make_polymorphism_marshaler(
+        msh.Impls(_build_typed_values_impls(rty)),
+        msh.WrapperTypeTagging(),
+        ctx,
+    )
+    return msh.IterableMarshaler(tv_m)
+
+
 class TypedValuesMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        tv_m = msh.make_polymorphism_marshaler(
-            msh.Impls(_build_typed_values_impls(rty)),
-            msh.WrapperTypeTagging(),
-            ctx,
-        )
-        return msh.IterableMarshaler(tv_m)
+        return build_typed_values_marshaler(ctx, rty)
 
     @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
     def _build_concrete(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         raise NotImplementedError
 
 
+#
+
+
+def build_typed_values_unmarshaler(ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
+    tv_u = msh.make_polymorphism_unmarshaler(
+        msh.Impls(_build_typed_values_impls(rty)),
+        msh.WrapperTypeTagging(),
+        ctx,
+    )
+    return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
+
+
 class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        tv_u = msh.make_polymorphism_unmarshaler(
-            msh.Impls(_build_typed_values_impls(rty)),
-            msh.WrapperTypeTagging(),
-            ctx,
-        )
-        return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
+        return build_typed_values_unmarshaler(ctx, rty)
 
     @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
     def _build_concrete(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:

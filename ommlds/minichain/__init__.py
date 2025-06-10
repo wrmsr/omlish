@@ -84,6 +84,7 @@ from .content.list import (  # noqa
 
 from .content.metadata import (  # noqa
     ContentMetadata,
+    ContentMetadatas,
 )
 
 from .content.rendering import (  # noqa
