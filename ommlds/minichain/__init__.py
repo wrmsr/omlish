@@ -1,10 +1,6 @@
 # fmt: off
 
-from .registry import (  # noqa
-    register_type,
-    registry_new,
-    registry_of,
-)
+##
 
 from .chat.formats import (  # noqa
     JSON_RESPONSE_FORMAT,
@@ -71,23 +67,7 @@ from .chat.types import (  # noqa
     ChatResponseOutput,
 )
 
-from .completion import (  # noqa
-    CompletionRequestOption,
-    CompletionRequestOptions,
-    CompletionRequest,
-
-    CompletionResponseOutput,
-    CompletionResponseOutputs,
-    CompletionResponse,
-
-    CompletionService,
-)
-
-from .configs import (  # noqa
-    Config,
-
-    consume_configs,
-)
+##
 
 from .content.content import (  # noqa
     Content,
@@ -104,10 +84,6 @@ from .content.list import (  # noqa
 
 from .content.metadata import (  # noqa
     ContentMetadata,
-
-    MetadataContent,
-
-    ContentUuid,
 )
 
 from .content.rendering import (  # noqa
@@ -125,10 +101,7 @@ from .content.transforms import (  # noqa
     transform_content_strings,
 )
 
-from .envs import (  # noqa
-    Env,
-    EnvKey,
-)
+##
 
 from .llms.tokens import (  # noqa
     Token,
@@ -151,6 +124,8 @@ from .llms.services import (  # noqa
     TokenUsageOutput,
 )
 
+##
+
 from .services import (  # noqa
     Request,
     RequestOption,
@@ -160,21 +135,7 @@ from .services import (  # noqa
     ServiceFacade,
 )
 
-from .standard import (  # noqa
-    ModelSpecifier,
-    ModelName,
-    ModelPath,
-
-    ApiKey,
-
-    DefaultRequestOptions,
-)
-
-from .streaming import (  # noqa
-    ResponseGenerator,
-
-    StreamResponse,
-)
+##
 
 from .tools.jsonschema import (  # noqa
     build_tool_spec_json_schema,
@@ -204,6 +165,8 @@ from .tools.types import (  # noqa
 
     ToolExecRequest,
 )
+
+##
 
 from .vectors.embeddings import (  # noqa
     EmbeddingRequest,
@@ -249,6 +212,71 @@ from .vectors.stores import (  # noqa
 from .vectors.types import (  # noqa
     Vector,
     Vectorable,
+)
+
+##
+
+from .completion import (  # noqa
+    CompletionRequestOption,
+    CompletionRequestOptions,
+    CompletionRequest,
+
+    CompletionResponseOutput,
+    CompletionResponseOutputs,
+    CompletionResponse,
+
+    CompletionService,
+)
+
+from .configs import (  # noqa
+    Config,
+
+    consume_configs,
+)
+
+from .envs import (  # noqa
+    Env,
+    EnvKey,
+)
+
+from .metadata import (  # noqa
+    Metadata,
+
+    MetadataContainer,
+
+    CommonMetadata,
+
+    Uuid,
+)
+
+from .registry import (  # noqa
+    register_type,
+    registry_new,
+    registry_of,
+)
+
+from .resources import (  # noqa
+    ResourcesRef,
+    ResourcesRefNotRegisteredError,
+    Resources,
+
+    ResourceManaged,
+)
+
+from .standard import (  # noqa
+    ModelSpecifier,
+    ModelName,
+    ModelPath,
+
+    ApiKey,
+
+    DefaultRequestOptions,
+)
+
+from .streaming import (  # noqa
+    ResponseGenerator,
+
+    StreamResponse,
 )
 
 
