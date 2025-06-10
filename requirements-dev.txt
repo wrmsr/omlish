@@ -110,11 +110,11 @@ numpy>=1.20
 prompt-toolkit==3.0.51
 
 snowflake-connector-python[secure-local-storage]==3.15.0; python_version < "3.13"
-snowflake-sqlalchemy==1.7.3; python_version < "3.13"
+snowflake-sqlalchemy==1.7.4; python_version < "3.13"
 
 trino==0.334.0
 
-huggingface-hub==0.32.4
+huggingface-hub==0.32.5
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 

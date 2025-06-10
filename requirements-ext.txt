@@ -8,7 +8,7 @@
 ##
 # infra
 
-google-api-python-client==2.171.0
+google-api-python-client==2.172.0
 google-cloud-compute==1.31.0
 
 
@@ -34,7 +34,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-duckduckgo-search==8.0.2  # @omlish-venv !13t  # segfault lol
+duckduckgo-search==8.0.3  # @omlish-venv !13t  # segfault lol
 
 
 ##
