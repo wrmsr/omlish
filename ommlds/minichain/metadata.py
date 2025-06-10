@@ -29,6 +29,10 @@ class MetadataContainer(
     def metadata(self) -> tv.TypedValues[MetadataT]:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def with_metadata(self, *mds: MetadataT, override: bool = False) -> ta.Self:
+        raise NotImplementedError
+
 
 ##
 

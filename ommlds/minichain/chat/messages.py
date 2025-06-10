@@ -1,21 +1,48 @@
 import operator
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 from omlish import marshal as msh
+from omlish import typedvalues as tv
 
+from .._typedvalues import _tv_field_metadata
 from ..content.content import Content
 from ..content.transforms import ContentTransform
+from ..metadata import MetadataContainer
 from ..tools.types import ToolExecRequest
+from .metadata import MessageMetadatas
 
 
 ##
 
 
-class Message(lang.Abstract, lang.Sealed):
-    pass
+@dc.dataclass(frozen=True)
+class Message(  # noqa
+    MetadataContainer[MessageMetadatas],
+    lang.Abstract,
+    lang.Sealed,
+):
+    _metadata: ta.Sequence[MessageMetadatas] = dc.field(
+        default=(),
+        kw_only=True,
+        metadata=_tv_field_metadata(
+            MessageMetadatas,
+            marshal_name='metadata',
+        ),
+    )
+
+    @property
+    def metadata(self) -> tv.TypedValues[MessageMetadatas]:
+        return check.isinstance(self._metadata, tv.TypedValues)
+
+    def with_metadata(self, *mds: MessageMetadatas, override: bool = False) -> ta.Self:
+        return dc.replace(self, _metadata=tv.TypedValues(*self._metadata, *mds, override=override))
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -23,18 +50,29 @@ class SystemMessage(Message, lang.Final):
     s: str
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['name'], omit_if=operator.not_)
 class UserMessage(Message, lang.Final):
     c: Content
+
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+
+
+#
 
 
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
 class AiMessage(Message, lang.Final):
     s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+
     tool_exec_requests: ta.Sequence['ToolExecRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
+
+
+#
 
 
 @dc.dataclass(frozen=True)

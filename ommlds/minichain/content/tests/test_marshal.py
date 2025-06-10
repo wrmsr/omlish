@@ -24,4 +24,4 @@ def test_marshal():
     assert msh.marshal(ListContent(['hi', [TextContent('bye')]]), Content) == {'list': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi', [Uuid(u)]), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}
+    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
