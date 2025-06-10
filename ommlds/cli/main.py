@@ -70,7 +70,7 @@ def _main() -> None:
     content: mc.Content
 
     if args.image:
-        content = mc.Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
+        content = mc.ImageContent(pimg.open(check.non_empty_str(check.single(args.prompt))))
 
     elif args.editor:
         check.arg(not args.prompt)

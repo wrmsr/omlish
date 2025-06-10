@@ -5,7 +5,9 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
-from .images import Image
+from .images import ImageContent
+from .list import ListContent
+from .text import TextContent
 
 
 T = ta.TypeVar('T')
@@ -19,6 +21,8 @@ class ContentTransform(lang.Abstract):
     def apply(self, o: T) -> T:
         raise TypeError(o)
 
+    #
+
     @apply.register  # noqa
     def apply_str(self, s: str) -> str:
         return s
@@ -27,9 +31,19 @@ class ContentTransform(lang.Abstract):
     def apply_sequence(self, l: collections.abc.Sequence[T]) -> collections.abc.Sequence[T]:
         return [self.apply(e) for e in l]
 
+    #
+
     @apply.register
-    def apply_image(self, c: Image) -> Image:
+    def apply_image(self, c: ImageContent) -> ImageContent:
         return c
+
+    @apply.register
+    def apply_list(self, c: ListContent) -> ListContent:
+        return dc.replace(c, l=self.apply(c.l))
+
+    @apply.register
+    def apply_text(self, c: TextContent) -> ListContent:
+        return dc.replace(c, s=self.apply(c.s))
 
 
 ##

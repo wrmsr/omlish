@@ -95,11 +95,27 @@ from .content.content import (  # noqa
 )
 
 from .content.images import (  # noqa
-    Image,
+    ImageContent,
+)
+
+from .content.list import (  # noqa
+    ListContent,
+)
+
+from .content.metadata import (  # noqa
+    ContentMetadata,
+
+    MetadataContent,
+
+    ContentUuid,
 )
 
 from .content.rendering import (  # noqa
     StringRenderer,
+)
+
+from .content.text import (  # noqa
+    TextContent,
 )
 
 from .content.transforms import (  # noqa
@@ -242,6 +258,6 @@ from .vectors.types import (  # noqa
 from omlish.lang.imports import _register_conditional_import  # noqa
 
 _register_conditional_import('omlish.marshal', '.chat.marshal', __package__)
-_register_conditional_import('omlish.marshal', '.content.marshal', __package__)
+_register_conditional_import('omlish.marshal', '.content._marshal', __package__)
 _register_conditional_import('omlish.marshal', '.llms.marshal', __package__)
 _register_conditional_import('omlish.marshal', '.tools.marshal', __package__)

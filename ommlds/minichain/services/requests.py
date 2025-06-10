@@ -5,7 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ._typedvalues import _tv_field_metadata
+from .._typedvalues import _tv_field_metadata
 from ._typedvalues import _TypedValues
 
 
@@ -37,7 +37,10 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
 
     _options: ta.Sequence[RequestOptionT_co] = dc.field(
         default=(),
-        metadata=_tv_field_metadata(RequestOption),
+        metadata=_tv_field_metadata(
+            RequestOption,
+            marshal_name='options',
+        ),
     )
 
     @property

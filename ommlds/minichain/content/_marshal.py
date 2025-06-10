@@ -10,7 +10,9 @@ from omlish.funcs import match as mfs
 from .content import Content
 from .content import ExtendedContent
 from .content import SingleContent
-from .images import Image
+from .images import ImageContent  # noqa
+from .list import ListContent  # noqa
+from .text import TextContent  # noqa
 
 
 ##
@@ -75,12 +77,12 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
 ##
 
 
-class _ImageMarshaler(msh.Marshaler):
+class _ImageContentMarshaler(msh.Marshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
         raise NotImplementedError
 
 
-class _ImageUnmarshaler(msh.Unmarshaler):
+class _ImageContentUnmarshaler(msh.Unmarshaler):
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         raise NotImplementedError
 
@@ -90,15 +92,24 @@ class _ImageUnmarshaler(msh.Unmarshaler):
 
 @lang.static_init
 def _install_standard_marshalling() -> None:
-    extended_content_poly = msh.polymorphism_from_subclasses(ExtendedContent, naming=msh.Naming.SNAKE)
+    extended_content_poly = msh.Polymorphism(
+        ExtendedContent,
+        [
+            msh.Impl(ImageContent, 'image'),
+            msh.Impl(ListContent, 'list'),
+            msh.Impl(TextContent, 'text'),
+        ],
+    )
+
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(extended_content_poly),
-        msh.TypeMapMarshalerFactory({Image: _ImageMarshaler()}),
+        msh.TypeMapMarshalerFactory({ImageContent: _ImageContentMarshaler()}),
         _ContentMarshalerFactory(),
     )
+
     msh.install_standard_factories(
         msh.PolymorphismUnmarshalerFactory(extended_content_poly),
-        msh.TypeMapUnmarshalerFactory({Image: _ImageUnmarshaler()}),
+        msh.TypeMapUnmarshalerFactory({ImageContent: _ImageContentUnmarshaler()}),
         _ContentUnmarshalerFactory(),
     )
 

@@ -29,7 +29,7 @@ def global_marshaler_factory() -> MarshalerFactory:
     return new_standard_marshaler_factory()
 
 
-def marshal(obj: ta.Any, ty: type | None = None, **kwargs: ta.Any) -> Value:
+def marshal(obj: ta.Any, ty: ta.Any | None = None, **kwargs: ta.Any) -> Value:
     mc = MarshalContext(GLOBAL_REGISTRY, factory=global_marshaler_factory(), **kwargs)
     return mc.make(ty if ty is not None else type(obj)).marshal(mc, obj)
 

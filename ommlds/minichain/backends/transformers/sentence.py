@@ -4,7 +4,7 @@ import sentence_transformers as stfm
 
 from ...configs import Config
 from ...configs import consume_configs
-from ...content.images import Image
+from ...content.images import ImageContent
 from ...standard import ModelPath
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
@@ -40,7 +40,7 @@ class SentenceTransformersEmbeddingService(EmbeddingService):
         v = request.v
         if isinstance(v, str):
             obj = v
-        elif isinstance(v, Image):
+        elif isinstance(v, ImageContent):
             obj = v.i
         else:
             raise TypeError(v)

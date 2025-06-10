@@ -1,8 +1,3 @@
-"""
-TODO:
-  - lazy load
-  - serialize fs path not data
-"""
 import typing as ta
 
 from omlish import check
@@ -16,22 +11,16 @@ from .metadata import ContentMetadata
 from .metadata import MetadataContent
 
 
-if ta.TYPE_CHECKING:
-    import PIL.Image as pimg  # noqa
-else:
-    pimg = lang.proxy_import('PIL.Image')
-
-
 ##
 
 
 @dc.dataclass(frozen=True)
-class ImageContent(
+class TextContent(
     MetadataContent,
     ExtendedContent,
     lang.Final,
 ):
-    i: 'pimg.Image' = dc.field()
+    s: str
 
     _metadata: ta.Sequence[ContentMetadata] = dc.field(
         default=(),

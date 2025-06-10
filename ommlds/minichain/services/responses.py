@@ -5,7 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ._typedvalues import _tv_field_metadata
+from .._typedvalues import _tv_field_metadata
 from ._typedvalues import _TypedValues
 
 
@@ -37,7 +37,10 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
 
     _outputs: ta.Sequence[ResponseOutputT_contra] = dc.field(
         default=(),
-        metadata=_tv_field_metadata(ResponseOutput),
+        metadata=_tv_field_metadata(
+            ResponseOutput,
+            marshal_name='outputs',
+        ),
     )
 
     @property
