@@ -286,7 +286,7 @@ from .streaming import (  # noqa
 
 from omlish.lang.imports import _register_conditional_import  # noqa
 
-_register_conditional_import('omlish.marshal', '.chat.marshal', __package__)
+_register_conditional_import('omlish.marshal', '.chat._marshal', __package__)
 _register_conditional_import('omlish.marshal', '.content._marshal', __package__)
-_register_conditional_import('omlish.marshal', '.llms.marshal', __package__)
-_register_conditional_import('omlish.marshal', '.tools.marshal', __package__)
+_register_conditional_import('omlish.marshal', '.llms._marshal', __package__)
+_register_conditional_import('omlish.marshal', '.tools._marshal', __package__)

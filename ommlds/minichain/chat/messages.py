@@ -1,8 +1,10 @@
+import operator
 import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
+from omlish import marshal as msh
 
 from ..content.content import Content
 from ..content.transforms import ContentTransform
@@ -22,12 +24,14 @@ class SystemMessage(Message, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['name'], omit_if=operator.not_)
 class UserMessage(Message, lang.Final):
     c: Content
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
 class AiMessage(Message, lang.Final):
     s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
     tool_exec_requests: ta.Sequence['ToolExecRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
