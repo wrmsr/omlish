@@ -136,12 +136,10 @@ class Attention:
         # update the cache
         check.state(xk.dtype == xv.dtype == self.cache_kv.dtype, f'{xk.dtype=}, {xv.dtype=}, {self.cache_kv.dtype=}')
 
-        self.cache_kv.shrink(
-            (None, None, (start_pos, start_pos + seqlen), None, None),
-        ).assign(Tensor.stack(xk, xv)).realize()
+        self.cache_kv[:, :, start_pos:start_pos + seqlen, :, :].assign(Tensor.stack(xk, xv)).realize()
 
-        keys = self.cache_kv[0].shrink((None, (0, start_pos + seqlen), None, None))
-        values = self.cache_kv[1].shrink((None, (0, start_pos + seqlen), None, None))
+        keys = self.cache_kv[0, :, 0:start_pos + seqlen, :, :]
+        values = self.cache_kv[1, :, 0:start_pos + seqlen, :, :]
 
         keys, values = repeat_kv(keys, self.n_rep), repeat_kv(values, self.n_rep)
         xq, keys, values = (

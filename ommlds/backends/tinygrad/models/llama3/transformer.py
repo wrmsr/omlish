@@ -130,10 +130,8 @@ class Transformer:
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
 
-        self.freqs_cis = self.freqs_cis.cast(h.dtype).realize()
-        freqs_cis = self.freqs_cis.shrink(
-            (None, (start_pos, start_pos + seqlen), None, None, None),
-        )
+        self.freqs_cis = self.freqs_cis.cast(h.dtype).kernelize()
+        freqs_cis = self.freqs_cis[:, start_pos:start_pos + seqlen, :, :, :]
 
         mask = (
             Tensor.full(
@@ -143,7 +141,7 @@ class Transformer:
                 device=h.device,
             )
             .triu(start_pos + 1)
-            .realize()
+            .kernelize()
         ) if seqlen > 1 else None
 
         for layer in self.layers:
@@ -152,7 +150,7 @@ class Transformer:
 
         return sample(
             logits.flatten(), temperature, top_k, top_p, alpha_f, alpha_p,
-        ).realize()
+        ).kernelize()
 
     def __call__(
             self,

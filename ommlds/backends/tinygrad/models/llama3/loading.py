@@ -27,7 +27,7 @@ from .transformer import Transformer
 # TODO: model shouldn't be an input here, and n_kv_heads should support None
 def convert_from_huggingface(
         weights: dict[str, Tensor],
-        model: Transformer,
+        n_layers: int,
         n_heads: int,
         n_kv_heads: int,
         permute_layers: bool = True,
@@ -50,35 +50,35 @@ def convert_from_huggingface(
         'model.embed_tokens.weight': 'tok_embeddings.weight',
         **{
             f'model.layers.{l}.input_layernorm.weight': f'layers.{l}.attention_norm.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.self_attn.{x}_norm.weight': f'layers.{l}.attention.{x}_norm.weight'
             for x in ['q', 'k']
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.self_attn.{x}_proj.weight': f'layers.{l}.attention.w{x}.weight'
             for x in ['q', 'k', 'v', 'o']
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.self_attn.{x}_proj.bias': f'layers.{l}.attention.w{x}.bias'
             for x in ['q', 'k', 'v', 'o']
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.post_attention_layernorm.weight': f'layers.{l}.ffn_norm.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.mlp.{x}_proj.weight': f'layers.{l}.feed_forward.w{y}.weight'
             for x, y in {'gate': '1', 'down': '2', 'up': '3'}.items()
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'model.layers.{l}.mlp.gate.weight': f'layers.{l}.feed_forward.gate.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         'model.norm.weight': 'norm.weight',
         'lm_head.weight': 'output.weight',
@@ -107,31 +107,31 @@ def convert_from_huggingface(
 
 def convert_from_gguf(
         weights: dict[str, Tensor],
-        model: Transformer,
+        n_layers: int,
 ):
     keymap = {
         'token_embd.weight': 'tok_embeddings.weight',
         **{
             f'blk.{l}.attn_norm.weight': f'layers.{l}.attention_norm.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'blk.{l}.attn_{x}.weight': f'layers.{l}.attention.w{x}.weight'
             for x in ['q', 'k', 'v']
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'blk.{l}.attn_output.weight': f'layers.{l}.attention.wo.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'blk.{l}.ffn_norm.weight': f'layers.{l}.ffn_norm.weight'
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         **{
             f'blk.{l}.ffn_{x}.weight': f'layers.{l}.feed_forward.w{y}.weight'
             for x, y in {'gate': '1', 'down': '2', 'up': '3'}.items()
-            for l in range(len(model.layers))
+            for l in range(n_layers)
         },
         'output_norm.weight': 'norm.weight',
         'rope_freqs.weight': 'rope_freqs.weight',
@@ -269,8 +269,10 @@ def build_transformer(
     else:
         linear, embedding, quantize_embeds = nn.Linear, nn.Embedding, False
 
+    model_params = MODEL_PARAMS[model_size]
+
     model = Transformer(
-        **MODEL_PARAMS[model_size]['args'],
+        **model_params['args'],
         linear=linear,
         embedding=embedding,
         max_context=max_context,
@@ -292,7 +294,7 @@ def build_transformer(
             weights = concat_weights(
                 [
                     load(str(model_path / f'consolidated.{i:02d}.pth'))
-                    for i in range(MODEL_PARAMS[model_size]['files'])
+                    for i in range(model_params['files'])
                 ],
                 device[0] if isinstance(device, tuple) else device,
             )
@@ -303,13 +305,16 @@ def build_transformer(
     if 'model.embed_tokens.weight' in weights:
         weights = convert_from_huggingface(
             weights,
-            model,
-            MODEL_PARAMS[model_size]['args']['n_heads'],
-            MODEL_PARAMS[model_size]['args']['n_kv_heads'],
+            model_params['args']['n_layers'],
+            model_params['args']['n_heads'],
+            model_params['args']['n_kv_heads'],
         )
 
     elif 'token_embd.weight' in weights:
-        weights = convert_from_gguf(weights, model)
+        weights = convert_from_gguf(
+            weights,
+            model_params['args']['n_layers'],
+        )
 
     weights = fix_bf16(weights)
 
