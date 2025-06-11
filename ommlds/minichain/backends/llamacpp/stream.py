@@ -12,11 +12,11 @@ from ...chat.choices.services import ChatChoicesResponseOutputs
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
 from ...chat.messages import AiMessage
-from ...chat.streaming import ChatChoicesStreamRequest
-from ...chat.streaming import ChatChoicesStreamResponse
-from ...chat.streaming import ChatChoicesStreamService
+from ...chat.stream.services import ChatChoicesStreamRequest
+from ...chat.stream.services import ChatChoicesStreamResponse
+from ...chat.stream.services import ChatChoicesStreamService
 from ...resources import Resources
-from ...streaming import ResponseGenerator
+from ...stream import ResponseGenerator
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
 from .format import get_msg_content

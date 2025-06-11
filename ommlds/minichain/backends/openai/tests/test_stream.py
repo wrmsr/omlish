@@ -1,12 +1,12 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
-from ....chat.streaming import ChatChoicesStreamRequest
+from ....chat.stream.services import ChatChoicesStreamRequest
 from ....standard import ApiKey
-from ..streaming import OpenaiChatChoicesStreamService
+from ..stream import OpenaiChatChoicesStreamService
 
 
-def test_openai_chat_streaming_model(harness):
+def test_openai_chat_stream_model(harness):
     llm = OpenaiChatChoicesStreamService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     )

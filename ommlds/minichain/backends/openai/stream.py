@@ -9,16 +9,16 @@ from omlish.io.buffers import DelimitingBuffer
 from ...chat.choices.services import ChatChoicesResponseOutputs
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
-from ...chat.streaming import ChatChoicesStreamRequest
-from ...chat.streaming import ChatChoicesStreamRequestOption
-from ...chat.streaming import ChatChoicesStreamResponse
-from ...chat.streaming import ChatChoicesStreamService
+from ...chat.stream.services import ChatChoicesStreamRequest
+from ...chat.stream.services import ChatChoicesStreamRequestOption
+from ...chat.stream.services import ChatChoicesStreamResponse
+from ...chat.stream.services import ChatChoicesStreamService
 from ...configs import Config
 from ...configs import consume_configs
 from ...resources import Resources
 from ...standard import ApiKey
 from ...standard import ModelName
-from ...streaming import ResponseGenerator
+from ...stream import ResponseGenerator
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 

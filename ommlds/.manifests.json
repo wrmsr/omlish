@@ -92,13 +92,13 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp.streaming",
+    "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
-    "file": "ommlds/minichain/backends/llamacpp/streaming.py",
+    "file": "ommlds/minichain/backends/llamacpp/stream.py",
     "line": 28,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.llamacpp.streaming",
+        "mod_name": "ommlds.minichain.backends.llamacpp.stream",
         "attr_name": "LlamacppChatChoicesStreamService",
         "name": "llamacpp",
         "aliases": null,
@@ -182,13 +182,13 @@
     }
   },
   {
-    "module": ".minichain.backends.openai.streaming",
+    "module": ".minichain.backends.openai.stream",
     "attr": null,
-    "file": "ommlds/minichain/backends/openai/streaming.py",
+    "file": "ommlds/minichain/backends/openai/stream.py",
     "line": 29,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.openai.streaming",
+        "mod_name": "ommlds.minichain.backends.openai.stream",
         "attr_name": "OpenaiChatChoicesStreamService",
         "name": "openai",
         "aliases": null,

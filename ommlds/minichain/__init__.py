@@ -293,7 +293,7 @@ from .standard import (  # noqa
     DefaultRequestOptions,
 )
 
-from .streaming import (  # noqa
+from .stream import (  # noqa
     ResponseGenerator,
 
     StreamResponse,
