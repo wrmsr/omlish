@@ -40,6 +40,8 @@ from .chat.services import (  # noqa
     ChatResponse,
 
     ChatService,
+
+    AbstractChatService,
 )
 
 from .chat.streaming import (  # noqa

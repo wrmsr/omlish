@@ -1,30 +1,66 @@
+import abc
 import typing as ta
 
 from omlish import lang
 
 from ..registry import register_type
+from ..services import Request
+from ..services import RequestOption
 from ..services import ResponseOutput
 from ..services import Service
 from ..streaming import StreamResponse
 from .choices import AiChoices
-from .services import ChatRequest
-from .services import ChatResponseOutputs
+from .choices import ChatChoicesRequestOptions
+from .choices import ChatChoicesResponseOutputs
+from .messages import Chat
 
 
 ##
 
 
-class ChatStreamResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+class ChatChoicesStreamRequestOption(RequestOption, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatStreamResponse: ta.TypeAlias = StreamResponse[AiChoices, ChatResponseOutputs, ChatStreamResponseOutput]
+ChatChoicesStreamRequestOptions = ChatChoicesStreamRequestOption | ChatChoicesRequestOptions
+
+
+ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamRequestOptions]
+
+
+##
+
+
+class ChatChoicesStreamResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+    pass
+
+
+ChatChoicesStreamResponseOutputs = ChatChoicesStreamResponseOutput
+
+
+ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
+    AiChoices,
+    ChatChoicesResponseOutputs,
+    ChatChoicesStreamResponseOutput,
+]
 
 
 ##
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
-ChatStreamService: ta.TypeAlias = Service[ChatRequest, ChatStreamResponse]
+ChatChoicesStreamService: ta.TypeAlias = Service[ChatChoicesStreamRequest, ChatChoicesStreamResponse]
 
-register_type(ChatStreamService, module=__name__)
+register_type(ChatChoicesStreamService, module=__name__)
+
+
+##
+
+
+class AbstractChatChoicesStreamService(ChatChoicesStreamService, lang.Abstract):  # noqa
+    @abc.abstractmethod
+    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+        raise NotImplementedError
+
+
+lang.static_check_issubclass[ChatChoicesStreamService](AbstractChatChoicesStreamService)
