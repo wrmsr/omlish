@@ -1,7 +1,7 @@
 import pytest
 
 from ....chat.messages import UserMessage
-from ....chat.simple.services import ChatRequest
+from ....chat.services import ChatRequest
 from ..streaming import LlamacppChatChoicesStreamService
 
 

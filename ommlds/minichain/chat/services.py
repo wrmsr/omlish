@@ -3,16 +3,16 @@ import typing as ta
 
 from omlish import lang
 
-from ...llms.services import LlmRequestOption
-from ...llms.services import LlmResponseOutput
-from ...registry import register_type
-from ...services import Request
-from ...services import RequestOption
-from ...services import Response
-from ...services import ResponseOutput
-from ...services import Service
-from ..messages import AiMessage
-from ..messages import Chat
+from ..llms.services import LlmRequestOption
+from ..llms.services import LlmResponseOutput
+from ..registry import register_type
+from ..services import Request
+from ..services import RequestOption
+from ..services import Response
+from ..services import ResponseOutput
+from ..services import Service
+from .messages import AiMessage
+from .messages import Chat
 
 
 ##

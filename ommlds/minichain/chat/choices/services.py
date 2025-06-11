@@ -10,8 +10,8 @@ from ...services import Response
 from ...services import ResponseOutput
 from ...services import Service
 from ..messages import Chat
-from ..simple.services import ChatRequestOptions
-from ..simple.services import ChatResponseOutputs
+from ..services import ChatRequestOptions
+from ..services import ChatResponseOutputs
 from .types import AiChoices
 
 

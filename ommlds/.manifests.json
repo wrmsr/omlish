@@ -263,13 +263,13 @@
     }
   },
   {
-    "module": ".minichain.chat.choices",
+    "module": ".minichain.chat.choices.services",
     "attr": null,
-    "file": "ommlds/minichain/chat/choices.py",
-    "line": 59,
+    "file": "ommlds/minichain/chat/choices/services.py",
+    "line": 47,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
-        "mod_name": "ommlds.minichain.chat.choices",
+        "mod_name": "ommlds.minichain.chat.choices.services",
         "attr_name": "ChatChoicesService"
       }
     }
@@ -287,13 +287,13 @@
     }
   },
   {
-    "module": ".minichain.chat.streaming",
+    "module": ".minichain.chat.stream.services",
     "attr": null,
-    "file": "ommlds/minichain/chat/streaming.py",
+    "file": "ommlds/minichain/chat/stream/services.py",
     "line": 51,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
-        "mod_name": "ommlds.minichain.chat.streaming",
+        "mod_name": "ommlds.minichain.chat.stream.services",
         "attr_name": "ChatChoicesStreamService"
       }
     }

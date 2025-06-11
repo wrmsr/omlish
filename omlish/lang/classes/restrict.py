@@ -64,7 +64,7 @@ class PackageSealed:
 
     __sealed_package__: ta.ClassVar[ta.Sequence[str] | None]
 
-    def __init_subclass__(cls, *, sealed_package: str | None = None, **kwargs: ta.Any) -> None:
+    def __init_subclass__(cls, *, sealed_package: ta.Sequence[str] | str | None = None, **kwargs: ta.Any) -> None:
         if PackageSealed in cls.__bases__:
             if sealed_package is not None:
                 if isinstance(sealed_package, str):
@@ -72,9 +72,8 @@ class PackageSealed:
                 cls.__sealed_package__ = sealed_package
             else:
                 cls.__sealed_package__ = cls.__module__.split('.')[:-1]
-        else:
-            if sealed_package is not None:
-                raise TypeError
+        elif sealed_package is not None:
+            raise TypeError
 
         for base in cls.__bases__:
             if (
