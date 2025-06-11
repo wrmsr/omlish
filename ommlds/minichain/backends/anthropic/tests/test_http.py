@@ -9,7 +9,7 @@ from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
 from ....services import Request
-from ..chat import AnthropicChatService
+from ..chat import AnthropicChatChoicesService
 
 
 @pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])
@@ -39,6 +39,6 @@ def test_anthropic_http(harness, cli_cls):
 
 def test_anthropic_chat(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
-    svc = AnthropicChatService(api_key=key.reveal())
+    svc = AnthropicChatChoicesService(api_key=key.reveal())
     resp = svc.invoke(Request([UserMessage('hi')]))
     print(resp.v)

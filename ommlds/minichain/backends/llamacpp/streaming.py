@@ -10,14 +10,14 @@ from omlish import lang
 from ....backends import llamacpp as lcu
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
+from ...chat.choices import ChatChoicesResponseOutputs
 from ...chat.messages import AiMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponseOutputs
-from ...chat.streaming import ChatStreamResponse
-from ...chat.streaming import ChatStreamService
+from ...chat.streaming import ChatChoicesStreamRequest
+from ...chat.streaming import ChatChoicesStreamResponse
+from ...chat.streaming import ChatChoicesStreamService
 from ...resources import Resources
 from ...streaming import ResponseGenerator
-from .chat import LlamacppChatService
+from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
 from .format import get_msg_content
 
@@ -25,8 +25,8 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatStreamService')
-class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesStreamService')
+class LlamacppChatChoicesStreamService(ChatChoicesStreamService, lang.ExitStacked):
     def __init__(self) -> None:
         super().__init__()
 
@@ -35,11 +35,11 @@ class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'lcc.Llama':
         return self._enter_context(contextlib.closing(lcc.Llama(
-            model_path=LlamacppChatService.DEFAULT_MODEL_PATH,
+            model_path=LlamacppChatChoicesService.DEFAULT_MODEL_PATH,
             verbose=False,
         )))
 
-    def invoke(self, request: ChatRequest) -> ChatStreamResponse:
+    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         lcu.install_logging_hook()
 
         with Resources.new() as rs:
@@ -62,7 +62,7 @@ class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatResponseOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesResponseOutputs] | None]:
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
                     l: list[AiChoice] = []
@@ -77,4 +77,4 @@ class LlamacppChatStreamService(ChatStreamService, lang.ExitStacked):
                     yield l
                 return None
 
-            return ChatStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))
+            return ChatChoicesStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))

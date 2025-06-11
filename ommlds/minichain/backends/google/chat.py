@@ -8,13 +8,13 @@ from omlish.formats import json
 from omlish.http import all as http
 
 from ...chat.choices import AiChoice
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
 from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import ModelName
@@ -23,8 +23,8 @@ from ...standard import ModelName
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='google', type='ChatService')
-class GoogleChatService(ChatService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
+class GoogleChatChoicesService(ChatChoicesService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gemini-2.0-flash'
     )
@@ -56,8 +56,8 @@ class GoogleChatService(ChatService):
 
     def invoke(
             self,
-            request: ChatRequest,
-    ) -> ChatResponse:
+            request: ChatChoicesRequest,
+    ) -> ChatChoicesResponse:
         key = check.not_none(self._api_key).reveal()
 
         req_dct = {
@@ -83,7 +83,7 @@ class GoogleChatService(ChatService):
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
-        return ChatResponse([
+        return ChatChoicesResponse([
             AiChoice(AiMessage(c['content']['parts'][0]['text']))
             for c in resp_dct['candidates']
         ])

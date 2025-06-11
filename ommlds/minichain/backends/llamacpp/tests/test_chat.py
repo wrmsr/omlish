@@ -9,13 +9,13 @@ from ....standard import ModelPath
 from ....tools.types import ToolDtype
 from ....tools.types import ToolParam
 from ....tools.types import ToolSpec
-from ..chat import LlamacppChatService
+from ..chat import LlamacppChatChoicesService
 
 
 @pytest.mark.not_docker_guest
 @pytest.mark.high_mem
 def test_llamacpp_chat_model():
-    llm = LlamacppChatService()
+    llm = LlamacppChatChoicesService()
     resp = llm.invoke(Request(
         [UserMessage('Is water dry?')],
         # Temperature(.1),
@@ -33,7 +33,7 @@ def test_llamacpp_chat_model_tools():
         'bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q4_K_M.gguf',
     )
 
-    llm = LlamacppChatService(
+    llm = LlamacppChatChoicesService(
         ModelPath(model_path),
     )
 

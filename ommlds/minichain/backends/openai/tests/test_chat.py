@@ -4,12 +4,12 @@ from omlish import check
 from omlish import marshal as msh
 from omlish.secrets.tests.harness import HarnessSecrets
 
+from ....chat.choices import ChatChoicesRequest
+from ....chat.choices import ChatChoicesService
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
-from ....chat.choices import ChatChoicesRequest
-from ....chat.choices import ChatChoicesService
 from ....chat.tools import Tool
 from ....llms.services import MaxTokens
 from ....llms.services import Temperature
@@ -93,7 +93,6 @@ def test_openai_tools(harness):
 
     print(resp)
     assert resp.v
-
 
 
 def test_openai_chat_promote(harness):

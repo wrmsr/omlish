@@ -1,11 +1,11 @@
 import pytest
 
+from ....chat.choices import ChatChoicesRequest
 from ....chat.messages import UserMessage
-from ....chat.services import ChatRequest
 from ....completion import CompletionRequest
 from ....services import Request
 from ....standard import ModelPath
-from ..transformers import TransformersChatService
+from ..transformers import TransformersChatChoicesService
 from ..transformers import TransformersCompletionService
 from ..transformers import TransformersPipelineKwargs
 
@@ -32,14 +32,14 @@ def test_transformers_completion():
 @pytest.mark.not_docker_guest
 @pytest.mark.high_mem
 def test_transformers_chat():
-    with TransformersChatService(
+    with TransformersChatChoicesService(
         ModelPath('meta-llama/Llama-3.2-1B-Instruct'),
         TransformersPipelineKwargs(dict(
             max_new_tokens=20,
             # device=None,
         )),
     ) as llm:
-        resp = llm.invoke(ChatRequest([UserMessage('Is water dry?')]))
+        resp = llm.invoke(ChatChoicesRequest([UserMessage('Is water dry?')]))
         print(resp)
         assert resp
 
@@ -47,7 +47,7 @@ def test_transformers_chat():
 # @pytest.mark.not_docker_guest
 # @pytest.mark.high_mem
 # def test_transformers_chat_phi4_tools():
-#     llm = TransformersChatService(
+#     llm = TransformersChatChoicesService(
 #         ModelPath('microsoft/Phi-4-mini-instruct'),
 #         TransformersPipelineKwargs(dict(
 #             max_new_tokens=20,
@@ -55,6 +55,6 @@ def test_transformers_chat():
 #         )),
 #     )
 #
-#     resp = llm.invoke(ChatRequest.new([UserMessage('Is water dry?')]))
+#     resp = llm.invoke(ChatChoicesRequest.new([UserMessage('Is water dry?')]))
 #     print(resp)
 #     assert resp

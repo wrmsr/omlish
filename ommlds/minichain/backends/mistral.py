@@ -9,20 +9,20 @@ from omlish.formats import json
 from omlish.http import all as http
 
 from ..chat.choices import AiChoice
+from ..chat.choices import ChatChoicesRequest
+from ..chat.choices import ChatChoicesResponse
+from ..chat.choices import ChatChoicesService
 from ..chat.messages import AiMessage
 from ..chat.messages import Message
 from ..chat.messages import SystemMessage
 from ..chat.messages import UserMessage
-from ..chat.services import ChatRequest
-from ..chat.services import ChatResponse
-from ..chat.services import ChatService
 
 
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mistral', type='ChatService')
-class MistralChatService(ChatService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mistral', type='ChatChoicesService')
+class MistralChatChoicesService(ChatChoicesService):
     model: ta.ClassVar[str] = 'mistral-large-latest'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -47,8 +47,8 @@ class MistralChatService(ChatService):
 
     def invoke(
             self,
-            request: ChatRequest,
-    ) -> ChatResponse:
+            request: ChatChoicesRequest,
+    ) -> ChatChoicesResponse:
         if not (key := self._api_key):
             key = os.environ['MISTRAL_API_KEY']
 
@@ -76,7 +76,7 @@ class MistralChatService(ChatService):
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
-        return ChatResponse([
+        return ChatChoicesResponse([
             AiChoice(AiMessage(c['message']['content']))
             for c in resp_dct['choices']
         ])

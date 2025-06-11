@@ -7,17 +7,15 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 
 from ...chat.choices import AiChoice
+from ...chat.choices import ChatChoicesRequestOptions
+from ...chat.choices import ChatChoicesResponse
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.choices import ChatChoicesRequestOption
-from ...chat.choices import ChatChoicesResponse
-from ...chat.choices import ChatChoicesRequestOptions
 from ...chat.tools import Tool
-from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...llms.services import TokenUsage

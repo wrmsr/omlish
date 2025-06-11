@@ -22,10 +22,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.anthropic.chat",
-        "attr_name": "AnthropicChatService",
+        "attr_name": "AnthropicChatChoicesService",
         "name": "anthropic",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -54,10 +54,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.google.chat",
-        "attr_name": "GoogleChatService",
+        "attr_name": "GoogleChatChoicesService",
         "name": "google",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -69,10 +69,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.chat",
-        "attr_name": "LlamacppChatService",
+        "attr_name": "LlamacppChatChoicesService",
         "name": "llamacpp",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -99,10 +99,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.streaming",
-        "attr_name": "LlamacppChatStreamService",
+        "attr_name": "LlamacppChatChoicesStreamService",
         "name": "llamacpp",
         "aliases": null,
-        "type": "ChatStreamService"
+        "type": "ChatChoicesStreamService"
       }
     }
   },
@@ -114,10 +114,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.mistral",
-        "attr_name": "MistralChatService",
+        "attr_name": "MistralChatChoicesService",
         "name": "mistral",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -125,14 +125,14 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 28,
+    "line": 27,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.mlx.chat",
-        "attr_name": "MlxChatService",
+        "attr_name": "MlxChatChoicesService",
         "name": "mlx",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -144,10 +144,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.openai.chat",
-        "attr_name": "OpenaiChatService",
+        "attr_name": "OpenaiChatChoicesService",
         "name": "openai",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -185,14 +185,14 @@
     "module": ".minichain.backends.openai.streaming",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/streaming.py",
-    "line": 28,
+    "line": 29,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.openai.streaming",
-        "attr_name": "OpenaiChatStreamService",
+        "attr_name": "OpenaiChatChoicesStreamService",
         "name": "openai",
         "aliases": null,
-        "type": "ChatStreamService"
+        "type": "ChatChoicesStreamService"
       }
     }
   },
@@ -204,10 +204,10 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.tinygrad.chat",
-        "attr_name": "TinygradLlama3ChatService",
+        "attr_name": "TinygradLlama3ChatChoicesService",
         "name": "tinygrad_llama3",
         "aliases": null,
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },
@@ -253,12 +253,12 @@
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.transformers",
-        "attr_name": "TransformersChatService",
+        "attr_name": "TransformersChatChoicesService",
         "name": "transformers",
         "aliases": [
           "tfm"
         ],
-        "type": "ChatService"
+        "type": "ChatChoicesService"
       }
     }
   },

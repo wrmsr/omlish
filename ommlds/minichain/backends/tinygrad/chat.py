@@ -5,19 +5,19 @@ from omlish import lang
 
 from ....backends.tinygrad.models import llama3 as tgl3
 from ...chat.choices import AiChoice
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...chat.messages import AiMessage
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
 
 
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatService')
-class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
+class TinygradLlama3ChatChoicesService(ChatChoicesService, lang.ExitStacked):
     DEFAULT_SIZE: ta.ClassVar[str] = '1B'
     DEFAULT_TEMPERATURE: ta.ClassVar[float] = .85
 
@@ -47,7 +47,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
 
         return llm
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         llm = self._load_model()
 
         #
@@ -93,4 +93,4 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
 
         #
 
-        return ChatResponse([AiChoice(AiMessage(''.join(out)))])
+        return ChatChoicesResponse([AiChoice(AiMessage(''.join(out)))])

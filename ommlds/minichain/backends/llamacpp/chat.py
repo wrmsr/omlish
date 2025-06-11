@@ -10,11 +10,11 @@ from omlish import typedvalues as tv
 
 from ....backends import llamacpp as lcu
 from ...chat.choices import AiChoice
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesRequestOptions
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...chat.messages import AiMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatRequestOptions
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
 from ...chat.tools import Tool
 from ...configs import Config
 from ...configs import consume_configs
@@ -29,8 +29,8 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatService')
-class LlamacppChatService(ChatService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesService')
+class LlamacppChatChoicesService(ChatChoicesService):
     DEFAULT_MODEL_PATH: ta.ClassVar[str] = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         # 'models--meta-llama--Llama-3.2-3B-Instruct/snapshots/0cb88a4f764b7a12671c53f0838cd831a0843b95/llama-2-7b-chat.Q5_0.gguf',  # noqa
@@ -44,12 +44,12 @@ class LlamacppChatService(ChatService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOptions]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
         max_tokens=MaxTokens,
         temperatur=Temperature,
     )
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         kwargs: dict = dict(
             # temperature=0,
             max_tokens=1024,
@@ -104,7 +104,7 @@ class LlamacppChatService(ChatService):
                 **kwargs,
             )
 
-            return ChatResponse([
+            return ChatChoicesResponse([
                 AiChoice(AiMessage(c['message']['content']))  # noqa
                 for c in output['choices']  # type: ignore
             ])

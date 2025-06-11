@@ -15,20 +15,20 @@ from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
 from ...chat.choices import AiChoice
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
 
 
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='anthropic', type='ChatService')
-class AnthropicChatService(ChatService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='anthropic', type='ChatChoicesService')
+class AnthropicChatChoicesService(ChatChoicesService):
     model: ta.ClassVar[str] = (
         'claude-3-5-sonnet-20241022'
         # 'claude-3-opus-20240229'
@@ -61,10 +61,10 @@ class AnthropicChatService(ChatService):
 
     def invoke(
             self,
-            request: ChatRequest,
+            request: ChatChoicesRequest,
             *,
             max_tokens: int = 4096,  # FIXME: ChatRequestOption
-    ) -> ChatResponse:
+    ) -> ChatChoicesResponse:
         messages = []
         system: str | None = None
         for i, m in enumerate(request.v):
@@ -97,6 +97,6 @@ class AnthropicChatService(ChatService):
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        return ChatResponse([
+        return ChatChoicesResponse([
             AiChoice(AiMessage(response['content'][0]['text'])),  # noqa
         ])

@@ -11,14 +11,14 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
 from ...completion import CompletionService
@@ -124,9 +124,9 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(
 #     name='transformers',
 #     aliases=['tfm'],
-#     type='ChatService',
+#     type='ChatChoicesService',
 # )
-class TransformersChatService(ChatService, lang.ExitStacked):
+class TransformersChatChoicesService(ChatChoicesService, lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'meta-llama/Llama-3.2-1B-Instruct'
     )
@@ -158,7 +158,7 @@ class TransformersChatService(ChatService, lang.ExitStacked):
             **pkw,
         )
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         check.empty(request.options)
 
         pipeline = self._load_pipeline()
@@ -170,4 +170,4 @@ class TransformersChatService(ChatService, lang.ExitStacked):
             ],
         )
 
-        return ChatResponse(output)
+        return ChatChoicesResponse(output)

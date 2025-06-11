@@ -8,8 +8,9 @@ from omlish.io.buffers import DelimitingBuffer
 
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
-from ...chat.streaming import ChatChoicesStreamRequest
 from ...chat.choices import ChatChoicesResponseOutputs
+from ...chat.streaming import ChatChoicesStreamRequest
+from ...chat.streaming import ChatChoicesStreamRequestOption
 from ...chat.streaming import ChatChoicesStreamResponse
 from ...chat.streaming import ChatChoicesStreamService
 from ...configs import Config
@@ -41,7 +42,7 @@ class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
 
         rh = OpenaiChatRequestHandler(
             request.v,
-            *request.options,
+            *[o for o in request.options if not isinstance(o, ChatChoicesStreamRequestOption)],
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,
