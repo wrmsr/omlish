@@ -88,6 +88,10 @@ class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
 
                                 check.state(sj['object'] == 'chat.completion.chunk')
 
+                                # FIXME: stop reason
+                                if not sj['choices']:
+                                    continue
+
                                 yield [
                                     AiChoice(rh.build_ai_message(choice['delta']))
                                     for choice in sj['choices']
