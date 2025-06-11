@@ -2,6 +2,10 @@
 
 ##
 
+from .chat.choices.adapters import (  # noqa
+    ChatChoicesServiceChatService,
+)
+
 from .chat.choices.services import (  # noqa
     ChatChoicesRequestOption,
     ChatChoicesRequestOptions,
@@ -19,6 +23,10 @@ from .chat.choices.services import (  # noqa
 from .chat.choices.types import (  # noqa
     AiChoice,
     AiChoices,
+)
+
+from .chat.stream.adapters import (  # noqa
+    ChatChoicesStreamServiceChatChoicesService,
 )
 
 from .chat.stream.services import (  # noqa
