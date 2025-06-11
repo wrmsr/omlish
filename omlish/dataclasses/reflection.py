@@ -29,6 +29,8 @@ class ClassReflection:
     def cls(self) -> type:
         return self._cls
 
+    #
+
     @lang.cached_property
     def spec(self) -> ClassSpec:
         if (cs := get_class_spec(self._cls)) is not None:
@@ -60,6 +62,8 @@ class ClassReflection:
 
         return cs
 
+    #
+
     @lang.cached_property
     def fields_inspection(self) -> FieldsInspection:
         return inspect_fields(self._cls)
@@ -79,6 +83,20 @@ class ClassReflection:
     @lang.cached_property
     def instance_fields(self) -> ta.Sequence[dc.Field]:
         return [f for f in self.fields.values() if std_field_type(f) is StdFieldType.INSTANCE]
+
+    #
+
+    @lang.cached_property
+    def type_hints(self) -> ta.Mapping[str, ta.Any]:
+        return ta.get_type_hints(self._cls)
+
+    @lang.cached_property
+    def field_annotations(self) -> ta.Mapping[str, ta.Any]:
+        return {
+            f: self.type_hints[f]
+            for f in self.fields
+            if f in self.type_hints
+        }
 
 
 def reflect(cls: type) -> ClassReflection:

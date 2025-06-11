@@ -36,7 +36,7 @@ class TinygradLlama3ChatService(ChatService, lang.ExitStacked):
     def _load_model(self) -> tgl3.Llama3Llm:
         check.not_none(self._exit_stack)
 
-        from ....backends.tinygrad.models.llama3.repl import fetch_model
+        from ....backends.tinygrad.models.llama3.fetch import fetch_model
         model = fetch_model(self._size)
 
         llm = tgl3.Llama3Llm(

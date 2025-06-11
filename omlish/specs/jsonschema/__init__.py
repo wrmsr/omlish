@@ -64,3 +64,11 @@ from .types import (  # noqa
     JsonType,
     TYPE_SETS_BY_JSON_TYPE,
 )
+
+
+##
+
+
+from ...lang.imports import _register_conditional_import  # noqa
+
+_register_conditional_import('...marshal', '.marshal', __package__)
