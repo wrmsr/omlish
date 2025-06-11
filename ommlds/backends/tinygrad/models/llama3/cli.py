@@ -38,23 +38,22 @@ def _run_to_stop(llm: Llama3Llm, start_pos: int, last_tok: int) -> _RunToStopRes
     return _RunToStopResult(start_pos, last_tok)
 
 
+def _run_new_toks(llm: Llama3Llm, toks: list[int], start_pos: int = 0) -> int:
+    start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
+    last_tok = toks[-1]
+    return _run_to_stop(llm, start_pos, last_tok).start_pos
+
+
 #
 
 
 def run_prompt(llm: Llama3Llm, prompt: str) -> None:
-    start_pos = llm.prefill([
+    _run_new_toks(llm,[
         llm.tokenizer.bos_id,
         *llm.encode_message('system', 'You are an helpful assistant.'),
         *llm.encode_message('user', prompt),
+        *llm.encode_role('assistant'),
     ])
-
-    toks = [*llm.encode_role('assistant')]
-    start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
-    last_tok = toks[-1]
-    _run_to_stop(llm, start_pos, last_tok)
-
-
-#
 
 
 def run_repl(llm: Llama3Llm) -> None:
@@ -64,10 +63,10 @@ def run_repl(llm: Llama3Llm) -> None:
     ])
 
     while True:
-        toks = llm.encode_message('user', input('Q: ')) + llm.encode_role('assistant')
-        start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
-        last_tok = toks[-1]
-        start_pos, last_tok = _run_to_stop(llm, start_pos, last_tok)
+        start_pos = _run_new_toks(llm, [
+            *llm.encode_message('user', input('Q: ')),
+            *llm.encode_role('assistant'),
+        ], start_pos)
 
 
 ##
