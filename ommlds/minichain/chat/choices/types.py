@@ -1,3 +1,7 @@
+"""
+TODO:
+ - ChatResponseOutputs really go on each AiChoice...
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
