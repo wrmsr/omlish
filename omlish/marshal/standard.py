@@ -18,6 +18,8 @@ from .composite.newtypes import NewtypeMarshalerFactory
 from .composite.newtypes import NewtypeUnmarshalerFactory
 from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
+from .composite.special import SequenceNotStrMarshalerFactory
+from .composite.special import SequenceNotStrUnmarshalerFactory
 from .objects.dataclasses import DataclassMarshalerFactory
 from .objects.dataclasses import DataclassUnmarshalerFactory
 from .objects.namedtuples import NamedtupleMarshalerFactory
@@ -58,6 +60,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     DATETIME_MARSHALER_FACTORY,
     MaybeMarshalerFactory(),
     MappingMarshalerFactory(),
+    SequenceNotStrMarshalerFactory(),
     IterableMarshalerFactory(),
     ANY_MARSHALER_FACTORY,
 ]
@@ -91,6 +94,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     DATETIME_UNMARSHALER_FACTORY,
     MaybeUnmarshalerFactory(),
     MappingUnmarshalerFactory(),
+    SequenceNotStrUnmarshalerFactory(),
     IterableUnmarshalerFactory(),
     ANY_UNMARSHALER_FACTORY,
 ]

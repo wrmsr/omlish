@@ -386,7 +386,12 @@ class Reflector:
                 )
 
             if _is_immediate_protocol(origin):
-                raise NotImplementedError
+                return Protocol(
+                    origin,
+                    args,
+                    params,
+                    obj,
+                )
 
             return Generic(
                 origin,
