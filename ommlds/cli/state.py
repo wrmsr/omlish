@@ -42,7 +42,7 @@ class StateStorage(lang.Abstract):
         ms = msh.unmarshal(obj, MarshaledState)
         if ms.version < self._version:
             return None
-        return msh.unmarshal(ms.payload, ty)  # type: ignore
+        return msh.unmarshal(ms.payload, ty)
 
     def marshal_state(self, obj: ta.Any, ty: type | None = None) -> ta.Any:
         ms = MarshaledState(

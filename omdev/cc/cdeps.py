@@ -68,4 +68,4 @@ def load_cdeps() -> ta.Mapping[str, Cdep]:
         },
     }
 
-    return msh.unmarshal(dct.get('deps', {}), ta.Mapping[str, Cdep])  # type: ignore
+    return msh.unmarshal(dct.get('deps', {}), ta.Mapping[str, Cdep])

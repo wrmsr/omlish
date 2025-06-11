@@ -42,7 +42,17 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
     return new_standard_unmarshaler_factory()
 
 
+@ta.overload
 def unmarshal(v: Value, ty: type[T], **kwargs: ta.Any) -> T:
+    ...
+
+
+@ta.overload
+def unmarshal(v: Value, ty: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    ...
+
+
+def unmarshal(v, ty, **kwargs):
     uc = UnmarshalContext(GLOBAL_REGISTRY, factory=global_unmarshaler_factory(), **kwargs)
     return uc.make(ty).unmarshal(uc, v)
 
