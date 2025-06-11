@@ -25,10 +25,7 @@ from .chat.messages import (  # noqa
     UserMessage,
 )
 
-from .chat.choices import (  # noqa
-    AiChoice,
-    AiChoices,
-
+from .chat.choices.services import (  # noqa
     ChatChoicesRequestOption,
     ChatChoicesRequestOptions,
     ChatChoicesRequest,
@@ -42,7 +39,12 @@ from .chat.choices import (  # noqa
     AbstractChatChoicesService,
 )
 
-from .chat.services import (  # noqa
+from .chat.choices.types import (  # noqa
+    AiChoice,
+    AiChoices,
+)
+
+from .chat.simple.services import (  # noqa
     ChatRequestOption,
     ChatRequestOptions,
     ChatRequest,
@@ -56,7 +58,7 @@ from .chat.services import (  # noqa
     AbstractChatService,
 )
 
-from .chat.streaming import (  # noqa
+from .chat.stream.services import (  # noqa
     ChatChoicesStreamRequestOption,
     ChatChoicesStreamRequestOptions,
     ChatChoicesStreamRequest,

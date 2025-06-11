@@ -4,10 +4,10 @@ from omlish import check
 from omlish import lang
 
 from ....backends.tinygrad.models import llama3 as tgl3
-from ...chat.choices import AiChoice
-from ...chat.choices import ChatChoicesRequest
-from ...chat.choices import ChatChoicesResponse
-from ...chat.choices import ChatChoicesService
+from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage

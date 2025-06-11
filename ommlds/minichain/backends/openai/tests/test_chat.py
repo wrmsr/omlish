@@ -4,8 +4,8 @@ from omlish import check
 from omlish import marshal as msh
 from omlish.secrets.tests.harness import HarnessSecrets
 
-from ....chat.choices import ChatChoicesRequest
-from ....chat.choices import ChatChoicesService
+from ....chat.choices.services import ChatChoicesRequest
+from ....chat.choices.services import ChatChoicesService
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage

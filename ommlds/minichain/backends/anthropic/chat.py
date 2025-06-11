@@ -14,10 +14,10 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.secrets.secrets import Secret
 
-from ...chat.choices import AiChoice
-from ...chat.choices import ChatChoicesRequest
-from ...chat.choices import ChatChoicesResponse
-from ...chat.choices import ChatChoicesService
+from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage

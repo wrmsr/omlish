@@ -1,30 +1,18 @@
 import abc
 import typing as ta
 
-from omlish import dataclasses as dc
 from omlish import lang
 
-from ..registry import register_type
-from ..services import Request
-from ..services import RequestOption
-from ..services import Response
-from ..services import ResponseOutput
-from ..services import Service
-from .messages import AiMessage
-from .messages import Chat
-from .services import ChatRequestOptions
-from .services import ChatResponseOutputs
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class AiChoice(lang.Final):
-    m: AiMessage
-
-
-AiChoices: ta.TypeAlias = ta.Sequence[AiChoice]
+from ...registry import register_type
+from ...services import Request
+from ...services import RequestOption
+from ...services import Response
+from ...services import ResponseOutput
+from ...services import Service
+from ..messages import Chat
+from ..simple.services import ChatRequestOptions
+from ..simple.services import ChatResponseOutputs
+from .types import AiChoices
 
 
 ##

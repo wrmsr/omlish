@@ -1,6 +1,6 @@
 import pytest
 
-from ....chat.choices import ChatChoicesRequest
+from ....chat.choices.services import ChatChoicesRequest
 from ....chat.messages import UserMessage
 from ....completion import CompletionRequest
 from ....services import Request

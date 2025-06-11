@@ -1,7 +1,7 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
-from ...chat.choices import ChatChoicesRequest
-from ...chat.choices import ChatChoicesService
+from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.services import ChatChoicesService
 from ...chat.messages import UserMessage
 from ...registry import registry_new
 from ...registry import registry_of

@@ -8,9 +8,9 @@ from omlish import check
 from omlish import lang
 
 from ....backends import llamacpp as lcu
-from ...chat.choices import AiChoice
-from ...chat.choices import AiChoices
-from ...chat.choices import ChatChoicesResponseOutputs
+from ...chat.choices.services import ChatChoicesResponseOutputs
+from ...chat.choices.types import AiChoice
+from ...chat.choices.types import AiChoices
 from ...chat.messages import AiMessage
 from ...chat.streaming import ChatChoicesStreamRequest
 from ...chat.streaming import ChatChoicesStreamResponse

@@ -6,9 +6,9 @@ from omlish import lang
 
 from .messages import Chat
 from .messages import Message
-from .services import ChatRequest
-from .services import ChatResponse
-from .services import ChatService
+from .simple.services import ChatRequest
+from .simple.services import ChatResponse
+from .simple.services import ChatService
 
 
 ##

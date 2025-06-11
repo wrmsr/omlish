@@ -3,16 +3,16 @@ import typing as ta
 
 from omlish import lang
 
-from ..registry import register_type
-from ..services import Request
-from ..services import RequestOption
-from ..services import ResponseOutput
-from ..services import Service
-from ..streaming import StreamResponse
-from .choices import AiChoices
-from .choices import ChatChoicesRequestOptions
-from .choices import ChatChoicesResponseOutputs
-from .messages import Chat
+from ...registry import register_type
+from ...services import Request
+from ...services import RequestOption
+from ...services import ResponseOutput
+from ...services import Service
+from ...streaming import StreamResponse
+from ..choices.services import ChatChoicesRequestOptions
+from ..choices.services import ChatChoicesResponseOutputs
+from ..choices.types import AiChoices
+from ..messages import Chat
 
 
 ##

@@ -6,9 +6,9 @@ from omlish import lang
 from omlish import typedvalues as tv
 from omlish.formats import json
 
-from ...chat.choices import AiChoice
-from ...chat.choices import ChatChoicesRequestOptions
-from ...chat.choices import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesRequestOptions
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message

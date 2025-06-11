@@ -11,9 +11,9 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ...chat.choices import ChatChoicesRequest
-from ...chat.choices import ChatChoicesResponse
-from ...chat.choices import ChatChoicesService
+from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesService
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage

@@ -55,19 +55,37 @@ class Sealed:
                 if Sealed in base.__bases__:
                     if cls.__module__ != base.__module__:
                         raise SealedError(base)
+
         super().__init_subclass__(**kwargs)
 
 
 class PackageSealed:
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+    __sealed_package__: ta.ClassVar[ta.Sequence[str] | None]
+
+    def __init_subclass__(cls, *, sealed_package: str | None = None, **kwargs: ta.Any) -> None:
+        if PackageSealed in cls.__bases__:
+            if sealed_package is not None:
+                if isinstance(sealed_package, str):
+                    sealed_package = sealed_package.split('.')
+                cls.__sealed_package__ = sealed_package
+            else:
+                cls.__sealed_package__ = cls.__module__.split('.')[:-1]
+        else:
+            if sealed_package is not None:
+                raise TypeError
+
         for base in cls.__bases__:
-            if base is not Abstract:
-                if PackageSealed in base.__bases__:
-                    pfx = base.__module__.split('.')[:-1]
-                    if cls.__module__.split('.')[:len(pfx)] != pfx:
-                        raise SealedError(base)
+            if (
+                    base is Abstract or
+                    PackageSealed not in base.__bases__
+            ):
+                continue
+            bsp = base.__dict__['__sealed_package__']
+            if cls.__module__.split('.')[:len(bsp)] != bsp:
+                raise SealedError(base)
+
         super().__init_subclass__(**kwargs)
 
 

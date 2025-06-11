@@ -6,9 +6,9 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from ...chat.choices import AiChoice
-from ...chat.choices import AiChoices
-from ...chat.choices import ChatChoicesResponseOutputs
+from ...chat.choices.services import ChatChoicesResponseOutputs
+from ...chat.choices.types import AiChoice
+from ...chat.choices.types import AiChoices
 from ...chat.streaming import ChatChoicesStreamRequest
 from ...chat.streaming import ChatChoicesStreamRequestOption
 from ...chat.streaming import ChatChoicesStreamResponse

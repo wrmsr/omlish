@@ -18,9 +18,9 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
-from ...chat.choices import ChatChoicesRequest
-from ...chat.choices import ChatChoicesResponse
-from ...chat.choices import ChatChoicesService
+from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesService
 from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import DefaultRequestOptions
