@@ -38,7 +38,7 @@ all = [
     'torch ~= 2.7',
     'transformers ~= 4.52',
     'sentence-transformers ~= 4.1',
-    'huggingface-hub ~= 0.32',
+    'huggingface-hub ~= 0.33',
     'datasets ~= 3.6',
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
@@ -62,7 +62,7 @@ backends = [
     'sentence-transformers ~= 4.1',
 ]
 huggingface = [
-    'huggingface-hub ~= 0.32',
+    'huggingface-hub ~= 0.33',
     'datasets ~= 3.6',
 ]
 numpy = [

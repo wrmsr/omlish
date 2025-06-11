@@ -114,7 +114,7 @@ snowflake-sqlalchemy==1.7.4; python_version < "3.13"
 
 trino==0.334.0  # @omlish-venv !13t
 
-huggingface-hub==0.32.6
+huggingface-hub==0.33.0
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
@@ -132,7 +132,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.34
+boto3>=1.38.35
 
 antlr4-python3-runtime==4.13.2
 
