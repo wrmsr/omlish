@@ -58,6 +58,6 @@ class ChatHistoryService(ChatService):
         response = self._underlying.invoke(new_req)
         self._history.add(
             *request.v,
-            response.v[0].m,
+            response.v,
         )
         return response

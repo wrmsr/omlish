@@ -13,8 +13,9 @@ from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequestOption
-from ...chat.services import ChatResponse
+from ...chat.choices import ChatChoicesRequestOption
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesRequestOptions
 from ...chat.tools import Tool
 from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
@@ -78,7 +79,7 @@ class OpenaiChatRequestHandler:
     def __init__(
             self,
             chat: Chat,
-            *options: ChatRequestOption | LlmRequestOption,
+            *options: ChatChoicesRequestOptions,
             model: str,
             mandatory_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
@@ -101,7 +102,7 @@ class OpenaiChatRequestHandler:
         MaxTokens(1024),
     )
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOption | LlmRequestOption]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
         temperature=Temperature,
         max_tokens=MaxTokens,
     )
@@ -176,8 +177,8 @@ class OpenaiChatRequestHandler:
             ] or None,
         )
 
-    def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatResponse:
-        return ChatResponse(
+    def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatChoicesResponse:
+        return ChatChoicesResponse(
             [
                 AiChoice(self.build_ai_message(choice['message']))
                 for choice in raw_response['choices']

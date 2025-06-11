@@ -57,6 +57,3 @@ class AbstractChatService(ChatService, lang.Abstract):  # noqa
     @abc.abstractmethod
     def invoke(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError
-
-
-lang.static_check_issubclass[ChatService](AbstractChatService)

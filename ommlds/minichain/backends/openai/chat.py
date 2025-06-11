@@ -18,9 +18,9 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
 from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import DefaultRequestOptions
@@ -31,8 +31,8 @@ from .format import OpenaiChatRequestHandler
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatService')
-class OpenaiChatService(ChatService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
+class OpenaiChatChoicesService(ChatChoicesService):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'
@@ -46,7 +46,7 @@ class OpenaiChatService(ChatService):
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
             self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(

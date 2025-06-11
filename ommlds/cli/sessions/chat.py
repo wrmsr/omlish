@@ -41,13 +41,13 @@ class ChatState:
 
 DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
-CHAT_MODEL_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatService]] = {}
+CHAT_CHOICES_SERVICE_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatChoicesService]] = {}
 
 
 ##
 
 
-ChatOption: ta.TypeAlias = mc.ChatRequestOption | mc.LlmRequestOption
+ChatOption: ta.TypeAlias = mc.ChatChoicesRequestOptions
 ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
 
 
@@ -102,8 +102,8 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
         if self._config.stream:
-            with lang.maybe_managing(mc.registry_of[mc.ChatStreamService].new(backend)) as st_mdl:
-                with st_mdl.invoke(mc.ChatRequest(
+            with lang.maybe_managing(mc.registry_of[mc.ChatChoicesStreamService].new(backend)) as st_mdl:
+                with st_mdl.invoke(mc.ChatChoicesStreamRequest(
                         chat,
                         (self._chat_options or []),
                 )).v as st_resp:
@@ -121,16 +121,16 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                 chat.append(resp_m)
 
         else:
-            csf: ta.Callable[..., mc.ChatService]
-            if (bf := CHAT_MODEL_FACTORIES.get(backend)) is not None:
+            csf: ta.Callable[..., mc.ChatChoicesService]
+            if (bf := CHAT_CHOICES_SERVICE_FACTORIES.get(backend)) is not None:
                 csf = bf
             else:
-                csf = functools.partial(mc.registry_of[mc.ChatService].new, backend)
+                csf = functools.partial(mc.registry_of[mc.ChatChoicesService].new, backend)
 
             with lang.maybe_managing(csf(
                     *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )) as mdl:
-                response = mdl.invoke(mc.ChatRequest(
+                response = mdl.invoke(mc.ChatChoicesRequest(
                     chat,
                     (self._chat_options or []),
                 ))
@@ -157,7 +157,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     tool_res = tool.fn(**tr.args)
                     chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
 
-                    response = mdl.invoke(mc.ChatRequest(
+                    response = mdl.invoke(mc.ChatChoicesRequest(
                         chat,
                         (self._chat_options or []),
                     ))
@@ -219,11 +219,11 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
         if backend is None:
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
-        csf: ta.Callable[..., mc.ChatService]
-        if (bf := CHAT_MODEL_FACTORIES.get(backend)) is not None:
+        csf: ta.Callable[..., mc.ChatChoicesService]
+        if (bf := CHAT_CHOICES_SERVICE_FACTORIES.get(backend)) is not None:
             csf = bf
         else:
-            csf = functools.partial(mc.registry_of[mc.ChatService].new, backend)
+            csf = functools.partial(mc.registry_of[mc.ChatChoicesService].new, backend)
 
         with lang.maybe_managing(csf(
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
@@ -239,7 +239,7 @@ class InteractiveChatSession(Session['InteractiveChatSession.Config']):
                     ],
                 )
 
-                response = mdl.invoke(mc.ChatRequest(state.chat))
+                response = mdl.invoke(mc.ChatChoicesRequest(state.chat))
                 print(check.isinstance(response.v[0].m.s, str).strip())
 
                 state = dc.replace(

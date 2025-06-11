@@ -10,13 +10,12 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponse
-from ...chat.services import ChatService
-from ...chat.types import ChatRequestOption
+from ...chat.choices import ChatChoicesRequest
+from ...chat.choices import ChatChoicesResponse
+from ...chat.choices import ChatChoicesService
+from ...chat.choices import ChatChoicesRequestOptions
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import LlmRequestOption
 from ...llms.services import MaxTokens
 from ...standard import DefaultRequestOptions
 from ...standard import ModelName
@@ -25,8 +24,8 @@ from ...standard import ModelName
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mlx', type='ChatService')
-class MlxChatService(ChatService, lang.ExitStacked):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mlx', type='ChatChoicesService')
+class MlxChatChoicesService(ChatChoicesService, lang.ExitStacked):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-4bit'
@@ -73,11 +72,11 @@ class MlxChatService(ChatService, lang.ExitStacked):
 
         return mlxu.load_model(self._model_name.v)
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatRequestOption | LlmRequestOption]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
         max_tokens=MaxTokens,
     )
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         loaded_model = self._load_model()
 
         tokenizer = loaded_model.tokenization.tokenizer
@@ -117,6 +116,6 @@ class MlxChatService(ChatService, lang.ExitStacked):
             # verbose=True,
         )
 
-        return ChatResponse([
+        return ChatChoicesResponse([
             AiChoice(AiMessage(response))  # noqa
         ])

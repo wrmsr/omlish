@@ -19,7 +19,7 @@ from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
-from ..minichain.backends.openai.chat import OpenaiChatService
+from ..minichain.backends.openai.chat import OpenaiChatChoicesService
 from ..server.client import McServerClient
 
 
@@ -62,9 +62,9 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
             if (sec := load_secrets().try_get(key.lower())) is not None:
                 os.environ[key] = sec.reveal()
 
-        llm = OpenaiChatService()
+        llm = OpenaiChatChoicesService()
 
-        resp = llm.invoke(mc.ChatRequest(
+        resp = llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],
             # FIXME:  *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         ))
@@ -92,8 +92,8 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
         super().__init__(config)
 
     def _run_prompt(self, prompt: str) -> str:
-        with mc_mlx_chat.MlxChatService(mc.ModelName(self._config.model)) as llm:
-            resp = llm.invoke(mc.ChatRequest(
+        with mc_mlx_chat.MlxChatChoicesService(mc.ModelName(self._config.model)) as llm:
+            resp = llm.invoke(mc.ChatChoicesRequest(
                 [mc.UserMessage(prompt)],
                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
             ))

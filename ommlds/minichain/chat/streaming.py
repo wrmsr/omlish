@@ -61,6 +61,3 @@ class AbstractChatChoicesStreamService(ChatChoicesStreamService, lang.Abstract):
     @abc.abstractmethod
     def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         raise NotImplementedError
-
-
-lang.static_check_issubclass[ChatChoicesStreamService](AbstractChatChoicesStreamService)

@@ -8,35 +8,35 @@ from omlish.io.buffers import DelimitingBuffer
 
 from ...chat.choices import AiChoice
 from ...chat.choices import AiChoices
-from ...chat.services import ChatRequest
-from ...chat.services import ChatResponseOutputs
-from ...chat.streaming import ChatStreamResponse
-from ...chat.streaming import ChatStreamService
+from ...chat.streaming import ChatChoicesStreamRequest
+from ...chat.choices import ChatChoicesResponseOutputs
+from ...chat.streaming import ChatChoicesStreamResponse
+from ...chat.streaming import ChatChoicesStreamService
 from ...configs import Config
 from ...configs import consume_configs
 from ...resources import Resources
 from ...standard import ApiKey
 from ...standard import ModelName
 from ...streaming import ResponseGenerator
-from .chat import OpenaiChatService
+from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 
 
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatStreamService')
-class OpenaiChatStreamService(ChatStreamService):
+# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesStreamService')
+class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
         with consume_configs(*configs) as cc:
-            self._model_name = cc.pop(ModelName(OpenaiChatService.DEFAULT_MODEL_NAME))
+            self._model_name = cc.pop(ModelName(OpenaiChatChoicesService.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     READ_CHUNK_SIZE = 64 * 1024
 
-    def invoke(self, request: ChatRequest) -> ChatStreamResponse:
+    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(
@@ -66,7 +66,7 @@ class OpenaiChatStreamService(ChatStreamService):
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatResponseOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesResponseOutputs] | None]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -98,4 +98,4 @@ class OpenaiChatStreamService(ChatStreamService):
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return ChatStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))
+            return ChatChoicesStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))

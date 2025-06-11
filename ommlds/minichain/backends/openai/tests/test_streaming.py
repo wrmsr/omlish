@@ -1,20 +1,20 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
-from ....chat.services import ChatRequest
+from ....chat.streaming import ChatChoicesStreamRequest
 from ....standard import ApiKey
-from ..streaming import OpenaiChatStreamService
+from ..streaming import OpenaiChatChoicesStreamService
 
 
 def test_openai_chat_streaming_model(harness):
-    llm = OpenaiChatStreamService(
+    llm = OpenaiChatChoicesStreamService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     )
 
-    foo_req: ChatRequest
+    foo_req: ChatChoicesStreamRequest
     for foo_req in [
-        ChatRequest([UserMessage('Is water dry?')]),
-        ChatRequest([UserMessage('Is air wet?')]),
+        ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
+        ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
     ]:
         print(foo_req)
 

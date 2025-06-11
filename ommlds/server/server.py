@@ -23,7 +23,7 @@ from omlish.sockets.bind import SocketBinder
 from omlish.sockets.server.server import SocketServer
 
 from .. import minichain as mc
-from ..minichain.backends.openai.chat import OpenaiChatService
+from ..minichain.backends.openai.chat import OpenaiChatChoicesService
 
 
 if ta.TYPE_CHECKING:
@@ -40,14 +40,14 @@ log = logging.getLogger(__name__)
 
 @dc.dataclass(frozen=True)
 class McServerHandler(HttpHandler_):
-    llm: mc.ChatService
+    llm: mc.ChatChoicesService
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         prompt = check.not_none(req.data).decode('utf-8')
 
         log.info('Server got prompt: %s', prompt)
 
-        resp = self.llm.invoke(mc.ChatRequest(
+        resp = self.llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],
             # Temperature(.1),
         ))
@@ -82,13 +82,13 @@ class McServer:
         self._config = config
 
     @cached.function
-    def llm(self) -> mc.ChatService:
+    def llm(self) -> mc.ChatChoicesService:
         if self._config.backend == 'openai':
-            return OpenaiChatService(mc.ApiKey(load_secrets().get('openai_api_key').reveal()))
+            return OpenaiChatChoicesService(mc.ApiKey(load_secrets().get('openai_api_key').reveal()))
 
         elif self._config.backend == 'local':
             model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-            return mc_mlx_chat.MlxChatService(mc.ModelName(model))
+            return mc_mlx_chat.MlxChatChoicesService(mc.ModelName(model))
 
         else:
             raise ValueError(self._config.backend)
