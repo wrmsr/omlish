@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import typing as ta
 
 from tinygrad import Tensor
 
@@ -12,33 +13,61 @@ from .llm import Llama3Llm
 ##
 
 
-def run_repl(llm: Llama3Llm) -> None:
-    prompt = [
+class _RunToStopResult(ta.NamedTuple):
+    start_pos: int
+    last_tok: int
+
+
+def _run_to_stop(llm: Llama3Llm, start_pos: int, last_tok: int) -> _RunToStopResult:
+    while True:
+        tok = llm.feed(
+            [last_tok],
+            start_pos,
+        )
+        tok = tok.item()
+
+        start_pos += 1
+        last_tok = tok
+        if tok in llm.tokenizer.stop_tokens:
+            break
+
+        print(llm.tokenizer.decode([tok]), end='', flush=True)
+
+    print(flush=True)
+
+    return _RunToStopResult(start_pos, last_tok)
+
+
+#
+
+
+def run_prompt(llm: Llama3Llm, prompt: str) -> None:
+    start_pos = llm.prefill([
         llm.tokenizer.bos_id,
         *llm.encode_message('system', 'You are an helpful assistant.'),
-    ]
+        *llm.encode_message('user', prompt),
+    ])
 
-    start_pos = llm.prefill(prompt)
+    toks = [*llm.encode_role('assistant')]
+    start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
+    last_tok = toks[-1]
+    _run_to_stop(llm, start_pos, last_tok)
+
+
+#
+
+
+def run_repl(llm: Llama3Llm) -> None:
+    start_pos = llm.prefill([
+        llm.tokenizer.bos_id,
+        *llm.encode_message('system', 'You are an helpful assistant.'),
+    ])
+
     while True:
         toks = llm.encode_message('user', input('Q: ')) + llm.encode_role('assistant')
-
         start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
         last_tok = toks[-1]
-        while True:
-            tok = llm.feed(
-                [last_tok],
-                start_pos,
-            )
-            tok = tok.item()
-
-            start_pos += 1
-            last_tok = tok
-            if tok in llm.tokenizer.stop_tokens:
-                break
-
-            print(llm.tokenizer.decode([tok]), end='', flush=True)
-
-        print(flush=True)
+        start_pos, last_tok = _run_to_stop(llm, start_pos, last_tok)
 
 
 ##
@@ -84,6 +113,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=0.85,
         help='Temperature',
     )
+    parser.add_argument(
+        '--prompt',
+    )
     return parser
 
 
@@ -112,7 +144,10 @@ def _main() -> None:
         temperature=args.temperature,
     )
 
-    run_repl(llm)
+    if (prompt := args.prompt) is not None:
+        run_prompt(llm, prompt)
+    else:
+        run_repl(llm)
 
 
 if __name__ == '__main__':
