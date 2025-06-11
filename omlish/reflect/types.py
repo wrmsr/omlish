@@ -403,7 +403,13 @@ class Reflector:
                 return None
 
             if _is_immediate_protocol(obj):
-                raise NotImplementedError
+                params = get_params(obj)
+                return Protocol(
+                    obj,
+                    params,
+                    params,
+                    obj,
+                )
 
             if issubclass(obj, ta.Generic):  # type: ignore
                 params = get_params(obj)

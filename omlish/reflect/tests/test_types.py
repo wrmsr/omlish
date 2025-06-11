@@ -10,9 +10,15 @@ from ... import check
 from ... import reflect as rfl
 
 
-K = ta.TypeVar('K')
-V = ta.TypeVar('V')
 T = ta.TypeVar('T')
+
+K = ta.TypeVar('K')
+K_co = ta.TypeVar('K_co', covariant=True)
+K_contra = ta.TypeVar('K_contra', contravariant=True)
+
+V = ta.TypeVar('V')
+V_co = ta.TypeVar('V_co', covariant=True)
+V_contra = ta.TypeVar('V_contra', contravariant=True)
 
 P = ta.ParamSpec('P')
 
@@ -142,15 +148,15 @@ def test_protocol():
 
     #
 
-    class P(ta.Protocol[K, V]):
+    class P(ta.Protocol[K_co, V_co]):
         pass
 
-    assert_generic_full_eq(rfl.type_(P), rfl.Protocol(P, (K, V), (K, V), P))
+    assert_generic_full_eq(rfl.type_(P), rfl.Protocol(P, (K_co, V_co), (K_co, V_co), P))
 
     #
 
-    assert_generic_full_eq(rfl.type_(P[int, str]), rfl.Protocol(P, (int, str), (K, V), P[int, str]))
-    assert_generic_full_eq(rfl.type_(P[int, T]), rfl.Protocol(P, (int, T), (K, V), P[int, T]))
+    assert_generic_full_eq(rfl.type_(P[int, str]), rfl.Protocol(P, (int, str), (K_co, V_co), P[int, str]))
+    assert_generic_full_eq(rfl.type_(P[int, T]), rfl.Protocol(P, (int, T), (K_co, V_co), P[int, T]))  # type: ignore
 
     #
 
