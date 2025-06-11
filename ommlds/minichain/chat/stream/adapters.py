@@ -1,12 +1,15 @@
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
 from ...services import Response
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesService
+from ..choices.types import AiChoice
 from ..choices.types import AiChoices
+from ..messages import AiMessage
 from ..messages import ToolExecRequest
 from .services import ChatChoicesResponseOutputs
 from .services import ChatChoicesStreamResponseOutputs
@@ -32,7 +35,7 @@ class ChatChoicesStreamServiceChatChoicesService:
 
         resp = self.service.invoke(request)
         with resp.v as resp_v:
-            i = -1
+            i = -1  # noqa
             for i, cs in enumerate(resp_v):
                 if i == 0:
                     for c in cs:
@@ -43,14 +46,24 @@ class ChatChoicesStreamServiceChatChoicesService:
                         ))
 
                 else:
-                    for lc, c in zip(lst, cs, strict=True):
+                    for ch, c in zip(lst, cs, strict=True):
                         m = c.m
                         if m.s is not None:
-                            lc.parts.append(m.s)
+                            ch.parts.append(m.s)
                         if m.tool_exec_requests:
-                            lc.trs.extend(m.tool_exec_requests)
+                            ch.trs.extend(m.tool_exec_requests)
 
-        raise NotImplementedError
+        check.state(resp_v.is_done)
+
+        ret: list[AiChoice] = []
+        for ch in lst:
+            ret.append(AiChoice(AiMessage(
+                ''.join(ch.parts) if ch.parts else None,
+                ch.trs or None,
+            )))
+
+        # FIXME: outputs lol
+        return Response(ret)
 
 
 lang.static_check_issubclass[ChatChoicesService](ChatChoicesStreamServiceChatChoicesService)
