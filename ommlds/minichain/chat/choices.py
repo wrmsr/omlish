@@ -4,13 +4,13 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .messages import AiMessage
 from ..registry import register_type
 from ..services import Request
 from ..services import RequestOption
 from ..services import Response
 from ..services import ResponseOutput
 from ..services import Service
+from .messages import AiMessage
 from .messages import Chat
 from .services import ChatRequestOptions
 from .services import ChatResponseOutputs

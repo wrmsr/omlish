@@ -11,7 +11,7 @@ from ..services import RequestOption
 from ..services import Response
 from ..services import ResponseOutput
 from ..services import Service
-from .choices import AiChoices
+from .messages import AiMessage
 from .messages import Chat
 
 
@@ -38,7 +38,7 @@ class ChatResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
 ChatResponseOutputs = ChatResponseOutput | LlmResponseOutput
 
 
-ChatResponse: ta.TypeAlias = Response[AiChoices, ChatResponseOutputs]
+ChatResponse: ta.TypeAlias = Response[AiMessage, ChatResponseOutputs]
 
 
 ##
