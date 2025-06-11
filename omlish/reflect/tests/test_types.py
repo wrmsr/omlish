@@ -19,8 +19,8 @@ P = ta.ParamSpec('P')
 _0, _1, _2, _3 = rfl.types._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
-def assert_generic_full_eq(l: ta.Any, r: rfl.Generic) -> None:
-    assert check.isinstance(rfl.type_(l), rfl.Generic).full_eq(r)
+def assert_generic_full_eq(l: ta.Any, r: rfl.GenericLike) -> None:
+    assert check.isinstance(rfl.type_(l), rfl.GenericLike).full_eq(r)
 
 
 def test_simple_reflect_type():
@@ -135,3 +135,33 @@ def test_tuples():
 
 def test_literal():
     assert set(check.isinstance(rfl.type_(ta.Literal['a', 'b', 'c']), rfl.Literal).args) == {'a', 'b', 'c'}
+
+
+def test_protocol():
+    assert_generic_full_eq(rfl.type_(ta.Protocol[K, V]), rfl.Protocol(ta.Protocol, (K, V), (K, V), ta.Protocol[K, V]))
+
+    #
+
+    class P(ta.Protocol[K, V]):
+        pass
+
+    assert_generic_full_eq(rfl.type_(P), rfl.Protocol(P, (K, V), (K, V), P))
+
+    #
+
+    assert_generic_full_eq(rfl.type_(P[int, str]), rfl.Protocol(P, (int, str), (K, V), P[int, str]))
+    assert_generic_full_eq(rfl.type_(P[int, T]), rfl.Protocol(P, (int, T), (K, V), P[int, T]))
+
+    #
+
+    # class C0(P[int, str]):
+    #     pass
+    #
+    # assert_generic_full_eq(rfl.type_(C0), rfl.Protocol(C0, (int, str), (K, V), C0))
+    #
+    # #
+    #
+    # class C1(P[int, T]):
+    #     pass
+    #
+    # assert_generic_full_eq(rfl.type_(C1), rfl.Protocol(C0, (int, T), (K, V), C0))

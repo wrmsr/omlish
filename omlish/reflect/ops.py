@@ -1,9 +1,12 @@
+import dataclasses as dc
 import typing as ta
 
 from .types import Annotated
 from .types import Any
 from .types import Generic
+from .types import GenericLike
 from .types import NewType
+from .types import Protocol
 from .types import Type
 from .types import Union
 from .types import get_type_var_bound
@@ -15,13 +18,13 @@ def strip_objs(ty: Type) -> Type:
         return ty
 
     if isinstance(ty, Union):
-        return Union(frozenset(map(strip_objs, ty.args)))
+        return dc.replace(ty, args=frozenset(map(strip_objs, ty.args)))
 
-    if isinstance(ty, Generic):
-        return Generic(ty.cls, tuple(map(strip_objs, ty.args)), ty.params, None)
+    if isinstance(ty, GenericLike):
+        return dc.replace(ty, args=tuple(map(strip_objs, ty.args)), obj=None)
 
     if isinstance(ty, Annotated):
-        return Annotated(strip_objs(ty.ty), ty.md, None)
+        return dc.replace(ty, ty=strip_objs(ty.ty), obj=None)
 
     raise TypeError(ty)
 
@@ -31,10 +34,10 @@ def strip_annotations(ty: Type) -> Type:
         return ty
 
     if isinstance(ty, Union):
-        return Union(frozenset(map(strip_annotations, ty.args)))
+        return dc.replace(ty, args=frozenset(map(strip_annotations, ty.args)))
 
-    if isinstance(ty, Generic):
-        return Generic(ty.cls, tuple(map(strip_annotations, ty.args)), ty.params, ty.obj)
+    if isinstance(ty, GenericLike):
+        return dc.replace(ty, args=tuple(map(strip_annotations, ty.args)))
 
     if isinstance(ty, Annotated):
         return strip_annotations(ty.ty)
@@ -74,7 +77,7 @@ def get_concrete_type(
 
             return None
 
-        if isinstance(cur, (Union, Any)):
+        if isinstance(cur, (Union, Any, Protocol)):
             return None
 
         raise TypeError(cur)
@@ -88,6 +91,9 @@ def to_annotation(ty: Type) -> ta.Any:
 
     if isinstance(ty, Union):
         return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
+
+    if isinstance(ty, Protocol):
+        return ta.Protocol[*ty.params]
 
     if isinstance(ty, (type, ta.TypeVar, NewType)):
         return ty

@@ -3,6 +3,7 @@ TODO:
  - visitor / transformer
  - uniform collection isinstance - items() for mappings, iter() for other
  - also check instance type in isinstance not just items lol
+TODO:
  - ta.Generic in mro causing trouble - omit? no longer 1:1
  - cache this shit, esp generic_mro shit
   - cache __hash__ in Generic/Union
@@ -22,8 +23,19 @@ _AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
 _CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
 _LiteralGenericAlias = ta._LiteralGenericAlias  # type: ignore  # noqa
+_ProtocolMeta = ta._ProtocolMeta  # noqa
 _SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
+
+
+##
+
+
+_Protocol = getattr(ta, 'Protocol')
+_Generic = getattr(ta, 'Generic')
+
+if not isinstance(_Protocol, type) or not issubclass(_Protocol, _Generic):
+    raise TypeError(f'typing.Protocol is not a proper typing.Generic subtype')
 
 
 ##
@@ -95,6 +107,10 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     raise TypeError(obj)
 
 
+def _is_immediate_protocol(obj: ta.Any) -> bool:
+    return isinstance(obj, _ProtocolMeta) and obj.__dict__['_is_protocol']
+
+
 def is_union_type(cls: ta.Any) -> bool:
     if hasattr(ta, 'UnionType'):
         return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
@@ -163,27 +179,47 @@ class Union(TypeInfo):
 #
 
 
-@dc.dataclass(frozen=True)
-class Generic(TypeInfo):
-    cls: type
-    args: tuple[Type, ...]                                                # map[int, V] = (int, V) | map[T, T] = (T, T)
+GenericLikeCls = ta.TypeVar('GenericLikeCls')
 
-    params: tuple[ta.TypeVar, ...] = dc.field(compare=False, repr=False)  # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)  # noqa
-    # params2: tuple[ta.TypeVar, ...]                                     # map[int, V] = (V,)     | map[T, T] = (T,)
+
+@dc.dataclass(frozen=True)
+class GenericLike(TypeInfo, abc.ABC, ta.Generic[GenericLikeCls]):
+    cls: GenericLikeCls
+
+    # args and params are the same length - params maps to the generic origin's params:
+    # args   : map[int, V] = (int, V) | map[T, T] = (T, T)
+    # params : map[int, V] = (_0, _1) | map[T, T] = (_0, _1)
+    args: tuple[Type, ...]
+    params: tuple[ta.TypeVar, ...] = dc.field(compare=False, repr=False)
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
-    # def __post_init__(self) -> None:
-    #     if not isinstance(self.cls, type):
-    #         raise TypeError(self.cls)
+    def __post_init__(self) -> None:
+        if not isinstance(self.cls, type):
+            raise ReflectTypeError(f'GenericLike {self.cls=} must be a type')
+        if len(self.args) != len(self.params):
+            raise ReflectTypeError(f'GenericLike {self.args=} must be same length as {self.params=}')
 
-    def full_eq(self, other: 'Generic') -> bool:
+    def full_eq(self, other: 'GenericLike') -> bool:
         return (
+            type(self) is type(other) and
             self.cls == other.cls and
             self.args == other.args and
             self.params == other.params and
             self.obj == other.obj
         )
+
+
+@dc.dataclass(frozen=True)
+class Generic(GenericLike[type]):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Protocol(GenericLike[ta.Any]):
+    # cls will still be a type - it will be the topmost _is_protocol=True class.
+    # it may however be ta.Protocol, which *is* a type, but not according to mypy.
+    pass
 
 
 #
@@ -311,9 +347,13 @@ class Reflector:
                 return None
 
             origin = ta.get_origin(obj)
+
             args = ta.get_args(obj)
 
-            if oty is _CallableGenericAlias:
+            if origin is ta.Protocol:
+                params = get_params(obj)
+
+            elif oty is _CallableGenericAlias:
                 p, r = args
                 if p is Ellipsis or isinstance(p, ta.ParamSpec):
                     raise ReflectTypeError(f'Callable argument not yet supported for {obj=}')
@@ -332,6 +372,22 @@ class Reflector:
             if len(args) != len(params):
                 raise ReflectTypeError(f'Mismatched {args=} and {params=} for {obj=}')
 
+            if not isinstance(origin, type):
+                raise ReflectTypeError(f'Generic origin {origin!r} is not a type')
+
+            if origin is ta.Protocol:
+                if args != params:
+                    raise ReflectTypeError(f'Protocol argument not yet supported for {args=}, {params=}')
+                return Protocol(
+                    ta.Protocol,
+                    args,
+                    params,
+                    obj,
+                )
+
+            if _is_immediate_protocol(origin):
+                raise NotImplementedError
+
             return Generic(
                 origin,
                 tuple(self.type(a) for a in args),
@@ -345,6 +401,9 @@ class Reflector:
         if isinstance(obj, type):
             if check_only:
                 return None
+
+            if _is_immediate_protocol(obj):
+                raise NotImplementedError
 
             if issubclass(obj, ta.Generic):  # type: ignore
                 params = get_params(obj)
