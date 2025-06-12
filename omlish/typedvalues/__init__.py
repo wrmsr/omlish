@@ -6,6 +6,8 @@ from .collection import (  # noqa
     DuplicateUniqueTypedValueError,
 
     TypedValues,
+
+    of,
 )
 
 from .consumer import (  # noqa
