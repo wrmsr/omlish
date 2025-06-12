@@ -9,7 +9,7 @@ from omlish.http import all as http
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -24,7 +24,8 @@ from ...standard import ModelName
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
-class GoogleChatChoicesService(ChatChoicesService):
+@static_check_is_chat_choices_service
+class GoogleChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gemini-2.0-flash'
     )

@@ -7,7 +7,7 @@ from omlish import typedvalues as tv
 from ....backends import mlx as mlxu
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
@@ -25,7 +25,8 @@ from ...standard import ModelName
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mlx', type='ChatChoicesService')
-class MlxChatChoicesService(ChatChoicesService, lang.ExitStacked):
+@static_check_is_chat_choices_service
+class MlxChatChoicesService(lang.ExitStacked):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-4bit'

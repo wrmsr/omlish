@@ -26,16 +26,16 @@ OutputT = ta.TypeVar('OutputT', bound=Output)
     terse_repr=True,
 )
 class ServiceFacade(
-    Service[
-        Request[
-            RequestV,
-            OptionT,
-        ],
-        Response[
-            ResponseV,
-            OutputT,
-        ],
-    ],
+    # Service[
+    #     Request[
+    #         RequestV,
+    #         OptionT,
+    #     ],
+    #     Response[
+    #         ResponseV,
+    #         OutputT,
+    #     ],
+    # ],
     ta.Generic[
         RequestV,
         OptionT,

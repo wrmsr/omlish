@@ -13,7 +13,7 @@ from omlish import typedvalues as tv
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
@@ -21,7 +21,7 @@ from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
-from ...completion import CompletionService
+from ...completion import static_check_is_completion_service
 from ...configs import Config
 from ...configs import consume_configs
 from ...standard import ModelPath
@@ -43,7 +43,8 @@ class TransformersPipelineKwargs(Config, tv.ScalarTypedValue[ta.Mapping[str, ta.
 #     aliases=['tfm'],
 #     type='CompletionService',
 # )
-class TransformersCompletionService(CompletionService, lang.ExitStacked):
+@static_check_is_completion_service
+class TransformersCompletionService(lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
         # 'Qwen/Qwen2-0.5B'
@@ -126,7 +127,8 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
 #     aliases=['tfm'],
 #     type='ChatChoicesService',
 # )
-class TransformersChatChoicesService(ChatChoicesService, lang.ExitStacked):
+@static_check_is_chat_choices_service
+class TransformersChatChoicesService(lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'meta-llama/Llama-3.2-1B-Instruct'
     )

@@ -249,7 +249,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 124,
+    "line": 125,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.transformers",
@@ -302,7 +302,7 @@
     "module": ".minichain.completion",
     "attr": null,
     "file": "ommlds/minichain/completion.py",
-    "line": 44,
+    "line": 42,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.completion",
@@ -314,7 +314,7 @@
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlds/minichain/search.py",
-    "line": 53,
+    "line": 59,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.search",
@@ -326,7 +326,7 @@
     "module": ".minichain.vectors.embeddings",
     "attr": null,
     "file": "ommlds/minichain/vectors/embeddings.py",
-    "line": 38,
+    "line": 42,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.embeddings",
@@ -338,7 +338,7 @@
     "module": ".minichain.vectors.index",
     "attr": null,
     "file": "ommlds/minichain/vectors/index.py",
-    "line": 47,
+    "line": 51,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.index",
@@ -350,7 +350,7 @@
     "module": ".minichain.vectors.search",
     "attr": null,
     "file": "ommlds/minichain/vectors/search.py",
-    "line": 67,
+    "line": 71,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.vectors.search",

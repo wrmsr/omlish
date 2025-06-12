@@ -6,7 +6,7 @@ from omlish import lang
 from ....backends.tinygrad.models import llama3 as tgl3
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import SystemMessage
@@ -17,7 +17,8 @@ from ...chat.messages import UserMessage
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
-class TinygradLlama3ChatChoicesService(ChatChoicesService, lang.ExitStacked):
+@static_check_is_chat_choices_service
+class TinygradLlama3ChatChoicesService(lang.ExitStacked):
     DEFAULT_SIZE: ta.ClassVar[str] = '1B'
     DEFAULT_TEMPERATURE: ta.ClassVar[float] = .85
 

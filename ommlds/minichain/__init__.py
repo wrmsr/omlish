@@ -211,32 +211,49 @@ from .tools.types import (  # noqa
 ##
 
 from .vectors.embeddings import (  # noqa
-    EmbeddingRequest,
     EmbeddingOption,
-    EmbeddingResponse,
+    EmbeddingOptions,
+
     EmbeddingOutput,
+    EmbeddingOutputs,
+
+    EmbeddingRequest,
+    EmbeddingResponse,
     EmbeddingService,
+    static_check_is_embedding_service,
 )
 
 from .vectors.index import (  # noqa
-    VectorIndexRequest,
-    VectorIndexOption,
-    VectorIndexResponse,
-    VectorIndexOutput,
-    VectorIndexService,
     VectorIndexed,
+
+    VectorIndexOption,
+    VectorIndexOptions,
+
+    VectorIndexOutput,
+    VectorIndexOutputs,
+
+    VectorIndexRequest,
+    VectorIndexResponse,
+    VectorIndexService,
+    static_check_is_vector_index_service,
 )
 
 from .vectors.search import (  # noqa
+    VectorSearch,
     VectorHit,
     VectorHits,
-    VectorSearch,
-    VectorSearchRequest,
+
     VectorSearchOption,
-    VectorSearchResponse,
+    VectorSearchOptions,
+
     VectorSearchOutput,
-    VectorSearchService,
     VectorSearchSimilarity,
+    VectorSearchOutputs,
+
+    VectorSearchRequest,
+    VectorSearchResponse,
+    VectorSearchService,
+    static_check_is_vector_search_service,
 )
 
 from .vectors.similarity import (  # noqa
@@ -261,13 +278,14 @@ from .vectors.types import (  # noqa
 from .completion import (  # noqa
     CompletionOption,
     CompletionOptions,
-    CompletionRequest,
 
     CompletionOutput,
     CompletionOutputs,
-    CompletionResponse,
 
+    CompletionRequest,
+    CompletionResponse,
     CompletionService,
+    static_check_is_completion_service,
 )
 
 from .configs import (  # noqa
@@ -303,6 +321,19 @@ from .resources import (  # noqa
     Resources,
 
     ResourceManaged,
+)
+
+from .search import (  # noqa
+    SearchOption,
+    SearchOptions,
+
+    SearchOutput,
+    SearchOutputs,
+
+    SearchRequest,
+    SearchResponse,
+    SearchService,
+    static_check_is_search_service,
 )
 
 from .standard import (  # noqa

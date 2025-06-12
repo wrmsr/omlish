@@ -39,7 +39,8 @@ def static_check_is_chat_choices_stream_service[T: ChatChoicesStreamService](t: 
 ##
 
 
-class AbstractChatChoicesStreamService(ChatChoicesStreamService, lang.Abstract):  # noqa
+@static_check_is_chat_choices_stream_service
+class AbstractChatChoicesStreamService(lang.Abstract):  # noqa
     @abc.abstractmethod
     def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         raise NotImplementedError

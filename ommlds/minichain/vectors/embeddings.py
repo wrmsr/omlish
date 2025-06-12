@@ -19,7 +19,7 @@ class EmbeddingOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-EmbeddingRequest: ta.TypeAlias = Request[Content, EmbeddingOption]
+EmbeddingOptions: ta.TypeAlias = EmbeddingOption
 
 
 ##
@@ -29,13 +29,21 @@ class EmbeddingOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingOutput]
+EmbeddingOutputs: ta.TypeAlias = EmbeddingOutput
 
 
 ##
 
 
+EmbeddingRequest: ta.TypeAlias = Request[Content, EmbeddingOptions]
+
+EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingOutputs]
+
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 EmbeddingService: ta.TypeAlias = Service[EmbeddingRequest, EmbeddingResponse]
 
 register_type(EmbeddingService, module=__name__)
+
+
+def static_check_is_embedding_service[T: EmbeddingService](t: type[T]) -> type[T]:
+    return t

@@ -28,7 +28,7 @@ class VectorIndexOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorIndexRequest: ta.TypeAlias = Request[VectorIndexed, VectorIndexOption]
+VectorIndexOptions: ta.TypeAlias = VectorIndexOption
 
 
 ##
@@ -38,13 +38,21 @@ class VectorIndexOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexOutput]
+VectorIndexOutputs: ta.TypeAlias = VectorIndexOutput
 
 
 ##
 
 
+VectorIndexRequest: ta.TypeAlias = Request[VectorIndexed, VectorIndexOptions]
+
+VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexOutputs]
+
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 VectorIndexService: ta.TypeAlias = Service[VectorIndexRequest, VectorIndexResponse]
 
 register_type(VectorIndexService, module=__name__)
+
+
+def static_check_is_vector_index_service[T: VectorIndexService](t: type[T]) -> type[T]:
+    return t

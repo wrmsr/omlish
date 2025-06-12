@@ -22,9 +22,6 @@ class CompletionOption(Option, lang.Abstract, lang.Sealed):
 CompletionOptions: ta.TypeAlias = CompletionOption | LlmOption
 
 
-CompletionRequest: ta.TypeAlias = Request[str, CompletionOptions]
-
-
 ##
 
 
@@ -35,13 +32,18 @@ class CompletionOutput(Output, lang.Abstract, lang.Sealed):
 CompletionOutputs: ta.TypeAlias = CompletionOutput | LlmOutput
 
 
-CompletionResponse: ta.TypeAlias = Response[str, CompletionOutputs]
-
-
 ##
 
+
+CompletionRequest: ta.TypeAlias = Request[str, CompletionOptions]
+
+CompletionResponse: ta.TypeAlias = Response[str, CompletionOutputs]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 CompletionService: ta.TypeAlias = Service[CompletionRequest, CompletionResponse]
 
 register_type(CompletionService, module=__name__)
+
+
+def static_check_is_completion_service[T: CompletionService](t: type[T]) -> type[T]:
+    return t

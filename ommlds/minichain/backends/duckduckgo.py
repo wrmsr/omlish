@@ -6,7 +6,7 @@ from ..search import SearchHit
 from ..search import SearchHits
 from ..search import SearchRequest
 from ..search import SearchResponse
-from ..search import SearchService
+from ..search import static_check_is_search_service
 
 
 if ta.TYPE_CHECKING:
@@ -23,7 +23,8 @@ else:
 #     aliases=['ddg'],
 #     type='SearchService',
 # )
-class DuckduckgoSearchService(SearchService):
+@static_check_is_search_service
+class DuckduckgoSearchService:
     def invoke(self, request: SearchRequest) -> SearchResponse:
         ddgs = duckduckgo_search.DDGS()
         res = ddgs.text(request.v)

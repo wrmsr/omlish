@@ -14,7 +14,7 @@ from ...chat.choices.types import AiChoices
 from ...chat.messages import AiMessage
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
-from ...chat.stream.services import ChatChoicesStreamService
+from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...resources import Resources
 from ...stream import ResponseGenerator
 from .chat import LlamacppChatChoicesService
@@ -26,7 +26,8 @@ from .format import get_msg_content
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesStreamService')
-class LlamacppChatChoicesStreamService(ChatChoicesStreamService, lang.ExitStacked):
+@static_check_is_chat_choices_stream_service
+class LlamacppChatChoicesStreamService(lang.ExitStacked):
     def __init__(self) -> None:
         super().__init__()
 

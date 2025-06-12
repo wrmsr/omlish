@@ -11,7 +11,7 @@ from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
-from ...chat.stream.services import ChatChoicesStreamService
+from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.types import ChatChoicesStreamOption
 from ...configs import Config
 from ...configs import consume_configs
@@ -27,7 +27,8 @@ from .format import OpenaiChatRequestHandler
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesStreamService')
-class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
+@static_check_is_chat_choices_stream_service
+class OpenaiChatChoicesStreamService:
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 

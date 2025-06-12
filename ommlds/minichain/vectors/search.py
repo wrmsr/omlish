@@ -48,7 +48,7 @@ class VectorSearchSimilarity(VectorSearchOption, lang.Final):
     similarity: Similarity
 
 
-VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchOption]
+VectorSearchOptions: ta.TypeAlias = VectorSearchOption
 
 
 ##
@@ -58,13 +58,21 @@ class VectorSearchOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchOutput]
+VectorSearchOutputs: ta.TypeAlias = VectorSearchOutput
 
 
 ##
 
 
+VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchOptions]
+
+VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchOutputs]
+
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 VectorSearchService: ta.TypeAlias = Service[VectorSearchRequest, VectorSearchResponse]
 
 register_type(VectorSearchService, module=__name__)
+
+
+def static_check_is_vector_search_service[T: VectorSearchService](t: type[T]) -> type[T]:
+    return t

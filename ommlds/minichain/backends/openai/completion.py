@@ -6,7 +6,7 @@ from omlish.http import all as http
 
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
-from ...completion import CompletionService
+from ...completion import static_check_is_completion_service
 from ...configs import Config
 from ...configs import consume_configs
 from ...standard import ApiKey
@@ -16,7 +16,8 @@ from ...standard import ApiKey
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='CompletionService')
-class OpenaiCompletionService(CompletionService):
+@static_check_is_completion_service
+class OpenaiCompletionService:
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = 'gpt-3.5-turbo-instruct'
 
     def __init__(self, *configs: Config) -> None:

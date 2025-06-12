@@ -7,7 +7,7 @@ from ...configs import consume_configs
 from ...standard import ApiKey
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
-from ...vectors.embeddings import EmbeddingService
+from ...vectors.embeddings import static_check_is_embedding_service
 from ...vectors.types import Vector
 
 
@@ -15,7 +15,8 @@ from ...vectors.types import Vector
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='EmbeddingService')
-class OpenaiEmbeddingService(EmbeddingService):
+@static_check_is_embedding_service
+class OpenaiEmbeddingService:
     model = 'text-embedding-3-small'
 
     def __init__(self, *configs: Config) -> None:

@@ -105,7 +105,7 @@ wikitextparser==0.56.4  # !! GPL
 executing==2.2.0
 asttokens==3.0.0
 
-numpy>=1.20
+numpy>=2.3.0
 
 prompt-toolkit==3.0.51
 
@@ -132,7 +132,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.35
+boto3>=1.38.36
 
 antlr4-python3-runtime==4.13.2
 

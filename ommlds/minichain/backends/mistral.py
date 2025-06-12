@@ -10,7 +10,7 @@ from omlish.http import all as http
 
 from ..chat.choices.services import ChatChoicesRequest
 from ..chat.choices.services import ChatChoicesResponse
-from ..chat.choices.services import ChatChoicesService
+from ..chat.choices.services import static_check_is_chat_choices_service
 from ..chat.choices.types import AiChoice
 from ..chat.messages import AiMessage
 from ..chat.messages import Message
@@ -22,7 +22,8 @@ from ..chat.messages import UserMessage
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='mistral', type='ChatChoicesService')
-class MistralChatChoicesService(ChatChoicesService):
+@static_check_is_chat_choices_service
+class MistralChatChoicesService:
     model: ta.ClassVar[str] = 'mistral-large-latest'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {

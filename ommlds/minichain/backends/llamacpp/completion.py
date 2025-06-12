@@ -10,7 +10,7 @@ from ....backends import llamacpp as lcu
 from ...completion import CompletionOption
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse
-from ...completion import CompletionService
+from ...completion import static_check_is_completion_service
 from ...configs import Config
 from ...configs import consume_configs
 from ...llms.types import LlmOption
@@ -23,7 +23,8 @@ from ...standard import ModelPath
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='CompletionService')
-class LlamacppCompletionService(CompletionService):
+@static_check_is_completion_service
+class LlamacppCompletionService:
     # hf.hf_hub_download(
     #   revision='1ca85c857dce892b673b988ad0aa83f2cb1bbd19',
     #   repo_id='QuantFactory/Meta-Llama-3-8B-GGUF',

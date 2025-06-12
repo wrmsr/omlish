@@ -20,7 +20,7 @@ from omlish.http import all as http
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import DefaultOptions
@@ -32,7 +32,8 @@ from .format import OpenaiChatRequestHandler
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
-class OpenaiChatChoicesService(ChatChoicesService):
+@static_check_is_chat_choices_service
+class OpenaiChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
         'gpt-4o'
         # 'gpt-4o-mini'

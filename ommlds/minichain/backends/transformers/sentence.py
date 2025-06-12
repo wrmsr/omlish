@@ -8,7 +8,7 @@ from ...content.images import ImageContent
 from ...standard import ModelPath
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
-from ...vectors.embeddings import EmbeddingService
+from ...vectors.embeddings import static_check_is_embedding_service
 from ...vectors.types import Vector
 
 
@@ -20,7 +20,8 @@ from ...vectors.types import Vector
 #     aliases=['stfm'],
 #     type='EmbeddingService',
 # )
-class SentenceTransformersEmbeddingService(EmbeddingService):
+@static_check_is_embedding_service
+class SentenceTransformersEmbeddingService:
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'clip-ViT-B-32'
     )

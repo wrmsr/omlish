@@ -17,7 +17,7 @@ from ...search import SearchHit
 from ...search import SearchHits
 from ...search import SearchRequest
 from ...search import SearchResponse
-from ...search import SearchService
+from ...search import static_check_is_search_service
 
 
 ##
@@ -76,7 +76,8 @@ class CseSearchResponse(lang.Final):
 #     cse_api_key: sec.Secret
 
 
-class CseSearchService(SearchService):
+@static_check_is_search_service
+class CseSearchService:
     def __init__(
             self,
             cse_id: str | None = None,

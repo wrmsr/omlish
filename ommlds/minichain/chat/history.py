@@ -9,6 +9,7 @@ from .messages import Message
 from .services import ChatRequest
 from .services import ChatResponse
 from .services import ChatService
+from .services import static_check_is_chat_service
 
 
 ##
@@ -43,7 +44,8 @@ class ListChatHistory(ChatHistory):
         self._lst.clear()
 
 
-class ChatHistoryService(ChatService):
+@static_check_is_chat_service
+class ChatHistoryService:
     def __init__(
             self,
             underlying: ChatService,
