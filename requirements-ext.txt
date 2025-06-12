@@ -50,7 +50,7 @@ watchdog==6.0.0
 
 pyright[nodejs]==1.1.402
 
-basedpyright==1.29.3
+basedpyright==1.29.4
 
 blobfile==3.0.0
 
