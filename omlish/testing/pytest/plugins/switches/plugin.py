@@ -3,6 +3,7 @@ TODO:
  - inheritance
  - dynamic registration
  - dynamic switching (skip docker if not running, skip online if not online, ...)
+ - probably make IF_SINGLE understand parametErization
 """
 import dataclasses as dc
 import typing as ta
@@ -121,6 +122,7 @@ class SwitchesPlugin:
     def pytest_sessionstart(self, session):
         session.stash[self._states_key] = self._States(session)
 
+    @pytest.hookimpl(tryfirst=True)
     def pytest_collection_modifyitems(self, config, items):
         def process_item(item):
             state: SwitchesPlugin._States = item.session.stash[self._states_key]
