@@ -67,6 +67,11 @@ from .classes.namespaces import (  # noqa
     NamespaceMeta,
 )
 
+from .classes.protocols import (  # noqa
+    ProtocolForbiddenAsBaseClass,
+    ProtocolForbiddenAsBaseClassTypeError,
+)
+
 from .classes.restrict import (  # noqa
     AnySensitive,
     Final,
