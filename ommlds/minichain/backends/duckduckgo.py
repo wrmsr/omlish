@@ -18,7 +18,7 @@ else:
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(
+# @omlish-manifest $.minichain.registry.RegistryManifest(
 #     name='duckduckgo',
 #     aliases=['ddg'],
 #     type='SearchService',

@@ -23,7 +23,7 @@ from ...standard import ModelName
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class GoogleChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (

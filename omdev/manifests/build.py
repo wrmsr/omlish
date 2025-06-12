@@ -139,18 +139,28 @@ class ManifestBuilder:
 
         lines = src.splitlines(keepends=True)
 
+        def prepare(s: str) -> ta.Any:
+            if s.startswith('$.'):
+                s = f'{mod_base}.{s[2:]}'
+            return magic.py_compile_magic_preparer(s)
+
         magics = magic.find_magic(
             magic.PY_MAGIC_STYLE,
             lines,
             file=file,
             keys={MANIFEST_MAGIC_KEY},
+            preparer=prepare,
         )
 
         origins: ta.List[ManifestOrigin] = []
         targets: ta.List[dict] = []
         for m in magics:
             if m.body:
-                pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(m.body))
+                body = m.body
+                if body.startswith('$.'):
+                    body = f'{mod_base}.{body[2:]}'
+
+                pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(body))
                 cls_name = check.non_empty_str(pat_match.groupdict()['cls_name'])
                 has_cls_args = bool(pat_match.groupdict().get('cls_args'))
 
@@ -165,7 +175,7 @@ class ManifestBuilder:
                 check.is_(cls_reload, cls)
 
                 if has_cls_args:
-                    inl_init_src = m.body[len(cls_name):]
+                    inl_init_src = body[len(cls_name):]
                 else:
                     inl_init_src = '()'
 

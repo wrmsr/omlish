@@ -16,7 +16,7 @@ from ...chat.messages import UserMessage
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class TinygradLlama3ChatChoicesService(lang.ExitStacked):
     DEFAULT_SIZE: ta.ClassVar[str] = '1B'

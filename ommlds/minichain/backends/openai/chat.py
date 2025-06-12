@@ -31,7 +31,7 @@ from .format import OpenaiChatRequestHandler
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class OpenaiChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (

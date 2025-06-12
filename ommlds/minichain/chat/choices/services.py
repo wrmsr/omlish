@@ -21,7 +21,7 @@ ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesOptions]
 
 ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesOutputs]
 
-# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
+# @omlish-manifest $.minichain.registry.RegistryTypeManifest
 ChatChoicesService: ta.TypeAlias = Service[ChatChoicesRequest, ChatChoicesResponse]
 
 register_type(ChatChoicesService, module=__name__)

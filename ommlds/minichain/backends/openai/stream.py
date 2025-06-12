@@ -26,7 +26,7 @@ from .format import OpenaiChatRequestHandler
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesStreamService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesStreamService')
 @static_check_is_chat_choices_stream_service
 class OpenaiChatChoicesStreamService:
     def __init__(self, *configs: Config) -> None:

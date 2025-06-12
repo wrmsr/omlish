@@ -48,7 +48,7 @@ VectorIndexRequest: ta.TypeAlias = Request[VectorIndexed, VectorIndexOptions]
 
 VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexOutputs]
 
-# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
+# @omlish-manifest $.minichain.registry.RegistryTypeManifest
 VectorIndexService: ta.TypeAlias = Service[VectorIndexRequest, VectorIndexResponse]
 
 register_type(VectorIndexService, module=__name__)

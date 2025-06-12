@@ -22,7 +22,7 @@ from ...standard import ModelPath
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='CompletionService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='llamacpp', type='CompletionService')
 @static_check_is_completion_service
 class LlamacppCompletionService:
     # hf.hf_hub_download(

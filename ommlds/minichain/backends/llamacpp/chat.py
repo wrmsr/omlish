@@ -29,7 +29,7 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class LlamacppChatChoicesService:
     DEFAULT_MODEL_PATH: ta.ClassVar[str] = os.path.join(

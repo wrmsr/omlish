@@ -39,7 +39,7 @@ EmbeddingRequest: ta.TypeAlias = Request[Content, EmbeddingOptions]
 
 EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingOutputs]
 
-# @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
+# @omlish-manifest $.minichain.registry.RegistryTypeManifest
 EmbeddingService: ta.TypeAlias = Service[EmbeddingRequest, EmbeddingResponse]
 
 register_type(EmbeddingService, module=__name__)
