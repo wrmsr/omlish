@@ -43,7 +43,6 @@ class SearchOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-
 ##
 
 

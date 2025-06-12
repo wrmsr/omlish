@@ -13,9 +13,9 @@ from ...completion import CompletionResponse
 from ...completion import CompletionService
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import LlmOption
-from ...llms.services import MaxTokens
-from ...llms.services import Temperature
+from ...llms.types import LlmOption
+from ...llms.types import MaxTokens
+from ...llms.types import Temperature
 from ...standard import ModelPath
 
 

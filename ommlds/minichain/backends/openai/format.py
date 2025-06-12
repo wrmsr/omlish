@@ -6,9 +6,9 @@ from omlish import lang
 from omlish import typedvalues as tv
 from omlish.formats import json
 
-from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message
@@ -16,10 +16,10 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...chat.tools import Tool
-from ...llms.services import MaxTokens
-from ...llms.services import Temperature
-from ...llms.services import TokenUsage
-from ...llms.services import TokenUsageOutput
+from ...llms.types import MaxTokens
+from ...llms.types import Temperature
+from ...llms.types import TokenUsage
+from ...llms.types import TokenUsageOutput
 from ...tools.jsonschema import build_tool_spec_json_schema
 from ...tools.types import ToolExecRequest
 from ...tools.types import ToolSpec

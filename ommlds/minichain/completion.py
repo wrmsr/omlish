@@ -2,8 +2,8 @@ import typing as ta
 
 from omlish import lang
 
-from .llms.services import LlmOption
-from .llms.services import LlmOutput
+from .llms.types import LlmOption
+from .llms.types import LlmOutput
 from .registry import register_type
 from .services import Request
 from .services import Response

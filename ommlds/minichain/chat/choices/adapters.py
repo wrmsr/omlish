@@ -6,8 +6,8 @@ from ...services import Response
 from ..messages import AiMessage
 from ..services import ChatRequest
 from ..services import ChatService
-from .services import ChatChoicesOutputs
 from .services import ChatChoicesService
+from .types import ChatChoicesOutputs
 
 
 ##

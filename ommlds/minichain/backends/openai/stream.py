@@ -9,10 +9,10 @@ from omlish.io.buffers import DelimitingBuffer
 from ...chat.choices.services import ChatChoicesOutputs
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
-from ...chat.stream.services import ChatChoicesStreamOption
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import ChatChoicesStreamService
+from ...chat.stream.types import ChatChoicesStreamOption
 from ...configs import Config
 from ...configs import consume_configs
 from ...resources import Resources

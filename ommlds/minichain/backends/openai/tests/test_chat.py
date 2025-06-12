@@ -11,8 +11,8 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools import Tool
-from ....llms.services import MaxTokens
-from ....llms.services import Temperature
+from ....llms.types import MaxTokens
+from ....llms.types import Temperature
 from ....standard import ApiKey
 from ....standard import DefaultOptions
 from ....tools.types import ToolDtype

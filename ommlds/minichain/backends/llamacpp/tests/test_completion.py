@@ -1,6 +1,6 @@
 import pytest
 
-from ....llms.services import MaxTokens
+from ....llms.types import MaxTokens
 from ....services import Request
 from ..completion import LlamacppCompletionService
 

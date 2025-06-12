@@ -266,7 +266,7 @@
     "module": ".minichain.chat.choices.services",
     "attr": null,
     "file": "ommlds/minichain/chat/choices/services.py",
-    "line": 47,
+    "line": 24,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.chat.choices.services",
@@ -290,7 +290,7 @@
     "module": ".minichain.chat.stream.services",
     "attr": null,
     "file": "ommlds/minichain/chat/stream/services.py",
-    "line": 51,
+    "line": 29,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.chat.stream.services",
@@ -314,7 +314,7 @@
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlds/minichain/search.py",
-    "line": 55,
+    "line": 53,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.search",

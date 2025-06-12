@@ -7,12 +7,8 @@ from .chat.choices.adapters import (  # noqa
 )
 
 from .chat.choices.services import (  # noqa
-    ChatChoicesOption,
-    ChatChoicesOptions,
     ChatChoicesRequest,
 
-    ChatChoicesOutput,
-    ChatChoicesOutputs,
     ChatChoicesResponse,
 
     ChatChoicesService,
@@ -21,6 +17,12 @@ from .chat.choices.services import (  # noqa
 )
 
 from .chat.choices.types import (  # noqa
+    ChatChoicesOption,
+    ChatChoicesOptions,
+
+    ChatChoicesOutput,
+    ChatChoicesOutputs,
+
     AiChoice,
     AiChoices,
 )
@@ -30,17 +32,21 @@ from .chat.stream.adapters import (  # noqa
 )
 
 from .chat.stream.services import (  # noqa
-    ChatChoicesStreamOption,
-    ChatChoicesStreamOptions,
     ChatChoicesStreamRequest,
 
-    ChatChoicesStreamOutput,
-    ChatChoicesStreamOutputs,
     ChatChoicesStreamResponse,
 
     ChatChoicesStreamService,
 
     AbstractChatChoicesStreamService,
+)
+
+from .chat.stream.types import (  # noqa
+    ChatChoicesStreamOption,
+    ChatChoicesStreamOptions,
+
+    ChatChoicesStreamOutput,
+    ChatChoicesStreamOutputs,
 )
 
 from .chat.transforms.base import (  # noqa
@@ -152,7 +158,7 @@ from .llms.tokens import (  # noqa
     Tokens,
 )
 
-from .llms.services import (  # noqa
+from .llms.types import (  # noqa
     LlmOption,
 
     TopK,

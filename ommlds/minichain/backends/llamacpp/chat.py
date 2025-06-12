@@ -9,17 +9,17 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ....backends import llamacpp as lcu
-from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
 from ...chat.tools import Tool
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import MaxTokens
-from ...llms.services import Temperature
+from ...llms.types import MaxTokens
+from ...llms.types import Temperature
 from ...standard import ModelPath
 from ...tools.types import PrimitiveToolDtype
 from .format import ROLES_MAP

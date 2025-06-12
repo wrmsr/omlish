@@ -5,18 +5,18 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ....backends import mlx as mlxu
-from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import MaxTokens
+from ...llms.types import MaxTokens
 from ...standard import DefaultOptions
 from ...standard import ModelName
 
