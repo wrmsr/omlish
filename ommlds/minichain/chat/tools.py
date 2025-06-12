@@ -2,7 +2,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..tools.types import ToolSpec
-from .services import ChatOption
+from .types import ChatOption
 
 
 ##

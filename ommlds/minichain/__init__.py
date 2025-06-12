@@ -79,12 +79,8 @@ from .chat.messages import (  # noqa
 )
 
 from .chat.services import (  # noqa
-    ChatOption,
-    ChatOptions,
     ChatRequest,
 
-    ChatOutput,
-    ChatOutputs,
     ChatResponse,
 
     ChatService,
@@ -104,6 +100,14 @@ from .chat.templating import (  # noqa
 
 from .chat.tools import (  # noqa
     Tool,
+)
+
+from .chat.types import (  # noqa
+    ChatOption,
+    ChatOptions,
+
+    ChatOutput,
+    ChatOutputs,
 )
 
 ##

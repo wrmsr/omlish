@@ -3,7 +3,7 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ..json import JsonSchema
-from .services import ChatOption
+from .types import ChatOption
 
 
 ##

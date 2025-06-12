@@ -278,7 +278,7 @@
     "module": ".minichain.chat.services",
     "attr": null,
     "file": "ommlds/minichain/chat/services.py",
-    "line": 47,
+    "line": 23,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.chat.services",

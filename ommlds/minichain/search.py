@@ -36,9 +36,6 @@ class SearchOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-SearchRequest: ta.TypeAlias = Request[str, SearchOption]
-
-
 ##
 
 
@@ -46,11 +43,13 @@ class SearchOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-SearchResponse: ta.TypeAlias = Response[SearchHits, SearchOutput]
-
 
 ##
 
+
+SearchRequest: ta.TypeAlias = Request[str, SearchOption]
+
+SearchResponse: ta.TypeAlias = Response[SearchHits, SearchOutput]
 
 # @omlish-manifest ommlds.minichain.registry.RegistryTypeManifest
 SearchService: ta.TypeAlias = Service[SearchRequest, SearchResponse]
