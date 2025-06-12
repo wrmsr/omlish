@@ -185,6 +185,8 @@ import json
 
 import pytest
 
+from omlish.testing import pytest as ptu
+
 from ....tools.jsonschema import build_tool_spec_json_schema
 from ....tools.types import PrimitiveToolDtype
 from ....tools.types import ToolParam
@@ -308,6 +310,7 @@ def test_dump_chat_templates():
 
 @pytest.mark.not_docker_guest
 @pytest.mark.high_mem
+@ptu.skip.if_cant_import('mlx', 'mlx_lm')
 def test_mlx():
     import mlx.nn  # noqa
     import mlx_lm.models.cache
