@@ -61,6 +61,10 @@ from .classes.abstract import (  # noqa
     unabstract_class,
 )
 
+from .classes.bindable import (  # noqa
+    BindableClass,
+)
+
 from .classes.namespaces import (  # noqa
     GenericNamespaceMeta,
     Namespace,

@@ -27,7 +27,11 @@ class _NOT_SET(lang.Marker):  # noqa
     pass
 
 
-class TypedValuesAccessor(lang.Abstract, ta.Sequence[TypedValueT0]):
+class TypedValuesAccessor(
+    lang.Abstract,
+    ta.Sequence[TypedValueT0],
+    ta.Generic[TypedValueT0],
+):
     def __iter__(self):
         raise TypeError(
             'TypedValuesAccessor does not implement __iter__ - it is reserved for implementation by subclasses.',
