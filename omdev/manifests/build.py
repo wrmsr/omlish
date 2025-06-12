@@ -63,7 +63,7 @@ class _ManifestGlobalPat:
 
 _MANIFEST_GLOBAL_PATS: ta.Sequence[_ManifestGlobalPat] = [
     _ManifestGlobalPat(re.compile(rf'^{_NAME_PAT_PART}\s*=.*')),
-    _ManifestGlobalPat(re.compile(rf'^class {_NAME_PAT_PART}\s*(\(|:|$)'), re.compile(r'^[#@].*')),
+    _ManifestGlobalPat(re.compile(rf'^class {_NAME_PAT_PART}\s*(\(|:|$)'), re.compile(r'^[#@\s].*')),
     _ManifestGlobalPat(re.compile(rf'^{_NAME_PAT_PART}:\s+(ta\.|typing\.|)?TypeAlias\s+=.*')),
 ]
 
