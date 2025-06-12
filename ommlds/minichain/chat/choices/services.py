@@ -27,6 +27,10 @@ ChatChoicesService: ta.TypeAlias = Service[ChatChoicesRequest, ChatChoicesRespon
 register_type(ChatChoicesService, module=__name__)
 
 
+def static_check_is_chat_choices_service[T: ChatChoicesService](t: type[T]) -> type[T]:
+    return t
+
+
 ##
 
 

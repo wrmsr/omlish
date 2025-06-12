@@ -32,6 +32,10 @@ ChatChoicesStreamService: ta.TypeAlias = Service[ChatChoicesStreamRequest, ChatC
 register_type(ChatChoicesStreamService, module=__name__)
 
 
+def static_check_is_chat_choices_stream_service[T: ChatChoicesStreamService](t: type[T]) -> type[T]:
+    return t
+
+
 ##
 
 

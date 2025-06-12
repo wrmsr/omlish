@@ -8,12 +8,10 @@ from .chat.choices.adapters import (  # noqa
 
 from .chat.choices.services import (  # noqa
     ChatChoicesRequest,
-
     ChatChoicesResponse,
-
     ChatChoicesService,
-
     AbstractChatChoicesService,
+    static_check_is_chat_choices_service,
 )
 
 from .chat.choices.types import (  # noqa
@@ -33,12 +31,10 @@ from .chat.stream.adapters import (  # noqa
 
 from .chat.stream.services import (  # noqa
     ChatChoicesStreamRequest,
-
     ChatChoicesStreamResponse,
-
     ChatChoicesStreamService,
-
     AbstractChatChoicesStreamService,
+    static_check_is_chat_choices_stream_service,
 )
 
 from .chat.stream.types import (  # noqa
@@ -86,12 +82,10 @@ from .chat.messages import (  # noqa
 
 from .chat.services import (  # noqa
     ChatRequest,
-
     ChatResponse,
-
     ChatService,
-
     AbstractChatService,
+    static_check_is_chat_service,
 )
 
 from .chat.templating import (  # noqa

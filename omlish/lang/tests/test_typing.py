@@ -62,6 +62,45 @@ def test_bar():
     assert isinstance(Bar(), Bar)
 
 
-# @static_check_issubclass[Foo]()  # FAILS
-# class Baz:
-#     pass
+@static_check_issubclass[Foo]()  # type: ignore[arg-type]  # FAILS
+class Baz:
+    pass
+
+
+##
+
+
+class FooProto(ta.Protocol):
+    def foo(self) -> None: ...
+
+
+FooProtoT = ta.TypeVar('FooProtoT', bound=FooProto)
+
+
+def static_check_is_foo_proto(t: type[FooProtoT]) -> type[FooProtoT]:
+    return t
+
+
+@static_check_is_foo_proto
+class FooImpl:
+    def foo(self) -> None:
+        pass
+
+
+@static_check_is_foo_proto
+class BarImpl:  # type: ignore[type-var]  # FAILS
+    def bar(self) -> None:
+        pass
+
+
+##
+# FIXME:
+
+# @static_check_issubclass[FooProto]
+# @static_check_issubclass[FooProto]
+# class FooImpl2:
+#     def foo(self) -> None:
+#         pass
+#
+#
+# static_check_issubclass[FooProto](FooImpl2)

@@ -5,6 +5,7 @@ TODO:
  - embed in pyproject
  - roundtrip flexibility regarding json-ness - tuples vs lists vs sets vs frozensets etc
  - kill _MANIFEST_GLOBAL_PATS lol, ast walk
+  - garbage skip_pat doesn't handle multiline decos, etc
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -53,18 +54,31 @@ MANIFEST_MAGIC_KEY = '@omlish-manifest'
 _IDENT_PAT_PART = r'[A-Za-z_][A-Za-z0-9_]*'
 _NAME_PAT_PART = rf'(?P<name>{_IDENT_PAT_PART})'
 
-_MANIFEST_GLOBAL_PATS = tuple(re.compile(p) for p in [
-    rf'^{_NAME_PAT_PART}\s*=.*',
-    rf'^class {_NAME_PAT_PART}\s*(\(|$)',
-    rf'^{_NAME_PAT_PART}:\s+(ta\.|typing\.||)TypeAlias\s+=.*',
-])
+
+@dc.dataclass(frozen=True)
+class _ManifestGlobalPat:
+    name_pat: re.Pattern
+    skip_pat: ta.Optional[re.Pattern] = None
 
 
-def extract_manifest_target_name(line: str) -> str:
-    for pat in _MANIFEST_GLOBAL_PATS:
-        if (m := pat.match(line)) is not None:
-            return m.groupdict()['name']
-    raise Exception(line)
+_MANIFEST_GLOBAL_PATS: ta.Sequence[_ManifestGlobalPat] = [
+    _ManifestGlobalPat(re.compile(rf'^{_NAME_PAT_PART}\s*=.*')),
+    _ManifestGlobalPat(re.compile(rf'^class {_NAME_PAT_PART}\s*(\(|:|$)'), re.compile(r'^[#@].*')),
+    _ManifestGlobalPat(re.compile(rf'^{_NAME_PAT_PART}:\s+(ta\.|typing\.|)?TypeAlias\s+=.*')),
+]
+
+
+def extract_manifest_target_name(lines: ta.Sequence[str], start_idx: int) -> str:
+    check.not_isinstance(lines, str)
+    for mgp in _MANIFEST_GLOBAL_PATS:
+        cur_idx = start_idx
+        while cur_idx < len(lines):
+            if (m := mgp.name_pat.match(lines[cur_idx])) is not None:
+                return m.groupdict()['name']
+            if mgp.skip_pat is None or not mgp.skip_pat.match(lines[cur_idx]):
+                break
+            cur_idx += 1
+    raise Exception(lines[start_idx])
 
 
 _INLINE_MANIFEST_CLS_NAME_PAT = re.compile(r'^(?P<cls_name>[_a-zA-Z][_a-zA-Z0-9.]*)\s*(?P<cls_args>\()?')
@@ -158,7 +172,7 @@ class ManifestBuilder:
                 inl_kw: dict = {}
 
                 if issubclass(cls, ModAttrManifest):
-                    attr_name = extract_manifest_target_name(lines[m.end_line])
+                    attr_name = extract_manifest_target_name(lines, m.end_line)
                     inl_kw.update({
                         'mod_name': mod_name,
                         'attr_name': attr_name,
@@ -183,8 +197,7 @@ class ManifestBuilder:
                 })
 
             else:
-                nl = lines[m.end_line]
-                attr_name = extract_manifest_target_name(nl)
+                attr_name = extract_manifest_target_name(lines, m.end_line)
 
                 origin = ManifestOrigin(
                     module='.'.join(['', *mod_name.split('.')[1:]]),

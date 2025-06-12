@@ -16,7 +16,7 @@ from omlish.secrets.secrets import Secret
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -28,7 +28,8 @@ from ...chat.messages import UserMessage
 
 
 # @omlish-manifest ommlds.minichain.registry.RegistryManifest(name='anthropic', type='ChatChoicesService')
-class AnthropicChatChoicesService(ChatChoicesService):
+@static_check_is_chat_choices_service
+class AnthropicChatChoicesService:
     model: ta.ClassVar[str] = (
         'claude-3-5-sonnet-20241022'
         # 'claude-3-opus-20240229'
