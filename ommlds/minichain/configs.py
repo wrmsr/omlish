@@ -21,8 +21,8 @@ def consume_configs(
         override: bool = False,
         check_type: type | tuple[type, ...] | None = None,
 ) -> tv.TypedValuesConsumer[Config]:
-    return tv.TypedValues(
+    return tv.of[Config].consume(
         *cfgs,
         override=override,
         check_type=check_type if check_type is not None else Config,
-    ).consume()
+    )

@@ -22,6 +22,10 @@ from .holder import (  # noqa
     TypedValueHolder,
 )
 
+from .of_ import (  # noqa
+    of,
+)
+
 from .reflect import (  # noqa
     reflect_typed_values_impls,
 )

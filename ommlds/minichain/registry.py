@@ -11,6 +11,7 @@ from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish.manifests import load as manifest_load
 from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.base import NameAliasesManifest
@@ -218,21 +219,10 @@ def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
 
 
 # PEP695 / https://github.com/python/mypy/issues/4717 workaround
-class _RegistryOf(ta.Generic[T]):  # noqa
-    @dc.dataclass(frozen=True)
-    class _Bound(ta.Generic[U]):  # noqa
-        cls: type[U]
-
-        def new(self, name: str, *args: ta.Any, **kwargs: ta.Any) -> U:
-            return registry_new(self.cls, name, *args, **kwargs)
-
-    def __class_getitem__(cls, *args, **kwargs):
-        [bind_cls] = args
-        return _RegistryOf._Bound(bind_cls)
-
+class _RegistryOf(lang.BindableClass[T]):  # noqa
     @classmethod
     def new(cls, name: str, *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
-        raise TypeError
+        return registry_new(check.not_none(cls._bound), name, *args, **kwargs)
 
 
 registry_of = _RegistryOf
