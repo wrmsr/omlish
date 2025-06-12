@@ -6,19 +6,19 @@ from omlish import typedvalues as tv
 
 from .resources import ResourceManaged
 from .services import Response
-from .services import ResponseOutput
+from .types import Output
 
 
 V = ta.TypeVar('V')
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
-StreamResponseOutputT = ta.TypeVar('StreamResponseOutputT', bound=ResponseOutput)
+OutputT = ta.TypeVar('OutputT', bound=Output)
+StreamOutputT = ta.TypeVar('StreamOutputT', bound=Output)
 
 
 ##
 
 
-class ResponseGenerator(lang.Final, ta.Generic[V, ResponseOutputT]):
-    def __init__(self, g: ta.Generator[V, None, ta.Sequence[ResponseOutputT] | None]) -> None:
+class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
+    def __init__(self, g: ta.Generator[V, None, ta.Sequence[OutputT] | None]) -> None:
         super().__init__()
 
         self._g = g
@@ -27,14 +27,14 @@ class ResponseGenerator(lang.Final, ta.Generic[V, ResponseOutputT]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}<{self._g!r}>'
 
-    _outputs: tv.TypedValues[ResponseOutputT]
+    _outputs: tv.TypedValues[OutputT]
 
     @property
     def is_done(self) -> bool:
         return self._is_done
 
     @property
-    def outputs(self) -> tv.TypedValues[ResponseOutputT]:
+    def outputs(self) -> tv.TypedValues[OutputT]:
         return self._outputs
 
     def __iter__(self) -> ta.Iterator[V]:
@@ -56,8 +56,8 @@ StreamResponse: ta.TypeAlias = Response[
     ResourceManaged[
         ResponseGenerator[
             V,
-            ResponseOutputT,
+            OutputT,
         ],
     ],
-    StreamResponseOutputT,
+    StreamOutputT,
 ]

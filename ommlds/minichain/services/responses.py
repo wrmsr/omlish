@@ -6,6 +6,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..types import Output
+from ..types import OutputT_contra
 from ._typedvalues import _TypedValues
 
 
@@ -15,40 +17,32 @@ V_co = ta.TypeVar('V_co', covariant=True)
 ##
 
 
-class ResponseOutput(tv.TypedValue, lang.Abstract):
-    pass
-
-
-# TODO: PEP696 default=ResponseOutput
-ResponseOutputT_contra = ta.TypeVar('ResponseOutputT_contra', bound=ResponseOutput, contravariant=True)
-
-
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(
     allow_dynamic_dunder_attrs=True,
     terse_repr=True,
 )
 class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invariant
-    _TypedValues[ResponseOutputT_contra],
+    _TypedValues[OutputT_contra],
     lang.Final,
-    ta.Generic[V_co, ResponseOutputT_contra],
+    ta.Generic[V_co, OutputT_contra],
 ):
     v: V_co
 
-    _outputs: ta.Sequence[ResponseOutputT_contra] = dc.field(
+    _outputs: ta.Sequence[OutputT_contra] = dc.field(
         default=(),
         metadata=_tv_field_metadata(
-            ResponseOutput,
+            Output,
             marshal_name='outputs',
         ),
     )
 
     @property
-    def outputs(self) -> tv.TypedValues[ResponseOutputT_contra]:
+    def outputs(self) -> tv.TypedValues[OutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)
 
     @property
-    def _typed_values(self) -> tv.TypedValues[ResponseOutputT_contra]:
+    def _typed_values(self) -> tv.TypedValues[OutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)
 
     def validate(self) -> ta.Self:

@@ -7,12 +7,12 @@ from .chat.choices.adapters import (  # noqa
 )
 
 from .chat.choices.services import (  # noqa
-    ChatChoicesRequestOption,
-    ChatChoicesRequestOptions,
+    ChatChoicesOption,
+    ChatChoicesOptions,
     ChatChoicesRequest,
 
-    ChatChoicesResponseOutput,
-    ChatChoicesResponseOutputs,
+    ChatChoicesOutput,
+    ChatChoicesOutputs,
     ChatChoicesResponse,
 
     ChatChoicesService,
@@ -30,12 +30,12 @@ from .chat.stream.adapters import (  # noqa
 )
 
 from .chat.stream.services import (  # noqa
-    ChatChoicesStreamRequestOption,
-    ChatChoicesStreamRequestOptions,
+    ChatChoicesStreamOption,
+    ChatChoicesStreamOptions,
     ChatChoicesStreamRequest,
 
-    ChatChoicesStreamResponseOutput,
-    ChatChoicesStreamResponseOutputs,
+    ChatChoicesStreamOutput,
+    ChatChoicesStreamOutputs,
     ChatChoicesStreamResponse,
 
     ChatChoicesStreamService,
@@ -79,12 +79,12 @@ from .chat.messages import (  # noqa
 )
 
 from .chat.services import (  # noqa
-    ChatRequestOption,
-    ChatRequestOptions,
+    ChatOption,
+    ChatOptions,
     ChatRequest,
 
-    ChatResponseOutput,
-    ChatResponseOutputs,
+    ChatOutput,
+    ChatOutputs,
     ChatResponse,
 
     ChatService,
@@ -149,13 +149,13 @@ from .llms.tokens import (  # noqa
 )
 
 from .llms.services import (  # noqa
-    LlmRequestOption,
+    LlmOption,
 
     TopK,
     Temperature,
     MaxTokens,
 
-    LlmResponseOutput,
+    LlmOutput,
 
     FinishReason,
     FinishReasonOutput,
@@ -168,9 +168,7 @@ from .llms.services import (  # noqa
 
 from .services import (  # noqa
     Request,
-    RequestOption,
     Response,
-    ResponseOutput,
     Service,
     ServiceFacade,
 )
@@ -210,17 +208,17 @@ from .tools.types import (  # noqa
 
 from .vectors.embeddings import (  # noqa
     EmbeddingRequest,
-    EmbeddingRequestOption,
+    EmbeddingOption,
     EmbeddingResponse,
-    EmbeddingResponseOutput,
+    EmbeddingOutput,
     EmbeddingService,
 )
 
 from .vectors.index import (  # noqa
     VectorIndexRequest,
-    VectorIndexRequestOption,
+    VectorIndexOption,
     VectorIndexResponse,
-    VectorIndexResponseOutput,
+    VectorIndexOutput,
     VectorIndexService,
     VectorIndexed,
 )
@@ -230,9 +228,9 @@ from .vectors.search import (  # noqa
     VectorHits,
     VectorSearch,
     VectorSearchRequest,
-    VectorSearchRequestOption,
+    VectorSearchOption,
     VectorSearchResponse,
-    VectorSearchResponseOutput,
+    VectorSearchOutput,
     VectorSearchService,
     VectorSearchSimilarity,
 )
@@ -257,12 +255,12 @@ from .vectors.types import (  # noqa
 ##
 
 from .completion import (  # noqa
-    CompletionRequestOption,
-    CompletionRequestOptions,
+    CompletionOption,
+    CompletionOptions,
     CompletionRequest,
 
-    CompletionResponseOutput,
-    CompletionResponseOutputs,
+    CompletionOutput,
+    CompletionOutputs,
     CompletionResponse,
 
     CompletionService,
@@ -310,13 +308,19 @@ from .standard import (  # noqa
 
     ApiKey,
 
-    DefaultRequestOptions,
+    DefaultOptions,
 )
 
 from .stream import (  # noqa
     ResponseGenerator,
 
     StreamResponse,
+)
+
+from .types import (  # noqa
+    Option,
+
+    Output,
 )
 
 

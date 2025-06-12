@@ -3,18 +3,18 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 
+from ..types import Option
+from ..types import Output
 from .requests import Request
-from .requests import RequestOption
 from .responses import Response
-from .responses import ResponseOutput
 from .services import Service
 
 
 RequestV = ta.TypeVar('RequestV')
-RequestOptionT = ta.TypeVar('RequestOptionT', bound=RequestOption)
+OptionT = ta.TypeVar('OptionT', bound=Option)
 
 ResponseV = ta.TypeVar('ResponseV')
-ResponseOutputT = ta.TypeVar('ResponseOutputT', bound=ResponseOutput)
+OutputT = ta.TypeVar('OutputT', bound=Output)
 
 
 ##
@@ -29,40 +29,40 @@ class ServiceFacade(
     Service[
         Request[
             RequestV,
-            RequestOptionT,
+            OptionT,
         ],
         Response[
             ResponseV,
-            ResponseOutputT,
+            OutputT,
         ],
     ],
     ta.Generic[
         RequestV,
-        RequestOptionT,
+        OptionT,
         ResponseV,
-        ResponseOutputT,
+        OutputT,
     ],
 ):
     service: Service[
         Request[
             RequestV,
-            RequestOptionT,
+            OptionT,
         ],
         Response[
             ResponseV,
-            ResponseOutputT,
+            OutputT,
         ],
     ]
 
-    def invoke(self, request: Request[RequestV, RequestOptionT]) -> Response[ResponseV, ResponseOutputT]:
+    def invoke(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
         return self.service.invoke(request)
 
     @ta.overload
-    def __call__(self, request: Request[RequestV, RequestOptionT]) -> Response[ResponseV, ResponseOutputT]:
+    def __call__(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
         ...
 
     @ta.overload
-    def __call__(self, v: RequestV, *options: RequestOptionT) -> Response[ResponseV, ResponseOutputT]:
+    def __call__(self, v: RequestV, *options: OptionT) -> Response[ResponseV, OutputT]:
         ...
 
     def __call__(self, o, *args):

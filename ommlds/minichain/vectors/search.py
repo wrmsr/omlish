@@ -5,10 +5,10 @@ from omlish import lang
 
 from ..registry import register_type
 from ..services import Request
-from ..services import RequestOption
 from ..services import Response
-from ..services import ResponseOutput
 from ..services import Service
+from ..types import Option
+from ..types import Output
 from .similarity import Similarity
 from .types import Vector
 
@@ -39,26 +39,26 @@ class VectorHits(lang.Final):
 ##
 
 
-class VectorSearchRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class VectorSearchOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
 @dc.dataclass(frozen=True)
-class VectorSearchSimilarity(VectorSearchRequestOption, lang.Final):
+class VectorSearchSimilarity(VectorSearchOption, lang.Final):
     similarity: Similarity
 
 
-VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchRequestOption]
+VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchOption]
 
 
 ##
 
 
-class VectorSearchResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class VectorSearchOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchResponseOutput]
+VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchOutput]
 
 
 ##

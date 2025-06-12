@@ -8,7 +8,7 @@ from omlish import check
 from omlish import lang
 
 from ....backends import llamacpp as lcu
-from ...chat.choices.services import ChatChoicesResponseOutputs
+from ...chat.choices.services import ChatChoicesOutputs
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
 from ...chat.messages import AiMessage
@@ -62,7 +62,7 @@ class LlamacppChatChoicesStreamService(ChatChoicesStreamService, lang.ExitStacke
 
             rs.enter_context(lang.defer(close_output))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesResponseOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesOutputs] | None]:
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
                     l: list[AiChoice] = []

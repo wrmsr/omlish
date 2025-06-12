@@ -6,11 +6,11 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from ...chat.choices.services import ChatChoicesResponseOutputs
+from ...chat.choices.services import ChatChoicesOutputs
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import AiChoices
+from ...chat.stream.services import ChatChoicesStreamOption
 from ...chat.stream.services import ChatChoicesStreamRequest
-from ...chat.stream.services import ChatChoicesStreamRequestOption
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import ChatChoicesStreamService
 from ...configs import Config
@@ -42,7 +42,7 @@ class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
 
         rh = OpenaiChatRequestHandler(
             request.v,
-            *[o for o in request.options if not isinstance(o, ChatChoicesStreamRequestOption)],
+            *[o for o in request.options if not isinstance(o, ChatChoicesStreamOption)],
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,
@@ -67,7 +67,7 @@ class OpenaiChatChoicesStreamService(ChatChoicesStreamService):
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesResponseOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesOutputs] | None]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:

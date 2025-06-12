@@ -23,7 +23,7 @@ from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...configs import consume_configs
 from ...standard import ApiKey
-from ...standard import DefaultRequestOptions
+from ...standard import DefaultOptions
 from ...standard import ModelName
 from .format import OpenaiChatRequestHandler
 
@@ -38,13 +38,13 @@ class OpenaiChatChoicesService(ChatChoicesService):
         # 'gpt-4o-mini'
     )
 
-    def __init__(self, *configs: ApiKey | ModelName | DefaultRequestOptions) -> None:
+    def __init__(self, *configs: ApiKey | ModelName | DefaultOptions) -> None:
         super().__init__()
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
-            self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
+            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         # check.isinstance(request, ChatRequest)

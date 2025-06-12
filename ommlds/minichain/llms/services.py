@@ -8,33 +8,33 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ..services import RequestOption
-from ..services import ResponseOutput
+from ..types import Option
+from ..types import Output
 
 
 ##
 
 
-class LlmRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class LlmOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-class TopK(LlmRequestOption, tv.UniqueScalarTypedValue[int]):
+class TopK(LlmOption, tv.UniqueScalarTypedValue[int]):
     pass
 
 
-class Temperature(LlmRequestOption, tv.UniqueScalarTypedValue[float]):
+class Temperature(LlmOption, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-class MaxTokens(LlmRequestOption, tv.UniqueScalarTypedValue[int]):
+class MaxTokens(LlmOption, tv.UniqueScalarTypedValue[int]):
     pass
 
 
 ##
 
 
-class LlmResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class LlmOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -46,7 +46,7 @@ class FinishReason(enum.Enum):
     OTHER = enum.auto()
 
 
-class FinishReasonOutput(LlmResponseOutput, tv.UniqueScalarTypedValue[FinishReason]):
+class FinishReasonOutput(LlmOutput, tv.UniqueScalarTypedValue[FinishReason]):
     pass
 
 
@@ -57,5 +57,5 @@ class TokenUsage(lang.Final):
     total: int
 
 
-class TokenUsageOutput(LlmResponseOutput, tv.UniqueScalarTypedValue[TokenUsage]):
+class TokenUsageOutput(LlmOutput, tv.UniqueScalarTypedValue[TokenUsage]):
     pass

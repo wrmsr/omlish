@@ -6,7 +6,7 @@ from omlish import lang
 from omlish import typedvalues as tv
 from omlish.formats import json
 
-from ...chat.choices.services import ChatChoicesRequestOptions
+from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
@@ -20,10 +20,10 @@ from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...llms.services import TokenUsage
 from ...llms.services import TokenUsageOutput
-from ...services import RequestOption
 from ...tools.jsonschema import build_tool_spec_json_schema
 from ...tools.types import ToolExecRequest
 from ...tools.types import ToolSpec
+from ...types import Option
 
 
 ##
@@ -77,7 +77,7 @@ class OpenaiChatRequestHandler:
     def __init__(
             self,
             chat: Chat,
-            *options: ChatChoicesRequestOptions,
+            *options: ChatChoicesOptions,
             model: str,
             mandatory_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
@@ -95,12 +95,12 @@ class OpenaiChatRequestHandler:
         ToolExecResultMessage: 'tool',
     }
 
-    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[RequestOption]] = tv.TypedValues(
+    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues(
         Temperature(0.),
         MaxTokens(1024),
     )
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
         temperature=Temperature,
         max_tokens=MaxTokens,
     )

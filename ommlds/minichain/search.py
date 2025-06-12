@@ -5,10 +5,10 @@ from omlish import lang
 
 from .registry import register_type
 from .services import Request
-from .services import RequestOption
 from .services import Response
-from .services import ResponseOutput
 from .services import Service
+from .types import Option
+from .types import Output
 
 
 ##
@@ -32,21 +32,21 @@ class SearchHits(lang.Final):
 ##
 
 
-class SearchRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class SearchOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-SearchRequest: ta.TypeAlias = Request[str, SearchRequestOption]
+SearchRequest: ta.TypeAlias = Request[str, SearchOption]
 
 
 ##
 
 
-class SearchResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class SearchOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-SearchResponse: ta.TypeAlias = Response[SearchHits, SearchResponseOutput]
+SearchResponse: ta.TypeAlias = Response[SearchHits, SearchOutput]
 
 
 ##

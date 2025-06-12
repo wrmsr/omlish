@@ -3,13 +3,13 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ..json import JsonSchema
-from .services import ChatRequestOption
+from .services import ChatOption
 
 
 ##
 
 
-class ResponseFormat(ChatRequestOption, tv.UniqueTypedValue, lang.Abstract, lang.Sealed):
+class ResponseFormat(ChatOption, tv.UniqueTypedValue, lang.Abstract, lang.Sealed):
     pass
 
 

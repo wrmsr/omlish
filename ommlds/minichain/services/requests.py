@@ -6,6 +6,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..types import Option
+from ..types import OptionT_co
 from ._typedvalues import _TypedValues
 
 
@@ -15,40 +17,32 @@ V_co = ta.TypeVar('V_co', covariant=True)
 ##
 
 
-class RequestOption(tv.TypedValue, lang.Abstract):
-    pass
-
-
-# TODO: PEP696 default=RequestOption
-RequestOptionT_co = ta.TypeVar('RequestOptionT_co', bound=RequestOption, covariant=True)
-
-
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(
     allow_dynamic_dunder_attrs=True,
     terse_repr=True,
 )
 class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invariant
-    _TypedValues[RequestOptionT_co],
+    _TypedValues[OptionT_co],
     lang.Final,
-    ta.Generic[V_co, RequestOptionT_co],
+    ta.Generic[V_co, OptionT_co],
 ):
     v: V_co
 
-    _options: ta.Sequence[RequestOptionT_co] = dc.field(
+    _options: ta.Sequence[OptionT_co] = dc.field(
         default=(),
         metadata=_tv_field_metadata(
-            RequestOption,
+            Option,
             marshal_name='options',
         ),
     )
 
     @property
-    def options(self) -> tv.TypedValues[RequestOptionT_co]:
+    def options(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
     @property
-    def _typed_values(self) -> tv.TypedValues[RequestOptionT_co]:
+    def _typed_values(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
     def validate(self) -> ta.Self:

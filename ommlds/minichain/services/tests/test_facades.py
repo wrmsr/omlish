@@ -4,10 +4,10 @@ from .chat import ApiKey
 from .chat import Chat
 from .chat import ChatRequest
 from .chat import ChatResponse
+from .chat import LocalChatOption
+from .chat import LocalChatOutput
 from .chat import LocalChatRequest
-from .chat import LocalChatRequestOption
 from .chat import LocalChatResponse  # noqa
-from .chat import LocalChatResponseOutput
 from .chat import LocalChatService  # noqa
 from .chat import LocalChatServiceImpl
 from .chat import MaxTokens
@@ -29,9 +29,9 @@ def test_facade():
 
     local_chat_service2 = ServiceFacade[
         Chat,
-        LocalChatRequestOption,
+        LocalChatOption,
         Message,
-        LocalChatResponseOutput,
+        LocalChatOutput,
     ](local_chat_service_impl)
     # ta.reveal_type(local_chat_service2)
 

@@ -4,10 +4,10 @@ import typing as ta
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ...types import Option
+from ...types import Output
 from ..requests import Request
-from ..requests import RequestOption
 from ..responses import Response
-from ..responses import ResponseOutput
 from ..services import Service
 
 
@@ -28,33 +28,33 @@ Chat: ta.TypeAlias = ta.Sequence[Message]
 # base
 
 
-class MaxTokens(RequestOption, tv.UniqueScalarTypedValue[int]):
+class MaxTokens(Option, tv.UniqueScalarTypedValue[int]):
     pass
 
 
-class Temperature(RequestOption, tv.UniqueScalarTypedValue[float]):
+class Temperature(Option, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-ChatRequestOption: ta.TypeAlias = MaxTokens | Temperature
+ChatOption: ta.TypeAlias = MaxTokens | Temperature
 
-ChatRequest: ta.TypeAlias = Request[Chat, ChatRequestOption]
+ChatRequest: ta.TypeAlias = Request[Chat, ChatOption]
 
 
 #
 
 
-class TokenUsage(ResponseOutput, tv.UniqueScalarTypedValue[int]):
+class TokenUsage(Output, tv.UniqueScalarTypedValue[int]):
     pass
 
 
-class ElapsedTime(ResponseOutput, tv.UniqueScalarTypedValue[float]):
+class ElapsedTime(Output, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-ChatResponseOutput: ta.TypeAlias = TokenUsage | ElapsedTime
+ChatOutput: ta.TypeAlias = TokenUsage | ElapsedTime
 
-ChatResponse: ta.TypeAlias = Response[Message, ChatResponseOutput]
+ChatResponse: ta.TypeAlias = Response[Message, ChatOutput]
 
 
 #
@@ -67,25 +67,25 @@ ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
 # local
 
 
-class ModelPath(RequestOption, tv.ScalarTypedValue[str]):
+class ModelPath(Option, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatRequestOption: ta.TypeAlias = ChatRequestOption | ModelPath
+LocalChatOption: ta.TypeAlias = ChatOption | ModelPath
 
-LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatRequestOption]
+LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOption]
 
 
 #
 
 
-class LogPath(ResponseOutput, tv.ScalarTypedValue[str]):
+class LogPath(Output, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatResponseOutput: ta.TypeAlias = ChatResponseOutput | LogPath
+LocalChatOutput: ta.TypeAlias = ChatOutput | LogPath
 
-LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatResponseOutput]
+LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutput]
 
 
 #
@@ -98,25 +98,25 @@ LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
 # remote
 
 
-class ApiKey(RequestOption, tv.ScalarTypedValue[str]):
+class ApiKey(Option, tv.ScalarTypedValue[str]):
     pass
 
 
-RemoteChatRequestOption: ta.TypeAlias = ChatRequestOption | ApiKey
+RemoteChatOption: ta.TypeAlias = ChatOption | ApiKey
 
-RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatRequestOption]
+RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOption]
 
 
 #
 
 
-class BilledCostInUsd(ResponseOutput, tv.UniqueScalarTypedValue[float]):
+class BilledCostInUsd(Output, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-RemoteChatResponseOutput: ta.TypeAlias = ChatResponseOutput | BilledCostInUsd
+RemoteChatOutput: ta.TypeAlias = ChatOutput | BilledCostInUsd
 
-RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatResponseOutput]
+RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutput]
 
 
 #

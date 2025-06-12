@@ -5,12 +5,12 @@ from omlish import lang
 
 from ...registry import register_type
 from ...services import Request
-from ...services import RequestOption
-from ...services import ResponseOutput
 from ...services import Service
 from ...stream import StreamResponse
-from ..choices.services import ChatChoicesRequestOptions
-from ..choices.services import ChatChoicesResponseOutputs
+from ...types import Option
+from ...types import Output
+from ..choices.services import ChatChoicesOptions
+from ..choices.services import ChatChoicesOutputs
 from ..choices.types import AiChoices
 from ..messages import Chat
 
@@ -18,30 +18,30 @@ from ..messages import Chat
 ##
 
 
-class ChatChoicesStreamRequestOption(RequestOption, lang.Abstract, lang.PackageSealed):
+class ChatChoicesStreamOption(Option, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatChoicesStreamRequestOptions = ChatChoicesStreamRequestOption | ChatChoicesRequestOptions
+ChatChoicesStreamOptions = ChatChoicesStreamOption | ChatChoicesOptions
 
 
-ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamRequestOptions]
+ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 
 
 ##
 
 
-class ChatChoicesStreamResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+class ChatChoicesStreamOutput(Output, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatChoicesStreamResponseOutputs = ChatChoicesStreamResponseOutput
+ChatChoicesStreamOutputs = ChatChoicesStreamOutput
 
 
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
     AiChoices,
-    ChatChoicesResponseOutputs,
-    ChatChoicesStreamResponseOutput,
+    ChatChoicesOutputs,
+    ChatChoicesStreamOutput,
 ]
 
 

@@ -6,7 +6,7 @@ from ...services import Response
 from ..messages import AiMessage
 from ..services import ChatRequest
 from ..services import ChatService
-from .services import ChatChoicesResponseOutputs
+from .services import ChatChoicesOutputs
 from .services import ChatChoicesService
 
 
@@ -17,7 +17,7 @@ from .services import ChatChoicesService
 class ChatChoicesServiceChatService:
     service: ChatChoicesService
 
-    def invoke(self, request: ChatRequest) -> Response[AiMessage, ChatChoicesResponseOutputs]:
+    def invoke(self, request: ChatRequest) -> Response[AiMessage, ChatChoicesOutputs]:
         resp = self.service.invoke(request)
         return Response(check.single(resp.v).m, resp.outputs)
 

@@ -2,18 +2,18 @@ import typing as ta
 
 from ...resources import ResourceManaged
 from ...resources import Resources
+from ...types import Output
 from ..responses import Response
-from ..responses import ResponseOutput
 
 
-IntManagerResponse: ta.TypeAlias = Response[ResourceManaged[Response[int, ResponseOutput]], ResponseOutput]
+IntManagerResponse: ta.TypeAlias = Response[ResourceManaged[Response[int, Output]], Output]
 
 
 def test_int_response():
     with Resources.new() as rsrc:
         irm = IntManagerResponse(
             ResourceManaged(
-                Response[int, ResponseOutput](420),
+                Response[int, Output](420),
                 rsrc,
             ),
         )
@@ -33,11 +33,11 @@ IntStreamManagerResponse: ta.TypeAlias = Response[
         ta.Iterator[
             Response[
                 int,
-                ResponseOutput,
+                Output,
             ],
         ],
     ],
-    ResponseOutput,
+    Output,
 ]
 
 
@@ -45,7 +45,7 @@ def test_int_stream_response():
     with Resources.new() as rsrc:
         irm = IntStreamManagerResponse(
             ResourceManaged(
-                iter([Response[int, ResponseOutput](420)]),
+                iter([Response[int, Output](420)]),
                 rsrc,
             ),
         )
@@ -66,7 +66,7 @@ def test_int_stream_response_from_fn():
         with Resources.new() as rsrc:
             return IntStreamManagerResponse(
                 ResourceManaged(
-                    iter([Response[int, ResponseOutput](420)]),
+                    iter([Response[int, Output](420)]),
                     rsrc,
                 ),
             )

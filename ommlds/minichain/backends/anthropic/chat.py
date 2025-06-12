@@ -63,7 +63,7 @@ class AnthropicChatChoicesService(ChatChoicesService):
             self,
             request: ChatChoicesRequest,
             *,
-            max_tokens: int = 4096,  # FIXME: ChatRequestOption
+            max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesResponse:
         messages = []
         system: str | None = None

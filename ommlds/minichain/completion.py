@@ -2,40 +2,40 @@ import typing as ta
 
 from omlish import lang
 
-from .llms.services import LlmRequestOption
-from .llms.services import LlmResponseOutput
+from .llms.services import LlmOption
+from .llms.services import LlmOutput
 from .registry import register_type
 from .services import Request
-from .services import RequestOption
 from .services import Response
-from .services import ResponseOutput
 from .services import Service
+from .types import Option
+from .types import Output
 
 
 ##
 
 
-class CompletionRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class CompletionOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-CompletionRequestOptions: ta.TypeAlias = CompletionRequestOption | LlmRequestOption
+CompletionOptions: ta.TypeAlias = CompletionOption | LlmOption
 
 
-CompletionRequest: ta.TypeAlias = Request[str, CompletionRequestOptions]
+CompletionRequest: ta.TypeAlias = Request[str, CompletionOptions]
 
 
 ##
 
 
-class CompletionResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class CompletionOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-CompletionResponseOutputs: ta.TypeAlias = CompletionResponseOutput | LlmResponseOutput
+CompletionOutputs: ta.TypeAlias = CompletionOutput | LlmOutput
 
 
-CompletionResponse: ta.TypeAlias = Response[str, CompletionResponseOutputs]
+CompletionResponse: ta.TypeAlias = Response[str, CompletionOutputs]
 
 
 ##

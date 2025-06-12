@@ -3,14 +3,14 @@ import typing as ta
 
 from omlish import lang
 
-from ..llms.services import LlmRequestOption
-from ..llms.services import LlmResponseOutput
+from ..llms.services import LlmOption
+from ..llms.services import LlmOutput
 from ..registry import register_type
 from ..services import Request
-from ..services import RequestOption
 from ..services import Response
-from ..services import ResponseOutput
 from ..services import Service
+from ..types import Option
+from ..types import Output
 from .messages import AiMessage
 from .messages import Chat
 
@@ -18,27 +18,27 @@ from .messages import Chat
 ##
 
 
-class ChatRequestOption(RequestOption, lang.Abstract, lang.PackageSealed):
+class ChatOption(Option, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatRequestOptions = ChatRequestOption | LlmRequestOption
+ChatOptions = ChatOption | LlmOption
 
 
-ChatRequest: ta.TypeAlias = Request[Chat, ChatRequestOptions]
+ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
 
 ##
 
 
-class ChatResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+class ChatOutput(Output, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatResponseOutputs = ChatResponseOutput | LlmResponseOutput
+ChatOutputs = ChatOutput | LlmOutput
 
 
-ChatResponse: ta.TypeAlias = Response[AiMessage, ChatResponseOutputs]
+ChatResponse: ta.TypeAlias = Response[AiMessage, ChatOutputs]
 
 
 ##

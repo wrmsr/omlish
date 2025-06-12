@@ -5,40 +5,40 @@ from omlish import lang
 
 from ...registry import register_type
 from ...services import Request
-from ...services import RequestOption
 from ...services import Response
-from ...services import ResponseOutput
 from ...services import Service
+from ...types import Option
+from ...types import Output
 from ..messages import Chat
-from ..services import ChatRequestOptions
-from ..services import ChatResponseOutputs
+from ..services import ChatOptions
+from ..services import ChatOutputs
 from .types import AiChoices
 
 
 ##
 
 
-class ChatChoicesRequestOption(RequestOption, lang.Abstract, lang.PackageSealed):
+class ChatChoicesOption(Option, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatChoicesRequestOptions = ChatChoicesRequestOption | ChatRequestOptions
+ChatChoicesOptions = ChatChoicesOption | ChatOptions
 
 
-ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesRequestOptions]
+ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesOptions]
 
 
 ##
 
 
-class ChatChoicesResponseOutput(ResponseOutput, lang.Abstract, lang.PackageSealed):
+class ChatChoicesOutput(Output, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatChoicesResponseOutputs = ChatChoicesResponseOutput | ChatResponseOutputs
+ChatChoicesOutputs = ChatChoicesOutput | ChatOutputs
 
 
-ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesResponseOutputs]
+ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesOutputs]
 
 
 ##

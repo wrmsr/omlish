@@ -9,8 +9,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ....backends import llamacpp as lcu
+from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
-from ...chat.choices.services import ChatChoicesRequestOptions
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.types import AiChoice
@@ -44,7 +44,7 @@ class LlamacppChatChoicesService(ChatChoicesService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
         max_tokens=MaxTokens,
         temperatur=Temperature,
     )

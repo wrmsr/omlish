@@ -47,7 +47,7 @@ CHAT_CHOICES_SERVICE_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatChoicesS
 ##
 
 
-ChatOption: ta.TypeAlias = mc.ChatChoicesRequestOptions
+ChatOption: ta.TypeAlias = mc.ChatChoicesOptions
 ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
 
 

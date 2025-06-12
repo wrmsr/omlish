@@ -11,8 +11,8 @@ from ..choices.types import AiChoice
 from ..choices.types import AiChoices
 from ..messages import AiMessage
 from ..messages import ToolExecRequest
-from .services import ChatChoicesResponseOutputs
-from .services import ChatChoicesStreamResponseOutputs
+from .services import ChatChoicesOutputs
+from .services import ChatChoicesStreamOutputs
 from .services import ChatChoicesStreamService
 
 
@@ -29,7 +29,7 @@ class ChatChoicesStreamServiceChatChoicesService:
 
     def invoke(self, request: ChatChoicesRequest) -> Response[
         AiChoices,
-        ChatChoicesResponseOutputs | ChatChoicesStreamResponseOutputs,
+        ChatChoicesOutputs | ChatChoicesStreamOutputs,
     ]:
         lst: list[ChatChoicesStreamServiceChatChoicesService._Choice] = []
 

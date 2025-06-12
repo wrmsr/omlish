@@ -5,8 +5,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ....backends import mlx as mlxu
+from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
-from ...chat.choices.services import ChatChoicesRequestOptions
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.types import AiChoice
@@ -17,7 +17,7 @@ from ...chat.messages import UserMessage
 from ...configs import Config
 from ...configs import consume_configs
 from ...llms.services import MaxTokens
-from ...standard import DefaultRequestOptions
+from ...standard import DefaultOptions
 from ...standard import ModelName
 
 
@@ -47,7 +47,7 @@ class MlxChatChoicesService(ChatChoicesService, lang.ExitStacked):
 
         with consume_configs(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
-            self._default_options: tv.TypedValues = DefaultRequestOptions.pop(cc)
+            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -72,7 +72,7 @@ class MlxChatChoicesService(ChatChoicesService, lang.ExitStacked):
 
         return mlxu.load_model(self._model_name.v)
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesRequestOptions]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
         max_tokens=MaxTokens,
     )
 

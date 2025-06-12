@@ -7,13 +7,13 @@ import llama_cpp as lcc
 from omlish import typedvalues as tv
 
 from ....backends import llamacpp as lcu
+from ...completion import CompletionOption
 from ...completion import CompletionRequest
-from ...completion import CompletionRequestOption
 from ...completion import CompletionResponse
 from ...completion import CompletionService
 from ...configs import Config
 from ...configs import consume_configs
-from ...llms.services import LlmRequestOption
+from ...llms.services import LlmOption
 from ...llms.services import MaxTokens
 from ...llms.services import Temperature
 from ...standard import ModelPath
@@ -43,7 +43,7 @@ class LlamacppCompletionService(CompletionService):
         with consume_configs(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
-    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[CompletionRequestOption | LlmRequestOption]]] = dict(
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[CompletionOption | LlmOption]]] = dict(
         max_tokens=MaxTokens,
         temperatur=Temperature,
     )

@@ -9,10 +9,10 @@ from omlish import typedvalues as tv
 from omlish.secrets import all as sec
 
 from .configs import Config
-from .services import RequestOption
+from .types import Option
 
 
-RequestOptionT = ta.TypeVar('RequestOptionT', bound=RequestOption)
+OptionT = ta.TypeVar('OptionT', bound=Option)
 
 
 ##
@@ -102,14 +102,14 @@ class ApiKey(SecretConfig, tv.UniqueTypedValue):
 ##
 
 
-class DefaultRequestOptions(Config, tv.ScalarTypedValue[ta.Sequence[RequestOptionT]]):
+class DefaultOptions(Config, tv.ScalarTypedValue[ta.Sequence[OptionT]]):
     @dc.init
     def _check_arg(self) -> None:
         for e in check.isinstance(self.v, ta.Sequence):
-            check.isinstance(e, RequestOption)
+            check.isinstance(e, Option)
 
     @classmethod
-    def pop(cls, consumer: tv.TypedValuesConsumer) -> tv.TypedValues[RequestOptionT]:
+    def pop(cls, consumer: tv.TypedValuesConsumer) -> tv.TypedValues[OptionT]:
         return tv.TypedValues(*[
             o
             for dro in consumer.pop(cls, [])

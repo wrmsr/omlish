@@ -2,12 +2,12 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..tools.types import ToolSpec
-from .services import ChatRequestOption
+from .services import ChatOption
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class Tool(ChatRequestOption, lang.Final):
+class Tool(ChatOption, lang.Final):
     spec: ToolSpec

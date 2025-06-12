@@ -1,6 +1,6 @@
 """
 TODO:
- - ChatResponseOutputs really go on each AiChoice...
+ - ChatOutputs really go on each AiChoice...
 """
 import typing as ta
 

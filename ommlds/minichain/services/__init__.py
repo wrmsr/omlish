@@ -6,12 +6,10 @@ from .facades import (  # noqa
 )
 
 from .requests import (  # noqa
-    RequestOption,
     Request,
 )
 
 from .responses import (  # noqa
-    ResponseOutput,
     Response,
 )
 

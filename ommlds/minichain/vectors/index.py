@@ -5,10 +5,10 @@ from omlish import lang
 
 from ..registry import register_type
 from ..services import Request
-from ..services import RequestOption
 from ..services import Response
-from ..services import ResponseOutput
 from ..services import Service
+from ..types import Option
+from ..types import Output
 from .types import Vector
 
 
@@ -24,21 +24,21 @@ class VectorIndexed(lang.Final):
 ##
 
 
-class VectorIndexRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class VectorIndexOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorIndexRequest: ta.TypeAlias = Request[VectorIndexed, VectorIndexRequestOption]
+VectorIndexRequest: ta.TypeAlias = Request[VectorIndexed, VectorIndexOption]
 
 
 ##
 
 
-class VectorIndexResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class VectorIndexOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexResponseOutput]
+VectorIndexResponse: ta.TypeAlias = Response[None, VectorIndexOutput]
 
 
 ##

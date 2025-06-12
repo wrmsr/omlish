@@ -5,31 +5,31 @@ from omlish import lang
 from ..content.content import Content
 from ..registry import register_type
 from ..services import Request
-from ..services import RequestOption
 from ..services import Response
-from ..services import ResponseOutput
 from ..services import Service
+from ..types import Option
+from ..types import Output
 from .types import Vector
 
 
 ##
 
 
-class EmbeddingRequestOption(RequestOption, lang.Abstract, lang.Sealed):
+class EmbeddingOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
-EmbeddingRequest: ta.TypeAlias = Request[Content, EmbeddingRequestOption]
+EmbeddingRequest: ta.TypeAlias = Request[Content, EmbeddingOption]
 
 
 ##
 
 
-class EmbeddingResponseOutput(ResponseOutput, lang.Abstract, lang.Sealed):
+class EmbeddingOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingResponseOutput]
+EmbeddingResponse: ta.TypeAlias = Response[Vector, EmbeddingOutput]
 
 
 ##
