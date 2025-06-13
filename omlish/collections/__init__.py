@@ -76,6 +76,25 @@ from .mappings import (  # noqa
     multikey_dict,
 )
 
+from .multimaps import (  # noqa
+    MultiMap,
+
+    SequenceMultiMap,
+    AbstractSetMultiMap,
+
+    BiMultiMap,
+    InverseBiMultiMap,
+
+    SequenceBiMultiMap,
+    AbstractSetBiMultiMap,
+
+    TupleBiMultiMap,
+    seq_bi_multi_map,
+
+    FrozensetBiMultiMap,
+    abs_set_bi_multi_map,
+)
+
 from .ordered import (  # noqa
     OrderedFrozenSet,
     OrderedSet,

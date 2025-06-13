@@ -9,7 +9,11 @@ from .. import lang
 V = ta.TypeVar('V')
 MK = ta.TypeVar('MK')
 MV = ta.TypeVar('MV')
-SetMap = ta.Mapping[MK, ta.AbstractSet[MV]]
+
+SetMap: ta.TypeAlias = ta.Mapping[MK, ta.AbstractSet[MV]]
+
+
+##
 
 
 class DirectedGraph(ta.Generic[V], lang.Abstract):

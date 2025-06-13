@@ -15,8 +15,9 @@ from ..algorithm import all as alg
 
 T = ta.TypeVar('T')
 NodeT = ta.TypeVar('NodeT')
-NodeWalker = ta.Callable[[NodeT], ta.Iterable[NodeT]]
-NodeGenerator = ta.Generator[NodeT, None, None]
+
+NodeWalker: ta.TypeAlias = ta.Callable[[NodeT], ta.Iterable[NodeT]]
+NodeGenerator: ta.TypeAlias = ta.Generator[NodeT, None, None]
 
 
 ##
