@@ -1,9 +1,10 @@
 import os.path
 
-from omlish.testing import pytest as ptu
+import pytest
 
 
-@ptu.skip.if_cant_import('llama_cpp')
+@pytest.mark.not_docker_guest
+@pytest.mark.high_mem
 def test_llamacpp_completion():
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),

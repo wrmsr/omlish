@@ -9,6 +9,9 @@ from .items import Node
 T = ta.TypeVar('T')
 
 
+##
+
+
 def make_simple(graph: ta.Mapping[T, ta.Iterable[T]]) -> Graph:
     return Graph([
         *[Node(n) for n in {*graph, *lang.flatten(graph.values())}],

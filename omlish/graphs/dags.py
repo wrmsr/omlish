@@ -12,103 +12,164 @@ from .. import check
 from .. import lang
 
 
-K = ta.TypeVar('K')
-V = ta.TypeVar('V')
 T = ta.TypeVar('T')
-U = ta.TypeVar('U')
 
 
 ##
 
 
-def traverse_links(data: ta.Mapping[T, ta.Iterable[T]], keys: ta.Iterable[T]) -> set[T]:
-    keys = set(keys)
-    todo = set(keys)
+class LinkError(KeyError):
+    pass
+
+
+def traverse_links(
+        links: ta.Mapping[T, ta.Iterable[T]],
+        roots: ta.Iterable[T],
+        *,
+        include_roots: bool = False,
+        strict: bool = False,
+) -> set[T]:
+    """Returns all keys deeply reachable from given roots. Handles cycles."""
+
+    roots = set(roots)
+
+    todo = set(roots)
     seen: set[T] = set()
     while todo:
         key = todo.pop()
         seen.add(key)
-        cur = data.get(key, [])
-        todo.update(set(cur) - seen)
-    return seen - keys
+
+        try:
+            cur = links[key]
+        except KeyError:
+            if strict:
+                raise LinkError(key) from None
+        else:
+            todo.update(set(cur) - seen)
+
+    if include_roots:
+        return seen
+    else:
+        return seen - roots
 
 
-def invert_set_map(src: ta.Mapping[K, ta.Iterable[V]]) -> dict[V, set[K]]:
-    dst: dict[V, set[K]] = {}
-    for l, rs in src.items():
-        for r in rs:
+def invert_links(
+        links: ta.Mapping[T, ta.Iterable[T]],
+        *,
+        auto_add_roots: bool = False,
+        if_absent: ta.Literal['raise', 'ignore', 'add'] = 'add',
+) -> dict[T, set[T]]:
+    check.in_(if_absent, ('raise', 'ignore', 'add'))
+    if if_absent != 'add':
+        check.arg(auto_add_roots, 'auto_add_roots must be True with given if_absent is not "add"')
+
+    ret: dict[T, set[T]]
+    if auto_add_roots:
+        ret = {src: set() for src in links}
+    else:
+        ret = {}
+
+    for src, dsts in links.items():
+        for dst in dsts:
             try:
-                s = dst[r]
+                tgt = ret[dst]
             except KeyError:
-                s = dst[r] = set()
-            s.add(l)
-    return dst
+                if if_absent == 'raise':
+                    raise LinkError(dst) from None
+                elif if_absent == 'ignore':
+                    continue
+                elif if_absent == 'add':
+                    tgt = ret[dst] = set()
+                else:
+                    raise RuntimeError from None
+
+            tgt.add(src)
+
+    return ret
 
 
-def invert_symmetric_set_map(src: ta.Mapping[T, ta.Iterable[T]]) -> dict[T, set[T]]:
-    dst: dict[T, set[T]] = {l: set() for l in src}
-    for l, rs in src.items():
-        for r in rs:
-            dst[r].add(l)
-    return dst
+##
 
 
 class Dag(ta.Generic[T]):
-    def __init__(self, input_its_by_outputs: ta.Mapping[T, ta.Iterable[T]]) -> None:
+    """Given 'input_its_by_outputs', or a map from nodes to that node's dependencies."""
+
+    def __init__(
+            self,
+            input_its_by_outputs: ta.Mapping[T, ta.Iterable[T]],
+            *,
+            auto_add_outputs: bool = True,
+            if_absent: ta.Literal['raise', 'ignore', 'add'] = 'add',
+    ) -> None:
         super().__init__()
 
         self._input_sets_by_output = {u: set(d) for u, d in input_its_by_outputs.items()}
+
+        self._output_sets_by_input = invert_links(
+            self._input_sets_by_output,
+            auto_add_roots=auto_add_outputs,
+            if_absent=if_absent,
+        )
 
     @property
     def input_sets_by_output(self) -> ta.Mapping[T, ta.AbstractSet[T]]:
         return self._input_sets_by_output
 
-    @lang.cached_property
+    @property
     def output_sets_by_input(self) -> ta.Mapping[T, ta.AbstractSet[T]]:
-        return invert_symmetric_set_map(self._input_sets_by_output)
+        return self._output_sets_by_input
 
-    def subdag(self, *args, **kwargs) -> 'Subdag[T]':
-        return Subdag(self, *args, **kwargs)
+    def subdag(
+            self,
+            roots: ta.Iterable[T],
+            *,
+            ignored: ta.Iterable[T] | None = None,
+    ) -> 'Subdag[T]':
+        return Subdag(
+            self,
+            roots,
+            ignored=ignored,
+        )
 
 
-class Subdag(ta.Generic[U]):
+class Subdag(ta.Generic[T]):
     def __init__(
             self,
-            dag: 'Dag[U]',
-            targets: ta.Iterable[U],
+            dag: Dag[T],
+            roots: ta.Iterable[T],
             *,
-            ignored: ta.Iterable[U] | None = None,
+            ignored: ta.Iterable[T] | None = None,
     ) -> None:
         super().__init__()
 
-        self._dag: Dag[U] = check.isinstance(dag, Dag)
-        self._targets = set(targets)
-        self._ignored = set(ignored or []) - self._targets
+        self._dag: Dag[T] = check.isinstance(dag, Dag)
+        self._roots = set(roots)
+        self._ignored = set(ignored or []) - self._roots
 
     @property
-    def dag(self) -> 'Dag[U]':
+    def dag(self) -> Dag[T]:
         return self._dag
 
     @property
-    def targets(self) -> ta.AbstractSet[U]:
-        return self._targets
+    def roots(self) -> ta.AbstractSet[T]:
+        return self._roots
 
     @property
-    def ignored(self) -> ta.AbstractSet[U]:
+    def ignored(self) -> ta.AbstractSet[T]:
         return self._ignored
 
     @lang.cached_property
-    def inputs(self) -> ta.AbstractSet[U]:
-        return traverse_links(self.dag.input_sets_by_output, self.targets) - self.ignored
+    def inputs(self) -> ta.AbstractSet[T]:
+        return traverse_links(self._dag.input_sets_by_output, self._roots) - self._ignored
 
     @lang.cached_property
-    def outputs(self) -> ta.AbstractSet[U]:
-        return traverse_links(self.dag.output_sets_by_input, self.targets) - self.ignored
+    def outputs(self) -> ta.AbstractSet[T]:
+        return traverse_links(self._dag.output_sets_by_input, self._roots) - self._ignored
 
     @lang.cached_property
-    def output_inputs(self) -> ta.AbstractSet[U]:
-        return traverse_links(self.dag.input_sets_by_output, self.outputs) - self.ignored
+    def output_inputs(self) -> ta.AbstractSet[T]:
+        return traverse_links(self._dag.input_sets_by_output, self.outputs) - self._ignored
 
     @lang.cached_property
-    def all(self) -> ta.AbstractSet[U]:
-        return self.targets | self.inputs | self.outputs | self.output_inputs
+    def all(self) -> ta.AbstractSet[T]:
+        return self.roots | self.inputs | self.outputs | self.output_inputs

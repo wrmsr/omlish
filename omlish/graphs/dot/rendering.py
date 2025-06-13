@@ -20,6 +20,9 @@ from .items import Table
 from .items import Text
 
 
+##
+
+
 class Renderer:
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()

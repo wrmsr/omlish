@@ -2,6 +2,9 @@ import html
 import typing as ta
 
 
+##
+
+
 def escape(s: str) -> str:
     return html.escape(s).replace('@', '&#64;')
 

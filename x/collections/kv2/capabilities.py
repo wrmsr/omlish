@@ -8,6 +8,8 @@ from .interfaces import Kv
 from .wrappers import underlying_of
 
 
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 KvT = ta.TypeVar('KvT', bound=Kv)
 
 
@@ -45,3 +47,26 @@ class Flushable(lang.Abstract):
 def flush(root: Kv) -> None:
     for c in underlying_of(root, Flushable):  # type: ignore[type-abstract]
         c.flush()
+
+
+##
+
+
+class Container(lang.Abstract, ta.Generic[K]):
+    @abc.abstractmethod
+    def __contains__(self, k: K) -> bool:
+        raise NotImplementedError
+
+
+def contains(kv: Kv[K, V], k: K) -> bool:
+    # FIXME: not propagated / shrinkwrapped
+    if isinstance(kv, Container):
+        return k in kv
+
+    try:
+        # FIXME: specifically just Queryable
+        kv[k]  # noqa
+    except KeyError:
+        return False
+    else:
+        return True
