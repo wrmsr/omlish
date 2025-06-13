@@ -3,6 +3,8 @@
 
 from .facades import (  # noqa
     ServiceFacade,
+
+    facade,
 )
 
 from .requests import (  # noqa

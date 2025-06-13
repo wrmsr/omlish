@@ -26,16 +26,6 @@ OutputT = ta.TypeVar('OutputT', bound=Output)
     terse_repr=True,
 )
 class ServiceFacade(
-    # Service[
-    #     Request[
-    #         RequestV,
-    #         OptionT,
-    #     ],
-    #     Response[
-    #         ResponseV,
-    #         OutputT,
-    #     ],
-    # ],
     ta.Generic[
         RequestV,
         OptionT,
@@ -72,3 +62,23 @@ class ServiceFacade(
         else:
             request = Request(o, args)
         return self.invoke(request)
+
+
+def facade(
+    service: Service[
+        Request[
+            RequestV,
+            OptionT,
+        ],
+        Response[
+            ResponseV,
+            OutputT,
+        ],
+    ],
+) -> ServiceFacade[
+    RequestV,
+    OptionT,
+    ResponseV,
+    OutputT,
+]:
+    return ServiceFacade(service)

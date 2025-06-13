@@ -175,6 +175,7 @@ from .services import (  # noqa
     Response,
     Service,
     ServiceFacade,
+    facade,
 )
 
 ##
