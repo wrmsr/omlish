@@ -35,11 +35,11 @@ from .fixed import (  # noqa
     CheckedInt64,
     CheckedInt128,
 
-    CheckedUInt8,
-    CheckedUInt16,
-    CheckedUInt32,
-    CheckedUInt64,
-    CheckedUInt128,
+    CheckedUint8,
+    CheckedUint16,
+    CheckedUint32,
+    CheckedUint64,
+    CheckedUint128,
 
     ClampedInt8,
     ClampedInt16,
@@ -47,11 +47,11 @@ from .fixed import (  # noqa
     ClampedInt64,
     ClampedInt128,
 
-    ClampedUInt8,
-    ClampedUInt16,
-    ClampedUInt32,
-    ClampedUInt64,
-    ClampedUInt128,
+    ClampedUint8,
+    ClampedUint16,
+    ClampedUint32,
+    ClampedUint64,
+    ClampedUint128,
 
     WrappedInt8,
     WrappedInt16,
@@ -59,11 +59,11 @@ from .fixed import (  # noqa
     WrappedInt64,
     WrappedInt128,
 
-    WrappedUInt8,
-    WrappedUInt16,
-    WrappedUInt32,
-    WrappedUInt64,
-    WrappedUInt128,
+    WrappedUint8,
+    WrappedUint16,
+    WrappedUint32,
+    WrappedUint64,
+    WrappedUint128,
 )
 
 from .floats import (  # noqa

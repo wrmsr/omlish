@@ -3,13 +3,14 @@ import json
 
 import pytest
 
+from ..... import check
 from ...consts import COMPACT_KWARGS
 from ...consts import PRETTY_KWARGS
 from ...tests.helpers import SIMPLE_DOCS
 from ..base import Backend
-from ..orjson import ORJSON_BACKEND
-from ..std import STD_BACKEND
-from ..ujson import UJSON_BACKEND
+from ..orjson import orjson_backend
+from ..std import std_backend
+from ..ujson import ujson_backend
 
 
 def _test_backend(be: Backend):
@@ -50,14 +51,14 @@ def _test_backend(be: Backend):
 
 
 def test_std_backend():
-    _test_backend(STD_BACKEND)
+    _test_backend(std_backend())
 
 
-@pytest.mark.skipif(ORJSON_BACKEND is None, reason='no orjson')
+@pytest.mark.skipif(orjson_backend() is None, reason='no orjson')
 def test_orjson_backend():
-    _test_backend(ORJSON_BACKEND)  # type: ignore
+    _test_backend(check.not_none(orjson_backend()))
 
 
-@pytest.mark.skipif(UJSON_BACKEND is None, reason='no ujson')
+@pytest.mark.skipif(ujson_backend() is None, reason='no ujson')
 def test_ujson_backend():
-    _test_backend(UJSON_BACKEND)  # type: ignore
+    _test_backend(check.not_none(ujson_backend()))

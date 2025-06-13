@@ -27,6 +27,8 @@ class BindableClass(ta.Generic[T]):
         setattr(self, '_bound', _bound)
 
     def __class_getitem__(cls, *args, **kwargs):
+        # FIXME: this could handle __mro_items__ to be subclassable, but it's not currently really intended to be
+        #   subclassed
         if cls is BindableClass:
             return super().__class_getitem__(*args, **kwargs)  # type: ignore[misc]
 

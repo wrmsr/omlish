@@ -109,8 +109,9 @@ class OrjsonBackend(Backend):
         return self.dumps(obj, **kwargs)
 
 
-ORJSON_BACKEND: OrjsonBackend | None
-if lang.can_import('orjson'):
-    ORJSON_BACKEND = OrjsonBackend()
-else:
-    ORJSON_BACKEND = None
+@lang.cached_function
+def orjson_backend() -> OrjsonBackend | None:
+    if lang.can_import('orjson'):
+        return OrjsonBackend()
+    else:
+        return None

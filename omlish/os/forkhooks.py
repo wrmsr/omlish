@@ -36,9 +36,9 @@ class _ForkHookManager:
 
     #
 
-    _hooks_by_key: ta.ClassVar[ta.Dict[str, Hook]] = {}
+    _hooks_by_key: ta.ClassVar[ta.Dict[ta.Any, Hook]] = {}
 
-    _hook_keys: ta.ClassVar[ta.FrozenSet[str]] = frozenset()
+    _hook_keys: ta.ClassVar[ta.FrozenSet[ta.Any]] = frozenset()
     _priority_ordered_hooks: ta.ClassVar[ta.List[Hook]] = []
 
     @classmethod
@@ -191,7 +191,7 @@ class ForkHook(abc.ABC):  # noqa
 ##
 
 
-class _ForkDepthTracker(ForkHook):
+class ForkDepthTracker(ForkHook):
     _hook_priority = -1000
 
     _fork_depth: ta.ClassVar[int] = 0
@@ -208,7 +208,7 @@ class _ForkDepthTracker(ForkHook):
 
 
 def get_fork_depth() -> int:
-    return _ForkDepthTracker.get_fork_depth()
+    return ForkDepthTracker.get_fork_depth()
 
 
 ##

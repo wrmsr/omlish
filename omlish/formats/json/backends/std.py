@@ -8,6 +8,7 @@ import dataclasses as dc
 import json
 import typing as ta
 
+from .... import lang
 from ..consts import COMPACT_KWARGS
 from ..consts import PRETTY_KWARGS
 from .base import Backend
@@ -73,4 +74,6 @@ class StdBackend(Backend):
         return json.dumps(obj, **COMPACT_KWARGS, **kwargs)
 
 
-STD_BACKEND = StdBackend()
+@lang.cached_function
+def std_backend() -> StdBackend:
+    return StdBackend()

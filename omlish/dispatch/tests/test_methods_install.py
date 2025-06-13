@@ -10,14 +10,14 @@ from ..methods import method
 ##
 
 
-class BaseFrobError(Exception):
+class FrobError(Exception):
     pass
 
 
-class BaseFrobber:
+class Frobber:
     @method(installable=True)
     def frob(self, obj: ta.Any) -> ta.Any:
-        raise BaseFrobError(obj)
+        raise FrobError(obj)
 
 
 #
@@ -28,8 +28,8 @@ class ThingA:
     pass
 
 
-class BaseThingAFrobber(BaseFrobber):
-    @BaseFrobber.frob.register
+class ThingAFrobber(Frobber):
+    @Frobber.frob.register
     def frob_thing_a(self, a: ThingA) -> ta.Any:
         return 'a'
 
@@ -42,8 +42,8 @@ class ThingB:
     pass
 
 
-class BaseThingBFrobber(BaseFrobber):
-    @BaseFrobber.frob.register
+class ThingBFrobber(Frobber):
+    @Frobber.frob.register
     def frob_thing_b(self, b: ThingB) -> ta.Any:
         return 'b'
 
@@ -56,7 +56,7 @@ class ThingC:
     pass
 
 
-@install_method(BaseFrobber.frob)
+@install_method(Frobber.frob)
 def frob_thing_c(self, c: ThingC) -> ta.Any:
     return 'c'
 
@@ -69,15 +69,15 @@ class ThingD:
     pass
 
 
-@install_method(BaseFrobber.frob)
-def frob_thing_d(self: BaseFrobber, c: ThingD) -> ta.Any:
+@install_method(Frobber.frob, on=ThingBFrobber)
+def frob_thing_d(self: Frobber, c: ThingD) -> ta.Any:
     return 'd'
 
 
 #
 
 
-class ThingAThingBFrobber(BaseThingAFrobber, BaseThingBFrobber):
+class ThingAThingBFrobber(ThingAFrobber, ThingBFrobber):
     pass
 
 
@@ -85,15 +85,16 @@ class ThingAThingBFrobber(BaseThingAFrobber, BaseThingBFrobber):
 
 
 def test_methods_install():
-    f: BaseFrobber = BaseThingAFrobber()
+    f: Frobber = ThingAFrobber()
     assert f.frob(ThingA()) == 'a'
-    with pytest.raises(BaseFrobError):
+    with pytest.raises(FrobError):
         f.frob(ThingB())
     assert f.frob(ThingC()) == 'c'
-    assert f.frob(ThingD()) == 'd'
+    with pytest.raises(FrobError):
+        f.frob(ThingD())
 
-    f = BaseThingBFrobber()
-    with pytest.raises(BaseFrobError):
+    f = ThingBFrobber()
+    with pytest.raises(FrobError):
         f.frob(ThingA())
     assert f.frob(ThingB()) == 'b'
     assert f.frob(ThingC()) == 'c'

@@ -1,4 +1,4 @@
-from .. import json
+from .. import default as json
 
 
 def test_json():

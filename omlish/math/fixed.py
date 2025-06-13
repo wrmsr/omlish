@@ -183,6 +183,16 @@ class FixedWidthInt(int, lang.Abstract):
         locals()[_proxy_name] = _gen_tuple_proxy_method(_proxy_name)
     del _proxy_name
 
+    #
+
+    def __invert__(self) -> ta.Self:
+        if not self.SIGNED:
+            return self.__class__(~int(self) & self.MASK)
+        else:
+            return self.__class__(super().__invert__())
+
+    #
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({int(self)})'
 
@@ -278,23 +288,23 @@ class CheckedInt128(CheckedInt, SignedInt, AnyInt128):
 #
 
 
-class CheckedUInt8(CheckedInt, UnsignedInt, AnyInt8):
+class CheckedUint8(CheckedInt, UnsignedInt, AnyInt8):
     pass
 
 
-class CheckedUInt16(CheckedInt, UnsignedInt, AnyInt16):
+class CheckedUint16(CheckedInt, UnsignedInt, AnyInt16):
     pass
 
 
-class CheckedUInt32(CheckedInt, UnsignedInt, AnyInt32):
+class CheckedUint32(CheckedInt, UnsignedInt, AnyInt32):
     pass
 
 
-class CheckedUInt64(CheckedInt, UnsignedInt, AnyInt64):
+class CheckedUint64(CheckedInt, UnsignedInt, AnyInt64):
     pass
 
 
-class CheckedUInt128(CheckedInt, UnsignedInt, AnyInt128):
+class CheckedUint128(CheckedInt, UnsignedInt, AnyInt128):
     pass
 
 
@@ -324,23 +334,23 @@ class ClampedInt128(ClampedInt, SignedInt, AnyInt128):
 #
 
 
-class ClampedUInt8(ClampedInt, UnsignedInt, AnyInt8):
+class ClampedUint8(ClampedInt, UnsignedInt, AnyInt8):
     pass
 
 
-class ClampedUInt16(ClampedInt, UnsignedInt, AnyInt16):
+class ClampedUint16(ClampedInt, UnsignedInt, AnyInt16):
     pass
 
 
-class ClampedUInt32(ClampedInt, UnsignedInt, AnyInt32):
+class ClampedUint32(ClampedInt, UnsignedInt, AnyInt32):
     pass
 
 
-class ClampedUInt64(ClampedInt, UnsignedInt, AnyInt64):
+class ClampedUint64(ClampedInt, UnsignedInt, AnyInt64):
     pass
 
 
-class ClampedUInt128(ClampedInt, UnsignedInt, AnyInt128):
+class ClampedUint128(ClampedInt, UnsignedInt, AnyInt128):
     pass
 
 
@@ -370,21 +380,21 @@ class WrappedInt128(WrappedInt, SignedInt, AnyInt128):
 #
 
 
-class WrappedUInt8(WrappedInt, UnsignedInt, AnyInt8):
+class WrappedUint8(WrappedInt, UnsignedInt, AnyInt8):
     pass
 
 
-class WrappedUInt16(WrappedInt, UnsignedInt, AnyInt16):
+class WrappedUint16(WrappedInt, UnsignedInt, AnyInt16):
     pass
 
 
-class WrappedUInt32(WrappedInt, UnsignedInt, AnyInt32):
+class WrappedUint32(WrappedInt, UnsignedInt, AnyInt32):
     pass
 
 
-class WrappedUInt64(WrappedInt, UnsignedInt, AnyInt64):
+class WrappedUint64(WrappedInt, UnsignedInt, AnyInt64):
     pass
 
 
-class WrappedUInt128(WrappedInt, UnsignedInt, AnyInt128):
+class WrappedUint128(WrappedInt, UnsignedInt, AnyInt128):
     pass

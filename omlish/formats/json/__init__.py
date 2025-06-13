@@ -12,10 +12,21 @@ from ... import lang as _lang
 from .backends import (  # noqa
     Backend,
 
-    DEFAULT_BACKED,
+    default_backend,
 
     StdBackend,
-    STD_BACKEND,
+    std_backend,
+)
+
+from .backends.default import (  # noqa
+    dump,
+    dump_compact,
+    dump_pretty,
+    dumps,
+    dumps_compact,
+    dumps_pretty,
+    load,
+    loads,
 )
 
 from .consts import (  # noqa
@@ -30,17 +41,6 @@ from .consts import (  # noqa
 from .encoding import (  # noqa
     decodes,
     detect_encoding,
-)
-
-from .json import (  # noqa
-    dump,
-    dump_compact,
-    dump_pretty,
-    dumps,
-    dumps_compact,
-    dumps_pretty,
-    load,
-    loads,
 )
 
 if _ta.TYPE_CHECKING:

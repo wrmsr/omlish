@@ -3,10 +3,10 @@ from .base import (  # noqa
 )
 
 from .default import (  # noqa
-    DEFAULT_BACKED,
+    default_backend,
 )
 
 from .std import (  # noqa
     StdBackend,
-    STD_BACKEND,
+    std_backend,
 )

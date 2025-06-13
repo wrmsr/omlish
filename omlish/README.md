@@ -14,7 +14,7 @@ Core utilities and foundational code. It's relatively large but completely self-
     late-loaded module globals.
   - **[classes](lang/classes)** - Class tools and bases, such as `Abstract` (which checks at subclass definition not
     instantiation), `Sealed` / `PackageSealed`, and `Final`.
-  - **[maybes](lang/maybes.py)** - A simple, nestable formalization of the presence or absence of an object, as in
+  - **[maybes](lite/maybes.py)** - A simple, nestable formalization of the presence or absence of an object, as in
     [many](https://en.cppreference.com/w/cpp/utility/optional)
     [other](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html)
     [languages](https://doc.rust-lang.org/std/option/).

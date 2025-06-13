@@ -24,10 +24,10 @@ def _main() -> None:
 
     with open(os.path.join(api_dir, 'openapi.yaml')) as f:
         doc = yaml.safe_load(f)
-    print(json.STD_BACKEND.dumps_pretty(doc))
+    print(json.std_backend().dumps_pretty(doc))
 
     api = msh.unmarshal(doc, openapi.Openapi)
-    print(json.STD_BACKEND.dumps_pretty(msh.marshal(api)))
+    print(json.std_backend().dumps_pretty(msh.marshal(api)))
 
 
 if __name__ == '__main__':

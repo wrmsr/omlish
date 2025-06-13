@@ -1,9 +1,9 @@
 from ..codecs import make_object_lazy_loaded_codec
 from ..codecs import make_str_object_codec
-from .json import dumps
-from .json import dumps_compact
-from .json import dumps_pretty
-from .json import loads
+from .backends.default import dumps
+from .backends.default import dumps_compact
+from .backends.default import dumps_pretty
+from .backends.default import loads
 
 
 ##

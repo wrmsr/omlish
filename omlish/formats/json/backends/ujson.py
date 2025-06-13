@@ -67,8 +67,9 @@ class UjsonBackend(Backend):
         return uj.dumps(obj, **kwargs)
 
 
-UJSON_BACKEND: UjsonBackend | None
-if lang.can_import('ujson'):
-    UJSON_BACKEND = UjsonBackend()
-else:
-    UJSON_BACKEND = None
+@lang.cached_function
+def ujson_backend() -> UjsonBackend | None:
+    if lang.can_import('ujson'):
+        return UjsonBackend()
+    else:
+        return None
