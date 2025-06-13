@@ -26,8 +26,12 @@ _callable = callable
 ##
 
 
-register_on_raise = check.register_on_raise
-unregister_on_raise = check.unregister_on_raise
+def register_on_raise(fn: OnRaiseFn) -> None:
+    check.register_on_raise(fn)
+
+
+def unregister_on_raise(fn: OnRaiseFn) -> None:
+    check.unregister_on_raise(fn)
 
 
 ##
