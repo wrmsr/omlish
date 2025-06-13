@@ -2,11 +2,10 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import lang
 
 from ...services import Response
 from ..choices.services import ChatChoicesRequest
-from ..choices.services import ChatChoicesService
+from ..choices.services import static_check_is_chat_choices_service
 from ..choices.types import AiChoice
 from ..choices.types import AiChoices
 from ..messages import AiMessage
@@ -19,6 +18,7 @@ from .services import ChatChoicesStreamService
 ##
 
 
+@static_check_is_chat_choices_service
 @dc.dataclass(frozen=True)
 class ChatChoicesStreamServiceChatChoicesService:
     service: ChatChoicesStreamService
@@ -64,6 +64,3 @@ class ChatChoicesStreamServiceChatChoicesService:
 
         # FIXME: outputs lol
         return Response(ret)
-
-
-lang.static_check_issubclass[ChatChoicesService](ChatChoicesStreamServiceChatChoicesService)

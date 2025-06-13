@@ -149,7 +149,7 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
         super().__init__()
 
         self._v = v
-        self._resources = resources
+        self.__resources = resources
 
         resources.add_ref(self)
 
@@ -160,4 +160,4 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
         return self._v
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._resources.remove_ref(self)
+        self.__resources.remove_ref(self)

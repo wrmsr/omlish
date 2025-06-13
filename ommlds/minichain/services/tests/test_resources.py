@@ -22,7 +22,7 @@ def test_int_response():
 
         with irm.v as irm2:
             # ta.reveal_type(irm2)
-            assert not irm.v._resources.closed  # noqa
+            assert not irm.v._ResourceManaged__resources.closed  # type: ignore[attr-defined]  # noqa
             print(irm2.v * 2)
 
     assert rsrc.closed
@@ -55,7 +55,7 @@ def test_int_stream_response():
             # ta.reveal_type(irm2s)
             for irm2 in irm2s:
                 # ta.reveal_type(irm2)
-                assert not irm.v._resources.closed  # noqa
+                assert not irm.v._ResourceManaged__resources.closed  # type: ignore[attr-defined]  # noqa
                 print(irm2.v * 2)
 
     assert rsrc.closed
@@ -76,7 +76,7 @@ def test_int_stream_response_from_fn():
         # ta.reveal_type(irm2s)
         for irm2 in irm2s:
             # ta.reveal_type(irm2)
-            assert not irm.v._resources.closed  # noqa
+            assert not irm.v._ResourceManaged__resources.closed  # noqa
             print(irm2.v * 2)
 
-    assert irm.v._resources.closed  # noqa
+    assert irm.v._ResourceManaged__resources.closed  # noqa
