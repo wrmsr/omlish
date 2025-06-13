@@ -65,7 +65,7 @@
     "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/chat.py",
-    "line": 32,
+    "line": 31,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.chat",
@@ -80,7 +80,7 @@
     "module": ".minichain.backends.llamacpp.completion",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/completion.py",
-    "line": 25,
+    "line": 24,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.completion",
@@ -125,7 +125,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 27,
+    "line": 26,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.mlx.chat",
@@ -140,7 +140,7 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/chat.py",
-    "line": 34,
+    "line": 33,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.openai.chat",
@@ -215,7 +215,7 @@
     "module": ".minichain.backends.transformers.sentence",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/sentence.py",
-    "line": 18,
+    "line": 19,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.sentence",
@@ -232,7 +232,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 41,
+    "line": 40,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.transformers",
@@ -249,7 +249,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 125,
+    "line": 124,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.transformers",

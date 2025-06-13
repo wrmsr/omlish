@@ -218,7 +218,6 @@ def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
 #
 
 
-# PEP695 / https://github.com/python/mypy/issues/4717 workaround
 class _RegistryOf(lang.BindableClass[T]):  # noqa
     @classmethod
     def new(cls, name: str, *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa

@@ -205,3 +205,6 @@ class TypedValues(
         ret = tuple(tv for tv in self if isinstance(tv, cls))
         any_dct[cls] = ret
         return ret
+
+
+collect = TypedValues

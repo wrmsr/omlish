@@ -23,7 +23,6 @@ from ...completion import CompletionRequest
 from ...completion import CompletionResponse
 from ...completion import static_check_is_completion_service
 from ...configs import Config
-from ...configs import consume_configs
 from ...standard import ModelPath
 from ..huggingface import HuggingfaceHubToken
 
@@ -54,7 +53,7 @@ class TransformersCompletionService(lang.ExitStacked):
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL))
             self._pipeline_kwargs = cc.pop(TransformersPipelineKwargs, [])
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
@@ -136,7 +135,7 @@ class TransformersChatChoicesService(lang.ExitStacked):
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL))
             self._pipeline_kwargs = cc.pop(TransformersPipelineKwargs, [])
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')

@@ -21,7 +21,6 @@ from omlish.http import all as http
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import DefaultOptions
 from ...standard import ModelName
@@ -42,7 +41,7 @@ class OpenaiChatChoicesService:
     def __init__(self, *configs: ApiKey | ModelName | DefaultOptions) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)

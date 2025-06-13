@@ -1,9 +1,9 @@
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
 from ...configs import Config
-from ...configs import consume_configs
 from ...standard import ApiKey
 from ...vectors.embeddings import EmbeddingRequest
 from ...vectors.embeddings import EmbeddingResponse
@@ -22,7 +22,7 @@ class OpenaiEmbeddingService:
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:

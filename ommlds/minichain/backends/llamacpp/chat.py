@@ -17,7 +17,6 @@ from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
 from ...chat.tools import Tool
 from ...configs import Config
-from ...configs import consume_configs
 from ...llms.types import MaxTokens
 from ...llms.types import Temperature
 from ...standard import ModelPath
@@ -42,7 +41,7 @@ class LlamacppChatChoicesService:
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL_PATH))
 
     _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(

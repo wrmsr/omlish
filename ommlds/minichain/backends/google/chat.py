@@ -4,6 +4,7 @@ https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
 import typing as ta
 
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
@@ -15,7 +16,6 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
-from ...configs import consume_configs
 from ...standard import ApiKey
 from ...standard import ModelName
 
@@ -33,7 +33,7 @@ class GoogleChatChoicesService:
     def __init__(self, *configs: ApiKey | ModelName) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 

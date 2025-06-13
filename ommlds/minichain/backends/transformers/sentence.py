@@ -2,8 +2,9 @@ import typing as ta
 
 import sentence_transformers as stfm
 
+from omlish import typedvalues as tv
+
 from ...configs import Config
-from ...configs import consume_configs
 from ...content.images import ImageContent
 from ...standard import ModelPath
 from ...vectors.embeddings import EmbeddingRequest
@@ -29,7 +30,7 @@ class SentenceTransformersEmbeddingService:
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL))
 
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:

@@ -173,3 +173,15 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
                 continue
             dct[k] = v.v  # type: ignore[attr-defined]
         return dct
+
+
+def consume(
+    *tvs: TypedValueT,
+    override: bool = False,
+    check_type: type | tuple[type, ...] | None = None,
+) -> TypedValuesConsumer[TypedValueT]:
+    return tvc.TypedValues(
+        *tvs,
+        override=override,
+        check_type=check_type,
+    ).consume()

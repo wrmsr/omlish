@@ -5,14 +5,13 @@ https://github.com/anthropics/anthropic-sdk-python/tree/cd80d46f7a223a5493565d15
 https://github.com/anthropics/anthropic-sdk-python/blob/cd80d46f7a223a5493565d155da31b898a4c6ee5/src/anthropic/resources/completions.py#L53
 https://github.com/anthropics/anthropic-sdk-python/blob/cd80d46f7a223a5493565d155da31b898a4c6ee5/src/anthropic/resources/messages.py#L70
 """
-import os
 import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.secrets.secrets import Secret
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
@@ -22,6 +21,7 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
+from ...standard import ApiKey
 
 
 ##
@@ -43,12 +43,12 @@ class AnthropicChatChoicesService:
 
     def __init__(
             self,
-            *,
-            api_key: Secret | str | None = None,
+            *configs: ApiKey,
     ) -> None:
         super().__init__()
 
-        self._api_key = Secret.of(api_key if api_key is not None else os.environ['ANTHROPIC_API_KEY'])
+        with tv.consume(*configs) as cc:
+            self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):

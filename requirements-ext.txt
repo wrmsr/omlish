@@ -36,6 +36,8 @@ pytesseract==0.3.13
 
 duckduckgo-search==8.0.4  # @omlish-venv !13t  # segfault lol
 
+gguf==0.17.0
+
 
 ##
 # source

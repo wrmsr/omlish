@@ -15,7 +15,7 @@ import collections
 import os.path
 import sys
 
-import gguf
+import gguf  # noqa
 
 import transformers as tfm
 import transformers.modeling_gguf_pytorch_utils
@@ -161,8 +161,12 @@ def _main() -> None:
 
     #
 
-    model_id = 'meta-llama/Llama-3.2-3B-Instruct'
-    model_path = os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf')
+    model_id = 'QuantFactory/Meta-Llama-3-8B-GGUF'
+    file_name = 'Meta-Llama-3-8B.Q8_0.gguf'
+
+    import huggingface_hub as hf
+    model_path = hf.hf_hub_download(repo_id=model_id, filename=file_name)
+
     from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
     gguf_checkpoint = load_gguf_checkpoint(model_path, return_tensors=True)
     config = tfm.AutoConfig.for_model(**gguf_checkpoint['config'])

@@ -290,8 +290,6 @@ from .completion import (  # noqa
 
 from .configs import (  # noqa
     Config,
-
-    consume_configs,
 )
 
 from .envs import (  # noqa

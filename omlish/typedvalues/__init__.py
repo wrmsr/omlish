@@ -6,12 +6,16 @@ from .collection import (  # noqa
     DuplicateUniqueTypedValueError,
 
     TypedValues,
+
+    collect,
 )
 
 from .consumer import (  # noqa
     UnconsumedTypedValuesError,
 
     TypedValuesConsumer,
+
+    consume,
 )
 
 from .generic import (  # noqa

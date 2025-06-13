@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
@@ -14,7 +15,6 @@ from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.types import ChatChoicesStreamOption
 from ...configs import Config
-from ...configs import consume_configs
 from ...resources import Resources
 from ...standard import ApiKey
 from ...standard import ModelName
@@ -32,7 +32,7 @@ class OpenaiChatChoicesStreamService:
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_name = cc.pop(ModelName(OpenaiChatChoicesService.DEFAULT_MODEL_NAME))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 

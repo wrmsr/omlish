@@ -15,7 +15,6 @@ from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
 from ...configs import Config
-from ...configs import consume_configs
 from ...llms.types import MaxTokens
 from ...standard import DefaultOptions
 from ...standard import ModelName
@@ -46,7 +45,7 @@ class MlxChatChoicesService(lang.ExitStacked):
     def __init__(self, *configs: Config) -> None:
         super().__init__()
 
-        with consume_configs(*configs) as cc:
+        with tv.consume(*configs) as cc:
             self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
