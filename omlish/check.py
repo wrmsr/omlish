@@ -67,15 +67,18 @@ check.register_late_configure(_try_enable_args_rendering)
 # layer of call indirection at runtime.
 
 
-_CHECK_PROXY_FUNCTIONS: list[ta.Any] = []
+_CHECK_PROXY_FUNCTIONS: dict[str, ta.Any] = {}
 
 
 def _check_proxy_function(fn: T) -> T:
-    _CHECK_PROXY_FUNCTIONS.append(fn)
+    name = fn.__name__  # type: ignore[attr-defined]
+    if name in _CHECK_PROXY_FUNCTIONS:
+        raise NameError(fn)
+    _CHECK_PROXY_FUNCTIONS[name] = fn
     return fn
 
 
-#
+##
 
 
 @ta.overload
@@ -103,22 +106,27 @@ def of_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[ta.Any], ta
     ...
 
 
+@_check_proxy_function
 def of_isinstance(spec, msg=None):
     return check.of_isinstance(spec, msg=msg)
 
 
+@_check_proxy_function
 def cast(v: ta.Any, cls: type[T], msg: Message = None) -> T:
     return check.cast(v, cls, msg=msg)
 
 
+@_check_proxy_function
 def of_cast(cls: type[T], msg: Message = None) -> ta.Callable[[T], T]:
     return check.of_cast(cls, msg=msg)
 
 
+@_check_proxy_function
 def not_isinstance(v: T, spec: ta.Any, msg: Message = None) -> T:
     return check.not_isinstance(v, spec, msg=msg)
 
 
+@_check_proxy_function
 def of_not_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
     return check.of_not_isinstance(spec, msg=msg)
 
@@ -126,10 +134,12 @@ def of_not_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
 #
 
 
+@_check_proxy_function
 def issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
     return check.issubclass(v, spec, msg=msg)
 
 
+@_check_proxy_function
 def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:
     return check.not_issubclass(v, spec, msg=msg)
 
@@ -137,34 +147,42 @@ def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:
 #
 
 
+@_check_proxy_function
 def in_(v: T, c: ta.Container[T], msg: Message = None) -> T:
     return check.in_(v, c, msg=msg)
 
 
+@_check_proxy_function
 def not_in(v: T, c: ta.Container[T], msg: Message = None) -> T:
     return check.not_in(v, c, msg=msg)
 
 
+@_check_proxy_function
 def empty(v: SizedT, msg: Message = None) -> SizedT:
     return check.empty(v, msg=msg)
 
 
+@_check_proxy_function
 def iterempty(v: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
     return check.iterempty(v, msg=msg)
 
 
+@_check_proxy_function
 def not_empty(v: SizedT, msg: Message = None) -> SizedT:
     return check.not_empty(v, msg=msg)
 
 
+@_check_proxy_function
 def unique(it: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
     return check.unique(it, msg=msg)
 
 
+@_check_proxy_function
 def single(obj: ta.Iterable[T], msg: Message = None) -> T:
     return check.single(obj, msg=msg)
 
 
+@_check_proxy_function
 def opt_single(obj: ta.Iterable[T], msg: Message = None) -> T | None:
     return check.opt_single(obj, msg=msg)
 
@@ -172,6 +190,7 @@ def opt_single(obj: ta.Iterable[T], msg: Message = None) -> T | None:
 #
 
 
+@_check_proxy_function
 def none(v: ta.Any, msg: Message = None) -> None:
     return check.none(v, msg=msg)
 
@@ -184,34 +203,42 @@ def not_none(v: T | None, msg: Message = None) -> T:
 #
 
 
+@_check_proxy_function
 def equal(v: T, o: ta.Any, msg: Message = None) -> T:
     return check.equal(v, o, msg=msg)
 
 
+@_check_proxy_function
 def not_equal(v: T, o: ta.Any, msg: Message = None) -> T:
     return check.not_equal(v, o, msg=msg)
 
 
+@_check_proxy_function
 def is_(v: T, o: ta.Any, msg: Message = None) -> T:
     return check.is_(v, o, msg=msg)
 
 
+@_check_proxy_function
 def is_not(v: T, o: ta.Any, msg: Message = None) -> T:
     return check.is_not(v, o, msg=msg)
 
 
+@_check_proxy_function
 def callable(v: T, msg: Message = None) -> T:  # noqa
     return check.callable(v, msg=msg)
 
 
+@_check_proxy_function
 def non_empty_str(v: str | None, msg: Message = None) -> str:
     return check.non_empty_str(v, msg=msg)
 
 
+@_check_proxy_function
 def replacing(expected: ta.Any, old: ta.Any, new: T, msg: Message = None) -> T:
     return check.replacing(expected, old, new, msg=msg)
 
 
+@_check_proxy_function
 def replacing_none(old: ta.Any, new: T, msg: Message = None) -> T:
     return check.replacing_none(old, new, msg=msg)
 
@@ -219,9 +246,22 @@ def replacing_none(old: ta.Any, new: T, msg: Message = None) -> T:
 #
 
 
+@_check_proxy_function
 def arg(v: bool, msg: Message = None) -> None:
     return check.arg(v, msg=msg)
 
 
+@_check_proxy_function
 def state(v: bool, msg: Message = None) -> None:
     return check.state(v, msg=msg)
+
+
+##
+
+
+def _install_direct_check_proxy_functions() -> None:
+    for n in _CHECK_PROXY_FUNCTIONS:
+        globals()[n] = getattr(check, n)
+
+
+_install_direct_check_proxy_functions()
