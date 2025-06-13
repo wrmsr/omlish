@@ -61,6 +61,21 @@ check.register_late_configure(_try_enable_args_rendering)
 
 
 ##
+# The following code manually proxies to the lite code, as opposed to simply assigning global names to instance methods
+# of `check`, to assist type analysis in tools - pycharm for example has a hard time deducing the return types in such
+# cases. The functions are however dynamically overwritten below with direct references to the method to remove one
+# layer of call indirection at runtime.
+
+
+_CHECK_PROXY_FUNCTIONS: list[ta.Any] = []
+
+
+def _check_proxy_function(fn: T) -> T:
+    _CHECK_PROXY_FUNCTIONS.append(fn)
+    return fn
+
+
+#
 
 
 @ta.overload
@@ -73,6 +88,7 @@ def isinstance(v: ta.Any, spec: ta.Any, msg: Message = None) -> ta.Any:  # noqa
     ...
 
 
+@_check_proxy_function
 def isinstance(v, spec, msg=None):  # noqa
     return check.isinstance(v, spec, msg=msg)
 
@@ -160,6 +176,7 @@ def none(v: ta.Any, msg: Message = None) -> None:
     return check.none(v, msg=msg)
 
 
+@_check_proxy_function
 def not_none(v: T | None, msg: Message = None) -> T:
     return check.not_none(v, msg=msg)
 
