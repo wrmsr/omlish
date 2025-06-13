@@ -2137,7 +2137,7 @@ class Checks:
 
         return inner
 
-    def cast(self, v: ta.Any, cls: ta.Type[T], msg: CheckMessage = None) -> T:  # noqa
+    def cast(self, v: ta.Any, cls: ta.Type[T], msg: CheckMessage = None) -> T:
         if not isinstance(v, cls):
             self._raise(
                 TypeError,
@@ -2186,7 +2186,7 @@ class Checks:
 
         return v
 
-    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:
         if issubclass(v, spec):
             self._raise(
                 TypeError,
@@ -2277,21 +2277,21 @@ class Checks:
 
         return it
 
-    def single(self, obj: ta.Iterable[T], message: CheckMessage = None) -> T:
+    def single(self, obj: ta.Iterable[T], msg: CheckMessage = None) -> T:
         try:
             [value] = obj
         except ValueError:
             self._raise(
                 ValueError,
                 'Must be single',
-                message,
+                msg,
                 Checks._ArgsKwargs(obj),
                 render_fmt='%s',
             )
 
         return value
 
-    def opt_single(self, obj: ta.Iterable[T], message: CheckMessage = None) -> ta.Optional[T]:
+    def opt_single(self, obj: ta.Iterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
         it = iter(obj)
         try:
             value = next(it)
@@ -2306,7 +2306,7 @@ class Checks:
         self._raise(
             ValueError,
             'Must be empty or single',
-            message,
+            msg,
             Checks._ArgsKwargs(obj),
             render_fmt='%s',
         )

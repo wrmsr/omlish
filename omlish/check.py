@@ -14,6 +14,10 @@ from .lite.check import Checks
 from .lite.check import check
 
 
+T = ta.TypeVar('T')
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+
+
 _isinstance = isinstance
 _issubclass = issubclass
 _callable = callable
@@ -59,46 +63,148 @@ check.register_late_configure(_try_enable_args_rendering)
 ##
 
 
-isinstance = check.isinstance  # noqa
-of_isinstance = check.of_isinstance
-cast = check.cast
-of_cast = check.of_cast
-not_isinstance = check.not_isinstance
-of_not_isinstance = check.of_not_isinstance
+@ta.overload
+def isinstance(v: ta.Any, spec: type[T], msg: Message = None) -> T:  # noqa
+    ...
+
+
+@ta.overload
+def isinstance(v: ta.Any, spec: ta.Any, msg: Message = None) -> ta.Any:  # noqa
+    ...
+
+
+def isinstance(v, spec, msg=None):  # noqa
+    return check.isinstance(v, spec, msg=msg)
+
+
+@ta.overload
+def of_isinstance(spec: type[T], msg: Message = None) -> ta.Callable[[ta.Any], T]:
+    ...
+
+
+@ta.overload
+def of_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[ta.Any], ta.Any]:
+    ...
+
+
+def of_isinstance(spec, msg=None):
+    return check.of_isinstance(spec, msg=msg)
+
+
+def cast(v: ta.Any, cls: type[T], msg: Message = None) -> T:
+    return check.cast(v, cls, msg=msg)
+
+
+def of_cast(cls: type[T], msg: Message = None) -> ta.Callable[[T], T]:
+    return check.of_cast(cls, msg=msg)
+
+
+def not_isinstance(v: T, spec: ta.Any, msg: Message = None) -> T:
+    return check.not_isinstance(v, spec, msg=msg)
+
+
+def of_not_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
+    return check.of_not_isinstance(spec, msg=msg)
+
 
 #
 
-issubclass = check.issubclass  # noqa
-not_issubclass = check.not_issubclass
+
+def issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
+    return check.issubclass(v, spec, msg=msg)
+
+
+def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:
+    return check.not_issubclass(v, spec, msg=msg)
+
 
 #
 
-in_ = check.in_
-not_in = check.not_in
-empty = check.empty
-iterempty = check.iterempty
-not_empty = check.not_empty
-unique = check.unique
-single = check.single
-opt_single = check.opt_single
+
+def in_(v: T, c: ta.Container[T], msg: Message = None) -> T:
+    return check.in_(v, c, msg=msg)
+
+
+def not_in(v: T, c: ta.Container[T], msg: Message = None) -> T:
+    return check.not_in(v, c, msg=msg)
+
+
+def empty(v: SizedT, msg: Message = None) -> SizedT:
+    return check.empty(v, msg=msg)
+
+
+def iterempty(v: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
+    return check.iterempty(v, msg=msg)
+
+
+def not_empty(v: SizedT, msg: Message = None) -> SizedT:
+    return check.not_empty(v, msg=msg)
+
+
+def unique(it: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
+    return check.unique(it, msg=msg)
+
+
+def single(obj: ta.Iterable[T], msg: Message = None) -> T:
+    return check.single(obj, msg=msg)
+
+
+def opt_single(obj: ta.Iterable[T], msg: Message = None) -> T | None:
+    return check.opt_single(obj, msg=msg)
+
 
 #
 
-none = check.none
-not_none = check.not_none
+
+def none(v: ta.Any, msg: Message = None) -> None:
+    return check.none(v, msg=msg)
+
+
+def not_none(v: T | None, msg: Message = None) -> T:
+    return check.not_none(v, msg=msg)
+
 
 #
 
-equal = check.equal
-not_equal = check.not_equal
-is_ = check.is_
-is_not = check.is_not
-callable = check.callable  # noqa
-non_empty_str = check.non_empty_str
-replacing = check.replacing
-replacing_none = check.replacing_none
+
+def equal(v: T, o: ta.Any, msg: Message = None) -> T:
+    return check.equal(v, o, msg=msg)
+
+
+def not_equal(v: T, o: ta.Any, msg: Message = None) -> T:
+    return check.not_equal(v, o, msg=msg)
+
+
+def is_(v: T, o: ta.Any, msg: Message = None) -> T:
+    return check.is_(v, o, msg=msg)
+
+
+def is_not(v: T, o: ta.Any, msg: Message = None) -> T:
+    return check.is_not(v, o, msg=msg)
+
+
+def callable(v: T, msg: Message = None) -> T:  # noqa
+    return check.callable(v, msg=msg)
+
+
+def non_empty_str(v: str | None, msg: Message = None) -> str:
+    return check.non_empty_str(v, msg=msg)
+
+
+def replacing(expected: ta.Any, old: ta.Any, new: T, msg: Message = None) -> T:
+    return check.replacing(expected, old, new, msg=msg)
+
+
+def replacing_none(old: ta.Any, new: T, msg: Message = None) -> T:
+    return check.replacing_none(old, new, msg=msg)
+
 
 #
 
-arg = check.arg
-state = check.state
+
+def arg(v: bool, msg: Message = None) -> None:
+    return check.arg(v, msg=msg)
+
+
+def state(v: bool, msg: Message = None) -> None:
+    return check.state(v, msg=msg)
