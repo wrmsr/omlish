@@ -151,7 +151,7 @@ def run_llm_to_stop(
     return RunLlmToStopResult(start_pos, last_tok)
 
 
-def run_llm_new_toks(
+def run_llm(
         llm: Llama3Llm,
         toks: ta.Sequence[int],
         start_pos: int = 0,

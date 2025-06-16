@@ -1,3 +1,4 @@
+# ruff: noqa: PERF402
 import typing as ta
 
 from omlish import check
@@ -76,21 +77,8 @@ class TinygradLlama3ChatChoicesService(lang.ExitStacked):
 
         out = []
 
-        start_pos = llm.prefill(toks[:-1])
-        last_tok = toks[-1]
-        while True:
-            tok = llm.feed(
-                [last_tok],
-                start_pos,
-            )
-            tok = tok.item()
-
-            start_pos += 1
-            last_tok = tok
-            if tok in llm.tokenizer.stop_tokens:
-                break
-
-            out.append(llm.tokenizer.decode([tok]))
+        for s in tgl3.run_llm(llm, toks):
+            out.append(s)
 
         #
 

@@ -8,21 +8,21 @@ from omlish import lang
 
 from .fetch import fetch_model
 from .llm import Llama3Llm
-from .llm import run_llm_new_toks
+from .llm import run_llm
 
 
 ##
 
 
-def _run_new_toks(llm: Llama3Llm, toks: list[int], start_pos: int = 0) -> int:
-    for s in (gc := lang.capture_generator(run_llm_new_toks(llm, toks, start_pos))):
+def _run(llm: Llama3Llm, toks: list[int], start_pos: int = 0) -> int:
+    for s in (gc := lang.capture_generator(run_llm(llm, toks, start_pos))):
         print(s, end='', flush=True)
     print(flush=True)
     return gc.value.start_pos
 
 
 def run_prompt(llm: Llama3Llm, prompt: str) -> None:
-    _run_new_toks(llm,[
+    _run(llm,[
         llm.tokenizer.bos_id,
         *llm.encode_message('system', 'You are an helpful assistant.'),
         *llm.encode_message('user', prompt),
@@ -37,7 +37,7 @@ def run_repl(llm: Llama3Llm) -> None:
     ])
 
     while True:
-        start_pos = _run_new_toks(llm, [
+        start_pos = _run(llm, [
             *llm.encode_message('user', input('Q: ')),
             *llm.encode_role('assistant'),
         ], start_pos)

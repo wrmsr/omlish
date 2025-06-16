@@ -200,7 +200,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 19,
+    "line": 20,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.tinygrad.chat",
