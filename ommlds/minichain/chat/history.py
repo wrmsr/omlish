@@ -29,6 +29,9 @@ class ChatHistory(lang.Abstract):
         raise NotImplementedError
 
 
+#
+
+
 class ListChatHistory(ChatHistory):
     def __init__(self, init: ta.Iterable[Message] | None = None) -> None:
         super().__init__()
