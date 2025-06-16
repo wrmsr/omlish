@@ -1,14 +1,16 @@
+import contextlib
 import typing as ta
 
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .resources import ResourceManaged
-from .resources import ResourcesOption
-from .services import Response
-from .types import Option
-from .types import Output
+from ..resources import ResourceManaged
+from ..resources import Resources
+from ..resources import ResourcesOption
+from ..services import Response
+from ..types import Option
+from ..types import Output
 
 
 V = ta.TypeVar('V')
@@ -73,3 +75,22 @@ StreamResponse: ta.TypeAlias = Response[
     ],
     StreamOutputT,
 ]
+
+
+def new_stream_response(
+        rs: Resources,
+        g: ta.Generator[V, None, ta.Sequence[OutputT] | None],
+        outputs: ta.Sequence[StreamOutputT] | None = None,
+) -> StreamResponse[V, OutputT, StreamOutputT]:
+    return StreamResponse(
+        rs.new_managed(
+            ResponseGenerator(
+                rs.enter_context(
+                    contextlib.closing(
+                        g,
+                    ),
+                ),
+            ),
+        ),
+        outputs or [],
+    )

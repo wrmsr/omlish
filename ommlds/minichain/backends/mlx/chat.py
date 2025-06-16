@@ -101,11 +101,11 @@ class MlxChatChoicesService(lang.ExitStacked):
 
         kwargs = dict()
 
-        with tv.TypedValues(
+        with tv.consume(
                 *self._default_options,
                 *request.options,
                 override=True,
-        ).consume() as oc:
+        ) as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
         response = mlxu.generate(

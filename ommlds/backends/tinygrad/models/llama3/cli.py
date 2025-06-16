@@ -1,50 +1,24 @@
 import argparse
 import pathlib
-import typing as ta
 
 from tinygrad import Tensor
 
 from omlish import check
+from omlish import lang
 
 from .fetch import fetch_model
 from .llm import Llama3Llm
+from .llm import run_llm_new_toks
 
 
 ##
 
 
-class _RunToStopResult(ta.NamedTuple):
-    start_pos: int
-    last_tok: int
-
-
-def _run_to_stop(llm: Llama3Llm, start_pos: int, last_tok: int) -> _RunToStopResult:
-    while True:
-        tok = llm.feed(
-            [last_tok],
-            start_pos,
-        )
-        tok = tok.item()
-
-        start_pos += 1
-        last_tok = tok
-        if tok in llm.tokenizer.stop_tokens:
-            break
-
-        print(llm.tokenizer.decode([tok]), end='', flush=True)
-
-    print(flush=True)
-
-    return _RunToStopResult(start_pos, last_tok)
-
-
 def _run_new_toks(llm: Llama3Llm, toks: list[int], start_pos: int = 0) -> int:
-    start_pos = llm.prefill(toks[:-1], start_pos=start_pos)
-    last_tok = toks[-1]
-    return _run_to_stop(llm, start_pos, last_tok).start_pos
-
-
-#
+    for s in (gc := lang.capture_generator(run_llm_new_toks(llm, toks, start_pos))):
+        print(s, end='', flush=True)
+    print(flush=True)
+    return gc.value.start_pos
 
 
 def run_prompt(llm: Llama3Llm, prompt: str) -> None:

@@ -385,17 +385,19 @@ class Reflector:
                     obj,
                 )
 
+            r_args = tuple(self.type(a) for a in args)
+
             if _is_immediate_protocol(origin):
                 return Protocol(
                     origin,
-                    args,
+                    r_args,
                     params,
                     obj,
                 )
 
             return Generic(
                 origin,
-                tuple(self.type(a) for a in args),
+                r_args,
                 params,
                 obj,
             )

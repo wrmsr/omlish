@@ -2,7 +2,7 @@ import typing as ta
 
 from omlish import lang
 
-from ...stream import StreamOptions
+from ...stream.services import StreamOptions
 from ...types import Option
 from ...types import Output
 from ..choices.types import ChatChoicesOptions

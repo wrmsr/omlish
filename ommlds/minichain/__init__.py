@@ -348,13 +348,17 @@ from .standard import (  # noqa
     DefaultOptions,
 )
 
-from .stream import (  # noqa
+from .stream.services import (  # noqa
     StreamOption,
     StreamOptions,
 
     ResponseGenerator,
-
     StreamResponse,
+    new_stream_response,
+)
+
+from .stream.wrap import (  # noqa
+    WrappedStreamService,
 )
 
 from .types import (  # noqa

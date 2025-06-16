@@ -19,8 +19,8 @@ from ...resources import ResourcesOption
 from ...resources import UseResources
 from ...standard import ApiKey
 from ...standard import ModelName
-from ...stream import ResponseGenerator
-from ...stream import StreamOption
+from ...stream.services import StreamOption
+from ...stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 
@@ -110,4 +110,4 @@ class OpenaiChatChoicesStreamService:
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return ChatChoicesStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))
+            return new_stream_response(rs, yield_choices())

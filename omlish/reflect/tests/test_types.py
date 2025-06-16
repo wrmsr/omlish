@@ -158,6 +158,8 @@ def test_protocol():
     assert_generic_full_eq(rfl.type_(P[int, str]), rfl.Protocol(P, (int, str), (K_co, V_co), P[int, str]))
     assert_generic_full_eq(rfl.type_(P[int, T]), rfl.Protocol(P, (int, T), (K_co, V_co), P[int, T]))  # type: ignore
 
+    assert_generic_full_eq(rfl.type_(P[int, ta.Sequence[str]]), rfl.Protocol(P, (int, rfl.type_(ta.Sequence[str])), (K_co, V_co), P[int, ta.Sequence[str]]))  # noqa
+
     #
 
     # class C0(P[int, str]):

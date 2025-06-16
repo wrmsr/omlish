@@ -6,7 +6,7 @@ from omlish import lang
 from ...registry import register_type
 from ...services import Request
 from ...services import Service
-from ...stream import StreamResponse
+from ...stream.services import StreamResponse
 from ..choices.types import AiChoices
 from ..choices.types import ChatChoicesOutputs
 from ..messages import Chat

@@ -1,4 +1,12 @@
-import tiktoken.load
+import typing as ta
+
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import tiktoken.load
+else:
+    tiktoken = lang.proxy_import('tiktoken', extras=['load'])
 
 
 ##

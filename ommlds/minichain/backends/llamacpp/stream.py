@@ -15,8 +15,8 @@ from ...chat.messages import AiMessage
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
-from ...resources import Resources
-from ...stream import ResponseGenerator
+from ...resources import UseResources
+from ...stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
 from .format import get_msg_content
@@ -43,7 +43,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
     def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         lcu.install_logging_hook()
 
-        with Resources.new() as rs:
+        with UseResources.or_new(request.options) as rs:
             rs.enter_context(self._lock)
 
             output = self._load_model().create_chat_completion(
@@ -78,4 +78,4 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                     yield l
                 return None
 
-            return ChatChoicesStreamResponse(rs.new_managed(ResponseGenerator(yield_choices())))
+            return new_stream_response(rs, yield_choices())
