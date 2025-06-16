@@ -32,6 +32,7 @@ class ChatHistory(lang.Abstract):
 class ListChatHistory(ChatHistory):
     def __init__(self, init: ta.Iterable[Message] | None = None) -> None:
         super().__init__()
+
         self._lst = list(init or ())
 
     def add(self, *msgs: Message) -> None:
@@ -44,20 +45,24 @@ class ListChatHistory(ChatHistory):
         self._lst.clear()
 
 
+##
+
+
 @static_check_is_chat_service
-class ChatHistoryService:
+class HistoryAddingChatService:
     def __init__(
             self,
-            underlying: ChatService,
+            inner: ChatService,
             history: ChatHistory,
     ) -> None:
         super().__init__()
-        self._underlying = underlying
+
+        self._inner = inner
         self._history = history
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        new_req = dc.replace(request, chat=[*self._history.get(), *request.v])
-        response = self._underlying.invoke(new_req)
+        new_req = dc.replace(request, v=[*self._history.get(), *request.v])
+        response = self._inner.invoke(new_req)
         self._history.add(
             *request.v,
             response.v,

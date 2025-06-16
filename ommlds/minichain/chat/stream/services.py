@@ -19,7 +19,6 @@ from .types import ChatChoicesStreamOutputs
 
 ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 
-
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
     AiChoices,
     ChatChoicesOutputs,

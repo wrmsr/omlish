@@ -69,8 +69,9 @@ from .chat.formats import (  # noqa
 
 from .chat.history import (  # noqa
     ChatHistory,
-    ChatHistoryService,
     ListChatHistory,
+
+    HistoryAddingChatService,
 )
 
 from .chat.messages import (  # noqa
