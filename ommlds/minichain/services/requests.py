@@ -13,6 +13,8 @@ from ._typedvalues import _TypedValues
 
 V_co = ta.TypeVar('V_co', covariant=True)
 
+OptionU = ta.TypeVar('OptionU', bound=Option)
+
 
 ##
 
@@ -41,7 +43,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def options(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
-    def with_options(self, *options: OptionT_co, override: bool = False) -> ta.Self:  # type: ignore[misc]  # FIXME
+    def with_options(self, *options: OptionU, override: bool = False) -> 'Request[V_co, OptionT_co | OptionU]':
         return dc.replace(self, _options=self.options.update(*options, override=override))
 
     @property
