@@ -18,7 +18,6 @@ from .types import ChatChoicesOutputs
 
 ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesOptions]
 
-
 ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesOutputs]
 
 # @omlish-manifest $.minichain.registry.RegistryTypeManifest

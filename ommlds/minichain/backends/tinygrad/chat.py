@@ -1,16 +1,26 @@
 # ruff: noqa: PERF402
+import typing as ta
 
 from omlish import check
 from omlish import lang
 
 from ....backends.tinygrad.models import llama3 as tgl3
+from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
+from ...chat.messages import Chat
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.services import ChatChoicesStreamGenerator
+from ...chat.stream.services import ChatChoicesStreamRequest
+from ...chat.stream.services import ChatChoicesStreamResponse
+from ...chat.stream.services import static_check_is_chat_choices_stream_service
+from ...chat.types import ChatOption
+from ...resources import UseResources
+from ...stream.services import new_stream_response
 
 
 ##
@@ -42,10 +52,14 @@ def _load_model(
     return llm
 
 
-def _prepare_toks(llm: tgl3.Llama3Llm, request: ChatChoicesRequest) -> list[int]:
+def _prepare_toks(
+        llm: tgl3.Llama3Llm,
+        chat: Chat,
+        options: ta.Sequence[ChatChoicesOptions],
+) -> list[int]:
     toks = [llm.tokenizer.bos_id]
 
-    for msg in request.v:
+    for msg in chat:
         if isinstance(msg, SystemMessage):
             role = 'system'
             msg_s = msg.s
@@ -68,9 +82,7 @@ def _prepare_toks(llm: tgl3.Llama3Llm, request: ChatChoicesRequest) -> list[int]
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
-@static_check_is_chat_choices_service
-class TinygradLlama3ChatChoicesService(lang.ExitStacked):
+class BaseTinygradLlama3ChatService(lang.ExitStacked, lang.Abstract):
     def __init__(
             self,
             *,
@@ -91,13 +103,42 @@ class TinygradLlama3ChatChoicesService(lang.ExitStacked):
             temperature=self._temperature,
         )
 
+
+##
+
+
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
+@static_check_is_chat_choices_service
+class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
     def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         llm = self._load_model()
-
-        toks = _prepare_toks(llm, request)
+        toks = _prepare_toks(llm, request.v, request.options)
 
         out = []
         for s in tgl3.run_llm(llm, toks):
             out.append(s)
 
         return ChatChoicesResponse([AiChoice(AiMessage(''.join(out)))])
+
+
+##
+
+
+# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesStreamService')
+@static_check_is_chat_choices_stream_service
+class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
+    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+        with UseResources.or_new(request.options) as rs:
+            llm = self._load_model()
+            toks = _prepare_toks(
+                llm,
+                request.v,
+                [o for o in request.options if isinstance(o, ChatOption)],  # FIXME
+            )
+
+            def yield_choices() -> ChatChoicesStreamGenerator:
+                for s in tgl3.run_llm(llm, toks):
+                    yield [AiChoice(AiMessage(s))]
+                return []
+
+            return new_stream_response(rs, yield_choices())

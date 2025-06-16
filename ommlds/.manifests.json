@@ -200,7 +200,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 71,
+    "line": 110,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.tinygrad.chat",
@@ -208,6 +208,21 @@
         "name": "tinygrad_llama3",
         "aliases": null,
         "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.tinygrad.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/tinygrad/chat.py",
+    "line": 127,
+    "value": {
+      "$.minichain.registry.RegistryManifest": {
+        "mod_name": "ommlds.minichain.backends.tinygrad.chat",
+        "attr_name": "TinygradLlama3ChatChoicesStreamService",
+        "name": "tinygrad_llama3",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
       }
     }
   },
@@ -266,7 +281,7 @@
     "module": ".minichain.chat.choices.services",
     "attr": null,
     "file": "ommlds/minichain/chat/choices/services.py",
-    "line": 24,
+    "line": 23,
     "value": {
       "$.minichain.registry.RegistryTypeManifest": {
         "mod_name": "ommlds.minichain.chat.choices.services",

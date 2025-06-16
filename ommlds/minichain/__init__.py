@@ -35,6 +35,8 @@ from .chat.stream.services import (  # noqa
     ChatChoicesStreamService,
     AbstractChatChoicesStreamService,
     static_check_is_chat_choices_stream_service,
+
+    ChatChoicesStreamGenerator,
 )
 
 from .chat.stream.types import (  # noqa
