@@ -320,6 +320,9 @@ from .resources import (  # noqa
     Resources,
 
     ResourceManaged,
+
+    ResourcesOption,
+    UseResources,
 )
 
 from .search import (  # noqa
@@ -348,8 +351,6 @@ from .standard import (  # noqa
 from .stream import (  # noqa
     StreamOption,
     StreamOptions,
-
-    UseResources,
 
     ResponseGenerator,
 

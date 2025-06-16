@@ -1,4 +1,3 @@
-import contextlib
 import typing as ta
 
 from omlish import check
@@ -6,7 +5,7 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .resources import ResourceManaged
-from .resources import Resources
+from .resources import ResourcesOption
 from .services import Response
 from .types import Option
 from .types import Output
@@ -24,22 +23,7 @@ class StreamOption(Option, lang.Abstract):
     pass
 
 
-StreamOptions: ta.TypeAlias = StreamOption
-
-
-#
-
-
-class UseResources(tv.UniqueScalarTypedValue[Resources], StreamOption, lang.Final):
-    @classmethod
-    @contextlib.contextmanager
-    def or_new(cls, options: ta.Sequence[Option]) -> ta.Iterator[Resources]:
-        if (ur := tv.as_collection(options).get(UseResources)) is not None:
-            with ResourceManaged(ur.v, ur.v) as rs:
-                yield rs
-        else:
-            with Resources.new() as rs:
-                yield rs
+StreamOptions: ta.TypeAlias = StreamOption | ResourcesOption
 
 
 ##

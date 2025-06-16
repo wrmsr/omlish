@@ -10,6 +10,9 @@ import typing as ta
 from omlish import check
 from omlish import collections as col
 from omlish import lang
+from omlish import typedvalues as tv
+
+from .types import Option
 
 
 T = ta.TypeVar('T')
@@ -161,3 +164,22 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__resources.remove_ref(self)
+
+
+##
+
+
+class ResourcesOption(Option, lang.Abstract):
+    pass
+
+
+class UseResources(tv.UniqueScalarTypedValue[Resources], ResourcesOption, lang.Final):
+    @classmethod
+    @contextlib.contextmanager
+    def or_new(cls, options: ta.Sequence[Option]) -> ta.Iterator[Resources]:
+        if (ur := tv.as_collection(options).get(UseResources)) is not None:
+            with ResourceManaged(ur.v, ur.v) as rs:
+                yield rs
+        else:
+            with Resources.new() as rs:
+                yield rs

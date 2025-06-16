@@ -15,11 +15,12 @@ from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.types import ChatChoicesStreamOption
 from ...configs import Config
+from ...resources import ResourcesOption
+from ...resources import UseResources
 from ...standard import ApiKey
 from ...standard import ModelName
 from ...stream import ResponseGenerator
 from ...stream import StreamOption
-from ...stream import UseResources
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 
@@ -44,7 +45,11 @@ class OpenaiChatChoicesStreamService:
 
         rh = OpenaiChatRequestHandler(
             request.v,
-            *[o for o in request.options if not isinstance(o, (ChatChoicesStreamOption, StreamOption))],
+            *[
+                o
+                for o in request.options
+                if not isinstance(o, (ChatChoicesStreamOption, StreamOption, ResourcesOption))
+            ],
             model=self._model_name.v,
             mandatory_kwargs=dict(
                 stream=True,

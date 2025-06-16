@@ -70,7 +70,10 @@ def _tv_field_metadata(
     if isinstance(tvc_rty, type):
         ct = check.issubclass(tvc, tv.TypedValue)
     elif isinstance(tvc_rty, rfl.Union):
-        ct = tuple(check.issubclass(check.not_none(rfl.get_concrete_type(a)), tv.TypedValue) for a in tvc_rty.args)
+        ct = tuple(
+            check.issubclass(check.not_none(rfl.get_concrete_type(a)), tv.TypedValue)  # noqa
+            for a in tvc_rty.args
+        )
     else:
         raise TypeError(tvc_rty)
 

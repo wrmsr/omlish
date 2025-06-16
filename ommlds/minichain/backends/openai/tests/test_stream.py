@@ -6,9 +6,9 @@ from ....chat.services import ChatService
 from ....chat.stream.adapters import ChatChoicesStreamServiceChatChoicesService
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....resources import Resources
+from ....resources import UseResources
 from ....services import Request
 from ....standard import ApiKey
-from ....stream import UseResources
 from ..stream import OpenaiChatChoicesStreamService
 
 
