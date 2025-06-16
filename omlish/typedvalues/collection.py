@@ -188,7 +188,7 @@ class TypedValues(
         else:
             raise TypeError(key)
 
-    _any_dct: dict[type, tuple[TypedValueT, ...]]
+    _any_dct: dict[type | tuple[type, ...], tuple[TypedValueT, ...]]
 
     def _typed_value_get_any(self, cls):
         try:

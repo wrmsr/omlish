@@ -19,6 +19,7 @@ from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.types import ChatOption
+from ...llms.types import LlmOption
 from ...resources import UseResources
 from ...stream.services import new_stream_response
 
@@ -133,7 +134,7 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
             toks = _prepare_toks(
                 llm,
                 request.v,
-                [o for o in request.options if isinstance(o, ChatOption)],  # FIXME
+                request.options.get_any((ChatOption, LlmOption)),  # FIXME
             )
 
             def yield_choices() -> ChatChoicesStreamGenerator:

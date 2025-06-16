@@ -124,7 +124,7 @@ class TypedValuesAccessor(
     #
 
     @ta.final
-    def get_any(self, cls: type[T]) -> ta.Sequence[T]:
+    def get_any(self, cls: type[T] | tuple[type[T], ...]) -> ta.Sequence[T]:
         return self._typed_value_get_any(cls)
 
     @abc.abstractmethod
