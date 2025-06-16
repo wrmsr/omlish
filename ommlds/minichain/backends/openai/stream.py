@@ -85,6 +85,7 @@ class OpenaiChatChoicesStreamService:
                             # FIXME: handle
                             return []
 
+                        # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
                         for so in sd.process_line(l):
                             if isinstance(so, sse.SseEvent) and so.type == b'message':
                                 ss = so.data.decode('utf-8')
