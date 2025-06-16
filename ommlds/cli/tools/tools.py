@@ -1,6 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish import check
+
 from ... import minichain as mc
 
 
@@ -14,6 +16,14 @@ class Tool:
 
 
 ToolMap = ta.NewType('ToolMap', ta.Mapping[str, Tool])
+
+
+def build_tool_map(its: ta.Iterable[Tool]) -> ToolMap:
+    dct: dict[str, Tool] = {}
+    for t in its:
+        check.not_in(t.spec.name, dct)
+        dct[t.spec.name] = t
+    return ToolMap(dct)
 
 
 ##
