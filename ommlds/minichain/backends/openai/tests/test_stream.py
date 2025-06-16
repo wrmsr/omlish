@@ -5,8 +5,10 @@ from ....chat.messages import UserMessage
 from ....chat.services import ChatService
 from ....chat.stream.adapters import ChatChoicesStreamServiceChatChoicesService
 from ....chat.stream.services import ChatChoicesStreamRequest
+from ....resources import Resources
 from ....services import Request
 from ....standard import ApiKey
+from ....stream import UseResources
 from ..stream import OpenaiChatChoicesStreamService
 
 
@@ -26,6 +28,25 @@ def test_openai_chat_stream_model(harness):
             for o in it:
                 print(o)
             print(it.outputs)
+
+
+def test_use_resources(harness):
+    llm = OpenaiChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    for foo_req in [
+        ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
+        ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
+    ]:
+        with Resources.new() as rs:
+            print(foo_req)
+
+            with llm.invoke(foo_req.with_options(UseResources(rs))).v as it:
+                for o in it:
+                    print(o)
+                print(it.outputs)
 
 
 def test_adapters(harness):

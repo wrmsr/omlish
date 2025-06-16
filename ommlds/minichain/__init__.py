@@ -346,6 +346,11 @@ from .standard import (  # noqa
 )
 
 from .stream import (  # noqa
+    StreamOption,
+    StreamOptions,
+
+    UseResources,
+
     ResponseGenerator,
 
     StreamResponse,

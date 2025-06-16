@@ -8,6 +8,7 @@ from .collection import (  # noqa
     TypedValues,
 
     collect,
+    as_collection,
 )
 
 from .consumer import (  # noqa

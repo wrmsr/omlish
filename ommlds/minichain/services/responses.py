@@ -41,6 +41,9 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     def outputs(self) -> tv.TypedValues[OutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)
 
+    def with_outputs(self, *outputs: OutputT_contra, override: bool = False) -> ta.Self:
+        return dc.replace(self, _outputs=self.outputs.update(*outputs, override=override))
+
     @property
     def _typed_values(self) -> tv.TypedValues[OutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)

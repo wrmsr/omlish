@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import lang
 
+from ...stream import StreamOptions
 from ...types import Option
 from ...types import Output
 from ..choices.types import ChatChoicesOptions
@@ -14,7 +15,7 @@ class ChatChoicesStreamOption(Option, lang.Abstract, lang.PackageSealed):
     pass
 
 
-ChatChoicesStreamOptions: ta.TypeAlias = ChatChoicesStreamOption | ChatChoicesOptions
+ChatChoicesStreamOptions: ta.TypeAlias = ChatChoicesStreamOption | StreamOptions | ChatChoicesOptions
 
 
 ##

@@ -208,3 +208,10 @@ class TypedValues(
 
 
 collect = TypedValues
+
+
+def as_collection(src: ta.Sequence[TypedValueT]) -> TypedValues[TypedValueT]:
+    if isinstance(src, TypedValues):
+        return src
+    else:
+        return TypedValues(*src)

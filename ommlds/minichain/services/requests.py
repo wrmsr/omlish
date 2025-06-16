@@ -41,6 +41,9 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def options(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
+    def with_options(self, *options: OptionT_co, override: bool = False) -> ta.Self:  # type: ignore[misc]  # FIXME
+        return dc.replace(self, _options=self.options.update(*options, override=override))
+
     @property
     def _typed_values(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)

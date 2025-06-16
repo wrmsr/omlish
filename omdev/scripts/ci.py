@@ -7810,7 +7810,7 @@ class StandardLogFormatter(logging.Formatter):
     converter = datetime.datetime.fromtimestamp  # type: ignore
 
     def formatTime(self, record, datefmt=None):
-        ct = self.converter(record.created)  # type: ignore
+        ct = self.converter(record.created)
         if datefmt:
             return ct.strftime(datefmt)  # noqa
         else:
