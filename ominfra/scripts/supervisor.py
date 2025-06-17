@@ -7450,6 +7450,9 @@ class ConfigPriorityOrdered(abc.ABC):
     def __eq__(self, other):
         return self.config.priority == other.config.priority
 
+    def __hash__(self):
+        raise TypeError
+
 
 ##
 

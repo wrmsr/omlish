@@ -20,11 +20,14 @@ class Param(lang.Final):
 
     def __eq__(self, other):
         if not isinstance(other, Param):
-            return False
+            return NotImplemented
         if self.n is None and other.n is None:
             return self is other
         else:
             return self.n == other.n
+
+    def __hash__(self):
+        return hash(self.n)
 
 
 ##

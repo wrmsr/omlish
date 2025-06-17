@@ -186,6 +186,9 @@ class TransientDict(collections.abc.MutableMapping):
     def __eq__(self, other, /):
         raise TypeError(self)
 
+    def __hash__(self):
+        raise TypeError(self)
+
 
 #
 

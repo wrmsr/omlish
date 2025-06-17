@@ -270,6 +270,9 @@ class _TypeEq:
     def __ne__(self, other):
         return not (self == other)
 
+    def __hash__(self):
+        return hash(type(self))
+
 
 @dc.dataclass()
 class Ex1(Exception):  # noqa

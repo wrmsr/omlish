@@ -43,7 +43,7 @@ class ConfigFlattening:
             elif isinstance(value, list):
                 check.not_empty(prefix)
                 for i, v in enumerate(value):
-                    rec(prefix[:-1] + [f'{prefix[-1]}{self._index_open}{i}{self._index_close}'], v)
+                    rec([*prefix[:-1], f'{prefix[-1]}{self._index_open}{i}{self._index_close}'], v)
             else:
                 k = self._delimiter.join(prefix)
                 if k in ret:

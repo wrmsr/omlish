@@ -211,7 +211,7 @@ class BuildExt:
         filename = self.get_ext_filename(modpath[-1])
 
         if not self._opts.inplace:
-            filename = os.path.join(*modpath[:-1] + [filename])
+            filename = os.path.join(*modpath[:-1] + [filename])  # noqa
             return os.path.join(self.build_lib, filename)  # noqa
 
         package = '.'.join(modpath[0:-1])

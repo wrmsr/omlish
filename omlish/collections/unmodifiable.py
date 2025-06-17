@@ -41,6 +41,9 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def __gt__(self, other: ta.Any) -> bool:
         return self._target > other
 
+    def __hash__(self) -> int:
+        return hash(self._target)
+
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._target)
 
@@ -91,6 +94,9 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
 
     def __gt__(self, s: ta.AbstractSet[ta.Any]) -> bool:
         return self._target > s
+
+    def __hash__(self) -> int:
+        return hash(self._target)
 
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._target)
@@ -147,6 +153,9 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
 
     def __gt__(self, other: ta.Any) -> bool:
         return self._target > other
+
+    def __hash__(self) -> int:
+        return hash(self._target)
 
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._target)  # type: ignore

@@ -38,5 +38,5 @@ class TestPythonSpecificCases(unittest.TestCase):
         self.assertTrue(jmespath.search('a < b', {'a': '2016', 'b': '2017'}))
 
     def test_can_handle_decimals_as_numeric_type(self):
-        result = decimal.Decimal('3')
+        result = decimal.Decimal(3)
         self.assertEqual(jmespath.search('[?a >= `1`].a', [{'a': result}]), [result])

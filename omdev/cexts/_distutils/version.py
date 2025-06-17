@@ -85,6 +85,9 @@ class Version(abc.ABC):
             return c
         return c >= 0
 
+    def __hash__(self):
+        raise TypeError
+
 
 # Interface for version-number classes -- must be implemented by the following classes (the concrete ones -- Version
 # should be treated as an abstract class).

@@ -56,6 +56,12 @@ class OrderedSet(ta.MutableSet[T]):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
 
+    def __ne__(self, other) -> bool:
+        return not (self == other)
+
+    def __hash__(self) -> int:
+        raise TypeError
+
 
 class OrderedFrozenSet(ta.FrozenSet[T]):  # noqa
     _list: ta.Sequence[T]

@@ -194,6 +194,7 @@ ignore = [
     'FBT003',  # boolean-positional-value-in-call
     'FIX',  # fixmes
     'FLY002',  # static-join-to-f-string
+    'FURB122',  # for-loop-writes
     'N804',  # invalid-first-argument-name-for-class-method
     'PERF203',  # try-except-in-loop
     'PERF401',  # manual-list-comprehension
@@ -252,6 +253,10 @@ ignore = [
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # non-pep695-type-alias
+
+    # TODO:
+    'UP046',  # non-pep695-generic-class
+    'UP047',  # non-pep695-generic-function
 
 ]
 

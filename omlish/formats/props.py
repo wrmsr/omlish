@@ -379,7 +379,7 @@ class Properties(collections.abc.MutableMapping):
                             self._source_file,
                         )
 
-                    codepoint2 = int(codepoint2_hex[2:], base=16)
+                    codepoint2 = int(codepoint2_hex[2:], base=16)  # noqa
                     if not (0xDC00 <= codepoint2 <= 0xDFFF):
                         raise ParseError(
                             'Low surrogate unicode escape sequence expected after high surrogate '

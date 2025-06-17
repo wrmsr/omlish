@@ -315,7 +315,7 @@ class StreamParser(GenMachine[Token, ta.Any]):
 
         elif src[1] == 'u':
             check.state(len(src) == 6)
-            c = chr(int(src[2:], 16))
+            c = chr(int(src[2:], 16))  # noqa
 
         elif src[1] == 'o':
             # \oXXX -> octal

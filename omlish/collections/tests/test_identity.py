@@ -16,6 +16,9 @@ class Incomparable:
     def __eq__(self, other):
         raise TypeError
 
+    def __hash__(self):
+        raise TypeError
+
 
 def test_identity_key_dict():
     x, y = Incomparable(), Incomparable()

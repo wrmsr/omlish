@@ -1,4 +1,4 @@
-# ruff: noqa: ANN204
+# ruff: noqa: ANN204 PLW1641
 
 
 class Hashable:
