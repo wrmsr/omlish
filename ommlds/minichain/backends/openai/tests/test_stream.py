@@ -1,14 +1,19 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.choices.adapters import ChatChoicesServiceChatService
+from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....chat.services import ChatService
 from ....chat.stream.adapters import ChatChoicesStreamServiceChatChoicesService
 from ....chat.stream.services import ChatChoicesStreamRequest
+from ....chat.tools import Tool
 from ....resources import Resources
 from ....resources import UseResources
 from ....services import Request
 from ....standard import ApiKey
+from ....tools.types import ToolDtype
+from ....tools.types import ToolParam
+from ....tools.types import ToolSpec
 from ..stream import OpenaiChatChoicesStreamService
 
 
@@ -28,6 +33,41 @@ def test_openai_chat_stream_model(harness):
             for o in it:
                 print(o)
             print(it.outputs)
+
+
+def test_openai_stream_tools(harness):
+    tool_spec = ToolSpec(
+        'get_weather',
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+                desc='The location to get the weather for.',
+            ),
+        ],
+        desc='Gets the weather in the given location.',
+    )
+
+    llm = OpenaiChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    foo_req = ChatChoicesStreamRequest(
+        [
+            SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
+            UserMessage('What is the weather in Seattle?'),
+            UserMessage(''),
+        ],
+        [
+            Tool(tool_spec),
+        ],
+    )
+
+    with llm.invoke(foo_req).v as it:
+        for o in it:
+            print(o)
+        print(it.outputs)
 
 
 def test_use_resources(harness):

@@ -45,6 +45,11 @@ from .chat.stream.types import (  # noqa
 
     ChatChoicesStreamOutput,
     ChatChoicesStreamOutputs,
+
+    ToolExecRequestDelta,
+    AiMessageDelta,
+    AiChoiceDelta,
+    AiChoiceDeltas,
 )
 
 from .chat.transforms.base import (  # noqa

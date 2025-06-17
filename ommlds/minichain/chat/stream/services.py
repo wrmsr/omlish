@@ -7,7 +7,7 @@ from ...registry import register_type
 from ...services import Request
 from ...services import Service
 from ...stream.services import StreamResponse
-from ..choices.types import AiChoices
+from .types import AiChoiceDeltas
 from ..choices.types import ChatChoicesOutputs
 from ..messages import Chat
 from .types import ChatChoicesStreamOptions
@@ -20,7 +20,7 @@ from .types import ChatChoicesStreamOutputs
 ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
-    AiChoices,
+    AiChoiceDeltas,
     ChatChoicesOutputs,
     ChatChoicesStreamOutputs,
 ]
@@ -48,4 +48,4 @@ class AbstractChatChoicesStreamService(lang.Abstract):  # noqa
 ##
 
 
-ChatChoicesStreamGenerator: ta.TypeAlias = ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesOutputs] | None]
+ChatChoicesStreamGenerator: ta.TypeAlias = ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]
