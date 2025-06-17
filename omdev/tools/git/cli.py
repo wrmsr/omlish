@@ -441,6 +441,30 @@ class Cli(ap.Cli):
         for mgm in load_message_generator_manifests():
             print(mgm.name)
 
+    #
+
+    BUILTIN_COMMIT_MESSAGES: ta.Mapping[str, str] = {
+        'tableflip': '(╯°□°)╯︵ ┻━┻',
+        'tableunflip': '┬─┬ノ(º _ ºノ)',
+    }
+
+    @ap.cmd(
+        ap.arg('-M', '--builtin-message', nargs='?'),
+        accepts_unknown=True,
+    )
+    def commit(self) -> None:
+        args: list[str] = []
+
+        if (bim := self.args.builtin_message) is not None:
+            args.extend(['-m', self.BUILTIN_COMMIT_MESSAGES[bim]])
+
+        subprocesses.check_call(
+            'git',
+            'commit',
+            *args,
+            *self.unknown_args,
+        )
+
 
 ##
 
