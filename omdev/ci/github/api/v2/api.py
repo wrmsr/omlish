@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 https://github.com/tonistiigi/go-actions-cache/blob/3e9a6642607fd6e4d5d4fdab7c91fe8bf4c36a25/cache_v2.go
 

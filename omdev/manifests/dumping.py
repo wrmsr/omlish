@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP037
+# ruff: noqa: UP006 UP007 UP037 UP045
 import typing as ta
 
 

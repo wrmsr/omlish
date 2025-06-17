@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
 
 from omdev.interp.default import get_default_interp_resolver

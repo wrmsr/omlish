@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 TODO:
  - python, python3, python3.12, ...

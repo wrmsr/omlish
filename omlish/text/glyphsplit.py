@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 """
 Note: string.Formatter (and string.Template) shouldn't be ignored - if they can be used they probably should be.

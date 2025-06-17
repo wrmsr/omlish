@@ -201,6 +201,7 @@ ignore = [
     'PGH004',  # blanket-noqa
     'PLC0206',  # dict-index-missing-items
     'PLC0208',  # iteration-over-set
+    'PLC0415',  # import-outside-top-level
     'PLR0911',  # too-many-return-statements
     'PLR0912',  # too-many-branches
     'PLR0913',  # too-many-arguments

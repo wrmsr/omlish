@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 

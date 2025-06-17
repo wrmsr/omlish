@@ -1,4 +1,4 @@
-# ruff: noqa: N802 UP006 UP007
+# ruff: noqa: N802 UP006 UP007 UP045
 # @omlish-lite
 """
 TODO:

@@ -1,4 +1,4 @@
-# ruff: noqa: UP007 UP012
+# ruff: noqa: UP007 UP012 UP045
 # @omlish-lite
 import ctypes as ct
 import logging

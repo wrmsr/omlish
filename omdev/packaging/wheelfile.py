@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 # https://github.com/pypa/wheel/blob/7bb46d7727e6e89fe56b3c78297b3af2672bbbe2/src/wheel/wheelfile.py
 # MIT License
 #

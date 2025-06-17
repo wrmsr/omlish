@@ -21,7 +21,7 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/cf2cbe2aec28f87c6228a6fb136c27931c9af407/src/packaging/_parser.py#L65
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 import ast
 import contextlib
 import dataclasses as dc

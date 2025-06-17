@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP007
+# ruff: noqa: UP007 UP045
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
  - The maximum batch size is 1,048,576 bytes. This size is calculated as the sum of all event messages in UTF-8, plus 26

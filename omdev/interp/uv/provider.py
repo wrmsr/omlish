@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 uv run pip
 uv run --python 3.11.6 pip

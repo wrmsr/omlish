@@ -1,10 +1,10 @@
+# ruff: noqa: TC003 UP006 UP007 UP045
+# @omlish-lite
 """
 TODO:
  - omlish-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
-# ruff: noqa: TC003 UP006 UP007
-# @omlish-lite
 import argparse
 import io
 import os.path

@@ -24,7 +24,7 @@ https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """  # noqa
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 import abc
 import dataclasses as dc
 import importlib

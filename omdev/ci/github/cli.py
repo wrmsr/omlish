@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 See:
  - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28

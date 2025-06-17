@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 """
 https://man7.org/linux/man-pages/man8/lsof.8.html

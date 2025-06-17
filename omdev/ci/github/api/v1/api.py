@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 export FILE_SIZE=$(stat --format="%s" $FILE)
 

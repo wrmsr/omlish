@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../pyproject/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP045
 """
 TODO:
  - check / tests, src dir sets

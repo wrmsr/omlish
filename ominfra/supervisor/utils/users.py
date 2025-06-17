@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP007 UP045
 import dataclasses as dc
 import grp
 import pwd

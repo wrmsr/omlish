@@ -1,4 +1,4 @@
-# ruff: noqa: TC003 UP006 UP007
+# ruff: noqa: TC003 UP006 UP007 UP045
 import dataclasses as dc
 import os
 import typing as ta

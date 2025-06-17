@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 """
 https://github.com/util-linux/util-linux/blob/a4436c7bf07f98a6381c7dfa2ab3f9a415f9c479/misc-utils/lslocks.c

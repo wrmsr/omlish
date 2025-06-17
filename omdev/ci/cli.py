@@ -1,5 +1,5 @@
 # @omlish-amalg ../scripts/ci.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 """
 Inputs:
  - requirements.txt

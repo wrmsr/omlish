@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP006 UP007 UP037
+# ruff: noqa: UP006 UP007 UP037 UP045
 # Copyright (c) 2014, Saurabh Kumar (python-dotenv), 2013, Ted Tieken (django-dotenv-rw), 2013, Jacob Kaplan-Moss
 # (django-dotenv)
 #

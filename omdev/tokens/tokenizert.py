@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 # Copyright (c) 2017 Anthony Sottile
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated

@@ -21,7 +21,7 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 import abc
 import itertools
 import re

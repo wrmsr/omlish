@@ -4,7 +4,7 @@ TODO:
  - literals
  - Options.sequence_cls = list, mapping_cls = dict, ... - def with_mutable_containers() -> Options
 """
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP045
 import abc
 import base64
 import collections.abc

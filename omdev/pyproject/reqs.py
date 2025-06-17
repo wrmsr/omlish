@@ -2,7 +2,7 @@
 TODO:
  - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP007 UP045
 import os.path
 import tempfile
 import typing as ta
