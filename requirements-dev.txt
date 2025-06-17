@@ -105,7 +105,7 @@ wikitextparser==0.56.4  # !! GPL
 executing==2.2.0
 asttokens==3.0.0
 
-numpy>=2.3.0
+numpy>=1.24
 
 prompt-toolkit==3.0.51
 
