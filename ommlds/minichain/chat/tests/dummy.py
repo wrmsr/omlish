@@ -19,6 +19,8 @@ from ..stream.services import ChatChoicesStreamGenerator
 from ..stream.services import ChatChoicesStreamRequest
 from ..stream.services import ChatChoicesStreamResponse
 from ..stream.services import static_check_is_chat_choices_stream_service
+from ..stream.types import AiChoiceDelta
+from ..stream.types import AiMessageDelta
 
 
 ##
@@ -69,6 +71,12 @@ class DummyChatChoicesStreamService(DummyFnService):
     def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         with UseResources.or_new(request.options) as rs:
             def yield_choices() -> ChatChoicesStreamGenerator:
-                yield [AiChoice(self.fn(request.v))]
+                am = self.fn(request.v)
+                yield [AiChoiceDelta(AiMessageDelta(
+                    am.s,
+                    # FIXME
+                    # am.tool_exec_requests,
+                    None,
+                ))]
                 return []
             return new_stream_response(rs, yield_choices())

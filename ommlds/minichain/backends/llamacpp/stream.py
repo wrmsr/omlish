@@ -9,12 +9,12 @@ from omlish import lang
 
 from ....backends import llamacpp as lcu
 from ...chat.choices.services import ChatChoicesOutputs
-from ...chat.choices.types import AiChoice
-from ...chat.choices.types import AiChoices
-from ...chat.messages import AiMessage
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.types import AiChoiceDelta
+from ...chat.stream.types import AiChoiceDeltas
+from ...chat.stream.types import AiMessageDelta
 from ...resources import UseResources
 from ...stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
@@ -63,10 +63,10 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
-                    l: list[AiChoice] = []
+                    l: list[AiChoiceDelta] = []
                     for choice in chunk['choices']:
                         # FIXME: check role is assistant
                         # FIXME: stop reason
@@ -74,7 +74,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                             continue
                         if not (content := delta.get('content', '')):
                             continue
-                        l.append(AiChoice(AiMessage(content)))
+                        l.append(AiChoiceDelta(AiMessageDelta(content)))
                     yield l
                 return None
 

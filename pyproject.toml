@@ -220,6 +220,7 @@ ignore = [
     'RET505',  # superfluous-else-return
     'RET506',  # superfluous-else-raise
     'RET508',  # superfluous-else-break
+    'RUF001',  # ambiguous-unicode-character-string
     'RUF009',  # function-call-in-dataclass-default-argument
     'RUF018',  # assignment-in-assert
     'RUF023',  # unsorted-dunder-slots

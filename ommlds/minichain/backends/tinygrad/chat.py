@@ -18,6 +18,8 @@ from ...chat.stream.services import ChatChoicesStreamGenerator
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.types import AiChoiceDelta
+from ...chat.stream.types import AiMessageDelta
 from ...chat.types import ChatOption
 from ...llms.types import LlmOption
 from ...resources import UseResources
@@ -134,12 +136,12 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
             toks = _prepare_toks(
                 llm,
                 request.v,
-                request.options.get_any((ChatOption, LlmOption)),  # FIXME
+                request.options.get_any((ChatOption, LlmOption)),  # FIXME  # noqa
             )
 
             def yield_choices() -> ChatChoicesStreamGenerator:
                 for s in tgl3.run_llm(llm, toks):
-                    yield [AiChoice(AiMessage(s))]
+                    yield [AiChoiceDelta(AiMessageDelta(s))]
                 return []
 
             return new_stream_response(rs, yield_choices())

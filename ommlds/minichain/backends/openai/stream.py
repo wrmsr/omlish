@@ -8,11 +8,11 @@ from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from ...chat.choices.services import ChatChoicesOutputs
-from ...chat.stream.types import AiChoiceDelta
-from ...chat.stream.types import AiChoiceDeltas
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.types import AiChoiceDelta
+from ...chat.stream.types import AiChoiceDeltas
 from ...chat.stream.types import ChatChoicesStreamOption
 from ...configs import Config
 from ...resources import ResourcesOption

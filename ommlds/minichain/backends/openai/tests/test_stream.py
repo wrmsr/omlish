@@ -1,19 +1,14 @@
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.choices.adapters import ChatChoicesServiceChatService
-from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....chat.services import ChatService
 from ....chat.stream.adapters import ChatChoicesStreamServiceChatChoicesService
 from ....chat.stream.services import ChatChoicesStreamRequest
-from ....chat.tools import Tool
 from ....resources import Resources
 from ....resources import UseResources
 from ....services import Request
 from ....standard import ApiKey
-from ....tools.types import ToolDtype
-from ....tools.types import ToolParam
-from ....tools.types import ToolSpec
 from ..stream import OpenaiChatChoicesStreamService
 
 

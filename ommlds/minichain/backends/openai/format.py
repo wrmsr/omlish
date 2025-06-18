@@ -9,13 +9,13 @@ from omlish.formats import json
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import ChatChoicesOptions
-from ...chat.stream.types import AiMessageDelta
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.types import AiMessageDelta
 from ...chat.tools import Tool
 from ...llms.types import MaxTokens
 from ...llms.types import Temperature
@@ -206,4 +206,3 @@ class OpenaiChatRequestHandler:
             #     for tc in message_or_delta.get('tool_calls', [])
             # ] or None,
         )
-
