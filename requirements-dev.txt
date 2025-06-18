@@ -6,7 +6,7 @@ wheel>=0.45.1
 
 uv>=0.7.12
 
-pytest==8.4.0
+pytest==8.4.1
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1

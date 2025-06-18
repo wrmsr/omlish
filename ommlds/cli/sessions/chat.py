@@ -110,7 +110,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     lst: list[str] = []
                     for o in st_resp:
                         if o:
-                            m = check.isinstance(check.single(o).m, mc.AiMessage)
+                            m = check.single(o).m
                             if m.s is not None:
                                 print(m.s, end='', flush=True)
                                 lst.append(m.s)
