@@ -7,9 +7,9 @@ from ...registry import register_type
 from ...services import Request
 from ...services import Service
 from ...stream.services import StreamResponse
-from .types import AiChoiceDeltas
 from ..choices.types import ChatChoicesOutputs
 from ..messages import Chat
+from .types import AiChoiceDeltas
 from .types import ChatChoicesStreamOptions
 from .types import ChatChoicesStreamOutputs
 

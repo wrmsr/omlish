@@ -42,7 +42,9 @@ class ChatChoicesStreamServiceChatChoicesService:
                         m = c.m
                         lst.append(self._Choice(
                             [m.s] if m.s is not None else [],
-                            list(m.tool_exec_requests or []),
+                            # FIXME
+                            # list(m.tool_exec_requests or []),
+                            [],
                         ))
 
                 else:
@@ -50,8 +52,9 @@ class ChatChoicesStreamServiceChatChoicesService:
                         m = c.m
                         if m.s is not None:
                             ch.parts.append(m.s)
-                        if m.tool_exec_requests:
-                            ch.trs.extend(m.tool_exec_requests)
+                        # FIXME
+                        # if m.tool_exec_requests:
+                        #     ch.trs.extend(m.tool_exec_requests)
 
         check.state(resp_v.is_done)
 

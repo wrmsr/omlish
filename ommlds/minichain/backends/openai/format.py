@@ -9,6 +9,7 @@ from omlish.formats import json
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import ChatChoicesOptions
+from ...chat.stream.types import AiMessageDelta
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import Message
@@ -161,9 +162,9 @@ class OpenaiChatRequestHandler:
             **po.kwargs,
         )
 
-    def build_ai_message(self, message_or_delta: ta.Mapping[str, ta.Any]) -> AiMessage:
+    def build_ai_message(self, message: ta.Mapping[str, ta.Any]) -> AiMessage:
         return AiMessage(
-            message_or_delta.get('content'),
+            message.get('content'),
             tool_exec_requests=[
                 ToolExecRequest(
                     id=tc['id'],
@@ -171,7 +172,7 @@ class OpenaiChatRequestHandler:
                     args=json.loads(tc['function']['arguments'] or '{}'),
                     raw_args=tc['function']['arguments'],
                 )
-                for tc in message_or_delta.get('tool_calls', [])
+                for tc in message.get('tool_calls', [])
             ] or None,
         )
 
@@ -190,3 +191,19 @@ class OpenaiChatRequestHandler:
                 ))] if (tu := raw_response.get('usage')) is not None else []),
             ),
         )
+
+    def build_ai_message_delta(self, delta: ta.Mapping[str, ta.Any]) -> AiMessageDelta:
+        return AiMessageDelta(
+            delta.get('content'),
+            # FIXME:
+            # tool_exec_requests=[
+            #     ToolExecRequest(
+            #         id=tc['id'],
+            #         spec=self._process_options().tools_by_name[tc['function']['name']],
+            #         args=json.loads(tc['function']['arguments'] or '{}'),
+            #         raw_args=tc['function']['arguments'],
+            #     )
+            #     for tc in message_or_delta.get('tool_calls', [])
+            # ] or None,
+        )
+

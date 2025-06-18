@@ -69,7 +69,7 @@ class UserMessage(Message, lang.Final):
 class AiMessage(Message, lang.Final):
     s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
-    tool_exec_requests: ta.Sequence['ToolExecRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    tool_exec_requests: ta.Sequence[ToolExecRequest] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 #

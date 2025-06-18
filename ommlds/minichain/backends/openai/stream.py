@@ -8,8 +8,8 @@ from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from ...chat.choices.services import ChatChoicesOutputs
-from ...chat.choices.types import AiChoice
-from ...chat.choices.types import AiChoices
+from ...chat.stream.types import AiChoiceDelta
+from ...chat.stream.types import AiChoiceDeltas
 from ...chat.stream.services import ChatChoicesStreamRequest
 from ...chat.stream.services import ChatChoicesStreamResponse
 from ...chat.stream.services import static_check_is_chat_choices_stream_service
@@ -74,7 +74,7 @@ class OpenaiChatChoicesStreamService:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Generator[AiChoices, None, ta.Sequence[ChatChoicesOutputs] | None]:
+            def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -101,7 +101,7 @@ class OpenaiChatChoicesStreamService:
                                     continue
 
                                 yield [
-                                    AiChoice(rh.build_ai_message(choice['delta']))
+                                    AiChoiceDelta(rh.build_ai_message_delta(choice['delta']))
                                     for choice in sj['choices']
                                 ]
 
