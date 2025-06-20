@@ -145,7 +145,7 @@ rapidocr-onnxruntime==1.4.4  # @omlish-venv !13t
 
 pillow==11.2.1
 
-accelerate==1.8.0
+accelerate==1.8.1
 
 # bitsandbytes==0.45.4
 bitsandbytes
