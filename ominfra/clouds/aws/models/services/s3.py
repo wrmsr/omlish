@@ -223,6 +223,7 @@ class ObjectStorageClass(_enum.Enum):
     GLACIER_IR = 'GLACIER_IR'
     SNOW = 'SNOW'
     EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
+    FSX_OPENZFS = 'FSX_OPENZFS'
 
 
 ObjectVersionId = _ta.NewType('ObjectVersionId', str)
@@ -286,6 +287,7 @@ SSEKMSKeyId = _ta.NewType('SSEKMSKeyId', str)
 
 class ServerSideEncryption(_enum.Enum):
     AES256 = 'AES256'
+    AWS_FSX = 'aws:fsx'
     AWS_KMS = 'aws:kms'
     AWS_KMS_DSSE = 'aws:kms:dsse'
 
@@ -307,6 +309,7 @@ class StorageClass(_enum.Enum):
     GLACIER_IR = 'GLACIER_IR'
     SNOW = 'SNOW'
     EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
+    FSX_OPENZFS = 'FSX_OPENZFS'
 
 
 TagCount = _ta.NewType('TagCount', int)

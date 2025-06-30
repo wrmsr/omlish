@@ -74,7 +74,9 @@ class TransformersCompletionService(lang.ExitStacked):
         )
         output = pipeline(request.v)
 
-        return CompletionResponse(output)
+        c = check.isinstance(check.single(output)['generated_text'], str)
+
+        return CompletionResponse(c)
 
 
 ##

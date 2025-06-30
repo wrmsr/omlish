@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            # 'diffusers ~= 0.33.1',
+            # 'diffusers ~= 0.34',
 
             'llama-cpp-python ~= 0.3',
 
@@ -32,7 +32,7 @@ class Project(ProjectBase):
 
             'torch ~= 2.7',
 
-            'transformers ~= 4.52',
+            'transformers ~= 4.53',
             'sentence-transformers ~= 4.1',
         ],
 
@@ -60,13 +60,13 @@ class Project(ProjectBase):
         ],
 
         'wiki': [
-            'mwparserfromhell ~= 0.6',
+            'mwparserfromhell ~= 0.7',
 
             'wikitextparser ~= 0.56',  # !! GPL
         ],
 
         'xml': [
-            'lxml ~= 5.3; python_version < "3.13"',
+            'lxml ~= 6.0; python_version < "3.13"',
         ],
     }
 

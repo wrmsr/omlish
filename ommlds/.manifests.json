@@ -264,7 +264,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 124,
+    "line": 126,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.transformers.transformers",

@@ -1427,6 +1427,8 @@ class NitroTpmSupport(_enum.Enum):
 
 NitroTpmSupportedVersionType = _ta.NewType('NitroTpmSupportedVersionType', str)
 
+OdbNetworkArn = _ta.NewType('OdbNetworkArn', str)
+
 PeakBandwidthInGbps = _ta.NewType('PeakBandwidthInGbps', float)
 
 
@@ -2073,6 +2075,11 @@ class CreateRouteRequest(
         shape_name='CoreNetworkArn',
     ))
 
+    odb_network_arn: OdbNetworkArn | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='OdbNetworkArn',
+        shape_name='OdbNetworkArn',
+    ))
+
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DryRun',
         serialization_name='dryRun',
@@ -2352,6 +2359,12 @@ class EbsBlockDevice(
         shape_name='String',
     ))
 
+    availability_zone: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AvailabilityZone',
+        serialization_name='availabilityZone',
+        shape_name='String',
+    ))
+
     encrypted: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Encrypted',
         serialization_name='encrypted',
@@ -2361,6 +2374,11 @@ class EbsBlockDevice(
     volume_initialization_rate: int | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VolumeInitializationRate',
         shape_name='Integer',
+    ))
+
+    availability_zone_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AvailabilityZoneId',
+        shape_name='String',
     ))
 
 
@@ -3665,6 +3683,12 @@ class Route(
         member_name='CoreNetworkArn',
         serialization_name='coreNetworkArn',
         shape_name='CoreNetworkArn',
+    ))
+
+    odb_network_arn: OdbNetworkArn | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='OdbNetworkArn',
+        serialization_name='odbNetworkArn',
+        shape_name='OdbNetworkArn',
     ))
 
 

@@ -8,7 +8,7 @@
 ##
 # infra
 
-google-api-python-client==2.173.0
+google-api-python-client==2.174.0
 google-cloud-compute==1.31.0
 
 
@@ -20,15 +20,15 @@ matplotlib==3.10.3
 torch==2.7.1
 torchvision==0.22.1
 
-diffusers==0.33.1
+diffusers==0.34.0
 
-scipy==1.15.3
+scipy==1.16.0
 scikit-learn==1.7.0
 scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.7.7
+tavily-python==0.7.8
 
 sqlite-vec==0.1.6
 
@@ -52,7 +52,7 @@ watchdog==6.0.0
 
 pyright[nodejs]==1.1.402
 
-basedpyright==1.29.4
+basedpyright==1.29.5
 
 blobfile==3.0.0
 
@@ -68,5 +68,5 @@ pyinstrument==5.0.2
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.4.3
-notebook==7.4.3
+jupyterlab==4.4.4
+notebook==7.4.4
