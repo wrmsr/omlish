@@ -8,6 +8,7 @@ import abc
 import operator
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
@@ -259,7 +260,7 @@ class NodeBuilder:
             return [self.build_content_node(c) for c in w.nodes]
 
         elif isinstance(w, ta.Iterable):
-            return [self.build_content_node(c) for c in w]
+            return [self.build_content_node(check.isinstance(c, mfn.Node)) for c in w]
 
         else:
             raise TypeError(w)

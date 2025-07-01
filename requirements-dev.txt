@@ -11,7 +11,7 @@ pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.4.0
-pytest-xdist==3.7.0
+pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
@@ -32,7 +32,7 @@ gprof2dot==2025.4.14
 guppy3==3.1.5; python_version < "3.13"
 objgraph==3.6.2
 
-ipython==9.3.0
+ipython==9.4.0
 
 pg8000==1.31.2
 pymysql==1.1.1
@@ -99,7 +99,7 @@ mdit-py-plugins==0.4.2
 
 pygments==2.19.2
 
-mwparserfromhell==0.7.1  # @omlish-venv !13t
+mwparserfromhell==0.7.2  # @omlish-venv !13t
 wikitextparser==0.56.4  # !! GPL
 
 executing==2.2.0
@@ -121,7 +121,7 @@ huggingface-hub==0.33.1
 datasets==3.6.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 transformers==4.53.0; python_version < "3.13"
-sentence-transformers==4.1.0; python_version < "3.13"
+sentence-transformers==5.0.0; python_version < "3.13"
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"
@@ -132,18 +132,18 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.38.46
+boto3>=1.39.1
 
 antlr4-python3-runtime==4.13.2
 
 mlx==0.26.1; sys_platform == "darwin"  # @omlish-venv !13t
-mlx-lm==0.25.2; sys_platform == "darwin" and python_version < "3.13"
+mlx-lm==0.25.3; sys_platform == "darwin" and python_version < "3.13"
 
 apsw==3.50.2.0
 
 rapidocr-onnxruntime==1.4.4  # @omlish-venv !13t
 
-pillow==11.2.1
+pillow==11.3.0
 
 accelerate==1.8.1
 

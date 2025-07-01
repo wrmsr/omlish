@@ -37,7 +37,7 @@ all = [
     'tokenizers ~= 0.21',
     'torch ~= 2.7',
     'transformers ~= 4.53',
-    'sentence-transformers ~= 4.1',
+    'sentence-transformers ~= 5.0',
     'huggingface-hub ~= 0.33',
     'datasets ~= 3.6',
     'numpy >= 1.26',
@@ -59,7 +59,7 @@ backends = [
     'tokenizers ~= 0.21',
     'torch ~= 2.7',
     'transformers ~= 4.53',
-    'sentence-transformers ~= 4.1',
+    'sentence-transformers ~= 5.0',
 ]
 huggingface = [
     'huggingface-hub ~= 0.33',
