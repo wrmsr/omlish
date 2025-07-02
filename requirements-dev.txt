@@ -109,12 +109,12 @@ numpy>=1.24
 
 prompt-toolkit==3.0.51
 
-snowflake-connector-python[secure-local-storage]==3.15.0; python_version < "3.13"
+snowflake-connector-python[secure-local-storage]==3.16.0; python_version < "3.13"
 snowflake-sqlalchemy==1.7.5; python_version < "3.13"
 
 trino==0.335.0  # @omlish-venv !13t
 
-huggingface-hub==0.33.1
+huggingface-hub==0.33.2
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
@@ -136,7 +136,7 @@ boto3>=1.39.1
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.26.1; sys_platform == "darwin"  # @omlish-venv !13t
+mlx==0.26.2; sys_platform == "darwin"  # @omlish-venv !13t
 mlx-lm==0.25.3; sys_platform == "darwin" and python_version < "3.13"
 
 apsw==3.50.2.0
