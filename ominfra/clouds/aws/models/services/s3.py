@@ -274,6 +274,8 @@ Restore = _ta.NewType('Restore', str)
 
 RestoreExpiryDate = _ta.NewType('RestoreExpiryDate', _base.Timestamp)
 
+S3RegionalOrS3ExpressBucketArnString = _ta.NewType('S3RegionalOrS3ExpressBucketArnString', str)
+
 SSECustomerAlgorithm = _ta.NewType('SSECustomerAlgorithm', str)
 
 SSECustomerKey = _ta.NewType('SSECustomerKey', str)
@@ -350,6 +352,11 @@ class Bucket(
     bucket_region: BucketRegion | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='BucketRegion',
         shape_name='BucketRegion',
+    ))
+
+    bucket_arn: S3RegionalOrS3ExpressBucketArnString | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='BucketArn',
+        shape_name='S3RegionalOrS3ExpressBucketArnString',
     ))
 
 
