@@ -84,6 +84,7 @@ def _build_args_parser() -> argparse.ArgumentParser:
 
     parser.add_argument('-x', '--jmespath-expr')
     parser.add_argument('-F', '--flat', action='store_true')
+    parser.add_argument('-E', '--omit-empty', action='store_true')
 
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
@@ -128,6 +129,7 @@ def _process_args(args: ta.Any) -> RunConfiguration:
     processing = ProcessingOptions(
         jmespath_expr=args.jmespath_expr,
         flat=args.flat,
+        omit_empty=args.omit_empty,
     )
 
     #

@@ -17,6 +17,7 @@ else:
 class ProcessingOptions:
     jmespath_expr: ta.Any | None = None
     flat: bool = False
+    omit_empty: bool = False
 
 
 class Processor:
@@ -34,6 +35,7 @@ class Processor:
         if self._jmespath_expr is not None:
             v = self._jmespath_expr.search(v)
 
+        vs: ta.Iterable[ta.Any]
         if self._opts.flat:
             if (
                     not isinstance(v, ta.Iterable) or  # noqa
@@ -42,7 +44,14 @@ class Processor:
             ):
                 raise TypeError(f'Flat output must be flat collections, got {type(v)}', v)
 
-            yield from v
+            vs = v
 
         else:
+            vs = [v]
+
+        for v in vs:
+            if self._opts.omit_empty:
+                if v is None or (isinstance(v, (ta.Sequence, ta.Mapping)) and not v):
+                    continue
+
             yield v

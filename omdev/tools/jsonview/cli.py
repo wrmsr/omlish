@@ -4,6 +4,8 @@ TODO:
  - evaluate jmespath on server using extended engine
  - integrate with json tool
  - use omlish server and templates
+ - vendor deps, serve local
+ - update to https://github.com/josdejong/svelte-jsoneditor
 """
 import argparse
 import http.server
