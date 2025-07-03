@@ -510,6 +510,21 @@
     }
   },
   {
+    "module": ".tools.shell",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/shell.py",
+    "line": 110,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "shell",
+          "sh"
+        ],
+        "mod_name": "omdev.tools.shell"
+      }
+    }
+  },
+  {
     "module": ".tools.sqlrepl",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/sqlrepl.py",
