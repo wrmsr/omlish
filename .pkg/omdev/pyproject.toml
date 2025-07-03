@@ -92,4 +92,6 @@ exclude = [
     'LICENSE.txt',
     'cc/cdeps.toml',
     'pyproject/resources/*.sh',
+    'tools/jsonview/resources/*.css',
+    'tools/jsonview/resources/*.js',
 ]

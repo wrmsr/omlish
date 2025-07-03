@@ -409,6 +409,21 @@
     }
   },
   {
+    "module": ".tools.jsonview.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/jsonview/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "jsonview",
+          "jv"
+        ],
+        "mod_name": "omdev.tools.jsonview.__main__"
+      }
+    }
+  },
+  {
     "module": ".tools.linehisto",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/linehisto.py",
