@@ -93,6 +93,7 @@ def _build_args_parser() -> argparse.ArgumentParser:
     parser.add_argument('-R', '--raw', action='store_true')
     parser.add_argument('-U', '--unicode', action='store_true')
     parser.add_argument('-c', '--color', action='store_true')
+    parser.add_argument('-5', '--five', action='store_true')
 
     parser.add_argument('-L', '--less', action='store_true')
 
@@ -154,6 +155,7 @@ def _process_args(args: ta.Any) -> RunConfiguration:
         raw=args.raw,
         unicode=args.unicode,
         color=args.color,
+        five=args.five,
     )
 
     #

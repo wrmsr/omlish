@@ -6,6 +6,7 @@ from omlish import lang
 from omlish.formats.json.rendering import JsonRenderer
 from omlish.formats.json.stream.parsing import JsonStreamParserEvent
 from omlish.formats.json.stream.rendering import StreamJsonRenderer
+from omlish.formats.json5.rendering import Json5Renderer
 from omlish.term import codes as tc
 
 
@@ -20,6 +21,7 @@ class RenderingOptions:
     raw: bool = False
     unicode: bool = False
     color: bool = False
+    five: bool = False
 
 
 def make_render_kwargs(opts: RenderingOptions) -> ta.Mapping[str, ta.Any]:
@@ -60,6 +62,14 @@ class EagerRenderer(Renderer):
                 raise TypeError(f'Raw output must be strings, got {type(v)}', v)
 
             return v
+
+        elif self._opts.five:
+            return Json5Renderer.render_str(
+                v,
+                **self._kw,
+                **(dict(style=term_color) if self._opts.color else {}),
+                multiline_strings=True,
+            )
 
         elif self._opts.color:
             return JsonRenderer.render_str(
