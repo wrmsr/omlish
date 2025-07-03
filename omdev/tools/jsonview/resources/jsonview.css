@@ -29,4 +29,5 @@ html, body {
 }
 #jsoneditor {
     flex-grow: 1;
+    overflow: auto;
 }
