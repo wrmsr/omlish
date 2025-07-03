@@ -7,6 +7,7 @@ html, body {
     flex-direction: column;
     font-family: sans-serif;
 }
+
 .input-area {
     padding: 10px;
     display: flex;
@@ -15,6 +16,7 @@ html, body {
     border-bottom: 1px solid #ccc;
     flex-shrink: 0;
 }
+
 #jmespath-input {
     flex-grow: 1;
     padding: 8px;
@@ -22,11 +24,13 @@ html, body {
     border-radius: 4px;
     font-size: 14px;
 }
+
 #error-message {
     color: red;
     font-size: 14px;
     white-space: nowrap;
 }
+
 #jsoneditor {
     flex-grow: 1;
     overflow: auto;
