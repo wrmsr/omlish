@@ -1,3 +1,10 @@
+"""
+TODO:
+ - read from stdin
+ - evaluate jmespath on server using extended engine
+ - integrate with json tool
+ - use omlish server and templates
+"""
 import argparse
 import http.server
 import json
