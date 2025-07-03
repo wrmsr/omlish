@@ -47,7 +47,7 @@ all = [
     'duckduckgo-search ~= 8.0',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
-    'lxml ~= 6.0; python_version < "3.13"',
+    'lxml >= 5.3; python_version < "3.13"',
 ]
 backends = [
     'llama-cpp-python ~= 0.3',
@@ -83,7 +83,7 @@ wiki = [
     'wikitextparser ~= 0.56',
 ]
 xml = [
-    'lxml ~= 6.0; python_version < "3.13"',
+    'lxml >= 5.3; python_version < "3.13"',
 ]
 
 [project.entry-points]

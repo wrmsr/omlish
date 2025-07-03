@@ -50,7 +50,7 @@ pudb==2025.1
 
 cython==3.1.2
 
-lxml==6.0.0  # @omlish-venv !13t
+lxml>=5.3.0  # @omlish-venv !13t
 
 # clang
 
