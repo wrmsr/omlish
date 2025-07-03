@@ -66,7 +66,7 @@ filelock==3.18.0
 flake8==7.3.0
 Flake8-pyproject==1.2.3
 flatbuffers==25.2.10
-fonttools==4.58.4
+fonttools==4.58.5
 fqdn==1.5.1
 frozenlist==1.7.0
 fsspec==2025.3.0
@@ -130,7 +130,7 @@ keyring==25.6.0
 kiwisolver==1.4.8
 lazy_loader==0.4
 litecli==1.15.0
-llama_cpp_python==0.3.9
+llama_cpp_python==0.3.10
 lsprotocol==2023.0.1
 lxml==6.0.0
 lz4==4.4.4
@@ -248,7 +248,7 @@ rfc3986-validator==0.1.1
 rich==14.0.0
 rpds-py==0.26.0
 rsa==4.9.1
-ruff==0.12.1
+ruff==0.12.2
 s3transfer==0.13.0
 safetensors==0.5.3
 scikit-image==0.25.2
