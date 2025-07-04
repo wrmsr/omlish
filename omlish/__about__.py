@@ -79,7 +79,7 @@ class Project(ProjectBase):
         ],
 
         'secrets': [
-            'cryptography ~= 44.0',
+            'cryptography ~= 45.0',
         ],
 
         'sqlalchemy': [
