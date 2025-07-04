@@ -77,7 +77,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         self._indent_cache[self._level] = ret
         return ret
 
-    def _format_scalar(self, o: Scalar) -> str:
+    def _format_scalar(self, o: Scalar, state: State | None = None) -> str:
         if o is None or isinstance(o, bool):
             return self._literals[o]
 
@@ -129,7 +129,13 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             post = None
 
         if isinstance(o, SCALAR_TYPES):
-            self._write(self._format_scalar(o))  # type: ignore
+            # FIXME: `less` workaround, doesn't carry color code across newlines
+            # f = self._format_scalar(o, state)
+            # if isinstance(o, str) and '\n' in f and self._style is not None and pre:
+            #     f = f'\n{pre}'.join(f.split('\n'))
+            # self._write(f)
+
+            self._write(self._format_scalar(o, state))  # type: ignore[arg-type]
 
         elif isinstance(o, ta.Mapping):
             self._write('{')

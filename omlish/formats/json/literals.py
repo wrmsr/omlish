@@ -56,10 +56,26 @@ def _convert_to_string(s: str | bytes) -> str:
         return s
 
 
+def _handle_encode_quote_args(
+        q: str | None,
+        lq: str | None,
+        rq: str | None,
+) -> tuple[str, str]:
+    if q is None:
+        q = '"'
+    if lq is None:
+        lq = q
+    if rq is None:
+        rq = q
+    return (lq, rq)
+
+
 def encode_string(
         s: str | bytes,
-        q: str = '"',
+        q: str | None = None,
         *,
+        lq: str | None = None,
+        rq: str | None = None,
         escape_map: ta.Mapping[str, str] | None = None,
 ) -> str:
     """Return a JSON representation of a Python string."""
@@ -72,13 +88,21 @@ def encode_string(
     def replace(m):
         return escape_map[m.group(0)]
 
-    return q + _ESCAPE_PAT.sub(replace, s) + q
+    lq, rq = _handle_encode_quote_args(q, lq, rq)
+
+    return ''.join([
+        lq,
+        _ESCAPE_PAT.sub(replace, s),
+        rq,
+    ])
 
 
 def encode_string_ascii(
         s: str | bytes,
-        q: str = '"',
+        q: str | None = None,
         *,
+        lq: str | None = None,
+        rq: str | None = None,
         escape_map: ta.Mapping[str, str] | None = None,
 ) -> str:
     """Return an ASCII-only JSON representation of a Python string."""
@@ -105,7 +129,13 @@ def encode_string_ascii(
             s2 = 0xDC00 | (n & 0x3FF)
             return f'\\u{s1:04x}\\u{s2:04x}'
 
-    return q + str(_ESCAPE_ASCII_PAT.sub(replace, s)) + q
+    lq, rq = _handle_encode_quote_args(q, lq, rq)
+
+    return ''.join([
+        lq,
+        str(_ESCAPE_ASCII_PAT.sub(replace, s)),
+        rq,
+    ])
 
 
 ##
