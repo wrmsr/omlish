@@ -69,7 +69,8 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.check_empty()
+        if exc_type is None:
+            self.check_empty()
 
     #
 

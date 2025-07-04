@@ -22,6 +22,7 @@ from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
 from ...standard import ApiKey
+from ...standard import ModelName
 
 
 ##
@@ -31,8 +32,11 @@ from ...standard import ApiKey
 @static_check_is_chat_choices_service
 class AnthropicChatChoicesService:
     model: ta.ClassVar[str] = (
-        'claude-3-5-sonnet-20241022'
-        # 'claude-3-opus-20240229'
+        # 'claude-opus-4-0'
+        # 'claude-sonnet-4-0'
+        # 'claude-3-7-sonnet-latest'
+        # 'claude-3-5-sonnet-latest'
+        'claude-3-5-haiku-latest'
     )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -43,12 +47,13 @@ class AnthropicChatChoicesService:
 
     def __init__(
             self,
-            *configs: ApiKey,
+            *configs: ApiKey | ModelName,
     ) -> None:
         super().__init__()
 
         with tv.consume(*configs) as cc:
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
+            self._model_name = cc.pop(ModelName(self.model))
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):

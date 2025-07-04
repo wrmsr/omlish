@@ -62,10 +62,12 @@ class SecretConfig(Config, lang.Abstract):
         check.issubclass(cls, tv.UniqueTypedValue)
 
         if (ak := consumer.pop(cls, None)) is not None:  # type: ignore[type-var]
-            if isinstance(ak.v, str):
-                return sec.Secret.of(ak.v)
+            if isinstance(ak.v, sec.Secret):
+                return ak.v
             elif isinstance(ak.v, sec.SecretRef):
                 raise NotImplementedError
+            elif isinstance(ak.v, str):
+                return sec.Secret.of(ak.v)
             else:
                 raise TypeError(ak.v)
 
