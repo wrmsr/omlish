@@ -12,7 +12,7 @@ authors = [
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
 requires-python = '>=3.12'
-version = '0.0.0.dev350'
+version = '0.0.0.dev351'
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
@@ -22,8 +22,8 @@ classifiers = [
 ]
 description = 'ominfra'
 dependencies = [
-    'omdev == 0.0.0.dev350',
-    'omlish == 0.0.0.dev350',
+    'omdev == 0.0.0.dev351',
+    'omlish == 0.0.0.dev351',
 ]
 
 [project.optional-dependencies]
