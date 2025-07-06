@@ -8,46 +8,83 @@ import os
 import re
 import typing as ta
 
+from omlish import collections as col
+
 from ..cli import CliModule
 
 
 ##
 
 
-SUPPORTED_EXTENSIONS: ta.Mapping[str, str] = {
-    '.c': 'c',
-    '.cpp': 'c',
-    '.h': 'c',
-    '.hpp': 'c',
-    '.py': 'python',
-    '.js': 'javascript',
-}
+@dc.dataclass(frozen=True)
+class Lang:
+    name: str
+    extensions: ta.AbstractSet[str]
+
+    _: dc.KW_ONLY
+
+    comment_pats: tuple[str, str | None, str | None]
+    is_test_file_fn: ta.Callable[[str], bool] | None = None
 
 
-COMMENT_PATTERNS: ta.Mapping[str, tuple[str, str | None, str | None]] = {
-    'c': (r'//', r'/\*', r'\*/'),
-    'python': (r'#', None, None),
-    'javascript': (r'//', r'/\*', r'\*/'),
-}
+_LANG = [
+    Lang(
+        'python',
+        {'.py'},
+        comment_pats=(r'#', None, None),
+        is_test_file_fn=lambda fp: 'tests' in os.path.normpath(fp).split(os.sep),
+    ),
+
+    Lang(
+        'c',
+        {'.c', '.cc', '.cpp', '.h', '.hh', '.hpp'},
+        comment_pats=(r'//', r'/\*', r'\*/'),
+    ),
+
+    Lang(
+        'javascript',
+        {'.js'},
+        comment_pats=(r'//', r'/\*', r'\*/'),
+    ),
+]
+
+
+LANGS = col.make_map_by(lambda l: l.name, _LANG, strict=True)
+LANGS_BY_EXTENSION = col.make_map([(e, l) for l in _LANG for e in l.extensions], strict=True)
+
+
+##
 
 
 @dc.dataclass(frozen=True)
-class FileLineCount:
+class FileStats:
     loc: int
     blanks: int
     comments: int
 
 
-def count_lines(file_path: str, language: str) -> FileLineCount:
-    single_line_comment, block_comment_start, block_comment_end = COMMENT_PATTERNS[language]
+@dc.dataclass(frozen=True)
+class File:
+    path: str
+    lang: Lang
+    stats: FileStats
+    is_test: bool
 
+
+def examine_file(path: str, lang: Lang | None = None) -> File | None:
+    if lang is None:
+        ext = os.path.splitext(os.path.basename(path))[1]
+        if (lang := LANGS_BY_EXTENSION.get(ext)) is None:
+            return None
+
+    single_line_comment, block_comment_start, block_comment_end = lang.comment_pats
     in_block_comment = False
 
     loc = 0
     blank_lines = 0
     comment_lines = 0
 
-    with open(file_path, encoding='utf-8') as file:
+    with open(path, encoding='utf-8') as file:
         for line in file:
             stripped = line.strip()
             if not stripped:
@@ -72,11 +109,19 @@ def count_lines(file_path: str, language: str) -> FileLineCount:
 
             loc += 1
 
-    return FileLineCount(
-        loc=loc,
-        blanks=blank_lines,
-        comments=comment_lines,
+    return File(
+        path=path,
+        lang=lang,
+        stats=FileStats(
+            loc=loc,
+            blanks=blank_lines,
+            comments=comment_lines,
+        ),
+        is_test=lang.is_test_file_fn(path) if lang.is_test_file_fn is not None else False,
     )
+
+
+##
 
 
 def count_lines_in_directory(
@@ -84,14 +129,10 @@ def count_lines_in_directory(
         *,
         include: list[re.Pattern[str]] | None = None,
         exclude: list[re.Pattern[str]] | None = None,
-) -> ta.Mapping[str, FileLineCount]:
-    results: dict[str, FileLineCount] = {}
+) -> ta.Mapping[str, FileStats]:
+    results: dict[str, FileStats] = {}
     for root, _, files in os.walk(directory):
         for file in files:
-            ext = os.path.splitext(file)[1]
-            if ext not in SUPPORTED_EXTENSIONS:
-                continue
-
             file_path = os.path.join(root, file)
 
             if include and not any(p.fullmatch(file_path) for p in include):
@@ -99,13 +140,15 @@ def count_lines_in_directory(
             if exclude and any(p.fullmatch(file_path) for p in exclude):
                 continue
 
-            language = SUPPORTED_EXTENSIONS[ext]
-            results[file_path] = count_lines(file_path, language)
+            if (ex := examine_file(file_path)) is None:
+                continue
+
+            results[file_path] = ex.stats
 
     return results
 
 
-def display_results(results: ta.Mapping[str, FileLineCount]) -> None:
+def display_results(results: ta.Mapping[str, FileStats]) -> None:
     total_loc = total_blanks = total_comments = 0
     file_width = max(map(len, results))
     dash_width = 41 + file_width
@@ -150,6 +193,9 @@ def display_results(results: ta.Mapping[str, FileLineCount]) -> None:
     )
 
 
+##
+
+
 def _main() -> None:
     import argparse
 
@@ -174,7 +220,7 @@ def _main() -> None:
 
     #
 
-    results_by_directory: dict[str, FileLineCount] = {}
+    results_by_directory: dict[str, FileStats] = {}
     for directory in args.directory:
         results = count_lines_in_directory(
             directory,
@@ -188,7 +234,7 @@ def _main() -> None:
         display_results(results)
         print()
 
-        results_by_directory[directory] = FileLineCount(
+        results_by_directory[directory] = FileStats(
             loc=sum(flc.loc for flc in results.values()),
             blanks=sum(flc.blanks for flc in results.values()),
             comments=sum(flc.comments for flc in results.values()),
