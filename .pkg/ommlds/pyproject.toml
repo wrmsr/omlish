@@ -44,7 +44,7 @@ all = [
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 11.1',
-    'duckduckgo-search ~= 8.0',
+    'duckduckgo-search ~= 8.1',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
     'lxml >= 5.3; python_version < "3.13"',
@@ -76,7 +76,7 @@ pillow = [
     'pillow ~= 11.1',
 ]
 search = [
-    'duckduckgo-search ~= 8.0',
+    'duckduckgo-search ~= 8.1',
 ]
 wiki = [
     'mwparserfromhell ~= 0.7',

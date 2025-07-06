@@ -56,7 +56,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'duckduckgo-search ~= 8.0',
+            'duckduckgo-search ~= 8.1',
         ],
 
         'wiki': [

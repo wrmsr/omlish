@@ -34,7 +34,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-duckduckgo-search==8.0.5  # @omlish-venv !13t  # segfault lol
+duckduckgo-search==8.1.0  # @omlish-venv !13t  # segfault lol
 
 gguf==0.17.1
 
