@@ -10,8 +10,9 @@ from omlish import marshal as msh
 
 class Content(lang.Abstract, lang.Sealed):
     class CacheControl(lang.Abstract, lang.Sealed):
-        pass
+        """https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching"""
 
+    @dc.dataclass(frozen=True)
     class EphemeralCacheControl(CacheControl):
         pass
 
@@ -58,11 +59,12 @@ class MessagesRequest:
 
     _: dc.KW_ONLY
 
-    system: ta.Sequence[TextContent] | None = None
+    system: ta.Sequence[Content] | None = None
 
     tools: ta.Sequence[ToolSpec] | None = None
 
-    betas: ta.Sequence[str] | None = None
     temperature: float | None = None
     max_tokens: int | None = None
+
+    betas: ta.Sequence[str] | None = None
     metadata: ta.Mapping[str, str] | None = None

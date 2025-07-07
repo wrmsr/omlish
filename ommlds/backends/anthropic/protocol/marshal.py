@@ -14,6 +14,10 @@ def _install_standard_marshalling() -> None:
         Content.CacheControl,
     ]:
         msh.install_standard_factories(*msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(root_cls, naming=msh.Naming.SNAKE),
+            msh.polymorphism_from_subclasses(
+                root_cls,
+                naming=msh.Naming.SNAKE,
+                strip_suffix='auto',
+            ),
             msh.FieldTypeTagging('type'),
         ))

@@ -199,8 +199,8 @@ class HttpHeaders:
             override: bool = False,
     ) -> 'HttpHeaders':
         if override:
-            nks = {k for k, v in items}
-            src = [(k, v) for k, v in self.items() if k not in nks]
+            nks = {k.lower() for k, v in items}
+            src = [(k, v) for k, v in self.items() if k.lower() not in nks]
         else:
             src = list(self.items())
         return HttpHeaders([

@@ -24,8 +24,8 @@ class AnthropicSseMessage:
     @dc.dataclass(frozen=True)
     class ToolUse(Content):
         id: str
-        input: ta.Mapping[str, ta.Any]
         name: str
+        input: ta.Mapping[str, ta.Any]
 
     content: ta.Sequence[Content] = ()
 
@@ -36,9 +36,11 @@ class AnthropicSseMessage:
     @msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
     class Usage:
         input_tokens: int | None = None
+        output_tokens: int | None = None
+
         cache_creation_input_tokens: int | None = None
         cache_read_input_tokens: int | None = None
-        output_tokens: int | None = None
+
         service_tier: str | None = None
 
     usage: Usage | None = None
