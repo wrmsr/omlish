@@ -53,4 +53,6 @@ from .stepped import (  # noqa
     read_into_str_stepped_coro,
 
     buffer_bytes_stepped_reader_coro,
+
+    iterable_bytes_stepped_coro,
 )

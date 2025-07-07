@@ -1,9 +1,12 @@
 import typing as ta
 
+import pytest
+
 from .... import check
 from .... import lang
 from ..stepped import buffer_bytes_stepped_reader_coro
 from ..stepped import flatmap_stepped_coro
+from ..stepped import iterable_bytes_stepped_coro
 
 
 T = ta.TypeVar('T')
@@ -74,3 +77,23 @@ def test_buffer():
     assert next(g) == b'C'
     assert next(g) == b'D'
     assert next(g) == b''
+
+
+def test_buffer_iterable():
+    def f():
+        assert (yield 1) == b'a'
+        assert (yield b'A') is None
+        assert (yield 2) == b'bc'
+        assert (yield b'B') is None
+        assert (yield b'C') is None
+        assert (yield 1) == b'd'
+        assert (yield b'D') is None
+        assert (yield b'') is None
+
+    g = iterable_bytes_stepped_coro(buffer_bytes_stepped_reader_coro(f()))
+    l = []
+    for i in [b'ab', b'c', b'd']:
+        l.extend(g.send(i))
+    with pytest.raises(StopIteration):
+        next(g)
+    assert l == [b'A', b'B', b'C', b'D', b'']
