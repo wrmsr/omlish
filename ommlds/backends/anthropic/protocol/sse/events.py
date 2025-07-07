@@ -1,7 +1,12 @@
+"""
+https://docs.anthropic.com/en/docs/build-with-claude/streaming#content-block-delta-types
+"""
 import dataclasses as dc
 import typing as ta
 
 from omlish import lang
+
+from .types import AnthropicSseMessage
 
 
 ##
@@ -19,16 +24,6 @@ class AnthropicSseDecoderEvents(lang.Namespace):
 
     #
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Usage:
-        input_tokens: int | None = None
-        cache_creation_input_tokens: int | None = None
-        cache_read_input_tokens: int | None = None
-        output_tokens: int | None = None
-        service_tier: str | None = None
-
-    #
-
     class MessageEvent(Event, lang.Abstract):
         pass
 
@@ -36,14 +31,18 @@ class AnthropicSseDecoderEvents(lang.Namespace):
     class MessageStart(MessageEvent):
         @dc.dataclass(frozen=True)
         class Message:
-            type: ta.Literal['message'] | None
             id: str
             role: str
             model: str
+
             content: ta.Sequence[ta.Any]
-            stop_reason: str | None
-            stop_sequence: str | None
-            usage: ta.Optional['AnthropicSseDecoderEvents.Usage']
+
+            stop_reason: str | None = None
+            stop_sequence: str | None = None
+
+            usage: ta.Optional['AnthropicSseMessage.Usage'] = None
+
+            type: ta.Literal['message'] | None = None
 
         message: Message
 
@@ -55,7 +54,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             stop_sequence: ta.Any
 
         delta: Delta
-        usage: 'AnthropicSseDecoderEvents.Usage'
+        usage: 'AnthropicSseMessage.Usage'
 
     @dc.dataclass(frozen=True)
     class MessageStop(MessageEvent):
@@ -78,8 +77,8 @@ class AnthropicSseDecoderEvents(lang.Namespace):
         @dc.dataclass(frozen=True)
         class ToolUse(ContentBlock):
             id: str
-            input: ta.Any
             name: str
+            input: ta.Any
 
         content_block: ContentBlock
         index: int
