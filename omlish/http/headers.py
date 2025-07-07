@@ -2,6 +2,7 @@
 TODO:
  - handle secrets (but they're strs..)
 """
+import http.client
 import typing as ta
 
 from .. import cached
@@ -11,8 +12,14 @@ from .. import collections as col
 
 StrOrBytes: ta.TypeAlias = str | bytes
 
+
+##
+
+
 CanHttpHeaders: ta.TypeAlias = ta.Union[
     'HttpHeaders',
+
+    http.client.HTTPMessage,
 
     ta.Mapping[str, str],
     ta.Mapping[str, ta.Sequence[str]],
@@ -42,7 +49,10 @@ class HttpHeaders:
 
         # TODO: optimized storage, 'use-whats-given'
         lst: list[tuple[bytes, bytes]] = []
-        if isinstance(src, ta.Mapping):
+        if isinstance(src, http.client.HTTPMessage):
+            lst = [(self._as_bytes(k), self._as_bytes(v)) for k, v in src.items()]
+
+        elif isinstance(src, ta.Mapping):
             for k, v in src.items():
                 if isinstance(v, (str, bytes)):
                     lst.append((self._as_bytes(k), self._as_bytes(v)))
@@ -180,6 +190,23 @@ class HttpHeaders:
 
     def items(self) -> ta.Iterable[tuple[bytes, bytes]]:
         return self._lst
+
+    #
+
+    def update(
+            self,
+            *items: tuple[bytes, bytes],  # FIXME: all arg types
+            override: bool = False,
+    ) -> 'HttpHeaders':
+        if override:
+            nks = {k for k, v in items}
+            src = [(k, v) for k, v in self.items() if k not in nks]
+        else:
+            src = list(self.items())
+        return HttpHeaders([
+            *src,
+            *items,
+        ])
 
 
 def headers(src: CanHttpHeaders) -> HttpHeaders:
