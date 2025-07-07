@@ -190,3 +190,35 @@ def buffer_bytes_stepped_reader_coro(g: BytesSteppedReaderCoro) -> BytesSteppedC
                     return
             else:
                 break
+
+
+##
+
+
+@lang.autostart
+def iterable_bytes_stepped_coro(g: BytesSteppedCoro) -> ta.Generator[ta.Iterator[bytes], bytes, None]:
+    i: bytes | None = check.isinstance((yield None), bytes)  # type: ignore[misc]
+    eof = False
+
+    def f() -> ta.Iterator[bytes]:
+        nonlocal i
+        while True:
+            o = g.send(i)
+            i = None
+
+            if isinstance(o, bytes):
+                yield o
+                if not o:
+                    nonlocal eof
+                    eof = True
+                    return
+            elif o is None:
+                return
+            else:
+                raise TypeError(o)
+
+    while True:
+        if eof:
+            return
+
+        i = (yield f())  # noqa

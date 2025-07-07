@@ -227,6 +227,7 @@ from .imports import (  # noqa
 from .iterables import (  # noqa
     IteratorWithReturn,
     asrange,
+    chunk,
     common_prefix_len,
     exhaust,
     flatmap,

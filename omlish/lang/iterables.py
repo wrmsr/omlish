@@ -33,6 +33,20 @@ def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
     return v, itertools.chain(iter((v,)), it)
 
 
+def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator[list[T]]:
+    # TODO: replace with itertools.batched in 3.13 - 3.12 doesn't support strict
+    iterator = iter(functools.partial(take, n, iter(iterable)), [])
+    if strict:
+        def ret():
+            for c in iterator:
+                if len(c) != n:
+                    raise ValueError('iterable is not divisible by n.')
+                yield c
+        return iter(ret())
+    else:
+        return iterator
+
+
 def interleave(vs: ta.Iterable[T], d: T) -> ta.Iterable[T]:
     for i, v in enumerate(vs):
         if i:

@@ -47,20 +47,6 @@ def take(n: int, iterable: ta.Iterable[T]) -> list[T]:
     return list(itertools.islice(iterable, n))
 
 
-def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator[list[T]]:
-    # TODO: remove with 3.13 - 3.12 doesn't support strict
-    iterator = iter(functools.partial(take, n, iter(iterable)), [])
-    if strict:
-        def ret():
-            for chunk in iterator:
-                if len(chunk) != n:
-                    raise ValueError('iterable is not divisible by n.')
-                yield chunk
-        return iter(ret())
-    else:
-        return iterator
-
-
 def merge_on(
         function: ta.Callable[[T], U],
         *its: ta.Iterable[T],

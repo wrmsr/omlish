@@ -10,7 +10,6 @@ from .recipes import (  # noqa
 )
 
 from .tools import (  # noqa
-    chunk,
     expand_indexed_pairs,
     merge_on,
     take,
