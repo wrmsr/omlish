@@ -43,7 +43,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             content: ta.Sequence[ta.Any]
             stop_reason: str | None
             stop_sequence: str | None
-            usage: 'AnthropicSseDecoderEvents.Usage'
+            usage: ta.Optional['AnthropicSseDecoderEvents.Usage']
 
         message: Message
 

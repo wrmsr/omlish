@@ -123,6 +123,10 @@ from .polymorphism.metadata import (  # noqa
     polymorphism_from_subclasses,
 )
 
+from .polymorphism.standard import (  # noqa
+    standard_polymorphism_factories,
+)
+
 from .polymorphism.unions import (  # noqa
     PRIMITIVE_UNION_TYPES,
     PolymorphismUnionMarshalerFactory,
