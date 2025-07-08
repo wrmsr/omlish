@@ -15,6 +15,9 @@ def _install_standard_marshalling() -> None:
         AnthropicSseDecoderEvents.ContentBlockDelta.Delta,
     ]:
         msh.install_standard_factories(*msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(root_cls, naming=msh.Naming.SNAKE),
+            msh.polymorphism_from_subclasses(
+                root_cls,
+                naming=msh.Naming.SNAKE,
+            ),
             msh.FieldTypeTagging('type'),
         ))
