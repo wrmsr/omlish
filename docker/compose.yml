@@ -126,7 +126,7 @@ services:
       - '35231:5432'
 
   omlish-redis:
-    image: 'redis:7.4.4'
+    image: 'redis:7.4.5'
     restart: 'unless-stopped'
     expose:
       - '6379'
