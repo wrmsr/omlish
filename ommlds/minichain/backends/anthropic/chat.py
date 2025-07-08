@@ -85,7 +85,7 @@ class AnthropicChatChoicesService:
                 ))
 
         raw_request = dict(
-            model=self.model,
+            model=self._model_name.v,
             **lang.opt_kw(system=system),
             messages=messages,
             max_tokens=max_tokens,
