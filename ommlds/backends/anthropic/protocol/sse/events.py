@@ -6,7 +6,7 @@ import typing as ta
 
 from omlish import lang
 
-from .types import AnthropicSseMessage
+from ..types import Usage
 
 
 ##
@@ -40,7 +40,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             stop_reason: str | None = None
             stop_sequence: str | None = None
 
-            usage: ta.Optional['AnthropicSseMessage.Usage'] = None
+            usage: Usage | None = None
 
             type: ta.Literal['message'] | None = None
 
@@ -54,7 +54,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             stop_sequence: ta.Any
 
         delta: Delta
-        usage: 'AnthropicSseMessage.Usage'
+        usage: Usage
 
     @dc.dataclass(frozen=True)
     class MessageStop(MessageEvent):

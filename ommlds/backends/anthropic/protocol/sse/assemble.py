@@ -4,8 +4,12 @@ from omlish import check
 from omlish.formats import json
 from omlish.funcs import genmachine
 
+from ..types import Content
+from ..types import Message
+from ..types import Text
+from ..types import ToolUse
+from ..types import Usage
 from .events import AnthropicSseDecoderEvents
-from .types import AnthropicSseMessage
 
 
 ##
@@ -14,7 +18,7 @@ from .types import AnthropicSseMessage
 class AnthropicSseMessageAssembler(
     genmachine.GenMachine[
         AnthropicSseDecoderEvents.Event,
-        AnthropicSseMessage,
+        Message,
     ],
 ):
     def __init__(self) -> None:
@@ -50,18 +54,18 @@ class AnthropicSseMessageAssembler(
 
     def _do_message(self, ms: AnthropicSseDecoderEvents.MessageStart) -> ta.Any:
         check.empty(ms.message.content)
-        content: list[AnthropicSseMessage.Content] = []
+        content: list[Content] = []
         dct: dict[str, ta.Any] = dict(
             stop_reason=ms.message.stop_reason,
             stop_sequence=ms.message.stop_sequence,
         )
-        usage: AnthropicSseMessage.Usage | None = ms.message.usage
+        usage: Usage | None = ms.message.usage
         while True:
             ae: ta.Any = check.not_none((yield from self._next_event()))
             if isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStart):
                 check.equal(ae.index, len(content))
                 c = yield from self._do_content_block(ae)
-                content.append(check.isinstance(c, AnthropicSseMessage.Content))
+                content.append(check.isinstance(c, Content))
             elif isinstance(ae, AnthropicSseDecoderEvents.MessageDelta):
                 for k in ('stop_reason', 'stop_sequence'):
                     if (v := getattr(ae.delta, k)) is not None:
@@ -70,7 +74,7 @@ class AnthropicSseMessageAssembler(
                 if ae.usage is not None:
                     usage = ae.usage
             elif isinstance(ae, AnthropicSseDecoderEvents.MessageStop):
-                yield [AnthropicSseMessage(
+                yield [Message(
                     id=ms.message.id,
                     role=ms.message.role,
                     model=ms.message.model,
@@ -102,7 +106,7 @@ class AnthropicSseMessageAssembler(
                 parts.append(cdc.text)
             elif isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStop):
                 check.equal(ae.index, cbs.index)
-                return AnthropicSseMessage.Text(''.join(parts))
+                return Text(''.join(parts))
             else:
                 raise TypeError(ae)
 
@@ -127,7 +131,7 @@ class AnthropicSseMessageAssembler(
                         k = check.non_empty_str(k)
                         check.not_in(k, dct)
                         dct[k] = v
-                return AnthropicSseMessage.ToolUse(
+                return ToolUse(
                     id=check.non_empty_str(csc.id),
                     input=dct,
                     name=check.non_empty_str(csc.name),

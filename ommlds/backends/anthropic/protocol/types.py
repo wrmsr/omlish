@@ -19,7 +19,7 @@ class Content(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['cache_control'], omit_if=lang.is_none)
-class TextContent(Content):
+class Text(Content):
     text: str
 
     _: dc.KW_ONLY
@@ -27,17 +27,60 @@ class TextContent(Content):
     cache_control: Content.CacheControl | None = None
 
 
-#
+@dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['cache_control'], omit_if=lang.is_none)
+class ToolUse(Content):
+    id: str
+    name: str
+    input: ta.Mapping[str, ta.Any]
+
+    _: dc.KW_ONLY
+
+    cache_control: Content.CacheControl | None = None
 
 
 @dc.dataclass(frozen=True)
+class ToolResult(Content):
+    tool_use_id: str
+    content: str
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+class Usage:
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+
+    cache_creation_input_tokens: int | None = None
+    cache_read_input_tokens: int | None = None
+
+    service_tier: str | None = None
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
 class Message:
-    role: str
+    id: str | None = None
 
-    content: ta.Sequence[Content]
+    role: str | None = None
+
+    model: str | None = None
+
+    content: ta.Sequence[Content] | None = None
+
+    stop_reason: str | None = None
+    stop_sequence: str | None = None
+
+    usage: Usage | None = None
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -47,7 +90,7 @@ class ToolSpec:
     input_schema: ta.Any
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
@@ -65,6 +108,8 @@ class MessagesRequest:
 
     temperature: float | None = None
     max_tokens: int | None = None
+
+    stream: bool | None = None
 
     betas: ta.Sequence[str] | None = None
     metadata: ta.Mapping[str, str] | None = None
