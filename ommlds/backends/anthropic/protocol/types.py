@@ -24,7 +24,7 @@ class Text(Content):
 
     _: dc.KW_ONLY
 
-    cache_control: Content.CacheControl | None = None
+    cache_control: Content.CacheControl | None = dc.xfield(default=None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)
@@ -36,7 +36,7 @@ class ToolUse(Content):
 
     _: dc.KW_ONLY
 
-    cache_control: Content.CacheControl | None = None
+    cache_control: Content.CacheControl | None = dc.xfield(default=None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)
