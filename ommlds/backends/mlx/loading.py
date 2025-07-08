@@ -1,9 +1,11 @@
 import dataclasses as dc
 import pathlib
+import typing as ta
 
 import mlx_lm.utils
 from mlx import nn
 
+from omlish import check
 from omlish import lang
 
 from .tokenization import Tokenization
@@ -42,7 +44,13 @@ def load_model(
         adapter_path: str | None = None,
         lazy: bool = False,
 ) -> LoadedModel:
-    model_path = mlx_lm.utils.get_model_path(path_or_hf_repo)
+    # FIXME: get_model_path return annotation is wrong:
+    #   https://github.com/ml-explore/mlx-lm/blob/9ee2b7358f5e258af7b31a8561acfbbe56ad5085/mlx_lm/utils.py#L82
+    model_path_res = ta.cast(ta.Any, mlx_lm.utils.get_model_path(path_or_hf_repo))
+    if isinstance(model_path_res, tuple):
+        model_path = check.isinstance(model_path_res[0], pathlib.Path)
+    else:
+        model_path = check.isinstance(model_path_res, pathlib.Path)
 
     model, config = mlx_lm.utils.load_model(
         model_path,

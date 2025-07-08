@@ -30,7 +30,7 @@ dependencies = [
 all = [
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.26',
-    'mlx-lm ~= 0.25; sys_platform == "darwin"',
+    'mlx-lm ~= 0.26; sys_platform == "darwin"',
     'sentencepiece ~= 0.2',
     'tiktoken ~= 0.9',
     'tinygrad ~= 0.10',
@@ -52,7 +52,7 @@ all = [
 backends = [
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.26',
-    'mlx-lm ~= 0.25; sys_platform == "darwin"',
+    'mlx-lm ~= 0.26; sys_platform == "darwin"',
     'sentencepiece ~= 0.2',
     'tiktoken ~= 0.9',
     'tinygrad ~= 0.10',
