@@ -132,7 +132,9 @@ def nf4_linear(block_size):
                 state_dict: dict[str, Tensor],
                 device,
                 scale_dtype=dtypes.float16,
+                quantize_embeds=False,
         ) -> dict[str, Tensor]:
+            check.state(not quantize_embeds)  # TODO: support this
             new_state_dict = {}
             for k, v in state_dict.items():
                 if 'feed_forward' in k or 'attention.w' in k:

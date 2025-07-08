@@ -60,7 +60,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         '--size',
-        choices=['1B', '8B', '70B'],
+        choices=['1B', '8B', '70B', '405B'],
         default='1B',
         help='Model size',
     )
@@ -82,7 +82,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         '--temperature',
-        type=int,
+        type=float,
         default=0.85,
         help='Temperature',
     )
@@ -93,8 +93,6 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 
 
 def _main() -> None:
-    Tensor.no_grad = True
-
     args = _build_arg_parser().parse_args()
 
     # download_model is the default without a model passed in

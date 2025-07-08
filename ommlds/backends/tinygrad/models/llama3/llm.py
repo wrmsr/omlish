@@ -61,7 +61,7 @@ class Llama3Llm:
             device=self.device,
         )
 
-        self.param_bytes = sum(x.lazydata.size * x.dtype.itemsize for x in get_parameters(model_path))
+        self.param_bytes = sum(x.uop.size * x.dtype.itemsize for x in get_parameters(model_path))
 
         self.last_seen_toks: list = []
 

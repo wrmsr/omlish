@@ -158,7 +158,6 @@ def _main() -> None:
     )
     args = parser.parse_args()
 
-    Tensor.no_grad = True
     if args.seed is not None:
         Tensor.manual_seed(args.seed)
 

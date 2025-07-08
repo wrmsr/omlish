@@ -9,7 +9,6 @@ from ..llm import Llama3Llm
 def test_llama3_llm():
     from tinygrad import Tensor
 
-    Tensor.no_grad = True
     Tensor.manual_seed(42)
 
     llm = Llama3Llm(

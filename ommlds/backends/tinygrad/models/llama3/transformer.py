@@ -1,3 +1,4 @@
+import math
 import typing as ta
 
 from tinygrad import Tensor
@@ -87,6 +88,7 @@ class Transformer:
             jit=True,
             feed_forward=FeedForward,
             qk_norm=None,
+            disable_kv_cache=False,
     ) -> None:
         super().__init__()
 
@@ -97,7 +99,7 @@ class Transformer:
                 n_heads,
                 n_kv_heads,
                 norm_eps,
-                max_context,
+                0 if disable_kv_cache else max_context,
                 linear,
                 feed_forward=feed_forward,
                 qk_norm=qk_norm,
@@ -114,7 +116,7 @@ class Transformer:
         self.max_context = max_context
         self.freqs_cis = precompute_freqs_cis(
             dim // n_heads, self.max_context * 2, rope_theta,
-        ).contiguous()
+        ).contiguous().requires_grad_(False)
         self.forward_jit = TinyJit(self.forward) if jit else None
 
     def forward(
@@ -130,7 +132,7 @@ class Transformer:
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
 
-        self.freqs_cis = self.freqs_cis.cast(h.dtype).kernelize()
+        self.freqs_cis = self.freqs_cis.cast(h.dtype).contiguous()
         freqs_cis = self.freqs_cis[:, start_pos:start_pos + seqlen, :, :, :]
 
         mask = (
@@ -141,16 +143,17 @@ class Transformer:
                 device=h.device,
             )
             .triu(start_pos + 1)
-            .kernelize()
         ) if seqlen > 1 else None
 
         for layer in self.layers:
             h = layer(h, start_pos, freqs_cis, mask)
         logits = self.output(self.norm(h)).float()[:, -1, :]
+        if math.isnan(temperature):
+            return logits
 
         return sample(
             logits.flatten(), temperature, top_k, top_p, alpha_f, alpha_p,
-        ).kernelize()
+        )
 
     def __call__(
             self,

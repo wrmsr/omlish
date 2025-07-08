@@ -246,6 +246,19 @@ MODEL_PARAMS: ta.Any = {
         },
         'files': 8,
     },
+    '405B': {
+        'args': {
+            'dim': 16384,
+            'n_heads': 128,
+            'n_kv_heads': 8,
+            'n_layers': 126,
+            'norm_eps': 1e-5,
+            'rope_theta': 500000,
+            'vocab_size': 128256,
+            'hidden_dim': 53248,
+        },
+        'files': 191,
+    },
 }
 
 
