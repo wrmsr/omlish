@@ -313,7 +313,7 @@ class IncrementalGzipDecompressor:
                     crc = _zero_crc()
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
-                    if not last_mtime:
+                    if last_mtime is None:
                         check.none((yield b''))
                         return
                     new_member = False
