@@ -81,6 +81,9 @@ class SimpleMitmHandler:
                 if self._on_response is not None:
                     buf = io.BytesIO()
 
+                resp_hdrs = dict(check.not_none(tgt_resp.headers).single_str_dct)
+                is_chunked = resp_hdrs.get('transfer-encoding') == 'chunked'
+
                 def stream_data():
                     try:
                         while b := tgt_resp.stream.read(self._read_size):
@@ -88,7 +91,12 @@ class SimpleMitmHandler:
                                 for o in dec(b):
                                     buf.write(o)
 
+                            if is_chunked:
+                                b = b''.join([f'{len(b):X}\r\n'.encode(), b, b'\r\n'])
                             yield b
+
+                        if is_chunked:
+                            yield b'0\r\n\r\n'
 
                         tgt_resp.close()
 
@@ -106,9 +114,6 @@ class SimpleMitmHandler:
                                     data=check.not_none(buf).getvalue(),
                                 ),
                             )
-
-                resp_hdrs = dict(check.not_none(tgt_resp.headers).single_str_dct)
-                resp_hdrs.pop('transfer-encoding', None)
 
                 resp = HttpHandlerResponse(
                     tgt_resp.status,
