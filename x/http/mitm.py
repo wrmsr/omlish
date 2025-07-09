@@ -42,6 +42,7 @@ class SimpleMitmHandler:
             on_response: ta.Callable[[Request, Response], None] | None = None,
             on_error: ta.Callable[[Request, Exception], None] | None = None,
 
+            handle_gzip: bool = False,
             read_size: int = DEFAULT_READ_SIZE,
     ) -> None:
         super().__init__()
@@ -56,6 +57,7 @@ class SimpleMitmHandler:
         self._on_response = on_response
         self._on_error = on_error
 
+        self._handle_gzip = handle_gzip
         self._read_size = read_size
 
     def __call__(self, h_req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -86,6 +88,7 @@ class SimpleMitmHandler:
             try:
                 dec: ta.Callable[[bytes], ta.Iterable[bytes]]
                 if (
+                        self._handle_gzip and
                         t_resp.headers is not None and
                         t_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
                 ):
@@ -198,6 +201,7 @@ def _main() -> None:
     handler = SimpleMitmHandler(
         args.target,
         client=hu.HttpxHttpClient() if args.httpx else None,
+        handle_gzip=not args.httpx,
         on_response=on_response,
         on_error=on_error,
     )

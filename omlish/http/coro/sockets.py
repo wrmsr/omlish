@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import itertools
 import typing as ta
 
 from ...lite.check import check
@@ -31,8 +32,10 @@ class CoroHttpServerSocketHandler(SocketHandler_):
         server = self._server_factory(client_address)
 
         if self._keep_alive:
-            while self._handle_one(server, fp).close_reason is None:
-                pass
+            for i in itertools.count():  # noqa
+                res = self._handle_one(server, fp)
+                if res.close_reason is not None:
+                    break
 
         else:
             self._handle_one(server, fp)
