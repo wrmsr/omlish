@@ -9450,7 +9450,11 @@ class CoroHttpServer:
 
     #
 
-    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    @dc.dataclass(frozen=True)
+    class CoroHandleResult:
+        close_reason: ta.Literal['response', 'internal', None] = None
+
+    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
         return self._coro_run_handler(self._coro_handle_one())
 
     class Close(Exception):  # noqa
@@ -9463,7 +9467,7 @@ class CoroHttpServer:
                 ta.Optional[bytes],
                 None,
             ],
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
         i: ta.Optional[bytes]
         o: ta.Any = next(gen)
         while True:
@@ -9487,7 +9491,9 @@ class CoroHttpServer:
 
                     o.close()
                     if o.close_connection:
-                        break
+                        return self.CoroHandleResult(
+                            close_reason='response',
+                        )
                     o = None
 
                 else:
@@ -9496,9 +9502,11 @@ class CoroHttpServer:
                 try:
                     o = gen.send(i)
                 except self.Close:
-                    return
+                    return self.CoroHandleResult(
+                        close_reason='internal',
+                    )
                 except StopIteration:
-                    break
+                    return self.CoroHandleResult()
 
             except Exception:  # noqa
                 if hasattr(o, 'close'):
@@ -10813,16 +10821,30 @@ class CoroHttpServerSocketHandler(SocketHandler_):
             self,
             server_factory: CoroHttpServerFactory,
             *,
+            keep_alive: bool = False,
             log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__()
 
         self._server_factory = server_factory
+        self._keep_alive = keep_alive
         self._log_handler = log_handler
 
     def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
         server = self._server_factory(client_address)
 
+        if self._keep_alive:
+            while self._handle_one(server, fp).close_reason is None:
+                pass
+
+        else:
+            self._handle_one(server, fp)
+
+    def _handle_one(
+            self,
+            server: CoroHttpServer,
+            fp: SocketIoPair,
+    ) -> CoroHttpServer.CoroHandleResult:
         gen = server.coro_handle()
 
         o = next(gen)
@@ -10851,8 +10873,8 @@ class CoroHttpServerSocketHandler(SocketHandler_):
                     o = gen.send(i)
                 else:
                     o = next(gen)
-            except StopIteration:
-                break
+            except StopIteration as e:
+                return check.isinstance(e.value, CoroHttpServer.CoroHandleResult)
 
 
 ########################################
@@ -11666,6 +11688,7 @@ def make_simple_http_server(
         handler: HttpHandler,
         *,
         server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
+        keep_alive: bool = False,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
         ignore_ssl_errors: bool = False,
         executor: ta.Optional[cf.Executor] = None,
@@ -11687,6 +11710,7 @@ def make_simple_http_server(
 
         socket_handler = CoroHttpServerSocketHandler(
             server_factory,
+            keep_alive=keep_alive,
         )
 
         #

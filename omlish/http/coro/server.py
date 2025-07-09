@@ -417,7 +417,11 @@ class CoroHttpServer:
 
     #
 
-    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    @dc.dataclass(frozen=True)
+    class CoroHandleResult:
+        close_reason: ta.Literal['response', 'internal', None] = None
+
+    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
         return self._coro_run_handler(self._coro_handle_one())
 
     class Close(Exception):  # noqa
@@ -430,7 +434,7 @@ class CoroHttpServer:
                 ta.Optional[bytes],
                 None,
             ],
-    ) -> ta.Generator[Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
         i: ta.Optional[bytes]
         o: ta.Any = next(gen)
         while True:
@@ -454,7 +458,9 @@ class CoroHttpServer:
 
                     o.close()
                     if o.close_connection:
-                        break
+                        return self.CoroHandleResult(
+                            close_reason='response',
+                        )
                     o = None
 
                 else:
@@ -463,9 +469,11 @@ class CoroHttpServer:
                 try:
                     o = gen.send(i)
                 except self.Close:
-                    return
+                    return self.CoroHandleResult(
+                        close_reason='internal',
+                    )
                 except StopIteration:
-                    break
+                    return self.CoroHandleResult()
 
             except Exception:  # noqa
                 if hasattr(o, 'close'):

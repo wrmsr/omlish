@@ -2,6 +2,7 @@
 # @omlish-lite
 import typing as ta
 
+from ...lite.check import check
 from ...sockets.addresses import SocketAddress
 from ...sockets.handlers import SocketHandler_
 from ...sockets.io import SocketIoPair
@@ -17,16 +18,30 @@ class CoroHttpServerSocketHandler(SocketHandler_):
             self,
             server_factory: CoroHttpServerFactory,
             *,
+            keep_alive: bool = False,
             log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__()
 
         self._server_factory = server_factory
+        self._keep_alive = keep_alive
         self._log_handler = log_handler
 
     def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
         server = self._server_factory(client_address)
 
+        if self._keep_alive:
+            while self._handle_one(server, fp).close_reason is None:
+                pass
+
+        else:
+            self._handle_one(server, fp)
+
+    def _handle_one(
+            self,
+            server: CoroHttpServer,
+            fp: SocketIoPair,
+    ) -> CoroHttpServer.CoroHandleResult:
         gen = server.coro_handle()
 
         o = next(gen)
@@ -55,5 +70,5 @@ class CoroHttpServerSocketHandler(SocketHandler_):
                     o = gen.send(i)
                 else:
                     o = next(gen)
-            except StopIteration:
-                break
+            except StopIteration as e:
+                return check.isinstance(e.value, CoroHttpServer.CoroHandleResult)

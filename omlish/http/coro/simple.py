@@ -39,6 +39,7 @@ def make_simple_http_server(
         handler: HttpHandler,
         *,
         server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
+        keep_alive: bool = False,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
         ignore_ssl_errors: bool = False,
         executor: ta.Optional[cf.Executor] = None,
@@ -60,6 +61,7 @@ def make_simple_http_server(
 
         socket_handler = CoroHttpServerSocketHandler(
             server_factory,
+            keep_alive=keep_alive,
         )
 
         #

@@ -39,7 +39,13 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             addr,
             handler=self._handler,
         )
-        self._srv_coro: ta.Optional[ta.Generator[CoroHttpServer.Io, ta.Optional[bytes], None]] = self._coro_srv.coro_handle()  # noqa
+        self._srv_coro: ta.Optional[
+            ta.Generator[
+                CoroHttpServer.Io,
+                ta.Optional[bytes],
+                CoroHttpServer.CoroHandleResult,
+            ],
+        ] = self._coro_srv.coro_handle()
 
         self._cur_io: ta.Optional[CoroHttpServer.Io] = None
         self._next_io()
