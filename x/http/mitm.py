@@ -23,6 +23,8 @@ class SimpleMitmHandler:
             self,
             target: str,
             *,
+            client: hu.HttpClient | None = None,
+
             on_request: ta.Callable[[HttpHandlerRequest], None] | None = None,
             on_response: ta.Callable[[HttpHandlerRequest, HttpHandlerResponse], None] | None = None,
             on_error: ta.Callable[[HttpHandlerRequest, Exception], None] | None = None,
@@ -32,6 +34,10 @@ class SimpleMitmHandler:
         super().__init__()
 
         self._target = target
+
+        if client is None:
+            client = hu.client()
+        self._client = client
 
         self._on_request = on_request
         self._on_response = on_response
@@ -52,29 +58,29 @@ class SimpleMitmHandler:
                 override=True,
             )
 
-            tgt_resp = hu.client().stream_request(hu.HttpRequest(
+            tgt_resp = self._client.stream_request(hu.HttpRequest(
                     url,
                     req.method,
                     headers=hdrs,
                     data=req.data,
             ))
 
-            dec: ta.Callable[[bytes], ta.Iterable[bytes]]
-            if (
-                    tgt_resp.headers is not None and
-                    tgt_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
-            ):
-                dec = iterable_bytes_stepped_coro(
-                    check.not_none(cdu.lookup('gzip').new_incremental)().decode_incremental(),
-                ).send
-            else:
-                dec = lambda b: [b]
-
-            buf: io.BytesIO | None = None
-            if self._on_response is not None:
-                buf = io.BytesIO()
-
             try:
+                dec: ta.Callable[[bytes], ta.Iterable[bytes]]
+                if (
+                        tgt_resp.headers is not None and
+                        tgt_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
+                ):
+                    dec = iterable_bytes_stepped_coro(
+                        check.not_none(cdu.lookup('gzip').new_incremental)().decode_incremental(),
+                    ).send
+                else:
+                    dec = lambda b: [b]
+
+                buf: io.BytesIO | None = None
+                if self._on_response is not None:
+                    buf = io.BytesIO()
+
                 def stream_data():
                     try:
                         while b := tgt_resp.stream.read(self._read_size):
@@ -101,9 +107,12 @@ class SimpleMitmHandler:
                                 ),
                             )
 
+                resp_hdrs = dict(check.not_none(tgt_resp.headers).single_str_dct)
+                resp_hdrs.pop('transfer-encoding', None)
+
                 resp = HttpHandlerResponse(
                     tgt_resp.status,
-                    check.not_none(tgt_resp.headers).single_str_dct,
+                    resp_hdrs,
                     data=HttpHandlerResponseStreamedData(stream_data()),
                     # close_connection=True,
                 )
