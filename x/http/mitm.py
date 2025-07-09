@@ -147,6 +147,8 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('target')
     parser.add_argument('port_or_unix_socket', default=str(default_port), nargs='?')
+    parser.add_argument('-x', '--httpx', action='store_true')
+    parser.add_argument('-k', '--keep-alive', action='store_true')
     args = parser.parse_args()
 
     #
@@ -176,6 +178,7 @@ def _main() -> None:
 
     handler = SimpleMitmHandler(
         args.target,
+        client=hu.HttpxHttpClient() if args.httpx else None,
         on_response=on_response,
         on_error=on_error,
     )
@@ -183,6 +186,7 @@ def _main() -> None:
     with make_simple_http_server(
             bind,
             handler,
+            keep_alive=args.keep_alive,
             use_threads=True,
     ) as server:
         server.run()
