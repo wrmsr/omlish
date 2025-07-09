@@ -1,5 +1,7 @@
 from .codec import (  # noqa
     dumps,
+    dumps_pretty,
+    dumps_compact,
     loads,
 )
 
