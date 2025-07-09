@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build>=1.2.2
-twine>=6.1.0
+twine>=6.1.0  # @omlish-venv !14t
 wheel>=0.45.1
 
 uv>=0.7.19
@@ -18,7 +18,7 @@ flake8-pyproject==1.2.3
 ruff==0.12.2
 
 docutils-stubs==0.0.22
-types-paramiko==3.5.0.20250708  # @omlish-venv !13t
+types-paramiko==3.5.0.20250708  # @omlish-venv !13t !14t
 types-pyyaml==6.0.12.20250516
 types-ujson==5.10.0.20250326
 
@@ -37,9 +37,9 @@ ipython==9.4.0
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.15.0  # @omlish-venv !13t
-mycli==1.29.2  # @omlish-venv !13t  # FIXME: duckduckgo-search -> click
-pgcli==4.3.0  # @omlish-venv !13t
+litecli==1.15.0  # @omlish-venv !13t !14t
+mycli==1.29.2  # @omlish-venv !13t !14t  # FIXME: duckduckgo-search -> click
+pgcli==4.3.0  # @omlish-venv !13t !14t
 
 # pydevd-pycharm==241.18034.82
 
@@ -50,7 +50,7 @@ pudb==2025.1
 
 cython==3.1.2
 
-lxml>=5.3.0  # @omlish-venv !13t
+lxml>=5.3.0  # @omlish-venv !13t !14t
 
 # clang
 
@@ -79,10 +79,10 @@ markupsafe==3.0.2
 
 redis==6.2.0
 
-sqlean.py==3.49.1; python_version < "3.14"  # @omlish-venv !13t
+sqlean.py==3.49.1; python_version < "3.14"  # @omlish-venv !13t !14t
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.3.2  # @omlish-venv !13t
+duckdb==1.3.2  # @omlish-venv !13t !14t
 
 
 pycparser==2.22
@@ -90,7 +90,7 @@ cffi==1.17.1
 pcpp==1.30
 
 # !! LGPL
-paramiko==3.5.1  # @omlish-venv !13t
+paramiko==3.5.1  # @omlish-venv !13t !14t
 
 docutils==0.21.2
 
@@ -99,8 +99,8 @@ mdit-py-plugins==0.4.2
 
 pygments==2.19.2
 
-mwparserfromhell==0.7.2  # @omlish-venv !13t
-wikitextparser==0.56.4  # !! GPL
+mwparserfromhell==0.7.2  # @omlish-venv !13t !14t
+wikitextparser==0.56.4  # @omlish-venv !14t  # !! GPL
 
 executing==2.2.0
 asttokens==3.0.0
@@ -112,16 +112,17 @@ prompt-toolkit==3.0.51
 snowflake-connector-python[secure-local-storage]==3.16.0; python_version < "3.13"
 snowflake-sqlalchemy==1.7.5; python_version < "3.13"
 
-trino==0.335.0  # @omlish-venv !13t
+trino==0.335.0  # @omlish-venv !13t !14t
 
-huggingface-hub==0.33.2
+huggingface-hub==0.33.2;  # @omlish-venv !14t
+hf-xet==1.1.5  # @omlish-venv !13t !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
 datasets==4.0.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
-transformers==4.53.1; python_version < "3.13"
-sentence-transformers==5.0.0; python_version < "3.13"
+transformers==4.53.1; python_version < "3.13"  # @omlish-venv !14t
+sentence-transformers==5.0.0; python_version < "3.13"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.9.0; python_version < "3.13"
@@ -136,18 +137,16 @@ boto3>=1.39.3
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.26.3; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t
-mlx-lm==0.26.0; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t
+mlx==0.26.3; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t !14t
+mlx-lm==0.26.0; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t !14t
 
 apsw==3.50.2.0
 
-rapidocr-onnxruntime==1.4.4; python_version < "3.14"  # @omlish-venv !13t
+rapidocr-onnxruntime==1.4.4; python_version < "3.14"  # @omlish-venv !13t !14t
 
 pillow==11.3.0
 
-accelerate==1.8.1; python_version < "3.14"
+accelerate==1.8.1; python_version < "3.14"  # @omlish-venv !14t
 
 # bitsandbytes==0.45.4
 bitsandbytes; python_version < "3.14"
-
-hf-xet==1.1.5  # @omlish-venv !13t
