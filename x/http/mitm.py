@@ -1,3 +1,4 @@
+import datetime
 import io
 import typing as ta
 import urllib.parse
@@ -5,6 +6,7 @@ import urllib.parse
 from omlish import check
 from omlish import codecs as cdu
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish.http import all as hu
 from omlish.http.coro.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandlerRequest
@@ -19,15 +21,26 @@ from omlish.io.coro import iterable_bytes_stepped_coro
 class SimpleMitmHandler:
     DEFAULT_READ_SIZE: int = 65536
 
+    @dc.dataclass(frozen=True)
+    class Request:
+        when: datetime.datetime
+        request: HttpHandlerRequest
+
+    @dc.dataclass(frozen=True)
+    class Response:
+        when: datetime.datetime
+        response: HttpHandlerResponse
+        data: bytes
+
     def __init__(
             self,
             target: str,
             *,
             client: hu.HttpClient | None = None,
 
-            on_request: ta.Callable[[HttpHandlerRequest], None] | None = None,
-            on_response: ta.Callable[[HttpHandlerRequest, HttpHandlerResponse], None] | None = None,
-            on_error: ta.Callable[[HttpHandlerRequest, Exception], None] | None = None,
+            on_request: ta.Callable[[Request], None] | None = None,
+            on_response: ta.Callable[[Request, Response], None] | None = None,
+            on_error: ta.Callable[[Request, Exception], None] | None = None,
 
             read_size: int = DEFAULT_READ_SIZE,
     ) -> None:
@@ -45,31 +58,36 @@ class SimpleMitmHandler:
 
         self._read_size = read_size
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, h_req: HttpHandlerRequest) -> HttpHandlerResponse:
+        m_req = self.Request(
+            lang.utcnow(),
+            h_req,
+        )
+
         try:
             if self._on_request is not None:
-                self._on_request(req)
+                self._on_request(m_req)
 
-            url = self._target + req.path
+            url = self._target + h_req.path
 
-            hdrs = hu.headers(req.headers)
+            hdrs = hu.headers(h_req.headers)
             hdrs = hdrs.update(
                 (b'Host', check.not_none(urllib.parse.urlparse(self._target).hostname).encode()),
                 override=True,
             )
 
-            tgt_resp = self._client.stream_request(hu.HttpRequest(
+            t_resp = self._client.stream_request(hu.HttpRequest(
                     url,
-                    req.method,
+                    h_req.method,
                     headers=hdrs,
-                    data=req.data,
+                    data=h_req.data,
             ))
 
             try:
                 dec: ta.Callable[[bytes], ta.Iterable[bytes]]
                 if (
-                        tgt_resp.headers is not None and
-                        tgt_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
+                        t_resp.headers is not None and
+                        t_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
                 ):
                     dec = iterable_bytes_stepped_coro(
                         check.not_none(cdu.lookup('gzip').new_incremental)().decode_incremental(),
@@ -81,12 +99,12 @@ class SimpleMitmHandler:
                 if self._on_response is not None:
                     buf = io.BytesIO()
 
-                resp_hdrs = dict(check.not_none(tgt_resp.headers).single_str_dct)
+                resp_hdrs = dict(check.not_none(t_resp.headers).single_str_dct)
                 is_chunked = resp_hdrs.get('transfer-encoding') == 'chunked'
 
                 def stream_data():
                     try:
-                        while b := tgt_resp.stream.read(self._read_size):
+                        while b := t_resp.stream.read(self._read_size):
                             if buf is not None:
                                 for o in dec(b):
                                     buf.write(o)
@@ -98,39 +116,40 @@ class SimpleMitmHandler:
                         if is_chunked:
                             yield b'0\r\n\r\n'
 
-                        tgt_resp.close()
+                        t_resp.close()
 
                     except Exception as e:
                         if self._on_error is not None:
-                            self._on_error(req, e)
+                            self._on_error(m_req, e)
                         raise
 
                     else:
                         if self._on_response is not None:
                             self._on_response(
-                                req,
-                                dc.replace(
-                                    resp,
-                                    data=check.not_none(buf).getvalue(),
+                                m_req,
+                                self.Response(
+                                    lang.utcnow(),
+                                    h_resp,
+                                    check.not_none(buf).getvalue(),
                                 ),
                             )
 
-                resp = HttpHandlerResponse(
-                    tgt_resp.status,
+                h_resp = HttpHandlerResponse(
+                    t_resp.status,
                     resp_hdrs,
                     data=HttpHandlerResponseStreamedData(stream_data()),
                     # close_connection=True,
                 )
 
-                return resp
+                return h_resp
 
             except Exception:
-                tgt_resp.close()
+                t_resp.close()
                 raise
 
         except Exception as e:
             if self._on_error is not None:
-                self._on_error(req, e)
+                self._on_error(m_req, e)
             raise
 
 
@@ -165,13 +184,13 @@ def _main() -> None:
     #
 
     def on_response(
-            req: HttpHandlerRequest,
-            resp: HttpHandlerResponse,
+            req: SimpleMitmHandler.Request,
+            resp: SimpleMitmHandler.Response,
     ) -> None:
         print((req, resp))
 
     def on_error(
-            req: HttpHandlerRequest,
+            req: SimpleMitmHandler.Request,
             exc: Exception,
     ) -> None:
         print((req, exc))
