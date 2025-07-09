@@ -60,7 +60,10 @@ class SimpleMitmHandler:
             ))
 
             dec: ta.Callable[[bytes], ta.Iterable[bytes]]
-            if tgt_resp.headers is not None and tgt_resp.headers.single_dct.get(b'content-encoding') == b'gzip':
+            if (
+                    tgt_resp.headers is not None and
+                    tgt_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
+            ):
                 dec = iterable_bytes_stepped_coro(
                     check.not_none(cdu.lookup('gzip').new_incremental)().decode_incremental(),
                 ).send
@@ -81,7 +84,7 @@ class SimpleMitmHandler:
 
                             yield b
 
-                            tgt_resp.close()
+                        tgt_resp.close()
 
                     except Exception as e:
                         if self._on_error is not None:
