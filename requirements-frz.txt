@@ -19,7 +19,7 @@ asyncpg==0.30.0
 asyncssh==2.21.0
 attrs==25.3.0
 babel==2.17.0
-basedpyright==1.29.5
+basedpyright==1.30.0
 bcrypt==4.3.0
 beautifulsoup4==4.13.4
 bitsandbytes==0.42.0
@@ -33,7 +33,7 @@ build==1.2.2.post1
 cachetools==5.5.2
 cattrs==25.1.1
 cbor2==5.6.5
-certifi==2025.6.15
+certifi==2025.7.9
 cffi==1.17.1
 charset-normalizer==3.4.2
 cli_helpers==2.4.0
@@ -47,7 +47,7 @@ cramjam==2.10.0
 cryptography==45.0.5
 cycler==0.12.1
 Cython==3.1.2
-datasets==3.6.0
+datasets==4.0.0
 debugpy==1.8.14
 decorator==5.2.1
 defusedxml==0.7.1
@@ -221,7 +221,7 @@ pyOpenSSL==25.1.0
 pyparsing==3.2.3
 pyperclip==1.9.0
 pyproject_hooks==1.2.0
-pyright==1.1.402
+pyright==1.1.403
 pytesseract==0.3.13
 pytest==8.4.1
 pytest-benchmark==5.1.0

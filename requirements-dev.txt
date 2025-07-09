@@ -118,7 +118,7 @@ huggingface-hub==0.33.2
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==3.6.0; python_version < "3.13"  # !! includes arrow and pandas and shit
+datasets==4.0.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 transformers==4.53.1; python_version < "3.13"
 sentence-transformers==5.0.0; python_version < "3.13"

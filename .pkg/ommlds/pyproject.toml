@@ -39,7 +39,7 @@ all = [
     'transformers ~= 4.53',
     'sentence-transformers ~= 5.0',
     'huggingface-hub ~= 0.33',
-    'datasets ~= 3.6',
+    'datasets ~= 4.0',
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
@@ -63,7 +63,7 @@ backends = [
 ]
 huggingface = [
     'huggingface-hub ~= 0.33',
-    'datasets ~= 3.6',
+    'datasets ~= 4.0',
 ]
 numpy = [
     'numpy >= 1.26',
