@@ -19,7 +19,7 @@ cryptography==45.0.5  # @omlish-venv !13t
 lz4==4.4.4
 # git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
 
-python-snappy==0.7.3  # @omlish-venv !13t  # segfault
+python-snappy==0.7.3; python_version < "3.14"  # @omlish-venv !13t  # segfault
 zstandard==0.23.0  # @omlish-venv !13t
 brotli==1.1.0
 
@@ -59,7 +59,7 @@ psutil==7.0.0
 ## json
 
 #> ujson==5.10.0
-orjson==3.10.18  # @omlish-venv !13t  # bug 'uninitialized object'
+orjson==3.10.18; python_version < "3.14"  # @omlish-venv !13t  # bug 'uninitialized object'
 
 ## pickle
 
