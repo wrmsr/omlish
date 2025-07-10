@@ -9,7 +9,7 @@
 # infra
 
 google-api-python-client==2.176.0
-google-cloud-compute==1.31.0
+google-cloud-compute==1.32.0
 
 
 ##
