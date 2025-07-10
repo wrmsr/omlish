@@ -1,5 +1,4 @@
 from ..literals import encode_string
-from ..literals import encode_string_ascii
 from ..literals import try_parse_number
 from ..literals import try_parse_string
 
@@ -26,6 +25,6 @@ def test_encode_string():
 
 
 def test_encode_string_ascii():
-    assert encode_string_ascii('foo') == '"foo"'
-    assert encode_string_ascii('f\noo') == '"f\\noo"'
-    assert encode_string_ascii('f\noo☃') == '"f\\noo\\u2603"'
+    assert encode_string('foo', ensure_ascii=True) == '"foo"'
+    assert encode_string('f\noo', ensure_ascii=True) == '"f\\noo"'
+    assert encode_string('f\noo☃', ensure_ascii=True) == '"f\\noo\\u2603"'

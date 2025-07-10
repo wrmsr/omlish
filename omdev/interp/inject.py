@@ -15,6 +15,10 @@ from .pyenv.provider import PyenvInterpProvider
 from .resolvers import InterpResolver
 from .resolvers import InterpResolverProviders
 from .uv.inject import bind_interp_uv
+from .uv.provider import UvInterpProvider
+
+
+##
 
 
 def bind_interp() -> InjectorBindings:
@@ -36,6 +40,7 @@ def bind_interp() -> InjectorBindings:
             injector.provide(c)
             for c in [
                 PyenvInterpProvider,
+                UvInterpProvider,
                 RunningInterpProvider,
                 SystemInterpProvider,
             ]

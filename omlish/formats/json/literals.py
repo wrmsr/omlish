@@ -121,26 +121,6 @@ def encode_string(
     ])
 
 
-def encode_string_ascii(
-        s: str | bytes,
-        q: str | None = None,
-        *,
-        lq: str | None = None,
-        rq: str | None = None,
-        escape_map: ta.Mapping[str, str] | None = None,
-) -> str:
-    """Return an ASCII-only JSON representation of a Python string."""
-
-    return encode_string(
-        s,
-        q,
-        lq=lq,
-        rq=rq,
-        escape_map=escape_map,
-        ensure_ascii=True,
-    )
-
-
 ##
 
 

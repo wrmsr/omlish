@@ -3,7 +3,6 @@ import typing as ta
 from ..json import Scalar
 from ..json.literals import ESCAPE_MAP
 from ..json.literals import encode_string
-from ..json.literals import encode_string_ascii
 from ..json.rendering import JsonRenderer
 from ..json.rendering import JsonRendererOut
 
@@ -35,15 +34,12 @@ class Json5Renderer(JsonRenderer):
                 isinstance(o, str) and
                 '\n' in o
         ):
-            kw: dict = dict(
-                escape_map=MULTILINE_STRINGS_ESCAPE_MAP,
+            return encode_string(
+                o,
                 lq='"\\\n',
+                escape_map=MULTILINE_STRINGS_ESCAPE_MAP,
+                ensure_ascii=self._ensure_ascii,
             )
-
-            if self._ensure_ascii:
-                return encode_string_ascii(o, **kw)
-            else:
-                return encode_string(o, **kw)
 
         else:
             return super()._format_scalar(o)

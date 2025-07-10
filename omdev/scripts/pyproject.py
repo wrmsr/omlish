@@ -143,6 +143,9 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlia
 # ../../magic/magic.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Magic:
     key: str
@@ -159,6 +162,9 @@ class Magic:
 
 ########################################
 # ../../magic/prepare.py
+
+
+##
 
 
 class MagicPrepareError(Exception):
@@ -188,6 +194,9 @@ def json_magic_preparer(src: str) -> ta.Any:
 
 ########################################
 # ../../magic/styles.py
+
+
+##
 
 
 MAGIC_KEY_PREFIX = '@omlish-'
@@ -6391,16 +6400,6 @@ class Interp:
 
 
 ########################################
-# ../../interp/uv/inject.py
-
-
-def bind_interp_uv() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
-
-    return inj.as_bindings(*lst)
-
-
-########################################
 # ../../../omlish/logs/standard.py
 """
 TODO:
@@ -6803,6 +6802,9 @@ class BaseSubprocesses(abc.ABC):  # noqa
 
 ########################################
 # ../../interp/resolvers.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -7391,6 +7393,9 @@ asyncio_subprocesses = AsyncioSubprocesses()
 # ../../interp/inspect.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class InterpInspection:
     exe: str
@@ -7500,6 +7505,9 @@ TODO:
 """
 
 
+##
+
+
 class Pyenv:
     def __init__(
             self,
@@ -7565,6 +7573,67 @@ class Pyenv:
             return False
         await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
         return True
+
+
+########################################
+# ../../interp/uv/uv.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class UvConfig:
+    ignore_path: bool = False
+    pip_bootstrap: bool = True
+
+
+class Uv:
+    def __init__(
+            self,
+            config: UvConfig = UvConfig(),
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._log = log
+
+        self._bootstrap_dir: ta.Optional[str] = None
+
+    def delete_bootstrap_dir(self) -> bool:
+        if (bs := self._bootstrap_dir) is None:
+            return False
+
+        shutil.rmtree(bs)
+        self._bootstrap_dir = None
+        return True
+
+    @async_cached_nullary
+    async def uv_exe(self) -> ta.Optional[str]:
+        if not self._config.ignore_path and (uv := shutil.which('uv')):
+            return uv
+
+        if self._config.pip_bootstrap:
+            if (bd := self._bootstrap_dir) is None:
+                bd = self._bootstrap_dir = tempfile.mkdtemp()
+
+            if self._log is not None:
+                self._log.info(f'Bootstrapping uv into %s', bd)
+
+            vn = 'uv-bootstrap'
+            await asyncio_subprocesses.check_call(os.path.realpath(sys.executable), '-m', 'venv', vn, cwd=bd)
+
+            vx = os.path.join(bd, vn, 'bin', 'python3')
+            await asyncio_subprocesses.check_call(vx, '-m', 'pip', 'install', 'uv', cwd=bd)
+
+            ux = os.path.join(bd, vn, 'bin', 'uv')
+            check.state(os.path.isfile(ux))
+
+            return ux
+
+        return None
 
 
 ########################################
@@ -7689,6 +7758,9 @@ class GitRevisionAdder:
 
 ########################################
 # ../../interp/providers/running.py
+
+
+##
 
 
 class RunningInterpProvider(InterpProvider):
@@ -8095,6 +8167,40 @@ class PyenvVersionInstaller:
         if not os.path.isfile(exe):
             raise RuntimeError(f'Interpreter not found: {exe}')
         return exe
+
+
+########################################
+# ../../interp/uv/provider.py
+"""
+uv run pip
+uv run --python 3.11.6 pip
+uv venv --python 3.11.6 --seed barf
+python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
+"""
+
+
+##
+
+
+class UvInterpProvider(InterpProvider):
+    def __init__(
+            self,
+            *,
+            pyenv: Uv,
+            inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pyenv = pyenv
+        self._inspector = inspector
+        self._log = log
+
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        raise NotImplementedError
 
 
 ########################################
@@ -8659,6 +8765,9 @@ class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
 # ../../interp/providers/inject.py
 
 
+##
+
+
 def bind_interp_providers() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(InterpProvider),
@@ -8676,6 +8785,9 @@ def bind_interp_providers() -> InjectorBindings:
 
 ########################################
 # ../../interp/pyenv/provider.py
+
+
+##
 
 
 class PyenvInterpProvider(InterpProvider):
@@ -8806,7 +8918,28 @@ class PyenvInterpProvider(InterpProvider):
 
 
 ########################################
+# ../../interp/uv/inject.py
+
+
+##
+
+
+def bind_interp_uv() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(Uv, singleton=True),
+
+        inj.bind(UvInterpProvider, singleton=True),
+        inj.bind(InterpProvider, to_key=UvInterpProvider, array=True),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
 # ../../interp/pyenv/inject.py
+
+
+##
 
 
 def bind_interp_pyenv() -> InjectorBindings:
@@ -8822,6 +8955,9 @@ def bind_interp_pyenv() -> InjectorBindings:
 
 ########################################
 # ../../interp/inject.py
+
+
+##
 
 
 def bind_interp() -> InjectorBindings:
@@ -8843,6 +8979,7 @@ def bind_interp() -> InjectorBindings:
             injector.provide(c)
             for c in [
                 PyenvInterpProvider,
+                UvInterpProvider,
                 RunningInterpProvider,
                 SystemInterpProvider,
             ]
@@ -8863,6 +9000,9 @@ def bind_interp() -> InjectorBindings:
 
 ########################################
 # ../../interp/default.py
+
+
+##
 
 
 @cached_nullary

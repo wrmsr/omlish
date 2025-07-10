@@ -8325,16 +8325,6 @@ class Interp:
 
 
 ########################################
-# ../../../omdev/interp/uv/inject.py
-
-
-def bind_interp_uv() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
-
-    return inj.as_bindings(*lst)
-
-
-########################################
 # ../commands/injection.py
 
 
@@ -10104,6 +10094,9 @@ class BaseSubprocesses(abc.ABC):  # noqa
 # ../../../omdev/interp/resolvers.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class InterpResolverProviders:
     providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
@@ -11243,6 +11236,9 @@ asyncio_subprocesses = AsyncioSubprocesses()
 # ../../../omdev/interp/inspect.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class InterpInspection:
     exe: str
@@ -11352,6 +11348,9 @@ TODO:
 """
 
 
+##
+
+
 class Pyenv:
     def __init__(
             self,
@@ -11417,6 +11416,67 @@ class Pyenv:
             return False
         await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
         return True
+
+
+########################################
+# ../../../omdev/interp/uv/uv.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class UvConfig:
+    ignore_path: bool = False
+    pip_bootstrap: bool = True
+
+
+class Uv:
+    def __init__(
+            self,
+            config: UvConfig = UvConfig(),
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._log = log
+
+        self._bootstrap_dir: ta.Optional[str] = None
+
+    def delete_bootstrap_dir(self) -> bool:
+        if (bs := self._bootstrap_dir) is None:
+            return False
+
+        shutil.rmtree(bs)
+        self._bootstrap_dir = None
+        return True
+
+    @async_cached_nullary
+    async def uv_exe(self) -> ta.Optional[str]:
+        if not self._config.ignore_path and (uv := shutil.which('uv')):
+            return uv
+
+        if self._config.pip_bootstrap:
+            if (bd := self._bootstrap_dir) is None:
+                bd = self._bootstrap_dir = tempfile.mkdtemp()
+
+            if self._log is not None:
+                self._log.info(f'Bootstrapping uv into %s', bd)
+
+            vn = 'uv-bootstrap'
+            await asyncio_subprocesses.check_call(os.path.realpath(sys.executable), '-m', 'venv', vn, cwd=bd)
+
+            vx = os.path.join(bd, vn, 'bin', 'python3')
+            await asyncio_subprocesses.check_call(vx, '-m', 'pip', 'install', 'uv', cwd=bd)
+
+            ux = os.path.join(bd, vn, 'bin', 'uv')
+            check.state(os.path.isfile(ux))
+
+            return ux
+
+        return None
 
 
 ########################################
@@ -12109,6 +12169,9 @@ class YumSystemPackageManager(SystemPackageManager):
 # ../../../omdev/interp/providers/running.py
 
 
+##
+
+
 class RunningInterpProvider(InterpProvider):
     @cached_nullary
     def version(self) -> InterpVersion:
@@ -12516,6 +12579,40 @@ class PyenvVersionInstaller:
 
 
 ########################################
+# ../../../omdev/interp/uv/provider.py
+"""
+uv run pip
+uv run --python 3.11.6 pip
+uv venv --python 3.11.6 --seed barf
+python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
+"""
+
+
+##
+
+
+class UvInterpProvider(InterpProvider):
+    def __init__(
+            self,
+            *,
+            pyenv: Uv,
+            inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pyenv = pyenv
+        self._inspector = inspector
+        self._log = log
+
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        raise NotImplementedError
+
+
+########################################
 # ../commands/inject.py
 
 
@@ -12755,6 +12852,9 @@ class CheckSystemPackageCommandExecutor(CommandExecutor[CheckSystemPackageComman
 # ../../../omdev/interp/providers/inject.py
 
 
+##
+
+
 def bind_interp_providers() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(InterpProvider),
@@ -12772,6 +12872,9 @@ def bind_interp_providers() -> InjectorBindings:
 
 ########################################
 # ../../../omdev/interp/pyenv/provider.py
+
+
+##
 
 
 class PyenvInterpProvider(InterpProvider):
@@ -12899,6 +13002,24 @@ class PyenvInterpProvider(InterpProvider):
 
         exe = await installer.install()
         return Interp(exe, version)
+
+
+########################################
+# ../../../omdev/interp/uv/inject.py
+
+
+##
+
+
+def bind_interp_uv() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(Uv, singleton=True),
+
+        inj.bind(UvInterpProvider, singleton=True),
+        inj.bind(InterpProvider, to_key=UvInterpProvider, array=True),
+    ]
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -13125,6 +13246,9 @@ class SshManageTargetConnector(ManageTargetConnector):
 # ../../../omdev/interp/pyenv/inject.py
 
 
+##
+
+
 def bind_interp_pyenv() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(Pyenv, singleton=True),
@@ -13169,6 +13293,9 @@ def bind_targets() -> InjectorBindings:
 # ../../../omdev/interp/inject.py
 
 
+##
+
+
 def bind_interp() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         bind_interp_providers(),
@@ -13188,6 +13315,7 @@ def bind_interp() -> InjectorBindings:
             injector.provide(c)
             for c in [
                 PyenvInterpProvider,
+                UvInterpProvider,
                 RunningInterpProvider,
                 SystemInterpProvider,
             ]
@@ -13208,6 +13336,9 @@ def bind_interp() -> InjectorBindings:
 
 ########################################
 # ../../../omdev/interp/default.py
+
+
+##
 
 
 @cached_nullary

@@ -2,6 +2,9 @@ import json
 import typing as ta
 
 
+##
+
+
 class MagicPrepareError(Exception):
     pass
 

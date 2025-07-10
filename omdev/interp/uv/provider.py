@@ -5,17 +5,36 @@ uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
 """
+import logging
 import typing as ta
 
+from ..inspect import InterpInspector
 from ..providers.base import InterpProvider
 from ..types import Interp
 from ..types import InterpSpecifier
 from ..types import InterpVersion
+from .uv import Uv
+
+
+##
 
 
 class UvInterpProvider(InterpProvider):
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
-        raise NotImplementedError
+    def __init__(
+            self,
+            *,
+            pyenv: Uv,
+            inspector: InterpInspector,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
+        super().__init__()
 
-    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
+        self._pyenv = pyenv
+        self._inspector = inspector
+        self._log = log
+
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
         raise NotImplementedError
