@@ -12,7 +12,7 @@ import typing as ta
 
 R = ta.TypeVar('R')
 
-BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')  # ta.TypeAlias
+BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')
 
 BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
 

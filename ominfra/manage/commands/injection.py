@@ -11,6 +11,9 @@ from .base import CommandExecutorRegistration
 from .base import CommandRegistration
 
 
+##
+
+
 def bind_command(
         command_cls: ta.Type[Command],
         executor_cls: ta.Optional[ta.Type[CommandExecutor]],

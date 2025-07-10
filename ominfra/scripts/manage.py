@@ -152,7 +152,7 @@ KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound='KeyDeployTag')
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 # system/packages.py
-SystemPackageOrStr = ta.Union['SystemPackage', str]
+SystemPackageOrStr = ta.Union['SystemPackage', str]  # ta.TypeAlias
 
 
 ########################################
@@ -5062,6 +5062,9 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 # ../deploy/paths/specs.py
 
 
+##
+
+
 def check_valid_deploy_spec_path(s: str) -> str:
     check.non_empty_str(s)
     for c in ['..', '//']:
@@ -5072,6 +5075,9 @@ def check_valid_deploy_spec_path(s: str) -> str:
 
 ########################################
 # ../remote/config.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -5096,6 +5102,9 @@ class RemoteConfig:
 
 
 RemoteExecutionPayloadFile = ta.NewType('RemoteExecutionPayloadFile', str)
+
+
+##
 
 
 @cached_nullary
@@ -8323,6 +8332,9 @@ def bind_interp_uv() -> InjectorBindings:
 # ../commands/injection.py
 
 
+##
+
+
 def bind_command(
         command_cls: ta.Type[Command],
         executor_cls: ta.Optional[ta.Type[CommandExecutor]],
@@ -8342,6 +8354,9 @@ def bind_command(
 
 ########################################
 # ../commands/marshal.py
+
+
+##
 
 
 def install_command_marshaling(
@@ -8811,6 +8826,9 @@ class RemoteChannelImpl(RemoteChannel):
 # ../system/config.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class SystemConfig:
     platform: ta.Optional[Platform] = None
@@ -9125,6 +9143,9 @@ class MainBootstrap:
 
 ########################################
 # ../commands/local.py
+
+
+##
 
 
 class LocalCommandExecutor(CommandExecutor):
@@ -10413,6 +10434,9 @@ class DeployConfManager:
 # ../deploy/paths/owners.py
 
 
+##
+
+
 class DeployPathOwner(abc.ABC):
     @abc.abstractmethod
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
@@ -10926,6 +10950,9 @@ def git_shallow_clone(
 # ../deploy/injection.py
 
 
+##
+
+
 def bind_deploy_manager(cls: type) -> InjectorBindings:
     return inj.as_bindings(
         inj.bind(cls, singleton=True),
@@ -10936,6 +10963,9 @@ def bind_deploy_manager(cls: type) -> InjectorBindings:
 
 ########################################
 # ../deploy/paths/manager.py
+
+
+##
 
 
 class DeployPathsManager:
@@ -10964,6 +10994,9 @@ class DeployPathsManager:
 
 ########################################
 # ../deploy/tmp.py
+
+
+##
 
 
 class DeployHomeAtomics(Func1[DeployHome, AtomicPathSwapping]):
@@ -11454,6 +11487,9 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 # ../deploy/conf/inject.py
 
 
+##
+
+
 def bind_deploy_conf() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         bind_deploy_manager(DeployConfManager),
@@ -11654,6 +11690,9 @@ class DeployGitManager(SingleDirDeployPathOwner):
 # ../deploy/paths/inject.py
 
 
+##
+
+
 def bind_deploy_paths() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(DeployPathOwner),
@@ -11675,6 +11714,9 @@ TODO:
   - ideally only those defined by links to deploy home
   - ominfra.systemd / x.sd_orphans
 """
+
+
+##
 
 
 class DeploySystemdManager:
@@ -11900,6 +11942,9 @@ class SubprocessRemoteSpawning(RemoteSpawning):
 TODO:
  - yum/rpm
 """
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -12844,6 +12889,9 @@ def bind_remote(
 # ../system/inject.py
 
 
+##
+
+
 def bind_system(
         *,
         system_config: SystemConfig,
@@ -13162,6 +13210,9 @@ TODO:
 """
 
 
+##
+
+
 class DeployVenvManager:
     async def setup_venv(
             self,
@@ -13205,6 +13256,9 @@ class DeployVenvManager:
 
 ########################################
 # ../deploy/apps.py
+
+
+##
 
 
 class DeployAppManager(DeployPathOwner):

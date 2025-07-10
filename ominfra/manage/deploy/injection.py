@@ -5,6 +5,9 @@ from omlish.lite.inject import inj
 from .paths.owners import DeployPathOwner
 
 
+##
+
+
 def bind_deploy_manager(cls: type) -> InjectorBindings:
     return inj.as_bindings(
         inj.bind(cls, singleton=True),

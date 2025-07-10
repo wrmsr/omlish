@@ -13,7 +13,10 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 
 
-SystemPackageOrStr = ta.Union['SystemPackage', str]
+SystemPackageOrStr = ta.Union['SystemPackage', str]  # ta.TypeAlias
+
+
+##
 
 
 @dc.dataclass(frozen=True)
