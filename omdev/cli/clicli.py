@@ -91,10 +91,16 @@ class CliCli(ap.Cli):
         ap.arg('--local', action='store_true'),
         ap.arg('--no-deps', action='store_true'),
         ap.arg('--dry-run', action='store_true'),
+        ap.arg('--version'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
         latest_version = _parse_latest_version_str(lookup_latest_package_version(__package__.split('.')[0]))
+
+        if self.args.version is not None:
+            target_version: str = self.args.version
+        else:
+            target_version = latest_version
 
         #
 
@@ -142,6 +148,7 @@ class CliCli(ap.Cli):
 
         print(f'Current version: {__about__.__version__}')
         print(f'Latest version: {latest_version}')
+        print(f'Target version: {target_version}')
         print()
 
         #
@@ -163,7 +170,7 @@ class CliCli(ap.Cli):
             reco_cmd = ' '.join([
                 'curl -LsSf',
                 f"'{url}'" if (qu := shlex.quote(url)) == url else qu,
-                f'| python3 - --version {shlex.quote(latest_version)}',
+                f'| python3 - --version {shlex.quote(target_version)}',
                 *deps,
             ])
             print(f'Recovery command:\n\n{reco_cmd}\n')
@@ -178,7 +185,7 @@ class CliCli(ap.Cli):
             sys.executable,
             sys.executable,
             '-c', install_src,
-            '--version', latest_version,
+            '--version', target_version,
             *deps,
         )
 
