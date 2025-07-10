@@ -29,7 +29,7 @@ pipdeptree==2.26.1
 astpretty==3.0.0
 
 gprof2dot==2025.4.14
-guppy3==3.1.5
+guppy3==3.1.5  # @omlish-venv !13t !14t
 objgraph==3.6.2
 
 ipython==9.4.0
@@ -109,8 +109,8 @@ numpy>=1.24
 
 prompt-toolkit==3.0.51
 
-snowflake-connector-python[secure-local-storage]==3.16.0
-snowflake-sqlalchemy==1.7.6
+snowflake-connector-python[secure-local-storage]==3.16.0  # @omlish-venv !13t !14t
+snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !14t
 
 trino==0.335.0  # @omlish-venv !13t !14t
 
@@ -124,8 +124,8 @@ datasets==4.0.0  # !! includes arrow and pandas and shit
 transformers==4.53.1  # @omlish-venv !14t
 sentence-transformers==5.0.0  # @omlish-venv !14t
 
-sentencepiece==0.2.0; python_version < "3.13"
-tiktoken==0.9.0
+sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121
+tiktoken==0.9.0  # @omlish-venv !13t !14t
 tokenizers==0.21.2
 
 llama-cpp-python; sys_platform == "darwin"

@@ -31,18 +31,13 @@ all = [
 #
 
 [tool.omlish.pyproject.venvs._default]
-interp = '@12'
+interp = '@13'
 requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
 use_uv = true
 
 [tool.omlish.pyproject.venvs.default]
 inherits = ['_default']
-requires = ['-rrequirements-ext.txt']
-
-[tool.omlish.pyproject.venvs.'13']
-inherits = ['_default']
-interp = '@13'
 requires = ['-rrequirements-ext.txt']
 
 [tool.omlish.pyproject.venvs.'13t']
@@ -62,6 +57,10 @@ interp = '@14t'
 [tool.omlish.pyproject.venvs._lite]
 requires = []
 srcs = []
+
+[tool.omlish.pyproject.venvs.'12']
+inherits = ['_lite']
+interp = '@12'
 
 [tool.omlish.pyproject.venvs.'11']
 inherits = ['_lite']

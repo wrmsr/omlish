@@ -27,7 +27,7 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     lang.Final,
     ta.Generic[V_co, OutputT_contra],
 ):
-    v: V_co
+    v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
 
     _outputs: ta.Sequence[OutputT_contra] = dc.field(
         default=(),

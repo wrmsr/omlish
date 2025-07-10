@@ -192,7 +192,7 @@ RUN \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         case $K in \
-            12|13) true ;; \
+            13) true ;; \
             *) continue ;; \
         esac && \
         echo "Installing Python $K" && \

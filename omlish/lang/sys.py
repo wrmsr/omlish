@@ -4,7 +4,7 @@ import sys
 ##
 
 
-REQUIRED_PYTHON_VERSION = (3, 12)
+REQUIRED_PYTHON_VERSION = (3, 13)
 
 
 def check_runtime_version() -> None:

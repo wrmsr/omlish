@@ -29,7 +29,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     lang.Final,
     ta.Generic[V_co, OptionT_co],
 ):
-    v: V_co
+    v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
 
     _options: ta.Sequence[OptionT_co] = dc.field(
         default=(),

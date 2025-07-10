@@ -1,4 +1,4 @@
-FROM python:3.12.11-bookworm
+FROM python:3.13.5-bookworm
 
 RUN ( \
     rm -f /etc/apt/apt.conf.d/docker-clean && \

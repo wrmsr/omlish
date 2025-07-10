@@ -242,7 +242,7 @@ pre-commit:
 PYTEST_OPTS=
 
 .PHONY: test-all
-test-all: test test-docker test-13 test-13t test-lite
+test-all: test test-docker test-13t test-lite
 
 .PHONY: test
 test:
@@ -263,17 +263,7 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13 venv-13t venv-lite
-
-# 13
-
-.PHONY: venv-13
-venv-13:
-	${PYPROJECT} venv 13 exe
-
-.PHONY: test-13
-test-13:
-	${PYPROJECT} venv 13 test -- ${PYTEST_OPTS}
+venv-all: venv venv-13t venv-lite
 
 # 13t
 
@@ -312,6 +302,7 @@ LITE_VENVS=\
 	9 \
 	10 \
 	11 \
+	12 \
 
 .PHONY: venv-lite
 venv-lite:
