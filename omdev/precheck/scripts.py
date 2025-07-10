@@ -26,7 +26,7 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
 
         self._context = context
 
-    async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         for fp in magic.find_magic_files(
                 magic.PY_MAGIC_STYLE,
                 self._context.src_roots,

@@ -173,3 +173,7 @@ def test_protocol():
     #     pass
     #
     # assert_generic_full_eq(rfl.type_(C1), rfl.Protocol(C0, (int, T), (K, V), C0))
+
+
+def test_defaults():
+    assert_generic_full_eq(rfl.type_(ta.Generator[int]), rfl.Generic(collections.abc.Generator, (int, type(None), type(None)), (_0, _1, _2), ta.Generator[int]))  # noqa

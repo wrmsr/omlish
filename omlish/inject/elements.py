@@ -24,7 +24,7 @@ class Elements(lang.Final):
     es: ta.Collection[Element] | None = None
     cs: ta.Collection['Elements'] | None = None
 
-    def __iter__(self) -> ta.Generator[Element, None, None]:
+    def __iter__(self) -> ta.Generator[Element]:
         if self.es:
             yield from self.es
         if self.cs:

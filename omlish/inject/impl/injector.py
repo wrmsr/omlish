@@ -149,7 +149,7 @@ class InjectorImpl(Injector, lang.Final):
             pass
 
     @contextlib.contextmanager
-    def _current_request(self) -> ta.Generator[_Request, None, None]:
+    def _current_request(self) -> ta.Generator[_Request]:
         if (cr := self.__cur_req) is not None:
             yield cr
             return

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
 # Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE

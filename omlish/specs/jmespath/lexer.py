@@ -48,7 +48,7 @@ class Lexer:
         self._enable_legacy_literals = False
         self._current: str | None = None
 
-    def tokenize(self, expression: str, options: Options | None = None) -> ta.Generator[Token, None, None]:
+    def tokenize(self, expression: str, options: Options | None = None) -> ta.Generator[Token]:
         if options is not None:
             self._enable_legacy_literals = options.enable_legacy_literals
 

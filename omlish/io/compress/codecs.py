@@ -28,10 +28,10 @@ class CompressionEagerCodec(codecs.EagerCodec[bytes, bytes]):
 class CompressionIncrementalCodec(codecs.IncrementalCodec[bytes, bytes]):
     compression: IncrementalCompression
 
-    def encode_incremental(self) -> ta.Generator[bytes | None, bytes, None]:
+    def encode_incremental(self) -> ta.Generator[bytes | None, bytes]:
         return self.compression.compress_incremental()
 
-    def decode_incremental(self) -> ta.Generator[bytes | None, bytes, None]:
+    def decode_incremental(self) -> ta.Generator[bytes | None, bytes]:
         return buffer_bytes_stepped_reader_coro(self.compression.decompress_incremental())
 
 

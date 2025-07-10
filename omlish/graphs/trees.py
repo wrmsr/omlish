@@ -17,7 +17,7 @@ T = ta.TypeVar('T')
 NodeT = ta.TypeVar('NodeT')
 
 NodeWalker: ta.TypeAlias = ta.Callable[[NodeT], ta.Iterable[NodeT]]
-NodeGenerator: ta.TypeAlias = ta.Generator[NodeT, None, None]
+NodeGenerator: ta.TypeAlias = ta.Generator[NodeT]
 
 
 ##

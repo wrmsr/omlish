@@ -183,7 +183,7 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file, 'rb'))
 
-        def yield_input() -> ta.Generator[bytes, None, None]:
+        def yield_input() -> ta.Generator[bytes]:
             fd = check.isinstance(in_file.fileno(), int)
 
             while True:
@@ -228,7 +228,7 @@ def _main() -> None:
                 def flush_output(
                         fn: ta.Callable[[T], ta.Iterable[U]],
                         i: T,
-                ) -> ta.Generator[U, None, None]:
+                ) -> ta.Generator[U]:
                     n = 0
                     for o in fn(i):
                         yield o
@@ -247,7 +247,7 @@ def _main() -> None:
                     def append_newlines(
                             fn: ta.Callable[[T], ta.Iterable[str]],
                             i: T,
-                    ) -> ta.Generator[str, None, None]:
+                    ) -> ta.Generator[str]:
                         yield from fn(i)
                         yield '\n'
 

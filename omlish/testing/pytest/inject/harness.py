@@ -65,7 +65,7 @@ class Harness:
     ##
 
     @contextlib.contextmanager
-    def activate(self) -> ta.Generator[ta.Self, None, None]:
+    def activate(self) -> ta.Generator[ta.Self]:
         check.none(self._inj)
         check.not_in(self, _ACTIVE_HARNESSES)
         _ACTIVE_HARNESSES.add(self)
@@ -107,7 +107,7 @@ class Harness:
             self,
             pytest_scope: PytestScope,
             request: pytest.FixtureRequest,
-    ) -> ta.Generator[None, None, None]:
+    ) -> ta.Generator[None]:
         ss = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
         with inj.enter_seeded_scope(check.not_none(self._inj), ss, {
             inj.Key(pytest.FixtureRequest, tag=pytest_scope): request,

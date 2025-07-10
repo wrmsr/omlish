@@ -58,7 +58,7 @@ class JsonStreamParserEvents(lang.Namespace):
 ##
 
 
-def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None, None]:
+def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent]:
     if isinstance(obj, SCALAR_VALUE_TYPES):
         yield obj  # type: ignore
 

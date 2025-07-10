@@ -47,7 +47,7 @@ def test_compression_zstd() -> None:
 ##
 
 
-def _run_incremental_codec(g: ta.Generator[bytes | None, bytes | None, None], i: bytes) -> bytes:
+def _run_incremental_codec(g: ta.Generator[bytes | None, bytes | None], i: bytes) -> bytes:
     cg = lang.capture_coroutine(g)
     o = io.BytesIO()
 

@@ -121,7 +121,7 @@ class IncrementalGzipCompressor:
         self._level = level
         self._mtime = mtime
 
-    def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
+    def _write_gzip_header(self) -> ta.Generator[bytes]:
         check.none((yield b'\037\213'))  # magic header
         check.none((yield b'\010'))  # compression method
 
@@ -267,7 +267,7 @@ class IncrementalGzipDecompressor:
             rdr: PrependableBytesCoroReader,
             crc: int,
             stream_size: int,
-    ) -> ta.Generator[int | None, bytes, None]:
+    ) -> ta.Generator[int | None, bytes]:
         # We've read to the end of the file.
         # We check that the computed CRC and size of the uncompressed data matches the stored values. Note that the size
         # stored is the true file size mod 2**32.

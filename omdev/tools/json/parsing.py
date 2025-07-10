@@ -22,7 +22,7 @@ class EagerParser:
 
         self._fmt = fmt
 
-    def parse(self, f: ta.TextIO) -> ta.Generator[ta.Any, None, None]:
+    def parse(self, f: ta.TextIO) -> ta.Generator[ta.Any]:
         return self._fmt.load(f)
 
 
@@ -42,7 +42,7 @@ class DelimitingParser:
 
         self._db = DelimitingBuffer(delimiters)
 
-    def parse(self, b: bytes) -> ta.Generator[ta.Any, None, None]:
+    def parse(self, b: bytes) -> ta.Generator[ta.Any]:
         for chunk in self._db.feed(b):
             s = check.isinstance(chunk, bytes).decode('utf-8')
             v = self._fmt.load(io.StringIO(s))
@@ -58,7 +58,7 @@ class StreamBuilder(lang.ExitStacked):
     def _enter_contexts(self) -> None:
         self._builder = self._enter_context(JsonObjectBuilder())
 
-    def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any, None, None]:
+    def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any]:
         yield from check.not_none(self._builder)(e)
 
 
@@ -72,7 +72,7 @@ class StreamParser(lang.ExitStacked):
         self._lex = self._enter_context(JsonStreamLexer())
         self._parse = self._enter_context(JsonStreamParser())
 
-    def parse(self, b: bytes) -> ta.Generator[JsonStreamParserEvent, None, None]:
+    def parse(self, b: bytes) -> ta.Generator[JsonStreamParserEvent]:
         for s in self._decoder.decode(b, not b):
             for c in s:
                 for t in self._lex(c):

@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../supervisor/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 UP006 UP007 UP012 UP036 UP045
+# ruff: noqa: N802 UP006 UP007 UP012 UP036 UP043 UP045
 #
 # Supervisor is Copyright (c) 2006-2015 Agendaless Consulting and Contributors.
 # (http://www.agendaless.com), All Rights Reserved

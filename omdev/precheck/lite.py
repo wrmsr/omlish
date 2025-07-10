@@ -157,7 +157,7 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         else:
             raise RuntimeError(f'Unknown target kind: {tgt.kind}')
 
-    async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         tgts = await self._collect_targets()
 
         sem = asyncio.Semaphore(self._config.concurrency)

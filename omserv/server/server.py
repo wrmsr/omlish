@@ -52,7 +52,7 @@ class Server:
         self._idle_handle: anyio.abc.CancelScope | None = None
         self._task_spawner: TaskSpawner | None = None
 
-    def __await__(self) -> ta.Generator[ta.Any, None, None]:
+    def __await__(self) -> ta.Generator[ta.Any]:
         return self.run().__await__()
 
     async def run(self) -> None:

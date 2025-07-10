@@ -37,7 +37,7 @@ def new_executor(
         *,
         immediate_exceptions: bool = False,
         **kwargs: ta.Any,
-) -> ta.Generator[cf.Executor, None, None]:
+) -> ta.Generator[cf.Executor]:
     if max_workers == 0:
         yield ImmediateExecutor(
             immediate_exceptions=immediate_exceptions,

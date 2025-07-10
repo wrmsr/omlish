@@ -20,7 +20,7 @@ class ManifestsPrecheck(Precheck['ManifestsPrecheck.Config']):
 
         self._context = context
 
-    async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         for src_root in self._context.src_roots:
             try:
                 MANIFEST_LOADER.load(src_root)

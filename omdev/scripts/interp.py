@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../interp/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 UP006 UP007 UP036 UP045
+# ruff: noqa: N802 UP006 UP007 UP036 UP043 UP045
 """
 TODO:
  - partial best-matches - '3.12'

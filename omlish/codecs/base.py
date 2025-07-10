@@ -37,11 +37,11 @@ class EagerCodec(lang.Abstract, ta.Generic[I, O]):
 
 class IncrementalCodec(lang.Abstract, ta.Generic[I, O]):
     @abc.abstractmethod
-    def encode_incremental(self) -> ta.Generator[O | None, I, None]:
+    def encode_incremental(self) -> ta.Generator[O | None, I]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def decode_incremental(self) -> ta.Generator[I | None, O, None]:
+    def decode_incremental(self) -> ta.Generator[I | None, O]:
         raise NotImplementedError
 
 

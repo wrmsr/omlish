@@ -35,7 +35,7 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
         self._headers_cache = headers_cache
         self._ast_cache = ast_cache
 
-    async def _run_py_file(self, py_file: str, src_root: str) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def _run_py_file(self, py_file: str, src_root: str) -> ta.AsyncGenerator[Precheck.Violation]:
         if isinstance(header_lines := self._headers_cache.get_file_headers(py_file), Exception):
             return
         if any(hl.src.strip() == '# ruff: noqa' for hl in header_lines):
@@ -58,7 +58,7 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
 
         return
 
-    async def _run_src_root(self, src_root: str) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def _run_src_root(self, src_root: str) -> ta.AsyncGenerator[Precheck.Violation]:
         py_files = [
             os.path.join(e.root, f)
             for e in self._dir_walk_cache.list_dir(src_root)
@@ -70,7 +70,7 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
             async for v in self._run_py_file(py_file, src_root):
                 yield v
 
-    async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         for src_root in self._context.src_roots:
             async for v in self._run_src_root(src_root):
                 yield v

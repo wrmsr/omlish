@@ -106,7 +106,7 @@ def _generate_step(
         prompt: mx.array,
         model: nn.Module,
         params: GenerationParams = GenerationParams(),
-) -> ta.Generator[_GenerationStep, None, None]:
+) -> ta.Generator[_GenerationStep]:
     y = prompt
     tokens = None
 
@@ -238,7 +238,7 @@ def stream_generate(
         tokenization: Tokenization,
         prompt: str | mx.array,
         params: GenerationParams = GenerationParams(),
-) -> ta.Generator[GenerationOutput, None, None]:
+) -> ta.Generator[GenerationOutput]:
     if not isinstance(prompt, mx.array):
         if isinstance(prompt, str):
             tokenizer = tokenization.tokenizer

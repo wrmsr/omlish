@@ -91,7 +91,7 @@ docker = 'omlish-dev-amd64'
 #
 
 [tool.omlish.pyproject.venvs.deploy]
-interp = '3.12'
+interp = '3.13'
 requires = ['-rrequirements.txt']
 
 
@@ -148,7 +148,7 @@ session_timeout = 600
 # ruff
 
 [tool.ruff]
-target-version = 'py312'
+target-version = 'py313'
 line-length = 120
 indent-width = 4
 
@@ -177,6 +177,7 @@ ignore = [
     'B010',  # set-attr-with-constant
     'B028',  # no-explicit-stacklevel
     'B905',  # zip-without-explicit-strict
+    'B911',  # batched-without-explicit-strict
     'C408',  # unnecessary-collection-call
     'C420',  # unnecessary-dict-comprehension-for-iterable
     'C901',  # complex-structure

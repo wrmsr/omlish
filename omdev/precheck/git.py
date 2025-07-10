@@ -25,7 +25,7 @@ class GitBlacklistPrecheck(Precheck['GitBlacklistPrecheck.Config']):
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
 
-    async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
+    async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         for f in self._config.files:
             proc = await asyncio.create_subprocess_exec('git', 'status', '-s', f)
             await proc.communicate()

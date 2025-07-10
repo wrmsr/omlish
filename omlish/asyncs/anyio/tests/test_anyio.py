@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.fixture
-def server_sock() -> ta.Generator[socket.socket, None, None]:
+def server_sock() -> ta.Generator[socket.socket]:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
     sock.bind(('localhost', 0))

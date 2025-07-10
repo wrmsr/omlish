@@ -98,5 +98,5 @@ class StreamRenderer(Renderer):
             **self._kw,
         )
 
-    def render(self, e: JsonStreamParserEvent) -> ta.Generator[str, None, None]:
+    def render(self, e: JsonStreamParserEvent) -> ta.Generator[str]:
         return self._renderer.render((e,))

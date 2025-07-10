@@ -196,7 +196,7 @@ def buffer_bytes_stepped_reader_coro(g: BytesSteppedReaderCoro) -> BytesSteppedC
 
 
 @lang.autostart
-def iterable_bytes_stepped_coro(g: BytesSteppedCoro) -> ta.Generator[ta.Iterator[bytes], bytes, None]:
+def iterable_bytes_stepped_coro(g: BytesSteppedCoro) -> ta.Generator[ta.Iterator[bytes], bytes]:
     i: bytes | None = check.isinstance((yield None), bytes)  # type: ignore[misc]
     eof = False
 

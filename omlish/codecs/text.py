@@ -88,7 +88,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
         i, _ = self._info.decode(o, self._opts.errors)
         return i
 
-    def encode_incremental(self) -> ta.Generator[bytes | None, str, None]:
+    def encode_incremental(self) -> ta.Generator[bytes | None, str]:
         x = self._info.incrementalencoder(self._opts.errors)
         i = yield None
         while True:
@@ -99,7 +99,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
         o = x.encode(i, final=True)
         yield o
 
-    def decode_incremental(self) -> ta.Generator[str | None, bytes, None]:
+    def decode_incremental(self) -> ta.Generator[str | None, bytes]:
         x = self._info.incrementaldecoder(self._opts.errors)
         i = yield None
         while True:

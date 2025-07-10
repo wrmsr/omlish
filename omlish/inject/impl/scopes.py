@@ -155,7 +155,7 @@ class SeededScopeImpl(ScopeImpl):
             self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)
 
         @contextlib.contextmanager
-        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None]:
             try:
                 if self._ssi._st is not None:  # noqa
                     raise ScopeAlreadyOpenError(self._ss)

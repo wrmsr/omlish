@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../manage/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP045
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045
 """
 manage.py -s 'docker run -i python:3.13'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8

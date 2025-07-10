@@ -36,7 +36,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             self,
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
-    ) -> ta.Generator[str, None, None]:
+    ) -> ta.Generator[str]:
         if self._style is not None:
             pre, post = self._style(o, state)
             yield pre
@@ -52,7 +52,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         if post:
             yield post
 
-    def _render(self, e: JsonStreamParserEvent) -> ta.Generator[str, None, None]:
+    def _render(self, e: JsonStreamParserEvent) -> ta.Generator[str]:
         if self._need_delimit:
             yield self._delimiter
             self._need_delimit = False
@@ -124,7 +124,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         else:
             raise TypeError(e)
 
-    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> ta.Generator[str, None, None]:
+    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> ta.Generator[str]:
         for e in events:
             yield from self._render(e)
 
