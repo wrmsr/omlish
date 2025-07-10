@@ -165,6 +165,8 @@ class CliCli(ap.Cli):
         else:
             print('venv not present, cannot check install')
 
+        print()
+
         #
 
         if deps:
