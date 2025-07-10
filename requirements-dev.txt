@@ -29,7 +29,7 @@ pipdeptree==2.26.1
 astpretty==3.0.0
 
 gprof2dot==2025.4.14
-guppy3==3.1.5; python_version < "3.13"
+guppy3==3.1.5
 objgraph==3.6.2
 
 ipython==9.4.0
@@ -109,8 +109,8 @@ numpy>=1.24
 
 prompt-toolkit==3.0.51
 
-snowflake-connector-python[secure-local-storage]==3.16.0; python_version < "3.13"
-snowflake-sqlalchemy==1.7.6; python_version < "3.13"
+snowflake-connector-python[secure-local-storage]==3.16.0
+snowflake-sqlalchemy==1.7.6
 
 trino==0.335.0  # @omlish-venv !13t !14t
 
@@ -119,14 +119,14 @@ hf-xet==1.1.5  # @omlish-venv !13t !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==4.0.0; python_version < "3.13"  # !! includes arrow and pandas and shit
+datasets==4.0.0  # !! includes arrow and pandas and shit
 
-transformers==4.53.1; python_version < "3.13"  # @omlish-venv !14t
-sentence-transformers==5.0.0; python_version < "3.13"  # @omlish-venv !14t
+transformers==4.53.1  # @omlish-venv !14t
+sentence-transformers==5.0.0  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"
-tiktoken==0.9.0; python_version < "3.13"
-tokenizers==0.21.2; python_version < "3.13"
+tiktoken==0.9.0
+tokenizers==0.21.2
 
 llama-cpp-python; sys_platform == "darwin"
 
@@ -137,8 +137,8 @@ boto3>=1.39.4
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.26.3; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t !14t
-mlx-lm==0.26.0; sys_platform == "darwin" and python_version < "3.13"  # @omlish-venv !13t !14t
+mlx==0.26.3; sys_platform == "darwin"  # @omlish-venv !13t !14t
+mlx-lm==0.26.0; sys_platform == "darwin"  # @omlish-venv !13t !14t
 
 apsw==3.50.2.0
 
