@@ -126,14 +126,13 @@ class CliCli(ap.Cli):
                 ])
                 venv_exe = os.path.join(venv_dir, 'bin', 'python')
 
+                subprocess.check_call([
+                    venv_exe,
+                    '-m', 'ensurepip',
+                    '--upgrade',
+                ])
+
                 if self.args.no_uv:
-                    subprocess.check_call([
-                        venv_exe,
-                        '-m', 'pip',
-                        'install',
-                        '--upgrade',
-                        'pip',
-                    ])
                     pip_cmd = [
                         venv_exe,
                         '-m', 'pip',
