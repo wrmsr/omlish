@@ -114,8 +114,8 @@ class CliCli(ap.Cli):
 
         #
 
-        if lang.can_import('pip'):
-            print('Checking pip install')
+        if lang.can_import('venv'):
+            print('Checking venv install')
 
             with temp_dir_context() as tmp_dir:
                 venv_dir = os.path.join(tmp_dir, 'venv')
@@ -161,7 +161,7 @@ class CliCli(ap.Cli):
                 print('Pip install check successful')
 
         else:
-            print('Pip not present, cannot check install')
+            print('venv not present, cannot check install')
 
         #
 
