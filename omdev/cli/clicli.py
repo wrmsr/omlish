@@ -158,7 +158,7 @@ class CliCli(ap.Cli):
                     *deps,
                 ])
 
-                print('Pip install check successful')
+                print('venv install check successful')
 
         else:
             print('venv not present, cannot check install')
