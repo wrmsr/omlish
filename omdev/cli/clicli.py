@@ -133,9 +133,10 @@ class CliCli(ap.Cli):
                 ])
 
                 if self.args.no_uv:
-                    pip_cmd = [
+                    pip_install_cmd = [
                         venv_exe,
                         '-m', 'pip',
+                        'install',
                     ]
                 else:
                     subprocess.check_call([
@@ -144,15 +145,16 @@ class CliCli(ap.Cli):
                         'install',
                         'uv',
                     ])
-                    pip_cmd = [
+                    pip_install_cmd = [
                         venv_exe,
                         '-m', 'uv',
                         'pip',
+                        'install',
+                        '--refresh',
                     ]
 
                 subprocess.check_call([
-                    *pip_cmd,
-                    'install',
+                    *pip_install_cmd,
                     '--dry-run',
                     f'{install.DEFAULT_CLI_PKG}=={target_version}',
                     *deps,
