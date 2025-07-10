@@ -1,7 +1,6 @@
 """
 TODO:
  - read from http
- - jmespath output flat, unquoted strs like jq '.[]'
 
 ==
 
@@ -68,10 +67,14 @@ T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
 
+##
+
+
 def _build_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file', nargs='?')
+    parser.add_argument('--source')
 
     parser.add_argument('-S', '--stream', action='store_true')
     parser.add_argument('-B', '--stream-build', action='store_true')
@@ -83,6 +86,7 @@ def _build_args_parser() -> argparse.ArgumentParser:
     parser.add_argument('-f', '--format')
 
     parser.add_argument('-x', '--jmespath-expr')
+    parser.add_argument('-M', '--marshal', action='store_true')
     parser.add_argument('-F', '--flat', action='store_true')
     parser.add_argument('-E', '--omit-empty', action='store_true')
 
@@ -129,6 +133,7 @@ def _process_args(args: ta.Any) -> RunConfiguration:
 
     processing = ProcessingOptions(
         jmespath_expr=args.jmespath_expr,
+        marshal=args.marshal,
         flat=args.flat,
         omit_empty=args.omit_empty,
     )
@@ -177,9 +182,12 @@ def _main() -> None:
     #
 
     with contextlib.ExitStack() as es:
-        if args.file is None:
+        in_file: ta.BinaryIO
+        if args.source is not None:
+            check.none(args.file)
+            in_file = io.BytesIO(args.source.encode('utf-8'))
+        elif args.file is None:
             in_file = sys.stdin.buffer
-
         else:
             in_file = es.enter_context(open(args.file, 'rb'))
 

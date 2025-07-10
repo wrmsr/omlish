@@ -102,6 +102,9 @@ from .registries import RegistryItem
 from .values import Value
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -382,6 +385,9 @@ class MarshalContext(BaseContext, lang.Final):
         except mfs.MatchGuardError:
             raise UnhandledTypeError(rty)  # noqa
 
+    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> Value:
+        return self.make(ty if ty is not None else type(obj)).marshal(self, obj)
+
 
 @dc.dataclass(frozen=True)
 class UnmarshalContext(BaseContext, lang.Final):
@@ -393,6 +399,17 @@ class UnmarshalContext(BaseContext, lang.Final):
             return check.not_none(self.factory).make_unmarshaler(self, rty)
         except mfs.MatchGuardError:
             raise UnhandledTypeError(rty)  # noqa
+
+    @ta.overload
+    def unmarshal(self, v: Value, ty: type[T]) -> T:
+        ...
+
+    @ta.overload
+    def unmarshal(self, v: Value, ty: ta.Any) -> ta.Any:
+        ...
+
+    def unmarshal(self, v, ty):
+        return self.make(ty).unmarshal(self, v)
 
 
 ##

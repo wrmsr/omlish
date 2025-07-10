@@ -5,8 +5,10 @@ from omlish import lang
 
 
 if ta.TYPE_CHECKING:
+    from omlish import marshal as msh
     from omlish.specs import jmespath
 else:
+    msh = lang.proxy_import('omlish.marshal')
     jmespath = lang.proxy_import('omlish.specs.jmespath')
 
 
@@ -16,6 +18,7 @@ else:
 @dc.dataclass(frozen=True, kw_only=True)
 class ProcessingOptions:
     jmespath_expr: ta.Any | None = None
+    marshal: bool = False
     flat: bool = False
     omit_empty: bool = False
 
@@ -31,9 +34,24 @@ class Processor:
             jmespath_expr = jmespath.compile(jmespath_expr)
         self._jmespath_expr: ta.Any | None = jmespath_expr
 
+    @lang.cached_function
+    def _marshaler_factory(self) -> 'msh.MarshalerFactory':
+        return msh.new_standard_marshaler_factory(
+            first=[msh.BASE64_MARSHALER_FACTORY],
+        )
+
+    def _marshal(self, v: ta.Any) -> ta.Any:
+        return msh.MarshalContext(
+            msh.GLOBAL_REGISTRY,
+            factory=self._marshaler_factory(),
+        ).marshal(v)
+
     def process(self, v: ta.Any) -> ta.Iterable[ta.Any]:
         if self._jmespath_expr is not None:
             v = self._jmespath_expr.search(v)
+
+        if self._opts.marshal:
+            v = self._marshal(v)
 
         vs: ta.Iterable[ta.Any]
         if self._opts.flat:

@@ -143,6 +143,11 @@ from .polymorphism.unmarshal import (  # noqa
     make_polymorphism_unmarshaler,
 )
 
+from .singular.base64 import (  # noqa
+    BASE64_MARSHALER_FACTORY,
+    BASE64_UNMARSHALER_FACTORY,
+)
+
 from .singular.primitives import (  # noqa
     PRIMITIVE_TYPES,
 )

@@ -30,8 +30,11 @@ def global_marshaler_factory() -> MarshalerFactory:
 
 
 def marshal(obj: ta.Any, ty: ta.Any | None = None, **kwargs: ta.Any) -> Value:
-    mc = MarshalContext(GLOBAL_REGISTRY, factory=global_marshaler_factory(), **kwargs)
-    return mc.make(ty if ty is not None else type(obj)).marshal(mc, obj)
+    return MarshalContext(
+        GLOBAL_REGISTRY,
+        factory=global_marshaler_factory(),
+        **kwargs,
+    ).marshal(obj, ty)
 
 
 ##
@@ -53,8 +56,11 @@ def unmarshal(v: Value, ty: ta.Any, **kwargs: ta.Any) -> ta.Any:
 
 
 def unmarshal(v, ty, **kwargs):
-    uc = UnmarshalContext(GLOBAL_REGISTRY, factory=global_unmarshaler_factory(), **kwargs)
-    return uc.make(ty).unmarshal(uc, v)
+    return UnmarshalContext(
+        GLOBAL_REGISTRY,
+        factory=global_unmarshaler_factory(),
+        **kwargs,
+    ).unmarshal(v, ty)
 
 
 ##

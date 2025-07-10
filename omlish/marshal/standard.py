@@ -1,3 +1,5 @@
+import typing as ta
+
 from .base import MarshalerFactory
 from .base import MultiMarshalerFactory
 from .base import MultiUnmarshalerFactory
@@ -26,8 +28,6 @@ from .objects.namedtuples import NamedtupleMarshalerFactory
 from .objects.namedtuples import NamedtupleUnmarshalerFactory
 from .polymorphism.unions import PrimitiveUnionMarshalerFactory
 from .polymorphism.unions import PrimitiveUnionUnmarshalerFactory
-from .singular.base64 import BASE64_MARSHALER_FACTORY
-from .singular.base64 import BASE64_UNMARSHALER_FACTORY
 from .singular.datetimes import DATETIME_MARSHALER_FACTORY
 from .singular.datetimes import DATETIME_UNMARSHALER_FACTORY
 from .singular.enums import EnumMarshalerFactory
@@ -56,7 +56,6 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     LiteralMarshalerFactory(),
     NUMBERS_MARSHALER_FACTORY,
     UUID_MARSHALER_FACTORY,
-    BASE64_MARSHALER_FACTORY,
     DATETIME_MARSHALER_FACTORY,
     MaybeMarshalerFactory(),
     MappingMarshalerFactory(),
@@ -66,12 +65,18 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
 ]
 
 
-def new_standard_marshaler_factory() -> MarshalerFactory:
+def new_standard_marshaler_factory(
+        *,
+        first: ta.Iterable[MarshalerFactory] | None = None,
+        last: ta.Iterable[MarshalerFactory] | None = None,
+) -> MarshalerFactory:
     return TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
-            MultiMarshalerFactory(
-                list(STANDARD_MARSHALER_FACTORIES),
-            ),
+            MultiMarshalerFactory([
+                *(first if first is not None else []),
+                *STANDARD_MARSHALER_FACTORIES,
+                *(last if last is not None else []),
+            ]),
         ),
     )
 
@@ -90,7 +95,6 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     LiteralUnmarshalerFactory(),
     NUMBERS_UNMARSHALER_FACTORY,
     UUID_UNMARSHALER_FACTORY,
-    BASE64_UNMARSHALER_FACTORY,
     DATETIME_UNMARSHALER_FACTORY,
     MaybeUnmarshalerFactory(),
     MappingUnmarshalerFactory(),
@@ -100,12 +104,18 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
 ]
 
 
-def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
+def new_standard_unmarshaler_factory(
+        *,
+        first: ta.Iterable[UnmarshalerFactory] | None = None,
+        last: ta.Iterable[UnmarshalerFactory] | None = None,
+) -> UnmarshalerFactory:
     return TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
-            MultiUnmarshalerFactory(
-                list(STANDARD_UNMARSHALER_FACTORIES),
-            ),
+            MultiUnmarshalerFactory([
+                *(first if first is not None else []),
+                *STANDARD_UNMARSHALER_FACTORIES,
+                *(last if last is not None else []),
+            ]),
         ),
     )
 

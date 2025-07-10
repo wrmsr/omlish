@@ -445,7 +445,8 @@ class PyremoteBootstrapDriver:
                 parts.append(p)
 
         if (mn := options.main_name_override) is not None:
-            # Must go on same single line as first line of user payload to preserve '<stdin>' line numbers.
+            # Must go on same single line as first line of user payload to preserve '<stdin>' line numbers. If more
+            # things wind up having to be done here, it can still be crammed on one line into a single `exec()`.
             parts.insert(0, f'__name__ = {mn!r}; ')
 
         if len(parts) == 1:
