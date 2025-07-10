@@ -77,22 +77,46 @@ def encode_string(
         lq: str | None = None,
         rq: str | None = None,
         escape_map: ta.Mapping[str, str] | None = None,
+        ensure_ascii: bool = False,
 ) -> str:
     """Return a JSON representation of a Python string."""
+
+    s = _convert_to_string(s)
+
+    lq, rq = _handle_encode_quote_args(q, lq, rq)
 
     if escape_map is None:
         escape_map = ESCAPE_MAP
 
-    s = _convert_to_string(s)
+    if ensure_ascii:
+        pat = _ESCAPE_ASCII_PAT
 
-    def replace(m):
-        return escape_map[m.group(0)]
+        def replace(m):
+            s = m.group(0)
 
-    lq, rq = _handle_encode_quote_args(q, lq, rq)
+            try:
+                return escape_map[s]
+
+            except KeyError:
+                n = ord(s)
+                if n < 0x10000:
+                    return f'\\u{n:04x}'
+
+                # surrogate pair
+                n -= 0x10000
+                s1 = 0xD800 | ((n >> 10) & 0x3FF)
+                s2 = 0xDC00 | (n & 0x3FF)
+                return f'\\u{s1:04x}\\u{s2:04x}'
+
+    else:
+        pat = _ESCAPE_PAT
+
+        def replace(m):
+            return escape_map[m.group(0)]
 
     return ''.join([
         lq,
-        _ESCAPE_PAT.sub(replace, s),
+        pat.sub(replace, s),
         rq,
     ])
 
@@ -107,35 +131,14 @@ def encode_string_ascii(
 ) -> str:
     """Return an ASCII-only JSON representation of a Python string."""
 
-    if escape_map is None:
-        escape_map = ESCAPE_MAP
-
-    s = _convert_to_string(s)
-
-    def replace(m):
-        s = m.group(0)
-
-        try:
-            return escape_map[s]
-
-        except KeyError:
-            n = ord(s)
-            if n < 0x10000:
-                return f'\\u{n:04x}'
-
-            # surrogate pair
-            n -= 0x10000
-            s1 = 0xD800 | ((n >> 10) & 0x3FF)
-            s2 = 0xDC00 | (n & 0x3FF)
-            return f'\\u{s1:04x}\\u{s2:04x}'
-
-    lq, rq = _handle_encode_quote_args(q, lq, rq)
-
-    return ''.join([
-        lq,
-        _ESCAPE_ASCII_PAT.sub(replace, s),
-        rq,
-    ])
+    return encode_string(
+        s,
+        q,
+        lq=lq,
+        rq=rq,
+        escape_map=escape_map,
+        ensure_ascii=True,
+    )
 
 
 ##
