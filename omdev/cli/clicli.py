@@ -1,5 +1,6 @@
 import inspect
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -21,6 +22,15 @@ from .types import CliModule
 
 
 DEFAULT_REINSTALL_URL = 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py'
+
+
+_VALID_VERSION_STR = re.compile(r'\d+(\.\d+(\.\d+(\.dev\d+)?)?)?')
+
+
+def _parse_latest_version_str(s: str) -> str:
+    if not _VALID_VERSION_STR.fullmatch(s):
+        raise ValueError(f'Invalid version string: {s}')
+    return s
 
 
 class CliCli(ap.Cli):
@@ -84,7 +94,7 @@ class CliCli(ap.Cli):
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
-        latest_version = lookup_latest_package_version(__package__.split('.')[0])
+        latest_version = _parse_latest_version_str(lookup_latest_package_version(__package__.split('.')[0]))
 
         #
 
@@ -153,7 +163,7 @@ class CliCli(ap.Cli):
             reco_cmd = ' '.join([
                 'curl -LsSf',
                 f"'{url}'" if (qu := shlex.quote(url)) == url else qu,
-                '| python3 -',
+                f'| python3 - --version {shlex.quote(latest_version)}',
                 *deps,
             ])
             print(f'Recovery command:\n\n{reco_cmd}\n')
