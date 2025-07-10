@@ -1565,6 +1565,7 @@ class ResourceType(_enum.Enum):
     INSTANCE_CONNECT_ENDPOINT = 'instance-connect-endpoint'
     VERIFIED_ACCESS_ENDPOINT_TARGET = 'verified-access-endpoint-target'
     IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
+    CAPACITY_BLOCK = 'capacity-block'
     MAC_MODIFICATION_TASK = 'mac-modification-task'
 
 
@@ -7689,6 +7690,12 @@ class Instance(
         member_name='CpuOptions',
         serialization_name='cpuOptions',
         shape_name='CpuOptions',
+    ))
+
+    capacity_block_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='CapacityBlockId',
+        serialization_name='capacityBlockId',
+        shape_name='String',
     ))
 
     capacity_reservation_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
