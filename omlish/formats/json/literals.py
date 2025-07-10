@@ -133,7 +133,7 @@ def encode_string_ascii(
 
     return ''.join([
         lq,
-        str(_ESCAPE_ASCII_PAT.sub(replace, s)),
+        _ESCAPE_ASCII_PAT.sub(replace, s),
         rq,
     ])
 
