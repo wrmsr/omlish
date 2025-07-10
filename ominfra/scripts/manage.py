@@ -1103,15 +1103,20 @@ class PyremoteBootstrapDriver:
         if isinstance(payload_src, str):
             parts = [payload_src]
         else:
-            parts = list(payload_src)
+            parts = []
+            for i, p in enumerate(payload_src):
+                if i:
+                    parts.append('\n\n')
+                parts.append(p)
 
         if (mn := options.main_name_override) is not None:
-            parts.insert(0, f'__name__ = {mn!r}')
+            # Must go on same single line as first line of user payload to preserve '<stdin>' line numbers.
+            parts.insert(0, f'__name__ = {mn!r}; ')
 
         if len(parts) == 1:
             return parts[0]
         else:
-            return '\n\n'.join(parts)
+            return ''.join(parts)
 
     #
 
