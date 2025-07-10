@@ -177,8 +177,8 @@ class CliCli(ap.Cli):
         os.execl(
             sys.executable,
             sys.executable,
-            '-c',
-            install_src,
+            '-c', install_src,
+            '--version', latest_version,
             *deps,
         )
 
