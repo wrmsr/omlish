@@ -9,7 +9,7 @@ class TestBaseProviders(unittest.IsolatedAsyncioTestCase):
     async def test_system(self):
         v = await SystemInterpProvider(
             inspector=InterpInspector(),
-        ).get_installed_versions(InterpSpecifier.parse('3.12'))
+        ).get_installed_versions(InterpSpecifier.parse('3.13'))
 
         print(await SystemInterpProvider(
             inspector=InterpInspector(),

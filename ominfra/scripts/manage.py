@@ -7,7 +7,7 @@
 # @omlish-git-diff-omit
 # ruff: noqa: N802 TC003 UP006 UP007 UP036 UP045
 """
-manage.py -s 'docker run -i python:3.12'
+manage.py -s 'docker run -i python:3.13'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import abc
@@ -3870,7 +3870,7 @@ ID=ubuntu
 ID_LIKE=debian
 UBUNTU_CODENAME=jammy
 
-➜  omlish git:(master) docker run -i python:3.12 cat /etc/os-release
+➜  omlish git:(master) docker run -i python:3.13 cat /etc/os-release
 PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
 NAME="Debian GNU/Linux"
 VERSION_ID="12"

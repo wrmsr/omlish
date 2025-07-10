@@ -17,4 +17,4 @@ name = 'omdevthing'
 main = ['omdevthing']
 
 [tool.omlish.pyproject.venvs]
-default = { interp = '3.12.7', requires = ['-rrequirements-dev.txt'], srcs = ['@main'] }
+default = { interp = '3.13.5', requires = ['-rrequirements-dev.txt'], srcs = ['@main'] }

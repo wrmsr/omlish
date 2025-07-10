@@ -92,7 +92,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 - **[reflect](reflect)** - Reflection utilities, including primarily a formalization of stdlib type annotations for use
   at runtime, decoupled from stdlib impl detail. Keeping this working is notoriously difficult across python versions
-  (one of the primary reasons for only supporting 3.12+).
+  (one of the primary reasons for only supporting 3.13+).
 
 - **[sql](sql)** - A collection of SQL utilities, including:
 
@@ -123,7 +123,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 # Lite code
 
-A subset of this codebase is written in a 'lite' style. While most of the code is written for python 3.12+, 'lite' code
+A subset of this codebase is written in a 'lite' style. While most of the code is written for python 3.13+, 'lite' code
 is written for 3.8+, and is written in a style conducive to
 [amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
@@ -137,7 +137,7 @@ Code written in this style has notable differences from standard code, including
   their contents. Where non-lite code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
   there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
   stuff with shortened names.
-- As lite code is tested in 3.8+ but core code requires 3.12+, packages containing lite code can't import anything
+- As lite code is tested in 3.8+ but core code requires 3.13+, packages containing lite code can't import anything
   non-lite in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in
   amalgamation, so they effectively must be empty in any package containing any lite code. As a result there are
   frequently [`all.py`](configs/all.py) files in mixed-lite packages which serve the purpose of `__init__.py` for

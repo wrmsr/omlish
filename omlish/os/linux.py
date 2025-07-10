@@ -19,7 +19,7 @@ ID=ubuntu
 ID_LIKE=debian
 UBUNTU_CODENAME=jammy
 
-➜  omlish git:(master) docker run -i python:3.12 cat /etc/os-release
+➜  omlish git:(master) docker run -i python:3.13 cat /etc/os-release
 PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
 NAME="Debian GNU/Linux"
 VERSION_ID="12"
