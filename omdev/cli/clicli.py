@@ -11,6 +11,7 @@ import urllib.request
 from omlish import __about__
 from omlish import lang
 from omlish.argparse import all as ap
+from omlish.os.temp import temp_dir_context
 
 from ..pip import get_root_dists
 from ..pip import lookup_latest_package_version
@@ -90,6 +91,7 @@ class CliCli(ap.Cli):
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
         ap.arg('--no-deps', action='store_true'),
+        ap.arg('--no-uv', action='store_true'),
         ap.arg('--dry-run', action='store_true'),
         ap.arg('--version'),
         ap.arg('extra_deps', nargs='*'),
@@ -114,16 +116,51 @@ class CliCli(ap.Cli):
 
         if lang.can_import('pip'):
             print('Checking pip install')
-            subprocess.check_call([
-                sys.executable,
-                '-m',
-                'pip',
-                'install',
-                '--dry-run',
-                install.DEFAULT_CLI_PKG,
-                *deps,
-            ])
-            print('Pip install check successful')
+
+            with temp_dir_context() as tmp_dir:
+                venv_dir = os.path.join(tmp_dir, 'venv')
+                subprocess.check_call([
+                    sys.executable,
+                    '-m', 'venv',
+                    venv_dir,
+                ])
+                venv_exe = os.path.join(venv_dir, 'bin', 'python')
+
+                if self.args.no_uv:
+                    subprocess.check_call([
+                        venv_exe,
+                        '-m', 'pip',
+                        'install',
+                        '--upgrade',
+                        'pip',
+                    ])
+                    pip_cmd = [
+                        venv_exe,
+                        '-m', 'pip',
+                    ]
+                else:
+                    subprocess.check_call([
+                        venv_exe,
+                        '-m', 'pip',
+                        'install',
+                        'uv',
+                    ])
+                    pip_cmd = [
+                        venv_exe,
+                        '-m', 'uv',
+                        'pip',
+                    ]
+
+                subprocess.check_call([
+                    *pip_cmd,
+                    'install',
+                    '--dry-run',
+                    f'{install.DEFAULT_CLI_PKG}=={target_version}',
+                    *deps,
+                ])
+
+                print('Pip install check successful')
+
         else:
             print('Pip not present, cannot check install')
 
