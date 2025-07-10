@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: UP045
 # @omlish-lite
 # @omlish-script
 """
@@ -25,9 +26,21 @@ DEFAULT_PY_VER = '3.13'
 @dc.dataclass(frozen=True)
 class InstallOpts:
     cli_pkg: str = DEFAULT_CLI_PKG
+    cli_ver: ta.Optional[str] = None
+
     py_ver: str = DEFAULT_PY_VER
 
     extras: ta.Sequence[str] = dc.field(default_factory=list)
+
+
+def _format_install_cli_pkg(opts: InstallOpts) -> str:
+    spec = opts.cli_pkg
+    if (ver := opts.cli_ver) is not None:
+        if any(c in ver for c in '=<>!~'):
+            spec += ver
+        else:
+            spec = f'{spec}=={ver}'
+    return spec
 
 
 class InstallManager(abc.ABC):
@@ -74,7 +87,7 @@ class UvxInstallManager(InstallManager):
             '--refresh',
             '--prerelease=allow',
             f'--python={opts.py_ver}',
-            opts.cli_pkg,
+            _format_install_cli_pkg(opts),
             *itertools.chain.from_iterable(['--with', e] for e in (opts.extras or [])),
         ])
 
@@ -113,7 +126,7 @@ class PipxInstallManager(InstallManager):
             'pipx',
             'install',
             f'--python={opts.py_ver}',
-            opts.cli_pkg,
+            _format_install_cli_pkg(opts),
             *itertools.chain.from_iterable(['--preinstall', e] for e in (opts.extras or [])),
         ])
 
@@ -140,8 +153,9 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--cli', default=DEFAULT_CLI_PKG)
-    parser.add_argument('-p', '--py', default=DEFAULT_PY_VER)
-    parser.add_argument('-m', '--mgr')
+    parser.add_argument('-V', '--version')
+    parser.add_argument('-p', '--python', default=DEFAULT_PY_VER)
+    parser.add_argument('-m', '--manager')
     parser.add_argument('extra', nargs='*')
     args = parser.parse_args()
 
@@ -150,10 +164,10 @@ def _main() -> None:
 
     cli = cli.lower().replace('_', '-')
 
-    if not (py := args.py):
+    if not (py := args.python):
         raise ValueError(f'Must specify py')
 
-    if mgr := args.mgr:
+    if mgr := args.manager:
         if (im := INSTALL_MANAGERS.get(mgr)) is None:
             raise ValueError(f'Unsupported mgr: {mgr}')
         if not im.is_available():
@@ -171,6 +185,7 @@ def _main() -> None:
 
     im.install(InstallOpts(
         cli_pkg=cli,
+        cli_ver=args.version,
         py_ver=py,
         extras=args.extra,
     ))
