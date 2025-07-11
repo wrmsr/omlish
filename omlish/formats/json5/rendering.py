@@ -3,6 +3,7 @@ import re
 import typing as ta
 
 from ... import check
+from ... import lang
 from ..json import Scalar
 from ..json.literals import ESCAPE_MAP
 from ..json.literals import encode_string
@@ -13,9 +14,10 @@ from ..json.rendering import JsonRendererOut
 ##
 
 
-MULTILINE_STRINGS_LQ = '"\\\n'
-MULTILINE_STRINGS_RQ = '\\\n"'
-MULTILINE_STRINGS_NL = '\\n\\\n'
+MULTILINE_STRINGS_ENDL = '\\\n'
+MULTILINE_STRINGS_LQ = '"' + MULTILINE_STRINGS_ENDL
+MULTILINE_STRINGS_RQ = MULTILINE_STRINGS_ENDL + '"'
+MULTILINE_STRINGS_NL = '\\n' + MULTILINE_STRINGS_ENDL
 
 MULTILINE_STRINGS_ESCAPE_MAP = {
     **ESCAPE_MAP,
@@ -37,20 +39,36 @@ class Json5Renderer(JsonRenderer):
         super().__init__(out, **kwargs)
 
         self._multiline_strings = multiline_strings
-        if softwrap_length is not None:
-            check.arg(softwrap_length > 0)
         self._softwrap_length = softwrap_length
 
     def _softwrap_string_chunks(self, chunks: list[str]) -> str:
+        multiline_strings = self._multiline_strings
         softwrap_len = check.not_none(self._softwrap_length)
 
         out = io.StringIO()
         out.write(MULTILINE_STRINGS_LQ)
 
+        l = 0
         for c in chunks:
-            if c and c[0] == '\\':
-                raise NotImplementedError
+            if not c:
+                continue
+
+            if l >= softwrap_len:
+                out.write(MULTILINE_STRINGS_ENDL)
+                l = 0
+
+            if c == '\\n' and multiline_strings:
+                out.write(MULTILINE_STRINGS_NL)
+                l = 0
+                continue
+
+            it: ta.Iterable[str | re.Match]
+            if c[0] == '\\':
+                it = [c]
             else:
+                it = lang.iter_matches(SOFTWRAP_WS_PAT, c)
+
+            for x in it:
                 raise NotImplementedError
 
         out.write(MULTILINE_STRINGS_RQ)
