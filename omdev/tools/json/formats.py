@@ -23,6 +23,7 @@ if ta.TYPE_CHECKING:
     from omlish.formats import json5
     from omlish.formats import props
     from omlish.formats import xml
+    from omlish.formats.json import stream as json_stream
     from omlish.formats.json5 import parsing as json5_parsing
 
 else:
@@ -34,9 +35,10 @@ else:
 
     dotenv = lang.proxy_import('omlish.formats.dotenv')
     json5 = lang.proxy_import('omlish.formats.json5')
-    json5_parsing = lang.proxy_import('omlish.formats.json5.parsing')
     props = lang.proxy_import('omlish.formats.props')
     xml = lang.proxy_import('omlish.formats.xml')
+    json_stream = lang.proxy_import('omlish.formats.json_stream')
+    json5_parsing = lang.proxy_import('omlish.formats.json5.parsing')
 
 
 ##
@@ -49,7 +51,7 @@ class Format:
 
 
 def _load_jsons(f: ta.TextIO) -> list[ta.Any]:
-    raise NotImplementedError
+    return list(json_stream.stream_parse_values(f.read()))
 
 
 def _load_json5s(f: ta.TextIO) -> list[ta.Any]:
