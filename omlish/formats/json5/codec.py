@@ -42,8 +42,27 @@ def dumps_compact(obj: ta.Any, **kwargs: ta.Any) -> str:
     return dumps(obj, **json.COMPACT_KWARGS, **kwargs)
 
 
+def dump(obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+    fp.write(dumps(obj, **kwargs))
+
+
+def dump_pretty(obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+    fp.write(dumps_pretty(obj, **kwargs))
+
+
+def dump_compact(obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+    fp.write(dumps_compact(obj, **kwargs))
+
+
+#
+
+
 def loads(s: str, **kwargs: ta.Any) -> ta.Any:
     return parsing.parse(s, **kwargs)
+
+
+def load(fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    return loads(fp.read(), **kwargs)
 
 
 ##

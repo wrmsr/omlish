@@ -125,7 +125,7 @@
     "module": ".formats.json5.codec",
     "attr": "_JSON5_LAZY_CODEC",
     "file": "omlish/formats/json5/codec.py",
-    "line": 54,
+    "line": 73,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
         "mod_name": "omlish.formats.json5.codec",
