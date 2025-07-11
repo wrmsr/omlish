@@ -67,8 +67,8 @@ class Formats(enum.Enum):
 
     JSON5 = Format(['json5'], lambda f: json5.loads(f.read()))
 
-    JSONS = Format(['jsons'], lambda f: _load_jsons(f))
-    JSON5S = Format(['json5s'], lambda f: _load_json5s(f))
+    JSON_STREAM = Format(['jsons'], lambda f: _load_jsons(f))
+    JSON5_STREAM = Format(['json5s'], lambda f: _load_json5s(f))
 
     YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
 
