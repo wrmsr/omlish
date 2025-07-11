@@ -17,6 +17,12 @@ def test_namespace():
     assert list(Foo) == [('X', 1), ('Y', '2')]
     assert Foo['X'] == 1
 
+    class Foo2(Foo):
+        Z = 'z'
+        Y = '3'
+
+    assert list(Foo2) == [('X', 1), ('Y', '3'), ('Z', 'z')]
+
 
 class Foos(Namespace):
     x = 1
