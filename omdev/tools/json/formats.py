@@ -23,6 +23,7 @@ if ta.TYPE_CHECKING:
     from omlish.formats import json5
     from omlish.formats import props
     from omlish.formats import xml
+    from omlish.formats.json5 import parsing as json5_parsing
 
 else:
     ast = lang.proxy_import('ast')
@@ -33,6 +34,7 @@ else:
 
     dotenv = lang.proxy_import('omlish.formats.dotenv')
     json5 = lang.proxy_import('omlish.formats.json5')
+    json5_parsing = lang.proxy_import('omlish.formats.json5.parsing')
     props = lang.proxy_import('omlish.formats.props')
     xml = lang.proxy_import('omlish.formats.xml')
 
@@ -46,6 +48,14 @@ class Format:
     load: ta.Callable[[ta.TextIO], ta.Any]
 
 
+def _load_jsons(f: ta.TextIO) -> list[ta.Any]:
+    raise NotImplementedError
+
+
+def _load_json5s(f: ta.TextIO) -> list[ta.Any]:
+    return list(json5_parsing.parse_many(f.read()))
+
+
 def _load_xml(f: ta.TextIO) -> dict[str, ta.Any]:
     tree = xml.parse_tree(f.read())
     sel = xml.build_simple_element(check.not_none(tree.getroot()))
@@ -56,6 +66,9 @@ class Formats(enum.Enum):
     JSON = Format(['json'], json.load)
 
     JSON5 = Format(['json5'], lambda f: json5.loads(f.read()))
+
+    JSONS = Format(['jsons'], lambda f: _load_jsons(f))
+    JSON5S = Format(['json5s'], lambda f: _load_json5s(f))
 
     YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
 
