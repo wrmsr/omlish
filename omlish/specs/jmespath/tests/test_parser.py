@@ -366,6 +366,30 @@ class TestMergedLists(unittest.TestCase):
         )
 
 
+class TestTernaryOperatorExpressions(unittest.TestCase):
+    def setUp(self):
+        self.parser = parser.Parser()
+        self.data = {
+            'true': True,
+            'false': False,
+            'foo': 'foo',
+            'bar': 'bar',
+            'baz': 'baz',
+            'qux': 'qux',
+            'quux': 'quux',
+        }
+
+    def test_ternary_operator_expression(self):
+        parsed = self.parser.parse('true ? foo : bar')
+        match = parsed.search(self.data)
+        self.assertEqual(match, 'foo')
+
+    def test_nested_ternary_operator_expressions(self):
+        parsed = self.parser.parse('foo ? bar ? baz : qux : quux')
+        match = parsed.search(self.data)
+        self.assertEqual(match, 'baz')
+
+
 class TestParserCaching(unittest.TestCase):
     def test_compile_lots_of_expressions(self):
         # We have to be careful here because this is an implementation detail that should be abstracted from the user,

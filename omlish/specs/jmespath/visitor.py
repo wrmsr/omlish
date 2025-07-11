@@ -37,6 +37,7 @@ from .ast import Projection
 from .ast import RootNode
 from .ast import Slice
 from .ast import Subexpression
+from .ast import TernaryOperator
 from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
@@ -444,6 +445,14 @@ class TreeInterpreter(Visitor):
             return self._scope[node.name]
         except KeyError:
             raise UndefinedVariableError(node.name)  # noqa
+
+    def visit_ternary_operator(self, node: TernaryOperator, value: ta.Any) -> ta.Any:
+        evaluation = self.visit(node.condition, value)
+
+        if self._is_false(evaluation):
+            return self.visit(node.if_falsy, value)
+        else:
+            return self.visit(node.if_truthy, value)
 
     def visit_value_projection(self, node: ValueProjection, value: ta.Any) -> ta.Any:
         base = self.visit(node.left, value)

@@ -54,6 +54,7 @@ from .ast import Projection
 from .ast import RootNode
 from .ast import Slice
 from .ast import Subexpression
+from .ast import TernaryOperator
 from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
@@ -88,8 +89,9 @@ class Parser:
         'expref': 0,
         'colon': 0,
         'pipe': 1,
-        'or': 2,
-        'and': 3,
+        'question': 2,
+        'or': 3,
+        'and': 4,
         'eq': 5,
         'gt': 5,
         'lt': 5,
@@ -484,6 +486,12 @@ class Parser:
             self._match('rbracket')
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
             return Projection(left, right)
+
+    def _token_led_question(self, condition: Node) -> Node:
+        left = self._expression()
+        self._match('colon')
+        right = self._expression()
+        return TernaryOperator(condition, left, right)
 
     def _project_if_slice(self, left: Node, right: Node) -> Node:
         index_expr = IndexExpression([left, right])

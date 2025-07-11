@@ -35,7 +35,7 @@ class LexerUtils(unittest.TestCase):
         self.assertEqual(stripped, expected)
 
 
-class TestRegexLexer(LexerUtils):
+class TestLexer(LexerUtils):
     def setUp(self):
         super().setUp()
 
@@ -227,6 +227,20 @@ class TestRegexLexer(LexerUtils):
             [
                 {'type': 'variable', 'value': '$foo', 'start': 0, 'end': 4},
                 {'type': 'eof', 'value': '', 'start': 4, 'end': 4},
+            ],
+        )
+
+    def test_ternary(self):
+        tokens = list(self.lexer.tokenize('true ? false : foo'))
+        self.assertEqual(
+            tokens,
+            [
+                {'type': 'unquoted_identifier', 'value': 'true', 'start': 0, 'end': 4},
+                {'type': 'question', 'value': '?', 'start': 5, 'end': 6},
+                {'type': 'unquoted_identifier', 'value': 'false', 'start': 7, 'end': 12},
+                {'type': 'colon', 'value': ':', 'start': 13, 'end': 14},
+                {'type': 'unquoted_identifier', 'value': 'foo', 'start': 15, 'end': 18},
+                {'type': 'eof', 'value': '', 'start': 18, 'end': 18},
             ],
         )
 

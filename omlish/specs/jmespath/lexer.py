@@ -40,6 +40,7 @@ class Lexer:
         '}': 'rbrace',
         '+': 'plus',
         '%': 'modulo',
+        '?': 'question',
         '\u2212': 'minus',
         '\u00d7': 'multiply',
         '\u00f7': 'divide',

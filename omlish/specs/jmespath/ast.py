@@ -276,6 +276,17 @@ class Slice(LeafNode, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class TernaryOperator(Node, lang.Final):
+    condition: Node
+    if_truthy: Node
+    if_falsy: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.condition, self.if_truthy, self.if_falsy]
+
+
+@dc.dataclass(frozen=True)
 class ValueProjection(Node, lang.Final):
     left: Node
     right: Node

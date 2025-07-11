@@ -1,3 +1,4 @@
+.benchmarks
 .cache
 .data
 .idea
@@ -6,8 +7,7 @@
 .ruff_cache
 .vector_cache
 .venv*
-omdev/ci/tests/cache
-tinygrad
+tinygrad_
 
 .git
 !.git/HEAD
