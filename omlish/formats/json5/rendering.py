@@ -43,19 +43,25 @@ class Json5Renderer(JsonRenderer):
 
     def _softwrap_string_chunks(self, chunks: list[str]) -> str:
         multiline_strings = self._multiline_strings
-        softwrap_len = check.not_none(self._softwrap_length)
+        softwrap_len = check.not_none(self._softwrap_length) - 1  # -1 for final '\\'
 
         out = io.StringIO()
         out.write(MULTILINE_STRINGS_LQ)
 
         l = 0
-        for c in chunks:
-            if not c:
-                continue
 
+        def write(s: str) -> None:
+            nonlocal l
             if l >= softwrap_len:
                 out.write(MULTILINE_STRINGS_ENDL)
                 l = 0
+
+            out.write(s)
+            l += len(s)
+
+        for c in chunks:
+            if not c:
+                continue
 
             if c == '\\n' and multiline_strings:
                 out.write(MULTILINE_STRINGS_NL)
@@ -69,7 +75,16 @@ class Json5Renderer(JsonRenderer):
                 it = lang.iter_matches(SOFTWRAP_WS_PAT, c)
 
             for x in it:
-                raise NotImplementedError
+                if isinstance(x, re.Match):
+                    ws = x.group(0)
+                    if len(ws) >= (softwrap_len - l):
+                        raise NotImplementedError
+
+                    else:
+                        write(ws)
+
+                else:
+                    write(x)
 
         out.write(MULTILINE_STRINGS_RQ)
         return out.getvalue()
