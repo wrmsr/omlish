@@ -22,6 +22,8 @@ import re
 import sys
 import typing as ta
 
+from ... import lang
+
 
 ##
 
@@ -114,15 +116,10 @@ def encode_string(
             return escape_map[c]
 
     if process_chunks is not None:
-        chunks: list[str] = []
-        i = 0
-        for m in re.finditer(pat, s):
-            if m.start() != i:
-                chunks.append(s[i:m.start()])
-            chunks.append(replace(m.group(0)))
-            i = m.end()
-        if i < len(s):
-            chunks.append(s[i:])
+        chunks: list[str] = [
+            replace(p.group(0)) if isinstance(p, re.Match) else p
+            for p in lang.iter_matches(pat, s)
+        ]
 
         return ''.join([
             lq,

@@ -45,8 +45,16 @@ class Json5Renderer(JsonRenderer):
         softwrap_len = check.not_none(self._softwrap_length)
 
         out = io.StringIO()
+        out.write(MULTILINE_STRINGS_LQ)
 
-        raise NotImplementedError
+        for c in chunks:
+            if c and c[0] == '\\':
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
+
+        out.write(MULTILINE_STRINGS_RQ)
+        return out.getvalue()
 
     def _format_string(self, s: str, state: JsonRenderer.State | None = None) -> str:
         num_nls = s.count('\n')
@@ -62,7 +70,7 @@ class Json5Renderer(JsonRenderer):
                         len(MULTILINE_STRINGS_LQ) -
                         (num_nls * (len(MULTILINE_STRINGS_NL) - 1)) -
                         len(MULTILINE_STRINGS_RQ)
-                     ):
+                    ):
                         return [
                             MULTILINE_STRINGS_LQ,
                             *[
