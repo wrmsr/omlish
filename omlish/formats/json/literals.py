@@ -27,7 +27,7 @@ import typing as ta
 
 
 _ESCAPE_PAT = re.compile(r'[\x00-\x1f\\"]')
-_ESCAPE_ASCII_PAT = re.compile(r'([\\"]|[^\ -~])')
+_ESCAPE_ASCII_PAT = re.compile(r'[\\"]|[^\ -~]')
 
 ESCAPE_MAP: ta.Mapping[str, str] = {
     **{
@@ -78,6 +78,7 @@ def encode_string(
         rq: str | None = None,
         escape_map: ta.Mapping[str, str] | None = None,
         ensure_ascii: bool = False,
+        process_chunks: ta.Callable[[list[str]], ta.Iterable[str]] | None = None,
 ) -> str:
     """Return a JSON representation of a Python string."""
 
@@ -91,14 +92,12 @@ def encode_string(
     if ensure_ascii:
         pat = _ESCAPE_ASCII_PAT
 
-        def replace(m):
-            s = m.group(0)
-
+        def replace(c):
             try:
-                return escape_map[s]
+                return escape_map[c]
 
             except KeyError:
-                n = ord(s)
+                n = ord(c)
                 if n < 0x10000:
                     return f'\\u{n:04x}'
 
@@ -111,14 +110,32 @@ def encode_string(
     else:
         pat = _ESCAPE_PAT
 
-        def replace(m):
-            return escape_map[m.group(0)]
+        def replace(c):
+            return escape_map[c]
 
-    return ''.join([
-        lq,
-        pat.sub(replace, s),
-        rq,
-    ])
+    if process_chunks is not None:
+        chunks: list[str] = []
+        i = 0
+        for m in re.finditer(pat, s):
+            if m.start() != i:
+                chunks.append(s[i:m.start()])
+            chunks.append(replace(m.group(0)))
+            i = m.end()
+        if i < len(s):
+            chunks.append(s[i:])
+
+        return ''.join([
+            lq,
+            *process_chunks(chunks),
+            rq,
+        ])
+
+    else:
+        return ''.join([
+            lq,
+            pat.sub(lambda m: replace(m.group(0)), s),
+            rq,
+        ])
 
 
 ##

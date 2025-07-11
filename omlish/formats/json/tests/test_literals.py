@@ -28,3 +28,13 @@ def test_encode_string_ascii():
     assert encode_string('foo', ensure_ascii=True) == '"foo"'
     assert encode_string('f\noo', ensure_ascii=True) == '"f\\noo"'
     assert encode_string('f\noo☃', ensure_ascii=True) == '"f\\noo\\u2603"'
+
+
+def test_encode_string_process_chunks():
+    def pcs(l: list[str]) -> list[str]:
+        return l
+
+    assert encode_string('foo', process_chunks=pcs) == '"foo"'
+    assert encode_string('f\noo', process_chunks=pcs) == '"f\\noo"'
+    assert encode_string('f\noo☃', process_chunks=pcs) == '"f\\noo☃"'
+    assert encode_string('f\noo☃', process_chunks=pcs, ensure_ascii=True) == '"f\\noo\\u2603"'

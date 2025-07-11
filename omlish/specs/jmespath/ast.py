@@ -5,6 +5,9 @@ import typing as ta
 from ... import lang
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Node(lang.Abstract):
     @property
@@ -18,6 +21,9 @@ class LeafNode(Node, lang.Abstract):
     @property
     def children(self) -> ta.Sequence[Node]:
         return []
+
+
+##
 
 
 UnaryArithmeticOperator: ta.TypeAlias = ta.Literal[

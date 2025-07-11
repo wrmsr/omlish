@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.12.2
+ruff==0.12.3
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20250708  # @omlish-venv !13t !14t
@@ -24,7 +24,7 @@ types-ujson==5.10.0.20250326
 
 black==25.1.0
 mypy==1.16.1
-pipdeptree==2.26.1
+pipdeptree==2.27.0
 
 astpretty==3.0.0
 
@@ -114,14 +114,14 @@ snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !14t
 
 trino==0.335.0  # @omlish-venv !13t !14t
 
-huggingface-hub==0.33.2  # @omlish-venv !14t
+huggingface-hub==0.33.4  # @omlish-venv !14t
 hf-xet==1.1.5  # @omlish-venv !13t !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
 datasets==4.0.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.53.1; python_version < "3.14"  # @omlish-venv !14t
+transformers==4.53.2; python_version < "3.14"  # @omlish-venv !14t
 sentence-transformers==5.0.0; python_version < "3.14"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121

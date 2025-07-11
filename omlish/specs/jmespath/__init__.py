@@ -20,6 +20,7 @@ From community:
  - JEP-18 Grouping - https://github.com/jmespath-community/jmespath.spec/discussions/96#discussion-4282156
  - JEP-19 Evaluation of Pipe Expressions - https://github.com/jmespath-community/jmespath.spec/discussions/113#discussioncomment-4000862
  - JEP-20 Compact syntax for multi-select-hash - https://github.com/jmespath-community/jmespath.spec/discussions/19
+ - JEP-21 Ternary Conditional Expression - https://github.com/jmespath-community/jmespath.spec/pull/182
 
 See:
  - https://github.com/jmespath-community/jmespath.spec/tree/main

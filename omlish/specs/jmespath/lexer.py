@@ -9,6 +9,9 @@ from .errors import LexerError
 from .visitor import Options
 
 
+##
+
+
 class Token(ta.TypedDict):
     type: str
     value: ta.Any
