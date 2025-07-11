@@ -37,7 +37,7 @@ else:
     json5 = lang.proxy_import('omlish.formats.json5')
     props = lang.proxy_import('omlish.formats.props')
     xml = lang.proxy_import('omlish.formats.xml')
-    json_stream = lang.proxy_import('omlish.formats.json_stream')
+    json_stream = lang.proxy_import('omlish.formats.json.stream')
     json5_parsing = lang.proxy_import('omlish.formats.json5.parsing')
 
 
