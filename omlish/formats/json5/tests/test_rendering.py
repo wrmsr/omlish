@@ -26,3 +26,8 @@ def test_rendering(
     s = Json5Renderer.render_str(obj, **kw)
     obj2 = loads(s)
     assert obj == obj2
+
+
+def test_softwrap():
+    assert Json5Renderer.render_str('abcdefg', softwrap_length=8) == '"abcdefg"'
+    # print(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8))
