@@ -43,7 +43,7 @@ class Json5Renderer(JsonRenderer):
 
     def _softwrap_string_chunks(self, chunks: list[str]) -> str:
         multiline_strings = self._multiline_strings
-        softwrap_len = check.not_none(self._softwrap_length) - 1  # -1 for final '\\'
+        softwrap_len = check.not_none(self._softwrap_length)
 
         out = io.StringIO()
         out.write(MULTILINE_STRINGS_LQ)
@@ -52,12 +52,12 @@ class Json5Renderer(JsonRenderer):
 
         def write(s: str) -> None:
             nonlocal l
-            if l >= softwrap_len:
+            if l >= (softwrap_len - (sl := len(s))):
                 out.write(MULTILINE_STRINGS_ENDL)
                 l = 0
 
             out.write(s)
-            l += len(s)
+            l += sl
 
         for c in chunks:
             if not c:

@@ -32,3 +32,26 @@ def test_softwrap():
     assert Json5Renderer.render_str('abcdefg', softwrap_length=8) == '"abcdefg"'
     assert loads(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8)) == KITCHEN_SINK_STR
     assert loads(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8, multiline_strings=True)) == KITCHEN_SINK_STR  # noqa
+
+    s = '0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 '
+    assert Json5Renderer.render_str(s, softwrap_length=8) == """\
+"\\
+0 1 2 3\\
+ 4 5 6 \\
+7 8 9 0\\
+ 1 2 3 \\
+4 5 6 7\\
+ 8 9 \\
+"\
+"""
+    assert Json5Renderer.render_str(s, softwrap_length=7) == """\
+"\\
+0 1 2 \\
+3 4 5 \\
+6 7 8 \\
+9 0 1 \\
+2 3 4 \\
+5 6 7 \\
+8 9 \\
+"\
+"""

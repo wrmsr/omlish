@@ -22,6 +22,7 @@ class RenderingOptions:
     unicode: bool = False
     color: bool = False
     five: bool = False
+    softwrap_length: int | None = None
 
 
 def make_render_kwargs(opts: RenderingOptions) -> ta.Mapping[str, ta.Any]:
@@ -69,6 +70,7 @@ class EagerRenderer(Renderer):
                 **self._kw,
                 **(dict(style=term_color) if self._opts.color else {}),
                 multiline_strings=True,
+                softwrap_length=self._opts.softwrap_length,
             )
 
         elif self._opts.color:
