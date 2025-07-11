@@ -1,3 +1,5 @@
+import io
+import re
 import typing as ta
 
 from ... import check
@@ -20,6 +22,8 @@ MULTILINE_STRINGS_ESCAPE_MAP = {
     '\n': MULTILINE_STRINGS_NL,
 }
 
+SOFTWRAP_WS_PAT = re.compile(r'\s+')
+
 
 class Json5Renderer(JsonRenderer):
     def __init__(
@@ -37,46 +41,67 @@ class Json5Renderer(JsonRenderer):
             check.arg(softwrap_length > 0)
         self._softwrap_length = softwrap_length
 
+    def _softwrap_string_chunks(self, chunks: list[str]) -> str:
+        softwrap_len = check.not_none(self._softwrap_length)
+
+        out = io.StringIO()
+
+        raise NotImplementedError
+
+    def _format_string(self, s: str, state: JsonRenderer.State | None = None) -> str:
+        num_nls = s.count('\n')
+        is_multiline = self._multiline_strings and num_nls
+
+        if (softwrap_len := self._softwrap_length) is not None:
+            def process_chunks(chunks: list[str]) -> list[str]:
+                naive_len = sum(map(len, chunks))
+
+                if is_multiline:
+                    if naive_len < (
+                        softwrap_len -
+                        len(MULTILINE_STRINGS_LQ) -
+                        (num_nls * (len(MULTILINE_STRINGS_NL) - 1)) -
+                        len(MULTILINE_STRINGS_RQ)
+                     ):
+                        return [
+                            MULTILINE_STRINGS_LQ,
+                            *[
+                                MULTILINE_STRINGS_NL if c == '\\n' else c
+                                for c in chunks
+                            ],
+                            MULTILINE_STRINGS_RQ,
+                        ]
+
+                elif naive_len < softwrap_len:
+                    return [
+                        '"',
+                        *chunks,
+                        '"',
+                    ]
+
+                return [self._softwrap_string_chunks(chunks)]
+
+            return encode_string(
+                s,
+                q='',
+                ensure_ascii=self._ensure_ascii,
+                process_chunks=process_chunks,
+            )
+
+        if is_multiline:
+            return encode_string(
+                s,
+                lq=MULTILINE_STRINGS_LQ,
+                rq=MULTILINE_STRINGS_RQ,
+                escape_map=MULTILINE_STRINGS_ESCAPE_MAP,
+                ensure_ascii=self._ensure_ascii,
+            )
+
+        return super()._format_scalar(s, state=state)
+
     def _format_scalar(self, o: Scalar, state: JsonRenderer.State | None = None) -> str:
         if isinstance(o, str):
-            force_multiline = self._multiline_strings and '\n' in o
+            return self._format_string(o)
 
-            if (sl := self._softwrap_length) is not None:
-                def process_chunks(chunks: list[str]) -> list[str]:
-                    if sum(map(len, chunks)) < sl:
-                        if force_multiline:
-                            return [
-                                MULTILINE_STRINGS_LQ,
-                                *[
-                                    MULTILINE_STRINGS_NL if c == '\\n' else c
-                                    for c in chunks
-                                ],
-                                MULTILINE_STRINGS_RQ,
-                            ]
-
-                        else:
-                            return [
-                                '"',
-                                *chunks,
-                                '"',
-                            ]
-
-                    raise NotImplementedError
-
-                return encode_string(
-                    o,
-                    q='',
-                    ensure_ascii=self._ensure_ascii,
-                    process_chunks=process_chunks,
-                )
-
-            if force_multiline:
-                return encode_string(
-                    o,
-                    lq=MULTILINE_STRINGS_LQ,
-                    rq=MULTILINE_STRINGS_RQ,
-                    escape_map=MULTILINE_STRINGS_ESCAPE_MAP,
-                    ensure_ascii=self._ensure_ascii,
-                )
-
-        return super()._format_scalar(o)
+        else:
+            return super()._format_scalar(o, state=state)
