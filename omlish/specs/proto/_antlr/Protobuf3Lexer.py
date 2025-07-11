@@ -1,6 +1,7 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
+# @omlish-generated
 # Generated from Protobuf3.g4 by ANTLR 4.13.2
 from ....text.antlr._runtime._all import *
 from io import StringIO

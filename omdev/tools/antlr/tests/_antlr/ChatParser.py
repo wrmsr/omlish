@@ -1,6 +1,7 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
+# @omlish-generated
 # Generated from Chat.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from omlish.text.antlr._runtime._all import *

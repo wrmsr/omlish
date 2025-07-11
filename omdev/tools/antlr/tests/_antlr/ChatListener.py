@@ -1,6 +1,7 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
+# @omlish-generated
 # Generated from Chat.g4 by ANTLR 4.13.2
 from omlish.text.antlr._runtime._all import *
 if "." in __name__:

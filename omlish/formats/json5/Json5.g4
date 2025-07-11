@@ -1,4 +1,3 @@
-// Student Main
 // 2020-07-22
 // Public domain
 
@@ -79,18 +78,18 @@ fragment SINGLE_QUOTE_CHAR
 fragment ESCAPE_SEQUENCE
     : '\\' (
         NEWLINE
-        | UNICODE_SEQUENCE       // \u1234
-        | ['"\\/bfnrtv]          // single escape char
-        | ~['"\\bfnrtv0-9xu\r\n] // non escape char
-        | '0'                    // \0
-        | 'x' HEX HEX            // \x3a
+        | UNICODE_SEQUENCE        // \u1234
+        | ['"\\/bfnrtv]           // single escape char
+        | ~['"\\bfnrtv0-9xu\r\n]  // non escape char
+        | '0'                     // \0
+        | 'x' HEX HEX             // \x3a
     )
     ;
 
 NUMBER
-    : INT ('.' [0-9]*)? EXP? // +1.e2, 1234, 1234.5
-    | '.' [0-9]+ EXP?        // -.2e3
-    | '0' [xX] HEX+          // 0x12345678
+    : INT ('.' [0-9]*)? EXP?  // +1.e2, 1234, 1234.5
+    | '.' [0-9]+ EXP?         // -.2e3
+    | '0' [xX] HEX+           // 0x12345678
     ;
 
 NUMERIC_LITERAL

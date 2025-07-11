@@ -11,6 +11,9 @@ from .literals import parse_number_literal
 from .literals import parse_string_literal
 
 
+##
+
+
 class Json5ParseVisitor(antlr.parsing.StandardParseTreeVisitor, Json5Visitor):
     def visitArr(self, ctx: Json5Parser.ArrContext):
         return [self.visit(e) for e in ctx.value()]
@@ -57,16 +60,18 @@ class Json5ParseVisitor(antlr.parsing.StandardParseTreeVisitor, Json5Visitor):
             return super().visitChildren(ctx)
 
 
+def _make_parser(buf: str) -> Json5Parser:
+    return antlr.parsing.make_parser(
+        buf,
+        Json5Lexer,
+        Json5Parser,
+        silent_errors=True,
+    )
+
+
 def parse(buf: str) -> ta.Any:
     try:
-        parser = antlr.parsing.make_parser(
-            buf,
-            Json5Lexer,
-            Json5Parser,
-            silent_errors=True,
-        )
-
-        root = parser.json5()
+        root = _make_parser(buf).json5()
 
     except antlr.errors.ParseError as e:
         raise Json5Error from e
@@ -76,3 +81,20 @@ def parse(buf: str) -> ta.Any:
 
     visitor = Json5ParseVisitor()
     return visitor.visit(root)
+
+
+def parse_many(buf: str) -> ta.Generator[ta.Any]:
+    try:
+        parser = _make_parser(buf)
+
+        while True:
+            if parser.getInputStream().LT(1).type == antlr.runtime.Token.EOF:
+                break
+
+            value = parser.value()
+
+            visitor = Json5ParseVisitor()
+            yield visitor.visit(value)
+
+    except antlr.errors.ParseError as e:
+        raise Json5Error from e
