@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from .abstract import Abstract
 from .restrict import NotInstantiable
 
 
@@ -50,9 +51,13 @@ class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
             **kwargs,
     ):
         if bases:
-            for nc in (NotInstantiable,):
-                if nc not in bases:
-                    bases += (nc,)
+            if NotInstantiable not in bases and not any(NotInstantiable in b.__mro__ for b in bases):
+                if Abstract in bases:
+                    # Must go before Abstract for mro because NotInstantiable is itself Abstract
+                    ai = bases.index(Abstract)
+                    bases = (*bases[:ai], NotInstantiable, *bases[ai:])
+                else:
+                    bases += (NotInstantiable,)
 
         if check_values is _NOT_SET:
             check_values = mcls.__namespace_check_values__

@@ -1,7 +1,9 @@
 import pytest
 
+from ..abstract import Abstract
 from ..namespaces import GenericNamespaceMeta
 from ..namespaces import Namespace
+from ..restrict import NotInstantiable
 
 
 def test_namespace():
@@ -70,3 +72,30 @@ def test_generic_namespaces():
     assert CiBars['Y'] == 2
     assert CiBars2['y'] == 2
     assert CiBars2['Y'] == 2
+
+
+def test_bases_handling():
+    class A(Namespace):
+        pass
+
+    assert A.__bases__ == (Namespace, NotInstantiable)
+
+    class B(A):
+        pass
+
+    assert B.__bases__ == (A,)
+
+    class C(Namespace, Abstract):
+        pass
+
+    assert C.__bases__ == (Namespace, NotInstantiable, Abstract)
+
+    class D(Namespace, NotInstantiable):
+        pass
+
+    assert D.__bases__ == (Namespace, NotInstantiable)
+
+    class E(Namespace, NotInstantiable, Abstract):
+        pass
+
+    assert E.__bases__ == (Namespace, NotInstantiable, Abstract)
