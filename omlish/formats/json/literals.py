@@ -118,7 +118,7 @@ def encode_string(
     if process_chunks is not None:
         chunks: list[str] = [
             replace(p.group(0)) if isinstance(p, re.Match) else p
-            for p in lang.iter_matches(pat, s)
+            for p in lang.iter_pat(pat, s)
         ]
 
         return ''.join([

@@ -75,7 +75,7 @@ class Json5Renderer(JsonRenderer):
             if c[0] == '\\':
                 it = [c]
             else:
-                it = lang.iter_matches(SOFTWRAP_WS_PAT, c)
+                it = lang.iter_pat(SOFTWRAP_WS_PAT, c)
 
             for x in it:
                 if isinstance(x, re.Match):

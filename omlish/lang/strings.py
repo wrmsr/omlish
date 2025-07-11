@@ -216,7 +216,7 @@ STRING_BOOL_VALUES: ta.Mapping[str, bool] = {
 ##
 
 
-def iter_matches(pat: re.Pattern[str], s: str, **kwargs: ta.Any) -> ta.Generator[str | re.Match]:
+def iter_pat(pat: re.Pattern[str], s: str, **kwargs: ta.Any) -> ta.Generator[str | re.Match]:
     p = 0
     for m in re.finditer(pat, s, **kwargs):
         if p < (l := m.start()):

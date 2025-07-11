@@ -327,7 +327,7 @@ from .strings import (  # noqa
     is_ident_cont,
     is_ident_start,
     is_sunder,
-    iter_matches,
+    iter_pat,
     prefix_delimited,
     prefix_lines,
     replace_many,
