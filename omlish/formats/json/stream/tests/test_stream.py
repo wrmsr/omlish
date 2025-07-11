@@ -6,12 +6,12 @@ import pytest
 from ..... import check
 from ...tests.helpers import TEST_DOCS
 from ...tests.helpers import assert_json_eq
-from ..building import JsonObjectBuilder
+from ..building import JsonValueBuilder
 from ..lexing import JsonStreamLexer
 from ..parsing import JsonStreamParser
 from ..parsing import yield_parser_events
 from ..rendering import StreamJsonRenderer
-from ..utils import stream_parse_one_object
+from ..utils import stream_parse_one_value
 
 
 @pytest.mark.parametrize('include_space', [False, True])
@@ -26,7 +26,7 @@ def test_stream(include_space):
                 include_space=include_space,
         ) as lex:
             with JsonStreamParser() as parse:
-                with JsonObjectBuilder() as build:
+                with JsonValueBuilder() as build:
                     for c in [*s, '']:
                         verbose and print(c)
                         for t in lex(c):
@@ -51,9 +51,9 @@ def test_parse():
         obj = json.loads(s)
 
         vs = []
-        with JsonObjectBuilder() as job:
+        with JsonValueBuilder() as jvb:
             for e in yield_parser_events(obj):
-                for v in job(e):
+                for v in jvb(e):
                     print(v)
                     vs.append(v)
 
@@ -94,7 +94,7 @@ def test_partial():
         if next(i) == '\n':
             break
 
-    o = stream_parse_one_object(i)
+    o = stream_parse_one_value(i)
     assert o == json.loads(oj)
 
     r = ''.join(i).strip()

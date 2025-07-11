@@ -1,7 +1,7 @@
 import os.path
 import typing as ta
 
-from ...building import JsonObjectBuilder
+from ...building import JsonValueBuilder
 from ...errors import JsonStreamError
 from ...lexing import JsonStreamLexer
 from ...parsing import JsonStreamParser
@@ -21,7 +21,7 @@ def parse(
 
     with JsonStreamLexer() as lex:
         with JsonStreamParser() as parse:
-            with JsonObjectBuilder() as build:
+            with JsonValueBuilder() as build:
                 for c in [*src, '']:
                     verbose and print(c)
                     for t in lex(c):

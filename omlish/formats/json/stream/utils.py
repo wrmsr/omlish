@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from .... import lang
-from .building import JsonObjectBuilder
+from .building import JsonValueBuilder
 from .lexing import JsonStreamLexer
 from .parsing import JsonStreamParser
 
@@ -11,7 +11,7 @@ from .parsing import JsonStreamParser
 
 
 @dc.dataclass(kw_only=True)
-class JsonStreamObjectParser(lang.ExitStacked):
+class JsonStreamValueParser(lang.ExitStacked):
     include_raw: bool = False
     yield_object_lists: bool = False
 
@@ -19,7 +19,7 @@ class JsonStreamObjectParser(lang.ExitStacked):
 
     _lex: JsonStreamLexer = dc.field(init=False)
     _parse: JsonStreamParser = dc.field(init=False)
-    _build: JsonObjectBuilder = dc.field(init=False)
+    _build: JsonValueBuilder = dc.field(init=False)
 
     def _enter_contexts(self) -> None:
         self._lex = JsonStreamLexer(
@@ -28,7 +28,7 @@ class JsonStreamObjectParser(lang.ExitStacked):
 
         self._parse = JsonStreamParser()
 
-        self._build = JsonObjectBuilder(
+        self._build = JsonValueBuilder(
             yield_object_lists=self.yield_object_lists,
         )
 
@@ -40,9 +40,17 @@ class JsonStreamObjectParser(lang.ExitStacked):
                         yield v
 
 
-def stream_parse_one_object(
+def stream_parse_values(
+        i: ta.Iterable[str],
+        **kwargs: ta.Any,
+) -> ta.Generator[ta.Any]:
+    with JsonStreamValueParser(**kwargs) as p:
+        yield from p.feed(i)
+
+
+def stream_parse_one_value(
         i: ta.Iterable[str],
         **kwargs: ta.Any,
 ) -> ta.Any:
-    with JsonStreamObjectParser(**kwargs) as p:
+    with JsonStreamValueParser(**kwargs) as p:
         return next(p.feed(i))

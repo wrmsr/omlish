@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish.formats.json.stream.building import JsonObjectBuilder
+from omlish.formats.json.stream.building import JsonValueBuilder
 from omlish.formats.json.stream.lexing import JsonStreamLexer
 from omlish.formats.json.stream.parsing import JsonStreamParser
 from omlish.formats.json.stream.parsing import JsonStreamParserEvent
@@ -53,10 +53,10 @@ class DelimitingParser:
 
 
 class StreamBuilder(lang.ExitStacked):
-    _builder: JsonObjectBuilder | None = None
+    _builder: JsonValueBuilder | None = None
 
     def _enter_contexts(self) -> None:
-        self._builder = self._enter_context(JsonObjectBuilder())
+        self._builder = self._enter_context(JsonValueBuilder())
 
     def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any]:
         yield from check.not_none(self._builder)(e)

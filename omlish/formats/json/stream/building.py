@@ -13,7 +13,7 @@ from .parsing import Key
 ##
 
 
-class JsonObjectBuilder:
+class JsonValueBuilder:
     def __init__(
             self,
             *,
