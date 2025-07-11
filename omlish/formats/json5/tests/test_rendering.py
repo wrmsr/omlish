@@ -30,4 +30,5 @@ def test_rendering(
 
 def test_softwrap():
     assert Json5Renderer.render_str('abcdefg', softwrap_length=8) == '"abcdefg"'
-    print(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8, multiline_strings=True))
+    assert loads(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8)) == KITCHEN_SINK_STR
+    assert loads(Json5Renderer.render_str(KITCHEN_SINK_STR, softwrap_length=8, multiline_strings=True)) == KITCHEN_SINK_STR  # noqa

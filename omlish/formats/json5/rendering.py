@@ -77,8 +77,13 @@ class Json5Renderer(JsonRenderer):
             for x in it:
                 if isinstance(x, re.Match):
                     ws = x.group(0)
-                    if len(ws) >= (softwrap_len - l):
-                        raise NotImplementedError
+                    r = softwrap_len - l
+                    if len(ws) > r:
+                        write(ws[:r])
+                        p = r
+                        while p < len(ws):
+                            write(ws[p:(np := (p + softwrap_len))])
+                            p = np
 
                     else:
                         write(ws)
