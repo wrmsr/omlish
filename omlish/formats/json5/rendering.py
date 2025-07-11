@@ -64,7 +64,10 @@ class Json5Renderer(JsonRenderer):
                 continue
 
             if c == '\\n' and multiline_strings:
-                out.write(MULTILINE_STRINGS_NL)
+                if (softwrap_len - l) > 2:
+                    out.write('\\n\\\n')
+                else:
+                    out.write('\\\n\\n\\\n')
                 l = 0
                 continue
 
