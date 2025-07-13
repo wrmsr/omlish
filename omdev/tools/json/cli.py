@@ -1,6 +1,7 @@
 """
 TODO:
  - read from http
+ - -n - strip inner nulls, -N strip outer nulls
 
 ==
 
