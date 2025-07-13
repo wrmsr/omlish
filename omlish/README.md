@@ -46,8 +46,8 @@ Core utilities and foundational code. It's relatively large but completely self-
     inheritance of dataclass parameters like `frozen`), and some basic [base classes](dataclasses/metaclass/bases.py).
   - (Nearly finished) support for ahead-of-time / build-time code generation, greatly reducing import times.
 
-  The stdlib-equivalent api is exported in such a way as to be direct aliases for the stdlib api itself, simplifying
-  tool support.
+  The stdlib-equivalent api is exported in such a way as to appear to be direct aliases for the stdlib api itself,
+  simplifying tool support.
 
 - **[dispatch](dispatch)** - A beefed-up version of
   [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch), most notably

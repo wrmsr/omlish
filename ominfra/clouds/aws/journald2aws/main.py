@@ -10,6 +10,9 @@ from omlish.logs.standard import configure_standard_logging
 from .driver import JournalctlToAwsDriver
 
 
+##
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser()
 

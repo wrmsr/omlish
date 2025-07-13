@@ -5,6 +5,9 @@ from omlish import dataclasses as dc
 from omlish import marshal as msh
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Device:
     dc.metadata(msh.ObjectMetadata(

@@ -4,6 +4,9 @@ import typing as ta
 from omlish.lite.marshal import ObjMarshalerManager
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class ObjMarshalerInstaller:
     fn: ta.Callable[[ObjMarshalerManager], None]

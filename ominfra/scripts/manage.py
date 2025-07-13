@@ -636,6 +636,9 @@ def canonicalize_version(
 # ../config.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class MainConfig:
     log_level: ta.Optional[str] = 'INFO'
@@ -5218,6 +5221,9 @@ def detect_system_platform() -> Platform:
 # ../targets/bestpython.py
 
 
+##
+
+
 BEST_PYTHON_SH = """\
 bv=""
 bx=""
@@ -8731,6 +8737,9 @@ class DeployTagMap:
 # ../marshal.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class ObjMarshalerInstaller:
     fn: ta.Callable[[ObjMarshalerManager], None]
@@ -9124,6 +9133,9 @@ InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 ########################################
 # ../bootstrap.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -13026,6 +13038,9 @@ def bind_interp_uv() -> InjectorBindings:
 # ../remote/inject.py
 
 
+##
+
+
 def bind_remote(
         *,
         remote_config: RemoteConfig,
@@ -13262,6 +13277,9 @@ def bind_interp_pyenv() -> InjectorBindings:
 
 ########################################
 # ../targets/inject.py
+
+
+##
 
 
 def bind_targets() -> InjectorBindings:
@@ -14131,6 +14149,9 @@ def bind_main(
 # ../bootstrap_.py
 
 
+##
+
+
 def main_bootstrap(bs: MainBootstrap) -> Injector:
     if (log_level := bs.main_config.log_level) is not None:
         configure_standard_logging(log_level)
@@ -14150,6 +14171,9 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 ########################################
 # main.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)

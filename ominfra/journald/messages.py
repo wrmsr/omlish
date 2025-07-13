@@ -9,6 +9,9 @@ from omlish.lite.check import check
 from omlish.lite.logs import log
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class JournalctlMessage:
     raw: bytes

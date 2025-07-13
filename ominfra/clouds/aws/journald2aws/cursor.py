@@ -5,6 +5,9 @@ import typing as ta
 from omlish.lite.logs import log
 
 
+##
+
+
 class JournalctlToAwsCursor:
     def __init__(
             self,

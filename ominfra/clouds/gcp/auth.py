@@ -7,6 +7,9 @@ from omlish.http import all as http
 from omlish.http import jwt
 
 
+##
+
+
 DEFAULT_JWT_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
 

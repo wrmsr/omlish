@@ -418,6 +418,9 @@ from .messages import JournalctlMessage  # noqa
 from .messages import JournalctlMessageBuilder
 
 
+##
+
+
 class JournalctlTailerWorker(ThreadWorker):
     DEFAULT_CMD: ta.ClassVar[ta.Sequence[str]] = ['journalctl']
 

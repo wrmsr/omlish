@@ -13,6 +13,9 @@ from omlish import check
 from omlish import lang
 
 
+##
+
+
 DEFAULT_METADATA_URL = 'http://169.254.169.254/'
 
 METADATA_TOKEN_HEADER = 'X-aws-ec2-metadata-token'  # noqa
