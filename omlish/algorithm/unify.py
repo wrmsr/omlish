@@ -5,6 +5,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 def mut_unify_sets(sets: ta.Iterable[set[T]]) -> list[set[T]]:
     rem: list[set[T]] = list(sets)
     ret: list[set[T]] = []

@@ -7,6 +7,9 @@ import os
 import typing as ta
 
 
+##
+
+
 def is_fd_open(fd: int) -> bool:
     try:
         fcntl.fcntl(fd, fcntl.F_GETFD)

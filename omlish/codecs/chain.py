@@ -4,6 +4,9 @@ import typing as ta
 from .base import EagerCodec
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class ChainEagerCodec(EagerCodec[ta.Any, ta.Any]):
     codecs: ta.Sequence[EagerCodec]

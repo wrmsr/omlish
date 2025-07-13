@@ -16,9 +16,12 @@ T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 
 
-AsyncEngineLike = ta.Union[saa.AsyncEngine, 'AsyncEngine']
-AsyncConnectionLike = ta.Union[saa.AsyncConnection, 'AsyncConnection']
-AsyncTransactionLike = ta.Union[saa.AsyncTransaction, 'AsyncTransaction']
+AsyncEngineLike: ta.TypeAlias = ta.Union[saa.AsyncEngine, 'AsyncEngine']
+AsyncConnectionLike: ta.TypeAlias = ta.Union[saa.AsyncConnection, 'AsyncConnection']
+AsyncTransactionLike: ta.TypeAlias = ta.Union[saa.AsyncTransaction, 'AsyncTransaction']
+
+
+##
 
 
 class AsyncTransaction:

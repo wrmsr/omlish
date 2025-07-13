@@ -2,6 +2,9 @@ import itertools
 import operator
 
 
+##
+
+
 def truncate_utf8_safe(string: str, length: int) -> str:
     return string[:length] \
         .encode('utf-8', 'ignore') \

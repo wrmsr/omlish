@@ -52,6 +52,9 @@ import threading
 import warnings
 
 
+##
+
+
 valid_seek_flags = {0, 1, 2}  # Hardwired values
 if hasattr(os, 'SEEK_HOLE'):
     valid_seek_flags.add(os.SEEK_HOLE)

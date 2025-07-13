@@ -12,6 +12,9 @@ from .utils import trim_initial_spaces
 from .utils import truncate_utf8_safe
 
 
+##
+
+
 class ParsedLine(ta.NamedTuple):
     message: Message
 

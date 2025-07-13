@@ -1807,6 +1807,9 @@ class TomlParser:
 # ../../../omlish/formats/toml/writer.py
 
 
+##
+
+
 class TomlWriter:
     @dc.dataclass(frozen=True)
     class Literal:
@@ -6100,6 +6103,9 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 
 ########################################
 # ../../../omlish/lite/runtime.py
+
+
+##
 
 
 @cached_nullary

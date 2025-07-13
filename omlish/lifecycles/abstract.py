@@ -9,6 +9,9 @@ from .base import Lifecycle
 AbstractLifecycleT = ta.TypeVar('AbstractLifecycleT', bound='AbstractLifecycle')
 
 
+##
+
+
 class AbstractLifecycle(lang.Abstract):
     @dc.dataclass(frozen=True)
     class _Lifecycle(Lifecycle, lang.Final, ta.Generic[AbstractLifecycleT]):

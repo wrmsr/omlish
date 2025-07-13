@@ -637,7 +637,7 @@ def parse_octal(arg: ta.Union[str, int]) -> int:
 # ../../../omlish/configs/types.py
 
 
-#
+##
 
 
 ########################################
@@ -1604,6 +1604,9 @@ class TomlParser:
 # ../../../omlish/formats/toml/writer.py
 
 
+##
+
+
 class TomlWriter:
     @dc.dataclass(frozen=True)
     class Literal:
@@ -1725,6 +1728,9 @@ class TomlWriter:
 
 ########################################
 # ../../../omlish/http/versions.py
+
+
+##
 
 
 class HttpProtocolVersion(ta.NamedTuple):
@@ -6493,6 +6499,9 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 # ../../../omlish/lite/runtime.py
 
 
+##
+
+
 @cached_nullary
 def is_debugger_attached() -> bool:
     return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
@@ -8872,6 +8881,9 @@ class SupervisorSetupImpl(SupervisorSetup):
 
 ########################################
 # ../../../omlish/http/coro/fdio.py
+
+
+##
 
 
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):

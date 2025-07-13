@@ -12,6 +12,9 @@ from .states import LifecycleStateError
 from .states import LifecycleStates
 
 
+##
+
+
 class LifecycleManager(AbstractLifecycle):
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):

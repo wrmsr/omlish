@@ -4,6 +4,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 class _Proxy(ta.Generic[T]):
     __obj: T | None = None
 

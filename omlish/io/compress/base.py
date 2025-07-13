@@ -4,6 +4,9 @@ from ..coro import BytesSteppedCoro
 from ..coro import BytesSteppedReaderCoro
 
 
+##
+
+
 class Compression(abc.ABC):
     @abc.abstractmethod
     def compress(self, d: bytes) -> bytes:

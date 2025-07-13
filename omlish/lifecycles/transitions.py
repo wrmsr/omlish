@@ -5,6 +5,9 @@ from .states import LifecycleState
 from .states import LifecycleStates
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class LifecycleTransition(lang.Final):
     old: frozenset[LifecycleState]

@@ -7,6 +7,9 @@ import sys
 import typing as ta
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class FcntlLockData:
     # cmd = {F_SETLK, F_SETLKW, F_GETLK}

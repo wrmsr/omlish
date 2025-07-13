@@ -461,6 +461,9 @@ class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
 # ../../../omlish/http/versions.py
 
 
+##
+
+
 class HttpProtocolVersion(ta.NamedTuple):
     major: int
     minor: int
@@ -1917,6 +1920,9 @@ log_timing_context = LogTimingContext
 # ../../../omlish/os/files.py
 
 
+##
+
+
 def is_fd_open(fd: int) -> bool:
     try:
         fcntl.fcntl(fd, fcntl.F_GETFD)
@@ -1964,6 +1970,9 @@ def unlinking_if_exists(path: str) -> ta.Iterator[None]:
 
 ########################################
 # ../../../omlish/os/paths.py
+
+
+##
 
 
 def abs_real_path(p: str) -> str:
@@ -5250,6 +5259,9 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 # ../../../omlish/lite/runtime.py
 
 
+##
+
+
 @cached_nullary
 def is_debugger_attached() -> bool:
     return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
@@ -5331,6 +5343,9 @@ class JsonLogFormatter(logging.Formatter):
 
 ########################################
 # ../../../omlish/os/temp.py
+
+
+##
 
 
 def make_temp_file(**kwargs: ta.Any) -> str:

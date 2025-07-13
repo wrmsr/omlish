@@ -2,6 +2,9 @@ from ....logs import all as logs
 from ._registry import register
 
 
+##
+
+
 @register
 class LoggingPlugin:
     def pytest_addoption(self, parser):

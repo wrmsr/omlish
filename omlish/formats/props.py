@@ -35,6 +35,9 @@ import time
 import typing as ta
 
 
+##
+
+
 class PropertyTuple(ta.NamedTuple):
     data: ta.Any
     meta: ta.Any

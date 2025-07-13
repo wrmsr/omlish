@@ -1344,7 +1344,7 @@ async def asyncio_open_stream_writer(
 # ../../../omlish/configs/types.py
 
 
-#
+##
 
 
 ########################################
@@ -2311,6 +2311,9 @@ class TomlParser:
 # ../../../omlish/formats/toml/writer.py
 
 
+##
+
+
 class TomlWriter:
     @dc.dataclass(frozen=True)
     class Literal:
@@ -3223,6 +3226,9 @@ Maybe._empty = _EmptyMaybe()  # noqa
 # ../../../omlish/lite/pycharm.py
 
 
+##
+
+
 DEFAULT_PYCHARM_VERSION = '242.23726.102'
 
 
@@ -3838,6 +3844,9 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 # ../../../omlish/os/deathsig.py
 
 
+##
+
+
 LINUX_PR_SET_PDEATHSIG = 1  # Second arg is a signal
 LINUX_PR_GET_PDEATHSIG = 2  # Second arg is a ptr to return the signal
 
@@ -3887,6 +3896,9 @@ VERSION="12 (bookworm)"
 VERSION_CODENAME=bookworm
 ID=debian
 """
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -4343,6 +4355,9 @@ class LinuxOsRelease:
 
 ########################################
 # ../../../omlish/os/paths.py
+
+
+##
 
 
 def abs_real_path(p: str) -> str:
@@ -7768,6 +7783,9 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 # ../../../omlish/lite/runtime.py
 
 
+##
+
+
 @cached_nullary
 def is_debugger_attached() -> bool:
     return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
@@ -8847,6 +8865,9 @@ See:
  - https://nginx.org/en/docs/dev/development_guide.html#config_directives
  - https://nginx.org/en/docs/example.html
 """
+
+
+##
 
 
 @dc.dataclass()

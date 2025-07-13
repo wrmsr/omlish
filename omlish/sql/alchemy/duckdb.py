@@ -17,6 +17,9 @@ else:
     duckdb = lang.proxy_import('duckdb')
 
 
+##
+
+
 class ConnectionWrapper:
     def __init__(self, c: 'duckdb.DuckDBPyConnection') -> None:
         super().__init__()

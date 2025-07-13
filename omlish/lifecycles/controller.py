@@ -13,6 +13,9 @@ from .transitions import LifecycleTransitions
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 
 
+##
+
+
 class LifecycleListener(ta.Generic[LifecycleT]):
     def on_starting(self, obj: LifecycleT) -> None:
         pass

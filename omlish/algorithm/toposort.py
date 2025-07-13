@@ -7,6 +7,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
     for k, v in data.items():
         v.discard(k)

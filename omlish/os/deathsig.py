@@ -3,6 +3,9 @@ import ctypes as ct
 import sys
 
 
+##
+
+
 LINUX_PR_SET_PDEATHSIG = 1  # Second arg is a signal
 LINUX_PR_GET_PDEATHSIG = 2  # Second arg is a ptr to return the signal
 

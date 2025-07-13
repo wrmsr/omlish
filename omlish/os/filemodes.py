@@ -7,6 +7,9 @@ import typing as ta
 from ..lite.check import check
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class FileMode:
     """

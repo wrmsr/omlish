@@ -13,6 +13,9 @@ from .types import get_type_var_bound
 from .types import type_
 
 
+##
+
+
 def strip_objs(ty: Type) -> Type:
     if isinstance(ty, (type, ta.TypeVar, NewType, Any)):
         return ty
