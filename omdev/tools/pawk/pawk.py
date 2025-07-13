@@ -37,6 +37,9 @@ from omlish import check
 from ...cli import CliModule
 
 
+##
+
+
 RESULT_VAR_NAME = '__result'
 
 STRING_ESCAPE = 'unicode_escape'

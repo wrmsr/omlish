@@ -8,6 +8,9 @@ from omlish.subprocesses.sync import subprocesses
 from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 
+##
+
+
 def get_git_revision(
         *,
         cwd: ta.Optional[str] = None,

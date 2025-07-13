@@ -171,6 +171,9 @@ CI_CACHE_VERSION = 2
 # ../github/env.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class GithubEnvVar:
     k: str
@@ -249,6 +252,9 @@ def sha256_str(s: str) -> str:
 
 ########################################
 # ../../oci/compression.py
+
+
+##
 
 
 class OciCompression(enum.Enum):
@@ -2458,6 +2464,9 @@ sudo rm -rf \
 /opt/hostedtoolcache    8.0G, 14843980 files
 /usr/local/lib/android  6.4G, 17251667 files
 """
+
+
+##
 
 
 GITHUB_ACTIONS_ENV_VAR = register_github_env_var('GITHUB_ACTIONS')
@@ -10388,6 +10397,9 @@ See:
 """
 
 
+##
+
+
 class GithubCli(ArgparseCli):
     @argparse_cmd()
     def list_referenced_env_vars(self) -> None:
@@ -13020,6 +13032,9 @@ def bind_ci(
 
 ########################################
 # cli.py
+
+
+##
 
 
 class CiCli(ArgparseCli):

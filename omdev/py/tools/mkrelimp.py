@@ -16,6 +16,9 @@ T = ta.TypeVar('T')
 log = logging.getLogger(__name__)
 
 
+##
+
+
 def indexfn(
         fn: ta.Callable[[T], bool],
         it: ta.Iterable[T],

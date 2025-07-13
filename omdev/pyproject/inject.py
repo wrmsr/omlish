@@ -6,6 +6,9 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 
+##
+
+
 def bind_pyproject() -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = []
 

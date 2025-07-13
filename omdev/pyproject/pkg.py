@@ -45,7 +45,7 @@ from ..magic.find import find_magic_files
 from ..packaging.revisions import GitRevisionAdder
 
 
-#
+##
 
 
 class BasePyprojectPackageGenerator(abc.ABC):

@@ -10,6 +10,9 @@ from omlish.lite.check import check
 from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 
+##
+
+
 _GIT_STATUS_LINE_ESCAPE_CODES: ta.Mapping[int, bytes] = {
     ord('\\'): b'\\',
     ord('"'): b'"',

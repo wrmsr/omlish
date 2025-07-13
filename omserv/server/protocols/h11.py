@@ -26,6 +26,9 @@ from ..workercontext import WorkerContext
 from .types import Protocol
 
 
+##
+
+
 H11SendableEvent: ta.TypeAlias = ta.Union[  # noqa
     h11.Data,
     h11.EndOfMessage,

@@ -4,6 +4,9 @@ import wsgiref.handlers
 from .config import Config
 
 
+##
+
+
 def _now() -> float:
     return time.time()
 

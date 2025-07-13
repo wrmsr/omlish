@@ -24,6 +24,9 @@
 import re
 
 
+##
+
+
 # Core metadata spec for `Name`
 _CANONICAL_NAME_VALIDATE_PATTERN = re.compile(r'^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$', re.IGNORECASE)
 _CANONICAL_NAME_CANONICALIZE_PATTERN = re.compile(r'[-_.]+')

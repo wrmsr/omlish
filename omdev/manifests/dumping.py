@@ -2,6 +2,9 @@
 import typing as ta
 
 
+##
+
+
 class _ModuleManifestDumper:
     def __init__(self, spec: str) -> None:
         super().__init__()

@@ -40,6 +40,9 @@ from .utils import valid_server_name
 log = logging.getLogger(__name__)
 
 
+##
+
+
 class AsgiWebsocketState(enum.Enum):
     # Hypercorn supports the Asgi websocket HTTP response extension, which allows HTTP responses rather than acceptance.
     HANDSHAKE = enum.auto()

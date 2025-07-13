@@ -7,6 +7,9 @@ from omlish.lite.marshal import unmarshal_obj
 from ..interp.venvs import InterpVenvConfig
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class VenvConfig(InterpVenvConfig):
     inherits: ta.Optional[ta.Sequence[str]] = None

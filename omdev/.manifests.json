@@ -246,7 +246,7 @@
     "module": ".py.tools.mkrelimp",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/tools/mkrelimp.py",
-    "line": 146,
+    "line": 149,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/mkrelimp",
@@ -318,7 +318,7 @@
     "module": ".tools.diff",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/diff.py",
-    "line": 21,
+    "line": 24,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "diff",
@@ -342,7 +342,7 @@
     "module": ".tools.docker",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/docker.py",
-    "line": 256,
+    "line": 259,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "docker",
@@ -453,7 +453,7 @@
     "module": ".tools.notebook",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/notebook.py",
-    "line": 120,
+    "line": 123,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": [
@@ -468,7 +468,7 @@
     "module": ".tools.pawk.pawk",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pawk/pawk.py",
-    "line": 389,
+    "line": 392,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pawk",
@@ -480,7 +480,7 @@
     "module": ".tools.pip",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pip.py",
-    "line": 120,
+    "line": 123,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
@@ -492,7 +492,7 @@
     "module": ".tools.prof",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/prof.py",
-    "line": 54,
+    "line": 57,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "prof",
@@ -504,7 +504,7 @@
     "module": ".tools.qr",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/qr.py",
-    "line": 74,
+    "line": 77,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "qr",
@@ -543,7 +543,7 @@
     "module": ".tools.sqlrepl",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/sqlrepl.py",
-    "line": 193,
+    "line": 196,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "sqlrepl",

@@ -9,6 +9,9 @@ from ..types import Scope
 log = logging.getLogger(__name__)
 
 
+##
+
+
 def valid_server_name(config: Config, request: Request) -> bool:
     if not config.server_names:
         return True

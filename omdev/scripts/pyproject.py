@@ -664,6 +664,9 @@ def canonicalize_version(
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+##
+
+
 class WheelError(Exception):
     pass
 
@@ -3269,6 +3272,9 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 # ../../cexts/magic.py
 
 
+##
+
+
 class CextMagic:
     KEY = '@omlish-cext'
     STYLE = C_MAGIC_STYLE
@@ -4024,6 +4030,9 @@ class SpecifierSet(BaseSpecifier):
 TODO:
  - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
 """
+
+
+##
 
 
 class RequirementsRewriter:
@@ -7132,6 +7141,9 @@ SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 # ../../git/revisions.py
 
 
+##
+
+
 def get_git_revision(
         *,
         cwd: ta.Optional[str] = None,
@@ -8233,7 +8245,7 @@ vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 """  # noqa
 
 
-#
+##
 
 
 class BasePyprojectPackageGenerator(abc.ABC):
@@ -9116,6 +9128,9 @@ class InterpVenv:
 
 ########################################
 # ../configs.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)

@@ -11,6 +11,9 @@ from omlish.sockets.wait import socket_wait_until_can_connect
 from .service import mc_server_service_daemon
 
 
+##
+
+
 class McServerClient:
     def prompt(
             self,

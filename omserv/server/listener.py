@@ -25,6 +25,9 @@ from .workercontext import WorkerContext
 log = logging.getLogger(__name__)
 
 
+##
+
+
 async def raise_shutdown(shutdown_event: ta.Callable[..., ta.Awaitable]) -> None:
     await shutdown_event()
     raise ShutdownError

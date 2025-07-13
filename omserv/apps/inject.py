@@ -19,6 +19,9 @@ from .templates import JinjaNamespace
 from .templates import JinjaTemplates
 
 
+##
+
+
 def bind_route_handler_class(hc: type[RouteHandlerHolder]) -> inj.Elemental:
     return inj.as_elements(
         inj.bind(hc, singleton=True),

@@ -10,6 +10,9 @@ import re
 import string
 
 
+##
+
+
 _VERSION_PAT = re.compile(r"__version__ = '(?P<version>[^\']+)'")
 
 
