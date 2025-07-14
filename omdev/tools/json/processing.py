@@ -20,7 +20,18 @@ class ProcessingOptions:
     jmespath_expr: ta.Any | None = None
     marshal: bool = False
     flat: bool = False
+    prune_empty: bool = False
     omit_empty: bool = False
+
+
+def _prune_empty(v: ta.Any) -> ta.Any:
+    # if isinstance(v, ta.Mapping):
+    #     v = type(v)([
+    #         (_prune_empty(k), _prune_empty(v))
+    #         for k, v in v.items()
+    #     ])
+    # elif
+    raise NotImplementedError
 
 
 class Processor:
@@ -68,6 +79,9 @@ class Processor:
             vs = [v]
 
         for v in vs:
+            if self._opts.prune_empty:
+                v = _prune_empty(v)
+
             if self._opts.omit_empty:
                 if v is None or (isinstance(v, (ta.Sequence, ta.Mapping)) and not v):
                     continue

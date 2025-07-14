@@ -1,7 +1,6 @@
 """
 TODO:
  - read from http
- - -n - strip inner nulls, -N strip outer nulls
 
 ==
 
@@ -89,6 +88,7 @@ def _build_args_parser() -> argparse.ArgumentParser:
     parser.add_argument('-x', '--jmespath-expr')
     parser.add_argument('-M', '--marshal', action='store_true')
     parser.add_argument('-F', '--flat', action='store_true')
+    parser.add_argument('-e', '--prune-empty', action='store_true')
     parser.add_argument('-E', '--omit-empty', action='store_true')
 
     parser.add_argument('-z', '--compact', action='store_true')
@@ -137,6 +137,7 @@ def _process_args(args: ta.Any) -> RunConfiguration:
         jmespath_expr=args.jmespath_expr,
         marshal=args.marshal,
         flat=args.flat,
+        prune_empty=args.prune_empty,
         omit_empty=args.omit_empty,
     )
 
