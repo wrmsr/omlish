@@ -1666,7 +1666,7 @@ class Checks:
                 render_fmt='%s',
             )
 
-        return v  # type: ignore
+        return v
 
     def non_empty_str(self, v: ta.Optional[str], msg: CheckMessage = None) -> str:
         if not isinstance(v, str) or not v:

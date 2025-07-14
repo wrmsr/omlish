@@ -12,7 +12,7 @@ from ..conns import JsonrpcConnection
 @pytest.mark.parametrize('close_queues', [False, True])
 async def test_conns(close_queues):
     async def request_handler(conn: JsonrpcConnection, req: jr.Request) -> None:
-        await conn.send_message(jr.result(jr.check_not_not_specified(req.id), 'hello'))  # type: ignore
+        await conn.send_message(jr.result(jr.check_not_not_specified(req.id), 'hello'))
 
     #
 

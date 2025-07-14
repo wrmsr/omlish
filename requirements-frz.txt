@@ -150,7 +150,7 @@ multidict==6.6.3
 multiprocess==0.70.16
 mwparserfromhell==0.7.2
 mycli==1.29.2
-mypy==1.16.1
+mypy==1.17.0
 mypy_extensions==1.1.0
 mysql-connector-python==9.3.0
 mysqlclient==2.2.7
@@ -308,7 +308,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.2
 urwid_readline==0.15.1
-uv==0.7.20
+uv==0.7.21
 watchdog==6.0.0
 wcwidth==0.2.13
 webcolors==24.11.1

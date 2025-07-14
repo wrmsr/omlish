@@ -115,7 +115,7 @@ class Cli(ap.Cli):
         dct: dict[str, list[PortEntry]] = {}
 
         with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
-            val = check.not_none(loader.get_single_data())  # type: ignore
+            val = check.not_none(loader.get_single_data())
             root = check.isinstance(val.value, ta.Mapping)
 
             services = check.isinstance(

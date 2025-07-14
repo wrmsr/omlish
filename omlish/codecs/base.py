@@ -72,7 +72,7 @@ class Codec:
     name: str = dc.xfield(coerce=check_codec_name)
     aliases: ta.Collection[str] | None = dc.xfield(
         default=None,
-        coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),  # type: ignore
+        coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),
     )
 
     input: rfl.Type = dc.xfield(coerce=rfl.type_)

@@ -19,7 +19,7 @@ _INTERNAL_ABSTRACT_ATTRS = frozenset([_FORCE_ABSTRACT_ATTR])
 
 def make_abstract(obj: T) -> T:
     if callable(obj):
-        return ta.cast(T, abc.abstractmethod(obj))
+        return abc.abstractmethod(obj)
     elif isinstance(obj, property):
         return ta.cast(T, property(
             abc.abstractmethod(obj.fget) if obj.fget is not None else None,

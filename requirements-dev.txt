@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.7.20
+uv>=0.7.21
 
 pytest==8.4.1
 pytest-benchmark==5.1.0
@@ -23,7 +23,7 @@ types-pyyaml==6.0.12.20250516
 types-ujson==5.10.0.20250326
 
 black==25.1.0
-mypy==1.16.1
+mypy==1.17.0
 pipdeptree==2.27.0
 
 astpretty==3.0.0

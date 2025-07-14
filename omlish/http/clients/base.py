@@ -116,12 +116,12 @@ def close_response(resp: BaseHttpResponse) -> None:
 @contextlib.contextmanager
 def closing_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
     if isinstance(resp, HttpResponse):
-        yield resp  # type: ignore
+        yield resp
         return
 
     elif isinstance(resp, StreamHttpResponse):
         with contextlib.closing(resp):
-            yield resp  # type: ignore
+            yield resp
 
     else:
         raise TypeError(resp)

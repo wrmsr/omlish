@@ -92,7 +92,7 @@ class SubprocessRun:
     ) -> SubprocessRunOutput:
         if subprocesses is None:
             subprocesses = self._DEFAULT_SUBPROCESSES
-        return check.not_none(subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
+        return check.not_none(subprocesses).run_(self.replace(**kwargs))
 
     _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
 
@@ -103,7 +103,7 @@ class SubprocessRun:
     ) -> SubprocessRunOutput:
         if async_subprocesses is None:
             async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
-        return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
+        return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))
 
 
 SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessRun))  # noqa

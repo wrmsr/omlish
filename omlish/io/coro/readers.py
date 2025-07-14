@@ -100,7 +100,7 @@ class PrependableCoroReader(CoroReader[AnyT]):
         if rem:
             d = check.not_none((yield rem))
             if d:
-                lst.append(d)  # type: ignore[unreachable]
+                lst.append(d)
 
         if len(lst) == 1:
             return lst[0]

@@ -9,7 +9,7 @@ T = ta.TypeVar('T')
 ##
 
 
-async def call_with_async_exit_stack(  # type: ignore[return]  # ???
+async def call_with_async_exit_stack(
         fn: ta.Callable[ta.Concatenate[contextlib.AsyncExitStack, P], ta.Awaitable[T]],
         *args: ta.Any,
         **kwargs: ta.Any,

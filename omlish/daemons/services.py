@@ -108,7 +108,7 @@ class ServiceDaemon(lang.Final, ta.Generic[ServiceT, ServiceConfigT]):
     def service_(self) -> ServiceT:
         with self._lock:
             if isinstance(self.service, Service):
-                return self.service  # type: ignore[return-value]
+                return self.service
             elif isinstance(self.service, Service.Config):
                 return Service.from_config(self.service)  # type: ignore[return-value]
             else:

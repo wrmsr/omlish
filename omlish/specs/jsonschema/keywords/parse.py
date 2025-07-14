@@ -74,25 +74,25 @@ class KeywordParser:
 
     def parse_keyword(self, cls: type[KeywordT], v: ta.Any) -> KeywordT:
         if issubclass(cls, AnyKeyword):
-            return cls(v)  # type: ignore
+            return cls(v)
 
         elif issubclass(cls, AnyArrayKeyword):
-            return cls(tuple(check.isinstance(v, ta.Sequence)))  # type: ignore
+            return cls(tuple(check.isinstance(v, ta.Sequence)))
 
         elif issubclass(cls, BooleanKeyword):
-            return cls(check.isinstance(v, bool))  # type: ignore
+            return cls(check.isinstance(v, bool))
 
         elif issubclass(cls, BooleanOrKeywordsKeyword):
             if isinstance(v, bool):
-                return cls(v)  # type: ignore
+                return cls(v)
             else:
-                return cls(self.parse_keywords(v))  # type: ignore
+                return cls(self.parse_keywords(v))
 
         elif issubclass(cls, NumberKeyword):
-            return cls(check.isinstance(v, (int, float)))  # type: ignore
+            return cls(check.isinstance(v, (int, float)))
 
         elif issubclass(cls, StrKeyword):
-            return cls(check.isinstance(v, str))  # type: ignore
+            return cls(check.isinstance(v, str))
 
         elif issubclass(cls, StrOrStrArrayKeyword):
             ss: str | ta.Sequence[str]
@@ -102,16 +102,16 @@ class KeywordParser:
                 ss = col.seq_of(check.of_isinstance(str))(v)
             else:
                 raise TypeError(v)
-            return cls(ss)  # type: ignore
+            return cls(ss)
 
         elif issubclass(cls, KeywordsKeyword):
-            return cls(self.parse_keywords(v))  # type: ignore
+            return cls(self.parse_keywords(v))
 
         elif issubclass(cls, KeywordsArrayKeyword):
-            return cls(tuple(self.parse_keywords(e) for e in v))  # type: ignore
+            return cls(tuple(self.parse_keywords(e) for e in v))
 
         elif issubclass(cls, StrToKeywordsKeyword):
-            return cls({k: self.parse_keywords(mv) for k, mv in v.items()})  # type: ignore
+            return cls({k: self.parse_keywords(mv) for k, mv in v.items()})
 
         else:
             raise TypeError(cls)

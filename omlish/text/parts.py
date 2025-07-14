@@ -133,7 +133,7 @@ remove_metas = RemoveMetas()
 
 def _drop_empties(it: ta.Iterable[T]) -> list[T]:
     return [
-        e  # type: ignore
+        e
         for e in it
         if not (
             isinstance(e, collections.abc.Sequence) and

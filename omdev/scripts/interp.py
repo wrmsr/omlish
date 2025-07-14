@@ -989,7 +989,7 @@ class Checks:
                 render_fmt='%s',
             )
 
-        return v  # type: ignore
+        return v
 
     def non_empty_str(self, v: ta.Optional[str], msg: CheckMessage = None) -> str:
         if not isinstance(v, str) or not v:
@@ -2560,7 +2560,7 @@ class ArgparseCli:
 
         if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
             msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
-            if (parser := self.get_parser()).exit_on_error:  # type: ignore
+            if (parser := self.get_parser()).exit_on_error:
                 parser.error(msg)
             else:
                 raise argparse.ArgumentError(None, msg)
@@ -3873,7 +3873,7 @@ class SubprocessRun:
     ) -> SubprocessRunOutput:
         if subprocesses is None:
             subprocesses = self._DEFAULT_SUBPROCESSES
-        return check.not_none(subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
+        return check.not_none(subprocesses).run_(self.replace(**kwargs))
 
     _DEFAULT_ASYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractAsyncSubprocesses
 
@@ -3884,7 +3884,7 @@ class SubprocessRun:
     ) -> SubprocessRunOutput:
         if async_subprocesses is None:
             async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
-        return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))  # type: ignore[attr-defined]
+        return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))
 
 
 SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessRun))  # noqa

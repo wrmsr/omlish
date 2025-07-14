@@ -62,7 +62,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._set_fac: ta.Callable[..., ta.MutableSet[NodeT]] = col.IdentitySet if identity else set
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
-        self._rank_seq_fac: ta.Callable[..., col.RankedSeq[NodeT]] = functools.partial(col.RankedSeq, identity=identity)  # type: ignore  # noqa
+        self._rank_seq_fac: ta.Callable[..., col.RankedSeq[NodeT]] = functools.partial(col.RankedSeq, identity=identity)
 
         def walk(cur: NodeT, parent: NodeT | None) -> None:
             check.not_none(cur)

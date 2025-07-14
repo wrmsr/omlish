@@ -25,7 +25,7 @@ def to(o: CanMoveToDeviceT, device: str | None) -> CanMoveToDeviceT:
         if device is not None:
             return o.to(device)  # type: ignore
         else:
-            return o  # type: ignore
+            return o
 
     elif isinstance(o, nn.Module):
         if device is not None:

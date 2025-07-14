@@ -87,7 +87,7 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
         if not isinstance(self, SetBinder):
             raise TypeError
         self._sbs.extend(SetBinding(self._multi_key, as_key(k)) for k in keys)
-        return self  # type: ignore
+        return self
 
     def __iter__(self) -> ta.Iterator[Element]:
         yield self._set_provider_binding
@@ -115,7 +115,7 @@ class MapBinder(ElementGenerator, ta.Generic[K, V]):
         if not isinstance(self, MapBinder):
             raise TypeError
         self._mbs.append(MapBinding(self._multi_key, map_key, as_key(map_value_key)))
-        return self  # type: ignore
+        return self
 
     def __iter__(self) -> ta.Iterator[Element]:
         yield self._map_provider_binding

@@ -35,7 +35,7 @@ class AbstractTestMarshal(unittest.TestCase):
         x = json.loads(s)
         _DEBUG_PRINT(x)
 
-        u = msh.unmarshal_obj(x, ty)  # type: ignore
+        u = msh.unmarshal_obj(x, ty)
         _DEBUG_PRINT(u)
 
         self.assertEqual(u, v)

@@ -123,7 +123,7 @@ class AsyncContextManager(abc.ABC, ta.Generic[T]):
 def maybe_managing(obj: T) -> ta.Iterator[T]:
     if isinstance(obj, ta.ContextManager):
         with obj:
-            yield ta.cast(T, obj)
+            yield obj
     else:
         yield obj
 
