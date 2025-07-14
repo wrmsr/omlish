@@ -10,16 +10,21 @@ class ExtendedContent(lang.Abstract, lang.PackageSealed):
     pass
 
 
+class SingleExtendedContent(ExtendedContent, lang.Abstract):
+    pass
+
+
 ##
+
+
+Content: ta.TypeAlias = ta.Union[  # noqa
+    str,
+    ExtendedContent,
+    ta.Sequence['Content'],
+]
 
 
 SingleContent: ta.TypeAlias = ta.Union[  # noqa
     str,
-    ExtendedContent,
-]
-
-
-Content: ta.TypeAlias = ta.Union[  # noqa
-    ta.Sequence['Content'],
-    SingleContent,
+    SingleExtendedContent,
 ]

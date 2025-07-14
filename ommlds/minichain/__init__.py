@@ -124,6 +124,7 @@ from .content.content import (  # noqa
     Content,
     ExtendedContent,
     SingleContent,
+    SingleExtendedContent,
 )
 
 from .content.images import (  # noqa

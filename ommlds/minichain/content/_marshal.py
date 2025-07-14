@@ -9,7 +9,6 @@ from omlish.funcs import match as mfs
 
 from .content import Content
 from .content import ExtendedContent
-from .content import SingleContent
 from .images import ImageContent  # noqa
 from .list import ListContent  # noqa
 from .text import TextContent  # noqa
@@ -24,8 +23,9 @@ class MarshalContent(lang.NotInstantiable, lang.Final):
 
 
 MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
+    str,
+    ExtendedContent,
     ta.Sequence[MarshalContent],
-    SingleContent,
 ]
 
 

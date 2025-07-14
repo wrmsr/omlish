@@ -8,6 +8,7 @@ from omlish import typedvalues as tv
 from .._typedvalues import _tv_field_metadata
 from ..metadata import MetadataContainer
 from .content import ExtendedContent
+from .content import SingleExtendedContent
 from .metadata import ContentMetadatas
 
 
@@ -19,7 +20,6 @@ class SimpleExtendedContent(  # noqa
     MetadataContainer[ContentMetadatas],
     ExtendedContent,
     lang.Abstract,
-    lang.PackageSealed,
 ):
     _metadata: ta.Sequence[ContentMetadatas] = dc.field(
         default=(),
@@ -36,3 +36,12 @@ class SimpleExtendedContent(  # noqa
 
     def with_metadata(self, *mds: ContentMetadatas, override: bool = False) -> ta.Self:
         return dc.replace(self, _metadata=tv.TypedValues(*self._metadata, *mds, override=override))
+
+
+@dc.dataclass(frozen=True)
+class SimpleSingleExtendedContent(
+    SimpleExtendedContent,
+    SingleExtendedContent,
+    lang.Abstract,
+):
+    pass
