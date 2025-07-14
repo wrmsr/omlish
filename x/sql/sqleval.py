@@ -46,8 +46,8 @@ class StmtEvaluator:
             row = {}
             for i in node.items:
                 i = check.isinstance(i, no.ExprSelectItem)
-                k = check.not_none(i.label).name
-                v = self._exprs.eval(i.value, {})
+                k = check.not_none(i.a).s
+                v = self._exprs.eval(i.v, {})
                 row[k] = v
 
             return [row]

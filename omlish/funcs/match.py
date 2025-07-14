@@ -143,6 +143,7 @@ class CachedMatchFn(MatchFn[P, T]):
             lock: lang.DefaultLockable = None,
     ) -> None:
         super().__init__()
+
         self._f = f
         self._key = key
         self._lock = lock
@@ -206,8 +207,10 @@ class MatchFnClass(MatchFn[P, T]):
 
     def __init_subclass__(cls, strict: bool = False, **kwargs: ta.Any) -> None:
         super().__init_subclass__()
+
         if '_cls_match_fn' in cls.__dict__:
             raise AttributeError('_cls_match_fn')
+
         d = {}
         for c in cls.__mro__:
             for a, o in c.__dict__.items():
