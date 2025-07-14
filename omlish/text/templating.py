@@ -32,6 +32,24 @@ class Templater(lang.Abstract):
         raise NotImplementedError
 
 
+def templater_context(
+        *envs: ta.Mapping[str, ta.Any] | None,
+        strict: bool = False,
+) -> Templater.Context:
+    env: dict[str, ta.Any] = {}
+    for e in envs:
+        if e is None:
+            continue
+        for k, v in e.items():
+            if strict and k in env:
+                raise KeyError(k)
+            env[k] = v
+
+    return Templater.Context(
+        env=env or None,
+    )
+
+
 ##
 
 
@@ -43,6 +61,9 @@ class FormatTemplater(Templater):
 
     def render(self, ctx: Templater.Context) -> str:
         return self.fmt.format(**(ctx.env or {}))
+
+
+format_templater = FormatTemplater
 
 
 ##
@@ -60,6 +81,10 @@ class Pep292Templater(Templater):
     @classmethod
     def from_string(cls, src: str) -> 'Pep292Templater':
         return cls(string.Template(src))
+
+
+pep292_templater = Pep292Templater.from_string
+
 
 ##
 
@@ -93,6 +118,9 @@ class MinjaTemplater(Templater):
         return cls(tmpl)
 
 
+minja_templater = MinjaTemplater.from_string
+
+
 ##
 
 
@@ -118,3 +146,6 @@ class JinjaTemplater(Templater):
             tmpl,
             **kwargs,
         )
+
+
+jinja_templater = JinjaTemplater.from_string

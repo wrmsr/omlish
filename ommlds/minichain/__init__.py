@@ -123,6 +123,7 @@ from .chat.types import (  # noqa
 from .content.content import (  # noqa
     Content,
     ExtendedContent,
+    SingleContent,
 )
 
 from .content.images import (  # noqa
