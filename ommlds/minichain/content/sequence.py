@@ -1,3 +1,8 @@
+"""
+TODO:
+ - track BlockContent nesting depth?
+ - section names? dedicated 'section' content with header and body?
+"""
 import typing as ta
 
 from omlish import dataclasses as dc

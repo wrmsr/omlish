@@ -62,7 +62,7 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
         c0 = m.c
         c1 = materialize_content(c0)
         c2 = squeeze_content(c1, strip_strings=True)
-        c3 = interleave_content(c2, '\n\n')
+        c3 = interleave_content(c2, block_separator='\n\n')
         cs = stringify_content(c3)
 
         return dict(
