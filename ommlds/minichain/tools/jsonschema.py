@@ -68,13 +68,13 @@ class ToolJsonschemaRenderer:
 
         raise TypeError(t)
 
-    def render_tool(self, fn: ToolSpec) -> dict:
+    def render_tool_params(self, ts: ToolSpec) -> dict:
         pr_dct: dict[str, dict] | None = None
         req_lst: list[str] | None = None
-        if fn.params is not None:
+        if ts.params is not None:
             pr_dct = {}
             req_lst = []
-            for p in fn.params or []:
+            for p in ts.params or []:
                 pr_dct[p.name] = {
                     **({'description': self._content_str_preparer.prepare_str(p.desc)} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
@@ -82,23 +82,26 @@ class ToolJsonschemaRenderer:
                 if p.required:
                     req_lst.append(p.name)
 
-        pa_dct = {
+        return {
             'type': 'object',
             **({'properties': pr_dct} if pr_dct is not None else {}),
             **({'required': req_lst} if req_lst is not None else {}),
             # By default any additional properties are allowed.
             # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
-            **({'additionalProperties': False} if not fn.allow_additional_params else {}),
+            **({'additionalProperties': False} if not ts.allow_additional_params else {}),
         }
 
+    def render_tool(self, ts: ToolSpec) -> dict:
+        pa_dct = self.render_tool_params(ts)
+
         ret_dct = {
-            **({'description': self._content_str_preparer.prepare_str(fn.returns_desc)} if fn.returns_desc is not None else {}),  # noqa
-            **({'type': self.render_type(fn.returns_type)} if fn.returns_type is not None else {}),
+            **({'description': self._content_str_preparer.prepare_str(ts.returns_desc)} if ts.returns_desc is not None else {}),  # noqa
+            **({'type': self.render_type(ts.returns_type)} if ts.returns_type is not None else {}),
         }
 
         return {
-            'name': fn.name,
-            **({'description': self._content_str_preparer.prepare_str(fn.desc)} if fn.desc is not None else {}),
+            'name': ts.name,
+            **({'description': self._content_str_preparer.prepare_str(ts.desc)} if ts.desc is not None else {}),
             **({'parameters': pa_dct} if pa_dct else {}),
             **({'return': ret_dct} if ret_dct else {}),
         }
@@ -109,3 +112,7 @@ class ToolJsonschemaRenderer:
 
 def build_tool_spec_json_schema(ts: ToolSpec) -> dict:
     return ToolJsonschemaRenderer().render_tool(ts)
+
+
+def build_tool_spec_params_json_schema(ts: ToolSpec) -> dict:
+    return ToolJsonschemaRenderer().render_tool_params(ts)

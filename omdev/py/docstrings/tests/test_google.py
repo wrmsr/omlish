@@ -1,4 +1,7 @@
 """Tests for Google-style docstring routines."""
+import functools
+import itertools
+
 import pytest
 
 from ..common import ParseError
@@ -399,21 +402,24 @@ def test_multiple_meta() -> None:
     assert docstring.meta[2].description == 'derp'
 
 
-def test_params() -> None:
+@pytest.mark.parametrize('seps', [':', '-', ':-'])
+def test_params(seps) -> None:
     """Test parsing params."""
+
+    sep = functools.partial(next, itertools.chain.from_iterable(itertools.repeat(seps)))
 
     docstring = parse('Short description')
     assert len(docstring.params) == 0
 
     docstring = parse(
-        """
+        f"""
         Short description
 
         Args:
-            name: description 1
-            priority (int): description 2
-            sender (str?): description 3
-            ratio (Optional[float], optional): description 4
+            name{sep()} description 1
+            priority (int){sep()} description 2
+            sender (str?){sep()} description 3
+            ratio (Optional[float], optional){sep()} description 4
         """,
     )
     assert len(docstring.params) == 4
@@ -435,13 +441,13 @@ def test_params() -> None:
     assert docstring.params[3].is_optional
 
     docstring = parse(
-        """
+        f"""
         Short description
 
         Args:
-            name: description 1
+            name{sep()} description 1
                 with multi-line text
-            priority (int): description 2
+            priority (int){sep()} description 2
         """,
     )
     assert len(docstring.params) == 2

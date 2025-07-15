@@ -2,6 +2,7 @@
 TODO:
  - ta.Annotated
  - @dataclass class Params + omdev.py.attrdocs
+ - strict mode - must get params docstring block somewhat like the fn params
 """
 import collections.abc
 import inspect

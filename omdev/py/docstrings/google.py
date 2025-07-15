@@ -44,7 +44,7 @@ class Section(ta.NamedTuple):
     type: SectionType
 
 
-_GOOGLE_TYPED_ARG_PAT = re.compile(r'\s*(.+?)\s*\(\s*(.*[^\s]+)\s*\)')
+_GOOGLE_TYPED_ARG_PAT = re.compile(r'\s*(.+?)\s*\(\s*(.*\S+)\s*\)')
 _GOOGLE_ARG_DESC_PAT = re.compile(r'.*\. Defaults to (.+)\.')
 _MULTIPLE_PATTERN = re.compile(r'(\s*[^:\s]+:)|([^:]*\]:.*)')
 
@@ -70,7 +70,9 @@ class GoogleParser:
     def __init__(
             self,
             sections: list[Section] | None = None,
+            *,
             title_colon: bool = True,
+            meta_separators: ta.Sequence[str] = ':-',
     ) -> None:
         """
         Setup sections.
@@ -85,6 +87,7 @@ class GoogleParser:
             sections = DEFAULT_SECTIONS
         self.sections = {s.title: s for s in sections}
         self.title_colon = title_colon
+        self.meta_separators = meta_separators
         self._setup()
 
     def _setup(self) -> None:
@@ -94,11 +97,11 @@ class GoogleParser:
             colon = ''
 
         self.titles_re = re.compile(
-            '^('
-            + '|'.join(f'({t})' for t in self.sections)
-            + ')'
-            + colon
-            + '[ \t\r\f\v]*$',
+            '^(' +
+            '|'.join(f'({t})' for t in self.sections) +
+            ')' +
+            colon +
+            '[ \t\r\f\v]*$',
             flags=re.MULTILINE,
         )
 
@@ -122,19 +125,23 @@ class GoogleParser:
         ):
             return self._build_single_meta(section, text)
 
-        if ':' not in text:
-            raise ParseError(f'Expected a colon in {text!r}.')
+        seps = self.meta_separators
+        for sep in seps:
+            if sep not in text:
+                continue
 
-        # Split spec and description
-        before, desc = text.split(':', 1)
-        if desc:
-            desc = desc[1:] if desc[0] == ' ' else desc
-            if '\n' in desc:
-                first_line, rest = desc.split('\n', 1)
-                desc = first_line + '\n' + inspect.cleandoc(rest)
-            desc = desc.strip('\n')
+            # Split spec and description
+            before, desc = text.split(sep, 1)
+            if desc:
+                desc = desc[1:] if desc[0] == ' ' else desc
+                if '\n' in desc:
+                    first_line, rest = desc.split('\n', 1)
+                    desc = first_line + '\n' + inspect.cleandoc(rest)
+                desc = desc.strip('\n')
 
-        return self._build_multi_meta(section, before, desc)
+            return self._build_multi_meta(section, before, desc)
+
+        raise ParseError(f'Expected some separator {seps!r} in {text!r}.')
 
     @staticmethod
     def _build_single_meta(section: Section, desc: str) -> DocstringMeta:
@@ -161,7 +168,7 @@ class GoogleParser:
             )
 
         if section.key in PARAM_KEYWORDS:
-            raise ParseError('Expected paramenter name.')
+            raise ParseError('Expected parameter name.')
 
         return DocstringMeta(args=[section.key], description=desc)
 
