@@ -60,7 +60,7 @@ class Project(ProjectBase):
         ],
 
         'formats': [
-            'orjson ~= 3.10',
+            'orjson ~= 3.11',
             'ujson ~= 5.10',
 
             'pyyaml ~= 6.0',

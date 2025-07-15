@@ -5,9 +5,9 @@ from omlish import marshal as msh
 
 from ...metadata import Uuid
 from .._marshal import MarshalContent
-from ..content import Content
 from ..list import ListContent
 from ..text import TextContent
+from ..types import Content
 
 
 @dc.dataclass(frozen=True)

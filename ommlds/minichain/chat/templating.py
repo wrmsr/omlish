@@ -10,7 +10,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text import templating as tpl
 
-from ..content.transforms import transform_content_strings
+from ..content.transforms.strings import transform_content_strings
 from ..envs import Env
 from ..envs import EnvKey
 from .messages import Chat

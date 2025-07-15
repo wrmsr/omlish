@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish import dispatch
 
-from .content import Content
+from .types import Content
 
 
 ##

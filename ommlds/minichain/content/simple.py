@@ -7,9 +7,9 @@ from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
 from ..metadata import MetadataContainer
-from .content import ExtendedContent
-from .content import SingleExtendedContent
 from .metadata import ContentMetadatas
+from .types import ExtendedContent
+from .types import SingleExtendedContent
 
 
 ##

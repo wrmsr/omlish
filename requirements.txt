@@ -59,7 +59,7 @@ psutil==7.0.0
 ## json
 
 #> ujson==5.10.0
-orjson==3.10.18; python_version < "3.14"  # @omlish-venv !13t !14t  # bug 'uninitialized object'
+orjson==3.11.0; python_version < "3.14"  # @omlish-venv !13t !14t  # bug 'uninitialized object'
 
 ## pickle
 

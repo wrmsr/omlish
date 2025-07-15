@@ -2,7 +2,7 @@ import typing as ta
 
 from omlish import lang
 
-from ..content.content import Content
+from ..content.types import Content
 from ..registry import register_type
 from ..services import Request
 from ..services import Response

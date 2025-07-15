@@ -9,8 +9,8 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
-from ..content.content import Content
-from ..content.transforms import ContentTransform
+from ..content.transforms.base import ContentTransform
+from ..content.types import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolExecRequest
 from .metadata import MessageMetadatas

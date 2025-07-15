@@ -7,11 +7,11 @@ from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish.funcs import match as mfs
 
-from .content import Content
-from .content import ExtendedContent
 from .images import ImageContent  # noqa
 from .list import ListContent  # noqa
 from .text import TextContent  # noqa
+from .types import Content
+from .types import ExtendedContent
 
 
 ##

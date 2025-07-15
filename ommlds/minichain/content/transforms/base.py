@@ -5,9 +5,9 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
-from .images import ImageContent
-from .list import ListContent
-from .text import TextContent
+from ..images import ImageContent
+from ..list import ListContent
+from ..text import TextContent
 
 
 T = ta.TypeVar('T')
@@ -44,19 +44,3 @@ class ContentTransform(lang.Abstract):
     @apply.register
     def apply_text(self, c: TextContent) -> ListContent:
         return dc.replace(c, s=self.apply(c.s))
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class StringFnContentTransform(ContentTransform):
-    fn: ta.Callable[[str], str]
-
-    @ContentTransform.apply.register  # noqa
-    def apply_str(self, s: str) -> str:
-        return self.fn(s)
-
-
-def transform_content_strings(fn: ta.Callable[[str], str], o: T) -> T:
-    return StringFnContentTransform(fn).apply(o)
