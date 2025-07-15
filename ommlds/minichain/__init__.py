@@ -137,6 +137,11 @@ from .content.namespaces import (  # noqa
     ContentNamespace,
 )
 
+from .content.prepare import (  # noqa
+    prepare_content,
+    prepare_content_str,
+)
+
 from .content.rendering import (  # noqa
     StringRenderer,
 )

@@ -17,10 +17,7 @@ from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...chat.stream.types import AiMessageDelta
 from ...chat.tools import Tool
-from ...content.materialize import materialize_content
-from ...content.transforms.interleave import interleave_content
-from ...content.transforms.squeeze import squeeze_content
-from ...content.transforms.stringify import stringify_content
+from ...content.prepare import prepare_content_str
 from ...llms.types import MaxTokens
 from ...llms.types import Temperature
 from ...llms.types import TokenUsage
@@ -59,15 +56,9 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
         )
 
     elif isinstance(m, UserMessage):
-        c0 = m.c
-        c1 = materialize_content(c0)
-        c2 = squeeze_content(c1, strip_strings=True)
-        c3 = interleave_content(c2, block_separator='\n\n')
-        cs = stringify_content(c3)
-
         return dict(
             role='user',
-            content=cs,
+            content=prepare_content_str(m.c),
         )
 
     elif isinstance(m, ToolExecResultMessage):
