@@ -24,7 +24,20 @@ Content: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
+CONTENT_RUNTIME_TYPES: tuple[type, ...] = (
+    str,
+    ta.Sequence,
+    ExtendedContent,
+)
+
+#
+
 SingleContent: ta.TypeAlias = ta.Union[  # noqa
     str,
     SingleExtendedContent,
 ]
+
+SINGLE_Content_RUNTIME_TYPES: tuple[type, ...] = (
+    str,
+    SingleExtendedContent,
+)

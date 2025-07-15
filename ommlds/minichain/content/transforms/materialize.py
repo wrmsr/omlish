@@ -9,20 +9,21 @@ from ..types import Content
 from ..types import ExtendedContent
 
 
-CanContent: ta.TypeAlias = ta.Union[  # noqa
-    Content,
-    ta.Iterable['CanContent'],
-    None,
-    type['ContentNamespace'],
-    tpl.Templater,
-]
-
-
 ##
 
 
 class ContentNamespace(lang.Namespace, lang.Abstract):
     pass
+
+
+CanContent: ta.TypeAlias = ta.Union[  # noqa
+    str,
+    ExtendedContent,
+    ta.Iterable['CanContent'],
+    None,
+    type[ContentNamespace],
+    tpl.Templater,
+]
 
 
 ##
