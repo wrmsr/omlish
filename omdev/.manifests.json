@@ -150,7 +150,7 @@
     "module": ".py.attrdocs",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/attrdocs.py",
-    "line": 155,
+    "line": 160,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/attrdocs",

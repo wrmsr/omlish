@@ -39,11 +39,11 @@ from .types import UnionToolDtype
 
 
 @dc.dataclass(frozen=True)
-class _SetToolSpec(ToolSpec, md.FunctionDecoratorObjectMetadata):
+class _ToolSpecAttach(ToolSpec, md.FunctionDecoratorObjectMetadata):
     pass
 
 
-set_tool_spec = _SetToolSpec
+tool_spec_attach = _ToolSpecAttach
 
 
 @dc.dataclass(frozen=True)
@@ -52,6 +52,10 @@ class _ToolSpecOverride(ToolSpec, md.FunctionDecoratorObjectMetadata):
 
 
 tool_spec_override = _ToolSpecOverride
+
+
+def tool_param_metadata(**kwargs: ta.Any) -> dict:
+    return {ToolParam: ToolParam(**kwargs)}
 
 
 ##
@@ -135,7 +139,7 @@ class ToolReflector:
     #
 
     def reflect_function(self, fn: ta.Callable) -> ToolSpec:
-        if (sts := md.get_object_metadata(fn, type=_SetToolSpec)):
+        if (sts := md.get_object_metadata(fn, type=_ToolSpecAttach)):
             return check.isinstance(check.single(sts), ToolSpec)
 
         #

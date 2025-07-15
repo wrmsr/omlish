@@ -1,4 +1,9 @@
 # ruff: noqa: N802
+"""
+TODO:
+ - shared / global ast cache
+  - weak key by module?
+"""
 import ast
 import dataclasses as dc
 import inspect

@@ -220,6 +220,10 @@ from .tools.jsonschema import (  # noqa
 )
 
 from .tools.reflect import (  # noqa
+    tool_spec_attach,
+    tool_spec_override,
+    tool_param_metadata,
+
     reflect_tool_spec,
 )
 

@@ -4,8 +4,8 @@ import typing as ta
 
 from ..jsonschema import ToolJsonschemaRenderer
 from ..reflect import ToolReflector
+from ..reflect import tool_param_metadata
 from ..reflect import tool_spec_override
-from ..types import ToolParam
 
 
 ##
@@ -145,10 +145,6 @@ def test_overrides():
 
 
 ##
-
-
-def tool_param_metadata(**kwargs: ta.Any) -> dict:
-    return {ToolParam: ToolParam(**kwargs)}
 
 
 @dc.dataclass(frozen=True)
