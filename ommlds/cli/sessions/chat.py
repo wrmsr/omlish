@@ -142,7 +142,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     check.state(resp_m.s is None)
 
                     tr: mc.ToolExecRequest = check.single(check.not_none(trs))
-                    tool = check.not_none(self._tool_map)[tr.spec.name]
+                    tool = check.not_none(self._tool_map)[check.non_empty_str(tr.spec.name)]
 
                     tr_dct = dict(
                         id=tr.id,
@@ -155,7 +155,11 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                         raise ToolExecutionRequestDeniedError
 
                     tool_res = tool.fn(**tr.args)
-                    chat.append(mc.ToolExecResultMessage(tr.id, tr.spec.name, json.dumps(tool_res)))
+                    chat.append(mc.ToolExecResultMessage(
+                        tr.id,
+                        check.non_empty_str(tr.spec.name),
+                        json.dumps(tool_res),
+                    ))
 
                     response = mdl.invoke(mc.ChatChoicesRequest(
                         chat,

@@ -35,7 +35,7 @@ def provide_tool_map(its: ta.AbstractSet[InjectedTool]) -> ToolMap:
     dct: dict[str, Tool] = {}
     for it in its:
         check.not_in(it.t.spec.name, dct)
-        dct[it.t.spec.name] = it.t
+        dct[check.non_empty_str(it.t.spec.name)] = it.t
     return ToolMap(dct)
 
 

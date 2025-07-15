@@ -2,7 +2,8 @@ import json
 import typing as ta
 
 from ..jsonschema import ToolJsonschemaRenderer
-from ..reflection import ToolReflector
+from ..reflect import ToolReflector
+from ..reflect import tool_spec_override
 
 
 def foo(
@@ -32,7 +33,7 @@ def foo(
     return repr((i, s, lit, q_s, o_q_s))
 
 
-def test_reflection():
+def test_reflect():
     ts = ToolReflector().make_function(foo)
     print(ts)
 
@@ -97,3 +98,39 @@ def test_reflection():
             },
         },
     }
+
+
+@tool_spec_override(
+    desc="Bar's some params.",
+)
+def bar(
+        i: int,
+        s: str,
+        lit: ta.Literal['foo', 'bar'],
+        q_s: ta.Sequence[str],
+        o_q_s: ta.Sequence[str] | None = None,
+) -> str:
+    """
+    Args:
+        i: Some int
+        s: A string
+        lit: A literal of some kind
+        q_s: A sequence of strings. This is a long docstring to test word wrapping. This is a long docstring to test
+            word wrapping. This is a long docstring to test word wrapping. This is a long docstring to test word
+            wrapping. This is a long docstring to test word wrapping. This is a long docstring to test word wrapping.
+            This is a long docstring to test word wrapping.
+        o_q_s: An *optional* sequence of strings
+
+    Returns:
+        The bar'd params.
+    """
+
+    return repr((i, s, lit, q_s, o_q_s))
+
+
+def test_overrides():
+    ts = ToolReflector().make_function(bar)
+    print(ts)
+
+    js = ToolJsonschemaRenderer().render_tool(ts)
+    print(json.dumps(js, indent=2, separators=(', ', ': ')))

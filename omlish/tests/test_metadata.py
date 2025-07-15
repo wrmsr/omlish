@@ -35,6 +35,9 @@ def test_function_metadata():
 
     assert get_object_metadata(functools.partial(qux, 1)) == [FooMetadata('1')]
 
+    assert FooMetadata('2')(qux) is qux
+    assert get_object_metadata(qux) == [FooMetadata('1'), FooMetadata('2')]
+
 
 ##
 

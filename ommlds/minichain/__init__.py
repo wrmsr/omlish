@@ -206,7 +206,7 @@ from .tools.jsonschema import (  # noqa
     build_tool_spec_json_schema,
 )
 
-from .tools.reflection import (  # noqa
+from .tools.reflect import (  # noqa
     reflect_tool_spec,
 )
 

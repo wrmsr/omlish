@@ -135,7 +135,7 @@ class OpenaiChatRequestHandler:
             for t in oc.pop(Tool, []):
                 if t.spec.name in tools_by_name:
                     raise NameError(t.spec.name)
-                tools_by_name[t.spec.name] = t.spec
+                tools_by_name[check.non_empty_str(t.spec.name)] = t.spec
 
         if (mk := self._mandatory_kwargs):
             for k, v in mk.items():

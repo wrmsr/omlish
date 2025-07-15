@@ -152,7 +152,7 @@ class ToolParam:
 @msh.update_fields_metadata(['desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
 @msh.update_fields_metadata(['allow_additional_params'], omit_if=operator.not_)
 class ToolSpec:
-    name: str
+    name: str | None = None
 
     _: dc.KW_ONLY
 
@@ -163,11 +163,6 @@ class ToolSpec:
 
     returns_desc: str | None = None
     returns_type: ToolDtype | None = None
-
-    #
-
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
 
     @cached.property
     @dc.init

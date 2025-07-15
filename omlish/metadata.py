@@ -91,7 +91,15 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
     return obj
 
 
-def get_object_metadata(obj: ta.Any, *, strict: bool = False) -> ta.Sequence[ObjectMetadata]:
+_type = type
+
+
+def get_object_metadata(
+        obj: ta.Any,
+        *,
+        strict: bool = False,
+        type: ta.Type | tuple[ta.Type, ...] | None = None,  # noqa
+) -> ta.Sequence[ObjectMetadata]:
     try:
         tgt = _unwrap_object_metadata_target(obj)
     except ObjectMetadataTargetTypeError:
@@ -104,7 +112,12 @@ def get_object_metadata(obj: ta.Any, *, strict: bool = False) -> ta.Sequence[Obj
     except AttributeError:
         return ()
 
-    return dct.get(_OBJECT_METADATA_ATTR, ())
+    ret = dct.get(_OBJECT_METADATA_ATTR, ())
+
+    if type is not None:
+        ret = [o for o in ret if isinstance(o, type)]
+
+    return ret
 
 
 ##

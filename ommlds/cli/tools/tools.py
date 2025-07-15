@@ -22,7 +22,7 @@ def build_tool_map(its: ta.Iterable[Tool]) -> ToolMap:
     dct: dict[str, Tool] = {}
     for t in its:
         check.not_in(t.spec.name, dct)
-        dct[t.spec.name] = t
+        dct[check.non_empty_str(t.spec.name)] = t
     return ToolMap(dct)
 
 

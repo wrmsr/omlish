@@ -65,7 +65,7 @@ class LlamacppChatChoicesService:
                 if t.spec.name in tools_by_name:
                     raise NameError(t.spec.name)
 
-                tools_by_name[t.spec.name] = dict(
+                tools_by_name[check.non_empty_str(t.spec.name)] = dict(
                     name=t.spec.name,
 
                     **lang.opt_kw(description=t.spec.desc),
