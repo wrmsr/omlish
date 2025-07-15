@@ -1975,6 +1975,31 @@ def unlinking_if_exists(path: str) -> ta.Iterator[None]:
 ##
 
 
+@ta.overload
+def path_dirname(p: str, n: int = 1) -> str:
+    ...
+
+
+@ta.overload
+def path_dirname(p: bytes, n: int = 1) -> bytes:
+    ...
+
+
+def path_dirname(p, n=1):
+    if isinstance(p, bytes):
+        sep: ta.Any = b'/'
+    else:
+        sep = '/'
+    p = os.fspath(p)
+    i = -1
+    for _ in range(n):
+        i = p.rindex(sep, 0, i)
+    head = p[:i + 1]
+    if head and head != sep * len(head):
+        head = head.rstrip(sep)
+    return head
+
+
 def abs_real_path(p: str) -> str:
     return os.path.abspath(os.path.realpath(p))
 
