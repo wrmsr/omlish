@@ -1,3 +1,7 @@
+"""
+TODO:
+ - '$schema': 'http://json-schema.org/draft-07/schema#'
+"""
 from omlish import check
 
 from ..content.prepare import ContentStrPreparer
