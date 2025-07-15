@@ -139,7 +139,7 @@ class ToolParam:
 
     type: ToolDtype | None = None
 
-    required: bool = False
+    required: bool | None = None
 
 
 ##
@@ -156,7 +156,7 @@ class ToolSpec:
     desc: CanContent = None
 
     params: ta.Sequence[ToolParam] | None = None
-    allow_additional_params: bool = False
+    allow_additional_params: bool | None = None
 
     returns_desc: CanContent = None
     returns_type: ToolDtype | None = None

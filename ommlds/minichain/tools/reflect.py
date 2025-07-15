@@ -241,13 +241,13 @@ class ToolReflector:
                 tp_kw.update(type=dc_rfl.type_hints[f.name])
 
             if 'required' not in tp_kw:
-                tp_kw.update(required=f.default is not dc.MISSING)
+                tp_kw.update(required=f.default is dc.MISSING)
 
             tpn = check.non_empty_str(tp_kw['name'])
             check.not_in(tpn, params)
             params[tpn] = ToolParam(**tp_kw)
 
-        return tuple(params.values())
+        return tuple(params.values())  # noqa
 
 ##
 

@@ -704,7 +704,7 @@ def test_broken_arguments() -> None:
             """This is a test
 
             Args:
-                param - poorly formatted
+                param ~ poorly formatted
             """,
         )
 
