@@ -15,6 +15,9 @@ def confirm_action(
         stdin = sys.stdin
     if not stdin.isatty():
         raise OSError(f'stdin {stdin!r} is not a tty')
+    # FIXME: we want to make sure we only run on a tty, but we als want input()'s readline goodies..
+    if stdin is not sys.stdin:
+        raise RuntimeError('Unsupported stdin')
 
     if stdout is None:
         stdout = sys.stdout
@@ -37,4 +40,4 @@ def confirm_action(
         elif c == 'n':
             return False
         else:
-            print("Please enter 'y' for yes or 'n' for no.")
+            print("Please enter 'y' for yes or 'n' for no.", file=stdout)

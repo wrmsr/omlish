@@ -1,3 +1,5 @@
+from ..content.prepare import ContentStrPreparer
+from ..content.prepare import default_content_str_preparer
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
@@ -13,6 +15,17 @@ from .types import UnionToolDtype
 
 
 class ToolJsonschemaRenderer:
+    def __init__(
+            self,
+            *,
+            content_str_preparer: ContentStrPreparer | None = None,
+    ) -> None:
+        super().__init__()
+
+        if content_str_preparer is None:
+            content_str_preparer = default_content_str_preparer()
+        self._content_str_preparer = content_str_preparer
+
     def render_type(self, t: ToolDtype) -> dict:
         if isinstance(t, PrimitiveToolDtype):
             return {'type': t.type}
@@ -63,7 +76,7 @@ class ToolJsonschemaRenderer:
             req_lst = []
             for p in fn.params or []:
                 pr_dct[p.name] = {
-                    **({'description': p.desc} if p.desc is not None else {}),
+                    **({'description': self._content_str_preparer.prepare_str(p.desc)} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
                 }
                 if p.required:
@@ -79,13 +92,13 @@ class ToolJsonschemaRenderer:
         }
 
         ret_dct = {
-            **({'description': fn.returns_desc} if fn.returns_desc is not None else {}),
+            **({'description': self._content_str_preparer.prepare_str(fn.returns_desc)} if fn.returns_desc is not None else {}),  # noqa
             **({'type': self.render_type(fn.returns_type)} if fn.returns_type is not None else {}),
         }
 
         return {
             'name': fn.name,
-            **({'description': fn.desc} if fn.desc is not None else {}),
+            **({'description': self._content_str_preparer.prepare_str(fn.desc)} if fn.desc is not None else {}),
             **({'parameters': pa_dct} if pa_dct else {}),
             **({'return': ret_dct} if ret_dct else {}),
         }

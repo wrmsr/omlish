@@ -1,7 +1,3 @@
-"""
-TODO:
- - inject[ability], obviously
-"""
 import abc
 import dataclasses as dc
 import typing as ta
@@ -62,9 +58,17 @@ class DefaultContentStrPreparer(ContentStrPreparer):
 ##
 
 
+def default_content_preparer(**kwargs: ta.Any) -> ContentPreparer:
+    return DefaultContentPreparer(**kwargs)
+
+
+def default_content_str_preparer(**kwargs: ta.Any) -> ContentStrPreparer:
+    return DefaultContentStrPreparer(DefaultContentPreparer(**kwargs))
+
+
 def prepare_content(c: CanContent, **kwargs: ta.Any) -> Content:
-    return DefaultContentPreparer(**kwargs).prepare(c)
+    return default_content_preparer(**kwargs).prepare(c)
 
 
 def prepare_content_str(c: CanContent, **kwargs: ta.Any) -> str:
-    return DefaultContentStrPreparer(DefaultContentPreparer(**kwargs)).prepare_str(c)
+    return default_content_str_preparer(**kwargs).prepare_str(c)
