@@ -10,6 +10,8 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from ..content.materialize import CanContent
+
 
 ##
 
@@ -133,7 +135,7 @@ class ToolParam:
 
     _: dc.KW_ONLY
 
-    desc: str | None = None
+    desc: CanContent = None
 
     type: ToolDtype | None = None
 
@@ -156,12 +158,12 @@ class ToolSpec:
 
     _: dc.KW_ONLY
 
-    desc: str | None = None
+    desc: CanContent = None
 
     params: ta.Sequence[ToolParam] | None = None
     allow_additional_params: bool = False
 
-    returns_desc: str | None = None
+    returns_desc: CanContent = None
     returns_type: ToolDtype | None = None
 
     @cached.property
