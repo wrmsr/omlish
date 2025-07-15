@@ -164,6 +164,6 @@ class BarParams:
     o_q_s: ta.Sequence[str] | None = dc.field(default=None, metadata=tool_param_metadata(desc='Some int'))
 
 
-# def test_params_dc():
-#     tps = ToolReflector().reflect_params_dataclass(BarParams)
-#     print(tps)
+def test_params_dc():
+    tps = ToolReflector().reflect_params_dataclass(BarParams)
+    print(tps)

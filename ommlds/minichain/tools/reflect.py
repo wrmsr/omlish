@@ -11,6 +11,7 @@ TODO:
 """
 import collections.abc
 import inspect
+import textwrap
 import types
 import typing as ta
 
@@ -191,6 +192,8 @@ class ToolReflector:
 
             params: dict[str, ToolParam] = {}
             for sig_p in sig().parameters.values():
+                check.not_in(sig_p.name, params)
+
                 ds_p = ds_p_dct.get(sig_p.name)
 
                 params[sig_p.name] = ToolParam(
@@ -215,7 +218,36 @@ class ToolReflector:
         check.isinstance(cls, type)
         check.arg(dc.is_dataclass(cls))
 
-        raise NotImplementedError
+        dc_rfl = dc.reflect(cls)
+
+        params: dict[str, ToolParam] = {}
+        for f in dc_rfl.fields.values():
+            tp_kw = dict(
+                name=f.name,
+            )
+
+            md_tp = f.metadata.get(ToolParam)
+            if md_tp is not None:
+                tp_kw.update({
+                    k: v
+                    for k, v in dc.asdict(md_tp).items()
+                    if v is not None
+                })
+
+            if 'desc' in tp_kw:
+                tp_kw.update(desc=textwrap.dedent(tp_kw['desc']))
+
+            if 'type' not in tp_kw:
+                tp_kw.update(type=dc_rfl.type_hints[f.name])
+
+            if 'required' not in tp_kw:
+                tp_kw.update(required=f.default is not dc.MISSING)
+
+            tpn = check.non_empty_str(tp_kw['name'])
+            check.not_in(tpn, params)
+            params[tpn] = ToolParam(**tp_kw)
+
+        return tuple(params.values())
 
 ##
 
