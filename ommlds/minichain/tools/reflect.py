@@ -1,7 +1,12 @@
 """
 TODO:
  - ta.Annotated
- - @dataclass class Params + omdev.py.attrdocs
+ - @dataclass class Params
+  - params desc options:
+   - dc.field(metadata=dict(ToolParam: ToolParam(desc=...
+   - @tool_spec_override(params=...
+   - omdev.py.attrdocs
+   - ta.Annotated[ToolSpecParam(...
  - strict mode - must get params docstring block somewhat like the fn params
 """
 import collections.abc
@@ -52,7 +57,7 @@ tool_spec_override = _ToolSpecOverride
 
 
 class ToolReflector:
-    def make_union_type(self, *args: rfl.Type) -> ToolDtype:
+    def reflect_union_type(self, *args: rfl.Type) -> ToolDtype:
         check.unique(args)
 
         if types.NoneType in args:
@@ -65,11 +70,11 @@ class ToolReflector:
 
         ret: ToolDtype
         if len(args) == 1:
-            ret = self.make_type(check.single(args))
+            ret = self.reflect_type(check.single(args))
 
         else:
             ret = UnionToolDtype(tuple(
-                self.make_type(a_rty)
+                self.reflect_type(a_rty)
                 for a_rty in args
             ))
 
@@ -88,36 +93,36 @@ class ToolReflector:
         dict,
     ])
 
-    def make_type(self, rty: rfl.Type) -> ToolDtype:
+    def reflect_type(self, rty: rfl.Type) -> ToolDtype:
         if isinstance(rty, (type, rfl.Any)):
             return PrimitiveToolDtype.of(rty)
 
         if isinstance(rty, rfl.Union):
-            return self.make_union_type(*rty.args)
+            return self.reflect_union_type(*rty.args)
 
         if isinstance(rty, rfl.Generic):
             g_cls = rty.cls
 
             if g_cls in self.SEQUENCE_TYPES:
                 a_rty = check.single(rty.args)
-                return SequenceToolDtype(self.make_type(a_rty))
+                return SequenceToolDtype(self.reflect_type(a_rty))
 
             if g_cls in self.MAPPING_TYPES:
                 k_rty, v_rty = rty.args
                 return MappingToolDtype(
-                    self.make_type(k_rty),
-                    self.make_type(v_rty),
+                    self.reflect_type(k_rty),
+                    self.reflect_type(v_rty),
                 )
 
             if g_cls is tuple:
                 return TupleToolDtype(tuple(
-                    self.make_type(a_rty)
+                    self.reflect_type(a_rty)
                     for a_rty in rty.args
                 ))
 
         if isinstance(rty, rfl.Literal):
             return EnumToolDtype(
-                self.make_union_type(*col.unique(
+                self.reflect_union_type(*col.unique(
                     rfl.type_(type(a))
                     for a in rty.args
                 )),
@@ -126,7 +131,9 @@ class ToolReflector:
 
         raise TypeError(rty)
 
-    def make_function(self, fn: ta.Callable) -> ToolSpec:
+    #
+
+    def reflect_function(self, fn: ta.Callable) -> ToolSpec:
         if (sts := md.get_object_metadata(fn, type=_SetToolSpec)):
             return check.isinstance(check.single(sts), ToolSpec)
 
@@ -168,7 +175,7 @@ class ToolReflector:
             return ta.get_type_hints(fn)
 
         if 'returns_type' not in ts_kw and 'return' in th():
-            ts_kw.update(returns_type=self.make_type(rfl.type_(th()['return'])))
+            ts_kw.update(returns_type=self.reflect_type(rfl.type_(th()['return'])))
 
         #
 
@@ -191,7 +198,7 @@ class ToolReflector:
 
                     desc=ds_p.description if ds_p is not None else None,
 
-                    type=self.make_type(rfl.type_(th()[sig_p.name])) if sig_p.name in th() else None,
+                    type=self.reflect_type(rfl.type_(th()[sig_p.name])) if sig_p.name in th() else None,
 
                     required=sig_p.default is inspect.Parameter.empty,
                 )
@@ -202,9 +209,16 @@ class ToolReflector:
 
         return ToolSpec(**ts_kw)
 
+    #
+
+    def reflect_params_dataclass(self, cls: type) -> ta.Sequence[ToolParam]:
+        check.isinstance(cls, type)
+        check.arg(dc.is_dataclass(cls))
+
+        raise NotImplementedError
 
 ##
 
 
 def reflect_tool_spec(fn: ta.Callable) -> ToolSpec:
-    return ToolReflector().make_function(fn)
+    return ToolReflector().reflect_function(fn)

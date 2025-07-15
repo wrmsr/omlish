@@ -1,3 +1,5 @@
+from omlish import check
+
 from ..content.prepare import ContentStrPreparer
 from ..content.prepare import default_content_str_preparer
 from .types import EnumToolDtype
@@ -75,12 +77,12 @@ class ToolJsonschemaRenderer:
             pr_dct = {}
             req_lst = []
             for p in ts.params or []:
-                pr_dct[p.name] = {
+                pr_dct[check.non_empty_str(p.name)] = {
                     **({'description': self._content_str_preparer.prepare_str(p.desc)} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
                 }
                 if p.required:
-                    req_lst.append(p.name)
+                    req_lst.append(check.non_empty_str(p.name))
 
         return {
             'type': 'object',

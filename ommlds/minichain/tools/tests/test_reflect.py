@@ -1,9 +1,14 @@
+import dataclasses as dc
 import json
 import typing as ta
 
 from ..jsonschema import ToolJsonschemaRenderer
 from ..reflect import ToolReflector
 from ..reflect import tool_spec_override
+from ..types import ToolParam
+
+
+##
 
 
 def foo(
@@ -34,7 +39,7 @@ def foo(
 
 
 def test_reflect():
-    ts = ToolReflector().make_function(foo)
+    ts = ToolReflector().reflect_function(foo)
     print(ts)
 
     js = ToolJsonschemaRenderer().render_tool(ts)
@@ -100,6 +105,9 @@ def test_reflect():
     }
 
 
+##
+
+
 @tool_spec_override(
     desc="Bar's some params.",
 )
@@ -129,8 +137,33 @@ def bar(
 
 
 def test_overrides():
-    ts = ToolReflector().make_function(bar)
+    ts = ToolReflector().reflect_function(bar)
     print(ts)
 
     js = ToolJsonschemaRenderer().render_tool(ts)
     print(json.dumps(js, indent=2, separators=(', ', ': ')))
+
+
+##
+
+
+def tool_param_metadata(**kwargs: ta.Any) -> dict:
+    return {ToolParam: ToolParam(**kwargs)}
+
+
+@dc.dataclass(frozen=True)
+class BarParams:
+    i: int = dc.field(metadata=tool_param_metadata(desc='Some int'))
+    s: str = dc.field(metadata=tool_param_metadata(desc='A string'))
+    lit: ta.Literal['foo', 'bar'] = dc.field(metadata=tool_param_metadata(desc='A literal of some kind'))
+    q_s: ta.Sequence[str] = dc.field(metadata=tool_param_metadata(desc="""
+        A sequence of strings. This is a long docstring to test word wrapping. This is a long docstring to test word
+        wrapping. This is a long docstring to test word wrapping. This is a long docstring to test word wrapping. This
+        is a long docstring to test word wrapping. This is a long docstring to test word wrapping.
+    """))
+    o_q_s: ta.Sequence[str] | None = dc.field(default=None, metadata=tool_param_metadata(desc='Some int'))
+
+
+# def test_params_dc():
+#     tps = ToolReflector().reflect_params_dataclass(BarParams)
+#     print(tps)

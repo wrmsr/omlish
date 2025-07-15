@@ -128,10 +128,10 @@ class EnumToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['desc', 'type'], omit_if=lang.is_none)
+@msh.update_fields_metadata(['name', 'desc', 'type'], omit_if=lang.is_none)
 @msh.update_fields_metadata(['required'], omit_if=operator.not_)
 class ToolParam:
-    name: str
+    name: str | None = None
 
     _: dc.KW_ONLY
 
@@ -141,17 +141,12 @@ class ToolParam:
 
     required: bool = False
 
-    #
-
-    def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-
 
 ##
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
+@msh.update_fields_metadata(['name', 'desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
 @msh.update_fields_metadata(['allow_additional_params'], omit_if=operator.not_)
 class ToolSpec:
     name: str | None = None
@@ -167,10 +162,9 @@ class ToolSpec:
     returns_type: ToolDtype | None = None
 
     @cached.property
-    @dc.init
     def params_by_name(self) -> ta.Mapping[str, ToolParam]:
         return col.make_map_by(
-            lambda p: p.name,
+            lambda p: check.non_empty_str(p.name),
             self.params or [],
             strict=True,
         )
