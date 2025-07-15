@@ -9,8 +9,8 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..content.materialize import CanContent
 from ..content.transforms.base import ContentTransform
-from ..content.types import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolExecRequest
 from .metadata import MessageMetadatas
@@ -56,7 +56,7 @@ class SystemMessage(Message, lang.Final):
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['name'], omit_if=operator.not_)
 class UserMessage(Message, lang.Final):
-    c: Content
+    c: CanContent
 
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 

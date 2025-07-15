@@ -6,7 +6,7 @@ from omlish import dispatch
 from omlish import lang
 
 from ..images import ImageContent
-from ..list import ListContent
+from ..sequence import SequenceContent
 from ..text import TextContent
 
 
@@ -34,13 +34,13 @@ class ContentTransform(lang.Abstract):
     #
 
     @apply.register
-    def apply_image(self, c: ImageContent) -> ImageContent:
+    def apply_image_content(self, c: ImageContent) -> ImageContent:
         return c
 
     @apply.register
-    def apply_list(self, c: ListContent) -> ListContent:
+    def apply_sequence_content(self, c: SequenceContent) -> SequenceContent:
         return dc.replace(c, l=self.apply(c.l))
 
     @apply.register
-    def apply_text(self, c: TextContent) -> ListContent:
+    def apply_text_content(self, c: TextContent) -> SequenceContent:
         return dc.replace(c, s=self.apply(c.s))

@@ -1,19 +1,19 @@
+"""
+TODO:
+ - ExtendedCanContent
+"""
 import typing as ta
 
 from omlish import check
 from omlish import dispatch
-from omlish import lang
 from omlish.text import templating as tpl
 
-from ..types import Content
-from ..types import ExtendedContent
+from .namespaces import ContentNamespace
+from .types import Content
+from .types import ExtendedContent
 
 
 ##
-
-
-class ContentNamespace(lang.Namespace, lang.Abstract):
-    pass
 
 
 CanContent: ta.TypeAlias = ta.Union[  # noqa
@@ -50,7 +50,7 @@ class ContentMaterializer:
         return o
 
     @materialize.register
-    def materialize_extended(self, o: ExtendedContent) -> Content:
+    def materialize_extended_content(self, o: ExtendedContent) -> Content:
         return o
 
     #

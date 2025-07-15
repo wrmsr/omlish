@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import dispatch
 
-from ..list import ListContent
+from ..sequence import SequenceContent
 from ..text import TextContent
 from ..types import Content
 
@@ -42,11 +42,11 @@ class ContentStringWriter:
     #
 
     @write.register
-    def write_text(self, c: TextContent) -> None:
+    def write_text_content(self, c: TextContent) -> None:
         self._out.write(c.s)
 
     @write.register
-    def write_list(self, c: ListContent) -> None:
+    def write_sequence_content(self, c: SequenceContent) -> None:
         for e in c.l:
             self.write(e)
 

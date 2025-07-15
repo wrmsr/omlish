@@ -17,8 +17,11 @@ Freestanding options:
 
 TODO:
  - cext interop
- - gen cmake
+ - cc cmake
+  - shlex shebang to extract opts
   - nanobind
+  - 2 dep mechanisms? not necessarily bad
+ - cc ij, based off of cmake
  - fix CFLAGS/CCFLAGS/CPPFLAGS/CXXFLAGS
  - jit-gen cmake mode? multi-src builds
 """

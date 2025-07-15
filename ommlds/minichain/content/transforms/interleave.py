@@ -4,7 +4,7 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
-from ..list import ListContent
+from ..sequence import SequenceContent
 from ..types import Content
 
 
@@ -33,7 +33,7 @@ class ContentInterleaver:
         return list(lang.interleave(map(self.interleave, c), self._separator))
 
     @interleave.register
-    def interleave_list(self, c: ListContent) -> Content:
+    def interleave_sequence_content(self, c: SequenceContent) -> Content:
         return dc.replace(c, l=list(lang.interleave(map(self.interleave, c.l), self._separator)))
 
 

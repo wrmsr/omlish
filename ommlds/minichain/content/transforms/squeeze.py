@@ -3,7 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import dispatch
 
-from ..list import ListContent
+from ..sequence import SequenceContent
 from ..text import TextContent
 from ..types import Content
 from ..types import SingleContent
@@ -44,11 +44,11 @@ class ContentSqueezer:
     #
 
     @squeeze.register
-    def squeeze_single(self, c: SingleContent) -> ta.Iterable[SingleContent]:
+    def squeeze_single_content(self, c: SingleContent) -> ta.Iterable[SingleContent]:
         return [c]
 
     @squeeze.register
-    def squeeze_text(self, c: TextContent) -> ta.Iterable[SingleContent]:
+    def squeeze_text_content(self, c: TextContent) -> ta.Iterable[SingleContent]:
         if self._strip_strings:
             if (ss := c.s.strip()) != c.s:
                 c = dc.replace(c, s=ss)
@@ -57,7 +57,7 @@ class ContentSqueezer:
             yield c.s
 
     @squeeze.register
-    def squeeze_list(self, c: ListContent) -> ta.Iterable[SingleContent]:
+    def squeeze_sequence_content(self, c: SequenceContent) -> ta.Iterable[SingleContent]:
         for e in c.l:
             yield from self.squeeze(e)
 
