@@ -1,6 +1,9 @@
 """
 TODO:
+ - max_depth
  - '...' marker for truncated directories
+  - any directory with unlisted children will be suffixed inline with '...'
+  - absence of '...' indicates an empty directory
 """
 import dataclasses as dc
 import typing as ta
@@ -15,7 +18,16 @@ from .running import LsItem
 ##
 
 
-@dc.dataclass()
+class RenderedLsLines(ta.NamedTuple):
+    lines: list[str]
+    joined_len: int
+    is_truncated: bool
+
+
+#
+
+
+@dc.dataclass(eq=False)
 class _LsLine:
     item: LsItem
     d: int
@@ -30,28 +42,16 @@ class _LsLine:
         return f'{self.__class__.__name__}<{self.item.path!r}, {self.s!r}>'
 
 
-class RenderedLsLines(ta.NamedTuple):
-    lines: list[str]
-    joined_len: int
-    is_truncated: bool
+@dc.dataclass()
+class _LsRenderRun:
+    root: DirLsItem
 
+    _: dc.KW_ONLY
 
-class LsLinesRenderer:
-    def __init__(
-            self,
-            *,
-            soft_max_len: int | None = None,
-    ) -> None:
-        super().__init__()
+    soft_max_len: int | None = None
 
-        self._soft_max_len = soft_max_len
-
-    def render(self, root: DirLsItem) -> RenderedLsLines:
-        check.state(not root.path.endswith('/'))
-        root_pfx = root.path + '/'
-
-        #
-
+    @lang.cached_function
+    def root_line(self) -> _LsLine:
         def rec0(cur: LsItem, *, d: int = 0) -> _LsLine:
             if isinstance(cur, DirLsItem):
                 return _LsLine(
@@ -69,10 +69,10 @@ class LsLinesRenderer:
                     d,
                 )
 
-        root_line = rec0(root)
+        return rec0(self.root)
 
-        #
-
+    @lang.cached_function
+    def all_lines(self) -> ta.Sequence[_LsLine]:
         all_lines: list[_LsLine] = []
 
         def rec1(cur: _LsLine) -> None:
@@ -81,64 +81,23 @@ class LsLinesRenderer:
                 for child in cur.children.values():
                     rec1(child)
 
-        rec1(root_line)
+        rec1(self.root_line())
+        return all_lines
 
-        #
+    def render_item(self, item: LsItem) -> str:
+        root_pfx = self.root.path + '/'
 
-        cur_len = 0
+        if item.path == self.root.path:
+            return f'- {self.root.path}'
 
-        def add_line(s: str, *, force: bool = False) -> str | None:
-            check.not_in('\n', s)
+        else:
+            return (
+                f'{"  " * (lang.strip_prefix(item.path, root_pfx).count("/") + 1)}'
+                f'- {item.name}'
+                f'{"/" if isinstance(item, DirLsItem) else ""}'
+            )
 
-            nonlocal cur_len
-            sl = len(s) + (1 if cur_len else 0)
-
-            if not force and (self._soft_max_len is not None and (cur_len + sl) > self._soft_max_len):
-                return None
-
-            cur_len += sl
-            return s
-
-        #
-
-        def render_item(item: LsItem) -> str:
-            if item.path == root.path:
-                return f'- {root.path}'
-
-            else:
-                return (
-                    f'{"  " * (lang.strip_prefix(item.path, root_pfx).count("/") + 1)}'
-                    f'- {item.name}'
-                    f'{"/" if isinstance(item, DirLsItem) else ""}'
-                )
-
-        #
-
-        root_line.s = add_line(render_item(root_line.item), force=True)
-
-        for root_child in check.not_none(root_line.children).values():
-            root_child.s = add_line(render_item(root_child.item), force=True)
-
-        sorted_lines = sorted(
-            all_lines,
-            key=lambda line: (line.children is None, line.d),
-        )
-
-        is_truncated = False
-
-        for cur in sorted_lines:
-            if cur.s is not None:
-                continue
-
-            s = add_line(render_item(cur.item))
-            if s is None:
-                is_truncated = True
-                break
-
-            cur.s = s
-
-        #
-
+    def collect_lines(self) -> list[str]:
         ret: list[str] = []
 
         def rec2(cur: _LsLine) -> None:
@@ -151,10 +110,76 @@ class LsLinesRenderer:
                 for child in cur.children.values():
                     rec2(child)
 
-        rec2(root_line)
+        rec2(self.root_line())
+        return ret
+
+    def run(self) -> RenderedLsLines:
+        cur_len = 0
+
+        def add_line(s: str, *, force: bool = False) -> str | None:
+            check.not_in('\n', s)
+
+            nonlocal cur_len
+            sl = len(s) + (1 if cur_len else 0)
+
+            if not force and (self.soft_max_len is not None and (cur_len + sl) > self.soft_max_len):
+                return None
+
+            cur_len += sl
+            return s
+
+        #
+
+        root_line = self.root_line()
+        root_line.s = add_line(self.render_item(root_line.item), force=True)
+
+        for root_child in check.not_none(root_line.children).values():
+            root_child.s = add_line(self.render_item(root_child.item), force=True)
+
+        sorted_lines = sorted(
+            self.all_lines(),
+            key=lambda line: (line.children is None, line.d),
+        )
+
+        is_truncated = False
+
+        for cur in sorted_lines:
+            if cur.s is not None:
+                continue
+
+            s = add_line(self.render_item(cur.item))
+            if s is None:
+                is_truncated = True
+                break
+
+            cur.s = s
+
+        #
 
         return RenderedLsLines(
-            ret,
+            self.collect_lines(),
             cur_len,
             is_truncated,
         )
+
+
+#
+
+
+class LsLinesRenderer:
+    def __init__(
+            self,
+            *,
+            soft_max_len: int | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._soft_max_len = soft_max_len
+
+    def render(self, root: DirLsItem) -> RenderedLsLines:
+        check.state(not root.path.endswith('/'))
+
+        return _LsRenderRun(
+            root,
+            soft_max_len=self._soft_max_len,
+        ).run()

@@ -51,7 +51,7 @@ tree-sitter-python==0.23.6
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.403
-basedpyright==1.30.1
+basedpyright==1.31.0
 
 blobfile==3.0.0
 
