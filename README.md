@@ -12,7 +12,7 @@ The structure of the repo is managed by the internal [pyproject](omdev/pyproject
 [`__about__.py`](omlish/__about__.py). The root-level [`pyproject.toml`](pyproject.toml) does not actually contain a
 PEP-621 project.
 
-General code is written for python 3.12+, '[lite](omlish#lite-code)' code for 3.8+.
+General code is written for python 3.13+, '[lite](omlish#lite-code)' code for 3.8+.
 
 # Core libraries
 
