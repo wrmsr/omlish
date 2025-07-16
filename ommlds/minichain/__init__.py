@@ -137,6 +137,12 @@ from .content.namespaces import (  # noqa
     ContentNamespace,
 )
 
+from .content.placeholders import (  # noqa
+    ContentPlaceholder,
+    ContentPlaceholderMarker,
+    content_placeholder,
+)
+
 from .content.prepare import (  # noqa
     ContentPreparer,
     ContentStrPreparer,

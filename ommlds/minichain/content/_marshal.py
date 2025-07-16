@@ -7,11 +7,10 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish.funcs import match as mfs
-from omlish.text import templating as tpl
 
 from .images import ImageContent  # noqa
 from .materialize import CanContent
-from .namespaces import ContentNamespace
+from .materialize import _InnerCanContent
 from .sequence import BlockContent  # noqa
 from .sequence import InlineContent  # noqa
 from .text import TextContent  # noqa
@@ -88,11 +87,8 @@ class MarshalCanContent(lang.NotInstantiable, lang.Final):
 
 
 MarshalCanContentUnion: ta.TypeAlias = ta.Union[  # noqa
-    str,
-    ExtendedContent,
     ta.Iterable[MarshalCanContent],
-    type[ContentNamespace],
-    tpl.Templater,
+    _InnerCanContent,
 ]
 
 
