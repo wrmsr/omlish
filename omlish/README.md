@@ -28,8 +28,8 @@ Core utilities and foundational code. It's relatively large but completely self-
   - **[cache](collections/cache)** - A configurable LRU / LFU cache with options like ttl and  max size / weight.
   - **[hasheq](collections/hasheq.py)** - A dict taking an external `__hash__` / `__eq__` implementation.
   - **[identity](collections/identity.py)** - Identity-keyed collections.
-  - **[sorted](collections/sorted)** - Interfaces for key-sorted collections and mappings, and a simple but correct
-    skiplist-backed implementation.
+  - **[sorted](collections/sorted)** - Interfaces for value-sorted collections and key-sorted mappings, and a simple but
+  - correct skiplist-backed implementation.
   - **[persistent](collections/persistent)** - Interfaces for
     [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) maps, and a simple but correct treap-backed
     implementation.
