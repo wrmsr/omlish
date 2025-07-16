@@ -47,7 +47,7 @@ class Message(  # noqa
 
 @dc.dataclass(frozen=True)
 class SystemMessage(Message, lang.Final):
-    s: str
+    c: CanContent
 
 
 #
@@ -94,7 +94,7 @@ Chat: ta.TypeAlias = ta.Sequence[Message]
 class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
     @dispatch.install_method(ContentTransform.apply)
     def apply_system_message(self, m: SystemMessage) -> SystemMessage:
-        return dc.replace(m, s=self.apply(m.s))
+        return dc.replace(m, c=self.apply(m.c))
 
     @dispatch.install_method(ContentTransform.apply)
     def apply_user_message(self, m: UserMessage) -> UserMessage:

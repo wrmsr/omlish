@@ -38,16 +38,16 @@ class GoogleChatChoicesService:
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
     def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, (SystemMessage, AiMessage)):
-            return m.s
+        if isinstance(m, AiMessage):
+            return check.isinstance(m.s, str)
 
-        elif isinstance(m, UserMessage):
+        elif isinstance(m, (SystemMessage, UserMessage)):
             return check.isinstance(m.c, str)
 
         else:
             raise TypeError(m)
 
-    BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
+    BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',

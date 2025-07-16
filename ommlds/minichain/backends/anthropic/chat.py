@@ -56,10 +56,10 @@ class AnthropicChatChoicesService:
             self._model_name = cc.pop(ModelName(self.model))
 
     def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, (SystemMessage, AiMessage)):
+        if isinstance(m, AiMessage):
             return m.s
 
-        elif isinstance(m, UserMessage):
+        elif isinstance(m, (UserMessage, SystemMessage)):
             return check.isinstance(m.c, str)
 
         else:

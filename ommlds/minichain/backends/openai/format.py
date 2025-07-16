@@ -35,7 +35,7 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
     if isinstance(m, SystemMessage):
         return dict(
             role='system',
-            content=m.s,
+            content=m.c,
         )
 
     elif isinstance(m, AiMessage):

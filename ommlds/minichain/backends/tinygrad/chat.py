@@ -65,7 +65,7 @@ def _prepare_toks(
     for msg in chat:
         if isinstance(msg, SystemMessage):
             role = 'system'
-            msg_s = msg.s
+            msg_s = check.isinstance(msg.c, str)
         elif isinstance(msg, UserMessage):
             role = 'user'
             msg_s = check.isinstance(msg.c, str)
