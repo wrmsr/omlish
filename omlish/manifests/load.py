@@ -9,6 +9,7 @@ TODO:
 import dataclasses as dc
 import importlib.machinery
 import importlib.resources
+import importlib.util
 import json
 import os.path
 import threading
@@ -121,18 +122,40 @@ class ManifestLoader:
 
     #
 
+    def _read_pkg_file_text(self, pkg_name: str, file_name: str) -> ta.Optional[str]:
+        # importlib.resources.files actually imports the package - to avoid this, if possible, the file is read straight
+        # off the filesystem.
+        spec = importlib.util.find_spec(pkg_name)
+        if (
+                spec is not None and
+                isinstance(spec.loader, importlib.machinery.SourceFileLoader) and
+                spec.origin is not None and
+                os.path.basename(spec.origin) == '__init__.py' and
+                os.path.isfile(spec.origin)
+        ):
+            file_path = os.path.join(os.path.dirname(spec.origin), file_name)
+            if not os.path.isfile(file_path):
+                with open(file_path, encoding='utf-8') as f:
+                    return f.read()
+
+        t = importlib.resources.files(pkg_name).joinpath(file_name)
+        if not t.is_file():
+            return None
+        return t.read_text('utf-8')
+
+    MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.manifests.json'
+
     def _load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
         try:
             return self._raw_cache[pkg_name]
         except KeyError:
             pass
 
-        t = importlib.resources.files(pkg_name).joinpath('.manifests.json')
-        if not t.is_file():
+        src = self._read_pkg_file_text(pkg_name, self.MANIFESTS_FILE_NAME)
+        if src is None:
             self._raw_cache[pkg_name] = None
             return None
 
-        src = t.read_text('utf-8')
         obj = json.loads(src)
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
