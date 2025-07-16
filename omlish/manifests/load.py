@@ -134,7 +134,7 @@ class ManifestLoader:
                 os.path.isfile(spec.origin)
         ):
             file_path = os.path.join(os.path.dirname(spec.origin), file_name)
-            if not os.path.isfile(file_path):
+            if os.path.isfile(file_path):
                 with open(file_path, encoding='utf-8') as f:
                     return f.read()
 
