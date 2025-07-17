@@ -6108,6 +6108,12 @@ class Image(
         shape_name='String',
     ))
 
+    free_tier_eligible: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='FreeTierEligible',
+        serialization_name='freeTierEligible',
+        shape_name='Boolean',
+    ))
+
     image_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ImageId',
         serialization_name='imageId',
