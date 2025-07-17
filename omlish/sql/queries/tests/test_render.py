@@ -43,6 +43,11 @@ def test_render():
             [Q.star],
             Q.n.foo,
         ),
+
+        Q.union(
+            Q.select([1]),
+            Q.select([2]),
+        ),
     ]:
         print(query)
         print()

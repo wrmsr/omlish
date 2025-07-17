@@ -97,6 +97,11 @@ from .unary import (  # noqa
     UnaryOps,
 )
 
+from .unions import (  # noqa
+    Union,
+    UnionBuilder,
+)
+
 
 ##
 

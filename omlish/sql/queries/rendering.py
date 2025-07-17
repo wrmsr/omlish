@@ -46,6 +46,7 @@ from .selects import Select
 from .unary import Unary
 from .unary import UnaryOp
 from .unary import UnaryOps
+from .unions import Union
 
 
 ##
@@ -281,6 +282,15 @@ class StdRenderer(Renderer):
             self.render(o.v),
             sfx,
         ])
+
+    # union
+
+    @Renderer.render.register
+    def render_union(self, o: Union) -> tp.Part:
+        return list(lang.interleave(
+            (self.render(s) for s in o.selects),
+            'union all' if o.all else 'union',
+        ))
 
 
 def render_parts(n: Node, **kwargs: ta.Any) -> RenderedQueryParts:

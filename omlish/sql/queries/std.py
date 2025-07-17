@@ -10,6 +10,7 @@ from .relations import RelationBuilder
 from .selects import SelectBuilder
 from .stmts import StmtBuilder
 from .unary import UnaryBuilder
+from .unions import UnionBuilder
 
 
 ##
@@ -19,6 +20,7 @@ class StdBuilder(
     InsertBuilder,
     SelectBuilder,
     StmtBuilder,
+    UnionBuilder,
 
     RelationBuilder,
 
