@@ -153,6 +153,7 @@ gen-cmake:
 .PHONY: gen-aws
 gen-aws:
 	${PYTHON} -m ominfra.clouds.aws.models.gen gen-services
+	${PYTHON} -m ominfra.clouds.aws.instancetypes fetch
 
 .PHONY: gen-manifest
 gen-manifest:
