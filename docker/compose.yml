@@ -67,7 +67,7 @@ services:
       - '35224:5432'
 
   omlish-mysql:
-    image: 'mysql:9.4.0'
+    image: 'mysql:9.3.0'
     restart: 'unless-stopped'
     environment:
       MYSQL_USER: 'omlish'
