@@ -8,8 +8,8 @@
 ##
 # infra
 
-google-api-python-client==2.176.0
-google-cloud-compute==1.32.0
+google-api-python-client==2.177.0
+google-cloud-compute==1.33.0
 
 
 ##
@@ -23,12 +23,12 @@ torchvision==0.22.1
 diffusers==0.34.0
 
 scipy==1.16.0
-scikit-learn==1.7.0
+scikit-learn==1.7.1
 scikit-image==0.25.2
 
 safetensors==0.5.3
 
-tavily-python==0.7.9
+tavily-python==0.7.10
 
 sqlite-vec==0.1.6
 
@@ -45,7 +45,7 @@ gguf==0.17.1
 jedi==0.19.2
 jedi-language-server==0.45.1
 
-tree-sitter==0.24.0
+tree-sitter==0.25.0
 tree-sitter-python==0.23.6
 
 watchdog==6.0.0
@@ -67,5 +67,5 @@ pyinstrument==5.0.3
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.4.4
+jupyterlab==4.4.5
 notebook==7.4.4

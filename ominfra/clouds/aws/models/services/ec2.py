@@ -1281,6 +1281,20 @@ class InstanceType(_enum.Enum):
     R8GD_48XLARGE = 'r8gd.48xlarge'
     R8GD_METAL_24XL = 'r8gd.metal-24xl'
     R8GD_METAL_48XL = 'r8gd.metal-48xl'
+    C8GN_MEDIUM = 'c8gn.medium'
+    C8GN_LARGE = 'c8gn.large'
+    C8GN_XLARGE = 'c8gn.xlarge'
+    C8GN_2XLARGE = 'c8gn.2xlarge'
+    C8GN_4XLARGE = 'c8gn.4xlarge'
+    C8GN_8XLARGE = 'c8gn.8xlarge'
+    C8GN_12XLARGE = 'c8gn.12xlarge'
+    C8GN_16XLARGE = 'c8gn.16xlarge'
+    C8GN_24XLARGE = 'c8gn.24xlarge'
+    C8GN_48XLARGE = 'c8gn.48xlarge'
+    C8GN_METAL_24XL = 'c8gn.metal-24xl'
+    C8GN_METAL_48XL = 'c8gn.metal-48xl'
+    F2_6XLARGE = 'f2.6xlarge'
+    P6E_GB200_36XLARGE = 'p6e-gb200.36xlarge'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
@@ -4605,6 +4619,11 @@ class StopInstancesRequest(
         shape_name='Boolean',
     ))
 
+    skip_os_shutdown: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SkipOsShutdown',
+        shape_name='Boolean',
+    ))
+
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DryRun',
         serialization_name='dryRun',
@@ -4667,6 +4686,11 @@ class TerminateInstancesRequest(
         serialization_name='InstanceId',
         value_type=_base.ListValueType(InstanceId),
         shape_name='InstanceIdStringList',
+    ))
+
+    skip_os_shutdown: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SkipOsShutdown',
+        shape_name='Boolean',
     ))
 
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(

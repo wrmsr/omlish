@@ -67,7 +67,7 @@ services:
       - '35224:5432'
 
   omlish-mysql:
-    image: 'mysql:9.3.0'
+    image: 'mysql:9.4.0'
     restart: 'unless-stopped'
     environment:
       MYSQL_USER: 'omlish'
@@ -91,7 +91,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.18.3'
+    image: 'elasticsearch:8.18.4'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
