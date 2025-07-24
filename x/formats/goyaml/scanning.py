@@ -93,7 +93,7 @@ class Context:
         mstate.update_indent_column(column)
         self.mstate = mstate
 
-    def add_token(self, tk: tokens_.Token | None) -> None:
+    def add_token(self, tk: ta.Optional[tokens_.Token]) -> None:
         if tk is None:
             return
         self.tokens.append(tk)  # FIXME: .add??
@@ -210,7 +210,7 @@ class Context:
 
         return src
 
-    def buffered_token(self, pos: tokens_.Position) -> tokens_.Token | None:
+    def buffered_token(self, pos: tokens_.Position) -> ta.Optional[tokens_.Token]:
         if self.idx == 0:
             return None
 
@@ -229,7 +229,7 @@ class Context:
         self.reset_buffer()
         return tk
 
-    def set_token_type_by_prev_tag(self, tk: tokens_.Token | None) -> None:
+    def set_token_type_by_prev_tag(self, tk: ta.Optional[tokens_.Token]) -> None:
         last_tk = self.last_token()
         if last_tk is None:
             return
@@ -241,7 +241,7 @@ class Context:
         if tag not in tokens.RESERVED_TAG_KEYWORD_MAP:
             tk.type = tokens.Type.STRING
 
-    def last_token(self) -> tokens_.Token | None:
+    def last_token(self) -> ta.Optional[tokens_.Token]:
         if len(self.tokens) != 0:
             return self.tokens[len(self.tokens)-1]
 
@@ -432,7 +432,7 @@ class Scanner:
     started_flow_sequence_num: int = 0
     started_flow_map_num: int = 0
     indent_state: IndentState = IndentState.EQUAL
-    saved_pos: tokens.Position | None = None
+    saved_pos: ta.Optional[tokens.Position] = None
 
     def pos(self) -> tokens.Position:
         return tokens.Position(

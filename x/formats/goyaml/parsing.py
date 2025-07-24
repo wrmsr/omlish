@@ -275,7 +275,7 @@ class TokenGroup:
             return None
         return self.tokens[len(self.tokens) - 1]
 
-    def raw_token(self) -> tokens_.Token | None:
+    def raw_token(self) -> ta.Optional[tokens_.Token]:
         if len(self.tokens) == 0:
             return None
         return self.tokens[0].raw_token()
@@ -1083,7 +1083,7 @@ def parse_str(
         s: str,
         mode: ParseMode = ParseMode(0),
         *opts: Option,
-) -> ta.Tuple[ast.File | None, ta.Optional[str]]:
+) -> ta.Tuple[ta.Optional[ast.File], ta.Optional[str]]:
     tokens = scanning.tokenize(s)
     f, err = parse(tokens, mode, *opts)
     if err is not None:
@@ -1096,7 +1096,7 @@ def parse(
         tokens: tokens_.Tokens,
         mode: ParseMode = ParseMode(0),
         *opts: Option,
-) -> ta.Tuple[ast.File | None, ta.Optional[str]]:
+) -> ta.Tuple[ta.Optional[ast.File], ta.Optional[str]]:
     if (tk := tokens.invalid_token()) is not None:
         return None, err_syntax(tk.error, tk)
     p, err = Parser.new_parser(tokens, mode, opts)
@@ -1163,7 +1163,7 @@ class Parser:
             opt(p)
         return p, None
 
-    def parse(self, ctx: Context) -> ta.Tuple[ast.File | None, ta.Optional[str]]:
+    def parse(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.File], ta.Optional[str]]:
         file = ast.File(docs=[])
         for token in self.tokens:
             doc, err = self.parse_document(ctx, token.group)
@@ -1183,8 +1183,8 @@ class Parser:
         self.path_map: ta.Dict[str, ast.Node] = {}
 
         tokens = doc_group.tokens
-        start: tokens_.Token | None = None
-        end: tokens_.Token | None = None
+        start: ta.Optional[tokens_.Token] = None
+        end: ta.Optional[tokens_.Token] = None
         if doc_group.first().type() == tokens_.Type.DOCUMENT_HEADER:
             start = doc_group.first().raw_token()
             tokens = tokens[1:]
