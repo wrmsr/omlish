@@ -365,13 +365,13 @@ def string(tk: tokens.Token) -> 'StringNode':
 
 
 # comment create node for comment
-def comment(tk: tokens.Token) -> 'CommentNode':
+def comment(tk: ta.Optional[tokens.Token]) -> 'CommentNode':
     return CommentNode(
         token=tk,
     )
 
 
-def comment_group(comments: ta.Iterable[tokens.Token]) -> 'CommentGroupNode':
+def comment_group(comments: ta.Iterable[ta.Optional[tokens.Token]]) -> 'CommentGroupNode':
     nodes: list[CommentNode] = []
     for c in comments:
         nodes.append(comment(c))
@@ -2184,4 +2184,4 @@ def merge(dst: Node, src: Node) -> str | None:
             return err
         node.merge(target)
         return None
-    return err.string()
+    return err.error()
