@@ -56,12 +56,12 @@ def run_coro(
 
         elif isinstance(o, CoroHttpClientIo.ReadIo):
             if (sz := o.sz) is not None:
-                return check.not_none(sock_file).read(sz)  # type: ignore[attr-defined]
+                return check.not_none(sock_file).read(sz)
             else:
-                return check.not_none(sock_file).read()  # type: ignore[attr-defined]
+                return check.not_none(sock_file).read()
 
         elif isinstance(o, CoroHttpClientIo.ReadLineIo):
-            return check.not_none(sock_file).readline(o.sz)  # type: ignore[attr-defined]
+            return check.not_none(sock_file).readline(o.sz)
 
         else:
             raise TypeError(o)
