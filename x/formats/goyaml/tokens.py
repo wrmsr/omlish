@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP043 UP045
 import copy
 import dataclasses as dc
 import datetime
@@ -410,7 +411,7 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> tuple[NumberValue | None, str | None]:
+def _to_number(value: str) -> ta.Tuple[NumberValue | None, str | None]:
     if not value:
         return None, None
 
@@ -653,7 +654,7 @@ class Token:
 
 
 # Tokens type of token collection
-class Tokens(list[Token]):
+class Tokens(ta.List[Token]):
     def invalid_token(self) -> Token | None:
         for tt in self:
             if tt.type == Type.INVALID:

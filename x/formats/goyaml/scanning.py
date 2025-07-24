@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP043 UP045
 import dataclasses as dc
 import enum
 import typing as ta
@@ -562,7 +563,7 @@ class Scanner:
     def break_multi_line(self, ctx: Context) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> tuple[tokens.Token | None, str | None]:
+    def scan_single_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, str | None]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -649,7 +650,7 @@ class Scanner:
             ),
         ))
 
-    def scan_double_quote(self, ctx: Context) -> tuple[tokens.Token | None, str | None]:
+    def scan_double_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, str | None]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -957,7 +958,7 @@ class Scanner:
 
         return marker == '---' or marker == '...'
 
-    def scan_quote(self, ctx: Context, ch: str) -> tuple[bool, str | None]:
+    def scan_quote(self, ctx: Context, ch: str) -> ta.Tuple[bool, str | None]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1022,7 +1023,7 @@ class Scanner:
 
         return False
 
-    def scan_tag(self, ctx: Context) -> tuple[bool, str | None]:
+    def scan_tag(self, ctx: Context) -> ta.Tuple[bool, str | None]:
         if ctx.exists_buffer() or self.is_directive:
             return False, None
 
@@ -1291,7 +1292,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_map_delim(self, ctx: Context) -> tuple[bool, str | None]:
+    def scan_map_delim(self, ctx: Context) -> ta.Tuple[bool, str | None]:
         nc = ctx.next_char()
         if self.is_directive or self.is_anchor or self.is_alias:
             return False, None
@@ -1397,7 +1398,7 @@ class Scanner:
         self.progress_column(ctx, 1)
         return True
 
-    def scan_sequence(self, ctx: Context) -> tuple[bool, str | None]:
+    def scan_sequence(self, ctx: Context) -> ta.Tuple[bool, str | None]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1419,7 +1420,7 @@ class Scanner:
         ctx.clear()
         return True, None
 
-    def scan_multi_line_header(self, ctx: Context) -> tuple[bool, str | None]:
+    def scan_multi_line_header(self, ctx: Context) -> ta.Tuple[bool, str | None]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1785,7 +1786,7 @@ class Scanner:
         self.indent_num = 0
 
     # scan scans the next token and returns the token collection. The source end is indicated by io.EOF.
-    def scan(self) -> tuple[tokens.Tokens | None, str | None]:
+    def scan(self) -> ta.Tuple[tokens.Tokens | None, str | None]:
         if self.source_pos >= self.source_size:
             return None, 'eof'
 

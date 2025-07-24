@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP043 UP045
 import abc
 import dataclasses as dc
 import enum
@@ -141,7 +142,7 @@ class Node(abc.ABC):
 
     # marshal_yaml
     @abc.abstractmethod
-    def marshal_yaml(self) -> tuple[bytes, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[bytes, str | None]:
         raise NotImplementedError
 
     # already read length
@@ -225,7 +226,7 @@ def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
 ##
 
 
-def read_node(p: str, node: Node) -> tuple[int, str | None]:
+def read_node(p: str, node: Node) -> ta.Tuple[int, str | None]:
     s = node.string()
     read_len = node.read_len()
     remain = len(s) - read_len
@@ -372,7 +373,7 @@ def comment(tk: ta.Optional[tokens.Token]) -> 'CommentNode':
 
 
 def comment_group(comments: ta.Iterable[ta.Optional[tokens.Token]]) -> 'CommentGroupNode':
-    nodes: list[CommentNode] = []
+    nodes: ta.List[CommentNode] = []
     for c in comments:
         nodes.append(comment(c))
 
@@ -468,10 +469,10 @@ def tag(tk: tokens.Token) -> 'TagNode':
 @dc.dataclass(kw_only=True)
 class File:
     name: str = ''
-    docs: list['DocumentNode']
+    docs: ta.List['DocumentNode']
 
     # read implements (io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         for doc in self.docs:
             n, err = doc.read(p)
             if err == 'eof':
@@ -481,7 +482,7 @@ class File:
 
     # string all documents to text
     def __str__(self) -> str:
-        docs: list[str] = []
+        docs: ta.List[str] = []
         for doc in self.docs:
             docs.append(doc.string())
         if len(docs) > 0:
@@ -501,7 +502,7 @@ class DocumentNode(BaseNode):
     body: Node | None
 
     # read implements (io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns DocumentNodeType
@@ -519,7 +520,7 @@ class DocumentNode(BaseNode):
 
     # string document to text
     def __str__(self) -> str:
-        doc: list[str] = []
+        doc: ta.List[str] = []
         if self.start is not None:
             doc.append(self.start.value)
         if self.body is not None:
@@ -529,7 +530,7 @@ class DocumentNode(BaseNode):
         return '\n'.join(doc)
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -542,7 +543,7 @@ class NullNode(ScalarNode, BaseNode):
     token: tokens.Token
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns NullType
@@ -571,7 +572,7 @@ class NullNode(ScalarNode, BaseNode):
         return 'null'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -590,7 +591,7 @@ class IntegerNode(ScalarNode, BaseNode):
     value: ta.Any  # int64 or uint64 value
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns IntegerType
@@ -619,7 +620,7 @@ class IntegerNode(ScalarNode, BaseNode):
         return self.token.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -638,7 +639,7 @@ class FloatNode(ScalarNode, BaseNode):
     value: float
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns FloatType
@@ -667,7 +668,7 @@ class FloatNode(ScalarNode, BaseNode):
         return self.token.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -746,7 +747,7 @@ class StringNode(ScalarNode, BaseNode):
     value: str
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns StringType
@@ -789,7 +790,7 @@ class StringNode(ScalarNode, BaseNode):
             header = tokens.literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
-            values: list[str] = []
+            values: ta.List[str] = []
             for v in self.value.split(lbc):
                 values.append(f'{space}{indent}{v}')
             block = lbc.join(values).rstrip(f'{lbc}{indent}{space}').rstrip(f'{indent}{space}')
@@ -815,7 +816,7 @@ class StringNode(ScalarNode, BaseNode):
             header = tokens.literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
-            values: list[str] = []
+            values: ta.List[str] = []
             for v in self.value.split(lbc):
                 values.append(f'{space}{indent}{v}')
             block = lbc.join(values).rstrip(f'{lbc}{indent}{space}').rstrip(f'  {space}')
@@ -825,7 +826,7 @@ class StringNode(ScalarNode, BaseNode):
         return self.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -853,7 +854,7 @@ class LiteralNode(ScalarNode, BaseNode):
     value: ta.Optional['StringNode'] = None
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns LiteralType
@@ -886,7 +887,7 @@ class LiteralNode(ScalarNode, BaseNode):
         return self.string()
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -903,7 +904,7 @@ class MergeKeyNode(ScalarNode, BaseNode):
     token: tokens.Token
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns MergeKeyType
@@ -930,7 +931,7 @@ class MergeKeyNode(ScalarNode, BaseNode):
         self.token.add_column(col)
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return str(self), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -948,7 +949,7 @@ class BoolNode(ScalarNode, BaseNode):
     value: bool
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns BoolType
@@ -977,7 +978,7 @@ class BoolNode(ScalarNode, BaseNode):
         return self.token.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -995,7 +996,7 @@ class InfinityNode(ScalarNode, BaseNode):
     value: float
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns InfinityType
@@ -1024,7 +1025,7 @@ class InfinityNode(ScalarNode, BaseNode):
         return self.token.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1041,7 +1042,7 @@ class NanNode(ScalarNode, BaseNode):
     token: tokens.Token
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns NanType
@@ -1070,7 +1071,7 @@ class NanNode(ScalarNode, BaseNode):
         return self.token.value
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1095,7 +1096,7 @@ START_RANGE_INDEX = -1
 # MapNodeIter is an iterator for ranging over a MapNode
 @dc.dataclass(kw_only=True)
 class MapNodeIter:
-    values: list['MappingValueNode']
+    values: ta.List['MappingValueNode']
     idx: int
 
     # next advances the map iterator and reports whether there is another entry.
@@ -1127,7 +1128,7 @@ class MappingNode(BaseNode):
     start: tokens.Token
     end: tokens.Token | None = None
     is_flow_style: bool
-    values: list['MappingValueNode']
+    values: ta.List['MappingValueNode']
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
     def start_pos(self) -> tokens.Position:
@@ -1137,7 +1138,7 @@ class MappingNode(BaseNode):
 
     # merge merge key/value of map.
     def merge(self, target: 'MappingNode') -> None:
-        key_to_map_value_map: dict[str, MappingValueNode] = {}
+        key_to_map_value_map: ta.Dict[str, MappingValueNode] = {}
         for value in self.values:
             key = value.key.string()
             key_to_map_value_map[key] = value
@@ -1160,7 +1161,7 @@ class MappingNode(BaseNode):
             value.set_is_flow_style(is_flow)
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns MappingType
@@ -1179,7 +1180,7 @@ class MappingNode(BaseNode):
             value.add_column(col)
 
     def flow_style_string(self, comment_mode: bool) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         for value in self.values:
             values.append(value.string().lstrip(' '))
         map_text = f'{{{", ".join(values)}}}'
@@ -1188,7 +1189,7 @@ class MappingNode(BaseNode):
         return map_text
 
     def block_style_string(self, comment_mode: bool) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         for value in self.values:
             values.append(value.string())
         map_text = '\n'.join(values)
@@ -1224,7 +1225,7 @@ class MappingNode(BaseNode):
         )
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -1238,7 +1239,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
     value: Node | None = None
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns MappingKeyType
@@ -1263,7 +1264,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
         return f'{self.start.value} {self.value.string()}'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1297,7 +1298,7 @@ class MappingValueNode(BaseNode):
         return None
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns MappingValueType
@@ -1388,7 +1389,7 @@ class MappingValueNode(BaseNode):
         )
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -1405,7 +1406,7 @@ class ArrayNode(abc.ABC):
 # ArrayNodeIter is an iterator for ranging over a ArrayNode
 @dc.dataclass(kw_only=True)
 class ArrayNodeIter:
-    values: list[Node]
+    values: ta.List[Node]
     idx: int
 
     # next advances the array iterator and reports whether there is another entry.
@@ -1433,9 +1434,9 @@ class SequenceNode(BaseNode):
     start: tokens.Token
     end: tokens.Token | None = None
     is_flow_style: bool
-    values: list[Node]
-    value_head_comments: list['CommentGroupNode'] = dc.field(default_factory=list)
-    entries: list['SequenceEntryNode'] = dc.field(default_factory=list)
+    values: ta.List[Node]
+    value_head_comments: ta.List['CommentGroupNode'] = dc.field(default_factory=list)
+    entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
     # Replace replace value node.
@@ -1471,7 +1472,7 @@ class SequenceNode(BaseNode):
                 value.set_is_flow_style(is_flow)
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns SequenceType
@@ -1490,7 +1491,7 @@ class SequenceNode(BaseNode):
             value.add_column(col)
 
     def flow_style_string(self) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         for value in self.values:
             values.append(value.string())
 
@@ -1498,7 +1499,7 @@ class SequenceNode(BaseNode):
 
     def block_style_string(self) -> str:
         space = ' ' * (self.start.position.column - 1)
-        values: list[str] = []
+        values: ta.List[str] = []
         if self.comment is not None:
             values.append(self.comment.string_with_space(self.start.position.column - 1))
 
@@ -1521,7 +1522,7 @@ class SequenceNode(BaseNode):
                 for i in range(1, len(splitted_values)):
                     splitted_values[i] = splitted_values[i].lstrip(prefix)
 
-            new_values: list[str] = [trimmed_first_value]
+            new_values: ta.List[str] = [trimmed_first_value]
             for i in range(1, len(splitted_values)):
                 if len(splitted_values[i]) <= diff_length:
                     # this line is \n or white space only
@@ -1560,7 +1561,7 @@ class SequenceNode(BaseNode):
         )
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -1601,10 +1602,10 @@ class SequenceEntryNode(BaseNode):
         return self.line_comment
 
     # marshal_yaml
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
 
@@ -1634,7 +1635,7 @@ def sequence_merge_value(*values: MapNode) -> 'SequenceMergeValueNode':
 # SequenceMergeValueNode is used to convert the Sequence node specified for the merge key into a MapNode format.
 @dc.dataclass(kw_only=True)
 class SequenceMergeValueNode(MapNode):
-    values: list[MapNode]
+    values: ta.List[MapNode]
 
     # map_range returns MapNodeIter instance.
     def map_range(self) -> MapNodeIter:
@@ -1668,7 +1669,7 @@ class AnchorNode(ScalarNode, BaseNode):
         return None
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns AnchorType
@@ -1700,7 +1701,7 @@ class AnchorNode(ScalarNode, BaseNode):
         return f'&{self.name.string()} {value}'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1734,7 +1735,7 @@ class AliasNode(ScalarNode, BaseNode):
         return None
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns AliasType
@@ -1759,7 +1760,7 @@ class AliasNode(ScalarNode, BaseNode):
         return f'*{self.value.string()}'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1778,10 +1779,10 @@ class DirectiveNode(BaseNode):
     # Name is directive name e.g.) "YAML" or "TAG".
     name: Node
     # Values is directive values e.g.) "1.2" or "!!" and "tag:clarkevans.com,2002:app/".
-    values: list[Node]
+    values: ta.List[Node]
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns DirectiveType
@@ -1801,13 +1802,13 @@ class DirectiveNode(BaseNode):
 
     # String directive to text
     def __str__(self) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         for val in self.values:
             values.append(val.string())
         return ' '.join(['%' + self.name.string(), *values])
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -1830,7 +1831,7 @@ class TagNode(ScalarNode, BaseNode):
         return self.value.string()
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns TagType
@@ -1858,7 +1859,7 @@ class TagNode(ScalarNode, BaseNode):
         return f'{self.start.value} {value}'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
     # is_merge_key returns whether it is a MergeKey node.
@@ -1886,7 +1887,7 @@ class CommentNode(BaseNode):
     token: tokens.Token
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns CommentType
@@ -1908,7 +1909,7 @@ class CommentNode(BaseNode):
         return f'#{self.token.value}'
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -1918,10 +1919,10 @@ class CommentNode(BaseNode):
 # CommentGroupNode type of comment node
 @dc.dataclass(kw_only=True)
 class CommentGroupNode(BaseNode):
-    comments: list[CommentNode]
+    comments: ta.List[CommentNode]
 
     # read implements(io.Reader).Read
-    def read(self, p: str) -> tuple[int, str | None]:
+    def read(self, p: str) -> ta.Tuple[int, str | None]:
         return read_node(p, self)
 
     # type returns CommentType
@@ -1941,13 +1942,13 @@ class CommentGroupNode(BaseNode):
 
     # String comment to text
     def __str__(self) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         for comment in self.comments:
             values.append(comment.string())
         return '\n'.join(values)
 
     def string_with_space(self, col: int) -> str:
-        values: list[str] = []
+        values: ta.List[str] = []
         space = ' ' * col
         for comment in self.comments:
             spc = space
@@ -1957,7 +1958,7 @@ class CommentGroupNode(BaseNode):
         return '\n'.join(values)
 
     # marshal_yaml encodes to a YAML text
-    def marshal_yaml(self) -> tuple[str, str | None]:
+    def marshal_yaml(self) -> ta.Tuple[str, str | None]:
         return self.string(), None
 
 
@@ -2050,7 +2051,7 @@ def walk_comment(v: Visitor, base: BaseNode | None) -> None:
 @dc.dataclass(kw_only=True)
 class FilterWalker(Visitor):
     typ: NodeType
-    results: list[Node]
+    results: ta.List[Node]
 
     def visit(self, n: Node) -> Visitor:
         if self.typ == n.type():
@@ -2133,15 +2134,15 @@ def parent(root: Node, child: Node) -> Node:
 
 
 # Filter returns a list of nodes that match the given type.
-def filter_(typ: NodeType, node: Node) -> list[Node]:
+def filter_(typ: NodeType, node: Node) -> ta.List[Node]:
     walker = FilterWalker(typ=typ)
     walk(walker, node)
     return walker.results
 
 
 # FilterFile returns a list of nodes that match the given type.
-def filter_file(typ: NodeType, file: File) -> list[Node]:
-    results: list[Node] = []
+def filter_file(typ: NodeType, file: File) -> ta.List[Node]:
+    results: ta.List[Node] = []
     for doc in file.docs:
         walker = FilterWalker(typ=typ)
         walk(walker, doc)
