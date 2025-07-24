@@ -8,7 +8,7 @@ from omlish import codecs as cdu
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as hu
-from omlish.http.coro.simple import make_simple_http_server
+from omlish.http.coro.server.simple import make_simple_http_server
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.http.handlers import HttpHandlerResponseStreamedData

@@ -46,8 +46,7 @@ import io
 import typing as ta
 import urllib.parse
 
-from omlish.lite.check import check
-
+from ....lite.check import check
 from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
 from .io import CoroHttpClientIo
@@ -174,12 +173,12 @@ class CoroHttpClientConnection(
             j = host.rfind(']')  # ipv6 addresses have [...]
             if i > j:
                 try:
-                    port = int(host[i+1:])
+                    port = int(host[i + 1:])
                 except ValueError:
-                    if host[i+1:] == '':  # http://foo.com:/ == http://foo.com/
+                    if host[i + 1:] == '':  # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise self.InvalidUrlError(f"non-numeric port: '{host[i+1:]}'") from None
+                        raise self.InvalidUrlError(f"non-numeric port: '{host[i + 1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -791,6 +790,6 @@ class CoroHttpClientConnection(
 
             return resp
 
-        except:
+        except:  # noqa
             resp.close()
             raise

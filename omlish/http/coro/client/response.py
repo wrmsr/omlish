@@ -39,8 +39,7 @@ import email.parser
 import http
 import typing as ta
 
-from omlish.lite.check import check
-
+from ....lite.check import check
 from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
 from .io import CoroHttpClientIo
@@ -360,7 +359,7 @@ class CoroHttpClientResponse(
 
         data = check.isinstance((yield self.ReadIo(amt)), bytes)
         if len(data) < amt:
-            raise self.IncompleteReadError(data, amt-len(data))
+            raise self.IncompleteReadError(data, amt - len(data))
         return data
 
     def peek(self, n: int = -1) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], bytes]:
