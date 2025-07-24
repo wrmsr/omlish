@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.12.4
+ruff==0.12.5
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20250708  # @omlish-venv !13t !14t
@@ -111,7 +111,7 @@ snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !14t
 
 trino==0.335.0  # @omlish-venv !13t !14t
 
-huggingface-hub==0.33.4  # @omlish-venv !14t
+huggingface-hub==0.33.5  # @omlish-venv !14t
 hf-xet==1.1.5  # @omlish-venv !13t !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
