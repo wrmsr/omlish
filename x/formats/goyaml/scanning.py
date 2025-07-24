@@ -219,7 +219,7 @@ class Context:
             self.buf = self.buf[:0]  # clear value's buffer only.
             return None
 
-        tk: tokens.Token | None = None
+        tk: ta.Optional[tokens.Token] = None
         if self.is_multi_line():
             tk = tokens.new_string(source, self.obuf, pos)
         else:
@@ -563,7 +563,7 @@ class Scanner:
     def break_multi_line(self, ctx: Context) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, ta.Optional[str]]:
+    def scan_single_quote(self, ctx: Context) -> ta.Tuple[ta.Optional[tokens.Token], ta.Optional[str]]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -650,7 +650,7 @@ class Scanner:
             ),
         ))
 
-    def scan_double_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, ta.Optional[str]]:
+    def scan_double_quote(self, ctx: Context) -> ta.Tuple[ta.Optional[tokens.Token], ta.Optional[str]]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -1786,7 +1786,7 @@ class Scanner:
         self.indent_num = 0
 
     # scan scans the next token and returns the token collection. The source end is indicated by io.EOF.
-    def scan(self) -> ta.Tuple[tokens.Tokens | None, ta.Optional[str]]:
+    def scan(self) -> ta.Tuple[ta.Optional[tokens.Tokens], ta.Optional[str]]:
         if self.source_pos >= self.source_size:
             return None, 'eof'
 

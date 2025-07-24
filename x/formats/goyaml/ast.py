@@ -107,7 +107,7 @@ class Node(abc.ABC):
 
     # get_token returns token instance
     @abc.abstractmethod
-    def get_token(self) -> tokens.Token | None:
+    def get_token(self) -> ta.Optional[tokens.Token]:
         raise NotImplementedError
 
     # type returns type of node
@@ -437,7 +437,7 @@ def alias(tk: tokens.Token) -> 'AliasNode':
     )
 
 
-def document(tk: tokens.Token, body: Node | None) -> 'DocumentNode':
+def document(tk: tokens.Token, body: ta.Optional[Node]) -> 'DocumentNode':
     return DocumentNode(
         start=tk,
         body=body,
@@ -498,8 +498,8 @@ class File:
 @dc.dataclass(kw_only=True)
 class DocumentNode(BaseNode):
     start: tokens.Token  # position of DocumentHeader ( `---` )
-    end: tokens.Token | None = None  # position of DocumentEnd ( `...` )
-    body: Node | None
+    end: ta.Optional[tokens.Token] = None  # position of DocumentEnd ( `...` )
+    body: ta.Optional[Node]
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> ta.Tuple[int, ta.Optional[str]]:
@@ -1126,7 +1126,7 @@ class MapNodeIter:
 @dc.dataclass(kw_only=True)
 class MappingNode(BaseNode):
     start: tokens.Token
-    end: tokens.Token | None = None
+    end: ta.Optional[tokens.Token] = None
     is_flow_style: bool
     values: ta.List['MappingValueNode']
     foot_comment: ta.Optional['CommentGroupNode'] = None
@@ -1236,7 +1236,7 @@ class MappingNode(BaseNode):
 @dc.dataclass(kw_only=True)
 class MappingKeyNode(MapKeyNode, BaseNode):
     start: tokens.Token
-    value: Node | None = None
+    value: ta.Optional[Node] = None
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> ta.Tuple[int, ta.Optional[str]]:
@@ -1284,7 +1284,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
 @dc.dataclass(kw_only=True)
 class MappingValueNode(BaseNode):
     start: tokens.Token  # delimiter token ':'.
-    collect_entry: tokens.Token | None = None  # collect entry token ','.
+    collect_entry: ta.Optional[tokens.Token] = None  # collect entry token ','.
     key: MapKeyNode
     value: Node
     foot_comment: ta.Optional['CommentGroupNode'] = None
@@ -1432,7 +1432,7 @@ class ArrayNodeIter:
 @dc.dataclass(kw_only=True)
 class SequenceNode(BaseNode):
     start: tokens.Token
-    end: tokens.Token | None = None
+    end: ta.Optional[tokens.Token] = None
     is_flow_style: bool
     values: ta.List[Node]
     value_head_comments: ta.List['CommentGroupNode'] = dc.field(default_factory=list)
@@ -1653,8 +1653,8 @@ class SequenceMergeValueNode(MapNode):
 @dc.dataclass(kw_only=True)
 class AnchorNode(ScalarNode, BaseNode):
     start: tokens.Token
-    name: Node | None = None
-    value: Node | None = None
+    name: ta.Optional[Node] = None
+    value: ta.Optional[Node] = None
 
     def string_without_comment(self) -> str:
         return self.value.string()
@@ -1721,7 +1721,7 @@ class AnchorNode(ScalarNode, BaseNode):
 @dc.dataclass(kw_only=True)
 class AliasNode(ScalarNode, BaseNode):
     start: tokens.Token
-    value: Node | None = None
+    value: ta.Optional[Node] = None
 
     def string_without_comment(self) -> str:
         return self.value.string()
@@ -1930,7 +1930,7 @@ class CommentGroupNode(BaseNode):
         return NodeType.COMMENT
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token | None:
+    def get_token(self) -> ta.Optional[tokens.Token]:
         if len(self.comments) > 0:
             return self.comments[0].token
         return None
@@ -2066,7 +2066,7 @@ class FilterWalker(Visitor):
 class ParentFinder:
     target: Node
 
-    def walk(self, parent: Node, node: Node) -> Node | None:
+    def walk(self, parent: Node, node: Node) -> ta.Optional[Node]:
         if self.target == node:
             return parent
 

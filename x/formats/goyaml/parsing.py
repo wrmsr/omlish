@@ -210,11 +210,11 @@ class TokenGroupType(enum.Enum):
 
 @dc.dataclass(kw_only=True)
 class Token:
-    token: tokens.Token | None = None
+    token: ta.Optional[tokens.Token] = None
     group: ta.Optional['TokenGroup'] = None
-    line_comment: tokens.Token | None = None
+    line_comment: ta.Optional[tokens.Token] = None
 
-    def raw_token(self) -> tokens.Token | None:
+    def raw_token(self) -> ta.Optional[tokens.Token]:
         if self is None:
             return None
 
@@ -265,12 +265,12 @@ class TokenGroup:
     type: TokenGroupType
     tokens: ta.List[Token]
 
-    def first(self) -> Token | None:
+    def first(self) -> ta.Optional[Token]:
         if len(self.tokens) == 0:
             return None
         return self.tokens[0]
 
-    def last(self) -> Token | None:
+    def last(self) -> ta.Optional[Token]:
         if len(self.tokens) == 0:
             return None
         return self.tokens[len(self.tokens) - 1]
@@ -852,7 +852,7 @@ def new_mapping_node(
 def new_mapping_value_node(
         ctx: Context,
         colon_tk: Token,
-        entry_tk: Token | None,
+        entry_tk: ta.Optional[Token],
         key: ast.MapKeyNode,
         value: ast.Node,
 ) -> ta.Tuple[ast.MappingValueNode | None, ta.Optional[str]]:
@@ -1002,7 +1002,7 @@ def new_tag_default_scalar_value_node(
     pos = copy.copy(tag.position)
     pos.column += 1
 
-    tk: Token | None = None
+    tk: ta.Optional[Token] = None
     node: ast.ScalarNode | None = None
 
     if tag.value == tokens_.ReservedTagKeywords.INTEGER:
@@ -1046,7 +1046,7 @@ def new_tag_default_scalar_value_node(
     return node, None
 
 
-def set_line_comment(ctx: Context, node: ast.Node, tk: Token | None) -> ta.Optional[str]:
+def set_line_comment(ctx: Context, node: ast.Node, tk: ta.Optional[Token]) -> ta.Optional[str]:
     if tk is None or tk.line_comment is None:
         return None
     comment = ast.comment_group([tk.line_comment])
@@ -1380,7 +1380,7 @@ class Parser:
                 node.end = tk.raw_token()
                 break
 
-            entry_tk: Token | None = None
+            entry_tk: ta.Optional[Token] = None
             if tk.type() == tokens_.Type.COLLECT_ENTRY:
                 entry_tk = tk
                 ctx.go_next()
@@ -1546,7 +1546,7 @@ class Parser:
             self,
             ctx: Context,
             g: TokenGroup,
-            entry_tk: Token | None,
+            entry_tk: ta.Optional[Token],
     ) -> ta.Tuple[ast.MappingValueNode | None, ta.Optional[str]]:
         if g.type != TokenGroupType.MAP_KEY_VALUE:
             return None, err_syntax('unexpected map key-value pair', g.raw_token())
@@ -1958,7 +1958,7 @@ class Parser:
                 node.end = tk.raw_token()
                 break
 
-            entry_tk: Token | None = None
+            entry_tk: ta.Optional[Token] = None
             if tk.type() == tokens_.Type.COLLECT_ENTRY:
                 if is_first:
                     return None, err_syntax("expected sequence element, but found ','", tk.raw_token())

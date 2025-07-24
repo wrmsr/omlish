@@ -391,7 +391,7 @@ class NumberValue:
     text: str
 
 
-def to_number(value: str) -> NumberValue | None:
+def to_number(value: str) -> ta.Optional[NumberValue]:
     num, err = _to_number(value)
     if err is not None:
         return None
@@ -411,7 +411,7 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> ta.Tuple[NumberValue | None, ta.Optional[str]]:
+def _to_number(value: str) -> ta.Tuple[ta.Optional[NumberValue], ta.Optional[str]]:
     if not value:
         return None, None
 
@@ -655,7 +655,7 @@ class Token:
 
 # Tokens type of token collection
 class Tokens(ta.List[Token]):
-    def invalid_token(self) -> Token | None:
+    def invalid_token(self) -> ta.Optional[Token]:
         for tt in self:
             if tt.type == Type.INVALID:
                 return tt
