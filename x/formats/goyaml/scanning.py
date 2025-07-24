@@ -877,6 +877,17 @@ class Scanner:
                     idx += 1
                     continue
 
+                elif next_char == '\r':
+                    is_first_line_char = True
+                    is_new_line = True
+                    ctx.add_origin_buf(next_char)
+                    self.progress_line(ctx)
+                    progress = 1
+                    # Skip \n after \r in CRLF sequences
+                    if idx + 2 < size and src[idx + 2] == '\n':
+                        ctx.add_origin_buf('\n')
+                        progress = 2
+
                 elif next_char == '\t':
                     progress = 1
                     ctx.add_origin_buf(next_char)
