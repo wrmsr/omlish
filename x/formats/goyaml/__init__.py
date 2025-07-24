@@ -1,1 +1,1 @@
-# https://github.com/goccy/go-yaml/tree/9d0a7f2b35e694d609f58c47d095c63f0d1ee430
+# https://github.com/goccy/go-yaml/tree/25e5d9094248e480434ca87d9119e3d9ce7ac1d7
