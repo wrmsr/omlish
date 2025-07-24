@@ -1,10 +1,10 @@
-# @omlish-amalg ./_demo.py
-# @omlish-lite
 # ruff: noqa: UP006 UP007 UP043 UP045
 import errno
 import socket
 import typing as ta
 import urllib.parse
+
+import pytest
 
 from omlish.lite.check import check
 
@@ -14,6 +14,52 @@ from ..io import CoroHttpClientIo
 
 
 ##
+
+
+def run_httpx(
+        url: str,
+) -> None:
+    import asyncio
+
+    import httpx
+
+    async def inner():
+        async with httpx.AsyncClient() as client:
+            async with client.stream('GET', url) as response:
+                response.raise_for_status()
+                async for chunk in response.aiter_bytes():
+                    print(chunk.decode('utf-8'), end='')
+
+    asyncio.run(inner())
+
+
+def run_urllib(
+        url: str,
+) -> None:
+    import urllib.request
+
+    req = urllib.request.Request(url)  # noqa
+
+    with urllib.request.urlopen(req) as resp:  # noqa
+        print(resp.read())
+
+
+def run_stdlib(
+        url: str,
+) -> None:
+    conn_cls = __import__('http.client').client.HTTPConnection
+
+    ups = urllib.parse.urlparse(url)
+    conn = conn_cls(ups.hostname)
+
+    conn.request('GET', ups.path or '/')
+    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
+    print((r1.status, r1.reason))
+
+    # data1 = r1.read()
+
+    while chunk := r1.read(200):
+        print(repr(chunk))
 
 
 def run_coro(
@@ -73,11 +119,8 @@ def run_coro(
         resp = yield from conn.get_response()
 
     def print_resp():
-        while True:
-            d = yield from check.not_none(resp).read(1024)
-            if not d:
-                break
-            print(d)
+        d = yield from check.not_none(resp).read()
+        print(d)
 
     for f in [
         conn.connect,
@@ -96,15 +139,16 @@ def run_coro(
             i = handle_io(o)
 
 
+@pytest.mark.online
+def test_client() -> None:
+    # run = run_httpx
+    # run = run_urllib
+    # run = run_stdlib
+    run = run_coro
 
-def _main() -> None:
     for url in [
         'http://www.example.com',
         'https://www.baidu.com',
         'https://anglesharp.azurewebsites.net/Chunked',
     ]:
-        run_coro(url)
-
-
-if __name__ == '__main__':
-    _main()
+        run(url)
