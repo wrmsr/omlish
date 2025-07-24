@@ -4,7 +4,7 @@ import json
 import socket
 import typing as ta
 
-from omlish.http.coro.fdio import CoroHttpServerConnectionFdioHandler
+from omlish.http.coro.server.fdio import CoroHttpServerConnectionFdioHandler
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest

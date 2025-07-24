@@ -12,7 +12,7 @@ from omdev.home.secrets import load_secrets
 from omlish import cached
 from omlish import check
 from omlish import lang
-from omlish.http.coro.simple import make_simple_http_server
+from omlish.http.coro.server.simple import make_simple_http_server
 from omlish.http.handlers import ExceptionLoggingHttpHandler
 from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest

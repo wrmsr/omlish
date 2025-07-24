@@ -1,4 +1,4 @@
-from omlish.http.coro.simple import make_simple_http_server
+from omlish.http.coro.server.simple import make_simple_http_server
 
 from ..handlers import DataServerRequest
 from ..http import DataServerHttpHandler

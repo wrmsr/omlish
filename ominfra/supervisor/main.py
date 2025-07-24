@@ -37,7 +37,7 @@ import itertools
 import os.path
 import typing as ta
 
-from omlish.http.coro.server import CoroHttpServer
+from omlish.http.coro.server.server import CoroHttpServer
 from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
