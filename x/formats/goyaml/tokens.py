@@ -411,7 +411,7 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> ta.Tuple[NumberValue | None, str | None]:
+def _to_number(value: str) -> ta.Tuple[NumberValue | None, ta.Optional[str]]:
     if not value:
         return None, None
 
@@ -606,7 +606,7 @@ class Token:
     # Origin is a string that stores the original text as-is.
     origin: str
     # Error keeps error message for InvalidToken.
-    error: str | None = None
+    error: ta.Optional[str] = None
     # Position is a token position.
     position: Position
     # Next is a next token reference.

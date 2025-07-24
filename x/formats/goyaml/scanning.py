@@ -286,14 +286,14 @@ class MultiLineState:
             return
         self.space_only_indent_column = column
 
-    def validate_indent_after_space_only(self, column: int) -> str | None:
+    def validate_indent_after_space_only(self, column: int) -> ta.Optional[str]:
         if self.first_line_indent_column != 0:
             return None
         if self.space_only_indent_column > column:
             return 'invalid number of indent is specified after space only'
         return None
 
-    def validate_indent_column(self) -> str | None:
+    def validate_indent_column(self) -> ta.Optional[str]:
         if first_line_indent_column_by_opt(self.opt) == 0:
             return None
         if self.first_line_indent_column > self.line_indent_column:
@@ -563,7 +563,7 @@ class Scanner:
     def break_multi_line(self, ctx: Context) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, str | None]:
+    def scan_single_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, ta.Optional[str]]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -650,7 +650,7 @@ class Scanner:
             ),
         ))
 
-    def scan_double_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, str | None]:
+    def scan_double_quote(self, ctx: Context) -> ta.Tuple[tokens.Token | None, ta.Optional[str]]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -938,7 +938,7 @@ class Scanner:
             ),
         ))
 
-    def validate_document_separator_marker(self, ctx: Context, src: str) -> str | None:
+    def validate_document_separator_marker(self, ctx: Context, src: str) -> ta.Optional[str]:
         if self.found_document_separator_marker(src):
             return repr(err_invalid_token(
                 tokens.new_invalid('found unexpected document separator', ctx.obuf, self.pos()),
@@ -958,7 +958,7 @@ class Scanner:
 
         return marker == '---' or marker == '...'
 
-    def scan_quote(self, ctx: Context, ch: str) -> ta.Tuple[bool, str | None]:
+    def scan_quote(self, ctx: Context, ch: str) -> ta.Tuple[bool, ta.Optional[str]]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1023,7 +1023,7 @@ class Scanner:
 
         return False
 
-    def scan_tag(self, ctx: Context) -> ta.Tuple[bool, str | None]:
+    def scan_tag(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
         if ctx.exists_buffer() or self.is_directive:
             return False, None
 
@@ -1109,7 +1109,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_multi_line(self, ctx: Context, c: str) -> str | None:
+    def scan_multi_line(self, ctx: Context, c: str) -> ta.Optional[str]:
         state = ctx.get_multi_line_state()
         ctx.add_origin_buf(c)
 
@@ -1292,7 +1292,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_map_delim(self, ctx: Context) -> ta.Tuple[bool, str | None]:
+    def scan_map_delim(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
         nc = ctx.next_char()
         if self.is_directive or self.is_anchor or self.is_alias:
             return False, None
@@ -1398,7 +1398,7 @@ class Scanner:
         self.progress_column(ctx, 1)
         return True
 
-    def scan_sequence(self, ctx: Context) -> ta.Tuple[bool, str | None]:
+    def scan_sequence(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1420,7 +1420,7 @@ class Scanner:
         ctx.clear()
         return True, None
 
-    def scan_multi_line_header(self, ctx: Context) -> ta.Tuple[bool, str | None]:
+    def scan_multi_line_header(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
         if ctx.exists_buffer():
             return False, None
 
@@ -1430,7 +1430,7 @@ class Scanner:
         self.progress_line(ctx)
         return True, None
 
-    def validate_multi_line_header_option(self, opt: str) -> str | None:
+    def validate_multi_line_header_option(self, opt: str) -> ta.Optional[str]:
         if len(opt) == 0:
             return None
 
@@ -1455,7 +1455,7 @@ class Scanner:
 
         return None
 
-    def scan_multi_line_header_option(self, ctx: Context) -> str | None:
+    def scan_multi_line_header_option(self, ctx: Context) -> ta.Optional[str]:
         header = ctx.current_char()
         ctx.add_origin_buf(header)
         self.progress(ctx, 1)  # skip '|' or '>' character
@@ -1560,7 +1560,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_reserved_char(self, ctx: Context, c: str) -> str | None:
+    def scan_reserved_char(self, ctx: Context, c: str) -> ta.Optional[str]:
         if ctx.exists_buffer():
             return None
 
@@ -1577,7 +1577,7 @@ class Scanner:
         ctx.clear()
         return repr(err)
 
-    def scan_tab(self, ctx: Context, c: str) -> str | None:
+    def scan_tab(self, ctx: Context, c: str) -> ta.Optional[str]:
         if self.started_flow_sequence_num > 0 or self.started_flow_map_num > 0:
             # tabs character is allowed in flow mode.
             return None
@@ -1598,7 +1598,7 @@ class Scanner:
         ctx.clear()
         return repr(err)
 
-    def _scan(self, ctx: Context) -> str | None:
+    def _scan(self, ctx: Context) -> ta.Optional[str]:
         while ctx.next():
             c = ctx.current_char()
             # First, change the IndentState.
@@ -1786,7 +1786,7 @@ class Scanner:
         self.indent_num = 0
 
     # scan scans the next token and returns the token collection. The source end is indicated by io.EOF.
-    def scan(self) -> ta.Tuple[tokens.Tokens | None, str | None]:
+    def scan(self) -> ta.Tuple[tokens.Tokens | None, ta.Optional[str]]:
         if self.source_pos >= self.source_size:
             return None, 'eof'
 
