@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# @omlish-script
 """
 https://stackoverflow.com/a/78339316
 
@@ -33,7 +35,7 @@ MINIMAL_SUBMODULE = True
 
 
 def _main() -> None:
-    tmp_dir = tempfile.mkdtemp(f'-{__package__.replace(".", "-")}-buildwheel')
+    tmp_dir = tempfile.mkdtemp(f'-om-llamacpp-buildwheel')
 
     print(tmp_dir)
 
