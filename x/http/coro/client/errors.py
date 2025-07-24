@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP006 UP007 UP043 UP045
 import dataclasses as dc
 import enum
 import typing as ta
