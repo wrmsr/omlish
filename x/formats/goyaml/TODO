@@ -1,2 +1,6 @@
-- mypy
+- optional-correctness
+- rest of mypy
 - undo __str__, bad idea, go with explicit def string(self) -> str
+- deal with hilarious buffer management inefficiency
+- actually test
+- promote to prod
