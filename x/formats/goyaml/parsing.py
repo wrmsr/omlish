@@ -1214,7 +1214,7 @@ class Parser:
             if clear_yaml_version:
                 self.yaml_version = ''
 
-    def parse_document_body(self, ctx: Context) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    def parse_document_body(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         node, err = self.parse_token(ctx, ctx.current_token())
         if err is not None:
             return None, err
@@ -1222,7 +1222,7 @@ class Parser:
             return None, err_syntax('value is not allowed in this context', ctx.current_token().raw_token())
         return node, None
 
-    def parse_token(self, ctx: Context, tk: Token) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    def parse_token(self, ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         if tk.group_type() in (
                 TokenGroupType.MAP_KEY,
                 TokenGroupType.MAP_KEY_VALUE,
@@ -1655,7 +1655,7 @@ class Parser:
                 num += 1
         return num
 
-    def map_key_text(self, n: ast.Node | None) -> str:
+    def map_key_text(self, n: ta.Optional[ast.Node]) -> str:
         if n is None:
             return ''
         nn = n
@@ -1674,7 +1674,7 @@ class Parser:
             ctx: Context,
             key: ast.MapKeyNode,
             colon_tk: Token,
-    ) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    ) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         tk = ctx.current_token()
         if tk is None:
             return new_null_node(ctx, ctx.add_null_value_token(colon_tk))
@@ -1906,7 +1906,7 @@ class Parser:
             ctx: Context,
             tag_raw_tk: tokens_.Token,
             tk: Token,
-    ) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    ) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         if tk is None:
             return new_null_node(ctx, ctx.create_null_token(Token(token=tag_raw_tk)))
         if tag_raw_tk.value in (
@@ -2035,7 +2035,7 @@ class Parser:
         return seq_node, None
 
 
-    def parse_sequence_value(self, ctx: Context, seq_tk: Token) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    def parse_sequence_value(self, ctx: Context, seq_tk: Token) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         tk = ctx.current_token()
         if tk is None:
             return new_null_node(ctx, ctx.add_null_value_token(seq_tk))
@@ -2175,7 +2175,7 @@ class Parser:
         directive.name = directive_name
         return directive, None
 
-    def parse_comment(self, ctx: Context) -> ta.Tuple[ast.Node | None, ta.Optional[str]]:
+    def parse_comment(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         cm = self.parse_head_comment(ctx)
         if ctx.is_token_not_found():
             return cm, None
