@@ -1534,6 +1534,8 @@ class Parser:
             return None
         if tk.column() <= key_tk.column():
             return None
+        if ctx.is_comment():
+            return None
         if ctx.is_flow and (tk.type() == tokens_.Type.COLLECT_ENTRY or tk.type() == tokens_.Type.SEQUENCE_END):
             return None
         # a: b
