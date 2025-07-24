@@ -103,6 +103,7 @@ class Node(abc.ABC):
         raise TypeError
 
     def string(self) -> str:
+        # FIXME: migrate off - ensure all sprintfy things explicitly call .string()
         return self.__str__()
 
     # get_token returns token instance
@@ -273,7 +274,7 @@ def check_line_break(t: tokens.Token) -> bool:
             #  bar: null # comment
             #
             #  baz: 1
-            if prev.type == tokens.Type.NULL:
+            if prev.type in (tokens.Type.NULL, tokens.Type.IMPLICIT_NULL):
                 return prev.origin.count(lbc) > 0
 
             if line_diff-adjustment > 0:
@@ -564,6 +565,10 @@ class NullNode(ScalarNode, BaseNode):
 
     # String returns `null` text
     def __str__(self) -> str:
+        if self.token.type == tokens.Type.IMPLICIT_NULL:
+            if self.comment is not None:
+                return self.comment.string()
+            return ''
         if self.comment is not None:
             return add_comment_string('null', self.comment)
         return self.string_without_comment()
@@ -1329,7 +1334,7 @@ class MappingValueNode(BaseNode):
 
     # String mapping value to text
     def __str__(self) -> str:
-        text = ''
+        text: str
         if self.comment is not None:
             text = f'{self.comment.string_with_space(self.key.get_token().position.column - 1)}\n{self.to_string()}'
         else:
@@ -1350,7 +1355,11 @@ class MappingValueNode(BaseNode):
         key_comment = self.key.get_comment()
 
         if isinstance(self.value, ScalarNode):
-            return f'{space}{self.key.string()}: {self.value.string()}'
+            value = self.value.string()
+            if value == '':
+                # implicit null value.
+                return f'{space}{self.key.string()}:'
+            return f'{space}{self.key.string()}: {value}'
 
         elif key_indent_level < value_indent_level and not self.is_flow_style:
             if key_comment is not None:
@@ -1693,12 +1702,16 @@ class AnchorNode(ScalarNode, BaseNode):
 
     # String anchor to text
     def __str__(self) -> str:
+        anchor = '&' + self.name.string()
         value = self.value.string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
-            return f'&{self.name.string()}\n{value}'
+            return f'{anchor}\n{value}'
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
-            return f'&{self.name.string()}\n{value}'
-        return f'&{self.name.string()} {value}'
+            return f'{anchor}\n{value}'
+        if value == '':
+            # implicit null value.
+            return anchor
+        return f'{anchor} {value}'
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> ta.Tuple[str, ta.Optional[str]]:

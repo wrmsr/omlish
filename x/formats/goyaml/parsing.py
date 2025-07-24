@@ -4,8 +4,6 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from omlish.lite.check import check
-
 from . import ast
 from . import scanning
 from . import tokens
@@ -89,14 +87,14 @@ class Context:
         return self.token_ref.idx < self.token_ref.size
 
     def insert_null_token(self, tk: 'Token') -> 'Token':
-        null_token = self.create_null_token(tk)
+        null_token = self.create_implicit_null_token(tk)
         self.insert_token(null_token)
         self.go_next()
 
         return null_token
 
     def add_null_value_token(self, tk: 'Token') -> 'Token':
-        null_token = self.create_null_token(tk)
+        null_token = self.create_implicit_null_token(tk)
         raw_tk = null_token.raw_token()
 
         # add space for map or sequence value.
@@ -107,10 +105,12 @@ class Context:
 
         return null_token
 
-    def create_null_token(self, base: 'Token') -> 'Token':
+    def create_implicit_null_token(self, base: 'Token') -> 'Token':
         pos = copy.copy(base.raw_token().position)
         pos.column+=1
-        return Token(token=tokens.new('null', ' null', pos))
+        tk = tokens.new('null', ' null', pos)
+        tk.type = tokens_.Type.IMPLICIT_NULL
+        return Token(token=tk)
 
     def insert_token(self, tk: 'Token') -> None:
         ref = self.token_ref
@@ -796,6 +796,7 @@ def is_scalar_type(tk: Token) -> bool:
         tokens_.Type.LITERAL,
         tokens_.Type.FOLDED,
         tokens_.Type.NULL,
+        tokens_.Type.IMPLICIT_NULL,
         tokens_.Type.BOOL,
         tokens_.Type.INTEGER,
         tokens_.Type.BINARY_INTEGER,
@@ -1338,7 +1339,7 @@ class Parser:
                 return None, err_syntax('unexpected scalar value', tk.raw_token())
         if tk.type() == tokens_.Type.MERGE_KEY:
             return new_merge_key_node(ctx, tk)
-        if tk.type() == tokens_.Type.NULL:
+        if tk.type() in (tokens_.Type.NULL, tokens_.Type.IMPLICIT_NULL):
             return new_null_node(ctx, tk)
         if tk.type() == tokens_.Type.BOOL:
             return new_bool_node(ctx, tk)
@@ -1718,7 +1719,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_null_token(tk)],
+                tokens=[tk, ctx.create_implicit_null_token(tk)],
             )
             anchor, err = self.parse_anchor(ctx.with_group(group), group)
             if err is not None:
@@ -1753,7 +1754,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_null_token(tk)],
+                tokens=[tk, ctx.create_implicit_null_token(tk)],
             )
             anchor, err = self.parse_anchor(ctx.with_group(group), group)
             if err is not None:
@@ -1911,7 +1912,7 @@ class Parser:
             tk: Token,
     ) -> ta.Tuple[ta.Optional[ast.Node], ta.Optional[str]]:
         if tk is None:
-            return new_null_node(ctx, ctx.create_null_token(Token(token=tag_raw_tk)))
+            return new_null_node(ctx, ctx.create_implicit_null_token(Token(token=tag_raw_tk)))
         if tag_raw_tk.value in (
                 tokens_.ReservedTagKeywords.MAPPING,
                 tokens_.ReservedTagKeywords.SET,
@@ -2067,7 +2068,7 @@ class Parser:
             # -
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_null_token(tk)],
+                tokens=[tk, ctx.create_implicit_null_token(tk)],
             )
             anchor, err = self.parse_anchor(ctx.with_group(group), group)
             if err is not None:
@@ -2102,7 +2103,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_null_token(tk)],
+                tokens=[tk, ctx.create_implicit_null_token(tk)],
             )
             anchor, err = self.parse_anchor(ctx.with_group(group), group)
             if err is not None:

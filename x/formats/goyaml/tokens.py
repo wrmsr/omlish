@@ -98,6 +98,10 @@ class Type(enum.Enum):
     SPACE = enum.auto()
     # NULL type for Null token
     NULL = enum.auto()
+    # IMPLICIT_NULL type for implicit Null token.
+    # This is used when explicit keywords such as null or ~ are not specified. It is distinguished during encoding and
+    # output as an empty string.
+    IMPLICIT_NULL = enum.auto()
     # INFINITY type for Infinity token
     INFINITY = enum.auto()
     # NAN type for Nan token

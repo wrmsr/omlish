@@ -1,0 +1,2 @@
+- mypy
+- undo __str__, bad idea, go with explicit def string(self) -> str
