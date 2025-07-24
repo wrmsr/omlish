@@ -208,6 +208,7 @@ ignore = [
     'PLR0912',  # too-many-branches
     'PLR0913',  # too-many-arguments
     'PLR0915',  # too-many-statements
+    'PLR1714',  # repeated-equality-comparison
     'PLR2004',  # magic-value-comparison
     'PLR2044',  # empty-comment
     'PLW0603',  # global-statement

@@ -73,11 +73,11 @@ def test_spec() -> None:
                         print(f'SUCCESS: {err}')
                     else:
                         print(f'FAILURE: {err}')
-                else:
+                else:  # noqa
                     if not item.fail:
                         print(f'SUCCESS: {obj}')
                     else:
                         print(f'FAILURE: {obj}')
 
-            except Exception as e:
+            except Exception as e:  # noqa
                 print(f'ERROR: {e}')

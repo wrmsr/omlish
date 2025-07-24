@@ -161,16 +161,12 @@ PATH_SPECIAL_CHARS = (
 
 
 def contains_path_special_char(path: str) -> bool:
-    for char in PATH_SPECIAL_CHARS:
-        if char in path:
-            return True
-
-    return False
+    return any(char in path for char in PATH_SPECIAL_CHARS)
 
 
 def normalize_path(path: str) -> str:
     if contains_path_special_char(path):
-        return "'%s'" % (path,)
+        return f"'{path}'"
 
     return path
 
@@ -1034,7 +1030,7 @@ def new_tag_default_scalar_value_node(ctx: Context, tag: tokens_.Token) -> tuple
             return None, err
         node = n
     else:
-        return None, err_syntax('cannot assign default value for %r tag' % (tag.value,), tag)
+        return None, err_syntax(f'cannot assign default value for {tag.value!r} tag', tag)
     ctx.insert_token(tk)
     ctx.go_next()
     return node, None
@@ -1599,7 +1595,7 @@ class Parser:
             if (n := self.path_map.get(key_path)) is not None:
                 pos = n.get_token().position
                 return err_syntax(
-                    'mapping key %q already defined at [%d:%d]' % (tk.value, pos.line, pos.column),
+                    f'mapping key {tk.value!r} already defined at [{pos.line:d}:{pos.column:d}]',
                     tk,
                 )
         origin = self.remove_left_white_space(tk.origin)
@@ -1820,12 +1816,12 @@ class Parser:
         if ctx.is_token_not_found():
             return None, err_syntax('could not find alias value', alias.get_token())
 
-        aliasName, err = self.parse_scalar_value(ctx, ctx.current_token())
+        alias_name, err = self.parse_scalar_value(ctx, ctx.current_token())
         if err is not None:
             return None, err
-        if aliasName is None:
+        if alias_name is None:
             return None, err_syntax('unexpected alias. alias name is not scalar value', ctx.current_token().raw_token())
-        alias.value = aliasName
+        alias.value = alias_name
         return alias, None
 
     def parse_literal(self, ctx: Context) -> tuple[ast.LiteralNode | None, str | None]:
@@ -2113,7 +2109,7 @@ class Parser:
             value = value_raw_tk.value
             ver, exists = YAML_VERSION_MAP[value]
             if not exists:
-                return None, err_syntax('unknown YAML version %r' % (value,), value_raw_tk)
+                return None, err_syntax(f'unknown YAML version {value!r}', value_raw_tk)
             if self.yaml_version != '':
                 return None, err_syntax('YAML version has already been specified', value_raw_tk)
             self.yaml_version = ver

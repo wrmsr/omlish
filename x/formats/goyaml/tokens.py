@@ -489,7 +489,7 @@ TIMESTAMP_FORMATS = (
 def _is_timestamp(value: str) -> bool:
     for format_str in TIMESTAMP_FORMATS:
         try:
-            datetime.datetime.strptime(value, format_str)
+            datetime.datetime.strptime(value, format_str)  # noqa
             return True
         except ValueError:
             continue
@@ -588,7 +588,7 @@ class Position:
 
     # String position to text
     def __str__(self) -> str:
-        return '[level:%d,line:%d,column:%d,offset:%d]' % (self.indent_level, self.line, self.column, self.offset)
+        return f'[level:{self.indent_level:d},line:{self.line:d},column:{self.column:d},offset:{self.offset:d}]'
 
 
 # Token type for token

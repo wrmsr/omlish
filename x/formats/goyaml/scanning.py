@@ -885,7 +885,7 @@ class Scanner:
                     self.progress_column(ctx, 1)
                     return None, repr(err_invalid_token(
                         tokens.new_invalid(
-                            'found unknown escape character %r' % (next_char,),
+                            f'found unknown escape character {next_char!r}',
                             ctx.obuf,
                             self.pos(),
                         ),
@@ -1064,7 +1064,7 @@ class Scanner:
             elif c in ('{', '}'):
                 ctx.add_origin_buf(c)
                 self.progress_column(ctx, progress)
-                invalid_tk = tokens.new_invalid('found invalid tag character %r' % (c,), ctx.obuf, self.pos())
+                invalid_tk = tokens.new_invalid(f'found invalid tag character {c!r}', ctx.obuf, self.pos())
                 return False, repr(err_invalid_token(invalid_tk))
 
             else:
@@ -1195,8 +1195,10 @@ class Scanner:
         #   b: c
         ctx.remove_right_space_from_buf()
 
-        # There is no problem that we ignore CR which followed by LF and normalize it to LF, because of following YAML1.2 spec.
-        # > Line breaks inside scalar content must be normalized by the YAML processor. Each such line break must be parsed into a single line feed character.
+        # There is no problem that we ignore CR which followed by LF and normalize it to LF, because of following
+        # YAML1.2 spec.
+        # > Line breaks inside scalar content must be normalized by the YAML processor. Each such line break must be
+        #   parsed into a single line feed character.
         # > Outside scalar content, YAML allows any line break to be used to terminate lines.
         # > -- https://yaml.org/spec/1.2/spec.html
         if c == '\r' and ctx.next_char() == '\n':
@@ -1294,7 +1296,13 @@ class Scanner:
         if self.is_directive or self.is_anchor or self.is_alias:
             return False, None
 
-        if self.started_flow_map_num <= 0 and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc) and not ctx.is_next_eos():
+        if (
+                self.started_flow_map_num <= 0 and
+                nc != ' ' and
+                nc != '\t' and
+                not self.is_new_line_char(nc) and
+                not ctx.is_next_eos()
+        ):
             return False, None
 
         if self.started_flow_map_num > 0 and nc == '/':
@@ -1434,15 +1442,15 @@ class Scanner:
             return None
 
         if opt == '0':
-            return 'invalid header option: %r' % (org_opt,)
+            return f'invalid header option: {org_opt!r}'
 
         try:
             i = int(opt, 10)
         except ValueError:
-            return 'invalid header option: %r' % (org_opt,)
+            return f'invalid header option: {org_opt!r}'
 
         if i > 9:
-            return 'invalid header option: %r' % (org_opt,)
+            return f'invalid header option: {org_opt!r}'
 
         return None
 
@@ -1559,7 +1567,7 @@ class Scanner:
         ctx.add_origin_buf(c)
         err = err_invalid_token(
             tokens.new_invalid(
-                '%r is a reserved character' % (c,),
+                f'{c!r} is a reserved character',
                 ctx.obuf,
                 self.pos(),
             ),
@@ -1597,7 +1605,8 @@ class Scanner:
             # The second and subsequent letters are Keep.
             self.update_indent(ctx, c)
 
-            # If IndentState is down, tokens are split, so the buffer accumulated until that point needs to be cutted as a token.
+            # If IndentState is down, tokens are split, so the buffer accumulated until that point needs to be cutted as
+            # a token.
             if self.is_changed_to_indent_state_down():
                 self.add_buffered_token_if_exists(ctx)
 
