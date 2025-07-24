@@ -1428,7 +1428,10 @@ class Parser:
                     node.values.append(map_value)
             else:
                 if not self.is_flow_map_delim(ctx.next_token()):
-                    return None, err_syntax('could not find flow map content', map_key_tk.raw_token())
+                    err_tk = map_key_tk
+                    if err_tk is None:
+                        err_tk = tk
+                    return None, err_syntax('could not find flow map content', err_tk.raw_token())
                 key, err = self.parse_scalar_value(ctx, map_key_tk)
                 if err is not None:
                     return None, err
@@ -1666,7 +1669,7 @@ class Parser:
         if isinstance(nn, ast.AnchorNode):
             return self.map_key_text(nn.value)
         if isinstance(nn, ast.AliasNode):
-            return self.map_key_text(nn.value)
+            return ''
         return n.get_token().value
 
     def parse_map_value(
