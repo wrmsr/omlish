@@ -264,7 +264,17 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13t venv-lite
+venv-all: venv venv-13d venv-13t venv-lite
+
+# 13d
+
+.PHONY: venv-13d
+venv-13d:
+	${PYPROJECT} venv 13d exe
+
+.PHONY: test-13d
+test-13d:
+	${PYPROJECT} venv 13d test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 13t
 

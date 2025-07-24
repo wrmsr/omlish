@@ -40,6 +40,11 @@ use_uv = true
 inherits = ['_default']
 requires = ['-rrequirements-ext.txt']
 
+[tool.omlish.pyproject.venvs.'13d']
+inherits = ['_default']
+interp = '@13d'
+requires = ['-rrequirements-ext.txt']
+
 [tool.omlish.pyproject.venvs.'13t']
 inherits = ['_default']
 interp = '@13t'
