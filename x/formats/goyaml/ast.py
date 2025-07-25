@@ -1448,7 +1448,7 @@ class SequenceNode(BaseNode):
     entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
-    # Replace replace value node.
+    # replace replace value node.
     def replace(self, idx: int, value: Node) -> ta.Optional[str]:
         if len(self.values) <= idx:
             return f'invalid index for sequence: sequence length is {len(self.values):d}, but specified {idx:d} index'
@@ -1458,7 +1458,7 @@ class SequenceNode(BaseNode):
         self.values[idx] = value
         return None
 
-    # Merge merge sequence value.
+    # merge merge sequence value.
     def merge(self, target: 'SequenceNode') -> None:
         column = self.start.position.column - target.start.position.column
         target.add_column(column)
