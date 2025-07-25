@@ -167,11 +167,11 @@ class ToolReflector:
             ds = docstrings.parse(doc)
 
         if ds is not None:
-            if 'desc' not in ts_kw:
-                ts_kw.update(desc=ds.description)
+            if 'desc' not in ts_kw and ds.description is not None:
+                ts_kw.update(desc=ds.description.strip())
 
-            if 'returns_desc' not in ts_kw and ds.returns is not None:
-                ts_kw.update(returns_desc=ds.returns.description)
+            if 'returns_desc' not in ts_kw and ds.returns is not None and ds.returns.description is not None:
+                ts_kw.update(returns_desc=ds.returns.description.strip())
 
         #
 
@@ -203,7 +203,7 @@ class ToolReflector:
                 params[sig_p.name] = ToolParam(
                     sig_p.name,
 
-                    desc=ds_p.description if ds_p is not None else None,
+                    desc=ds_p.description.strip() if ds_p is not None and ds_p.description is not None else None,
 
                     type=self.reflect_type(rfl.type_(th()[sig_p.name])) if sig_p.name in th() else None,
 
