@@ -174,7 +174,7 @@ class Context:
         src = self.buf[:self.not_space_char_pos]
 
         if self.is_multi_line():
-            mstate = self.get_multi_line_state()
+            mstate = check.not_none(self.get_multi_line_state())
 
             # remove end '\n' character and trailing empty lines.
             # https://yaml.org/spec/1.2.2/#8112-block-chomping-indicator
@@ -239,7 +239,7 @@ class Context:
 
         tag = last_tk.value
         if tag not in tokens.RESERVED_TAG_KEYWORD_MAP:
-            tk.type = tokens.Type.STRING
+            check.not_none(tk).type = tokens.Type.STRING
 
     def last_token(self) -> ta.Optional[tokens_.Token]:
         if len(self.tokens) != 0:
@@ -443,7 +443,7 @@ class Scanner:
             indent_level=self.indent_level,
         )
 
-    def buffered_token(self, ctx: Context) -> tokens.Token:
+    def buffered_token(self, ctx: Context) -> ta.Optional[tokens.Token]:
         if self.saved_pos is not None:
             tk = ctx.buffered_token(self.saved_pos)
             self.saved_pos = None
@@ -1121,7 +1121,7 @@ class Scanner:
         return True
 
     def scan_multi_line(self, ctx: Context, c: str) -> ta.Optional[str]:
-        state = ctx.get_multi_line_state()
+        state = check.not_none(ctx.get_multi_line_state())
         ctx.add_origin_buf(c)
 
         if ctx.is_eos():
@@ -1827,7 +1827,7 @@ def tokenize(src: str) -> tokens.Tokens:
         if err == 'eof':
             break
 
-        tks.add(*sub_tokens)
+        tks.add(*check.not_none(sub_tokens))
 
     return tks
 
@@ -1836,7 +1836,9 @@ def tokenize(src: str) -> tokens.Tokens:
 
 
 def hex_to_int(s: str) -> int:
-    [b] = s
+    if len(s) != 1:
+        raise ValueError(s)
+    b = s[0]
     if 'A' <= b <= 'F':
         return ord(b) - ord('A') + 10
     if 'a' <= b <= 'f':
