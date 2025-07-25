@@ -84,7 +84,7 @@ class ToolExecutor(lang.Final):
             check.arg(dc.is_dataclass(self.cls))
 
     @dc.dataclass(frozen=True)
-    class RawStringOutput(lang.Sealed, lang.Abstract):
+    class RawStringOutput(Output, lang.Final):
         pass
 
     output: Output

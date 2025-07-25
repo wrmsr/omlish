@@ -2,10 +2,10 @@ import os.path
 import typing as ta
 
 from omlish import check
-from omlish.formats import json
 
 from ..rendering import LsLinesRenderer
 from ..running import LsRunner
+from .newtools import ToolExecutor
 
 
 def test_ls():
@@ -14,6 +14,31 @@ def test_ls():
     root = LsRunner().run(root_dir)
     lines = LsLinesRenderer().render(root)
     print('\n'.join(lines.lines))
+
+
+def execute_tool_executor(
+        te: ToolExecutor,
+        args: ta.Mapping[str, ta.Any],
+) -> str:
+    fn = te.fn
+
+    out: ta.Any
+    if isinstance(te.input, ToolExecutor.DataclassInput):
+        raise NotImplementedError
+    elif isinstance(te.input, ToolExecutor.KwargsInput):
+        out = fn(**args)
+    else:
+        raise NotImplementedError
+
+    ret: str
+    if isinstance(te.output, ToolExecutor.DataclassOutput):
+        raise NotImplementedError
+    elif isinstance(te.output, ToolExecutor.RawStringOutput):
+        ret = check.isinstance(out, str)
+    else:
+        raise NotImplementedError
+
+    return ret
 
 
 def execute_ls_tool(
@@ -54,13 +79,16 @@ def test_ls_tool():
         tool_args,
     )
 
-    result_obj: ta.Any = execute_ls_tool(**tool_args)
+    ls_tool_executor = ToolExecutor(
+        execute_ls_tool,
+        ToolExecutor.KwargsInput(),
+        ToolExecutor.RawStringOutput(),
+    )
 
-    result_str: str
-    if isinstance(result_obj, str):
-        result_str = result_obj
-    else:
-        result_str = json.dumps_compact(result_obj)
+    result_str = execute_tool_executor(
+        ls_tool_executor,
+        tool_args,
+    )
 
     from .....chat.messages import ToolExecResultMessage
     tool_exec_result = ToolExecResultMessage(
