@@ -3,6 +3,7 @@ import dataclasses as dc
 import unittest
 
 from ..dataclasses import dataclass_cache_hash
+from ..dataclasses import dataclass_kw_only_init
 from ..dataclasses import dataclass_maybe_post_init
 from ..dataclasses import is_immediate_dataclass
 
@@ -115,3 +116,26 @@ class TestMaybePostInit(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             Bad()
+
+
+##
+
+
+class TestKwOnlyInit(unittest.TestCase):
+    def test_kw_only_init(self):
+        @dataclass_kw_only_init()
+        @dc.dataclass()
+        class Foo:
+            i: int
+            s: str = 'barf'
+
+        f = Foo(i=1, s='2')
+        self.assertEqual(f.i, 1)
+        self.assertEqual(f.s, '2')
+
+        f = Foo(i=2)
+        self.assertEqual(f.i, 2)
+        self.assertEqual(f.s, 'barf')
+
+        with self.assertRaises(TypeError):
+            Foo(1, '2')
