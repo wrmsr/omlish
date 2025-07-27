@@ -31,7 +31,6 @@ all = [
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.27',
     'mlx-lm ~= 0.26; sys_platform == "darwin"',
-    'sentencepiece ~= 0.2',
     'tiktoken ~= 0.9',
     'tinygrad ~= 0.10',
     'tokenizers ~= 0.21',
@@ -43,7 +42,7 @@ all = [
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
-    'pillow ~= 11.1',
+    'pillow ~= 11.3',
     'duckduckgo-search ~= 8.1',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
@@ -53,7 +52,6 @@ backends = [
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.27',
     'mlx-lm ~= 0.26; sys_platform == "darwin"',
-    'sentencepiece ~= 0.2',
     'tiktoken ~= 0.9',
     'tinygrad ~= 0.10',
     'tokenizers ~= 0.21',
@@ -73,7 +71,7 @@ ocr = [
     'rapidocr-onnxruntime ~= 1.4',
 ]
 pillow = [
-    'pillow ~= 11.1',
+    'pillow ~= 11.3',
 ]
 search = [
     'duckduckgo-search ~= 8.1',

@@ -21,7 +21,7 @@ class Project(ProjectBase):
             'mlx ~= 0.27',
             'mlx-lm ~= 0.26; sys_platform == "darwin"',
 
-            'sentencepiece ~= 0.2',
+            # 'sentencepiece ~= 0.2',  # FIXME: https://github.com/google/sentencepiece/issues/1121
 
             'tiktoken ~= 0.9',
 
@@ -52,7 +52,7 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 11.1',
+            'pillow ~= 11.3',
         ],
 
         'search': [

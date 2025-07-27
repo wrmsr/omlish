@@ -31,20 +31,25 @@ from mlx import nn
 def wired_limit_context(
         model: nn.Module,
         streams: ta.Iterable[mx.Stream] | None = None,
-) -> ta.Iterator[None]:
+) -> ta.Generator[None]:
     """
     A context manager to temporarily change the wired limit.
 
-    Note, the wired limit should not be changed during an async eval.  If an async eval could be running pass in the
+    Note, the wired limit should not be changed during an async eval. If an async eval could be running pass in the
     streams to synchronize with prior to exiting the context manager.
     """
 
+    if not mx.metal.is_available():
+        yield
+        return
+
     model_bytes = mlx.utils.tree_reduce(
-        lambda acc, x: acc + x.nbytes if isinstance(x, mlx.core.array) else acc, model, 0,
+        lambda acc, x: acc + x.nbytes if isinstance(x, mx.array) else acc,
+        model,
+        0,
     )
 
-    max_rec_size = int(mlx.core.metal.device_info()['max_recommended_working_set_size'])
-
+    max_rec_size = int(mx.metal.device_info()['max_recommended_working_set_size'])
     if model_bytes > 0.9 * max_rec_size:
         model_mb = model_bytes // 2**20
         max_rec_mb = max_rec_size // 2**20
@@ -55,16 +60,15 @@ def wired_limit_context(
             file=sys.stderr,
         )
 
-    old_limit = mlx.core.set_wired_limit(max_rec_size)
-
+    old_limit = mx.set_wired_limit(max_rec_size)
     try:
-        yield None
+        yield
 
     finally:
         if streams is not None:
             for s in streams:
-                mlx.core.synchronize(s)
+                mx.synchronize(s)
         else:
-            mlx.core.synchronize()
+            mx.synchronize()
 
-        mlx.core.set_wired_limit(old_limit)
+        mx.set_wired_limit(old_limit)

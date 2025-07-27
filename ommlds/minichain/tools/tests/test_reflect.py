@@ -47,7 +47,7 @@ def test_reflect():
 
     assert js == {
         'name': 'foo',
-        'description': "Foo's some params.\n",
+        'description': "Foo's some params.",
         'parameters': {
             'type': 'object',
             'properties': {
