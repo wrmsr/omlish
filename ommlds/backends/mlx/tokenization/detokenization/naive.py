@@ -44,8 +44,9 @@ class NaiveStreamingDetokenizer(BaseStreamingDetokenizer):
     def text(self) -> str:
         if self._current_tokens:
             self._current_text = self._tokenizer.decode(self._current_tokens)
-            if (
+            if self._current_text.endswith('\ufffd') or (
                     self._tokenizer.clean_up_tokenization_spaces and
+                    self._current_text and
                     self._current_text[-1] == ' '
             ):
                 self._current_text = self._current_text[:-1]
