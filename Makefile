@@ -316,6 +316,13 @@ venv-14t:
 test-14t:
 	${PYPROJECT} venv 14t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
+# 8
+
+.PHONY: test-8
+test-8:
+	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
+	$$(${PYPROJECT} venv 8 exe) -m omlish.testing.unittest.run -vb $$LITE_PATHS
+
 # lite
 
 LITE_VENVS=\
