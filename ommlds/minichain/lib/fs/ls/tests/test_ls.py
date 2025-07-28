@@ -1,11 +1,11 @@
 import os.path
-import typing as ta
 
 from omlish import check
 
 from ..rendering import LsLinesRenderer
 from ..running import LsRunner
 from .newtools import ToolExecutor
+from .newtools import execute_tool_executor
 
 
 def test_ls():
@@ -14,31 +14,6 @@ def test_ls():
     root = LsRunner().run(root_dir)
     lines = LsLinesRenderer().render(root)
     print('\n'.join(lines.lines))
-
-
-def execute_tool_executor(
-        te: ToolExecutor,
-        args: ta.Mapping[str, ta.Any],
-) -> str:
-    fn = te.fn
-
-    out: ta.Any
-    if isinstance(te.input, ToolExecutor.DataclassInput):
-        raise NotImplementedError
-    elif isinstance(te.input, ToolExecutor.KwargsInput):
-        out = fn(**args)
-    else:
-        raise NotImplementedError
-
-    ret: str
-    if isinstance(te.output, ToolExecutor.DataclassOutput):
-        raise NotImplementedError
-    elif isinstance(te.output, ToolExecutor.RawStringOutput):
-        ret = check.isinstance(out, str)
-    else:
-        raise NotImplementedError
-
-    return ret
 
 
 def execute_ls_tool(
