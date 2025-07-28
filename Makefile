@@ -335,13 +335,7 @@ venv-lite:
 test-lite:
 	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
 	for V in ${LITE_VENVS} ; do \
-  		for T in $$LITE_PATHS ; do \
-			if [ -d $$(echo "$$T" | tr '.' '/') ] ; then \
-				$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest.run -vb $$T ; \
-			else \
-				$$(${PYPROJECT} venv $$V exe) -m unittest -vb $$T ; \
-			fi ; \
-		done ; \
+		$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest.run -vb $$LITE_PATHS ; \
 	done
 
 # docker
