@@ -15,6 +15,9 @@ from ..lite.check import check
 from ..lite.maybes import Maybe
 
 
+MinjaTemplateFragmentKind = ta.Literal['expr', 'stmt', 'for', 'if', 'elif']  # ta.TypeAlias
+
+
 ##
 
 
@@ -90,6 +93,7 @@ class MinjaTemplateCompiler:
             params: ta.Sequence[ta.Union[str, MinjaTemplateParam]],
             *,
             indent: str = DEFAULT_INDENT,
+            fragment_processor: ta.Optional[ta.Callable[[MinjaTemplateFragmentKind, str], str]] = None,
     ) -> None:
         super().__init__()
 
@@ -102,6 +106,10 @@ class MinjaTemplateCompiler:
         ]
         check.unique(p.name for p in self._params)
         self._indent_str: str = check.non_empty_str(indent)
+
+        if fragment_processor is None:
+            fragment_processor = lambda _, s: s  # noqa
+        self._fragment_processor = fragment_processor
 
         self._stack: ta.List[ta.Literal['for', 'if']] = []
 
@@ -200,23 +208,23 @@ class MinjaTemplateCompiler:
         for g, s in parts:
             if g == '{':
                 expr = s.strip()
-                lines.append(self._indent(f'__output.write(str({expr}))'))
+                lines.append(self._indent(f'__output.write(str({self._fragment_processor("expr", expr)}))'))
 
             elif g == '%':
                 stmt = s.strip()
 
                 if stmt.startswith('for '):
-                    lines.append(self._indent(stmt + ':'))
+                    lines.append(self._indent(self._fragment_processor('for', stmt) + ':'))
                     self._stack.append('for')
                 elif stmt.startswith('endfor'):
                     check.equal(self._stack.pop(), 'for')
 
                 elif stmt.startswith('if '):
-                    lines.append(self._indent(stmt + ':'))
+                    lines.append(self._indent(self._fragment_processor('if', stmt) + ':'))
                     self._stack.append('if')
                 elif stmt.startswith('elif '):
                     check.equal(self._stack[-1], 'if')
-                    lines.append(self._indent(stmt + ':', -1))
+                    lines.append(self._indent(self._fragment_processor('elif', stmt) + ':', -1))
                 elif stmt.strip() == 'else':
                     check.equal(self._stack[-1], 'if')
                     lines.append(self._indent('else:', -1))
@@ -224,7 +232,7 @@ class MinjaTemplateCompiler:
                     check.equal(self._stack.pop(), 'if')
 
                 else:
-                    lines.append(self._indent(stmt))
+                    lines.append(self._indent(self._fragment_processor('stmt', stmt)))
 
             elif g == '#':
                 pass
