@@ -210,6 +210,7 @@ class TestRunner:
         errors: ta.Sequence[TestAndReason]
         failures: ta.Sequence[TestAndReason]
 
+        expected_failures: ta.Sequence[TestAndReason]
         unexpected_successes: ta.Sequence[str]
 
         @classmethod
@@ -231,6 +232,7 @@ class TestRunner:
                 errors=merge_list_attr('errors'),
                 failures=merge_list_attr('failures'),
 
+                expected_failures=merge_list_attr('expected_failures'),
                 unexpected_successes=merge_list_attr('unexpected_successes'),
             )
 
@@ -254,6 +256,7 @@ class TestRunner:
             errors=as_test_and_reasons(result.errors),
             failures=as_test_and_reasons(result.failures),
 
+            expected_failures=as_test_and_reasons(result.expectedFailures),
             unexpected_successes=[result.getDescription(t) for t in result.unexpectedSuccesses],
         )
 
@@ -297,19 +300,18 @@ class TestRunner:
 
         self._stream.writeln(self.separator2)
 
-        run = result.num_tests_run
-
-        self._stream.writeln(f'Ran {run:d} test{"s" if run != 1 else ""} in {result.time_taken:.3f}s')
+        self._stream.writeln(
+            f'Ran {result.num_tests_run:d} '
+            f'test{"s" if result.num_tests_run != 1 else ""} '
+            f'in {result.time_taken:.3f}s',
+        )
         self._stream.writeln()
 
-        expected_fails = unexpected_successes = skipped = 0
-        try:
-            expected_fails, unexpected_successes, skipped = \
-                map(len, (result.expectedFailures, result.unexpectedSuccesses, result.skipped))  # type: ignore
-        except AttributeError:
-            pass
+        expected_fails = len(result.expected_failures)
+        unexpected_successes = len(result.unexpected_successes)
+        skipped = len(result.skipped)
 
-        infos = []
+        infos: ta.List[str] = []
 
         if not result.was_successful:
             self._stream.write('FAILED')
@@ -340,6 +342,21 @@ class TestRunner:
 
 
 class TestTargetLoader:
+    def __init__(
+            self,
+            *,
+            test_name_patterns: ta.Optional[ta.Sequence[str]] = None,
+            module: ta.Union[str, types.ModuleType, None] = None,
+            loader: ta.Optional[unittest.loader.TestLoader] = None,
+    ) -> None:
+        super().__init__()
+
+        self._test_name_patterns = test_name_patterns
+        self._module = module
+        self._loader = loader
+
+    #
+
     class Target(abc.ABC):  # noqa
         pass
 
@@ -355,23 +372,6 @@ class TestTargetLoader:
         start: ta.Optional[str] = None
         pattern: ta.Optional[str] = None
         top: ta.Optional[str] = None
-
-    #
-
-    def __init__(
-            self,
-            *,
-            test_name_patterns: ta.Optional[ta.Sequence[str]] = None,
-            module: ta.Union[str, types.ModuleType, None] = None,
-            loader: ta.Optional[unittest.loader.TestLoader] = None,
-    ) -> None:
-        super().__init__()
-
-        self._test_name_patterns = test_name_patterns
-        self._module = module
-        self._loader = loader
-
-    #
 
     def load(self, target: Target) -> Test:
         loader = self._loader
@@ -608,7 +608,7 @@ class TestRunCli:
         runner.print(result)
 
         if exit:
-            if result.num_tests_run == 0 and len(result.skipped) == 0:
+            if not result.num_tests_run and not result.skipped:
                 sys.exit(self.NO_TESTS_EXITCODE)
             elif result.was_successful:
                 sys.exit(0)
