@@ -78,7 +78,7 @@ class _WritelnDecorator:
         self.write('\n')  # text-mode streams translate to \r\n if needed
 
 
-class TextTestRunner:
+class TestRunner:
     """
     A test runner class that displays results in textual form.
 
@@ -166,7 +166,7 @@ class TextTestRunner:
 
         time_taken = stop_time - start_time
 
-        return TextTestRunner._InternalRunTestResult(
+        return TestRunner._InternalRunTestResult(
             result,
             time_taken,
         )
@@ -192,7 +192,7 @@ class TextTestRunner:
         unexpected_successes: ta.Sequence[str]
 
         @classmethod
-        def merge(cls, results: ta.Iterable['TextTestRunner.RunResult']) -> 'TextTestRunner.RunResult':
+        def merge(cls, results: ta.Iterable['TestRunner.RunResult']) -> 'TestRunner.RunResult':
             def reduce_attr(fn, a):
                 return fn(getattr(r, a) for r in results)
 
@@ -218,11 +218,11 @@ class TextTestRunner:
 
         def as_test_and_reasons(l):
             return [
-                TextTestRunner.RunResult.TestAndReason(result.getDescription(t), r)
+                TestRunner.RunResult.TestAndReason(result.getDescription(t), r)
                 for t, r in l
             ]
 
-        return TextTestRunner.RunResult(
+        return TestRunner.RunResult(
             raw_results=[result],
             time_taken=internal_result.time_taken,
 
@@ -398,7 +398,7 @@ class TestTargetRunner:
 
     #
 
-    def run_test(self, test: Test) -> TextTestRunner.RunResult:
+    def run_test(self, test: Test) -> TestRunner.RunResult:
         if self._args.catchbreak:
             unittest.signals.installHandler()
 
@@ -413,7 +413,7 @@ class TestTargetRunner:
             # depends on the values passed to -W.
             warnings = self._args.warnings  # noqa
 
-        runner = TextTestRunner(
+        runner = TestRunner(
             verbosity=self._args.verbosity,
             failfast=self._args.failfast,
             buffer=self._args.buffer,
