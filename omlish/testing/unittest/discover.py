@@ -52,46 +52,6 @@ import unittest
 ##
 
 
-def _convert_name(name: str) -> str:
-    # on Linux / Mac OS X 'foo.PY' is not importable, but on Windows it is. Simpler to do a case insensitive match a
-    # better check would be to check that the name is a valid Python module name.
-    if not (os.path.isfile(name) and name.lower().endswith('.py')):
-        return name
-
-    if os.path.isabs(name):
-        rel_path = os.path.relpath(name, os.getcwd())
-        if os.path.isabs(rel_path) or rel_path.startswith(os.pardir):
-            return name
-        name = rel_path
-
-    # on Windows both '\' and '/' are used as path separators. Better to replace both than rely on os.path.sep
-    return os.path.normpath(name)[:-3].replace('\\', '.').replace('/', '.')
-
-
-def _convert_names(names: ta.Iterable[str]) -> ta.List[str]:
-    return [_convert_name(name) for name in names]
-
-
-def _convert_select_pattern(pattern: str) -> str:
-    if '*' not in pattern:
-        pattern = f'*{pattern}*'
-    return pattern
-
-
-def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any]:
-    if obj is None:
-        return {}
-
-    return {
-        a: v
-        for a in attrs
-        if (v := getattr(obj, a, None)) is not None
-    }
-
-
-##
-
-
 class TestProgramRunner:
     class Target(abc.ABC):  # noqa
         pass
@@ -138,23 +98,21 @@ class TestProgramRunner:
         self._args = args
 
         self._module = module
-
-        if loader is None:
-            loader = unittest.loader.TestLoader()
         self._loader = loader
-
-        if runner is None:
-            runner = unittest.runner.TextTestRunner
         self._runner = runner
 
     #
 
     def create_suite(self, target: Target) -> ta.Any:
+        loader = self._loader
+        if loader is None:
+            loader = unittest.loader.TestLoader()
+
         if self._args.test_name_patterns:
-            self._loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
+            loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
 
         if isinstance(target, TestProgramRunner.DiscoveryTarget):
-            return self._loader.discover(
+            return loader.discover(
                 target.start,  # type: ignore[arg-type]
                 target.pattern,  # type: ignore[arg-type]
                 target.top,
@@ -167,10 +125,10 @@ class TestProgramRunner:
                 module = getattr(module, part)
 
         if isinstance(target, TestProgramRunner.ModuleTarget):
-            return self._loader.loadTestsFromModule(module)
+            return loader.loadTestsFromModule(module)
 
         elif isinstance(target, TestProgramRunner.NamesTarget):
-            return self._loader.loadTestsFromNames(
+            return loader.loadTestsFromNames(
                 target.test_names,  # type: ignore[arg-type]
                 module,
             )
@@ -196,6 +154,9 @@ class TestProgramRunner:
             warnings = self._args.warnings
 
         runner: ta.Any = self._runner
+        if runner is None:
+            runner = unittest.runner.TextTestRunner
+
         if isinstance(runner, type):
             try:
                 try:
@@ -226,6 +187,43 @@ class TestProgramRunner:
 
 
 ##
+
+
+def _convert_name(name: str) -> str:
+    # on Linux / Mac OS X 'foo.PY' is not importable, but on Windows it is. Simpler to do a case insensitive match a
+    # better check would be to check that the name is a valid Python module name.
+    if not (os.path.isfile(name) and name.lower().endswith('.py')):
+        return name
+
+    if os.path.isabs(name):
+        rel_path = os.path.relpath(name, os.getcwd())
+        if os.path.isabs(rel_path) or rel_path.startswith(os.pardir):
+            return name
+        name = rel_path
+
+    # on Windows both '\' and '/' are used as path separators. Better to replace both than rely on os.path.sep
+    return os.path.normpath(name)[:-3].replace('\\', '.').replace('/', '.')
+
+
+def _convert_names(names: ta.Iterable[str]) -> ta.List[str]:
+    return [_convert_name(name) for name in names]
+
+
+def _convert_select_pattern(pattern: str) -> str:
+    if '*' not in pattern:
+        pattern = f'*{pattern}*'
+    return pattern
+
+
+def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any]:
+    if obj is None:
+        return {}
+
+    return {
+        a: v
+        for a in attrs
+        if (v := getattr(obj, a, None)) is not None
+    }
 
 
 class TestDiscoveryCli:
@@ -337,13 +335,12 @@ class TestDiscoveryCli:
             help='Top level directory of project (defaults to start directory)',
         )
 
-        for arg in ('start', 'pattern', 'top'):
-            parser.add_argument(
-                arg,
-                nargs='?',
-                default=argparse.SUPPRESS,
-                help=argparse.SUPPRESS,
-            )
+        parser.add_argument(
+            'target',
+            nargs='*',
+            default=argparse.SUPPRESS,
+            help=argparse.SUPPRESS,
+        )
 
         return parser
 
@@ -361,6 +358,18 @@ class TestDiscoveryCli:
 
     #
 
+    def _build_target(self, target_arg: str, args: ParsedArgs) -> TestProgramRunner.Target:
+        return TestProgramRunner.DiscoveryTarget(
+            start=target_arg,
+            **_get_attr_dict(
+                args.args,
+                'pattern',
+                'top',
+            ),
+        )
+
+    #
+
     NO_TESTS_EXITCODE = 5
 
     def run_tests(
@@ -369,13 +378,6 @@ class TestDiscoveryCli:
             *,
             exit: bool = False,  # noqa
     ) -> None:
-        target: TestProgramRunner.Target = TestProgramRunner.DiscoveryTarget(**_get_attr_dict(
-            args.args,
-            'start',
-            'pattern',
-            'top',
-        ))
-
         run_args = TestProgramRunner.Args(**_get_attr_dict(
             args.args,
             'test_name_patterns',
@@ -392,12 +394,23 @@ class TestDiscoveryCli:
             run_args,
         )
 
-        suite = tpr.create_suite(target)
-        result = tpr.run_suite(suite)
+        tests_run = 0
+        tests_skipped = 0
+        was_successful = True
+
+        for target_arg in (args.args.target if args.args is not None else None) or []:
+            target = self._build_target(target_arg, args)
+            suite = tpr.create_suite(target)
+            result = tpr.run_suite(suite)
+
+            tests_run += result.testsRun
+            tests_skipped += len(result.skipped)
+            was_successful &= result.wasSuccessful()
+
         if exit:
-            if result.testsRun == 0 and len(result.skipped) == 0:
+            if tests_run == 0 and tests_skipped == 0:
                 sys.exit(self.NO_TESTS_EXITCODE)
-            elif result.wasSuccessful():
+            elif was_successful:
                 sys.exit(0)
             else:
                 sys.exit(1)
