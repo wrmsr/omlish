@@ -1,47 +1,51 @@
+# @omlish-lite
+# ruff: noqa: PT009 UP006 UP007
 import sys
 import threading
 import time
-
-import pytest
+import unittest
 
 from ..testing import raise_in_thread
 
 
-@pytest.mark.skipif(sys.implementation.name != 'cpython', reason='cpython only')
-def test_raise_in_thread():
-    c = 0
-    e = None
-    f = False
+class TestRaiseInThread(unittest.TestCase):
+    def test_raise_in_thread(self):
+        if sys.implementation.name != 'cpython':
+            self.skipTest('cpython only')
 
-    class FooError(Exception):
-        pass
+        c = 0
+        e = None
+        f = False
 
-    def proc():
-        nonlocal c
-        nonlocal e
-        nonlocal f
-        try:
-            while True:
-                time.sleep(.05)
-                c += 1
-        except FooError as e_:
-            e = e_
-        finally:
-            f = True
+        class FooError(Exception):
+            pass
 
-    t = threading.Thread(target=proc)
+        def proc():
+            nonlocal c
+            nonlocal e
+            nonlocal f
+            try:
+                while True:
+                    time.sleep(.05)
+                    c += 1
+            except FooError as e_:
+                e = e_
+            finally:
+                f = True
 
-    t.start()
-    assert t.is_alive()
+        t = threading.Thread(target=proc)
 
-    time.sleep(.4)
-    assert not f
+        t.start()
+        self.assertTrue(t.is_alive())
 
-    raise_in_thread(t, FooError)
+        time.sleep(.4)
+        self.assertFalse(f)
 
-    t.join()
-    assert not t.is_alive()
+        raise_in_thread(t, FooError)
 
-    assert c > 1
-    assert isinstance(e, FooError)
-    assert f
+        t.join()
+        self.assertFalse(t.is_alive())
+
+        self.assertTrue(c > 1)
+        self.assertIsInstance(e, FooError)
+        self.assertTrue(f)

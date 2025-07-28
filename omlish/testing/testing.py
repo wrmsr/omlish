@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
 import functools
 import os
 import sys
@@ -27,16 +29,16 @@ DEFAULT_TIMEOUT_S = 30
 
 def call_many_with_timeout(
         fns: ta.Iterable[ta.Callable[[], T]],
-        timeout_s: float | None = None,
+        timeout_s: ta.Optional[float] = None,
         timeout_exception: Exception = TimeoutError('Thread timeout'),
-) -> list[T]:
+) -> ta.List[T]:
     if timeout_s is None:
         timeout_s = DEFAULT_TIMEOUT_S
 
     fns = list(fns)
     missing = object()
-    rets: list[ta.Any] = [missing] * len(fns)
-    thread_exception: Exception | None = None
+    rets: ta.List[ta.Any] = [missing] * len(fns)
+    thread_exception: ta.Optional[Exception] = None
 
     def inner(fn, idx):
         try:
@@ -61,12 +63,12 @@ def call_many_with_timeout(
         if ret is missing:
             raise ValueError
 
-    return ta.cast(list[T], rets)
+    return ta.cast('ta.List[T]', rets)
 
 
 def run_with_timeout(
         *fns: ta.Callable[[], None],
-        timeout_s: float | None = None,
+        timeout_s: ta.Optional[float] = None,
         timeout_exception: Exception = TimeoutError('Thread timeout'),
 ) -> None:
     call_many_with_timeout(fns, timeout_s, timeout_exception)
@@ -74,7 +76,7 @@ def run_with_timeout(
 
 def waitpid_with_timeout(
         pid: int,
-        timeout_s: float | None = None,
+        timeout_s: ta.Optional[float] = None,
         timeout_exception: Exception = TimeoutError('waitpid timeout'),
 ) -> int:
     if timeout_s is None:
@@ -108,7 +110,7 @@ def xfail(fn):
     return inner
 
 
-def raise_in_thread(thr: threading.Thread, exc: BaseException | type[BaseException]) -> None:
+def raise_in_thread(thr: threading.Thread, exc: ta.Union[BaseException, ta.Type[BaseException]]) -> None:
     if sys.implementation.name != 'cpython':
         raise RuntimeError(sys.implementation.name)
 
