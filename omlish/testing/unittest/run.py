@@ -42,7 +42,9 @@ https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/
 import abc
 import argparse
 import dataclasses as dc
+import importlib.util
 import os
+import re
 import sys
 import types
 import typing as ta
@@ -52,7 +54,7 @@ import unittest
 ##
 
 
-class TestProgramRunner:
+class TestTargetRunner:
     class Target(abc.ABC):  # noqa
         pass
 
@@ -111,7 +113,7 @@ class TestProgramRunner:
         if self._args.test_name_patterns:
             loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
 
-        if isinstance(target, TestProgramRunner.DiscoveryTarget):
+        if isinstance(target, TestTargetRunner.DiscoveryTarget):
             return loader.discover(
                 target.start,  # type: ignore[arg-type]
                 target.pattern,  # type: ignore[arg-type]
@@ -124,10 +126,10 @@ class TestProgramRunner:
             for part in module.split('.')[1:]:
                 module = getattr(module, part)
 
-        if isinstance(target, TestProgramRunner.ModuleTarget):
+        if isinstance(target, TestTargetRunner.ModuleTarget):
             return loader.loadTestsFromModule(module)
 
-        elif isinstance(target, TestProgramRunner.NamesTarget):
+        elif isinstance(target, TestTargetRunner.NamesTarget):
             return loader.loadTestsFromNames(
                 target.test_names,  # type: ignore[arg-type]
                 module,
@@ -189,32 +191,6 @@ class TestProgramRunner:
 ##
 
 
-def _convert_name(name: str) -> str:
-    # on Linux / Mac OS X 'foo.PY' is not importable, but on Windows it is. Simpler to do a case insensitive match a
-    # better check would be to check that the name is a valid Python module name.
-    if not (os.path.isfile(name) and name.lower().endswith('.py')):
-        return name
-
-    if os.path.isabs(name):
-        rel_path = os.path.relpath(name, os.getcwd())
-        if os.path.isabs(rel_path) or rel_path.startswith(os.pardir):
-            return name
-        name = rel_path
-
-    # on Windows both '\' and '/' are used as path separators. Better to replace both than rely on os.path.sep
-    return os.path.normpath(name)[:-3].replace('\\', '.').replace('/', '.')
-
-
-def _convert_names(names: ta.Iterable[str]) -> ta.List[str]:
-    return [_convert_name(name) for name in names]
-
-
-def _convert_select_pattern(pattern: str) -> str:
-    if '*' not in pattern:
-        pattern = f'*{pattern}*'
-    return pattern
-
-
 def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any]:
     if obj is None:
         return {}
@@ -226,7 +202,7 @@ def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any
     }
 
 
-class TestDiscoveryCli:
+class TestRunCli:
     def __init__(self) -> None:
         super().__init__()
 
@@ -298,6 +274,11 @@ class TestDiscoveryCli:
             help='Buffer stdout and stderr during tests',
         )
 
+        def _convert_select_pattern(pattern: str) -> str:
+            if '*' not in pattern:
+                pattern = f'*{pattern}*'
+            return pattern
+
         parser.add_argument(
             '-k',
             dest='test_name_patterns',
@@ -358,15 +339,29 @@ class TestDiscoveryCli:
 
     #
 
-    def _build_target(self, target_arg: str, args: ParsedArgs) -> TestProgramRunner.Target:
-        return TestProgramRunner.DiscoveryTarget(
-            start=target_arg,
-            **_get_attr_dict(
-                args.args,
-                'pattern',
-                'top',
-            ),
-        )
+    IMPORT_PATH_PAT = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*')
+
+    def _build_target(self, name: str, args: ParsedArgs) -> TestTargetRunner.Target:
+        is_discovery = False
+        if os.path.isdir(name):
+            is_discovery = True
+        elif self.IMPORT_PATH_PAT.fullmatch(name):
+            spec = importlib.util.find_spec(name)
+            if spec is not None and spec.submodule_search_locations is not None:  # is a package, not a module
+                is_discovery = True
+
+        if not is_discovery:
+            return TestTargetRunner.NamesTarget([name])
+
+        else:
+            return TestTargetRunner.DiscoveryTarget(
+                start=name,
+                **_get_attr_dict(
+                    args.args,
+                    'pattern',
+                    'top',
+                ),
+            )
 
     #
 
@@ -378,7 +373,7 @@ class TestDiscoveryCli:
             *,
             exit: bool = False,  # noqa
     ) -> None:
-        run_args = TestProgramRunner.Args(**_get_attr_dict(
+        run_args = TestTargetRunner.Args(**_get_attr_dict(
             args.args,
             'test_name_patterns',
             'verbosity',
@@ -390,7 +385,7 @@ class TestDiscoveryCli:
             'durations',
         ))
 
-        tpr = TestProgramRunner(
+        tpr = TestTargetRunner(
             run_args,
         )
 
@@ -398,7 +393,7 @@ class TestDiscoveryCli:
         tests_skipped = 0
         was_successful = True
 
-        for target_arg in (args.args.target if args.args is not None else None) or []:
+        for target_arg in (args.args.target if args.args is not None else None) or []:  # noqa
             target = self._build_target(target_arg, args)
             suite = tpr.create_suite(target)
             result = tpr.run_suite(suite)
@@ -420,7 +415,7 @@ class TestDiscoveryCli:
 
 
 def _main() -> None:
-    cli = TestDiscoveryCli()
+    cli = TestRunCli()
     args = cli.parse_args(sys.argv[1:])
     cli.run_tests(args, exit=True)
 

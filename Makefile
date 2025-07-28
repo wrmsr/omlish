@@ -337,7 +337,7 @@ test-lite:
 	for V in ${LITE_VENVS} ; do \
   		for T in $$LITE_PATHS ; do \
 			if [ -d $$(echo "$$T" | tr '.' '/') ] ; then \
-				$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest.discover -vb $$T ; \
+				$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest.run -vb $$T ; \
 			else \
 				$$(${PYPROJECT} venv $$V exe) -m unittest -vb $$T ; \
 			fi ; \
