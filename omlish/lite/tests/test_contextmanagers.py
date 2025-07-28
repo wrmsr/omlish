@@ -1,5 +1,4 @@
 # ruff: noqa: PT009 PT027
-# @omlish-lite
 import unittest
 
 from ..contextmanagers import ExitStacked
