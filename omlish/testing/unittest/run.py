@@ -3,9 +3,6 @@
 """
 https://docs.python.org/3/library/unittest.html#command-line-interface
 ~ https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/unittest
-
-TODO:
- - output only final status line
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -262,12 +259,18 @@ class TestRunner:
 
     #
 
+    def run(self, test: Test) -> RunResult:
+        return self._build_run_result(self._internal_run_test(test))
+
+    def run_many(self, tests: ta.Iterable[Test]) -> RunResult:
+        return TestRunner.RunResult.merge([self.run(t) for t in tests])
+
+    #
+
     separator1 = unittest.TextTestResult.separator1
     separator2 = unittest.TextTestResult.separator2
 
-    def run(self, test: Test) -> RunResult:
-        result = self._build_run_result(self._internal_run_test(test))
-
+    def print(self, result: RunResult) -> None:
         if self._args.verbosity > 0:
             self._stream.writeln()
             self._stream.flush()
@@ -331,8 +334,6 @@ class TestRunner:
             self._stream.writeln(f' ({", ".join(infos)})')
         else:
             self._stream.write('\n')
-
-        return result
 
 
 ##
@@ -576,18 +577,23 @@ class TestRunCli:
 
     NO_TESTS_EXITCODE = 5
 
-    def run_tests(
+    def run(
             self,
             args: ParsedArgs,
             *,
             exit: bool = False,  # noqa
     ) -> None:
-        ttl = TestTargetLoader(**_get_attr_dict(
+        loader = TestTargetLoader(**_get_attr_dict(
             args.args,
             'test_name_patterns',
         ))
 
-        tr = TestRunner(TestRunner.Args(**_get_attr_dict(
+        tests = [
+            loader.load(self._build_target(target_arg, args))
+            for target_arg in (args.args.target if args.args is not None else None) or []  # noqa
+        ]
+
+        runner = TestRunner(TestRunner.Args(**_get_attr_dict(
             args.args,
             'verbosity',
             'failfast',
@@ -597,25 +603,14 @@ class TestRunCli:
             'tb_locals',
         )))
 
-        # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
+        result = runner.run_many(tests)
 
-        tests_run = 0
-        tests_skipped = 0
-        was_successful = True
-
-        for target_arg in (args.args.target if args.args is not None else None) or []:  # noqa
-            target = self._build_target(target_arg, args)
-            test = ttl.load(target)
-            result = tr.run(test)
-
-            tests_run += result.num_tests_run
-            tests_skipped += len(result.skipped)
-            was_successful &= result.was_successful
+        runner.print(result)
 
         if exit:
-            if tests_run == 0 and tests_skipped == 0:
+            if result.num_tests_run == 0 and len(result.skipped) == 0:
                 sys.exit(self.NO_TESTS_EXITCODE)
-            elif was_successful:
+            elif result.was_successful:
                 sys.exit(0)
             else:
                 sys.exit(1)
@@ -627,7 +622,7 @@ class TestRunCli:
 def _main() -> None:
     cli = TestRunCli()
     args = cli.parse_args(sys.argv[1:])
-    cli.run_tests(args, exit=True)
+    cli.run(args, exit=True)
 
 
 if __name__ == '__main__':
