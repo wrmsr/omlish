@@ -1,9 +1,17 @@
 """
+This is all gross, but this business always tends to be, and it at least centralizes and abstracts away all the
+grossness and hides it behind a small and stable interface. It supports exactly as much as is needed by the codebase at
+any given moment. It is 90% of why the codebase is strictly 3.13+ - I've tried to maintain backwards compat with this
+kind of thing many times before and it's not worth my time, especially with lite code as an alternative.
+
+I'm exploring extracting and distilling down mypy's type system to replace all of this, both to add some formalism /
+give it some guiding North Star to make all of its decisions for it, and to add some long sought capabilities (infer,
+meet, join, solve, ...), but it's quite a bit of work and not a priority at the moment.
+
 TODO:
  - visitor / transformer
  - uniform collection isinstance - items() for mappings, iter() for other
  - also check instance type in isinstance not just items lol
-TODO:
  - ta.Generic in mro causing trouble - omit? no longer 1:1
  - cache this shit, esp generic_mro shit
   - cache __hash__ in Generic/Union

@@ -1,5 +1,5 @@
 - Environment
-  - Target cpython 3.12 - use the modern language and library features it includes.
+  - Target cpython 3.13 - use the modern language and library features it includes.
     - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` to `'/'.join` where reasonable.
@@ -121,5 +121,6 @@
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
 
 - Runtime
-  - Unless forced to through interaction with external code, not use environment variables for anything. Configuration
-    should be injected, usually as class constructor arguments.
+  - Unless forced to through interaction with external code, do not use environment variables for anything.
+    Configuration should be injected, usually as keyword-only class constructor arguments, and usually in the form of
+    dataclasses or `ta.NewType`s.
