@@ -244,7 +244,7 @@ class MinjaTemplateCompiler:
                 elif stmt.strip() == 'else':
                     check.equal(self._stack[-1], 'if')
                     lines.append(self._indent('else:', -1))
-                elif stmt.startswith('endif'):
+                elif stmt.strip() == 'endif':
                     check.equal(self._stack.pop(), 'if')
 
                 else:
