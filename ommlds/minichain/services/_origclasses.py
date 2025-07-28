@@ -34,7 +34,7 @@ class _OrigClassCapture:
         code should check that it actually succeeded as necessary.
 
         See:
-            https://github.com/python/cpython/blob/3.12/Lib/typing.py#L1187-L1190
+            https://github.com/python/cpython/blob/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/typing.py#L1187-L1190
             https://github.com/python/cpython/issues/115165
         """
 

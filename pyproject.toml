@@ -49,6 +49,10 @@ requires = ['-rrequirements-ext.txt']
 inherits = ['_default']
 interp = '@13t'
 
+[tool.omlish.pyproject.venvs.'13dt']
+inherits = ['_default']
+interp = '@13dt'
+
 [tool.omlish.pyproject.venvs.'14']
 inherits = ['_default']
 interp = '@14'
