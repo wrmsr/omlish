@@ -43,6 +43,7 @@ TODO:
 # License Agreement.
 import abc
 import argparse
+import contextlib
 import dataclasses as dc
 import importlib.util
 import os
@@ -86,36 +87,70 @@ class TestRunner:
     the test run.
     """
 
+    @dc.dataclass(frozen=True)
+    class Args:
+        descriptions: bool = True
+        verbosity: int = 1
+        failfast: bool = False
+        buffer: bool = False
+        warnings: ta.Optional[str] = None
+        tb_locals: bool = False
+        catchbreak: bool = False
+
     def __init__(
             self,
+            args: Args = Args(),
             *,
             stream: ta.Optional[ta.Any] = None,
-            descriptions: bool = True,
-            verbosity: int = 1,
-            failfast: bool = False,
-            buffer: bool = False,
-            warnings: ta.Optional[ta.Any] = None,  # noqa
-            tb_locals: bool = False,
     ):
         super().__init__()
+
+        self._args = args
 
         if stream is None:
             stream = sys.stderr
         self._stream = _WritelnDecorator(stream)
-        self._descriptions = descriptions
-        self._verbosity = verbosity
-        self._failfast = failfast
-        self._buffer = buffer
-        self._tb_locals = tb_locals
-        self._warnings = warnings
+
+    #
+
+    @contextlib.contextmanager
+    def _warnings_context(self) -> ta.Iterator[None]:
+        with warnings.catch_warnings():
+            w = self._args.warnings
+
+            if w is None and not sys.warnoptions:
+                # Even if DeprecationWarnings are ignored by default print them anyway unless other warnings settings
+                # are specified by the warnings arg or the -W python flag.
+                w = 'default'  # noqa
+            else:
+                # Here self.warnings is set either to the value passed to the warnings args or to None. If the user
+                # didn't pass a value self.warnings will be None. This means that the behavior is unchanged and depends
+                # on the values passed to -W.
+                w = self._args.warnings  # noqa
+
+            if w:
+                # If self.warnings is set, use it to filter all the warnings.
+                warnings.simplefilter(w)  # noqa
+
+                # If the filter is 'default' or 'always', special-case the warnings from the deprecated unittest methods
+                # to show them no more than once per module, because they can be fairly noisy.  The -Wd and -Wa flags
+                # can be used to bypass this only when self.warnings is None.
+                if w in ['default', 'always']:
+                    warnings.filterwarnings(
+                        'module',
+                        category=DeprecationWarning,
+                        message=r'Please use assert\w+ instead.',
+                    )
+
+            yield
 
     #
 
     def _make_result(self) -> unittest.TextTestResult:
         return unittest.TextTestResult(
             self._stream,  # type: ignore[arg-type]
-            self._descriptions,
-            self._verbosity,
+            self._args.descriptions,
+            self._args.verbosity,
         )
 
     #
@@ -127,27 +162,16 @@ class TestRunner:
     def _internal_run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _InternalRunTestResult:
         result = self._make_result()
         unittest.registerResult(result)
-        result.failfast = self._failfast
-        result.buffer = self._buffer
-        result.tb_locals = self._tb_locals
+        result.failfast = self._args.failfast
+        result.buffer = self._args.buffer
+        result.tb_locals = self._args.tb_locals
 
         #
 
-        with warnings.catch_warnings():
-            if self._warnings:
-                # if self.warnings is set, use it to filter all the warnings
-                warnings.simplefilter(self._warnings)
+        if self._args.catchbreak:
+            unittest.signals.installHandler()
 
-                # if the filter is 'default' or 'always', special-case the warnings from the deprecated unittest methods
-                # to show them no more than once per module, because they can be fairly noisy.  The -Wd and -Wa flags
-                # can be used to bypass this only when self.warnings is None.
-                if self._warnings in ['default', 'always']:
-                    warnings.filterwarnings(
-                        'module',
-                        category=DeprecationWarning,
-                        message=r'Please use assert\w+ instead.',
-                    )
-
+        with self._warnings_context():
             start_time = time.perf_counter()
 
             start_test_run = getattr(result, 'startTestRun', None)
@@ -244,7 +268,7 @@ class TestRunner:
     def run(self, test: Test) -> RunResult:
         result = self._build_run_result(self._internal_run_test(test))
 
-        if self._verbosity > 0:
+        if self._args.verbosity > 0:
             self._stream.writeln()
             self._stream.flush()
 
@@ -343,7 +367,6 @@ class TestTargetRunner:
         buffer: bool = False
         warnings: ta.Optional[str] = None
         tb_locals: bool = False
-        durations: ta.Optional[int] = None
 
     #
 
@@ -399,27 +422,14 @@ class TestTargetRunner:
     #
 
     def run_test(self, test: Test) -> TestRunner.RunResult:
-        if self._args.catchbreak:
-            unittest.signals.installHandler()
-
-        warnings: ta.Optional[str]  # noqa
-        if self._args.warnings is None and not sys.warnoptions:
-            # even if DeprecationWarnings are ignored by default print them anyway unless other warnings settings are
-            # specified by the warnings arg or the -W python flag
-            warnings = 'default'  # noqa
-        else:
-            # here self.warnings is set either to the value passed to the warnings args or to None.
-            # If the user didn't pass a value self.warnings will be None. This means that the behavior is unchanged and
-            # depends on the values passed to -W.
-            warnings = self._args.warnings  # noqa
-
-        runner = TestRunner(
+        runner = TestRunner(TestRunner.Args(
             verbosity=self._args.verbosity,
             failfast=self._args.failfast,
             buffer=self._args.buffer,
-            warnings=warnings,
+            warnings=self._args.warnings,
             tb_locals=self._args.tb_locals,
-        )
+            catchbreak=self._args.catchbreak,
+        ))
 
         # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
         return runner.run(test)
@@ -476,15 +486,6 @@ class TestRunCli:
             dest='tb_locals',
             action='store_true',
             help='Show local variables in tracebacks',
-        )
-
-        parser.add_argument(
-            '--durations',
-            dest='durations',
-            type=int,
-            default=None,
-            metavar='N',
-            help='Show the N slowest test cases (N=0 for all)',
         )
 
         parser.add_argument(
@@ -619,7 +620,6 @@ class TestRunCli:
             'buffer',
             'warnings',
             'tb_locals',
-            'durations',
         ))
 
         tpr = TestTargetRunner(
