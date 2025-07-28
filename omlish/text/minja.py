@@ -258,16 +258,22 @@ class MinjaTemplateCompiler:
         exec(src, glo)
         return glo[name]
 
-    #
-
-    @cached_nullary
-    def compile(self) -> MinjaTemplate:
+    def compile(
+            self,
+            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> MinjaTemplate:
         rendered = self.render()
+
+        ns = dict(ns or {})
+        for k, v in rendered.ns.items():
+            if k in ns:
+                raise KeyError(k)
+            ns[k] = v
 
         render_fn = self._make_fn(
             self._RENDER_FN_NAME,
             rendered.src,
-            rendered.ns,
+            ns,
         )
 
         return MinjaTemplate(
@@ -282,8 +288,10 @@ class MinjaTemplateCompiler:
 def compile_minja_template(
         src: str,
         params: ta.Sequence[ta.Union[str, MinjaTemplateParam]] = (),
+        *,
+        ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
 ) -> MinjaTemplate:
-    return MinjaTemplateCompiler(src, params).compile()
+    return MinjaTemplateCompiler(src, params).compile(ns)
 
 
 def render_minja_template(src: str, **kwargs: ta.Any) -> str:
