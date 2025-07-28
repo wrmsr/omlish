@@ -94,6 +94,8 @@ class MinjaTemplateCompiler:
             *,
             indent: str = DEFAULT_INDENT,
             fragment_processor: ta.Optional[ta.Callable[[MinjaTemplateFragmentKind, str], str]] = None,
+            strict_strings: bool = False,
+            stringifier: ta.Optional[ta.Callable[[ta.Any], str]] = None,
     ) -> None:
         super().__init__()
 
@@ -111,7 +113,20 @@ class MinjaTemplateCompiler:
             fragment_processor = lambda _, s: s  # noqa
         self._fragment_processor = fragment_processor
 
+        if stringifier is None:
+            if strict_strings:
+                stringifier = self._strict_stringify
+            else:
+                stringifier = lambda o: str(o)
+        self._stringifier = stringifier
+
         self._stack: ta.List[ta.Literal['for', 'if']] = []
+
+    @staticmethod
+    def _strict_stringify(o: ta.Any) -> str:
+        if not isinstance(o, str):
+            raise TypeError(o)
+        return o
 
     #
 
@@ -174,7 +189,7 @@ class MinjaTemplateCompiler:
 
     #
 
-    _RENDER_FN_NAME = '__render'
+    _RENDER_FN_NAME = '__minja__render'
 
     class Rendered(ta.NamedTuple):
         src: str
@@ -185,7 +200,8 @@ class MinjaTemplateCompiler:
         lines: ta.List[str] = []
 
         ns: ta.Dict[str, ta.Any] = {
-            '__StringIO': io.StringIO,
+            '__minja__StringIO': io.StringIO,
+            '__minja__stringify': self._stringifier,
         }
 
         parts = self._split_tags(self._src)
@@ -203,12 +219,12 @@ class MinjaTemplateCompiler:
                     lines.append(self._indent(f'{p.name},'))
             lines.append('):')
 
-        lines.append(self._indent('__output = __StringIO()'))
+        lines.append(self._indent('__minja__output = __minja__StringIO()'))
 
         for g, s in parts:
             if g == '{':
                 expr = s.strip()
-                lines.append(self._indent(f'__output.write(str({self._fragment_processor("expr", expr)}))'))
+                lines.append(self._indent(f'__minja__output.write(__minja__stringify({self._fragment_processor("expr", expr)}))'))  # noqa
 
             elif g == '%':
                 stmt = s.strip()
@@ -240,14 +256,14 @@ class MinjaTemplateCompiler:
             elif not g:
                 if s:
                     safe_text = s.replace('"""', '\\"""')
-                    lines.append(self._indent(f'__output.write("""{safe_text}""")'))
+                    lines.append(self._indent(f'__minja__output.write("""{safe_text}""")'))
 
             else:
                 raise KeyError(g)
 
         check.empty(self._stack)
 
-        lines.append(self._indent('return __output.getvalue()'))
+        lines.append(self._indent('return __minja__output.getvalue()'))
 
         return self.Rendered('\n'.join(lines), ns)
 
@@ -298,8 +314,13 @@ def compile_minja_template(
         params: ta.Sequence[ta.Union[str, MinjaTemplateParam]] = (),
         *,
         ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        **kwargs: ta.Any,
 ) -> MinjaTemplate:
-    return MinjaTemplateCompiler(src, params).compile(ns)
+    return MinjaTemplateCompiler(
+        src,
+        params,
+        **kwargs,
+    ).compile(ns)
 
 
 def render_minja_template(src: str, **kwargs: ta.Any) -> str:
