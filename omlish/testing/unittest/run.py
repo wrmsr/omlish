@@ -116,11 +116,11 @@ class TextTestRunner:
             self._verbosity,
         )
 
-    class _RunTestResult(ta.NamedTuple):
+    class _InternalRunTestResult(ta.NamedTuple):
         result: unittest.TextTestResult
         time_taken: float
 
-    def _run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _RunTestResult:
+    def _run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _InternalRunTestResult:
         result = self._make_result()
         unittest.registerResult(result)
         result.failfast = self._failfast
@@ -162,17 +162,37 @@ class TextTestRunner:
 
         time_taken = stop_time - start_time
 
-        return TextTestRunner._RunTestResult(
+        return TextTestRunner._InternalRunTestResult(
             result,
             time_taken,
         )
+
+    @dc.dataclass(frozen=True)
+    class RunResult:
+        result: unittest.TextTestResult
+
+    def _build_run_result(self, result: unittest.TextTestResult) -> RunResult:
+        raise NotImplementedError
 
     def _print_result_errors(self, result: unittest.TextTestResult) -> None:
         if result.dots or result.showAll:
             self._stream.writeln()
             self._stream.flush()
-        result.printErrorList('ERROR', result.errors)
-        result.printErrorList('FAIL', result.failures)
+
+        for test, err in result.errors:
+            self._stream.writeln(result.separator1)
+            self._stream.writeln(f'{"ERROR"}: {result.getDescription(test)}')
+            self._stream.writeln(result.separator2)
+            self._stream.writeln(f'{err}')
+            self._stream.flush()
+
+        for test, err in result.failures:
+            self._stream.writeln(result.separator1)
+            self._stream.writeln(f'{"FAIL"}: {result.getDescription(test)}')
+            self._stream.writeln(result.separator2)
+            self._stream.writeln(f'{err}')
+            self._stream.flush()
+
         unexpected_successes = getattr(result, 'unexpectedSuccesses', ())
         if unexpected_successes:
             self._stream.writeln(result.separator1)
@@ -185,8 +205,7 @@ class TextTestRunner:
 
         self._print_result_errors(result)
 
-        if hasattr(result, 'separator2'):
-            self._stream.writeln(result.separator2)
+        self._stream.writeln(result.separator2)
 
         run = result.testsRun
 
