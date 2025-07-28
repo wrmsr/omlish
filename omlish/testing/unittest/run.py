@@ -2,8 +2,10 @@
 # @omlish-lite
 """
 https://docs.python.org/3/library/unittest.html#command-line-interface
+~ https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/unittest
 
-https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/unittest
+TODO:
+ - output only final status line
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -46,9 +48,161 @@ import importlib.util
 import os
 import re
 import sys
+import time
 import types
 import typing as ta
 import unittest
+import warnings
+
+
+##
+
+
+class _WritelnDecorator:
+    def __init__(self, stream):
+        super().__init__()
+
+        self.stream = stream
+
+    def __getattr__(self, attr):
+        if attr in ('stream', '__getstate__'):
+            raise AttributeError(attr)
+        return getattr(self.stream, attr)
+
+    def writeln(self, arg=None):
+        if arg:
+            self.write(arg)
+        self.write('\n')  # text-mode streams translate to \r\n if needed
+
+
+class TextTestRunner:
+    """
+    A test runner class that displays results in textual form.
+
+    It prints out the names of tests as they are run, errors as they occur, and a summary of the results at the end of
+    the test run.
+    """
+
+    def __init__(
+            self,
+            *,
+            stream: ta.Optional[ta.Any] = None,
+            descriptions: bool = True,
+            verbosity: int = 1,
+            failfast=False,
+            buffer=False,
+            warnings=None,
+            tb_locals=False,
+    ):
+        super().__init__()
+
+        if stream is None:
+            stream = sys.stderr
+        self._stream = _WritelnDecorator(stream)
+        self._descriptions = descriptions
+        self._verbosity = verbosity
+        self._failfast = failfast
+        self._buffer = buffer
+        self._tb_locals = tb_locals
+        self._warnings = warnings
+
+    def _make_result(self) -> unittest.TextTestResult:
+        return unittest.TextTestResult(
+            self._stream,  # type: ignore[arg-type]
+            self._descriptions,
+            self._verbosity,
+        )
+
+    def run(self, test: ta.Callable[[unittest.TestResult], None]) -> unittest.TextTestResult:
+        """Run the given test case or test suite."""
+
+        result = self._make_result()
+        unittest.registerResult(result)
+        result.failfast = self._failfast
+        result.buffer = self._buffer
+        result.tb_locals = self._tb_locals
+
+        #
+
+        with warnings.catch_warnings():
+            if self._warnings:
+                # if self.warnings is set, use it to filter all the warnings
+                warnings.simplefilter(self._warnings)
+
+                # if the filter is 'default' or 'always', special-case the warnings from the deprecated unittest methods
+                # to show them no more than once per module, because they can be fairly noisy.  The -Wd and -Wa flags
+                # can be used to bypass this only when self.warnings is None.
+                if self._warnings in ['default', 'always']:
+                    warnings.filterwarnings(
+                        'module',
+                        category=DeprecationWarning,
+                        message=r'Please use assert\w+ instead.',
+                    )
+
+            start_time = time.perf_counter()
+
+            start_test_run = getattr(result, 'startTestRun', None)
+            if start_test_run is not None:
+                start_test_run()
+
+            try:
+                test(result)
+
+            finally:
+                stop_test_run = getattr(result, 'stopTestRun', None)
+                if stop_test_run is not None:
+                    stop_test_run()
+
+            stop_time = time.perf_counter()
+
+        time_taken = stop_time - start_time
+
+        #
+
+        result.printErrors()
+
+        if hasattr(result, 'separator2'):
+            self._stream.writeln(result.separator2)
+
+        run = result.testsRun
+
+        self._stream.writeln(f'Ran {run:d} test{"s" if run != 1 else ""} in {time_taken:.3f}s')
+        self._stream.writeln()
+
+        expected_fails = unexpected_successes = skipped = 0
+        try:
+            expected_fails, unexpected_successes, skipped = \
+                map(len, (result.expectedFailures, result.unexpectedSuccesses, result.skipped))  # type: ignore
+        except AttributeError:
+            pass
+
+        infos = []
+
+        if not result.wasSuccessful():
+            self._stream.write('FAILED')
+            failed, errored = len(result.failures), len(result.errors)
+            if failed:
+                infos.append(f'failures={failed:d}')
+            if errored:
+                infos.append(f'errors={errored:d}')
+        else:
+            self._stream.write('OK')
+
+        if skipped:
+            infos.append(f'skipped={skipped:d}')
+
+        if expected_fails:
+            infos.append(f'expected failures={expected_fails:d}')
+
+        if unexpected_successes:
+            infos.append(f'unexpected successes={unexpected_successes:d}')
+
+        if infos:
+            self._stream.writeln(f' ({", ".join(infos)})')
+        else:
+            self._stream.write('\n')
+
+        return result
 
 
 ##
@@ -93,7 +247,6 @@ class TestTargetRunner:
             *,
             module: ta.Union[str, types.ModuleType, None] = None,
             loader: ta.Optional[unittest.loader.TestLoader] = None,
-            runner: ta.Union[unittest.TextTestRunner, ta.Type[unittest.TextTestRunner], None] = None,
     ) -> None:
         super().__init__()
 
@@ -101,7 +254,6 @@ class TestTargetRunner:
 
         self._module = module
         self._loader = loader
-        self._runner = runner
 
     #
 
@@ -155,34 +307,13 @@ class TestTargetRunner:
             # depends on the values passed to -W.
             warnings = self._args.warnings
 
-        runner: ta.Any = self._runner
-        if runner is None:
-            runner = unittest.runner.TextTestRunner
-
-        if isinstance(runner, type):
-            try:
-                try:
-                    runner = runner(
-                        verbosity=self._args.verbosity,
-                        failfast=self._args.failfast,
-                        buffer=self._args.buffer,
-                        warnings=warnings,
-                        tb_locals=self._args.tb_locals,
-                        durations=self._args.durations,
-                    )
-
-                except TypeError:
-                    # didn't accept the tb_locals or durations argument
-                    runner = runner(
-                        verbosity=self._args.verbosity,
-                        failfast=self._args.failfast,
-                        buffer=self._args.buffer,
-                        warnings=warnings,
-                    )
-
-            except TypeError:
-                # didn't accept the verbosity, buffer or failfast arguments
-                runner = runner()
+        runner = TextTestRunner(
+            verbosity=self._args.verbosity,
+            failfast=self._args.failfast,
+            buffer=self._args.buffer,
+            warnings=warnings,
+            tb_locals=self._args.tb_locals,
+        )
 
         # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
         return runner.run(suite)
