@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: PT009 UP006 UP007 UP045
 # @omlish-lite
 import operator
 import typing as ta
@@ -95,4 +95,23 @@ class TestMinja(unittest.TestCase):
 
     def test_helper(self) -> None:
         s = render_minja_template('{{ operator.add(x, 1) }}', operator=operator, x=1)
-        assert s == '2'
+        self.assertEqual(s, '2')
+
+    def test_stmts(self) -> None:
+        s = render_minja_template(
+            '\n'.join([
+                '{%- y = x + 1 -%}',
+                '{{ y }}',
+            ]),
+            x=1,
+        )
+        self.assertEqual(s, '2')
+
+        s = render_minja_template(
+            '\n'.join([
+                '{%- y = {"foo", x, x} -%}',
+                '{{ len(y) }}',
+            ]),
+            x=1,
+        )
+        self.assertEqual(s, '2')
