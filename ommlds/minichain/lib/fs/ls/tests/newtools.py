@@ -93,7 +93,7 @@ class ToolExecutor(lang.Final):
 #
 
 
-def execute_tool_executor(
+def _execute_tool_executor(
         te: ToolExecutor,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
@@ -116,3 +116,12 @@ def execute_tool_executor(
         raise NotImplementedError
 
     return ret
+
+
+def execute_tool_executor(
+        ctx: ToolContext,
+        te: ToolExecutor,
+        args: ta.Mapping[str, ta.Any],
+) -> str:
+    with bind_tool_context(ctx):
+        return _execute_tool_executor(te, args)
