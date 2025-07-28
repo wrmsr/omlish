@@ -27,11 +27,11 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
         self._context = context
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
-        for fp in magic.find_magic_files(
+        for fp in sorted(magic.find_magic_files(
                 magic.PY_MAGIC_STYLE,
                 self._context.src_roots,
                 keys=['@omlish-script'],
-        ):
+        )):
             if not (stat.S_IXUSR & os.stat(fp).st_mode):
                 yield Precheck.Violation(self, f'script {fp} is not executable')
 

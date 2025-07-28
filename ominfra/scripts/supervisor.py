@@ -6801,14 +6801,14 @@ class ProcessConfig:
     # containing group_name, host_node_name, process_num, program_name, and here (the directory of the supervisord
     # config file). Values containing non-alphanumeric characters should be quoted (e.g. KEY="val:123",KEY2="val,456").
     # Otherwise, quoting the values is optional but recommended. Note that the subprocess will inherit the environment
-    # variables of the shell used to start “supervisord” except for the ones overridden here.
+    # variables of the shell used to start "supervisord" except for the ones overridden here.
     environment: ta.Optional[ta.Mapping[str, str]] = None
 
     #
 
     # The relative priority of the program in the start and shutdown ordering. Lower priorities indicate programs that
-    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. “start
-    # all”/”stop all”). Higher priorities indicate programs that start last and shut down first.
+    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. "start
+    # all"/"stop all"). Higher priorities indicate programs that start last and shut down first.
     priority: int = 999
 
     # If true, this program will start automatically when supervisord is started.
@@ -6830,7 +6830,7 @@ class ProcessConfig:
     # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
     # program needn't stay running for any particular amount of time.
     #
-    # Note: Even if a process exits with an “expected” exit code (see exitcodes), the start will still be considered a
+    # Note: Even if a process exits with an "expected" exit code (see exitcodes), the start will still be considered a
     # failure if the process exits quicker than startsecs.
     start_secs: int = 1
 
@@ -6859,7 +6859,7 @@ class ProcessConfig:
     # taking care of its children as well, useful e.g with Python programs using multiprocessing.
     kill_as_group: bool = False
 
-    # The list of “expected” exit codes for this program used with autorestart. If the autorestart parameter is set to
+    # The list of "expected" exit codes for this program used with autorestart. If the autorestart parameter is set to
     # unexpected, and the process exits in any other way than as a result of a supervisor stop request, supervisord will
     # restart the process if it exits with an exit code that is not defined in this list.
     #
@@ -6941,7 +6941,7 @@ class ServerConfig:
     logfile: str = 'supervisord.log'
 
     # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
-    # like “KB”, “MB”, and “GB” can be used in the value). Set this value to 0 to indicate an unlimited log size.
+    # like "KB", "MB", and "GB" can be used in the value). Set this value to 0 to indicate an unlimited log size.
     logfile_max_bytes: int = 50 * 1024 * 1024
 
     # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be

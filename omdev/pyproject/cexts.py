@@ -12,7 +12,7 @@ name (str) -
 sources (list[str]) -
     list of source filenames, relative to the distribution root (where the setup script lives), in Unix form
     (slash-separated) for portability. Source files may be C, C++, SWIG (.i), platform-specific resource files, or
-    whatever else is recognized by the “build_ext” command as source for a Python extension.
+    whatever else is recognized by the "build_ext" command as source for a Python extension.
 
 include_dirs (list[str]) -
     list of directories to search for C/C++ header files (in Unix form for portability)
@@ -20,7 +20,7 @@ include_dirs (list[str]) -
 define_macros (list[tuple[str, str|None]]) -
     list of macros to define; each macro is defined using a 2-tuple: the first item corresponding to the name of the
     macro and the second item either a string with its value or None to define it without a particular value (equivalent
-    of “#define FOO” in source or -DFOO on Unix C compiler command line)
+    of "#define FOO" in source or -DFOO on Unix C compiler command line)
 
 undef_macros (list[str]) -
     list of macros to undefine explicitly
@@ -41,7 +41,7 @@ extra_objects (list[str]) -
 
 extra_compile_args (list[str]) -
     any extra platform- and compiler-specific information to use when compiling the source files in 'sources'. For
-    platforms and compilers where “command line” makes sense, this is typically a list of command-line arguments, but
+    platforms and compilers where "command line" makes sense, this is typically a list of command-line arguments, but
     for other platforms it could be anything.
 
 extra_link_args (list[str]) -
@@ -50,7 +50,7 @@ extra_link_args (list[str]) -
 
 export_symbols (list[str]) -
     list of symbols to be exported from a shared extension. Not used on all platforms, and not generally necessary for
-    Python extensions, which typically export exactly one symbol: “init” + extension_name.
+    Python extensions, which typically export exactly one symbol: "init" + extension_name.
 
 swig_opts (list[str]) -
     any extra options to pass to SWIG if a source file has the .i extension.
@@ -59,7 +59,7 @@ depends (list[str]) -
     list of files that the extension depends on
 
 language (str) -
-    extension language (i.e. “c”, “c++”, “objc”). Will be detected from the source extensions if not provided.
+    extension language (i.e. "c", "c++", "objc"). Will be detected from the source extensions if not provided.
 
 optional (bool) -
     specifies that a build failure in the extension should not abort the build process, but simply not install the

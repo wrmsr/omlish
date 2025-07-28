@@ -1,3 +1,4 @@
+# @omlish-precheck-allow-any-unicode
 import enum
 import typing as ta
 

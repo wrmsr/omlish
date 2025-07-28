@@ -40,6 +40,7 @@ from .imports import RootRelativeImportPrecheck
 from .lite import LitePython8Precheck
 from .manifests import ManifestsPrecheck
 from .scripts import ScriptDepsPrecheck
+from .unicode import UnicodePrecheck
 
 
 log = logging.getLogger(__name__)
@@ -92,6 +93,7 @@ def _check_cmd(args) -> None:
         ManifestsPrecheck.Config(),
         RootRelativeImportPrecheck.Config(),
         ScriptDepsPrecheck.Config(),
+        UnicodePrecheck.Config(),
     ]
 
     with inj.create_managed_injector(bind_main(

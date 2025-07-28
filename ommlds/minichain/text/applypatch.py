@@ -17,7 +17,7 @@
 #
 # https://github.com/openai/openai-cookbook/blob/024c433873a32723debf98008401776ac21f922c/examples/gpt4-1_prompting_guide.ipynb
 """
-A self-contained **pure-Python 3.9+** utility for applying human-readable “pseudo-diff” patch files to a collection of
+A self-contained **pure-Python 3.9+** utility for applying human-readable "pseudo-diff" patch files to a collection of
 text files.
 """
 import dataclasses as dc

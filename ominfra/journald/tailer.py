@@ -190,7 +190,7 @@ Output Options
     Reverse output so that the newest entries are displayed first.
 --show-cursor
     The cursor is shown after the last entry after two dashes:
--- cursor: s=0639…
+-- cursor: s=0639...
     The format of the cursor is private and subject to change.
 --utc
     Express time in Coordinated Universal Time (UTC).
@@ -218,7 +218,7 @@ Output Options
 --no-tail
     Show all stored output lines, even in follow mode. Undoes the effect of --lines=.
 -q, --quiet
-    Suppresses all informational messages (i.e. "-- Journal begins at …", "-- Reboot --"), any warning messages
+    Suppresses all informational messages (i.e. "-- Journal begins at ...", "-- Reboot --"), any warning messages
     regarding inaccessible system journals when run as a normal user.
 
 Pager Control Options
@@ -302,10 +302,10 @@ Commands
     Instead of showing journal contents, show internal header information of the journal fields accessed. This option is
     particularly useful when trying to identify out-of-order journal entries, as happens for example when the machine is
     booted with the wrong system time.
---list-catalog [128-bit-ID…]
+--list-catalog [128-bit-ID...]
     List the contents of the message catalog as a table of message IDs, plus their short description strings. If any
     128-bit-IDs are specified, only those entries are shown.
---dump-catalog [128-bit-ID…]
+--dump-catalog [128-bit-ID...]
     Show the contents of the message catalog, with entries separated by a line consisting of two dashes and the ID (the
     format is the same as .catalog files). If any 128-bit-IDs are specified, only those entries are shown.
 --update-catalog
@@ -326,11 +326,11 @@ Environment
 $SYSTEMD_LOG_LEVEL
     The maximum log level of emitted messages (messages with a higher log level, i.e. less important ones, will be
     suppressed). Takes a comma-separated list of values. A value may be either one of (in order of decreasing
-    importance) emerg, alert, crit, err, warning, notice, info, debug, or an integer in the range 0…7. See syslog(3) for
-    more information. Each value may optionally be prefixed with one of console, syslog, kmsg or journal followed by a
-    colon to set the maximum log level for that specific log target (e.g. SYSTEMD_LOG_LEVEL=debug,console:info specifies
-    to log at debug level except when logging to the console which should be at info level). Note that the global
-    maximum log level takes priority over any per target maximum log levels.
+    importance) emerg, alert, crit, err, warning, notice, info, debug, or an integer in the range 0...7. See syslog(3)
+    for more information. Each value may optionally be prefixed with one of console, syslog, kmsg or journal followed by
+    a colon to set the maximum log level for that specific log target (e.g. SYSTEMD_LOG_LEVEL=debug,console:info
+    specifies to log at debug level except when logging to the console which should be at info level). Note that the
+    global maximum log level takes priority over any per target maximum log levels.
 $SYSTEMD_LOG_COLOR
     A boolean. If true, messages written to the tty will be colored according to priority. This setting is only useful
     when messages are written directly to the terminal, because journalctl(1) and other tools that display logs will

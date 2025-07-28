@@ -25,12 +25,12 @@ TODO (old):
  - version generators - one for ast
  - configurable serde - marshal vs pickle? marshal w/ override for ndarray to write to file?
  - ok:
-  - @fn - version, passive=False, deps=[Objectable, …]
+  - @fn - version, passive=False, deps=[Objectable, ...]
    - it no version use ast - specifically {'ast': <md5>}
    - but if present just use literal they gave, probably int
    - idiom: Version can be a frozendict, conventionally of str -> ta.Hashable
   - auto deps - fn can get containing Packages
-  - Module, Resource, …
+  - Module, Resource, ...
   - hrm.. LiteralVersion, MapVersion? + custom Marshal? need to deser as frozendict
  - storage
   - object table? w/ versions? strictly one row per object, evict objects with diff versions than those encountered

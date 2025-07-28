@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-precheck-allow-any-unicode
 """
 TODO:
  - Handle:

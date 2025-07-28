@@ -66,11 +66,11 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
             if f.endswith('.py')
         ]
 
-        for py_file in py_files:
+        for py_file in sorted(py_files):
             async for v in self._run_py_file(py_file, src_root):
                 yield v
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
-        for src_root in self._context.src_roots:
+        for src_root in sorted(self._context.src_roots):
             async for v in self._run_src_root(src_root):
                 yield v

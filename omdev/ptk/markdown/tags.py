@@ -1,3 +1,4 @@
+# @omlish-precheck-allow-any-unicode
 import typing as ta
 
 from ... import ptk
