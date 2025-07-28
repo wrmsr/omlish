@@ -124,7 +124,7 @@ class TextTestRunner:
         result: unittest.TextTestResult
         time_taken: float
 
-    def _run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _InternalRunTestResult:
+    def _internal_run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _InternalRunTestResult:
         result = self._make_result()
         unittest.registerResult(result)
         result.failfast = self._failfast
@@ -175,10 +175,11 @@ class TextTestRunner:
 
     @dc.dataclass(frozen=True)
     class RunResult:
-        raw_result: unittest.TextTestResult
+        raw_results: ta.Sequence[unittest.TextTestResult]
         time_taken: float
 
         num_tests_run: int
+        was_successful: bool
 
         class TestAndReason(ta.NamedTuple):
             test: str
@@ -190,6 +191,28 @@ class TextTestRunner:
 
         unexpected_successes: ta.Sequence[str]
 
+        @classmethod
+        def merge(cls, results: ta.Iterable['TextTestRunner.RunResult']) -> 'TextTestRunner.RunResult':
+            def reduce_attr(fn, a):
+                return fn(getattr(r, a) for r in results)
+
+            def merge_list_attr(a):
+                return [rr for r in results for rr in getattr(r, a)]
+
+            return cls(
+                raw_results=merge_list_attr('raw_results'),
+                time_taken=reduce_attr(sum, 'time_taken'),
+
+                num_tests_run=reduce_attr(sum, 'num_tests_run'),
+                was_successful=reduce_attr(all, 'was_successful'),
+
+                skipped=merge_list_attr('skipped'),
+                errors=merge_list_attr('errors'),
+                failures=merge_list_attr('failures'),
+
+                unexpected_successes=merge_list_attr('unexpected_successes'),
+            )
+
     def _build_run_result(self, internal_result: _InternalRunTestResult) -> RunResult:
         result = internal_result.result
 
@@ -200,10 +223,11 @@ class TextTestRunner:
             ]
 
         return TextTestRunner.RunResult(
-            raw_result=result,
+            raw_results=[result],
             time_taken=internal_result.time_taken,
 
             num_tests_run=result.testsRun,
+            was_successful=result.wasSuccessful(),
 
             skipped=as_test_and_reasons(result.skipped),
             errors=as_test_and_reasons(result.errors),
@@ -214,42 +238,41 @@ class TextTestRunner:
 
     #
 
-    def run(self, test: Test) -> unittest.TextTestResult:
-        internal_result = self._run_test(test)
-        result, time_taken = internal_result
+    separator1 = unittest.TextTestResult.separator1
+    separator2 = unittest.TextTestResult.separator2
 
-        foo = self._build_run_result(internal_result)  # noqa
+    def run(self, test: Test) -> RunResult:
+        result = self._build_run_result(self._internal_run_test(test))
 
-        if result.dots or result.showAll:
+        if self._verbosity > 0:
             self._stream.writeln()
             self._stream.flush()
 
-        for t, err in result.errors:
-            self._stream.writeln(result.separator1)
-            self._stream.writeln(f'ERROR: {result.getDescription(t)}')
-            self._stream.writeln(result.separator2)
-            self._stream.writeln(f'{err}')
+        for t, r in result.errors:
+            self._stream.writeln(self.separator1)
+            self._stream.writeln(f'ERROR: {t}')
+            self._stream.writeln(self.separator2)
+            self._stream.writeln(f'{r}')
             self._stream.flush()
 
-        for t, err in result.failures:
-            self._stream.writeln(result.separator1)
-            self._stream.writeln(f'FAIL: {result.getDescription(t)}')
-            self._stream.writeln(result.separator2)
-            self._stream.writeln(f'{err}')
+        for t, r in result.failures:
+            self._stream.writeln(self.separator1)
+            self._stream.writeln(f'FAIL: {t}')
+            self._stream.writeln(self.separator2)
+            self._stream.writeln(f'{r}')
             self._stream.flush()
 
-        unexpected_successes = getattr(result, 'unexpectedSuccesses', ())
-        if unexpected_successes:
-            self._stream.writeln(result.separator1)
-            for t in unexpected_successes:
-                self._stream.writeln(f'UNEXPECTED SUCCESS: {result.getDescription(t)}')
+        if result.unexpected_successes:
+            self._stream.writeln(self.separator1)
+            for t in result.unexpected_successes:
+                self._stream.writeln(f'UNEXPECTED SUCCESS: {t}')
             self._stream.flush()
 
-        self._stream.writeln(result.separator2)
+        self._stream.writeln(self.separator2)
 
-        run = result.testsRun
+        run = result.num_tests_run
 
-        self._stream.writeln(f'Ran {run:d} test{"s" if run != 1 else ""} in {time_taken:.3f}s')
+        self._stream.writeln(f'Ran {run:d} test{"s" if run != 1 else ""} in {result.time_taken:.3f}s')
         self._stream.writeln()
 
         expected_fails = unexpected_successes = skipped = 0
@@ -261,7 +284,7 @@ class TextTestRunner:
 
         infos = []
 
-        if not result.wasSuccessful():
+        if not result.was_successful:
             self._stream.write('FAILED')
             failed, errored = len(result.failures), len(result.errors)
             if failed:
@@ -375,7 +398,7 @@ class TestTargetRunner:
 
     #
 
-    def run_test(self, test: Test) -> ta.Any:
+    def run_test(self, test: Test) -> TextTestRunner.RunResult:
         if self._args.catchbreak:
             unittest.signals.installHandler()
 
@@ -612,9 +635,9 @@ class TestRunCli:
             test = tpr.create_test(target)
             result = tpr.run_test(test)
 
-            tests_run += result.testsRun
+            tests_run += result.num_tests_run
             tests_skipped += len(result.skipped)
-            was_successful &= result.wasSuccessful()
+            was_successful &= result.was_successful
 
         if exit:
             if tests_run == 0 and tests_skipped == 0:
