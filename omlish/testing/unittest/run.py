@@ -167,10 +167,23 @@ class TextTestRunner:
             time_taken,
         )
 
+    def _print_result_errors(self, result: unittest.TextTestResult) -> None:
+        if result.dots or result.showAll:
+            self._stream.writeln()
+            self._stream.flush()
+        result.printErrorList('ERROR', result.errors)
+        result.printErrorList('FAIL', result.failures)
+        unexpected_successes = getattr(result, 'unexpectedSuccesses', ())
+        if unexpected_successes:
+            self._stream.writeln(result.separator1)
+            for test in unexpected_successes:
+                self._stream.writeln(f'UNEXPECTED SUCCESS: {result.getDescription(test)}')
+            self._stream.flush()
+
     def run(self, test: Test) -> unittest.TextTestResult:
         result, time_taken = self._run_test(test)
 
-        result.printErrors()
+        self._print_result_errors(result)
 
         if hasattr(result, 'separator2'):
             self._stream.writeln(result.separator2)
@@ -307,16 +320,16 @@ class TestTargetRunner:
         if self._args.catchbreak:
             unittest.signals.installHandler()
 
-        warnings: ta.Optional[str]
+        warnings: ta.Optional[str]  # noqa
         if self._args.warnings is None and not sys.warnoptions:
             # even if DeprecationWarnings are ignored by default print them anyway unless other warnings settings are
             # specified by the warnings arg or the -W python flag
-            warnings = 'default'
+            warnings = 'default'  # noqa
         else:
             # here self.warnings is set either to the value passed to the warnings args or to None.
             # If the user didn't pass a value self.warnings will be None. This means that the behavior is unchanged and
             # depends on the values passed to -W.
-            warnings = self._args.warnings
+            warnings = self._args.warnings  # noqa
 
         runner = TextTestRunner(
             verbosity=self._args.verbosity,
