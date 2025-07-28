@@ -338,7 +338,7 @@ class TestRunner:
 ##
 
 
-class TestTargetRunner:
+class TestTargetLoader:
     class Target(abc.ABC):  # noqa
         pass
 
@@ -357,44 +357,30 @@ class TestTargetRunner:
 
     #
 
-    @dc.dataclass(frozen=True)
-    class Args:
-        test_name_patterns: ta.Optional[ta.Sequence[str]] = None
-
-        verbosity: int = 1
-        failfast: bool = False
-        catchbreak: bool = False
-        buffer: bool = False
-        warnings: ta.Optional[str] = None
-        tb_locals: bool = False
-
-    #
-
     def __init__(
             self,
-            args: Args = Args(),
             *,
+            test_name_patterns: ta.Optional[ta.Sequence[str]] = None,
             module: ta.Union[str, types.ModuleType, None] = None,
             loader: ta.Optional[unittest.loader.TestLoader] = None,
     ) -> None:
         super().__init__()
 
-        self._args = args
-
+        self._test_name_patterns = test_name_patterns
         self._module = module
         self._loader = loader
 
     #
 
-    def create_test(self, target: Target) -> Test:
+    def load(self, target: Target) -> Test:
         loader = self._loader
         if loader is None:
             loader = unittest.loader.TestLoader()
 
-        if self._args.test_name_patterns:
-            loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
+        if self._test_name_patterns:
+            loader.testNamePatterns = self._test_name_patterns  # type: ignore[assignment]
 
-        if isinstance(target, TestTargetRunner.DiscoveryTarget):
+        if isinstance(target, TestTargetLoader.DiscoveryTarget):
             return ta.cast(Test, loader.discover(
                 target.start,  # type: ignore[arg-type]
                 target.pattern,  # type: ignore[arg-type]
@@ -407,10 +393,10 @@ class TestTargetRunner:
             for part in module.split('.')[1:]:
                 module = getattr(module, part)
 
-        if isinstance(target, TestTargetRunner.ModuleTarget):
+        if isinstance(target, TestTargetLoader.ModuleTarget):
             return ta.cast(Test, loader.loadTestsFromModule(module))
 
-        elif isinstance(target, TestTargetRunner.NamesTarget):
+        elif isinstance(target, TestTargetLoader.NamesTarget):
             return ta.cast(Test, loader.loadTestsFromNames(
                 target.test_names,  # type: ignore[arg-type]
                 module,
@@ -418,21 +404,6 @@ class TestTargetRunner:
 
         else:
             raise TypeError(target)
-
-    #
-
-    def run_test(self, test: Test) -> TestRunner.RunResult:
-        runner = TestRunner(TestRunner.Args(
-            verbosity=self._args.verbosity,
-            failfast=self._args.failfast,
-            buffer=self._args.buffer,
-            warnings=self._args.warnings,
-            tb_locals=self._args.tb_locals,
-            catchbreak=self._args.catchbreak,
-        ))
-
-        # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
-        return runner.run(test)
 
 
 ##
@@ -579,7 +550,7 @@ class TestRunCli:
 
     IMPORT_PATH_PAT = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*')
 
-    def _build_target(self, name: str, args: ParsedArgs) -> TestTargetRunner.Target:
+    def _build_target(self, name: str, args: ParsedArgs) -> TestTargetLoader.Target:
         is_discovery = False
         if os.path.isdir(name):
             is_discovery = True
@@ -589,10 +560,10 @@ class TestRunCli:
                 is_discovery = True
 
         if not is_discovery:
-            return TestTargetRunner.NamesTarget([name])
+            return TestTargetLoader.NamesTarget([name])
 
         else:
-            return TestTargetRunner.DiscoveryTarget(
+            return TestTargetLoader.DiscoveryTarget(
                 start=name,
                 **_get_attr_dict(
                     args.args,
@@ -611,20 +582,22 @@ class TestRunCli:
             *,
             exit: bool = False,  # noqa
     ) -> None:
-        run_args = TestTargetRunner.Args(**_get_attr_dict(
+        ttl = TestTargetLoader(**_get_attr_dict(
             args.args,
             'test_name_patterns',
+        ))
+
+        tr = TestRunner(TestRunner.Args(**_get_attr_dict(
+            args.args,
             'verbosity',
             'failfast',
             'catchbreak',
             'buffer',
             'warnings',
             'tb_locals',
-        ))
+        )))
 
-        tpr = TestTargetRunner(
-            run_args,
-        )
+        # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
 
         tests_run = 0
         tests_skipped = 0
@@ -632,8 +605,8 @@ class TestRunCli:
 
         for target_arg in (args.args.target if args.args is not None else None) or []:  # noqa
             target = self._build_target(target_arg, args)
-            test = tpr.create_test(target)
-            result = tpr.run_test(test)
+            test = ttl.load(target)
+            result = tr.run(test)
 
             tests_run += result.num_tests_run
             tests_skipped += len(result.skipped)
