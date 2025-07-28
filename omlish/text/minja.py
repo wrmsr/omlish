@@ -214,17 +214,17 @@ class MinjaTemplateCompiler:
                 stmt = s.strip()
 
                 if stmt.startswith('for '):
-                    lines.append(self._indent(self._fragment_processor('for', stmt) + ':'))
+                    lines.append(self._indent(f'for {self._fragment_processor("for", stmt[4:])}:'))
                     self._stack.append('for')
                 elif stmt.startswith('endfor'):
                     check.equal(self._stack.pop(), 'for')
 
                 elif stmt.startswith('if '):
-                    lines.append(self._indent(self._fragment_processor('if', stmt) + ':'))
+                    lines.append(self._indent(f'if {self._fragment_processor("if", stmt[3:])}:'))
                     self._stack.append('if')
                 elif stmt.startswith('elif '):
                     check.equal(self._stack[-1], 'if')
-                    lines.append(self._indent(self._fragment_processor('elif', stmt) + ':', -1))
+                    lines.append(self._indent(f'elif {self._fragment_processor("elif", stmt[5:])}:', -1))
                 elif stmt.strip() == 'else':
                     check.equal(self._stack[-1], 'if')
                     lines.append(self._indent('else:', -1))
