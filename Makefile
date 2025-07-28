@@ -321,7 +321,7 @@ test-14t:
 .PHONY: test-8
 test-8:
 	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
-	$$(${PYPROJECT} venv 8 exe) -m omlish.testing.unittest.run -vb $$LITE_PATHS
+	$$(${PYPROJECT} venv 8 exe) -m omlish.testing.unittest -vb $$LITE_PATHS
 
 # lite
 
@@ -342,7 +342,7 @@ venv-lite:
 test-lite:
 	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
 	for V in ${LITE_VENVS} ; do \
-		$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest.run -vb $$LITE_PATHS ; \
+		$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest -vb $$LITE_PATHS ; \
 	done
 
 # docker
