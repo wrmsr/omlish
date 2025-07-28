@@ -109,12 +109,16 @@ class TextTestRunner:
         self._tb_locals = tb_locals
         self._warnings = warnings
 
+    #
+
     def _make_result(self) -> unittest.TextTestResult:
         return unittest.TextTestResult(
             self._stream,  # type: ignore[arg-type]
             self._descriptions,
             self._verbosity,
         )
+
+    #
 
     class _InternalRunTestResult(ta.NamedTuple):
         result: unittest.TextTestResult
@@ -167,28 +171,69 @@ class TextTestRunner:
             time_taken,
         )
 
+    #
+
     @dc.dataclass(frozen=True)
     class RunResult:
-        result: unittest.TextTestResult
+        raw_result: unittest.TextTestResult
+        time_taken: float
 
-    def _build_run_result(self, result: unittest.TextTestResult) -> RunResult:
-        raise NotImplementedError
+        num_tests_run: int
 
-    def _print_result_errors(self, result: unittest.TextTestResult) -> None:
+        class TestAndReason(ta.NamedTuple):
+            test: str
+            reason: str
+
+        skipped: ta.Sequence[TestAndReason]
+        errors: ta.Sequence[TestAndReason]
+        failures: ta.Sequence[TestAndReason]
+
+        unexpected_successes: ta.Sequence[str]
+
+    def _build_run_result(self, internal_result: _InternalRunTestResult) -> RunResult:
+        result = internal_result.result
+
+        def as_test_and_reasons(l):
+            return [
+                TextTestRunner.RunResult.TestAndReason(result.getDescription(t), r)
+                for t, r in l
+            ]
+
+        return TextTestRunner.RunResult(
+            raw_result=result,
+            time_taken=internal_result.time_taken,
+
+            num_tests_run=result.testsRun,
+
+            skipped=as_test_and_reasons(result.skipped),
+            errors=as_test_and_reasons(result.errors),
+            failures=as_test_and_reasons(result.failures),
+
+            unexpected_successes=[result.getDescription(t) for t in result.unexpectedSuccesses],
+        )
+
+    #
+
+    def run(self, test: Test) -> unittest.TextTestResult:
+        internal_result = self._run_test(test)
+        result, time_taken = internal_result
+
+        foo = self._build_run_result(internal_result)  # noqa
+
         if result.dots or result.showAll:
             self._stream.writeln()
             self._stream.flush()
 
-        for test, err in result.errors:
+        for t, err in result.errors:
             self._stream.writeln(result.separator1)
-            self._stream.writeln(f'{"ERROR"}: {result.getDescription(test)}')
+            self._stream.writeln(f'ERROR: {result.getDescription(t)}')
             self._stream.writeln(result.separator2)
             self._stream.writeln(f'{err}')
             self._stream.flush()
 
-        for test, err in result.failures:
+        for t, err in result.failures:
             self._stream.writeln(result.separator1)
-            self._stream.writeln(f'{"FAIL"}: {result.getDescription(test)}')
+            self._stream.writeln(f'FAIL: {result.getDescription(t)}')
             self._stream.writeln(result.separator2)
             self._stream.writeln(f'{err}')
             self._stream.flush()
@@ -196,14 +241,9 @@ class TextTestRunner:
         unexpected_successes = getattr(result, 'unexpectedSuccesses', ())
         if unexpected_successes:
             self._stream.writeln(result.separator1)
-            for test in unexpected_successes:
-                self._stream.writeln(f'UNEXPECTED SUCCESS: {result.getDescription(test)}')
+            for t in unexpected_successes:
+                self._stream.writeln(f'UNEXPECTED SUCCESS: {result.getDescription(t)}')
             self._stream.flush()
-
-    def run(self, test: Test) -> unittest.TextTestResult:
-        result, time_taken = self._run_test(test)
-
-        self._print_result_errors(result)
 
         self._stream.writeln(result.separator2)
 
