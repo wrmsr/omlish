@@ -55,6 +55,9 @@ import unittest
 import warnings
 
 
+Test = ta.Callable[[unittest.TestResult], None]  # ta.TypeAlias
+
+
 ##
 
 
@@ -89,10 +92,10 @@ class TextTestRunner:
             stream: ta.Optional[ta.Any] = None,
             descriptions: bool = True,
             verbosity: int = 1,
-            failfast=False,
-            buffer=False,
-            warnings=None,
-            tb_locals=False,
+            failfast: bool = False,
+            buffer: bool = False,
+            warnings: ta.Optional[ta.Any] = None,  # noqa
+            tb_locals: bool = False,
     ):
         super().__init__()
 
@@ -113,9 +116,11 @@ class TextTestRunner:
             self._verbosity,
         )
 
-    def run(self, test: ta.Callable[[unittest.TestResult], None]) -> unittest.TextTestResult:
-        """Run the given test case or test suite."""
+    class _RunTestResult(ta.NamedTuple):
+        result: unittest.TextTestResult
+        time_taken: float
 
+    def _run_test(self, test: ta.Callable[[unittest.TestResult], None]) -> _RunTestResult:
         result = self._make_result()
         unittest.registerResult(result)
         result.failfast = self._failfast
@@ -157,7 +162,13 @@ class TextTestRunner:
 
         time_taken = stop_time - start_time
 
-        #
+        return TextTestRunner._RunTestResult(
+            result,
+            time_taken,
+        )
+
+    def run(self, test: Test) -> unittest.TextTestResult:
+        result, time_taken = self._run_test(test)
 
         result.printErrors()
 
@@ -257,7 +268,7 @@ class TestTargetRunner:
 
     #
 
-    def create_suite(self, target: Target) -> ta.Any:
+    def create_test(self, target: Target) -> Test:
         loader = self._loader
         if loader is None:
             loader = unittest.loader.TestLoader()
@@ -266,11 +277,11 @@ class TestTargetRunner:
             loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
 
         if isinstance(target, TestTargetRunner.DiscoveryTarget):
-            return loader.discover(
+            return ta.cast(Test, loader.discover(
                 target.start,  # type: ignore[arg-type]
                 target.pattern,  # type: ignore[arg-type]
                 target.top,
-            )
+            ))
 
         module: ta.Any = self._module
         if isinstance(module, str):
@@ -279,20 +290,20 @@ class TestTargetRunner:
                 module = getattr(module, part)
 
         if isinstance(target, TestTargetRunner.ModuleTarget):
-            return loader.loadTestsFromModule(module)
+            return ta.cast(Test, loader.loadTestsFromModule(module))
 
         elif isinstance(target, TestTargetRunner.NamesTarget):
-            return loader.loadTestsFromNames(
+            return ta.cast(Test, loader.loadTestsFromNames(
                 target.test_names,  # type: ignore[arg-type]
                 module,
-            )
+            ))
 
         else:
             raise TypeError(target)
 
     #
 
-    def run_suite(self, suite: ta.Any) -> ta.Any:
+    def run_test(self, test: Test) -> ta.Any:
         if self._args.catchbreak:
             unittest.signals.installHandler()
 
@@ -316,7 +327,7 @@ class TestTargetRunner:
         )
 
         # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
-        return runner.run(suite)
+        return runner.run(test)
 
 
 ##
@@ -526,8 +537,8 @@ class TestRunCli:
 
         for target_arg in (args.args.target if args.args is not None else None) or []:  # noqa
             target = self._build_target(target_arg, args)
-            suite = tpr.create_suite(target)
-            result = tpr.run_suite(suite)
+            test = tpr.create_test(target)
+            result = tpr.run_test(test)
 
             tests_run += result.testsRun
             tests_skipped += len(result.skipped)
