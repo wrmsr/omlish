@@ -109,6 +109,8 @@ class TestProgramRunner:
         pattern: ta.Optional[str] = None
         top: ta.Optional[str] = None
 
+    #
+
     @dc.dataclass(frozen=True)
     class Args:
         test_name_patterns: ta.Optional[ta.Sequence[str]] = None
@@ -121,9 +123,10 @@ class TestProgramRunner:
         tb_locals: bool = False
         durations: ta.Optional[int] = None
 
+    #
+
     def __init__(
             self,
-            target: Target,
             args: Args = Args(),
             *,
             module: ta.Union[str, types.ModuleType, None] = None,
@@ -132,7 +135,6 @@ class TestProgramRunner:
     ) -> None:
         super().__init__()
 
-        self._target = target
         self._args = args
 
         self._module = module
@@ -145,11 +147,12 @@ class TestProgramRunner:
             runner = unittest.runner.TextTestRunner
         self._runner = runner
 
-    def create_tests(self) -> ta.Any:
+    #
+
+    def create_suite(self, target: Target) -> ta.Any:
         if self._args.test_name_patterns:
             self._loader.testNamePatterns = self._args.test_name_patterns  # type: ignore[assignment]
 
-        target = self._target
         if isinstance(target, TestProgramRunner.DiscoveryTarget):
             return self._loader.discover(
                 target.start,  # type: ignore[arg-type]
@@ -175,7 +178,9 @@ class TestProgramRunner:
         else:
             raise TypeError(target)
 
-    def run_tests(self, test: ta.Any) -> ta.Any:
+    #
+
+    def run_suite(self, suite: ta.Any) -> ta.Any:
         if self._args.catchbreak:
             unittest.signals.installHandler()
 
@@ -217,7 +222,7 @@ class TestProgramRunner:
                 runner = runner()
 
         # TODO: if result.testsRun == 0 and len(result.skipped) == 0:
-        return runner.run(test)
+        return runner.run(suite)
 
 
 ##
@@ -384,12 +389,11 @@ class TestDiscoveryCli:
         ))
 
         tpr = TestProgramRunner(
-            target,
             run_args,
         )
 
-        test = tpr.create_tests()
-        result = tpr.run_tests(test)
+        suite = tpr.create_suite(target)
+        result = tpr.run_suite(suite)
         if exit:
             if result.testsRun == 0 and len(result.skipped) == 0:
                 sys.exit(self.NO_TESTS_EXITCODE)
