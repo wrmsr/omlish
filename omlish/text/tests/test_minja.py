@@ -1,9 +1,10 @@
-# ruff: noqa: PT009 UP006 UP007 UP045
+# ruff: noqa: PT009 PT027 UP006 UP007 UP045
 # @omlish-lite
 import operator
 import typing as ta
 import unittest
 
+from ..minja import compile_minja_template
 from ..minja import render_minja_template
 
 
@@ -115,3 +116,10 @@ class TestMinja(unittest.TestCase):
             x=1,
         )
         self.assertEqual(s, '2')
+
+    def test_strict_strings(self) -> None:
+        self.assertEqual(compile_minja_template('{{ "hi" }}')(), 'hi')
+        self.assertEqual(compile_minja_template('{{ 5 }}')(), '5')
+        self.assertEqual(compile_minja_template('{{ "hi" }}', strict_strings=True)(), 'hi')
+        with self.assertRaises(TypeError):
+            compile_minja_template('{{ 5 }}', strict_strings=True)()
