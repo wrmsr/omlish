@@ -111,7 +111,7 @@ snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !14t
 
 trino==0.335.0  # @omlish-venv !13t !14t
 
-huggingface-hub==0.34.1  # @omlish-venv !14t
+huggingface-hub==0.34.2  # @omlish-venv !14t
 hf-xet==1.1.5  # @omlish-venv !13t !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
@@ -123,7 +123,7 @@ sentence-transformers==5.0.0; python_version < "3.14"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121
 tiktoken==0.9.0; python_version < "3.14"  # @omlish-venv !13t !14t
-tokenizers==0.21.2  # @omlish-venv !14t
+tokenizers==0.21.4  # @omlish-venv !14t
 
 llama-cpp-python; sys_platform == "darwin"
 
