@@ -4,6 +4,7 @@ import operator
 import typing as ta
 import unittest
 
+from ..minja import MinjaTemplateParam
 from ..minja import compile_minja_template
 from ..minja import render_minja_template
 
@@ -75,7 +76,7 @@ Some function call: {{ len(items) }} items total.
 
 
 class TestMinja(unittest.TestCase):
-    def test_minja(self) -> None:
+    def test_minja(self):
         jinja2: ta.Any
         try:
             import jinja2
@@ -94,11 +95,11 @@ class TestMinja(unittest.TestCase):
             print('=== end minja ===')
             print()
 
-    def test_helper(self) -> None:
+    def test_helper(self):
         s = render_minja_template('{{ operator.add(x, 1) }}', operator=operator, x=1)
         self.assertEqual(s, '2')
 
-    def test_stmts(self) -> None:
+    def test_stmts(self):
         s = render_minja_template(
             '\n'.join([
                 '{%- y = x + 1 -%}',
@@ -117,9 +118,36 @@ class TestMinja(unittest.TestCase):
         )
         self.assertEqual(s, '2')
 
-    def test_strict_strings(self) -> None:
+    def test_strict_strings(self):
         self.assertEqual(compile_minja_template('{{ "hi" }}')(), 'hi')
         self.assertEqual(compile_minja_template('{{ 5 }}')(), '5')
         self.assertEqual(compile_minja_template('{{ "hi" }}', strict_strings=True)(), 'hi')
         with self.assertRaises(TypeError):
             compile_minja_template('{{ 5 }}', strict_strings=True)()
+
+    def test_params(self):
+        tmpl = compile_minja_template('foo {{ bar }}', ['bar'])
+        self.assertEqual(tmpl(bar='hi'), 'foo hi')
+        with self.assertRaises(TypeError):
+            tmpl()
+
+        tmpl = compile_minja_template(
+            'foo {{ bar }}',
+            [
+                MinjaTemplateParam.new('bar', 420),
+            ],
+        )
+        self.assertEqual(tmpl(), 'foo 420')
+        self.assertEqual(tmpl(bar='hi'), 'foo hi')
+
+        tmpl = compile_minja_template(
+            'foo {{ bar }} {{ baz }}',
+            [
+                MinjaTemplateParam.new('bar', 420),
+                MinjaTemplateParam.new('baz', 421),
+            ],
+        )
+        self.assertEqual(tmpl(), 'foo 420 421')
+        self.assertEqual(tmpl(bar='hi'), 'foo hi 421')
+        self.assertEqual(tmpl(baz='bye'), 'foo 420 bye')
+        self.assertEqual(tmpl(bar='hi', baz='bye'), 'foo hi bye')

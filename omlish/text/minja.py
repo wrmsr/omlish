@@ -49,10 +49,15 @@ class MinjaTemplateParam:
         return cls(name, dfl)
 
 
+class MinjaTemplateFn(ta.Protocol):
+    def __call__(self, **kwargs: ta.Any) -> str:
+        ...
+
+
 class MinjaTemplate:
     def __init__(
             self,
-            fn: ta.Callable,
+            fn: MinjaTemplateFn,
             params: ta.Sequence[MinjaTemplateParam],
     ) -> None:
         super().__init__()
@@ -69,6 +74,16 @@ class MinjaTemplate:
 
 
 ##
+
+
+class MinjaFunctionBuilder(ta.Protocol):
+    def __call__(
+            self,
+            name: str,
+            src: str,
+            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Callable:
+        ...
 
 
 class MinjaTemplateCompiler:
@@ -96,6 +111,7 @@ class MinjaTemplateCompiler:
             fragment_processor: ta.Optional[ta.Callable[[MinjaTemplateFragmentKind, str], str]] = None,
             strict_strings: bool = False,
             stringifier: ta.Optional[ta.Callable[[ta.Any], str]] = None,
+            function_builder: ta.Optional[MinjaFunctionBuilder] = None,
     ) -> None:
         super().__init__()
 
@@ -120,6 +136,10 @@ class MinjaTemplateCompiler:
                 stringifier = lambda o: str(o)
         self._stringifier = stringifier
 
+        if function_builder is None:
+            function_builder = self._build_function
+        self._function_builder = function_builder
+
         self._stack: ta.List[ta.Literal['for', 'if']] = []
 
     @staticmethod
@@ -127,6 +147,18 @@ class MinjaTemplateCompiler:
         if not isinstance(o, str):
             raise TypeError(o)
         return o
+
+    @staticmethod
+    def _build_function(
+            name: str,
+            src: str,
+            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Callable:
+        glo: dict = {}
+        if ns:
+            glo.update(ns)
+        exec(src, glo)
+        return glo[name]
 
     #
 
@@ -210,11 +242,13 @@ class MinjaTemplateCompiler:
             lines.append(f'def {self._RENDER_FN_NAME}():')
         else:
             lines.append(f'def {self._RENDER_FN_NAME}(')
+            lines.append(self._indent('*,'))
             for p in self._params:
                 if p.default.present:
                     check.not_in(p.name, ns)
-                    ns[p.name] = p.default.must()
-                    lines.append(self._indent(f'{p.name}={p.name},'))
+                    dn = f'__minja__default__{p.name}'
+                    ns[dn] = p.default.must()
+                    lines.append(self._indent(f'{p.name}={dn},'))
                 else:
                     lines.append(self._indent(f'{p.name},'))
             lines.append('):')
@@ -269,19 +303,6 @@ class MinjaTemplateCompiler:
 
     #
 
-    @classmethod
-    def _make_fn(
-            cls,
-            name: str,
-            src: str,
-            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> ta.Callable:
-        glo: dict = {}
-        if ns:
-            glo.update(ns)
-        exec(src, glo)
-        return glo[name]
-
     def compile(
             self,
             ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -294,14 +315,14 @@ class MinjaTemplateCompiler:
                 raise KeyError(k)
             ns[k] = v
 
-        render_fn = self._make_fn(
+        render_fn = self._function_builder(
             self._RENDER_FN_NAME,
             rendered.src,
             ns,
         )
 
         return MinjaTemplate(
-            render_fn,
+            ta.cast(MinjaTemplateFn, check.callable(render_fn)),
             self._params,
         )
 

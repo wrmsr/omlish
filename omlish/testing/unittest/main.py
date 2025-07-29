@@ -2,6 +2,9 @@
 """
 https://docs.python.org/3/library/unittest.html#command-line-interface
 ~ https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/unittest
+
+TODO:
+ - giving it filenames doesn't work
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
