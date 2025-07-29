@@ -107,8 +107,8 @@ class TestMarshalDataclasses(AbstractTestMarshal):
 
     def test_strictness(self):
         u: Foo = msh.unmarshal_obj(dict(i=24), Foo)
-        assert isinstance(u, Foo)
-        assert u.i == 24
+        self.assertIsInstance(u, Foo)
+        self.assertEqual(u.i, 24)
 
         with self.assertRaises(KeyError):  # noqa
             msh.unmarshal_obj(dict(i=24, j=25), Foo)
@@ -121,8 +121,8 @@ class TestMarshalDataclasses(AbstractTestMarshal):
                 manager=msh.OBJ_MARSHALER_MANAGER,
             ),
         )
-        assert isinstance(u, Foo)
-        assert u.i == 24
+        self.assertIsInstance(u, Foo)
+        self.assertEqual(u.i, 24)
 
     def test_name_overrides(self):
         @dc.dataclass

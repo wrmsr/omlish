@@ -34,17 +34,17 @@ class TestCached(unittest.TestCase):
 
         c0 = C('c0')
         for _ in range(2):
-            assert c0.f() == 'c0'
-            assert c == 1
+            self.assertEqual(c0.f(), 'c0')
+            self.assertEqual(c, 1)
 
         c1 = C('c1')
         for _ in range(2):
-            assert c1.f() == 'c1'
-            assert c == 2
+            self.assertEqual(c1.f(), 'c1')
+            self.assertEqual(c, 2)
 
-        assert c0.f() == 'c0'
-        assert c1.f() == 'c1'
-        assert c == 2
+        self.assertEqual(c0.f(), 'c0')
+        self.assertEqual(c1.f(), 'c1')
+        self.assertEqual(c, 2)
 
 
 class TestCachedAsync(unittest.IsolatedAsyncioTestCase):
@@ -58,5 +58,5 @@ class TestCachedAsync(unittest.IsolatedAsyncioTestCase):
             return 'f'
 
         for _ in range(2):
-            assert await f() == 'f'
-            assert c == 1
+            self.assertEqual(await f(), 'f')
+            self.assertEqual(c, 1)
