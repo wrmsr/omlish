@@ -10,9 +10,12 @@ from .....tools.reflect import reflect_tool_spec
 from .....tools.reflect import tool_spec_override
 from ..rendering import LsLinesRenderer
 from ..running import LsRunner
-from .newtools import ToolContext
-from .newtools import ToolExecutor
-from .newtools import execute_tool_executor
+from .execution.context import ToolContext
+from .execution.execution import execute_tool_executor
+from .execution.types import ToolExecutor
+
+
+##
 
 
 class LsDescription(ContentNamespace):
@@ -36,6 +39,9 @@ def execute_ls_tool(
     root = LsRunner().run(base_path)
     lines = LsLinesRenderer().render(root)
     return '\n'.join(lines.lines)
+
+
+##
 
 
 def test_ls_tool():
