@@ -3423,7 +3423,6 @@ class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
- - literals
  - Options.sequence_cls = list, mapping_cls = dict, ... - def with_mutable_containers() -> Options
 """
 
@@ -3535,6 +3534,28 @@ class OptionalObjMarshaler(ObjMarshaler):
         if o is None:
             return None
         return self.item.unmarshal(o, ctx)
+
+
+@dc.dataclass(frozen=True)
+class PrimitiveUnionObjMarshaler(ObjMarshaler):
+    pt: ta.Tuple[type, ...]
+    x: ta.Optional[ObjMarshaler] = None
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if isinstance(o, self.pt):
+            return o
+        elif self.x is not None:
+            return self.x.marshal(o, ctx)
+        else:
+            raise TypeError(o)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if isinstance(o, self.pt):
+            return o
+        elif self.x is not None:
+            return self.x.unmarshal(o, ctx)
+        else:
+            raise TypeError(o)
 
 
 @dc.dataclass(frozen=True)
@@ -3735,6 +3756,13 @@ _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
     collections.abc.MutableSequence: list,
 }
 
+_OBJ_MARSHALER_PRIMITIVE_TYPES: ta.Set[type] = {
+    int,
+    float,
+    bool,
+    str,
+}
+
 
 ##
 
@@ -3883,8 +3911,16 @@ class ObjMarshalerManager:
 
         if is_literal_type(ty):
             lvs = frozenset(get_literal_type_args(ty))
+            if None in lvs:
+                is_opt = True
+                lvs -= frozenset([None])
+            else:
+                is_opt = False
             lty = check.single(set(map(type, lvs)))
-            return LiteralObjMarshaler(rec(lty), lvs)
+            lm: ObjMarshaler = LiteralObjMarshaler(rec(lty), lvs)
+            if is_opt:
+                lm = OptionalObjMarshaler(lm)
+            return lm
 
         if is_generic_alias(ty):
             try:
@@ -3904,7 +3940,31 @@ class ObjMarshalerManager:
                 return IterableObjMarshaler(st, rec(e))
 
             if is_union_alias(ty):
-                return OptionalObjMarshaler(rec(get_optional_alias_arg(ty)))
+                uts = frozenset(ta.get_args(ty))
+                if None in uts or type(None) in uts:
+                    is_opt = True
+                    uts = frozenset(ut for ut in uts if ut not in (None, type(None)))
+                else:
+                    is_opt = False
+
+                um: ObjMarshaler
+                if not uts:
+                    raise TypeError(ty)
+                elif len(uts) == 1:
+                    um = rec(check.single(uts))
+                else:
+                    pt = tuple({ut for ut in uts if ut in _OBJ_MARSHALER_PRIMITIVE_TYPES})
+                    np_uts = {ut for ut in uts if ut not in _OBJ_MARSHALER_PRIMITIVE_TYPES}
+                    if not np_uts:
+                        um = PrimitiveUnionObjMarshaler(pt)
+                    elif len(np_uts) == 1:
+                        um = PrimitiveUnionObjMarshaler(pt, x=rec(check.single(np_uts)))
+                    else:
+                        raise TypeError(ty)
+
+                if is_opt:
+                    um = OptionalObjMarshaler(um)
+                return um
 
         raise TypeError(ty)
 
