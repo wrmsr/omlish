@@ -72,6 +72,21 @@
     }
   },
   {
+    "module": ".intellij.cli",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/intellij/cli.py",
+    "line": 81,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "intellij",
+          "ij"
+        ],
+        "mod_name": "omdev.intellij.cli"
+      }
+    }
+  },
+  {
     "module": ".interp.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/interp/__main__.py",
@@ -375,21 +390,6 @@
         "aliases": [
           "ts"
         ]
-      }
-    }
-  },
-  {
-    "module": ".tools.intellij",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/intellij.py",
-    "line": 248,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": [
-          "intellij",
-          "ij"
-        ],
-        "mod_name": "omdev.tools.intellij"
       }
     }
   },
