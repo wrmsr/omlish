@@ -156,10 +156,6 @@ from .content.prepare import (  # noqa
     prepare_content_str,
 )
 
-from .content.rendering import (  # noqa
-    StringRenderer,
-)
-
 from .content.sequence import (  # noqa
     BlockContent,
     InlineContent,

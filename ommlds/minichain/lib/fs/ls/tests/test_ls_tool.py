@@ -17,7 +17,7 @@ from .newtools import execute_tool_executor
 
 class LsDescription(ContentNamespace):
     SUMMARY = """
-    Recursively lists the directory contents of the given base path.
+        Recursively lists the directory contents of the given base path.
     """
 
 
