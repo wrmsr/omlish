@@ -111,7 +111,7 @@ snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !13dt !14t
 
 trino==0.335.0  # @omlish-venv !13t !13dt !14t
 
-huggingface-hub==0.34.2  # @omlish-venv !14t
+huggingface-hub==0.34.3  # @omlish-venv !14t
 hf-xet==1.1.5  # @omlish-venv !13t !13dt !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..

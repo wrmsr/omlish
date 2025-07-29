@@ -134,7 +134,7 @@ services:
       - '35232:6379'
 
   omlish-trino:
-    image: 'trinodb/trino'
+    image: 'trinodb/trino:476'
     restart: 'unless-stopped'
     expose:
       - '8080'
