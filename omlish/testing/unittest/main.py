@@ -49,25 +49,14 @@ import sys
 import types
 import typing as ta
 
-from .loading import TestTargetLoader
-from .running import TestRunner
+from .loading import UnittestTargetLoader
+from .running import UnittestTestRunner
 
 
 ##
 
 
-def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any]:
-    if obj is None:
-        return {}
-
-    return {
-        a: v
-        for a in attrs
-        if (v := getattr(obj, a, None)) is not None
-    }
-
-
-class TestRunCli:
+class UnittestRunCli:
     def __init__(self) -> None:
         super().__init__()
 
@@ -195,9 +184,22 @@ class TestRunCli:
 
     #
 
+    @staticmethod
+    def _get_attr_dict(obj: ta.Optional[ta.Any], *attrs: str) -> ta.Dict[str, ta.Any]:
+        if obj is None:
+            return {}
+
+        return {
+            a: v
+            for a in attrs
+            if (v := getattr(obj, a, None)) is not None
+        }
+
+    #
+
     IMPORT_PATH_PAT = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*')
 
-    def _build_target(self, name: str, args: ParsedArgs) -> TestTargetLoader.Target:
+    def _build_target(self, name: str, args: ParsedArgs) -> UnittestTargetLoader.Target:
         is_discovery = False
         if os.path.isdir(name):
             is_discovery = True
@@ -207,12 +209,12 @@ class TestRunCli:
                 is_discovery = True
 
         if not is_discovery:
-            return TestTargetLoader.NamesTarget([name])
+            return UnittestTargetLoader.NamesTarget([name])
 
         else:
-            return TestTargetLoader.DiscoveryTarget(
+            return UnittestTargetLoader.DiscoveryTarget(
                 start=name,
-                **_get_attr_dict(
+                **self._get_attr_dict(
                     args.args,
                     'pattern',
                     'top',
@@ -229,7 +231,7 @@ class TestRunCli:
             *,
             exit: bool = False,  # noqa
     ) -> None:
-        loader = TestTargetLoader(**_get_attr_dict(
+        loader = UnittestTargetLoader(**self._get_attr_dict(
             args.args,
             'test_name_patterns',
         ))
@@ -239,7 +241,7 @@ class TestRunCli:
             for target_arg in (args.args.target if args.args is not None else None) or []  # noqa
         ]
 
-        runner = TestRunner(TestRunner.Args(**_get_attr_dict(
+        runner = UnittestTestRunner(UnittestTestRunner.Args(**self._get_attr_dict(
             args.args,
             'verbosity',
             'failfast',
@@ -266,7 +268,7 @@ class TestRunCli:
 
 
 def _main() -> None:
-    cli = TestRunCli()
+    cli = UnittestRunCli()
     args = cli.parse_args(sys.argv[1:])
     cli.run(args, exit=True)
 

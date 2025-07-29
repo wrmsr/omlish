@@ -43,13 +43,13 @@ import types
 import typing as ta
 import unittest
 
-from .types import Test
+from .types import UnittestTest
 
 
 ##
 
 
-class TestTargetLoader:
+class UnittestTargetLoader:
     def __init__(
             self,
             *,
@@ -81,7 +81,7 @@ class TestTargetLoader:
         pattern: ta.Optional[str] = None
         top: ta.Optional[str] = None
 
-    def load(self, target: Target) -> Test:
+    def load(self, target: Target) -> UnittestTest:
         loader = self._loader
         if loader is None:
             loader = unittest.loader.TestLoader()
@@ -89,8 +89,8 @@ class TestTargetLoader:
         if self._test_name_patterns:
             loader.testNamePatterns = self._test_name_patterns  # type: ignore[assignment]
 
-        if isinstance(target, TestTargetLoader.DiscoveryTarget):
-            return ta.cast(Test, loader.discover(
+        if isinstance(target, UnittestTargetLoader.DiscoveryTarget):
+            return ta.cast(UnittestTest, loader.discover(
                 target.start,  # type: ignore[arg-type]
                 target.pattern,  # type: ignore[arg-type]
                 target.top,
@@ -102,11 +102,11 @@ class TestTargetLoader:
             for part in module.split('.')[1:]:
                 module = getattr(module, part)
 
-        if isinstance(target, TestTargetLoader.ModuleTarget):
-            return ta.cast(Test, loader.loadTestsFromModule(module))
+        if isinstance(target, UnittestTargetLoader.ModuleTarget):
+            return ta.cast(UnittestTest, loader.loadTestsFromModule(module))
 
-        elif isinstance(target, TestTargetLoader.NamesTarget):
-            return ta.cast(Test, loader.loadTestsFromNames(
+        elif isinstance(target, UnittestTargetLoader.NamesTarget):
+            return ta.cast(UnittestTest, loader.loadTestsFromNames(
                 target.test_names,  # type: ignore[arg-type]
                 module,
             ))

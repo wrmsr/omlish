@@ -45,30 +45,13 @@ import typing as ta
 import unittest
 import warnings
 
-from .types import Test
+from .types import UnittestTest
 
 
 ##
 
 
-class _WritelnDecorator:
-    def __init__(self, stream):
-        super().__init__()
-
-        self.stream = stream
-
-    def __getattr__(self, attr):
-        if attr in ('stream', '__getstate__'):
-            raise AttributeError(attr)
-        return getattr(self.stream, attr)
-
-    def writeln(self, arg=None):
-        if arg:
-            self.write(arg)
-        self.write('\n')  # text-mode streams translate to \r\n if needed
-
-
-class TestRunner:
+class UnittestTestRunner:
     """
     A test runner class that displays results in textual form.
 
@@ -98,7 +81,25 @@ class TestRunner:
 
         if stream is None:
             stream = sys.stderr
-        self._stream = _WritelnDecorator(stream)
+        self._stream = UnittestTestRunner._WritelnDecorator(stream)
+
+    #
+
+    class _WritelnDecorator:
+        def __init__(self, stream):
+            super().__init__()
+
+            self.stream = stream
+
+        def __getattr__(self, attr):
+            if attr in ('stream', '__getstate__'):
+                raise AttributeError(attr)
+            return getattr(self.stream, attr)
+
+        def writeln(self, arg=None):
+            if arg:
+                self.write(arg)
+            self.write('\n')  # text-mode streams translate to \r\n if needed
 
     #
 
@@ -179,7 +180,7 @@ class TestRunner:
 
         time_taken = stop_time - start_time
 
-        return TestRunner._InternalRunTestResult(
+        return UnittestTestRunner._InternalRunTestResult(
             result,
             time_taken,
         )
@@ -206,7 +207,7 @@ class TestRunner:
         unexpected_successes: ta.Sequence[str]
 
         @classmethod
-        def merge(cls, results: ta.Iterable['TestRunner.RunResult']) -> 'TestRunner.RunResult':
+        def merge(cls, results: ta.Iterable['UnittestTestRunner.RunResult']) -> 'UnittestTestRunner.RunResult':
             def reduce_attr(fn, a):
                 return fn(getattr(r, a) for r in results)
 
@@ -233,11 +234,11 @@ class TestRunner:
 
         def as_test_and_reasons(l):
             return [
-                TestRunner.RunResult.TestAndReason(result.getDescription(t), r)
+                UnittestTestRunner.RunResult.TestAndReason(result.getDescription(t), r)
                 for t, r in l
             ]
 
-        return TestRunner.RunResult(
+        return UnittestTestRunner.RunResult(
             raw_results=[result],
             time_taken=internal_result.time_taken,
 
@@ -254,11 +255,11 @@ class TestRunner:
 
     #
 
-    def run(self, test: Test) -> RunResult:
+    def run(self, test: UnittestTest) -> RunResult:
         return self._build_run_result(self._internal_run_test(test))
 
-    def run_many(self, tests: ta.Iterable[Test]) -> RunResult:
-        return TestRunner.RunResult.merge([self.run(t) for t in tests])
+    def run_many(self, tests: ta.Iterable[UnittestTest]) -> RunResult:
+        return UnittestTestRunner.RunResult.merge([self.run(t) for t in tests])
 
     #
 
