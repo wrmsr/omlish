@@ -249,11 +249,14 @@ class NamedTupleTest(AbstractTestMarshal):
 
 
 FooLiteral = ta.Literal['a', 'b', 'c']
+OptFooLiteral = ta.Literal['a', 'b', 'c', None]
 
 
 class TestMarshalLiterals(AbstractTestMarshal):
     def test_literal(self):
         self._assert_marshal(('b', FooLiteral))
+        self._assert_marshal(('b', OptFooLiteral))
+        self._assert_marshal((None, OptFooLiteral))
 
 
 ##
@@ -323,3 +326,24 @@ class TestInnerClassPoly(AbstractTestMarshal):
         }
 
         self.assertEqual(m, x)
+
+
+##
+
+
+class TestUnions(AbstractTestMarshal):
+    def test_unions(self):
+        self._assert_marshal((420, ta.Union[int, str]))
+        self._assert_marshal(('420', ta.Union[int, str]))
+
+        self._assert_marshal((420, ta.Union[int, str, None]))
+        self._assert_marshal(('420', ta.Union[int, str, None]))
+        self._assert_marshal((None, ta.Union[int, str, None]))
+
+        self._assert_marshal((420, ta.Optional[ta.Union[int, str]]))
+        self._assert_marshal(('420', ta.Optional[ta.Union[int, str]]))
+        self._assert_marshal((None, ta.Optional[ta.Union[int, str]]))
+
+        self._assert_marshal(('abc', ta.Union[str, ta.Sequence[str]]))
+        self._assert_marshal((('abc',), ta.Union[str, ta.Sequence[str]]))
+        self._assert_marshal((('a', 'b', 'c'), ta.Union[str, ta.Sequence[str]]))
