@@ -89,7 +89,7 @@ pcpp==1.30
 # !! LGPL
 paramiko==3.5.1  # @omlish-venv !13t !13dt !14t
 
-docutils==0.21.2
+docutils==0.22
 
 markdown-it-py==3.0.0
 mdit-py-plugins==0.4.2
