@@ -1,3 +1,4 @@
+# ruff: noqa: PT009
 import unittest
 
 from .. import cached
@@ -14,8 +15,8 @@ class TestCached(unittest.TestCase):
             return 'f'
 
         for _ in range(2):
-            assert f() == 'f'
-            assert c == 1
+            self.assertEqual(f(), 'f')
+            self.assertEqual(c, 1)
 
     def test_cached_nullary_method(self):
         c = 0

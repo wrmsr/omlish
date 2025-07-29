@@ -1,19 +1,11 @@
 import pytest
 
-from ..functions import Args
 from ..functions import as_async
 from ..functions import coalesce
 from ..functions import finally_
 from ..functions import opt_coalesce
 from ..functions import strict_eq
 from ..functions import try_
-
-
-def test_args():
-    def f(x, y, z):
-        return x + y * z
-
-    assert Args(1, 2, 3)(f) == 7
 
 
 class FooError(Exception):
