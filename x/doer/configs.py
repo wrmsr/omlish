@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
-# @omlish-lite
 import abc
 import dataclasses as dc
 import typing as ta

@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
-# @omlish-lite
 """
 TODO:
  - inject
@@ -16,6 +15,7 @@ from omlish.formats.toml.parser import toml_loads
 from omlish.funcs.builders import DebugFnBuilder  # noqa
 from omlish.funcs.builders import FnBuilder
 from omlish.funcs.builders import SimpleFnBuilder  # noqa
+from omlish.lite.inject import inj
 from omlish.lite.marshal import unmarshal_obj
 
 from ._marshal import _install_doer_marshaling
@@ -25,7 +25,8 @@ from .configs import DoerTaskConfig
 from .execution import DoerDefExecutor
 from .execution import make_doer_def_executor
 from .execution import make_doer_task_executor
-
+from .inject import DoerExecutableExecutorBindingList
+from .inject import bind_doer
 
 ##
 
@@ -35,6 +36,11 @@ def _main() -> None:
     parser.add_argument('-c', '--config')
     parser.add_argument('task')
     args, task_argv = parser.parse_known_args()
+
+    #
+
+    injector = inj.create_injector(bind_doer())
+    injector.provide(DoerExecutableExecutorBindingList)
 
     #
 
@@ -63,6 +69,7 @@ def _main() -> None:
     #
 
     def do_task(task_name: str, *task_argv: str) -> None:
+        task_name = task_name.replace('-', '_')
         task_cfg_obj = task_cfg_objs[task_name]
         task_cfg: DoerTaskConfig = unmarshal_obj(task_cfg_obj, DoerTaskConfig)
 

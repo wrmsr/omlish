@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007 UP043 UP045 UP046
-# @omlish-lite
 """
 TODO:
  - ** debug mode **
