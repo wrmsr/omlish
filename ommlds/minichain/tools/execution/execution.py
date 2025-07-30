@@ -4,30 +4,30 @@ from omlish import check
 
 from .context import ToolContext
 from .context import bind_tool_context
-from .types import ToolExecutor
+from .types import ToolFn
 
 
 ##
 
 
-def _execute_tool_executor(
-        te: ToolExecutor,
+def _execute_tool_fn(
+        te: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
     fn = te.fn
 
     out: ta.Any
-    if isinstance(te.input, ToolExecutor.DataclassInput):
+    if isinstance(te.input, ToolFn.DataclassInput):
         raise NotImplementedError
-    elif isinstance(te.input, ToolExecutor.KwargsInput):
+    elif isinstance(te.input, ToolFn.KwargsInput):
         out = fn(**args)
     else:
         raise NotImplementedError
 
     ret: str
-    if isinstance(te.output, ToolExecutor.DataclassOutput):
+    if isinstance(te.output, ToolFn.DataclassOutput):
         raise NotImplementedError
-    elif isinstance(te.output, ToolExecutor.RawStringOutput):
+    elif isinstance(te.output, ToolFn.RawStringOutput):
         ret = check.isinstance(out, str)
     else:
         raise NotImplementedError
@@ -35,10 +35,10 @@ def _execute_tool_executor(
     return ret
 
 
-def execute_tool_executor(
+def execute_tool_fn(
         ctx: ToolContext,
-        te: ToolExecutor,
+        te: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
     with bind_tool_context(ctx):
-        return _execute_tool_executor(te, args)
+        return _execute_tool_fn(te, args)

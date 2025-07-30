@@ -6,7 +6,7 @@ from .....chat.messages import ToolExecRequest
 from .....chat.tools.execution import execute_tool_request
 from .....content.namespaces import ContentNamespace
 from .....tools.execution.context import ToolContext
-from .....tools.execution.types import ToolExecutor
+from .....tools.execution.types import ToolFn
 from .....tools.jsonschema import build_tool_spec_json_schema
 from .....tools.reflect import reflect_tool_spec
 from .....tools.reflect import tool_spec_override
@@ -60,15 +60,15 @@ def test_ls_tool():
         tool_args,
     )
 
-    ls_tool_executor = ToolExecutor(
+    ls_tool_fn = ToolFn(
         execute_ls_tool,
-        ToolExecutor.KwargsInput(),
-        ToolExecutor.RawStringOutput(),
+        ToolFn.KwargsInput(),
+        ToolFn.RawStringOutput(),
     )
 
     tool_exec_result = execute_tool_request(
         ToolContext(),
-        ls_tool_executor,
+        ls_tool_fn,
         tool_exec_request,
     )
 

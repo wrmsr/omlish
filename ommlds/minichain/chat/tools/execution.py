@@ -1,6 +1,6 @@
 from ...tools.execution.context import ToolContext
-from ...tools.execution.execution import execute_tool_executor
-from ...tools.execution.types import ToolExecutor
+from ...tools.execution.execution import execute_tool_fn
+from ...tools.execution.types import ToolFn
 from ..messages import ToolExecRequest
 from ..messages import ToolExecResultMessage
 
@@ -10,10 +10,10 @@ from ..messages import ToolExecResultMessage
 
 def execute_tool_request(
         ctx: ToolContext,
-        te: ToolExecutor,
+        te: ToolFn,
         ter: ToolExecRequest,
 ) -> ToolExecResultMessage:
-    result_str = execute_tool_executor(
+    result_str = execute_tool_fn(
         ctx,
         te,
         ter.args,

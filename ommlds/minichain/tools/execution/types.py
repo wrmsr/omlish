@@ -12,7 +12,7 @@ D = ta.TypeVar('D')
 
 
 @dc.dataclass(frozen=True)
-class ToolExecutor(lang.Final):
+class ToolFn(lang.Final):
     fn: ta.Callable
 
     #
