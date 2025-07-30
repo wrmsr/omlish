@@ -63,7 +63,6 @@ def _main() -> None:
     #
 
     def do_task(task_name: str, *task_argv: str) -> None:
-        task_name = args.task
         task_cfg_obj = task_cfg_objs[task_name]
         task_cfg: DoerTaskConfig = unmarshal_obj(task_cfg_obj, DoerTaskConfig)
 

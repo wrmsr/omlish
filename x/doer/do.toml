@@ -112,7 +112,7 @@ sh = """
 """
 
 [do.task.check_x]
-sh = """
-{{python}} -m ruff check x/doer
-{{python}} -m mypy x/doer
+py = """
+do('ruff')
+do('mypy')
 """
