@@ -56,7 +56,7 @@ class DebugFnBuilder(FnBuilder):
         super().__init__()
 
         if mod_name_prefix is None:
-            mod_name_prefix = f'fn_'
+            mod_name_prefix = f'_{self.__class__.__name__}_{id(self):x}_'
         self._mod_name_prefix = mod_name_prefix
 
         self._given_src_dir = src_dir
@@ -70,7 +70,7 @@ class DebugFnBuilder(FnBuilder):
         if self._given_src_dir is not None:
             return self._given_src_dir
         else:
-            return __import__('tempfile').mkdtemp()  # noqa
+            return __import__('tempfile').mkdtemp(prefix=f'_{self.__class__.__name__}__')  # noqa
 
     @cached_nullary
     def _install_sys_path(self) -> None:
