@@ -54,3 +54,31 @@ class ToolFn(lang.Final):
         pass
 
     output: Output
+
+
+##
+
+
+def execute_tool_fn(
+        tfn: ToolFn,
+        args: ta.Mapping[str, ta.Any],
+) -> str:
+    fn = tfn.fn
+
+    out: ta.Any
+    if isinstance(tfn.input, ToolFn.DataclassInput):
+        raise NotImplementedError
+    elif isinstance(tfn.input, ToolFn.KwargsInput):
+        out = fn(**args)
+    else:
+        raise NotImplementedError
+
+    ret: str
+    if isinstance(tfn.output, ToolFn.DataclassOutput):
+        raise NotImplementedError
+    elif isinstance(tfn.output, ToolFn.RawStringOutput):
+        ret = check.isinstance(out, str)
+    else:
+        raise NotImplementedError
+
+    return ret
