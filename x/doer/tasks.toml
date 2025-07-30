@@ -1,0 +1,100 @@
+[tasks]
+shell.preamble = [
+#    'set -ex',
+]
+
+#
+
+[[tasks.consts]]
+foo = 'bar'
+srcs = [
+    'omlish',
+    'omdev',
+]
+
+#
+
+[def.date]
+sh = 'date'
+
+[def.echo_it]
+params = ['it']
+sh = 'echo {{quote(it)}}'
+
+[def.now]
+py = "return repr(datetime.datetime.now())"
+
+[def.now_fmt]
+params = ['fmt="%d-%m-%y"']
+#py = "return datetime.datetime.now().strftime(fmt)"
+py = """
+return datetime.datetime.now().strftime(fmt)
+"""
+
+[def.local_version]
+sh = "{{python}} -c 'from omlish import __about__; print(__about__.__version__)'"
+cache = true
+
+[def.pypi_version]
+sh = "{{python}} -m omdev.tools.pip lookup-latest-version omlish"
+cache = true
+
+#
+
+[task.say_hi]
+args = [
+    {name='message'},
+    {name='--hi', default='default hi'},
+]
+sh = """
+echo {{quote(args.hi)}} \\
+    also \\
+    {{quote(args.message)}}
+
+echo some const: {{quote(foo)}}
+
+echo the date is: {{date()}}
+
+echo the py date is: {{quote(now())}}
+
+echo echoing it: {{echo_it(it='foo')}}
+
+echo the py date is: {{quote(now_fmt())}}
+echo the py date is: {{quote(now_fmt('%d/%m/%y'))}}
+
+for EXT in '.tar.gz' '.whl' ; do
+    echo "EXT=$EXT"
+    D=$(mktemp -d)
+    echo "D=$D"
+done
+
+echo local_version = {{local_version()}}
+echo pypi_version = {{pypi_version()}}
+echo local_version = {{local_version()}}
+echo pypi_version = {{pypi_version()}}
+echo local_version = {{local_version()}}
+echo pypi_version = {{pypi_version()}}
+
+echo {{' '.join(srcs)}}
+
+for S in {{' '.join(srcs)}} ; do
+    echo "S=$S"
+done
+
+{% for s in srcs %}
+echo "for s = {{s}}"
+{% endfor %}
+"""
+
+#
+
+[task.test_lite]
+sh = '{{python}} -m omlish.testing.unittest -vb omlish.lite'
+
+[task.py_test_lite]
+py = """
+subprocess.check_call(
+    './python -m omlish.testing.unittest -vb omlish.lite',
+    shell=True,
+)
+"""
