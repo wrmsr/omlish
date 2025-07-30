@@ -1,6 +1,7 @@
 """
 TODO:
  - strong config types
+ - https://huggingface.co/blog/aifeifei798/transformers-streaming-output
 """
 import sys
 import typing as ta
