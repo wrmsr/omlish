@@ -119,16 +119,20 @@ class DoerExecutableExecutor(abc.ABC, ta.Generic[DoerExecutableConfigT]):
             self,
             config: DoerExecutableConfigT,
             *,
-            doer_config: DoerConfig = DoerConfig(),
+            doer_config: ta.Optional[DoerConfig] = None,
             ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-            fn_builder: FnBuilder = SimpleFnBuilder(),
+            fn_builder: ta.Optional[FnBuilder] = None,
     ) -> None:
         super().__init__()
 
         self._config = config
 
+        if doer_config is None:
+            doer_config = DoerConfig()
         self._doer_config = doer_config
         self._init_ns = ns
+        if fn_builder is None:
+            fn_builder = SimpleFnBuilder()
         self._fn_builder = fn_builder
 
     @cached_nullary
@@ -204,7 +208,7 @@ class PythonDoerExecutableExecutor(DoerExecutableExecutor[PythonDoerExecutableCo
 
 
 class DoerTaskExecutor(DoerExecutableExecutor[DoerTaskConfigT], abc.ABC):
-    _ARG_TYPES_BY_TYPE_NAME: ta.Mapping[ta.Optional[str], type] = {
+    _ARG_TYPES_BY_TYPE_NAME: ta.ClassVar[ta.Mapping[ta.Optional[str], type]] = {
         None: str,
         **{t.__name__: t for t in (int, float, bool)},
     }
