@@ -73,7 +73,9 @@ def test_ls_tool():
     })
 
     tool_exec_result = execute_tool_request(
-        ToolContext(),
+        ToolContext.new(
+            tool_exec_request,
+        ),
         tool_executor,
         tool_exec_request,
     )

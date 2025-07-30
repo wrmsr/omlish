@@ -7,12 +7,39 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
 class ToolContext(lang.Final):
     dct: col.TypeMap = col.TypeMap()
+
+    @classmethod
+    def new(cls, *objs: ta.Any) -> 'ToolContext':
+        return cls(col.TypeMap(objs))
+
+    #
+
+    def __len__(self) -> int:
+        return len(self.dct)
+
+    def __iter__(self) -> ta.Iterator[ta.Any]:
+        return iter(self.dct)
+
+    def get(self, ty: type[T]) -> T | None:
+        return self.dct.get(ty)
+
+    def __getitem__(self, cls: type[T]) -> T:
+        return self.dct[cls]
+
+    def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:
+        return self.dct.get_any(cls)
+
+
+##
 
 
 _TOOL_CONTEXT: contextvars.ContextVar[ToolContext] = contextvars.ContextVar(f'{__name__}._TOOL_CONTEXT')

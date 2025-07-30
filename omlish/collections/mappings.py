@@ -66,7 +66,7 @@ class TypeMap(ta.Generic[T]):
     def get(self, ty: type[T]) -> T | None:
         return self._dct.get(ty)
 
-    def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
+    def __getitem__(self, ty: type[T]) -> T:
         return self._dct[ty]
 
     _any_dct: dict[type | tuple[type, ...], tuple[T, ...]]
