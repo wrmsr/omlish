@@ -41,13 +41,13 @@ def _main() -> None:
     if config_path is None:
         config_path = os.path.join(os.path.dirname(__file__), 'tasks.toml')
     with open(config_path) as f:
-        config_obj = toml_loads(f.read())
+        config_obj = toml_loads(f.read())['do']
 
     _install_doer_marshaling()
 
-    doer_cfg: DoerConfig = unmarshal_obj(config_obj.get('tasks', {}), DoerConfig)
-    task_cfg_objs = config_obj.get('task', {})
-    def_cfg_objs = config_obj.get('def', {})
+    task_cfg_objs = config_obj.pop('task', {})
+    def_cfg_objs = config_obj.pop('def', {})
+    doer_cfg: DoerConfig = unmarshal_obj(config_obj, DoerConfig)
 
     #
 

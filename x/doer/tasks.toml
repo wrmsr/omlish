@@ -1,11 +1,11 @@
-[tasks]
+[do]
 shell.preamble = [
 #    'set -ex',
 ]
 
 #
 
-[[tasks.consts]]
+[[do.consts]]
 foo = 'bar'
 srcs = [
     'omlish',
@@ -14,34 +14,34 @@ srcs = [
 
 #
 
-[def.date]
+[do.def.date]
 sh = 'date'
 
-[def.echo_it]
+[do.def.echo_it]
 params = ['it']
 sh = 'echo {{quote(it)}}'
 
-[def.now]
+[do.def.now]
 py = "return repr(datetime.datetime.now())"
 
-[def.now_fmt]
+[do.def.now_fmt]
 params = ['fmt="%d-%m-%y"']
 #py = "return datetime.datetime.now().strftime(fmt)"
 py = """
 return datetime.datetime.now().strftime(fmt)
 """
 
-[def.local_version]
+[do.def.local_version]
 sh = "{{python}} -c 'from omlish import __about__; print(__about__.__version__)'"
 cache = true
 
-[def.pypi_version]
+[do.def.pypi_version]
 sh = "{{python}} -m omdev.tools.pip lookup-latest-version omlish"
 cache = true
 
 #
 
-[task.say_hi]
+[do.task.say_hi]
 args = [
     {name='message'},
     {name='--hi', default='default hi'},
@@ -88,10 +88,10 @@ echo "for s = {{s}}"
 
 #
 
-[task.test_lite]
+[do.task.test_lite]
 sh = '{{python}} -m omlish.testing.unittest -vb omlish.lite'
 
-[task.py_test_lite]
+[do.task.py_test_lite]
 py = """
 subprocess.check_call(
     './python -m omlish.testing.unittest -vb omlish.lite',
