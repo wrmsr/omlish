@@ -241,7 +241,7 @@ rapidocr-onnxruntime==1.4.4
 readme_renderer==44.0
 redis==6.2.0
 referencing==0.36.2
-regex==2025.7.29
+regex==2025.7.31
 requests==2.32.4
 requests-toolbelt==1.0.0
 rfc3339-validator==0.1.4
@@ -251,7 +251,7 @@ rfc3987-syntax==1.1.0
 rich==14.1.0
 rpds-py==0.26.0
 rsa==4.9.1
-ruff==0.12.6
+ruff==0.12.7
 s3transfer==0.13.1
 safetensors==0.5.3
 scikit-image==0.25.2

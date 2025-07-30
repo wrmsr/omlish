@@ -76,7 +76,7 @@ class MinjaTemplate:
 ##
 
 
-class MinjaFunctionBuilder(ta.Protocol):
+class MinjaFnBuilder(ta.Protocol):
     def __call__(
             self,
             name: str,
@@ -88,7 +88,7 @@ class MinjaFunctionBuilder(ta.Protocol):
 
 class MinjaTemplateCompiler:
     """
-    Compiles a template string into a Python function. The returned function takes a dictionary 'context' and returns
+    Compiles a template string into a Python fn. The returned fn takes a dictionary 'context' and returns
     the rendered string.
 
     Supported syntax:
@@ -111,7 +111,7 @@ class MinjaTemplateCompiler:
             fragment_processor: ta.Optional[ta.Callable[[MinjaTemplateFragmentKind, str], str]] = None,
             strict_strings: bool = False,
             stringifier: ta.Optional[ta.Callable[[ta.Any], str]] = None,
-            function_builder: ta.Optional[MinjaFunctionBuilder] = None,
+            fn_builder: ta.Optional[MinjaFnBuilder] = None,
     ) -> None:
         super().__init__()
 
@@ -136,9 +136,9 @@ class MinjaTemplateCompiler:
                 stringifier = lambda o: str(o)
         self._stringifier = stringifier
 
-        if function_builder is None:
-            function_builder = self._build_function
-        self._function_builder = function_builder
+        if fn_builder is None:
+            fn_builder = self._build_fn
+        self._fn_builder = fn_builder
 
         self._stack: ta.List[ta.Literal['for', 'if']] = []
 
@@ -149,7 +149,7 @@ class MinjaTemplateCompiler:
         return o
 
     @staticmethod
-    def _build_function(
+    def _build_fn(
             name: str,
             src: str,
             ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -315,7 +315,7 @@ class MinjaTemplateCompiler:
                 raise KeyError(k)
             ns[k] = v
 
-        render_fn = self._function_builder(
+        render_fn = self._fn_builder(
             self._RENDER_FN_NAME,
             rendered.src,
             ns,
