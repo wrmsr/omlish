@@ -30,7 +30,6 @@ from omlish.text.minja import MinjaTemplate
 from omlish.text.minja import MinjaTemplateParam
 from omlish.text.minja import compile_minja_template
 
-from .args import build_doer_task_arg_parser
 from .configs import DoerConfig
 from .configs import DoerDefConfig
 from .configs import DoerExecutableConfig
@@ -205,12 +204,27 @@ class PythonDoerExecutableExecutor(DoerExecutableExecutor[PythonDoerExecutableCo
 
 
 class DoerTaskExecutor(DoerExecutableExecutor[DoerTaskConfigT], abc.ABC):
+    _ARG_TYPES_BY_TYPE_NAME: ta.Mapping[ta.Optional[str], type] = {
+        None: str,
+        **{t.__name__: t for t in (int, float, bool)},
+    }
+
     @cached_nullary
     def _args_parser(self) -> ta.Optional[argparse.ArgumentParser]:
         if self._config.args is None:
             return None
-        else:
-            return build_doer_task_arg_parser(self._config.args)
+
+        parser = argparse.ArgumentParser()
+
+        for a in self._config.args:
+            parser.add_argument(
+                *([a.name] if isinstance(a.name, str) else (a.name or [])),
+                **(dict(type=self._ARG_TYPES_BY_TYPE_NAME[a.type]) if a.type is not None else {}),  # type: ignore
+                **(dict(nargs=a.nargs) if a.nargs else {}),  # type: ignore
+                **(dict(default=a.default) if a.default is not None else {}),
+            )
+
+        return parser
 
     @abc.abstractmethod
     def execute(self, *argv: str) -> None:
