@@ -106,7 +106,7 @@ from .chat.templating import (  # noqa
     ChatTemplater,
 )
 
-from .chat.tools import (  # noqa
+from .chat.tools.types import (  # noqa
     Tool,
 )
 

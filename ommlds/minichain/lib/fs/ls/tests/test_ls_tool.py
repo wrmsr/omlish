@@ -1,18 +1,15 @@
 import os.path
 
-from omlish import check
-
 from .....chat.messages import ToolExecRequest
-from .....chat.messages import ToolExecResultMessage
+from .....chat.tools.execution import execute_tool_request
 from .....content.namespaces import ContentNamespace
+from .....tools.execution.context import ToolContext
+from .....tools.execution.types import ToolExecutor
 from .....tools.jsonschema import build_tool_spec_json_schema
 from .....tools.reflect import reflect_tool_spec
 from .....tools.reflect import tool_spec_override
 from ..rendering import LsLinesRenderer
 from ..running import LsRunner
-from .execution.context import ToolContext
-from .execution.execution import execute_tool_executor
-from .execution.types import ToolExecutor
 
 
 ##
@@ -67,18 +64,10 @@ def test_ls_tool():
         ToolExecutor.RawStringOutput(),
     )
 
-    tc = ToolContext()
-
-    result_str = execute_tool_executor(
-        tc,
+    tool_exec_result = execute_tool_request(
+        ToolContext(),
         ls_tool_executor,
-        tool_args,
-    )
-
-    tool_exec_result = ToolExecResultMessage(
-        tool_exec_request.id,
-        check.not_none(tool_spec.name),
-        result_str,
+        tool_exec_request,
     )
 
     print(tool_exec_result)

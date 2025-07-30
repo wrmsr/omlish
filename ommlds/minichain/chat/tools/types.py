@@ -1,8 +1,8 @@
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..tools.types import ToolSpec
-from .types import ChatOption
+from ...tools.types import ToolSpec
+from ..types import ChatOption
 
 
 ##

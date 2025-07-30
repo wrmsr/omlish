@@ -70,7 +70,7 @@ class DebugFnBuilder(FnBuilder):
         if self._given_src_dir is not None:
             return self._given_src_dir
         else:
-            return __import__('tempfile').mkdtemp(prefix=f'_{self.__class__.__name__}__')  # noqa
+            return __import__('tempfile').mkdtemp(prefix=f'_{self.__class__.__name__}_{os.getpid()}__')  # noqa
 
     @cached_nullary
     def _install_sys_path(self) -> None:

@@ -15,7 +15,7 @@ from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import AiChoice
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiMessage
-from ...chat.tools import Tool
+from ...chat.tools.types import Tool
 from ...configs import Config
 from ...llms.types import MaxTokens
 from ...llms.types import Temperature

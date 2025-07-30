@@ -3,7 +3,7 @@ import os.path
 import pytest
 
 from ....chat.messages import UserMessage
-from ....chat.tools import Tool
+from ....chat.tools.types import Tool
 from ....services import Request
 from ....standard import ModelPath
 from ....tools.types import ToolDtype

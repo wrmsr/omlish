@@ -107,6 +107,8 @@ class DoerDefConfig(DoerExecutableConfig, abc.ABC):
 
     cache: ta.Union[bool, int, None] = None
 
+    # eager: ta.Union[bool] = None
+
 
 @dc.dataclass(frozen=True)
 class ShellDoerDefConfig(DoerDefConfig, ShellDoerExecutableConfig):

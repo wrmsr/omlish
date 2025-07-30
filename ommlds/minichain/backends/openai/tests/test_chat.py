@@ -10,7 +10,7 @@ from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
-from ....chat.tools import Tool
+from ....chat.tools.types import Tool
 from ....content.text import TextContent
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature

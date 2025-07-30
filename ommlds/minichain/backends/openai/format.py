@@ -16,7 +16,7 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolExecResultMessage
 from ...chat.messages import UserMessage
 from ...chat.stream.types import AiMessageDelta
-from ...chat.tools import Tool
+from ...chat.tools.types import Tool
 from ...content.prepare import prepare_content_str
 from ...llms.types import MaxTokens
 from ...llms.types import Temperature
