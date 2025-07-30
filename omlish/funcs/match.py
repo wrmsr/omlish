@@ -1,4 +1,6 @@
 """
+Analogous to scala's partial functions ( https://www.scala-lang.org/api/current/scala/PartialFunction.html ).
+
 TODO:
  - unify MatchFnClass with dispatch.method?
   - __call__ = mfs.method(); @__call__.register(lambda: ...) def _call_... ?

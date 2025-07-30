@@ -3706,6 +3706,12 @@ class Route(
         shape_name='OdbNetworkArn',
     ))
 
+    ip_address: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IpAddress',
+        serialization_name='ipAddress',
+        shape_name='String',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class RouteTableAssociationState(
