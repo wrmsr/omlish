@@ -123,34 +123,34 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 # Lite code
 
-A subset of this codebase is written in a 'lite' style. While most of the code is written for python 3.13+, 'lite' code
-is written for 3.8+, and is written in a style conducive to
+A subset of this codebase is written in a 'lite' style (non-'lite' code is referred to as *standard* code). While
+standard code is written for python 3.13+, 'lite' code is written for 3.8+, and is written in a style conducive to
 [amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
 
 Code written in this style has notable differences from standard code, including (but not limited to):
 
 - No name mangling is done in amalgamation, which means (among other things) that code must be written expecting to be
-  all dumped into the same giant namespace. Where a non-lite class might be [`omlish.inject.keys.Key`](inject/keys.py),
+  all dumped into the same giant namespace. Where a standard class might be [`omlish.inject.keys.Key`](inject/keys.py),
   a lite equivalent might be [`omlish.lite.inject.InjectorKey`](lite/inject.py).
 - All internal imports `import` each individual item out of modules rather than importing the modules and referencing
-  their contents. Where non-lite code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
+  their contents. Where standard code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
   there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
   stuff with shortened names.
 - As lite code is tested in 3.8+ but core code requires 3.13+, packages containing lite code can't import anything
-  non-lite in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in
+  standard in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in
   amalgamation, so they effectively must be empty in any package containing any lite code. As a result there are
   frequently [`all.py`](configs/all.py) files in mixed-lite packages which serve the purpose of `__init__.py` for
-  non-lite usage - where importing non-lite packages from non-lite code would be done via `from .. import lang`,
-  importing mixed-lite packages from non-lite code would be done via `from ..configs import all as cfgs`.
+  standard usage - where importing standard packages from standard code would be done via `from .. import lang`,
+  importing mixed-lite packages from standard code would be done via `from ..configs import all as cfgs`.
 
 # Dependencies
 
 This library has no required dependencies of any kind, but there are numerous optional integrations - see
 [`__about__.py`](__about__.py) for a full list, but some specific examples are:
 
-- **anyio** - While lite code must use only asyncio, non-trivial async non-lite code prefers to be written to anyio.
-- **pytest** - What is used for all non-lite testing - as lite code has no dependencies of any kind its testing uses
+- **anyio** - While lite code must use only asyncio, non-trivial async standard code prefers to be written to anyio.
+- **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
 - **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
   capability of [check](check.py).

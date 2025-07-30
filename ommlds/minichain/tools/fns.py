@@ -1,3 +1,7 @@
+"""
+TODO:
+ - should really return Content conventionally
+"""
 import typing as ta
 
 from omlish import check
