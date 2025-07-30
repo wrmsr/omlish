@@ -173,6 +173,10 @@ from .enums import (  # noqa
     enum_name_repr,
 )
 
+from .errors import (  # noqa
+    DuplicateKeyError,
+)
+
 from .functions import (  # noqa
     VoidError,
     as_async,

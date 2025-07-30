@@ -1,7 +1,6 @@
 import typing as ta
 
 from .. import lang
-from .errors import DuplicateKeyError
 from .identity import IdentityKeyDict
 from .identity import IdentitySet
 
@@ -48,7 +47,7 @@ def unique(
         k = key(e)
         if k in seen:
             if strict:
-                raise DuplicateKeyError(k, e)
+                raise lang.DuplicateKeyError(k, e)
         else:
             seen.add(k)
             ret.append(e)
@@ -88,7 +87,7 @@ def make_map(
     for k, v in kvs:
         if k in d:
             if strict:
-                raise DuplicateKeyError(k)
+                raise lang.DuplicateKeyError(k)
         else:
             d[k] = v
     return d

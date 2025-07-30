@@ -49,7 +49,7 @@ class ToolFnToolExecutor(ToolExecutor):
 
 @dc.dataclass(frozen=True)
 class NameSwitchedToolExecutor(ToolExecutor):
-    by_name: ta.Mapping[str, ToolExecutor]
+    tool_executors_by_name: ta.Mapping[str, ToolExecutor]
 
     def execute_tool(
             self,
@@ -57,4 +57,4 @@ class NameSwitchedToolExecutor(ToolExecutor):
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:
-        return self.by_name[name].execute_tool(ctx, name, args)
+        return self.tool_executors_by_name[name].execute_tool(ctx, name, args)

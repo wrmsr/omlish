@@ -4,6 +4,7 @@ from omlish import check
 
 from .....chat.messages import ToolExecRequest
 from .....chat.tools.execution.context import ToolContext
+from .....chat.tools.execution.executors import NameSwitchedToolExecutor
 from .....chat.tools.execution.executors import ToolFnToolExecutor
 from .....chat.tools.execution.messages import execute_tool_request
 from .....content.namespaces import ContentNamespace
@@ -67,9 +68,13 @@ def test_ls_tool():
         ToolFn.RawStringOutput(),
     )
 
+    tool_executor = NameSwitchedToolExecutor({
+        check.not_none(tool_spec.name): ToolFnToolExecutor(ls_tool_fn),
+    })
+
     tool_exec_result = execute_tool_request(
         ToolContext(),
-        ToolFnToolExecutor(ls_tool_fn),
+        tool_executor,
         tool_exec_request,
     )
 

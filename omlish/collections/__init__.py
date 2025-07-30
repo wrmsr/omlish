@@ -37,10 +37,6 @@ from .coerce import (  # noqa
     seq_or_none,
 )
 
-from .errors import (  # noqa
-    DuplicateKeyError,
-)
-
 from .frozen import (  # noqa
     Frozen,
     FrozenDict,
