@@ -62,6 +62,24 @@ def _main() -> None:
 
     #
 
+    def do_task(task_name: str, *task_argv: str) -> None:
+        task_name = args.task
+        task_cfg_obj = task_cfg_objs[task_name]
+        task_cfg: DoerTaskConfig = unmarshal_obj(task_cfg_obj, DoerTaskConfig)
+
+        task_exe = make_doer_task_executor(
+            task_cfg,
+            ns=ns,
+            doer_config=doer_cfg,
+            fn_builder=fn_builder,
+        )
+
+        task_exe.execute(*task_argv)
+
+    ns['do'] = do_task
+
+    #
+
     def def_executor_closure(def_name: str) -> ta.Callable[..., ta.Any]:  # noqa
         def_exe: ta.Optional[DoerDefExecutor] = None
 
@@ -86,19 +104,7 @@ def _main() -> None:
 
     #
 
-    task_name = args.task
-    task_cfg_obj = task_cfg_objs[task_name]
-    task_cfg: DoerTaskConfig = unmarshal_obj(task_cfg_obj, DoerTaskConfig)
-
-    task_exe = make_doer_task_executor(
-        task_cfg,
-        ns=ns,
-        doer_config=doer_cfg,
-        fn_builder=fn_builder,
-
-    )
-
-    task_exe.execute(*task_argv)
+    do_task(args.task, *task_argv)
 
 
 if __name__ == '__main__':
