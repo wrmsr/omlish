@@ -26,7 +26,7 @@ py = "return repr(datetime.datetime.now())"
 
 [do.def.now_fmt]
 params = ['fmt="%d-%m-%y"']
-#py = "return datetime.datetime.now().strftime(fmt)"
+# py = "return datetime.datetime.now().strftime(fmt)"
 py = """
 return datetime.datetime.now().strftime(fmt)
 """
