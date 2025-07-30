@@ -17,7 +17,7 @@ import inspect
 import threading
 import typing as ta
 import uuid
-import weakref  # noqa
+import weakref
 
 from .check import check
 from .reflect import deep_subclasses

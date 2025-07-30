@@ -43,7 +43,7 @@ import typing as ta
 import urllib.parse
 import urllib.request
 import uuid
-import weakref  # noqa
+import weakref
 
 
 ########################################

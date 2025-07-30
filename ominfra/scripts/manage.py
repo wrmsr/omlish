@@ -54,7 +54,7 @@ import traceback
 import types
 import typing as ta
 import uuid
-import weakref  # noqa
+import weakref
 import zlib
 
 
