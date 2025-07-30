@@ -10,6 +10,8 @@ import io
 import re
 import typing as ta
 
+from ..funcs.builders import FnBuilder
+from ..funcs.builders import SimpleFnBuilder
 from ..lite.cached import cached_nullary
 from ..lite.check import check
 from ..lite.maybes import Maybe
@@ -76,16 +78,6 @@ class MinjaTemplate:
 ##
 
 
-class MinjaFnBuilder(ta.Protocol):
-    def __call__(
-            self,
-            name: str,
-            src: str,
-            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> ta.Callable:
-        ...
-
-
 class MinjaTemplateCompiler:
     """
     Compiles a template string into a Python fn. The returned fn takes a dictionary 'context' and returns
@@ -111,7 +103,7 @@ class MinjaTemplateCompiler:
             fragment_processor: ta.Optional[ta.Callable[[MinjaTemplateFragmentKind, str], str]] = None,
             strict_strings: bool = False,
             stringifier: ta.Optional[ta.Callable[[ta.Any], str]] = None,
-            fn_builder: ta.Optional[MinjaFnBuilder] = None,
+            fn_builder: ta.Optional[FnBuilder] = None,
     ) -> None:
         super().__init__()
 
@@ -137,7 +129,7 @@ class MinjaTemplateCompiler:
         self._stringifier = stringifier
 
         if fn_builder is None:
-            fn_builder = self._build_fn
+            fn_builder = SimpleFnBuilder()
         self._fn_builder = fn_builder
 
         self._stack: ta.List[ta.Literal['for', 'if']] = []
@@ -147,18 +139,6 @@ class MinjaTemplateCompiler:
         if not isinstance(o, str):
             raise TypeError(o)
         return o
-
-    @staticmethod
-    def _build_fn(
-            name: str,
-            src: str,
-            ns: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> ta.Callable:
-        glo: dict = {}
-        if ns:
-            glo.update(ns)
-        exec(src, glo)
-        return glo[name]
 
     #
 
@@ -315,7 +295,7 @@ class MinjaTemplateCompiler:
                 raise KeyError(k)
             ns[k] = v
 
-        render_fn = self._fn_builder(
+        render_fn = self._fn_builder.build_fn(
             self._RENDER_FN_NAME,
             rendered.src,
             ns,
