@@ -40,7 +40,7 @@ def _main() -> None:
 
     config_path = args.config
     if config_path is None:
-        config_path = os.path.join(os.path.dirname(__file__), 'tasks.toml')
+        config_path = os.path.join(os.path.dirname(__file__), 'do.toml')
     with open(config_path) as f:
         config_obj = toml_loads(f.read())['do']
 
