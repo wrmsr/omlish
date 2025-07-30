@@ -4,7 +4,8 @@ from omlish import check
 
 from .....chat.messages import ToolExecRequest
 from .....chat.tools.execution.context import ToolContext
-from .....chat.tools.execution.execution import execute_tool_request
+from .....chat.tools.execution.executors import ToolFnToolExecutor
+from .....chat.tools.execution.messages import execute_tool_request
 from .....content.namespaces import ContentNamespace
 from .....tools.fns import ToolFn
 from .....tools.jsonschema import build_tool_spec_json_schema
@@ -68,7 +69,7 @@ def test_ls_tool():
 
     tool_exec_result = execute_tool_request(
         ToolContext(),
-        ls_tool_fn,
+        ToolFnToolExecutor(ls_tool_fn),
         tool_exec_request,
     )
 

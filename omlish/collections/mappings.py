@@ -69,6 +69,24 @@ class TypeMap(ta.Generic[T]):
     def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
         return self._dct[ty]
 
+    _any_dct: dict[type | tuple[type, ...], tuple[T, ...]]
+
+    def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:
+        try:
+            any_dct = self._any_dct
+        except AttributeError:
+            any_dct = {}
+            self._any_dct = any_dct
+
+        try:
+            return any_dct[cls]
+        except KeyError:
+            pass
+
+        ret = tuple(tv for tv in self if isinstance(tv, cls))
+        any_dct[cls] = ret
+        return ret
+
 
 class DynamicTypeMap(ta.Generic[V]):
     def __init__(self, items: ta.Iterable[V] = (), *, weak: bool = False) -> None:
