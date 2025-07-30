@@ -7,6 +7,7 @@ TODO:
  - honor SHELL like however shell=True does
  - PythonParam class lol
  - 'subprocess' helper as used in python code should get the config from DoerTaskConfig.Shell - env and such
+ - 'eager' defs? lol just full injection?
 """
 import abc
 import argparse
