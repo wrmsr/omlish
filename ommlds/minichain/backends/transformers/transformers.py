@@ -98,7 +98,7 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
                     id=te.id,
                     function=dict(
                         arguments=te.args,
-                        name=te.spec.name,
+                        name=te.name,
                     ),
                     type='function',
                 )

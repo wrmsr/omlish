@@ -142,11 +142,11 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     check.state(resp_m.s is None)
 
                     tr: mc.ToolExecRequest = check.single(check.not_none(trs))
-                    tool = check.not_none(self._tool_map)[check.non_empty_str(tr.spec.name)]
+                    tool = check.not_none(self._tool_map)[check.non_empty_str(tr.name)]
 
                     tr_dct = dict(
                         id=tr.id,
-                        spec=msh.marshal(tr.spec),
+                        spec=msh.marshal(tool.spec),
                         args=tr.args,
                     )
                     cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
@@ -157,7 +157,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     tool_res = tool.fn(**tr.args)
                     chat.append(mc.ToolExecResultMessage(
                         tr.id,
-                        check.non_empty_str(tr.spec.name),
+                        check.non_empty_str(tr.name),
                         json.dumps(tool_res),
                     ))
 

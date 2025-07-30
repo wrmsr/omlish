@@ -1,5 +1,7 @@
 import os.path
 
+from omlish import check
+
 from .....chat.messages import ToolExecRequest
 from .....chat.tools.execution import execute_tool_request
 from .....content.namespaces import ContentNamespace
@@ -54,7 +56,7 @@ def test_ls_tool():
 
     tool_exec_request = ToolExecRequest(
         'foo_id',
-        tool_spec,
+        check.not_none(tool_spec.name),
         tool_args,
     )
 

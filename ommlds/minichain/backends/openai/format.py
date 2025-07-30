@@ -47,7 +47,7 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
                     id=te.id,
                     function=dict(
                         arguments=check.not_none(te.raw_args),
-                        name=te.spec.name,
+                        name=te.name,
                     ),
                     type='function',
                 )
@@ -169,7 +169,7 @@ class OpenaiChatRequestHandler:
             tool_exec_requests=[
                 ToolExecRequest(
                     id=tc['id'],
-                    spec=self._process_options().tools_by_name[tc['function']['name']],
+                    name=tc['function']['name'],
                     args=json.loads(tc['function']['arguments'] or '{}'),
                     raw_args=tc['function']['arguments'],
                 )

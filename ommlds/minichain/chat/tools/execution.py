@@ -1,5 +1,3 @@
-from omlish import check
-
 from ...tools.execution.context import ToolContext
 from ...tools.execution.execution import execute_tool_executor
 from ...tools.execution.types import ToolExecutor
@@ -15,8 +13,6 @@ def execute_tool_request(
         te: ToolExecutor,
         ter: ToolExecRequest,
 ) -> ToolExecResultMessage:
-    tn = check.not_none(ter.spec.name)
-
     result_str = execute_tool_executor(
         ctx,
         te,
@@ -25,6 +21,6 @@ def execute_tool_request(
 
     return ToolExecResultMessage(
         ter.id,
-        tn,
+        ter.name,
         result_str,
     )
