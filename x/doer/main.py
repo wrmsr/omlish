@@ -6,6 +6,7 @@ TODO:
  - multi-exec - maybe like hyphen separated?
   - explicitly argless / argful?
  - agnostic to '_' / '-' for convenience (like argparse)
+ - 'do' def? chain call a task without reexecuting process
 """
 import argparse
 import os.path

@@ -98,3 +98,15 @@ subprocess.check_call(
     shell=True,
 )
 """
+
+[do.task.ruff]
+sh = "{{python}} -m ruff check {{' '.join(srcs)}}"
+
+[do.task.mypy]
+sh = "{{python}} -m mypy {{' '.join(srcs)}}"
+
+[do.task.check]
+sh = """
+{{python}} -m x.doer ruff
+{{python}} -m x.doer mypy
+"""
