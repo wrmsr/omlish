@@ -4694,6 +4694,11 @@ class TerminateInstancesRequest(
         shape_name='InstanceIdStringList',
     ))
 
+    force: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Force',
+        shape_name='Boolean',
+    ))
+
     skip_os_shutdown: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SkipOsShutdown',
         shape_name='Boolean',
