@@ -38,6 +38,7 @@ def test_response_message_transforming_chat_service():
             DumbToolExecParser(
                 '<tools>',
                 '</tools>',
+                strip_whitespace=True,
             ),
         ),
         dcs,

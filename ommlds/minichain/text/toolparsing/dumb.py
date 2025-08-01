@@ -22,6 +22,7 @@ class DumbToolExecParser(ToolExecParser):
             *,
             tool_name_key: str | None = None,
             tool_args_key: str | None = None,
+            strip_whitespace: bool = False,
     ) -> None:
         super().__init__()
 
@@ -33,14 +34,22 @@ class DumbToolExecParser(ToolExecParser):
         if tool_args_key is None:
             tool_args_key = self.DEFAULT_TOOL_ARGS_KEY
         self._tool_args_key = check.non_empty_str(tool_args_key)
+        self._strip_whitespace = strip_whitespace
 
     def parse_tool_execs(self, text: str) -> ParsedToolExecs | None:
         lst: list[str | ParsedToolExec] = []
 
+        def append_str(s: str) -> None:
+            if self._strip_whitespace:
+                s = s.strip()
+                if not s:
+                    return
+            lst.append(s)
+
         start_pos = 0
         while (open_pos := text.find(self._open_tag, start_pos)) >= 0:
             if start_pos != open_pos:
-                lst.append(text[start_pos:open_pos])
+                append_str(text[start_pos:open_pos])
 
             body_open_pos = open_pos + len(self._open_tag)
             body_close_pos = text.index(self._close_tag, body_open_pos)
@@ -63,6 +72,6 @@ class DumbToolExecParser(ToolExecParser):
             return None
 
         if start_pos != len(text):
-            lst.append(text[start_pos:])
+            append_str(text[start_pos:])
 
         return lst
