@@ -65,7 +65,7 @@
     "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/chat.py",
-    "line": 31,
+    "line": 32,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.chat",

@@ -1,7 +1,7 @@
-
 from omlish import check
 from omlish import dataclasses as dc
 
+from ...content.types import Content
 from ...text.toolparsing.base import ParsedToolExec
 from ...text.toolparsing.base import ToolExecParser
 from ..messages import AiMessage
@@ -27,6 +27,7 @@ class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
                     id=pt.id,
                     name=pt.name,
                     args=pt.args,
+                    raw_args=pt.raw_body,
                 ))
 
             elif isinstance(pt, str):
@@ -35,9 +36,17 @@ class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
             else:
                 raise TypeError(pt)
 
+        c: Content | None
+        if len(sl) == 1:
+            [c] = sl
+        elif sl:
+            c = sl
+        else:
+            c = None
+
         return dc.replace(
             message,
-            c=sl or None,
+            c=c,
             tool_exec_requests=[
                 *(message.tool_exec_requests or []),
                 *xl,
