@@ -12,17 +12,17 @@ from ..duckduckgo import DuckduckgoSearchService
 
 
 if ta.TYPE_CHECKING:
-    import duckduckgo_search
+    import ddgs
 else:
-    duckduckgo_search = lang.proxy_import('duckduckgo_search')
+    ddgs = lang.proxy_import('ddgs')
 
 
-@ptu.skip.if_cant_import('duckduckgo_search')
+@ptu.skip.if_cant_import('ddgs')
 @pytest.mark.online
 def test_search():
     try:
         res = DuckduckgoSearchService().invoke(Request('the disco biscuits'))
-    except (duckduckgo_search.exceptions.RatelimitException, TimeoutError) as e:
+    except (ddgs.exceptions.RatelimitException, TimeoutError) as e:
         print(e)
         return
 
@@ -30,7 +30,7 @@ def test_search():
     assert res
 
 
-@ptu.skip.if_cant_import('duckduckgo_search')
+@ptu.skip.if_cant_import('ddgs')
 def test_manifest():
     svc = registry_new(SearchService, 'ddg')  # type: ignore[type-abstract]
     assert isinstance(svc, DuckduckgoSearchService)

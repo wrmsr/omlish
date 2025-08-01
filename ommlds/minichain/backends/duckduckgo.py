@@ -10,9 +10,9 @@ from ..search import static_check_is_search_service
 
 
 if ta.TYPE_CHECKING:
-    import duckduckgo_search
+    import ddgs
 else:
-    duckduckgo_search = lang.proxy_import('duckduckgo_search')
+    ddgs = lang.proxy_import('ddgs')
 
 
 ##
@@ -26,8 +26,8 @@ else:
 @static_check_is_search_service
 class DuckduckgoSearchService:
     def invoke(self, request: SearchRequest) -> SearchResponse:
-        ddgs = duckduckgo_search.DDGS()
-        res = ddgs.text(request.v)
+        dsch = ddgs.DDGS()
+        res = dsch.text(request.v)
         return SearchResponse(SearchHits(
             l=[
                 SearchHit(

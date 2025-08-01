@@ -56,7 +56,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'duckduckgo-search ~= 8.1',
+            'ddgs ~= 9.5',
         ],
 
         'wiki': [
