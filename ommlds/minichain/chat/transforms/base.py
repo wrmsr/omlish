@@ -21,6 +21,16 @@ class MessageTransform(lang.Abstract, ta.Generic[MessageT]):
 
 
 @dc.dataclass(frozen=True)
+class CompositeMessageTransform(MessageTransform[Message]):
+    mts: ta.Sequence[MessageTransform[Message]]
+
+    def transform_message(self, message: Message) -> Message:
+        for mt in self.mts:
+            message = mt.transform_message(message)
+        return message
+
+
+@dc.dataclass(frozen=True)
 class FnMessageTransform(MessageTransform, ta.Generic[MessageT]):
     fn: ta.Callable[[MessageT], MessageT]
 
@@ -73,6 +83,16 @@ class ChatTransform(lang.Abstract):
     @abc.abstractmethod
     def transform_chat(self, chat: Chat) -> Chat:
         raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class CompositeChatTransform(ChatTransform):
+    cts: ta.Sequence[ChatTransform]
+
+    def transform_chat(self, chat: Chat) -> Chat:
+        for ct in self.cts:
+            chat = ct.transform_chat(chat)
+        return chat
 
 
 @dc.dataclass(frozen=True)
