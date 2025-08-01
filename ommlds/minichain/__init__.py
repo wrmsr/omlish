@@ -52,6 +52,25 @@ from .chat.stream.types import (  # noqa
     AiChoiceDeltas,
 )
 
+from .chat.tools.execution.context import (  # noqa
+    ToolContext,
+
+    bind_tool_context,
+    tool_context,
+)
+
+from .chat.tools.execution.executors import (  # noqa
+    ToolExecutor,
+
+    ToolFnToolExecutor,
+
+    NameSwitchedToolExecutor,
+)
+
+from .chat.tools.execution.messages import (  # noqa
+    execute_tool_request,
+)
+
 from .chat.transforms.base import (  # noqa
     MessageTransform,
 
@@ -216,6 +235,12 @@ from .services import (  # noqa
 )
 
 ##
+
+from .tools.fns import (  # noqa
+    ToolFn,
+
+    execute_tool_fn,
+)
 
 from .tools.jsonschema import (  # noqa
     build_tool_spec_json_schema,

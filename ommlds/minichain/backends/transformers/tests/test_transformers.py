@@ -44,17 +44,16 @@ def test_transformers_chat():
         assert resp
 
 
-# @pytest.mark.not_docker_guest
-# @pytest.mark.high_mem
+# # @pytest.mark.not_docker_guest
+# # @pytest.mark.high_mem
 # def test_transformers_chat_phi4_tools():
-#     llm = TransformersChatChoicesService(
+#     with TransformersChatChoicesService(
 #         ModelPath('microsoft/Phi-4-mini-instruct'),
 #         TransformersPipelineKwargs(dict(
 #             max_new_tokens=20,
 #             # device=None,
 #         )),
-#     )
-#
-#     resp = llm.invoke(ChatChoicesRequest.new([UserMessage('Is water dry?')]))
-#     print(resp)
-#     assert resp
+#     ) as llm:
+#         resp = llm.invoke(ChatChoicesRequest([UserMessage('Is water dry?')]))
+#         print(resp)
+#         assert resp

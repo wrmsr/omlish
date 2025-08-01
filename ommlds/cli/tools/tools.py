@@ -12,7 +12,7 @@ from ... import minichain as mc
 @dc.dataclass(frozen=True)
 class Tool:
     spec: mc.ToolSpec
-    fn: ta.Callable
+    fn: mc.ToolFn
 
 
 ToolMap = ta.NewType('ToolMap', ta.Mapping[str, Tool])
@@ -48,5 +48,9 @@ _WEATHER_TOOL_SPEC = mc.ToolSpec(
 
 WEATHER_TOOL = Tool(
     _WEATHER_TOOL_SPEC,
-    _get_weather,
+    mc.ToolFn(
+        _get_weather,
+        mc.ToolFn.KwargsInput(),
+        mc.ToolFn.RawStringOutput(),
+    ),
 )

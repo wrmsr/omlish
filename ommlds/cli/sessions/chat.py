@@ -4,6 +4,7 @@ import functools
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
@@ -82,6 +83,10 @@ class PromptChatSession(Session['PromptChatSession.Config']):
         self._chat_options = chat_options
         self._tool_map = tool_map
 
+        self._tool_executor = mc.NameSwitchedToolExecutor(col.make_map(
+            (tn, mc.ToolFnToolExecutor(t.fn)) for tn, t in (tool_map or {}).items()
+        ))
+
     def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
@@ -154,12 +159,12 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     if not cr:
                         raise ToolExecutionRequestDeniedError
 
-                    tool_res = tool.fn(**tr.args)
-                    chat.append(mc.ToolExecResultMessage(
-                        tr.id,
-                        check.non_empty_str(tr.name),
-                        json.dumps(tool_res),
-                    ))
+                    trm = mc.execute_tool_request(
+                        mc.ToolContext(),
+                        self._tool_executor,
+                        tr,
+                    )
+                    chat.append(trm)
 
                     response = mdl.invoke(mc.ChatChoicesRequest(
                         chat,
