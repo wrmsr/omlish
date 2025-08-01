@@ -1,4 +1,3 @@
-
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ...chat.messages import UserMessage

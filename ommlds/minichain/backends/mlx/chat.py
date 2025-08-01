@@ -57,7 +57,7 @@ class MlxChatChoicesService(lang.ExitStacked):
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, AiMessage):
-            return check.isinstance(m.s, str)
+            return check.isinstance(m.c, str)
 
         elif isinstance(m, (SystemMessage, UserMessage)):
             return check.isinstance(m.c, str)

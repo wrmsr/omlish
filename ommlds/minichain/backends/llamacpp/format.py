@@ -22,7 +22,7 @@ ROLES_MAP: ta.Mapping[type[Message], str] = {
 
 def get_msg_content(m: Message) -> str | None:
     if isinstance(m, AiMessage):
-        return m.s
+        return check.isinstance(m.c, str)
 
     elif isinstance(m, (SystemMessage, UserMessage)):
         return check.isinstance(m.c, str)

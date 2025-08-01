@@ -37,7 +37,7 @@ SingleContent: ta.TypeAlias = ta.Union[  # noqa
     SingleExtendedContent,
 ]
 
-SINGLE_Content_RUNTIME_TYPES: tuple[type, ...] = (
+SINGLE_CONTENT_RUNTIME_TYPES: tuple[type, ...] = (
     str,
     SingleExtendedContent,
 )

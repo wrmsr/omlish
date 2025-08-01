@@ -41,7 +41,7 @@ class ChatChoicesStreamServiceChatChoicesService:
                     for c in cs:
                         m = c.m
                         lst.append(self._Choice(
-                            [m.s] if m.s is not None else [],
+                            [check.isinstance(m.c, str)] if m.c is not None else [],
                             # FIXME
                             # list(m.tool_exec_requests or []),
                             [],
@@ -50,8 +50,8 @@ class ChatChoicesStreamServiceChatChoicesService:
                 else:
                     for ch, c in zip(lst, cs, strict=True):
                         m = c.m
-                        if m.s is not None:
-                            ch.parts.append(m.s)
+                        if m.c is not None:
+                            ch.parts.append(check.isinstance(m.c, str))
                         # FIXME
                         # if m.tool_exec_requests:
                         #     ch.trs.extend(m.tool_exec_requests)

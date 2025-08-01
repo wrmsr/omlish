@@ -73,7 +73,7 @@ class DummyChatChoicesStreamService(DummyFnService):
             def yield_choices() -> ChatChoicesStreamGenerator:
                 am = self.fn(request.v)
                 yield [AiChoiceDelta(AiMessageDelta(
-                    am.s,
+                    am.c,
                     # FIXME
                     # am.tool_exec_requests,
                     None,

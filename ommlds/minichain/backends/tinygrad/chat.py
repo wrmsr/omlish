@@ -71,7 +71,7 @@ def _prepare_toks(
             msg_s = check.isinstance(msg.c, str)
         elif isinstance(msg, AiMessage):
             role = 'assistant'
-            msg_s = check.not_none(msg.s)
+            msg_s = check.isinstance(msg.c, str)
         else:
             raise TypeError(msg)
 

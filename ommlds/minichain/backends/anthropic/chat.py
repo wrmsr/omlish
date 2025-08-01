@@ -57,7 +57,7 @@ class AnthropicChatChoicesService:
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, AiMessage):
-            return m.s
+            return check.isinstance(m.c, str)
 
         elif isinstance(m, (UserMessage, SystemMessage)):
             return check.isinstance(m.c, str)

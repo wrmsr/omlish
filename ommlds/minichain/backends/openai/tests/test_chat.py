@@ -102,7 +102,11 @@ def test_openai_tools(harness):
     assert tr.name == 'get_weather'
     assert tr.args == {'location': 'Seattle'}
 
-    chat.append(ToolExecResultMessage(id=tr.id, name=tr.name, s='"rain"'))
+    chat.append(ToolExecResultMessage(
+        id=tr.id,
+        name=tr.name,
+        c='"rain"',
+    ))
 
     resp = llm.invoke(ChatChoicesRequest(
         chat,

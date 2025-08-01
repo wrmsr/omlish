@@ -22,7 +22,7 @@ def test_response_message_transforming_chat_service():
     print(dcs.invoke(ChatRequest([UserMessage('hi')])))
 
     tcs = ResponseMessageTransformingChatService(
-        FnMessageTransform(lambda m: dc.replace(m, s=m.s + '?')),
+        FnMessageTransform(lambda m: dc.replace(m, c=check.isinstance(m.c, str) + '?')),
         dcs,
     )
     print(tcs.invoke(ChatRequest([UserMessage('hi')])))

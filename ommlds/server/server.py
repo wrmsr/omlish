@@ -51,7 +51,7 @@ class McServerHandler(HttpHandler_):
             [mc.UserMessage(prompt)],
             # Temperature(.1),
         ))
-        resp_txt = check.not_none(resp.v[0].m.s)
+        resp_txt = check.isinstance(resp.v[0].m.c, str)
 
         log.info('Server got response: %s', resp_txt)
 

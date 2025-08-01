@@ -11,6 +11,7 @@ from omlish import typedvalues as tv
 from .._typedvalues import _tv_field_metadata
 from ..content.materialize import CanContent
 from ..content.transforms.base import ContentTransform
+from ..content.types import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolExecRequest
 from .metadata import MessageMetadatas
@@ -67,7 +68,7 @@ class UserMessage(Message, lang.Final):
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
 class AiMessage(Message, lang.Final):
-    s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
     tool_exec_requests: ta.Sequence[ToolExecRequest] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
@@ -79,7 +80,7 @@ class AiMessage(Message, lang.Final):
 class ToolExecResultMessage(Message, lang.Final):
     id: str | None = None
     name: str
-    s: str
+    c: Content
 
 
 ##
@@ -102,7 +103,7 @@ class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiabl
 
     @dispatch.install_method(ContentTransform.apply)
     def apply_ai_message(self, m: AiMessage) -> AiMessage:
-        return dc.replace(m, s=self.apply(m.s))
+        return dc.replace(m, c=self.apply(m.c))
 
     @dispatch.install_method(ContentTransform.apply)
     def apply_tool_exec_result_message(self, m: ToolExecResultMessage) -> ToolExecResultMessage:

@@ -22,7 +22,7 @@ def test_llamacpp_chat_model():
         # MaxTokens(64),
     ))
     print(resp)
-    assert resp.v[0].m.s
+    assert resp.v[0].m.c
 
 
 @pytest.mark.not_docker_guest

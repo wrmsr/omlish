@@ -5,6 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
+from ...content.types import Content
 from ...stream.services import StreamOptions
 from ...types import Option
 from ...types import Output
@@ -45,7 +46,7 @@ class ToolExecRequestDelta(lang.Final):
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
 class AiMessageDelta(lang.Final):
-    s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
     tool_exec_requests: ta.Sequence[ToolExecRequestDelta] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 

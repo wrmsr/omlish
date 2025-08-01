@@ -21,5 +21,5 @@ def execute_tool_request(
     return ToolExecResultMessage(
         id=ter.id,
         name=ter.name,
-        s=result_str,
+        c=result_str,
     )

@@ -93,7 +93,7 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
     elif isinstance(m, AiMessage):
         return dict(
             role='assistant',
-            content=m.s,
+            content=check.isinstance(m.c, str),
             **(dict(tool_calls=[
                 dict(
                     id=te.id,
@@ -117,7 +117,7 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
         return dict(
             role='tool',
             tool_call_id=m.id,
-            content=m.s,
+            content=check.isinstance(m.c, str),
         )
 
     else:

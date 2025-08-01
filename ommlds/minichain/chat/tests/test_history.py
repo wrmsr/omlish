@@ -16,7 +16,7 @@ def test_history_chat_service():
     ch = ListChatHistory()
     svc = HistoryAddingChatService(DummyChatService(fn), ch)
 
-    assert (am0 := svc.invoke(ChatRequest([um0 := UserMessage('hi')])).v).s == '1:hi'
-    assert (am1 := svc.invoke(ChatRequest([um1 := UserMessage('again')])).v).s == '3:again'
+    assert (am0 := svc.invoke(ChatRequest([um0 := UserMessage('hi')])).v).c == '1:hi'
+    assert (am1 := svc.invoke(ChatRequest([um1 := UserMessage('again')])).v).c == '3:again'
 
     assert list(ch.get()) == [um0, am0, um1, am1]
