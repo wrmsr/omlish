@@ -1,4 +1,3 @@
-import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
@@ -16,10 +15,6 @@ from ..transforms.base import MessageTransform
 @dc.dataclass(frozen=True)
 class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
     parser: ToolExecParser
-
-    _: dc.KW_ONLY
-
-    string_joiner: ta.Callable[[ta.Sequence[str]], str] | None = None
 
     def transform_message(self, message: AiMessage) -> AiMessage:
         pts = self.parser.parse_tool_execs_(check.isinstance(message.c or '', str))
@@ -40,12 +35,9 @@ class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
             else:
                 raise TypeError(pt)
 
-        if (sj := self.string_joiner) is None:
-            sj = ''.join
-
         return dc.replace(
             message,
-            c=sj(sl),
+            c=sl or None,
             tool_exec_requests=[
                 *(message.tool_exec_requests or []),
                 *xl,

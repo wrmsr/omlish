@@ -50,7 +50,7 @@ class FieldMetadata:
         mkw = {k: v for k, v in kwargs.items() if k not in FIELD_OPTIONS_KWARGS}
         return dc.replace(
             self,
-            **(dict(options=dc.replace(self.options, **okw)) if okw else {}),
+            **(dict(options=dc.replace(self.options, **okw)) if okw else {}),  # type: ignore[arg-type]
             **mkw,
         )
 

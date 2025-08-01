@@ -18,6 +18,8 @@ from dataclasses import (  # noqa
     fields,
 
     is_dataclass,
+
+    replace,
 )
 
 from .api import (  # noqa
@@ -34,7 +36,7 @@ from .tools.as_ import (  # noqa
 )
 
 from .concerns.replace import (  # noqa
-    replace,
+    replace as xreplace,
 )
 
 
@@ -45,6 +47,8 @@ globals()['field'] = xfield
 
 globals()['dataclass'] = xdataclass
 globals()['make_dataclass'] = xmake_dataclass
+
+globals()['replace'] = xreplace
 
 
 ##

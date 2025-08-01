@@ -42,5 +42,5 @@ class ContentTransform(lang.Abstract):
         return dc.replace(c, l=self.apply(c.l))
 
     @apply.register
-    def apply_text_content(self, c: TextContent) -> SequenceContent:
+    def apply_text_content(self, c: TextContent) -> TextContent:
         return dc.replace(c, s=self.apply(c.s))

@@ -6,10 +6,26 @@ from ..services import ChatRequest
 from ..services import ChatResponse
 from ..services import ChatService
 from ..services import static_check_is_chat_service
+from .base import ChatTransform
 from .base import MessageTransform
 
 
 ##
+
+
+@static_check_is_chat_service
+@dc.dataclass(frozen=True)
+class RequestChatTransformingChatService:
+    ct: ChatTransform
+    svc: ChatService
+
+    def invoke(self, request: ChatRequest) -> ChatResponse:
+        new_chat = self.ct.transform_chat(request.v)
+        new_req = dc.replace(request, v=new_chat)
+        return self.svc.invoke(new_req)
+
+
+#
 
 
 @static_check_is_chat_service
