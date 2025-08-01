@@ -31,7 +31,7 @@ def _get_secrets() -> sec.Secrets:
     return load_secrets()
 
 
-def get_ec2_instance_types(session: boto3.Session) -> dict[str, dict[str, ta.Any]]:
+def get_ec2_instance_types(session: 'boto3.Session') -> dict[str, dict[str, ta.Any]]:
     ec2 = session.client('ec2')
     next_token = None
     dct = {}
