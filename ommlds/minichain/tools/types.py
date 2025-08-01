@@ -173,12 +173,10 @@ class ToolSpec:
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ToolExecRequest(lang.Final):
-    id: str
+    id: str | None = None
     name: str
     args: ta.Mapping[str, ta.Any]
-
-    _: dc.KW_ONLY
 
     raw_args: str | None = None

@@ -19,7 +19,7 @@ def execute_tool_request(
     )
 
     return ToolExecResultMessage(
-        ter.id,
-        ter.name,
-        result_str,
+        id=ter.id,
+        name=ter.name,
+        s=result_str,
     )

@@ -30,3 +30,10 @@ class ToolExecParser(lang.Abstract):
     @abc.abstractmethod
     def parse_tool_execs(self, text: str) -> ParsedToolExecs | None:
         raise NotImplementedError
+
+    @ta.final
+    def parse_tool_execs_(self, text: str) -> ParsedToolExecs:
+        if (pts := self.parse_tool_execs(text)) is not None:
+            return pts
+        else:
+            return [text]

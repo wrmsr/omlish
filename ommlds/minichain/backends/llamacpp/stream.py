@@ -6,6 +6,7 @@ import llama_cpp as lcc
 
 from omlish import check
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ....backends import llamacpp as lcu
 from ...chat.choices.services import ChatChoicesOutputs
@@ -15,7 +16,9 @@ from ...chat.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.types import AiChoiceDelta
 from ...chat.stream.types import AiChoiceDeltas
 from ...chat.stream.types import AiMessageDelta
+from ...configs import Config
 from ...resources import UseResources
+from ...standard import ModelPath
 from ...stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
@@ -28,15 +31,18 @@ from .format import get_msg_content
 # @omlish-manifest $.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesStreamService')
 @static_check_is_chat_choices_stream_service
 class LlamacppChatChoicesStreamService(lang.ExitStacked):
-    def __init__(self) -> None:
+    def __init__(self, *configs: Config) -> None:
         super().__init__()
+
+        with tv.consume(*configs) as cc:
+            self._model_path = cc.pop(ModelPath(LlamacppChatChoicesService.DEFAULT_MODEL_PATH))
 
         self._lock = threading.Lock()
 
     @lang.cached_function(transient=True)
     def _load_model(self) -> 'lcc.Llama':
         return self._enter_context(contextlib.closing(lcc.Llama(
-            model_path=LlamacppChatChoicesService.DEFAULT_MODEL_PATH,
+            model_path=self._model_path.v,
             verbose=False,
         )))
 

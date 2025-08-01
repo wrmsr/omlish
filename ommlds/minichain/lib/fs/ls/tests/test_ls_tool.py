@@ -57,9 +57,9 @@ def test_ls_tool():
     }
 
     tool_exec_request = ToolExecRequest(
-        'foo_id',
-        check.not_none(tool_spec.name),
-        tool_args,
+        id='foo_id',
+        name=check.not_none(tool_spec.name),
+        args=tool_args,
     )
 
     ls_tool_fn = ToolFn(

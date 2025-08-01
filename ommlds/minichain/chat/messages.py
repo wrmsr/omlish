@@ -75,9 +75,9 @@ class AiMessage(Message, lang.Final):
 #
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ToolExecResultMessage(Message, lang.Final):
-    id: str
+    id: str | None = None
     name: str
     s: str
 

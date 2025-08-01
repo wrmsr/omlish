@@ -28,6 +28,44 @@ class FnMessageTransform(MessageTransform, ta.Generic[MessageT]):
         return self.fn(message)
 
 
+@dc.dataclass(frozen=True)
+class TypeFilteredMessageTransform(MessageTransform[Message], ta.Generic[MessageT]):
+    ty: type | tuple[type, ...]
+    mt: MessageTransform[MessageT]
+
+    def transform_message(self, message: Message) -> Message:
+        if isinstance(message, self.ty):
+            return self.mt.transform_message(ta.cast(MessageT, message))
+        else:
+            return message
+
+
+#
+
+
+@ta.overload
+def fn_message_transform(
+        fn: ta.Callable[[MessageT], MessageT],
+        ty: type[MessageT],
+) -> MessageTransform[MessageT]:
+    ...
+
+
+@ta.overload
+def fn_message_transform(
+        fn: ta.Callable[[Message], Message],
+        ty: type | tuple[type, ...] | None = None,
+) -> MessageTransform:
+    ...
+
+
+def fn_message_transform(fn, ty=None) -> MessageTransform[MessageT]:
+    mt: MessageTransform = FnMessageTransform(fn)
+    if ty is not None:
+        mt = TypeFilteredMessageTransform(ty, mt)
+    return mt
+
+
 ##
 
 

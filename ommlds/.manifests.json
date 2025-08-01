@@ -95,7 +95,7 @@
     "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/stream.py",
-    "line": 28,
+    "line": 31,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.llamacpp.stream",
