@@ -1,18 +1,18 @@
 import os.path
-import uuid  # noqa
 
 import pytest
 
 from omlish import check
-from omlish import dataclasses as dc
 
 from ....chat.choices.adapters import ChatChoicesServiceChatService
 from ....chat.messages import AiMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.services import ChatService
+from ....chat.tools.ids import ToolExecRequestIdAddingMessageTransform
 from ....chat.tools.parsing import ToolExecParsingMessageTransform
 from ....chat.tools.types import Tool
+from ....chat.transforms.base import CompositeMessageTransform
 from ....chat.transforms.services import ResponseMessageTransformingChatService
 from ....services import Request
 from ....standard import ModelPath
@@ -84,13 +84,16 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
     )
 
     llm = ResponseMessageTransformingChatService(
-        ToolExecParsingMessageTransform(
-            DumbToolExecParser(
-                '<tool_call>',
-                '</tool_call>',
-                strip_whitespace=True,
+        CompositeMessageTransform([
+            ToolExecParsingMessageTransform(
+                DumbToolExecParser(
+                    '<tool_call>',
+                    '</tool_call>',
+                    strip_whitespace=True,
+                ),
             ),
-        ),
+            ToolExecRequestIdAddingMessageTransform(),
+        ]),
         llm,
     )
 
@@ -119,15 +122,9 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
     assert resp.v
 
     air = check.isinstance(resp.v, AiMessage)
+    chat.append(air)
 
     ter = check.single(check.not_none(air.tool_exec_requests))
-    print(ter)
-
-    if ter.id is None:
-        ter = dc.replace(ter, id=str(uuid.uuid4()))
-    air = dc.replace(air, tool_exec_requests=[ter])
-    chat.append(air)
-    print(ter)
 
     tem = ToolExecResultMessage(
         id=ter.id,

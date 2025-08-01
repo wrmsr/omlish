@@ -21,8 +21,8 @@ class MessageTransform(lang.Abstract, ta.Generic[MessageT]):
 
 
 @dc.dataclass(frozen=True)
-class CompositeMessageTransform(MessageTransform[Message]):
-    mts: ta.Sequence[MessageTransform[Message]]
+class CompositeMessageTransform(MessageTransform):
+    mts: ta.Sequence[MessageTransform]
 
     def transform_message(self, message: Message) -> Message:
         for mt in self.mts:
