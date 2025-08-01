@@ -4,14 +4,12 @@ import functools
 import typing as ta
 
 from omlish import check
-from omlish import collections as col
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
 from ... import minichain as mc
 from ..state import StateStorage
-from ..tools.tools import ToolMap
 from .base import Session
 
 
@@ -75,17 +73,13 @@ class PromptChatSession(Session['PromptChatSession.Config']):
             *,
             state_storage: StateStorage,
             chat_options: ChatOptions | None = None,
-            tool_map: ToolMap | None = None,
+            tool_catalog: mc.ToolCatalog | None = None,
     ) -> None:
         super().__init__(config)
 
         self._state_storage = state_storage
         self._chat_options = chat_options
-        self._tool_map = tool_map
-
-        self._tool_executor = mc.NameSwitchedToolExecutor(col.make_map(
-            (tn, mc.ToolFnToolExecutor(t.fn)) for tn, t in (tool_map or {}).items()
-        ))
+        self._tool_catalog = tool_catalog
 
     def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
@@ -147,11 +141,11 @@ class PromptChatSession(Session['PromptChatSession.Config']):
                     check.state(resp_m.c is None)
 
                     tr: mc.ToolExecRequest = check.single(check.not_none(trs))
-                    tool = check.not_none(self._tool_map)[check.non_empty_str(tr.name)]
+                    tce = check.not_none(self._tool_catalog).by_name[check.non_empty_str(tr.name)]
 
                     tr_dct = dict(
                         id=tr.id,
-                        spec=msh.marshal(tool.spec),
+                        spec=msh.marshal(tce.spec),
                         args=tr.args,
                     )
                     cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
@@ -161,7 +155,7 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 
                     trm = mc.execute_tool_request(
                         mc.ToolContext(),
-                        self._tool_executor,
+                        check.not_none(self._tool_catalog),
                         tr,
                     )
                     chat.append(trm)

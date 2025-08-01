@@ -50,9 +50,6 @@ class TypeFilteredMessageTransform(MessageTransform[Message], ta.Generic[Message
             return message
 
 
-#
-
-
 @ta.overload
 def fn_message_transform(
         fn: ta.Callable[[MessageT], MessageT],

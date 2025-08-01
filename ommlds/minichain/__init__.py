@@ -52,6 +52,12 @@ from .chat.stream.types import (  # noqa
     AiChoiceDeltas,
 )
 
+from .chat.tools.execution.catalog import (  # noqa
+    ToolCatalogEntry,
+    ToolCatalogEntries,
+    ToolCatalog,
+)
+
 from .chat.tools.execution.context import (  # noqa
     ToolContext,
 
@@ -73,10 +79,17 @@ from .chat.tools.execution.messages import (  # noqa
 
 from .chat.transforms.base import (  # noqa
     MessageTransform,
+    CompositeMessageTransform,
+    FnMessageTransform,
+    TypeFilteredMessageTransform,
+    fn_message_transform,
 
     ChatTransform,
+    CompositeChatTransform,
+    FnChatTransform,
 
     MessageTransformChatTransform,
+    LastMessageTransformChatTransform,
 )
 
 from .chat.transforms.uuids import (  # noqa

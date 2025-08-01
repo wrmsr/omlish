@@ -1,29 +1,4 @@
-import dataclasses as dc
-import typing as ta
-
-from omlish import check
-
 from ... import minichain as mc
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Tool:
-    spec: mc.ToolSpec
-    fn: mc.ToolFn
-
-
-ToolMap = ta.NewType('ToolMap', ta.Mapping[str, Tool])
-
-
-def build_tool_map(its: ta.Iterable[Tool]) -> ToolMap:
-    dct: dict[str, Tool] = {}
-    for t in its:
-        check.not_in(t.spec.name, dct)
-        dct[check.non_empty_str(t.spec.name)] = t
-    return ToolMap(dct)
 
 
 ##
@@ -46,7 +21,7 @@ _WEATHER_TOOL_SPEC = mc.ToolSpec(
 )
 
 
-WEATHER_TOOL = Tool(
+WEATHER_TOOL = mc.ToolCatalogEntry(
     _WEATHER_TOOL_SPEC,
     mc.ToolFn(
         _get_weather,
