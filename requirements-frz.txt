@@ -163,7 +163,7 @@ nest-asyncio==1.6.0
 networkx==3.5
 nh3==0.3.0
 nodeenv==1.9.1
-nodejs-wheel-binaries==22.17.1
+nodejs-wheel-binaries==22.18.0
 notebook==7.4.4
 notebook_shim==0.2.4
 numpy==2.3.2
@@ -272,7 +272,7 @@ sortedcontainers==2.4.0
 soupsieve==2.7
 SQLAlchemy==2.0.42
 sqlean.py==3.49.1
-sqlglot==27.5.1
+sqlglot==27.6.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3
@@ -298,7 +298,7 @@ trino==0.335.0
 trio==0.30.0
 trio_asyncio==0.15.0
 twine==6.1.0
-types-paramiko==3.5.0.20250708
+types-paramiko==3.5.0.20250801
 types-python-dateutil==2.9.0.20250708
 types-PyYAML==6.0.12.20250516
 types-ujson==5.10.0.20250326
