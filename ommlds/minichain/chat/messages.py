@@ -29,6 +29,7 @@ class Message(  # noqa
     _metadata: ta.Sequence[MessageMetadatas] = dc.field(
         default=(),
         kw_only=True,
+        repr=False,
         metadata=_tv_field_metadata(
             MessageMetadatas,
             marshal_name='metadata',

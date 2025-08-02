@@ -13,6 +13,8 @@ from ....chat.tools.ids import ToolExecRequestIdAddingMessageTransform
 from ....chat.tools.parsing import ToolExecParsingMessageTransform
 from ....chat.tools.types import Tool
 from ....chat.transforms.base import CompositeMessageTransform
+from ....chat.transforms.metadata import CreatedAtAddingMessageTransform
+from ....chat.transforms.metadata import UuidAddingMessageTransform
 from ....chat.transforms.services import ResponseMessageTransformingChatService
 from ....services import Request
 from ....standard import ModelPath
@@ -85,6 +87,8 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
 
     llm = ResponseMessageTransformingChatService(
         CompositeMessageTransform([
+            CreatedAtAddingMessageTransform(),
+            UuidAddingMessageTransform(),
             ToolExecParsingMessageTransform(
                 DumbToolExecParser(
                     '<tool_call>',

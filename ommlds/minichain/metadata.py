@@ -1,4 +1,5 @@
 import abc
+import datetime
 import typing as ta
 import uuid
 
@@ -41,8 +42,9 @@ class CommonMetadata(Metadata, lang.Abstract):
     pass
 
 
-#
-
-
 class Uuid(tv.ScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
+    pass
+
+
+class CreatedAt(tv.ScalarTypedValue[datetime.datetime], CommonMetadata, lang.Final):
     pass

@@ -92,8 +92,9 @@ from .chat.transforms.base import (  # noqa
     LastMessageTransformChatTransform,
 )
 
-from .chat.transforms.uuids import (  # noqa
+from .chat.transforms.metadata import (  # noqa
     UuidAddingMessageTransform,
+    CreatedAtAddingMessageTransform,
 )
 
 from .chat.formats import (  # noqa
@@ -383,8 +384,8 @@ from .metadata import (  # noqa
     MetadataContainer,
 
     CommonMetadata,
-
     Uuid,
+    CreatedAt,
 )
 
 from .registry import (  # noqa

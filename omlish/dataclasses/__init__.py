@@ -95,6 +95,23 @@ from .reflection import (  # noqa
     reflect,
 )
 
+from .specs import (  # noqa
+    CoerceFn,
+    ValidateFn,
+    ReprFn,
+
+    InitFn,
+    ClassValidateFn,
+
+    DefaultFactory,
+
+    FieldType,
+
+    FieldSpec,
+
+    ClassSpec,
+)
+
 from .tools.as_ import (  # noqa
     shallow_asdict,
     shallow_astuple,
