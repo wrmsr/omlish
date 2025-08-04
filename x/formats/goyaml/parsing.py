@@ -1616,7 +1616,7 @@ class Parser:
     ) -> ta.Optional[YamlError]:
         if not self.allow_duplicate_map_key:
             if (n := self.path_map.get(key_path)) is not None:
-                pos = n.get_token().position
+                pos = check.not_none(n.get_token()).position
                 return err_syntax(
                     f'mapping key {tk.value!r} already defined at [{pos.line:d}:{pos.column:d}]',
                     tk,
@@ -1676,7 +1676,7 @@ class Parser:
             return self.map_key_text(nn.value)
         if isinstance(nn, ast.AliasNode):
             return ''
-        return n.get_token().value
+        return check.not_none(n.get_token()).value
 
     def parse_map_value(
             self,
@@ -1690,22 +1690,22 @@ class Parser:
 
         if ctx.is_comment():
             tk = ctx.next_not_comment_token()
-        key_col = key.get_token().position.column
-        key_line = key.get_token().position.line
+        key_col = check.not_none(key.get_token()).position.column
+        key_line = check.not_none(key.get_token()).position.line
 
         if (
-                tk.column() != key_col and
-                tk.line() == key_line and
-                (tk.group_type() == TokenGroupType.MAP_KEY or tk.group_type() == TokenGroupType.MAP_KEY_VALUE)
+                Token.column(tk) != key_col and
+                Token.line(tk) == key_line and
+                (Token.group_type(tk) == TokenGroupType.MAP_KEY or Token.group_type(tk) == TokenGroupType.MAP_KEY_VALUE)
         ):
             # a: b:
             #    ^
             #
             # a: b: c
             #    ^
-            return err_syntax('mapping value is not allowed in this context', tk.raw_token())
+            return err_syntax('mapping value is not allowed in this context', Token.raw_token(tk))
 
-        if tk.column() == key_col and self.is_map_token(tk):
+        if Token.column(tk) == key_col and self.is_map_token(check.not_none(tk)):
             # in this case,
             # ----
             # key: <value does not defined>
@@ -1713,10 +1713,10 @@ class Parser:
             return new_null_node(ctx, ctx.insert_null_token(colon_tk))
 
         if (
-                tk.line() == key_line and
-                tk.group_type() == TokenGroupType.ANCHOR_NAME and
-                ctx.next_token().column() == key_col and
-                self.is_map_token(ctx.next_token())
+                Token.line(tk) == key_line and
+                Token.group_type(tk) == TokenGroupType.ANCHOR_NAME and
+                Token.column(ctx.next_token()) == key_col and
+                self.is_map_token(check.not_none(ctx.next_token()))
         ):
             # in this case,
             # ----
@@ -1724,7 +1724,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_implicit_null_token(tk)],
+                tokens=[check.not_none(tk), ctx.create_implicit_null_token(check.not_none(tk))],
             )
             anchor = self.parse_anchor(ctx.with_group(group), group)
             if isinstance(anchor, YamlError):
@@ -1732,16 +1732,16 @@ class Parser:
             ctx.go_next()
             return anchor
 
-        if tk.column() <= key_col and tk.group_type() == TokenGroupType.ANCHOR_NAME:
+        if Token.column(tk) <= key_col and Token.group_type(tk) == TokenGroupType.ANCHOR_NAME:
             # key: <value does not defined>
             # &anchor
-            return err_syntax('anchor is not allowed in this context', tk.raw_token())
-        if tk.column() <= key_col and tk.type() == tokens_.Type.TAG:
+            return err_syntax('anchor is not allowed in this context', Token.raw_token(tk))
+        if Token.column(tk) <= key_col and Token.type(tk) == tokens_.Type.TAG:
             # key: <value does not defined>
             # !!tag
-            return err_syntax('tag is not allowed in this context', tk.raw_token())
+            return err_syntax('tag is not allowed in this context', Token.raw_token(tk))
 
-        if tk.column() < key_col:
+        if Token.column(tk) < key_col:
             # in this case,
             # ----
             #   key: <value does not defined>
@@ -1749,9 +1749,9 @@ class Parser:
             return new_null_node(ctx, ctx.insert_null_token(colon_tk))
 
         if (
-                tk.line() == key_line and
-                tk.group_type() == TokenGroupType.ANCHOR_NAME and
-                ctx.next_token().column() < key_col
+                Token.line(tk) == key_line and
+                Token.group_type(tk) == TokenGroupType.ANCHOR_NAME and
+                Token.column(ctx.next_token()) < key_col
         ):
             # in this case,
             # ----
@@ -1759,7 +1759,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_implicit_null_token(tk)],
+                tokens=[check.not_none(tk), ctx.create_implicit_null_token(check.not_none(tk))],
             )
             anchor = self.parse_anchor(ctx.with_group(group), group)
             if isinstance(anchor, YamlError):
@@ -1775,12 +1775,12 @@ class Parser:
         return value
 
     def validate_anchor_value_in_map_or_seq(self, value: ast.Node, col: int) -> ta.Optional[YamlError]:
-        anchor: ast.AnchorNode
-        if not isinstance(anchor := value, ast.AnchorNode):
+        if not isinstance(value, ast.AnchorNode):
             return None
-        tag: ast.TagNode
-        if not isinstance(tag := anchor.value, ast.TagNode):
+        anchor: ast.AnchorNode = value
+        if not isinstance(anchor.value, ast.TagNode):
             return None
+        tag: ast.TagNode = anchor.value
         anchor_tk = anchor.get_token()
         tag_tk = tag.get_token()
 
@@ -1801,7 +1801,7 @@ class Parser:
         return None
 
     def parse_anchor(self, ctx: Context, g: TokenGroup) -> YamlErrorOr[ast.AnchorNode]:
-        anchor_name_group = g.first().group
+        anchor_name_group = check.not_none(check.not_none(g.first()).group)
         anchor = self.parse_anchor_name(ctx.with_group(anchor_name_group))
         if isinstance(anchor, YamlError):
             return anchor
@@ -1831,7 +1831,7 @@ class Parser:
         if anchor_name is None:
             return err_syntax(
                 'unexpected anchor. anchor name is not scalar value',
-                ctx.current_token().raw_token(),
+                Token.raw_token(ctx.current_token()),
             )
         anchor.name = anchor_name
         return anchor
@@ -1848,7 +1848,10 @@ class Parser:
         if isinstance(alias_name, YamlError):
             return alias_name
         if alias_name is None:
-            return err_syntax('unexpected alias. alias name is not scalar value', ctx.current_token().raw_token())
+            return err_syntax(
+                'unexpected alias. alias name is not scalar value',
+                Token.raw_token(ctx.current_token()),
+            )
         alias.value = alias_name
         return alias
 
@@ -1860,16 +1863,16 @@ class Parser:
 
         tk = ctx.current_token()
         if tk is None:
-            value = new_string_node(ctx, Token(token=tokens.new('', '', node.start.position)))
-            if isinstance(value, YamlError):
-                return value
-            node.value = value
+            value0 = new_string_node(ctx, Token(token=tokens.new('', '', node.start.position)))
+            if isinstance(value0, YamlError):
+                return value0
+            node.value = value0
             return node
-        value = self.parse_token(ctx, tk)
-        if isinstance(value, YamlError):
-            return value
-        if not isinstance(s := value, ast.StringNode):
-            return err_syntax('unexpected token. required string token', value.get_token())
+        value1 = self.parse_token(ctx, tk)
+        if isinstance(value1, YamlError):
+            return value1
+        if not isinstance(s := value1, ast.StringNode):
+            return err_syntax('unexpected token. required string token', value1.get_token())
         node.value = s
         return node
 
