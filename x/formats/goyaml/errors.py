@@ -18,12 +18,6 @@ class YamlError(abc.ABC):
         raise NotImplementedError
 
 
-class EofYamlError(YamlError):
-    @property
-    def message(self) -> str:
-        return 'eof'
-
-
 @dc.dataclass(frozen=True)
 class GenericYamlError(YamlError):
     obj: ta.Union[str, Exception]

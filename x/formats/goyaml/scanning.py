@@ -9,23 +9,29 @@ from . import tokens
 from . import tokens as tokens_
 from .errors import YamlError
 from .errors import YamlErrorOr
-from .errors import EofYamlError
 from .errors import yaml_error
 
 
 ##
 
 
+class EofYamlError(YamlError):
+    @property
+    def message(self) -> str:
+        return 'eof'
+
+
 @dc.dataclass()
-class InvalidTokenError(Exception):
+class InvalidTokenYamlError(YamlError):
     token: tokens.Token
 
-    def __str__(self) -> str:
-        return check.not_none(self.token.error).message
+    @property
+    def message(self) -> str:
+        return self.token.error.message
 
 
-def err_invalid_token(tk: tokens.Token) -> InvalidTokenError:
-    return InvalidTokenError(
+def err_invalid_token(tk: tokens.Token) -> InvalidTokenYamlError:
+    return InvalidTokenYamlError(
         token=tk,
     )
 
