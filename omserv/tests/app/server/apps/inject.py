@@ -1,8 +1,8 @@
 import typing as ta
 
 from omlish import inject as inj
-from omserv.apps import inject as base_apps_inj
 
+from .....apps import inject as base_apps_inj
 from ...users import User
 from .login import _LoginRequiredAppMarker
 from .login import _LoginRequiredAppMarkerProcessor

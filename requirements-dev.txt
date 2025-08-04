@@ -87,7 +87,7 @@ cffi==1.17.1
 pcpp==1.30
 
 # !! LGPL
-paramiko==3.5.1  # @omlish-venv !13t !13dt !14t
+paramiko==4.0.0  # @omlish-venv !13t !13dt !14t
 
 docutils==0.22
 

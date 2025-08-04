@@ -4,12 +4,12 @@ import typing as ta
 from omlish.http import all as hu
 from omlish.http import asgi
 from omlish.http.sessions import Session
-from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandlerHolder
-from omserv.apps.routes import handles
-from omserv.apps.sessions import with_session
-from omserv.apps.templates import JinjaTemplates
 
+from .....apps.routes import Route
+from .....apps.routes import RouteHandlerHolder
+from .....apps.routes import handles
+from .....apps.sessions import with_session
+from .....apps.templates import JinjaTemplates
 from ..apps.users import with_user
 
 

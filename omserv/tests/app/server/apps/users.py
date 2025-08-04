@@ -5,12 +5,12 @@ import logging
 from omlish import lang
 from omlish.http import all as hu
 from omlish.http import asgi
-from omserv.apps.markers import AppMarker
-from omserv.apps.markers import AppMarkerProcessor
-from omserv.apps.markers import append_app_marker
-from omserv.apps.sessions import SESSION
-from omserv.apps.templates import jinja_helper
 
+from .....apps.markers import AppMarker
+from .....apps.markers import AppMarkerProcessor
+from .....apps.markers import append_app_marker
+from .....apps.sessions import SESSION
+from .....apps.templates import jinja_helper
 from ...users import User
 from ...users import UserStore
 

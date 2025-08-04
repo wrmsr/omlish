@@ -9,10 +9,10 @@ from omlish.asyncs import anyio as anu
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.http import asgi
-from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandlerHolder
-from omserv.apps.routes import handles
 
+from .....apps.routes import Route
+from .....apps.routes import RouteHandlerHolder
+from .....apps.routes import handles
 from ...users import UserStore
 from ..apps.users import get_auth_user
 

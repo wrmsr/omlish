@@ -4,8 +4,8 @@ import os
 from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish.configs.processing.strings import StringConfigRewriter
-from omserv.apps.base import BaseServerUrl
 
+from ....apps.base import BaseServerUrl
 from .. import shell
 from ..dbs import bind_dbs
 from ..secrets import bind_secrets

@@ -12,14 +12,11 @@ pkgs = [
 
 [tool.omlish.pyproject.srcs]
 main = [
-    'omlish',
-
     'omdev',
     'ominfra',
+    'omlish',
     'ommlds',
     'omserv',
-
-    'app',
 ]
 
 all = [

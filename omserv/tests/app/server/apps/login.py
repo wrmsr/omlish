@@ -1,11 +1,11 @@
 from omlish import lang
 from omlish.http import asgi
-from omserv.apps.base import url_for
-from omserv.apps.markers import AppMarker
-from omserv.apps.markers import AppMarkerProcessor
-from omserv.apps.markers import append_app_marker
-from omserv.apps.sessions import SESSION
 
+from .....apps.base import url_for
+from .....apps.markers import AppMarker
+from .....apps.markers import AppMarkerProcessor
+from .....apps.markers import append_app_marker
+from .....apps.sessions import SESSION
 from ...users import User
 from .users import USER
 

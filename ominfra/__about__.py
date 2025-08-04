@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'ssh': [
-            'paramiko ~= 3.5',  # !! LGPL
+            'paramiko ~= 4.0',  # !! LGPL
 
             'asyncssh ~= 2.21',  # cffi
         ],

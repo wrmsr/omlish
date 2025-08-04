@@ -1,5 +1,5 @@
-from omserv.apps.sessions import SESSION
-from omserv.apps.templates import jinja_helper
+from .....apps.sessions import SESSION
+from .....apps.templates import jinja_helper
 
 
 ##

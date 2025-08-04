@@ -1,11 +1,11 @@
 from omlish.http import asgi
-from omserv.apps.base import url_for
-from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandlerHolder
-from omserv.apps.routes import handles
-from omserv.apps.sessions import SESSION
-from omserv.apps.sessions import with_session
 
+from .....apps.base import url_for
+from .....apps.routes import Route
+from .....apps.routes import RouteHandlerHolder
+from .....apps.routes import handles
+from .....apps.sessions import SESSION
+from .....apps.sessions import with_session
 from ..apps.login import login_required
 from ..apps.users import with_user
 

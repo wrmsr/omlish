@@ -1,6 +1,6 @@
 from omlish import inject as inj
-from omserv.apps.inject import bind_route_handler_class
 
+from .....apps.inject import bind_route_handler_class
 from .auth import AuthHandler
 from .diag import DiagHandler
 from .favicon import FaviconHandler

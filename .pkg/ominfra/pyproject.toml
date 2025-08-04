@@ -28,11 +28,11 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'paramiko ~= 3.5',
+    'paramiko ~= 4.0',
     'asyncssh ~= 2.21',
 ]
 ssh = [
-    'paramiko ~= 3.5',
+    'paramiko ~= 4.0',
     'asyncssh ~= 2.21',
 ]
 

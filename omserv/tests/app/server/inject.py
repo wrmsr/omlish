@@ -15,9 +15,9 @@ from omlish import inject as inj
 from omlish.http import asgi
 from omlish.http import sessions
 from omlish.secrets import all as sec
-from omserv.apps.routes import RouteHandlerApp
-from omserv.apps.templates import JinjaTemplates
 
+from ....apps.routes import RouteHandlerApp
+from ....apps.templates import JinjaTemplates
 from ..users import InMemoryUserStore
 from ..users import UserStore
 from ..usersdb import DbUserStore

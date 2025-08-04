@@ -53,7 +53,7 @@ def get_current_task() -> anyio.TaskInfo | None:
 ##
 
 
-async def call_with_task_group(
+async def call_with_task_group(  # type: ignore[return]  # ????
         fn: ta.Callable[ta.Concatenate[anyio.abc.TaskGroup, P], ta.Awaitable[T]],
         *args: ta.Any,
         **kwargs: ta.Any,

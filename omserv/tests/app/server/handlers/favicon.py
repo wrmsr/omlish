@@ -1,9 +1,10 @@
 from omlish.http import all as hu
 from omlish.http import asgi
-from omserv.apps.routes import Route
-from omserv.apps.routes import RouteHandlerHolder
-from omserv.apps.routes import handles
-from omserv.server.resources import favicon_bytes
+
+from .....apps.routes import Route
+from .....apps.routes import RouteHandlerHolder
+from .....apps.routes import handles
+from .....server.resources import favicon_bytes
 
 
 ##

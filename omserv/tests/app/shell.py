@@ -18,8 +18,9 @@ from omlish.diag import procstats
 from omlish.formats import dotenv
 from omlish.http import asgi
 from omlish.logs import all as logs
-from omserv import server
-from omserv.nodes import registry as nr
+
+from ... import server
+from ...nodes import registry as nr
 
 
 ShellTask = ta.NewType('ShellTask', lang.Func1[anyio.Event, ta.Awaitable[None]])

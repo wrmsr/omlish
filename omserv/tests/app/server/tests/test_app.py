@@ -15,12 +15,12 @@ from omlish.asyncs import all as au
 from omlish.http import asgi
 from omlish.sockets.ports import get_available_port
 from omlish.testing import pytest as ptu
-from omserv.server.config import Config
-from omserv.server.default import serve
-from omserv.server.tests.utils import get_timeout_s
-from omserv.server.tests.utils import headers_time_patch  # noqa
-from omserv.server.types import AsgiWrapper
 
+from .....server.config import Config
+from .....server.default import serve
+from .....server.tests.utils import get_timeout_s
+from .....server.tests.utils import headers_time_patch  # noqa
+from .....server.types import AsgiWrapper
 from ...dbs import bind_dbs
 from ...secrets import bind_secrets
 from ..inject import bind_app
