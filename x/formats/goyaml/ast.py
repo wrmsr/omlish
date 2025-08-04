@@ -192,16 +192,16 @@ class ScalarNode(MapKeyNode, abc.ABC):
 class BaseNode(Node, abc.ABC):
     path: str = ''
     comment: ta.Optional['CommentGroupNode'] = None
-    read: int = 0
+    cur_read: int = 0
 
     def read_len(self) -> int:
-        return self.read
+        return self.cur_read
 
     def clear_len(self) -> None:
-        self.read = 0
+        self.cur_read = 0
 
     def append_read_len(self, l: int) -> None:
-        self.read += l
+        self.cur_read += l
 
     # get_path returns YAMLPath for the current node.
     @ta.final
@@ -1997,7 +1997,7 @@ class Visitor(abc.ABC):
 # If the visitor w returned by v.visit(node) is not nil,
 # walk is invoked recursively with visitor w for each of the non-nil children of node,
 # followed by a call of w.visit(nil).
-def walk(v: Visitor, node: Node) -> None:
+def walk(v: Visitor, node: ta.Optional[Node]) -> None:
     if (v := v.visit(node)) is None:
         return
 
@@ -2085,7 +2085,7 @@ class FilterWalker(Visitor):
 class ParentFinder:
     target: Node
 
-    def walk(self, parent: Node, node: Node) -> ta.Optional[Node]:
+    def walk(self, parent: Node, node: ta.Optional[Node]) -> ta.Optional[Node]:
         if self.target == node:
             return parent
 
@@ -2109,37 +2109,37 @@ class ParentFinder:
         if isinstance(n, NanNode):
             return None
         if isinstance(n, LiteralNode):
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         if isinstance(n, DirectiveNode):
-            if (found := self.walk(node, n.name)) is not None:
+            if (found := self.walk(n, n.name)) is not None:
                 return found
             for value in n.values:
-                if (found := self.walk(node, value)) is not None:
+                if (found := self.walk(n, value)) is not None:
                     return found
         if isinstance(n, TagNode):
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         if isinstance(n, DocumentNode):
-            return self.walk(node, n.body)
+            return self.walk(n, n.body)
         if isinstance(n, MappingNode):
             for value in n.values:
-                if (found := self.walk(node, value)) is not None:
+                if (found := self.walk(n, value)) is not None:
                     return found
         if isinstance(n, MappingKeyNode):
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         if isinstance(n, MappingValueNode):
-            if (found := self.walk(node, n.key)) is not None:
+            if (found := self.walk(n, n.key)) is not None:
                 return found
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         if isinstance(n, SequenceNode):
             for value in n.values:
-                if (found := self.walk(node, value)) is not None:
+                if (found := self.walk(n, value)) is not None:
                     return found
         if isinstance(n, AnchorNode):
-            if (found := self.walk(node, n.name)) is not None:
+            if (found := self.walk(n, n.name)) is not None:
                 return found
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         if isinstance(n, AliasNode):
-            return self.walk(node, n.value)
+            return self.walk(n, n.value)
         return None
 
 

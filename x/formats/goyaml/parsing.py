@@ -26,23 +26,29 @@ class Context:
     is_flow: bool = False
 
     def current_token(self) -> ta.Optional['Token']:
-        if self.token_ref.idx >= self.token_ref.size:
+        ref = check.not_none(self.token_ref)
+
+        if ref.idx >= ref.size:
             return None
 
-        return self.token_ref.tokens[self.token_ref.idx]
+        return ref.tokens[ref.idx]
 
     def is_comment(self) -> bool:
         return Token.type(self.current_token()) == tokens_.Type.COMMENT
 
     def next_token(self) -> ta.Optional['Token']:
-        if self.token_ref.idx + 1 >= self.token_ref.size:
+        ref = check.not_none(self.token_ref)
+
+        if ref.idx + 1 >= ref.size:
             return None
 
-        return self.token_ref.tokens[self.token_ref.idx + 1]
+        return ref.tokens[ref.idx + 1]
 
     def next_not_comment_token(self) -> ta.Optional['Token']:
-        for i in range(self.token_ref.idx + 1, self.token_ref.size):
-            tk = self.token_ref.tokens[i]
+        ref = check.not_none(self.token_ref)
+
+        for i in range(ref.idx + 1, ref.size):
+            tk = ref.tokens[i]
             if tk.type() == tokens_.Type.COMMENT:
                 continue
             return tk
