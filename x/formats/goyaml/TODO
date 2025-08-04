@@ -5,3 +5,5 @@
 - deal with hilarious buffer management inefficiency
 - actually test
 - promote to prod
+- exceptions lol
+- amalg-safe - class YamlParsing, class YamlAsts, ...
