@@ -6,11 +6,10 @@ from omlish import check
 from omlish import lang
 
 from .... import minichain as mc
-from ...state import StateStorage
 from .base import CHAT_CHOICES_SERVICE_FACTORIES
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatSession
-from .state import ChatState
+from .state import ChatStateManager
 
 
 if ta.TYPE_CHECKING:
@@ -35,19 +34,17 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             self,
             config: Config,
             *,
-            state_storage: StateStorage,
+            state_manager: ChatStateManager,
     ) -> None:
         super().__init__(config)
 
-        self._state_storage = state_storage
+        self._state_manager = state_manager
 
     def run(self) -> None:
         if self._config.new:
-            state = ChatState()
+            state = self._state_manager.clear_state()
         else:
-            state = self._state_storage.load_state('chat', ChatState)  # type: ignore
-            if state is None:
-                state = ChatState()  # type: ignore
+            state = self._state_manager.get_state()
 
         backend = self._config.backend
         if backend is None:
@@ -65,24 +62,12 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             while True:
                 prompt = ptk.prompt('> ')
 
-                state = dc.replace(
-                    state,
-                    chat=[
-                        *state.chat,
-                        mc.UserMessage(prompt),
-                    ],
-                )
+                req_msg = mc.UserMessage(prompt)
 
-                response = mdl.invoke(mc.ChatChoicesRequest(state.chat))
-                print(check.isinstance(response.v[0].m.c, str).strip())
+                response = mdl.invoke(mc.ChatChoicesRequest([*state.chat, req_msg]))
 
-                state = dc.replace(
-                    state,
-                    chat=[
-                        *state.chat,
-                        response.v[0].m,
-                    ],
-                    updated_at=lang.utcnow(),
-                )
+                resp_msg = response.v[0].m
 
-                self._state_storage.save_state('chat', state, ChatState)
+                print(check.isinstance(resp_msg.c, str).strip())
+
+                state = self._state_manager.extend_chat([req_msg, resp_msg])

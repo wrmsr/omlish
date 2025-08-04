@@ -6,6 +6,8 @@ from omlish import inject as inj
 from .base import ChatOption
 from .base import ChatOptions
 from .base import ChatSession
+from .state import ChatStateManager
+from .state import StateStorageChatStateManager
 
 
 ##
@@ -43,6 +45,11 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
     els.extend([
         inj.set_binder[InjectedChatOptions](),
         inj.bind(provide_chat_options, singleton=True),
+    ])
+
+    els.extend([
+        inj.bind(StateStorageChatStateManager, singleton=True),
+        inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
     ])
 
     return inj.as_elements(*els)

@@ -8,12 +8,11 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from .... import minichain as mc
-from ...state import StateStorage
 from .base import CHAT_CHOICES_SERVICE_FACTORIES
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
-from .state import ChatState
+from .state import ChatStateManager
 
 
 if ta.TYPE_CHECKING:
@@ -48,13 +47,13 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             self,
             config: Config,
             *,
-            state_storage: StateStorage,
+            state_manager: ChatStateManager,
             chat_options: ChatOptions | None = None,
             tool_catalog: mc.ToolCatalog | None = None,
     ) -> None:
         super().__init__(config)
 
-        self._state_storage = state_storage
+        self._state_manager = state_manager
         self._chat_options = chat_options
         self._tool_catalog = tool_catalog
 
@@ -62,14 +61,11 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         prompt = check.isinstance(self._config.content, str)
 
         if self._config.new:
-            state = ChatState()
+            state = self._state_manager.clear_state()
         else:
-            state = self._state_storage.load_state('chat', ChatState)  # type: ignore
-            if state is None:
-                state = ChatState()  # type: ignore
+            state = self._state_manager.get_state()
 
-        chat: list[mc.Message] = [
-            *state.chat,
+        new_chat: list[mc.Message] = [
             mc.UserMessage(prompt),
         ]
 
@@ -80,7 +76,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         if self._config.stream:
             with lang.maybe_managing(mc.registry_of[mc.ChatChoicesStreamService].new(backend)) as st_mdl:
                 with st_mdl.invoke(mc.ChatChoicesStreamRequest(
-                        chat,
+                        [*state.chat, *new_chat],
                         (self._chat_options or []),
                 )).v as st_resp:
                     lst: list[str] = []
@@ -94,7 +90,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                     print()
 
                 resp_m = mc.AiMessage(''.join(lst))
-                chat.append(resp_m)
+                new_chat.append(resp_m)
 
         else:
             csf: ta.Callable[..., mc.ChatChoicesService]
@@ -107,12 +103,12 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                     *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
             )) as mdl:
                 response: mc.ChatChoicesResponse = mdl.invoke(mc.ChatChoicesRequest(
-                    chat,
+                    [*state.chat, *new_chat],
                     (self._chat_options or []),
                 ))
 
                 resp_m = response.v[0].m
-                chat.append(resp_m)
+                new_chat.append(resp_m)
 
                 if (trs := resp_m.tool_exec_requests):
                     check.state(resp_m.c is None)
@@ -135,15 +131,15 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                         check.not_none(self._tool_catalog),
                         tr,
                     )
-                    chat.append(trm)
+                    new_chat.append(trm)
 
                     response = mdl.invoke(mc.ChatChoicesRequest(
-                        chat,
+                        [*state.chat, *new_chat],
                         (self._chat_options or []),
                     ))
 
                     resp_m = response.v[0].m
-                    chat.append(resp_m)
+                    new_chat.append(resp_m)
 
                 resp_s = check.isinstance(resp_m.c, str).strip()
 
@@ -156,10 +152,4 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 else:
                     print(resp_s)
 
-        state = dc.replace(
-            state,
-            chat=tuple(chat),
-            updated_at=lang.utcnow(),
-        )
-
-        self._state_storage.save_state('chat', state, ChatState)
+        self._state_manager.extend_chat(new_chat)
