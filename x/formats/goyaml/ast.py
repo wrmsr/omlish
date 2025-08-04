@@ -1448,7 +1448,7 @@ class SequenceNode(BaseNode):
     end: ta.Optional[tokens.Token] = None
     is_flow_style: bool
     values: ta.List[Node]
-    value_head_comments: ta.List['CommentGroupNode'] = dc.field(default_factory=list)
+    value_head_comments: ta.List[ta.Optional['CommentGroupNode']] = dc.field(default_factory=list)
     entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
@@ -1624,7 +1624,7 @@ class SequenceEntryNode(BaseNode):
 
 # sequence_entry creates SequenceEntryNode instance.
 def sequence_entry(
-        start: tokens.Token,
+        start: ta.Optional[tokens.Token],
         value: Node,
         head_comment: ta.Optional['CommentGroupNode'],
 ) -> SequenceEntryNode:

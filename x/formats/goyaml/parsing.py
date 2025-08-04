@@ -1885,7 +1885,7 @@ class Parser:
 
     def parse_tag(self, ctx: Context) -> YamlErrorOr[ast.TagNode]:
         tag_tk = ctx.current_token()
-        tag_raw_tk = tag_tk.raw_token()
+        tag_raw_tk = Token.raw_token(tag_tk)
         node = new_tag_node(ctx, tag_tk)
         if isinstance(node, YamlError):
             return node
@@ -1895,22 +1895,27 @@ class Parser:
 
         tag_value: ast.Node
         if self.secondary_tag_directive is not None:
-            value = new_string_node(ctx, ctx.current_token())
-            if isinstance(value, YamlError):
-                return value
-            tag_value = value
+            value0 = new_string_node(ctx, ctx.current_token())
+            if isinstance(value0, YamlError):
+                return value0
+            tag_value = value0
             node.directive = self.secondary_tag_directive
         else:
-            value = self.parse_tag_value(ctx, tag_raw_tk, ctx.current_token())
-            if isinstance(value, YamlError):
-                return value
-            tag_value = value
+            value1 = self.parse_tag_value(ctx, check.not_none(tag_raw_tk), ctx.current_token())
+            if isinstance(value1, YamlError):
+                return value1
+            tag_value = check.not_none(value1)
         if (err := set_head_comment(comment, tag_value)) is not None:
             return err
         node.value = tag_value
         return node
 
-    def parse_tag_value(self, ctx: Context, tag_raw_tk: tokens_.Token, tk: Token) -> YamlErrorOr[ast.Node]:
+    def parse_tag_value(
+            self,
+            ctx: Context,
+            tag_raw_tk: tokens_.Token,
+            tk: ta.Optional[Token],
+    ) -> YamlErrorOr[ta.Optional[ast.Node]]:
         if tk is None:
             return new_null_node(ctx, ctx.create_implicit_null_token(Token(token=tag_raw_tk)))
         if tag_raw_tk.value in (
@@ -1932,7 +1937,7 @@ class Parser:
                 tokens_.ReservedTagKeywords.NULL,
         ):
             if tk.group_type() == TokenGroupType.LITERAL or tk.group_type() == TokenGroupType.FOLDED:
-                return self.parse_literal(ctx.with_group(tk.group))
+                return self.parse_literal(ctx.with_group(check.not_none(tk.group)))
             elif tk.type() == tokens_.Type.COLLECT_ENTRY or tk.type() == tokens_.Type.MAPPING_VALUE:
                 return new_tag_default_scalar_value_node(ctx, tag_raw_tk)
             scalar = self.parse_scalar_value(ctx, tk)
@@ -1958,23 +1963,23 @@ class Parser:
         is_first = True
         while ctx.next():
             tk = ctx.current_token()
-            if tk.type() == tokens_.Type.SEQUENCE_END:
-                node.end = tk.raw_token()
+            if Token.type(tk) == tokens_.Type.SEQUENCE_END:
+                node.end = Token.raw_token(tk)
                 break
 
             entry_tk: ta.Optional[Token] = None
-            if tk.type() == tokens_.Type.COLLECT_ENTRY:
+            if Token.type(tk) == tokens_.Type.COLLECT_ENTRY:
                 if is_first:
-                    return err_syntax("expected sequence element, but found ','", tk.raw_token())
+                    return err_syntax("expected sequence element, but found ','", Token.raw_token(tk))
                 entry_tk = tk
                 ctx.go_next()
             elif not is_first:
-                return err_syntax("',' or ']' must be specified", tk.raw_token())
+                return err_syntax("',' or ']' must be specified", Token.raw_token(tk))
 
-            if (tk := ctx.current_token()).type() == tokens_.Type.SEQUENCE_END:
+            if Token.type(tk := ctx.current_token()) == tokens_.Type.SEQUENCE_END:
                 # this case is here: "[ elem, ]".
                 # In this case, ignore the last element and break sequence parsing.
-                node.end = tk.raw_token()
+                node.end = Token.raw_token(tk)
                 break
 
             if ctx.is_token_not_found():
@@ -2008,16 +2013,15 @@ class Parser:
             return seq_node
 
         tk = seq_tk
-        while Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY and tk.column() == seq_tk.column():
-            seq_tk = check.not_none(tk)
+        while Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY and Token.column(tk) == Token.column(seq_tk):
             head_comment = self.parse_head_comment(ctx)
             ctx.go_next()  # skip sequence entry token
 
             ctx = ctx.with_index(len(seq_node.values))
-            value = self.parse_sequence_value(ctx, seq_tk)
+            value = self.parse_sequence_value(ctx, check.not_none(seq_tk))
             if isinstance(value, YamlError):
                 return value
-            seq_entry = ast.sequence_entry(seq_tk.raw_token(), value, head_comment)
+            seq_entry = ast.sequence_entry(Token.raw_token(seq_tk), value, head_comment)
             if (err := set_line_comment(ctx, seq_entry, seq_tk)) is not None:
                 return err
             seq_entry.set_path(ctx.path)
@@ -2030,12 +2034,12 @@ class Parser:
             else:
                 tk = ctx.current_token()
         if ctx.is_comment():
-            if seq_tk.column() <= ctx.current_token().column():
+            if Token.column(seq_tk) <= Token.column(ctx.current_token()):
                 # If the comment is in the same or deeper column as the last element column in sequence value,
                 # treat it as a footer comment for the last element.
-                seq_node.foot_comment = self.parse_foot_comment(ctx, seq_tk.column())
+                seq_node.foot_comment = self.parse_foot_comment(ctx, Token.column(seq_tk))
                 if len(seq_node.values) != 0:
-                    seq_node.foot_comment.set_path(seq_node.values[len(seq_node.values) - 1].get_path())
+                    check.not_none(seq_node.foot_comment).set_path(seq_node.values[len(seq_node.values) - 1].get_path())
         return seq_node
 
     def parse_sequence_value(self, ctx: Context, seq_tk: Token) -> YamlErrorOr[ast.Node]:
