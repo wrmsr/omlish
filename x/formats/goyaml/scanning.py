@@ -9,6 +9,7 @@ from . import tokens
 from . import tokens as tokens_
 from .errors import YamlError
 from .errors import YamlErrorOr
+from .errors import EofYamlError
 from .errors import yaml_error
 
 
@@ -1814,7 +1815,7 @@ class Scanner:
     # scan scans the next token and returns the token collection. The source end is indicated by io.EOF.
     def scan(self) -> ta.Tuple[ta.Optional[tokens.Tokens], ta.Optional[YamlError]]:
         if self.source_pos >= self.source_size:
-            return None, yaml_error('eof')
+            return None, EofYamlError()
 
         ctx = new_context(self.source[self.source_pos:])
 
@@ -1839,7 +1840,7 @@ def tokenize(src: str) -> tokens.Tokens:
     tks = tokens.Tokens()
     while True:
         sub_tokens, err = s.scan()
-        if err == YamlError('eof'):
+        if isinstance(err, EofYamlError):
             break
 
         tks.add(*check.not_none(sub_tokens))

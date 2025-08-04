@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -10,8 +11,21 @@ YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 ##
 
 
+class YamlError(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def message(self) -> str:
+        raise NotImplementedError
+
+
+class EofYamlError(YamlError):
+    @property
+    def message(self) -> str:
+        return 'eof'
+
+
 @dc.dataclass(frozen=True)
-class YamlError:
+class GenericYamlError(YamlError):
     obj: ta.Union[str, Exception]
 
     @property
@@ -26,7 +40,6 @@ def yaml_error(obj: ta.Union[YamlError, str, Exception]) -> YamlError:
     if isinstance(obj, YamlError):
         return obj
     elif isinstance(obj, (str, Exception)):
-        return YamlError(obj)
+        return GenericYamlError(obj)
     else:
         raise TypeError(obj)
-
