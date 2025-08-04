@@ -984,16 +984,16 @@ class Scanner:
             return False
 
         if ch == "'":
-            tk, err = self.scan_single_quote(ctx)
-            if err is not None:
-                return err
+            tk = self.scan_single_quote(ctx)
+            if isinstance(tk, YamlError):
+                return tk
 
             ctx.add_token(tk)
 
         else:
-            tk, err = self.scan_double_quote(ctx)
-            if err is not None:
-                return err
+            tk = self.scan_double_quote(ctx)
+            if isinstance(tk, YamlError):
+                return tk
 
             ctx.add_token(tk)
 
@@ -1693,9 +1693,9 @@ class Scanner:
                 if self.scan_raw_folded_char(ctx):
                     continue
 
-                scanned, err = self.scan_sequence(ctx)
-                if err is not None:
-                    return err
+                scanned = self.scan_sequence(ctx)
+                if isinstance(scanned, YamlError):
+                    return scanned
 
                 if scanned:
                     continue
@@ -1713,25 +1713,25 @@ class Scanner:
                     continue
 
             elif c == ':':
-                scanned, err = self.scan_map_delim(ctx)
-                if err is not None:
-                    return err
+                scanned = self.scan_map_delim(ctx)
+                if isinstance(scanned, YamlError):
+                    return scanned
 
                 if scanned:
                     continue
 
             elif c in ('|', '>'):
-                scanned, err = self.scan_multi_line_header(ctx)
-                if err is not None:
-                    return err
+                scanned = self.scan_multi_line_header(ctx)
+                if isinstance(scanned, YamlError):
+                    return scanned
 
                 if scanned:
                     continue
 
             elif c == '!':
-                scanned, err = self.scan_tag(ctx)
-                if err is not None:
-                    return err
+                scanned = self.scan_tag(ctx)
+                if isinstance(scanned, YamlError):
+                    return scanned
 
                 if scanned:
                     continue
@@ -1757,9 +1757,9 @@ class Scanner:
                     continue
 
             elif c in ("'", '"'):
-                scanned, err = self.scan_quote(ctx, c)
-                if err is not None:
-                    return err
+                scanned = self.scan_quote(ctx, c)
+                if isinstance(scanned, YamlError):
+                    return scanned
 
                 if scanned:
                     continue
