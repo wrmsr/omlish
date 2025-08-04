@@ -84,22 +84,3 @@ def test_spec() -> None:
             except Exception as e:  # noqa
                 print(f'ERROR: {e}')
                 raise
-
-
-def test_foo():
-    s = """
-# Sets are represented as a
-# Mapping where each key is
-# associated with a null value
---- !!set
-? Mark McGwire
-? Sammy Sosa
-? Ken Griff
-    """.strip()
-
-    obj = parsing.parse_str(  # noqa
-        check.non_empty_str(s),
-        parsing.ParseMode(0),
-    )
-
-    print(obj)
