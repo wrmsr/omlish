@@ -1417,7 +1417,7 @@ class Parser:
                 else:
                     ctx.go_next()
                     if ctx.is_token_not_found():
-                        return err_syntax('could not find map value', colon_tk.raw_token())
+                        return err_syntax('could not find map value', Token.raw_token(colon_tk))
                     value = self.parse_token(ctx, ctx.current_token())
                     if isinstance(value, YamlError):
                         return value
@@ -1430,7 +1430,7 @@ class Parser:
                     err_tk = map_key_tk
                     if err_tk is None:
                         err_tk = tk
-                    return err_syntax('could not find flow map content', err_tk.raw_token())
+                    return err_syntax('could not find flow map content', Token.raw_token(err_tk))
                 key = self.parse_scalar_value(ctx, map_key_tk)
                 if isinstance(key, YamlError):
                     return key
@@ -1454,9 +1454,9 @@ class Parser:
     def parse_map(self, ctx: Context) -> YamlErrorOr[ast.MappingNode]:
         key_tk = ctx.current_token()
         if key_tk.group is None:
-            return err_syntax('unexpected map key', key_tk.raw_token())
+            return err_syntax('unexpected map key', Token.raw_token(key_tk))
         key_value_node: ast.MappingValueNode
-        if key_tk.group_type() == TokenGroupType.MAP_KEY_VALUE:
+        if Token.group_type(key_tk) == TokenGroupType.MAP_KEY_VALUE:
             node = self.parse_map_key_value(ctx.with_group(key_tk.group), key_tk.group, None)
             if isinstance(node, YamlError):
                 return node
@@ -1516,14 +1516,14 @@ class Parser:
                 map_node.values[len(map_node.values) - 1].foot_comment = node.foot_comment
             tk = ctx.current_token()
         if ctx.is_comment():
-            if key_tk.column() <= ctx.current_token().column():
+            if Token.column(key_tk) <= Token.column(ctx.current_token()):
                 # If the comment is in the same or deeper column as the last element column in map value,
                 # treat it as a footer comment for the last element.
                 if len(map_node.values) == 1:
-                    map_node.values[0].foot_comment = self.parse_foot_comment(ctx, key_tk.column())
+                    map_node.values[0].foot_comment = self.parse_foot_comment(ctx, Token.column(key_tk))
                     map_node.values[0].foot_comment.set_path(map_node.values[0].key.get_path())
                 else:
-                    map_node.foot_comment = self.parse_foot_comment(ctx, key_tk.column())
+                    map_node.foot_comment = self.parse_foot_comment(ctx, Token.column(key_tk))
                     map_node.foot_comment.set_path(map_node.get_path())
         return map_node
 

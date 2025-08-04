@@ -1,6 +1,8 @@
 """
 TODO:
  - alt mode: --output=json, subprocess / tee
+ - 'grep' - dumb grep for matches
+  - thus custom args
 """
 import collections
 import dataclasses as dc
