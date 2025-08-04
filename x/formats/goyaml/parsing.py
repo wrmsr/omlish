@@ -82,14 +82,14 @@ class Context:
         )
 
     def go_next(self) -> None:
-        ref = self.token_ref
+        ref = check.not_none(self.token_ref)
         if ref.size <= ref.idx+1:
             ref.idx = ref.size
         else:
             ref.idx += 1
 
     def next(self) -> bool:
-        return self.token_ref.idx < self.token_ref.size
+        return check.not_none(self.token_ref).idx < check.not_none(self.token_ref).size
 
     def insert_null_token(self, tk: 'Token') -> 'Token':
         null_token = self.create_implicit_null_token(tk)
@@ -118,30 +118,30 @@ class Context:
         return Token(token=tk)
 
     def insert_token(self, tk: 'Token') -> None:
-        ref = self.token_ref
+        ref = check.not_none(self.token_ref)
         idx = ref.idx
         if ref.size < idx:
             return
 
         if ref.size == idx:
             cur_token = ref.tokens[ref.size-1]
-            tk.raw_token().next = cur_token.raw_token()
-            cur_token.raw_token().prev = tk.raw_token()
+            check.not_none(tk.raw_token()).next = cur_token.raw_token()
+            check.not_none(cur_token.raw_token()).prev = tk.raw_token()
 
             ref.tokens.append(tk)
             ref.size = len(ref.tokens)
             return
 
         cur_token = ref.tokens[idx]
-        tk.raw_token().next = cur_token.raw_token()
-        cur_token.raw_token().prev = tk.raw_token()
+        check.not_none(tk.raw_token()).next = cur_token.raw_token()
+        check.not_none(cur_token.raw_token()).prev = tk.raw_token()
 
         ref.tokens = [*ref.tokens[:idx+1], *ref.tokens[idx:]]
         ref.tokens[idx] = tk
         ref.size = len(ref.tokens)
 
     def add_token(self, tk: 'Token') -> None:
-        ref = self.token_ref
+        ref = check.not_none(self.token_ref)
         last_tk = ref.tokens[ref.size-1]
         if last_tk.group is not None:
             last_tk = last_tk.group.last()
@@ -930,7 +930,7 @@ def new_bool_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.BoolN
     return node
 
 
-def new_integer_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.IntegerNode]:
+def new_integer_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.IntegerNode]:
     node = ast.integer(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
