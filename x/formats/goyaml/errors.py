@@ -1,11 +1,32 @@
+import dataclasses as dc
 import typing as ta
+
+
+T = ta.TypeVar('T')
+
+YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 
 
 ##
 
 
-class YamlError(Exception):
-    def __init__(self, message: ta.Union[str, Exception], *args: ta.Any, **kwargs: ta.Any) -> None:
-        super().__init__(message, *args, **kwargs)
+@dc.dataclass(frozen=True)
+class YamlError:
+    obj: ta.Union[str, Exception]
 
-        self.message = message
+    @property
+    def message(self) -> str:
+        if isinstance(self.obj, str):
+            return self.obj
+        else:
+            return str(self.obj)
+
+
+def yaml_error(obj: ta.Union[YamlError, str, Exception]) -> YamlError:
+    if isinstance(obj, YamlError):
+        return obj
+    elif isinstance(obj, (str, Exception)):
+        return YamlError(obj)
+    else:
+        raise TypeError(obj)
+

@@ -7,6 +7,8 @@ import functools
 import typing as ta
 
 from .errors import YamlError
+from .errors import YamlErrorOr
+from .errors import yaml_error
 
 
 ##
@@ -398,18 +400,16 @@ class NumberValue:
 
 
 def to_number(value: str) -> ta.Optional[NumberValue]:
-    try:
-        num = _to_number(value)
-    except YamlError:
+    num = _to_number(value)
+    if isinstance(num, YamlError):
         return None
 
     return num
 
 
 def _is_number(value: str) -> bool:
-    try:
-        num = _to_number(value)
-    except YamlError:
+    num = _to_number(value)
+    if isinstance(num, YamlError):
         # var numErr *strconv.NumError
         # if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
         #     return true
@@ -419,7 +419,7 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> ta.Optional[NumberValue]:
+def _to_number(value: str) -> YamlErrorOr[ta.Optional[NumberValue]]:
     if not value:
         return None
 
@@ -466,12 +466,12 @@ def _to_number(value: str) -> ta.Optional[NumberValue]:
         try:
             v = float(text)
         except ValueError as e:
-            raise YamlError(e)
+            return YamlError(e)
     else:
         try:
             v = int(text, base)
         except ValueError as e:
-            raise YamlError(e)
+            return YamlError(e)
 
     return NumberValue(
         type=typ,
