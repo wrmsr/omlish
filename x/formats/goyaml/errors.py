@@ -1,0 +1,2 @@
+class YamlError(Exception):
+    pass

@@ -6,6 +6,8 @@ import enum
 import functools
 import typing as ta
 
+from .errors import YamlError
+
 
 ##
 
@@ -396,16 +398,18 @@ class NumberValue:
 
 
 def to_number(value: str) -> ta.Optional[NumberValue]:
-    num, err = _to_number(value)
-    if err is not None:
+    try:
+        num = _to_number(value)
+    except YamlError:
         return None
 
     return num
 
 
 def _is_number(value: str) -> bool:
-    num, err = _to_number(value)
-    if err is not None:
+    try:
+        num = _to_number(value)
+    except YamlError:
         # var numErr *strconv.NumError
         # if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
         #     return true
@@ -415,16 +419,16 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> ta.Tuple[ta.Optional[NumberValue], ta.Optional[str]]:
+def _to_number(value: str) -> ta.Optional[NumberValue]:
     if not value:
-        return None, None
+        return None
 
     if value.startswith('_'):
-        return None, None
+        return None
 
     dot_count = value.count('.')
     if dot_count > 1:
-        return None, None
+        return None
 
     is_negative = value.startswith('-')
     normalized = value.lstrip('+').lstrip('-').replace('_', '')
@@ -462,18 +466,18 @@ def _to_number(value: str) -> ta.Tuple[ta.Optional[NumberValue], ta.Optional[str
         try:
             v = float(text)
         except ValueError as e:
-            return None, repr(e)
+            raise YamlError(e)
     else:
         try:
             v = int(text, base)
         except ValueError as e:
-            return None, repr(e)
+            raise YamlError(e)
 
     return NumberValue(
         type=typ,
         value=v,
         text=text,
-    ), None
+    )
 
 
 ##
