@@ -4,6 +4,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.check import check
+
 from . import ast
 from . import scanning
 from . import tokens
@@ -217,7 +219,7 @@ class Token:
     group: ta.Optional['TokenGroup'] = None
     line_comment: ta.Optional[tokens.Token] = None
 
-    def raw_token(self) -> ta.Optional[tokens.Token]:
+    def raw_token(self: ta.Optional['Token']) -> ta.Optional[tokens.Token]:
         if self is None:
             return None
 
@@ -226,28 +228,28 @@ class Token:
 
         return self.group.raw_token()
 
-    def type(self) -> tokens.Type:
+    def type(self: ta.Optional['Token']) -> tokens.Type:
         if self is None:
             return tokens_.Type.UNKNOWN
         if self.token is not None:
             return self.token.type
         return self.group.token_type()
 
-    def group_type(self) -> TokenGroupType:
+    def group_type(self: ta.Optional['Token']) -> TokenGroupType:
         if self is None:
             return TokenGroupType.NONE
         if self.token is not None:
             return TokenGroupType.NONE
         return self.group.type
 
-    def line(self) -> int:
+    def line(self: ta.Optional['Token']) -> int:
         if self is None:
             return 0
         if self.token is not None:
             return self.token.position.line
         return self.group.line()
 
-    def column(self) -> int:
+    def column(self: ta.Optional['Token']) -> int:
         if self is None:
             return 0
         if self.token is not None:
@@ -393,7 +395,7 @@ def create_literal_and_folded_token_groups(tokens: ta.List[Token]) -> YamlErrorO
     return ret
 
 
-def err_syntax(msg: str, tk: tokens.Token) -> YamlError:
+def err_syntax(msg: str, tk: ta.Optional[tokens.Token]) -> YamlError:
     return yaml_error(f'Syntax error: {msg}, {tk}')
 
 
@@ -874,120 +876,120 @@ def new_mapping_value_node(
     return node
 
 
-def new_mapping_key_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.MappingKeyNode]:
-    node = ast.mapping_key(tk.raw_token())
+def new_mapping_key_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.MappingKeyNode]:
+    node = ast.mapping_key(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_anchor_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.AnchorNode]:
-    node = ast.anchor(tk.raw_token())
+def new_anchor_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.AnchorNode]:
+    node = ast.anchor(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_alias_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.AliasNode]:
-    node = ast.alias(tk.raw_token())
+def new_alias_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.AliasNode]:
+    node = ast.alias(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_directive_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.DirectiveNode]:
-    node = ast.directive(tk.raw_token())
+def new_directive_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.DirectiveNode]:
+    node = ast.directive(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_merge_key_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.MergeKeyNode]:
-    node = ast.merge_key(tk.raw_token())
+def new_merge_key_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.MergeKeyNode]:
+    node = ast.merge_key(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_null_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.NullNode]:
-    node = ast.null(tk.raw_token())
+def new_null_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.NullNode]:
+    node = ast.null(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_bool_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.BoolNode]:
-    node = ast.bool_(tk.raw_token())
+def new_bool_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.BoolNode]:
+    node = ast.bool_(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_integer_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.IntegerNode]:
-    node = ast.integer(tk.raw_token())
+def new_integer_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.IntegerNode]:
+    node = ast.integer(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_float_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.FloatNode]:
-    node = ast.float_(tk.raw_token())
+def new_float_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.FloatNode]:
+    node = ast.float_(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_infinity_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.InfinityNode]:
-    node = ast.infinity(tk.raw_token())
+def new_infinity_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.InfinityNode]:
+    node = ast.infinity(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_nan_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.NanNode]:
-    node = ast.nan(tk.raw_token())
+def new_nan_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.NanNode]:
+    node = ast.nan(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_string_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.StringNode]:
-    node = ast.string(tk.raw_token())
+def new_string_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.StringNode]:
+    node = ast.string(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_literal_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.LiteralNode]:
-    node = ast.literal(tk.raw_token())
+def new_literal_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.LiteralNode]:
+    node = ast.literal(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_tag_node(ctx: Context, tk: Token) -> YamlErrorOr[ast.TagNode]:
-    node = ast.tag(tk.raw_token())
+def new_tag_node(ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.TagNode]:
+    node = ast.tag(Token.raw_token(tk))
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
     return node
 
 
-def new_sequence_node(ctx: Context, tk: Token, is_flow: bool) -> YamlErrorOr[ast.SequenceNode]:
-    node = ast.sequence(tk.raw_token(), is_flow)
+def new_sequence_node(ctx: Context, tk: ta.Optional[Token], is_flow: bool) -> YamlErrorOr[ast.SequenceNode]:
+    node = ast.sequence(Token.raw_token(tk), is_flow)
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
         return err
@@ -1218,31 +1220,31 @@ class Parser:
             return err_syntax('value is not allowed in this context', ctx.current_token().raw_token())
         return node
 
-    def parse_token(self, ctx: Context, tk: Token) -> YamlErrorOr[ast.Node]:
-        if tk.group_type() in (
+    def parse_token(self, ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.Node]:
+        if Token.group_type(tk) in (
                 TokenGroupType.MAP_KEY,
                 TokenGroupType.MAP_KEY_VALUE,
         ):
             return self.parse_map(ctx)
-        elif tk.group_type() == TokenGroupType.DIRECTIVE:
+        elif Token.group_type(tk) == TokenGroupType.DIRECTIVE:
             node = self.parse_directive(ctx.with_group(tk.group), tk.group)
             if isinstance(node, YamlError):
                 return node
             ctx.go_next()
             return node
-        elif tk.group_type() == TokenGroupType.DIRECTIVE_NAME:
+        elif Token.group_type(tk) == TokenGroupType.DIRECTIVE_NAME:
             node = self.parse_directive_name(ctx.with_group(tk.group))
             if isinstance(node, YamlError):
                 return node
             ctx.go_next()
             return node
-        elif tk.group_type() == TokenGroupType.ANCHOR:
+        elif Token.group_type(tk) == TokenGroupType.ANCHOR:
             node = self.parse_anchor(ctx.with_group(tk.group), tk.group)
             if isinstance(node, YamlError):
                 return node
             ctx.go_next()
             return node
-        elif tk.group_type() == TokenGroupType.ANCHOR_NAME:
+        elif Token.group_type(tk) == TokenGroupType.ANCHOR_NAME:
             anchor = self.parse_anchor_name(ctx.with_group(tk.group))
             if isinstance(anchor, YamlError):
                 return anchor
@@ -1256,13 +1258,13 @@ class Parser:
                 return err_syntax('anchors cannot be used consecutively', value.get_token())
             anchor.value = value
             return anchor
-        elif tk.group_type() == TokenGroupType.ALIAS:
+        elif Token.group_type(tk) == TokenGroupType.ALIAS:
             node = self.parse_alias(ctx.with_group(tk.group))
             if isinstance(node, YamlError):
                 return node
             ctx.go_next()
             return node
-        elif tk.group_type() in (
+        elif Token.group_type(tk) in (
                 TokenGroupType.LITERAL,
                 TokenGroupType.FOLDED,
         ):
@@ -1271,31 +1273,31 @@ class Parser:
                 return node
             ctx.go_next()
             return node
-        elif tk.group_type() == TokenGroupType.SCALAR_TAG:
+        elif Token.group_type(tk) == TokenGroupType.SCALAR_TAG:
             node = self.parse_tag(ctx.with_group(tk.group))
             if isinstance(node, YamlError):
                 return node
             ctx.go_next()
             return node
-        if tk.type() == tokens_.Type.COMMENT:
+        if Token.type(tk) == tokens_.Type.COMMENT:
             return self.parse_comment(ctx)
-        elif tk.type() == tokens_.Type.TAG:
+        elif Token.type(tk) == tokens_.Type.TAG:
             return self.parse_tag(ctx)
-        elif tk.type() == tokens_.Type.MAPPING_START:
+        elif Token.type(tk) == tokens_.Type.MAPPING_START:
             return self.parse_flow_map(ctx.with_flow(True))
-        elif tk.type() == tokens_.Type.SEQUENCE_START:
+        elif Token.type(tk) == tokens_.Type.SEQUENCE_START:
             return self.parse_flow_sequence(ctx.with_flow(True))
-        elif tk.type() == tokens_.Type.SEQUENCE_ENTRY:
+        elif Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY:
             return self.parse_sequence(ctx)
-        elif tk.type() == tokens_.Type.SEQUENCE_END:
+        elif Token.type(tk) == tokens_.Type.SEQUENCE_END:
             # SequenceEndType is always validated in parse_flow_sequence.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
             return err_syntax("could not find '[' character corresponding to ']'", tk.raw_token())
-        elif tk.type() == tokens_.Type.MAPPING_END:
+        elif Token.type(tk) == tokens_.Type.MAPPING_END:
             # MappingEndType is always validated in parse_flow_map.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
             return err_syntax("could not find '{' character corresponding to '}'", tk.raw_token())
-        elif tk.type() == tokens_.Type.MAPPING_VALUE:
+        elif Token.type(tk) == tokens_.Type.MAPPING_VALUE:
             return err_syntax('found an invalid key for this map', tk.raw_token())
         node = self.parse_scalar_value(ctx, tk)
         if isinstance(node, YamlError):
@@ -1303,7 +1305,8 @@ class Parser:
         ctx.go_next()
         return node
 
-    def parse_scalar_value(self, ctx: Context, tk: Token) -> YamlErrorOr[ast.ScalarNode]:
+    def parse_scalar_value(self, ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ta.Optional[ast.ScalarNode]]:
+        tk = check.not_none(tk)
         if tk.group is not None:
             if tk.group_type() == TokenGroupType.ANCHOR:
                 return self.parse_anchor(ctx.with_group(tk.group), tk.group)
@@ -1844,7 +1847,7 @@ class Parser:
         alias_name = self.parse_scalar_value(ctx, ctx.current_token())
         if isinstance(alias_name, YamlError):
             return alias_name
-        if alias_name is None:  # FIXME: parse_scalar_value is Optional?
+        if alias_name is None:
             return err_syntax('unexpected alias. alias name is not scalar value', ctx.current_token().raw_token())
         alias.value = alias_name
         return alias
@@ -2122,7 +2125,7 @@ class Parser:
 
         if directive.name == 'YAML':
             if len(g.tokens) != 2:
-                return err_syntax('unexpected format YAML directive', g.first().raw_token())
+                return err_syntax('unexpected format YAML directive', Token.raw_token(g.first()))
             value_tk = g.tokens[1]
             value_raw_tk = value_tk.raw_token()
             value = value_raw_tk.value
@@ -2138,7 +2141,7 @@ class Parser:
             directive.values.append(version_node)
         elif directive.name == 'TAG':
             if len(g.tokens) != 3:
-                return err_syntax('unexpected format TAG directive', g.first().raw_token())
+                return err_syntax('unexpected format TAG directive', Token.raw_token(g.first()))
             tag_key = new_string_node(ctx, g.tokens[1])
             if isinstance(tag_key, YamlError):
                 return tag_key
@@ -2170,12 +2173,12 @@ class Parser:
         if directive_name is None:
             return err_syntax(
                 'unexpected directive. directive name is not scalar value',
-                ctx.current_token().raw_token(),
+                Token.raw_token(ctx.current_token()),
             )
         directive.name = directive_name
         return directive
 
-    def parse_comment(self, ctx: Context) -> YamlErrorOr[ast.Node]:
+    def parse_comment(self, ctx: Context) -> YamlErrorOr[ta.Optional[ast.Node]]:
         cm = self.parse_head_comment(ctx)
         if ctx.is_token_not_found():
             return cm
@@ -2187,9 +2190,9 @@ class Parser:
         return node
 
     def parse_head_comment(self, ctx: Context) -> ta.Optional[ast.CommentGroupNode]:
-        tks: ta.List[tokens_.Token] = []
+        tks: ta.List[ta.Optional[tokens_.Token]] = []
         while ctx.is_comment():
-            tks.append(ctx.current_token().raw_token())
+            tks.append(Token.raw_token(ctx.current_token()))
             ctx.go_next()
         if len(tks) == 0:
             return None
@@ -2197,8 +2200,8 @@ class Parser:
 
     def parse_foot_comment(self, ctx: Context, col: int) -> ta.Optional[ast.CommentGroupNode]:
         tks: ta.List[ta.Optional[tokens_.Token]] = []
-        while ctx.is_comment() and col <= ctx.current_token().column():
-            tks.append(ctx.current_token().raw_token())
+        while ctx.is_comment() and col <= Token.column(ctx.current_token()):
+            tks.append(Token.raw_token(ctx.current_token()))
             ctx.go_next()
         if len(tks) == 0:
             return None

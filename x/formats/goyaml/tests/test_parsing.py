@@ -11,7 +11,7 @@ def test_parsing():
 
     doc = yaml.safe_load(src)  # noqa
 
-    obj, err = parsing.parse_str(
+    obj = parsing.parse_str(
         src,
         parsing.ParseMode(0),
     )

@@ -2,6 +2,7 @@ import argparse
 import sys
 
 from ..parsing import parse_str
+from ..errors import YamlError
 
 
 def _main() -> None:
@@ -18,9 +19,9 @@ def _main() -> None:
                 srcs.append(f.read())
 
     for src in srcs:
-        p, err = parse_str(src)
-        if err is not None:
-            print(f'ERROR: {err}', file=sys.stderr)
+        p = parse_str(src)
+        if isinstance(p, YamlError):
+            print(f'ERROR: {p}', file=sys.stderr)
         else:
             print(str(src))
 
