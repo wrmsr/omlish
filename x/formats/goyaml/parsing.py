@@ -2009,7 +2009,7 @@ class Parser:
 
         tk = seq_tk
         while Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY and tk.column() == seq_tk.column():
-            seq_tk = tk
+            seq_tk = check.not_none(tk)
             head_comment = self.parse_head_comment(ctx)
             ctx.go_next()  # skip sequence entry token
 
