@@ -4,7 +4,6 @@ from omlish import dataclasses as dc
 from omlish.formats import json
 from ommlds import minichain as mc
 
-from ..tools.execution import ToolExecutor
 from .base import ChatCompleter
 
 
@@ -14,7 +13,7 @@ from .base import ChatCompleter
 @dc.dataclass(frozen=True)
 class ToolExecutingChatCompleter(ChatCompleter):
     inner: ChatCompleter
-    tool_executor: ToolExecutor
+    tool_executor: mc.ToolExecutor
 
     @ta.override
     def complete_chat(self, chat: mc.Chat) -> mc.Chat:
@@ -31,7 +30,11 @@ class ToolExecutingChatCompleter(ChatCompleter):
                     continue
 
                 for tr in cur.tool_exec_requests:
-                    tool_res = self.tool_executor.execute_tool_request(tr)
+                    tool_res = mc.execute_tool_request(
+                        mc.ToolContext(),
+                        self.tool_executor,
+                        tr,
+                    )
 
                     trm = mc.ToolExecResultMessage(
                         id=tr.id,

@@ -5,6 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from ommlds import minichain as mc
 
+
 if ta.TYPE_CHECKING:
     from omdev import ptk
     from omdev.ptk import markdown as ptk_md
@@ -51,12 +52,12 @@ class MarkdownPrintingChatService(mc.AbstractChatService):
 class PrintingChatChoicesStreamService(
     mc.WrappedStreamService[
         mc.ChatChoicesStreamRequest,
-        mc.AiChoices,
+        mc.AiChoiceDeltas,
         mc.ChatChoicesOutputs,
         mc.ChatChoicesStreamOutputs,
     ],
 ):
-    def _process_vs(self, choices_it: ta.Iterator[mc.AiChoices]) -> ta.Iterator[mc.AiChoices]:
+    def _process_vs(self, choices_it: ta.Iterator[mc.AiChoiceDeltas]) -> ta.Iterator[mc.AiChoiceDeltas]:
         for choices in choices_it:
             c = check.single(choices)
             if c.m.c is not None:

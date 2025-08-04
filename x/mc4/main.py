@@ -36,7 +36,7 @@ def _main_(
         backend: str = 'openai',
         stream: bool = False,
         print_output: bool = True,
-        tool_executor: mc.ToolExecuor | None = None,
+        tool_map: mc.ToolCatalogEntries | None = None,
         confirm_tool_execution: bool = True,
 ) -> None:
     install_env_secrets(
@@ -94,7 +94,7 @@ def _main_(
     if tool_map is not None:
         cs = OptionsAddingService(
             cs,
-            [mc.Tool(t.spec) for t in tool_map.values()],
+            [mc.Tool(t.spec) for t in tool_map],
         )
 
     #
@@ -104,7 +104,7 @@ def _main_(
     )
 
     if tool_map is not None:
-        te: mc.ToolExecutor = ToolMapToolExecutor(
+        te: mc.ToolExecutor = mc.ToolCatalog(
             tool_map,
         )
 
@@ -136,8 +136,8 @@ def _main(**kwargs: ta.Any) -> None:
 ##
 
 
-def _default_tool_map() -> ToolMap:
-    return build_tool_map([
+def _default_tool_map() -> mc.ToolCatalogEntries:
+    return mc.ToolCatalogEntries([
         WEATHER_TOOL,
     ])
 
