@@ -3,9 +3,9 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import inject as inj
 
-from .chat import ChatOption
-from .chat import ChatOptions
-from .chat import ChatSession
+from .base import ChatOption
+from .base import ChatOptions
+from .base import ChatSession
 
 
 ##

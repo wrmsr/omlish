@@ -1,7 +1,7 @@
 from omlish import inject as inj
 
 from .base import Session
-from .chat.chat import ChatSession
+from .chat.base import ChatSession
 from .chat.inject import bind_chat_session
 
 
