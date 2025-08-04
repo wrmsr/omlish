@@ -602,6 +602,7 @@ class Position:
 
 # Token type for token
 @dc.dataclass(kw_only=True)
+@ta.final
 class Token:
     # Type is a token type.
     type: Type

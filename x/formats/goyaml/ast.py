@@ -204,13 +204,15 @@ class BaseNode(Node, abc.ABC):
         self.read += l
 
     # get_path returns YAMLPath for the current node.
-    def get_path(self) -> str:
+    @ta.final
+    def get_path(self: ta.Optional['BaseNode']) -> str:
         if self is None:
             return ''
         return self.path
 
     # set_path set YAMLPath for the current node.
-    def set_path(self, path: str) -> None:
+    @ta.final
+    def set_path(self: ta.Optional['BaseNode'], path: str) -> None:
         if self is None:
             return
         self.path = path

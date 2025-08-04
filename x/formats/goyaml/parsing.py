@@ -222,11 +222,9 @@ class Token:
     def raw_token(self: ta.Optional['Token']) -> ta.Optional[tokens.Token]:
         if self is None:
             return None
-
         if self.token is not None:
             return self.token
-
-        return self.group.raw_token()
+        return check.not_none(self.group).raw_token()
 
     def type(self: ta.Optional['Token']) -> tokens.Type:
         if self is None:
@@ -240,21 +238,21 @@ class Token:
             return TokenGroupType.NONE
         if self.token is not None:
             return TokenGroupType.NONE
-        return self.group.type
+        return check.not_none(self.group).type
 
     def line(self: ta.Optional['Token']) -> int:
         if self is None:
             return 0
         if self.token is not None:
             return self.token.position.line
-        return self.group.line()
+        return check.not_none(self.group).line()
 
     def column(self: ta.Optional['Token']) -> int:
         if self is None:
             return 0
         if self.token is not None:
             return self.token.position.column
-        return self.group.column()
+        return check.not_none(self.group).column()
 
     def set_group_type(self, typ: TokenGroupType) -> None:
         if self.group is None:
@@ -1183,14 +1181,14 @@ class Parser:
         tokens = doc_group.tokens
         start: ta.Optional[tokens_.Token] = None
         end: ta.Optional[tokens_.Token] = None
-        if doc_group.first().type() == tokens_.Type.DOCUMENT_HEADER:
-            start = doc_group.first().raw_token()
+        if Token.type(doc_group.first()) == tokens_.Type.DOCUMENT_HEADER:
+            start = Token.raw_token(doc_group.first())
             tokens = tokens[1:]
 
         clear_yaml_version = False
         try:
-            if doc_group.last().type() == tokens_.Type.DOCUMENT_END:
-                end = doc_group.last().raw_token()
+            if Token.type(doc_group.last()) == tokens_.Type.DOCUMENT_END:
+                end = Token.raw_token(doc_group.last())
                 tokens = tokens[:len(tokens) - 1]
                 # clear yaml version value if DocumentEnd token (...) is specified.
                 clear_yaml_version = True
@@ -1217,7 +1215,7 @@ class Parser:
         if isinstance(node, YamlError):
             return node
         if ctx.next():
-            return err_syntax('value is not allowed in this context', ctx.current_token().raw_token())
+            return err_syntax('value is not allowed in this context', Token.raw_token(ctx.current_token()))
         return node
 
     def parse_token(self, ctx: Context, tk: ta.Optional[Token]) -> YamlErrorOr[ast.Node]:
@@ -1250,7 +1248,7 @@ class Parser:
                 return anchor
             ctx.go_next()
             if ctx.is_token_not_found():
-                return err_syntax('could not find anchor value', tk.raw_token())
+                return err_syntax('could not find anchor value', Token.raw_token(tk))
             value = self.parse_token(ctx, ctx.current_token())
             if isinstance(value, YamlError):
                 return value
@@ -1292,13 +1290,13 @@ class Parser:
         elif Token.type(tk) == tokens_.Type.SEQUENCE_END:
             # SequenceEndType is always validated in parse_flow_sequence.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
-            return err_syntax("could not find '[' character corresponding to ']'", tk.raw_token())
+            return err_syntax("could not find '[' character corresponding to ']'", Token.raw_token(tk))
         elif Token.type(tk) == tokens_.Type.MAPPING_END:
             # MappingEndType is always validated in parse_flow_map.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
-            return err_syntax("could not find '{' character corresponding to '}'", tk.raw_token())
+            return err_syntax("could not find '{' character corresponding to '}'", Token.raw_token(tk))
         elif Token.type(tk) == tokens_.Type.MAPPING_VALUE:
-            return err_syntax('found an invalid key for this map', tk.raw_token())
+            return err_syntax('found an invalid key for this map', Token.raw_token(tk))
         node = self.parse_scalar_value(ctx, tk)
         if isinstance(node, YamlError):
             return node
@@ -1375,31 +1373,31 @@ class Parser:
         is_first = True
         while ctx.next():
             tk = ctx.current_token()
-            if tk.type() == tokens_.Type.MAPPING_END:
-                node.end = tk.raw_token()
+            if Token.type(tk) == tokens_.Type.MAPPING_END:
+                node.end = Token.raw_token(tk)
                 break
 
             entry_tk: ta.Optional[Token] = None
-            if tk.type() == tokens_.Type.COLLECT_ENTRY:
+            if Token.type(tk) == tokens_.Type.COLLECT_ENTRY:
                 entry_tk = tk
                 ctx.go_next()
             elif not is_first:
-                return err_syntax("',' or '}' must be specified", tk.raw_token())
+                return err_syntax("',' or '}' must be specified", Token.raw_token(tk))
 
-            if (tk := ctx.current_token()).type() == tokens_.Type.MAPPING_END:
+            if Token.type(tk := ctx.current_token()) == tokens_.Type.MAPPING_END:
                 # this case is here: "{ elem, }".
                 # In this case, ignore the last element and break mapping parsing.
-                node.end = tk.raw_token()
+                node.end = Token.raw_token(tk)
                 break
 
             map_key_tk = ctx.current_token()
-            if map_key_tk.group_type() == TokenGroupType.MAP_KEY_VALUE:
+            if Token.group_type(map_key_tk) == TokenGroupType.MAP_KEY_VALUE:
                 value = self.parse_map_key_value(ctx.with_group(map_key_tk.group), map_key_tk.group, entry_tk)
                 if isinstance(value, YamlError):
                     return value
                 node.values.append(value)
                 ctx.go_next()
-            elif map_key_tk.group_type() == TokenGroupType.MAP_KEY:
+            elif Token.group_type(map_key_tk) == TokenGroupType.MAP_KEY:
                 key = self.parse_map_key(ctx.with_group(map_key_tk.group), map_key_tk.group)
                 if isinstance(key, YamlError):
                     return key
@@ -1452,52 +1450,55 @@ class Parser:
         return tk.type() == tokens_.Type.MAPPING_END or tk.type() == tokens_.Type.COLLECT_ENTRY
 
     def parse_map(self, ctx: Context) -> YamlErrorOr[ast.MappingNode]:
-        key_tk = ctx.current_token()
+        key_tk = check.not_none(ctx.current_token())
         if key_tk.group is None:
             return err_syntax('unexpected map key', Token.raw_token(key_tk))
         key_value_node: ast.MappingValueNode
         if Token.group_type(key_tk) == TokenGroupType.MAP_KEY_VALUE:
-            node = self.parse_map_key_value(ctx.with_group(key_tk.group), key_tk.group, None)
-            if isinstance(node, YamlError):
-                return node
-            key_value_node = node
+            node0 = self.parse_map_key_value(ctx.with_group(check.not_none(key_tk.group)), check.not_none(key_tk.group), None)
+            if isinstance(node0, YamlError):
+                return node0
+            key_value_node = node0
             ctx.go_next()
             if (err := self.validate_map_key_value_next_token(ctx, key_tk, ctx.current_token())) is not None:
                 return err
         else:
-            key = self.parse_map_key(ctx.with_group(key_tk.group), key_tk.group)
+            key = self.parse_map_key(ctx.with_group(check.not_none(key_tk.group)), check.not_none(key_tk.group))
             if isinstance(key, YamlError):
                 return key
             ctx.go_next()
 
             value_tk = ctx.current_token()
             if Token.line(key_tk) == Token.line(value_tk) and Token.type(value_tk) == tokens_.Type.SEQUENCE_ENTRY:
-                return err_syntax('block sequence entries are not allowed in this context', value_tk.raw_token())
+                return err_syntax(
+                    'block sequence entries are not allowed in this context',
+                    Token.raw_token(value_tk),
+                )
             ctx = ctx.with_child(self.map_key_text(key))
-            value = self.parse_map_value(ctx, key, key_tk.group.last())
+            value = self.parse_map_value(ctx, key, check.not_none(check.not_none(key_tk.group).last()))
             if isinstance(value, YamlError):
                 return value
-            node = new_mapping_value_node(ctx, key_tk.group.last(), None, key, value)
-            if isinstance(node, YamlError):
-                return node
-            key_value_node = node
+            node1 = new_mapping_value_node(ctx, check.not_none(check.not_none(key_tk.group).last()), None, key, value)
+            if isinstance(node1, YamlError):
+                return node1
+            key_value_node = node1
         map_node = new_mapping_node(ctx, Token(token=key_value_node.get_token()), False, key_value_node)
         if isinstance(map_node, YamlError):
             return map_node
-        tk: Token
+        tk: ta.Optional[Token]
         if ctx.is_comment():
             tk = ctx.next_not_comment_token()
         else:
             tk = ctx.current_token()
         while Token.column(tk) == Token.column(key_tk):
-            typ = tk.type()
+            typ = Token.type(tk)
             if ctx.is_flow and typ == tokens_.Type.SEQUENCE_END:
                 # [
                 # key: value
                 # ] <=
                 break
-            if not self.is_map_token(tk):
-                return err_syntax('non-map value is specified', tk.raw_token())
+            if not self.is_map_token(check.not_none(tk)):
+                return err_syntax('non-map value is specified', Token.raw_token(tk))
             cm = self.parse_head_comment(ctx)
             if typ == tokens_.Type.MAPPING_END:
                 # a: {
@@ -1505,15 +1506,15 @@ class Parser:
                 # } <=
                 ctx.go_next()
                 break
-            node = self.parse_map(ctx)
-            if isinstance(node, YamlError):
-                return node
-            if len(node.values) != 0:
-                if (err := set_head_comment(cm, node.values[0])) is not None:
+            node2 = self.parse_map(ctx)
+            if isinstance(node2, YamlError):
+                return node2
+            if len(node2.values) != 0:
+                if (err := set_head_comment(cm, node2.values[0])) is not None:
                     return err
-            map_node.values.extend(node.values)
-            if node.foot_comment is not None:
-                map_node.values[len(map_node.values) - 1].foot_comment = node.foot_comment
+            map_node.values.extend(node2.values)
+            if node2.foot_comment is not None:
+                map_node.values[len(map_node.values) - 1].foot_comment = node2.foot_comment
             tk = ctx.current_token()
         if ctx.is_comment():
             if Token.column(key_tk) <= Token.column(ctx.current_token()):
@@ -1521,10 +1522,10 @@ class Parser:
                 # treat it as a footer comment for the last element.
                 if len(map_node.values) == 1:
                     map_node.values[0].foot_comment = self.parse_foot_comment(ctx, Token.column(key_tk))
-                    map_node.values[0].foot_comment.set_path(map_node.values[0].key.get_path())
+                    ast.BaseNode.set_path(map_node.values[0].foot_comment, map_node.values[0].key.get_path())
                 else:
                     map_node.foot_comment = self.parse_foot_comment(ctx, Token.column(key_tk))
-                    map_node.foot_comment.set_path(map_node.get_path())
+                    ast.BaseNode.set_path(map_node.foot_comment, map_node.get_path())
         return map_node
 
     def validate_map_key_value_next_token(self, ctx: Context, key_tk, tk: ta.Optional[Token]) -> ta.Optional[YamlError]:
