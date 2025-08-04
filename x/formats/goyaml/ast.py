@@ -2072,7 +2072,7 @@ def walk_comment(v: Visitor, base: ta.Optional[BaseNode]) -> None:
 @dc.dataclass(kw_only=True)
 class FilterWalker(Visitor):
     typ: NodeType
-    results: ta.List[Node]
+    results: ta.List[Node] = dc.field(default_factory=list)
 
     def visit(self, n: Node) -> Visitor:
         if self.typ == n.type():

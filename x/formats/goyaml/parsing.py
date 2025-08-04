@@ -152,8 +152,8 @@ class Context:
         if last_tk.group is not None:
             last_tk = last_tk.group.last()
 
-        last_tk.raw_token().next = tk.raw_token()
-        tk.raw_token().prev = last_tk.raw_token()
+        check.not_none(last_tk.raw_token()).next = tk.raw_token()
+        check.not_none(tk.raw_token()).prev = last_tk.raw_token()
 
         ref.tokens.append(tk)
         ref.size = len(ref.tokens)
