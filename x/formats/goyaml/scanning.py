@@ -7,18 +7,13 @@ from omlish.lite.check import check
 
 from . import tokens
 from . import tokens as tokens_
+from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
 
 
 ##
-
-
-class EofYamlError(YamlError):
-    @property
-    def message(self) -> str:
-        return 'eof'
 
 
 @dc.dataclass()

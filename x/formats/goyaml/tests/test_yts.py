@@ -82,4 +82,4 @@ def test_spec() -> None:
 
             except Exception as e:  # noqa
                 print(f'ERROR: {e}')
-                # raise
+                raise
