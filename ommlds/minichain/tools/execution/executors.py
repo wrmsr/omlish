@@ -4,8 +4,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ....tools.fns import ToolFn
-from ....tools.fns import execute_tool_fn
+from ..fns import ToolFn
+from ..fns import execute_tool_fn
 from .context import ToolContext
 from .context import bind_tool_context
 

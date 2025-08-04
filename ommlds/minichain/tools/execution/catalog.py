@@ -3,9 +3,9 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 
-from ....tools.fns import ToolFn
-from ....tools.types import ToolSpec
-from ...tools.execution.context import ToolContext
+from ..fns import ToolFn
+from ..types import ToolSpec
+from .context import ToolContext
 from .executors import ToolExecutor
 from .executors import ToolFnToolExecutor
 

@@ -3,11 +3,11 @@ import os.path
 from omlish import check
 
 from .....chat.messages import ToolExecRequest
-from .....chat.tools.execution.context import ToolContext
-from .....chat.tools.execution.executors import NameSwitchedToolExecutor
-from .....chat.tools.execution.executors import ToolFnToolExecutor
-from .....chat.tools.execution.messages import execute_tool_request
+from .....chat.tools.execution import execute_tool_request
 from .....content.namespaces import ContentNamespace
+from .....tools.execution.context import ToolContext
+from .....tools.execution.executors import NameSwitchedToolExecutor
+from .....tools.execution.executors import ToolFnToolExecutor
 from .....tools.fns import ToolFn
 from .....tools.jsonschema import build_tool_spec_json_schema
 from .....tools.reflect import reflect_tool_spec
