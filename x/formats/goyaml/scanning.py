@@ -229,7 +229,7 @@ class Context:
             self.buf = self.buf[:0]  # clear value's buffer only.
             return None
 
-        tk: ta.Optional[tokens.Token] = None
+        tk: ta.Optional[tokens.Token]
         if self.is_multi_line():
             tk = tokens.new_string(source, self.obuf, pos)
         else:
@@ -573,7 +573,7 @@ class Scanner:
     def break_multi_line(self, ctx: Context) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> ta.Tuple[ta.Optional[tokens.Token], ta.Optional[str]]:
+    def scan_single_quote(self, ctx: Context) -> YamlErrorOr[tokens.Token]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -616,7 +616,7 @@ class Scanner:
                 self.progress_line(ctx)
                 if idx + 1 < size:
                     if (err := self.validate_document_separator_marker(ctx, src[idx + 1:])) is not None:
-                        return None, err
+                        return err
 
                 continue
 
@@ -625,13 +625,13 @@ class Scanner:
 
             if is_first_line_char and c == '\t':
                 if self.last_delim_column >= self.column:
-                    return None, repr(err_invalid_token(
+                    return err_invalid_token(
                         tokens.new_invalid(
                             yaml_error('tab character cannot be used for indentation in single-quoted text'),
                             ctx.obuf,
                             self.pos(),
                         ),
-                    ))
+                    )
 
                 continue
 
@@ -649,18 +649,18 @@ class Scanner:
                 continue
 
             self.progress_column(ctx, 1)
-            return tokens.new_single_quote(value, ctx.obuf, srcpos), None
+            return tokens.new_single_quote(value, ctx.obuf, srcpos)
 
         self.progress_column(ctx, 1)
-        return None, repr(err_invalid_token(
+        return err_invalid_token(
             tokens.new_invalid(
                 yaml_error('could not find end character of single-quoted text'),
                 ctx.obuf,
                 srcpos,
             ),
-        ))
+        )
 
-    def scan_double_quote(self, ctx: Context) -> ta.Tuple[ta.Optional[tokens.Token], ta.Optional[str]]:
+    def scan_double_quote(self, ctx: Context) -> YamlErrorOr[tokens.Token]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -704,7 +704,7 @@ class Scanner:
                 self.progress_line(ctx)
                 if idx + 1 < size:
                     if (err := self.validate_document_separator_marker(ctx, src[idx + 1:])) is not None:
-                        return None, err
+                        return err
 
                 continue
 
@@ -713,13 +713,13 @@ class Scanner:
 
             if is_first_line_char and c == '\t':
                 if self.last_delim_column >= self.column:
-                    return None, repr(err_invalid_token(
+                    return err_invalid_token(
                         tokens.new_invalid(
                             yaml_error('tab character cannot be used for indentation in double-quoted text'),
                             ctx.obuf,
                             self.pos(),
                         ),
-                    ))
+                    )
 
                 continue
 
@@ -814,13 +814,13 @@ class Scanner:
                 elif next_char == 'u':
                     # \u0000 style must have 5 characters at least.
                     if idx + 5 >= size:
-                        return None, repr(err_invalid_token(
+                        return err_invalid_token(
                             tokens.new_invalid(
                                 yaml_error('not enough length for escaped UTF-16 character'),
                                 ctx.obuf,
                                 self.pos(),
                             ),
-                        ))
+                        )
 
                     progress = 5
                     code_num = hex_runes_to_int(src[idx + 2: idx + 6])
@@ -831,32 +831,32 @@ class Scanner:
 
                         # \u0000\u0000 style must have 11 characters at least.
                         if idx + 11 >= size:
-                            return None, repr(err_invalid_token(
+                            return err_invalid_token(
                                 tokens.new_invalid(
                                     yaml_error('not enough length for escaped UTF-16 surrogate pair'),
                                     ctx.obuf,
                                     self.pos(),
                                 ),
-                            ))
+                            )
 
                         if src[idx + 6] != '\\' or src[idx + 7] != 'u':
-                            return None, repr(err_invalid_token(
+                            return err_invalid_token(
                                 tokens.new_invalid(
                                     yaml_error('found unexpected character after high surrogate for UTF-16 surrogate pair'),  # noqa
                                     ctx.obuf,
                                     self.pos(),
                                 ),
-                            ))
+                            )
 
                         low = hex_runes_to_int(src[idx + 8: idx + 12])
                         if low < 0xDC00 or low > 0xDFFF:
-                            return None, repr(err_invalid_token(
+                            return err_invalid_token(
                                 tokens.new_invalid(
                                     yaml_error('found unexpected low surrogate after high surrogate'),
                                     ctx.obuf,
                                     self.pos(),
                                 ),
-                            ))
+                            )
 
                         code_num = ((high - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000
                         progress += 6
@@ -866,13 +866,13 @@ class Scanner:
                 elif next_char == 'U':
                     # \U00000000 style must have 9 characters at least.
                     if idx + 9 >= size:
-                        return None, repr(err_invalid_token(
+                        return err_invalid_token(
                             tokens.new_invalid(
                                 yaml_error('not enough length for escaped UTF-32 character'),
                                 ctx.obuf,
                                 self.pos(),
                             ),
-                        ))
+                        )
 
                     progress = 9
                     code_num = hex_runes_to_int(src[idx + 2: idx + 10])
@@ -905,13 +905,13 @@ class Scanner:
 
                 else:
                     self.progress_column(ctx, 1)
-                    return None, repr(err_invalid_token(
+                    return err_invalid_token(
                         tokens.new_invalid(
                             yaml_error(f'found unknown escape character {next_char!r}'),
                             ctx.obuf,
                             self.pos(),
                         ),
-                    ))
+                    )
 
                 idx += progress
                 self.progress_column(ctx, progress)
@@ -948,22 +948,22 @@ class Scanner:
                 continue
 
             self.progress_column(ctx, 1)
-            return tokens.new_double_quote(value, ctx.obuf, srcpos), None
+            return tokens.new_double_quote(value, ctx.obuf, srcpos)
 
         self.progress_column(ctx, 1)
-        return None, repr(err_invalid_token(
+        return err_invalid_token(
             tokens.new_invalid(
                 yaml_error('could not find end character of double-quoted text'),
                 ctx.obuf,
                 srcpos,
             ),
-        ))
+        )
 
-    def validate_document_separator_marker(self, ctx: Context, src: str) -> ta.Optional[str]:
+    def validate_document_separator_marker(self, ctx: Context, src: str) -> ta.Optional[YamlError]:
         if self.found_document_separator_marker(src):
-            return repr(err_invalid_token(
+            return err_invalid_token(
                 tokens.new_invalid(yaml_error('found unexpected document separator'), ctx.obuf, self.pos()),
-            ))
+            )
 
         return None
 
@@ -979,26 +979,26 @@ class Scanner:
 
         return marker == '---' or marker == '...'
 
-    def scan_quote(self, ctx: Context, ch: str) -> ta.Tuple[bool, ta.Optional[str]]:
+    def scan_quote(self, ctx: Context, ch: str) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
-            return False, None
+            return False
 
         if ch == "'":
             tk, err = self.scan_single_quote(ctx)
             if err is not None:
-                return False, err
+                return err
 
             ctx.add_token(tk)
 
         else:
             tk, err = self.scan_double_quote(ctx)
             if err is not None:
-                return False, err
+                return err
 
             ctx.add_token(tk)
 
         ctx.clear()
-        return True, None
+        return True
 
     def scan_white_space(self, ctx: Context) -> bool:
         if ctx.is_multi_line():
@@ -1044,9 +1044,9 @@ class Scanner:
 
         return False
 
-    def scan_tag(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
+    def scan_tag(self, ctx: Context) -> YamlErrorOr[bool]:
         if ctx.exists_buffer() or self.is_directive:
-            return False, None
+            return False
 
         ctx.add_origin_buf('!')
         self.progress(ctx, 1)  # skip '!' character
@@ -1061,7 +1061,7 @@ class Scanner:
                 ctx.add_token(tokens.new_tag(value, ctx.obuf, self.pos()))
                 self.progress_column(ctx, len(value))
                 ctx.clear()
-                return True, None
+                return True
 
             elif c == ',':
                 if self.started_flow_sequence_num > 0 or self.started_flow_map_num > 0:
@@ -1070,7 +1070,7 @@ class Scanner:
                     # progress column before collect-entry for scanning it at scan_flow_entry function.
                     self.progress_column(ctx, len(value) - 1)
                     ctx.clear()
-                    return True, None
+                    return True
                 else:
                     ctx.add_origin_buf(c)
 
@@ -1081,7 +1081,7 @@ class Scanner:
                 # progress column before new-line-char for scanning new-line-char at scan_new_line function.
                 self.progress_column(ctx, len(value) - 1)
                 ctx.clear()
-                return True, None
+                return True
 
             elif c in ('{', '}'):
                 ctx.add_origin_buf(c)
@@ -1091,14 +1091,14 @@ class Scanner:
                     ctx.obuf,
                     self.pos(),
                 )
-                return False, repr(err_invalid_token(invalid_tk))
+                return err_invalid_token(invalid_tk)
 
             else:
                 ctx.add_origin_buf(c)
 
         self.progress_column(ctx, progress)
         ctx.clear()
-        return True, None
+        return True
 
     def scan_comment(self, ctx: Context) -> bool:
         if ctx.exists_buffer():
@@ -1134,7 +1134,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_multi_line(self, ctx: Context, c: str) -> ta.Optional[str]:
+    def scan_multi_line(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
         state = check.not_none(ctx.get_multi_line_state())
         ctx.add_origin_buf(c)
 
@@ -1148,7 +1148,7 @@ class Scanner:
             if (err := state.validate_indent_column()) is not None:
                 invalid_tk = tokens.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
                 self.progress_column(ctx, 1)
-                return repr(err_invalid_token(invalid_tk))
+                return err_invalid_token(invalid_tk)
 
             value = ctx.buffered_src()
             ctx.add_token(tokens.new_string(value, ctx.obuf, self.pos()))
@@ -1172,13 +1172,13 @@ class Scanner:
             self.progress_column(ctx, 1)
 
         elif self.is_first_char_at_line and c == '\t' and state.is_indent_column(self.column):
-            err = repr(err_invalid_token(
+            err = err_invalid_token(
                 tokens.new_invalid(
                     yaml_error('found a tab character where an indentation space is expected'),
                     ctx.obuf,
                     self.pos(),
                 ),
-            ))
+            )
             self.progress_column(ctx, 1)
             return err
 
@@ -1190,13 +1190,13 @@ class Scanner:
             if (err := state.validate_indent_after_space_only(self.column)) is not None:
                 invalid_tk = tokens.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
                 self.progress_column(ctx, 1)
-                return repr(err_invalid_token(invalid_tk))
+                return err_invalid_token(invalid_tk)
 
             state.update_indent_column(self.column)
             if (err := state.validate_indent_column()) is not None:
                 invalid_tk = tokens.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
                 self.progress_column(ctx, 1)
-                return repr(err_invalid_token(invalid_tk))
+                return err_invalid_token(invalid_tk)
 
             if (col := state.last_delim_column()) > 0:
                 self.last_delim_column = col
@@ -1204,8 +1204,6 @@ class Scanner:
             state.update_new_line_in_folded(ctx, self.column)
             ctx.add_buf_with_tab(c)
             self.progress_column(ctx, 1)
-
-        return None
 
     def scan_new_line(self, ctx: Context, c: str) -> None:
         if len(ctx.buf) > 0 and self.saved_pos is None:
@@ -1317,10 +1315,10 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_map_delim(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
+    def scan_map_delim(self, ctx: Context) -> YamlErrorOr[bool]:
         nc = ctx.next_char()
         if self.is_directive or self.is_anchor or self.is_alias:
-            return False, None
+            return False
 
         if (
                 self.started_flow_map_num <= 0 and
@@ -1329,16 +1327,16 @@ class Scanner:
                 not self.is_new_line_char(nc) and
                 not ctx.is_next_eos()
         ):
-            return False, None
+            return False
 
         if self.started_flow_map_num > 0 and nc == '/':
             # like http://
-            return False, None
+            return False
 
         if self.started_flow_map_num > 0:
             tk = ctx.last_token()
             if tk is not None and tk.type == tokens.Type.MAPPING_VALUE:
-                return False, None
+                return False
 
         if ctx.obuf.lstrip(' ').startswith('\t') and not ctx.buf.startswith('\t'):
             invalid_tk = tokens.new_invalid(
@@ -1347,7 +1345,7 @@ class Scanner:
                 self.pos(),
             )
             self.progress_column(ctx, 1)
-            return False, repr(err_invalid_token(invalid_tk))
+            return err_invalid_token(invalid_tk)
 
         # mapping value
         tk = self.buffered_token(ctx)
@@ -1364,7 +1362,7 @@ class Scanner:
         ctx.add_token(tokens.new_mapping_value(self.pos()))
         self.progress_column(ctx, 1)
         ctx.clear()
-        return True, None
+        return True
 
     def scan_document_start(self, ctx: Context) -> bool:
         if self.indent_num != 0:
@@ -1427,13 +1425,13 @@ class Scanner:
         self.progress_column(ctx, 1)
         return True
 
-    def scan_sequence(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
+    def scan_sequence(self, ctx: Context) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
-            return False, None
+            return False
 
         nc = ctx.next_char()
         if nc != 0 and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
-            return False, None
+            return False
 
         if ctx.obuf.lstrip(' ').startswith('\t'):
             invalid_tk = tokens.new_invalid(
@@ -1442,7 +1440,7 @@ class Scanner:
                 self.pos(),
             )
             self.progress_column(ctx, 1)
-            return False, repr(err_invalid_token(invalid_tk))
+            return err_invalid_token(invalid_tk)
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('-')
@@ -1451,19 +1449,19 @@ class Scanner:
         ctx.add_token(tk)
         self.progress_column(ctx, 1)
         ctx.clear()
-        return True, None
+        return True
 
-    def scan_multi_line_header(self, ctx: Context) -> ta.Tuple[bool, ta.Optional[str]]:
+    def scan_multi_line_header(self, ctx: Context) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
-            return False, None
+            return False
 
         if (err := self.scan_multi_line_header_option(ctx)) is not None:
-            return False, err
+            return err
 
         self.progress_line(ctx)
-        return True, None
+        return True
 
-    def validate_multi_line_header_option(self, opt: str) -> ta.Optional[str]:
+    def validate_multi_line_header_option(self, opt: str) -> ta.Optional[YamlError]:
         if len(opt) == 0:
             return None
 
@@ -1476,19 +1474,19 @@ class Scanner:
             return None
 
         if opt == '0':
-            return f'invalid header option: {org_opt!r}'
+            return yaml_error(f'invalid header option: {org_opt!r}')
 
         try:
             i = int(opt, 10)
         except ValueError:
-            return f'invalid header option: {org_opt!r}'
+            return yaml_error(f'invalid header option: {org_opt!r}')
 
         if i > 9:
-            return f'invalid header option: {org_opt!r}'
+            return yaml_error(f'invalid header option: {org_opt!r}')
 
         return None
 
-    def scan_multi_line_header_option(self, ctx: Context) -> ta.Optional[str]:
+    def scan_multi_line_header_option(self, ctx: Context) -> ta.Optional[YamlError]:
         header = ctx.current_char()
         ctx.add_origin_buf(header)
         self.progress(ctx, 1)  # skip '|' or '>' character
@@ -1512,7 +1510,7 @@ class Scanner:
             if (err := self.validate_multi_line_header_option(opt)) is not None:
                 invalid_tk = tokens.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
                 self.progress_column(ctx, progress)
-                return repr(err_invalid_token(invalid_tk))
+                return err_invalid_token(invalid_tk)
 
         if self.column == 1:
             self.last_delim_column = 1
@@ -1593,7 +1591,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_reserved_char(self, ctx: Context, c: str) -> ta.Optional[str]:
+    def scan_reserved_char(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
         if ctx.exists_buffer():
             return None
 
@@ -1608,9 +1606,9 @@ class Scanner:
         )
         self.progress_column(ctx, 1)
         ctx.clear()
-        return repr(err)
+        return err
 
-    def scan_tab(self, ctx: Context, c: str) -> ta.Optional[str]:
+    def scan_tab(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
         if self.started_flow_sequence_num > 0 or self.started_flow_map_num > 0:
             # tabs character is allowed in flow mode.
             return None
@@ -1629,7 +1627,7 @@ class Scanner:
         )
         self.progress_column(ctx, 1)
         ctx.clear()
-        return repr(err)
+        return err
 
     def _scan(self, ctx: Context) -> ta.Optional[YamlError]:
         while ctx.next():

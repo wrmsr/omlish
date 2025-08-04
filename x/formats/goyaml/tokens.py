@@ -466,12 +466,12 @@ def _to_number(value: str) -> YamlErrorOr[ta.Optional[NumberValue]]:
         try:
             v = float(text)
         except ValueError as e:
-            return YamlError(e)
+            return yaml_error(e)
     else:
         try:
             v = int(text, base)
         except ValueError as e:
-            return YamlError(e)
+            return yaml_error(e)
 
     return NumberValue(
         type=typ,
