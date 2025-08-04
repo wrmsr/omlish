@@ -2048,7 +2048,7 @@ class Parser:
         seq_col = seq_tk.column()
         seq_line = seq_tk.line()
 
-        if tk.column() == seq_col and tk.type() == tokens_.Type.SEQUENCE_ENTRY:
+        if Token.column(tk) == seq_col and Token.type(tk) == tokens_.Type.SEQUENCE_ENTRY:
             # in this case,
             # ----
             # - <value does not defined>
@@ -2056,10 +2056,10 @@ class Parser:
             return new_null_node(ctx, ctx.insert_null_token(seq_tk))
 
         if (
-                tk.line() == seq_line and
-                tk.group_type() == TokenGroupType.ANCHOR_NAME and
-                ctx.next_token().column() == seq_col and
-                ctx.next_token().type() == tokens_.Type.SEQUENCE_ENTRY
+                Token.line(tk) == seq_line and
+                Token.group_type(tk) == TokenGroupType.ANCHOR_NAME and
+                Token.column(ctx.next_token()) == seq_col and
+                Token.type(ctx.next_token()) == tokens_.Type.SEQUENCE_ENTRY
         ):
             # in this case,
             # ----
@@ -2067,7 +2067,7 @@ class Parser:
             # -
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_implicit_null_token(tk)],
+                tokens=[check.not_none(tk), ctx.create_implicit_null_token(check.not_none(tk))],
             )
             anchor = self.parse_anchor(ctx.with_group(group), group)
             if isinstance(anchor, YamlError):
@@ -2075,16 +2075,16 @@ class Parser:
             ctx.go_next()
             return anchor
 
-        if tk.column() <= seq_col and tk.group_type() == TokenGroupType.ANCHOR_NAME:
+        if Token.column(tk) <= seq_col and Token.group_type(tk) == TokenGroupType.ANCHOR_NAME:
             # - <value does not defined>
             # &anchor
-            return err_syntax('anchor is not allowed in this sequence context', tk.raw_token())
-        if tk.column() <= seq_col and tk.type() == tokens_.Type.TAG:
+            return err_syntax('anchor is not allowed in this sequence context', Token.raw_token(tk))
+        if Token.column(tk) <= seq_col and Token.type(tk) == tokens_.Type.TAG:
             # - <value does not defined>
             # !!tag
-            return err_syntax('tag is not allowed in this sequence context', tk.raw_token())
+            return err_syntax('tag is not allowed in this sequence context', Token.raw_token(tk))
 
-        if tk.column() < seq_col:
+        if Token.column(tk) < seq_col:
             # in this case,
             # ----
             #   - <value does not defined>
@@ -2092,9 +2092,9 @@ class Parser:
             return new_null_node(ctx, ctx.insert_null_token(seq_tk))
 
         if (
-                tk.line() == seq_line and
-                tk.group_type() == TokenGroupType.ANCHOR_NAME and
-                ctx.next_token().column() < seq_col
+                Token.line(tk) == seq_line and
+                Token.group_type(tk) == TokenGroupType.ANCHOR_NAME and
+                Token.column(ctx.next_token()) < seq_col
         ):
             # in this case,
             # ----
@@ -2102,7 +2102,7 @@ class Parser:
             # next
             group = TokenGroup(
                 type=TokenGroupType.ANCHOR,
-                tokens=[tk, ctx.create_implicit_null_token(tk)],
+                tokens=[check.not_none(tk), ctx.create_implicit_null_token(check.not_none(tk))],
             )
             anchor = self.parse_anchor(ctx.with_group(group), group)
             if isinstance(anchor, YamlError):
@@ -2118,7 +2118,7 @@ class Parser:
         return value
 
     def parse_directive(self, ctx: Context, g: TokenGroup) -> YamlErrorOr[ast.DirectiveNode]:
-        directive_name_group = g.first().group
+        directive_name_group = check.not_none(check.not_none(g.first()).group)
         directive = self.parse_directive_name(ctx.with_group(directive_name_group))
         if isinstance(directive, YamlError):
             return directive
@@ -2127,11 +2127,11 @@ class Parser:
             if len(g.tokens) != 2:
                 return err_syntax('unexpected format YAML directive', Token.raw_token(g.first()))
             value_tk = g.tokens[1]
-            value_raw_tk = value_tk.raw_token()
-            value = value_raw_tk.value
-            ver = YAML_VERSION_MAP.get(value)
+            value_raw_tk = check.not_none(value_tk.raw_token())
+            value0 = value_raw_tk.value
+            ver = YAML_VERSION_MAP.get(value0)
             if ver is None:
-                return err_syntax(f'unknown YAML version {value!r}', value_raw_tk)
+                return err_syntax(f'unknown YAML version {value0!r}', value_raw_tk)
             if self.yaml_version != '':
                 return err_syntax('YAML version has already been specified', value_raw_tk)
             self.yaml_version = ver
@@ -2153,10 +2153,10 @@ class Parser:
             directive.values.extend([tag_key, tag_value])
         elif len(g.tokens) > 1:
             for tk in g.tokens[1:]:
-                value = new_string_node(ctx, tk)
-                if isinstance(value, YamlError):
-                    return value
-                directive.values.append(value)
+                value1 = new_string_node(ctx, tk)
+                if isinstance(value1, YamlError):
+                    return value1
+                directive.values.append(value1)
         return directive
 
     def parse_directive_name(self, ctx: Context) -> YamlErrorOr[ast.DirectiveNode]:
