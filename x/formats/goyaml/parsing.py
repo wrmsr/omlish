@@ -1527,7 +1527,7 @@ class Parser:
                     map_node.foot_comment.set_path(map_node.get_path())
         return map_node
 
-    def validate_map_key_value_next_token(self, ctx: Context, key_tk, tk: Token) -> ta.Optional[YamlError]:
+    def validate_map_key_value_next_token(self, ctx: Context, key_tk, tk: ta.Optional[Token]) -> ta.Optional[YamlError]:
         if tk is None:
             return None
         if tk.column() <= key_tk.column():
@@ -1553,9 +1553,9 @@ class Parser:
     ) -> YamlErrorOr[ast.MappingValueNode]:
         if g.type != TokenGroupType.MAP_KEY_VALUE:
             return err_syntax('unexpected map key-value pair', g.raw_token())
-        if g.first().group is None:
+        if check.not_none(g.first()).group is None:
             return err_syntax('unexpected map key', g.raw_token())
-        key_group = g.first().group
+        key_group = check.not_none(check.not_none(g.first()).group)
         key = self.parse_map_key(ctx.with_group(key_group), key_group)
         if isinstance(key, YamlError):
             return key
@@ -1564,7 +1564,7 @@ class Parser:
         value = self.parse_token(c, g.last())
         if isinstance(value, YamlError):
             return value
-        return new_mapping_value_node(c, key_group.last(), entry_tk, key, value)
+        return new_mapping_value_node(c, check.not_none(key_group.last()), entry_tk, key, value)
 
     def parse_map_key(self, ctx: Context, g: TokenGroup) -> YamlErrorOr[ast.MapKeyNode]:
         if g.type != TokenGroupType.MAP_KEY:
@@ -1603,7 +1603,11 @@ class Parser:
         if isinstance(scalar1, YamlError):
             return scalar1
         if not isinstance(scalar1, ast.MapKeyNode):
-            return err_syntax('cannot take map-key node', check.not_none(scalar1).get_token())
+            # FIXME: not possible
+            return err_syntax(
+                'cannot take map-key node',
+                check.not_none(scalar1).get_token(),  # type: ignore[attr-defined]
+            )
         key1: ast.MapKeyNode = ta.cast(ast.MapKeyNode, scalar1)
         key_text = self.map_key_text(key1)
         key_path = ctx.with_child(key_text).path
