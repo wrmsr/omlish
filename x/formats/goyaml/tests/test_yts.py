@@ -10,6 +10,7 @@ from omlish import lang
 from omlish import marshal as msh
 
 from .. import parsing
+from ..errors import YamlError
 
 
 ##
@@ -64,16 +65,16 @@ def test_spec() -> None:
             print(yts_f)
 
             try:
-                obj, err = parsing.parse_str(  # noqa
+                obj = parsing.parse_str(  # noqa
                     check.non_empty_str(item.yaml),
                     parsing.ParseMode(0),
                 )
 
-                if err:
+                if isinstance(obj, YamlError):
                     if item.fail:
-                        print(f'SUCCESS: {err}')
+                        print(f'SUCCESS: {obj}')
                     else:
-                        print(f'FAILURE: {err}')
+                        print(f'FAILURE: {obj}')
                 else:  # noqa
                     if not item.fail:
                         print(f'SUCCESS: {obj}')
