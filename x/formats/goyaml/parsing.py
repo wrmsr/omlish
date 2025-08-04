@@ -1468,7 +1468,7 @@ class Parser:
             ctx.go_next()
 
             value_tk = ctx.current_token()
-            if key_tk.line() == value_tk.line() and value_tk.type() == tokens_.Type.SEQUENCE_ENTRY:
+            if Token.line(key_tk) == Token.line(value_tk) and Token.type(value_tk) == tokens_.Type.SEQUENCE_ENTRY:
                 return err_syntax('block sequence entries are not allowed in this context', value_tk.raw_token())
             ctx = ctx.with_child(self.map_key_text(key))
             value = self.parse_map_value(ctx, key, key_tk.group.last())
