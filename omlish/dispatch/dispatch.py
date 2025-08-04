@@ -13,6 +13,8 @@ T = ta.TypeVar('T')
 
 
 class Dispatcher(ta.Generic[T]):
+    """Shared dispatching system for functions and methods. Logic directly mimics `functools.singledispatch`."""
+
     def __init__(self, find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None] | None = None) -> None:
         super().__init__()
 

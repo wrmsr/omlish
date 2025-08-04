@@ -24,6 +24,21 @@ P = ta.ParamSpec('P')
 
 
 class Method(ta.Generic[P, R]):
+    """
+    MRO-honoring instancemethod singledispatch. There are many ways to do this, and this one is attr name based: a class
+    is considered to have method implementations that have been registered to a given method based on whether or not
+    they are accessible by a non-shadowed, MRO-resolved named attribute on that class.
+
+    Care must be taken when overriding registered implementations from superclasses in subclasses - shadowing the name
+    of the superclass method will not automatically register the new method with the same name to the dispatch method -
+    it must be explicitly `@register`'ed itself. This is a feature, allowing for selective de-registration of
+    implementations in subclasses via name shadowing.
+
+    Methods have ability to choose to allow external installation of implementations outside of direct subclasses. This
+    is to be used *extremely* rarely - basically only in the rare case of externally extensible type hierarchies with
+    visitors.
+    """
+
     def __init__(
             self,
             func: ta.Callable,
