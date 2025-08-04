@@ -262,7 +262,7 @@ class Token:
 
 @dc.dataclass(kw_only=True)
 class TokenGroup:
-    type: TokenGroupType
+    type: TokenGroupType = TokenGroupType.NONE
     tokens: ta.List[Token]
 
     def first(self) -> ta.Optional[Token]:
@@ -844,7 +844,7 @@ def new_mapping_node(
         tk: Token,
         is_flow: bool,
         *values: ast.MappingValueNode,
-) -> ta.Tuple[ast.MappingNode | None, ta.Optional[str]]:
+) -> ta.Tuple[ta.Optional[ast.MappingNode], ta.Optional[str]]:
     node = ast.mapping(tk.raw_token(), is_flow, *values)
     node.set_path(ctx.path)
     return node, None
@@ -856,7 +856,7 @@ def new_mapping_value_node(
         entry_tk: ta.Optional[Token],
         key: ast.MapKeyNode,
         value: ast.Node,
-) -> ta.Tuple[ast.MappingValueNode | None, ta.Optional[str]]:
+) -> ta.Tuple[ta.Optional[ast.MappingValueNode], ta.Optional[str]]:
     node = ast.mapping_value(colon_tk.raw_token(), key, value)
     node.set_path(ctx.path)
     node.collect_entry = Token.raw_token(entry_tk)
@@ -876,7 +876,7 @@ def new_mapping_value_node(
     return node, None
 
 
-def new_mapping_key_node(ctx: Context, tk: Token) -> ta.Tuple[ast.MappingKeyNode | None, ta.Optional[str]]:
+def new_mapping_key_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.MappingKeyNode], ta.Optional[str]]:
     node = ast.mapping_key(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -884,7 +884,7 @@ def new_mapping_key_node(ctx: Context, tk: Token) -> ta.Tuple[ast.MappingKeyNode
     return node, None
 
 
-def new_anchor_node(ctx: Context, tk: Token) -> ta.Tuple[ast.AnchorNode | None, ta.Optional[str]]:
+def new_anchor_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.AnchorNode], ta.Optional[str]]:
     node = ast.anchor(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -892,7 +892,7 @@ def new_anchor_node(ctx: Context, tk: Token) -> ta.Tuple[ast.AnchorNode | None, 
     return node, None
 
 
-def new_alias_node(ctx: Context, tk: Token) -> ta.Tuple[ast.AliasNode | None, ta.Optional[str]]:
+def new_alias_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.AliasNode], ta.Optional[str]]:
     node = ast.alias(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -900,7 +900,7 @@ def new_alias_node(ctx: Context, tk: Token) -> ta.Tuple[ast.AliasNode | None, ta
     return node, None
 
 
-def new_directive_node(ctx: Context, tk: Token) -> ta.Tuple[ast.DirectiveNode | None, ta.Optional[str]]:
+def new_directive_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.DirectiveNode], ta.Optional[str]]:
     node = ast.directive(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -908,7 +908,7 @@ def new_directive_node(ctx: Context, tk: Token) -> ta.Tuple[ast.DirectiveNode | 
     return node, None
 
 
-def new_merge_key_node(ctx: Context, tk: Token) -> ta.Tuple[ast.MergeKeyNode | None, ta.Optional[str]]:
+def new_merge_key_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.MergeKeyNode], ta.Optional[str]]:
     node = ast.merge_key(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -916,7 +916,7 @@ def new_merge_key_node(ctx: Context, tk: Token) -> ta.Tuple[ast.MergeKeyNode | N
     return node, None
 
 
-def new_null_node(ctx: Context, tk: Token) -> ta.Tuple[ast.NullNode | None, ta.Optional[str]]:
+def new_null_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.NullNode], ta.Optional[str]]:
     node = ast.null(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -924,7 +924,7 @@ def new_null_node(ctx: Context, tk: Token) -> ta.Tuple[ast.NullNode | None, ta.O
     return node, None
 
 
-def new_bool_node(ctx: Context, tk: Token) -> ta.Tuple[ast.BoolNode | None, ta.Optional[str]]:
+def new_bool_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.BoolNode], ta.Optional[str]]:
     node = ast.bool_(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -932,7 +932,7 @@ def new_bool_node(ctx: Context, tk: Token) -> ta.Tuple[ast.BoolNode | None, ta.O
     return node, None
 
 
-def new_integer_node(ctx: Context, tk: Token) -> ta.Tuple[ast.IntegerNode | None, ta.Optional[str]]:
+def new_integer_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.IntegerNode], ta.Optional[str]]:
     node = ast.integer(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -940,7 +940,7 @@ def new_integer_node(ctx: Context, tk: Token) -> ta.Tuple[ast.IntegerNode | None
     return node, None
 
 
-def new_float_node(ctx: Context, tk: Token) -> ta.Tuple[ast.FloatNode | None, ta.Optional[str]]:
+def new_float_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.FloatNode], ta.Optional[str]]:
     node = ast.float_(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -948,7 +948,7 @@ def new_float_node(ctx: Context, tk: Token) -> ta.Tuple[ast.FloatNode | None, ta
     return node, None
 
 
-def new_infinity_node(ctx: Context, tk: Token) -> ta.Tuple[ast.InfinityNode | None, ta.Optional[str]]:
+def new_infinity_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.InfinityNode], ta.Optional[str]]:
     node = ast.infinity(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -956,7 +956,7 @@ def new_infinity_node(ctx: Context, tk: Token) -> ta.Tuple[ast.InfinityNode | No
     return node, None
 
 
-def new_nan_node(ctx: Context, tk: Token) -> ta.Tuple[ast.NanNode | None, ta.Optional[str]]:
+def new_nan_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.NanNode], ta.Optional[str]]:
     node = ast.nan(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -964,7 +964,7 @@ def new_nan_node(ctx: Context, tk: Token) -> ta.Tuple[ast.NanNode | None, ta.Opt
     return node, None
 
 
-def new_string_node(ctx: Context, tk: Token) -> ta.Tuple[ast.StringNode | None, ta.Optional[str]]:
+def new_string_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.StringNode], ta.Optional[str]]:
     node = ast.string(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -972,7 +972,7 @@ def new_string_node(ctx: Context, tk: Token) -> ta.Tuple[ast.StringNode | None, 
     return node, None
 
 
-def new_literal_node(ctx: Context, tk: Token) -> ta.Tuple[ast.LiteralNode | None, ta.Optional[str]]:
+def new_literal_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.LiteralNode], ta.Optional[str]]:
     node = ast.literal(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -980,7 +980,7 @@ def new_literal_node(ctx: Context, tk: Token) -> ta.Tuple[ast.LiteralNode | None
     return node, None
 
 
-def new_tag_node(ctx: Context, tk: Token) -> ta.Tuple[ast.TagNode | None, ta.Optional[str]]:
+def new_tag_node(ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.TagNode], ta.Optional[str]]:
     node = ast.tag(tk.raw_token())
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -988,7 +988,11 @@ def new_tag_node(ctx: Context, tk: Token) -> ta.Tuple[ast.TagNode | None, ta.Opt
     return node, None
 
 
-def new_sequence_node(ctx: Context, tk: Token, is_flow: bool) -> ta.Tuple[ast.SequenceNode | None, ta.Optional[str]]:
+def new_sequence_node(
+        ctx: Context,
+        tk: Token,
+        is_flow: bool,
+) -> ta.Tuple[ta.Optional[ast.SequenceNode], ta.Optional[str]]:
     node = ast.sequence(tk.raw_token(), is_flow)
     node.set_path(ctx.path)
     if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -999,12 +1003,12 @@ def new_sequence_node(ctx: Context, tk: Token, is_flow: bool) -> ta.Tuple[ast.Se
 def new_tag_default_scalar_value_node(
         ctx: Context,
         tag: tokens_.Token,
-) -> ta.Tuple[ast.ScalarNode | None, ta.Optional[str]]:
+) -> ta.Tuple[ta.Optional[ast.ScalarNode], ta.Optional[str]]:
     pos = copy.copy(tag.position)
     pos.column += 1
 
     tk: ta.Optional[Token] = None
-    node: ast.ScalarNode | None = None
+    node: ta.Optional[ast.ScalarNode] = None
 
     if tag.value == tokens_.ReservedTagKeywords.INTEGER:
         tk = Token(token=tokens.new('0', '0', pos))
@@ -1057,7 +1061,7 @@ def set_line_comment(ctx: Context, node: ast.Node, tk: ta.Optional[Token]) -> ta
     return None
 
 
-def set_head_comment(cm: ast.CommentGroupNode | None, value: ast.Node) -> ta.Optional[str]:
+def set_head_comment(cm: ta.Optional[ast.CommentGroupNode], value: ast.Node) -> ta.Optional[str]:
     if cm is None:
         return None
     n = value
@@ -1135,7 +1139,7 @@ class Parser:
     path_map: ta.Dict[str, ast.Node]
     yaml_version: YAMLVersion = YAMLVersion('')
     allow_duplicate_map_key: bool = False
-    secondary_tag_directive: ast.DirectiveNode | None = None
+    secondary_tag_directive: ta.Optional[ast.DirectiveNode] = None
 
     @staticmethod
     def new_parser(
@@ -1177,7 +1181,7 @@ class Parser:
             self,
             ctx: Context,
             doc_group: TokenGroup,
-    ) -> ta.Tuple[ast.DocumentNode | None, ta.Optional[str]]:
+    ) -> ta.Tuple[ta.Optional[ast.DocumentNode], ta.Optional[str]]:
         if len(doc_group.tokens) == 0:
             return ast.document(doc_group.raw_token(), None), None
 
@@ -1308,7 +1312,7 @@ class Parser:
         ctx.go_next()
         return node, None
 
-    def parse_scalar_value(self, ctx: Context, tk: Token) -> ta.Tuple[ast.ScalarNode | None, ta.Optional[str]]:
+    def parse_scalar_value(self, ctx: Context, tk: Token) -> ta.Tuple[ta.Optional[ast.ScalarNode], ta.Optional[str]]:
         if tk.group is not None:
             if tk.group_type() == TokenGroupType.ANCHOR:
                 return self.parse_anchor(ctx.with_group(tk.group), tk.group)
@@ -1368,7 +1372,7 @@ class Parser:
             return self.parse_scalar_tag(ctx)
         return None, err_syntax('unexpected scalar value type', tk.raw_token())
 
-    def parse_flow_map(self, ctx: Context) -> ta.Tuple[ast.MappingNode | None, ta.Optional[str]]:
+    def parse_flow_map(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.MappingNode], ta.Optional[str]]:
         node, err = new_mapping_node(ctx, ctx.current_token(), True)
         if err is not None:
             return None, err
@@ -1453,7 +1457,7 @@ class Parser:
     def is_flow_map_delim(self, tk: Token) -> bool:
         return tk.type() == tokens_.Type.MAPPING_END or tk.type() == tokens_.Type.COLLECT_ENTRY
 
-    def parse_map(self, ctx: Context) -> ta.Tuple[ast.MappingNode | None, ta.Optional[str]]:
+    def parse_map(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.MappingNode], ta.Optional[str]]:
         key_tk = ctx.current_token()
         if key_tk.group is None:
             return None, err_syntax('unexpected map key', key_tk.raw_token())
@@ -1553,7 +1557,7 @@ class Parser:
             ctx: Context,
             g: TokenGroup,
             entry_tk: ta.Optional[Token],
-    ) -> ta.Tuple[ast.MappingValueNode | None, ta.Optional[str]]:
+    ) -> ta.Tuple[ta.Optional[ast.MappingValueNode], ta.Optional[str]]:
         if g.type != TokenGroupType.MAP_KEY_VALUE:
             return None, err_syntax('unexpected map key-value pair', g.raw_token())
         if g.first().group is None:
@@ -1569,7 +1573,7 @@ class Parser:
             return None, err
         return new_mapping_value_node(c, key_group.last(), entry_tk, key, value)
 
-    def parse_map_key(self, ctx: Context, g: TokenGroup) -> ta.Tuple[ast.MapKeyNode | None, ta.Optional[str]]:
+    def parse_map_key(self, ctx: Context, g: TokenGroup) -> ta.Tuple[ta.Optional[ast.MapKeyNode], ta.Optional[str]]:
         if g.type != TokenGroupType.MAP_KEY:
             return None, err_syntax('unexpected map key', g.raw_token())
         if g.first().type() == tokens_.Type.MAPPING_KEY:
@@ -1797,7 +1801,7 @@ class Parser:
             return err_syntax('tag is not allowed in this context', tag_tk)
         return None
 
-    def parse_anchor(self, ctx: Context, g: TokenGroup) -> ta.Tuple[ast.AnchorNode | None, ta.Optional[str]]:
+    def parse_anchor(self, ctx: Context, g: TokenGroup) -> ta.Tuple[ta.Optional[ast.AnchorNode], ta.Optional[str]]:
         anchor_name_group = g.first().group
         anchor, err = self.parse_anchor_name(ctx.with_group(anchor_name_group))
         if err is not None:
@@ -1814,7 +1818,7 @@ class Parser:
         anchor.value = value
         return anchor, None
 
-    def parse_anchor_name(self, ctx: Context) -> ta.Tuple[ast.AnchorNode | None, ta.Optional[str]]:
+    def parse_anchor_name(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.AnchorNode], ta.Optional[str]]:
         anchor, err = new_anchor_node(ctx, ctx.current_token())
         if err is not None:
             return None, err
@@ -1833,7 +1837,7 @@ class Parser:
         anchor.name = anchor_name
         return anchor, None
 
-    def parse_alias(self, ctx: Context) -> ta.Tuple[ast.AliasNode | None, ta.Optional[str]]:
+    def parse_alias(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.AliasNode], ta.Optional[str]]:
         alias, err = new_alias_node(ctx, ctx.current_token())
         if err is not None:
             return None, err
@@ -1849,7 +1853,7 @@ class Parser:
         alias.value = alias_name
         return alias, None
 
-    def parse_literal(self, ctx: Context) -> ta.Tuple[ast.LiteralNode | None, ta.Optional[str]]:
+    def parse_literal(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.LiteralNode], ta.Optional[str]]:
         node, err = new_literal_node(ctx, ctx.current_token())
         if err is not None:
             return None, err
@@ -1870,7 +1874,7 @@ class Parser:
         node.value = s
         return node, None
 
-    def parse_scalar_tag(self, ctx: Context) -> ta.Tuple[ast.TagNode | None, ta.Optional[str]]:
+    def parse_scalar_tag(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.TagNode], ta.Optional[str]]:
         tag, err = self.parse_tag(ctx)
         if err is not None:
             return None, err
@@ -1880,7 +1884,7 @@ class Parser:
             return None, err_syntax('specified not scalar tag', tag.get_token())
         return tag, None
 
-    def parse_tag(self, ctx: Context) -> ta.Tuple[ast.TagNode | None, ta.Optional[str]]:
+    def parse_tag(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.TagNode], ta.Optional[str]]:
         tag_tk = ctx.current_token()
         tag_raw_tk = tag_tk.raw_token()
         node, err = new_tag_node(ctx, tag_tk)
@@ -1951,7 +1955,7 @@ class Parser:
             return self.parse_sequence(ctx)
         return self.parse_token(ctx, tk)
 
-    def parse_flow_sequence(self, ctx: Context) -> ta.Tuple[ast.SequenceNode | None, ta.Optional[str]]:
+    def parse_flow_sequence(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.SequenceNode], ta.Optional[str]]:
         node, err = new_sequence_node(ctx, ctx.current_token(), True)
         if err is not None:
             return None, err
@@ -2003,7 +2007,7 @@ class Parser:
         ctx.go_next()  # skip sequence end token.
         return node, None
 
-    def parse_sequence(self, ctx: Context) -> ta.Tuple[ast.SequenceNode | None, ta.Optional[str]]:
+    def parse_sequence(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.SequenceNode], ta.Optional[str]]:
         seq_tk = ctx.current_token()
         seq_node, err = new_sequence_node(ctx, seq_tk, False)
         if err is not None:
@@ -2120,7 +2124,11 @@ class Parser:
             return None, err
         return value, None
 
-    def parse_directive(self, ctx: Context, g: TokenGroup) -> ta.Tuple[ast.DirectiveNode | None, ta.Optional[str]]:
+    def parse_directive(
+            self,
+            ctx: Context,
+            g: TokenGroup,
+    ) -> ta.Tuple[ta.Optional[ast.DirectiveNode], ta.Optional[str]]:
         directive_name_group = g.first().group
         directive, err = self.parse_directive_name(ctx.with_group(directive_name_group))
         if err is not None:
@@ -2162,7 +2170,7 @@ class Parser:
                 directive.values.append(value)
         return directive, None
 
-    def parse_directive_name(self, ctx: Context) -> ta.Tuple[ast.DirectiveNode | None, ta.Optional[str]]:
+    def parse_directive_name(self, ctx: Context) -> ta.Tuple[ta.Optional[ast.DirectiveNode], ta.Optional[str]]:
         directive, err = new_directive_node(ctx, ctx.current_token())
         if err is not None:
             return None, err

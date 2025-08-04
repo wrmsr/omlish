@@ -5,6 +5,7 @@ import typing as ta
 import yaml
 
 from omdev.cache import data as dcache
+from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 
@@ -64,7 +65,7 @@ def test_spec() -> None:
 
             try:
                 obj, err = parsing.parse_str(  # noqa
-                    item.yaml,
+                    check.non_empty_str(item.yaml),
                     parsing.ParseMode(0),
                 )
 
@@ -81,3 +82,4 @@ def test_spec() -> None:
 
             except Exception as e:  # noqa
                 print(f'ERROR: {e}')
+                raise

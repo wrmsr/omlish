@@ -603,7 +603,7 @@ class Token:
     type: Type
     # CharType is a character type.
     char_type: CharType
-    # Indicator is a indicator type.
+    # Indicator is an indicator type.
     indicator: Indicator
     # Value is a string extracted with only meaningful characters, with spaces and such removed.
     value: str

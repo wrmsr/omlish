@@ -1563,7 +1563,7 @@ class SequenceNode(BaseNode):
         return self.block_style_string()
 
     # array_range implements ArrayNode protocol
-    def array_range(self) -> ArrayNodeIter | None:
+    def array_range(self) -> ta.Optional[ArrayNodeIter]:
         return ArrayNodeIter(
             idx=START_RANGE_INDEX,
             values=self.values,
@@ -1790,9 +1790,9 @@ class DirectiveNode(BaseNode):
     # Start is '%' token.
     start: tokens.Token
     # Name is directive name e.g.) "YAML" or "TAG".
-    name: Node
+    name: ta.Optional[Node] = None
     # Values is directive values e.g.) "1.2" or "!!" and "tag:clarkevans.com,2002:app/".
-    values: ta.List[Node]
+    values: ta.List[Node] = dc.field(default_factory=list)
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> ta.Tuple[int, ta.Optional[str]]:
@@ -1831,9 +1831,9 @@ class DirectiveNode(BaseNode):
 # TagNode type of tag node
 @dc.dataclass(kw_only=True)
 class TagNode(ScalarNode, BaseNode):
-    directive: DirectiveNode
+    directive: ta.Optional[DirectiveNode] = None
     start: tokens.Token
-    value: Node
+    value: ta.Optional[Node] = None
 
     def get_value(self) -> ta.Any:
         if not isinstance(self.value, ScalarNode):
@@ -1884,7 +1884,7 @@ class TagNode(ScalarNode, BaseNode):
             return False
         return key.is_merge_key()
 
-    def array_range(self) -> ArrayNodeIter | None:
+    def array_range(self) -> ta.Optional[ArrayNodeIter]:
         arr = self.value
         if not isinstance(arr, ArrayNode):
             return None
@@ -2050,7 +2050,7 @@ def walk(v: Visitor, node: Node) -> None:
         walk(v, n.value)
 
 
-def walk_comment(v: Visitor, base: BaseNode | None) -> None:
+def walk_comment(v: Visitor, base: ta.Optional[BaseNode]) -> None:
     if base is None:
         return
     if base.comment is None:
