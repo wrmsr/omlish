@@ -1569,43 +1569,54 @@ class Parser:
     def parse_map_key(self, ctx: Context, g: TokenGroup) -> YamlErrorOr[ast.MapKeyNode]:
         if g.type != TokenGroupType.MAP_KEY:
             return err_syntax('unexpected map key', g.raw_token())
-        if g.first().type() == tokens_.Type.MAPPING_KEY:
-            map_key_tk = g.first()
+        if Token.type(g.first()) == tokens_.Type.MAPPING_KEY:
+            map_key_tk = check.not_none(g.first())
             if map_key_tk.group is not None:
                 ctx = ctx.with_group(map_key_tk.group)
-            key = new_mapping_key_node(ctx, map_key_tk)
-            if isinstance(key, YamlError):
-                return key
+            key0 = new_mapping_key_node(ctx, map_key_tk)
+            if isinstance(key0, YamlError):
+                return key0
             ctx.go_next()  # skip mapping key token
             if ctx.is_token_not_found():
-                return err_syntax('could not find value for mapping key', map_key_tk.raw_token())
+                return err_syntax('could not find value for mapping key', Token.raw_token(map_key_tk))
 
-            scalar = self.parse_scalar_value(ctx, ctx.current_token())
-            if isinstance(scalar, YamlError):
-                return scalar
-            key.value = scalar
-            key_text = self.map_key_text(scalar)
+            scalar0 = self.parse_scalar_value(ctx, ctx.current_token())
+            if isinstance(scalar0, YamlError):
+                return scalar0
+            key0.value = scalar0
+            key_text = self.map_key_text(scalar0)
             key_path = ctx.with_child(key_text).path
-            key.set_path(key_path)
-            if (err := self.validate_map_key(ctx, key.get_token(), key_path, g.last())) is not None:
+            key0.set_path(key_path)
+            if (err := self.validate_map_key(
+                    ctx,
+                    check.not_none(key0.get_token()),
+                    key_path,
+                    check.not_none(g.last()),
+            )) is not None:
                 return err
-            self.path_map[key_path] = key
-            return key
-        if g.last().type() != tokens_.Type.MAPPING_VALUE:
-            return err_syntax("expected map key-value delimiter ':'", g.last().raw_token())
+            self.path_map[key_path] = key0
+            return key0
+        if Token.type(g.last()) != tokens_.Type.MAPPING_VALUE:
+            return err_syntax("expected map key-value delimiter ':'", Token.raw_token(g.last()))
 
-        scalar = self.parse_scalar_value(ctx, g.first())
-        if isinstance(scalar, YamlError):
-            return scalar
-        if not isinstance(key := scalar, ast.MapKeyNode):
-            return err_syntax('cannot take map-key node', scalar.get_token())
-        key_text = self.map_key_text(key)
+        scalar1 = self.parse_scalar_value(ctx, g.first())
+        if isinstance(scalar1, YamlError):
+            return scalar1
+        if not isinstance(scalar1, ast.MapKeyNode):
+            return err_syntax('cannot take map-key node', check.not_none(scalar1).get_token())
+        key1: ast.MapKeyNode = ta.cast(ast.MapKeyNode, scalar1)
+        key_text = self.map_key_text(key1)
         key_path = ctx.with_child(key_text).path
-        key.set_path(key_path)
-        if (err := self.validate_map_key(ctx, key.get_token(), key_path, g.last())) is not None:
+        key1.set_path(key_path)
+        if (err := self.validate_map_key(
+                ctx,
+                check.not_none(key1.get_token()),
+                key_path,
+                check.not_none(g.last()),
+        )) is not None:
             return err
-        self.path_map[key_path] = key
-        return key
+        self.path_map[key_path] = key1
+        return key1
 
     def validate_map_key(
             self,
