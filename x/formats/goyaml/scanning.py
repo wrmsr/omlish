@@ -1205,6 +1205,8 @@ class Scanner:
             ctx.add_buf_with_tab(c)
             self.progress_column(ctx, 1)
 
+        return None
+
     def scan_new_line(self, ctx: Context, c: str) -> None:
         if len(ctx.buf) > 0 and self.saved_pos is None:
             buf_len = len(ctx.buffered_src())
