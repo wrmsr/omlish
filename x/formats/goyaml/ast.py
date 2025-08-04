@@ -6,6 +6,8 @@ import io
 import typing as ta
 import unicodedata
 
+from omlish.lite.check import check
+
 from . import tokens
 from .errors import EofYamlError
 from .errors import YamlError
@@ -147,7 +149,7 @@ class Node(abc.ABC):
 
     # marshal_yaml
     @abc.abstractmethod
-    def marshal_yaml(self) -> YamlErrorOr[bytes]:
+    def marshal_yaml(self) -> YamlErrorOr[str]:
         raise NotImplementedError
 
     # already read length
@@ -2173,11 +2175,12 @@ def filter_file(typ: NodeType, file: File) -> ta.List[Node]:
 
 
 @dc.dataclass(kw_only=True)
-class ErrInvalidMergeType:
+class InvalidMergeTypeYamlError(YamlError):
     dst: Node
     src: Node
 
-    def error(self) -> str:
+    @property
+    def message(self) -> str:
         return f'cannot merge {self.src.type()} into {self.dst.type()}'
 
 
@@ -2185,23 +2188,24 @@ class ErrInvalidMergeType:
 def merge(dst: Node, src: Node) -> ta.Optional[YamlError]:
     if isinstance(src, DocumentNode):
         doc: DocumentNode = src
-        src = doc.body
+        src = check.not_none(doc.body)
 
-    err = ErrInvalidMergeType(dst=dst, src=src)
+    err = InvalidMergeTypeYamlError(dst=dst, src=src)
     if dst.type() == NodeType.DOCUMENT:
-        node: DocumentNode = dst
-        return merge(node.body, src)
+        node0: DocumentNode = check.isinstance(dst, DocumentNode)
+        return merge(check.not_none(node0.body), src)
     if dst.type() == NodeType.MAPPING:
-        node: MappingNode = dst
+        node1: MappingNode = check.isinstance(dst, MappingNode)
         if not isinstance(src, MappingNode):
             return err
-        target: MappingNode = src
-        node.merge(target)
+        target0: MappingNode = src
+        node1.merge(target0)
         return None
     if dst.type() == NodeType.SEQUENCE:
-        node: SequenceNode = dst
-        if not isinstance(target := src, SequenceNode):
+        node2: SequenceNode = check.isinstance(dst, SequenceNode)
+        if not isinstance(src, SequenceNode):
             return err
-        node.merge(target)
+        target1: SequenceNode = src
+        node2.merge(target1)
         return None
-    return err.error()
+    return err
