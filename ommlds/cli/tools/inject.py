@@ -4,7 +4,7 @@ import typing as ta
 from omlish import inject as inj
 
 from ... import minichain as mc
-from ..sessions.inject import bind_chat_options
+from ..sessions.chat.inject import bind_chat_options
 from .tools import WEATHER_TOOL
 
 

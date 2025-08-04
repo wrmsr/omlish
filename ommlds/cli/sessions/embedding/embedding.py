@@ -4,16 +4,16 @@ import typing as ta
 from omlish import lang
 from omlish.formats import json
 
-from ... import minichain as mc
-from .base import Session
+from .... import minichain as mc
+from ..base import Session
 
 
 if ta.TYPE_CHECKING:
-    from ...minichain.backends.openai import embedding as mc_openai_embedding
-    from ...minichain.backends.transformers import sentence as mc_stfm
+    from ....minichain.backends.openai import embedding as mc_openai_embedding
+    from ....minichain.backends.transformers import sentence as mc_stfm
 else:
-    mc_openai_embedding = lang.proxy_import('...minichain.backends.openai.embedding', __package__)
-    mc_stfm = lang.proxy_import('...minichain.backends.transformers.sentence', __package__)
+    mc_openai_embedding = lang.proxy_import('....minichain.backends.openai.embedding', __package__)
+    mc_stfm = lang.proxy_import('....minichain.backends.transformers.sentence', __package__)
 
 ##
 

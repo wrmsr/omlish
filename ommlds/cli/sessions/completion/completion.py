@@ -4,18 +4,18 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ... import minichain as mc
-from .base import Session
+from .... import minichain as mc
+from ..base import Session
 
 
 if ta.TYPE_CHECKING:
-    from ...minichain.backends.llamacpp import completion as mc_lcc_completion
-    from ...minichain.backends.openai import completion as mc_openai_completion
-    from ...minichain.backends.transformers import transformers as mc_tfm
+    from ....minichain.backends.llamacpp import completion as mc_lcc_completion
+    from ....minichain.backends.openai import completion as mc_openai_completion
+    from ....minichain.backends.transformers import transformers as mc_tfm
 else:
-    mc_lcc_completion = lang.proxy_import('...minichain.backends.llamacpp.completion', __package__)
-    mc_openai_completion = lang.proxy_import('...minichain.backends.openai.completion', __package__)
-    mc_tfm = lang.proxy_import('...minichain.backends.transformers.transformers', __package__)
+    mc_lcc_completion = lang.proxy_import('....minichain.backends.llamacpp.completion', __package__)
+    mc_openai_completion = lang.proxy_import('....minichain.backends.openai.completion', __package__)
+    mc_tfm = lang.proxy_import('....minichain.backends.transformers.transformers', __package__)
 
 
 ##

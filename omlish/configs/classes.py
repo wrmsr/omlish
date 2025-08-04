@@ -11,7 +11,7 @@ ConfigurableConfigT = ta.TypeVar('ConfigurableConfigT', bound='Configurable.Conf
 ##
 
 
-class Configurable(ta.Generic[ConfigurableConfigT], lang.Abstract):
+class Configurable(lang.Abstract, ta.Generic[ConfigurableConfigT]):
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:
         """Does not use any dc metaclasses to preserve typechecking."""

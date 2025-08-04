@@ -21,10 +21,10 @@ from omlish.subprocesses.sync import subprocesses
 from .. import minichain as mc
 from .inject import bind_main
 from .sessions.base import Session
-from .sessions.chat import InteractiveChatSession
-from .sessions.chat import PromptChatSession
-from .sessions.completion import CompletionSession
-from .sessions.embedding import EmbeddingSession
+from .sessions.chat.chat import InteractiveChatSession
+from .sessions.chat.chat import PromptChatSession
+from .sessions.completion.completion import CompletionSession
+from .sessions.embedding.embedding import EmbeddingSession
 
 
 if ta.TYPE_CHECKING:

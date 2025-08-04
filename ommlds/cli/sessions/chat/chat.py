@@ -8,9 +8,9 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
-from ... import minichain as mc
-from ..state import StateStorage
-from .base import Session
+from .... import minichain as mc
+from ...state import StateStorage
+from ..base import Session
 
 
 if ta.TYPE_CHECKING:
@@ -49,14 +49,31 @@ CHAT_CHOICES_SERVICE_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatChoicesS
 ChatOption: ta.TypeAlias = mc.ChatChoicesOptions
 ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
 
+ChatSessionConfigT = ta.TypeVar('ChatSessionConfigT', bound='ChatSession.Config')
+
+
+class ChatSession(Session[ChatSessionConfigT], lang.Abstract, ta.Generic[ChatSessionConfigT]):
+    @dc.dataclass(frozen=True)
+    class Config(Session.Config, lang.Abstract):
+        pass
+
+    def __init__(
+            self,
+            config: ChatSessionConfigT,
+    ) -> None:
+        super().__init__(config)
+
+
+##
+
 
 class ToolExecutionRequestDeniedError(Exception):
     pass
 
 
-class PromptChatSession(Session['PromptChatSession.Config']):
+class PromptChatSession(ChatSession['PromptChatSession.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Session.Config):
+    class Config(ChatSession.Config):
         content: mc.Content
 
         _: dc.KW_ONLY
@@ -191,9 +208,9 @@ class PromptChatSession(Session['PromptChatSession.Config']):
 ##
 
 
-class InteractiveChatSession(Session['InteractiveChatSession.Config']):
+class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Session.Config):
+    class Config(ChatSession.Config):
         _: dc.KW_ONLY
 
         new: bool = False
