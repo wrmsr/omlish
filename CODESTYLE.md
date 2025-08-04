@@ -97,7 +97,7 @@
     `ta.Iterable[int]` can return a new `list[int]`, but a getter property on a class exposing some internal set of
     integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
   - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
-    will suffice.
+    will suffice. When present in a class definition, `ta.Generic` should be the last class in the base class list.
 
 - Comments
   - Avoid unnecessary and frivolous comments. Most semantic meaning should be able to be inferred from package / module

@@ -23,7 +23,7 @@ NodeGenerator: ta.TypeAlias = ta.Generator[NodeT]
 ##
 
 
-class NodeError(ta.Generic[NodeT], Exception):
+class NodeError(Exception, ta.Generic[NodeT]):
     def __init__(self, node: NodeT, msg: str, *args, **kwargs) -> None:
         super().__init__(msg, *args, **kwargs)  # noqa
         self._node = node

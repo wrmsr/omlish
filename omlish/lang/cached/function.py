@@ -158,7 +158,7 @@ class _CachedException(ta.NamedTuple):
     ex: BaseException
 
 
-class _CachedFunction(ta.Generic[T], Abstract):
+class _CachedFunction(Abstract, ta.Generic[T]):
     @dc.dataclass(frozen=True, kw_only=True)
     class Opts:
         map_maker: ta.Callable[[], ta.MutableMapping] = dict

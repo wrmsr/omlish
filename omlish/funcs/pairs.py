@@ -19,7 +19,7 @@ T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
 
-class FnPair(ta.Generic[F, T], abc.ABC):
+class FnPair(abc.ABC, ta.Generic[F, T]):
     @abc.abstractmethod
     def forward(self, f: F) -> T:
         raise NotImplementedError

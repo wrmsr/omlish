@@ -16,7 +16,7 @@ SetMap: ta.TypeAlias = ta.Mapping[MK, ta.AbstractSet[MV]]
 ##
 
 
-class DirectedGraph(ta.Generic[V], lang.Abstract):
+class DirectedGraph(lang.Abstract, ta.Generic[V]):
     @abc.abstractmethod
     def get_successors(self, vertex: V) -> ta.Collection[V]:
         raise NotImplementedError

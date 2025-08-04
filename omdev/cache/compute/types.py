@@ -101,7 +101,7 @@ class CacheKey(lang.Abstract, ta.Generic[NameT]):
 
 
 @dc.dataclass(frozen=True)
-class CacheResult(ta.Generic[T], lang.Final):
+class CacheResult(lang.Final, ta.Generic[T]):
     hit: bool
     versions: VersionMap
     value: T

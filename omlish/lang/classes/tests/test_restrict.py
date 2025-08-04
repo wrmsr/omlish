@@ -32,7 +32,7 @@ def test_final():
 
     T = ta.TypeVar('T')
 
-    class D(ta.Generic[T], Final):
+    class D(Final, ta.Generic[T]):
         pass
 
     D()
