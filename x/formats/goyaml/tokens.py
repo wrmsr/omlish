@@ -614,7 +614,7 @@ class Token:
     # Origin is a string that stores the original text as-is.
     origin: str
     # Error keeps error message for InvalidToken.
-    error: ta.Optional[str] = None
+    error: ta.Optional[YamlError] = None
     # Position is a token position.
     position: Position
     # Next is a next token reference.
@@ -955,7 +955,7 @@ def new_document_end(org: str, pos: Position) -> Token:
     )
 
 
-def new_invalid(err: str, org: str, pos: Position) -> Token:
+def new_invalid(err: YamlError, org: str, pos: Position) -> Token:
     return Token(
         type=Type.INVALID,
         char_type=CharType.INVALID,
