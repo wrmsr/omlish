@@ -97,4 +97,7 @@ from prompt_toolkit.widgets.toolbars import SearchToolbar
 from prompt_toolkit.widgets.toolbars import SystemToolbar
 from prompt_toolkit.widgets.toolbars import ValidationToolbar
 
+#
+from .confirm import a_strict_confirm
+from .confirm import create_strict_confirm_session
 from .confirm import strict_confirm

@@ -9,6 +9,8 @@ import os.path
 import sys
 import typing as ta
 
+import anyio
+
 from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
@@ -30,7 +32,6 @@ from .tools.config import ToolsConfig
 
 if ta.TYPE_CHECKING:
     import PIL.Image as pimg  # noqa
-
 else:
     pimg = lang.proxy_import('PIL.Image')
 
@@ -38,7 +39,7 @@ else:
 ##
 
 
-def _main() -> None:
+async def _a_main() -> None:
     logs.configure_standard_logging('INFO')
 
     #
@@ -158,7 +159,14 @@ def _main() -> None:
             session_cfg=session_cfg,
             tools_config=tools_config,
     )) as injector:
-        injector[Session].run()
+        await injector[Session].run()
+
+
+def _main() -> None:
+    anyio.run(
+        _a_main,
+        backend='asyncio',
+    )  # noqa
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 import dataclasses as dc
-import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -12,12 +11,6 @@ from .base import ChatSession
 from .printing import ChatSessionPrinter
 from .state import ChatStateManager
 from .tools import ToolExecRequestExecutor
-
-
-if ta.TYPE_CHECKING:
-    from omdev import ptk
-else:
-    ptk = lang.proxy_import('omdev.ptk')
 
 
 ##
@@ -57,13 +50,13 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         self._backend_catalog = backend_catalog
         self._tool_exec_request_executor = tool_exec_request_executor
 
-    def run(self) -> None:
+    async def run(self) -> None:
         if self._config.stream:
-            self._run_stream()
+            await self._run_stream()
         else:
-            self._run_immediate()
+            await self._run_immediate()
 
-    def _run_stream(self) -> None:
+    async def _run_stream(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
         if self._config.new:
@@ -100,7 +93,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
 
         self._state_manager.extend_chat(new_chat)
 
-    def _run_immediate(self) -> None:
+    async def _run_immediate(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
         if self._config.new:
@@ -131,7 +124,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
 
                 tr: mc.ToolExecRequest = check.single(check.not_none(trs))
 
-                trm = self._tool_exec_request_executor.execute_tool_request(tr)
+                trm = await self._tool_exec_request_executor.execute_tool_request(tr)
 
                 print(trm.c)
                 new_chat.append(trm)

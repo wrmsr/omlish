@@ -33,7 +33,7 @@ class CompletionSession(Session['CompletionSession.Config']):
 
         self._backend_catalog = backend_catalog
 
-    def run(self) -> None:
+    async def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
         mdl: mc.CompletionService

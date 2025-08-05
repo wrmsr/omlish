@@ -24,23 +24,23 @@ class ToolExecutionRequestDeniedError(Exception):
 
 class ToolExecutionConfirmation(lang.Abstract):
     @abc.abstractmethod
-    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
 class NopToolExecutionConfirmation(ToolExecutionConfirmation):
-    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+    async def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
         pass
 
 
 class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
-    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+    async def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
         tr_dct = dict(
             id=tr.id,
             spec=msh.marshal(tce.spec),
             args=tr.args,
         )
-        cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+        cr = await ptk.a_strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
 
         if not cr:
             raise ToolExecutionRequestDeniedError
@@ -54,7 +54,7 @@ class ToolExecRequestExecutor(lang.Abstract):
     def execute_tool_request(
             self,
             ter: mc.ToolExecRequest,
-    ) -> mc.ToolExecResultMessage:
+    ) -> ta.Awaitable[mc.ToolExecResultMessage]:
         raise NotImplementedError
 
 
@@ -70,10 +70,10 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
         self._catalog = catalog
         self._confirmation = confirmation
 
-    def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
+    async def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 
-        self._confirmation.confirm_tool_execution_or_raise(tr, tce)
+        await self._confirmation.confirm_tool_execution_or_raise(tr, tce)
 
         return mc.execute_tool_request(
             mc.ToolContext(),

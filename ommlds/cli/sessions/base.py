@@ -18,5 +18,5 @@ class Session(cfgs.Configurable[SessionConfigT], lang.Abstract):
         pass
 
     @abc.abstractmethod
-    def run(self) -> None:
+    def run(self) -> ta.Awaitable[None]:
         raise NotImplementedError

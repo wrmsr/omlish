@@ -43,7 +43,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
         self._printer = printer
         self._backend_catalog = backend_catalog
 
-    def run(self) -> None:
+    async def run(self) -> None:
         if self._config.new:
             state = self._state_manager.clear_state()
         else:
