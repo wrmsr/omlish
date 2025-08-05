@@ -246,7 +246,7 @@ def read_node(p: str, node: Node) -> YamlErrorOr[int]:
 
     size = min(remain, len(p))
     for idx, b in enumerate(s[read_len : read_len+size]):
-        p[idx] = b  # FIXME: lol
+        p[idx] = b  # type: ignore[index]  # FIXME: lol
 
     node.append_read_len(size)
     return size
@@ -2144,7 +2144,7 @@ class ParentFinder:
 
 
 # Parent get parent node from child node.
-def parent(root: Node, child: Node) -> Node:
+def parent(root: Node, child: Node) -> ta.Optional[Node]:
     finder = ParentFinder(target=child)
     return finder.walk(root, root)
 
