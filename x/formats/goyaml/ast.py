@@ -129,7 +129,7 @@ class Node(abc.ABC):
 
     # set_comment set comment token to node
     @abc.abstractmethod
-    def set_comment(self, node: 'CommentGroupNode') -> ta.Optional[YamlError]:
+    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
         raise NotImplementedError
 
     # comment returns comment token instance
@@ -224,8 +224,9 @@ class BaseNode(Node, abc.ABC):
         return self.comment
 
     # set_comment set comment token
-    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> None:
+    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
         self.comment = node
+        return None
 
 
 def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
@@ -446,7 +447,7 @@ def alias(tk: tokens.Token) -> 'AliasNode':
     )
 
 
-def document(tk: tokens.Token, body: ta.Optional[Node]) -> 'DocumentNode':
+def document(tk: ta.Optional[tokens.Token], body: ta.Optional[Node]) -> 'DocumentNode':
     return DocumentNode(
         start=tk,
         body=body,
@@ -506,7 +507,7 @@ class File:
 # DocumentNode type of Document
 @dc.dataclass(kw_only=True)
 class DocumentNode(BaseNode):
-    start: tokens.Token  # position of DocumentHeader ( `---` )
+    start: ta.Optional[tokens.Token]  # position of DocumentHeader ( `---` )
     end: ta.Optional[tokens.Token] = None  # position of DocumentEnd ( `...` )
     body: ta.Optional[Node]
 
@@ -1610,8 +1611,8 @@ class SequenceEntryNode(BaseNode):
         self.start.add_column(col)
 
     # set_comment set line comment.
-    def set_comment(self, cm: 'CommentGroupNode') -> ta.Optional[YamlError]:
-        self.line_comment = cm
+    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
+        self.line_comment = node
         return None
 
     # comment returns comment token instance
