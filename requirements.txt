@@ -40,14 +40,6 @@ pymysql==1.1.1
 
 # pyhive
 
-## caches
-
-# pymemcache
-# redis
-
-## config
-# kazoo
-
 
 ### diag:
 
@@ -70,13 +62,6 @@ cloudpickle==3.1.1
 cbor2==5.6.5
 
 # msgpack
-
-
-### misc
-
-# billiard
-# numpy
-# python-dateutil
 
 
 ### web
