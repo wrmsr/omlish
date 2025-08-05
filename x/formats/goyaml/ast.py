@@ -1413,7 +1413,7 @@ class MappingValueNode(BaseNode):
 
 
 # ArrayNode interface of SequenceNode
-class ArrayNode(abc.ABC):
+class ArrayNode(Node, abc.ABC):
     @abc.abstractmethod
     def array_range(self) -> ta.Optional['ArrayNodeIter']:
         raise NotImplementedError
@@ -1446,11 +1446,11 @@ class ArrayNodeIter:
 
 # SequenceNode type of sequence node
 @dc.dataclass(kw_only=True)
-class SequenceNode(BaseNode):
+class SequenceNode(BaseNode, ArrayNode):
     start: tokens.Token
     end: ta.Optional[tokens.Token] = None
     is_flow_style: bool
-    values: ta.List[Node]
+    values: ta.List[ta.Optional[Node]]
     value_head_comments: ta.List[ta.Optional['CommentGroupNode']] = dc.field(default_factory=list)
     entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupNode'] = None
@@ -1460,7 +1460,7 @@ class SequenceNode(BaseNode):
         if len(self.values) <= idx:
             return yaml_error(f'invalid index for sequence: sequence length is {len(self.values):d}, but specified {idx:d} index')  # noqa
 
-        column = check.not_none(self.values[idx].get_token()).position.column - check.not_none(value.get_token()).position.column  # noqa
+        column = check.not_none(check.not_none(self.values[idx]).get_token()).position.column - check.not_none(value.get_token()).position.column  # noqa
         value.add_column(column)
         self.values[idx] = value
         return None
@@ -1504,7 +1504,7 @@ class SequenceNode(BaseNode):
         tokens.Token.add_column(self.start, col)
         tokens.Token.add_column(self.end, col)
         for value in self.values:
-            value.add_column(col)
+            check.not_none(value).add_column(col)
 
     def flow_style_string(self) -> str:
         values: ta.List[str] = []
@@ -1552,7 +1552,7 @@ class SequenceNode(BaseNode):
             if len(self.value_head_comments) == len(self.values) and self.value_head_comments[idx] is not None:
                 values.append(
                     f'{new_line_prefix}'
-                    f'{self.value_head_comments[idx].string_with_space(self.start.position.column - 1)}',
+                    f'{check.not_none(self.value_head_comments[idx]).string_with_space(self.start.position.column - 1)}',  # noqa
                 )
                 new_line_prefix = ''
 
@@ -1573,7 +1573,7 @@ class SequenceNode(BaseNode):
     def array_range(self) -> ta.Optional[ArrayNodeIter]:
         return ArrayNodeIter(
             idx=START_RANGE_INDEX,
-            values=self.values,
+            values=ta.cast('ta.List[Node]', self.values),
         )
 
     # marshal_yaml encodes to a YAML text
@@ -1589,7 +1589,7 @@ class SequenceNode(BaseNode):
 class SequenceEntryNode(BaseNode):
     head_comment: 'CommentGroupNode'  # head comment.
     line_comment: ta.Optional['CommentGroupNode'] = None  # line comment e.g.) - # comment.
-    start: tokens.Token  # entry token.
+    start: ta.Optional[tokens.Token]  # entry token.
     value: Node  # value node.
 
     # String node to text
@@ -1597,7 +1597,7 @@ class SequenceEntryNode(BaseNode):
         return ''  # TODO
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> ta.Optional[tokens.Token]:
         return self.start
 
     # type returns type of node
@@ -1614,7 +1614,7 @@ class SequenceEntryNode(BaseNode):
         return None
 
     # comment returns comment token instance
-    def get_comment(self) -> 'CommentGroupNode':
+    def get_comment(self) -> ta.Optional['CommentGroupNode']:
         return self.line_comment
 
     # marshal_yaml
@@ -1837,7 +1837,7 @@ class DirectiveNode(BaseNode):
 
 # TagNode type of tag node
 @dc.dataclass(kw_only=True)
-class TagNode(ScalarNode, BaseNode):
+class TagNode(ScalarNode, BaseNode, ArrayNode):
     directive: ta.Optional[DirectiveNode] = None
     start: tokens.Token
     value: ta.Optional[Node] = None
@@ -1904,7 +1904,7 @@ class TagNode(ScalarNode, BaseNode):
 # CommentNode type of comment node
 @dc.dataclass(kw_only=True)
 class CommentNode(BaseNode):
-    token: tokens.Token
+    token: ta.Optional[tokens.Token]
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1915,7 +1915,7 @@ class CommentNode(BaseNode):
         return NodeType.COMMENT
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> ta.Optional[tokens.Token]:
         return self.token
 
     # add_column add column number to child nodes recursively
@@ -1924,7 +1924,7 @@ class CommentNode(BaseNode):
 
     # String comment to text
     def __str__(self) -> str:
-        return f'#{self.token.value}'
+        return f'#{check.not_none(self.token).value}'
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -1970,7 +1970,7 @@ class CommentGroupNode(BaseNode):
         space = ' ' * col
         for comment in self.comments:
             spc = space
-            if check_line_break(comment.token):
+            if check_line_break(check.not_none(comment.token)):
                 spc = f'\n{spc}'
             values.append(spc + comment.string())
         return '\n'.join(values)
@@ -1988,7 +1988,7 @@ class CommentGroupNode(BaseNode):
 # followed by a call of w.visit(nil).
 class Visitor(abc.ABC):
     @abc.abstractmethod
-    def visit(self, node: Node) -> 'Visitor':
+    def visit(self, node: Node) -> ta.Optional['Visitor']:
         raise NotImplementedError
 
 
@@ -1996,9 +1996,10 @@ class Visitor(abc.ABC):
 # If the visitor w returned by v.visit(node) is not nil,
 # walk is invoked recursively with visitor w for each of the non-nil children of node,
 # followed by a call of w.visit(nil).
-def walk(v: Visitor, node: ta.Optional[Node]) -> None:
-    if (v := v.visit(node)) is None:
+def walk(v: Visitor, node: Node) -> None:
+    if (v_ := v.visit(node)) is None:
         return
+    v = v_
 
     n = node
     if isinstance(n, (CommentNode, NullNode)):
@@ -2019,40 +2020,40 @@ def walk(v: Visitor, node: ta.Optional[Node]) -> None:
         walk_comment(v, n)
     if isinstance(n, LiteralNode):
         walk_comment(v, n)
-        walk(v, n.value)
+        walk(v, check.not_none(n.value))
     if isinstance(n, DirectiveNode):
         walk_comment(v, n)
-        walk(v, n.name)
-        for value in n.values:
-            walk(v, value)
+        walk(v, check.not_none(n.name))
+        for value0 in n.values:
+            walk(v, value0)
     if isinstance(n, TagNode):
         walk_comment(v, n)
-        walk(v, n.value)
+        walk(v, check.not_none(n.value))
     if isinstance(n, DocumentNode):
         walk_comment(v, n)
-        walk(v, n.body)
+        walk(v, check.not_none(n.body))
     if isinstance(n, MappingNode):
         walk_comment(v, n)
-        for value in n.values:
-            walk(v, value)
+        for value1 in n.values:
+            walk(v, value1)
     if isinstance(n, MappingKeyNode):
         walk_comment(v, n)
-        walk(v, n.value)
+        walk(v, check.not_none(n.value))
     if isinstance(n, MappingValueNode):
         walk_comment(v, n)
         walk(v, n.key)
         walk(v, n.value)
     if isinstance(n, SequenceNode):
         walk_comment(v, n)
-        for value in n.values:
-            walk(v, value)
+        for value2 in n.values:
+            walk(v, check.not_none(value2))
     if isinstance(n, AnchorNode):
         walk_comment(v, n)
-        walk(v, n.name)
-        walk(v, n.value)
+        walk(v, check.not_none(n.name))
+        walk(v, check.not_none(n.value))
     if isinstance(n, AliasNode):
         walk_comment(v, n)
-        walk(v, n.value)
+        walk(v, check.not_none(n.value))
 
 
 def walk_comment(v: Visitor, base: ta.Optional[BaseNode]) -> None:
@@ -2112,16 +2113,16 @@ class ParentFinder:
         if isinstance(n, DirectiveNode):
             if (found := self.walk(n, n.name)) is not None:
                 return found
-            for value in n.values:
-                if (found := self.walk(n, value)) is not None:
+            for value0 in n.values:
+                if (found := self.walk(n, value0)) is not None:
                     return found
         if isinstance(n, TagNode):
             return self.walk(n, n.value)
         if isinstance(n, DocumentNode):
             return self.walk(n, n.body)
         if isinstance(n, MappingNode):
-            for value in n.values:
-                if (found := self.walk(n, value)) is not None:
+            for value1 in n.values:
+                if (found := self.walk(n, value1)) is not None:
                     return found
         if isinstance(n, MappingKeyNode):
             return self.walk(n, n.value)
@@ -2130,8 +2131,8 @@ class ParentFinder:
                 return found
             return self.walk(n, n.value)
         if isinstance(n, SequenceNode):
-            for value in n.values:
-                if (found := self.walk(n, value)) is not None:
+            for value2 in n.values:
+                if (found := self.walk(n, value2)) is not None:
                     return found
         if isinstance(n, AnchorNode):
             if (found := self.walk(n, n.name)) is not None:
