@@ -2,13 +2,13 @@ import dataclasses as dc
 import functools
 import typing as ta
 
-from omlish import check
 from omlish import lang
 
 from .... import minichain as mc
 from .base import CHAT_CHOICES_SERVICE_FACTORIES
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatSession
+from .printing import ChatSessionPrinter
 from .state import ChatStateManager
 
 
@@ -35,10 +35,12 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             config: Config,
             *,
             state_manager: ChatStateManager,
+            printer: ChatSessionPrinter,
     ) -> None:
         super().__init__(config)
 
         self._state_manager = state_manager
+        self._printer = printer
 
     def run(self) -> None:
         if self._config.new:
@@ -68,6 +70,6 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
 
                 resp_msg = response.v[0].m
 
-                print(check.isinstance(resp_msg.c, str).strip())
+                self._printer.print(resp_msg)
 
                 state = self._state_manager.extend_chat([req_msg, resp_msg])
