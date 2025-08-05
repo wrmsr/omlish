@@ -1285,7 +1285,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
     def is_merge_key(self) -> bool:
         if self.value is None:
             return False
-        key, = self.value
+        key = self.value
         if not isinstance(key, MapKeyNode):
             return False
         return key.is_merge_key()
