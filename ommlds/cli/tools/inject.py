@@ -33,12 +33,20 @@ def _provide_tool_catalog(its: ta.AbstractSet[_InjectedTool]) -> mc.ToolCatalog:
 
 def bind_tools(
         *,
+        enable_fs_tools: bool = False,
         enable_test_weather_tool: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
         inj.set_binder[_InjectedTool](),
         inj.bind(_provide_tool_catalog, singleton=True),
     ]
+
+    #
+
+    if enable_fs_tools:
+        from ...minichain.lib.fs.ls.execution import ls_tool
+
+        els.append(bind_tool(ls_tool()))
 
     #
 

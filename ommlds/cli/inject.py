@@ -30,6 +30,7 @@ def _provide_state_storage() -> StateStorage:
 def bind_main(
         session_cfg: Session.Config,
         *,
+        enable_fs_tools: bool = False,
         enable_test_weather_tool: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
@@ -38,6 +39,7 @@ def bind_main(
         bind_sessions(session_cfg),
 
         bind_tools(
+            enable_fs_tools=enable_fs_tools,
             enable_test_weather_tool=enable_test_weather_tool,
         ),
     ]
