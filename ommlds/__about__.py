@@ -23,7 +23,7 @@ class Project(ProjectBase):
 
             # 'sentencepiece ~= 0.2',  # FIXME: https://github.com/google/sentencepiece/issues/1121
 
-            'tiktoken ~= 0.9',
+            'tiktoken ~= 0.10',
 
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
             'tinygrad ~= 0.10',

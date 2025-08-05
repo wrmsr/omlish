@@ -34,7 +34,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.5.1  # @omlish-venv !13t !13dt
+ddgs==9.5.2  # @omlish-venv !13t !13dt
 
 gguf==0.17.1
 
@@ -45,7 +45,7 @@ gguf==0.17.1
 jedi==0.19.2
 jedi-language-server==0.45.1
 
-tree-sitter==0.25.0
+tree-sitter==0.25.1
 tree-sitter-python==0.23.6
 
 watchdog==6.0.0
