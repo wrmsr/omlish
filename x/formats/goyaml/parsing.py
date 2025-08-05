@@ -109,7 +109,7 @@ class Context:
         raw_tk = null_token.raw_token()
 
         # add space for map or sequence value.
-        raw_tk.position.column += 1
+        check.not_none(raw_tk).position.column += 1
 
         self.add_token(null_token)
         self.go_next()
@@ -117,8 +117,8 @@ class Context:
         return null_token
 
     def create_implicit_null_token(self, base: 'Token') -> 'Token':
-        pos = copy.copy(base.raw_token().position)
-        pos.column+=1
+        pos = copy.copy(check.not_none(base.raw_token()).position)
+        pos.column += 1
         tk = tokens.new('null', ' null', pos)
         tk.type = tokens_.Type.IMPLICIT_NULL
         return Token(token=tk)
@@ -148,9 +148,9 @@ class Context:
 
     def add_token(self, tk: 'Token') -> None:
         ref = check.not_none(self.token_ref)
-        last_tk = ref.tokens[ref.size-1]
+        last_tk = check.not_none(ref.tokens[ref.size-1])
         if last_tk.group is not None:
-            last_tk = last_tk.group.last()
+            last_tk = check.not_none(last_tk.group.last())
 
         check.not_none(last_tk.raw_token()).next = tk.raw_token()
         check.not_none(tk.raw_token()).prev = last_tk.raw_token()
@@ -237,7 +237,7 @@ class Token:
             return tokens_.Type.UNKNOWN
         if self.token is not None:
             return self.token.type
-        return self.group.token_type()
+        return check.not_none(self.group).token_type()
 
     def group_type(self: ta.Optional['Token']) -> TokenGroupType:
         if self is None:
