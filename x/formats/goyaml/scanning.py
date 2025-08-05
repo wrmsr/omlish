@@ -22,7 +22,7 @@ class InvalidTokenYamlError(YamlError):
 
     @property
     def message(self) -> str:
-        return self.token.error.message
+        return check.not_none(self.token.error).message
 
 
 def err_invalid_token(tk: tokens.Token) -> InvalidTokenYamlError:

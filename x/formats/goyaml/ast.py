@@ -1306,7 +1306,7 @@ class MappingValueNode(BaseNode):
 
     # Replace replace value node.
     def replace(self, value: Node) -> ta.Optional[YamlError]:
-        column = self.value.get_token().position.column - value.get_token().position.column
+        column = check.not_none(self.value.get_token()).position.column - check.not_none(value.get_token()).position.column  # noqa
         value.add_column(column)
         self.value = value
         return None
@@ -1345,22 +1345,22 @@ class MappingValueNode(BaseNode):
     def __str__(self) -> str:
         text: str
         if self.comment is not None:
-            text = f'{self.comment.string_with_space(self.key.get_token().position.column - 1)}\n{self.to_string()}'
+            text = f'{self.comment.string_with_space(check.not_none(self.key.get_token()).position.column - 1)}\n{self.to_string()}'  # noqa
         else:
             text = self.to_string()
 
         if self.foot_comment is not None:
-            text += f'\n{self.foot_comment.string_with_space(self.key.get_token().position.column - 1)}'
+            text += f'\n{self.foot_comment.string_with_space(check.not_none(self.key.get_token()).position.column - 1)}'
 
         return text
 
     def to_string(self) -> str:
-        space = ' ' * (self.key.get_token().position.column - 1)
-        if check_line_break(self.key.get_token()):
+        space = ' ' * (check.not_none(self.key.get_token()).position.column - 1)
+        if check_line_break(check.not_none(self.key.get_token())):
             space = f'\n{space}'
 
-        key_indent_level = self.key.get_token().position.indent_level
-        value_indent_level = self.value.get_token().position.indent_level
+        key_indent_level = check.not_none(self.key.get_token()).position.indent_level
+        value_indent_level = check.not_none(self.value.get_token()).position.indent_level
         key_comment = self.key.get_comment()
 
         if isinstance(self.value, ScalarNode):
@@ -1462,7 +1462,7 @@ class SequenceNode(BaseNode):
         if len(self.values) <= idx:
             return yaml_error(f'invalid index for sequence: sequence length is {len(self.values):d}, but specified {idx:d} index')  # noqa
 
-        column = self.values[idx].get_token().position.column - value.get_token().position.column
+        column = check.not_none(self.values[idx].get_token()).position.column - check.not_none(value.get_token()).position.column  # noqa
         value.add_column(column)
         self.values[idx] = value
         return None
@@ -1769,7 +1769,7 @@ class AliasNode(ScalarNode, BaseNode):
         return self.start
 
     def get_value(self) -> ta.Any:
-        return self.value.get_token().value
+        return check.not_none(self.value.get_token()).value
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
