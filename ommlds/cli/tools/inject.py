@@ -6,6 +6,7 @@ from omlish import lang
 
 from ... import minichain as mc
 from ..sessions.chat.inject import bind_chat_options
+from .config import ToolsConfig
 from .weather import WEATHER_TOOL
 
 
@@ -28,12 +29,10 @@ def bind_tool(tce: mc.ToolCatalogEntry) -> inj.Element | inj.Elements:
 ##
 
 
-def bind_tools(
-        *,
-        enable_fs_tools: bool = False,
-        enable_test_weather_tool: bool = False,
-) -> inj.Elements:
+def bind_tools(tools_config: ToolsConfig) -> inj.Elements:
     els: list[inj.Elemental] = [
+        inj.bind(tools_config),
+
         inj.bind(mc.ToolCatalog, singleton=True),
 
         inj.set_binder[_InjectedTool](),
@@ -47,14 +46,17 @@ def bind_tools(
 
     #
 
-    if enable_fs_tools:
+    if tools_config.enable_fs_tools:
         from ...minichain.lib.fs.ls.execution import ls_tool
 
         els.append(bind_tool(ls_tool()))
 
-    #
+    if tools_config.enable_unsafe_bash_tool:
+        from ...minichain.lib.bash import bash_tool
 
-    if enable_test_weather_tool:
+        els.append(bind_tool(bash_tool()))
+
+    if tools_config.enable_test_weather_tool:
         els.append(bind_tool(WEATHER_TOOL))
 
     #

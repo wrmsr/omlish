@@ -8,6 +8,7 @@ from .sessions.base import Session
 from .sessions.inject import bind_sessions
 from .state import JsonFileStateStorage
 from .state import StateStorage
+from .tools.config import ToolsConfig
 from .tools.inject import bind_tools
 
 
@@ -28,20 +29,16 @@ def _provide_state_storage() -> StateStorage:
 
 
 def bind_main(
-        session_cfg: Session.Config,
         *,
-        enable_fs_tools: bool = False,
-        enable_test_weather_tool: bool = False,
+        session_cfg: Session.Config,
+        tools_config: ToolsConfig,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
         bind_backends(),
 
         bind_sessions(session_cfg),
 
-        bind_tools(
-            enable_fs_tools=enable_fs_tools,
-            enable_test_weather_tool=enable_test_weather_tool,
-        ),
+        bind_tools(tools_config),
     ]
 
     #
