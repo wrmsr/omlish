@@ -1,5 +1,4 @@
 import dataclasses as dc
-import functools
 import typing as ta
 
 from omlish import check
@@ -9,7 +8,6 @@ from omlish.formats import json
 
 from .... import minichain as mc
 from ...backends.catalog import BackendCatalog
-from .base import CHAT_CHOICES_SERVICE_FACTORIES
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
@@ -83,9 +81,11 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         ]
 
         st_mdl: mc.ChatChoicesStreamService
-        with lang.maybe_managing(
-            self._backend_catalog.get_backend(mc.ChatChoicesStreamService, backend),
-        ) as st_mdl:
+        with lang.maybe_managing(self._backend_catalog.get_backend(
+            mc.ChatChoicesStreamService,
+            backend,
+            *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
+        )) as st_mdl:
             with st_mdl.invoke(mc.ChatChoicesStreamRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
@@ -121,13 +121,10 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             mc.UserMessage(prompt),
         ]
 
-        csf: ta.Callable[..., mc.ChatChoicesService]
-        if (bf := CHAT_CHOICES_SERVICE_FACTORIES.get(backend)) is not None:
-            csf = bf
-        else:
-            csf = functools.partial(mc.registry_of[mc.ChatChoicesService].new, backend)
-
-        with lang.maybe_managing(csf(
+        mdl: mc.ChatChoicesService
+        with lang.maybe_managing(self._backend_catalog.get_backend(
+            mc.ChatChoicesService,
+                backend,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
             response: mc.ChatChoicesResponse = mdl.invoke(mc.ChatChoicesRequest(

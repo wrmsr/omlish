@@ -12,14 +12,16 @@ from ..base import Session
 
 DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
-CHAT_CHOICES_SERVICE_FACTORIES: ta.Mapping[str, ta.Callable[..., mc.ChatChoicesService]] = {}
-
 
 ##
 
 
 ChatOption: ta.TypeAlias = mc.ChatChoicesOptions
 ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
+
+
+##
+
 
 ChatSessionConfigT = ta.TypeVar('ChatSessionConfigT', bound='ChatSession.Config')
 

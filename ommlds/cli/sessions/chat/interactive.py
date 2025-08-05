@@ -1,11 +1,10 @@
 import dataclasses as dc
-import functools
 import typing as ta
 
 from omlish import lang
 
 from .... import minichain as mc
-from .base import CHAT_CHOICES_SERVICE_FACTORIES
+from ...backends.catalog import BackendCatalog
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatSession
 from .printing import ChatSessionPrinter
@@ -36,11 +35,13 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             *,
             state_manager: ChatStateManager,
             printer: ChatSessionPrinter,
+            backend_catalog: BackendCatalog,
     ) -> None:
         super().__init__(config)
 
         self._state_manager = state_manager
         self._printer = printer
+        self._backend_catalog = backend_catalog
 
     def run(self) -> None:
         if self._config.new:
@@ -52,13 +53,10 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
         if backend is None:
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
-        csf: ta.Callable[..., mc.ChatChoicesService]
-        if (bf := CHAT_CHOICES_SERVICE_FACTORIES.get(backend)) is not None:
-            csf = bf
-        else:
-            csf = functools.partial(mc.registry_of[mc.ChatChoicesService].new, backend)
-
-        with lang.maybe_managing(csf(
+        mdl: mc.ChatChoicesService
+        with lang.maybe_managing(self._backend_catalog.get_backend(
+                mc.ChatChoicesService,
+                backend,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
             while True:

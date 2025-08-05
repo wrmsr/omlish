@@ -11,7 +11,7 @@ from omlish import lang
 
 class BackendCatalog(lang.Abstract):
     @abc.abstractmethod
-    def get_backend(self, service_cls: ta.Any, name: str) -> ta.Any:
+    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         raise NotImplementedError
 
     # #
@@ -23,8 +23,8 @@ class BackendCatalog(lang.Abstract):
     #         self._catalog = catalog
     #         self._service_cls = service_cls
     #
-    #     def get_backend(self, name: str) -> T:
-    #         return ta.cast(T, self._catalog.get_backend(self._service_cls, name))
+    #     def get_backend(self, name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+    #         return ta.cast(T, self._catalog.get_backend(self._service_cls, name, *args, **kwargs))
     #
     # def __getitem__(
     #         self,
@@ -65,6 +65,6 @@ class SimpleBackendCatalog(BackendCatalog):
             sc_dct[e.name] = e
         self._dct = dct
 
-    def get_backend(self, service_cls: ta.Any, name: str) -> ta.Any:
+    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         e = self._dct[service_cls][name]
-        return e.factory_fn()
+        return e.factory_fn(*args, **kwargs)
