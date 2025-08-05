@@ -2,6 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import inject as inj
+from omlish import lang
 
 from ... import minichain as mc
 from ..sessions.chat.inject import bind_chat_options
@@ -24,10 +25,6 @@ def bind_tool(tce: mc.ToolCatalogEntry) -> inj.Element | inj.Elements:
     )
 
 
-def _provide_tool_catalog(its: ta.AbstractSet[_InjectedTool]) -> mc.ToolCatalog:
-    return mc.ToolCatalog(ta.cast(mc.ToolCatalogEntries, [it.tce for it in its]))
-
-
 ##
 
 
@@ -37,8 +34,15 @@ def bind_tools(
         enable_test_weather_tool: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
+        inj.bind(mc.ToolCatalog, singleton=True),
+
         inj.set_binder[_InjectedTool](),
-        inj.bind(_provide_tool_catalog, singleton=True),
+        inj.bind(
+            lang.typed_lambda(mc.ToolCatalogEntries, s=ta.AbstractSet[_InjectedTool])(
+                lambda s: [it.tce for it in s],
+            ),
+            singleton=True,
+        ),
     ]
 
     #
