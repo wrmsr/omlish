@@ -5,15 +5,16 @@ My python monorepo, the successor to my previous one `omnibus`(... 'ish').
 The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
 respective `pyproject.toml` files for details.
 
-General code is written for python 3.13+, '[lite](omlish#lite-code)' code for 3.8+.
+General code is written for python 3.13+, '[lite](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code)' code
+for 3.8+.
 
 # Core libraries
 
-- **[omlish](omlish#readme)** - Core foundational code
-- **[omdev](omdev#readme)** - Development utilities
-- **[ominfra](ominfra)** - Infrastructure and cloud code
-- **[ommlds](ommlds)** - ML / data science code
-- **[omserv](omserv)** - Request serving code
+- **[omlish](https://github.com/wrmsr/omlish/blob/master/omlish#readme)** - Core foundational code
+- **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities
+- **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra)** - Infrastructure and cloud code
+- **[ommlds](https://github.com/wrmsr/omlish/ommlds)** - ML / data science code
+- **[omserv](https://github.com/wrmsr/omlish/omserv)** - Request serving code
 
 # Installation
 
@@ -45,7 +46,9 @@ om cli reinstall
 
 # Project structure
 
-The structure of the repo is managed by the internal [pyproject](omdev/pyproject) tool, which generates [`.pkg`](.pkg)
-directories (which map to published packages) from each library's [`__about__.py`](omlish/__about__.py). The root-level
-[`pyproject.toml`](pyproject.toml) does not actually contain a PEP-621 project.
-
+The structure of the repo is managed by the internal
+[pyproject](https://github.com/wrmsr/omlish/blob/master/omdev/pyproject) tool, which generates
+[`.pkg`](https://github.com/wrmsr/omlish/blob/master/.pkg) directories (which map to published packages) from each
+library's [`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omlish/__about__.py). The root-level
+[`pyproject.toml`](https://github.com/wrmsr/omlish/blob/master/pyproject.toml) does not actually contain a PEP-621
+project.
