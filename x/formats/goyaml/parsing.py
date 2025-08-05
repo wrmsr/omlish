@@ -1461,7 +1461,7 @@ class Parser:
             return err_syntax('unexpected map key', Token.raw_token(key_tk))
         key_value_node: ast.MappingValueNode
         if Token.group_type(key_tk) == TokenGroupType.MAP_KEY_VALUE:
-            node0 = self.parse_map_key_value(ctx.with_group(check.not_none(key_tk.group)), check.not_none(key_tk.group), None)
+            node0 = self.parse_map_key_value(ctx.with_group(check.not_none(key_tk.group)), check.not_none(key_tk.group), None)  # noqa
             if isinstance(node0, YamlError):
                 return node0
             key_value_node = node0

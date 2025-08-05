@@ -84,7 +84,7 @@ class Context:
     def set_folded(self, last_delim_column: int, opt: str) -> None:
         mstate = MultiLineState(
             is_folded= True,
-            opt=      opt,
+            opt=opt,
         )
         indent = first_line_indent_column_by_opt(opt)
         if indent > 0:

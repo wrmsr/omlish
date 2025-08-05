@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from ..parsing import parse_str
 from ..errors import YamlError
+from ..parsing import parse_str
 
 
 def _main() -> None:
