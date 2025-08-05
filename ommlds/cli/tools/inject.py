@@ -17,12 +17,8 @@ class _InjectedTool:
 
 
 def bind_tool(tce: mc.ToolCatalogEntry) -> inj.Element | inj.Elements:
-    it = _InjectedTool(tce)
-    it_key: inj.Key = inj.Key(_InjectedTool, tag=inj.Id(id(it)))
-
     return inj.as_elements(
-        inj.bind(it_key, to_const=it),
-        inj.set_binder[_InjectedTool]().bind(it_key),
+        inj.bind_set_entry_const(ta.AbstractSet[_InjectedTool], _InjectedTool(tce)),
 
         bind_chat_options(mc.Tool(tce.spec)),
     )

@@ -14,7 +14,7 @@ from .executors import ToolFnToolExecutor
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
     target: ToolFn | ToolExecutor

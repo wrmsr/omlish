@@ -3,6 +3,7 @@ import os.path
 from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 
+from .backends.inject import bind_backends
 from .sessions.base import Session
 from .sessions.inject import bind_sessions
 from .state import JsonFileStateStorage
@@ -32,6 +33,8 @@ def bind_main(
         enable_test_weather_tool: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
+        bind_backends(),
+
         bind_sessions(session_cfg),
 
         bind_tools(

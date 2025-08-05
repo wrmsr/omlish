@@ -1,3 +1,4 @@
+import collections.abc
 import functools
 import inspect
 import types
@@ -11,8 +12,10 @@ from .bindings import Binding
 from .eagers import Eager
 from .elements import Element
 from .elements import Elements
+from .elements import as_elements
 from .keys import Key
 from .keys import as_key
+from .multis import SetBinding
 from .privates import Expose
 from .providers import ConstProvider
 from .providers import CtorProvider
@@ -21,6 +24,7 @@ from .providers import LinkProvider
 from .providers import Provider
 from .scopes import SCOPE_ALIASES
 from .scopes import Singleton
+from .tags import Id
 from .types import Scope
 from .types import Unscoped
 
@@ -180,3 +184,21 @@ def bind(
         return elements[0]
     else:
         return Elements(frozenset(elements))
+
+
+##
+
+
+def bind_set_entry_const(set_key: ta.Any, obj: ta.Any, *, tag: ta.Any | None = None) -> Elements:
+    set_key = as_key(set_key)
+    set_rty = check.isinstance(set_key.ty, rfl.Generic)
+    check.is_(set_rty.cls, collections.abc.Set)
+
+    if tag is None:
+        tag = Id(id(obj), tag=set_key.tag)
+    obj_key: Key = Key(type(obj), tag=tag)
+
+    return as_elements(
+        bind(obj_key, to_const=obj),
+        SetBinding(set_key, obj_key),
+    )

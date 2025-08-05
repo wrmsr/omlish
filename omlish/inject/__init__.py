@@ -4,6 +4,7 @@
 from .binder import (  # noqa
     bind,
     bind_as_fn,
+    bind_set_entry_const,
 )
 
 from .bindings import (  # noqa
@@ -112,6 +113,10 @@ from .scopes import (  # noqa
     enter_seeded_scope,
 )
 
+from .tags import (  # noqa
+    Id,
+)
+
 from .types import (  # noqa
     Scope,
     Tag,
@@ -120,5 +125,4 @@ from .types import (  # noqa
 
 from .utils import (  # noqa
     ConstFn,
-    Id,
 )

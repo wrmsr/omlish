@@ -19,14 +19,3 @@ class ConstFn(HasOriginsImpl, lang.Final, ta.Generic[T]):
 
     def __call__(self) -> T:
         return self.v
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(terse_repr=True)
-class Id:
-    """A utility dataclass intended to be used as a key tag for disambiguation."""
-
-    v: int

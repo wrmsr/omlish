@@ -1,3 +1,4 @@
+import dataclasses as dc
 import typing as ta
 
 from ... import inject as inj
@@ -39,3 +40,17 @@ def test_private_multis():
         inj.set_binder[str]().bind(inj.Key(str, tag='b')),
     )
     assert set(i[ta.AbstractSet[str]]) == {'a!', 'b!'}
+
+
+def test_bind_set_entry_const():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        s: str
+
+    injector = inj.create_injector(
+        inj.set_binder[Foo](),
+
+        inj.bind_set_entry_const(ta.AbstractSet[Foo], Foo('abc')),
+        inj.bind_set_entry_const(ta.AbstractSet[Foo], Foo('def')),
+    )
+    assert set(injector[ta.AbstractSet[Foo]]) == {Foo('abc'), Foo('def')}

@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
 class Key(lang.Final, ta.Generic[T]):
     ty: rfl.Type = dc.xfield(coerce=rfl.type_)
 
