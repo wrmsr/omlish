@@ -1673,7 +1673,7 @@ class AnchorNode(ScalarNode, BaseNode):
     value: ta.Optional[Node] = None
 
     def string_without_comment(self) -> str:
-        return self.value.string()
+        return check.not_none(self.value).string()
 
     def set_name(self, name: str) -> ta.Optional[YamlError]:
         if self.name is None:
@@ -1709,7 +1709,7 @@ class AnchorNode(ScalarNode, BaseNode):
 
     # String anchor to text
     def __str__(self) -> str:
-        anchor = '&' + self.name.string()
+        anchor = '&' + check.not_none(self.name).string()
         value = check.not_none(self.value).string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
             return f'{anchor}\n{value}'
@@ -1777,7 +1777,7 @@ class AliasNode(ScalarNode, BaseNode):
 
     # String alias to text
     def __str__(self) -> str:
-        return f'*{self.value.string()}'
+        return f'*{check.not_none(self.value).string()}'
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -1825,7 +1825,7 @@ class DirectiveNode(BaseNode):
         values: ta.List[str] = []
         for val in self.values:
             values.append(val.string())
-        return ' '.join(['%' + self.name.string(), *values])
+        return ' '.join(['%' + check.not_none(self.name).string(), *values])
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -1848,7 +1848,7 @@ class TagNode(ScalarNode, BaseNode):
         return self.value.get_value()
 
     def string_without_comment(self) -> str:
-        return self.value.string()
+        return check.not_none(self.value).string()
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1870,7 +1870,7 @@ class TagNode(ScalarNode, BaseNode):
 
     # String tag to text
     def __str__(self) -> str:
-        value = self.value.string()
+        value = check.not_none(self.value).string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
             return f'{self.start.value}\n{value}'
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
