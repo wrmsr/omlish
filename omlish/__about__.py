@@ -22,6 +22,9 @@ class ProjectBase:
 
         'Operating System :: OS Independent',
         'Operating System :: POSIX',
+
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.13',
     ]
 
 
