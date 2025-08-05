@@ -350,13 +350,14 @@ def float_(tk: tokens.Token) -> 'FloatNode':
 
 # infinity create node for .inf or -.inf value
 def infinity(tk: tokens.Token) -> 'InfinityNode':
+    if tk.value in ('.inf', '.Inf', '.INF'):
+        value = float('inf')
+    elif tk.value in ('-.inf', '-.Inf', '-.INF'):
+        value = float('-inf')
     node = InfinityNode(
         token=tk,
+        value=value,
     )
-    if tk.value in ('.inf', '.Inf', '.INF'):
-        node.value = float('inf')
-    elif tk.value in ('-.inf', '-.Inf', '-.INF'):
-        node.value = float('-inf')
     return node
 
 
@@ -521,7 +522,7 @@ class DocumentNode(BaseNode):
 
     # get_token returns token instance
     def get_token(self) -> tokens.Token:
-        return self.body.get_token()
+        return check.not_none(self.body).get_token()
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
@@ -1148,7 +1149,7 @@ class MappingNode(BaseNode):
     def start_pos(self) -> tokens.Position:
         if len(self.values) == 0:
             return self.start.position
-        return self.values[0].key.get_token().position
+        return check.not_none(self.values[0].key.get_token()).position
 
     # merge merge key/value of map.
     def merge(self, target: 'MappingNode') -> None:
@@ -1272,7 +1273,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
-        return f'{self.start.value} {self.value.string()}'
+        return f'{self.start.value} {check.not_none(self.value).string()}'
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -1696,7 +1697,7 @@ class AnchorNode(ScalarNode, BaseNode):
         return self.start
 
     def get_value(self) -> ta.Any:
-        return self.value.get_token().value
+        return check.not_none(check.not_none(self.value).get_token()).value
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
