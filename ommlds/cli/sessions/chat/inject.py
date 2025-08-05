@@ -4,8 +4,6 @@ from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
-from ...backends.catalog import BackendCatalogEntry
-from .backends import CHAT_BACKEND_CATALOG_ENTRIES
 from .base import ChatOption
 from .base import ChatOptions
 from .base import ChatSession
@@ -63,10 +61,5 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
             inj.bind(SimpleStringChatSessionPrinter, singleton=True),
             inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
         ])
-
-    els.extend([
-        inj.bind_set_entry_const(ta.AbstractSet[BackendCatalogEntry], e)
-        for e in CHAT_BACKEND_CATALOG_ENTRIES
-    ])
 
     return inj.as_elements(*els)

@@ -7,6 +7,7 @@ from .catalog import BackendCatalog
 from .catalog import BackendCatalogEntries
 from .catalog import BackendCatalogEntry
 from .catalog import SimpleBackendCatalog
+from .standard import STANDARD_BACKEND_CATALOG_ENTRIES
 
 
 ##
@@ -25,5 +26,10 @@ def bind_backends() -> inj.Elements:
         inj.bind(SimpleBackendCatalog, singleton=True),
         inj.bind(BackendCatalog, to_key=SimpleBackendCatalog),
     ]
+
+    lst.extend([
+        inj.bind_set_entry_const(ta.AbstractSet[BackendCatalogEntry], e)
+        for e in STANDARD_BACKEND_CATALOG_ENTRIES
+    ])
 
     return inj.as_elements(*lst)

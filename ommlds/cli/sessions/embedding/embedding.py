@@ -1,32 +1,17 @@
 import dataclasses as dc
-import typing as ta
 
 from omlish import lang
 from omlish.formats import json
 
 from .... import minichain as mc
+from ...backends.catalog import BackendCatalog
 from ..base import Session
 
-
-if ta.TYPE_CHECKING:
-    from ....minichain.backends.openai import embedding as mc_openai_embedding
-    from ....minichain.backends.transformers import sentence as mc_stfm
-else:
-    mc_openai_embedding = lang.proxy_import('....minichain.backends.openai.embedding', __package__)
-    mc_stfm = lang.proxy_import('....minichain.backends.transformers.sentence', __package__)
 
 ##
 
 
 DEFAULT_EMBEDDING_MODEL_BACKEND = 'openai'
-
-EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, ta.Callable[[], type[mc.EmbeddingService]]] = {
-    'openai': lambda: mc_openai_embedding.OpenaiEmbeddingService,
-    'stfm': lambda: mc_stfm.SentenceTransformersEmbeddingService,
-}
-
-
-##
 
 
 class EmbeddingSession(Session['EmbeddingSession.Config']):
@@ -38,12 +23,21 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
 
         backend: str | None = None
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            config: Config,
+            *,
+            backend_catalog: BackendCatalog,
+    ) -> None:
         super().__init__(config)
 
+        self._backend_catalog = backend_catalog
+
     def run(self) -> None:
-        with lang.maybe_managing(
-                EMBEDDING_MODEL_BACKENDS[self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND]()(),
-        ) as mdl:
+        mdl: mc.EmbeddingService
+        with lang.maybe_managing(self._backend_catalog.get_backend(
+            mc.EmbeddingService,
+            self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND,
+        )) as mdl:
             response = mdl.invoke(mc.EmbeddingRequest(self._config.content))
-            print(json.dumps_compact(response.v))
+            print(json.dumps_compact(list(map(float, response.v))))
