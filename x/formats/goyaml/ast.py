@@ -1159,11 +1159,8 @@ class MappingNode(BaseNode):
         column = self.start_pos().column - target.start_pos().column
         target.add_column(column)
         for value in target.values:
-            try:
-                map_value, exists = key_to_map_value_map[value.key.string()], True
-            except KeyError:
-                map_value, exists = None, False
-            if exists:
+            map_value = key_to_map_value_map.get(value.key.string())
+            if map_value is not None:
                 map_value.value = value.value
             else:
                 self.values.append(value)
@@ -1204,14 +1201,14 @@ class MappingNode(BaseNode):
 
     def block_style_string(self, comment_mode: bool) -> str:
         values: ta.List[str] = []
-        for value in self.values:
-            values.append(value.string())
+        for value0 in self.values:
+            values.append(value0.string())
         map_text = '\n'.join(values)
         if comment_mode and self.comment is not None:
-            value = values[0]
+            value1 = values[0]
             space_num = 0
-            for i in range(len(value)):
-                if value[i] != ' ':
+            for i in range(len(value1)):
+                if value1[i] != ' ':
                     break
                 space_num += 1
             comment = self.comment.string_with_space(space_num)
@@ -1712,7 +1709,7 @@ class AnchorNode(ScalarNode, BaseNode):
     # String anchor to text
     def __str__(self) -> str:
         anchor = '&' + self.name.string()
-        value = self.value.string()
+        value = check.not_none(self.value).string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
             return f'{anchor}\n{value}'
         elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
@@ -1746,7 +1743,7 @@ class AliasNode(ScalarNode, BaseNode):
     value: ta.Optional[Node] = None
 
     def string_without_comment(self) -> str:
-        return self.value.string()
+        return check.not_none(self.value).string()
 
     def set_name(self, name: str) -> ta.Optional[YamlError]:
         if self.value is None:
@@ -1769,7 +1766,7 @@ class AliasNode(ScalarNode, BaseNode):
         return self.start
 
     def get_value(self) -> ta.Any:
-        return check.not_none(self.value.get_token()).value
+        return check.not_none(check.not_none(self.value).get_token()).value
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
