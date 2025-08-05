@@ -12,8 +12,10 @@ from .printing import MarkdownStringChatSessionPrinter
 from .printing import SimpleStringChatSessionPrinter
 from .state import ChatStateManager
 from .state import StateStorageChatStateManager
+from .tools import AskingToolExecutionConfirmation
 from .tools import ToolExecRequestExecutor
 from .tools import ToolExecRequestExecutorImpl
+from .tools import ToolExecutionConfirmation
 
 
 ##
@@ -73,6 +75,9 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
     #
 
     els.extend([
+        inj.bind(AskingToolExecutionConfirmation, singleton=True),
+        inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
+
         inj.bind(ToolExecRequestExecutorImpl, singleton=True),
         inj.bind(ToolExecRequestExecutor, to_key=ToolExecRequestExecutorImpl),
     ])

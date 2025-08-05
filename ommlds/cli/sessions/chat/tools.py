@@ -18,35 +18,23 @@ else:
 ##
 
 
-class ToolExecRequestExecutor(lang.Abstract):
-    @abc.abstractmethod
-    def execute_tool_request(
-            self,
-            ter: mc.ToolExecRequest,
-    ) -> mc.ToolExecResultMessage:
-        raise NotImplementedError
-
-
-##
-
-
 class ToolExecutionRequestDeniedError(Exception):
     pass
 
 
-class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
-    def __init__(
-            self,
-            *,
-            tool_catalog: mc.ToolCatalog | None = None,
-    ) -> None:
-        super().__init__()
+class ToolExecutionConfirmation(lang.Abstract):
+    @abc.abstractmethod
+    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+        raise NotImplementedError
 
-        self._tool_catalog = tool_catalog
 
-    def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
-        tce = check.not_none(self._tool_catalog).by_name[check.non_empty_str(tr.name)]
+class NopToolExecutionConfirmation(ToolExecutionConfirmation):
+    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+        pass
 
+
+class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
+    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
         tr_dct = dict(
             id=tr.id,
             spec=msh.marshal(tce.spec),
@@ -57,8 +45,38 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
         if not cr:
             raise ToolExecutionRequestDeniedError
 
+
+##
+
+
+class ToolExecRequestExecutor(lang.Abstract):
+    @abc.abstractmethod
+    def execute_tool_request(
+            self,
+            ter: mc.ToolExecRequest,
+    ) -> mc.ToolExecResultMessage:
+        raise NotImplementedError
+
+
+class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
+    def __init__(
+            self,
+            *,
+            catalog: mc.ToolCatalog,
+            confirmation: ToolExecutionConfirmation,
+    ) -> None:
+        super().__init__()
+
+        self._catalog = catalog
+        self._confirmation = confirmation
+
+    def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
+        tce = self._catalog.by_name[check.non_empty_str(tr.name)]
+
+        self._confirmation.confirm_tool_execution_or_raise(tr, tce)
+
         return mc.execute_tool_request(
             mc.ToolContext(),
-            check.not_none(self._tool_catalog),
+            tce.executor(),
             tr,
         )
