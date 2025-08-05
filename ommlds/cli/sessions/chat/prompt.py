@@ -156,6 +156,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                     check.not_none(self._tool_catalog),
                     tr,
                 )
+                print(trm.c)
                 new_chat.append(trm)
 
                 response = mdl.invoke(mc.ChatChoicesRequest(
