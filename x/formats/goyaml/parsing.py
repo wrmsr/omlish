@@ -2090,7 +2090,7 @@ class Parser:
                 # treat it as a footer comment for the last element.
                 seq_node.foot_comment = self.parse_foot_comment(ctx, Token.column(seq_tk))
                 if len(seq_node.values) != 0:
-                    check.not_none(seq_node.foot_comment).set_path(seq_node.values[len(seq_node.values) - 1].get_path())
+                    check.not_none(seq_node.foot_comment).set_path(check.not_none(seq_node.values[len(seq_node.values) - 1]).get_path())  # noqa
         return seq_node
 
     def parse_sequence_value(self, ctx: Context, seq_tk: Token) -> YamlErrorOr[ast.Node]:

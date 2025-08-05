@@ -521,7 +521,7 @@ class DocumentNode(BaseNode):
         return NodeType.DOCUMENT
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> ta.Optional[tokens.Token]:
         return check.not_none(self.body).get_token()
 
     # add_column add column number to child nodes recursively
@@ -892,7 +892,7 @@ class LiteralNode(ScalarNode, BaseNode):
 
     # String literal to text
     def __str__(self) -> str:
-        origin = self.value.get_token().origin
+        origin = check.not_none(check.not_none(self.value).get_token()).origin
         lit = origin.rstrip(' ').rstrip('\n')
         if self.comment is not None:
             return f'{self.start.value} {self.comment.string()}\n{lit}'
@@ -1509,7 +1509,7 @@ class SequenceNode(BaseNode, ArrayNode):
     def flow_style_string(self) -> str:
         values: ta.List[str] = []
         for value in self.values:
-            values.append(value.string())
+            values.append(check.not_none(value).string())
 
         return f'[{", ".join(values)}]'
 
@@ -1587,7 +1587,7 @@ class SequenceNode(BaseNode, ArrayNode):
 # SequenceEntryNode is the sequence entry.
 @dc.dataclass(kw_only=True)
 class SequenceEntryNode(BaseNode):
-    head_comment: 'CommentGroupNode'  # head comment.
+    head_comment: ta.Optional['CommentGroupNode']  # head comment.
     line_comment: ta.Optional['CommentGroupNode'] = None  # line comment e.g.) - # comment.
     start: ta.Optional[tokens.Token]  # entry token.
     value: Node  # value node.
