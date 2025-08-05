@@ -10,11 +10,11 @@ authors = [
     {name = 'wrmsr'},
 ]
 urls = {source = 'https://github.com/wrmsr/omlish'}
-license = {text = 'BSD-3-Clause'}
+license = 'BSD-3-Clause'
+readme = 'README.md'
 requires-python = '>=3.13'
 version = '0.0.0.dev382'
 classifiers = [
-    'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
@@ -35,7 +35,7 @@ all = [
     'tinygrad ~= 0.10',
     'tokenizers ~= 0.21',
     'torch ~= 2.7',
-    'transformers ~= 4.54',
+    'transformers ~= 4.55',
     'sentence-transformers ~= 5.0',
     'huggingface-hub ~= 0.34',
     'datasets ~= 4.0',
@@ -56,7 +56,7 @@ backends = [
     'tinygrad ~= 0.10',
     'tokenizers ~= 0.21',
     'torch ~= 2.7',
-    'transformers ~= 4.54',
+    'transformers ~= 4.55',
     'sentence-transformers ~= 5.0',
 ]
 huggingface = [

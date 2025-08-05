@@ -170,7 +170,7 @@ networkx==3.5
 nh3==0.3.0
 nodeenv==1.9.1
 nodejs-wheel-binaries==22.18.0
-notebook==7.4.4
+notebook==7.4.5
 notebook_shim==0.2.4
 numpy==2.3.2
 objgraph==3.6.2
@@ -245,7 +245,7 @@ PyYAML==6.0.2
 pyzmq==27.0.1
 rapidocr-onnxruntime==1.4.4
 readme_renderer==44.0
-redis==6.2.0
+redis==6.3.0
 referencing==0.36.2
 regex==2025.7.34
 requests==2.32.4
@@ -297,7 +297,7 @@ torchvision==0.22.1
 tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3
-transformers==4.54.1
+transformers==4.55.0
 tree-sitter==0.25.0
 tree-sitter-python==0.23.6
 trino==0.335.0

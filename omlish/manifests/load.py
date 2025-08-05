@@ -130,6 +130,7 @@ class ManifestLoader:
                 spec is not None and
                 isinstance(spec.loader, importlib.machinery.SourceFileLoader) and
                 spec.origin is not None and
+                len(spec.submodule_search_locations or []) == 1 and
                 os.path.basename(spec.origin) == '__init__.py' and
                 os.path.isfile(spec.origin)
         ):

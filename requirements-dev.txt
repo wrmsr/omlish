@@ -74,7 +74,7 @@ ujson==5.10.0
 
 markupsafe==3.0.2
 
-redis==6.2.0
+redis==6.3.0
 
 sqlean.py==3.49.1; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -118,7 +118,7 @@ hf-xet==1.1.5  # @omlish-venv !13t !13dt !14t
 
 datasets==4.0.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.54.1; python_version < "3.14"  # @omlish-venv !14t
+transformers==4.55.0; python_version < "3.14"  # @omlish-venv !14t
 sentence-transformers==5.0.0; python_version < "3.14"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121

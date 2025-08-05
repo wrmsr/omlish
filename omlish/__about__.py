@@ -9,14 +9,15 @@ class ProjectBase:
     name: str | None = None
     authors = [{'name': 'wrmsr'}]
     urls = {'source': 'https://github.com/wrmsr/omlish'}
-    license = {'text': 'BSD-3-Clause'}
+    license = 'BSD-3-Clause'
+    readme = 'README.md'
     requires_python = '>=3.13'
 
     version = __version__
 
     classifiers = [
-        'License :: OSI Approved :: BSD License',
         'Development Status :: 2 - Pre-Alpha',
+
         'Intended Audience :: Developers',
 
         'Operating System :: OS Independent',
