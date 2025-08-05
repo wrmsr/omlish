@@ -27,7 +27,9 @@ ChatSessionConfigT = ta.TypeVar('ChatSessionConfigT', bound='ChatSession.Config'
 class ChatSession(Session[ChatSessionConfigT], lang.Abstract, ta.Generic[ChatSessionConfigT]):  # noqa
     @dc.dataclass(frozen=True)
     class Config(Session.Config, lang.Abstract):
-        pass
+        _: dc.KW_ONLY
+
+        markdown: bool = False
 
     def __init__(
             self,

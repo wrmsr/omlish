@@ -10,7 +10,8 @@ from .base import ChatOption
 from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
-from .printing import StringChatSessionPrinter
+from .printing import MarkdownStringChatSessionPrinter
+from .printing import SimpleStringChatSessionPrinter
 from .state import ChatStateManager
 from .state import StateStorageChatStateManager
 
@@ -52,10 +53,16 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
         inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
     ])
 
-    els.extend([
-        inj.bind(StringChatSessionPrinter, singleton=True),
-        inj.bind(ChatSessionPrinter, to_key=StringChatSessionPrinter),
-    ])
+    if cfg.markdown:
+        els.extend([
+            inj.bind(MarkdownStringChatSessionPrinter, singleton=True),
+            inj.bind(ChatSessionPrinter, to_key=MarkdownStringChatSessionPrinter),
+        ])
+    else:
+        els.extend([
+            inj.bind(SimpleStringChatSessionPrinter, singleton=True),
+            inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
+        ])
 
     els.extend([
         inj.bind_set_entry_const(ta.AbstractSet[BackendCatalogEntry], e)

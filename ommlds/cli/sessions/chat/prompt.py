@@ -19,10 +19,8 @@ from .state import ChatStateManager
 
 if ta.TYPE_CHECKING:
     from omdev import ptk
-    from omdev.ptk import markdown as ptk_md
 else:
     ptk = lang.proxy_import('omdev.ptk')
-    ptk_md = lang.proxy_import('omdev.ptk.markdown')
 
 
 ##
@@ -34,7 +32,7 @@ class ToolExecutionRequestDeniedError(Exception):
 
 class PromptChatSession(ChatSession['PromptChatSession.Config']):
     @dc.dataclass(frozen=True)
-    class Config(ChatSession.Config):
+    class Config(ChatSession.Config):  # noqa
         content: mc.Content
 
         _: dc.KW_ONLY
@@ -43,7 +41,6 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         backend: str | None = None
         model_name: str | None = None
         stream: bool = False
-        markdown: bool = False
 
     def __init__(
             self,
@@ -172,13 +169,6 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 resp_m = response.v[0].m
                 new_chat.append(resp_m)
 
-            if self._config.markdown:
-                ptk.print_formatted_text(
-                    ptk_md.Markdown(check.isinstance(resp_m.c, str).strip()),
-                    style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
-                )
-
-            else:
-                self._printer.print(resp_m)
+            self._printer.print(resp_m)
 
         self._state_manager.extend_chat(new_chat)

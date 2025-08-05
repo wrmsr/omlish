@@ -7,6 +7,14 @@ from omlish import lang
 from .... import minichain as mc
 
 
+if ta.TYPE_CHECKING:
+    from omdev import ptk
+    from omdev.ptk import markdown as ptk_md
+else:
+    ptk = lang.proxy_import('omdev.ptk')
+    ptk_md = lang.proxy_import('omdev.ptk.markdown')
+
+
 ##
 
 
@@ -19,22 +27,10 @@ class ChatSessionPrinter(lang.Abstract):
 ##
 
 
-class StringChatSessionPrinter(ChatSessionPrinter):
-    def __init__(
-            self,
-            *,
-            str_printer: ta.Callable[[str], None] | None = None,
-    ) -> None:
-        super().__init__()
-
-        if str_printer is None:
-            str_printer = print
-        self._str_printer = str_printer
-
+class StringChatSessionPrinter(ChatSessionPrinter, lang.Abstract):
+    @abc.abstractmethod
     def _print_str(self, s: str) -> None:
-        s = s.strip()
-        if s:
-            self._str_printer(s)
+        raise NotImplementedError
 
     def print(self, obj: mc.Message | mc.Content) -> None:
         if obj is None:
@@ -60,3 +56,41 @@ class StringChatSessionPrinter(ChatSessionPrinter):
 
         else:
             raise TypeError(obj)
+
+
+##
+
+
+class SimpleStringChatSessionPrinter(StringChatSessionPrinter):
+    def __init__(
+            self,
+            *,
+            str_printer: ta.Callable[[str], None] | None = None,
+    ) -> None:
+        super().__init__()
+
+        if str_printer is None:
+            str_printer = print
+        self._str_printer = str_printer
+
+    def _print_str(self, s: str) -> None:
+        s = s.strip()
+        if not s:
+            return
+
+        self._str_printer(s)
+
+
+##
+
+
+class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
+    def _print_str(self, s: str) -> None:
+        s = s.strip()
+        if not s:
+            return
+
+        ptk.print_formatted_text(
+            ptk_md.Markdown(s),
+            style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
+        )
