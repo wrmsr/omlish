@@ -250,6 +250,10 @@ from .tools.execution.executors import (  # noqa
     NameSwitchedToolExecutor,
 )
 
+from .tools.execution.reflect import (  # noqa
+    reflect_tool_catalog_entry,
+)
+
 from .tools.fns import (  # noqa
     ToolFn,
 

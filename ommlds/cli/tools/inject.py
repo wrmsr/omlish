@@ -5,7 +5,7 @@ from omlish import inject as inj
 
 from ... import minichain as mc
 from ..sessions.chat.inject import bind_chat_options
-from .tools import WEATHER_TOOL
+from .weather import WEATHER_TOOL
 
 
 ##

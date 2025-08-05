@@ -1,8 +1,7 @@
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
-from ....tools.fns import ToolFn
-from ....tools.reflect import reflect_tool_spec
+from ....tools.execution.reflect import reflect_tool_catalog_entry
 from .rendering import LsLinesRenderer
 from .running import LsRunner
 
@@ -30,11 +29,4 @@ def execute_ls_tool(
 
 @lang.cached_function
 def ls_tool() -> ToolCatalogEntry:
-    return ToolCatalogEntry(
-        reflect_tool_spec(execute_ls_tool),
-        ToolFn(
-            execute_ls_tool,
-            ToolFn.KwargsInput(),
-            ToolFn.RawStringOutput(),
-        ),
-    )
+    return reflect_tool_catalog_entry(execute_ls_tool)
