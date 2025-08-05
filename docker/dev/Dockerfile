@@ -167,12 +167,24 @@ RUN ( \
 )
 
 
-# rustup
+## rustup
 
 RUN ( \
     curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y && \
     echo "\n\
 source ~/.cargo/env \n\
+\n\
+" >> ~/.bashrc \
+)
+
+
+## vcpkg
+
+RUN ( \
+    git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root && \
+    (cd /root/.vcpkg_root && ./bootstrap-vcpkg.sh) && \
+    echo "\n\
+export VCPKG_ROOT="$HOME/.vcpkg_root" \n\
 \n\
 " >> ~/.bashrc \
 )
