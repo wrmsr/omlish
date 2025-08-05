@@ -566,7 +566,7 @@ class NullNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns nil value
     def get_value(self) -> ta.Any:
@@ -618,7 +618,7 @@ class IntegerNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns int64 value
     def get_value(self) -> ta.Any:
@@ -666,7 +666,7 @@ class FloatNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns float64 value
     def get_value(self) -> ta.Any:
@@ -774,7 +774,7 @@ class StringNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns string value
     def get_value(self) -> ta.Any:
@@ -881,7 +881,7 @@ class LiteralNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -942,7 +942,7 @@ class MergeKeyNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -976,7 +976,7 @@ class BoolNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns boolean value
     def get_value(self) -> ta.Any:
@@ -1023,7 +1023,7 @@ class InfinityNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns math.Inf(0) or math.Inf(-1)
     def get_value(self) -> ta.Any:
@@ -1069,7 +1069,7 @@ class NanNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # get_value returns math.NaN()
     def get_value(self) -> ta.Any:
@@ -1188,8 +1188,8 @@ class MappingNode(BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
-        self.end.add_column(col)
+        tokens.Token.add_column(self.start, col)
+        tokens.Token.add_column(self.end, col)
         for value in self.values:
             value.add_column(col)
 
@@ -1266,7 +1266,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1325,7 +1325,7 @@ class MappingValueNode(BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.key is not None:
             self.key.add_column(col)
         if self.value is not None:
@@ -1503,8 +1503,8 @@ class SequenceNode(BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
-        self.end.add_column(col)
+        tokens.Token.add_column(self.start, col)
+        tokens.Token.add_column(self.end, col)
         for value in self.values:
             value.add_column(col)
 
@@ -1608,7 +1608,7 @@ class SequenceEntryNode(BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
 
     # set_comment set line comment.
     def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
@@ -1703,7 +1703,7 @@ class AnchorNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.name is not None:
             self.name.add_column(col)
         if self.value is not None:
@@ -1773,7 +1773,7 @@ class AliasNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1866,7 +1866,7 @@ class TagNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        self.start.add_column(col)
+        tokens.Token.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1922,9 +1922,7 @@ class CommentNode(BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        if self.token is None:
-            return
-        self.token.add_column(col)
+        tokens.Token.add_column(self.token, col)
 
     # String comment to text
     def __str__(self) -> str:
