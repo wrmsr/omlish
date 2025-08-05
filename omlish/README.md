@@ -147,7 +147,7 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 A subset of this codebase is written in a 'lite' style (non-'lite' code is referred to as *standard* code). While
 standard code is written for python 3.13+, 'lite' code is written for 3.8+, and is written in a style conducive to
-[amalgamation](https://github.com/wrmsr/omlish/tree/master/omdev#amalgamation) in which multiple python source files are
+[amalgamation](https://github.com/wrmsr/omlish/blob/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
 
 Code written in this style has notable differences from standard code, including (but not limited to):
