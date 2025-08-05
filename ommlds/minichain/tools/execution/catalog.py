@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 
 from ..fns import ToolFn
 from ..types import ToolSpec
@@ -14,9 +15,29 @@ from .executors import ToolFnToolExecutor
 
 
 @dc.dataclass(frozen=True)
-class ToolCatalogEntry:
+class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
     target: ToolFn | ToolExecutor
+
+    _: dc.KW_ONLY
+
+    name_override: str | None = dc.xfield(default=None, repr_fn=dc.opt_repr)
+
+    @property
+    def name(self) -> str:
+        return check.non_empty_str(self.name_override if self.name_override is not None else self.spec.name)
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+    @lang.cached_function
+    def executor(self) -> ToolExecutor:
+        if isinstance(self.target, ToolFn):
+            return ToolFnToolExecutor(self.target)
+        elif isinstance(self.target, ToolExecutor):
+            return self.target
+        else:
+            raise TypeError(self.target)
 
 
 ToolCatalogEntries = ta.NewType('ToolCatalogEntries', ta.Sequence[ToolCatalogEntry])
@@ -33,7 +54,7 @@ class ToolCatalog(ToolExecutor):
 
         by_name: dict[str, ToolCatalogEntry] = {}
         for e in self._entries:
-            n = check.non_empty_str(e.spec.name)
+            n = e.name
             check.not_in(n, by_name)
             by_name[n] = e
         self._by_name = by_name
@@ -50,15 +71,7 @@ class ToolCatalog(ToolExecutor):
     ) -> str:
         e = self._by_name[name]
 
-        x: ToolExecutor
-        if isinstance(e.target, ToolExecutor):
-            x = e.target
-        elif isinstance(e.target, ToolFn):
-            x = ToolFnToolExecutor(e.target)
-        else:
-            raise TypeError(e.target)
-
-        return x.execute_tool(
+        return e.executor().execute_tool(
             ctx,
             name,
             args,
