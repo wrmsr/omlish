@@ -75,6 +75,9 @@ class _EmptyMap(ta.Mapping[K, V]):
             raise TypeError
         return _EMPTY_MAP
 
+    def __hash__(self) -> int:
+        return hash(_EmptyMap)
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}()'
 

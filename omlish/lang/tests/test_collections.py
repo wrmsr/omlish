@@ -1,7 +1,9 @@
+import dataclasses as dc
 import typing as ta
 
 import pytest
 
+from ..collections import empty_map
 from ..collections import yield_dict_init
 
 
@@ -51,3 +53,11 @@ def test_yield_dict_init_keys_iter():
 
     assert dict(Foo()) == {1: 2, 2: 4}
     assert list(yield_dict_init(Foo())) == [(1, 2), (2, 4)]
+
+
+def test_empty_map_dataclass():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        m: ta.Mapping[str, ta.Any] = empty_map()
+
+    assert Foo().m.get('foo') is None
