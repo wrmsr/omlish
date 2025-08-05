@@ -12,6 +12,8 @@ from .printing import MarkdownStringChatSessionPrinter
 from .printing import SimpleStringChatSessionPrinter
 from .state import ChatStateManager
 from .state import StateStorageChatStateManager
+from .tools import ToolExecRequestExecutor
+from .tools import ToolExecRequestExecutorImpl
 
 
 ##
@@ -32,6 +34,8 @@ def bind_chat_options(*cos: ChatOption) -> inj.Elements:
 def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
     els: list[inj.Elemental] = []
 
+    #
+
     els.extend([
         inj.set_binder[_InjectedChatOptions](),
         inj.bind(
@@ -46,10 +50,14 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
         ),
     ])
 
+    #
+
     els.extend([
         inj.bind(StateStorageChatStateManager, singleton=True),
         inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
     ])
+
+    #
 
     if cfg.markdown:
         els.extend([
@@ -61,5 +69,14 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
             inj.bind(SimpleStringChatSessionPrinter, singleton=True),
             inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
         ])
+
+    #
+
+    els.extend([
+        inj.bind(ToolExecRequestExecutorImpl, singleton=True),
+        inj.bind(ToolExecRequestExecutor, to_key=ToolExecRequestExecutorImpl),
+    ])
+
+    #
 
     return inj.as_elements(*els)

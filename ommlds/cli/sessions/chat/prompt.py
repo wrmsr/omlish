@@ -3,8 +3,6 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import marshal as msh
-from omlish.formats import json
 
 from .... import minichain as mc
 from ...backends.catalog import BackendCatalog
@@ -13,6 +11,7 @@ from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
 from .state import ChatStateManager
+from .tools import ToolExecRequestExecutor
 
 
 if ta.TYPE_CHECKING:
@@ -46,17 +45,17 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             *,
             state_manager: ChatStateManager,
             chat_options: ChatOptions | None = None,
-            tool_catalog: mc.ToolCatalog | None = None,
             printer: ChatSessionPrinter,
             backend_catalog: BackendCatalog,
+            tool_exec_request_executor: ToolExecRequestExecutor,
     ) -> None:
         super().__init__(config)
 
         self._state_manager = state_manager
         self._chat_options = chat_options
-        self._tool_catalog = tool_catalog
         self._printer = printer
         self._backend_catalog = backend_catalog
+        self._tool_exec_request_executor = tool_exec_request_executor
 
     def run(self) -> None:
         if self._config.stream:
@@ -72,21 +71,17 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         else:
             state = self._state_manager.get_state()
 
-        backend = self._config.backend
-        if backend is None:
-            backend = DEFAULT_CHAT_MODEL_BACKEND
-
         new_chat: list[mc.Message] = [
             mc.UserMessage(prompt),
         ]
 
-        st_mdl: mc.ChatChoicesStreamService
+        mdl: mc.ChatChoicesStreamService
         with lang.maybe_managing(self._backend_catalog.get_backend(
             mc.ChatChoicesStreamService,
-            backend,
+            self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
             *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
-        )) as st_mdl:
-            with st_mdl.invoke(mc.ChatChoicesStreamRequest(
+        )) as mdl:
+            with mdl.invoke(mc.ChatChoicesStreamRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
             )).v as st_resp:
@@ -113,10 +108,6 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         else:
             state = self._state_manager.get_state()
 
-        backend = self._config.backend
-        if backend is None:
-            backend = DEFAULT_CHAT_MODEL_BACKEND
-
         new_chat: list[mc.Message] = [
             mc.UserMessage(prompt),
         ]
@@ -124,7 +115,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         mdl: mc.ChatChoicesService
         with lang.maybe_managing(self._backend_catalog.get_backend(
             mc.ChatChoicesService,
-                backend,
+                self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
             response: mc.ChatChoicesResponse = mdl.invoke(mc.ChatChoicesRequest(
@@ -139,23 +130,9 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 check.state(resp_m.c is None)
 
                 tr: mc.ToolExecRequest = check.single(check.not_none(trs))
-                tce = check.not_none(self._tool_catalog).by_name[check.non_empty_str(tr.name)]
 
-                tr_dct = dict(
-                    id=tr.id,
-                    spec=msh.marshal(tce.spec),
-                    args=tr.args,
-                )
-                cr = ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+                trm = self._tool_exec_request_executor.execute_tool_request(tr)
 
-                if not cr:
-                    raise ToolExecutionRequestDeniedError
-
-                trm = mc.execute_tool_request(
-                    mc.ToolContext(),
-                    check.not_none(self._tool_catalog),
-                    tr,
-                )
                 print(trm.c)
                 new_chat.append(trm)
 
