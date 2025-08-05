@@ -8,6 +8,7 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from .... import minichain as mc
+from ...backends.catalog import BackendCatalog
 from .base import CHAT_CHOICES_SERVICE_FACTORIES
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
@@ -52,6 +53,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             chat_options: ChatOptions | None = None,
             tool_catalog: mc.ToolCatalog | None = None,
             printer: ChatSessionPrinter,
+            backend_catalog: BackendCatalog,
     ) -> None:
         super().__init__(config)
 
@@ -59,6 +61,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         self._chat_options = chat_options
         self._tool_catalog = tool_catalog
         self._printer = printer
+        self._backend_catalog = backend_catalog
 
     def run(self) -> None:
         if self._config.stream:
@@ -82,7 +85,10 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             mc.UserMessage(prompt),
         ]
 
-        with lang.maybe_managing(mc.registry_of[mc.ChatChoicesStreamService].new(backend)) as st_mdl:
+        st_mdl: mc.ChatChoicesStreamService
+        with lang.maybe_managing(
+            self._backend_catalog.get_backend(mc.ChatChoicesStreamService, backend),
+        ) as st_mdl:
             with st_mdl.invoke(mc.ChatChoicesStreamRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
