@@ -4,6 +4,7 @@
 from .binder import (  # noqa
     bind,
     bind_as_fn,
+    bind_map_entry_const,
     bind_set_entry_const,
 )
 

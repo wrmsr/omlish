@@ -1,4 +1,3 @@
-import collections.abc
 import functools
 import inspect
 import types
@@ -15,7 +14,10 @@ from .elements import Elements
 from .elements import as_elements
 from .keys import Key
 from .keys import as_key
+from .multis import MapBinding
 from .multis import SetBinding
+from .multis import is_map_multi_key
+from .multis import is_set_multi_key
 from .privates import Expose
 from .providers import ConstProvider
 from .providers import CtorProvider
@@ -189,16 +191,40 @@ def bind(
 ##
 
 
-def bind_set_entry_const(set_key: ta.Any, obj: ta.Any, *, tag: ta.Any | None = None) -> Elements:
-    set_key = as_key(set_key)
-    set_rty = check.isinstance(set_key.ty, rfl.Generic)
-    check.is_(set_rty.cls, collections.abc.Set)
+def bind_set_entry_const(
+        multi_key: ta.Any,
+        obj: ta.Any,
+        *,
+        tag: ta.Any | None = None,
+) -> Elements:
+    multi_key = as_key(multi_key)
+    check.arg(is_set_multi_key(multi_key))
 
     if tag is None:
-        tag = Id(id(obj), tag=set_key.tag)
+        tag = Id(id(obj), tag=multi_key.tag)
     obj_key: Key = Key(type(obj), tag=tag)
 
     return as_elements(
         bind(obj_key, to_const=obj),
-        SetBinding(set_key, obj_key),
+        SetBinding(multi_key, obj_key),
+    )
+
+
+def bind_map_entry_const(
+        multi_key: ta.Any,
+        map_key: ta.Any,
+        obj: ta.Any,
+        *,
+        tag: ta.Any | None = None,
+) -> Elements:
+    multi_key = as_key(multi_key)
+    check.arg(is_map_multi_key(multi_key))
+
+    if tag is None:
+        tag = Id(id(obj), tag=multi_key.tag)
+    obj_key: Key = Key(type(obj), tag=tag)
+
+    return as_elements(
+        bind(obj_key, to_const=obj),
+        MapBinding(multi_key, map_key, obj_key),
     )

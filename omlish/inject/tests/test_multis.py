@@ -54,3 +54,17 @@ def test_bind_set_entry_const():
         inj.bind_set_entry_const(ta.AbstractSet[Foo], Foo('def')),
     )
     assert set(injector[ta.AbstractSet[Foo]]) == {Foo('abc'), Foo('def')}
+
+
+def test_bind_map_entry_const():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        s: str
+
+    injector = inj.create_injector(
+        inj.map_binder[str, Foo](),
+
+        inj.bind_map_entry_const(ta.Mapping[str, Foo], 'abc', Foo('def')),
+        inj.bind_map_entry_const(ta.Mapping[str, Foo], 'ghi', Foo('jkl')),
+    )
+    assert dict(injector[ta.Mapping[str, Foo]]) == {'abc': Foo('def'), 'ghi': Foo('jkl')}
