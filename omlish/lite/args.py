@@ -41,3 +41,8 @@ class Args:
             return args(fn)
         else:
             return fn()
+
+    EMPTY: ta.ClassVar['Args']
+
+
+Args.EMPTY = Args()
