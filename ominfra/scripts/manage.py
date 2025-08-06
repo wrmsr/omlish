@@ -3876,8 +3876,8 @@ class EnvVar:
     @ta.overload
     def get(
             self,
-            /,
             default: str,
+            /,
             *,
             environ: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> str:
@@ -3886,8 +3886,8 @@ class EnvVar:
     @ta.overload
     def get(
             self,
-            /,
             default: ta.Optional[str],
+            /,
             *,
             environ: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> ta.Optional[str]:
@@ -3896,8 +3896,8 @@ class EnvVar:
     @ta.overload
     def get(
             self,
-            /,
             default: ta.Callable[[], str],
+            /,
             *,
             environ: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> str:
@@ -3906,14 +3906,14 @@ class EnvVar:
     @ta.overload
     def get(
             self,
-            /,
             default: ta.Callable[[], ta.Optional[str]],
+            /,
             *,
             environ: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> ta.Optional[str]:
         ...
 
-    def get(self, /, default=_NO_DEFAULT, *, environ=None):
+    def get(self, default=_NO_DEFAULT, /, *, environ=None):
         environ = self._get_environ(environ)
         try:
             return environ[self._name]
