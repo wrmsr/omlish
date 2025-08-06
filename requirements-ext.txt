@@ -8,8 +8,8 @@
 ##
 # infra
 
-google-api-python-client==2.177.0
-google-cloud-compute==1.33.0
+google-api-python-client==2.178.0
+google-cloud-compute==1.34.0
 
 
 ##
@@ -17,8 +17,8 @@ google-cloud-compute==1.33.0
 
 matplotlib==3.10.5
 
-torch==2.7.1
-torchvision==0.22.1
+torch==2.8.0
+torchvision==0.23.0
 
 diffusers==0.34.0
 
@@ -26,7 +26,7 @@ scipy==1.16.1
 scikit-learn==1.7.1
 scikit-image==0.25.2
 
-safetensors==0.5.3
+safetensors==0.6.1
 
 tavily-python==0.7.10
 

@@ -30,10 +30,10 @@ class Project(ProjectBase):
 
             'tokenizers ~= 0.21',
 
-            'torch ~= 2.7',
+            'torch ~= 2.8',
 
             'transformers ~= 4.55',
-            'sentence-transformers ~= 5.0',
+            'sentence-transformers ~= 5.1',
         ],
 
         'huggingface': [
