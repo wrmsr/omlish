@@ -14,7 +14,7 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# https://github.com/asottile/tokenize-rt/blob/413692b7c1ad8a873caec39dd4f427d55ee538ea/tokenize_rt.py
+# https://github.com/asottile/tokenize-rt/blob/d3874b787677593fc34aedf7174a2934e2caa94b/tokenize_rt.py
 import argparse
 import io
 import keyword
@@ -123,7 +123,7 @@ class Tokenization:
 
             tok_name = tokenize.tok_name[tok_type]
 
-            if tok_name == 'FSTRING_MIDDLE':  # pragma: >=3.12 cover
+            if tok_name in {'FSTRING_MIDDLE', 'TSTRING_MIDDLE'}:  # pragma: >=3.12 cover
                 if '{' in tok_text or '}' in tok_text:
                     new_tok_text = cls.curly_escape(tok_text)
                     ecol += len(new_tok_text) - len(tok_text)

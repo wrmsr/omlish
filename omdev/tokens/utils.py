@@ -5,6 +5,7 @@ from .tokenizert import Token
 
 
 Tokens: ta.TypeAlias = ta.Sequence[Token]
+TokensIterable: ta.TypeAlias = ta.Iterable[Token]
 
 
 ##
@@ -37,14 +38,25 @@ def ignore_ws(
     )
 
 
+def ignore_ws_(
+        toks: ta.Iterable[Token],
+        *,
+        keep: ta.Container[str] = (),
+) -> list[Token]:
+    return list(ignore_ws(
+        toks,
+        keep=keep,
+    ))
+
+
 ##
 
 
-def split_lines(ts: Tokens) -> list[Tokens]:
+def split_lines(ts: TokensIterable) -> list[Tokens]:
     return [list(it) for g, it in itertools.groupby(ts, lambda t: t.line)]
 
 
-def split_lines_dense(ts: Tokens) -> list[Tokens]:
+def split_lines_dense(ts: TokensIterable) -> list[Tokens]:
     lines: list[list[Token]] = []
     for t in ts:
         while len(lines) < (t.line or 0):
@@ -53,7 +65,7 @@ def split_lines_dense(ts: Tokens) -> list[Tokens]:
     return lines  # type: ignore[return-value]
 
 
-def join_toks(ts: Tokens) -> str:
+def join_toks(ts: TokensIterable) -> str:
     return ''.join(t.src for t in ts)
 
 
@@ -65,7 +77,7 @@ def join_lines(ls: ta.Iterable[Tokens]) -> str:
 
 
 def match_toks(
-        ts: ta.Iterable[Token],
+        ts: TokensIterable,
         pat: ta.Sequence[tuple[str | None, str | tuple[str, ...] | None]],
 ) -> bool:
     it = iter(ts)

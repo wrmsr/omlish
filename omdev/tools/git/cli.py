@@ -23,7 +23,8 @@ TODO:
 import dataclasses as dc
 import logging
 import os
-import re
+import shutil
+import tempfile
 import typing as ta
 import urllib.parse
 
@@ -42,6 +43,9 @@ from ...git.status import get_git_status
 from ...home.paths import get_home_paths
 from ...home.shadow import get_shadow_configs
 from . import consts
+from .cloning import GithubCloneTarget
+from .cloning import OtherCloneTarget
+from .cloning import parse_clone_target
 from .messages import GitMessageGenerator
 from .messages import TimestampGitMessageGenerator
 from .messages import load_message_generator_manifests
@@ -153,8 +157,6 @@ class Cli(ap.Cli):
 
     #
 
-    _GITHUB_PAT = re.compile(r'((http(s)?://)?(www\./)?github(\.com)?/)?(?P<user>[^/.]+)/(?P<repo>[^/.]+)(/.*)?')
-
     @ap.cmd(
         ap.arg('repo'),
         ap.arg('args', nargs=ap.REMAINDER),
@@ -166,25 +168,23 @@ class Cli(ap.Cli):
         # fails.
         out_dir = '.'
         try:
-            if (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
-                user = m.group('user')
-                repo = m.group('repo')
-
-                os.makedirs(user, 0o755, exist_ok=True)
+            ct = parse_clone_target(self.args.repo)
+            if isinstance(ct, GithubCloneTarget):
+                os.makedirs(ct.user, 0o755, exist_ok=True)
 
                 subprocesses.check_call(
                     'git',
                     'clone',
                     *self.unknown_args,
                     *self.args.args,
-                    f'git@github.com:{user}/{repo}.git',
-                    os.path.join(user, repo),
+                    ct.render(),
+                    os.path.join(ct.user, ct.repo),
                 )
 
-                out_dir = os.path.join(user, repo)
+                out_dir = os.path.join(ct.user, ct.repo)
 
-            else:
-                parsed = urllib.parse.urlparse(self.args.repo)
+            elif isinstance(ct, OtherCloneTarget):
+                parsed = urllib.parse.urlparse(ct.s)
                 out_dir = parsed.path.split('/')[-1]
 
                 subprocesses.check_call(
@@ -192,11 +192,16 @@ class Cli(ap.Cli):
                     'clone',
                     *self.unknown_args,
                     *self.args.args,
-                    self.args.repo,
+                    ct.render(),
                 )
+
+            else:
+                raise TypeError(ct)
 
         finally:
             print(out_dir)
+
+    #
 
     @ap.cmd(
         ap.arg('rev', nargs='?', default='HEAD'),
@@ -465,6 +470,50 @@ class Cli(ap.Cli):
             *args,
             *self.unknown_args,
         )
+
+    #
+
+    @ap.cmd(
+        ap.arg('repo'),
+        ap.arg('args', nargs=ap.REMAINDER),
+        accepts_unknown=True,
+    )
+    def anon_clone(self) -> None:
+        cwd = os.getcwd()
+
+        # As with the clone command, we always print a cd-able path to stdout, even on failure.
+        out_dir = '.'
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            try:
+                ct = parse_clone_target(self.args.repo)
+
+                subprocesses.check_call(
+                    'git',
+                    'clone',
+                    *self.unknown_args,
+                    *self.args.args,
+                    ct.render(),
+                    cwd=tmp_dir,
+                )
+
+                repo_dir_name = check.single(os.listdir(tmp_dir))
+                repo_dir = os.path.join(tmp_dir, repo_dir_name)
+                check.state(os.path.isdir(repo_dir))
+
+                git_dir = os.path.join(repo_dir, '.git')
+                check.state(os.path.isdir(git_dir))
+                shutil.rmtree(git_dir)
+
+                shutil.move(repo_dir, cwd)
+
+                out_dir = repo_dir_name
+
+            finally:
+                shutil.rmtree(tmp_dir)
+
+        finally:
+            print(out_dir)
 
 
 ##
