@@ -2,12 +2,26 @@ import functools
 import typing as ta
 
 from ..lite.maysync import MaysyncGen
+from ..lite.maysync import MaysyncOp
 from ..lite.maysync import a_maysync
 from ..lite.maysync import maysync
 
 
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
+
+
+##
+
+
+def maysync_op(
+        fn: ta.Callable[P, T],
+        a_fn: ta.Callable[P, ta.Awaitable[T]],
+) -> MaysyncOp[T]:
+    return MaysyncOp(
+        fn,
+        a_fn,
+    )
 
 
 ##
