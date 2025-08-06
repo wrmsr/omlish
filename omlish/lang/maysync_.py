@@ -27,6 +27,18 @@ def maysync_op(
 ##
 
 
+def maysync_yield(
+        fn: ta.Callable[P, T],
+        a_fn: ta.Callable[P, ta.Awaitable[T]],
+) -> ta.Callable[P, ta.Generator[ta.Any, ta.Any, T]]:
+    def inner(*args, **kwargs):
+        return (yield MaysyncOp(fn, a_fn)(*args, **kwargs))
+    return inner
+
+
+##
+
+
 def maysync_wrap(fn: ta.Callable[P, MaysyncGen[T]]) -> ta.Callable[P, T]:
     @functools.wraps(fn)
     def inner(*args, **kwargs):

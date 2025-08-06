@@ -47,7 +47,7 @@ def _m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> lan
 
     while True:
         session = create_strict_confirm_session(message, suffix)
-        ret = (yield lang.maysync_op(session.prompt, session.prompt_async))
+        ret = yield from lang.maysync_yield(session.prompt, session.prompt_async)()
 
         if isinstance(ret, str):
             check.empty(ret)

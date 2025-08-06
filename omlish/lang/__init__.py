@@ -253,6 +253,8 @@ from .iterables import (  # noqa
 from .maysync_ import (  # noqa
     maysync_op,
 
+    maysync_yield,
+
     maysync_wrap,
     a_maysync_wrap,
 )
