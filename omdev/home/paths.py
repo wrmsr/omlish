@@ -7,16 +7,18 @@ TODO:
 import os.path
 import typing as ta
 
+from omlish.os.environ import EnvVar
+
 
 ##
 
 
-HOME_DIR_ENV_VAR = 'OMLISH_HOME'
+HOME_DIR_ENV_VAR = EnvVar('OMLISH_HOME')
 DEFAULT_HOME_DIR = '~/.omlish'
 
 
 def get_home_dir() -> str:
-    return os.path.expanduser(os.getenv(HOME_DIR_ENV_VAR, DEFAULT_HOME_DIR))
+    return os.path.expanduser(HOME_DIR_ENV_VAR.get(DEFAULT_HOME_DIR))
 
 
 #

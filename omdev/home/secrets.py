@@ -2,6 +2,7 @@ import os.path
 import typing as ta
 
 from omlish import lang
+from omlish.os.environ import EnvVar
 from omlish.secrets import all as sec
 
 from .paths import get_home_paths
@@ -16,16 +17,13 @@ else:
 ##
 
 
-SECRETS_FILE_ENV_VAR = 'OMLISH_SECRETS'
+SECRETS_FILE_ENV_VAR = EnvVar('OMLISH_SECRETS')
 DEFAULT_SECRETS_FILE_NAME = 'secrets.yml'
 
 
 def get_secrets_file() -> str:
     return os.path.expanduser(
-        os.getenv(
-            SECRETS_FILE_ENV_VAR,
-            os.path.join(get_home_paths().config_dir, DEFAULT_SECRETS_FILE_NAME),
-        ),
+        SECRETS_FILE_ENV_VAR.get(lambda: os.path.join(get_home_paths().config_dir, DEFAULT_SECRETS_FILE_NAME)),
     )
 
 
