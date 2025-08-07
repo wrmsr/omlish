@@ -13,8 +13,8 @@ for 3.8+.
 - **[omlish](https://github.com/wrmsr/omlish/blob/master/omlish#readme)** - Core foundational code
 - **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities
 - **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code
-- **[ommlds](https://github.com/wrmsr/omlish/ommlds#readme)** - ML / data science code
-- **[omserv](https://github.com/wrmsr/omlish/omserv#readme)** - Request serving code
+- **[ommlds](https://github.com/wrmsr/omlish/blob/master/ommlds#readme)** - ML / data science code
+- **[omserv](https://github.com/wrmsr/omlish/blob/master/omserv#readme)** - Request serving code
 
 # Installation
 
