@@ -129,7 +129,7 @@ class _MgMaysyncFn:
         functools.update_wrapper(self, m)
 
     def __get__(self, instance, owner=None):
-        return _Maysync(self._m.__get__(instance, owner))
+        return _MgMaysyncFn(self._m.__get__(instance, owner))
 
     def __call__(self, *args, **kwargs):
         a = self._m(*args, **kwargs).__await__()

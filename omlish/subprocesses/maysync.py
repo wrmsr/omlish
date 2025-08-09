@@ -4,12 +4,12 @@ import abc
 import sys
 import typing as ta
 
-from ..lite.timeouts import TimeoutLike
-from .base import BaseSubprocesses
+from ..lite.maysyncs import make_maysync
+from .async_ import AbstractAsyncSubprocesses
+from .async_ import _AbstractAsyncSubprocesses
 from .run import SubprocessRun
 from .run import SubprocessRunOutput
-from .async_ import _AbstractAsyncSubprocesses
-
+from .sync import AbstractSubprocesses
 
 
 ##
@@ -23,11 +23,30 @@ class AbstractMaysyncSubprocesses(_AbstractAsyncSubprocesses, abc.ABC):
 
 
 class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
+    def __init__(
+            self,
+            subprocesses: AbstractSubprocesses,
+            async_subprocesses: AbstractAsyncSubprocesses,
+    ) -> None:
+        super().__init__()
+
+        self._subprocesses = subprocesses
+        self._async_subprocesses = async_subprocesses
+
     async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
+        return await make_maysync(
+            self._subprocesses.run,
+            self._async_subprocesses.run,
+        ).m(run)
 
     async def check_call(self, *cmd: str, stdout: ta.Any = sys.stderr, **kwargs: ta.Any) -> None:
-        raise NotImplementedError
+        return await make_maysync(
+            self._subprocesses.check_call,
+            self._async_subprocesses.check_call,
+        ).m(*cmd, **kwargs)
 
     async def check_output(self, *cmd: str, **kwargs: ta.Any) -> bytes:
-        raise NotImplementedError
+        return await make_maysync(
+            self._subprocesses.check_output,
+            self._async_subprocesses.check_output,
+        ).m(*cmd, **kwargs)

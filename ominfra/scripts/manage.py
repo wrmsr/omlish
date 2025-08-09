@@ -8392,6 +8392,17 @@ class SubprocessRun:
             async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
         return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))
 
+    _DEFAULT_MAYSYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractMaysyncSubprocesses
+
+    async def maysync_run(
+            self,
+            maysync_subprocesses: ta.Optional[ta.Any] = None,  # AbstractMaysyncSubprocesses
+            **kwargs: ta.Any,
+    ) -> SubprocessRunOutput:
+        if maysync_subprocesses is None:
+            maysync_subprocesses = self._DEFAULT_MAYSYNC_SUBPROCESSES
+        return await check.not_none(maysync_subprocesses).run_(self.replace(**kwargs))
+
 
 SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessRun))  # noqa
 
@@ -8423,6 +8434,13 @@ class SubprocessRunnable(abc.ABC, ta.Generic[T]):
             **kwargs: ta.Any,
     ) -> T:
         return self.handle_run_output(await self.make_run().async_run(async_subprocesses, **kwargs))
+
+    async def maysync_run(
+            self,
+            maysync_subprocesses: ta.Optional[ta.Any] = None,  # AbstractMaysyncSubprocesses
+            **kwargs: ta.Any,
+    ) -> T:
+        return self.handle_run_output(await self.make_run().maysync_run(maysync_subprocesses, **kwargs))
 
 
 ########################################
@@ -10887,7 +10905,7 @@ def _remote_execution_main() -> None:
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses):
+class _AbstractAsyncSubprocesses(BaseSubprocesses):
     @abc.abstractmethod
     async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
         raise NotImplementedError
@@ -10969,6 +10987,10 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
+
+
+class AbstractAsyncSubprocesses(_AbstractAsyncSubprocesses, abc.ABC):
+    pass
 
 
 ########################################
