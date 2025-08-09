@@ -76,6 +76,7 @@ class _MgMaysyncable(Maysyncable[T]):
 
         i: ta.Any = None
         e: ta.Any = None
+
         while True:
             try:
                 if e is not None:
@@ -84,6 +85,7 @@ class _MgMaysyncable(Maysyncable[T]):
                     o = g.send(i)
             except StopIteration as ex:
                 return ex.value
+
             i = None
             e = None
 
@@ -98,6 +100,7 @@ class _MgMaysyncable(Maysyncable[T]):
 
         i: ta.Any = None
         e: ta.Any = None
+
         while True:
             try:
                 if e is not None:
@@ -106,6 +109,7 @@ class _MgMaysyncable(Maysyncable[T]):
                     o = g.send(i)
             except StopIteration as ex:
                 return ex.value
+
             i = None
             e = None
 
@@ -131,7 +135,6 @@ def maysyncable(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
                         return e.value
 
                     f = check.isinstance(o, _MaysyncFuture)
-
                     if not f.done:
                         try:
                             f.result = yield f.op
