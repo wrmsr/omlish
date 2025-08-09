@@ -32,7 +32,7 @@ class Maysyncable(abc.ABC, ta.Generic[T]):
         return _MaysyncFuture(_MaysyncOp(self, Args(*args, **kwargs)))
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -51,7 +51,7 @@ class _FnMaysyncable(Maysyncable[T]):
 _FnMaysyncable.__abstractmethods__ = frozenset()
 
 
-def make_maysyncable(
+def make_maysync(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
 ) -> Maysyncable[T]:
@@ -120,7 +120,7 @@ class _MgMaysyncable(Maysyncable[T]):
                 e = ex
 
 
-def maysyncable(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
+def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
     @functools.wraps(m)
     def mg_fn(*args, **kwargs):
         a = m(*args, **kwargs).__await__()

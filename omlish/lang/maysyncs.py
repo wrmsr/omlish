@@ -1,7 +1,7 @@
 import typing as ta
 
-from ..lite.maysyncs import make_maysyncable as _make_maysyncable
-from ..lite.maysyncs import maysyncable as _maysyncable
+from ..lite.maysyncs import make_maysync as _make_maysync
+from ..lite.maysyncs import maysync as _maysync
 
 
 T_co = ta.TypeVar('T_co', covariant=True)
@@ -25,17 +25,17 @@ class MaysyncableP(ta.Protocol[P, T_co]):
         ...
 
 
-def make_maysyncable(
+def make_maysync(
         s: ta.Callable[P, T_co],
         a: ta.Callable[P, ta.Awaitable[T_co]],
 ) -> MaysyncableP[P, T_co]:
-    return ta.cast('MaysyncableP[P, T_co]', _make_maysyncable(
+    return ta.cast('MaysyncableP[P, T_co]', _make_maysync(
         s,
         a,
     ))
 
 
-def maysyncable(m: ta.Callable[P, ta.Awaitable[T_co]]) -> MaysyncableP[P, T_co]:
-    return ta.cast('MaysyncableP[P, T_co]', _maysyncable(
+def maysync(m: ta.Callable[P, ta.Awaitable[T_co]]) -> MaysyncableP[P, T_co]:
+    return ta.cast('MaysyncableP[P, T_co]', _maysync(
         m,
     ))

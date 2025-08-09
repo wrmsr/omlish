@@ -41,13 +41,13 @@ def create_strict_confirm_session(
 ##
 
 
-@lang.maysyncable
+@lang.maysync
 async def m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> bool:
     """Display a confirmation prompt that returns True/False. Requires an explicit answer."""
 
     while True:
         session = create_strict_confirm_session(message, suffix)
-        ret = await lang.make_maysyncable(session.prompt, session.prompt_async).m()
+        ret = await lang.make_maysync(session.prompt, session.prompt_async).m()
 
         if isinstance(ret, str):
             check.empty(ret)

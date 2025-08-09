@@ -1,5 +1,5 @@
-from ..maysyncs import make_maysyncable
-from ..maysyncs import maysyncable
+from ..maysyncs import make_maysync
+from ..maysyncs import maysync
 
 
 def s_inc(i: int) -> int:
@@ -10,9 +10,9 @@ async def a_inc(i: int) -> int:
     return i + 1
 
 
-@maysyncable
+@maysync
 async def m_frob(i: int) -> int:
-    return await make_maysyncable(s_inc, a_inc).m(i)
+    return await make_maysync(s_inc, a_inc).m(i)
 
 
 def test_maysync():

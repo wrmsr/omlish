@@ -253,9 +253,9 @@ from .iterables import (  # noqa
 from .maysyncs import (  # noqa
     MaysyncableP,
 
-    make_maysyncable,
+    make_maysync,
 
-    maysyncable,
+    maysync,
 )
 
 from .objects import (  # noqa
