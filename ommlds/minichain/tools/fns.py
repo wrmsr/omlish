@@ -17,7 +17,7 @@ D = ta.TypeVar('D')
 
 @dc.dataclass(frozen=True)
 class ToolFn(lang.Final):
-    fn: ta.Callable
+    fn: ta.Callable | lang.Maysyncable
 
     #
 
@@ -67,7 +67,10 @@ def execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
-    fn = tfn.fn
+    if isinstance(tfn.fn, lang.Maysyncable):
+        raise NotImplementedError
+    else:
+        fn = check.callable(tfn.fn)
 
     out: ta.Any
     if isinstance(tfn.input, ToolFn.DataclassInput):
