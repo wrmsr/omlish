@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.8.5
+uv>=0.8.8
 
 pytest==8.4.1
 pytest-benchmark==5.1.0
@@ -15,11 +15,11 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.12.7
+ruff==0.12.8
 
 docutils-stubs==0.0.22
-types-paramiko==4.0.0.20250806  # @omlish-venv !13t !13dt !14t
-types-pyyaml==6.0.12.20250516
+types-paramiko==4.0.0.20250809  # @omlish-venv !13t !13dt !14t
+types-pyyaml==6.0.12.20250809
 types-ujson==5.10.0.20250326
 
 black==25.1.0
@@ -74,7 +74,7 @@ ujson==5.10.0
 
 markupsafe==3.0.2
 
-redis==6.3.0
+redis==6.4.0
 
 sqlean.py==3.49.1; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -111,7 +111,7 @@ snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !13dt !14t
 
 trino==0.335.0  # @omlish-venv !13t !13dt !14t
 
-huggingface-hub==0.34.3  # @omlish-venv !14t
+huggingface-hub==0.34.4  # @omlish-venv !14t
 hf-xet==1.1.7  # @omlish-venv !13t !13dt !14t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
@@ -130,11 +130,11 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.4
+boto3>=1.40.6
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.27.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx==0.28.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 mlx-lm==0.26.3; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.50.4.0
@@ -143,7 +143,7 @@ rapidocr-onnxruntime==1.4.4; python_version < "3.14"  # @omlish-venv !13t !13dt 
 
 pillow==11.3.0
 
-accelerate==1.9.0; python_version < "3.14"  # @omlish-venv !14t
+accelerate==1.10.0; python_version < "3.14"  # @omlish-venv !14t
 
 # bitsandbytes==0.45.4
 bitsandbytes; python_version < "3.14"

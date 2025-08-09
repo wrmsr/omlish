@@ -1,6 +1,6 @@
 #### optional
 
-greenlet==3.2.3
+greenlet==3.2.4
 
 wrapt>=1.17.2
 

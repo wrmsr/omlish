@@ -26,7 +26,7 @@ scipy==1.16.1
 scikit-learn==1.7.1
 scikit-image==0.25.2
 
-safetensors==0.6.1
+safetensors==0.6.2
 
 tavily-python==0.7.10
 
