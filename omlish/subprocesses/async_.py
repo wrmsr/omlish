@@ -13,7 +13,7 @@ from .run import SubprocessRunOutput
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses):
+class _AbstractAsyncSubprocesses(BaseSubprocesses):
     @abc.abstractmethod
     async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
         raise NotImplementedError
@@ -95,3 +95,7 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
+
+
+class AbstractAsyncSubprocesses(_AbstractAsyncSubprocesses, abc.ABC):
+    pass

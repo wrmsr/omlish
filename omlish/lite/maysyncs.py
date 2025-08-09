@@ -120,10 +120,19 @@ class _MgMaysyncable(Maysyncable[T]):
                 e = ex
 
 
-def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
-    @functools.wraps(m)
-    def mg_fn(*args, **kwargs):
-        a = m(*args, **kwargs).__await__()
+class _MgMaysyncFn:
+    def __init__(self, m):
+        super().__init__()
+
+        self._m = m
+
+        functools.update_wrapper(self, m)
+
+    def __get__(self, instance, owner=None):
+        return _Maysync(self._m.__get__(instance, owner))
+
+    def __call__(self, *args, **kwargs):
+        a = self._m(*args, **kwargs).__await__()
 
         try:
             g = iter(a)
@@ -148,7 +157,9 @@ def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
         finally:
             a.close()
 
-    return _MgMaysyncable(mg_fn)
+
+def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
+    return _MgMaysyncable(_MgMaysyncFn(m))
 
 
 ##
@@ -166,9 +177,11 @@ class _MaysyncOp:
 ##
 
 
-@dc.dataclass(eq=False)
 class _MaysyncFuture(ta.Generic[T]):
-    op: _MaysyncOp
+    def __init__(self, op: _MaysyncOp) -> None:
+        super().__init__()
+
+        self.op = op
 
     done: bool = False
     error: ta.Optional[BaseException] = None
