@@ -53,7 +53,7 @@ from .chat.stream.types import (  # noqa
 )
 
 from .chat.tools.execution import (  # noqa
-    execute_tool_request,
+    m_execute_tool_request,
 )
 
 from .chat.transforms.base import (  # noqa
@@ -257,7 +257,7 @@ from .tools.execution.reflect import (  # noqa
 from .tools.fns import (  # noqa
     ToolFn,
 
-    execute_tool_fn,
+    m_execute_tool_fn,
 )
 
 from .tools.jsonschema import (  # noqa

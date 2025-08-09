@@ -3,7 +3,7 @@ import os.path
 from omlish import check
 
 from .....chat.messages import ToolExecRequest
-from .....chat.tools.execution import execute_tool_request
+from .....chat.tools.execution import m_execute_tool_request
 from .....tools.execution.context import ToolContext
 from .....tools.execution.executors import NameSwitchedToolExecutor
 from .....tools.jsonschema import build_tool_spec_json_schema
@@ -33,7 +33,7 @@ def test_ls_tool():
         check.not_none(ls_tool().name): ls_tool().executor(),
     })
 
-    tool_exec_result = execute_tool_request(
+    tool_exec_result = m_execute_tool_request.s(
         ToolContext.new(
             tool_exec_request,
         ),

@@ -1,5 +1,9 @@
 # ruff: noqa: UP045
 # @omlish-lite
+"""
+TODO:
+ - __del__
+"""
 import abc
 import dataclasses as dc
 import functools
@@ -19,6 +23,10 @@ _MaysyncGen = ta.Generator['_MaysyncOp', ta.Any, T]  # ta.TypeAlias
 
 @dc.dataclass(frozen=True, eq=False)
 class Maysyncable(abc.ABC, ta.Generic[T]):
+    @abc.abstractmethod
+    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
+        raise NotImplementedError
+
     @abc.abstractmethod
     def s(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         raise NotImplementedError
@@ -47,6 +55,12 @@ class _FnMaysyncable(Maysyncable[T]):
     def __init_subclass__(cls, **kwargs):
         raise TypeError
 
+    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
+        return _FnMaysyncable(
+            self.s.__get__(instance, owner),
+            self.a.__get__(instance, owner),
+        )
+
 
 _FnMaysyncable.__abstractmethods__ = frozenset()
 
@@ -70,6 +84,11 @@ class _MgMaysyncable(Maysyncable[T]):
 
     def __init_subclass__(cls, **kwargs):
         raise TypeError
+
+    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
+        return _MgMaysyncable(
+            self.mg.__get__(instance, owner),
+        )
 
     def s(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         g = self.mg(*args, **kwargs)

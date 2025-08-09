@@ -63,20 +63,22 @@ class ToolFn(lang.Final):
 ##
 
 
-def execute_tool_fn(
+@lang.maysync
+async def m_execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
+    m_fn: lang.MaysyncableP
     if isinstance(tfn.fn, lang.Maysyncable):
-        raise NotImplementedError
+        m_fn = tfn.fn
     else:
-        fn = check.callable(tfn.fn)
+        m_fn = lang.make_maysync(tfn.fn)
 
     out: ta.Any
     if isinstance(tfn.input, ToolFn.DataclassInput):
         raise NotImplementedError
     elif isinstance(tfn.input, ToolFn.KwargsInput):
-        out = fn(**args)
+        out = await m_fn.m(**args)
     else:
         raise NotImplementedError
 

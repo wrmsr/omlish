@@ -50,11 +50,14 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
 
 
 class ToolExecRequestExecutor(lang.Abstract):
+    @property
     @abc.abstractmethod
-    def execute_tool_request(
-            self,
-            ter: mc.ToolExecRequest,
-    ) -> ta.Awaitable[mc.ToolExecResultMessage]:
+    def m_execute_tool_request(self) -> lang.MaysyncableP[
+        [
+            mc.ToolExecRequest,
+        ],
+        mc.ToolExecResultMessage,
+    ]:
         raise NotImplementedError
 
 
@@ -70,12 +73,13 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
         self._catalog = catalog
         self._confirmation = confirmation
 
-    async def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
+    @lang.maysync
+    async def m_execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 
         await self._confirmation.confirm_tool_execution_or_raise(tr, tce)
 
-        return mc.execute_tool_request(
+        return await mc.m_execute_tool_request.m(
             mc.ToolContext(),
             tce.executor(),
             tr,

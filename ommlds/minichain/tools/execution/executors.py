@@ -5,7 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..fns import ToolFn
-from ..fns import execute_tool_fn
+from ..fns import m_execute_tool_fn
 from .context import ToolContext
 from .context import bind_tool_context
 
@@ -14,13 +14,16 @@ from .context import bind_tool_context
 
 
 class ToolExecutor(lang.Abstract):
+    @property
     @abc.abstractmethod
-    def execute_tool(
-            self,
-            ctx: ToolContext,
-            name: str,
-            args: ta.Mapping[str, ta.Any],
-    ) -> str:
+    def m_execute_tool(self) -> lang.MaysyncableP[
+        [
+            ToolContext,
+            str,
+            ta.Mapping[str, ta.Any],
+        ],
+        str,
+    ]:
         raise NotImplementedError
 
 
@@ -31,14 +34,15 @@ class ToolExecutor(lang.Abstract):
 class ToolFnToolExecutor(ToolExecutor):
     tool_fn: ToolFn
 
-    def execute_tool(
+    @lang.maysync
+    async def m_execute_tool(
             self,
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:
         with bind_tool_context(ctx):
-            return execute_tool_fn(
+            return await m_execute_tool_fn.m(
                 self.tool_fn,
                 args,
             )
@@ -51,10 +55,11 @@ class ToolFnToolExecutor(ToolExecutor):
 class NameSwitchedToolExecutor(ToolExecutor):
     tool_executors_by_name: ta.Mapping[str, ToolExecutor]
 
-    def execute_tool(
+    @lang.maysync
+    async def m_execute_tool(
             self,
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:
-        return self.tool_executors_by_name[name].execute_tool(ctx, name, args)
+        return await self.tool_executors_by_name[name].m_execute_tool.m(ctx, name, args)
