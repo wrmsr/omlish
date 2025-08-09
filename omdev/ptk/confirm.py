@@ -1,4 +1,3 @@
-
 from prompt_toolkit.formatted_text import merge_formatted_text
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding import KeyPressEvent
@@ -42,12 +41,13 @@ def create_strict_confirm_session(
 ##
 
 
-def _m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> lang.MaysyncGen[bool]:
+@lang.maysyncable
+async def m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> bool:
     """Display a confirmation prompt that returns True/False. Requires an explicit answer."""
 
     while True:
         session = create_strict_confirm_session(message, suffix)
-        ret = yield from lang.maysync_yield(session.prompt, session.prompt_async)()
+        ret = await lang.make_maysyncable(session.prompt, session.prompt_async).m()
 
         if isinstance(ret, str):
             check.empty(ret)
@@ -57,7 +57,3 @@ def _m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> lan
 
         else:
             raise TypeError(ret)
-
-
-strict_confirm = lang.maysync_wrap(_m_strict_confirm)
-a_strict_confirm = lang.a_maysync_wrap(_m_strict_confirm)

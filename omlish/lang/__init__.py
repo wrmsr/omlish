@@ -250,13 +250,12 @@ from .iterables import (  # noqa
     take,
 )
 
-from .maysync_ import (  # noqa
-    maysync_op,
+from .maysyncs import (  # noqa
+    MaysyncableP,
 
-    maysync_yield,
+    make_maysyncable,
 
-    maysync_wrap,
-    a_maysync_wrap,
+    maysyncable,
 )
 
 from .objects import (  # noqa
@@ -393,20 +392,12 @@ from ..lite.maybes import (  # noqa
     Maybe,
 )
 
-from ..lite.maysync import (  # noqa
-    MaysyncGen,
-    MaysyncFn,
-
-    MaysyncOp,
-
-    maysync,
-    a_maysync,
-
-    MaysyncRunnable,
-)
-
 empty = Maybe.empty
 just = Maybe.just
+
+from ..lite.maysyncs import (  # noqa
+    Maysyncable,
+)
 
 from ..lite.reprs import (  # noqa
     AttrRepr,
