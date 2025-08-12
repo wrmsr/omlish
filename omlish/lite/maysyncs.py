@@ -146,6 +146,7 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
 
             if not isinstance(o, _MaysyncOp):
                 raise TypeError(o)
+
             try:
                 i = o.x(*o.args, **o.kwargs).s()
             except BaseException as ex:  # noqa
@@ -173,6 +174,7 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
 
             if not isinstance(o, _MaysyncOp):
                 raise TypeError(o)
+
             try:
                 i = await o.x(*o.args, **o.kwargs).a()
             except BaseException as ex:  # noqa
@@ -206,12 +208,15 @@ class _MgMaysyncFn:
 
                     if not isinstance(o, _MaysyncFuture):
                         raise TypeError(o)
+
                     if not o.done:
                         try:
                             o.result = yield o.op
                         except BaseException as e:  # noqa
                             o.error = e
                         o.done = True
+
+                    del o
 
             finally:
                 g.close()
