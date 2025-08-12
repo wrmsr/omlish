@@ -7,7 +7,7 @@ import anyio.abc
 
 from ... import check
 from ...lite.timeouts import Timeout
-from ...subprocesses.async_ import AbstractAsyncSubprocesses
+from ...subprocesses.asyncs import AbstractAsyncSubprocesses
 from ...subprocesses.run import SubprocessRun
 from ...subprocesses.run import SubprocessRunOutput
 

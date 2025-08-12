@@ -11,7 +11,7 @@ import typing as ta
 
 from ...lite.check import check
 from ...lite.timeouts import TimeoutLike
-from ...subprocesses.async_ import AbstractAsyncSubprocesses
+from ...subprocesses.asyncs import AbstractAsyncSubprocesses
 from ...subprocesses.run import SubprocessRun
 from ...subprocesses.run import SubprocessRunOutput
 from .timeouts import asyncio_maybe_timeout

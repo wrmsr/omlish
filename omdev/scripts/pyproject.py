@@ -6985,15 +6985,15 @@ class InterpResolver:
 
 
 ########################################
-# ../../../omlish/subprocesses/async_.py
+# ../../../omlish/subprocesses/asyncs.py
 
 
 ##
 
 
-class _AbstractAsyncSubprocesses(BaseSubprocesses):
+class AbstractAsyncSubprocesses(BaseSubprocesses):
     @abc.abstractmethod
-    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         raise NotImplementedError
 
     def run(
@@ -7017,20 +7017,20 @@ class _AbstractAsyncSubprocesses(BaseSubprocesses):
     #
 
     @abc.abstractmethod
-    async def check_call(
+    def check_call(
             self,
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
-    ) -> None:
+    ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def check_output(
+    def check_output(
             self,
             *cmd: str,
             **kwargs: ta.Any,
-    ) -> bytes:
+    ) -> ta.Awaitable[bytes]:
         raise NotImplementedError
 
     #
@@ -7073,10 +7073,6 @@ class _AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
-
-
-class AbstractAsyncSubprocesses(_AbstractAsyncSubprocesses, abc.ABC):
-    pass
 
 
 ########################################
