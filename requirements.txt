@@ -2,7 +2,7 @@
 
 greenlet==3.2.4
 
-wrapt>=1.17.2
+wrapt>=1.17.3
 
 pyyaml==6.0.2
 
@@ -51,7 +51,7 @@ psutil==7.0.0
 ## json
 
 #> ujson==5.10.0
-orjson==3.11.1; python_version < "3.14"  # @omlish-venv !13t !13dt !14t  # bug 'uninitialized object'
+orjson==3.11.2; python_version < "3.14"  # @omlish-venv !13t !13dt !14t  # bug 'uninitialized object'
 
 ## pickle
 

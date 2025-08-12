@@ -4584,6 +4584,12 @@ class RouteTableAssociation(
         shape_name='String',
     ))
 
+    public_ipv4_pool: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicIpv4Pool',
+        serialization_name='publicIpv4Pool',
+        shape_name='String',
+    ))
+
     association_state: RouteTableAssociationState | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='AssociationState',
         serialization_name='associationState',
