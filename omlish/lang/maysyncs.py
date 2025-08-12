@@ -7,7 +7,6 @@ from .functions import as_async
 
 
 T = ta.TypeVar('T')
-T_co = ta.TypeVar('T_co', covariant=True)
 P = ta.ParamSpec('P')
 
 MaysyncP: ta.TypeAlias = ta.Callable[P, Maywaitable[T]]
@@ -17,16 +16,16 @@ MaysyncP: ta.TypeAlias = ta.Callable[P, Maywaitable[T]]
 
 
 def make_maysync(
-        s: ta.Callable[P, T_co],
-        a: ta.Callable[P, ta.Awaitable[T_co]] | None = None,
-) -> MaysyncP[P, T_co]:
-    return ta.cast('MaysyncP[P, T_co]', _make_maysync(
+        s: ta.Callable[P, T],
+        a: ta.Callable[P, ta.Awaitable[T]] | None = None,
+) -> MaysyncP[P, T]:
+    return ta.cast('MaysyncP[P, T]', _make_maysync(
         s,
         a if a is not None else as_async(s),
     ))
 
 
-def maysync(m: ta.Callable[P, ta.Awaitable[T_co]]) -> MaysyncP[P, T_co]:
-    return ta.cast('MaysyncP[P, T_co]', _maysync(
+def maysync(m: ta.Callable[P, ta.Awaitable[T]]) -> MaysyncP[P, T]:
+    return ta.cast('MaysyncP[P, T]', _maysync(
         m,
     ))

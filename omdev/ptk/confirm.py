@@ -1,3 +1,5 @@
+import typing as ta
+
 from prompt_toolkit.formatted_text import merge_formatted_text
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding import KeyPressEvent
@@ -47,7 +49,7 @@ async def m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -
 
     while True:
         session = create_strict_confirm_session(message, suffix)
-        ret = await lang.make_maysync(session.prompt, session.prompt_async)().m()
+        ret = await lang.make_maysync(session.prompt, ta.cast(ta.Any, session.prompt_async))().m()
 
         if isinstance(ret, str):
             check.empty(ret)

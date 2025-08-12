@@ -151,6 +151,8 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
             except BaseException as ex:  # noqa
                 e = ex
 
+            del o
+
     async def a(self) -> T:
         g = self.x.mg(*self.args, **self.kwargs)
 
@@ -175,6 +177,8 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
                 i = await o.x(*o.args, **o.kwargs).a()
             except BaseException as ex:  # noqa
                 e = ex
+
+            del o
 
 
 @ta.final
@@ -245,8 +249,8 @@ class _MaysyncFuture(ta.Generic[T]):
         self.op = op
 
     done: bool = False
-    error: ta.Optional[BaseException] = None
     result: ta.Optional[T] = None
+    error: ta.Optional[BaseException] = None
 
     def __await__(self):
         if not self.done:
