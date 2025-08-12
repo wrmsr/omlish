@@ -11,6 +11,8 @@ from ..tokens import all as tks
 TYPE_ALIAS_COMMENT = '# ta.TypeAlias'
 NOQA_TYPE_ALIAS_COMMENT = TYPE_ALIAS_COMMENT + '  # noqa'
 
+NO_MOVE_COMMENT = '# omlish-amalg-typing-no-move'
+
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Typing:
@@ -28,6 +30,8 @@ def _is_typing(
         exclude_newtypes: bool = False,
 ) -> bool:
     es = tks.join_toks(lts).strip()
+    if es.endswith(NO_MOVE_COMMENT):
+        return False
     if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
         return True
 
