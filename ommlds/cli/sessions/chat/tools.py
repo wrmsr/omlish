@@ -40,7 +40,7 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
             spec=msh.marshal(tce.spec),
             args=tr.args,
         )
-        cr = await ptk.m_strict_confirm.a(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+        cr = await ptk.m_strict_confirm.m(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
 
         if not cr:
             raise ToolExecutionRequestDeniedError

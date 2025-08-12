@@ -46,6 +46,8 @@ class AttachmentStatus(_enum.Enum):
 
 AutoRecoveryFlag = _ta.NewType('AutoRecoveryFlag', bool)
 
+AvailabilityZoneId = _ta.NewType('AvailabilityZoneId', str)
+
 
 class BandwidthWeightingType(_enum.Enum):
     DEFAULT = 'default'
@@ -3369,6 +3371,12 @@ class Placement(
     _base.Shape,
     shape_name='Placement',
 ):
+    availability_zone_id: AvailabilityZoneId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AvailabilityZoneId',
+        serialization_name='availabilityZoneId',
+        shape_name='AvailabilityZoneId',
+    ))
+
     affinity: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Affinity',
         serialization_name='affinity',

@@ -16,16 +16,13 @@ class MaysyncableP(ta.Protocol[P, T_co]):
     def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'MaysyncableP[P, T_co]':
         ...
 
-    @property
-    def s(self) -> ta.Callable[P, T_co]:
+    def s(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
         ...
 
-    @property
-    def a(self) -> ta.Callable[P, ta.Awaitable[T_co]]:
+    def a(self, *args: P.args, **kwargs: P.kwargs) -> ta.Awaitable[T_co]:
         ...
 
-    @property
-    def m(self) -> ta.Callable[P, ta.Awaitable[T_co]]:
+    def m(self, *args: P.args, **kwargs: P.kwargs) -> ta.Awaitable[T_co]:
         ...
 
 
