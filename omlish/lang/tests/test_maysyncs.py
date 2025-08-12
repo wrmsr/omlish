@@ -12,8 +12,8 @@ async def a_inc(i: int) -> int:
 
 @maysync
 async def m_frob(i: int) -> int:
-    return await make_maysync(s_inc, a_inc).m(i)
+    return await make_maysync(s_inc, a_inc)(i).m()
 
 
 def test_maysync():
-    assert m_frob.s(3) == 4
+    assert m_frob(3).s() == 4

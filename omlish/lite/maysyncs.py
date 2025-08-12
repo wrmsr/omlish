@@ -5,15 +5,13 @@ TODO:
  - __del__
 """
 import abc
-import dataclasses as dc
 import functools
 import typing as ta
 
-from .args import Args
-from .check import check
-
 
 T = ta.TypeVar('T')
+T_co = ta.TypeVar('T_co', covariant=True)
+_X = ta.TypeVar('_X')
 
 _MaysyncGen = ta.Generator['_MaysyncOp', ta.Any, T]  # ta.TypeAlias
 
@@ -21,77 +19,111 @@ _MaysyncGen = ta.Generator['_MaysyncOp', ta.Any, T]  # ta.TypeAlias
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class Maysyncable(abc.ABC, ta.Generic[T]):
-    @abc.abstractmethod
-    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
-        raise NotImplementedError
+class Maywaitable(ta.Protocol[T_co]):
+    def s(self) -> T_co:
+        ...
 
-    @abc.abstractmethod
-    def s(self, *args: ta.Any, **kwargs: ta.Any) -> T:
-        raise NotImplementedError
+    def a(self) -> ta.Awaitable[T_co]:
+        ...
 
-    @abc.abstractmethod
-    def a(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[T]:
-        raise NotImplementedError
+    def m(self) -> ta.Awaitable[T_co]:
+        ...
 
-    @ta.final
-    def m(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[T]:
-        return _MaysyncFuture(_MaysyncOp(self, Args(*args, **kwargs)))
+
+Maysync = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
 
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class _FnMaysyncable(Maysyncable[T]):
-    s: ta.Callable[..., T]
-    a: ta.Callable[..., ta.Awaitable[T]]
+class _Maywaitable(abc.ABC, ta.Generic[_X, T]):
+    @ta.final
+    def __init__(
+            self,
+            x: _X,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        self.x = x
+        self.args = args
+        self.kwargs = kwargs
 
-    def __post_init__(self) -> None:
-        check.not_none(self.s)
-        check.not_none(self.a)
+    @ta.final
+    def m(self) -> ta.Awaitable[T]:
+        return _MaysyncFuture(_MaysyncOp(
+            ta.cast(ta.Any, self.x),
+            *self.args,
+            **self.kwargs,
+        ))
 
-    def __init_subclass__(cls, **kwargs):
-        raise TypeError
 
-    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
-        return _FnMaysyncable(
-            self.s.__get__(instance, owner),
-            self.a.__get__(instance, owner),
+##
+
+
+@ta.final
+class _FnMaysync(ta.Generic[T]):
+    def __init__(
+            self,
+            s: ta.Callable[..., T],
+            a: ta.Callable[..., ta.Awaitable[T]],
+    ) -> None:
+        if s is None:
+            raise TypeError(s)
+        if a is None:
+            raise TypeError(a)
+        self.s = s
+        self.a = a
+
+    def __get__(self, instance, owner=None):
+        return _FnMaysync(
+            self.s.__get__(instance, owner),  # noqa
+            self.a.__get__(instance, owner),  # noqa
         )
 
+    def __call__(self, *args, **kwargs):
+        return _FnMaywaitable(self, *args, **kwargs)
 
-_FnMaysyncable.__abstractmethods__ = frozenset()
+
+@ta.final
+class _FnMaywaitable(_Maywaitable[_FnMaysync[T], T]):
+    def s(self) -> T:
+        return self.x.s(*self.args, **self.kwargs)
+
+    async def a(self) -> T:
+        return await self.x.a(*self.args, **self.kwargs)
 
 
 def make_maysync(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
-) -> Maysyncable[T]:
-    return _FnMaysyncable(
-        s,
-        a,
-    )
+) -> Maysync[T]:
+    return _FnMaysync(s, a)
 
 
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class _MgMaysyncable(Maysyncable[T]):
-    mg: ta.Callable[..., _MaysyncGen[T]]
+@ta.final
+class _MgMaysync(ta.Generic[T]):
+    def __init__(
+            self,
+            mg: ta.Callable[..., _MaysyncGen[T]],
+    ) -> None:
+        self.mg = mg
 
-    def __init_subclass__(cls, **kwargs):
-        raise TypeError
-
-    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> 'Maysyncable[T]':
-        return _MgMaysyncable(
-            self.mg.__get__(instance, owner),
+    def __get__(self, instance, owner=None):
+        return _MgMaysync(
+            self.mg.__get__(instance, owner),  # noqa
         )
 
-    def s(self, *args: ta.Any, **kwargs: ta.Any) -> T:
-        g = self.mg(*args, **kwargs)
+    def __call__(self, *args, **kwargs):
+        return _MgMaywaitable(self, *args, **kwargs)
+
+
+@ta.final
+class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
+    def s(self) -> T:
+        g = self.x.mg(*self.args, **self.kwargs)
 
         i: ta.Any = None
         e: ta.Any = None
@@ -108,14 +140,15 @@ class _MgMaysyncable(Maysyncable[T]):
             i = None
             e = None
 
-            mo = check.isinstance(o, _MaysyncOp)
+            if not isinstance(o, _MaysyncOp):
+                raise TypeError(o)
             try:
-                i = mo.a(mo.mx.s)
+                i = o.x(*o.args, **o.kwargs).s()
             except BaseException as ex:  # noqa
                 e = ex
 
-    async def a(self, *args: ta.Any, **kwargs: ta.Any) -> T:
-        g = self.mg(*args, **kwargs)
+    async def a(self) -> T:
+        g = self.x.mg(*self.args, **self.kwargs)
 
         i: ta.Any = None
         e: ta.Any = None
@@ -132,27 +165,28 @@ class _MgMaysyncable(Maysyncable[T]):
             i = None
             e = None
 
-            mo = check.isinstance(o, _MaysyncOp)
+            if not isinstance(o, _MaysyncOp):
+                raise TypeError(o)
             try:
-                i = await mo.a(mo.mx.a)
+                i = await o.x(*o.args, **o.kwargs).a()
             except BaseException as ex:  # noqa
                 e = ex
 
 
+@ta.final
 class _MgMaysyncFn:
     def __init__(self, m):
-        super().__init__()
-
-        self._m = m
+        self.m = m
 
         functools.update_wrapper(self, m)
 
     def __get__(self, instance, owner=None):
-        return _MgMaysyncFn(self._m.__get__(instance, owner))
+        return _MgMaysyncFn(
+            self.m.__get__(instance, owner),
+        )
 
     def __call__(self, *args, **kwargs):
-        a = self._m(*args, **kwargs).__await__()
-
+        a = self.m(*args, **kwargs).__await__()
         try:
             g = iter(a)
             try:
@@ -162,13 +196,14 @@ class _MgMaysyncFn:
                     except StopIteration as e:
                         return e.value
 
-                    f = check.isinstance(o, _MaysyncFuture)
-                    if not f.done:
+                    if not isinstance(o, _MaysyncFuture):
+                        raise TypeError(o)
+                    if not o.done:
                         try:
-                            f.result = yield f.op
+                            o.result = yield o.op
                         except BaseException as e:  # noqa
-                            f.error = e
-                        f.done = True
+                            o.error = e
+                        o.done = True
 
             finally:
                 g.close()
@@ -177,29 +212,32 @@ class _MgMaysyncFn:
             a.close()
 
 
-def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysyncable[T]:
-    return _MgMaysyncable(_MgMaysyncFn(m))
+def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysync[T]:
+    return _MgMaysync(_MgMaysyncFn(m))
 
 
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@ta.final
 class _MaysyncOp:
-    mx: Maysyncable
-    a: Args
+    def __init__(
+            self,
+            x: Maysync[T],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        self.x = x
+        self.args = args
+        self.kwargs = kwargs
 
-    def __init_subclass__(cls, **kwargs):
-        raise TypeError
 
-
-##
-
-
+@ta.final
 class _MaysyncFuture(ta.Generic[T]):
-    def __init__(self, op: _MaysyncOp) -> None:
-        super().__init__()
-
+    def __init__(
+            self,
+            op: _MaysyncOp,
+    ) -> None:
         self.op = op
 
     done: bool = False

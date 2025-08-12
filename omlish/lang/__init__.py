@@ -251,10 +251,9 @@ from .iterables import (  # noqa
 )
 
 from .maysyncs import (  # noqa
-    MaysyncableP,
+    MaysyncP,
 
     make_maysync,
-
     maysync,
 )
 
@@ -396,7 +395,8 @@ empty = Maybe.empty
 just = Maybe.just
 
 from ..lite.maysyncs import (  # noqa
-    Maysyncable,
+    Maywaitable,
+    Maysync,
 )
 
 from ..lite.reprs import (  # noqa
