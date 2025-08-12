@@ -24,23 +24,37 @@ class ToolExecutionRequestDeniedError(Exception):
 
 class ToolExecutionConfirmation(lang.Abstract):
     @abc.abstractmethod
-    def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> ta.Awaitable[None]:
+    def m_confirm_tool_execution_or_raise(
+            self,
+            tr: mc.ToolExecRequest,
+            tce: mc.ToolCatalogEntry,
+    ) -> lang.Maywaitable[None]:
         raise NotImplementedError
 
 
 class NopToolExecutionConfirmation(ToolExecutionConfirmation):
-    async def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+    @lang.maysync
+    async def m_confirm_tool_execution_or_raise(
+            self,
+            tr: mc.ToolExecRequest,
+            tce: mc.ToolCatalogEntry,
+    ) -> None:
         pass
 
 
 class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
-    async def confirm_tool_execution_or_raise(self, tr: mc.ToolExecRequest, tce: mc.ToolCatalogEntry) -> None:
+    @lang.maysync
+    async def m_confirm_tool_execution_or_raise(
+            self,
+            tr: mc.ToolExecRequest,
+            tce: mc.ToolCatalogEntry,
+    ) -> None:
         tr_dct = dict(
             id=tr.id,
             spec=msh.marshal(tce.spec),
             args=tr.args,
         )
-        cr = await ptk.m_strict_confirm.m(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+        cr = await ptk.m_strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n').m()
 
         if not cr:
             raise ToolExecutionRequestDeniedError
@@ -50,14 +64,8 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
 
 
 class ToolExecRequestExecutor(lang.Abstract):
-    @property
     @abc.abstractmethod
-    def m_execute_tool_request(self) -> lang.MaysyncableP[
-        [
-            mc.ToolExecRequest,
-        ],
-        mc.ToolExecResultMessage,
-    ]:
+    def m_execute_tool_request(self, tr: mc.ToolExecRequest) -> lang.Maywaitable[mc.ToolExecResultMessage]:
         raise NotImplementedError
 
 
@@ -77,10 +85,10 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
     async def m_execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 
-        await self._confirmation.confirm_tool_execution_or_raise(tr, tce)
+        await self._confirmation.m_confirm_tool_execution_or_raise(tr, tce).m()
 
-        return await mc.m_execute_tool_request.m(
+        return await mc.m_execute_tool_request(
             mc.ToolContext(),
             tce.executor(),
             tr,
-        )
+        ).m()

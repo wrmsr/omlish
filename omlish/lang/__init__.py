@@ -397,6 +397,7 @@ just = Maybe.just
 from ..lite.maysyncs import (  # noqa
     Maywaitable,
     Maysync,
+    Maysync_,
 )
 
 from ..lite.reprs import (  # noqa

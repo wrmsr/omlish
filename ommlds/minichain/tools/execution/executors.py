@@ -14,16 +14,13 @@ from .context import bind_tool_context
 
 
 class ToolExecutor(lang.Abstract):
-    @property
     @abc.abstractmethod
-    def m_execute_tool(self) -> lang.MaysyncableP[
-        [
-            ToolContext,
-            str,
-            ta.Mapping[str, ta.Any],
-        ],
-        str,
-    ]:
+    def m_execute_tool(
+            self,
+            ctx: ToolContext,
+            name: str,
+            args: ta.Mapping[str, ta.Any],
+    ) -> lang.Maywaitable[str]:
         raise NotImplementedError
 
 
@@ -42,10 +39,10 @@ class ToolFnToolExecutor(ToolExecutor):
             args: ta.Mapping[str, ta.Any],
     ) -> str:
         with bind_tool_context(ctx):
-            return await m_execute_tool_fn.m(
+            return await m_execute_tool_fn(
                 self.tool_fn,
                 args,
-            )
+            ).m()
 
 
 ##
@@ -62,4 +59,4 @@ class NameSwitchedToolExecutor(ToolExecutor):
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:
-        return await self.tool_executors_by_name[name].m_execute_tool.m(ctx, name, args)
+        return await self.tool_executors_by_name[name].m_execute_tool(ctx, name, args).m()

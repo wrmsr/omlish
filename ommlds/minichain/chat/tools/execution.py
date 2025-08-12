@@ -15,11 +15,11 @@ async def m_execute_tool_request(
         tex: ToolExecutor,
         ter: ToolExecRequest,
 ) -> ToolExecResultMessage:
-    result_str = await tex.m_execute_tool.m(
+    result_str = await tex.m_execute_tool(
         ctx,
         ter.name,
         ter.args,
-    )
+    ).m()
 
     return ToolExecResultMessage(
         id=ter.id,

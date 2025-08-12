@@ -17,7 +17,7 @@ D = ta.TypeVar('D')
 
 @dc.dataclass(frozen=True)
 class ToolFn(lang.Final):
-    fn: ta.Callable | lang.Maysyncable
+    fn: ta.Callable | lang.Maysync_
 
     #
 
@@ -68,9 +68,9 @@ async def m_execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
-    m_fn: lang.MaysyncableP
-    if isinstance(tfn.fn, lang.Maysyncable):
-        m_fn = tfn.fn
+    m_fn: lang.Maysync
+    if isinstance(tfn.fn, lang.Maysync_):
+        m_fn = ta.cast(ta.Any, tfn)
     else:
         m_fn = lang.make_maysync(tfn.fn)
 
@@ -78,7 +78,7 @@ async def m_execute_tool_fn(
     if isinstance(tfn.input, ToolFn.DataclassInput):
         raise NotImplementedError
     elif isinstance(tfn.input, ToolFn.KwargsInput):
-        out = await m_fn.m(**args)
+        out = await m_fn(**args).m()
     else:
         raise NotImplementedError
 

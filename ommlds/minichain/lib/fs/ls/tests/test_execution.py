@@ -33,12 +33,12 @@ def test_ls_tool():
         check.not_none(ls_tool().name): ls_tool().executor(),
     })
 
-    tool_exec_result = m_execute_tool_request.s(
+    tool_exec_result = m_execute_tool_request(
         ToolContext.new(
             tool_exec_request,
         ),
         tool_executor,
         tool_exec_request,
-    )
+    ).s()
 
     print(tool_exec_result)

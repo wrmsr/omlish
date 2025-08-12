@@ -33,6 +33,10 @@ class Maywaitable(ta.Protocol[T_co]):
 Maysync = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
 
+class Maysync_(abc.ABC):  # noqa
+    pass
+
+
 ##
 
 
@@ -61,7 +65,7 @@ class _Maywaitable(abc.ABC, ta.Generic[_X, T]):
 
 
 @ta.final
-class _FnMaysync(ta.Generic[T]):
+class _FnMaysync(Maysync_, ta.Generic[T]):
     def __init__(
             self,
             s: ta.Callable[..., T],
@@ -104,7 +108,7 @@ def make_maysync(
 
 
 @ta.final
-class _MgMaysync(ta.Generic[T]):
+class _MgMaysync(Maysync_, ta.Generic[T]):
     def __init__(
             self,
             mg: ta.Callable[..., _MaysyncGen[T]],
