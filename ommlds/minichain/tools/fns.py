@@ -70,7 +70,7 @@ async def m_execute_tool_fn(
 ) -> str:
     m_fn: lang.Maysync
     if isinstance(tfn.fn, lang.Maysync_):
-        m_fn = ta.cast(ta.Any, tfn)
+        m_fn = ta.cast(ta.Any, tfn.fn)
     else:
         m_fn = lang.make_maysync(tfn.fn)
 

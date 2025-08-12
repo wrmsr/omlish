@@ -11,7 +11,8 @@ import typing as ta
 
 T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
-_X = ta.TypeVar('_X')
+
+_MaysyncX = ta.TypeVar('_MaysyncX')
 
 _MaysyncGen = ta.Generator['_MaysyncOp', ta.Any, T]  # ta.TypeAlias
 
@@ -40,11 +41,11 @@ class Maysync_(abc.ABC):  # noqa
 ##
 
 
-class _Maywaitable(abc.ABC, ta.Generic[_X, T]):
+class _Maywaitable(abc.ABC, ta.Generic[_MaysyncX, T]):
     @ta.final
     def __init__(
             self,
-            x: _X,
+            x: _MaysyncX,
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
@@ -114,6 +115,8 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
             mg: ta.Callable[..., _MaysyncGen[T]],
     ) -> None:
         self.mg = mg
+
+        functools.update_wrapper(self, mg, updated=())
 
     def __get__(self, instance, owner=None):
         return _MgMaysync(
@@ -188,7 +191,7 @@ class _MgMaysyncFn:
     def __init__(self, m):
         self.m = m
 
-        functools.update_wrapper(self, m)
+        functools.update_wrapper(self, m, updated=())
 
     def __get__(self, instance, owner=None):
         return _MgMaysyncFn(
