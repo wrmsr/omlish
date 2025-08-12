@@ -120,19 +120,32 @@ class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
         self._subprocesses = subprocesses
         self._async_subprocesses = async_subprocesses
 
+    #
+
     def run_(self, run: SubprocessRun) -> Maywaitable[SubprocessRunOutput]:
         return make_maysync(
             self._subprocesses.run,
             self._async_subprocesses.run,
         )(run)
 
-    def check_call(self, *cmd: str, stdout: ta.Any = sys.stderr, **kwargs: ta.Any) -> Maywaitable[None]:
+    #
+
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> Maywaitable[None]:
         return make_maysync(
             self._subprocesses.check_call,
             self._async_subprocesses.check_call,
         )(*cmd, stdout=stdout, **kwargs)
 
-    def check_output(self, *cmd: str, **kwargs: ta.Any) -> Maywaitable[bytes]:
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> Maywaitable[bytes]:
         return make_maysync(
             self._subprocesses.check_output,
             self._async_subprocesses.check_output,

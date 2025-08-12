@@ -6,7 +6,6 @@ import contextlib
 import functools
 import logging
 import subprocess
-import sys
 import typing as ta
 
 from ...lite.check import check
@@ -207,25 +206,6 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
             stdout=stdout,
             stderr=stderr,
         )
-
-    #
-
-    async def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, check=True, **kwargs) as (cmd, kwargs):  # noqa
-            await self.run(*cmd, **kwargs)
-
-    async def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
-            return check.not_none((await self.run(*cmd, **kwargs)).stdout)
 
 
 asyncio_subprocesses = AsyncioSubprocesses()

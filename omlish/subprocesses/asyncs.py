@@ -1,9 +1,11 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import abc
+import subprocess
 import sys
 import typing as ta
 
+from ..lite.check import check
 from ..lite.timeouts import TimeoutLike
 from .base import BaseSubprocesses
 from .run import SubprocessRun
@@ -38,31 +40,41 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
 
     #
 
-    @abc.abstractmethod
-    def check_call(
+    async def check_call(
             self,
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
-    ) -> ta.Awaitable[None]:
-        raise NotImplementedError
+    ) -> None:
+        await self.run(
+            *cmd,
+            stdout=stdout,
+            check=True,
+            **kwargs,
+        )
 
-    @abc.abstractmethod
-    def check_output(
+    async def check_output(
             self,
             *cmd: str,
+            stdout: ta.Any = subprocess.PIPE,
             **kwargs: ta.Any,
-    ) -> ta.Awaitable[bytes]:
-        raise NotImplementedError
-
-    #
+    ) -> bytes:
+        return check.not_none((await self.run(
+            *cmd,
+            stdout=stdout,
+            check=True,
+            **kwargs,
+        )).stdout)
 
     async def check_output_str(
             self,
             *cmd: str,
             **kwargs: ta.Any,
     ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+        return (await self.check_output(
+            *cmd,
+            **kwargs,
+        )).decode().strip()
 
     #
 

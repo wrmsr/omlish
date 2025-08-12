@@ -1,6 +1,5 @@
 # ruff: noqa: PT009 PT027
 # @omlish-lite
-import sys
 import typing as ta
 import unittest
 
@@ -18,12 +17,6 @@ class BadError(Exception):
 
 class BadAsyncSubprocesses(AbstractAsyncSubprocesses):
     def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
-        raise BadError
-
-    def check_call(self, *cmd: str, stdout: ta.Any = sys.stderr, **kwargs: ta.Any) -> ta.Awaitable[None]:
-        raise BadError
-
-    def check_output(self, *cmd: str, **kwargs: ta.Any) -> ta.Awaitable[bytes]:
         raise BadError
 
 

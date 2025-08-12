@@ -1,6 +1,5 @@
 import io
 import subprocess
-import sys
 import typing as ta
 
 import anyio.abc
@@ -72,14 +71,6 @@ class AnyioSubprocesses(AbstractAsyncSubprocesses):
             stdout=stdout.getvalue() if stdout is not None else None,
             stderr=stderr.getvalue() if stderr is not None else None,
         )
-
-    async def check_call(self, *cmd: str, stdout: ta.Any = sys.stderr, **kwargs: ta.Any) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, check=True, **kwargs) as (cmd, kwargs):  # noqa
-            await self.run(*cmd, **kwargs)
-
-    async def check_output(self, *cmd: str, **kwargs: ta.Any) -> bytes:
-        with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
-            return check.not_none((await self.run(*cmd, **kwargs)).stdout)
 
 
 anyio_subprocesses = AnyioSubprocesses()
