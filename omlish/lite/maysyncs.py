@@ -240,6 +240,10 @@ class _MaysyncOp:
         self.kwargs = kwargs
 
 
+class _MaysyncFutureNotAwaitedError(RuntimeError):
+    pass
+
+
 @ta.final
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
@@ -249,14 +253,15 @@ class _MaysyncFuture(ta.Generic[T]):
         self.op = op
 
     done: bool = False
-    result: ta.Optional[T] = None
+    result: T
     error: ta.Optional[BaseException] = None
 
     def __await__(self):
         if not self.done:
             yield self
         if not self.done:
-            raise RuntimeError("await wasn't used with event future")
+            raise _MaysyncFutureNotAwaitedError
         if self.error is not None:
             raise self.error
-        return self.result
+        else:
+            return self.result
