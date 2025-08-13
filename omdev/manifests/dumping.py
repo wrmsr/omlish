@@ -9,6 +9,8 @@ import json
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import unmarshal_obj
 
 
 ##
@@ -36,6 +38,23 @@ class _ModuleManifestDumper:
 
     #
 
+    def _build_manifest_dct(self, manifest: ta.Any) -> ta.Mapping[str, ta.Any]:
+        manifest_json = json.dumps(marshal_obj(manifest))
+        manifest_dct = json.loads(manifest_json)
+
+        rt_manifest: ta.Any = unmarshal_obj(manifest_dct, type(manifest))
+        rt_manifest_json: ta.Any = json.dumps(marshal_obj(rt_manifest))
+        rt_manifest_dct: ta.Any = json.loads(rt_manifest_json)
+        if rt_manifest_dct != manifest_dct:
+            raise Exception(
+                f'Manifest failed to roundtrip: '
+                f'{manifest} => {manifest_dct} != {rt_manifest} => {rt_manifest_dct}',
+            )
+
+        return manifest_dct
+
+    #
+
     def _load_attr_manifest(self, target: dict) -> dict:
         attr = target['attr']
         manifest = getattr(self._mod(), attr)
@@ -45,15 +64,11 @@ class _ModuleManifestDumper:
             if isinstance(manifest, type):
                 manifest = manifest()
 
+            manifest_dct = self._build_manifest_dct(manifest)
+
             cls = type(manifest)
-            manifest_json = json.dumps(dc.asdict(manifest))
-            manifest_dct = json.loads(manifest_json)
-
-            rt_manifest = cls(**manifest_dct)
-            if rt_manifest != manifest:
-                raise Exception(f'Manifest failed to roundtrip: {manifest} => {manifest_dct} != {rt_manifest}')
-
             key = f'${cls.__module__}.{cls.__qualname__}'
+
             return {key: manifest_dct}
 
         elif isinstance(manifest, collections.abc.Mapping):
@@ -65,8 +80,9 @@ class _ModuleManifestDumper:
                 raise Exception(f'Bad value: {manifest_dct}')
 
             manifest_json = json.dumps(manifest_dct)
+
             rt_manifest_dct = json.loads(manifest_json)
-            if manifest_dct != rt_manifest_dct:
+            if rt_manifest_dct != manifest_dct:
                 raise Exception(f'Manifest failed to roundtrip: {manifest_dct} != {rt_manifest_dct}')
 
             return {key: manifest_dct}
@@ -102,9 +118,11 @@ class _ModuleManifestDumper:
 
         inl_src = eval_attr_name + target['init_src']
         inl_code = compile(inl_src, '<magic>', 'eval')
+
         manifest = eval(inl_code, inl_glo)  # noqa
-        manifest_json = json.dumps(dc.asdict(manifest))
-        manifest_dct = json.loads(manifest_json)
+
+        manifest_dct = self._build_manifest_dct(manifest)
+
         key = f'${cls.__module__}.{cls.__qualname__}'
         return {key: manifest_dct}
 

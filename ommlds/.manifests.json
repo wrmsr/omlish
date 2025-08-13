@@ -18,7 +18,7 @@
     "module": ".minichain.backends.impls.anthropic.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
-    "line": 61,
+    "line": 32,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.impls.anthropic.chat",
@@ -26,6 +26,33 @@
         "name": "anthropic",
         "aliases": null,
         "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.anthropic.names",
+    "attr": "_MODEL_NAMES_PACK",
+    "file": "ommlds/minichain/backends/impls/anthropic/names.py",
+    "line": 26,
+    "value": {
+      "$.minichain.backends.strings.packs.ModelNameBackendStringPack": {
+        "service_cls_names": [
+          "ChatChoicesService"
+        ],
+        "backend_name": "anthropic",
+        "model_names": {
+          "default": "claude",
+          "aliases": {
+            "claude-opus-4-1": "claude-opus-4-1-20250805",
+            "claude-opus": "claude-opus-4-1",
+            "claude-sonnet-4": "claude-sonnet-4-20250514",
+            "claude-sonnet": "claude-sonnet-4",
+            "claude-haiku-3-5-latest": "claude-3-5-haiku-latest",
+            "claude-haiku-3-5": "claude-haiku-3-5-latest",
+            "claude-haiku": "claude-haiku-3-5",
+            "claude": "claude-haiku"
+          }
+        }
       }
     }
   },

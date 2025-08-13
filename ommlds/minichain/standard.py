@@ -34,9 +34,9 @@ class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ModelNameCollection:
-    default: str | None = None
+    default: ta.Optional[str] = None  # noqa
 
-    aliases: ta.Mapping[str, str] | None = None
+    aliases: ta.Optional[ta.Mapping[str, str]] = None  # noqa
 
     @cached.property
     def alias_map(self) -> ta.Mapping[str, str]:
