@@ -81,7 +81,7 @@ class ProgressBar:
     #     codes.CHA(),
     # ])
 
-    _LINE_UPDATE_PREFIX: ta.ClassVar[str] = '\033[2K\033['
+    _LINE_UPDATE_PREFIX: ta.ClassVar[str] = '\033[2K\033[G'
 
     def print(
             self,
