@@ -123,6 +123,17 @@
     }
   },
   {
+    "module": ".manifests.tests.packages.foo.fargles",
+    "attr": "_SIMPLE_THINGY",
+    "file": "omdev/manifests/tests/packages/foo/fargles.py",
+    "line": 4,
+    "value": {
+      "$.manifests.tests.packages.foo.thingies.manifests.SimpleThingyManifest": {
+        "what": "fargles"
+      }
+    }
+  },
+  {
     "module": ".precheck.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/precheck/__main__.py",

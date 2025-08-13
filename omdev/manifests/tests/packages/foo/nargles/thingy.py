@@ -1,3 +1,3 @@
-# @test-omlish-manifest $.thingies.manifests.ThingyManifest(name='nargle')
+# @test-omlish-manifest $.thingies.manifests.NamedThingyManifest(name='nargle')
 class NargleThingy:
     pass

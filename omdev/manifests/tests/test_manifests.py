@@ -60,6 +60,9 @@ def build_dummy_packages(request) -> DummyPackages:
     )
 
 
+##
+
+
 def test_main(request):
     dummy = build_dummy_packages(request)
 
@@ -77,12 +80,23 @@ def test_main(request):
 
     assert out == [
         {
+            'attr': '_SIMPLE_THINGY',
+            'file': 'foo/fargles.py',
+            'line': 4,
+            'module': '.fargles',
+            'value': {
+                '$.thingies.manifests.SimpleThingyManifest': {
+                    'what': 'fargles',
+                },
+            },
+        },
+        {
             'module': '.nargles.thingy',
             'attr': None,
             'file': 'foo/nargles/thingy.py',
             'line': 1,
             'value': {
-                '$.thingies.manifests.ThingyManifest': {
+                '$.thingies.manifests.NamedThingyManifest': {
                     'mod_name': 'foo.nargles.thingy',
                     'attr_name': 'NargleThingy',
                     'name': 'nargle',
@@ -93,14 +107,15 @@ def test_main(request):
     ]
 
 
-def test_dumping(request):
-    dummy = build_dummy_packages(request)
+##
 
+
+def collect_file_targets(dummy, file):
     sp_src = textwrap.dedent(f"""
         import json
         from {__package__.rpartition('.')[0]}.building import ManifestBuilder
         mb = ManifestBuilder({dummy.packages_dir!r})
-        fm = mb.build_file_module('foo/nargles/thingy.py')
+        fm = mb.build_file_module({file!r})
         tgts = mb.collect_module_manifest_targets(fm)
         print(json.dumps(tgts))
     """)
@@ -113,11 +128,13 @@ def test_dumping(request):
         ],
         **dummy.subprocess_kwargs,
     ).decode()
-    targets = json.loads(out_str)
+    return json.loads(out_str)
 
+
+def dump_module_targets(dummy, module, targets):
     sp_src = textwrap.dedent(f"""
         from {__package__.rpartition('.')[0]}.dumping import _ModuleManifestDumper
-        _ModuleManifestDumper('foo.nargles.thingy')({", ".join(repr(tgt) for tgt in targets)})
+        _ModuleManifestDumper({module!r})({", ".join(repr(tgt) for tgt in targets)})
     """)
     out_str = subprocess.check_output(
         [
@@ -127,7 +144,14 @@ def test_dumping(request):
         ],
         **dummy.subprocess_kwargs,
     ).decode()
-    out = json.loads(out_str)
+    return json.loads(out_str)
+
+
+def test_dumping_nargles(request):
+    dummy = build_dummy_packages(request)
+
+    targets = collect_file_targets(dummy, 'foo/nargles/thingy.py')
+    out = dump_module_targets(dummy, 'foo.nargles.thingy', targets)
 
     assert out == [
         {
@@ -136,11 +160,32 @@ def test_dumping(request):
             'file': 'foo/nargles/thingy.py',
             'line': 1,
             'value': {
-                '$foo.thingies.manifests.ThingyManifest': {
+                '$foo.thingies.manifests.NamedThingyManifest': {
                     'mod_name': 'foo.nargles.thingy',
                     'attr_name': 'NargleThingy',
                     'name': 'nargle',
                     'aliases': None,
+                },
+            },
+        },
+    ]
+
+
+def test_dumping_fargles(request):
+    dummy = build_dummy_packages(request)
+
+    targets = collect_file_targets(dummy, 'foo/fargles.py')
+    out = dump_module_targets(dummy, 'foo.fargles', targets)
+
+    assert out == [
+        {
+            'attr': '_SIMPLE_THINGY',
+            'file': 'foo/fargles.py',
+            'line': 4,
+            'module': '.fargles',
+            'value': {
+                '$foo.thingies.manifests.SimpleThingyManifest': {
+                    'what': 'fargles',
                 },
             },
         },
