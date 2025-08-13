@@ -13,6 +13,7 @@ NOTES:
  - huggingface handle 'tag dir is a file containing a rev'
  - ** make them manifest-able, yaml-able **
 """
+import abc
 import os.path
 import re
 import typing as ta
@@ -194,6 +195,15 @@ def test_instantiate_backend_strings():
 ##
 
 
+class BackendStringInstantiator(lang.Abstract):
+    @abc.abstractmethod
+    def instantiate_backend_string(self, bs: ParsedBackendString) -> ta.Any:
+        raise NotImplementedError
+
+
+#
+
+
 @dc.dataclass(frozen=True)
 class ModelNameBackendStringPack:
     service_cls: str | ta.Any | ta.AbstractSet[str] | ta.AbstractSet[ta.Any]
@@ -218,6 +228,22 @@ class ModelNameBackendStringPack:
     @cached.property
     def root_model_names(self) -> frozenset[str]:
         return frozenset(self.model_name_alias_map.values())
+
+
+class ModelNameBackendStringPackInstantiator(BackendStringInstantiator):
+    def __init__(
+            self,
+            pack: ModelNameBackendStringPack,
+    ) -> None:
+        super().__init__()
+
+        self._pack = pack
+
+    def instantiate_backend_string(self, bs: ParsedBackendString) -> ta.Any:
+        raise NotImplementedError
+
+
+##
 
 
 ANTHROPIC_MODEL_NAME_BACKEND_STRING_PACK = ModelNameBackendStringPack(

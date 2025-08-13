@@ -24,5 +24,5 @@ def test_search():
 
 @ptu.skip.if_cant_import('ddgs')
 def test_manifest():
-    svc = registry_new(SearchService, 'ddg')  # type: ignore[type-abstract]
+    svc = registry_new(SearchService, 'ddg')
     assert isinstance(svc, DuckduckgoSearchService)

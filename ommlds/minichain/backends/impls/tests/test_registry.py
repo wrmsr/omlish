@@ -11,7 +11,7 @@ from ....standard import ApiKey
 
 def test_new_backend_openai(harness):
     llm: ChatChoicesService = registry_new(
-        ChatChoicesService,  # type: ignore[type-abstract]
+        ChatChoicesService,
         'openai',
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     )
