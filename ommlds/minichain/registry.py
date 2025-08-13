@@ -163,7 +163,9 @@ class _Registry:
 
     def get_registry_cls(self, selector: ta.Any, name: str) -> type:
         with self._lock:
-            if isinstance(selector, type):
+            if isinstance(selector, str):
+                type_name = check.in_(selector, self._registry_type_manifests_by_name)
+            elif isinstance(selector, type):
                 type_name = selector.__name__
             else:
                 type_name = self._resolved_registry_type_names_by_registered_type[selector]
@@ -208,7 +210,17 @@ def register_type(
     return cls
 
 
+@ta.overload
 def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+    ...
+
+
+@ta.overload
+def registry_new(cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    ...
+
+
+def registry_new(cls, name, *args, **kwargs):
     be_cls = _registry().get_registry_cls(cls, name)
     if isinstance(cls, type):
         be_cls = check.issubclass(be_cls, cls)
