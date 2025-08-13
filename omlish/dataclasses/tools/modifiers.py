@@ -2,6 +2,13 @@ import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import lang
+
+
+if ta.TYPE_CHECKING:
+    from ..metaclass import meta
+else:
+    meta = lang.proxy_import('..metaclass.meta', __package__)
 
 
 T = ta.TypeVar('T')
@@ -30,6 +37,9 @@ def update_fields(
         fields: ta.Iterable[str] | None = None,
 ) -> ta.Callable[[type[T]], type[T]]:
     def inner(cls):
+        if issubclass(cls, meta.DataMeta):
+            raise TypeError('update_fields() cannot be used on DataMeta subclasses')
+
         if fields is None:
             for a, v in list(cls.__dict__.items()):
                 if isinstance(v, dc.Field):

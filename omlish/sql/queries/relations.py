@@ -7,6 +7,7 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
+from ... import marshal as msh
 from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr
@@ -28,7 +29,7 @@ class Relation(Node, lang.Abstract):
 
 class Table(Relation, lang.Final):
     n: Name
-    a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
 
 
 #
@@ -49,7 +50,7 @@ class Join(Relation, lang.Final):
     l: Relation
     r: Relation
 
-    c: Expr | None = None
+    c: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
 
 
 ##
