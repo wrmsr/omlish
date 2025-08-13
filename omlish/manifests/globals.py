@@ -1,11 +1,11 @@
 # @omlish-lite
-from .loading import ManifestLoader
 from ..lite.marshal import unmarshal_obj
+from .loading import ManifestLoader
 
 
 ##
 
 
 MANIFEST_LOADER = ManifestLoader(
-    instantiator=lambda cls, **kwargs: unmarshal_obj(kwargs, cls),
+    cls_instantiator=lambda cls, **kwargs: unmarshal_obj(kwargs, cls),
 )

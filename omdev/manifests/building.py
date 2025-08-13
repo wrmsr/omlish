@@ -1,5 +1,3 @@
-# ruff: noqa: UP006 UP007 UP045
-# @omlish-lite
 """
 TODO:
  - verify classes instantiate
@@ -44,7 +42,6 @@ from omlish.manifests.types import Manifest
 from omlish.manifests.types import ManifestOrigin
 
 from .. import magic
-from .dumping import _ModuleManifestDumper
 
 
 T = ta.TypeVar('T')
@@ -65,7 +62,7 @@ _NAME_PAT_PART = rf'(?P<name>{_IDENT_PAT_PART})'
 @dc.dataclass(frozen=True)
 class _ManifestGlobalPat:
     name_pat: re.Pattern
-    skip_pat: ta.Optional[re.Pattern] = None
+    skip_pat: re.Pattern | None = None
 
 
 _MANIFEST_GLOBAL_PATS: ta.Sequence[_ManifestGlobalPat] = [
@@ -114,7 +111,8 @@ class AttrManifestDumperTarget(ta.TypedDict):
 
 @cached_nullary
 def _module_manifest_dumper_payload_src() -> str:
-    return inspect.getsource(_ModuleManifestDumper)
+    from . import _dumping
+    return inspect.getsource(_dumping)
 
 
 class ManifestBuilder:
@@ -123,8 +121,8 @@ class ManifestBuilder:
             base_dir: str,
             concurrency: int = 8,
             *,
-            subprocess_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-            module_dumper_payload_src: ta.Optional[str] = None,
+            subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
+            module_dumper_payload_src: str | None = None,
     ) -> None:
         super().__init__()
 
@@ -161,7 +159,7 @@ class ManifestBuilder:
 
     #
 
-    def collect_module_manifest_targets(self, fm: FileModule) -> ta.List[ManifestDumperTarget]:
+    def collect_module_manifest_targets(self, fm: FileModule) -> list[ManifestDumperTarget]:
         with open(os.path.join(self._base_dir, fm.file)) as f:  # noqa
             src = f.read()
 
@@ -180,8 +178,8 @@ class ManifestBuilder:
             preparer=prepare,
         )
 
-        origins: ta.List[ManifestOrigin] = []
-        targets: ta.List[ManifestDumperTarget] = []
+        origins: list[ManifestOrigin] = []
+        targets: list[ManifestDumperTarget] = []
         for m in magics:
             if m.body:
                 body = m.body
@@ -268,7 +266,7 @@ class ManifestBuilder:
             targets: ta.Sequence[ManifestDumperTarget],
             *,
             shell_wrap: bool = True,
-            warn_threshold_s: ta.Optional[float] = 1.,
+            warn_threshold_s: float | None = 1.,
     ):
         dumper_payload_src: str
         if self._module_dumper_payload_src is not None:
@@ -318,8 +316,8 @@ class ManifestBuilder:
             self,
             fm: FileModule,
             sp_outs: ta.Sequence[ta.Mapping[str, ta.Any]],
-    ) -> ta.List[Manifest]:
-        out: ta.List[Manifest] = []
+    ) -> list[Manifest]:
+        out: list[Manifest] = []
         for sp_out in sp_outs:
             value = sp_out['value']
 
@@ -380,7 +378,7 @@ class ManifestBuilder:
             name: str,
             *,
             write: bool = False,
-    ) -> ta.List[Manifest]:
+    ) -> list[Manifest]:
         pkg_dir = os.path.join(self._base_dir, name)
         if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
             raise Exception(pkg_dir)
@@ -390,7 +388,7 @@ class ManifestBuilder:
             [pkg_dir],
             keys=[MANIFEST_MAGIC_KEY],
         ))
-        manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(await asyncio.gather(*[
+        manifests: list[Manifest] = list(itertools.chain.from_iterable(await asyncio.gather(*[
             self._spawn(
                 self.build_module_manifests,
                 os.path.relpath(file, self._base_dir),
@@ -430,4 +428,4 @@ def check_package_manifests(
         if key.startswith('$.'):
             key = f'${name}{key[1:]}'
         cls = MANIFEST_LOADER.load_cls(key)
-        value = cls(**value_dct)  # noqa
+        value = MANIFEST_LOADER.instantiate_cls(cls, **value_dct)  # noqa

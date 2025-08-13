@@ -23,8 +23,10 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....standard import ApiKey
 from ....standard import ModelName
-# from ...strings.packs import ModelNameBackendStringPack
 from ....standard import ModelNameCollection
+
+
+# from ...strings.packs import ModelNameBackendStringPack
 
 
 ##
@@ -62,7 +64,7 @@ MODEL_NAMES = ModelNameCollection(
 # )
 @static_check_is_chat_choices_service
 class AnthropicChatChoicesService:
-    DEFAULT_MODEL: ta.ClassVar[str] = MODEL_NAMES.default
+    DEFAULT_MODEL: ta.ClassVar[str] = check.not_none(MODEL_NAMES.default)
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
