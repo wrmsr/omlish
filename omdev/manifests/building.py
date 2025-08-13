@@ -9,7 +9,8 @@ TODO:
   - garbage skip_pat doesn't handle multiline decos, etc
  - relative paths
  - is this lite? or not?
- - can this run externally? or not?
+ - can this run externally? or not? what does it have to import?
+  - has to import manifest classes, but not modules with manifest magics
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -123,11 +124,13 @@ class ManifestBuilder:
             concurrency: int = 8,
             *,
             subprocess_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            module_dumper_payload_src: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self._base_dir = base_dir
         self._subprocess_kwargs = subprocess_kwargs
+        self._module_dumper_payload_src = module_dumper_payload_src
 
         self._sem = asyncio.Semaphore(concurrency)
 
@@ -267,8 +270,14 @@ class ManifestBuilder:
             shell_wrap: bool = True,
             warn_threshold_s: ta.Optional[float] = 1.,
     ):
+        dumper_payload_src: str
+        if self._module_dumper_payload_src is not None:
+            dumper_payload_src = self._module_dumper_payload_src
+        else:
+            dumper_payload_src = _module_manifest_dumper_payload_src()
+
         subproc_src = '\n\n'.join([
-            _module_manifest_dumper_payload_src(),
+            dumper_payload_src,
             f'_ModuleManifestDumper({fm.mod_name!r})({", ".join(repr(tgt) for tgt in targets)})\n',
         ])
 
