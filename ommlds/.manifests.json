@@ -15,13 +15,13 @@
     }
   },
   {
-    "module": ".minichain.backends.anthropic.chat",
+    "module": ".minichain.backends.impls.anthropic.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/anthropic/chat.py",
+    "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
     "line": 31,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.anthropic.chat",
+        "mod_name": "ommlds.minichain.backends.impls.anthropic.chat",
         "attr_name": "AnthropicChatChoicesService",
         "name": "anthropic",
         "aliases": null,
@@ -30,13 +30,13 @@
     }
   },
   {
-    "module": ".minichain.backends.duckduckgo",
+    "module": ".minichain.backends.impls.duckduckgo",
     "attr": null,
-    "file": "ommlds/minichain/backends/duckduckgo.py",
-    "line": 21,
+    "file": "ommlds/minichain/backends/impls/duckduckgo.py",
+    "line": 13,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.duckduckgo",
+        "mod_name": "ommlds.minichain.backends.impls.duckduckgo",
         "attr_name": "DuckduckgoSearchService",
         "name": "duckduckgo",
         "aliases": [
@@ -47,13 +47,13 @@
     }
   },
   {
-    "module": ".minichain.backends.google.chat",
+    "module": ".minichain.backends.impls.google.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/google/chat.py",
+    "file": "ommlds/minichain/backends/impls/google/chat.py",
     "line": 26,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.google.chat",
+        "mod_name": "ommlds.minichain.backends.impls.google.chat",
         "attr_name": "GoogleChatChoicesService",
         "name": "google",
         "aliases": null,
@@ -62,13 +62,13 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp.chat",
+    "module": ".minichain.backends.impls.llamacpp.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/llamacpp/chat.py",
+    "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
     "line": 32,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.llamacpp.chat",
+        "mod_name": "ommlds.minichain.backends.impls.llamacpp.chat",
         "attr_name": "LlamacppChatChoicesService",
         "name": "llamacpp",
         "aliases": null,
@@ -77,13 +77,13 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp.completion",
+    "module": ".minichain.backends.impls.llamacpp.completion",
     "attr": null,
-    "file": "ommlds/minichain/backends/llamacpp/completion.py",
+    "file": "ommlds/minichain/backends/impls/llamacpp/completion.py",
     "line": 24,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.llamacpp.completion",
+        "mod_name": "ommlds.minichain.backends.impls.llamacpp.completion",
         "attr_name": "LlamacppCompletionService",
         "name": "llamacpp",
         "aliases": null,
@@ -92,13 +92,13 @@
     }
   },
   {
-    "module": ".minichain.backends.llamacpp.stream",
+    "module": ".minichain.backends.impls.llamacpp.stream",
     "attr": null,
-    "file": "ommlds/minichain/backends/llamacpp/stream.py",
+    "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
     "line": 31,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.llamacpp.stream",
+        "mod_name": "ommlds.minichain.backends.impls.llamacpp.stream",
         "attr_name": "LlamacppChatChoicesStreamService",
         "name": "llamacpp",
         "aliases": null,
@@ -107,13 +107,13 @@
     }
   },
   {
-    "module": ".minichain.backends.mistral",
+    "module": ".minichain.backends.impls.mistral",
     "attr": null,
-    "file": "ommlds/minichain/backends/mistral.py",
+    "file": "ommlds/minichain/backends/impls/mistral.py",
     "line": 24,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.mistral",
+        "mod_name": "ommlds.minichain.backends.impls.mistral",
         "attr_name": "MistralChatChoicesService",
         "name": "mistral",
         "aliases": null,
@@ -122,13 +122,13 @@
     }
   },
   {
-    "module": ".minichain.backends.mlx.chat",
+    "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/mlx/chat.py",
+    "file": "ommlds/minichain/backends/impls/mlx/chat.py",
     "line": 26,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.mlx.chat",
+        "mod_name": "ommlds.minichain.backends.impls.mlx.chat",
         "attr_name": "MlxChatChoicesService",
         "name": "mlx",
         "aliases": null,
@@ -137,13 +137,13 @@
     }
   },
   {
-    "module": ".minichain.backends.openai.chat",
+    "module": ".minichain.backends.impls.openai.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/openai/chat.py",
+    "file": "ommlds/minichain/backends/impls/openai/chat.py",
     "line": 33,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.openai.chat",
+        "mod_name": "ommlds.minichain.backends.impls.openai.chat",
         "attr_name": "OpenaiChatChoicesService",
         "name": "openai",
         "aliases": null,
@@ -152,13 +152,13 @@
     }
   },
   {
-    "module": ".minichain.backends.openai.completion",
+    "module": ".minichain.backends.impls.openai.completion",
     "attr": null,
-    "file": "ommlds/minichain/backends/openai/completion.py",
+    "file": "ommlds/minichain/backends/impls/openai/completion.py",
     "line": 18,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.openai.completion",
+        "mod_name": "ommlds.minichain.backends.impls.openai.completion",
         "attr_name": "OpenaiCompletionService",
         "name": "openai",
         "aliases": null,
@@ -167,13 +167,13 @@
     }
   },
   {
-    "module": ".minichain.backends.openai.embedding",
+    "module": ".minichain.backends.impls.openai.embedding",
     "attr": null,
-    "file": "ommlds/minichain/backends/openai/embedding.py",
+    "file": "ommlds/minichain/backends/impls/openai/embedding.py",
     "line": 17,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.openai.embedding",
+        "mod_name": "ommlds.minichain.backends.impls.openai.embedding",
         "attr_name": "OpenaiEmbeddingService",
         "name": "openai",
         "aliases": null,
@@ -182,13 +182,13 @@
     }
   },
   {
-    "module": ".minichain.backends.openai.stream",
+    "module": ".minichain.backends.impls.openai.stream",
     "attr": null,
-    "file": "ommlds/minichain/backends/openai/stream.py",
+    "file": "ommlds/minichain/backends/impls/openai/stream.py",
     "line": 31,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.openai.stream",
+        "mod_name": "ommlds.minichain.backends.impls.openai.stream",
         "attr_name": "OpenaiChatChoicesStreamService",
         "name": "openai",
         "aliases": null,
@@ -197,13 +197,13 @@
     }
   },
   {
-    "module": ".minichain.backends.tinygrad.chat",
+    "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/tinygrad/chat.py",
+    "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 113,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.tinygrad.chat",
+        "mod_name": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr_name": "TinygradLlama3ChatChoicesService",
         "name": "tinygrad_llama3",
         "aliases": null,
@@ -212,13 +212,13 @@
     }
   },
   {
-    "module": ".minichain.backends.tinygrad.chat",
+    "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/tinygrad/chat.py",
+    "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 130,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.tinygrad.chat",
+        "mod_name": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr_name": "TinygradLlama3ChatChoicesStreamService",
         "name": "tinygrad_llama3",
         "aliases": null,
@@ -227,13 +227,13 @@
     }
   },
   {
-    "module": ".minichain.backends.transformers.sentence",
+    "module": ".minichain.backends.impls.transformers.sentence",
     "attr": null,
-    "file": "ommlds/minichain/backends/transformers/sentence.py",
+    "file": "ommlds/minichain/backends/impls/transformers/sentence.py",
     "line": 19,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.transformers.sentence",
+        "mod_name": "ommlds.minichain.backends.impls.transformers.sentence",
         "attr_name": "SentenceTransformersEmbeddingService",
         "name": "sentence_transformers",
         "aliases": [
@@ -244,13 +244,13 @@
     }
   },
   {
-    "module": ".minichain.backends.transformers.transformers",
+    "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
-    "file": "ommlds/minichain/backends/transformers/transformers.py",
+    "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
     "line": 41,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.transformers.transformers",
+        "mod_name": "ommlds.minichain.backends.impls.transformers.transformers",
         "attr_name": "TransformersCompletionService",
         "name": "transformers",
         "aliases": [
@@ -261,13 +261,13 @@
     }
   },
   {
-    "module": ".minichain.backends.transformers.transformers",
+    "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
-    "file": "ommlds/minichain/backends/transformers/transformers.py",
+    "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
     "line": 127,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.transformers.transformers",
+        "mod_name": "ommlds.minichain.backends.impls.transformers.transformers",
         "attr_name": "TransformersChatChoicesService",
         "name": "transformers",
         "aliases": [
