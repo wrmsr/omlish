@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
 import argparse
 import asyncio
 import dataclasses as dc

@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
+# @omlish-lite
 import typing as ta
 
 
@@ -10,7 +11,7 @@ class _ModuleManifestDumper:
             self,
             spec: str,
             *,
-            output: ta.Optional[ta.Callable[[str], None]] = None,
+            output: 'ta.Optional[ta.Callable[[str], None]]' = None,
     ) -> None:
         super().__init__()
 

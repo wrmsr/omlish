@@ -33,9 +33,9 @@ class FeedForward:
         self.w3 = linear(dim, hidden_dim, bias=False)  # the gate in Gated Linear Unit
 
     def __call__(self, x: Tensor) -> Tensor:
-        return self.w2(
-            self.w1(x).silu() * self.w3(x),
-        )  # SwiGLU [arxiv/2002.05202, eq (5)]
+        w1 = self.w1(x).silu()
+        w3 = self.w3(x.contiguous_backward())  # this fixes a strange fusion that makes tensor cores miss
+        return self.w2(w1 * w3)
 
 
 class TransformerBlock:
@@ -68,7 +68,7 @@ class TransformerBlock:
             mask: Tensor | None,
     ):
         h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask)
-        return (h + self.feed_forward(self.ffn_norm(h))).contiguous()
+        return (h + self.feed_forward(self.ffn_norm(h))).contiguous().contiguous_backward()
 
 
 class Transformer:
@@ -132,7 +132,6 @@ class Transformer:
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
 
-        self.freqs_cis = self.freqs_cis.cast(h.dtype).contiguous()
         freqs_cis = self.freqs_cis[:, start_pos:start_pos + seqlen, :, :, :]
 
         mask = (
@@ -147,12 +146,12 @@ class Transformer:
 
         for layer in self.layers:
             h = layer(h, start_pos, freqs_cis, mask)
-        logits = self.output(self.norm(h)).float()[:, -1, :]
+        logits = self.output(self.norm(h))
         if math.isnan(temperature):
             return logits
 
         return sample(
-            logits.flatten(), temperature, top_k, top_p, alpha_f, alpha_p,
+            logits[:, -1, :].flatten(), temperature, top_k, top_p, alpha_f, alpha_p,
         )
 
     def __call__(

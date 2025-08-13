@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
 """
 TODO:
  - verify classes instantiate
@@ -7,6 +8,8 @@ TODO:
  - kill _MANIFEST_GLOBAL_PATS lol, ast walk
   - garbage skip_pat doesn't handle multiline decos, etc
  - relative paths
+ - is this lite? or not?
+ - can this run externally? or not?
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -118,10 +121,13 @@ class ManifestBuilder:
             self,
             base_dir: str,
             concurrency: int = 8,
+            *,
+            subprocess_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> None:
         super().__init__()
 
         self._base_dir = base_dir
+        self._subprocess_kwargs = subprocess_kwargs
 
         self._sem = asyncio.Semaphore(concurrency)
 
@@ -277,7 +283,12 @@ class ManifestBuilder:
 
         start_time = time.time()
 
-        proc = await asyncio.create_subprocess_exec(*args, stdout=subprocess.PIPE)
+        proc = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=subprocess.PIPE,
+            **(self._subprocess_kwargs or {}),
+        )
+
         subproc_out, _ = await proc.communicate()
         if proc.returncode:
             raise Exception('Subprocess failed')
