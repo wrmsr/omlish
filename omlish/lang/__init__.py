@@ -254,6 +254,8 @@ from .maysyncs import (  # noqa
     MaysyncP,
 
     make_maysync,
+    make_maysync_from_sync,
+
     maysync,
 )
 

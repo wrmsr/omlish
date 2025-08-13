@@ -66,6 +66,7 @@ async def _a_main() -> None:
     parser.add_argument('--enable-fs-tools', action='store_true')
     parser.add_argument('--enable-unsafe-bash-tool', action='store_true')
     parser.add_argument('--enable-test-weather-tool', action='store_true')
+    parser.add_argument('--dangerous-no-tool-confirmation', action='store_true')
 
     args = parser.parse_args()
 
@@ -121,6 +122,7 @@ async def _a_main() -> None:
             backend=args.backend,
             model_name=args.model_name,
             new=bool(args.new),
+            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 
     elif args.embed:
@@ -143,6 +145,7 @@ async def _a_main() -> None:
             new=bool(args.new),
             stream=bool(args.stream),
             markdown=bool(args.markdown),
+            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 
     #

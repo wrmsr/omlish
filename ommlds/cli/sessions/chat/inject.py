@@ -13,6 +13,7 @@ from .printing import SimpleStringChatSessionPrinter
 from .state import ChatStateManager
 from .state import StateStorageChatStateManager
 from .tools import AskingToolExecutionConfirmation
+from .tools import NopToolExecutionConfirmation
 from .tools import ToolExecRequestExecutor
 from .tools import ToolExecRequestExecutorImpl
 from .tools import ToolExecutionConfirmation
@@ -74,10 +75,20 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
 
     #
 
-    els.extend([
-        inj.bind(AskingToolExecutionConfirmation, singleton=True),
-        inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
+    if cfg.dangerous_no_tool_confirmation:
+        els.extend([
+            inj.bind(NopToolExecutionConfirmation, singleton=True),
+            inj.bind(ToolExecutionConfirmation, to_key=NopToolExecutionConfirmation),
+        ])
+    else:
+        els.extend([
+            inj.bind(AskingToolExecutionConfirmation, singleton=True),
+            inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
+        ])
 
+    #
+
+    els.extend([
         inj.bind(ToolExecRequestExecutorImpl, singleton=True),
         inj.bind(ToolExecRequestExecutor, to_key=ToolExecRequestExecutorImpl),
     ])

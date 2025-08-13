@@ -33,6 +33,8 @@ class ChatSession(Session[ChatSessionConfigT], lang.Abstract, ta.Generic[ChatSes
 
         markdown: bool = False
 
+        dangerous_no_tool_confirmation: bool = False
+
     def __init__(
             self,
             config: ChatSessionConfigT,

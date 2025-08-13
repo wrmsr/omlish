@@ -1,4 +1,4 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP006 UP045
 # @omlish-lite
 """
 TODO:
@@ -47,6 +47,10 @@ class Maysync_(abc.ABC, ta.Generic[T]):  # noqa
     def fn_pair(self) -> ta.Optional[FnPair]:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def __call__(self, *args, **kwargs):  # -> Maywaitable[T]
+        raise NotImplementedError
+
 
 ##
 
@@ -63,12 +67,15 @@ class _Maywaitable(abc.ABC, ta.Generic[_MaysyncX, T]):
         self._args = args
         self._kwargs = kwargs
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._x!r})'
+
     @ta.final
     def m(self) -> ta.Awaitable[T]:
         return _MaysyncFuture(_MaysyncOp(
             ta.cast(ta.Any, self._x),
-            *self._args,
-            **self._kwargs,
+            self._args,
+            self._kwargs,
         ))
 
 
@@ -88,6 +95,9 @@ class _FnMaysync(Maysync_, ta.Generic[T]):
             raise TypeError(a)
         self._s = s
         self._a = a
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._s!r}, {self._a!r})'
 
     def fn_pair(self) -> ta.Optional[Maysync_.FnPair]:
         return Maysync_.FnPair(
@@ -133,6 +143,9 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
         self._mg = mg
 
         functools.update_wrapper(self, mg, updated=())
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._mg!r})'
 
     def fn_pair(self) -> ta.Optional[Maysync_.FnPair]:
         return None
@@ -212,6 +225,9 @@ class _MgMaysyncFn:
 
         functools.update_wrapper(self, m, updated=())
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._m!r})'
+
     def __get__(self, instance, owner=None):
         return _MgMaysyncFn(
             self._m.__get__(instance, owner),
@@ -259,12 +275,15 @@ class _MaysyncOp:
     def __init__(
             self,
             x: Maysync[T],
-            *args: ta.Any,
-            **kwargs: ta.Any,
+            args: ta.Tuple[ta.Any, ...],
+            kwargs: ta.Mapping[str, ta.Any],
     ) -> None:
         self.x = x
         self.args = args
         self.kwargs = kwargs
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self.x!r})'
 
 
 class _MaysyncFutureNotAwaitedError(RuntimeError):
@@ -278,6 +297,9 @@ class _MaysyncFuture(ta.Generic[T]):
             op: _MaysyncOp,
     ) -> None:
         self.op = op
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self.op!r}, done={self.done!r})'
 
     done: bool = False
     result: T

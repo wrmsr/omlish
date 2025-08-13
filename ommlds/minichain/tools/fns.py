@@ -17,7 +17,24 @@ D = ta.TypeVar('D')
 
 @dc.dataclass(frozen=True)
 class ToolFn(lang.Final):
-    fn: ta.Callable | lang.Maysync_
+    @dc.dataclass(frozen=True)
+    class Impl(lang.Sealed, lang.Abstract):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class FnImpl(Impl):
+        s: ta.Callable[..., ta.Any] | None = None
+        a: ta.Callable[..., ta.Awaitable[ta.Any]] | None = None
+
+        def __post_init__(self) -> None:
+            if self.s is None and self.a is None:
+                raise TypeError(f'one of s or a must be specified')
+
+    @dc.dataclass(frozen=True)
+    class MaysyncImpl(Impl):
+        m: lang.Maysync
+
+    impl: Impl
 
     #
 
@@ -63,16 +80,36 @@ class ToolFn(lang.Final):
 ##
 
 
+class NoToolImplError(Exception):
+    pass
+
+
+def _no_sync_tool_impl(*args, **kwargs):
+    raise NoToolImplError
+
+
+async def _no_async_tool_impl(*args, **kwargs):
+    raise NoToolImplError
+
+
+##
+
+
 @lang.maysync
 async def m_execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
     m_fn: lang.Maysync
-    if isinstance(tfn.fn, lang.Maysync_):
-        m_fn = ta.cast(ta.Any, tfn.fn)
+    if isinstance(tfn.impl, ToolFn.FnImpl):
+        m_fn = lang.make_maysync(
+            tfn.impl.s if tfn.impl.s is not None else _no_sync_tool_impl,
+            tfn.impl.a if tfn.impl.a is not None else _no_async_tool_impl,
+        )
+    elif isinstance(tfn.impl, ToolFn.MaysyncImpl):
+        m_fn = tfn.impl.m
     else:
-        m_fn = lang.make_maysync(tfn.fn)
+        raise TypeError(tfn.impl)
 
     out: ta.Any
     if isinstance(tfn.input, ToolFn.DataclassInput):
