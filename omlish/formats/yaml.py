@@ -156,7 +156,7 @@ class _cached_class_property:  # noqa
             return ret
 
 
-class WrappedLoaders(lang.Namespace):
+class WrappedLoaders(lang.NotInstantiable):
     @staticmethod
     def _wrap(cls):  # noqa
         return type('NodeWrapping$' + cls.__name__, (NodeWrappingConstructorMixin, cls), {})

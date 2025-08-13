@@ -4,7 +4,7 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ....backends import mlx as mlxu
+from .....backends import mlx as mlxu
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service

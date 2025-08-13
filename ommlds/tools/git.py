@@ -19,12 +19,12 @@ from omlish.configs.classes import Configurable
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
-from ..minichain.backends.openai.chat import OpenaiChatChoicesService
+from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService
 from ..server.client import McServerClient
 
 
 if ta.TYPE_CHECKING:
-    from ..minichain.backends.mlx import chat as mc_mlx_chat
+    from ..minichain.backends.impls.mlx import chat as mc_mlx_chat
 else:
     mc_mlx_chat = lang.proxy_import('..minichain.backends.mlx.chat', __package__)
 

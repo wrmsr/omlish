@@ -30,13 +30,13 @@
     }
   },
   {
-    "module": ".minichain.backends.impls.duckduckgo",
+    "module": ".minichain.backends.impls.duckduckgo.search",
     "attr": null,
-    "file": "ommlds/minichain/backends/impls/duckduckgo.py",
+    "file": "ommlds/minichain/backends/impls/duckduckgo/search.py",
     "line": 13,
     "value": {
       "$.minichain.registry.RegistryManifest": {
-        "mod_name": "ommlds.minichain.backends.impls.duckduckgo",
+        "mod_name": "ommlds.minichain.backends.impls.duckduckgo.search",
         "attr_name": "DuckduckgoSearchService",
         "name": "duckduckgo",
         "aliases": [

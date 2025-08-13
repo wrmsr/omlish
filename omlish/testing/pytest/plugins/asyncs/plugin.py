@@ -47,8 +47,6 @@ class AsyncsPlugin:
         bd: dict[str, AsyncsBackend] = {}
         for bc in backends:
             be = bc()
-            if not be.is_available():
-                continue
             bn = be.name
             check.not_in(bn, bd)
             bd[bn] = be
@@ -82,7 +80,8 @@ class AsyncsPlugin:
 
         for bn in bns:
             be = self._backends[bn]
-            be.prepare_for_metafunc(metafunc)
+            if be.is_available():
+                be.prepare_for_metafunc(metafunc)
 
         metafunc.fixturenames.append(PARAM_NAME)
         metafunc.parametrize(PARAM_NAME, bns)
@@ -138,6 +137,9 @@ class AsyncsPlugin:
 
         if not is_coroutine_function(testfunc):
             pytest.fail(f'test function `{item!r}` is marked asyncs but is not async')
+
+        if not backend.is_available():
+            pytest.skip(f'backend `{backend.name}` is unavailable')
 
         @backend.wrap_runner
         async def _bootstrap_fixtures_and_run_test(**kwargs):

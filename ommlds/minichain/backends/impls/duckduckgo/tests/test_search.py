@@ -1,20 +1,12 @@
-import typing as ta
-
+import ddgs.exceptions
 import pytest
 
-from omlish import lang
 from omlish.testing import pytest as ptu
 
-from ....registry import registry_new
-from ....search import SearchService
-from ....services import Request
-from ..duckduckgo import DuckduckgoSearchService
-
-
-if ta.TYPE_CHECKING:
-    import ddgs
-else:
-    ddgs = lang.proxy_import('ddgs')
+from .....registry import registry_new
+from .....search import SearchService
+from .....services import Request
+from ..search import DuckduckgoSearchService
 
 
 @ptu.skip.if_cant_import('ddgs')

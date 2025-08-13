@@ -25,7 +25,7 @@ brotli==1.1.0
 
 
 ### db:
-
+  # @omlish-venv !14 !14t
 sqlalchemy[asyncio]==2.0.43
 
 ## sql
@@ -77,7 +77,7 @@ httpx[http2]==0.28.1  # FIXME: ,zstd,cli (dev only)
 ### async
 
 trio==0.30.0
-trio-asyncio==0.15.0
+trio-asyncio==0.15.0; python_version < "3.14"
 
 aiomysql==0.2.0
 aiosqlite==0.21.0

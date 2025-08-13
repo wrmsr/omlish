@@ -1,10 +1,10 @@
 import ddgs
 
-from ...search import SearchHit
-from ...search import SearchHits
-from ...search import SearchRequest
-from ...search import SearchResponse
-from ...search import static_check_is_search_service
+from ....search import SearchHit
+from ....search import SearchHits
+from ....search import SearchRequest
+from ....search import SearchResponse
+from ....search import static_check_is_search_service
 
 
 ##
