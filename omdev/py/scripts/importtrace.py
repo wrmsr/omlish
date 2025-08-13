@@ -219,6 +219,14 @@ class ImportTracer:
         node_stack = [Node()]
 
         def new_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa
+            __builtins__.__import__ = old_import
+
+            st = [
+                StackTraceEntry(*s[1:4])
+                for s in inspect.stack()
+                if s[0].f_code.co_filename != __file__
+            ]
+
             node = Node(
                 import_name=name,
                 import_fromlist=fromlist,
@@ -227,16 +235,14 @@ class ImportTracer:
                 pid=os.getpid(),
                 tid=threading.current_thread().ident,
 
-                stacktrace=[
-                    StackTraceEntry(*s[1:4])
-                    for s in inspect.stack()
-                    if s[0].f_code.co_filename != __file__
-                ],
+                stacktrace=st,
 
                 cached_id=id(sys.modules[name]) if name in sys.modules else None,
 
                 start_stats=self._stats_factory(),
             )
+
+            __builtins__.__import__ = new_import
 
             node_stack[-1].children.append(node)
             node_stack.append(node)
@@ -245,9 +251,11 @@ class ImportTracer:
                 loaded = old_import(name, globals, locals, fromlist, level)
                 if not isinstance(loaded, types.ModuleType):
                     raise TypeError(loaded)  # noqa
+
                 node.loaded_name = loaded.__name__
                 node.loaded_id = id(loaded)
                 node.loaded_file = getattr(loaded, '__file__', None)
+
                 return loaded
 
             except Exception as ex:
@@ -255,8 +263,13 @@ class ImportTracer:
                 raise
 
             finally:
+                __builtins__.__import__ = old_import
+
                 node.end_stats = self._stats_factory()
                 node.stats = node.end_stats - node.start_stats
+
+                __builtins__.__import__ = new_import
+
                 if node_stack.pop() is not node:
                     raise RuntimeError(node_stack)
 
