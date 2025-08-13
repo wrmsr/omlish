@@ -43,7 +43,7 @@ def _load_model(
     if temperature is None:
         temperature = DEFAULT_TEMPERATURE
 
-    from ....backends.tinygrad.models.llama3.fetch import fetch_model
+    from .....backends.tinygrad.models.llama3.fetch import fetch_model
     model = fetch_model(size)
 
     llm = tgl3.Llama3Llm(

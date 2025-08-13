@@ -26,7 +26,7 @@ from ..server.client import McServerClient
 if ta.TYPE_CHECKING:
     from ..minichain.backends.impls.mlx import chat as mc_mlx_chat
 else:
-    mc_mlx_chat = lang.proxy_import('..minichain.backends.mlx.chat', __package__)
+    mc_mlx_chat = lang.proxy_import('..minichain.backends.impls.mlx.chat', __package__)
 
 
 GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')
