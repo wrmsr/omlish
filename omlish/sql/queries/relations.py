@@ -1,6 +1,5 @@
 """
 TODO:
- - join
  - subquery
 """
 import enum

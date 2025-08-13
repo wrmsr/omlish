@@ -34,8 +34,18 @@ class Maywaitable(ta.Protocol[T_co]):
 Maysync = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
 
-class Maysync_(abc.ABC):  # noqa
-    pass
+class Maysync_(abc.ABC, ta.Generic[T]):  # noqa
+    @ta.final
+    def cast(self) -> Maysync[T]:
+        return ta.cast('Maysync[T]', self)
+
+    class FnPair(ta.NamedTuple):
+        s: ta.Callable[..., ta.Any]
+        a: ta.Callable[..., ta.Awaitable[ta.Any]]
+
+    @abc.abstractmethod
+    def fn_pair(self) -> ta.Optional[FnPair]:
+        raise NotImplementedError
 
 
 ##
@@ -49,16 +59,16 @@ class _Maywaitable(abc.ABC, ta.Generic[_MaysyncX, T]):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        self.x = x
-        self.args = args
-        self.kwargs = kwargs
+        self._x = x
+        self._args = args
+        self._kwargs = kwargs
 
     @ta.final
     def m(self) -> ta.Awaitable[T]:
         return _MaysyncFuture(_MaysyncOp(
-            ta.cast(ta.Any, self.x),
-            *self.args,
-            **self.kwargs,
+            ta.cast(ta.Any, self._x),
+            *self._args,
+            **self._kwargs,
         ))
 
 
@@ -76,13 +86,19 @@ class _FnMaysync(Maysync_, ta.Generic[T]):
             raise TypeError(s)
         if a is None:
             raise TypeError(a)
-        self.s = s
-        self.a = a
+        self._s = s
+        self._a = a
+
+    def fn_pair(self) -> ta.Optional[Maysync_.FnPair]:
+        return Maysync_.FnPair(
+            self._s,
+            self._a,
+        )
 
     def __get__(self, instance, owner=None):
         return _FnMaysync(
-            self.s.__get__(instance, owner),  # noqa
-            self.a.__get__(instance, owner),  # noqa
+            self._s.__get__(instance, owner),  # noqa
+            self._a.__get__(instance, owner),  # noqa
         )
 
     def __call__(self, *args, **kwargs):
@@ -92,10 +108,10 @@ class _FnMaysync(Maysync_, ta.Generic[T]):
 @ta.final
 class _FnMaywaitable(_Maywaitable[_FnMaysync[T], T]):
     def s(self) -> T:
-        return self.x.s(*self.args, **self.kwargs)
+        return self._x._s(*self._args, **self._kwargs)  # noqa
 
     async def a(self) -> T:
-        return await self.x.a(*self.args, **self.kwargs)
+        return await self._x._a(*self._args, **self._kwargs)  # noqa
 
 
 def make_maysync(
@@ -114,13 +130,16 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
             self,
             mg: ta.Callable[..., _MaysyncGen[T]],
     ) -> None:
-        self.mg = mg
+        self._mg = mg
 
         functools.update_wrapper(self, mg, updated=())
 
+    def fn_pair(self) -> ta.Optional[Maysync_.FnPair]:
+        return None
+
     def __get__(self, instance, owner=None):
         return _MgMaysync(
-            self.mg.__get__(instance, owner),  # noqa
+            self._mg.__get__(instance, owner),  # noqa
         )
 
     def __call__(self, *args, **kwargs):
@@ -130,7 +149,7 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
 @ta.final
 class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
     def s(self) -> T:
-        g = self.x.mg(*self.args, **self.kwargs)
+        g = self._x._mg(*self._args, **self._kwargs)  # noqa
 
         i: ta.Any = None
         e: ta.Any = None
@@ -158,7 +177,7 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
             del o
 
     async def a(self) -> T:
-        g = self.x.mg(*self.args, **self.kwargs)
+        g = self._x._mg(*self._args, **self._kwargs)  # noqa
 
         i: ta.Any = None
         e: ta.Any = None
@@ -189,17 +208,17 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
 @ta.final
 class _MgMaysyncFn:
     def __init__(self, m):
-        self.m = m
+        self._m = m
 
         functools.update_wrapper(self, m, updated=())
 
     def __get__(self, instance, owner=None):
         return _MgMaysyncFn(
-            self.m.__get__(instance, owner),
+            self._m.__get__(instance, owner),
         )
 
     def __call__(self, *args, **kwargs):
-        a = self.m(*args, **kwargs).__await__()
+        a = self._m(*args, **kwargs).__await__()
         try:
             g = iter(a)
             try:
