@@ -6,10 +6,19 @@ import typing as ta
 
 
 class _ModuleManifestDumper:
-    def __init__(self, spec: str) -> None:
+    def __init__(
+            self,
+            spec: str,
+            *,
+            output: ta.Optional[ta.Callable[[str], None]] = None,
+    ) -> None:
         super().__init__()
 
         self._spec = spec
+        if output is None:
+            output = print
+        self._output = output
+
         self._imported_mod: 'ta.Optional[ta.Any]' = None
 
     def _mod(self) -> 'ta.Any':
@@ -32,7 +41,10 @@ class _ModuleManifestDumper:
         def __missing__(self, key):
             return self.__get_missing(key)
 
-    def __call__(self, *targets: dict) -> None:
+    def __call__(
+            self,
+            *targets: dict,  # .build.ManifestDumperTarget
+    ) -> None:
         import collections.abc
         import dataclasses as dc  # noqa
         import functools
@@ -115,4 +127,4 @@ class _ModuleManifestDumper:
             })
 
         out_json = json.dumps(out, indent=None, separators=(',', ':'))
-        print(out_json)
+        self._output(out_json)

@@ -6,6 +6,7 @@ TODO:
  - roundtrip flexibility regarding json-ness - tuples vs lists vs sets vs frozensets etc
  - kill _MANIFEST_GLOBAL_PATS lol, ast walk
   - garbage skip_pat doesn't handle multiline decos, etc
+ - relative paths
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -43,6 +44,8 @@ from .dumping import _ModuleManifestDumper
 
 
 T = ta.TypeVar('T')
+
+ManifestDumperTarget = ta.Union['InlineManifestDumperTarget', 'AttrManifestDumperTarget']  # ta.TypeAlias
 
 
 ##
@@ -87,45 +90,51 @@ _INLINE_MANIFEST_CLS_NAME_PAT = re.compile(r'^(?P<cls_name>[_a-zA-Z][_a-zA-Z0-9.
 ##
 
 
+class InlineManifestDumperTarget(ta.TypedDict):
+    origin: ta.Mapping[str, ta.Any]
+    kind: ta.Literal['inline']
+    cls_mod_name: str
+    cls_qualname: str
+    init_src: str
+    kwargs: ta.Mapping[str, ta.Any]
+
+
+class AttrManifestDumperTarget(ta.TypedDict):
+    origin: ta.Mapping[str, ta.Any]
+    kind: ta.Literal['attr']
+    attr: str
+
+
+##
+
+
 @cached_nullary
-def _payload_src() -> str:
+def _module_manifest_dumper_payload_src() -> str:
     return inspect.getsource(_ModuleManifestDumper)
 
 
 class ManifestBuilder:
     def __init__(
             self,
-            base: str,
+            base_dir: str,
             concurrency: int = 8,
-            *,
-            write: bool = False,
     ) -> None:
         super().__init__()
 
-        self._base = base
+        self._base_dir = base_dir
+
         self._sem = asyncio.Semaphore(concurrency)
-        self._write = write
 
-    async def _spawn(self, fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T:
-        await self._sem.acquire()
-        try:
-            try:
-                return await fn(*args, **kwargs)
-            except Exception:  # noqa
-                log.exception('Exception in task: %s, %r, %r', fn, args, kwargs)
-                raise
-        finally:
-            self._sem.release()
+    #
 
-    async def build_module_manifests(
-            self,
-            file: str,
-            *,
-            shell_wrap: bool = True,
-            warn_threshold_s: ta.Optional[float] = 1.,
-    ) -> ta.Sequence[Manifest]:
-        log.info('Extracting manifests from file %s', file)
+    @dc.dataclass(frozen=True)
+    class FileModule:
+        file: str
 
+        mod_name: str
+        mod_base: str
+
+    def build_file_module(self, file: str) -> FileModule:
         if not file.endswith('.py'):
             raise Exception(file)
 
@@ -134,31 +143,41 @@ class ManifestBuilder:
         if mod_base != (first_dir := file.split(os.path.sep)[0]):
             raise Exception(f'Unexpected module base: {mod_base=} != {first_dir=}')
 
-        with open(os.path.join(self._base, file)) as f:  # noqa
+        return ManifestBuilder.FileModule(
+            file=file,
+
+            mod_name=mod_name,
+            mod_base=mod_base,
+        )
+
+    #
+
+    def collect_module_manifest_targets(self, fm: FileModule) -> ta.List[ManifestDumperTarget]:
+        with open(os.path.join(self._base_dir, fm.file)) as f:  # noqa
             src = f.read()
 
         lines = src.splitlines(keepends=True)
 
         def prepare(s: str) -> ta.Any:
             if s.startswith('$.'):
-                s = f'{mod_base}.{s[2:]}'
+                s = f'{fm.mod_base}.{s[2:]}'
             return magic.py_compile_magic_preparer(s)
 
         magics = magic.find_magic(
             magic.PY_MAGIC_STYLE,
             lines,
-            file=file,
+            file=fm.file,
             keys={MANIFEST_MAGIC_KEY},
             preparer=prepare,
         )
 
         origins: ta.List[ManifestOrigin] = []
-        targets: ta.List[dict] = []
+        targets: ta.List[ManifestDumperTarget] = []
         for m in magics:
             if m.body:
                 body = m.body
                 if body.startswith('$.'):
-                    body = f'{mod_base}.{body[2:]}'
+                    body = f'{fm.mod_base}.{body[2:]}'
 
                 pat_match = check.not_none(_INLINE_MANIFEST_CLS_NAME_PAT.match(body))
                 cls_name = check.non_empty_str(pat_match.groupdict()['cls_name'])
@@ -184,15 +203,15 @@ class ManifestBuilder:
                 if issubclass(cls, ModAttrManifest):
                     attr_name = extract_manifest_target_name(lines, m.end_line)
                     inl_kw.update({
-                        'mod_name': mod_name,
+                        'mod_name': fm.mod_name,
                         'attr_name': attr_name,
                     })
 
                 origin = ManifestOrigin(
-                    module='.'.join(['', *mod_name.split('.')[1:]]),
+                    module='.'.join(['', *fm.mod_name.split('.')[1:]]),
                     attr=None,
 
-                    file=file,
+                    file=fm.file,
                     line=m.start_line,
                 )
 
@@ -210,10 +229,10 @@ class ManifestBuilder:
                 attr_name = extract_manifest_target_name(lines, m.end_line)
 
                 origin = ManifestOrigin(
-                    module='.'.join(['', *mod_name.split('.')[1:]]),
+                    module='.'.join(['', *fm.mod_name.split('.')[1:]]),
                     attr=attr_name,
 
-                    file=file,
+                    file=fm.file,
                     line=m.start_line,
                 )
 
@@ -230,9 +249,21 @@ class ManifestBuilder:
         if (dups := [k for k, v in collections.Counter(o.attr for o in origins if o.attr is not None).items() if v > 1]):  # noqa
             raise Exception(f'Duplicate attrs: {dups}')
 
+        return targets
+
+    #
+
+    async def _dump_module_manifests(
+            self,
+            fm: FileModule,
+            targets: ta.Sequence[ManifestDumperTarget],
+            *,
+            shell_wrap: bool = True,
+            warn_threshold_s: ta.Optional[float] = 1.,
+    ):
         subproc_src = '\n\n'.join([
-            _payload_src(),
-            f'_ModuleManifestDumper({mod_name!r})({", ".join(repr(tgt) for tgt in targets)})\n',
+            _module_manifest_dumper_payload_src(),
+            f'_ModuleManifestDumper({fm.mod_name!r})({", ".join(repr(tgt) for tgt in targets)})\n',
         ])
 
         args = [
@@ -254,17 +285,20 @@ class ManifestBuilder:
         end_time = time.time()
 
         if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
-            log.warning('Manifest extraction took a long time: %s, %.2f s', file, elapsed_time)
+            log.warning('Manifest extraction took a long time: %s, %.2f s', fm.file, elapsed_time)
 
         sp_lines = subproc_out.decode().strip().splitlines()
         if len(sp_lines) != 1:
             raise Exception('Unexpected subprocess output')
 
         sp_outs = json.loads(sp_lines[0])
-        # FIXME:
-        # if set(dct) != set(attrs):
-        #     raise Exception('Unexpected subprocess output keys')
+        return sp_outs
 
+    def _process_module_dump_output(
+            self,
+            fm: FileModule,
+            sp_outs: ta.Sequence[ta.Mapping[str, ta.Any]],
+    ) -> ta.List[Manifest]:
         out: ta.List[Manifest] = []
         for sp_out in sp_outs:
             value = sp_out['value']
@@ -278,7 +312,7 @@ class ManifestBuilder:
 
             [(key, value_dct)] = value.items()
             kb, _, kr = key[1:].partition('.')  # noqa
-            if kb == mod_base:  # noqa
+            if kb == fm.mod_base:  # noqa
                 key = f'$.{kr}'
                 value = {key: value_dct}
 
@@ -289,11 +323,45 @@ class ManifestBuilder:
 
         return out
 
+    #
+
+    async def build_module_manifests(self, file: str) -> ta.Sequence[Manifest]:
+        log.info('Extracting manifests from file %s', file)
+
+        fm = self.build_file_module(file)
+
+        targets = self.collect_module_manifest_targets(fm)
+
+        sp_outs = await self._dump_module_manifests(fm, targets)
+
+        # FIXME:
+        # if set(dct) != set(attrs):
+        #     raise Exception('Unexpected subprocess output keys')
+
+        out = self._process_module_dump_output(fm, sp_outs)
+
+        return out
+
+    #
+
+    async def _spawn(self, fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T:
+        await self._sem.acquire()
+        try:
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:  # noqa
+                log.exception('Exception in task: %s, %r, %r', fn, args, kwargs)
+                raise
+        finally:
+            self._sem.release()
+
     async def build_package_manifests(
             self,
             name: str,
+            *,
+            write: bool = False,
     ) -> ta.List[Manifest]:
-        pkg_dir = os.path.join(self._base, name)
+        pkg_dir = os.path.join(self._base_dir, name)
         if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
             raise Exception(pkg_dir)
 
@@ -305,12 +373,12 @@ class ManifestBuilder:
         manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(await asyncio.gather(*[
             self._spawn(
                 self.build_module_manifests,
-                os.path.relpath(file, self._base),
+                os.path.relpath(file, self._base_dir),
             )
             for file in files
         ])))
 
-        if self._write:
+        if write:
             with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:  # noqa
                 f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
                 f.write('\n')
@@ -323,9 +391,9 @@ class ManifestBuilder:
 
 def check_package_manifests(
         name: str,
-        base: str,
+        base_dir: str,
 ) -> None:
-    pkg_dir = os.path.join(base, name)
+    pkg_dir = os.path.join(base_dir, name)
     if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
         raise Exception(pkg_dir)
 

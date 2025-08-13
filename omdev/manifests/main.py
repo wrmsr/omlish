@@ -8,14 +8,14 @@ import os.path
 from omlish.lite.json import json_dumps_pretty
 from omlish.logs.standard import configure_standard_logging
 
-from .build import ManifestBuilder
-from .build import check_package_manifests
+from .building import ManifestBuilder
+from .building import check_package_manifests
 
 
 ##
 
 
-def _get_base(args) -> str:
+def _get_base_dir(args) -> str:
     if args.base is not None:
         base = args.base
     else:
@@ -27,18 +27,20 @@ def _get_base(args) -> str:
 
 
 def _gen_cmd(args) -> None:
-    base = _get_base(args)
+    base_dir = _get_base_dir(args)
 
     jobs = args.jobs or int(max(mp.cpu_count() // 1.5, 1))
     builder = ManifestBuilder(
-        base,
+        base_dir,
         jobs,
-        write=args.write or False,
     )
 
     async def do():
         return await asyncio.gather(*[
-            builder.build_package_manifests(pkg)
+            builder.build_package_manifests(
+                pkg,
+                write=bool(args.write),
+            )
             for pkg in args.package
         ])
 
@@ -49,12 +51,12 @@ def _gen_cmd(args) -> None:
 
 
 def _check_cmd(args) -> None:
-    base = _get_base(args)
+    base_dir = _get_base_dir(args)
 
     for pkg in args.package:
         check_package_manifests(
             pkg,
-            base,
+            base_dir,
         )
 
 
