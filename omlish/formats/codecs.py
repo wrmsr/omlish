@@ -22,7 +22,7 @@ def make_object_codec(
         *,
         input: rfl.Type,  # noqa
         output: rfl.Type = rfl.type_(ta.Any),
-        aliases: ta.Collection[str] | None = None,
+        aliases: ta.Sequence[str] | None = None,
 ) -> ObjectCodecT:
     return cls(
         name=name,

@@ -1,7 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.manifests.load import MANIFEST_LOADER
+from omlish.manifests.globals import MANIFEST_LOADER
 
 from .base import Precheck
 from .base import PrecheckContext

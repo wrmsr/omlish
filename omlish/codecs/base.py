@@ -70,7 +70,7 @@ def check_codec_name(s: str) -> str:
 @dc.dataclass(frozen=True, kw_only=True)
 class Codec:
     name: str = dc.xfield(coerce=check_codec_name)
-    aliases: ta.Collection[str] | None = dc.xfield(
+    aliases: ta.Sequence[str] | None = dc.xfield(
         default=None,
         coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),
     )
@@ -90,7 +90,7 @@ class Codec:
 @dc.dataclass(frozen=True, kw_only=True)
 class LazyLoadedCodec(ModAttrManifest):
     name: str
-    aliases: ta.Collection[str] | None = None
+    aliases: ta.Sequence[str] | None = None
 
     @classmethod
     def new(

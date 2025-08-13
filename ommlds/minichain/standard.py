@@ -2,10 +2,12 @@
 import os
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
+from omlish.algorithm.toposort import mut_toposort
 from omlish.secrets import all as sec
 
 from .configs import Config
@@ -28,6 +30,38 @@ class ModelName(tv.ScalarTypedValue[str], ModelSpecifier):
 
 class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
     pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ModelNameCollection:
+    default: str | None = None
+
+    aliases: ta.Mapping[str, str] | None = None
+
+    @cached.property
+    def alias_map(self) -> ta.Mapping[str, str]:
+        if not (src := self.aliases):
+            return {}
+
+        dct: dict[str, str] = {}
+        for ks in mut_toposort({k: {v} for k, v in src.items()}):
+            for k in ks:
+                dct[k] = dct.get(src.get(k, k), k)
+        return dct
+
+    @cached.property
+    def roots(self) -> frozenset[str]:
+        return frozenset(self.alias_map.values())
+
+    def resolve(self, name: str) -> str:
+        return self.alias_map.get(name, name)
+
+    @cached.property
+    def resolved_default(self) -> str | None:
+        if self.default is not None:
+            return self.resolve(self.default)
+        else:
+            return None
 
 
 ##

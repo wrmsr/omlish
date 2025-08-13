@@ -56,7 +56,7 @@ from .errors import (  # noqa
     UnhandledTypeError,
 )
 
-from .global_ import (  # noqa
+from .globals import (  # noqa
     GLOBAL_REGISTRY,
 
     global_marshaler_factory,

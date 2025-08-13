@@ -26,8 +26,11 @@ class ManifestLoader:
             self,
             *,
             module_remap: ta.Optional[ta.Mapping[str, str]] = None,
+            instantiator: ta.Optional[ta.Callable[..., ta.Any]] = None,
     ) -> None:
         super().__init__()
+
+        self._instantiator = instantiator
 
         self._lock = threading.RLock()
 
@@ -172,6 +175,12 @@ class ManifestLoader:
 
     #
 
+    def _instantiate(self, cls: type, **kwargs: ta.Any) -> ta.Any:
+        if self._instantiator is not None:
+            return self._instantiator(cls, **kwargs)
+        else:
+            return cls(**kwargs)
+
     def _load(
             self,
             *pkg_names: str,
@@ -197,7 +206,7 @@ class ManifestLoader:
                     continue
 
                 cls = self._load_cls(key)
-                value = cls(**value_dct)
+                value = self._instantiate(cls, **value_dct)
 
                 manifest = dc.replace(manifest, value=value)
                 lst.append(manifest)
@@ -256,9 +265,3 @@ class ManifestLoader:
                 pkgs.extend(self.scan_pkg_root(fallback_root))
 
         return pkgs
-
-
-##
-
-
-MANIFEST_LOADER = ManifestLoader()

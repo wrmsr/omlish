@@ -27,7 +27,7 @@ class ModAttrManifest:
 @dc.dataclass(frozen=True)
 class NameAliasesManifest:
     name: str
-    aliases: ta.Optional[ta.Collection[str]] = None
+    aliases: ta.Optional[ta.Sequence[str]] = None
 
     @classmethod
     def build_name_dict(cls, objs: ta.Iterable[NameAliasesManifestT]) -> ta.Dict[str, NameAliasesManifestT]:

@@ -11,9 +11,9 @@ from .standard import STANDARD_CODECS
 
 
 if ta.TYPE_CHECKING:
-    from ..manifests import load as manifest_load
+    from ..manifests import globals as manifest_globals
 else:
-    manifest_load = lang.proxy_import('..manifests.load', __package__)
+    manifest_globals = lang.proxy_import('..manifests.globals', __package__)
 
 
 ##
@@ -102,7 +102,7 @@ def _install_standard_codecs(registry: CodecRegistry) -> None:
 
 @cached.function
 def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
-    ldr = manifest_load.MANIFEST_LOADER
+    ldr = manifest_globals.MANIFEST_LOADER
     pkgs = {__package__.split('.')[0], *ldr.discover_pkgs()}
     mns = ldr.load(*pkgs, only=[LazyLoadedCodec])
     return [m.value for m in mns]

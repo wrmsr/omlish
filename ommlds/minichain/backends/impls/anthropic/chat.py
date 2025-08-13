@@ -23,21 +23,46 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....standard import ApiKey
 from ....standard import ModelName
+# from ...strings.packs import ModelNameBackendStringPack
+from ....standard import ModelNameCollection
 
 
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='anthropic', type='ChatChoicesService')
+MODEL_NAMES = ModelNameCollection(
+    default='claude',
+    aliases={
+        'claude-opus-4-1': 'claude-opus-4-1-20250805',
+        'claude-opus': 'claude-opus-4-1',
+
+        'claude-sonnet-4': 'claude-sonnet-4-20250514',
+        'claude-sonnet': 'claude-sonnet-4',
+
+        'claude-haiku-3-5-latest': 'claude-3-5-haiku-latest',
+        'claude-haiku-3-5': 'claude-haiku-3-5-latest',
+        'claude-haiku': 'claude-haiku-3-5',
+
+        'claude': 'claude-haiku',
+    },
+)
+
+
+# # @omlish-manifest
+# _MODEL_NAMES_PACK = ModelNameBackendStringPack(
+#     'ChatChoicesService',
+#     'anthropic',
+#     MODEL_NAMES,
+# )
+
+
+# @omlish-manifest $.minichain.registry.RegistryManifest(
+#     name='anthropic',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class AnthropicChatChoicesService:
-    model: ta.ClassVar[str] = (
-        # 'claude-opus-4-0'
-        # 'claude-sonnet-4-0'
-        # 'claude-3-7-sonnet-latest'
-        # 'claude-3-5-sonnet-latest'
-        'claude-3-5-haiku-latest'
-    )
+    DEFAULT_MODEL: ta.ClassVar[str] = MODEL_NAMES.default
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -53,7 +78,7 @@ class AnthropicChatChoicesService:
 
         with tv.consume(*configs) as cc:
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
-            self._model_name = cc.pop(ModelName(self.model))
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, AiMessage):
@@ -85,7 +110,7 @@ class AnthropicChatChoicesService:
                 ))
 
         raw_request = dict(
-            model=self._model_name.v,
+            model=MODEL_NAMES.resolve(self._model_name.v),
             **lang.opt_kw(system=system),
             messages=messages,
             max_tokens=max_tokens,

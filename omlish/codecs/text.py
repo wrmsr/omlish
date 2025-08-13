@@ -126,7 +126,7 @@ def normalize_text_encoding_name(s: str) -> str:
 
 def make_text_encoding_codec(
         name: str,
-        aliases: ta.Collection[str] | None = None,
+        aliases: ta.Sequence[str] | None = None,
         *,
         append_to: ta.MutableSequence[Codec] | None = None,
 ) -> TextEncodingCodec:

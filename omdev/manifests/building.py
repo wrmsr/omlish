@@ -39,7 +39,7 @@ from omlish.lite.imports import import_attr
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log
 from omlish.manifests.base import ModAttrManifest
-from omlish.manifests.load import MANIFEST_LOADER
+from omlish.manifests.globals import MANIFEST_LOADER
 from omlish.manifests.types import Manifest
 from omlish.manifests.types import ManifestOrigin
 

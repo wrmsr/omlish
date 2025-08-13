@@ -21,7 +21,7 @@ class BytesCodec(Codec):
 
 def make_bytes_encoding_codec(
         name: str,
-        aliases: ta.Collection[str] | None,
+        aliases: ta.Sequence[str] | None,
         encode: ta.Callable[[bytes], bytes],
         decode: ta.Callable[[bytes], bytes],
         *,

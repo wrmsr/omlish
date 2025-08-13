@@ -46,7 +46,7 @@ def make_compression_codec(
         name: str,
         cls: type[Compression],
         *,
-        aliases: ta.Collection[str] | None = None,
+        aliases: ta.Sequence[str] | None = None,
 ) -> CompressionCodec:
     return CompressionCodec(
         name=name,

@@ -5,8 +5,8 @@ from .... import dataclasses as dc
 from ....lite import marshal as lmsh
 from ...base import MarshalContext
 from ...base import UnmarshalContext
-from ...global_ import marshal
-from ...global_ import unmarshal
+from ...globals import marshal
+from ...globals import unmarshal
 from ...registries import Registry
 from ...standard import new_standard_unmarshaler_factory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER

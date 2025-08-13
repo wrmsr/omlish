@@ -206,7 +206,7 @@ class BackendStringInstantiator(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class ModelNameBackendStringPack:
-    service_cls: str | ta.Any | ta.AbstractSet[str] | ta.AbstractSet[ta.Any]
+    service_cls: str | ta.Collection[str]
 
     default_model_name: str
 
