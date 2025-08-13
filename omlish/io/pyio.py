@@ -4,7 +4,7 @@
 """
 Python implementation of the io module.
 
-https://github.com/python/cpython/blob/8b3cccf3f9508572d85b0044519f2bd5715dacad/Lib/_pyio.py
+https://github.com/python/cpython/blob/6cb20a219a860eaf687b2d968b41c480c7461909/Lib/_pyio.py
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -255,11 +255,18 @@ def open(
     result = raw
     try:
         line_buffering = False
-        if buffering == 1 or buffering < 0 and raw._isatty_open_only():
+        if buffering == 1 or buffering < 0 and raw.isatty():
             buffering = -1
             line_buffering = True
         if buffering < 0:
-            buffering = raw._blksize
+            buffering = DEFAULT_BUFFER_SIZE
+            try:
+                bs = os.fstat(raw.fileno()).st_blksize
+            except (OSError, AttributeError):
+                pass
+            else:
+                if bs > 1:
+                    buffering = bs
         if buffering < 0:
             raise ValueError('invalid buffering size')
         if buffering == 0:
@@ -424,6 +431,9 @@ class IOBase(metaclass=abc.ABCMeta):
 
         if closed:
             return
+
+        if dealloc_warn := getattr(self, "_dealloc_warn", None):
+            dealloc_warn(self)
 
         # If close() fails, the caller logs the exception with sys.unraisablehook. close() must be called at the end at
         # __del__().
@@ -872,6 +882,10 @@ class _BufferedIOMixin(BufferedIOBase):
             return f'<{modname}.{clsname}>'
         else:
             return f'<{modname}.{clsname} name={name!r}>'
+
+    def _dealloc_warn(self, source):
+        if dealloc_warn := getattr(self.raw, "_dealloc_warn", None):
+            dealloc_warn(source)
 
     # Lower-level APIs
 
@@ -1484,7 +1498,6 @@ class FileIO(RawIOBase):
 
         if self._fd >= 0:
             # Have to close the existing file first.
-            self._stat_atopen = None
             try:
                 if self._closefd:
                     os.close(self._fd)
@@ -1553,21 +1566,25 @@ class FileIO(RawIOBase):
                     if not isinstance(fd, int):
                         raise TypeError('expected integer from opener')
                     if fd < 0:
-                        raise OSError('Negative file descriptor')
+                        # bpo-27066: Raise a ValueError for bad value.
+                        raise ValueError(f'opener returned {fd}')
                 owned_fd = fd
                 if not noinherit_flag:
                     os.set_inheritable(fd, False)
 
             self._closefd = closefd
-            self._stat_atopen = os.fstat(fd)
+            fdfstat = os.fstat(fd)
             try:
-                if stat.S_ISDIR(self._stat_atopen.st_mode):
+                if stat.S_ISDIR(fdfstat.st_mode):
                     raise IsADirectoryError(
                         errno.EISDIR, os.strerror(errno.EISDIR), file,
                     )
             except AttributeError:
                 # Ignore the AttributeError if stat.S_ISDIR or errno.EISDIR don't exist.
                 pass
+            self._blksize = getattr(fdfstat, 'st_blksize', 0)
+            if self._blksize <= 1:
+                self._blksize = DEFAULT_BUFFER_SIZE
 
             self.name = file
             if self._appending:
@@ -1579,16 +1596,15 @@ class FileIO(RawIOBase):
                     if e.errno != errno.ESPIPE:
                         raise
         except:  # noqa
-            self._stat_atopen = None
             if owned_fd is not None:
                 os.close(owned_fd)
             raise
         self._fd = fd
 
-    def __del__(self):
+    def _dealloc_warn(self, source):
         if self._fd >= 0 and self._closefd and not self.closed:
-            warnings.warn('unclosed file %r' % (self,), ResourceWarning, stacklevel=2, source=self)
-            self.close()
+            import warnings
+            warnings.warn(f'unclosed file {source!r}', ResourceWarning, stacklevel=2, source=self)
 
     def __getstate__(self):
         raise TypeError(f'cannot pickle {self.__class__.__name__!r} object')
@@ -1613,17 +1629,6 @@ class FileIO(RawIOBase):
                 self.mode,
                 self._closefd,
             )
-
-    @property
-    def _blksize(self):
-        if self._stat_atopen is None:
-            return DEFAULT_BUFFER_SIZE
-
-        blksize = getattr(self._stat_atopen, 'st_blksize', 0)
-        # WASI sets blsize to 0
-        if not blksize:
-            return DEFAULT_BUFFER_SIZE
-        return blksize
 
     def _checkReadable(self):
         if not self._readable:
@@ -1660,21 +1665,14 @@ class FileIO(RawIOBase):
 
         self._checkClosed()
         self._checkReadable()
-        if self._stat_atopen is None or self._stat_atopen.st_size <= 0:
-            bufsize = DEFAULT_BUFFER_SIZE
-        else:
-            # In order to detect end of file, need a read() of at least 1 byte which returns size 0. Oversize the buffer
-            # by 1 byte so the I/O can be completed with two read() calls (one for all data, one for EOF) without
-            # needing to resize the buffer.
-            bufsize = self._stat_atopen.st_size + 1
-
-            if self._stat_atopen.st_size > 65536:
-                try:
-                    pos = os.lseek(self._fd, 0, io.SEEK_CUR)
-                    if self._stat_atopen.st_size >= pos:
-                        bufsize = self._stat_atopen.st_size - pos + 1
-                except OSError:
-                    pass
+        bufsize = DEFAULT_BUFFER_SIZE
+        try:
+            pos = os.lseek(self._fd, 0, os.SEEK_CUR)
+            end = os.fstat(self._fd).st_size
+            if end >= pos:
+                bufsize = end - pos + 1
+        except OSError:
+            pass
 
         result = bytearray()
         while True:
@@ -1756,7 +1754,6 @@ class FileIO(RawIOBase):
         if size is None:
             size = self.tell()
         os.ftruncate(self._fd, size)
-        self._stat_atopen = None
         return size
 
     def close(self):
@@ -1767,9 +1764,8 @@ class FileIO(RawIOBase):
         """
 
         if not self.closed:
-            self._stat_atopen = None
             try:
-                if self._closefd:
+                if self._closefd and self._fd >= 0:
                     os.close(self._fd)
             finally:
                 super().close()
@@ -1809,20 +1805,6 @@ class FileIO(RawIOBase):
         """True if the file is connected to a TTY device."""
 
         self._checkClosed()
-        return os.isatty(self._fd)
-
-    def _isatty_open_only(self):
-        """
-        Checks whether the file is a TTY using an open-only optimization.
-
-        TTYs are always character devices. If the interpreter knows a file is not a character device when it would call
-        ``isatty``, can skip that call. Inside ``open()``  there is a fresh stat result that contains that information.
-        Use the stat result to skip a system call. Outside of that context TOCTOU issues (the fd could be arbitrarily
-        modified by surrounding code).
-        """
-
-        if self._stat_atopen is not None and not stat.S_ISCHR(self._stat_atopen.st_mode):
-            return False
         return os.isatty(self._fd)
 
     @property
@@ -2583,11 +2565,8 @@ class TextIOWrapper(TextIOBase):
         decoder = self._decoder or self._get_decoder()
 
         if size < 0:
-            chunk = self.buffer.read()
-            if chunk is None:
-                raise BlockingIOError("Read returned None.")
             # Read everything.
-            result = self._get_decoded_chars() + decoder.decode(chunk, final=True)
+            result = self._get_decoded_chars() + decoder.decode(self.buffer.read(), final=True)
             if self._snapshot is not None:
                 self._set_decoded_chars('')
                 self._snapshot = None
@@ -2707,6 +2686,10 @@ class TextIOWrapper(TextIOBase):
     @property
     def newlines(self):
         return self._decoder.newlines if self._decoder else None
+
+    def _dealloc_warn(self, source):
+        if dealloc_warn := getattr(self.buffer, "_dealloc_warn", None):
+            dealloc_warn(source)
 
 
 class StringIO(TextIOWrapper):
