@@ -3,12 +3,12 @@ import typing as ta
 
 from ..... import check
 from ..... import lang
+from ...._internals import StdFieldType
+from ...._internals import std_field_type
 from ....debug import DEBUG
 from ....specs import DefaultFactory
 from ....specs import FieldSpec
 from ....specs import FieldType
-from ...internals import StdFieldType
-from ...internals import std_field_type
 from .metadata import _ExtraFieldParamsMetadata
 from .metadata import set_field_spec_metadata
 

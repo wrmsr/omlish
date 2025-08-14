@@ -7,9 +7,9 @@ import typing as ta
 
 from ..... import check
 from ..... import lang
+from ...._internals import STD_FIELDS_ATTR
+from ...._internals import STD_PARAMS_ATTR
 from ....specs import ClassSpec
-from ...internals import STD_FIELDS_ATTR
-from ...internals import STD_PARAMS_ATTR
 from ...processing.driving import drive_cls_processing
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields

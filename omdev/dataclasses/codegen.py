@@ -4,19 +4,24 @@ TODO:
  - refactor dc gen to just Execute and Codegen
  - need to bubble up imports, preamble, deduped
  - still need plan repr / cmp
+ - !! manifests for dataclass config?
+  - more sparse / diffuse intent, not package-level
 """
+import json
 import logging
 import os.path
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
+from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_FILE_NAME
+from omlish.dataclasses.impl.configs import PackageConfig
 from omlish.dataclasses.impl.generation.compilation import OpCompiler
 from omlish.dataclasses.impl.generation.processor import Codegen as CodegenProcessingOption
 from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
 from omlish.dataclasses.impl.processing.base import ProcessingContext
 from omlish.dataclasses.impl.processing.driving import processing_options_context
-from omlish.formats.toml.parser import toml_loads
 
 
 log = logging.getLogger(__name__)
@@ -25,23 +30,17 @@ log = logging.getLogger(__name__)
 ##
 
 
-CONFIG_FILE_NAME = '.dataclasses.toml'
-
-
 class DataclassCodeGen:
     def __init__(self) -> None:
         super().__init__()
 
-    def run_config_file(self, config_file: str) -> None:
-        with open(config_file) as f:
-            config_toml = f.read()
-        config_obj = toml_loads(config_toml)
-
-        should_codegen = check.isinstance(config_obj.get('codegen', False), bool)
-        if not should_codegen:
+    def run_package_config(
+            self,
+            pkg_root: str,
+            config: PackageConfig,
+    ) -> None:
+        if not config.codegen:
             return
-
-        pkg_root = os.path.dirname(config_file).replace(os.sep, '.')
 
         log.info('Running codegen on package: %s', pkg_root)
 
@@ -68,17 +67,30 @@ class DataclassCodeGen:
                 except ImportError as e:
                     print(repr(e))
 
+    def build_config_trie(
+            self,
+            root_dirs: ta.Iterable[str],
+    ) -> col.Trie[str, PackageConfig]:
+        check.not_isinstance(root_dirs, str)
+
+        trie: col.Trie[str, PackageConfig] = col.Trie()
+        for root_dir in root_dirs:
+            for dp, _, fns in os.walk(root_dir):
+                if PACKAGE_CONFIG_FILE_NAME in fns:
+                    with open(os.path.join(dp, PACKAGE_CONFIG_FILE_NAME)) as f:
+                        config = PackageConfig(**json.load(f))
+                    pkg_parts = dp.split(os.sep)
+                    trie[pkg_parts] = config
+
+        return trie
+
     def run(
             self,
             root_dirs: ta.Iterable[str],
     ) -> None:
         check.not_isinstance(root_dirs, str)
 
-        config_files: set[str] = set()
-        for root_dir in root_dirs:
-            for dp, _, fns in os.walk(root_dir):
-                if CONFIG_FILE_NAME in fns:
-                    config_files.add(os.path.join(dp, CONFIG_FILE_NAME))
+        config_trie = self.build_config_trie(root_dirs)
 
-        for config_file in sorted(config_files):
-            self.run_config_file(config_file)
+        for pkg_parts, pkg_config in config_trie.iter_items(sort_children=True):
+            self.run_package_config('.'.join(pkg_parts), pkg_config)

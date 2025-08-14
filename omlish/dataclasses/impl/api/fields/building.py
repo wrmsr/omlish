@@ -3,12 +3,12 @@ import types
 import typing as ta
 
 from ..... import check
+from ...._internals import STD_FIELDS_ATTR
+from ...._internals import StdFieldType
+from ...._internals import std_is_classvar
+from ...._internals import std_is_initvar
+from ...._internals import std_is_kw_only
 from ....inspect import get_cls_annotations
-from ...internals import STD_FIELDS_ATTR
-from ...internals import StdFieldType
-from ...internals import std_is_classvar
-from ...internals import std_is_initvar
-from ...internals import std_is_kw_only
 
 
 ##

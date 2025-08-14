@@ -43,6 +43,10 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
         self._len = 0
         self._root: Trie.Node[K, V] = Trie.Node()
 
+    @property
+    def root(self) -> Node[K, V]:
+        return self._root
+
     def __len__(self) -> int:
         return self._len
 
@@ -53,7 +57,11 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
         return cur
 
     def __getitem__(self, k: ta.Iterable[K]) -> V:
-        node = self.get_node(k)
+        try:
+            node = self.get_node(k)
+        except KeyError:
+            raise KeyError(k) from None
+
         try:
             return node.value
         except AttributeError:
@@ -94,12 +102,32 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
             del parent._children[x]  # noqa
             cur = parent
 
-    def iter_nodes(self, *, share_key: bool = False) -> ta.Iterator[tuple[ta.Sequence[K], Node[K, V]]]:
+    def iter_nodes(
+            self,
+            *,
+            share_key: bool = False,
+            root: ta.Optional['Trie.Node[K, V]'] = None,
+            sort_children: bool | ta.Callable[[list[tuple[K, Node[K, V]]]], None] = False,
+    ) -> ta.Iterator[tuple[ta.Sequence[K], Node[K, V]]]:
+        if root is None:
+            root = self._root
+
+        ic: ta.Callable[[ta.Mapping[K, Trie.Node[K, V]]], ta.Iterator[tuple[K, Trie.Node[K, V]]]]
+        if sort_children is True:
+            ic = lambda cd: iter(sorted(cd.items(), key=lambda t: t[0]))  # type: ignore
+        elif sort_children is False:
+            ic = lambda cd: iter(cd.items())
+        else:
+            def ic(cd):
+                il = list(cd.items())
+                sort_children(il)
+                return iter(il)
+
         key: list[K] = []
         stack: list[tuple[Trie.Node[K, V], ta.Iterator[tuple[K, Trie.Node[K, V]]]]] = []
 
-        stack.append((self._root, iter(self._root._children.items())))  # noqa
-        yield (key if share_key else tuple(key), self._root)
+        stack.append((root, ic(root._children)))  # noqa
+        yield (key if share_key else tuple(key), root)
 
         while stack:
             node, it = stack[-1]
@@ -113,11 +141,11 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
                 continue
             key.append(k)
 
-            stack.append((c, iter(c._children.items())))  # noqa
+            stack.append((c, ic(c._children)))  # noqa
             yield (key if share_key else tuple(key), c)
 
-    def iter_items(self, *, share_key: bool = False) -> ta.Iterator[tuple[ta.Sequence[K], V]]:
-        for k, node in self.iter_nodes(share_key=share_key):
+    def iter_items(self, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Sequence[K], V]]:
+        for k, node in self.iter_nodes(**kwargs):
             try:
                 yield (k, node._value)  # noqa
             except AttributeError:

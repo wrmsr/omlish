@@ -1,9 +1,9 @@
 import typing as ta
 
 from ..... import check
+from ...._internals import StdParams
 from ....specs import ClassSpec
 from ....specs import FieldSpec
-from ...internals import StdParams
 
 
 ##

@@ -1,10 +1,10 @@
 import dataclasses as dc
 import typing as ta
 
-from ..internals import STD_FIELDS_ATTR
-from ..internals import StdFieldType
-from ..internals import std_field_type
-from ..internals import std_is_dataclass_instance
+from ..._internals import STD_FIELDS_ATTR
+from ..._internals import StdFieldType
+from ..._internals import std_field_type
+from ..._internals import std_is_dataclass_instance
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type

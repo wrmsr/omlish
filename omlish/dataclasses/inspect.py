@@ -7,10 +7,10 @@ from .. import check
 from .. import collections as col
 from .. import lang
 from .. import reflect as rfl
-from .impl.internals import STD_FIELDS_ATTR
-from .impl.internals import StdFieldType
-from .impl.internals import std_field_type
-from .impl.internals import std_is_kw_only
+from ._internals import STD_FIELDS_ATTR
+from ._internals import StdFieldType
+from ._internals import std_field_type
+from ._internals import std_is_kw_only
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]

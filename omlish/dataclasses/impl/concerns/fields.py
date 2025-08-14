@@ -2,12 +2,12 @@ import dataclasses as dc
 import typing as ta
 
 from .... import check
+from ..._internals import STD_FIELDS_ATTR
 from ...debug import DEBUG
 from ...inspect import FieldsInspection
 from ...specs import FieldSpec
 from ...specs import FieldType
 from ..generation.idents import IDENT_PREFIX
-from ..internals import STD_FIELDS_ATTR
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority

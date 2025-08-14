@@ -2,15 +2,15 @@ import dataclasses as dc
 import typing as ta
 
 from .. import lang
+from ._internals import STD_PARAMS_ATTR
+from ._internals import StdFieldType
+from ._internals import std_field_type
 from .impl.api.classes.conversion import std_params_to_class_spec
 from .impl.api.classes.metadata import extract_cls_metadata
 from .impl.api.classes.params import get_class_spec
 from .impl.api.fields.conversion import std_field_to_field_spec
 from .impl.concerns.fields import InitFields
 from .impl.concerns.fields import calc_init_fields
-from .impl.internals import STD_PARAMS_ATTR
-from .impl.internals import StdFieldType
-from .impl.internals import std_field_type
 from .inspect import FieldsInspection
 from .inspect import inspect_fields
 from .specs import ClassSpec

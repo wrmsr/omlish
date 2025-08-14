@@ -8,6 +8,8 @@ import typing as ta
 import weakref
 
 from .... import check
+from ..._internals import STD_FIELDS_ATTR
+from ..._internals import STD_PARAMS_ATTR
 from ..generation.base import Generator
 from ..generation.base import Plan
 from ..generation.base import PlanResult
@@ -17,8 +19,6 @@ from ..generation.idents import IDENT_PREFIX
 from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.registry import register_generator_type
-from ..internals import STD_FIELDS_ATTR
-from ..internals import STD_PARAMS_ATTR
 from ..processing.base import ProcessingContext
 
 

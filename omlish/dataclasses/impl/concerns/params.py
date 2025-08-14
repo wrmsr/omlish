@@ -1,5 +1,5 @@
 from .... import check
-from ..internals import STD_PARAMS_ATTR
+from ..._internals import STD_PARAMS_ATTR
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
 from ..processing.registry import register_processor_type

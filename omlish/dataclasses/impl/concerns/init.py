@@ -8,6 +8,7 @@ import itertools
 import typing as ta
 
 from .... import check
+from ..._internals import STD_POST_INIT_NAME
 from ...inspect import FieldsInspection
 from ...specs import CoerceFn
 from ...specs import DefaultFactory
@@ -31,7 +32,6 @@ from ..generation.ops import OpRef
 from ..generation.ops import Ref
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
-from ..internals import STD_POST_INIT_NAME
 from ..processing.base import ProcessingContext
 from .fields import InitFields
 from .mro import MroDict

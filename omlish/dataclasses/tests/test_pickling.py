@@ -1,7 +1,7 @@
 import dataclasses as dc
 import pickle
 
-from .. import api
+from ..impl import api
 
 
 @dc.dataclass(frozen=True)
