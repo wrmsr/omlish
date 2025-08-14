@@ -13,6 +13,8 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 ##
@@ -286,3 +288,28 @@ class Timer:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._end = self._clock()
+
+
+##
+
+
+def double_check_setdefault(
+        cm: ta.ContextManager,
+        dct: ta.MutableMapping[K, V],
+        k: K,
+        fn: ta.Callable[[], V],
+) -> V:
+    try:
+        return dct[k]
+    except KeyError:
+        pass
+
+    with cm:
+        try:
+            return dct[k]
+        except KeyError:
+            pass
+
+        v = fn()
+        dct[k] = v
+        return v

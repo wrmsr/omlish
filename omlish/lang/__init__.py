@@ -142,6 +142,7 @@ from .contextmanagers import (  # noqa
     context_wrapped,
     default_lock,
     disposing,
+    double_check_setdefault,
     maybe_managing,
 )
 
