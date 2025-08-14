@@ -60,6 +60,7 @@ exclude = [
     '*.cu',
     '*.g4',
     '*.h',
+    '.dataclasses.json',
     '.manifests.json',
     'LICENSE',
     'LICENSE.txt',

@@ -175,6 +175,7 @@ class SetuptoolsBase:
             '*.g4',
             '*.h',
 
+            '.dataclasses.json',
             '.manifests.json',
 
             'LICENSE',
