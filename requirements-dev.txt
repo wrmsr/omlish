@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.12.8
+ruff==0.12.9
 
 docutils-stubs==0.0.22
 types-paramiko==4.0.0.20250809  # @omlish-venv !13t !13dt !14t
@@ -105,7 +105,7 @@ prompt-toolkit==3.0.51
 snowflake-connector-python[secure-local-storage]==3.17.0  # @omlish-venv !13t !13dt !14t
 snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !13dt !14t
 
-trino==0.335.0  # @omlish-venv !13t !13dt !14t
+trino==0.336.0  # @omlish-venv !13t !13dt !14t
 
 huggingface-hub==0.34.4  # @omlish-venv !14t
 hf-xet==1.1.7  # @omlish-venv !13t !13dt !14t
