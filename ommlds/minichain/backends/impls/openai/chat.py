@@ -25,6 +25,7 @@ from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
 from .format import OpenaiChatRequestHandler
+from .names import MODEL_NAMES
 
 
 ##
@@ -33,16 +34,13 @@ from .format import OpenaiChatRequestHandler
 # @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class OpenaiChatChoicesService:
-    DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
-        'gpt-4o'
-        # 'gpt-4o-mini'
-    )
+    DEFAULT_MODEL: ta.ClassVar[str] = check.not_none(MODEL_NAMES.default)
 
     def __init__(self, *configs: ApiKey | ModelName | DefaultOptions) -> None:
         super().__init__()
 
         with tv.consume(*configs) as cc:
-            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
@@ -56,7 +54,7 @@ class OpenaiChatChoicesService:
                 *request.options,
                 override=True,
             ),
-            model=self._model_name.v,
+            model=MODEL_NAMES.resolve(self._model_name.v),
             mandatory_kwargs=dict(
                 stream=False,
             ),

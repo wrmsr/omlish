@@ -18,6 +18,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....models.configs import ModelName
 from ....standard import ApiKey
+from .names import MODEL_NAMES
 
 
 ##
@@ -26,15 +27,13 @@ from ....standard import ApiKey
 # @omlish-manifest $.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
 @static_check_is_chat_choices_service
 class GoogleChatChoicesService:
-    DEFAULT_MODEL_NAME: ta.ClassVar[str] = (
-        'gemini-2.0-flash'
-    )
+    DEFAULT_MODEL: ta.ClassVar[str] = check.not_none(MODEL_NAMES.default)
 
     def __init__(self, *configs: ApiKey | ModelName) -> None:
         super().__init__()
 
         with tv.consume(*configs) as cc:
-            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL_NAME))
+            self._model_name = cc.pop(ModelName(self.DEFAULT_MODEL))
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
     def _get_msg_content(self, m: Message) -> str | None:
@@ -75,8 +74,10 @@ class GoogleChatChoicesService:
             ],
         }
 
+        model_name = MODEL_NAMES.resolve(self._model_name.v)
+
         resp = http.request(
-            f'{self.BASE_URL.rstrip("/")}/{self._model_name.v}:generateContent?key={key}',
+            f'{self.BASE_URL.rstrip("/")}/{model_name}:generateContent?key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),
             method='POST',

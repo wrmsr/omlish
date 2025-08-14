@@ -23,6 +23,7 @@ from ....stream.services import StreamOption
 from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
+from .names import MODEL_NAMES
 
 
 ##
@@ -35,7 +36,7 @@ class OpenaiChatChoicesStreamService:
         super().__init__()
 
         with tv.consume(*configs) as cc:
-            self._model_name = cc.pop(ModelName(OpenaiChatChoicesService.DEFAULT_MODEL_NAME))
+            self._model_name = cc.pop(ModelName(OpenaiChatChoicesService.DEFAULT_MODEL))
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
     READ_CHUNK_SIZE = 64 * 1024
@@ -50,7 +51,7 @@ class OpenaiChatChoicesStreamService:
                 for o in request.options
                 if not isinstance(o, (ChatChoicesStreamOption, StreamOption, ResourcesOption))
             ],
-            model=self._model_name.v,
+            model=MODEL_NAMES.resolve(self._model_name.v),
             mandatory_kwargs=dict(
                 stream=True,
                 stream_options=dict(

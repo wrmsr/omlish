@@ -1,3 +1,9 @@
+"""
+https://docs.anthropic.com/en/docs/about-claude/models#model-comparison-table
+
+curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" | \
+  om j -FR -x 'data[].id' | sort
+"""
 from ....models.names import ModelNameCollection
 from ...strings.packs import ModelNameBackendStringPack
 
@@ -25,7 +31,9 @@ MODEL_NAMES = ModelNameCollection(
 
 # @omlish-manifest
 _MODEL_NAMES_PACK = ModelNameBackendStringPack(
-    ['ChatChoicesService'],
+    [
+        'ChatChoicesService',
+    ],
     'anthropic',
     MODEL_NAMES,
 )

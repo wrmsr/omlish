@@ -18,7 +18,7 @@
     "module": ".minichain.backends.impls.anthropic.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
-    "line": 32,
+    "line": 30,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.impls.anthropic.chat",
@@ -33,7 +33,7 @@
     "module": ".minichain.backends.impls.anthropic.names",
     "attr": "_MODEL_NAMES_PACK",
     "file": "ommlds/minichain/backends/impls/anthropic/names.py",
-    "line": 26,
+    "line": 32,
     "value": {
       "$.minichain.backends.strings.packs.ModelNameBackendStringPack": {
         "service_cls_names": [
@@ -77,7 +77,7 @@
     "module": ".minichain.backends.impls.google.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/chat.py",
-    "line": 26,
+    "line": 27,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.impls.google.chat",
@@ -85,6 +85,30 @@
         "name": "google",
         "aliases": null,
         "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.google.names",
+    "attr": "_MODEL_NAMES_PACK",
+    "file": "ommlds/minichain/backends/impls/google/names.py",
+    "line": 30,
+    "value": {
+      "$.minichain.backends.strings.packs.ModelNameBackendStringPack": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "google",
+        "model_names": {
+          "default": "gemini",
+          "aliases": {
+            "gemini-pro": "gemini-2.5-pro",
+            "gemini-flash": "gemini-2.5-flash",
+            "gemini-flash-lite": "gemini-2.5-flash-lite",
+            "gemini": "gemini-flash"
+          }
+        }
       }
     }
   },
@@ -167,7 +191,7 @@
     "module": ".minichain.backends.impls.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/chat.py",
-    "line": 33,
+    "line": 34,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.impls.openai.chat",
@@ -209,10 +233,32 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.openai.names",
+    "attr": "_MODEL_NAMES_PACK",
+    "file": "ommlds/minichain/backends/impls/openai/names.py",
+    "line": 23,
+    "value": {
+      "$.minichain.backends.strings.packs.ModelNameBackendStringPack": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "openai",
+        "model_names": {
+          "default": "gpt",
+          "aliases": {
+            "gpt": "gpt-4o",
+            "gpt-mini": "gpt-4o-mini"
+          }
+        }
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/stream.py",
-    "line": 31,
+    "line": 32,
     "value": {
       "$.minichain.registry.RegistryManifest": {
         "mod_name": "ommlds.minichain.backends.impls.openai.stream",
