@@ -60,6 +60,18 @@
     }
   },
   {
+    "module": ".dataclasses.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/dataclasses/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "dataclasses",
+        "mod_name": "omdev.dataclasses.__main__"
+      }
+    }
+  },
+  {
     "module": ".imgur",
     "attr": "_FOO_CLI_MODULE",
     "file": "omdev/imgur.py",
