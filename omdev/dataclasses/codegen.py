@@ -13,6 +13,8 @@ from omlish import check
 from omlish import lang
 from omlish.dataclasses.generation.compilation import OpCompiler
 from omlish.dataclasses.generation.processor import Codegen as CodegenProcessingOption
+from omlish.dataclasses.generation.processor import GeneratorProcessor
+from omlish.dataclasses.processing.base import ProcessingContext
 from omlish.dataclasses.processing.driving import processing_options_context
 from omlish.formats.toml.parser import toml_loads
 
@@ -51,10 +53,12 @@ class DataclassCodeGen:
 
         for sub_pkg in sub_pkgs:
             def callback(
-                    cls: type,
+                    ctx: ProcessingContext,
+                    prepared: GeneratorProcessor.Prepared,
                     comp: OpCompiler.CompileResult,
             ) -> None:
-                print(cls)
+                print(ctx.cls)
+                print(prepared.plans)
                 print(comp.src)
 
             with processing_options_context(CodegenProcessingOption(callback)):

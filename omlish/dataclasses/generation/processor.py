@@ -10,6 +10,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ..processing.base import ProcessingContext
 from ..processing.base import ProcessingOption
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
@@ -45,7 +46,8 @@ class Verbose(ProcessingOption):
 class CompileCallback(ta.Protocol):
     def __call__(
             self,
-            cls: type,
+            ctx: ProcessingContext,
+            prepared: 'GeneratorProcessor.Prepared',
             comp: OpCompiler.CompileResult,
     ) -> None:
         ...
@@ -139,7 +141,8 @@ class GeneratorProcessor(Processor):
 
             if (cg := self._codegen) is not None and (cb := cg.callback) is not None:
                 cb(
-                    cls,
+                    gp._ctx,  # noqa
+                    gp.prepare(),
                     comp,
                 )
 

@@ -54,7 +54,6 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
 
     def __getitem__(self, k: ta.Iterable[K]) -> V:
         node = self.get_node(k)
-
         try:
             return node.value
         except AttributeError:
