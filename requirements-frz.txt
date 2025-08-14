@@ -26,8 +26,8 @@ bitsandbytes==0.42.0
 black==25.1.0
 bleach==6.2.0
 blobfile==3.0.0
-boto3==1.40.9
-botocore==1.40.9
+boto3==1.40.10
+botocore==1.40.10
 Brotli==1.1.0
 build==1.3.0
 cachetools==5.5.2
@@ -196,7 +196,7 @@ prometheus_client==0.22.1
 prompt_toolkit==3.0.51
 propcache==0.3.2
 proto-plus==1.26.1
-protobuf==6.31.1
+protobuf==6.32.0
 psutil==7.0.0
 psycopg==3.2.9
 psycopg2==2.9.10
@@ -267,7 +267,7 @@ setuptools==80.9.0
 shapely==2.1.1
 six==1.17.0
 sniffio==1.3.1
-snowflake-connector-python==3.17.0
+snowflake-connector-python==3.17.1
 snowflake-sqlalchemy==1.7.6
 sortedcontainers==2.4.0
 soupsieve==2.7
@@ -312,7 +312,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.2
 urwid_readline==0.15.1
-uv==0.8.10
+uv==0.8.11
 watchdog==6.0.0
 wcwidth==0.2.13
 webcolors==24.11.1
