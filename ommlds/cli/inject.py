@@ -32,9 +32,12 @@ def bind_main(
         *,
         session_cfg: Session.Config,
         tools_config: ToolsConfig,
+        enable_backend_strings: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
-        bind_backends(),
+        bind_backends(
+            enable_backend_strings=enable_backend_strings,
+        ),
 
         bind_sessions(session_cfg),
 

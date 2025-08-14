@@ -1,7 +1,7 @@
 from omlish import dataclasses as dc
 from omlish import typedvalues as tv
 
-from ..standard import SecretConfig
+from ....standard import SecretConfig
 
 
 ##

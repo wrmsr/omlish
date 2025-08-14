@@ -26,6 +26,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
         _: dc.KW_ONLY
 
         new: bool = False
+
         backend: str | None = None
         model_name: str | None = None
 

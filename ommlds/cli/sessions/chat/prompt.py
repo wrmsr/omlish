@@ -28,8 +28,10 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         _: dc.KW_ONLY
 
         new: bool = False
+
         backend: str | None = None
         model_name: str | None = None
+
         stream: bool = False
 
     def __init__(
