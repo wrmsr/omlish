@@ -86,6 +86,7 @@ class Cli(ap.Cli):
         pstats_file = os.path.join(tmp_dir, 'prof.pstats')
 
         # TODO: --python - and handle env vars, unset venv and pythonpath stuff - helper for this, scrub env
+        #  - share with execstat, -x
         subprocess.check_call([
             sys.executable,
             '-m', 'cProfile',
