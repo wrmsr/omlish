@@ -7,7 +7,6 @@ TODO:
  - !! manifests for dataclass config?
   - more sparse / diffuse intent, not package-level
 """
-import json
 import logging
 import os.path
 import typing as ta
@@ -78,7 +77,7 @@ class DataclassCodeGen:
             for dp, _, fns in os.walk(root_dir):
                 if PACKAGE_CONFIG_FILE_NAME in fns:
                     with open(os.path.join(dp, PACKAGE_CONFIG_FILE_NAME)) as f:
-                        config = PackageConfig(**json.load(f))
+                        config = PackageConfig.loads(f.read())
                     pkg_parts = dp.split(os.sep)
                     trie[pkg_parts] = config
 

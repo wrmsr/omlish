@@ -515,7 +515,7 @@
     "module": ".tools.prof",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/prof.py",
-    "line": 57,
+    "line": 126,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "prof",
