@@ -1,3 +1,10 @@
+"""
+TODO:
+ - subdir conf files override parents, codegen those separately, don't duplicate
+ - refactor dc gen to just Execute and Codegen
+ - need to bubble up imports, preamble, deduped
+ - still need plan repr / cmp
+"""
 import logging
 import os.path
 import typing as ta
