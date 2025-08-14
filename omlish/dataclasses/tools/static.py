@@ -10,7 +10,7 @@ import typing as ta
 
 from ... import lang
 from ...lite.dataclasses import is_immediate_dataclass
-from ..api.classes.decorator import dataclass
+from ..impl.api.classes.decorator import dataclass
 
 
 ##
@@ -123,7 +123,7 @@ class Static(lang.Abstract):
                     new_fld.default_factory = (lambda v2: lambda: v2)(v)  # noqa
 
                 # FIXME
-                from ..api.fields.metadata import _ExtraFieldParamsMetadata  # noqa
+                from ..impl.api.fields.metadata import _ExtraFieldParamsMetadata  # noqa
                 from ..specs import FieldSpec
                 try:
                     x_fs = fld.metadata[FieldSpec]

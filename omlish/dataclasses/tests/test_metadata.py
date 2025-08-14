@@ -1,7 +1,7 @@
 import dataclasses as dc
 
-from ..api import append_class_metadata
-from ..api import dataclass
+from ..impl.api import append_class_metadata
+from ..impl.api import dataclass
 from ..reflection import reflect
 
 

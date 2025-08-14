@@ -1,7 +1,7 @@
 import dataclasses as dc
 
 from ... import lang
-from ..api.classes.params import get_class_spec
+from ..impl.api.classes.params import get_class_spec
 from ..specs import ClassSpec
 
 

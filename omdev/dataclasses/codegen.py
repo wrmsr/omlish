@@ -11,11 +11,11 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish.dataclasses.generation.compilation import OpCompiler
-from omlish.dataclasses.generation.processor import Codegen as CodegenProcessingOption
-from omlish.dataclasses.generation.processor import GeneratorProcessor
-from omlish.dataclasses.processing.base import ProcessingContext
-from omlish.dataclasses.processing.driving import processing_options_context
+from omlish.dataclasses.impl.generation.compilation import OpCompiler
+from omlish.dataclasses.impl.generation.processor import Codegen as CodegenProcessingOption
+from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
+from omlish.dataclasses.impl.processing.base import ProcessingContext
+from omlish.dataclasses.impl.processing.driving import processing_options_context
 from omlish.formats.toml.parser import toml_loads
 
 

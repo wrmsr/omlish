@@ -1,7 +1,7 @@
 import typing as ta
 
-from ..api.classes.decorator import dataclass
-from ..concerns.frozen import unchecked_frozen_base
+from ..impl.api.classes.decorator import dataclass
+from ..impl.concerns.frozen import unchecked_frozen_base
 from .meta import DataMeta
 from .specs import get_metaclass_spec
 

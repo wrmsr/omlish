@@ -2,8 +2,8 @@ import copy
 import dataclasses as dc
 import typing as ta
 
-from ..internals import STD_ATOMIC_TYPES
-from ..internals import std_is_dataclass_instance
+from ..impl.internals import STD_ATOMIC_TYPES
+from ..impl.internals import std_is_dataclass_instance
 
 
 ##

@@ -22,7 +22,7 @@ from dataclasses import (  # noqa
     replace,
 )
 
-from .api import (  # noqa
+from .impl.api import (  # noqa
     dataclass as xdataclass,
 
     make_dataclass as xmake_dataclass,
@@ -30,13 +30,13 @@ from .api import (  # noqa
     field as xfield,
 )
 
+from .impl.concerns.replace import (  # noqa
+    replace as xreplace,
+)
+
 from .tools.as_ import (  # noqa
     asdict,
     astuple,
-)
-
-from .concerns.replace import (  # noqa
-    replace as xreplace,
 )
 
 
@@ -54,7 +54,7 @@ globals()['replace'] = xreplace
 ##
 # additional interface
 
-from .api import (  # noqa
+from .impl.api import (  # noqa
     append_class_metadata,
     extra_class_params,
     init,
