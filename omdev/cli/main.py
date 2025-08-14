@@ -13,7 +13,7 @@ import typing as ta
 
 from omlish import check
 from omlish.lite.cached import cached_nullary
-from omlish.manifests.load import ManifestLoader
+from omlish.manifests.globals import MANIFEST_LOADER
 
 from .types import CliCmd
 from .types import CliFunc
@@ -183,7 +183,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 
 
 def _build_cmd_set(args: ta.Any) -> CliCmdSet:
-    ldr = ManifestLoader.from_entry_point(globals())
+    ldr = MANIFEST_LOADER.from_entry_point(
+        globals(),
+        cls_instantiator=MANIFEST_LOADER.instantiate_cls,
+    )
 
     #
 
