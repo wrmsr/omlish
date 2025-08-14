@@ -142,7 +142,7 @@ ALIAS_UPDATING_GENERIC_SUBSTITUTION = GenericSubstitution(
 ##
 
 
-_DEFAULT_SIMPLE_GENERIC_BASE_LIST: ta.Sequence = [
+_DEFAULT_SIMPLE_GENERIC_BASE_LIST: ta.Sequence[Type] = [
     object,
     abc.ABC,
     lang.Abstract,
