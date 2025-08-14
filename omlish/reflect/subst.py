@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import types
 import typing as ta
@@ -20,6 +21,9 @@ if ta.TYPE_CHECKING:
     from ..collections import cache
 else:
     cache = lang.proxy_import('.collections.cache', __package__)
+
+
+GenericBasesMap: ta.TypeAlias = ta.Mapping[Type, tuple[Type, ...]]
 
 
 ##
@@ -69,22 +73,35 @@ def replace_type_vars(
     return rec(ty)
 
 
+##
+
+
+_DEFAULT_SIMPLE_GENERIC_BASES: dict[Type, tuple[Type, ...]] = {}
+DEFAULT_SIMPLE_GENERIC_BASES: GenericBasesMap = _DEFAULT_SIMPLE_GENERIC_BASES
+
+
 class GenericSubstitution:
     def __init__(
             self,
             *,
             update_aliases: bool = False,
             cache_size: int = 0,  # FIXME: ta.Generic isn't weakrefable..
+            simple_generic_bases: GenericBasesMap | None = None,
     ) -> None:
         super().__init__()
 
         self._update_aliases = update_aliases
+        self._simple_generic_bases = simple_generic_bases
 
         if cache_size > 0:
             self.get_generic_bases = cache.cache(weak_keys=True, max_size=cache_size)(self.get_generic_bases)  # type: ignore  # noqa
             self.generic_mro = cache.cache(weak_keys=True, max_size=cache_size)(self.generic_mro)  # type: ignore
 
     def get_generic_bases(self, ty: Type) -> tuple[Type, ...]:
+        if (sgm := self._simple_generic_bases) is not None:
+            if (sgb := sgm.get(ty)) is not None:
+                return sgb
+
         if (cty := get_concrete_type(ty)) is not None:
             rpl = get_type_var_replacements(ty)
             ret: list[Type] = []
@@ -97,6 +114,7 @@ class GenericSubstitution:
                 rty = replace_type_vars(bty, rpl, update_aliases=self._update_aliases)
                 ret.append(rty)
             return tuple(ret)
+
         return ()
 
     def generic_mro(self, obj: ta.Any) -> list[Type]:
@@ -108,9 +126,32 @@ class GenericSubstitution:
         return [ty for ty in mro if get_concrete_type(ty) is not ta.Generic]
 
 
-DEFAULT_GENERIC_SUBSTITUTION = GenericSubstitution()
+DEFAULT_GENERIC_SUBSTITUTION = GenericSubstitution(
+    simple_generic_bases=DEFAULT_SIMPLE_GENERIC_BASES,
+)
 
 get_generic_bases = DEFAULT_GENERIC_SUBSTITUTION.get_generic_bases
 generic_mro = DEFAULT_GENERIC_SUBSTITUTION.generic_mro
 
-ALIAS_UPDATING_GENERIC_SUBSTITUTION = GenericSubstitution(update_aliases=True)
+ALIAS_UPDATING_GENERIC_SUBSTITUTION = GenericSubstitution(
+    update_aliases=True,
+    simple_generic_bases=DEFAULT_SIMPLE_GENERIC_BASES,
+)
+
+
+##
+
+
+_DEFAULT_SIMPLE_GENERIC_BASE_LIST: ta.Sequence = [
+    object,
+    abc.ABC,
+    lang.Abstract,
+    lang.Sealed,
+    lang.PackageSealed,
+    lang.Final,
+]
+
+_DEFAULT_SIMPLE_GENERIC_BASES.update({
+    b: get_generic_bases(b)
+    for b in _DEFAULT_SIMPLE_GENERIC_BASE_LIST
+})
