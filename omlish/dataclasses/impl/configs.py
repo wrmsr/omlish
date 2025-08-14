@@ -1,4 +1,5 @@
 import dataclasses as dc
+import importlib.resources
 import json
 
 
@@ -30,7 +31,7 @@ class PackageConfigCache:
     def __init__(self) -> None:
         super().__init__()
 
-        self._dct: dict[str, PackageConfig] = {}
+        self._dct: dict[str, PackageConfig | None] = {}
 
     def get(self, pkg: str) -> PackageConfig | None:
         try:
@@ -38,7 +39,19 @@ class PackageConfigCache:
         except KeyError:
             pass
 
-        raise NotImplementedError
+        try:
+            s = importlib.resources.read_text(pkg, PACKAGE_CONFIG_FILE_NAME)
+        except FileNotFoundError:
+            self._dct[pkg] = None
+        else:
+            c = PackageConfig.loads(s)
+            self._dct[pkg] = c
+            return c
+
+        if '.' not in pkg:
+            return None
+
+        return self.get(pkg.rpartition('.')[0])
 
 
 PACKAGE_CONFIG_CACHE = PackageConfigCache()
