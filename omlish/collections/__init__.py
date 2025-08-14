@@ -139,6 +139,10 @@ from .sorted.sorted import (  # noqa
     SortedMutableMapping,
 )
 
+from .trie import (  # noqa
+    Trie,
+)
+
 from .unmodifiable import (  # noqa
     Unmodifiable,
     UnmodifiableMapping,
