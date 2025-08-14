@@ -15,7 +15,7 @@ from ....configs import Config
 from ....llms.types import LlmOption
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
-from ....standard import ModelPath
+from ....models.configs import ModelPath
 
 
 ##

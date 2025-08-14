@@ -1,8 +1,8 @@
 import pytest
 
 from .....chat.messages import UserMessage
+from .....models.configs import ModelName
 from .....services import Request
-from .....standard import ModelName
 from ..chat import MlxChatChoicesService
 
 

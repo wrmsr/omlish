@@ -3,8 +3,8 @@ import pytest
 from .....chat.choices.services import ChatChoicesRequest
 from .....chat.messages import UserMessage
 from .....completion import CompletionRequest
+from .....models.configs import ModelPath
 from .....services import Request
-from .....standard import ModelPath
 from ..transformers import TransformersChatChoicesService
 from ..transformers import TransformersCompletionService
 from ..transformers import TransformersPipelineKwargs

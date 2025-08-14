@@ -16,8 +16,8 @@ from .....chat.transforms.base import CompositeMessageTransform
 from .....chat.transforms.metadata import CreatedAtAddingMessageTransform
 from .....chat.transforms.metadata import UuidAddingMessageTransform
 from .....chat.transforms.services import ResponseMessageTransformingChatService
+from .....models.configs import ModelPath
 from .....services import Request
-from .....standard import ModelPath
 from .....text.toolparsing.dumb import DumbToolExecParser
 from .....tools.types import ToolDtype
 from .....tools.types import ToolParam

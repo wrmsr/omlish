@@ -15,10 +15,10 @@ from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import ChatChoicesStreamOption
 from ....configs import Config
+from ....models.configs import ModelName
 from ....resources import ResourcesOption
 from ....resources import UseResources
 from ....standard import ApiKey
-from ....standard import ModelName
 from ....stream.services import StreamOption
 from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService

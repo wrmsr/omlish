@@ -21,9 +21,9 @@ from omlish.http import all as http
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
+from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
-from ....standard import ModelName
 from .format import OpenaiChatRequestHandler
 
 

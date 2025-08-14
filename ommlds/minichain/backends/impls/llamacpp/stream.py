@@ -17,8 +17,8 @@ from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiMessageDelta
 from ....configs import Config
+from ....models.configs import ModelPath
 from ....resources import UseResources
-from ....standard import ModelPath
 from ....stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP

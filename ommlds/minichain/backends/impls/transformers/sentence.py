@@ -6,7 +6,7 @@ from omlish import typedvalues as tv
 
 from ....configs import Config
 from ....content.images import ImageContent
-from ....standard import ModelPath
+from ....models.configs import ModelPath
 from ....vectors.embeddings import EmbeddingRequest
 from ....vectors.embeddings import EmbeddingResponse
 from ....vectors.embeddings import static_check_is_embedding_service

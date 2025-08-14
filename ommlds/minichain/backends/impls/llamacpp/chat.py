@@ -20,7 +20,7 @@ from ....chat.tools.types import Tool
 from ....configs import Config
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
-from ....standard import ModelPath
+from ....models.configs import ModelPath
 from ....tools.types import PrimitiveToolDtype
 from .format import ROLES_MAP
 from .format import get_msg_content

@@ -8,9 +8,9 @@ from omlish.http import all as hu
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.messages import UserMessage
+from .....models.configs import ModelName
 from .....services import Request
 from .....standard import ApiKey
-from .....standard import ModelName
 from ..chat import AnthropicChatChoicesService
 
 

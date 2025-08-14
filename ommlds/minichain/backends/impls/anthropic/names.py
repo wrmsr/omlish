@@ -1,4 +1,4 @@
-from ....standard import ModelNameCollection
+from ....models.names import ModelNameCollection
 from ...strings.packs import ModelNameBackendStringPack
 
 

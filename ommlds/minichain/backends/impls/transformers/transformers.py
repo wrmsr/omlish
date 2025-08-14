@@ -24,7 +24,7 @@ from ....completion import CompletionRequest
 from ....completion import CompletionResponse
 from ....completion import static_check_is_completion_service
 from ....configs import Config
-from ....standard import ModelPath
+from ....models.configs import ModelPath
 from ...huggingface import HuggingfaceHubToken
 
 

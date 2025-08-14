@@ -16,8 +16,8 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....configs import Config
 from ....llms.types import MaxTokens
+from ....models.configs import ModelName
 from ....standard import DefaultOptions
-from ....standard import ModelName
 
 
 ##

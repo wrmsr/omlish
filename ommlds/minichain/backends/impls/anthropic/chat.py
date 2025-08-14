@@ -21,8 +21,8 @@ from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....models.configs import ModelName
 from ....standard import ApiKey
-from ....standard import ModelName
 from .names import MODEL_NAMES
 
 
