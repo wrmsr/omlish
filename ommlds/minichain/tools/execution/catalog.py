@@ -72,8 +72,8 @@ class ToolCatalog(ToolExecutor):
     ) -> str:
         e = self._by_name[name]
 
-        return await e.executor().m_execute_tool.m(
+        return await e.executor().m_execute_tool(
             ctx,
             name,
             args,
-        )
+        ).m()

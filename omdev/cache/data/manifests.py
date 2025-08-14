@@ -2,6 +2,7 @@ import datetime
 
 from omlish import __about__ as about
 from omlish import cached
+from omlish import check
 from omlish import dataclasses as dc
 
 from ...git.revisions import get_git_revision
@@ -13,11 +14,11 @@ from .specs import Spec
 
 
 @cached.function
-def _lib_revision() -> str | None:
+def _lib_revision() -> str:
     if (rev := about.__revision__) is not None:
         return rev  # type: ignore
 
-    return get_git_revision()
+    return check.not_none(get_git_revision())
 
 
 ##

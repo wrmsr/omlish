@@ -23,7 +23,7 @@ def test_cached_function_nullary():
     assert c == 1
     assert f() == 'f'
     assert c == 1
-    f.reset()
+    f.reset()  # type: ignore
     assert f() == 'f'
     assert c == 2
     assert f() == 'f'

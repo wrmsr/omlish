@@ -97,7 +97,7 @@ def upload_image(
 
     resp = hu.request(
         url,
-        headers={
+        headers={  # type: ignore[arg-type]
             hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(Secret.of(auth_key).reveal()),
             hu.consts.HEADER_CONTENT_TYPE: me.content_type().decode(),
         },

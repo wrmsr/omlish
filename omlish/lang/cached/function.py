@@ -415,6 +415,16 @@ class _DescriptorCachedFunction(_CachedFunction[T]):
 #
 
 
+@ta.overload
+def cached_function(fn: None = None, **kwargs: ta.Any) -> ta.Callable[[CallableT], CallableT]:
+    ...
+
+
+@ta.overload
+def cached_function(fn: CallableT, **kwargs: ta.Any) -> CallableT:
+    ...
+
+
 def cached_function(fn=None, **kwargs):  # noqa
     if fn is None:
         return functools.partial(cached_function, **kwargs)

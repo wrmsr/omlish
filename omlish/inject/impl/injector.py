@@ -69,7 +69,7 @@ class InjectorImpl(Injector, lang.Final):
         self._bim = ec.binding_impl_map()
         self._ekbs = ec.eager_keys_by_scope()
         self._pls: tuple[ProvisionListener, ...] = tuple(
-            b.listener
+            b.listener  # type: ignore[attr-defined]
             for b in itertools.chain(
                 ec.elements_of_type(ProvisionListenerBinding),
                 (p._pls if p is not None else ()),  # noqa

@@ -78,7 +78,7 @@ def infer_directory_ide(cwd: str | None) -> Ide | None:
 ##
 
 
-def get_ide_version(ide: Ide) -> str:
+def get_ide_version(ide: Ide) -> str | None:
     if ide is Ide.PYCHARM:
         return get_pycharm_version()
     else:

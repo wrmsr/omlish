@@ -88,7 +88,7 @@ class MlxChatChoicesService(lang.ExitStacked):
             raise RuntimeError(tokenizer)
 
         prompt = tokenizer.apply_chat_template(
-            [
+            [  # type: ignore[arg-type]
                 dict(
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
@@ -111,7 +111,7 @@ class MlxChatChoicesService(lang.ExitStacked):
         response = mlxu.generate(
             loaded_model.model,
             loaded_model.tokenization,
-            prompt,
+            check.isinstance(prompt, str),
             mlxu.GenerationParams(**kwargs),
             # verbose=True,
         )

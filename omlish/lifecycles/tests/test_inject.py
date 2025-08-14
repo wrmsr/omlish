@@ -26,7 +26,7 @@ class _LifecycleRegistrar(lang.Final):
 
     @dc.dataclass(frozen=True)
     class Dep(lang.Final):
-        binding: inj.Binding
+        binding: inj.Binding | None
         obj: ta.Any
 
     @dc.dataclass(frozen=True)
@@ -38,7 +38,7 @@ class _LifecycleRegistrar(lang.Final):
             self,
             injector: inj.Injector,
             key: inj.Key,
-            binding: inj.Binding,
+            binding: inj.Binding | None,
             fn: ta.Callable[[], ta.Any],
     ) -> ta.Callable[[], ta.Any]:
         st = _LifecycleRegistrar.State(key)

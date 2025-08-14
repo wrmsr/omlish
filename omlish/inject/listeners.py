@@ -14,7 +14,7 @@ from .keys import Key
 ProvisionListener: ta.TypeAlias = ta.Callable[[
     Injector,
     Key,
-    Binding,
+    Binding | None,
     ta.Callable[[], ta.Any],
 ], ta.Callable[[], ta.Any]]
 

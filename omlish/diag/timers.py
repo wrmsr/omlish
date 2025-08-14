@@ -1,5 +1,6 @@
 import atexit
 import contextlib
+import functools
 import sys
 import threading
 import time
@@ -7,6 +8,9 @@ import typing as ta
 
 from .. import check
 from .. import lang
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -18,7 +22,6 @@ class _GlobalTimer:
             registry: '_GlobalTimerRegistry',
             name: str,
             *,
-
             clock: ta.Callable[[], float] | None = None,
             report_at_exit: bool = False,
             report_out: ta.Any | None = None,
@@ -138,3 +141,44 @@ def global_timer_context(
     timer = reg.get_timer(name, **kwargs)
     with timer():
         yield
+
+
+#
+
+
+class _GlobalTimerContextWrapped:
+    def __init__(
+            self,
+            fn: ta.Any,
+            timer: _GlobalTimer,
+    ) -> None:
+        super().__init__()
+
+        self._fn = fn
+        self._timer = timer
+
+        functools.update_wrapper(self, fn)
+
+    def __get__(self, instance, owner=None):
+        return self.__class__(
+            self._fn.__get__(instance, owner),
+            self._timer,
+        )
+
+    def __call__(self, *args, **kwargs):
+        with self._timer():
+            return self._fn(*args, **kwargs)
+
+
+def global_timer_wrap(
+        globals: ta.MutableMapping[str, ta.Any],  # noqa
+        name: str,
+        **kwargs: ta.Any,
+) -> ta.Callable[[T], T]:
+    reg = _get_global_registry(globals)
+    timer = reg.get_timer(name, **kwargs)
+
+    def inner(fn):
+        return _GlobalTimerContextWrapped(fn, timer)
+
+    return inner

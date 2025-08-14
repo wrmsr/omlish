@@ -132,7 +132,7 @@ class GcpServer(Server):
 
 def get_gcp_servers() -> list[GcpServer]:
     cfg = _get_secrets()
-    creds = cfg.try_get('gcp_oauth2').reveal()
+    creds = cfg.get('gcp_oauth2').reveal()
 
     from google.oauth2 import service_account
     credentials = service_account.Credentials.from_service_account_info(json.loads(creds))

@@ -52,7 +52,9 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
         with UseResources.or_new(request.options) as rs:
             rs.enter_context(self._lock)
 
-            output = self._load_model().create_chat_completion(
+            model: ta.Any = self._load_model()  # FIXME: the types are awful lol
+
+            output = model.create_chat_completion(
                 messages=[  # noqa
                     dict(
                         role=ROLES_MAP[type(m)],

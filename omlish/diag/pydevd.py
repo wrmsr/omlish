@@ -124,7 +124,7 @@ def is_present() -> bool:
 
 def get_setup() -> dict | None:
     if is_present():
-        return _pydevd().SetupHolder.setup
+        return check.not_none(_pydevd()).SetupHolder.setup
     else:
         return None
 
@@ -160,7 +160,7 @@ ARGS_ENV_VAR = 'PYDEVD_ARGS'
 def get_args() -> list[str]:
     check.state(is_present())
     setup: ta.Mapping[ta.Any, ta.Any] = check.isinstance(get_setup(), dict)
-    args = [_pydevd().__file__]
+    args = [check.not_none(check.not_none(_pydevd()).__file__)]
 
     for k in [
         'port',
