@@ -4,6 +4,9 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish.dataclasses.generation.compilation import OpCompiler
+from omlish.dataclasses.generation.processor import Codegen as CodegenProcessingOption
+from omlish.dataclasses.processing.driving import processing_options_context
 from omlish.formats.toml.parser import toml_loads
 
 
@@ -40,7 +43,19 @@ class DataclassCodeGen:
         ))
 
         for sub_pkg in sub_pkgs:
-            print(f'{sub_pkg=}')
+            def callback(
+                    cls: type,
+                    comp: OpCompiler.CompileResult,
+            ) -> None:
+                print(cls)
+                print(comp.src)
+
+            with processing_options_context(CodegenProcessingOption(callback)):
+                print(f'{sub_pkg=}')
+                try:
+                    __import__(sub_pkg)
+                except ImportError as e:
+                    print(repr(e))
 
     def run(
             self,

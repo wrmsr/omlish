@@ -10,7 +10,6 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..processing.base import ProcessingContext
 from ..processing.base import ProcessingOption
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
@@ -43,6 +42,20 @@ class Verbose(ProcessingOption):
     b: bool
 
 
+class CompileCallback(ta.Protocol):
+    def __call__(
+            self,
+            cls: type,
+            comp: OpCompiler.CompileResult,
+    ) -> None:
+        ...
+
+
+@dc.dataclass(frozen=True)
+class Codegen(ProcessingOption):
+    callback: CompileCallback
+
+
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
     class Mode(abc.ABC):
@@ -61,6 +74,15 @@ class GeneratorProcessor(Processor):
                 opx.execute(op)
 
     class CompilerMode(Mode):
+        def __init__(
+                self,
+                *,
+                codegen: Codegen,
+        ) -> None:
+            super().__init__()
+
+            self._codegen = codegen
+
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
             compiler = OpCompiler(
                 OpCompiler.AotStyle(),
@@ -115,18 +137,13 @@ class GeneratorProcessor(Processor):
 
             fn(**kw)
 
+            if (cg := self._codegen) is not None and (cb := cg.callback) is not None:
+                cb(
+                    cls,
+                    comp,
+                )
+
     #
-
-    def __init__(
-            self,
-            ctx: ProcessingContext,
-            *,
-            mode: Mode = ExecutorMode(),
-            # mode: Mode = CompilerMode(),
-    ) -> None:
-        super().__init__(ctx)
-
-        self._mode = mode
 
     @dc.dataclass(frozen=True)
     class Prepared:
@@ -177,6 +194,13 @@ class GeneratorProcessor(Processor):
     def process(self, cls: type) -> type:
         if (po := self._ctx.option(PlanOnly)) is not None and po.b:
             self.prepare()
+            return cls
+
+        mode: GeneratorProcessor.Mode
+        if (cg := self._ctx.option(Codegen)) is not None:  # noqa
+            mode = GeneratorProcessor.CompilerMode(codegen=cg)
         else:
-            self._mode._process(self, cls)  # noqa
+            mode = GeneratorProcessor.ExecutorMode()
+
+        mode._process(self, cls)  # noqa
         return cls

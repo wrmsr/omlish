@@ -1,4 +1,8 @@
+import contextlib
+import contextvars
+import typing as ta
 
+from ... import lang
 from .. import concerns as _concerns  # noqa  # imported for registration
 from ..generation import processor as gp
 from ..specs import ClassSpec
@@ -12,6 +16,24 @@ from .registry import ordered_processor_types
 ##
 
 
+_OPTIONS_CONTEXT_VAR: contextvars.ContextVar[ta.Sequence[ProcessingOption]] = contextvars.ContextVar(
+    f'{__name__}._OPTIONS_CONTEXT_VAR',
+    default=(),
+)
+
+
+@contextlib.contextmanager
+def processing_options_context(*opts: ProcessingOption) -> ta.Iterator[None]:
+    with lang.context_var_setting(
+            _OPTIONS_CONTEXT_VAR,
+            (*_OPTIONS_CONTEXT_VAR.get(), *opts),
+    ):
+        yield
+
+
+##
+
+
 def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
@@ -19,7 +41,7 @@ def drive_cls_processing(
         plan_only: bool = False,
         verbose: bool = False,
 ) -> type:
-    options: list[ProcessingOption] = []
+    options: list[ProcessingOption] = list(_OPTIONS_CONTEXT_VAR.get())
     if plan_only:
         options.append(gp.PlanOnly(True))
     if verbose:
