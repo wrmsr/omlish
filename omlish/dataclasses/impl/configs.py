@@ -1,6 +1,7 @@
 import dataclasses as dc
 import importlib.resources
 import json
+import typing as ta
 
 
 ##
@@ -24,6 +25,9 @@ class PackageConfig:
         return json.dumps(dc.asdict(self), indent=2)
 
 
+DEFAULT_PACKAGE_CONFIG = PackageConfig()
+
+
 ##
 
 
@@ -33,7 +37,15 @@ class PackageConfigCache:
 
         self._dct: dict[str, PackageConfig | None] = {}
 
-    def get(self, pkg: str) -> PackageConfig | None:
+    @ta.overload
+    def get(self, pkg: str, default: PackageConfig) -> PackageConfig:
+        ...
+
+    @ta.overload
+    def get(self, pkg: str, default: PackageConfig | None = None) -> PackageConfig | None:
+        ...
+
+    def get(self, pkg, default=None):
         try:
             return self._dct[pkg]
         except KeyError:
@@ -49,9 +61,9 @@ class PackageConfigCache:
             return c
 
         if '.' not in pkg:
-            return None
+            return default
 
-        return self.get(pkg.rpartition('.')[0])
+        return self.get(pkg.rpartition('.')[0], default)
 
 
 PACKAGE_CONFIG_CACHE = PackageConfigCache()

@@ -116,6 +116,7 @@ class Cli(ap.Cli):
                 subprocess.check_call(['open', out_file])
 
             else:
+                # Alt: python -i <setup.py> where setup.py is 'import pstats; stats = pstats.Stats(<out_file>)'
                 os.execl(
                     sys.executable,
                     sys.executable,

@@ -1,3 +1,7 @@
+"""
+TODO:
+ - quantiles via math.histogram
+"""
 import atexit
 import contextlib
 import functools

@@ -5,6 +5,8 @@ import typing as ta
 from .... import lang
 from ...specs import ClassSpec
 from .. import concerns as _concerns  # noqa  # imported for registration
+from ..configs import DEFAULT_PACKAGE_CONFIG
+from ..configs import PACKAGE_CONFIG_CACHE
 from ..generation import processor as gp
 from .base import ProcessingContext
 from .base import ProcessingOption
@@ -46,6 +48,14 @@ def drive_cls_processing(
         options.append(gp.PlanOnly(True))
     if verbose:
         options.append(gp.Verbose(True))
+
+    #
+
+    pkg_config = DEFAULT_PACKAGE_CONFIG
+    cls_mod = cls.__module__
+    if '.' in cls_mod:
+        cls_pkg = cls_mod.rpartition('.')[0]
+        pkg_cfg = PACKAGE_CONFIG_CACHE.get(cls_pkg, pkg_config)  # noqa
 
     #
 
