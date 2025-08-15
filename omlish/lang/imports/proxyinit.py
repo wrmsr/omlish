@@ -48,7 +48,10 @@ class _ProxyInit:
             raise TypeError(attrs)
 
         if attrs is None:
-            self._imps_by_attr[package.split('.')[-1]] = self._Import(package, None)
+            whole_attr = package.split('.')[-1]
+
+            self._imps_by_attr[whole_attr] = self._Import(package, None)
+            self._lazy_globals.set_fn(whole_attr, functools.partial(self.get, whole_attr))
 
         else:
             for attr in attrs:
@@ -58,7 +61,6 @@ class _ProxyInit:
                     imp_attr = attr
 
                 self._imps_by_attr[attr] = self._Import(package, imp_attr)
-
                 self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
 
     def get(self, attr: str) -> ta.Any:
@@ -67,15 +69,18 @@ class _ProxyInit:
         except KeyError:
             raise AttributeError(attr)  # noqa
 
-        try:
-            mod = self._mods_by_pkgs[imp.pkg]
-        except KeyError:
-            mod = importlib.import_module(imp.pkg, package=self._name_package.package)
+        val: ta.Any
 
-        if imp.attr is not None:
-            val: ta.Any = getattr(mod, imp.attr)
+        if imp.attr is None:
+            val = importlib.import_module(imp.pkg, package=self._name_package.package)
+
         else:
-            val = mod
+            try:
+                mod = self._mods_by_pkgs[imp.pkg]
+            except KeyError:
+                mod = importlib.import_module(imp.pkg, package=self._name_package.package)
+
+            val = getattr(mod, imp.attr)
 
         return val
 
