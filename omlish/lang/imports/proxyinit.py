@@ -1,3 +1,10 @@
+"""
+TODO:
+ - auto_proxy_init can capture `import as` by scanning globals for sentinels
+  - replaces _AutoProxyInitCapture._attrs dict outright
+  - should raise on unbound or shadowed import - was probably imported for side-effects but will never get
+    proxy imported
+"""
 import builtins
 import contextlib
 import functools
