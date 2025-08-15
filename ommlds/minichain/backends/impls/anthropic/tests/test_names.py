@@ -1,6 +1,6 @@
-from omlish.manifests.globals import MANIFEST_LOADER
+from omlish.manifests.globals import GlobalManifestLoader
 
 
 def test_names():
-    manifests = MANIFEST_LOADER.load(__package__.partition('.')[0])
+    manifests = GlobalManifestLoader.load(__package__.partition('.')[0])
     print(manifests)

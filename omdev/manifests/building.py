@@ -37,7 +37,7 @@ from omlish.lite.imports import import_attr
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log
 from omlish.manifests.base import ModAttrManifest
-from omlish.manifests.globals import MANIFEST_LOADER
+from omlish.manifests.globals import GlobalManifestLoader
 from omlish.manifests.types import Manifest
 from omlish.manifests.types import ManifestOrigin
 
@@ -427,5 +427,5 @@ def check_package_manifests(
         [(key, value_dct)] = manifest.value.items()
         if key.startswith('$.'):
             key = f'${name}{key[1:]}'
-        cls = MANIFEST_LOADER.load_cls(key)
-        value = MANIFEST_LOADER.instantiate_cls(cls, **value_dct)  # noqa
+        cls = GlobalManifestLoader.instance().load_cls(key)
+        value = GlobalManifestLoader.instance()._instantiate_cls(cls, **value_dct)  # noqa

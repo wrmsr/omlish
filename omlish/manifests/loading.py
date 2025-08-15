@@ -5,6 +5,10 @@ Should be kept somewhat lightweight - used in cli entrypoints.
 
 TODO:
  - persisted caching support - {pkg_name: manifests}
+ - real relative cls names - shouldn't need parent package names
+ - *require* loaded class names - special All sentinel for explicit all
+  - ! late instantiation !
+ - per-manifest-item cache?
 """
 import dataclasses as dc
 import importlib.machinery
@@ -31,10 +35,10 @@ class ManifestLoader:
         super().__init__()
 
         self._cls_instantiator = cls_instantiator
+        self._module_remap = module_remap or {}
 
         self._lock = threading.RLock()
 
-        self._module_remap = module_remap or {}
         self._module_reverse_remap = {v: k for k, v in self._module_remap.items()}
 
         self._cls_cache: ta.Dict[str, type] = {}
@@ -43,13 +47,13 @@ class ManifestLoader:
     #
 
     @classmethod
-    def from_entry_point(
+    def kwargs_from_entry_point(
             cls,
             globals: ta.Mapping[str, ta.Any],  # noqa
             *,
             module_remap: ta.Optional[ta.Mapping[str, str]] = None,
             **kwargs: ta.Any,
-    ) -> 'ManifestLoader':
+    ) -> ta.Dict[str, ta.Any]:
         rm: ta.Dict[str, str] = {}
 
         if module_remap:
@@ -61,7 +65,7 @@ class ManifestLoader:
             if '__main__' not in rm and name == '__main__':
                 rm[spec.name] = '__main__'
 
-        return cls(module_remap=rm, **kwargs)
+        return dict(module_remap=rm, **kwargs)
 
     #
 
@@ -175,7 +179,7 @@ class ManifestLoader:
 
     #
 
-    def instantiate_cls(self, cls: type, **kwargs: ta.Any) -> ta.Any:
+    def _instantiate_cls(self, cls: type, **kwargs: ta.Any) -> ta.Any:
         if self._cls_instantiator is not None:
             return self._cls_instantiator(cls, **kwargs)
         else:
@@ -208,7 +212,7 @@ class ManifestLoader:
                     continue
 
                 cls = self._load_cls(key)
-                value = self.instantiate_cls(cls, **value_dct)
+                value = self._instantiate_cls(cls, **value_dct)
 
                 manifest = dc.replace(manifest, value=value)
                 lst.append(manifest)
@@ -228,7 +232,7 @@ class ManifestLoader:
 
     #
 
-    ENTRY_POINT_GROUP = 'omlish.manifests'
+    ENTRY_POINT_GROUP: ta.ClassVar[str] = 'omlish.manifests'
 
     def discover_pkgs(self) -> ta.Sequence[str]:
         # This is a fat dep so do it late.
@@ -241,9 +245,11 @@ class ManifestLoader:
 
     def scan_pkg_root(self, root: str) -> ta.Sequence[str]:
         pkgs: ta.List[str] = []
+
         for n in os.listdir(root):
             if os.path.isdir(p := os.path.join(root, n)) and os.path.exists(os.path.join(p, '__init__.py')):
                 pkgs.append(n)
+
         return pkgs
 
     def scan_or_discover_pkgs(
