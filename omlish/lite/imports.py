@@ -28,7 +28,7 @@ def import_module_attr(dotted_path: str) -> ta.Any:
 
 
 def import_attr(dotted_path: str) -> ta.Any:
-    importlib = __import__('importlib')
+    import importlib  # noqa
     parts = dotted_path.split('.')
     mod: ta.Any = None
     mod_pos = 0

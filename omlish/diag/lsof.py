@@ -243,20 +243,21 @@ class LsofCommand(SubprocessRunnable[ta.List[LsofItem]]):
 
 if __name__ == '__main__':
     def _main() -> None:
-        argparse = __import__('argparse')
+        import argparse  # noqa
+        import importlib  # noqa
+        import json  # noqa
+
         parser = argparse.ArgumentParser()
         parser.add_argument('--pid', '-p', type=int)
         parser.add_argument('file', nargs='?')
         args = parser.parse_args()
 
-        importlib = __import__('importlib')
         subprocesses = importlib.import_module('..subprocesses.sync', package=__package__).subprocesses
         items = LsofCommand(
             pid=args.pid,
             file=args.file,
         ).run(subprocesses)
 
-        json = __import__('json')
         marshal_obj = importlib.import_module('..lite.marshal', package=__package__).marshal_obj
         print(json.dumps(marshal_obj(items), indent=2))
 

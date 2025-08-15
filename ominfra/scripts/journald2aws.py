@@ -2843,14 +2843,18 @@ class YamlConfigLoader(ConfigLoader[YamlConfigData]):
     file_exts = ('yaml', 'yml')
 
     def load_str(self, s: str) -> YamlConfigData:
-        return YamlConfigData(__import__('yaml').safe_load(s))
+        import yaml  # noqa
+
+        return YamlConfigData(yaml.safe_load(s))
 
 
 class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
     data_cls = YamlConfigData
 
     def render(self, d: YamlConfigData) -> str:
-        return __import__('yaml').safe_dump(d.obj)
+        import yaml  # noqa
+
+        return yaml.safe_dump(d.obj)
 
 
 ##

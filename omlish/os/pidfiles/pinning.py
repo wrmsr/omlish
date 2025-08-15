@@ -245,7 +245,8 @@ class LslocksPidfdPidfilePinner(PidfilePinner):
 
 if __name__ == '__main__':
     def _main() -> None:
-        argparse = __import__('argparse')
+        import argparse  # noqa
+
         parser = argparse.ArgumentParser()
         parser.add_argument('file')
         args = parser.parse_args()

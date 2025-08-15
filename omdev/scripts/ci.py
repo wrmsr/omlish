@@ -237,7 +237,7 @@ class ShellCmd:
 
 
 def read_yaml_file(yaml_file: str) -> ta.Any:
-    yaml = __import__('yaml')
+    import yaml  # noqa
 
     with open(yaml_file) as f:
         return yaml.safe_load(f)
@@ -7793,10 +7793,12 @@ class OciDataTarWriter(ExitStacked):
             )
 
         elif self._compression is OciCompression.ZSTD:
-            zc = __import__('zstandard').ZstdCompressor(
+            import zstandard  # noqa
+
+            zc = zstandard.ZstdCompressor(
                 level=self._zstd_level,
             )
-            self._cf = self._enter_context(zc.stream_writer(self._cw))
+            self._cf = self._enter_context(zc.stream_writer(self._cw))  # type: ignore
 
         elif self._compression is None:
             self._cf = self._cw  # type: ignore

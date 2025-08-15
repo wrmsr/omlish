@@ -232,7 +232,7 @@ class ManifestLoader:
 
     def discover_pkgs(self) -> ta.Sequence[str]:
         # This is a fat dep so do it late.
-        importlib_metadata = __import__('importlib.metadata').metadata
+        from importlib import metadata as importlib_metadata  # noqa
 
         return [
             ep.value

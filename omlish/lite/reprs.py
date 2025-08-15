@@ -75,7 +75,8 @@ class AttrRepr:
         except AttributeError:
             pass
 
-        reprlib = __import__('reprlib')
+        import reprlib  # noqa
+
         cls._reprlib_ = reprlib
         return reprlib
 

@@ -16,7 +16,8 @@ class ModAttrManifest:
     attr_name: str
 
     def load(self) -> ta.Any:
-        importlib = __import__('importlib')
+        import importlib  # noqa
+
         mod = importlib.import_module(self.mod_name)
         return getattr(mod, self.attr_name)
 

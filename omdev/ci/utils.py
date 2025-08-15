@@ -7,7 +7,7 @@ import typing as ta
 
 
 def read_yaml_file(yaml_file: str) -> ta.Any:
-    yaml = __import__('yaml')
+    import yaml  # noqa
 
     with open(yaml_file) as f:
         return yaml.safe_load(f)

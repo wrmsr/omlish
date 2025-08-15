@@ -41,7 +41,19 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
             if not src.startswith('#!/usr/bin/env python3\n'):
                 yield Precheck.Violation(self, f'script {fp} lacks correct shebang')
 
-            imps = findimports.find_imports(fp)
-            deps = findimports.get_import_deps(imps)
+            deps: set[str] = set()
+
+            imp_finder = findimports.ImportFinder()
+            for imp in imp_finder.yield_file_imports(fp):
+                # FIXME: lame
+                if imp.line and 'noqa' in [p.strip() for p in imp.line.split('#')]:
+                    continue
+
+                if (imp_tgts := imp_finder.get_import_node_targets(imp.node)) is None:
+                    continue
+
+                imp_deps = imp_finder.get_import_deps(imp_tgts)
+                deps.update(imp_deps)
+
             if deps:
                 yield Precheck.Violation(self, f'script {fp} has deps: {deps}')
