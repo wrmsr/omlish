@@ -231,6 +231,10 @@ from .imports.lazy import (  # noqa
 
 from .imports.proxyinit import (  # noqa
     proxy_init,
+
+    AutoProxyInitError,
+    AutoProxyInitErrors,
+    auto_proxy_init,
 )
 
 from .imports.resolution import (  # noqa
