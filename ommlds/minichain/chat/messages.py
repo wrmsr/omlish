@@ -109,3 +109,9 @@ class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiabl
     @dispatch.install_method(ContentTransform.apply)
     def apply_tool_exec_result_message(self, m: ToolExecResultMessage) -> ToolExecResultMessage:
         return m
+
+
+##
+
+
+lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

@@ -6,7 +6,8 @@ from .resolution import resolve_import_name
 ##
 
 
-_REGISTERED_CONDITIONAL_IMPORTS: dict[str, list[str] | None] = {}
+# dict[str, None] to preserve insertion order - we don't have OrderedSet here
+_REGISTERED_CONDITIONAL_IMPORTS: dict[str, dict[str, None] | None] = {}
 
 
 def register_conditional_import(when: str, then: str, package: str | None = None) -> None:
@@ -17,14 +18,14 @@ def register_conditional_import(when: str, then: str, package: str | None = None
     if wn in sys.modules:
         __import__(tn)
     else:
-        tns = _REGISTERED_CONDITIONAL_IMPORTS.setdefault(wn, [])
+        tns = _REGISTERED_CONDITIONAL_IMPORTS.setdefault(wn, {})
         if tns is None:
             raise Exception(f'Conditional import trigger already cleared: {wn=} {tn=}')
-        tns.append(tn)
+        tns[tn] = None
 
 
 def trigger_conditional_imports(package: str) -> None:
-    tns = _REGISTERED_CONDITIONAL_IMPORTS.get(package, [])
+    tns = _REGISTERED_CONDITIONAL_IMPORTS.get(package, {})
     if tns is None:
         raise Exception(f'Conditional import trigger already cleared: {package=}')
     _REGISTERED_CONDITIONAL_IMPORTS[package] = None

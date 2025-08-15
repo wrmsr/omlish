@@ -180,3 +180,9 @@ class ToolExecRequest(lang.Final):
     args: ta.Mapping[str, ta.Any]
 
     raw_args: str | None = None
+
+
+##
+
+
+lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

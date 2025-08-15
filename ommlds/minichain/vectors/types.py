@@ -169,3 +169,9 @@ class Vector(lang.Final, ta.Sequence[float]):
             self._s = si.ctor(self._s)
 
         return self._s  # type: ignore
+
+
+##
+
+
+lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

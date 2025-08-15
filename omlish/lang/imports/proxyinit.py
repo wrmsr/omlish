@@ -401,7 +401,14 @@ class _AutoProxyInitCapture:
 @contextlib.contextmanager
 def auto_proxy_init(
         init_globals: ta.MutableMapping[str, ta.Any],
+        *,
+        disable: bool = False,
+        eager: bool = False,
 ) -> ta.Iterator[None]:
+    if disable:
+        yield
+        return
+
     cap = _AutoProxyInitCapture()
 
     with cap.hook_context(init_globals):
@@ -420,3 +427,8 @@ def auto_proxy_init(
             pi.package,
             pi.attrs,
         )
+
+    if eager:
+        lg = LazyGlobals.install(init_globals)
+        for attr in cap.all_attrs:
+            lg.get(attr)
