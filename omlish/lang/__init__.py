@@ -219,16 +219,29 @@ from .generators import (  # noqa
     nextgen,
 )
 
-from .imports import (  # noqa
-    LazyGlobals,
-    can_import,
-    get_real_module_name,
-    import_all,
+from .imports.conditional import (  # noqa
+    register_conditional_import,
+    trigger_conditional_imports,
+)
+
+from .imports.lazy import (  # noqa
     lazy_import,
     proxy_import,
+)
+
+from .imports.proxyinit import (  # noqa
     proxy_init,
+)
+
+from .imports.resolution import (  # noqa
+    can_import,
+    get_real_module_name,
     resolve_import_name,
     try_import,
+)
+
+from .imports.traversal import (  # noqa
+    import_all,
     yield_import_all,
     yield_importable,
 )
@@ -249,6 +262,10 @@ from .iterables import (  # noqa
     readiter,
     renumerate,
     take,
+)
+
+from .lazyglobals import (  # noqa
+    LazyGlobals,
 )
 
 from .maysyncs import (  # noqa

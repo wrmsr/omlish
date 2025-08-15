@@ -112,14 +112,8 @@ Q = StdBuilder()
 ##
 
 
-from ...lang.imports import _register_conditional_import  # noqa
+from ... import lang as _lang  # noqa
 
-_register_conditional_import('...marshal', '.marshal', __package__)
+_lang.register_conditional_import('...marshal', '.marshal', __package__)
 
-
-##
-
-
-from ...lang.imports import _trigger_conditional_imports  # noqa
-
-_trigger_conditional_imports(__package__)
+_lang.trigger_conditional_imports(__package__)

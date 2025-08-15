@@ -21,7 +21,7 @@ ref = SecretRef
 ##
 
 
-from ..lang.imports import _register_conditional_import  # noqa
+from .. import lang as _lang  # noqa
 
 # FIXME: only happens when 'all' is imported lol
-_register_conditional_import('..marshal', '.marshal', __package__)
+_lang.register_conditional_import('..marshal', '.marshal', __package__)

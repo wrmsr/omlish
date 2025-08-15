@@ -184,6 +184,6 @@ from .values import (  # noqa
 ##
 
 
-from ..lang.imports import _trigger_conditional_imports  # noqa
+from .. import lang as _lang
 
-_trigger_conditional_imports(__package__)
+_lang.trigger_conditional_imports(__package__)

@@ -341,4 +341,4 @@ class EnvVarSecrets(Secrets):
 ##
 
 
-lang.imports._register_conditional_import('..marshal', '.marshal', __package__)  # noqa
+lang.register_conditional_import('..marshal', '.marshal', __package__)

@@ -461,10 +461,10 @@ from .types import (  # noqa
 ##
 
 
-from omlish.lang.imports import _register_conditional_import  # noqa
+from omlish import lang as _lang
 
-_register_conditional_import('omlish.marshal', '.chat._marshal', __package__)
-_register_conditional_import('omlish.marshal', '.content._marshal', __package__)
-_register_conditional_import('omlish.marshal', '.llms._marshal', __package__)
-_register_conditional_import('omlish.marshal', '.tools._marshal', __package__)
-_register_conditional_import('omlish.marshal', '.vectors._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '.chat._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '.content._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '.llms._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '.tools._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '.vectors._marshal', __package__)

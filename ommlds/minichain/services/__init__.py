@@ -23,6 +23,6 @@ from .services import (  # noqa
 ##
 
 
-from omlish.lang.imports import _register_conditional_import  # noqa
+from omlish import lang as _lang
 
-_register_conditional_import('omlish.marshal', '._marshal', __package__)
+_lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

@@ -37,6 +37,6 @@ from .sys import (  # noqa
 ##
 
 
-from ..lang.imports import _register_conditional_import  # noqa
+from .. import lang as _lang
 
-_register_conditional_import('..marshal', '.marshal', __package__)
+_lang.register_conditional_import('..marshal', '.marshal', __package__)

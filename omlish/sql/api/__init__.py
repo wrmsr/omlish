@@ -71,6 +71,6 @@ from .rows import (  # noqa
 ##
 
 
-from ...lang.imports import _register_conditional_import  # noqa
+from ... import lang as _lang
 
-_register_conditional_import('..queries', '._queries', __package__)
+_lang.register_conditional_import('..queries', '._queries', __package__)
