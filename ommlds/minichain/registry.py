@@ -12,9 +12,9 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish.manifests import globals as manifest_globals
 from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.base import NameAliasesManifest
+from omlish.manifests.globals import MANIFEST_LOADER
 
 
 T = ta.TypeVar('T')
@@ -38,7 +38,7 @@ class RegistryManifest(NameAliasesManifest, ModAttrManifest):
 
 
 def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
-    ldr = manifest_globals.MANIFEST_LOADER
+    ldr = MANIFEST_LOADER
     pkgs = ldr.scan_or_discover_pkgs(fallback_root=os.getcwd())  # FIXME
     mfs = ldr.load(*pkgs, only=[cls])
     return [mf.value for mf in mfs]

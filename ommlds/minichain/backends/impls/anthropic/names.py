@@ -14,12 +14,15 @@ from ...strings.packs import ModelNameBackendStringPack
 MODEL_NAMES = ModelNameCollection(
     default='claude',
     aliases={
+        'claude-opus-4-1-20250805': None,
         'claude-opus-4-1': 'claude-opus-4-1-20250805',
         'claude-opus': 'claude-opus-4-1',
 
+        'claude-sonnet-4-20250514': None,
         'claude-sonnet-4': 'claude-sonnet-4-20250514',
         'claude-sonnet': 'claude-sonnet-4',
 
+        'claude-3-5-haiku-latest': None,
         'claude-haiku-3-5-latest': 'claude-3-5-haiku-latest',
         'claude-haiku-3-5': 'claude-haiku-3-5-latest',
         'claude-haiku': 'claude-haiku-3-5',

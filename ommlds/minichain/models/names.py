@@ -13,7 +13,7 @@ from omlish.algorithm.toposort import mut_toposort
 class ModelNameCollection:
     default: ta.Optional[str] = None  # noqa
 
-    aliases: ta.Optional[ta.Mapping[str, str]] = None  # noqa
+    aliases: ta.Optional[ta.Mapping[str, ta.Optional[str]]] = None  # noqa
 
     @cached.property
     def alias_map(self) -> ta.Mapping[str, str]:
@@ -21,9 +21,11 @@ class ModelNameCollection:
             return {}
 
         dct: dict[str, str] = {}
-        for ks in mut_toposort({k: {v} for k, v in src.items()}):
+        for ks in mut_toposort({k: {v} for k, v in src.items()}):  # type: ignore
             for k in ks:
-                dct[k] = dct.get(src.get(k, k), k)
+                if k is None:
+                    continue
+                dct[k] = dct.get(src.get(k, k), k)  # type: ignore
         return dct
 
     @cached.property
