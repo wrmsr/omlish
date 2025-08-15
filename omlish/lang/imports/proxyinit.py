@@ -20,7 +20,7 @@ class NamePackage(ta.NamedTuple):
 class _ProxyInit:
     class _Import(ta.NamedTuple):
         pkg: str
-        attr: str
+        attr: str | None
 
     def __init__(
             self,
@@ -39,19 +39,27 @@ class _ProxyInit:
     def name_package(self) -> NamePackage:
         return self._name_package
 
-    def add(self, package: str, attrs: ta.Iterable[str | tuple[str, str]]) -> None:
+    def add(
+            self,
+            package: str,
+            attrs: ta.Iterable[str | tuple[str, str]] | None = None,
+    ) -> None:
         if isinstance(attrs, str):
             raise TypeError(attrs)
 
-        for attr in attrs:
-            if isinstance(attr, tuple):
-                imp_attr, attr = attr
-            else:
-                imp_attr = attr
+        if attrs is None:
+            self._imps_by_attr[package.split('.')[-1]] = self._Import(package, None)
 
-            self._imps_by_attr[attr] = self._Import(package, imp_attr)
+        else:
+            for attr in attrs:
+                if isinstance(attr, tuple):
+                    imp_attr, attr = attr
+                else:
+                    imp_attr = attr
 
-            self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
+                self._imps_by_attr[attr] = self._Import(package, imp_attr)
+
+                self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
 
     def get(self, attr: str) -> ta.Any:
         try:
@@ -64,34 +72,37 @@ class _ProxyInit:
         except KeyError:
             mod = importlib.import_module(imp.pkg, package=self._name_package.package)
 
-        val = getattr(mod, imp.attr)
+        if imp.attr is not None:
+            val: ta.Any = getattr(mod, imp.attr)
+        else:
+            val = mod
 
         return val
 
 
 def proxy_init(
-        globals: ta.MutableMapping[str, ta.Any],  # noqa
+        init_globals: ta.MutableMapping[str, ta.Any],
         package: str,
-        attrs: ta.Iterable[str | tuple[str, str]],
+        attrs: ta.Iterable[str | tuple[str, str]] | None = None,
 ) -> None:
     if isinstance(attrs, str):
         raise TypeError(attrs)
 
     init_name_package = NamePackage(
-        globals['__name__'],
-        globals['__package__'],
+        init_globals['__name__'],
+        init_globals['__package__'],
     )
 
     pi: _ProxyInit
     try:
-        pi = globals['__proxy_init__']
+        pi = init_globals['__proxy_init__']
 
     except KeyError:
         pi = _ProxyInit(
-            LazyGlobals.install(globals),
+            LazyGlobals.install(init_globals),
             init_name_package,
         )
-        globals['__proxy_init__'] = pi
+        init_globals['__proxy_init__'] = pi
 
     else:
         if pi.name_package != init_name_package:
