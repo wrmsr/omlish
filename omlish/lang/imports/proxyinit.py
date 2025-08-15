@@ -157,12 +157,6 @@ class AutoProxyInitErrors:
 
 
 class _AutoProxyInitCapture:
-    """
-    This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
-    implicitly does anyway. It further relies on temporarily patching `__builtins__.__import__`, but could be switched
-    to use any number of other import hooks.
-    """
-
     class ModuleSpec(ta.NamedTuple):
         name: str
         level: int
@@ -405,6 +399,12 @@ def auto_proxy_init(
         disable: bool = False,
         eager: bool = False,
 ) -> ta.Iterator[None]:
+    """
+    This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
+    implicitly does anyway. It further relies on temporarily patching `__builtins__.__import__`, but could be switched
+    to use any number of other import hooks.
+    """
+
     if disable:
         yield
         return
