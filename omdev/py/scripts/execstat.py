@@ -36,8 +36,10 @@ def _run(
 
     #
 
+    ns: dict = {}
+
     if setup:
-        exec(setup)
+        exec(setup, globals(), ns)
 
     code = compile(src, '', 'exec')
 
@@ -54,7 +56,7 @@ def _run(
 
     #
 
-    exec(code)
+    exec(code, globals(), ns)
 
     #
 

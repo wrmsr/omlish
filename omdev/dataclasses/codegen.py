@@ -7,6 +7,7 @@ TODO:
  - !! manifests for dataclass config?
   - more sparse / diffuse intent, not package-level
 """
+import importlib
 import logging
 import os.path
 import typing as ta
@@ -46,7 +47,6 @@ class DataclassCodeGen:
         sub_pkgs = sorted(lang.yield_importable(
             pkg_root,
             recursive=True,
-            include_special=True,
         ))
 
         for sub_pkg in sub_pkgs:
@@ -62,7 +62,7 @@ class DataclassCodeGen:
             with processing_options_context(CodegenProcessingOption(callback)):
                 print(f'{sub_pkg=}')
                 try:
-                    __import__(sub_pkg)
+                    importlib.import_module(sub_pkg)
                 except ImportError as e:
                     print(repr(e))
 
