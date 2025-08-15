@@ -3,6 +3,7 @@
 # ruff: noqa: UP006 UP007 UP045
 """
 TODO:
+ - !! amalg !!
  - hoist first stacktrace file to a full field
  - no psutil on lin / togglable on mac
  - create table paths(path varchar(1024); - norm, dedupe, index, etc (bonus points for 32bit key)

@@ -69,6 +69,9 @@ class _ProxyInit:
                 self._imps_by_attr[attr] = self._Import(package, imp_attr)
                 self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
 
+    def _import_module(self, name: str) -> ta.Any:
+        return importlib.import_module(name, package=self._name_package.package)
+
     def get(self, attr: str) -> ta.Any:
         try:
             imp = self._imps_by_attr[attr]
@@ -78,13 +81,14 @@ class _ProxyInit:
         val: ta.Any
 
         if imp.attr is None:
-            val = importlib.import_module(imp.pkg, package=self._name_package.package)
+            val = self._import_module(imp.pkg)
 
         else:
             try:
                 mod = self._mods_by_pkgs[imp.pkg]
             except KeyError:
-                mod = importlib.import_module(imp.pkg, package=self._name_package.package)
+                mod = self._import_module(imp.pkg)
+                self._mods_by_pkgs[imp.pkg] = mod
 
             val = getattr(mod, imp.attr)
 
