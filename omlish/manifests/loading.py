@@ -26,23 +26,83 @@ from .types import Manifest
 
 
 class ManifestLoader:
+    class LoadedManifest:
+        def __init__(
+                self,
+                package: 'ManifestLoader.LoadedPackage',
+                manifest: Manifest,
+        ) -> None:
+            super().__init__()
+
+            self._package = package
+            self._manifest = manifest
+
+        @property
+        def package(self) -> 'ManifestLoader.LoadedPackage':
+            return self._package
+
+        @property
+        def manifest(self) -> Manifest:
+            return self._manifest
+
+        @property
+        def loader(self) -> 'ManifestLoader':
+            return self._package.loader
+
+        _value: ta.Any
+
+        def value(self) -> ta.Any:
+            try:
+                return self._value
+            except AttributeError:
+                pass
+
+            value = self.loader._instantiate_loaded_manifest(self)
+            self._value = value
+            return value
+
+    class LoadedPackage:
+        def __init__(
+                self,
+                loader: 'ManifestLoader',
+                name: str,
+        ) -> None:
+            super().__init__()
+
+            self._loader = loader
+            self._name = name
+
+        _manifests: ta.Sequence['ManifestLoader.LoadedManifest']
+
+        @property
+        def loader(self) -> 'ManifestLoader':
+            return self._loader
+
+        @property
+        def name(self) -> str:
+            return self._name
+
+        @property
+        def manifests(self) -> ta.Sequence['ManifestLoader.LoadedManifest']:
+            return self._manifests
+
     def __init__(
             self,
             *,
             module_remap: ta.Optional[ta.Mapping[str, str]] = None,
-            cls_instantiator: ta.Optional[ta.Callable[..., ta.Any]] = None,
+            value_instantiator: ta.Optional[ta.Callable[..., ta.Any]] = None,
     ) -> None:
         super().__init__()
 
-        self._cls_instantiator = cls_instantiator
+        self._value_instantiator = value_instantiator
         self._module_remap = module_remap or {}
 
         self._lock = threading.RLock()
 
         self._module_reverse_remap = {v: k for k, v in self._module_remap.items()}
 
-        self._cls_cache: ta.Dict[str, type] = {}
-        self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
+        self._loaded_classes: ta.Dict[str, type] = {}
+        self._loaded_packages: ta.Dict[str, ta.Optional[ManifestLoader.LoadedPackage]] = {}
 
     #
 
@@ -69,12 +129,7 @@ class ManifestLoader:
 
     #
 
-    def _load_cls(self, key: str) -> type:
-        try:
-            return self._cls_cache[key]
-        except KeyError:
-            pass
-
+    def _load_class_uncached(self, key: str) -> type:
         if not key.startswith('$'):
             raise Exception(f'Bad key: {key}')
 
@@ -93,16 +148,25 @@ class ManifestLoader:
         if not isinstance(cls, type):
             raise TypeError(cls)
 
-        self._cls_cache[key] = cls
         return cls
 
-    def load_cls(self, key: str) -> type:
+    def _load_class_locked(self, key: str) -> type:
+        try:
+            return self._loaded_classes[key]
+        except KeyError:
+            pass
+
+        cls = self._load_class_uncached(key)
+        self._loaded_classes[key] = cls
+        return cls
+
+    def _load_class(self, key: str) -> type:
         with self._lock:
-            return self._load_cls(key)
+            return self._load_class_locked(key)
 
     #
 
-    def _load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
+    def _deserialize_raw_manifests(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
@@ -123,13 +187,9 @@ class ManifestLoader:
 
         return lst
 
-    def load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
-        with self._lock:
-            return self.load_contents(obj, pkg_name)
-
     #
 
-    def _read_pkg_file_text(self, pkg_name: str, file_name: str) -> ta.Optional[str]:
+    def _read_package_file_text(self, pkg_name: str, file_name: str) -> ta.Optional[str]:
         # importlib.resources.files actually imports the package - to avoid this, if possible, the file is read straight
         # off the filesystem.
         spec = importlib.util.find_spec(pkg_name)
@@ -153,39 +213,65 @@ class ManifestLoader:
 
     MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.manifests.json'
 
-    def _load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
-        try:
-            return self._raw_cache[pkg_name]
-        except KeyError:
-            pass
-
-        src = self._read_pkg_file_text(pkg_name, self.MANIFESTS_FILE_NAME)
+    def _load_package_uncached(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
+        src = self._read_package_file_text(pkg_name, self.MANIFESTS_FILE_NAME)
         if src is None:
-            self._raw_cache[pkg_name] = None
             return None
 
         obj = json.loads(src)
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
-        lst = self._load_contents(obj, pkg_name)
+        raw_lst = self._deserialize_raw_manifests(obj, pkg_name)
 
-        self._raw_cache[pkg_name] = lst
-        return lst
+        ld_pkg = ManifestLoader.LoadedPackage(self, pkg_name)
 
-    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+        ld_man_lst: ta.List[ManifestLoader.LoadedManifest] = []
+        for raw in raw_lst:
+            ld_man = ManifestLoader.LoadedManifest(ld_pkg, raw)
+
+            ld_man_lst.append(ld_man)
+
+        ld_pkg._manifests = ld_man_lst
+
+        return ld_pkg
+
+    def _load_package_locked(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
+        try:
+            return self._loaded_packages[pkg_name]
+        except KeyError:
+            pass
+
+        pkg = self._load_package_uncached(pkg_name)
+        self._loaded_packages[pkg_name] = pkg
+        return pkg
+
+    def load_package(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
         with self._lock:
-            return self._load_raw(pkg_name)
+            return self._load_package_locked(pkg_name)
 
     #
 
-    def _instantiate_cls(self, cls: type, **kwargs: ta.Any) -> ta.Any:
-        if self._cls_instantiator is not None:
-            return self._cls_instantiator(cls, **kwargs)
+    def _instantiate_value(self, cls: type, **kwargs: ta.Any) -> ta.Any:
+        if self._value_instantiator is not None:
+            return self._value_instantiator(cls, **kwargs)
         else:
             return cls(**kwargs)
 
+    def _instantiate_loaded_manifest(self, ld_man: LoadedManifest) -> ta.Any:
+        [(cls_key, value_dct)] = ld_man.manifest.value.items()
+        cls = self._load_class(cls_key)
+        value = self._instantiate_value(cls, **value_dct)
+        return value
+
     #
+
+    class LOAD_ALL:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+        def __init_subclass__(cls, **kwargs):  # noqa
+            raise TypeError
 
     def _load(
             self,
@@ -206,6 +292,9 @@ class ManifestLoader:
 
         lst: ta.List[Manifest] = []
         for pn in pkg_names:
+            lp = self.load_package(pn)
+            for m in lp.manifests:
+                print(m.value())
             for manifest in (self.load_raw(pn) or []):
                 [(key, value_dct)] = manifest.value.items()
                 if only_keys is not None and key not in only_keys:

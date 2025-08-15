@@ -46,13 +46,13 @@ class GlobalManifestLoader:
     ##
 
     @classmethod
-    def default_cls_instantiator(cls, obj_cls: type, **kwargs: ta.Any) -> ta.Any:
+    def default_value_instantiator(cls, obj_cls: type, **kwargs: ta.Any) -> ta.Any:
         return unmarshal_obj(kwargs, obj_cls)
 
     @classmethod
     def default_kwargs(cls) -> ta.Mapping[str, ta.Any]:
         return dict(
-            cls_instantiator=cls.default_cls_instantiator,
+            value_instantiator=cls.default_value_instantiator,
         )
 
     ##
@@ -70,5 +70,5 @@ class GlobalManifestLoader:
 
 
 MANIFEST_LOADER = ManifestLoader(
-    cls_instantiator=lambda cls, **kwargs: unmarshal_obj(kwargs, cls),
+    value_instantiator=lambda cls, **kwargs: unmarshal_obj(kwargs, cls),
 )
