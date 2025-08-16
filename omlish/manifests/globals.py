@@ -66,8 +66,3 @@ class GlobalManifestLoader:
             *pkg_names,
             only=only,
         )
-
-
-MANIFEST_LOADER = ManifestLoader(
-    value_instantiator=lambda cls, **kwargs: unmarshal_obj(kwargs, cls),
-)
