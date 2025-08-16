@@ -8,7 +8,8 @@ TODO:
  - real relative cls names - shouldn't need parent package names
  - *require* loaded class names - special All sentinel for explicit all
   - ! late instantiation !
- - per-manifest-item cache?
+ - TypeMap style weak cache of issubclass queries
+  - wait.. lazily load the class for virtual subclass queries? xor support virtual bases?
 """
 import dataclasses as dc
 import importlib.machinery
