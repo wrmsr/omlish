@@ -7,7 +7,7 @@ import dataclasses as dc
 import os
 import typing as ta
 
-from omlish.manifests.globals import MANIFEST_LOADER
+from omlish.manifests.globals import GlobalManifestLoader
 
 from ... import minichain as mc
 from ...minichain.backends.strings.packs import ModelNameBackendStringPack
@@ -23,7 +23,7 @@ T = ta.TypeVar('T')
 
 
 def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
-    ldr = MANIFEST_LOADER
+    ldr = GlobalManifestLoader.instance()
     pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())  # FIXME
     mfs = ldr.load(*pkgs, only=[cls])
     return [mf.value for mf in mfs]

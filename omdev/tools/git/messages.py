@@ -54,7 +54,7 @@ class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGenerat
 
 @cached.function
 def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifest]:
-    ldr = manifest_globals.MANIFEST_LOADER
+    ldr = manifest_globals.GlobalManifestLoader.instance()
     pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())
     mfs = ldr.load(*pkgs, only=[GitMessageGeneratorManifest])
     return [mf.value for mf in mfs]
