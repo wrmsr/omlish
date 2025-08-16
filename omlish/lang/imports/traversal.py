@@ -1,6 +1,6 @@
 """
 TODO:
- - overhaul this - use pkgutil.walk_packages unless called needs non-importing (which this currently doesn't do anyway),
+ - overhaul this - use pkgutil.walk_packages unless caller needs non-importing (which this currently doesn't do anyway),
    and support namespace packages if they do.
 """
 import contextlib
