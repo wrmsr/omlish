@@ -203,7 +203,7 @@ def _build_cmd_set(args: ta.Any) -> CliCmdSet:
     lst: list[CliCmd] = []
 
     for m in ldr.load(*pkgs, only=[CliModule]):
-        lst.append(check.isinstance(m.value, CliModule))
+        lst.append(check.isinstance(m.value(), CliModule))
 
     lst.extend(_CLI_FUNCS)
 

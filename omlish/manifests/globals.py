@@ -5,7 +5,6 @@ import typing as ta
 
 from ..lite.marshal import unmarshal_obj
 from .loading import ManifestLoader
-from .types import Manifest
 
 
 ##
@@ -62,7 +61,7 @@ class GlobalManifestLoader:
             cls,
             *pkg_names: str,
             only: ta.Optional[ta.Iterable[type]] = None,
-    ) -> ta.Sequence[Manifest]:
+    ) -> ta.Sequence[ManifestLoader.LoadedManifest]:
         return cls.instance().load(
             *pkg_names,
             only=only,

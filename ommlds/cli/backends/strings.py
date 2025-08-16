@@ -26,7 +26,7 @@ def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
     ldr = GlobalManifestLoader.instance()
     pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())  # FIXME
     mfs = ldr.load(*pkgs, only=[cls])
-    return [mf.value for mf in mfs]
+    return [mf.value() for mf in mfs]
 
 
 @dc.dataclass(frozen=True)

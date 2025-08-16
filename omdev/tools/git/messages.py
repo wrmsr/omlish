@@ -57,7 +57,7 @@ def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifes
     ldr = manifest_globals.GlobalManifestLoader.instance()
     pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())
     mfs = ldr.load(*pkgs, only=[GitMessageGeneratorManifest])
-    return [mf.value for mf in mfs]
+    return [mf.value() for mf in mfs]
 
 
 @cached.function

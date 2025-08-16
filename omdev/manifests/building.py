@@ -431,5 +431,5 @@ def check_package_manifests(
         [(key, value_dct)] = manifest.value.items()
         if key.startswith('$.'):
             key = f'${name}{key[1:]}'
-        cls = GlobalManifestLoader.instance().load_cls(key)
-        value = GlobalManifestLoader.instance()._instantiate_cls(cls, **value_dct)  # noqa
+        cls = GlobalManifestLoader.instance()._load_class(key)  # noqa
+        value = GlobalManifestLoader.instance()._instantiate_value(cls, **value_dct)  # noqa

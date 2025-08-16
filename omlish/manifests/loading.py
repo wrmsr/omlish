@@ -49,6 +49,11 @@ class ManifestLoader:
         def loader(self) -> 'ManifestLoader':
             return self._package.loader
 
+        @property
+        def class_key(self) -> str:
+            [(cls_key, value_dct)] = self._manifest.value.items()
+            return cls_key
+
         _value: ta.Any
 
         def value(self) -> ta.Any:
@@ -57,7 +62,7 @@ class ManifestLoader:
             except AttributeError:
                 pass
 
-            value = self.loader._instantiate_loaded_manifest(self)
+            value = self.loader._instantiate_loaded_manifest(self)  # noqa
             self._value = value
             return value
 
@@ -234,7 +239,7 @@ class ManifestLoader:
 
             ld_man_lst.append(ld_man)
 
-        ld_pkg._manifests = ld_man_lst
+        ld_pkg._manifests = ld_man_lst  # noqa
 
         return ld_pkg
 
@@ -279,7 +284,7 @@ class ManifestLoader:
             self,
             *pkg_names: str,
             only: ta.Optional[ta.Iterable[type]] = None,
-    ) -> ta.Sequence[Manifest]:
+    ) -> ta.Sequence[LoadedManifest]:
         only_keys: ta.Optional[ta.Set]
         if only is not None:
             only_keys = set()
@@ -292,21 +297,17 @@ class ManifestLoader:
         else:
             only_keys = None
 
-        lst: ta.List[Manifest] = []
+        lst: ta.List[ManifestLoader.LoadedManifest] = []
         for pn in pkg_names:
             lp = self.load_package(pn)
+            if lp is None:
+                continue
+
             for m in lp.manifests:
-                print(m.value())
-            for manifest in (self.load_raw(pn) or []):
-                [(key, value_dct)] = manifest.value.items()
-                if only_keys is not None and key not in only_keys:
+                if only_keys is not None and m.class_key not in only_keys:
                     continue
 
-                cls = self._load_cls(key)
-                value = self._instantiate_cls(cls, **value_dct)
-
-                manifest = dc.replace(manifest, value=value)
-                lst.append(manifest)
+                lst.append(m)
 
         return lst
 
@@ -314,7 +315,7 @@ class ManifestLoader:
             self,
             *pkg_names: str,
             only: ta.Optional[ta.Iterable[type]] = None,
-    ) -> ta.Sequence[Manifest]:
+    ) -> ta.Sequence[LoadedManifest]:
         with self._lock:
             return self._load(
                 *pkg_names,
