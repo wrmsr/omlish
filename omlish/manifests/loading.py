@@ -104,6 +104,8 @@ class ManifestLoader:
         self._loaded_classes: ta.Dict[str, type] = {}
         self._loaded_packages: ta.Dict[str, ta.Optional[ManifestLoader.LoadedPackage]] = {}
 
+        self._scanned_package_root_dirs: ta.Dict[str, ta.Sequence[str]] = {}
+
     #
 
     @classmethod
@@ -323,42 +325,80 @@ class ManifestLoader:
 
     ENTRY_POINT_GROUP: ta.ClassVar[str] = 'omlish.manifests'
 
-    def discover_pkgs(self) -> ta.Sequence[str]:
+    _discovered_packages: ta.ClassVar[ta.Optional[ta.Sequence[str]]] = None
+
+    @classmethod
+    def discover_packages(cls) -> ta.Sequence[str]:
+        if (x := cls._discovered_packages) is not None:
+            return x
+
         # This is a fat dep so do it late.
         from importlib import metadata as importlib_metadata  # noqa
 
-        return [
+        x = [
             ep.value
-            for ep in importlib_metadata.entry_points(group=self.ENTRY_POINT_GROUP)
+            for ep in importlib_metadata.entry_points(group=cls.ENTRY_POINT_GROUP)
         ]
 
-    def scan_pkg_root(self, root: str) -> ta.Sequence[str]:
+        cls._discovered_packages = x
+        return x
+
+    #
+
+    def _scan_package_root_dir_uncached(
+            self,
+            root_dir: str,
+    ) -> ta.Sequence[str]:
         pkgs: ta.List[str] = []
 
-        for n in os.listdir(root):
-            if os.path.isdir(p := os.path.join(root, n)) and os.path.exists(os.path.join(p, '__init__.py')):
+        for n in os.listdir(root_dir):
+            if (
+                    os.path.isdir(p := os.path.join(root_dir, n)) and
+                    os.path.exists(os.path.join(p, '__init__.py'))
+            ):
                 pkgs.append(n)
 
         return pkgs
 
-    def scan_or_discover_pkgs(
+    def _scan_package_root_dir_locked(
+            self,
+            root_dir: str,
+    ) -> ta.Sequence[str]:
+        try:
+            return self._scanned_package_root_dirs[root_dir]
+        except KeyError:
+            pass
+
+        ret = self._scan_package_root_dir_uncached(root_dir)
+        self._scanned_package_root_dirs[root_dir] = ret
+        return ret
+
+    def _scan_package_root_dir(
+            self,
+            root_dir: str,
+    ) -> ta.Sequence[str]:
+        with self._lock:
+            return self._scan_package_root_dir_locked(root_dir)
+
+    def scan_or_discover_packages(
             self,
             *,
-            specified_roots: ta.Optional[ta.Sequence[str]] = None,
-            fallback_root: ta.Optional[str] = None,
+            specified_root_dirs: ta.Optional[ta.Sequence[str]] = None,
+            fallback_root_dir: ta.Optional[str] = None,
     ) -> ta.Sequence[str]:
         pkgs: list[str] = []
 
-        if specified_roots is not None:
-            if isinstance(specified_roots, str):
-                raise TypeError(specified_roots)
-            for r in specified_roots:
-                pkgs.extend(self.scan_pkg_root(r))
+        if specified_root_dirs is not None:
+            if isinstance(specified_root_dirs, str):
+                raise TypeError(specified_root_dirs)
+
+            for r in specified_root_dirs:
+                pkgs.extend(self._scan_package_root_dir(r))
 
         else:
-            pkgs.extend(self.discover_pkgs())
+            pkgs.extend(self.discover_packages())
 
-            if not pkgs and fallback_root is not None:
-                pkgs.extend(self.scan_pkg_root(fallback_root))
+            if not pkgs and fallback_root_dir is not None:
+                pkgs.extend(self._scan_package_root_dir(fallback_root_dir))
 
         return pkgs

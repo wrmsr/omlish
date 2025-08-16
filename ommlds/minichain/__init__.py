@@ -1,4 +1,5 @@
 # fmt: off
+# ruff: noqa: I001
 from omlish import lang as _lang
 
 

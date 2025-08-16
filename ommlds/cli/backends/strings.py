@@ -24,7 +24,7 @@ T = ta.TypeVar('T')
 
 def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
     ldr = MANIFEST_LOADER
-    pkgs = ldr.scan_or_discover_pkgs(fallback_root=os.getcwd())  # FIXME
+    pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())  # FIXME
     mfs = ldr.load(*pkgs, only=[cls])
     return [mf.value for mf in mfs]
 

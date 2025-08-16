@@ -1,3 +1,4 @@
+# fmt: off
 # ruff: noqa: I001
 from .. import lang as _lang
 

@@ -193,9 +193,9 @@ def _build_cmd_set(args: ta.Any) -> CliCmdSet:
 
     #
 
-    pkgs = ldr.scan_or_discover_pkgs(
-        specified_roots=args.cli_pkg_root,
-        fallback_root=os.getcwd(),
+    pkgs = ldr.scan_or_discover_packages(
+        specified_root_dirs=args.cli_pkg_root,
+        fallback_root_dir=os.getcwd(),
     )
 
     #
