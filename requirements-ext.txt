@@ -34,7 +34,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.5.2  # @omlish-venv !13t !13dt
+ddgs==9.5.4  # @omlish-venv !13t !13dt
 
 gguf==0.17.1
 

@@ -274,12 +274,13 @@ class ManifestLoader:
 
     #
 
-    class LOAD_ALL:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-        def __init_subclass__(cls, **kwargs):  # noqa
-            raise TypeError
+    # FIXME:
+    # class LOAD_ALL:  # noqa
+    #     def __new__(cls, *args, **kwargs):  # noqa
+    #         raise TypeError
+    #
+    #     def __init_subclass__(cls, **kwargs):  # noqa
+    #         raise TypeError
 
     def _load(
             self,
