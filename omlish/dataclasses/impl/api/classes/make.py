@@ -31,6 +31,8 @@ def make_dataclass(  # noqa
 
         module=None,
 
+        decorator=dataclass,
+
         #
 
         metadata: ta.Sequence[ta.Any] | None = None,
@@ -46,6 +48,12 @@ def make_dataclass(  # noqa
 
         allow_redundant_decorator: bool | None = None,
 ):
+    if decorator is not dataclass:
+        raise TypeError(
+            f'The `decorator` kwarg, as added in https://github.com/python/cpython/pull/122723, is not supported. '
+            f'{decorator=}',
+        )
+
     if namespace is None:
         namespace = {}
 
