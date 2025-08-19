@@ -110,7 +110,10 @@ class BaseTinygradLlama3ChatService(lang.ExitStacked, lang.Abstract):
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='tinygrad_llama3',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
     def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
@@ -127,7 +130,10 @@ class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='tinygrad_llama3', type='ChatChoicesStreamService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='tinygrad_llama3',
+#     type='ChatChoicesStreamService',
+# )
 @static_check_is_chat_choices_stream_service
 class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
     def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:

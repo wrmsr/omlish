@@ -3,7 +3,7 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
-from .....registry import registry_new
+from .....registries.globals import registry_new
 from .....search import SearchService
 from .....services import Request
 from ..search import DuckduckgoSearchService

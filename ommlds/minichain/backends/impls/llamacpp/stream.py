@@ -28,7 +28,10 @@ from .format import get_msg_content
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='llamacpp', type='ChatChoicesStreamService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='llamacpp',
+#     type='ChatChoicesStreamService',
+# )
 @static_check_is_chat_choices_stream_service
 class LlamacppChatChoicesStreamService(lang.ExitStacked):
     def __init__(self, *configs: Config) -> None:

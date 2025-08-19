@@ -10,7 +10,7 @@ from ....search import static_check_is_search_service
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='duckduckgo',
 #     aliases=['ddg'],
 #     type='SearchService',

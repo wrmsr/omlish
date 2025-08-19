@@ -23,7 +23,10 @@ from ....standard import DefaultOptions
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='mlx', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='mlx',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class MlxChatChoicesService(lang.ExitStacked):
     DEFAULT_MODEL_NAME: ta.ClassVar[str] = (

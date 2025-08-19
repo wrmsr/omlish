@@ -16,7 +16,7 @@ from ....vectors.types import Vector
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='sentence_transformers',
 #     aliases=['stfm'],
 #     type='EmbeddingService',

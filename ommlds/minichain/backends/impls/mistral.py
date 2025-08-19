@@ -21,7 +21,10 @@ from ...chat.messages import UserMessage
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='mistral', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='mistral',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class MistralChatChoicesService:
     model: ta.ClassVar[str] = 'mistral-large-latest'

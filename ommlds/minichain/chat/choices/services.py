@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import lang
 
-from ...registry import register_type
+from ...registries.globals import register_type
 from ...services import Request
 from ...services import Response
 from ...services import Service
@@ -20,7 +20,7 @@ ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesOptions]
 
 ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesOutputs]
 
-# @omlish-manifest $.minichain.registry.RegistryTypeManifest
+# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatChoicesService: ta.TypeAlias = Service[ChatChoicesRequest, ChatChoicesResponse]
 
 register_type(ChatChoicesService, module=__name__)

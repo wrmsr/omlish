@@ -7,7 +7,7 @@ curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API
   om j -FR -x 'models[].name' | sort
 """
 from ....models.names import ModelNameCollection
-from ...strings.packs import ModelNameBackendStringPack
+from ...strings.manifests import BackendStringsManifest
 
 
 ##
@@ -30,11 +30,11 @@ MODEL_NAMES = ModelNameCollection(
 
 
 # @omlish-manifest
-_MODEL_NAMES_PACK = ModelNameBackendStringPack(
+_MODEL_NAMES_PACK = BackendStringsManifest(
     [
         'ChatChoicesService',
         'ChatChoicesStreamService',
     ],
     'google',
-    MODEL_NAMES,
+    model_names=MODEL_NAMES,
 )

@@ -31,7 +31,10 @@ from .names import MODEL_NAMES
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='openai',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class OpenaiChatChoicesService:
     DEFAULT_MODEL: ta.ClassVar[str] = check.not_none(MODEL_NAMES.default)

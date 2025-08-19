@@ -6,7 +6,7 @@ curl -s https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_K
 
 """
 from ....models.names import ModelNameCollection
-from ...strings.packs import ModelNameBackendStringPack
+from ...strings.manifests import BackendStringsManifest
 
 
 ##
@@ -61,11 +61,11 @@ MODEL_NAMES = ModelNameCollection(
 
 
 # @omlish-manifest
-_MODEL_NAMES_PACK = ModelNameBackendStringPack(
+_MODEL_NAMES_PACK = BackendStringsManifest(
     [
         'ChatChoicesService',
         'ChatChoicesStreamService',
     ],
     'openai',
-    MODEL_NAMES,
+    model_names=MODEL_NAMES,
 )

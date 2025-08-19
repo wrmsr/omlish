@@ -14,7 +14,10 @@ from ....vectors.types import Vector
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='EmbeddingService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='openai',
+#     type='EmbeddingService',
+# )
 @static_check_is_embedding_service
 class OpenaiEmbeddingService:
     model = 'text-embedding-3-small'

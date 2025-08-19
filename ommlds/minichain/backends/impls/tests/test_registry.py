@@ -3,8 +3,8 @@ from omlish.secrets.tests.harness import HarnessSecrets
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesService
 from ....chat.messages import UserMessage
-from ....registry import registry_new
-from ....registry import registry_of
+from ....registries.globals import registry_new
+from ....registries.globals import registry_of
 from ....services import ServiceFacade
 from ....standard import ApiKey
 

@@ -27,7 +27,7 @@ from .names import MODEL_NAMES
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='anthropic',
 #     type='ChatChoicesService',
 # )

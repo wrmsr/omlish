@@ -5,7 +5,7 @@ curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -
   om j -FR -x 'data[].id' | sort
 """
 from ....models.names import ModelNameCollection
-from ...strings.packs import ModelNameBackendStringPack
+from ...strings.manifests import BackendStringsManifest
 
 
 ##
@@ -33,10 +33,10 @@ MODEL_NAMES = ModelNameCollection(
 
 
 # @omlish-manifest
-_MODEL_NAMES_PACK = ModelNameBackendStringPack(
+_MODEL_NAMES_PACK = BackendStringsManifest(
     [
         'ChatChoicesService',
     ],
     'anthropic',
-    MODEL_NAMES,
+    model_names=MODEL_NAMES,
 )

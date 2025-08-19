@@ -235,6 +235,14 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .registries.globals import (  # noqa
+        register_type,
+        registry_new,
+        registry_of,
+    )
+
+    ##
+
     from .services import (  # noqa
         Request,
         Response,
@@ -421,12 +429,6 @@ with _lang.auto_proxy_init(
         CommonMetadata,
         Uuid,
         CreatedAt,
-    )
-
-    from .registry import (  # noqa
-        register_type,
-        registry_new,
-        registry_of,
     )
 
     from .resources import (  # noqa

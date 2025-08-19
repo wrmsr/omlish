@@ -29,7 +29,10 @@ from .names import MODEL_NAMES
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='openai', type='ChatChoicesStreamService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='openai',
+#     type='ChatChoicesStreamService',
+# )
 @static_check_is_chat_choices_stream_service
 class OpenaiChatChoicesStreamService:
     def __init__(self, *configs: Config) -> None:

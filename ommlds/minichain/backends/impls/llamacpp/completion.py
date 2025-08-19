@@ -21,7 +21,10 @@ from ....models.configs import ModelPath
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='llamacpp', type='CompletionService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='llamacpp',
+#     type='CompletionService',
+# )
 @static_check_is_completion_service
 class LlamacppCompletionService:
     # hf.hf_hub_download(

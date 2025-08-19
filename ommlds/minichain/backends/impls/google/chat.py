@@ -24,7 +24,10 @@ from .names import MODEL_NAMES
 ##
 
 
-# @omlish-manifest $.minichain.registry.RegistryManifest(name='google', type='ChatChoicesService')
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='google',
+#     type='ChatChoicesService',
+# )
 @static_check_is_chat_choices_service
 class GoogleChatChoicesService:
     DEFAULT_MODEL: ta.ClassVar[str] = check.not_none(MODEL_NAMES.default)
