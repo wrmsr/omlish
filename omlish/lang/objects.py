@@ -72,6 +72,7 @@ def super_meta(
         **kwargs: ta.Any,
 ) -> type:
     """Per types.new_class"""
+
     resolved_bases = types.resolve_bases(bases)
     if resolved_bases is not bases:
         if '__orig_bases__' in namespace:

@@ -9,8 +9,6 @@ import functools
 import inspect
 import typing as ta
 
-from ..lite.typing import typing_annotations_attr
-
 
 Ty = ta.TypeVar('Ty', bound=type)
 
@@ -61,7 +59,16 @@ def protocol_check(proto: type) -> ta.Callable[[Ty], Ty]:
 ##
 
 
-_UPDATE_WRAPPER_ASSIGNED_NO_ANNS = list(set(functools.WRAPPER_ASSIGNMENTS) - {typing_annotations_attr()})  # noqa
+_ANN_ATTRS: frozenset[str] = frozenset([
+    '__annotations__',
+
+    '__annotate__',
+    '__annotate_func__',
+
+    '__annotations_cache__',
+])
+
+_UPDATE_WRAPPER_ASSIGNED_NO_ANNS = list(frozenset(functools.WRAPPER_ASSIGNMENTS) - _ANN_ATTRS)
 
 
 def _update_wrapper_no_anns(wrapper, wrapped):

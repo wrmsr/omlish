@@ -76,6 +76,7 @@ def make_dataclass(  # noqa
     def exec_body_callback(ns):
         ns.update(namespace)
         ns.update(defaults)
+        # FIXME: 3.14
         ns['__annotations__'] = annotations
 
     cls = types.new_class(cls_name, bases, {}, exec_body_callback)

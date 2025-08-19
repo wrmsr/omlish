@@ -155,6 +155,7 @@ class Static(lang.Abstract):
                 if k not in new_anns
             })
 
+            # FIXME: 3.14
             cls.__annotations__ = new_anns
 
         else:

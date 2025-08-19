@@ -2,6 +2,7 @@
 TODO:
  - vs ta.get_type_hints?
   - eval (ta.get_type_hints) vs forwardref (inspect.get_annotations)?
+ - remove, or at least address, get_filtered_type_hints wrt 3.14
 """
 import typing as ta
 
