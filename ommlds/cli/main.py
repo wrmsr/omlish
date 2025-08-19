@@ -5,6 +5,7 @@ See:
  - https://github.com/paul-gauthier/aider
 """
 import argparse
+import functools
 import os.path
 import sys
 import typing as ta
@@ -39,7 +40,7 @@ else:
 ##
 
 
-async def _a_main() -> None:
+async def _a_main(args: ta.Any = None) -> None:
     logs.configure_standard_logging('INFO')
 
     #
@@ -68,7 +69,7 @@ async def _a_main() -> None:
     parser.add_argument('--enable-test-weather-tool', action='store_true')
     parser.add_argument('--dangerous-no-tool-confirmation', action='store_true')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     #
 
@@ -166,9 +167,12 @@ async def _a_main() -> None:
         await injector[Session].run()
 
 
-def _main() -> None:
+def _main(args: ta.Any = None) -> None:
     anyio.run(
-        _a_main,
+        functools.partial(
+            _a_main,
+            args,
+        ),
         backend='asyncio',
     )  # noqa
 
