@@ -117,3 +117,33 @@ def raise_in_thread(thr: threading.Thread, exc: ta.Union[BaseException, ta.Type[
     # https://github.com/python/cpython/blob/37ba7531a59a0a2b240a86f7e2adfb1b1cd8ac0c/Lib/test/test_threading.py#L182
     import ctypes as ct
     ct.pythonapi.PyThreadState_SetAsyncExc(ct.c_ulong(thr.ident), ct.py_object(exc))  # type: ignore
+
+
+##
+
+
+def run_all_tests(
+        obj: ta.Any,
+        *,
+        filter: ta.Optional[ta.Callable[[str, ta.Any], bool]] = None,  # noqa
+        out: ta.Optional[ta.Any] = None,
+) -> None:
+    if out is None:
+        out = sys.stderr
+
+    if isinstance(obj, ta.Mapping):
+        items: ta.Any = obj.items()
+    else:
+        items = ((a, getattr(obj, a)) for a in dir(obj))
+
+    for k, v in items:
+        if not callable(v):
+            continue
+
+        if filter is not None:
+            if not filter(k, v):
+                continue
+        elif not k.startswith('test_'):
+            continue
+
+        print(f'Running {k}', file=out)

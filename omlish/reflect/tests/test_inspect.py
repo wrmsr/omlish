@@ -2,6 +2,7 @@ import typing as ta
 
 import pytest
 
+from ...testing import run_all_tests
 from ..inspect import get_filtered_type_hints
 from . import inttree
 
@@ -17,3 +18,7 @@ def test_filtered():
         ta.get_type_hints(make_int_tree)
 
     assert get_filtered_type_hints(make_int_tree, exclude=['return']) == {'i': int}
+
+
+if __name__ == '__main__':
+    run_all_tests(globals())

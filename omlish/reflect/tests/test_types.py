@@ -8,6 +8,7 @@ import pytest
 
 from ... import check
 from ... import reflect as rfl
+from ...testing import run_all_tests
 
 
 T = ta.TypeVar('T')
@@ -177,3 +178,7 @@ def test_protocol():
 
 def test_defaults():
     assert_generic_full_eq(rfl.type_(ta.Generator[int]), rfl.Generic(collections.abc.Generator, (int, type(None), type(None)), (_0, _1, _2), ta.Generator[int]))  # noqa
+
+
+if __name__ == '__main__':
+    run_all_tests(globals())
