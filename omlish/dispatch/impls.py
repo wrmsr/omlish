@@ -20,8 +20,7 @@ T = ta.TypeVar('T')
 
 
 def get_impl_func_cls_set(func: ta.Callable, *, arg_offset: int = 0) -> frozenset[type]:
-    ann = getattr(func, '__annotations__', {})
-    if not ann:
+    if not rfl.has_annotations(func):
         raise TypeError(f'Invalid impl func: {func!r}')
 
     def erase(a):

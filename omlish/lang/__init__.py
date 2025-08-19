@@ -446,4 +446,6 @@ from ..lite.typing import (  # noqa
     Func1,
     Func2,
     Func3,
+
+    typing_annotations_attr,
 )

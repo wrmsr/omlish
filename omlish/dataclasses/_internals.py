@@ -1,3 +1,7 @@
+"""
+For arcane import machinery compatibility with stdlib, this must be a direct child of the 'dataclasses' package - not
+under 'impl'.
+"""
 import dataclasses as dc
 import enum
 import sys
@@ -101,7 +105,10 @@ def _self_module():
 def std_is_classvar(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_classvar(ty, ta)  # type: ignore  # noqa
-        or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # type: ignore  # noqa
+        or (
+            isinstance(ty, str) and
+            dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar)  # type: ignore  # noqa
+        )
     )
 
 
@@ -109,8 +116,8 @@ def std_is_initvar(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_initvar(ty, dc)  # type: ignore  # noqa
         or (
-            isinstance(ty, str)
-            and any(
+            isinstance(ty, str) and
+            any(
                 dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # type: ignore  # noqa
                 for mod in (dc, _self_module())
             )
@@ -122,8 +129,8 @@ def std_is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
         dc._is_kw_only(ty, dc)  # type: ignore  # noqa
         or (
-            isinstance(ty, str)
-            and any(
+            isinstance(ty, str) and
+            any(
                 dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # type: ignore  # noqa
                 for mod in (dc, _self_module())
             )

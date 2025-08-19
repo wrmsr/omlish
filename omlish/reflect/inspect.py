@@ -1,11 +1,13 @@
 """
 TODO:
  - vs ta.get_type_hints?
+  - eval (ta.get_type_hints) vs forwardref (inspect.get_annotations)?
 """
 import typing as ta
 
 from .. import check
 from .. import lang
+from ..lite.typing import typing_annotations_attr
 
 
 if ta.TYPE_CHECKING:
@@ -15,6 +17,13 @@ else:
 
 
 annotationlib = lang.lazy_import('annotationlib', optional=True, cache_failure=True)
+
+
+##
+
+
+def has_annotations(obj: ta.Any) -> bool:
+    return hasattr(obj, typing_annotations_attr())
 
 
 ##

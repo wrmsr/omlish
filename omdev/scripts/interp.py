@@ -2441,6 +2441,7 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
 class _ArgparseCliAnnotationBox:
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
+
         self.__annotations__ = annotations  # type: ignore
 
 

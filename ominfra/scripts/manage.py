@@ -3650,6 +3650,16 @@ class Func3(ta.Generic[A0, A1, A2, T]):
         return self.fn(a0, a1, a2)
 
 
+##
+
+
+_TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '__annotations__'
+
+
+def typing_annotations_attr() -> str:
+    return _TYPING_ANNOTATIONS_ATTR
+
+
 ########################################
 # ../../../omlish/logs/filters.py
 
@@ -5669,6 +5679,7 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
 class _ArgparseCliAnnotationBox:
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
+
         self.__annotations__ = annotations  # type: ignore
 
 

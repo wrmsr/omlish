@@ -15,6 +15,7 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
 
         def __init__(self, cls: ta.Any) -> None:
             super().__init__()
+
             self.__cls = cls
 
         def __repr__(self) -> str:
@@ -24,6 +25,7 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
 
         def __init__(self, cls):
             super().__init__(_CyclicDependencyPlaceholder(cls))
+
             if isinstance(cls, type):
                 self._self__class__ = cls  # noqa
 

@@ -67,6 +67,7 @@ class UnscopedScopeImpl(ScopeImpl, lang.Final):
 class SingletonScopeImpl(ScopeImpl, lang.Final):
     def __init__(self) -> None:
         super().__init__()
+
         self._dct: dict[BindingImpl, ta.Any] = {}
 
     @property
@@ -86,6 +87,7 @@ class SingletonScopeImpl(ScopeImpl, lang.Final):
 class ThreadScopeImpl(ScopeImpl, lang.Final):
     def __init__(self) -> None:
         super().__init__()
+
         self._local = threading.local()
 
     @property
@@ -135,6 +137,7 @@ class SeededScopeImpl(ScopeImpl):
 
     def __init__(self, ss: SeededScope) -> None:
         super().__init__()
+
         self._ss = check.isinstance(ss, SeededScope)
         self._st: SeededScopeImpl.State | None = None
 
@@ -150,6 +153,7 @@ class SeededScopeImpl(ScopeImpl):
     class Manager(SeededScope.Manager, lang.Final):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
+
             self._ss = check.isinstance(ss, SeededScope)
             self._ii = check.isinstance(i, injector_.InjectorImpl)
             self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)

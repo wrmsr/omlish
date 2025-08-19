@@ -1,4 +1,5 @@
 import dataclasses as dc
+import sys
 import typing as ta
 
 
@@ -51,3 +52,13 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 
     def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
         return self.fn(a0, a1, a2)
+
+
+##
+
+
+_TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '__annotations__'
+
+
+def typing_annotations_attr() -> str:
+    return _TYPING_ANNOTATIONS_ATTR
