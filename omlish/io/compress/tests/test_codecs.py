@@ -1,4 +1,5 @@
 import io
+import sys
 import typing as ta
 
 import pytest
@@ -39,7 +40,7 @@ def test_compression_snappy() -> None:
     _test_compression('snappy')
 
 
-@ptu.skip.if_cant_import('zstandard')
+@pytest.mark.skipif(sys.version_info < (3, 14) and not lang.can_import('zstandard'), reason='no zstd')
 def test_compression_zstd() -> None:
     _test_compression('zstd')
 

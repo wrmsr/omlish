@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            # 'diffusers ~= 0.34',
+            # 'diffusers ~= 0.35',
 
             'llama-cpp-python ~= 0.3',
 
@@ -26,7 +26,7 @@ class Project(ProjectBase):
             'tiktoken ~= 0.11',
 
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
-            'tinygrad ~= 0.10',
+            'tinygrad ~= 0.11',
 
             'tokenizers ~= 0.21',
 

@@ -20,7 +20,7 @@ matplotlib==3.10.5
 torch==2.8.0
 torchvision==0.23.0
 
-diffusers==0.34.0
+diffusers==0.35.0
 
 scipy==1.16.1
 scikit-learn==1.7.1

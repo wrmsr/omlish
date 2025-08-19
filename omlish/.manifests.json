@@ -311,7 +311,7 @@
     "module": ".io.compress.zstd",
     "attr": "_ZSTD_LAZY_CODEC",
     "file": "omlish/io/compress/zstd.py",
-    "line": 43,
+    "line": 51,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
         "mod_name": "omlish.io.compress.zstd",
