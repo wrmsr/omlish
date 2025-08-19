@@ -10,6 +10,14 @@ from .decorator import dataclass
 ##
 
 
+_IS_PY_3_14 = sys.version_info >= (3, 14)
+
+if _IS_PY_3_14:
+    import annotationlib  # noqa
+
+    _ANY_MARKER = object()
+
+
 def make_dataclass(  # noqa
         cls_name,
         fields,
@@ -63,7 +71,10 @@ def make_dataclass(  # noqa
     for item in fields:
         if isinstance(item, str):
             name = item
-            tp = 'typing.Any'
+            if _IS_PY_3_14:
+                tp = _ANY_MARKER
+            else:
+                tp = 'typing.Any'
         elif len(item) == 2:
             name, tp, = item
         elif len(item) == 3:
@@ -81,13 +92,51 @@ def make_dataclass(  # noqa
         seen.add(name)
         annotations[name] = tp
 
+    if _IS_PY_3_14:
+        # We initially block the VALUE format, because inside dataclass() we'll call get_annotations(), which will try
+        # the VALUE format first. If we don't block, that means we'd always end up eagerly importing typing here, which
+        # is what we're trying to avoid.
+        value_blocked = True
+
+        def annotate_method(format):  # noqa
+            def get_any():
+                match format:
+                    case annotationlib.Format.STRING:
+                        return 'typing.Any'
+                    case annotationlib.Format.FORWARDREF:
+                        typing = sys.modules.get('typing')
+                        if typing is None:
+                            return annotationlib.ForwardRef('Any', module='typing')
+                        else:
+                            return typing.Any
+                    case annotationlib.Format.VALUE:
+                        if value_blocked:
+                            raise NotImplementedError
+                        from typing import Any
+                        return Any
+                    case _:
+                        raise NotImplementedError
+
+            annos = {
+                ann: get_any() if t is _ANY_MARKER else t
+                for ann, t in annotations.items()
+            }
+            if format == annotationlib.Format.STRING:
+                return annotationlib.annotations_to_string(annos)
+            else:
+                return annos
+
     def exec_body_callback(ns):
         ns.update(namespace)
         ns.update(defaults)
-        # FIXME: 3.14
-        ns['__annotations__'] = annotations
+        if not _IS_PY_3_14:
+            ns['__annotations__'] = annotations
 
     cls = types.new_class(cls_name, bases, {}, exec_body_callback)
+
+    if _IS_PY_3_14:
+        # For now, set annotations including the _ANY_MARKER.
+        cls.__annotate__ = annotate_method  # type: ignore
 
     if module is None:
         try:
@@ -98,7 +147,7 @@ def make_dataclass(  # noqa
     if module is not None:
         cls.__module__ = module
 
-    return dataclass(
+    cls = decorator(
         cls,
         init=init,
         repr=repr,
@@ -126,3 +175,9 @@ def make_dataclass(  # noqa
 
         allow_redundant_decorator=allow_redundant_decorator,
     )
+
+    if _IS_PY_3_14:
+        # Now that the class is ready, allow the VALUE format.
+        value_blocked = False
+
+    return cls
