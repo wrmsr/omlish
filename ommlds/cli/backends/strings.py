@@ -38,7 +38,8 @@ def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
 @dc.dataclass(frozen=True)
 class ResolvedBackend:
     backend_name: str
-    model_name: str | None = None
+
+    args: ta.Sequence[ta.Any] | None = None
 
 
 class BackendStringResolver(lang.Abstract):
@@ -56,15 +57,27 @@ class ManifestBackendStringResolver(BackendStringResolver):
 
         self._manifests = list(manifests)
 
+    def _model_name_args(self, s: str | None) -> ta.Sequence[ta.Any]:
+        if s is not None:
+            return [mc.ModelName(s)]
+        else:
+            return []
+
     def resolve_backend_string(self, ps: ParsedBackendString) -> ResolvedBackend | None:
         if ps.backend is not None and isinstance(ps.model, ParsedBackendString.NameModel):
-            return ResolvedBackend(ps.model.name, ps.model.name)
+            return ResolvedBackend(
+                ps.model.name,
+                self._model_name_args(ps.model.name),
+            )
 
         for m in self._manifests:
             if ps.backend is not None:
                 if ps.backend == m.backend_name:
                     if isinstance(ps.model, ParsedBackendString.NameModel):
-                        return ResolvedBackend(ps.backend, ps.model.name)
+                        return ResolvedBackend(
+                            ps.backend,
+                            self._model_name_args(ps.model.name),
+                        )
 
                     else:
                         raise NotImplementedError
@@ -73,15 +86,24 @@ class ManifestBackendStringResolver(BackendStringResolver):
                     continue
 
             if isinstance(ps.model, ParsedBackendString.NameModel):
-                if m.model_names is not None:
-                    if ps.model.name in m.backend_name:
-                        return ResolvedBackend(m.backend_name, m.model_names.resolved_default)
+                if ps.model.name in m.backend_name:
+                    return ResolvedBackend(
+                        m.backend_name,
+                        self._model_name_args(m.model_names.resolved_default if m.model_names is not None else None),
+                    )
 
-                    elif ps.model.name == m.model_names.default:
-                        return ResolvedBackend(m.backend_name, m.model_names.resolved_default)
+                if m.model_names is not None:
+                    if ps.model.name == m.model_names.default:
+                        return ResolvedBackend(
+                            m.backend_name,
+                            self._model_name_args(m.model_names.resolved_default),
+                        )
 
                     elif ps.model.name in m.model_names.alias_map:
-                        return ResolvedBackend(m.backend_name, m.model_names.alias_map[ps.model.name])
+                        return ResolvedBackend(
+                            m.backend_name,
+                            self._model_name_args(m.model_names.alias_map[ps.model.name]),
+                        )
 
             else:
                 raise NotImplementedError
@@ -101,7 +123,7 @@ class BackendStringBackendCatalog(BackendCatalog):
         return mc.registry_new(
             service_cls,
             rs.backend_name,
-            *([mc.ModelName(mn)] if (mn := rs.model_name) is not None else []),
+            *(rs.args or []),
             *args,
             **kwargs,
         )

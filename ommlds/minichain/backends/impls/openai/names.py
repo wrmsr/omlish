@@ -61,7 +61,7 @@ MODEL_NAMES = ModelNameCollection(
 
 
 # @omlish-manifest
-_MODEL_NAMES_PACK = BackendStringsManifest(
+_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
     [
         'ChatChoicesService',
         'ChatChoicesStreamService',
