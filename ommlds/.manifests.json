@@ -242,7 +242,7 @@
     "module": ".minichain.backends.impls.openai.names",
     "attr": "_MODEL_NAMES_PACK",
     "file": "ommlds/minichain/backends/impls/openai/names.py",
-    "line": 48,
+    "line": 63,
     "value": {
       "$.minichain.backends.strings.packs.ModelNameBackendStringPack": {
         "service_cls_names": [
@@ -266,12 +266,25 @@
             "gpt-5-chat-latest": null,
             "gpt-5-mini": null,
             "gpt-5-nano": null,
+            "gpt3.5-turbo": "gpt-3.5-turbo",
+            "gpt3.5-turbo-instruct": "gpt-3.5-turbo-instruct",
+            "gpt4": "gpt-4",
+            "gpt4-turbo": "gpt-4-turbo",
+            "gpt4.1": "gpt-4.1",
+            "gpt4.1-mini": "gpt-4.1-mini",
+            "gpt4.1-nano": "gpt-4.1-nano",
+            "gpt4o": "gpt-4o",
+            "gpt4o-mini": "gpt-4o-mini",
+            "gpt5": "gpt-5",
+            "gpt5-chat-latest": "gpt-5-chat-latest",
+            "gpt5-mini": "gpt-5-mini",
+            "gpt5-nano": "gpt-5-nano",
+            "gpt": "gpt-4o",
+            "gpt-mini": "gpt-4o-mini",
             "o3": null,
             "o3-mini": null,
             "o4-mini": null,
-            "o4-mini-deep-research": null,
-            "gpt": "gpt-4o",
-            "gpt-mini": "gpt-4o-mini"
+            "o4-mini-deep-research": null
           }
         }
       }

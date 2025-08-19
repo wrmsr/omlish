@@ -12,35 +12,50 @@ from ...strings.packs import ModelNameBackendStringPack
 ##
 
 
+_GPT_MODEL_NAMES = [
+    'gpt-3.5-turbo',
+    'gpt-3.5-turbo-instruct',
+
+    'gpt-4',
+    'gpt-4-turbo',
+
+    'gpt-4.1',
+    'gpt-4.1-mini',
+    'gpt-4.1-nano',
+
+    'gpt-4o',
+    'gpt-4o-mini',
+
+    'gpt-5',
+    'gpt-5-chat-latest',
+    'gpt-5-mini',
+    'gpt-5-nano',
+]
+
+
 MODEL_NAMES = ModelNameCollection(
     default='gpt',
     aliases={
-        'gpt-3.5-turbo': None,
-        'gpt-3.5-turbo-instruct': None,
+        **{
+            n: None
+            for n in _GPT_MODEL_NAMES
+        },
 
-        'gpt-4': None,
-        'gpt-4-turbo': None,
+        **{
+            'gpt' + n.removeprefix('gpt-'): n
+            for n in _GPT_MODEL_NAMES
+        },
 
-        'gpt-4.1': None,
-        'gpt-4.1-mini': None,
-        'gpt-4.1-nano': None,
+        'gpt': 'gpt-4o',
+        'gpt-mini': 'gpt-4o-mini',
 
-        'gpt-4o': None,
-        'gpt-4o-mini': None,
-
-        'gpt-5': None,
-        'gpt-5-chat-latest': None,
-        'gpt-5-mini': None,
-        'gpt-5-nano': None,
+        #
 
         'o3': None,
         'o3-mini': None,
 
         'o4-mini': None,
         'o4-mini-deep-research': None,
-
-        'gpt': 'gpt-4o',
-        'gpt-mini': 'gpt-4o-mini',
     },
 )
 
