@@ -826,12 +826,12 @@ class TestCase(unittest.TestCase):
 
                 # Because this is a ClassVar, it can be mutable.
                 @dataclass
-                class C:
+                class UsesMutableClassVar:
                     z: ClassVar[typ] = typ()
 
                 # Because this is a ClassVar, it can be mutable.
                 @dataclass
-                class C:
+                class UsesMutableClassVarWithSubType:
                     x: ClassVar[typ] = Subclass()
 
     def test_deliberately_mutable_defaults(self):
@@ -2356,7 +2356,10 @@ class TestDocString(unittest.TestCase):
         class C:
             x: Union[int, type(None)] = None
 
-        self.assertDocStrEqual(C.__doc__, "C(x:Optional[int]=None)")
+        if sys.version_info >= (3, 14):
+            self.assertDocStrEqual(C.__doc__, "C(x:int|None=None)")
+        else:
+            self.assertDocStrEqual(C.__doc__, "C(x:Optional[int]=None)")
 
     def test_docstring_list_field(self):
         @dataclass
@@ -3745,7 +3748,7 @@ class TestSlots(unittest.TestCase):
                 {**globals(), **locals()},
             )
 
-    def test_dataclass_derived_generic_from_weakref_slotted_base(self):
+    def test_dataclass_derived_generic_from_slotted_base_with_weakref(self):
         T = typing.TypeVar('T')
 
         class WithWeakrefSlot:
@@ -5034,7 +5037,7 @@ class TestKeywordArgs(unittest.TestCase):
 
         # But this usage is okay, since it's not using KW_ONLY.
         @dataclass
-        class A:
+        class NoDuplicateKwOnlyAnnotation:
             a: int
             _: KW_ONLY
             b: int
@@ -5042,14 +5045,14 @@ class TestKeywordArgs(unittest.TestCase):
 
         # And if inheriting, it's okay.
         @dataclass
-        class A:
+        class BaseUsesKwOnly:
             a: int
             _: KW_ONLY
             b: int
             c: int
 
         @dataclass
-        class B(A):
+        class SubclassUsesKwOnly(BaseUsesKwOnly):
             _: KW_ONLY
             d: int
 
