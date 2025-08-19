@@ -1,4 +1,5 @@
 import inspect
+import sys
 
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
@@ -9,12 +10,29 @@ from ..processing.registry import register_processor_type
 ##
 
 
+if sys.version_info >= (3, 14):
+    import annotationlib  # noqa
+
+    def _raw_build_cls_sig(cls: type) -> str:
+        return str(inspect.signature(
+            cls,
+            annotation_format=annotationlib.Format.FORWARDREF,  # noqa
+        )).replace(' -> None', '')
+
+else:
+    def _raw_build_cls_sig(cls: type) -> str:
+        return str(inspect.signature(cls)).replace(' -> None', '')
+
+
 def _build_cls_doc(cls: type) -> str:
     try:
-        text_sig = str(inspect.signature(cls)).replace(' -> None', '')
+        text_sig = _raw_build_cls_sig(cls)
     except (TypeError, ValueError):
         text_sig = ''
     return cls.__name__ + text_sig
+
+
+##
 
 
 class _LazyClsDocDescriptor:
