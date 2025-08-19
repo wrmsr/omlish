@@ -236,7 +236,7 @@
     "module": ".py.scripts.execstat",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/scripts/execstat.py",
-    "line": 84,
+    "line": 86,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "py/execstat",

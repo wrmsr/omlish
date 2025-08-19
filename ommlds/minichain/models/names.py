@@ -1,3 +1,7 @@
+"""
+TODO:
+ - ctor from {real_name: {alias_names}} ?
+"""
 import typing as ta
 
 from omlish import cached

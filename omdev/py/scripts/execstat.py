@@ -3,9 +3,11 @@
 import argparse
 import inspect
 import json
+import os.path
 import statistics
 import subprocess
 import sys
+import tempfile
 
 
 ##
@@ -102,6 +104,8 @@ def _main() -> None:
 
     parser.add_argument('-P', '--precision', type=int, default=3)
 
+    parser.add_argument('--out-dir')
+
     parser.add_argument('-x', '--exe')
 
     args = parser.parse_args()
@@ -116,8 +120,13 @@ def _main() -> None:
     if (exe := args.exe) is None:
         exe = sys.executable
 
+    if (out_dir := args.out_dir) is None:
+        out_dir = tempfile.mkdtemp()
+
     results = []
     for i in range(n):
+        out_file = os.path.join(out_dir, f'{str(i).zfill(len(str(n)))}.json')
+
         run_kw = dict(
             src=args.src,
             setup=args.setup,
@@ -133,11 +142,15 @@ def _main() -> None:
         payload = '\n'.join([
             inspect.getsource(_run),
             f'dct = _run(**{run_kw!r})',
-            'import json',
-            'print(json.dumps(dct))',
+            f'import json',
+            f'with open({out_file!r}, "w") as f:',  # noqa
+            f'    print(f.write(json.dumps(dct)))',
         ])
 
-        result = json.loads(subprocess.check_output([exe, '-c', payload]))
+        subprocess.check_call([exe, '-c', payload])
+
+        with open(out_file) as f:
+            result = json.load(f)
 
         results.append(result)
 
