@@ -545,32 +545,32 @@ class ObjMarshalerManager:
                 [e] = ta.get_args(ty)
                 return IterableObjMarshaler(st, rec(e))
 
-            if is_union_alias(ty):
-                uts = frozenset(ta.get_args(ty))
-                if None in uts or type(None) in uts:
-                    is_opt = True
-                    uts = frozenset(ut for ut in uts if ut not in (None, type(None)))
-                else:
-                    is_opt = False
+        if is_union_alias(ty):
+            uts = frozenset(ta.get_args(ty))
+            if None in uts or type(None) in uts:
+                is_opt = True
+                uts = frozenset(ut for ut in uts if ut not in (None, type(None)))
+            else:
+                is_opt = False
 
-                um: ObjMarshaler
-                if not uts:
+            um: ObjMarshaler
+            if not uts:
+                raise TypeError(ty)
+            elif len(uts) == 1:
+                um = rec(check.single(uts))
+            else:
+                pt = tuple({ut for ut in uts if ut in _OBJ_MARSHALER_PRIMITIVE_TYPES})
+                np_uts = {ut for ut in uts if ut not in _OBJ_MARSHALER_PRIMITIVE_TYPES}
+                if not np_uts:
+                    um = PrimitiveUnionObjMarshaler(pt)
+                elif len(np_uts) == 1:
+                    um = PrimitiveUnionObjMarshaler(pt, x=rec(check.single(np_uts)))
+                else:
                     raise TypeError(ty)
-                elif len(uts) == 1:
-                    um = rec(check.single(uts))
-                else:
-                    pt = tuple({ut for ut in uts if ut in _OBJ_MARSHALER_PRIMITIVE_TYPES})
-                    np_uts = {ut for ut in uts if ut not in _OBJ_MARSHALER_PRIMITIVE_TYPES}
-                    if not np_uts:
-                        um = PrimitiveUnionObjMarshaler(pt)
-                    elif len(np_uts) == 1:
-                        um = PrimitiveUnionObjMarshaler(pt, x=rec(check.single(np_uts)))
-                    else:
-                        raise TypeError(ty)
 
-                if is_opt:
-                    um = OptionalObjMarshaler(um)
-                return um
+            if is_opt:
+                um = OptionalObjMarshaler(um)
+            return um
 
         raise TypeError(ty)
 

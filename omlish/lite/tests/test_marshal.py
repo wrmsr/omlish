@@ -1,9 +1,10 @@
-# ruff: noqa: PT009 UP006 UP007 UP045
+# ruff: noqa: PT009 UP006 UP007 UP036 UP045
 import abc
 import dataclasses as dc
 import datetime
 import enum
 import json
+import sys
 import typing as ta
 import unittest
 
@@ -336,6 +337,12 @@ class TestUnions(AbstractTestMarshal):
         self._assert_marshal((420, ta.Union[int, str]))
         self._assert_marshal(('420', ta.Union[int, str]))
 
+        if sys.version_info >= (3, 10):
+            self._assert_marshal((420, int | str))
+            self._assert_marshal(('420', int | str))
+
+        #
+
         self._assert_marshal((420, ta.Union[int, str, None]))
         self._assert_marshal(('420', ta.Union[int, str, None]))
         self._assert_marshal((None, ta.Union[int, str, None]))
@@ -344,6 +351,42 @@ class TestUnions(AbstractTestMarshal):
         self._assert_marshal(('420', ta.Optional[ta.Union[int, str]]))
         self._assert_marshal((None, ta.Optional[ta.Union[int, str]]))
 
+        if sys.version_info >= (3, 10):
+            self._assert_marshal((420, int | str | None))
+            self._assert_marshal(('420', int | str | None))
+            self._assert_marshal((None, int | str | None))
+
+        #
+
+        self._assert_marshal((('abc',), ta.Optional[ta.Sequence[str]]))
+        self._assert_marshal((('a', 'b', 'c'), ta.Optional[ta.Sequence[str]]))
+        self._assert_marshal((None, ta.Optional[ta.Sequence[str]]))
+
+        if sys.version_info >= (3, 10):
+            self._assert_marshal((('abc',), ta.Sequence[str] | None))
+            self._assert_marshal((('a', 'b', 'c'), ta.Sequence[str] | None))
+            self._assert_marshal((None, ta.Sequence[str] | None))
+
+        #
+
         self._assert_marshal(('abc', ta.Union[str, ta.Sequence[str]]))
         self._assert_marshal((('abc',), ta.Union[str, ta.Sequence[str]]))
         self._assert_marshal((('a', 'b', 'c'), ta.Union[str, ta.Sequence[str]]))
+
+        if sys.version_info >= (3, 10):
+            self._assert_marshal(('abc', str | ta.Sequence[str]))
+            self._assert_marshal((('abc',), str | ta.Sequence[str]))
+            self._assert_marshal((('a', 'b', 'c'), str | ta.Sequence[str]))
+
+        #
+
+        self._assert_marshal(('abc', ta.Union[str, ta.Sequence[str], None]))
+        self._assert_marshal((('abc',), ta.Union[str, ta.Sequence[str], None]))
+        self._assert_marshal((('a', 'b', 'c'), ta.Union[str, ta.Sequence[str], None]))
+        self._assert_marshal((None, ta.Union[str, ta.Sequence[str], None]))
+
+        if sys.version_info >= (3, 10):
+            self._assert_marshal(('abc', str | ta.Sequence[str]))
+            self._assert_marshal((('abc',), str | ta.Sequence[str]))
+            self._assert_marshal((('a', 'b', 'c'), str | ta.Sequence[str]))
+            self._assert_marshal((None, str | ta.Sequence[str] | None))

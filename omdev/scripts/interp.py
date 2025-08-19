@@ -1301,24 +1301,40 @@ _GENERIC_ALIAS_TYPES = (
 )
 
 
-def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
+def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     return (
         isinstance(obj, _GENERIC_ALIAS_TYPES) and
         (origin is None or ta.get_origin(obj) is origin)
     )
 
 
-is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
 is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
 
 
 ##
 
 
+_UNION_ALIAS_ORIGINS = frozenset([
+    ta.get_origin(ta.Optional[int]),
+    *(
+        [
+            ta.get_origin(int | None),
+            ta.get_origin(getattr(ta, 'TypeVar')('_T') | None),
+        ] if sys.version_info >= (3, 10) else ()
+    ),
+])
+
+
+def is_union_alias(obj: ta.Any) -> bool:
+    return ta.get_origin(obj) in _UNION_ALIAS_ORIGINS
+
+
+#
+
+
 def is_optional_alias(spec: ta.Any) -> bool:
     return (
-        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
-        ta.get_origin(spec) is ta.Union and
+        is_union_alias(spec) and
         len(ta.get_args(spec)) == 2 and
         any(a in (None, type(None)) for a in ta.get_args(spec))
     )

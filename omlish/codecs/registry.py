@@ -27,6 +27,8 @@ class CodecRegistry:
     ) -> None:
         super().__init__()
 
+        if late_load_callbacks is not None:
+            late_load_callbacks = list(late_load_callbacks)
         self._late_load_callbacks = late_load_callbacks
 
         self._lock = threading.RLock()
@@ -36,8 +38,10 @@ class CodecRegistry:
 
     def _late_load(self) -> None:
         if self._late_load_callbacks:
-            for cb in self._late_load_callbacks:
+            while self._late_load_callbacks:
+                cb = self._late_load_callbacks[0]
                 cb(self)
+                self._late_load_callbacks.pop(0)
             self._late_load_callbacks = None
 
     @contextlib.contextmanager
