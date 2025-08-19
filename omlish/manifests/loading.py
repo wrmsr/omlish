@@ -324,29 +324,32 @@ class ManifestLoader:
                 only=only,
             )
 
-    #
+    ##
 
     ENTRY_POINT_GROUP: ta.ClassVar[str] = 'omlish.manifests'
 
     _discovered_packages: ta.ClassVar[ta.Optional[ta.Sequence[str]]] = None
 
     @classmethod
-    def discover_packages(cls) -> ta.Sequence[str]:
-        if (x := cls._discovered_packages) is not None:
-            return x
-
+    def _discover_packages_uncached(cls) -> ta.Sequence[str]:
         # This is a fat dep so do it late.
         from importlib import metadata as importlib_metadata  # noqa
 
-        x = [
+        return [
             ep.value
             for ep in importlib_metadata.entry_points(group=cls.ENTRY_POINT_GROUP)
         ]
 
+    @classmethod
+    def discover_packages(cls) -> ta.Sequence[str]:
+        if (x := cls._discovered_packages) is not None:
+            return x
+
+        x = cls._discover_packages_uncached()
         cls._discovered_packages = x
         return x
 
-    #
+    ##
 
     def _scan_package_root_dir_uncached(
             self,
