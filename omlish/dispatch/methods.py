@@ -101,12 +101,6 @@ class Method(ta.Generic[P, R]):
         return wrapper
 
     def register(self, impl: T, cls_set: frozenset[type] | None = None) -> T:
-        # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
-        # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
-        # singledispatches. So we add that just-in-time here.
-        if isinstance(impl, (staticmethod, classmethod)):
-            impl.__annotations__ = getattr(impl.__func__, '__annotations__', {})
-
         check.callable(impl)
         if impl not in self._impls:
             self._impls[impl] = cls_set  # type: ignore
