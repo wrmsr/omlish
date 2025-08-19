@@ -83,7 +83,7 @@ class TestCase(unittest.TestCase):
 
     @unittest.skip('metadata')
     def test_field_repr(self):
-        int_field = field(default=1, init=True, repr=False)
+        int_field = field(default=1, init=True, repr=False, doc='Docstring')
         int_field.name = "id"
         repr_output = repr(int_field)
         expected_output = (
@@ -92,6 +92,7 @@ class TestCase(unittest.TestCase):
             "init=True,repr=False,hash=None,"
             "compare=True,metadata=mappingproxy({}),"
             f"kw_only={MISSING!r},"
+            "doc='Docstring',"
             "_field_type=None)"
         )
 
@@ -3378,6 +3379,24 @@ class TestSlots(unittest.TestCase):
             z: int
 
         self.assertNotIn('__slots__', AnotherDerived.__dict__)
+
+    def test_slots_with_docs(self):
+        class Root:
+            __slots__ = {'x': 'x'}
+
+        @dataclass(slots=True)
+        class Base(Root):
+            y1: int = field(doc='y1')
+            y2: int
+
+        self.assertEqual(Base.__slots__, {'y1': 'y1', 'y2': None})
+
+        @dataclass(slots=True)
+        class Child(Base):
+            z1: int = field(doc='z1')
+            z2: int
+
+        self.assertEqual(Child.__slots__, {'z1': 'z1', 'z2': None})
 
     def test_cant_inherit_from_iterator_slots(self):
         class Root:

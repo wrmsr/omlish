@@ -105,7 +105,10 @@ def std_field_to_field_spec(
         compare=check.isinstance(f.compare, bool) if DEBUG else f.compare,
         metadata=f.metadata,
         kw_only=None if f.kw_only is dc.MISSING else (check.isinstance(f.kw_only, bool) if DEBUG else f.kw_only),
-        **(dict(doc=f.doc) if _IS_PY_3_14 else {}),  # type: ignore[attr-defined]  # noqa
+
+        **lang.opt_kw(
+            doc=extra_params.get('doc', f.doc if _IS_PY_3_14 else None),  # type: ignore[attr-defined]  # noqa
+        ),
 
         **lang.opt_kw(
             coerce=extra_params.get('coerce'),

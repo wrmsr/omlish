@@ -2,6 +2,7 @@ import dataclasses as dc
 import inspect
 import itertools
 import types
+import typing as ta
 
 from ..processing.base import Processor
 from ..processing.priority import ProcessorPriority
@@ -63,11 +64,41 @@ def _update_func_cell_for__class__(f, oldcls, newcls):
     return False
 
 
+def _create_slots(
+        defined_fields,
+        inherited_slots,
+        field_names,
+        weakref_slot,
+):
+    # The slots for our class.  Remove slots from our base classes.  Add '__weakref__' if weakref_slot was given, unless
+    # it is already present.
+    seen_docs = False
+    slots = {}
+    for slot in itertools.filterfalse(
+        inherited_slots.__contains__,
+        itertools.chain(
+            # gh-93521: '__weakref__' also needs to be filtered out if already present in inherited_slots
+            field_names, ('__weakref__',) if weakref_slot else (),
+        ),
+    ):
+        doc = getattr(defined_fields.get(slot), 'doc', None)
+        if doc is not None:
+            seen_docs = True
+        slots.update({slot: doc})
+
+    # We only return dict if there's at least one doc member, otherwise we return tuple, which is the old default
+    # format.
+    if seen_docs:
+        return slots
+    return tuple(slots)
+
+
 def add_slots(
         cls: type,
         *,
         is_frozen: bool,
         weakref_slot: bool,
+        defined_fields: ta.Mapping[str, ta.Any],
 ) -> type:
     # Need to create a new class, since we can't set __slots__ after a class has been created, and the @dataclass
     # decorator is called after the class is created.
@@ -83,17 +114,11 @@ def add_slots(
     # Make sure slots don't overlap with those in base classes.
     inherited_slots = set(itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1])))
 
-    # The slots for our class.  Remove slots from our base classes.  Add '__weakref__' if weakref_slot was given, unless
-    # it is already present.
-    cls_dict['__slots__'] = tuple(
-        itertools.filterfalse(
-            inherited_slots.__contains__,
-            itertools.chain(
-                field_names,
-                # gh-93521: '__weakref__' also needs to be filtered out if already present in inherited_slots
-                ('__weakref__',) if weakref_slot else (),
-            ),
-        ),
+    cls_dict['__slots__'] = _create_slots(
+        defined_fields,
+        inherited_slots,
+        field_names,
+        weakref_slot,
     )
 
     for field_name in field_names:
@@ -156,4 +181,5 @@ class SlotsProcessor(Processor):
             cls,
             is_frozen=self._ctx.cs.frozen,
             weakref_slot=self._ctx.cs.weakref_slot,
+            defined_fields=self._ctx.cs.fields_by_name,
         )
