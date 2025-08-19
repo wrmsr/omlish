@@ -1,5 +1,6 @@
 import collections
 import dataclasses as dc
+import sys
 import typing as ta
 
 from ..... import lang
@@ -13,6 +14,9 @@ from .metadata import extra_field_params
 ##
 
 
+_IS_PY_3_14 = sys.version_info >= (3, 14)
+
+
 def field(
         default=dc.MISSING,
         *,
@@ -23,6 +27,7 @@ def field(
         compare=True,
         metadata=None,
         kw_only=dc.MISSING,
+        doc=None,
 
         coerce: bool | CoerceFn | None = None,
         validate: ValidateFn | None = None,  # noqa
@@ -40,6 +45,7 @@ def field(
             override=override,
             repr_fn=repr_fn,
             repr_priority=repr_priority,
+            doc=doc,
         ),
     })
 
@@ -58,4 +64,5 @@ def field(
         compare=compare,
         metadata=md,
         kw_only=kw_only,
+        **(dict(doc=doc) if _IS_PY_3_14 else {}),
     )

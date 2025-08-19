@@ -65,7 +65,7 @@ class FieldSpec(lang.Final):
 
     kw_only: bool | None = None
 
-    # doc: ta.Any = None
+    doc: ta.Any = None
 
     ##
     # ext
