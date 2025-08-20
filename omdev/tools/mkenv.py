@@ -121,7 +121,7 @@ def _main() -> None:
 
 
 # @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': ['mkenv'],
     'module': __name__,
 }}

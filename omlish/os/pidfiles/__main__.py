@@ -1,5 +1,5 @@
 # @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': 'pidfiles',
     'module': __name__,
 }}

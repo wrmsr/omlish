@@ -115,7 +115,7 @@ def _main() -> None:
 
 
 # @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': 'slowcat',
     'module': __name__,
 }}

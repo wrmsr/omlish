@@ -1,5 +1,5 @@
 # @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': ['jmespath', 'jp'],
     'module': __name__,
 }}

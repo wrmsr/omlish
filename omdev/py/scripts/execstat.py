@@ -87,7 +87,7 @@ def _run(
 
 
 # @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': 'py/execstat',
     'module': __name__,
 }}
