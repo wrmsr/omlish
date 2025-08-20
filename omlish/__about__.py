@@ -65,7 +65,7 @@ class Project(ProjectBase):
 
         'formats': [
             'orjson ~= 3.11',
-            'ujson ~= 5.10',
+            'ujson ~= 5.11',
 
             'pyyaml ~= 6.0',
 

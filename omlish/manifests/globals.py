@@ -1,10 +1,14 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP006 UP045
 # @omlish-lite
+import os
 import threading
 import typing as ta
 
 from ..lite.marshal import unmarshal_obj
 from .loading import ManifestLoader
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -28,17 +32,20 @@ class GlobalManifestLoader:
         if (inst := cls._instance) is None:
             with cls._lock:
                 if (inst := cls._instance) is None:
-                    inst = cls._instance = ManifestLoader(**cls.default_kwargs())
+                    inst = cls._instance = ManifestLoader(cls.default_config())
 
         return inst
 
     @classmethod
-    def initialize(cls, **kwargs: ta.Any) -> ManifestLoader:
+    def initialize(cls, config: ta.Optional[ManifestLoader.Config] = None) -> ManifestLoader:
         with cls._lock:
             if cls._instance is not None:
                 raise Exception(f'{cls.__name__} already initialized')
 
-            inst = cls._instance = ManifestLoader(**kwargs)
+            if config is None:
+                config = cls.default_config()
+
+            inst = cls._instance = ManifestLoader(config)
 
         return inst
 
@@ -49,8 +56,11 @@ class GlobalManifestLoader:
         return unmarshal_obj(kwargs, obj_cls)
 
     @classmethod
-    def default_kwargs(cls) -> ta.Mapping[str, ta.Any]:
-        return dict(
+    def default_config(cls) -> ManifestLoader.Config:
+        return ManifestLoader.Config(
+            discover_packages=True,
+            discover_packages_fallback_scan_root_dirs=[os.getcwd()],
+
             value_instantiator=cls.default_value_instantiator,
         )
 
@@ -59,10 +69,35 @@ class GlobalManifestLoader:
     @classmethod
     def load(
             cls,
-            *pkg_names: str,
-            only: ta.Optional[ta.Iterable[type]] = None,
+            *,
+            packages: ta.Optional[ta.Collection[str]] = None,
+            classes: ta.Optional[ta.Collection[type]] = None,
     ) -> ta.Sequence[ManifestLoader.LoadedManifest]:
         return cls.instance().load(
-            *pkg_names,
-            only=only,
+            packages=packages,
+            classes=classes,
+        )
+
+    @classmethod
+    def load_values(
+            cls,
+            *,
+            packages: ta.Optional[ta.Collection[str]] = None,
+            classes: ta.Optional[ta.Collection[type]] = None,
+    ) -> ta.Sequence[ta.Any]:
+        return cls.instance().load_values(
+            packages=packages,
+            classes=classes,
+        )
+
+    @classmethod
+    def load_values_of(
+            cls,
+            clz: ta.Type[T],
+            *,
+            packages: ta.Optional[ta.Collection[str]] = None,
+    ) -> ta.Sequence[T]:
+        return cls.instance().load_values_of(
+            clz,
+            packages=packages,
         )

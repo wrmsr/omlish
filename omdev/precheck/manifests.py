@@ -23,6 +23,6 @@ class ManifestsPrecheck(Precheck['ManifestsPrecheck.Config']):
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation]:
         for src_root in sorted(self._context.src_roots):
             try:
-                GlobalManifestLoader.load(src_root)
+                GlobalManifestLoader.load(packages=[src_root])
             except Exception as e:  # noqa
                 yield Precheck.Violation(self, f'Error loading manifest for {src_root}: {e!r}')

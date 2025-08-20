@@ -5,7 +5,6 @@ TODO:
 """
 import abc
 import dataclasses as dc
-import os
 import typing as ta
 
 from omlish import check
@@ -26,10 +25,7 @@ T = ta.TypeVar('T')
 
 
 def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
-    ldr = GlobalManifestLoader.instance()
-    pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())  # FIXME
-    mfs = ldr.load(*pkgs, only=[cls])
-    return [mf.value() for mf in mfs]
+    return GlobalManifestLoader.load_values_of(cls)
 
 
 ##

@@ -102,6 +102,9 @@ class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
 
     See also:
     https://github.com/python-trio/trio/blob/efd785a20721707b52a6e2289a65e25722b30c96/src/trio/_core/_ki.py#L81
+
+    TODO:
+     - audit for freethreaded
     """
 
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:

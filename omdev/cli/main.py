@@ -6,7 +6,6 @@ TODO:
 """
 import argparse
 import dataclasses as dc
-import os
 import runpy
 import sys
 import typing as ta
@@ -184,26 +183,24 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 
 
 def _build_cmd_set(args: ta.Any) -> CliCmdSet:
-    ldr = ManifestLoader(
-        **ManifestLoader.kwargs_from_entry_point(
-            globals(),
-            **GlobalManifestLoader.default_kwargs(),
-        ),
-    )
+    ldr_cfg = GlobalManifestLoader.default_config()
 
-    #
+    ldr_cfg |= ManifestLoader.config_from_entry_point(globals())
 
-    pkgs = ldr.scan_or_discover_packages(
-        specified_root_dirs=args.cli_pkg_root,
-        fallback_root_dir=os.getcwd(),
-    )
+    if args.cli_pkg_root:
+        ldr_cfg |= ManifestLoader.Config(
+            package_scan_root_dirs=args.cli_pkg_root,
+            discover_packages=False,
+        )
+
+    ldr = ManifestLoader(ldr_cfg)
 
     #
 
     lst: list[CliCmd] = []
 
-    for m in ldr.load(*pkgs, only=[CliModule]):
-        lst.append(check.isinstance(m.value(), CliModule))
+    for mv in ldr.load_values_of(CliModule):
+        lst.append(check.isinstance(mv, CliModule))
 
     lst.extend(_CLI_FUNCS)
 

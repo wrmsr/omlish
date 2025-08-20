@@ -20,7 +20,7 @@ matplotlib==3.10.5
 torch==2.8.0
 torchvision==0.23.0
 
-diffusers==0.35.0
+diffusers==0.35.1
 
 scipy==1.16.1
 scikit-learn==1.7.1
@@ -51,7 +51,7 @@ tree-sitter-python==0.23.6
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.403
-basedpyright==1.31.2
+basedpyright==1.31.3
 
 blobfile==3.0.0
 

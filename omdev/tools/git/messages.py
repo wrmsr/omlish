@@ -1,5 +1,4 @@
 import abc
-import os
 import typing as ta
 
 from omlish import cached
@@ -54,10 +53,7 @@ class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGenerat
 
 @cached.function
 def load_message_generator_manifests() -> ta.Sequence[GitMessageGeneratorManifest]:
-    ldr = manifest_globals.GlobalManifestLoader.instance()
-    pkgs = ldr.scan_or_discover_packages(fallback_root_dir=os.getcwd())  # FIXME
-    mfs = ldr.load(*pkgs, only=[GitMessageGeneratorManifest])
-    return [mf.value() for mf in mfs]
+    return manifest_globals.GlobalManifestLoader.load_values_of(GitMessageGeneratorManifest)
 
 
 @cached.function
