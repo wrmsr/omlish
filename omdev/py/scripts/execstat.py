@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ruff: noqa: UP045
+# @omlish-lite
 # @omlish-script
 import argparse
 import inspect
@@ -8,6 +10,7 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import typing as ta
 
 
 ##
@@ -16,7 +19,7 @@ import tempfile
 def _run(
         src: str,
         *,
-        setup: str | None = None,
+        setup: 'ta.Optional[str]' = None,
         time: bool = False,
         rss: bool = False,
         modules: bool = False,
@@ -33,8 +36,8 @@ def _run(
     if modules:
         import sys  # noqa
 
-        def get_modules() -> set[str]:
-            return set(sys.modules)
+        def get_modules() -> 'ta.Sequence[str]':
+            return list(sys.modules)
 
     #
 
@@ -51,7 +54,7 @@ def _run(
         start_rss = get_rss()  # noqa
 
     if modules:
-        start_modules = get_modules()  # noqa
+        start_modules = set(get_modules())  # noqa
 
     if time:
         start_time = get_time()  # noqa
@@ -76,7 +79,7 @@ def _run(
     return {
         **({'time': (end_time - start_time)} if time else {}),  # noqa
         **({'rss': (end_rss - start_rss)} if rss else {}),  # noqa
-        **({'modules': sorted(end_modules - start_modules)} if modules else {}),  # noqa
+        **({'modules': [m for m in end_modules if m not in start_modules]} if modules else {}),  # noqa
     }
 
 
@@ -99,6 +102,7 @@ def _main() -> None:
     parser.add_argument('-t', '--time', action='store_true')
     parser.add_argument('-r', '--rss', action='store_true')
     parser.add_argument('-m', '--modules', action='store_true')
+    parser.add_argument('-M', '--modules-ordered', action='store_true')
 
     parser.add_argument('-n', '--num-runs', type=int, default=1)
 
@@ -136,7 +140,7 @@ def _main() -> None:
         if i == 0:
             run_kw.update(
                 rss=bool(args.rss),
-                modules=bool(args.modules),
+                modules=bool(args.modules) or bool(args.modules),
             )
 
         payload = '\n'.join([
@@ -183,7 +187,11 @@ def _main() -> None:
 
     if args.modules:
         out.update({
-            'modules': results[0]['modules'],
+            'modules': sorted(results[0]['modules']),
+        })
+    if args.modules_ordered:
+        out.update({
+            'modules_ordered': results[0]['modules'],
         })
 
     print(json.dumps(out, indent=2))

@@ -79,15 +79,15 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../../../omlish/configs/formats.py
-ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
-
 # ../../../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
 # ../../../threadworkers.py
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
+
+# ../../../../omlish/configs/formats.py
+ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 
 ########################################
@@ -1731,6 +1731,201 @@ check = Checks()
 
 
 ########################################
+# ../../../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__enter__', '__exit__'):
+            for b in cls.__bases__:
+                if b is ExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(ExitStacked, a):
+                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
+
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
+        """
+        Overridable wrapper around __enter__ which deliberately does not have access to an _exit_stack yet. Intended for
+        things like wrapping __enter__ in a lock.
+        """
+
+        yield
+
+    @ta.final
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        """
+        Final because any contexts entered during this init must be exited if any exception is thrown, and user
+        overriding would likely interfere with that. Override `_enter_contexts` for such init.
+        """
+
+        with self._exit_stacked_init_wrapper():
+            if self._exit_stack is not None:
+                raise RuntimeError
+            es = self._exit_stack = contextlib.ExitStack()
+            es.__enter__()
+            try:
+                self._enter_contexts()
+            except Exception:  # noqa
+                es.__exit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        try:
+            self._exit_contexts()
+        except Exception:  # noqa
+            es.__exit__(*sys.exc_info())
+            raise
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _enter_contexts(self) -> None:
+        pass
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return es.enter_context(cm)
+
+
+class AsyncExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__aenter__', '__aexit__'):
+            for b in cls.__bases__:
+                if b is AsyncExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(AsyncExitStacked, a):
+                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
+
+    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
+
+    @contextlib.asynccontextmanager
+    async def _async_exit_stacked_init_wrapper(self) -> ta.AsyncGenerator[None, None]:
+        yield
+
+    @ta.final
+    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
+        async with self._async_exit_stacked_init_wrapper():
+            if self._exit_stack is not None:
+                raise RuntimeError
+            es = self._exit_stack = contextlib.AsyncExitStack()
+            await es.__aenter__()
+            try:
+                await self._async_enter_contexts()
+            except Exception:  # noqa
+                await es.__aexit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        try:
+            await self._async_exit_contexts()
+        except Exception:  # noqa
+            await es.__aexit__(*sys.exc_info())
+            raise
+        return await es.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def _async_enter_contexts(self) -> None:
+        pass
+
+    async def _async_exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return es.enter_context(cm)
+
+    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return await es.enter_async_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> ta.Generator[ta.Callable, None, None]:
+    if args or kwargs:
+        fn = functools.partial(fn, *args, **kwargs)
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.asynccontextmanager
+async def adefer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
+    try:
+        yield fn
+    finally:
+        await fn
+
+
+##
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
+
+
+##
+
+
+class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
+    def __init__(self, thing):
+        self.thing = thing
+
+    async def __aenter__(self):
+        return self.thing
+
+    async def __aexit__(self, *exc_info):
+        await self.thing.aclose()
+
+
+########################################
 # ../../../../../omlish/lite/json.py
 
 
@@ -2728,6 +2923,193 @@ class JournalctlToAwsCursor:
 
 
 ########################################
+# ../../../../threadworkers.py
+"""
+FIXME:
+ - group is racy af - meditate on has_started, etc
+
+TODO:
+ - overhaul stop lol
+ - group -> 'context'? :|
+  - shared stop_event?
+"""
+
+
+##
+
+
+class ThreadWorker(ExitStacked, abc.ABC):
+    def __init__(
+            self,
+            *,
+            stop_event: ta.Optional[threading.Event] = None,
+            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
+    ) -> None:
+        super().__init__()
+
+        if stop_event is None:
+            stop_event = threading.Event()
+        self._stop_event = stop_event
+
+        self._lock = threading.RLock()
+        self._thread: ta.Optional[threading.Thread] = None
+        self._last_heartbeat: ta.Optional[float] = None
+
+        for g in worker_groups or []:
+            g.add(self)
+
+    #
+
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
+        with self._lock:
+            yield
+
+    #
+
+    def should_stop(self) -> bool:
+        return self._stop_event.is_set()
+
+    class Stopping(Exception):  # noqa
+        pass
+
+    #
+
+    @property
+    def last_heartbeat(self) -> ta.Optional[float]:
+        return self._last_heartbeat
+
+    def _heartbeat(
+            self,
+            *,
+            no_stop_check: bool = False,
+    ) -> None:
+        self._last_heartbeat = time.time()
+
+        if not no_stop_check and self.should_stop():
+            log.info('Stopping: %s', self)
+            raise ThreadWorker.Stopping
+
+    #
+
+    def has_started(self) -> bool:
+        return self._thread is not None
+
+    def is_alive(self) -> bool:
+        return (thr := self._thread) is not None and thr.is_alive()
+
+    def start(self) -> None:
+        with self._lock:
+            if self._thread is not None:
+                raise RuntimeError('Thread already started: %r', self)
+
+            thr = threading.Thread(target=self.__thread_main)
+            self._thread = thr
+            thr.start()
+
+    #
+
+    def __thread_main(self) -> None:
+        try:
+            self._run()
+        except ThreadWorker.Stopping:
+            log.exception('Thread worker stopped: %r', self)
+        except Exception:  # noqa
+            log.exception('Error in worker thread: %r', self)
+            raise
+
+    @abc.abstractmethod
+    def _run(self) -> None:
+        raise NotImplementedError
+
+    #
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+    def join(
+            self,
+            timeout: ta.Optional[float] = None,
+            *,
+            unless_not_started: bool = False,
+    ) -> None:
+        with self._lock:
+            if self._thread is None:
+                if not unless_not_started:
+                    raise RuntimeError('Thread not started: %r', self)
+                return
+            self._thread.join(timeout)
+
+
+##
+
+
+class ThreadWorkerGroup:
+    @dc.dataclass()
+    class _State:
+        worker: ThreadWorker
+
+        last_heartbeat: ta.Optional[float] = None
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._lock = threading.RLock()
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
+        self._last_heartbeat_check: ta.Optional[float] = None
+
+    #
+
+    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
+        with self._lock:
+            for w in workers:
+                if w in self._states:
+                    raise KeyError(w)
+                self._states[w] = ThreadWorkerGroup._State(w)
+
+        return self
+
+    #
+
+    def start_all(self) -> None:
+        thrs = list(self._states)
+        with self._lock:
+            for thr in thrs:
+                if not thr.has_started():
+                    thr.start()
+
+    def stop_all(self) -> None:
+        for w in reversed(list(self._states)):
+            if w.has_started():
+                w.stop()
+
+    def join_all(self, timeout: ta.Optional[float] = None) -> None:
+        for w in reversed(list(self._states)):
+            if w.has_started():
+                w.join(timeout, unless_not_started=True)
+
+    #
+
+    def get_dead(self) -> ta.List[ThreadWorker]:
+        with self._lock:
+            return [thr for thr in self._states if not thr.is_alive()]
+
+    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
+        with self._lock:
+            dct: ta.Dict[ThreadWorker, float] = {}
+            for thr, st in self._states.items():
+                if not thr.has_started():
+                    continue
+                hb = thr.last_heartbeat
+                if hb is None:
+                    hb = time.time()
+                st.last_heartbeat = hb
+                dct[st.worker] = time.time() - hb
+            self._last_heartbeat_check = time.time()
+        return dct
+
+
+########################################
 # ../../../../../omlish/configs/formats.py
 """
 Notes:
@@ -3246,196 +3628,6 @@ class IncrementalWriteBuffer:
             self._pos += t
 
         return t
-
-
-########################################
-# ../../../../../omlish/lite/contextmanagers.py
-
-
-##
-
-
-class ExitStacked:
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        for a in ('__enter__', '__exit__'):
-            for b in cls.__bases__:
-                if b is ExitStacked:
-                    continue
-                try:
-                    fn = getattr(b, a)
-                except AttributeError:
-                    pass
-                else:
-                    if fn is not getattr(ExitStacked, a):
-                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
-
-    _exit_stack: ta.Optional[contextlib.ExitStack] = None
-
-    @contextlib.contextmanager
-    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
-        """
-        Overridable wrapper around __enter__ which deliberately does not have access to an _exit_stack yet. Intended for
-        things like wrapping __enter__ in a lock.
-        """
-
-        yield
-
-    @ta.final
-    def __enter__(self: ExitStackedT) -> ExitStackedT:
-        """
-        Final because any contexts entered during this init must be exited if any exception is thrown, and user
-        overriding would likely interfere with that. Override `_enter_contexts` for such init.
-        """
-
-        with self._exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.ExitStack()
-            es.__enter__()
-            try:
-                self._enter_contexts()
-            except Exception:  # noqa
-                es.__exit__(*sys.exc_info())
-                raise
-            return self
-
-    @ta.final
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        try:
-            self._exit_contexts()
-        except Exception:  # noqa
-            es.__exit__(*sys.exc_info())
-            raise
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _enter_contexts(self) -> None:
-        pass
-
-    def _exit_contexts(self) -> None:
-        pass
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return es.enter_context(cm)
-
-
-class AsyncExitStacked:
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        for a in ('__aenter__', '__aexit__'):
-            for b in cls.__bases__:
-                if b is AsyncExitStacked:
-                    continue
-                try:
-                    fn = getattr(b, a)
-                except AttributeError:
-                    pass
-                else:
-                    if fn is not getattr(AsyncExitStacked, a):
-                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
-
-    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
-
-    @contextlib.asynccontextmanager
-    async def _async_exit_stacked_init_wrapper(self) -> ta.AsyncGenerator[None, None]:
-        yield
-
-    @ta.final
-    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
-        async with self._async_exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.AsyncExitStack()
-            await es.__aenter__()
-            try:
-                await self._async_enter_contexts()
-            except Exception:  # noqa
-                await es.__aexit__(*sys.exc_info())
-                raise
-            return self
-
-    @ta.final
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        try:
-            await self._async_exit_contexts()
-        except Exception:  # noqa
-            await es.__aexit__(*sys.exc_info())
-            raise
-        return await es.__aexit__(exc_type, exc_val, exc_tb)
-
-    async def _async_enter_contexts(self) -> None:
-        pass
-
-    async def _async_exit_contexts(self) -> None:
-        pass
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return es.enter_context(cm)
-
-    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return await es.enter_async_context(cm)
-
-
-##
-
-
-@contextlib.contextmanager
-def defer(fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> ta.Generator[ta.Callable, None, None]:
-    if args or kwargs:
-        fn = functools.partial(fn, *args, **kwargs)
-    try:
-        yield fn
-    finally:
-        fn()
-
-
-@contextlib.asynccontextmanager
-async def adefer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
-    try:
-        yield fn
-    finally:
-        await fn
-
-
-##
-
-
-@contextlib.contextmanager
-def attr_setting(obj, attr, val, *, default=None):  # noqa
-    not_set = object()
-    orig = getattr(obj, attr, not_set)
-    try:
-        setattr(obj, attr, val)
-        if orig is not not_set:
-            yield orig
-        else:
-            yield default
-    finally:
-        if orig is not_set:
-            delattr(obj, attr)
-        else:
-            setattr(obj, attr, orig)
-
-
-##
-
-
-class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
-    def __init__(self, thing):
-        self.thing = thing
-
-    async def __aenter__(self):
-        return self.thing
-
-    async def __aexit__(self, *exc_info):
-        await self.thing.aclose()
 
 
 ########################################
@@ -4418,193 +4610,6 @@ class JournalctlMessageBuilder:
         for line in self._buf.feed(data):
             ret.append(self._make_message(check.isinstance(line, bytes)))
         return ret
-
-
-########################################
-# ../../../../threadworkers.py
-"""
-FIXME:
- - group is racy af - meditate on has_started, etc
-
-TODO:
- - overhaul stop lol
- - group -> 'context'? :|
-  - shared stop_event?
-"""
-
-
-##
-
-
-class ThreadWorker(ExitStacked, abc.ABC):
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-        self._lock = threading.RLock()
-        self._thread: ta.Optional[threading.Thread] = None
-        self._last_heartbeat: ta.Optional[float] = None
-
-        for g in worker_groups or []:
-            g.add(self)
-
-    #
-
-    @contextlib.contextmanager
-    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
-        with self._lock:
-            yield
-
-    #
-
-    def should_stop(self) -> bool:
-        return self._stop_event.is_set()
-
-    class Stopping(Exception):  # noqa
-        pass
-
-    #
-
-    @property
-    def last_heartbeat(self) -> ta.Optional[float]:
-        return self._last_heartbeat
-
-    def _heartbeat(
-            self,
-            *,
-            no_stop_check: bool = False,
-    ) -> None:
-        self._last_heartbeat = time.time()
-
-        if not no_stop_check and self.should_stop():
-            log.info('Stopping: %s', self)
-            raise ThreadWorker.Stopping
-
-    #
-
-    def has_started(self) -> bool:
-        return self._thread is not None
-
-    def is_alive(self) -> bool:
-        return (thr := self._thread) is not None and thr.is_alive()
-
-    def start(self) -> None:
-        with self._lock:
-            if self._thread is not None:
-                raise RuntimeError('Thread already started: %r', self)
-
-            thr = threading.Thread(target=self.__thread_main)
-            self._thread = thr
-            thr.start()
-
-    #
-
-    def __thread_main(self) -> None:
-        try:
-            self._run()
-        except ThreadWorker.Stopping:
-            log.exception('Thread worker stopped: %r', self)
-        except Exception:  # noqa
-            log.exception('Error in worker thread: %r', self)
-            raise
-
-    @abc.abstractmethod
-    def _run(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    def stop(self) -> None:
-        self._stop_event.set()
-
-    def join(
-            self,
-            timeout: ta.Optional[float] = None,
-            *,
-            unless_not_started: bool = False,
-    ) -> None:
-        with self._lock:
-            if self._thread is None:
-                if not unless_not_started:
-                    raise RuntimeError('Thread not started: %r', self)
-                return
-            self._thread.join(timeout)
-
-
-##
-
-
-class ThreadWorkerGroup:
-    @dc.dataclass()
-    class _State:
-        worker: ThreadWorker
-
-        last_heartbeat: ta.Optional[float] = None
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._lock = threading.RLock()
-        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
-        self._last_heartbeat_check: ta.Optional[float] = None
-
-    #
-
-    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
-        with self._lock:
-            for w in workers:
-                if w in self._states:
-                    raise KeyError(w)
-                self._states[w] = ThreadWorkerGroup._State(w)
-
-        return self
-
-    #
-
-    def start_all(self) -> None:
-        thrs = list(self._states)
-        with self._lock:
-            for thr in thrs:
-                if not thr.has_started():
-                    thr.start()
-
-    def stop_all(self) -> None:
-        for w in reversed(list(self._states)):
-            if w.has_started():
-                w.stop()
-
-    def join_all(self, timeout: ta.Optional[float] = None) -> None:
-        for w in reversed(list(self._states)):
-            if w.has_started():
-                w.join(timeout, unless_not_started=True)
-
-    #
-
-    def get_dead(self) -> ta.List[ThreadWorker]:
-        with self._lock:
-            return [thr for thr in self._states if not thr.is_alive()]
-
-    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
-        with self._lock:
-            dct: ta.Dict[ThreadWorker, float] = {}
-            for thr, st in self._states.items():
-                if not thr.has_started():
-                    continue
-                hb = thr.last_heartbeat
-                if hb is None:
-                    hb = time.time()
-                st.last_heartbeat = hb
-                dct[st.worker] = time.time() - hb
-            self._last_heartbeat_check = time.time()
-        return dct
 
 
 ########################################

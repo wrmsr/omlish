@@ -40,7 +40,7 @@ class GlobalManifestLoader:
     def initialize(cls, config: ta.Optional[ManifestLoader.Config] = None) -> ManifestLoader:
         with cls._lock:
             if cls._instance is not None:
-                raise Exception(f'{cls.__name__} already initialized')
+                raise RuntimeError(f'{cls.__name__} already initialized')
 
             if config is None:
                 config = cls.default_config()

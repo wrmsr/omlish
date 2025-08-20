@@ -99,6 +99,10 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../omlish/lite/contextmanagers.py
+ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
+AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
+
 # ../../omlish/lite/maybes.py
 U = ta.TypeVar('U')
 
@@ -120,10 +124,6 @@ AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
 # ../../omlish/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
-
-# ../../omlish/lite/contextmanagers.py
-ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
-AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
 # ../../omlish/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]
@@ -1024,6 +1024,201 @@ class Checks:
 
 
 check = Checks()
+
+
+########################################
+# ../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__enter__', '__exit__'):
+            for b in cls.__bases__:
+                if b is ExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(ExitStacked, a):
+                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
+
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
+        """
+        Overridable wrapper around __enter__ which deliberately does not have access to an _exit_stack yet. Intended for
+        things like wrapping __enter__ in a lock.
+        """
+
+        yield
+
+    @ta.final
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        """
+        Final because any contexts entered during this init must be exited if any exception is thrown, and user
+        overriding would likely interfere with that. Override `_enter_contexts` for such init.
+        """
+
+        with self._exit_stacked_init_wrapper():
+            if self._exit_stack is not None:
+                raise RuntimeError
+            es = self._exit_stack = contextlib.ExitStack()
+            es.__enter__()
+            try:
+                self._enter_contexts()
+            except Exception:  # noqa
+                es.__exit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        try:
+            self._exit_contexts()
+        except Exception:  # noqa
+            es.__exit__(*sys.exc_info())
+            raise
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _enter_contexts(self) -> None:
+        pass
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return es.enter_context(cm)
+
+
+class AsyncExitStacked:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in ('__aenter__', '__aexit__'):
+            for b in cls.__bases__:
+                if b is AsyncExitStacked:
+                    continue
+                try:
+                    fn = getattr(b, a)
+                except AttributeError:
+                    pass
+                else:
+                    if fn is not getattr(AsyncExitStacked, a):
+                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
+
+    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
+
+    @contextlib.asynccontextmanager
+    async def _async_exit_stacked_init_wrapper(self) -> ta.AsyncGenerator[None, None]:
+        yield
+
+    @ta.final
+    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
+        async with self._async_exit_stacked_init_wrapper():
+            if self._exit_stack is not None:
+                raise RuntimeError
+            es = self._exit_stack = contextlib.AsyncExitStack()
+            await es.__aenter__()
+            try:
+                await self._async_enter_contexts()
+            except Exception:  # noqa
+                await es.__aexit__(*sys.exc_info())
+                raise
+            return self
+
+    @ta.final
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        try:
+            await self._async_exit_contexts()
+        except Exception:  # noqa
+            await es.__aexit__(*sys.exc_info())
+            raise
+        return await es.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def _async_enter_contexts(self) -> None:
+        pass
+
+    async def _async_exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return es.enter_context(cm)
+
+    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
+        return await es.enter_async_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> ta.Generator[ta.Callable, None, None]:
+    if args or kwargs:
+        fn = functools.partial(fn, *args, **kwargs)
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.asynccontextmanager
+async def adefer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
+    try:
+        yield fn
+    finally:
+        await fn
+
+
+##
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
+
+
+##
+
+
+class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
+    def __init__(self, thing):
+        self.thing = thing
+
+    async def __aenter__(self):
+        return self.thing
+
+    async def __aexit__(self, *exc_info):
+        await self.thing.aclose()
 
 
 ########################################
@@ -2721,6 +2916,204 @@ class OciDataRefInfo:
 
 
 ########################################
+# ../../oci/pack/unpacking.py
+
+
+##
+
+
+class OciLayerUnpacker(ExitStacked):
+    def __init__(
+            self,
+            input_files: ta.Sequence[ta.Union[str, tarfile.TarFile]],
+            output_file_path: str,
+    ) -> None:
+        super().__init__()
+
+        self._input_files = list(input_files)
+        self._output_file_path = output_file_path
+
+    #
+
+    @contextlib.contextmanager
+    def _open_input_file(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Iterator[tarfile.TarFile]:
+        if isinstance(input_file, tarfile.TarFile):
+            yield input_file
+
+        elif isinstance(input_file, str):
+            with tarfile.open(input_file) as tar_file:
+                yield tar_file
+
+        else:
+            raise TypeError(input_file)
+
+    #
+
+    class _Entry(ta.NamedTuple):
+        file: ta.Union[str, tarfile.TarFile]
+        info: tarfile.TarInfo
+
+    def _build_input_file_sorted_entries(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Sequence[_Entry]:
+        dct: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        with self._open_input_file(input_file) as input_tar_file:
+            for info in input_tar_file.getmembers():
+                check.not_in(info.name, dct)
+                dct[info.name] = self._Entry(
+                    file=input_file,
+                    info=info,
+                )
+
+        return sorted(dct.values(), key=lambda entry: entry.info.name)
+
+    @cached_nullary
+    def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
+        root: dict = {}
+
+        def find_dir(dir_name: str) -> dict:  # noqa
+            if dir_name:
+                dir_parts = dir_name.split('/')
+            else:
+                dir_parts = []
+
+            cur = root  # noqa
+            for dir_part in dir_parts:
+                cur = cur[dir_part]  # noqa
+
+            return check.isinstance(cur, dict)
+
+        #
+
+        for input_file in self._input_files:
+            sorted_entries = self._build_input_file_sorted_entries(input_file)
+
+            wh_names = set()
+            wh_opaques = set()
+
+            #
+
+            for entry in sorted_entries:
+                info = entry.info
+                name = check.non_empty_str(info.name)
+                base_name = os.path.basename(name)
+                dir_name = os.path.dirname(name)
+
+                if base_name == '.wh..wh..opq':
+                    wh_opaques.add(dir_name)
+                    continue
+
+                if base_name.startswith('.wh.'):
+                    wh_base_name = os.path.basename(base_name[4:])
+                    wh_name = os.path.join(dir_name, wh_base_name)
+                    wh_names.add(wh_name)
+                    continue
+
+                cur = find_dir(dir_name)
+
+                if info.type == tarfile.DIRTYPE:
+                    try:
+                        ex = cur[base_name]
+                    except KeyError:
+                        cur[base_name] = {'': entry}
+                    else:
+                        ex[''] = entry
+
+                else:
+                    cur[base_name] = entry
+
+            #
+
+            for wh_name in reversed(sorted(wh_names)):  # noqa
+                wh_dir_name = os.path.dirname(wh_name)
+                wh_base_name = os.path.basename(wh_name)
+
+                cur = find_dir(wh_dir_name)
+                rm = cur[wh_base_name]
+
+                if isinstance(rm, dict):
+                    # Whiteouts wipe out whole directory:
+                    # https://github.com/containerd/containerd/blob/59c8cf6ea5f4175ad512914dd5ce554942bf144f/pkg/archive/tar_test.go#L648
+                    # check.equal(set(rm), '')
+                    del cur[wh_base_name]
+
+                elif isinstance(rm, self._Entry):
+                    del cur[wh_base_name]
+
+                else:
+                    raise TypeError(rm)
+
+            if wh_opaques:
+                raise NotImplementedError
+
+        #
+
+        out: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        def rec(cur):  # noqa
+            for _, child in sorted(cur.items(), key=lambda t: t[0]):
+                if isinstance(child, dict):
+                    rec(child)
+
+                elif isinstance(child, self._Entry):
+                    check.not_in(child.info.name, out)
+                    out[child.info.name] = child
+
+                else:
+                    raise TypeError(child)
+
+        rec(root)
+
+        return out
+
+    #
+
+    @cached_nullary
+    def _output_tar_file(self) -> tarfile.TarFile:
+        return self._enter_context(tarfile.open(self._output_file_path, 'w'))
+
+    #
+
+    def _add_unpacked_entry(
+            self,
+            input_tar_file: tarfile.TarFile,
+            info: tarfile.TarInfo,
+    ) -> None:
+        base_name = os.path.basename(info.name)
+        check.state(not base_name.startswith('.wh.'))
+
+        if info.type in tarfile.REGULAR_TYPES:
+            with check.not_none(input_tar_file.extractfile(info)) as f:
+                self._output_tar_file().addfile(info, f)
+
+        else:
+            self._output_tar_file().addfile(info)
+
+    def _unpack_file(
+            self,
+            input_file: ta.Union[str, tarfile.TarFile],
+    ) -> None:
+        entries_by_name = self._entries_by_name()
+
+        with self._open_input_file(input_file) as input_tar_file:
+            info: tarfile.TarInfo
+            for info in input_tar_file.getmembers():
+                try:
+                    entry = entries_by_name[info.name]
+                except KeyError:
+                    continue
+
+                if entry.file != input_file:
+                    continue
+
+                self._add_unpacked_entry(input_tar_file, info)
+
+    @cached_nullary
+    def write(self) -> None:
+        for input_file in self._input_files:
+            self._unpack_file(input_file)
+
+
+########################################
 # ../../../omlish/argparse/cli.py
 """
 FIXME:
@@ -3490,196 +3883,6 @@ class HttpRequestParser:
 
     def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
         return self._run_read_line_coro(self.coro_parse(), read_line)
-
-
-########################################
-# ../../../omlish/lite/contextmanagers.py
-
-
-##
-
-
-class ExitStacked:
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        for a in ('__enter__', '__exit__'):
-            for b in cls.__bases__:
-                if b is ExitStacked:
-                    continue
-                try:
-                    fn = getattr(b, a)
-                except AttributeError:
-                    pass
-                else:
-                    if fn is not getattr(ExitStacked, a):
-                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
-
-    _exit_stack: ta.Optional[contextlib.ExitStack] = None
-
-    @contextlib.contextmanager
-    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
-        """
-        Overridable wrapper around __enter__ which deliberately does not have access to an _exit_stack yet. Intended for
-        things like wrapping __enter__ in a lock.
-        """
-
-        yield
-
-    @ta.final
-    def __enter__(self: ExitStackedT) -> ExitStackedT:
-        """
-        Final because any contexts entered during this init must be exited if any exception is thrown, and user
-        overriding would likely interfere with that. Override `_enter_contexts` for such init.
-        """
-
-        with self._exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.ExitStack()
-            es.__enter__()
-            try:
-                self._enter_contexts()
-            except Exception:  # noqa
-                es.__exit__(*sys.exc_info())
-                raise
-            return self
-
-    @ta.final
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        try:
-            self._exit_contexts()
-        except Exception:  # noqa
-            es.__exit__(*sys.exc_info())
-            raise
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _enter_contexts(self) -> None:
-        pass
-
-    def _exit_contexts(self) -> None:
-        pass
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return es.enter_context(cm)
-
-
-class AsyncExitStacked:
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        for a in ('__aenter__', '__aexit__'):
-            for b in cls.__bases__:
-                if b is AsyncExitStacked:
-                    continue
-                try:
-                    fn = getattr(b, a)
-                except AttributeError:
-                    pass
-                else:
-                    if fn is not getattr(AsyncExitStacked, a):
-                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
-
-    _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
-
-    @contextlib.asynccontextmanager
-    async def _async_exit_stacked_init_wrapper(self) -> ta.AsyncGenerator[None, None]:
-        yield
-
-    @ta.final
-    async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
-        async with self._async_exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.AsyncExitStack()
-            await es.__aenter__()
-            try:
-                await self._async_enter_contexts()
-            except Exception:  # noqa
-                await es.__aexit__(*sys.exc_info())
-                raise
-            return self
-
-    @ta.final
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        try:
-            await self._async_exit_contexts()
-        except Exception:  # noqa
-            await es.__aexit__(*sys.exc_info())
-            raise
-        return await es.__aexit__(exc_type, exc_val, exc_tb)
-
-    async def _async_enter_contexts(self) -> None:
-        pass
-
-    async def _async_exit_contexts(self) -> None:
-        pass
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return es.enter_context(cm)
-
-    async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
-        return await es.enter_async_context(cm)
-
-
-##
-
-
-@contextlib.contextmanager
-def defer(fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> ta.Generator[ta.Callable, None, None]:
-    if args or kwargs:
-        fn = functools.partial(fn, *args, **kwargs)
-    try:
-        yield fn
-    finally:
-        fn()
-
-
-@contextlib.asynccontextmanager
-async def adefer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None]:
-    try:
-        yield fn
-    finally:
-        await fn
-
-
-##
-
-
-@contextlib.contextmanager
-def attr_setting(obj, attr, val, *, default=None):  # noqa
-    not_set = object()
-    orig = getattr(obj, attr, not_set)
-    try:
-        setattr(obj, attr, val)
-        if orig is not not_set:
-            yield orig
-        else:
-            yield default
-    finally:
-        if orig is not_set:
-            delattr(obj, attr)
-        else:
-            setattr(obj, attr, orig)
-
-
-##
-
-
-class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
-    def __init__(self, thing):
-        self.thing = thing
-
-    async def __aenter__(self):
-        return self.thing
-
-    async def __aexit__(self, *exc_info):
-        await self.thing.aclose()
 
 
 ########################################
@@ -7372,204 +7575,6 @@ def get_single_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex
 def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifest:
     child_index = check.single(image_index.manifests)
     return check.isinstance(child_index, OciImageManifest)
-
-
-########################################
-# ../../oci/pack/unpacking.py
-
-
-##
-
-
-class OciLayerUnpacker(ExitStacked):
-    def __init__(
-            self,
-            input_files: ta.Sequence[ta.Union[str, tarfile.TarFile]],
-            output_file_path: str,
-    ) -> None:
-        super().__init__()
-
-        self._input_files = list(input_files)
-        self._output_file_path = output_file_path
-
-    #
-
-    @contextlib.contextmanager
-    def _open_input_file(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Iterator[tarfile.TarFile]:
-        if isinstance(input_file, tarfile.TarFile):
-            yield input_file
-
-        elif isinstance(input_file, str):
-            with tarfile.open(input_file) as tar_file:
-                yield tar_file
-
-        else:
-            raise TypeError(input_file)
-
-    #
-
-    class _Entry(ta.NamedTuple):
-        file: ta.Union[str, tarfile.TarFile]
-        info: tarfile.TarInfo
-
-    def _build_input_file_sorted_entries(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Sequence[_Entry]:
-        dct: ta.Dict[str, OciLayerUnpacker._Entry] = {}
-
-        with self._open_input_file(input_file) as input_tar_file:
-            for info in input_tar_file.getmembers():
-                check.not_in(info.name, dct)
-                dct[info.name] = self._Entry(
-                    file=input_file,
-                    info=info,
-                )
-
-        return sorted(dct.values(), key=lambda entry: entry.info.name)
-
-    @cached_nullary
-    def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
-        root: dict = {}
-
-        def find_dir(dir_name: str) -> dict:  # noqa
-            if dir_name:
-                dir_parts = dir_name.split('/')
-            else:
-                dir_parts = []
-
-            cur = root  # noqa
-            for dir_part in dir_parts:
-                cur = cur[dir_part]  # noqa
-
-            return check.isinstance(cur, dict)
-
-        #
-
-        for input_file in self._input_files:
-            sorted_entries = self._build_input_file_sorted_entries(input_file)
-
-            wh_names = set()
-            wh_opaques = set()
-
-            #
-
-            for entry in sorted_entries:
-                info = entry.info
-                name = check.non_empty_str(info.name)
-                base_name = os.path.basename(name)
-                dir_name = os.path.dirname(name)
-
-                if base_name == '.wh..wh..opq':
-                    wh_opaques.add(dir_name)
-                    continue
-
-                if base_name.startswith('.wh.'):
-                    wh_base_name = os.path.basename(base_name[4:])
-                    wh_name = os.path.join(dir_name, wh_base_name)
-                    wh_names.add(wh_name)
-                    continue
-
-                cur = find_dir(dir_name)
-
-                if info.type == tarfile.DIRTYPE:
-                    try:
-                        ex = cur[base_name]
-                    except KeyError:
-                        cur[base_name] = {'': entry}
-                    else:
-                        ex[''] = entry
-
-                else:
-                    cur[base_name] = entry
-
-            #
-
-            for wh_name in reversed(sorted(wh_names)):  # noqa
-                wh_dir_name = os.path.dirname(wh_name)
-                wh_base_name = os.path.basename(wh_name)
-
-                cur = find_dir(wh_dir_name)
-                rm = cur[wh_base_name]
-
-                if isinstance(rm, dict):
-                    # Whiteouts wipe out whole directory:
-                    # https://github.com/containerd/containerd/blob/59c8cf6ea5f4175ad512914dd5ce554942bf144f/pkg/archive/tar_test.go#L648
-                    # check.equal(set(rm), '')
-                    del cur[wh_base_name]
-
-                elif isinstance(rm, self._Entry):
-                    del cur[wh_base_name]
-
-                else:
-                    raise TypeError(rm)
-
-            if wh_opaques:
-                raise NotImplementedError
-
-        #
-
-        out: ta.Dict[str, OciLayerUnpacker._Entry] = {}
-
-        def rec(cur):  # noqa
-            for _, child in sorted(cur.items(), key=lambda t: t[0]):
-                if isinstance(child, dict):
-                    rec(child)
-
-                elif isinstance(child, self._Entry):
-                    check.not_in(child.info.name, out)
-                    out[child.info.name] = child
-
-                else:
-                    raise TypeError(child)
-
-        rec(root)
-
-        return out
-
-    #
-
-    @cached_nullary
-    def _output_tar_file(self) -> tarfile.TarFile:
-        return self._enter_context(tarfile.open(self._output_file_path, 'w'))
-
-    #
-
-    def _add_unpacked_entry(
-            self,
-            input_tar_file: tarfile.TarFile,
-            info: tarfile.TarInfo,
-    ) -> None:
-        base_name = os.path.basename(info.name)
-        check.state(not base_name.startswith('.wh.'))
-
-        if info.type in tarfile.REGULAR_TYPES:
-            with check.not_none(input_tar_file.extractfile(info)) as f:
-                self._output_tar_file().addfile(info, f)
-
-        else:
-            self._output_tar_file().addfile(info)
-
-    def _unpack_file(
-            self,
-            input_file: ta.Union[str, tarfile.TarFile],
-    ) -> None:
-        entries_by_name = self._entries_by_name()
-
-        with self._open_input_file(input_file) as input_tar_file:
-            info: tarfile.TarInfo
-            for info in input_tar_file.getmembers():
-                try:
-                    entry = entries_by_name[info.name]
-                except KeyError:
-                    continue
-
-                if entry.file != input_file:
-                    continue
-
-                self._add_unpacked_entry(input_tar_file, info)
-
-    @cached_nullary
-    def write(self) -> None:
-        for input_file in self._input_files:
-            self._unpack_file(input_file)
 
 
 ########################################

@@ -193,13 +193,13 @@ def _build_cmd_set(args: ta.Any) -> CliCmdSet:
             discover_packages=False,
         )
 
-    ldr = ManifestLoader(ldr_cfg)
+    GlobalManifestLoader.initialize(ldr_cfg)
 
     #
 
     lst: list[CliCmd] = []
 
-    for mv in ldr.load_values_of(CliModule):
+    for mv in GlobalManifestLoader.load_values_of(CliModule):
         lst.append(check.isinstance(mv, CliModule))
 
     lst.extend(_CLI_FUNCS)

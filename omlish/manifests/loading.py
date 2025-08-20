@@ -4,12 +4,10 @@
 Should be kept somewhat lightweight - used in cli entrypoints.
 
 TODO:
- - persisted caching support - {pkg_name: manifests}
  - real relative cls names - shouldn't need parent package names
- - *require* loaded class names - special All sentinel for explicit all
-  - ! late instantiation !
  - TypeMap style weak cache of issubclass queries
   - wait.. lazily load the class for virtual subclass queries? xor support virtual bases?
+ - weakref class dict keys?
 """
 import dataclasses as dc
 import importlib.machinery
@@ -42,6 +40,9 @@ class ManifestLoader:
 
             [(cls_key, value_dct)] = self._manifest.value.items()  # noqa
             self._cls_key = cls_key
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}@{id(self):x}(package={self._package!r}, class_key={self._cls_key!r})'
 
         @property
         def package(self) -> 'ManifestLoader.LoadedPackage':
@@ -83,6 +84,9 @@ class ManifestLoader:
             self._name = name
 
         _manifests: ta.Sequence['ManifestLoader.LoadedManifest']
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}(name={self._name!r})'
 
         @property
         def loader(self) -> 'ManifestLoader':
@@ -283,9 +287,12 @@ class ManifestLoader:
 
     ##
 
+    class ClassKeyError(Exception):
+        pass
+
     def _load_class_uncached(self, key: str) -> type:
         if not key.startswith('$'):
-            raise Exception(f'Bad key: {key}')
+            raise ManifestLoader.ClassKeyError(key)
 
         parts = key[1:].split('.')
         pos = next(i for i, p in enumerate(parts) if p[0].isupper())
@@ -339,7 +346,7 @@ class ManifestLoader:
 
             [(key, value_dct)] = m.value.items()
             if not key.startswith('$'):
-                raise Exception(f'Bad key: {key}')
+                raise ManifestLoader.ClassKeyError(key)
             if key.startswith('$.'):
                 key = f'${pkg_name}{key[1:]}'
                 m = dc.replace(m, value={key: value_dct})

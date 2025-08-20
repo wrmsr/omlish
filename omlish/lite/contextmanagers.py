@@ -4,8 +4,6 @@ import functools
 import sys
 import typing as ta
 
-from .check import check
-
 
 T = ta.TypeVar('T')
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
@@ -50,7 +48,8 @@ class ExitStacked:
         """
 
         with self._exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
+            if self._exit_stack is not None:
+                raise RuntimeError
             es = self._exit_stack = contextlib.ExitStack()
             es.__enter__()
             try:
@@ -78,7 +77,8 @@ class ExitStacked:
         pass
 
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
         return es.enter_context(cm)
 
 
@@ -107,7 +107,8 @@ class AsyncExitStacked:
     @ta.final
     async def __aenter__(self: AsyncExitStackedT) -> AsyncExitStackedT:
         async with self._async_exit_stacked_init_wrapper():
-            check.state(self._exit_stack is None)
+            if self._exit_stack is not None:
+                raise RuntimeError
             es = self._exit_stack = contextlib.AsyncExitStack()
             await es.__aenter__()
             try:
@@ -135,11 +136,13 @@ class AsyncExitStacked:
         pass
 
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
         return es.enter_context(cm)
 
     async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
-        es = check.not_none(self._exit_stack)
+        if (es := self._exit_stack) is None:
+            raise RuntimeError
         return await es.enter_async_context(cm)
 
 
