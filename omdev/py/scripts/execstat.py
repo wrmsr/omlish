@@ -87,7 +87,7 @@ def _run(
 
 
 # @omlish-manifest
-_CLI_MODULE = {'!omdev.cli.types.CliModule': {
+_CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'py/execstat',
     'module': __name__,
 }}
@@ -140,7 +140,7 @@ def _main() -> None:
         if i == 0:
             run_kw.update(
                 rss=bool(args.rss),
-                modules=bool(args.modules) or bool(args.modules),
+                modules=bool(args.modules) or bool(args.modules_ordered),
             )
 
         payload = '\n'.join([
