@@ -85,7 +85,7 @@ def test_main(request):
             'line': 4,
             'module': '.fargles',
             'value': {
-                '$.thingies.manifests.SimpleThingyManifest': {
+                '!.thingies.manifests.SimpleThingyManifest': {
                     'what': 'fargles',
                 },
             },
@@ -96,7 +96,7 @@ def test_main(request):
             'file': 'foo/nargles/thingy.py',
             'line': 1,
             'value': {
-                '$.thingies.manifests.NamedThingyManifest': {
+                '!.thingies.manifests.NamedThingyManifest': {
                     'module': 'foo.nargles.thingy',
                     'attr': 'NargleThingy',
                     'name': 'nargle',
@@ -160,7 +160,7 @@ def test_dumping_nargles(request):
             'file': 'foo/nargles/thingy.py',
             'line': 1,
             'value': {
-                '$foo.thingies.manifests.NamedThingyManifest': {
+                '!foo.thingies.manifests.NamedThingyManifest': {
                     'module': 'foo.nargles.thingy',
                     'attr': 'NargleThingy',
                     'name': 'nargle',
@@ -184,7 +184,7 @@ def test_dumping_fargles(request):
             'line': 4,
             'module': '.fargles',
             'value': {
-                '$foo.thingies.manifests.SimpleThingyManifest': {
+                '!foo.thingies.manifests.SimpleThingyManifest': {
                     'what': 'fargles',
                 },
             },

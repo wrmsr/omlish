@@ -1515,13 +1515,13 @@ class _ModuleManifestDumper:
             manifest_dct = self._build_manifest_dct(manifest)
 
             cls = type(manifest)
-            key = f'${cls.__module__}.{cls.__qualname__}'
+            key = f'!{cls.__module__}.{cls.__qualname__}'
 
             return {key: manifest_dct}
 
         elif isinstance(manifest, collections.abc.Mapping):
             [(key, manifest_dct)] = manifest.items()
-            if not key.startswith('$'):  # noqa
+            if not key.startswith('!'):  # noqa
                 raise Exception(f'Bad key: {key}')
 
             if not isinstance(manifest_dct, collections.abc.Mapping):
@@ -1571,7 +1571,7 @@ class _ModuleManifestDumper:
 
         manifest_dct = self._build_manifest_dct(manifest)
 
-        key = f'${cls.__module__}.{cls.__qualname__}'
+        key = f'!{cls.__module__}.{cls.__qualname__}'
         return {key: manifest_dct}
 
     #
