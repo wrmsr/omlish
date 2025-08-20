@@ -18,4 +18,4 @@ class ManifestOrigin:
 
 @dc.dataclass(frozen=True)
 class Manifest(ManifestOrigin):
-    value: ta.Any  # [{class_key: value_dct}], where class_key is of the form `$.foo.bar.Class` or `$baz.quz.Class`
+    value: ta.Any  # [{class_key: value_dct}], where class_key is of the form `!.foo.bar.Class` or `!baz.quz.Class`

@@ -5,7 +5,7 @@
     "file": "ommlds/cli/__main__.py",
     "line": 1,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": [
           "minichain",
           "mc"
@@ -20,7 +20,7 @@
     "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
     "line": 30,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.chat",
         "attr": "AnthropicChatChoicesService",
         "name": "anthropic",
@@ -35,7 +35,7 @@
     "file": "ommlds/minichain/backends/impls/anthropic/names.py",
     "line": 35,
     "value": {
-      "$.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService"
         ],
@@ -65,7 +65,7 @@
     "file": "ommlds/minichain/backends/impls/duckduckgo/search.py",
     "line": 13,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.duckduckgo.search",
         "attr": "DuckduckgoSearchService",
         "name": "duckduckgo",
@@ -82,7 +82,7 @@
     "file": "ommlds/minichain/backends/impls/google/chat.py",
     "line": 27,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.chat",
         "attr": "GoogleChatChoicesService",
         "name": "google",
@@ -97,7 +97,7 @@
     "file": "ommlds/minichain/backends/impls/google/names.py",
     "line": 32,
     "value": {
-      "$.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -124,7 +124,7 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
     "line": 32,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.chat",
         "attr": "LlamacppChatChoicesService",
         "name": "llamacpp",
@@ -139,7 +139,7 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/completion.py",
     "line": 24,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.completion",
         "attr": "LlamacppCompletionService",
         "name": "llamacpp",
@@ -154,7 +154,7 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
     "line": 31,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.stream",
         "attr": "LlamacppChatChoicesStreamService",
         "name": "llamacpp",
@@ -169,7 +169,7 @@
     "file": "ommlds/minichain/backends/impls/mistral.py",
     "line": 24,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mistral",
         "attr": "MistralChatChoicesService",
         "name": "mistral",
@@ -184,7 +184,7 @@
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
     "line": 26,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mlx.chat",
         "attr": "MlxChatChoicesService",
         "name": "mlx",
@@ -199,7 +199,7 @@
     "file": "ommlds/minichain/backends/impls/openai/chat.py",
     "line": 34,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.chat",
         "attr": "OpenaiChatChoicesService",
         "name": "openai",
@@ -214,7 +214,7 @@
     "file": "ommlds/minichain/backends/impls/openai/completion.py",
     "line": 18,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.completion",
         "attr": "OpenaiCompletionService",
         "name": "openai",
@@ -229,7 +229,7 @@
     "file": "ommlds/minichain/backends/impls/openai/embedding.py",
     "line": 17,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.embedding",
         "attr": "OpenaiEmbeddingService",
         "name": "openai",
@@ -244,7 +244,7 @@
     "file": "ommlds/minichain/backends/impls/openai/names.py",
     "line": 63,
     "value": {
-      "$.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -296,7 +296,7 @@
     "file": "ommlds/minichain/backends/impls/openai/stream.py",
     "line": 32,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.stream",
         "attr": "OpenaiChatChoicesStreamService",
         "name": "openai",
@@ -311,7 +311,7 @@
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 114,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr": "TinygradLlama3ChatChoicesService",
         "name": "tinygrad_llama3",
@@ -326,7 +326,7 @@
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 134,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr": "TinygradLlama3ChatChoicesStreamService",
         "name": "tinygrad_llama3",
@@ -341,7 +341,7 @@
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 160,
     "value": {
-      "$.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -357,7 +357,7 @@
     "file": "ommlds/minichain/backends/impls/transformers/sentence.py",
     "line": 19,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.sentence",
         "attr": "SentenceTransformersEmbeddingService",
         "name": "sentence_transformers",
@@ -374,7 +374,7 @@
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
     "line": 41,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
         "attr": "TransformersCompletionService",
         "name": "transformers",
@@ -391,7 +391,7 @@
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
     "line": 127,
     "value": {
-      "$.minichain.registries.manifests.RegistryManifest": {
+      "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
         "attr": "TransformersChatChoicesService",
         "name": "transformers",
@@ -408,7 +408,7 @@
     "file": "ommlds/minichain/chat/choices/services.py",
     "line": 23,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.choices.services",
         "attr": "ChatChoicesService"
       }
@@ -420,7 +420,7 @@
     "file": "ommlds/minichain/chat/services.py",
     "line": 23,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.services",
         "attr": "ChatService"
       }
@@ -432,7 +432,7 @@
     "file": "ommlds/minichain/chat/stream/services.py",
     "line": 28,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.stream.services",
         "attr": "ChatChoicesStreamService"
       }
@@ -444,7 +444,7 @@
     "file": "ommlds/minichain/completion.py",
     "line": 42,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.completion",
         "attr": "CompletionService"
       }
@@ -456,7 +456,7 @@
     "file": "ommlds/minichain/search.py",
     "line": 59,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.search",
         "attr": "SearchService"
       }
@@ -468,7 +468,7 @@
     "file": "ommlds/minichain/vectors/embeddings.py",
     "line": 42,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.vectors.embeddings",
         "attr": "EmbeddingService"
       }
@@ -480,7 +480,7 @@
     "file": "ommlds/minichain/vectors/index.py",
     "line": 51,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.vectors.index",
         "attr": "VectorIndexService"
       }
@@ -492,7 +492,7 @@
     "file": "ommlds/minichain/vectors/search.py",
     "line": 71,
     "value": {
-      "$.minichain.registries.manifests.RegistryTypeManifest": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.vectors.search",
         "attr": "VectorSearchService"
       }
@@ -504,7 +504,7 @@
     "file": "ommlds/server/__main__.py",
     "line": 1,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": [
           "minichain-server",
           "mcs"
@@ -519,7 +519,7 @@
     "file": "ommlds/tools/git.py",
     "line": 172,
     "value": {
-      "$omdev.tools.git.messages.GitMessageGeneratorManifest": {
+      "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "ommlds.tools.git",
         "attr": "AiGitMessageGenerator",
         "name": "ai",
@@ -533,7 +533,7 @@
     "file": "ommlds/tools/ocr.py",
     "line": 83,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "ocr",
         "module": "ommlds.tools.ocr"
       }

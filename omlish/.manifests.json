@@ -5,7 +5,7 @@
     "file": "omlish/bootstrap/__main__.py",
     "line": 1,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "bootstrap",
         "module": "omlish.bootstrap.__main__"
       }
@@ -17,7 +17,7 @@
     "file": "omlish/diag/procfs.py",
     "line": 361,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "procfs",
         "module": "omlish.diag.procfs"
       }
@@ -29,7 +29,7 @@
     "file": "omlish/formats/cbor.py",
     "line": 30,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.cbor",
         "attr": "CBOR_CODEC",
         "name": "cbor",
@@ -43,7 +43,7 @@
     "file": "omlish/formats/cloudpickle.py",
     "line": 30,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.cloudpickle",
         "attr": "CLOUDPICKLE_CODEC",
         "name": "cloudpickle",
@@ -57,7 +57,7 @@
     "file": "omlish/formats/edn/codec.py",
     "line": 25,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.edn.codec",
         "attr": "EDN_CODEC",
         "name": "edn",
@@ -71,7 +71,7 @@
     "file": "omlish/formats/ini/codec.py",
     "line": 25,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.ini.codec",
         "attr": "INI_CODEC",
         "name": "ini",
@@ -85,7 +85,7 @@
     "file": "omlish/formats/json/codecs.py",
     "line": 14,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.json.codecs",
         "attr": "JSON_CODEC",
         "name": "json",
@@ -99,7 +99,7 @@
     "file": "omlish/formats/json/codecs.py",
     "line": 21,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.json.codecs",
         "attr": "JSON_COMPACT_CODEC",
         "name": "json-compact",
@@ -113,7 +113,7 @@
     "file": "omlish/formats/json/codecs.py",
     "line": 28,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.json.codecs",
         "attr": "JSON_PRETTY_CODEC",
         "name": "json-pretty",
@@ -127,7 +127,7 @@
     "file": "omlish/formats/json5/codec.py",
     "line": 73,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.json5.codec",
         "attr": "JSON5_CODEC",
         "name": "json5",
@@ -141,7 +141,7 @@
     "file": "omlish/formats/pickle.py",
     "line": 30,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.pickle",
         "attr": "PICKLE_CODEC",
         "name": "pickle",
@@ -155,7 +155,7 @@
     "file": "omlish/formats/repr.py",
     "line": 24,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.repr",
         "attr": "REPR_CODEC",
         "name": "repr",
@@ -169,7 +169,7 @@
     "file": "omlish/formats/toml/codec.py",
     "line": 16,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.toml.codec",
         "attr": "TOML_CODEC",
         "name": "toml",
@@ -183,7 +183,7 @@
     "file": "omlish/formats/yaml.py",
     "line": 255,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.yaml",
         "attr": "YAML_CODEC",
         "name": "yaml",
@@ -199,7 +199,7 @@
     "file": "omlish/formats/yaml.py",
     "line": 262,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.yaml",
         "attr": "YAML_UNSAFE_CODEC",
         "name": "yaml-unsafe",
@@ -213,7 +213,7 @@
     "file": "omlish/io/compress/brotli.py",
     "line": 46,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.brotli",
         "attr": "BROTLI_CODEC",
         "name": "brotli",
@@ -227,7 +227,7 @@
     "file": "omlish/io/compress/bz2.py",
     "line": 60,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.bz2",
         "attr": "BZ2_CODEC",
         "name": "bz2",
@@ -241,7 +241,7 @@
     "file": "omlish/io/compress/gzip.py",
     "line": 349,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.gzip",
         "attr": "GZIP_CODEC",
         "name": "gzip",
@@ -257,7 +257,7 @@
     "file": "omlish/io/compress/lz4.py",
     "line": 90,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.lz4",
         "attr": "LZ4_CODEC",
         "name": "lz4",
@@ -271,7 +271,7 @@
     "file": "omlish/io/compress/lzma.py",
     "line": 80,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.lzma",
         "attr": "LZMA_CODEC",
         "name": "lzma",
@@ -285,7 +285,7 @@
     "file": "omlish/io/compress/snappy.py",
     "line": 33,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.snappy",
         "attr": "SNAPPY_CODEC",
         "name": "snappy",
@@ -299,7 +299,7 @@
     "file": "omlish/io/compress/zlib.py",
     "line": 73,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.zlib",
         "attr": "ZLIB_CODEC",
         "name": "zlib",
@@ -313,7 +313,7 @@
     "file": "omlish/io/compress/zstd.py",
     "line": 51,
     "value": {
-      "$.codecs.base.LazyLoadedCodec": {
+      "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.io.compress.zstd",
         "attr": "ZSTD_CODEC",
         "name": "zstd",
@@ -327,7 +327,7 @@
     "file": "omlish/os/pidfiles/__main__.py",
     "line": 1,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "pidfiles",
         "module": "omlish.os.pidfiles.__main__"
       }
@@ -339,7 +339,7 @@
     "file": "omlish/secrets/pwgen.py",
     "line": 78,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "pwgen",
         "module": "omlish.secrets.pwgen"
       }
@@ -351,7 +351,7 @@
     "file": "omlish/specs/jmespath/__main__.py",
     "line": 1,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": [
           "jmespath",
           "jp"

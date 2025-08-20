@@ -5,7 +5,7 @@
     "file": "ominfra/clouds/aws/__main__.py",
     "line": 4,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "aws",
         "module": "ominfra.clouds.aws.__main__"
       }
@@ -17,7 +17,7 @@
     "file": "ominfra/tailscale/cli.py",
     "line": 118,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": [
           "tailscale",
           "ts"

@@ -334,14 +334,14 @@ class ManifestBuilder:
             if not (
                     isinstance(value, ta.Mapping) and
                     len(value) == 1 and
-                    all(isinstance(k, str) and k.startswith('$') and len(k) > 1 for k in value)
+                    all(isinstance(k, str) and k.startswith('!') and len(k) > 1 for k in value)
             ):
-                raise TypeError(f'Manifest values must be mappings of strings starting with $: {value!r}')
+                raise TypeError(f'Manifest values must be mappings of strings starting with !: {value!r}')
 
             [(key, value_dct)] = value.items()
             kb, _, kr = key[1:].partition('.')  # noqa
             if kb == fm.mod_base:  # noqa
-                key = f'$.{kr}'
+                key = f'!.{kr}'
                 value = {key: value_dct}
 
             out.append(Manifest(**{
@@ -435,7 +435,7 @@ def check_package_manifests(
     for entry in manifests_json:
         manifest = Manifest(**entry)
         [(key, value_dct)] = manifest.value.items()
-        if key.startswith('$.'):
-            key = f'${name}{key[1:]}'
+        if key.startswith('!.'):
+            key = f'!{name}{key[1:]}'
         cls = GlobalManifestLoader.instance()._load_class(key)  # noqa
         value = GlobalManifestLoader.instance()._instantiate_value(cls, **value_dct)  # noqa

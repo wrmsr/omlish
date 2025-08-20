@@ -5,7 +5,7 @@
     "file": "omdev/amalg/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "amalg",
         "module": "omdev.amalg.__main__"
       }
@@ -17,7 +17,7 @@
     "file": "omdev/cc/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "cc",
         "module": "omdev.cc.__main__"
       }
@@ -29,7 +29,7 @@
     "file": "omdev/cexts/cmake.py",
     "line": 331,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "cmake",
         "module": "omdev.cexts.cmake"
       }
@@ -41,7 +41,7 @@
     "file": "omdev/cli/clicli.py",
     "line": 233,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "cli",
         "module": "omdev.cli.clicli"
       }
@@ -53,7 +53,7 @@
     "file": "omdev/cmdlog/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "cmdlog",
         "module": "omdev.cmdlog.__main__"
       }
@@ -65,7 +65,7 @@
     "file": "omdev/dataclasses/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "dataclasses",
         "module": "omdev.dataclasses.__main__"
       }
@@ -77,7 +77,7 @@
     "file": "omdev/imgur.py",
     "line": 136,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "imgur",
         "module": "omdev.imgur"
       }
@@ -89,7 +89,7 @@
     "file": "omdev/intellij/cli.py",
     "line": 81,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "intellij",
           "ij"
@@ -104,7 +104,7 @@
     "file": "omdev/interp/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "interp",
         "module": "omdev.interp.__main__"
       }
@@ -116,7 +116,7 @@
     "file": "omdev/magic/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "magic",
         "module": "omdev.magic.__main__"
       }
@@ -128,7 +128,7 @@
     "file": "omdev/manifests/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "manifests",
         "module": "omdev.manifests.__main__"
       }
@@ -140,7 +140,7 @@
     "file": "omdev/manifests/tests/packages/foo/fargles.py",
     "line": 4,
     "value": {
-      "$.manifests.tests.packages.foo.thingies.manifests.SimpleThingyManifest": {
+      "!.manifests.tests.packages.foo.thingies.manifests.SimpleThingyManifest": {
         "what": "fargles"
       }
     }
@@ -151,7 +151,7 @@
     "file": "omdev/precheck/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "precheck",
         "module": "omdev.precheck.__main__"
       }
@@ -163,7 +163,7 @@
     "file": "omdev/ptk/apps/ncdu.py",
     "line": 162,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "ptk/ncdu",
         "module": "omdev.ptk.apps.ncdu"
       }
@@ -175,7 +175,7 @@
     "file": "omdev/ptk/markdown/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "ptk/markdown",
           "ptk/md"
@@ -190,7 +190,7 @@
     "file": "omdev/py/attrdocs.py",
     "line": 160,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/attrdocs",
         "module": "omdev.py.attrdocs"
       }
@@ -202,7 +202,7 @@
     "file": "omdev/py/bracepy.py",
     "line": 94,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "bracepy",
         "module": "omdev.py.bracepy"
       }
@@ -214,7 +214,7 @@
     "file": "omdev/py/classdot.py",
     "line": 63,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/classdot",
         "module": "omdev.py.classdot"
       }
@@ -226,7 +226,7 @@
     "file": "omdev/py/findimports.py",
     "line": 136,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/findimports",
         "module": "omdev.py.findimports"
       }
@@ -238,7 +238,7 @@
     "file": "omdev/py/scripts/execstat.py",
     "line": 89,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/execstat",
         "module": "omdev.py.scripts.execstat"
       }
@@ -250,7 +250,7 @@
     "file": "omdev/py/scripts/importtrace.py",
     "line": 491,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/importtrace",
         "module": "omdev.py.scripts.importtrace"
       }
@@ -262,7 +262,7 @@
     "file": "omdev/py/srcheaders.py",
     "line": 65,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/srcheaders",
         "module": "omdev.py.srcheaders"
       }
@@ -274,7 +274,7 @@
     "file": "omdev/py/tools/importscan.py",
     "line": 178,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/importscan",
         "module": "omdev.py.tools.importscan"
       }
@@ -286,7 +286,7 @@
     "file": "omdev/py/tools/mkrelimp.py",
     "line": 149,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "py/mkrelimp",
         "module": "omdev.py.tools.mkrelimp"
       }
@@ -298,7 +298,7 @@
     "file": "omdev/pyproject/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "pyproject",
         "module": "omdev.pyproject.__main__"
       }
@@ -310,7 +310,7 @@
     "file": "omdev/scripts/slowcat.py",
     "line": 117,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "slowcat",
         "module": "omdev.scripts.slowcat"
       }
@@ -322,7 +322,7 @@
     "file": "omdev/scripts/tmpexec.py",
     "line": 50,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "tmpexec",
         "module": "omdev.scripts.tmpexec"
       }
@@ -334,7 +334,7 @@
     "file": "omdev/tools/antlr/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "antlr",
         "module": "omdev.tools.antlr.__main__"
       }
@@ -346,7 +346,7 @@
     "file": "omdev/tools/cloc.py",
     "line": 248,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "cloc",
         "module": "omdev.tools.cloc"
       }
@@ -358,7 +358,7 @@
     "file": "omdev/tools/diff.py",
     "line": 24,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "diff",
         "module": "omdev.tools.diff"
       }
@@ -370,7 +370,7 @@
     "file": "omdev/tools/doc.py",
     "line": 106,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "doc",
         "module": "omdev.tools.doc"
       }
@@ -382,7 +382,7 @@
     "file": "omdev/tools/docker.py",
     "line": 259,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "docker",
         "module": "omdev.tools.docker"
       }
@@ -394,7 +394,7 @@
     "file": "omdev/tools/git/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "git",
         "module": "omdev.tools.git.__main__"
       }
@@ -406,7 +406,7 @@
     "file": "omdev/tools/git/messages.py",
     "line": 81,
     "value": {
-      "$.tools.git.messages.GitMessageGeneratorManifest": {
+      "!.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "omdev.tools.git.messages",
         "attr": "TimestampGitMessageGenerator",
         "name": "timestamp",
@@ -422,7 +422,7 @@
     "file": "omdev/tools/json/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "json",
           "j"
@@ -437,7 +437,7 @@
     "file": "omdev/tools/jsonview/__main__.py",
     "line": 4,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "jsonview",
           "jv"
@@ -452,7 +452,7 @@
     "file": "omdev/tools/linehisto.py",
     "line": 330,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "linehisto",
         "module": "omdev.tools.linehisto"
       }
@@ -464,7 +464,7 @@
     "file": "omdev/tools/mkenv.py",
     "line": 123,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "mkenv"
         ],
@@ -478,7 +478,7 @@
     "file": "omdev/tools/notebook.py",
     "line": 123,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "notebook",
           "nb"
@@ -493,7 +493,7 @@
     "file": "omdev/tools/pawk/pawk.py",
     "line": 392,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "pawk",
         "module": "omdev.tools.pawk.pawk"
       }
@@ -505,7 +505,7 @@
     "file": "omdev/tools/pip.py",
     "line": 123,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "pip",
         "module": "omdev.tools.pip"
       }
@@ -517,7 +517,7 @@
     "file": "omdev/tools/prof.py",
     "line": 128,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "prof",
         "module": "omdev.tools.prof"
       }
@@ -529,7 +529,7 @@
     "file": "omdev/tools/qr.py",
     "line": 77,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "qr",
         "module": "omdev.tools.qr"
       }
@@ -541,7 +541,7 @@
     "file": "omdev/tools/shadow.py",
     "line": 68,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "shadow",
         "module": "omdev.tools.shadow"
       }
@@ -553,7 +553,7 @@
     "file": "omdev/tools/shell.py",
     "line": 110,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": [
           "shell",
           "sh"
@@ -568,7 +568,7 @@
     "file": "omdev/tools/sqlrepl.py",
     "line": 196,
     "value": {
-      "$.cli.types.CliModule": {
+      "!.cli.types.CliModule": {
         "name": "sqlrepl",
         "module": "omdev.tools.sqlrepl"
       }

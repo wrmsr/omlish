@@ -300,7 +300,7 @@ class ManifestLoader:
         module: ta.Optional[str] = None
 
     def _load_class_uncached(self, key: str) -> type:
-        if not key.startswith('$'):
+        if not key.startswith('!'):
             raise ManifestLoader.ClassKeyError(key)
 
         parts = key[1:].split('.')
@@ -342,7 +342,7 @@ class ManifestLoader:
             raise TypeError(cls)
         mod_name = cls.__module__
         mod_name = self._module_reverse_remap.get(mod_name, mod_name)
-        return f'${mod_name}.{cls.__qualname__}'
+        return f'!{mod_name}.{cls.__qualname__}'
 
     ##
 
@@ -370,11 +370,11 @@ class ManifestLoader:
 
         [(class_key, value_dct)] = m.value.items()
 
-        if not class_key.startswith('$'):
+        if not class_key.startswith('!'):
             raise ManifestLoader.ClassKeyError(class_key, module=module)
 
-        if class_key.startswith('$.'):
-            class_key = f'${package_name}{class_key[1:]}'
+        if class_key.startswith('!.'):
+            class_key = f'!{package_name}{class_key[1:]}'
 
         # FIXME: move to builder
         # elif key.startswith('$.'):

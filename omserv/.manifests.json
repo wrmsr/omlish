@@ -5,7 +5,7 @@
     "file": "omserv/nginx/logs.py",
     "line": 68,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "!omdev.cli.types.CliModule": {
         "name": "nginxlogs",
         "module": "omserv.nginx.logs"
       }
