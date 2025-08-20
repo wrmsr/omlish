@@ -170,9 +170,9 @@ class ManifestBuilder:
         lines = src.splitlines(keepends=True)
 
         def prepare(s: str) -> ta.Any:
-            if s.startswith('$$.'):
-                s = f'{fm.mod_base}.{s[3:]}'
-            elif s.startswith('$.'):
+            if s.startswith('$.'):
+                s = f'{fm.mod_base}.{s[2:]}'
+            elif s.startswith('.'):
                 # s = f'{fm.mod_base}.{s[2:]}'
                 raise NotImplementedError
             return magic.py_compile_magic_preparer(s)
@@ -190,9 +190,9 @@ class ManifestBuilder:
         for m in magics:
             if m.body:
                 body = m.body
-                if body.startswith('$$.'):
-                    body = f'{fm.mod_base}.{body[3:]}'
-                elif body.startswith('$.'):
+                if body.startswith('$.'):
+                    body = f'{fm.mod_base}.{body[2:]}'
+                elif body.startswith('.'):
                     # body = f'{fm.mod_base}.{body[2:]}'
                     raise NotImplementedError
 

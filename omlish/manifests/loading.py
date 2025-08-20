@@ -40,11 +40,11 @@ class ManifestLoader:
 
         def __repr__(self) -> str:
             return (
-                    f'{self.__class__.__name__}@{id(self):x}('
-                    f'package={self._package.name!r}, '
-                    f'module={self._resolved.module!r}, '
-                    f'class_key={self._resolved.class_key!r}'
-                    f')'
+                f'{self.__class__.__name__}@{id(self):x}('
+                f'package={self._package.name!r}, '
+                f'module={self._resolved.module!r}, '
+                f'class_key={self._resolved.class_key!r}'
+                f')'
             )
 
         @property
