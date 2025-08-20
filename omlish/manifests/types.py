@@ -9,7 +9,7 @@ import typing as ta
 
 @dc.dataclass(frozen=True)
 class ManifestOrigin:
-    module: str
+    module: str  # Always starts with exactly one '.'
     attr: ta.Optional[str]  # None if inline
 
     file: str
@@ -18,4 +18,4 @@ class ManifestOrigin:
 
 @dc.dataclass(frozen=True)
 class Manifest(ManifestOrigin):
-    value: ta.Any
+    value: ta.Any  # [{class_key: value_dct}], where class_key is of the form `$.foo.bar.Class` or `$baz.quz.Class`

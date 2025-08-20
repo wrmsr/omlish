@@ -2,9 +2,9 @@
 TODO:
  - queue register_types + late load manifests ? less urgent than late loading marshal lol
 """
+import threading
 import typing as ta
 
-from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.manifests.globals import GlobalManifestLoader
@@ -21,26 +21,61 @@ U = ta.TypeVar('U')
 ##
 
 
-def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
-    return GlobalManifestLoader.instance().load_values_of(cls)
+class _GlobalRegistry(lang.Final, lang.NotInstantiable):
+    _lock: ta.ClassVar[threading.RLock] = threading.RLock()
 
+    _instance: ta.ClassVar[Registry | None] = None
 
-@cached.function
-def _load_registry_type_manifests() -> ta.Sequence[RegistryTypeManifest]:
-    return _load_manifests(RegistryTypeManifest)
+    @classmethod
+    def instance(cls) -> Registry:
+        if (i := cls._instance) is None:
+            with cls._lock:
+                if (i := cls._instance) is None:
+                    i = cls._instance = cls._create_instance()
+        return i
 
+    @classmethod
+    def _create_instance(cls) -> Registry:
+        r = Registry(
+            GlobalManifestLoader.load_values_of(RegistryTypeManifest),
+            GlobalManifestLoader.load_values_of(RegistryManifest),
+        )
 
-@cached.function
-def _load_registry_manifests() -> ta.Sequence[RegistryManifest]:
-    return _load_manifests(RegistryManifest)
+        for qrt in check.not_none(cls._register_type_queue):
+            r.register_type(
+                qrt.cls,
+                module=qrt.module,
+            )
+        cls._register_type_queue = None
 
+        return r
 
-@cached.function(lock=True)
-def _registry() -> Registry:
-    return Registry(
-        _load_registry_type_manifests(),
-        _load_registry_manifests(),
-    )
+    #
+
+    class _QueuedRegisterType(ta.NamedTuple):
+        cls: ta.Any
+        module: str | None = None
+
+    _register_type_queue: ta.ClassVar[list[_QueuedRegisterType] | None] = []
+
+    @classmethod
+    def register_type(
+            cls,
+            clz: T,
+            *,
+            module: str | None = None,
+    ) -> None:
+        with cls._lock:
+            if (i := cls._instance) is not None:
+                i.register_type(
+                    cls,
+                    module=module,
+                )
+            else:
+                check.not_none(cls._register_type_queue).append(_GlobalRegistry._QueuedRegisterType(
+                    clz,
+                    module=module,
+                ))
 
 
 ##
@@ -51,7 +86,7 @@ def register_type(
         *,
         module: str | None = None,
 ) -> T:
-    _registry().register_type(
+    _GlobalRegistry.register_type(
         cls,
         module=module,
     )
@@ -69,7 +104,7 @@ def registry_new(cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.
 
 
 def registry_new(cls, name, *args, **kwargs):
-    be_cls = _registry().get_registry_cls(cls, name)
+    be_cls = _GlobalRegistry.instance().get_registry_cls(cls, name)
     if isinstance(cls, type):
         be_cls = check.issubclass(be_cls, cls)  # noqa
     return be_cls(*args, **kwargs)

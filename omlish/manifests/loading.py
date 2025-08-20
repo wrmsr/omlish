@@ -31,34 +31,41 @@ class ManifestLoader:
         def __init__(
                 self,
                 package: 'ManifestLoader.LoadedPackage',
-                manifest: Manifest,
+                resolved: 'ManifestLoader._ResolvedManifest',
         ) -> None:
             super().__init__()
 
             self._package = package
-            self._manifest = manifest
-
-            [(cls_key, value_dct)] = self._manifest.value.items()  # noqa
-            self._cls_key = cls_key
+            self._resolved = resolved
 
         def __repr__(self) -> str:
-            return f'{self.__class__.__name__}@{id(self):x}(package={self._package!r}, class_key={self._cls_key!r})'
+            return (
+                    f'{self.__class__.__name__}@{id(self):x}('
+                    f'package={self._package.name!r}, '
+                    f'module={self._resolved.module!r}, '
+                    f'class_key={self._resolved.class_key!r}'
+                    f')'
+            )
 
         @property
         def package(self) -> 'ManifestLoader.LoadedPackage':
             return self._package
 
         @property
+        def module(self) -> str:
+            return self._resolved.module
+
+        @property
+        def class_key(self) -> str:
+            return self._resolved.class_key
+
+        @property
         def manifest(self) -> Manifest:
-            return self._manifest
+            return self._resolved.manifest
 
         @property
         def loader(self) -> 'ManifestLoader':
             return self._package.loader
-
-        @property
-        def class_key(self) -> str:
-            return self._cls_key
 
         _value: ta.Any
 
@@ -68,7 +75,7 @@ class ManifestLoader:
             except AttributeError:
                 pass
 
-            value = self.loader._instantiate_loaded_manifest(self)  # noqa
+            value = self.loader._instantiate_resolved_manifest(self._resolved)  # noqa
             self._value = value
             return value
 
@@ -86,7 +93,7 @@ class ManifestLoader:
         _manifests: ta.Sequence['ManifestLoader.LoadedManifest']
 
         def __repr__(self) -> str:
-            return f'{self.__class__.__name__}(name={self._name!r})'
+            return f'{self.__class__.__name__}@{id(self):x}(name={self._name!r})'
 
         @property
         def loader(self) -> 'ManifestLoader':
@@ -287,14 +294,19 @@ class ManifestLoader:
 
     ##
 
+    @dc.dataclass()
     class ClassKeyError(Exception):
-        pass
+        key: str
+        module: ta.Optional[str] = None
 
     def _load_class_uncached(self, key: str) -> type:
         if not key.startswith('$'):
             raise ManifestLoader.ClassKeyError(key)
 
         parts = key[1:].split('.')
+        if '' in parts:
+            raise ManifestLoader.ClassKeyError(key)
+
         pos = next(i for i, p in enumerate(parts) if p[0].isupper())
 
         mod_name = '.'.join(parts[:pos])
@@ -334,33 +346,75 @@ class ManifestLoader:
 
     ##
 
-    def _deserialize_raw_manifests(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
+    class _ResolvedManifest(ta.NamedTuple):
+        manifest: Manifest
+        package: str
+
+        module: str
+        class_key: str
+        value_dct: ta.Any
+
+    @classmethod
+    def _resolve_raw_manifest(
+            cls,
+            m: Manifest,
+            *,
+            package_name: str,
+    ) -> _ResolvedManifest:
+        # self._module = module
+        # self._class_key = class_key
+        if not m.module.startswith('.'):
+            raise NameError(m.module)
+
+        module = package_name + m.module
+
+        [(class_key, value_dct)] = m.value.items()
+
+        if not class_key.startswith('$'):
+            raise ManifestLoader.ClassKeyError(class_key, module=module)
+
+        if class_key.startswith('$.'):
+            class_key = f'${package_name}{class_key[1:]}'
+
+        # FIXME: move to builder
+        # elif key.startswith('$.'):
+        #     if module.startswith('.'):
+        #         raise NameError(module)
+        #     kl = key[1:].split('.')
+        #     ml = module.split('.')
+        #     lvl = len(kl) - kl[::-1].index('')
+        #     if lvl >= len(ml):
+        #         raise ManifestLoader.ClassKeyError(key, module=module)
+        #     rn = '.'.join([*ml[:-lvl], *kl[lvl:]])
+        #     return f'${rn}'
+
+        return ManifestLoader._ResolvedManifest(
+            manifest=m,
+            package=package_name,
+
+            module=module,
+            class_key=class_key,
+            value_dct=value_dct,
+        )
+
+    ##
+
+    @classmethod
+    def _deserialize_raw_manifests(cls, obj: ta.Any) -> ta.Sequence[Manifest]:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
         lst: ta.List[Manifest] = []
         for e in obj:
-            m = Manifest(**e)
-
-            m = dc.replace(m, module=pkg_name + m.module)
-
-            [(key, value_dct)] = m.value.items()
-            if not key.startswith('$'):
-                raise ManifestLoader.ClassKeyError(key)
-            if key.startswith('$.'):
-                key = f'${pkg_name}{key[1:]}'
-                m = dc.replace(m, value={key: value_dct})
-
-            lst.append(m)
+            lst.append(Manifest(**e))
 
         return lst
 
-    #
-
-    def _read_package_file_text(self, pkg_name: str, file_name: str) -> ta.Optional[str]:
+    @classmethod
+    def _read_package_file_text(cls, package_name: str, file_name: str) -> ta.Optional[str]:
         # importlib.resources.files actually imports the package - to avoid this, if possible, the file is read straight
         # off the filesystem.
-        spec = importlib.util.find_spec(pkg_name)
+        spec = importlib.util.find_spec(package_name)
         if (
                 spec is not None and
                 isinstance(spec.loader, importlib.machinery.SourceFileLoader) and
@@ -375,17 +429,16 @@ class ManifestLoader:
                     return f.read()
 
         from importlib import resources as importlib_resources  # noqa
-        t = importlib_resources.files(pkg_name).joinpath(file_name)
+        t = importlib_resources.files(package_name).joinpath(file_name)
         if not t.is_file():
             return None
         return t.read_text('utf-8')
 
-    #
-
     MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.manifests.json'
 
-    def _load_package_uncached(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
-        src = self._read_package_file_text(pkg_name, self.MANIFESTS_FILE_NAME)
+    @classmethod
+    def _read_package_raw_manifests(cls, package_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+        src = cls._read_package_file_text(package_name, cls.MANIFESTS_FILE_NAME)
         if src is None:
             return None
 
@@ -393,13 +446,21 @@ class ManifestLoader:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
-        raw_lst = self._deserialize_raw_manifests(obj, pkg_name)
+        return cls._deserialize_raw_manifests(obj)
 
-        ld_pkg = ManifestLoader.LoadedPackage(self, pkg_name)
+    ##
+
+    def _load_package_uncached(self, package_name: str) -> ta.Optional[LoadedPackage]:
+        if (raw_lst := self._read_package_raw_manifests(package_name)) is None:
+            return None
+
+        ld_pkg = ManifestLoader.LoadedPackage(self, package_name)
 
         ld_man_lst: ta.List[ManifestLoader.LoadedManifest] = []
         for raw in raw_lst:
-            ld_man = ManifestLoader.LoadedManifest(ld_pkg, raw)
+            rsv = self._resolve_raw_manifest(raw, package_name=package_name)
+
+            ld_man = ManifestLoader.LoadedManifest(ld_pkg, rsv)
 
             ld_man_lst.append(ld_man)
 
@@ -407,19 +468,19 @@ class ManifestLoader:
 
         return ld_pkg
 
-    def _load_package_locked(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
+    def _load_package_locked(self, package_name: str) -> ta.Optional[LoadedPackage]:
         try:
-            return self._loaded_packages[pkg_name]
+            return self._loaded_packages[package_name]
         except KeyError:
             pass
 
-        pkg = self._load_package_uncached(pkg_name)
-        self._loaded_packages[pkg_name] = pkg
+        pkg = self._load_package_uncached(package_name)
+        self._loaded_packages[package_name] = pkg
         return pkg
 
-    def load_package(self, pkg_name: str) -> ta.Optional[LoadedPackage]:
+    def load_package(self, package_name: str) -> ta.Optional[LoadedPackage]:
         with self._lock:
-            return self._load_package_locked(pkg_name)
+            return self._load_package_locked(package_name)
 
     ##
 
@@ -429,10 +490,9 @@ class ManifestLoader:
         else:
             return cls(**kwargs)
 
-    def _instantiate_loaded_manifest(self, ld_man: LoadedManifest) -> ta.Any:
-        [(cls_key, value_dct)] = ld_man.manifest.value.items()
-        cls = self._load_class(cls_key)
-        value = self._instantiate_value(cls, **value_dct)
+    def _instantiate_resolved_manifest(self, resolved: _ResolvedManifest) -> ta.Any:
+        cls = self._load_class(resolved.class_key)
+        value = self._instantiate_value(cls, **resolved.value_dct)
         return value
 
     ##

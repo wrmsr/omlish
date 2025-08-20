@@ -24,13 +24,6 @@ T = ta.TypeVar('T')
 ##
 
 
-def _load_manifests(cls: type[T]) -> ta.Sequence[T]:
-    return GlobalManifestLoader.load_values_of(cls)
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class ResolvedBackend:
     backend_name: str
@@ -113,7 +106,7 @@ class ManifestBackendStringResolver(BackendStringResolver):
 class BackendStringBackendCatalog(BackendCatalog):
     def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         ps = parse_backend_string(name)
-        rv = ManifestBackendStringResolver(_load_manifests(BackendStringsManifest))
+        rv = ManifestBackendStringResolver(GlobalManifestLoader.load_values_of(BackendStringsManifest))
         rs = check.not_none(rv.resolve_backend_string(ps))
 
         return mc.registry_new(
