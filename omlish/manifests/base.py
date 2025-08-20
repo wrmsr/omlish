@@ -12,14 +12,14 @@ NameAliasesManifestT = ta.TypeVar('NameAliasesManifestT', bound='NameAliasesMani
 
 @dc.dataclass(frozen=True)
 class ModAttrManifest:
-    mod_name: str
-    attr_name: str
+    module: str
+    attr: str
 
     def load(self) -> ta.Any:
         import importlib  # noqa
 
-        mod = importlib.import_module(self.mod_name)
-        return getattr(mod, self.attr_name)
+        mod = importlib.import_module(self.module)
+        return getattr(mod, self.attr)
 
 
 ##

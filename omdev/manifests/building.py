@@ -220,8 +220,8 @@ class ManifestBuilder:
                 if issubclass(cls, ModAttrManifest):
                     attr_name = extract_manifest_target_name(lines, m.end_line)
                     inl_kw.update({
-                        'mod_name': fm.mod_name,
-                        'attr_name': attr_name,
+                        'module': fm.mod_name,
+                        'attr': attr_name,
                     })
 
                 origin = ManifestOrigin(

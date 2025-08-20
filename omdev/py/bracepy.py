@@ -93,8 +93,8 @@ def translate_brace_python(
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'bracepy',
-    'mod_name': __name__,
+    'name': 'bracepy',
+    'module': __name__,
 }}
 
 

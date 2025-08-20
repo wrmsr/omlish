@@ -9,19 +9,19 @@ import typing as ta
 
 @dc.dataclass(frozen=True)
 class CliCmd:
-    cmd_name: ta.Union[str, ta.Sequence[str]]
+    name: ta.Union[str, ta.Sequence[str]]
 
     @property
     def primary_name(self) -> str:
-        if isinstance(self.cmd_name, str):
-            return self.cmd_name
+        if isinstance(self.name, str):
+            return self.name
         else:
-            return self.cmd_name[0]
+            return self.name[0]
 
 
 @dc.dataclass(frozen=True)
 class CliModule(CliCmd):
-    mod_name: str
+    module: str
 
 
 @dc.dataclass(frozen=True)

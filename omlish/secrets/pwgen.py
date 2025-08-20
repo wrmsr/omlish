@@ -77,8 +77,8 @@ def _main() -> None:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'pwgen',
-    'mod_name': __name__,
+    'name': 'pwgen',
+    'module': __name__,
 }}
 
 

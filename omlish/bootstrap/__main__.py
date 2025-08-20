@@ -1,7 +1,7 @@
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'bootstrap',
-    'mod_name': __name__,
+    'name': 'bootstrap',
+    'module': __name__,
 }}
 
 

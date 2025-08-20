@@ -135,8 +135,8 @@ class ImportFinder:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'py/findimports',
-    'mod_name': __name__,
+    'name': 'py/findimports',
+    'module': __name__,
 }}
 
 

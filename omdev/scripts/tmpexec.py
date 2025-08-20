@@ -49,8 +49,8 @@ def _main() -> None:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'tmpexec',
-    'mod_name': __name__,
+    'name': 'tmpexec',
+    'module': __name__,
 }}
 
 

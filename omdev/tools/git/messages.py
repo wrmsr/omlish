@@ -80,6 +80,6 @@ class TimestampGitMessageGenerator(GitMessageGenerator):
 
 # @omlish-manifest
 class _TIMESTAMP_GIT_MESSAGE_GENERATOR_MANIFEST(StaticGitMessageGeneratorManifest):  # noqa
-    attr_name = 'TimestampGitMessageGenerator'
+    attr = 'TimestampGitMessageGenerator'
     name = 'timestamp'
     aliases = ['ts']  # noqa

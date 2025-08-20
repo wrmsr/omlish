@@ -1,7 +1,7 @@
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': ['jmespath', 'jp'],
-    'mod_name': __name__,
+    'name': ['jmespath', 'jp'],
+    'module': __name__,
 }}
 
 

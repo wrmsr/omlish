@@ -6,8 +6,8 @@
     "line": 68,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "nginxlogs",
-        "mod_name": "omserv.nginx.logs"
+        "name": "nginxlogs",
+        "module": "omserv.nginx.logs"
       }
     }
   }

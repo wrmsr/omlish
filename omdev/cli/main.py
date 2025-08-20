@@ -61,20 +61,20 @@ class CliCmdSet:
     def _make_entry(self, cmd: CliCmd) -> Entry:
         help_path: StrTuple | None
 
-        if isinstance(cmd.cmd_name, str):
-            ns = [cmd.cmd_name]
+        if isinstance(cmd.name, str):
+            ns = [cmd.name]
         else:
-            ns = list(cmd.cmd_name)
+            ns = list(cmd.name)
         exec_paths = [tuple(n.split('/')) for n in ns]
 
-        if isinstance(cmd.cmd_name, str) and cmd.cmd_name[0] == '_':
+        if isinstance(cmd.name, str) and cmd.name[0] == '_':
             help_path = None
 
         elif isinstance(cmd, CliFunc):
             help_path = ('-', *exec_paths[0])
 
         elif isinstance(cmd, CliModule):
-            help_path = (cmd.mod_name.partition('.')[0], *exec_paths[0])
+            help_path = (cmd.module.partition('.')[0], *exec_paths[0])
 
         else:
             raise TypeError(cmd)
@@ -128,10 +128,10 @@ class CliCmdSet:
             if h in c:
                 raise NameError(e)
 
-            if isinstance(e.cmd.cmd_name, str):
-                l = [e.cmd.cmd_name]
+            if isinstance(e.cmd.name, str):
+                l = [e.cmd.name]
             else:
-                l = list(e.cmd.cmd_name)
+                l = list(e.cmd.name)
 
             s = (
                 f'{l[0].split("/")[-1]}'
@@ -256,7 +256,7 @@ def _main() -> ta.Any:
         cmd = sel.cmd
         if isinstance(cmd, CliModule):
             sys.argv = [args.cmd, *(sel.args or ())]
-            runpy._run_module_as_main(cmd.mod_name)  # type: ignore  # noqa
+            runpy._run_module_as_main(cmd.module)  # type: ignore  # noqa
             return 0
 
         elif isinstance(cmd, CliFunc):

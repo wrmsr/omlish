@@ -13,8 +13,8 @@ class StaticModAttrManifest(dc.Static, ModAttrManifest, abc.ABC):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         if (
                 not (lang.is_abstract_class(cls) or abc.ABC in cls.__bases__) and
-                'mod_name' not in cls.__dict__
+                'module' not in cls.__dict__
         ):
-            setattr(cls, 'mod_name', cls.__module__)
+            setattr(cls, 'module', cls.__module__)
 
         super().__init_subclass__(**kwargs)

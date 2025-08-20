@@ -16,10 +16,10 @@ class StaticMyManifest(StaticModAttrManifest, MyManifest, abc.ABC):
 
 
 class _MY_MANIFEST(StaticMyManifest):  # noqa
-    attr_name = 'FOO_COUNT'
+    attr = 'FOO_COUNT'
     name = 'foo'
 
 
 def test_manifest():
     print(_MY_MANIFEST())
-    assert _MY_MANIFEST.mod_name == __name__
+    assert _MY_MANIFEST.module == __name__

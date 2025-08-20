@@ -85,12 +85,12 @@ def make_str_object_codec(
 
 
 def make_object_lazy_loaded_codec(
-        mod_name: str,
-        attr_name: str,
+        module: str,
+        attr: str,
         codec: ObjectCodec,
 ) -> codecs.LazyLoadedCodec:
     return codecs.LazyLoadedCodec.new(
-        mod_name,
-        attr_name,
+        module,
+        attr,
         codec,
     )

@@ -6,8 +6,8 @@
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "bootstrap",
-        "mod_name": "omlish.bootstrap.__main__"
+        "name": "bootstrap",
+        "module": "omlish.bootstrap.__main__"
       }
     }
   },
@@ -18,8 +18,8 @@
     "line": 361,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "procfs",
-        "mod_name": "omlish.diag.procfs"
+        "name": "procfs",
+        "module": "omlish.diag.procfs"
       }
     }
   },
@@ -30,8 +30,8 @@
     "line": 30,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.cbor",
-        "attr_name": "CBOR_CODEC",
+        "module": "omlish.formats.cbor",
+        "attr": "CBOR_CODEC",
         "name": "cbor",
         "aliases": null
       }
@@ -44,8 +44,8 @@
     "line": 30,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.cloudpickle",
-        "attr_name": "CLOUDPICKLE_CODEC",
+        "module": "omlish.formats.cloudpickle",
+        "attr": "CLOUDPICKLE_CODEC",
         "name": "cloudpickle",
         "aliases": null
       }
@@ -58,8 +58,8 @@
     "line": 25,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.edn.codec",
-        "attr_name": "EDN_CODEC",
+        "module": "omlish.formats.edn.codec",
+        "attr": "EDN_CODEC",
         "name": "edn",
         "aliases": null
       }
@@ -72,8 +72,8 @@
     "line": 25,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.ini.codec",
-        "attr_name": "INI_CODEC",
+        "module": "omlish.formats.ini.codec",
+        "attr": "INI_CODEC",
         "name": "ini",
         "aliases": null
       }
@@ -86,8 +86,8 @@
     "line": 14,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.json.codecs",
-        "attr_name": "JSON_CODEC",
+        "module": "omlish.formats.json.codecs",
+        "attr": "JSON_CODEC",
         "name": "json",
         "aliases": null
       }
@@ -100,8 +100,8 @@
     "line": 21,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.json.codecs",
-        "attr_name": "JSON_COMPACT_CODEC",
+        "module": "omlish.formats.json.codecs",
+        "attr": "JSON_COMPACT_CODEC",
         "name": "json-compact",
         "aliases": null
       }
@@ -114,8 +114,8 @@
     "line": 28,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.json.codecs",
-        "attr_name": "JSON_PRETTY_CODEC",
+        "module": "omlish.formats.json.codecs",
+        "attr": "JSON_PRETTY_CODEC",
         "name": "json-pretty",
         "aliases": null
       }
@@ -128,8 +128,8 @@
     "line": 73,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.json5.codec",
-        "attr_name": "JSON5_CODEC",
+        "module": "omlish.formats.json5.codec",
+        "attr": "JSON5_CODEC",
         "name": "json5",
         "aliases": null
       }
@@ -142,8 +142,8 @@
     "line": 30,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.pickle",
-        "attr_name": "PICKLE_CODEC",
+        "module": "omlish.formats.pickle",
+        "attr": "PICKLE_CODEC",
         "name": "pickle",
         "aliases": null
       }
@@ -156,8 +156,8 @@
     "line": 24,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.repr",
-        "attr_name": "REPR_CODEC",
+        "module": "omlish.formats.repr",
+        "attr": "REPR_CODEC",
         "name": "repr",
         "aliases": null
       }
@@ -170,8 +170,8 @@
     "line": 16,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.toml.codec",
-        "attr_name": "TOML_CODEC",
+        "module": "omlish.formats.toml.codec",
+        "attr": "TOML_CODEC",
         "name": "toml",
         "aliases": null
       }
@@ -184,8 +184,8 @@
     "line": 255,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.yaml",
-        "attr_name": "YAML_CODEC",
+        "module": "omlish.formats.yaml",
+        "attr": "YAML_CODEC",
         "name": "yaml",
         "aliases": [
           "yml"
@@ -200,8 +200,8 @@
     "line": 262,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.formats.yaml",
-        "attr_name": "YAML_UNSAFE_CODEC",
+        "module": "omlish.formats.yaml",
+        "attr": "YAML_UNSAFE_CODEC",
         "name": "yaml-unsafe",
         "aliases": null
       }
@@ -214,8 +214,8 @@
     "line": 46,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.brotli",
-        "attr_name": "BROTLI_CODEC",
+        "module": "omlish.io.compress.brotli",
+        "attr": "BROTLI_CODEC",
         "name": "brotli",
         "aliases": null
       }
@@ -228,8 +228,8 @@
     "line": 60,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.bz2",
-        "attr_name": "BZ2_CODEC",
+        "module": "omlish.io.compress.bz2",
+        "attr": "BZ2_CODEC",
         "name": "bz2",
         "aliases": null
       }
@@ -242,8 +242,8 @@
     "line": 349,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.gzip",
-        "attr_name": "GZIP_CODEC",
+        "module": "omlish.io.compress.gzip",
+        "attr": "GZIP_CODEC",
         "name": "gzip",
         "aliases": [
           "gz"
@@ -258,8 +258,8 @@
     "line": 90,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.lz4",
-        "attr_name": "LZ4_CODEC",
+        "module": "omlish.io.compress.lz4",
+        "attr": "LZ4_CODEC",
         "name": "lz4",
         "aliases": null
       }
@@ -272,8 +272,8 @@
     "line": 80,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.lzma",
-        "attr_name": "LZMA_CODEC",
+        "module": "omlish.io.compress.lzma",
+        "attr": "LZMA_CODEC",
         "name": "lzma",
         "aliases": null
       }
@@ -286,8 +286,8 @@
     "line": 33,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.snappy",
-        "attr_name": "SNAPPY_CODEC",
+        "module": "omlish.io.compress.snappy",
+        "attr": "SNAPPY_CODEC",
         "name": "snappy",
         "aliases": null
       }
@@ -300,8 +300,8 @@
     "line": 73,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.zlib",
-        "attr_name": "ZLIB_CODEC",
+        "module": "omlish.io.compress.zlib",
+        "attr": "ZLIB_CODEC",
         "name": "zlib",
         "aliases": null
       }
@@ -314,8 +314,8 @@
     "line": 51,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.zstd",
-        "attr_name": "ZSTD_CODEC",
+        "module": "omlish.io.compress.zstd",
+        "attr": "ZSTD_CODEC",
         "name": "zstd",
         "aliases": null
       }
@@ -328,8 +328,8 @@
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "pidfiles",
-        "mod_name": "omlish.os.pidfiles.__main__"
+        "name": "pidfiles",
+        "module": "omlish.os.pidfiles.__main__"
       }
     }
   },
@@ -340,8 +340,8 @@
     "line": 78,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "pwgen",
-        "mod_name": "omlish.secrets.pwgen"
+        "name": "pwgen",
+        "module": "omlish.secrets.pwgen"
       }
     }
   },
@@ -352,11 +352,11 @@
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "jmespath",
           "jp"
         ],
-        "mod_name": "omlish.specs.jmespath.__main__"
+        "module": "omlish.specs.jmespath.__main__"
       }
     }
   }

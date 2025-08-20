@@ -35,13 +35,13 @@ class Registry:
         self._registry_manifests = list(registry_manifests)
 
         self._registry_type_manifests_by_name = col.make_map(
-            ((m.attr_name, m) for m in self._registry_type_manifests),
+            ((m.attr, m) for m in self._registry_type_manifests),
             strict=True,
         )
 
         self._modules: dict[str, Registry._Module] = {}
         for rtm in self._registry_type_manifests:
-            m = self._get_module(rtm.mod_name)
+            m = self._get_module(rtm.module)
             m.registry_type_manifests.append(rtm)
             m.unresolved_type_manifests.append(rtm)
 
@@ -105,9 +105,9 @@ class Registry:
 
                 nu: list[RegistryTypeManifest] = []
                 for rtm in m.unresolved_type_manifests:
-                    if hasattr(mo, rtm.attr_name) and (v := getattr(mo, rtm.attr_name)) is cls:
+                    if hasattr(mo, rtm.attr) and (v := getattr(mo, rtm.attr)) is cls:
                         check.not_in(v, self._resolved_registry_type_names_by_registered_type)
-                        self._resolved_registry_type_names_by_registered_type[v] = rtm.attr_name
+                        self._resolved_registry_type_names_by_registered_type[v] = rtm.attr
                     else:
                         nu.append(rtm)
                 m.unresolved_type_manifests = nu

@@ -67,8 +67,8 @@ def parse_nginx_log_line(
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'nginxlogs',
-    'mod_name': __name__,
+    'name': 'nginxlogs',
+    'module': __name__,
 }}
 
 

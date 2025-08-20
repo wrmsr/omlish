@@ -95,13 +95,13 @@ class LazyLoadedCodec(ModAttrManifest):
     @classmethod
     def new(
             cls,
-            mod_name: str,
-            attr_name: str,
+            module: str,
+            attr: str,
             codec: Codec,
     ) -> 'LazyLoadedCodec':
         return cls(
-            mod_name=mod_name,
-            attr_name=attr_name,
+            module=module,
+            attr=attr,
             name=codec.name,
             aliases=codec.aliases,
         )

@@ -6,8 +6,8 @@
     "line": 4,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "aws",
-        "mod_name": "ominfra.clouds.aws.__main__"
+        "name": "aws",
+        "module": "ominfra.clouds.aws.__main__"
       }
     }
   },
@@ -18,11 +18,11 @@
     "line": 118,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "tailscale",
           "ts"
         ],
-        "mod_name": "ominfra.tailscale.cli"
+        "module": "ominfra.tailscale.cli"
       }
     }
   }

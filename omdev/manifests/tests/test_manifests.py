@@ -97,8 +97,8 @@ def test_main(request):
             'line': 1,
             'value': {
                 '$.thingies.manifests.NamedThingyManifest': {
-                    'mod_name': 'foo.nargles.thingy',
-                    'attr_name': 'NargleThingy',
+                    'module': 'foo.nargles.thingy',
+                    'attr': 'NargleThingy',
                     'name': 'nargle',
                     'aliases': None,
                 },
@@ -161,8 +161,8 @@ def test_dumping_nargles(request):
             'line': 1,
             'value': {
                 '$foo.thingies.manifests.NamedThingyManifest': {
-                    'mod_name': 'foo.nargles.thingy',
-                    'attr_name': 'NargleThingy',
+                    'module': 'foo.nargles.thingy',
+                    'attr': 'NargleThingy',
                     'name': 'nargle',
                     'aliases': None,
                 },

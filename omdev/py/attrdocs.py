@@ -159,8 +159,8 @@ def extract_attr_docs(src: str) -> ta.Mapping[str, AttrDoc]:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'py/attrdocs',
-    'mod_name': __name__,
+    'name': 'py/attrdocs',
+    'module': __name__,
 }}
 
 

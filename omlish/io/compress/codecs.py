@@ -67,12 +67,12 @@ def make_compression_codec(
 
 
 def make_compression_lazy_loaded_codec(
-        mod_name: str,
-        attr_name: str,
+        module: str,
+        attr: str,
         codec: CompressionCodec,
 ) -> codecs.LazyLoadedCodec:
     return codecs.LazyLoadedCodec.new(
-        mod_name,
-        attr_name,
+        module,
+        attr,
         codec,
     )

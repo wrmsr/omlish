@@ -6,8 +6,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "amalg",
-        "mod_name": "omdev.amalg.__main__"
+        "name": "amalg",
+        "module": "omdev.amalg.__main__"
       }
     }
   },
@@ -18,8 +18,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "cc",
-        "mod_name": "omdev.cc.__main__"
+        "name": "cc",
+        "module": "omdev.cc.__main__"
       }
     }
   },
@@ -30,8 +30,8 @@
     "line": 331,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "cmake",
-        "mod_name": "omdev.cexts.cmake"
+        "name": "cmake",
+        "module": "omdev.cexts.cmake"
       }
     }
   },
@@ -42,8 +42,8 @@
     "line": 233,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "cli",
-        "mod_name": "omdev.cli.clicli"
+        "name": "cli",
+        "module": "omdev.cli.clicli"
       }
     }
   },
@@ -54,8 +54,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "cmdlog",
-        "mod_name": "omdev.cmdlog.__main__"
+        "name": "cmdlog",
+        "module": "omdev.cmdlog.__main__"
       }
     }
   },
@@ -66,8 +66,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "dataclasses",
-        "mod_name": "omdev.dataclasses.__main__"
+        "name": "dataclasses",
+        "module": "omdev.dataclasses.__main__"
       }
     }
   },
@@ -78,8 +78,8 @@
     "line": 136,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "imgur",
-        "mod_name": "omdev.imgur"
+        "name": "imgur",
+        "module": "omdev.imgur"
       }
     }
   },
@@ -90,11 +90,11 @@
     "line": 81,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "intellij",
           "ij"
         ],
-        "mod_name": "omdev.intellij.cli"
+        "module": "omdev.intellij.cli"
       }
     }
   },
@@ -105,8 +105,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "interp",
-        "mod_name": "omdev.interp.__main__"
+        "name": "interp",
+        "module": "omdev.interp.__main__"
       }
     }
   },
@@ -117,8 +117,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "magic",
-        "mod_name": "omdev.magic.__main__"
+        "name": "magic",
+        "module": "omdev.magic.__main__"
       }
     }
   },
@@ -129,8 +129,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "manifests",
-        "mod_name": "omdev.manifests.__main__"
+        "name": "manifests",
+        "module": "omdev.manifests.__main__"
       }
     }
   },
@@ -152,8 +152,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "precheck",
-        "mod_name": "omdev.precheck.__main__"
+        "name": "precheck",
+        "module": "omdev.precheck.__main__"
       }
     }
   },
@@ -164,8 +164,8 @@
     "line": 162,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "ptk/ncdu",
-        "mod_name": "omdev.ptk.apps.ncdu"
+        "name": "ptk/ncdu",
+        "module": "omdev.ptk.apps.ncdu"
       }
     }
   },
@@ -176,11 +176,11 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "ptk/markdown",
           "ptk/md"
         ],
-        "mod_name": "omdev.ptk.markdown.__main__"
+        "module": "omdev.ptk.markdown.__main__"
       }
     }
   },
@@ -191,8 +191,8 @@
     "line": 160,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/attrdocs",
-        "mod_name": "omdev.py.attrdocs"
+        "name": "py/attrdocs",
+        "module": "omdev.py.attrdocs"
       }
     }
   },
@@ -203,8 +203,8 @@
     "line": 94,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "bracepy",
-        "mod_name": "omdev.py.bracepy"
+        "name": "bracepy",
+        "module": "omdev.py.bracepy"
       }
     }
   },
@@ -215,8 +215,8 @@
     "line": 63,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/classdot",
-        "mod_name": "omdev.py.classdot"
+        "name": "py/classdot",
+        "module": "omdev.py.classdot"
       }
     }
   },
@@ -227,8 +227,8 @@
     "line": 136,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/findimports",
-        "mod_name": "omdev.py.findimports"
+        "name": "py/findimports",
+        "module": "omdev.py.findimports"
       }
     }
   },
@@ -239,8 +239,8 @@
     "line": 89,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/execstat",
-        "mod_name": "omdev.py.scripts.execstat"
+        "name": "py/execstat",
+        "module": "omdev.py.scripts.execstat"
       }
     }
   },
@@ -251,8 +251,8 @@
     "line": 491,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/importtrace",
-        "mod_name": "omdev.py.scripts.importtrace"
+        "name": "py/importtrace",
+        "module": "omdev.py.scripts.importtrace"
       }
     }
   },
@@ -263,8 +263,8 @@
     "line": 65,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/srcheaders",
-        "mod_name": "omdev.py.srcheaders"
+        "name": "py/srcheaders",
+        "module": "omdev.py.srcheaders"
       }
     }
   },
@@ -275,8 +275,8 @@
     "line": 178,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/importscan",
-        "mod_name": "omdev.py.tools.importscan"
+        "name": "py/importscan",
+        "module": "omdev.py.tools.importscan"
       }
     }
   },
@@ -287,8 +287,8 @@
     "line": 149,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "py/mkrelimp",
-        "mod_name": "omdev.py.tools.mkrelimp"
+        "name": "py/mkrelimp",
+        "module": "omdev.py.tools.mkrelimp"
       }
     }
   },
@@ -299,8 +299,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "pyproject",
-        "mod_name": "omdev.pyproject.__main__"
+        "name": "pyproject",
+        "module": "omdev.pyproject.__main__"
       }
     }
   },
@@ -311,8 +311,8 @@
     "line": 117,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "slowcat",
-        "mod_name": "omdev.scripts.slowcat"
+        "name": "slowcat",
+        "module": "omdev.scripts.slowcat"
       }
     }
   },
@@ -323,8 +323,8 @@
     "line": 50,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "tmpexec",
-        "mod_name": "omdev.scripts.tmpexec"
+        "name": "tmpexec",
+        "module": "omdev.scripts.tmpexec"
       }
     }
   },
@@ -335,8 +335,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "antlr",
-        "mod_name": "omdev.tools.antlr.__main__"
+        "name": "antlr",
+        "module": "omdev.tools.antlr.__main__"
       }
     }
   },
@@ -347,8 +347,8 @@
     "line": 248,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "cloc",
-        "mod_name": "omdev.tools.cloc"
+        "name": "cloc",
+        "module": "omdev.tools.cloc"
       }
     }
   },
@@ -359,8 +359,8 @@
     "line": 24,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "diff",
-        "mod_name": "omdev.tools.diff"
+        "name": "diff",
+        "module": "omdev.tools.diff"
       }
     }
   },
@@ -371,8 +371,8 @@
     "line": 106,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "doc",
-        "mod_name": "omdev.tools.doc"
+        "name": "doc",
+        "module": "omdev.tools.doc"
       }
     }
   },
@@ -383,8 +383,8 @@
     "line": 259,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "docker",
-        "mod_name": "omdev.tools.docker"
+        "name": "docker",
+        "module": "omdev.tools.docker"
       }
     }
   },
@@ -395,8 +395,8 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "git",
-        "mod_name": "omdev.tools.git.__main__"
+        "name": "git",
+        "module": "omdev.tools.git.__main__"
       }
     }
   },
@@ -407,8 +407,8 @@
     "line": 81,
     "value": {
       "$.tools.git.messages.GitMessageGeneratorManifest": {
-        "mod_name": "omdev.tools.git.messages",
-        "attr_name": "TimestampGitMessageGenerator",
+        "module": "omdev.tools.git.messages",
+        "attr": "TimestampGitMessageGenerator",
         "name": "timestamp",
         "aliases": [
           "ts"
@@ -423,11 +423,11 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "json",
           "j"
         ],
-        "mod_name": "omdev.tools.json.__main__"
+        "module": "omdev.tools.json.__main__"
       }
     }
   },
@@ -438,11 +438,11 @@
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "jsonview",
           "jv"
         ],
-        "mod_name": "omdev.tools.jsonview.__main__"
+        "module": "omdev.tools.jsonview.__main__"
       }
     }
   },
@@ -453,8 +453,8 @@
     "line": 330,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "linehisto",
-        "mod_name": "omdev.tools.linehisto"
+        "name": "linehisto",
+        "module": "omdev.tools.linehisto"
       }
     }
   },
@@ -465,10 +465,10 @@
     "line": 123,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "mkenv"
         ],
-        "mod_name": "omdev.tools.mkenv"
+        "module": "omdev.tools.mkenv"
       }
     }
   },
@@ -479,11 +479,11 @@
     "line": 123,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "notebook",
           "nb"
         ],
-        "mod_name": "omdev.tools.notebook"
+        "module": "omdev.tools.notebook"
       }
     }
   },
@@ -494,8 +494,8 @@
     "line": 392,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "pawk",
-        "mod_name": "omdev.tools.pawk.pawk"
+        "name": "pawk",
+        "module": "omdev.tools.pawk.pawk"
       }
     }
   },
@@ -506,8 +506,8 @@
     "line": 123,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "pip",
-        "mod_name": "omdev.tools.pip"
+        "name": "pip",
+        "module": "omdev.tools.pip"
       }
     }
   },
@@ -518,8 +518,8 @@
     "line": 128,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "prof",
-        "mod_name": "omdev.tools.prof"
+        "name": "prof",
+        "module": "omdev.tools.prof"
       }
     }
   },
@@ -530,8 +530,8 @@
     "line": 77,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "qr",
-        "mod_name": "omdev.tools.qr"
+        "name": "qr",
+        "module": "omdev.tools.qr"
       }
     }
   },
@@ -542,8 +542,8 @@
     "line": 68,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "shadow",
-        "mod_name": "omdev.tools.shadow"
+        "name": "shadow",
+        "module": "omdev.tools.shadow"
       }
     }
   },
@@ -554,11 +554,11 @@
     "line": 110,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": [
+        "name": [
           "shell",
           "sh"
         ],
-        "mod_name": "omdev.tools.shell"
+        "module": "omdev.tools.shell"
       }
     }
   },
@@ -569,8 +569,8 @@
     "line": 196,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "sqlrepl",
-        "mod_name": "omdev.tools.sqlrepl"
+        "name": "sqlrepl",
+        "module": "omdev.tools.sqlrepl"
       }
     }
   }
