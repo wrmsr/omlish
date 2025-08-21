@@ -71,6 +71,7 @@ class Cli(ap.Cli):
         ap.arg('-p', '--pdf', action='store_true'),
         ap.arg('-o', '--open', action='store_true'),
         ap.arg('-O', '--overwrite', action='store_true'),
+        ap.arg('-x', '--exe'),
     )
     def pstats_exec(self) -> None:
         if self.args.out_file is not None:
@@ -85,10 +86,13 @@ class Cli(ap.Cli):
 
         pstats_file = os.path.join(tmp_dir, 'prof.pstats')
 
+        if (exe := self.args.exe) is None:
+            exe = sys.executable
+
         # TODO: --python - and handle env vars, unset venv and pythonpath stuff - helper for this, scrub env
         #  - share with execstat, -x
         subprocess.check_call([
-            sys.executable,
+            exe,
             '-m', 'cProfile',
             '-o', pstats_file,
             os.path.abspath(src_file),
@@ -118,8 +122,8 @@ class Cli(ap.Cli):
             else:
                 # Alt: python -i <setup.py> where setup.py is 'import pstats; stats = pstats.Stats(<out_file>)'
                 os.execl(
-                    sys.executable,
-                    sys.executable,
+                    exe,
+                    exe,
                     '-m', 'pstats',
                     out_file,
                 )
