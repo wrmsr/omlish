@@ -1,3 +1,8 @@
+"""
+TODO:
+ - handle service_cls, like at all, lol
+  - interop with registry somehow, probably? or is it strictly a different concern?
+"""
 import abc
 import dataclasses as dc
 import typing as ta
