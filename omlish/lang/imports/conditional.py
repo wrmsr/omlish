@@ -1,6 +1,6 @@
 import sys
 
-from .resolution import resolve_import_name
+from .resolving import resolve_import_name
 
 
 ##

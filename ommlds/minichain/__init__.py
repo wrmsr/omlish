@@ -231,6 +231,7 @@ with _lang.auto_proxy_init(
         ModelSpecifier,
         ModelName,
         ModelPath,
+        ModelRepo,
     )
 
     ##

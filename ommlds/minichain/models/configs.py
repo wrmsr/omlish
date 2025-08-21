@@ -1,3 +1,4 @@
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
@@ -17,3 +18,14 @@ class ModelName(tv.ScalarTypedValue[str], ModelSpecifier):
 
 class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
     pass
+
+
+@dc.dataclass(frozen=True)
+class ModelRepo(ModelSpecifier):
+    namespace: str
+    repo: str
+
+    _: dc.KW_ONLY
+
+    tag: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    path: str | None = dc.xfield(None, repr_fn=dc.opt_repr)

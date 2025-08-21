@@ -18,6 +18,17 @@ from ....configs import Config
 from ....llms.types import MaxTokens
 from ....models.configs import ModelName
 from ....standard import DefaultOptions
+from ...strings.manifests import BackendStringsManifest
+
+
+##
+
+
+# @omlish-manifest
+_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
+    ['ChatChoicesService'],
+    'mlx',
+)
 
 
 ##

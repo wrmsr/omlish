@@ -237,7 +237,7 @@ from .imports.proxyinit import (  # noqa
     auto_proxy_init,
 )
 
-from .imports.resolution import (  # noqa
+from .imports.resolving import (  # noqa
     can_import,
     get_real_module_name,
     resolve_import_name,

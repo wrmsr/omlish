@@ -1,6 +1,6 @@
 import sys
 
-from ..resolution import can_import
+from ..resolving import can_import
 
 
 def test_can_import():

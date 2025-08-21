@@ -180,9 +180,24 @@
   },
   {
     "module": ".minichain.backends.impls.mlx.chat",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "ommlds/minichain/backends/impls/mlx/chat.py",
+    "line": 27,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService"
+        ],
+        "backend_name": "mlx",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
-    "line": 26,
+    "line": 37,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mlx.chat",
