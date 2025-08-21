@@ -192,6 +192,16 @@ class _AutoProxyInitCapture:
         def __repr__(self) -> str:
             return repr(str(self))
 
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._modules_by_spec: dict[_AutoProxyInitCapture.ModuleSpec, _AutoProxyInitCapture._Module] = {}
+        self._modules_by_module_obj: dict[types.ModuleType, _AutoProxyInitCapture._Module] = {}
+
+        self._attrs: dict[_AutoProxyInitCapture._ModuleAttr, tuple[_AutoProxyInitCapture._Module, str]] = {}
+
+    #
+
     class _ModuleAttr:
         def __init__(self, module: '_AutoProxyInitCapture._Module', name: str) -> None:
             super().__init__()
@@ -208,20 +218,13 @@ class _AutoProxyInitCapture:
 
             self.spec = spec
 
-            self.module = types.ModuleType(f'<{self.__class__.__qualname__}: {spec!r}>')
+            self.module_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {spec!r}>')
 
             self.attrs: dict[str, _AutoProxyInitCapture._ModuleAttr] = {}
             self.imported_whole = False
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}({self.spec!r})'
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._modules_by_spec: dict[_AutoProxyInitCapture.ModuleSpec, _AutoProxyInitCapture._Module] = {}
-        self._modules_by_module: dict[types.ModuleType, _AutoProxyInitCapture._Module] = {}
-        self._attrs: dict[_AutoProxyInitCapture._ModuleAttr, tuple[_AutoProxyInitCapture._Module, str]] = {}
 
     def _handle_import(
             self,
@@ -241,7 +244,7 @@ class _AutoProxyInitCapture:
                     raise AutoProxyInitErrors.ImportStarForbiddenError(str(module.spec), from_list)
 
                 try:
-                    xma = getattr(module.module, attr)
+                    xma = getattr(module.module_obj, attr)
                 except AttributeError:
                     pass
 
@@ -257,7 +260,9 @@ class _AutoProxyInitCapture:
                 ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
                 module.attrs[attr] = ma
                 self._attrs[ma] = (module, attr)
-                setattr(module.module, attr, ma)
+                setattr(module.module_obj, attr, ma)
+
+    #
 
     _MOD_SELF_ATTR: ta.ClassVar[str] = '__auto_proxy_init_capture__'
 
@@ -281,14 +286,14 @@ class _AutoProxyInitCapture:
         except KeyError:
             module = self._Module(spec)
             self._modules_by_spec[spec] = module
-            self._modules_by_module[module.module] = module
+            self._modules_by_module_obj[module.module_obj] = module
 
         self._handle_import(
             module,
             from_list=from_list,
         )
 
-        return module.module
+        return module.module_obj
 
     @contextlib.contextmanager
     def hook_context(
@@ -349,26 +354,19 @@ class _AutoProxyInitCapture:
             del init_globals[self._MOD_SELF_ATTR]
             builtins.__import__ = old_import
 
-    # def verify_globals(
-    #         self,
-    #         init_globals: ta.MutableMapping[str, ta.Any],  # noqa
-    # ) -> None:
-    #     for attr, obj in self._attrs.items():
-    #         try:
-    #             xo = init_globals[attr]
-    #         except KeyError:
-    #             raise AutoProxyInitErrors.AttrError(None, attr) from None
     #
-    #         if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
-    #             if xo is not obj:
-    #                 raise AutoProxyInitErrors.AttrError(None, attr) from None
+
+    def verify_state(
+            self,
+            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    ) -> None:
+        # TODO:
+        #  - check fake modules, ensure expected dicts (only _ModuleAttrs) - callers should not set attrs into imported
+        #    modules
+
+        pass
+
     #
-    #         elif isinstance(obj, _AutoProxyInitCapture._Module):
-    #             if xo is not obj.module:
-    #                 raise AutoProxyInitErrors.AttrError(None, attr) from None
-    #
-    #         else:
-    #             raise TypeError(obj)
 
     class ProxyInit(ta.NamedTuple):
         package: str
@@ -393,12 +391,12 @@ class _AutoProxyInitCapture:
 
             elif isinstance(obj, types.ModuleType):
                 try:
-                    obj = self._modules_by_module[obj]
+                    m = self._modules_by_module_obj[obj]
                 except KeyError:
                     continue
-                if not obj.imported_whole:
-                    raise RuntimeError(f'AutoProxyInit module {obj.spec!r} not imported_whole')
-                dct.setdefault(obj, []).append((None, attr))
+                if not m.imported_whole:
+                    raise RuntimeError(f'AutoProxyInit module {m.spec!r} not imported_whole')
+                dct.setdefault(m, []).append((None, attr))
 
         lst: list[_AutoProxyInitCapture.ProxyInit] = []
         for m, ts in dct.items():
@@ -443,6 +441,8 @@ def auto_proxy_init(
 
     with cap.hook_context(init_globals):
         yield
+
+    cap.verify_state(init_globals)
 
     pis = cap.build_proxy_inits(init_globals)
 

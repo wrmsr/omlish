@@ -10,3 +10,9 @@ with auto_proxy_init(globals()):
         abc,
         ghi,
     )
+
+    import math as math2  # noqa
+
+    from . import qux as qux2  # noqa
+
+    from .bar.baz import jkl as jkl2  # noqa
