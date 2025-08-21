@@ -218,6 +218,7 @@ class _AutoProxyInitCapture:
             self.spec = spec
 
             self.module_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {spec!r}>')
+            self.initial_module_dict = dict(self.module_obj.__dict__)
 
             self.attrs: dict[str, _AutoProxyInitCapture._ModuleAttr] = {}
             self.imported_whole = False
@@ -359,11 +360,18 @@ class _AutoProxyInitCapture:
             self,
             init_globals: ta.MutableMapping[str, ta.Any],  # noqa
     ) -> None:
-        # TODO:
-        #  - check fake modules, ensure expected dicts (only _ModuleAttrs) - callers should not set attrs into imported
-        #    modules
+        for m in self._modules_by_spec.values():
+            for a, o in m.module_obj.__dict__.items():
+                try:
+                    i = m.initial_module_dict[a]
 
-        pass
+                except KeyError:
+                    if o is not m.attrs[a]:
+                        raise AutoProxyInitErrors.AttrError(str(m.spec), a) from None
+
+                else:
+                    if o != i:
+                        raise AutoProxyInitErrors.AttrError(str(m.spec), a)
 
     #
 
@@ -380,6 +388,9 @@ class _AutoProxyInitCapture:
     ) -> BuiltProxyInits:
         dct: dict[_AutoProxyInitCapture._Module, list[tuple[str | None, str]]] = {}
 
+        rem_whole_mods: set[_AutoProxyInitCapture._Module] = {m for m in self._modules_by_spec.values() if m.imported_whole}  # noqa
+        rem_mod_attrs: set[_AutoProxyInitCapture._ModuleAttr] = set(self._attrs)
+
         for attr, obj in init_globals.items():
             if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
                 try:
@@ -387,6 +398,7 @@ class _AutoProxyInitCapture:
                 except KeyError:
                     raise AutoProxyInitErrors.AttrError(None, attr) from None
                 dct.setdefault(m, []).append((a, attr))
+                rem_mod_attrs.discard(obj)
 
             elif isinstance(obj, _AutoProxyInitCapture._Module):
                 raise AutoProxyInitErrors.AttrError(None, attr) from None
@@ -399,6 +411,7 @@ class _AutoProxyInitCapture:
                 if not m.imported_whole:
                     raise RuntimeError(f'AutoProxyInit module {m.spec!r} not imported_whole')
                 dct.setdefault(m, []).append((None, attr))
+                rem_whole_mods.discard(m)
 
         lst: list[_AutoProxyInitCapture.ProxyInit] = []
         for m, ts in dct.items():
