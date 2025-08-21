@@ -11,7 +11,7 @@ from omlish import lang
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ParsedBackendString:
-    backend: str | None = None
+    backend: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
     #
 
