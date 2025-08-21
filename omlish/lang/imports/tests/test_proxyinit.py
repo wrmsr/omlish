@@ -1,3 +1,6 @@
+import math
+
+
 def test_auto_proxy_init():
     from . import foo2  # noqa
 
@@ -11,15 +14,17 @@ def test_auto_proxy_init():
         'jkl2',
         # 'jarf2',
         # 'karf',
+        'pi',
     ]:
         assert k not in foo2.__dict__
 
-    assert foo2.math.pi < 4
+    assert foo2.math.pi is math.pi
     assert foo2.qux.jarf == 420
     assert foo2.ghi == 2
     assert not hasattr(foo2, 'jkl')
-    assert foo2.math2.pi < 4
+    assert foo2.math2.pi is math.pi
     assert foo2.qux2.jarf == 420
     assert foo2.jkl2 == 421
     # assert foo2.jarf2 == 420
     # assert foo2.karf == 520
+    # assert foo2.pi is math.pi

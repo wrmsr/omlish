@@ -21,3 +21,5 @@ with auto_proxy_init(globals()):
 
     # jarf2 = qux.jarf  # noqa
     # karf = qux.karf  # noqa
+
+    pi = math.pi

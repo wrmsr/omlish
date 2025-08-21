@@ -203,7 +203,11 @@ class _AutoProxyInitCapture:
     #
 
     class _ModuleAttr:
-        def __init__(self, module: '_AutoProxyInitCapture._Module', name: str) -> None:
+        def __init__(
+                self,
+                module: '_AutoProxyInitCapture._Module',
+                name: str,
+        ) -> None:
             super().__init__()
 
             self.__module = module
@@ -228,18 +232,18 @@ class _AutoProxyInitCapture:
                 self.module_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
             self.initial_module_dict = dict(self.module_obj.__dict__)
 
-            self.attrs: dict[str, _AutoProxyInitCapture._ModuleAttr] = {}
+            self.contents: dict[str, _AutoProxyInitCapture._ModuleAttr | _AutoProxyInitCapture._Module] = {}
             self.imported_whole = False
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}({self.spec!r})'
 
     def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
-        if attr in module.attrs:
+        if attr in module.contents:
             raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
         ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
-        module.attrs[attr] = ma
+        module.contents[attr] = ma
         self._attrs[ma] = (module, attr)
         setattr(module.module_obj, attr, ma)
         return ma
@@ -264,7 +268,7 @@ class _AutoProxyInitCapture:
                 xma = getattr(module.module_obj, attr)
 
                 if (
-                        xma is not module.attrs.get(attr) or
+                        xma is not module.contents.get(attr) or
                         self._attrs[xma] != (module, attr)
                 ):
                     raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
@@ -376,7 +380,7 @@ class _AutoProxyInitCapture:
                     i = m.initial_module_dict[a]
 
                 except KeyError:
-                    if o is not m.attrs[a]:
+                    if o is not m.contents[a]:
                         raise AutoProxyInitErrors.AttrError(str(m.spec), a) from None
 
                 else:
