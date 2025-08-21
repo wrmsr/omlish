@@ -29,6 +29,7 @@ def l2_norm(v: ta.Sequence[float]) -> ta.Sequence[float]:
 class SimpleVectorStore(VectorStore):
     def __init__(self) -> None:
         super().__init__()
+
         self._docs: list[VectorIndexed] = []
 
     def index(self, doc: VectorIndexed) -> None:

@@ -121,6 +121,7 @@ class RequiresTokenizer:
         rules: ta.Dict[str, ta.Union[str, ta.Pattern[str]]],
     ) -> None:
         super().__init__()
+
         self.source = source
         self.rules: ta.Dict[str, ta.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
         self.next_token: ta.Optional[RequiresToken] = None

@@ -76,6 +76,7 @@ class CmakeProjectGen:
             use_exe_realpath: bool = False,
     ) -> None:
         super().__init__()
+
         self._exts = check.not_isinstance(exts, str)
         self._prj_root = os.path.abspath(prj_root) if prj_root is not None else os.getcwd()
         self._use_exe_realpath = use_exe_realpath
@@ -164,6 +165,7 @@ class CmakeProjectGen:
                 out: ta.TextIO,
         ) -> None:
             super().__init__()
+
             self.p = p
             self.g = cmake.CmakeGen(out)
 

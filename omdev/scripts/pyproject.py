@@ -4072,6 +4072,7 @@ class RequirementsRewriter:
             venv: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
         self._venv = venv
 
     @cached_nullary
@@ -6691,6 +6692,7 @@ class InterpProvider(abc.ABC):
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
             sfx = 'InterpProvider'
             if not cls.__name__.endswith(sfx):
@@ -7775,6 +7777,7 @@ class GitRevisionAdder:
             output_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
         self._given_revision = revision
         self._output_suffix = output_suffix
 
@@ -8365,6 +8368,7 @@ class BasePyprojectPackageGenerator(abc.ABC):
             pkg_suffix: str = '',
     ) -> None:
         super().__init__()
+
         self._dir_name = dir_name
         self._pkgs_root = pkgs_root
         self._pkg_suffix = pkg_suffix
@@ -9346,6 +9350,7 @@ class Venv:
             cfg: VenvConfig,
     ) -> None:
         super().__init__()
+
         self._name = name
         self._cfg = cfg
 

@@ -2535,6 +2535,7 @@ class AwsSigner:
             service_name: str,
     ) -> None:
         super().__init__()
+
         self._creds = creds
         self._region_name = region_name
         self._service_name = service_name
@@ -2890,6 +2891,7 @@ class JournalctlToAwsCursor:
             ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
     ) -> None:
         super().__init__()
+
         self._cursor_file = cursor_file
         self._ensure_locked = ensure_locked
 
@@ -4820,6 +4822,7 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
+
         self._queue = queue
         self._builder = builder
         self._cursor = cursor

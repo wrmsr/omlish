@@ -41,6 +41,7 @@ class UnexpectedMessageError(Exception):
 class AsgiWrapper:
     def __init__(self, app: AsgiFramework) -> None:
         super().__init__()
+
         self.app = app
 
     async def __call__(

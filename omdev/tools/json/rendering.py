@@ -37,6 +37,7 @@ def make_render_kwargs(opts: RenderingOptions) -> ta.Mapping[str, ta.Any]:
 class Renderer(lang.Abstract):
     def __init__(self, opts: RenderingOptions) -> None:
         super().__init__()
+
         self._opts = opts
         self._kw = make_render_kwargs(opts)
 

@@ -69,6 +69,7 @@ class AsgiServerShellTask:
             config: server.Config = server.Config(),
     ) -> None:
         super().__init__()
+
         self._app = app
         self._config = config
 

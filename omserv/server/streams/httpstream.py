@@ -56,6 +56,7 @@ class HttpStream:
             stream_id: int,
     ) -> None:
         super().__init__()
+
         self.app = app
         self.client = client
         self.closed = False

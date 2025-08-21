@@ -34,6 +34,7 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
+
         self._queue = queue
         self._builder = builder
         self._cursor = cursor

@@ -50,6 +50,7 @@ class BufferCompleteError(Exception):
 class StreamBuffer:
     def __init__(self, event_class: type[WaitableEvent]) -> None:
         super().__init__()
+
         self.buffer = bytearray()
         self._complete = False
         self._is_empty = event_class()

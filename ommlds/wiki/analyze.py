@@ -90,6 +90,7 @@ class FileAnalyzer:
         ctx: Context,
     ) -> None:
         super().__init__()
+
         self._db_url = db_url
         self._ctx = ctx
 

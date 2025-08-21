@@ -29,6 +29,7 @@ class ProtocolWrapper:
             alpn_protocol: str | None = None,
     ) -> None:
         super().__init__()
+
         self.app = app
         self.config = config
         self.context = context

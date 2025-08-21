@@ -9,6 +9,7 @@ from .types import WaitableEvent
 class WaitableEventWrapper:
     def __init__(self) -> None:
         super().__init__()
+
         self._event = anyio.Event()
 
     async def clear(self) -> None:
@@ -29,6 +30,7 @@ class WorkerContext:
 
     def __init__(self, max_requests: int | None) -> None:
         super().__init__()
+
         self.max_requests = max_requests
         self.requests = 0
         self.terminate = self.event_class()

@@ -85,6 +85,7 @@ class CreateUpdateAtTrigger(sa.schema.DDLElement):
 
     def __init__(self, table_name: str) -> None:
         super().__init__()
+
         self.table_name = table_name
 
 
@@ -111,6 +112,7 @@ class DropUpdateAtTrigger(sa.schema.DDLElement):
 
     def __init__(self, table_name: str) -> None:
         super().__init__()
+
         self.table_name = table_name
 
 

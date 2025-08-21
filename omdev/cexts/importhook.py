@@ -38,6 +38,7 @@ class CextImportLoader(importlib.machinery.ExtensionFileLoader):
             filename: str,
     ) -> None:
         module_name = os.path.splitext(os.path.basename(filename))[0]
+
         super().__init__(module_name, filename)
 
     def create_module(self, spec: importlib.machinery.ModuleSpec) -> types.ModuleType:
@@ -59,6 +60,7 @@ class CextImportMetaFinder(importlib.abc.MetaPathFinder):
             extensions: ta.AbstractSet[str] = frozenset(CEXT_EXTENSIONS),
     ) -> None:
         super().__init__()
+
         self._extensions = extensions
 
     def find_spec(

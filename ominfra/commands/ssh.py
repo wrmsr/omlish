@@ -56,6 +56,7 @@ class SshSubprocessCommandRunner(CommandRunner):
             lcr: LocalCommandRunner | None = None,
     ) -> None:
         super().__init__()
+
         self._cfg = check.isinstance(cfg, SshConfig)
         self._lcr = check.isinstance(lcr, LocalCommandRunner) if lcr is not None else LocalCommandRunner()
 
@@ -89,6 +90,7 @@ class AsyncsshSshCommandRunner(CommandRunner):
             cfg: SshConfig,
     ) -> None:
         super().__init__()
+
         self._cfg = check.isinstance(cfg, SshConfig)
 
     async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
@@ -122,6 +124,7 @@ class ParamikoSshCommandRunner(CommandRunner):
             cfg: SshConfig,
     ) -> None:
         super().__init__()
+
         self._cfg = check.isinstance(cfg, SshConfig)
 
     def _run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:

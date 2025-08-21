@@ -43,6 +43,7 @@ STREAM_ID = 1
 class H2CProtocolRequiredError(Exception):
     def __init__(self, data: bytes, request: h11.Request) -> None:
         super().__init__()
+
         settings = ''
         headers = [(b':method', request.method), (b':path', request.target)]
         for name, value in request.headers:
@@ -60,6 +61,7 @@ class H2CProtocolRequiredError(Exception):
 class H2ProtocolAssumedError(Exception):
     def __init__(self, data: bytes) -> None:
         super().__init__()
+
         self.data = data
 
 

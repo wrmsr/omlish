@@ -38,6 +38,7 @@ class CommandRunner(lang.Abstract):
     class ReturnCodeError(Exception):
         def __init__(self, result: 'CommandRunner.Result') -> None:
             super().__init__(f'Bad return code: {result.rc}', result)
+
             self.result = result
 
     @abc.abstractmethod
@@ -52,6 +53,7 @@ class LocalCommandRunner(CommandRunner):
 
     def __init__(self, cfg: Config = Config()) -> None:
         super().__init__()
+
         self._cfg = check.isinstance(cfg, LocalCommandRunner.Config)
 
     async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:

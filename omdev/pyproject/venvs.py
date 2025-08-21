@@ -23,6 +23,7 @@ class Venv:
             cfg: VenvConfig,
     ) -> None:
         super().__init__()
+
         self._name = name
         self._cfg = cfg
 

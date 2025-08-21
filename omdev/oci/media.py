@@ -40,6 +40,7 @@ class OciMediaDataclass(abc.ABC):  # noqa
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         for a in OCI_MEDIA_FIELDS:
             check.in_(a, cls.__dict__)
 

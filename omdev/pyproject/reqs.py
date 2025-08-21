@@ -20,6 +20,7 @@ class RequirementsRewriter:
             venv: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
         self._venv = venv
 
     @cached_nullary

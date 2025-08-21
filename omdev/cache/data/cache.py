@@ -97,6 +97,7 @@ def _url_retrieve(
 class Cache:
     def __init__(self, base_dir: str) -> None:
         super().__init__()
+
         self._base_dir = base_dir
 
         self._items_dir = os.path.join(base_dir, 'items')

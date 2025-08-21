@@ -16,6 +16,7 @@ class JournalctlToAwsCursor:
             ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
     ) -> None:
         super().__init__()
+
         self._cursor_file = cursor_file
         self._ensure_locked = ensure_locked
 

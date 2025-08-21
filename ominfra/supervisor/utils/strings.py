@@ -66,6 +66,7 @@ class SuffixMultiplier:
     # case insensitive. Return values are in the fundamental unit.
     def __init__(self, d, default=1):
         super().__init__()
+
         self._d = d
         self._default = default
         # all keys must be the same size

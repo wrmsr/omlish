@@ -39,6 +39,7 @@ else:
 class _RemoteExecutionLogHandler(logging.Handler):
     def __init__(self, fn: ta.Callable[[str], None]) -> None:
         super().__init__()
+
         self._fn = fn
 
     def emit(self, record):

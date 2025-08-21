@@ -9423,6 +9423,7 @@ class InterpProvider(abc.ABC):
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
             sfx = 'InterpProvider'
             if not cls.__name__.endswith(sfx):
@@ -10806,6 +10807,7 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
 class _RemoteExecutionLogHandler(logging.Handler):
     def __init__(self, fn: ta.Callable[[str], None]) -> None:
         super().__init__()
+
         self._fn = fn
 
     def emit(self, record):

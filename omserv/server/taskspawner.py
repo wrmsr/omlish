@@ -67,6 +67,7 @@ async def _handle(
 class TaskSpawner:
     def __init__(self) -> None:
         super().__init__()
+
         self._task_group: anyio.abc.TaskGroup | None = None
 
     async def start(

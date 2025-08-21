@@ -31,6 +31,7 @@ class AwsSigner:
             service_name: str,
     ) -> None:
         super().__init__()
+
         self._creds = creds
         self._region_name = region_name
         self._service_name = service_name

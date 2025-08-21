@@ -31,6 +31,7 @@ class GitRevisionAdder:
             output_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
+
         self._given_revision = revision
         self._output_suffix = output_suffix
 

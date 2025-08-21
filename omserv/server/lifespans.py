@@ -37,6 +37,7 @@ class LifespanFailureError(Exception):
 class Lifespan:
     def __init__(self, app: AppWrapper, config: Config) -> None:
         super().__init__()
+
         self.app = app
         self.config = config
         self.startup = anyio.Event()

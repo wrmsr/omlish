@@ -57,6 +57,7 @@ class BasePyprojectPackageGenerator(abc.ABC):
             pkg_suffix: str = '',
     ) -> None:
         super().__init__()
+
         self._dir_name = dir_name
         self._pkgs_root = pkgs_root
         self._pkg_suffix = pkg_suffix

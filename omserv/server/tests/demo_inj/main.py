@@ -53,6 +53,7 @@ class Endpoint:
 class InjApp(asgi.App_):
     def __init__(self, endpoints: ta.Mapping[Endpoint, asgi.App_]) -> None:
         super().__init__()
+
         self._endpoints = endpoints
 
     async def __call__(self, scope: asgi.Scope, recv: asgi.Recv, send: asgi.Send) -> None:

@@ -53,6 +53,7 @@ class JinjaTemplates:
     class _Loader(jinja2.BaseLoader):
         def __init__(self, owner: 'JinjaTemplates') -> None:
             super().__init__()
+
             self._owner = owner
 
         def get_source(self, environment, template):

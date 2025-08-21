@@ -35,6 +35,7 @@ else:
 class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
     def __init__(self, f: ta.IO[bytes]) -> None:
         super().__init__()
+
         self._f = f
 
     def close(self):
@@ -109,6 +110,7 @@ class FileProgressReporter:
             bytes_interval: int | None = None,
     ) -> None:
         super().__init__()
+
         self._f = f
         self._out = out
         self._time_interval = time_interval
@@ -276,6 +278,7 @@ class MultiFileWriter:
 class Lz4MfwFile:
     def __init__(self, fp: str) -> None:
         super().__init__()
+
         self._raw_f = open(fp, 'wb')  # noqa
         self._z_f = lz4_frame.open(self._raw_f, 'wb')
 

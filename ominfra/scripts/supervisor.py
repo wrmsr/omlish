@@ -594,6 +594,7 @@ class SuffixMultiplier:
     # case insensitive. Return values are in the fundamental unit.
     def __init__(self, d, default=1):
         super().__init__()
+
         self._d = d
         self._default = default
         # all keys must be the same size
@@ -3242,6 +3243,7 @@ class ProcessLogEvent(Event, abc.ABC):
 
     def __init__(self, process, pid, data):
         super().__init__()
+
         self.process = process
         self.pid = pid
         self.data = data
@@ -3267,6 +3269,7 @@ class ProcessCommunicationEvent(Event, abc.ABC):
 
     def __init__(self, process, pid, data):
         super().__init__()
+
         self.process = process
         self.pid = pid
         self.data = data
@@ -3286,6 +3289,7 @@ class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
 class RemoteCommunicationEvent(Event):
     def __init__(self, type, data):  # noqa
         super().__init__()
+
         self.type = type
         self.data = data
 
@@ -3311,6 +3315,7 @@ class SupervisorStoppingEvent(SupervisorStateChangeEvent):
 class EventRejectedEvent:  # purposely does not subclass Event
     def __init__(self, process, event):
         super().__init__()
+
         self.process = process
         self.event = event
 
@@ -3325,6 +3330,7 @@ class ProcessStateEvent(Event):
 
     def __init__(self, process, from_state, expected=True):
         super().__init__()
+
         self.process = process
         self.from_state = from_state
         self.expected = expected
@@ -3395,6 +3401,7 @@ PROCESS_STATE_EVENT_MAP: ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]] = 
 class ProcessGroupEvent(Event):
     def __init__(self, group):
         super().__init__()
+
         self.group = group
 
 
@@ -3414,6 +3421,7 @@ class TickEvent(Event):
 
     def __init__(self, when, supervisord):
         super().__init__()
+
         self.when = when
         self.supervisord = supervisord
 

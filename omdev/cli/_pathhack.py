@@ -25,6 +25,7 @@ class _PathHackMetaFinder:
             removed_paths=None,  # type: list[str] | None
     ) -> None:
         super().__init__()
+
         if removed_paths is None:
             removed_paths = ['', '.', os.getcwd()]
         self._removed_paths = removed_paths
