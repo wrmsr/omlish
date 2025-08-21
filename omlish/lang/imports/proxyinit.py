@@ -1,7 +1,6 @@
 """
 TODO:
  - should raise on unbound or shadowed import - was probably imported for side-effects but will never get proxy imported
- - check fake modules, ensure expected dicts (only _ModuleAttrs) - callers should not set attrs into imported modules
  - __getattr__ hook in fake modules, returning jit attrs
 """
 import builtins
@@ -370,12 +369,15 @@ class _AutoProxyInitCapture:
 
     class ProxyInit(ta.NamedTuple):
         package: str
-        attrs: ta.Iterable[tuple[str | None, str]]
+        attrs: ta.Sequence[tuple[str | None, str]]
+
+    class BuiltProxyInits(ta.NamedTuple):
+        proxy_inits: ta.Sequence['_AutoProxyInitCapture.ProxyInit']
 
     def build_proxy_inits(
             self,
             init_globals: ta.MutableMapping[str, ta.Any],  # noqa
-    ) -> list[ProxyInit]:
+    ) -> BuiltProxyInits:
         dct: dict[_AutoProxyInitCapture._Module, list[tuple[str | None, str]]] = {}
 
         for attr, obj in init_globals.items():
@@ -417,7 +419,9 @@ class _AutoProxyInitCapture:
                     ts,
                 ))
 
-        return lst
+        return _AutoProxyInitCapture.BuiltProxyInits(
+            lst,
+        )
 
 
 @contextlib.contextmanager
@@ -444,9 +448,9 @@ def auto_proxy_init(
 
     cap.verify_state(init_globals)
 
-    pis = cap.build_proxy_inits(init_globals)
+    blt = cap.build_proxy_inits(init_globals)
 
-    for pi in pis:
+    for pi in blt.proxy_inits:
         for _, a in pi.attrs:
             del init_globals[a]
 
@@ -459,6 +463,6 @@ def auto_proxy_init(
     if eager:
         lg = LazyGlobals.install(init_globals)
 
-        for pi in pis:
+        for pi in blt.proxy_inits:
             for _, a in pi.attrs:
                 lg.get(a)
