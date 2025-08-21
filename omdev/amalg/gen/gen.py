@@ -8,8 +8,8 @@ from omlish import lang
 from omlish.algorithm import all as alg
 from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
-from ..git.magic import GIT_DIFF_OMIT_MAGIC
-from ..tokens import all as tks
+from ...git.magic import GIT_DIFF_OMIT_MAGIC
+from ...tokens import all as tks
 from .srcfiles import SrcFile
 from .srcfiles import make_src_file
 from .strip import strip_main_lines

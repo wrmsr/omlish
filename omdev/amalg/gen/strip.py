@@ -1,8 +1,8 @@
 import re
 import typing as ta
 
-from .. import magic
-from ..tokens import all as tks
+from ... import magic
+from ...tokens import all as tks
 
 
 ##

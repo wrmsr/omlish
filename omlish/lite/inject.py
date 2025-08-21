@@ -19,6 +19,7 @@ from .reflect import is_optional_alias
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
+
 InjectorKeyCls = ta.Union[type, ta.NewType]
 
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]

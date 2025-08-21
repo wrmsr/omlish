@@ -2,7 +2,7 @@ import dataclasses as dc
 
 from omlish import check
 
-from ..tokens import all as tks
+from ...tokens import all as tks
 
 
 ##

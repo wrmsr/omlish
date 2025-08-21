@@ -34,8 +34,8 @@ import typing as ta
 from omlish import check
 from omlish.logs import all as logs
 
-from .gen import SCAN_COMMENT
-from .gen import AmalgGenerator
+from ..gen.gen import SCAN_COMMENT
+from ..gen.gen import AmalgGenerator
 
 
 log = logging.getLogger(__name__)
