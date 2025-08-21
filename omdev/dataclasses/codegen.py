@@ -91,5 +91,5 @@ class DataclassCodeGen:
 
         config_trie = self.build_config_trie(root_dirs)
 
-        for pkg_parts, pkg_config in config_trie.iter_items(sort_children=True):
+        for pkg_parts, pkg_config in config_trie.iteritems(sort_children=True):
             self.run_package_config('.'.join(pkg_parts), pkg_config)

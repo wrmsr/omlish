@@ -144,7 +144,7 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
             stack.append((c, ic(c._children)))  # noqa
             yield (key if share_key else tuple(key), c)
 
-    def iter_items(self, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Sequence[K], V]]:
+    def iteritems(self, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Sequence[K], V]]:
         for k, node in self.iter_nodes(**kwargs):
             try:
                 yield (k, node._value)  # noqa
@@ -152,5 +152,5 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
                 pass
 
     def __iter__(self) -> ta.Iterator[ta.Sequence[K]]:
-        for k, _ in self.iter_items():
+        for k, _ in self.iteritems():
             yield k

@@ -31,7 +31,7 @@ def test_trie():
         (('a', 'c', 'e', 'd'), 2),
         (('a', 'a', 'e', 'd'), 3),
     ]
-    assert list(pt.iter_items(sort_children=True)) == [
+    assert list(pt.iteritems(sort_children=True)) == [
         (('a', 'a', 'e', 'd'), 3),
         (('a', 'b', 'e', 'a'), 4),
         (('a', 'b', 'e', 'd'), 1),
@@ -49,14 +49,14 @@ def test_trie():
         (('a', 'c', 'e', 'd'), 2),
         (('a', 'a', 'e', 'd'), 3),
     ]
-    assert list(pt.iter_items(sort_children=True)) == [
+    assert list(pt.iteritems(sort_children=True)) == [
         (('a', 'a', 'e', 'd'), 3),
         (('a', 'b', 'e', 'a'), 4),
         (('a', 'b', 'e', 'd'), 1),
         (('a', 'b', 'ee', 'a'), 5),
         (('a', 'c', 'e', 'd'), 2),
     ]
-    assert list(pt.iter_items(sort_children=lambda cl: cl.sort(key=lambda ct: (-len(ct[0]), ct[0])))) == [
+    assert list(pt.iteritems(sort_children=lambda cl: cl.sort(key=lambda ct: (-len(ct[0]), ct[0])))) == [
         (('a', 'a', 'e', 'd'), 3),
         (('a', 'b', 'ee', 'a'), 5),
         (('a', 'b', 'e', 'a'), 4),
