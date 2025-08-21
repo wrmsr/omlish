@@ -48,6 +48,7 @@ _ACTIVE_HARNESSES: set['Harness'] = set()
 class Harness:
     def __init__(self, es: inj.Elements) -> None:
         super().__init__()
+
         self._orig_es = es
         self._es = inj.as_elements(
             inj.bind(self),
@@ -65,7 +66,7 @@ class Harness:
     ##
 
     @contextlib.contextmanager
-    def activate(self) -> ta.Generator[ta.Self]:
+    def _activate(self) -> ta.Generator[ta.Self]:
         check.none(self._inj)
         check.not_in(self, _ACTIVE_HARNESSES)
         _ACTIVE_HARNESSES.add(self)
@@ -122,6 +123,7 @@ class Harness:
 class HarnessPlugin:
     def __init__(self) -> None:
         super().__init__()
+
         self._harnesses_by_session: dict[ta.Any, Harness] = {}
 
     def get_session_harness(self, session: ta.Any) -> Harness:
@@ -129,7 +131,7 @@ class HarnessPlugin:
 
     @pytest.fixture(scope='session', autouse=True)
     def _harness_scope_listener_session(self, request):
-        with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)).activate() as harness:
+        with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST))._activate() as harness:  # noqa
             self._harnesses_by_session[request.session] = harness
             try:
                 with harness._pytest_scope_manager(PytestScope.SESSION, request):  # noqa
