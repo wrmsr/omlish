@@ -217,6 +217,7 @@ ignore = [
     'PLR1714',  # repeated-equality-comparison
     'PLR2004',  # magic-value-comparison
     'PLR2044',  # empty-comment
+    'PLR5501',  # collapsible-else-if
     'PLW0603',  # global-statement
     'PLW2901',  # redefined-loop-name
     'PT016',  # pytest-fail-without-message
