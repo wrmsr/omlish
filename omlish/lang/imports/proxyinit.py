@@ -1,7 +1,8 @@
 """
 TODO:
+ - ModuleAttr should behave differently on whether or not it's a full module or module (either `import math` or `from .
+   import foo`) - complete the work of __getattr__ jit usage (`from . import foo; bar = foo.bar`)
  - should raise on unbound or shadowed import - was probably imported for side-effects but will never get proxy imported
- - __getattr__ hook in fake modules, returning jit attrs
 """
 import builtins
 import contextlib
@@ -212,12 +213,19 @@ class _AutoProxyInitCapture:
             return f'<{self.__class__.__name__}: {f"{self.__module.spec}:{self.__name}"!r}>'
 
     class _Module:
-        def __init__(self, spec: '_AutoProxyInitCapture.ModuleSpec') -> None:
+        def __init__(
+                self,
+                spec: '_AutoProxyInitCapture.ModuleSpec',
+                *,
+                getattr_handler: ta.Callable[['_AutoProxyInitCapture._Module', str], ta.Any] | None = None,
+        ) -> None:
             super().__init__()
 
             self.spec = spec
 
             self.module_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {spec!r}>')
+            if getattr_handler is not None:
+                self.module_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
             self.initial_module_dict = dict(self.module_obj.__dict__)
 
             self.attrs: dict[str, _AutoProxyInitCapture._ModuleAttr] = {}
@@ -225,6 +233,16 @@ class _AutoProxyInitCapture:
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}({self.spec!r})'
+
+    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+        if attr in module.attrs:
+            raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
+
+        ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
+        module.attrs[attr] = ma
+        self._attrs[ma] = (module, attr)
+        setattr(module.module_obj, attr, ma)
+        return ma
 
     def _handle_import(
             self,
@@ -243,24 +261,13 @@ class _AutoProxyInitCapture:
                 if attr == '*':
                     raise AutoProxyInitErrors.ImportStarForbiddenError(str(module.spec), from_list)
 
-                try:
-                    xma = getattr(module.module_obj, attr)
-                except AttributeError:
-                    pass
+                xma = getattr(module.module_obj, attr)
 
-                else:
-                    if (
-                            xma is not module.attrs.get(attr) or
-                            self._attrs[xma] != (module, attr)
-                    ):
-                        raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
-
-                    continue
-
-                ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
-                module.attrs[attr] = ma
-                self._attrs[ma] = (module, attr)
-                setattr(module.module_obj, attr, ma)
+                if (
+                        xma is not module.attrs.get(attr) or
+                        self._attrs[xma] != (module, attr)
+                ):
+                    raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
     #
 
@@ -284,7 +291,10 @@ class _AutoProxyInitCapture:
         try:
             module = self._modules_by_spec[spec]
         except KeyError:
-            module = self._Module(spec)
+            module = self._Module(
+                spec,
+                getattr_handler=self._handle_module_getattr,
+            )
             self._modules_by_spec[spec] = module
             self._modules_by_module_obj[module.module_obj] = module
 

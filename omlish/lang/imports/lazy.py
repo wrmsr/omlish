@@ -62,5 +62,5 @@ def proxy_import(
         return getattr(omod, att)
 
     lmod = types.ModuleType(name)
-    lmod.__getattr__ = __getattr__  # type: ignore
+    lmod.__getattr__ = __getattr__  # type: ignore[method-assign]
     return lmod

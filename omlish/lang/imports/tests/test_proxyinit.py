@@ -9,6 +9,8 @@ def test_auto_proxy_init():
         'math2',
         'qux2',
         'jkl2',
+        # 'jarf2',
+        # 'karf',
     ]:
         assert k not in foo2.__dict__
 
@@ -19,3 +21,5 @@ def test_auto_proxy_init():
     assert foo2.math2.pi < 4
     assert foo2.qux2.jarf == 420
     assert foo2.jkl2 == 421
+    # assert foo2.jarf2 == 420
+    # assert foo2.karf == 520

@@ -18,3 +18,6 @@ with auto_proxy_init(globals()):
     from .bar.baz import jkl as jkl2  # noqa
 
     # abc = None
+
+    # jarf2 = qux.jarf  # noqa
+    # karf = qux.karf  # noqa
