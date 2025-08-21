@@ -62,6 +62,7 @@ from .events import WaitableBlueletEvent
 class BlueletCoroException(Exception):  # noqa
     def __init__(self, coro: BlueletCoro, exc_info: BlueletExcInfo) -> None:
         super().__init__()
+
         self.coro = coro
         self.exc_info = exc_info
 

@@ -91,6 +91,7 @@ class Singleton:
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         _set_singleton_instance(super().__new__(cls))  # noqa
 
 

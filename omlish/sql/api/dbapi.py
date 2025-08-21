@@ -43,6 +43,7 @@ class DbapiRows(Rows):
 
     def _close(self) -> None:
         self._cursor.close()
+
         super()._close()
 
     @property
@@ -65,6 +66,7 @@ class DbapiConn(Conn):
 
     def _close(self) -> None:
         self._conn.close()
+
         super()._close()
 
     @property

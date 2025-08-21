@@ -34,6 +34,7 @@ class KnownKeyword(Keyword, lang.Abstract):
             **kwargs: ta.Any,
     ) -> None:
         super().__init_subclass__(**kwargs)
+
         check.empty(set(dir(cls)) & {'tag', 'aliases', 'tag_and_aliases'})
         if not lang.is_abstract_class(cls):
             check.issubclass(cls, lang.Final)

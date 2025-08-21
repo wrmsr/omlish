@@ -45,6 +45,7 @@ class RealThreadlet(Threadlet, abc.ABC):
             seq: int | None = None,
     ) -> None:
         super().__init__()
+
         self._s = s
         self._t = t
         self._seq = seq if seq is not None else next(self._seq_counter)

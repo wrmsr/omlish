@@ -266,6 +266,7 @@ class Timer:
             clock: ta.Callable[[], float] | None = None,
     ) -> None:
         super().__init__()
+
         self._clock = clock if clock is not None else time.monotonic
 
     _start: float

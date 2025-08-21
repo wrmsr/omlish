@@ -52,6 +52,7 @@ class Algorithm(abc.ABC):
 class HmacAlgorithm(Algorithm):
     def __init__(self, name: str, digest: ta.Any) -> None:
         super().__init__()
+
         self._name = name
         self._digest = digest
 
@@ -69,6 +70,7 @@ class HmacAlgorithm(Algorithm):
 class RsaAlgorithm(Algorithm):
     def __init__(self, name: str, digest: str) -> None:
         super().__init__()
+
         self._name = name
         self._digest = digest
 

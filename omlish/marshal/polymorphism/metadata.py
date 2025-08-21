@@ -39,6 +39,7 @@ class Impls(ta.Sequence[Impl]):
             lst: ta.Iterable[Impl],
     ) -> None:
         super().__init__()
+
         self._lst = list(lst)
 
         by_ty: dict[type, Impl] = {}
@@ -89,6 +90,7 @@ class Polymorphism:
             impls: ta.Iterable[Impl],
     ) -> None:
         super().__init__()
+
         self._ty = ty
         self._impls = Impls(impls)
 

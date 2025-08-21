@@ -24,6 +24,7 @@ class ExtrasSpawnPosixPopen(mp.popen_spawn_posix.Popen):
     def __init__(self, process_obj: 'ExtrasSpawnProcess', *, extras: SpawnExtras) -> None:
         self.__extras = extras
         self.__pass_fds = extras.pass_fds
+
         super().__init__(process_obj)
 
     def _launch(self, process_obj: 'ExtrasSpawnProcess') -> None:
@@ -38,6 +39,7 @@ class ExtrasSpawnPosixPopen(mp.popen_spawn_posix.Popen):
 class ExtrasSpawnProcess(mp.context.SpawnProcess):
     def __init__(self, *args: ta.Any, extras: SpawnExtras, **kwargs: ta.Any) -> None:
         self.__extras = extras
+
         super().__init__(*args, **kwargs)
 
     def _Popen(self, process_obj: 'ExtrasSpawnProcess') -> ExtrasSpawnPosixPopen:  # type: ignore  # noqa
@@ -56,6 +58,7 @@ class ExtrasSpawnProcess(mp.context.SpawnProcess):
 class ExtrasSpawnContext(mp.context.SpawnContext):
     def __init__(self, extras: SpawnExtras = SpawnExtras()) -> None:
         self.__extras = extras
+
         super().__init__()
 
     def Process(self, *args: ta.Any, **kwargs: ta.Any):  # type: ignore  # noqa

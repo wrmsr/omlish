@@ -121,6 +121,7 @@ class SortedListDict(SortedMutableMapping[K, V]):
 
     def __init__(self, impl: SortedCollection, *args, **kwargs) -> None:
         super().__init__()
+
         self._impl = impl
         for k, v in lang.yield_dict_init(*args, **kwargs):
             self[k] = v

@@ -12,6 +12,7 @@ StrGenerator: ta.TypeAlias = ta.Generator[ta.Iterable[str] | None, str, ta.Optio
 class FooMachine:
     def __init__(self) -> None:
         super().__init__()
+
         self._m = GenMachine[str, str](self._state0())
 
     @property

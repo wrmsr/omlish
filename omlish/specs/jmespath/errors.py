@@ -19,6 +19,7 @@ class ParseError(JmespathError):
             msg: str = _ERROR_MESSAGE,
     ) -> None:
         super().__init__(lex_position, token_value, token_type)
+
         self.lex_position = lex_position
         self.token_value = token_value
         self.token_type = token_type.upper()
@@ -56,7 +57,9 @@ class LexerError(ParseError):
         self.lexer_position = lexer_position
         self.lexer_value = lexer_value
         self.message = message
+
         super().__init__(lexer_position, lexer_value, message)
+
         # Whatever catches LexerError can set this.
         self.expression = expression
 
@@ -143,4 +146,5 @@ class UnknownFunctionError(JmespathError):
 class UndefinedVariableError(JmespathError):
     def __init__(self, varname):
         self.varname = varname
+
         super().__init__(f'Reference to undefined variable: {self.varname}')

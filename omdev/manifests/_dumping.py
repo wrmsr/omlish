@@ -60,6 +60,7 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 class _AbstractCachedNullary:
     def __init__(self, fn):
         super().__init__()
+
         self._fn = fn
         self._value = self._missing = object()
         functools.update_wrapper(self, fn)

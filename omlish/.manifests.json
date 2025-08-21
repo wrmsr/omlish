@@ -181,7 +181,7 @@
     "module": ".formats.yaml",
     "attr": "_YAML_LAZY_CODEC",
     "file": "omlish/formats/yaml.py",
-    "line": 255,
+    "line": 256,
     "value": {
       "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.yaml",
@@ -197,7 +197,7 @@
     "module": ".formats.yaml",
     "attr": "_YAML_UNSAFE_LAZY_CODEC",
     "file": "omlish/formats/yaml.py",
-    "line": 262,
+    "line": 263,
     "value": {
       "!.codecs.base.LazyLoadedCodec": {
         "module": "omlish.formats.yaml",

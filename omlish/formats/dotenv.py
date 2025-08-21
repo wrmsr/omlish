@@ -66,6 +66,7 @@ class DotenvAtom(metaclass=abc.ABCMeta):
 class DotenvLiteral(DotenvAtom):
     def __init__(self, value: str) -> None:
         super().__init__()
+
         self.value = value
 
     def __repr__(self) -> str:
@@ -86,6 +87,7 @@ class DotenvLiteral(DotenvAtom):
 class DotenvVariable(DotenvAtom):
     def __init__(self, name: str, default: ta.Optional[str]) -> None:
         super().__init__()
+
         self.name = name
         self.default = default
 
@@ -164,6 +166,7 @@ class DotenvBinding(ta.NamedTuple):
 class _DotenvPosition:
     def __init__(self, chars: int, line: int) -> None:
         super().__init__()
+
         self.chars = chars
         self.line = line
 
@@ -187,6 +190,7 @@ class DotenvError(Exception):
 class _DotenvReader:
     def __init__(self, stream: ta.IO[str]) -> None:
         super().__init__()
+
         self.string = stream.read()
         self.position = _DotenvPosition.start()
         self.mark = _DotenvPosition.start()
@@ -334,6 +338,7 @@ class Dotenv:
         log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
+
         self.path: ta.Union[str, 'os.PathLike[str]', None] = path
         self.stream: ta.Optional[ta.IO[str]] = stream
         self._dict: ta.Optional[ta.Dict[str, ta.Optional[str]]] = None

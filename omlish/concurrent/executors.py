@@ -13,6 +13,7 @@ P = ta.ParamSpec('P')
 class ImmediateExecutor(cf.Executor):
     def __init__(self, *, immediate_exceptions: bool = False) -> None:
         super().__init__()
+
         self._immediate_exceptions = immediate_exceptions
 
     def submit(

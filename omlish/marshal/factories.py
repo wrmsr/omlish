@@ -41,6 +41,7 @@ class TypeMapFactory(mfs.MatchFn[[C, rfl.Type], R]):
 class TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
     def __init__(self, f: mfs.MatchFn[[C, rfl.Type], R]) -> None:
         super().__init__()
+
         self._f = f
         self._dct: dict[rfl.Type, R | None] = {}
         self._mtx = threading.RLock()
@@ -90,6 +91,7 @@ class RecursiveTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
             prx: ta.Callable[[], tuple[R, ta.Callable[[R], None]]],
     ) -> None:
         super().__init__()
+
         self._f = f
         self._prx = prx
         self._dct: dict[rfl.Type, R] = {}

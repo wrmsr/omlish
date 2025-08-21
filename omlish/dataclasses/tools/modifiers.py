@@ -20,6 +20,7 @@ T = ta.TypeVar('T')
 class field_modifier:  # noqa
     def __init__(self, fn: ta.Callable[[dc.Field], dc.Field]) -> None:
         super().__init__()
+
         self.fn = fn
 
     def __ror__(self, other: T) -> T:

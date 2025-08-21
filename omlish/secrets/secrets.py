@@ -33,6 +33,7 @@ class Secret(lang.NotPicklable, lang.Sensitive, lang.Final):
 
     def __init__(self, *, key: str | None, value: str) -> None:
         super().__init__()
+
         self._key = key
         setattr(self, self._VALUE_ATTR, lambda: value)
 
@@ -203,6 +204,7 @@ class CachingSecrets(Secrets):
             clock: ta.Callable[..., float] = time.time,
     ) -> None:
         super().__init__()
+
         self._child = child
         self._dct: dict[str, Secret] = {}
         self._ttl_s = ttl_s
@@ -243,6 +245,7 @@ class CachingSecrets(Secrets):
 class CompositeSecrets(Secrets):
     def __init__(self, *children: Secrets) -> None:
         super().__init__()
+
         self._children = children
 
     def _get_raw(self, key: str) -> str:
@@ -265,6 +268,7 @@ class LoggingSecrets(Secrets):
             log: logging.Logger | None = None,  # noqa
     ) -> None:
         super().__init__()
+
         self._child = child
         self._log = log if log is not None else globals()['log']
 
@@ -317,6 +321,7 @@ class EnvVarSecrets(Secrets):
             pop: bool = False,
     ) -> None:
         super().__init__()
+
         self._env = env
         self._upcase = upcase
         self._prefix = prefix

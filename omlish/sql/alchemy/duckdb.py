@@ -23,6 +23,7 @@ else:
 class ConnectionWrapper:
     def __init__(self, c: 'duckdb.DuckDBPyConnection') -> None:
         super().__init__()
+
         self.__c = c
         self.autocommit = None
         self.closed = False
@@ -49,6 +50,7 @@ class CursorWrapper:
             connection_wrapper: 'ConnectionWrapper',
     ) -> None:
         super().__init__()
+
         self.__c = c
         self.__connection_wrapper = connection_wrapper
 

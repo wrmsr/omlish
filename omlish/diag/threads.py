@@ -52,6 +52,7 @@ class StoppableThread:
             **kwargs: ta.Any,
     ) -> None:
         super().__init__()
+
         self._fn = fn
         self._interval_s = interval_s
         self._tick_immediately = tick_immediately

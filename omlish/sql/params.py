@@ -25,6 +25,7 @@ class ParamsPreparer(lang.Abstract):
 class LinearParamsPreparer(ParamsPreparer):
     def __init__(self, placeholder: str) -> None:
         super().__init__()
+
         self._placeholder = placeholder
         self._args: list[ParamKey] = []
 
@@ -39,6 +40,7 @@ class LinearParamsPreparer(ParamsPreparer):
 class NumericParamsPreparer(ParamsPreparer):
     def __init__(self) -> None:
         super().__init__()
+
         self._args: list[ParamKey] = []
         self._str_by_key: dict[ParamKey, str] = {}
         self._pos_by_name: dict[str, int] = {}
@@ -76,6 +78,7 @@ class NamedParamsPreparer(ParamsPreparer):
             anon: ta.Callable[[int], str] | None = None,
     ) -> None:
         super().__init__()
+
         self._render = render
         self._anon = anon if anon is not None else self.underscore_anon
         self._kwargs: dict[str, ParamKey] = {}

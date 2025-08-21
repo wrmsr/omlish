@@ -10,6 +10,7 @@ import typing as ta
 class ListHandler(logging.Handler):
     def __init__(self) -> None:
         super().__init__()
+
         self.records: ta.List[logging.LogRecord] = []
 
     def emit(self, record: logging.LogRecord) -> None:

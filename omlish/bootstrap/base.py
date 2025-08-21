@@ -18,10 +18,12 @@ class Bootstrap(abc.ABC, lang.PackageSealed, ta.Generic[BootstrapConfigT]):
 
     def __init__(self, config: BootstrapConfigT) -> None:
         super().__init__()
+
         self._config = config
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         if not cls.__name__.endswith('Bootstrap'):
             raise NameError(cls)
         if abc.ABC not in cls.__bases__ and not issubclass(cls.__dict__['Config'], Bootstrap.Config):

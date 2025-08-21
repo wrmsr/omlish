@@ -1071,6 +1071,7 @@ class TomlWriter:
 
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()
+
         self._out = out
 
         self._indent = 0
@@ -1193,6 +1194,7 @@ class TomlWriter:
 class _AbstractCachedNullary:
     def __init__(self, fn):
         super().__init__()
+
         self._fn = fn
         self._value = self._missing = object()
         functools.update_wrapper(self, fn)
@@ -3363,6 +3365,7 @@ class DelimitingBuffer:
     class Error(Exception):
         def __init__(self, buffer: 'DelimitingBuffer') -> None:
             super().__init__(buffer)
+
             self.buffer = buffer
 
         def __repr__(self) -> str:
@@ -3518,6 +3521,7 @@ class ReadableListBuffer:
 
     def __init__(self) -> None:
         super().__init__()
+
         self._lst: list[bytes] = []
 
     def __len__(self) -> int:

@@ -51,6 +51,7 @@ BOOTSTRAP_TYPES_BY_CONFIG_TYPE: ta.Mapping[ta.Type[Bootstrap.Config], ta.Type[Bo
 class BootstrapHarness:
     def __init__(self, lst: ta.Sequence[Bootstrap]) -> None:
         super().__init__()
+
         self._lst = lst
 
     @contextlib.contextmanager

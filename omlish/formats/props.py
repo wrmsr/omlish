@@ -129,6 +129,7 @@ class PropertyError(Exception):
 class ParseError(PropertyError):
     def __init__(self, message: str, line_number: int, file_obj: ta.Any = None) -> None:
         super().__init__()
+
         self.message = message
         self.line_number = line_number
         self.file_obj = file_obj

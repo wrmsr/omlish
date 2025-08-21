@@ -33,6 +33,7 @@ class UniqueIterator(ta.Iterator[UniqueItem[T]]):
             keyer: ta.Callable[[T], ta.Any] = lang.identity,
     ) -> None:
         super().__init__()
+
         self._it = enumerate(it)
         self._keyer = keyer
 

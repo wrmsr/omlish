@@ -166,6 +166,7 @@ class SimpleProxy(ta.Generic[T]):
     class Descriptor:
         def __init__(self, attr: str) -> None:
             super().__init__()
+
             self._attr = attr
 
         def __get__(self, instance, owner=None):
@@ -189,6 +190,7 @@ class SimpleProxy(ta.Generic[T]):
 
     def __init__(self, wrapped: T) -> None:
         super().__init__()
+
         object.__setattr__(self, '__wrapped__', wrapped)
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:

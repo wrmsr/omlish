@@ -33,6 +33,7 @@ class SqlalchemyApiWrapper(api.ContextCloser, ta.Generic[T]):
     def _close(self) -> None:
         if self._auto_close and hasattr(self._u, 'close'):
             self._u.close()
+
         super()._close()
 
 

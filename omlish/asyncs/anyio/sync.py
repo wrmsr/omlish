@@ -14,6 +14,7 @@ T = ta.TypeVar('T')
 class Once:
     def __init__(self) -> None:
         super().__init__()
+
         self._done = False
         self._lock = anyio.Lock()
 
@@ -36,6 +37,7 @@ class Once:
 class Lazy(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
+
         self._once = Once()
         self._v: lang.Maybe[T] = lang.empty()
 
@@ -55,6 +57,7 @@ class Lazy(ta.Generic[T]):
 class LazyFn(ta.Generic[T]):
     def __init__(self, fn: ta.Callable[[], ta.Awaitable[T]]) -> None:
         super().__init__()
+
         self._fn = fn
         self._once = Once()
         self._v: lang.Maybe[T] = lang.empty()

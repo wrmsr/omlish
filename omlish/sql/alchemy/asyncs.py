@@ -27,6 +27,7 @@ AsyncTransactionLike: ta.TypeAlias = ta.Union[saa.AsyncTransaction, 'AsyncTransa
 class AsyncTransaction:
     def __init__(self, underlying: saa.AsyncTransaction) -> None:
         super().__init__()
+
         self._underlying = underlying
 
     @property
@@ -51,6 +52,7 @@ class AsyncTransaction:
 class AsyncConnection:
     def __init__(self, underlying: saa.AsyncConnection) -> None:
         super().__init__()
+
         self._underlying = underlying
 
     @property
@@ -87,6 +89,7 @@ class AsyncConnection:
 class AsyncEngine:
     def __init__(self, underlying: saa.AsyncEngine) -> None:
         super().__init__()
+
         self._underlying = underlying
 
     @property

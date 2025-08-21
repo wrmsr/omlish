@@ -56,6 +56,7 @@ class OpensslAescbcCrypto(Crypto):
             iters: int = 10_000,
     ) -> None:
         super().__init__()
+
         self._iters = iters
 
     def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
@@ -131,6 +132,7 @@ class OpensslSubprocessAescbcCrypto(Crypto):
             file_input: SubprocessFileInputMethod = temp_subprocess_file_input,
     ) -> None:
         super().__init__()
+
         self._cmd = cmd
         self._timeout = timeout
         self._file_input = file_input

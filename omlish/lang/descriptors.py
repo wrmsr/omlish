@@ -200,6 +200,7 @@ decorator = _decorator
 class AccessForbiddenError(Exception):
     def __init__(self, name: str | None = None, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*((name,) if name is not None else ()), *args, **kwargs)  # noqa
+
         self.name = name
 
 
@@ -231,6 +232,7 @@ class _ClassOnly:
         if not isinstance(mth, classmethod):
             raise TypeError(f'must be classmethod: {mth}')
         super().__init__()
+
         self._mth = (mth,)
         functools.update_wrapper(self, mth)  # type: ignore
 

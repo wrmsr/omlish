@@ -129,6 +129,7 @@ class NoBool:
 class _NoBoolDescriptor:
     def __init__(self, fn, instance=None, owner=None) -> None:
         super().__init__()
+
         self._fn = fn
         self._instance = instance
         self._owner = owner

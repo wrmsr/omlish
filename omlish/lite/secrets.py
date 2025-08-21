@@ -12,6 +12,7 @@ class Secret:
 
     def __init__(self, *, key: ta.Optional[str] = None, value: str) -> None:
         super().__init__()
+
         self._key = key
         setattr(self, self._VALUE_ATTR, lambda: value)
 

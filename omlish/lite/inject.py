@@ -402,6 +402,7 @@ class ContextvarInjectorScope(InjectorScope, abc.ABC):
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+
         check.not_in(abc.ABC, cls.__bases__)
         check.state(not hasattr(cls, '_cv'))
         cls._cv = contextvars.ContextVar(f'{cls.__name__}_cv')
@@ -676,6 +677,7 @@ class _Injector(Injector):
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
             super().__init__()
+
             self._injector = injector
             self._provisions: ta.Dict[InjectorKey, Maybe] = {}
             self._seen_keys: ta.Set[InjectorKey] = set()

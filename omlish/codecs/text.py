@@ -69,6 +69,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
             options: TextEncodingOptions = TextEncodingOptions(),
     ) -> None:
         super().__init__()
+
         self._info = check.isinstance(info, codecs.CodecInfo)
         self._opts = check.isinstance(options, TextEncodingOptions)
 

@@ -74,6 +74,7 @@ CanName: ta.TypeAlias = ta.Union[
 class NameAccessor(NameLike, lang.Final):
     def __init__(self, ps: tuple[str, ...] = ()) -> None:
         super().__init__()
+
         self.__query_name_parts__ = ps
 
     def __repr__(self) -> str:

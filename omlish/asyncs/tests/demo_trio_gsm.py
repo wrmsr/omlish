@@ -6,6 +6,7 @@ import trio
 class GracefulShutdownManager:
     def __init__(self) -> None:
         super().__init__()
+
         self._shutting_down = False
         self._cancel_scopes: set[trio.CancelScope] = set()
 

@@ -31,6 +31,7 @@ class MultipartEncoder:
             boundary: bytes | None = None,
     ) -> None:
         super().__init__()
+
         self._fields = fields
         self._boundary = boundary or (b'----WebKitFormBoundary-' + uuid.uuid4().hex.encode('ascii'))
 

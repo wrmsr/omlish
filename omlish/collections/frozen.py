@@ -26,6 +26,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
+
         self._hash = None
         if len(args) > 1:
             raise TypeError(args)

@@ -39,6 +39,7 @@ class Fn(abc.ABC, ta.Generic[T]):
 class Bind(Fn[T]):
     def __init__(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__()
+
         if Ellipsis not in args and Ellipsis not in kwargs:
             args += (Ellipsis,)
         self._fn = fn
@@ -75,6 +76,7 @@ bind = Bind
 class Pipe(Fn[T]):
     def __init__(self, lfns: ta.Sequence[ta.Callable], rfn: ta.Callable[..., T]) -> None:
         super().__init__()
+
         self._lfn, *self._rfns = [*lfns, rfn]
 
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
@@ -95,6 +97,7 @@ def pipe(*fns: ta.Callable) -> Pipe:
 class Apply(Fn[T]):
     def __init__(self, *fns: ta.Callable[[T], ta.Any]) -> None:
         super().__init__()
+
         self._fns = fns
 
     def __call__(self, o: T) -> T:  # noqa

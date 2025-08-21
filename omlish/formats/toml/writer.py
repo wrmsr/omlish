@@ -15,6 +15,7 @@ class TomlWriter:
 
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()
+
         self._out = out
 
         self._indent = 0

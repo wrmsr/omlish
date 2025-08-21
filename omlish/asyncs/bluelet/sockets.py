@@ -33,6 +33,7 @@ class BlueletListener:
         """Create a listening socket on the given hostname and port."""
 
         super().__init__()
+
         self._closed = False
         self.host = host
         self.port = port
@@ -64,6 +65,7 @@ class BlueletConnection:
 
     def __init__(self, sock: socket.socket, addr: ta.Tuple[str, int]) -> None:
         super().__init__()
+
         self.sock = sock
         self.addr = addr
         self._buf = bytearray()

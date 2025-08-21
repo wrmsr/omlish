@@ -134,6 +134,7 @@ class NodeWrappingConstructorMixin:
 class _cached_class_property:  # noqa
     def __init__(self, fn):
         super().__init__()
+
         self._fn = fn
         self._attr = None
 

@@ -111,6 +111,7 @@ class InjectorImpl(Injector, lang.Final):
     class _Request:
         def __init__(self, injector: 'InjectorImpl') -> None:
             super().__init__()
+
             self._injector = injector
             self._provisions: dict[Key, lang.Maybe] = {}
             self._seen_keys: set[Key] = set()

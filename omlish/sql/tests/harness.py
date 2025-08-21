@@ -15,6 +15,7 @@ from ..dbs import UrlDbLoc
 class HarnessDbs:
     def __init__(self, compose_services: ComposeServices) -> None:
         super().__init__()
+
         self._compose_services = compose_services
 
     @lang.cached_function

@@ -164,6 +164,7 @@ class Options:
 class _Expression:
     def __init__(self, expression: Node, interpreter: 'TreeInterpreter') -> None:
         super().__init__()
+
         self.expression = expression
         self.interpreter = interpreter
 
@@ -487,6 +488,7 @@ class TreeInterpreter(Visitor):
 class GraphvizVisitor:
     def __init__(self) -> None:
         super().__init__()
+
         self._lines: list[str] = []
         self._count = 1
 

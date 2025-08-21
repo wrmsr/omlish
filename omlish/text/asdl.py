@@ -177,6 +177,7 @@ class VisitorBase:
 
     def __init__(self) -> None:
         super().__init__()
+
         self.cache: dict[type, ta.Any] = {}
 
     def visit(self, obj, *args):
@@ -247,6 +248,7 @@ class Token:
 class AsdlSyntaxError(Exception):
     def __init__(self, msg: str, lineno: int | None = None) -> None:
         super().__init__()
+
         self.msg = msg
         self.lineno = lineno or '<unknown>'
 
@@ -291,6 +293,7 @@ class AsdlParser:
 
     def __init__(self) -> None:
         super().__init__()
+
         self._tokenizer: ta.Iterator[Token] | None = None
         self.cur_token: Token | None = None
 
