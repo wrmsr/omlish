@@ -232,7 +232,7 @@ class _AutoProxyInitCapture:
                 self.module_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
             self.initial_module_dict = dict(self.module_obj.__dict__)
 
-            self.contents: dict[str, _AutoProxyInitCapture._ModuleAttr | _AutoProxyInitCapture._Module] = {}
+            self.contents: dict[str, _AutoProxyInitCapture._ModuleAttr | types.ModuleType] = {}
             self.imported_whole = False
 
         def __repr__(self) -> str:
@@ -265,12 +265,19 @@ class _AutoProxyInitCapture:
                 if attr == '*':
                     raise AutoProxyInitErrors.ImportStarForbiddenError(str(module.spec), from_list)
 
-                xma = getattr(module.module_obj, attr)
+                x = getattr(module.module_obj, attr)
 
-                if (
-                        xma is not module.contents.get(attr) or
-                        self._attrs[xma] != (module, attr)
-                ):
+                bad = False
+                if x is not module.contents.get(attr):
+                    bad = True
+                if isinstance(x, _AutoProxyInitCapture._ModuleAttr):
+                    if self._attrs[x] != (module, attr):
+                        bad = True
+                elif isinstance(x, types.ModuleType):
+                    raise NotImplementedError
+                else:
+                    bad = True
+                if bad:
                     raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
     #
