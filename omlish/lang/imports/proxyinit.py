@@ -259,7 +259,7 @@ class _AutoProxyInitCapture:
         if attr in module.contents:
             raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
-        v: ta.Any
+        v: _AutoProxyInitCapture._ModuleAttr | types.ModuleType
         if not module.spec.name:
             if not module.spec.level:
                 raise AutoProxyInitError
