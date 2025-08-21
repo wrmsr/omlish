@@ -1,9 +1,8 @@
 """
 TODO:
- - auto_proxy_init can capture `import as` by scanning globals for sentinels
-  - replaces _AutoProxyInitCapture._attrs dict outright
-  - should raise on unbound or shadowed import - was probably imported for side-effects but will never get
-    proxy imported
+ - should raise on unbound or shadowed import - was probably imported for side-effects but will never get proxy imported
+ - check fake modules, ensure expected dicts (only _ModuleAttrs) - callers should not set attrs into imported modules
+ - __getattr__ hook in fake modules, returning jit attrs
 """
 import builtins
 import contextlib
@@ -18,12 +17,11 @@ from ..lazyglobals import LazyGlobals
 ##
 
 
-class NamePackage(ta.NamedTuple):
-    name: str
-    package: str
-
-
 class _ProxyInit:
+    class NamePackage(ta.NamedTuple):
+        name: str
+        package: str
+
     class _Import(ta.NamedTuple):
         pkg: str
         attr: str | None
@@ -48,26 +46,16 @@ class _ProxyInit:
     def add(
             self,
             package: str,
-            attrs: ta.Iterable[str | tuple[str, str]] | None = None,
+            attrs: ta.Iterable[tuple[str | None, str]],
     ) -> None:
-        if isinstance(attrs, str):
-            raise TypeError(attrs)
+        for imp_attr, as_attr in attrs:
+            if imp_attr is None:
+                self._imps_by_attr[as_attr] = self._Import(package, None)
+                self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
 
-        if attrs is None:
-            whole_attr = package.split('.')[-1]
-
-            self._imps_by_attr[whole_attr] = self._Import(package, None)
-            self._lazy_globals.set_fn(whole_attr, functools.partial(self.get, whole_attr))
-
-        else:
-            for attr in attrs:
-                if isinstance(attr, tuple):
-                    imp_attr, attr = attr
-                else:
-                    imp_attr = attr
-
-                self._imps_by_attr[attr] = self._Import(package, imp_attr)
-                self._lazy_globals.set_fn(attr, functools.partial(self.get, attr))
+            else:
+                self._imps_by_attr[as_attr] = self._Import(package, imp_attr)
+                self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
 
     def _import_module(self, name: str) -> ta.Any:
         return importlib.import_module(name, package=self._name_package.package)
@@ -98,12 +86,38 @@ class _ProxyInit:
 def proxy_init(
         init_globals: ta.MutableMapping[str, ta.Any],
         package: str,
-        attrs: ta.Iterable[str | tuple[str, str]] | None = None,
+        attrs: ta.Iterable[str | tuple[str | None, str | None] | None] | None = None,
 ) -> None:
     if isinstance(attrs, str):
         raise TypeError(attrs)
 
-    init_name_package = NamePackage(
+    if attrs is None:
+        attrs = [None]
+
+    whole_attr = package.split('.')[-1]
+    al: list[tuple[str | None, str]] = []
+    for attr in attrs:
+        if attr is None:
+            al.append((None, whole_attr))
+
+        elif isinstance(attr, str):
+            al.append((attr, attr))
+
+        elif isinstance(attr, tuple):
+            imp_attr, as_attr = attr
+            if as_attr is None:
+                if imp_attr is None:
+                    as_attr = whole_attr
+                else:
+                    as_attr = imp_attr
+            al.append((imp_attr, as_attr))
+
+        else:
+            raise TypeError(attr)
+
+    #
+
+    init_name_package = _ProxyInit.NamePackage(
         init_globals['__name__'],
         init_globals['__package__'],
     )
@@ -123,7 +137,7 @@ def proxy_init(
         if pi.name_package != init_name_package:
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
 
-    pi.add(package, attrs)
+    pi.add(package, al)
 
 
 ##
@@ -205,8 +219,9 @@ class _AutoProxyInitCapture:
     def __init__(self) -> None:
         super().__init__()
 
-        self._modules: dict[_AutoProxyInitCapture.ModuleSpec, _AutoProxyInitCapture._Module] = {}
-        self._attrs: dict[str, _AutoProxyInitCapture._ModuleAttr | _AutoProxyInitCapture._Module] = {}
+        self._modules_by_spec: dict[_AutoProxyInitCapture.ModuleSpec, _AutoProxyInitCapture._Module] = {}
+        self._modules_by_module: dict[types.ModuleType, _AutoProxyInitCapture._Module] = {}
+        self._attrs: dict[_AutoProxyInitCapture._ModuleAttr, tuple[_AutoProxyInitCapture._Module, str]] = {}
 
     def _handle_import(
             self,
@@ -218,23 +233,6 @@ class _AutoProxyInitCapture:
             if module.spec.level or not module.spec.name:
                 raise AutoProxyInitError
 
-            attr = module.spec.name
-
-            try:
-                xma: ta.Any = self._attrs[attr]
-            except KeyError:
-                pass
-
-            else:
-                if (
-                        xma is not self._attrs.get(attr) or
-                        not module.imported_whole
-                ):
-                    raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
-
-                return
-
-            self._attrs[attr] = module
             module.imported_whole = True
 
         else:
@@ -250,18 +248,15 @@ class _AutoProxyInitCapture:
                 else:
                     if (
                             xma is not module.attrs.get(attr) or
-                            xma is not self._attrs.get(attr)
+                            self._attrs[xma] != (module, attr)
                     ):
                         raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
                     continue
 
-                if attr in self._attrs:
-                    raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
-
                 ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
-                self._attrs[attr] = ma
                 module.attrs[attr] = ma
+                self._attrs[ma] = (module, attr)
                 setattr(module.module, attr, ma)
 
     _MOD_SELF_ATTR: ta.ClassVar[str] = '__auto_proxy_init_capture__'
@@ -282,10 +277,11 @@ class _AutoProxyInitCapture:
 
         spec = _AutoProxyInitCapture.ModuleSpec(name, level)
         try:
-            module = self._modules[spec]
+            module = self._modules_by_spec[spec]
         except KeyError:
             module = self._Module(spec)
-            self._modules[spec] = module
+            self._modules_by_spec[spec] = module
+            self._modules_by_module[module.module] = module
 
         self._handle_import(
             module,
@@ -353,52 +349,75 @@ class _AutoProxyInitCapture:
             del init_globals[self._MOD_SELF_ATTR]
             builtins.__import__ = old_import
 
-    def verify_globals(
-            self,
-            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
-    ) -> None:
-        for attr, obj in self._attrs.items():
-            try:
-                xo = init_globals[attr]
-            except KeyError:
-                raise AutoProxyInitErrors.AttrError(None, attr) from None
-
-            if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
-                if xo is not obj:
-                    raise AutoProxyInitErrors.AttrError(None, attr) from None
-
-            elif isinstance(obj, _AutoProxyInitCapture._Module):
-                if xo is not obj.module:
-                    raise AutoProxyInitErrors.AttrError(None, attr) from None
-
-            else:
-                raise TypeError(obj)
-
-    @property
-    def all_attrs(self) -> ta.AbstractSet[str]:
-        return self._attrs.keys()
+    # def verify_globals(
+    #         self,
+    #         init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    # ) -> None:
+    #     for attr, obj in self._attrs.items():
+    #         try:
+    #             xo = init_globals[attr]
+    #         except KeyError:
+    #             raise AutoProxyInitErrors.AttrError(None, attr) from None
+    #
+    #         if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
+    #             if xo is not obj:
+    #                 raise AutoProxyInitErrors.AttrError(None, attr) from None
+    #
+    #         elif isinstance(obj, _AutoProxyInitCapture._Module):
+    #             if xo is not obj.module:
+    #                 raise AutoProxyInitErrors.AttrError(None, attr) from None
+    #
+    #         else:
+    #             raise TypeError(obj)
 
     class ProxyInit(ta.NamedTuple):
         package: str
-        attrs: ta.Sequence[str] | None
+        attrs: ta.Iterable[tuple[str | None, str]]
 
-    def build_proxy_inits(self) -> list[ProxyInit]:
+    def build_proxy_inits(
+            self,
+            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    ) -> list[ProxyInit]:
+        dct: dict[_AutoProxyInitCapture._Module, list[tuple[str | None, str]]] = {}
+
+        for attr, obj in init_globals.items():
+            if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
+                try:
+                    m, a = self._attrs[obj]
+                except KeyError:
+                    raise AutoProxyInitErrors.AttrError(None, attr) from None
+                dct.setdefault(m, []).append((a, attr))
+
+            elif isinstance(obj, _AutoProxyInitCapture._Module):
+                raise AutoProxyInitErrors.AttrError(None, attr) from None
+
+            elif isinstance(obj, types.ModuleType):
+                try:
+                    obj = self._modules_by_module[obj]
+                except KeyError:
+                    continue
+                if not obj.imported_whole:
+                    raise RuntimeError(f'AutoProxyInit module {obj.spec!r} not imported_whole')
+                dct.setdefault(obj, []).append((None, attr))
+
         lst: list[_AutoProxyInitCapture.ProxyInit] = []
+        for m, ts in dct.items():
+            if not m.spec.name:
+                if not m.spec.level:
+                    raise AutoProxyInitError
+                for imp_attr, as_attr in ts:
+                    if not imp_attr:
+                        raise RuntimeError
+                    lst.append(_AutoProxyInitCapture.ProxyInit(
+                        '.' * m.spec.level + imp_attr,
+                        [(None, as_attr)],
+                    ))
 
-        for module in self._modules.values():
-            if module.imported_whole:
-                lst.append(_AutoProxyInitCapture.ProxyInit(str(module.spec), None))
-
-            if module.attrs:
-                if not module.spec.name:
-                    for attr in module.attrs:
-                        if not module.spec.level:
-                            raise AutoProxyInitError
-
-                        lst.append(_AutoProxyInitCapture.ProxyInit('.' * module.spec.level + attr, None))
-
-                else:
-                    lst.append(_AutoProxyInitCapture.ProxyInit(str(module.spec), list(module.attrs)))
+            else:
+                lst.append(_AutoProxyInitCapture.ProxyInit(
+                    str(m.spec),
+                    ts,
+                ))
 
         return lst
 
@@ -425,14 +444,12 @@ def auto_proxy_init(
     with cap.hook_context(init_globals):
         yield
 
-    cap.verify_globals(init_globals)
-
-    pis = cap.build_proxy_inits()
-
-    for attr in cap.all_attrs:
-        del init_globals[attr]
+    pis = cap.build_proxy_inits(init_globals)
 
     for pi in pis:
+        for _, a in pi.attrs:
+            del init_globals[a]
+
         proxy_init(
             init_globals,
             pi.package,
@@ -441,5 +458,7 @@ def auto_proxy_init(
 
     if eager:
         lg = LazyGlobals.install(init_globals)
-        for attr in cap.all_attrs:
-            lg.get(attr)
+
+        for pi in pis:
+            for _, a in pi.attrs:
+                lg.get(a)
