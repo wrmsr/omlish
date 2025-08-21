@@ -32,12 +32,13 @@ class TestInject(unittest.TestCase):
             return str(sfn_n)
 
         bs = inj.as_bindings(
-            # inj.bind(420),
+            inj.bind(420.),
             inj.bind(ifn),
             inj.bind(sfn, singleton=True),
         )
 
         i = inj.create_injector(bs)
+        self.assertEqual(i.provide(float), 420.)
         self.assertEqual(i.provide(int), 1)
         self.assertEqual(i.provide(int), 2)
         self.assertEqual(i.provide(str), '1')
