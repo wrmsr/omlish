@@ -381,15 +381,21 @@ class _AutoProxyInitCapture:
 
     class BuiltProxyInits(ta.NamedTuple):
         proxy_inits: ta.Sequence['_AutoProxyInitCapture.ProxyInit']
+        unreferenced: ta.Mapping[str, ta.Sequence[str | None]] | None
 
     def build_proxy_inits(
             self,
             init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+            *,
+            collect_unreferenced: bool = False,
     ) -> BuiltProxyInits:
         dct: dict[_AutoProxyInitCapture._Module, list[tuple[str | None, str]]] = {}
 
-        rem_whole_mods: set[_AutoProxyInitCapture._Module] = {m for m in self._modules_by_spec.values() if m.imported_whole}  # noqa
-        rem_mod_attrs: set[_AutoProxyInitCapture._ModuleAttr] = set(self._attrs)
+        rem_whole_mods: set[_AutoProxyInitCapture._Module] = set()
+        rem_mod_attrs: set[_AutoProxyInitCapture._ModuleAttr] = set()
+        if collect_unreferenced:
+            rem_whole_mods.update([m for m in self._modules_by_spec.values() if m.imported_whole])
+            rem_mod_attrs.update(self._attrs)
 
         for attr, obj in init_globals.items():
             if isinstance(obj, _AutoProxyInitCapture._ModuleAttr):
@@ -432,8 +438,18 @@ class _AutoProxyInitCapture:
                     ts,
                 ))
 
+        unreferenced: dict[str, list[str | None]] | None = None
+        if collect_unreferenced and (rem_whole_mods or rem_mod_attrs):
+            unreferenced = {}
+            for m in rem_whole_mods:
+                unreferenced.setdefault(str(m.spec), []).append(None)
+            for ma in rem_mod_attrs:
+                m, a = self._attrs[ma]
+                unreferenced.setdefault(str(m.spec), []).append(a)
+
         return _AutoProxyInitCapture.BuiltProxyInits(
             lst,
+            unreferenced,
         )
 
 
