@@ -182,7 +182,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _build_cmd_set(args: ta.Any) -> CliCmdSet:
+def _initialize_global_manifests(args: ta.Any) -> None:
     ldr_cfg = GlobalManifestLoader.default_config()
 
     ldr_cfg |= ManifestLoader.config_from_entry_point(globals())
@@ -195,8 +195,8 @@ def _build_cmd_set(args: ta.Any) -> CliCmdSet:
 
     GlobalManifestLoader.initialize(ldr_cfg)
 
-    #
 
+def _build_cmd_set() -> CliCmdSet:
     lst: list[CliCmd] = []
 
     for mv in GlobalManifestLoader.load_values_of(CliModule):
@@ -247,7 +247,9 @@ def _main() -> ta.Any:
     args = parser.parse_args()
 
     def inner():
-        cmds = _build_cmd_set(args)
+        _initialize_global_manifests(args)
+
+        cmds = _build_cmd_set()
         sel = _select_cmd(args, cmds)
 
         if isinstance(sel, int):

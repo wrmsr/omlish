@@ -1,6 +1,5 @@
 """
 TODO:
- - fix load_manifests already
  - ModelNamePackCollectionThing
 """
 import abc
