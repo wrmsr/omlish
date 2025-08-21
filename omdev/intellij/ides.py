@@ -24,6 +24,7 @@ class Ide(enum.Enum):
 
 
 _INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
+
     Ide.PYCHARM: frozenset([
         'setup.py',
         'setup.cfg',
@@ -36,6 +37,7 @@ _INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
         'asgi.py',
         'manage.py',
     ]),
+
     Ide.IDEA: frozenset([
         'pom.xml',
         'mvnw',
@@ -45,21 +47,27 @@ _INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
         'module-info.java',
         '.java-version',
     ]),
+
     Ide.CLION: frozenset([
         'CMakeLists.txt',
+        'Cargo.toml',
+        'config.h.in',
         'configure.ac',
         'configure.in',
-        'config.h.in',
+        'rust-toolchain.toml',
         'vcpkg.json',
     ]),
+
     Ide.WEBSTORM: frozenset([
         'package.json',
         'package-lock.json',
     ]),
+
     Ide.GOLAND: frozenset([
         'go.mod',
         'go.sum',
     ]),
+
 }
 
 
