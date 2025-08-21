@@ -1,9 +1,3 @@
-"""
-TODO:
- - ModuleAttr should behave differently on whether or not it's a full module or module (either `import math` or `from .
-   import foo`) - complete the work of __getattr__ jit usage (`from . import foo; bar = foo.bar`)
- - should raise on unbound or shadowed import - was probably imported for side-effects but will never get proxy imported
-"""
 import builtins
 import contextlib
 import functools
@@ -180,6 +174,15 @@ class AutoProxyInitErrors:
     class UnproxiedImportForbiddenError(ImportError):
         pass
 
+    class UnreferencedImportsError(AutoProxyInitError):
+        def __init__(self, unreferenced: ta.Mapping[str, ta.Sequence[str | None]]) -> None:
+            super().__init__()
+
+            self.unreferenced = unreferenced
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__qualname__}(unreferenced={self.unreferenced!r})'
+
 
 class _AutoProxyInitCapture:
     class ModuleSpec(ta.NamedTuple):
@@ -238,15 +241,41 @@ class _AutoProxyInitCapture:
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}({self.spec!r})'
 
+    def _get_or_make_module(self, spec: ModuleSpec) -> _Module:
+        try:
+            return self._modules_by_spec[spec]
+        except KeyError:
+            pass
+
+        module = self._Module(
+            spec,
+            getattr_handler=self._handle_module_getattr,
+        )
+        self._modules_by_spec[spec] = module
+        self._modules_by_module_obj[module.module_obj] = module
+        return module
+
     def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
         if attr in module.contents:
             raise AutoProxyInitErrors.AttrError(str(module.spec), attr)
 
-        ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
-        module.contents[attr] = ma
-        self._attrs[ma] = (module, attr)
-        setattr(module.module_obj, attr, ma)
-        return ma
+        v: ta.Any
+        if not module.spec.name:
+            if not module.spec.level:
+                raise AutoProxyInitError
+            cs = _AutoProxyInitCapture.ModuleSpec(attr, module.spec.level)
+            cm = self._get_or_make_module(cs)
+            cm.imported_whole = True
+            v = cm.module_obj
+
+        else:
+            ma = _AutoProxyInitCapture._ModuleAttr(module, attr)
+            self._attrs[ma] = (module, attr)
+            v = ma
+
+        module.contents[attr] = v
+        setattr(module.module_obj, attr, v)
+        return v
 
     def _handle_import(
             self,
@@ -274,7 +303,8 @@ class _AutoProxyInitCapture:
                     if self._attrs[x] != (module, attr):
                         bad = True
                 elif isinstance(x, types.ModuleType):
-                    raise NotImplementedError
+                    if x not in self._modules_by_module_obj:
+                        bad = True
                 else:
                     bad = True
                 if bad:
@@ -299,15 +329,7 @@ class _AutoProxyInitCapture:
             return None
 
         spec = _AutoProxyInitCapture.ModuleSpec(name, level)
-        try:
-            module = self._modules_by_spec[spec]
-        except KeyError:
-            module = self._Module(
-                spec,
-                getattr_handler=self._handle_module_getattr,
-            )
-            self._modules_by_spec[spec] = module
-            self._modules_by_module_obj[module.module_obj] = module
+        module = self._get_or_make_module(spec)
 
         self._handle_import(
             module,
@@ -480,6 +502,9 @@ def auto_proxy_init(
         *,
         disable: bool = False,
         eager: bool = False,
+
+        unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
+        raise_unreferenced: bool = False,
 ) -> ta.Iterator[None]:
     """
     This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
@@ -498,7 +523,16 @@ def auto_proxy_init(
 
     cap.verify_state(init_globals)
 
-    blt = cap.build_proxy_inits(init_globals)
+    blt = cap.build_proxy_inits(
+        init_globals,
+        collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
+    )
+
+    if blt.unreferenced:
+        if unreferenced_callback:
+            unreferenced_callback(blt.unreferenced)
+        if raise_unreferenced:
+            raise AutoProxyInitErrors.UnreferencedImportsError(blt.unreferenced)
 
     for pi in blt.proxy_inits:
         for _, a in pi.attrs:
