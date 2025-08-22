@@ -43,7 +43,6 @@ from .. import check
 from .. import lang
 from .. import sync
 from ..concurrent import threadlets
-from .sync import sync_await
 
 
 if ta.TYPE_CHECKING:
@@ -71,7 +70,7 @@ def trivial_s_to_a(fn):
 
 def trivial_a_to_s(fn):
     def inner(*args, **kwargs):
-        return sync_await(fn, *args, **kwargs)
+        return lang.sync_await(fn, *args, **kwargs)
     return inner
 
 

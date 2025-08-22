@@ -6,6 +6,9 @@ from ..maysyncs import make_maysync
 from ..maysyncs import maysync
 
 
+##
+
+
 def s_inc(i: int) -> int:
     return i + 1
 
@@ -61,18 +64,18 @@ async def test_async_generator():
 ##
 
 
-@maysync
-async def m_foo():
-    for i in range(3):
-        yield await m_inc(i).m()
-
-
-@maysync
-async def m_bar():
-    c = 0
-    async for i in await m_foo().m():
-        c += i + 1
-    return c
+# @maysync
+# async def m_foo():
+#     for i in range(3):
+#         yield await m_inc(i).m()
+#
+#
+# @maysync
+# async def m_bar():
+#     c = 0
+#     async for i in await m_foo().m():
+#         c += i + 1
+#     return c
 
 
 # @pytest.mark.asyncs('asyncio')

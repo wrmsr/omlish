@@ -438,8 +438,29 @@ class _MgWrapper:
                 a_.close()
 
 
-def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> MaysyncFn[T]:
+def maysync_fn(m: ta.Callable[..., ta.Awaitable[T]]) -> MaysyncFn[T]:
     return _MgMaysyncFn(_MgWrapper(m))
+
+
+def maysync_generator_fn(m: ta.Callable[..., ta.AsyncGenerator[O, I]]) -> MaysyncGeneratorFn[O, I]:
+    raise NotImplementedError
+
+
+@ta.overload
+def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> MaysyncFn[T]:
+    ...
+
+
+@ta.overload
+def maysync(m: ta.Callable[..., ta.AsyncGenerator[O, I]]) -> MaysyncGeneratorFn[O, I]:
+    ...
+
+
+def maysync(m):
+    if inspect.isasyncgenfunction(m):
+        return maysync_generator_fn(m)
+    else:
+        return maysync_fn(m)
 
 
 ##
