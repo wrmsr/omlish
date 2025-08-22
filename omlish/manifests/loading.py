@@ -209,6 +209,7 @@ class ManifestLoader:
     @classmethod
     def _discover_packages_uncached(cls) -> ta.Sequence[str]:
         from importlib import metadata as importlib_metadata  # noqa
+
         return [
             ep.value
             for ep in importlib_metadata.entry_points(group=cls.ENTRY_POINT_GROUP)
@@ -262,35 +263,31 @@ class ManifestLoader:
 
     ##
 
-    _detected_packages: ta.Set[str]
-
-    def _do_initialize(self) -> None:
-        self._detected_packages = set()
+    def _detect_packages_uncached(self) -> ta.AbstractSet[str]:
+        ret: ta.Set[str] = set()
 
         for r in self._config.package_scan_root_dirs or []:
-            self._detected_packages.update(self._scan_package_root_dir_locked(r))
+            ret.update(self._scan_package_root_dir_locked(r))
 
         if self._config.discover_packages:
-            self._detected_packages.update(dps := self.discover_packages())
+            ret.update(dps := self.discover_packages())
             if not dps:
                 for r in self._config.discover_packages_fallback_scan_root_dirs or []:
-                    self._detected_packages.update(self._scan_package_root_dir_locked(r))
+                    ret.update(self._scan_package_root_dir_locked(r))
 
-    _has_initialized = False
+        return ret
 
-    def _initialize_locked(self) -> None:
-        if not self._has_initialized:
-            self._do_initialize()
-            self._has_initialized = True
+    _detected_packages: ta.Optional[ta.AbstractSet[str]] = None
 
-    def has_initialized(self) -> bool:
+    def _detect_packages_locked(self) -> ta.AbstractSet[str]:
+        if self._detected_packages is None:
+            self._detected_packages = self._detect_packages_uncached()
+
+        return self._detected_packages
+
+    def detect_packages(self) -> ta.AbstractSet[str]:
         with self._lock:
-            return self._has_initialized
-
-    def initialize(self) -> None:
-        if not self._has_initialized:
-            with self._lock:
-                self._initialize_locked()
+            return self._detect_packages_locked()
 
     ##
 
@@ -429,6 +426,7 @@ class ManifestLoader:
                     return f.read()
 
         from importlib import resources as importlib_resources  # noqa
+
         t = importlib_resources.files(package_name).joinpath(file_name)
         if not t.is_file():
             return None
@@ -497,7 +495,7 @@ class ManifestLoader:
 
     ##
 
-    def _load_initialized(
+    def _load_locked(
             self,
             *,
             packages: ta.Optional[ta.Collection[str]] = None,
@@ -511,7 +509,7 @@ class ManifestLoader:
             class_keys = {self.get_class_key(cls) for cls in classes}
 
         if packages is None:
-            packages = self._detected_packages
+            packages = self._detect_packages_locked()
 
         lst: ta.List[ManifestLoader.LoadedManifest] = []
         for pn in packages:
@@ -526,18 +524,6 @@ class ManifestLoader:
                 lst.extend(lp.manifests)
 
         return lst
-
-    def _load_locked(
-            self,
-            *,
-            packages: ta.Optional[ta.Collection[str]] = None,
-            classes: ta.Optional[ta.Collection[type]] = None,
-    ) -> ta.Sequence[LoadedManifest]:
-        self._initialize_locked()
-        return self._load_initialized(
-            packages=packages,
-            classes=classes,
-        )
 
     def load(
             self,
