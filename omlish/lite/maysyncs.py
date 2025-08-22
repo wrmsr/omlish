@@ -382,14 +382,14 @@ class _MgMaysyncGenerator(
                     o = g.send(i)
             except StopIteration as ex:
                 if ex.value is not None:
-                    raise NotImplementedError from ex
+                    raise TypeError from ex
                 return
 
             i = None
             e = None
 
             if isinstance(o, _MaysyncGeneratorYield):
-                yield o.v
+                i = yield o.v
                 continue
 
             if not isinstance(o, _MaysyncOp):
@@ -403,11 +403,38 @@ class _MgMaysyncGenerator(
             del o
 
     async def a(self) -> ta.AsyncGenerator[O, I]:
-        # # FIXME: I???
-        # async for o in self._x._a(*self._args, **self._kwargs):  # noqa
-        #     yield o
-        raise NotImplementedError
-        yield  # type: ignore[unreachable]  # noqa
+        g = self._x._mg(*self._args, **self._kwargs)  # noqa
+
+        i: ta.Any = None
+        e: ta.Any = None
+
+        while True:
+            try:
+                if e is not None:
+                    o = g.throw(e)
+                else:
+                    o = g.send(i)
+            except StopIteration as ex:
+                if ex.value is not None:
+                    raise TypeError from ex
+                return
+
+            i = None
+            e = None
+
+            if isinstance(o, _MaysyncGeneratorYield):
+                i = yield o.v
+                continue
+
+            if not isinstance(o, _MaysyncOp):
+                raise TypeError(o)
+
+            try:
+                i = await o.x(*o.args, **o.kwargs).a()
+            except BaseException as ex:  # noqa
+                e = ex
+
+            del o
 
 
 #
@@ -487,7 +514,7 @@ class _MgGeneratorDriver(_MgDriverLike):
                         g = a.asend(None)
                     except StopIteration as e:
                         if e.value is not None:
-                            raise NotImplementedError from e
+                            raise TypeError from e
                         return
 
                     try:
@@ -496,7 +523,7 @@ class _MgGeneratorDriver(_MgDriverLike):
                                 o = g.send(None)
                             except StopIteration as e:
                                 if e.value is not None:
-                                    raise NotImplementedError from e
+                                    raise TypeError from e
                                 break
 
                             if isinstance(o, _MaysyncGeneratorYield):
