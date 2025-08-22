@@ -13,6 +13,9 @@ import typing as ta
 T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
 
+O = ta.TypeVar('O')
+I = ta.TypeVar('I')
+
 _MaysyncX = ta.TypeVar('_MaysyncX')
 
 
@@ -30,17 +33,25 @@ class Maywaitable(ta.Protocol[T_co]):
         ...
 
 
-Maysync = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
+class MaysyncGenerator(ta.Protocol[O, I]):
+    def s(self) -> ta.Generator[O, I]:
+        ...
+
+    def a(self) -> ta.AsyncGenerator[O, I]:
+        ...
+
+    def m(self) -> ta.AsyncGenerator[O, I]:
+        ...
 
 
-class Maysync_(abc.ABC, ta.Generic[T]):  # noqa
-    @ta.final
-    def cast(self) -> Maysync[T]:
-        return ta.cast('Maysync[T]', self)
+MaysyncFn = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
+MaysyncGeneratorFn = ta.Callable[..., MaysyncGenerator[O, I]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
+
+class Maysync_(abc.ABC):  # noqa
     class FnPair(ta.NamedTuple):
         s: ta.Callable[..., ta.Any]
-        a: ta.Callable[..., ta.Awaitable[ta.Any]]
+        a: ta.Callable[..., ta.Any]
 
     @abc.abstractmethod
     def fn_pair(self) -> ta.Optional[FnPair]:
@@ -49,6 +60,18 @@ class Maysync_(abc.ABC, ta.Generic[T]):  # noqa
     @abc.abstractmethod
     def __call__(self, *args, **kwargs):  # -> Maywaitable[T]
         raise NotImplementedError
+
+
+class MaysyncFn_(abc.ABC, ta.Generic[T]):  # noqa
+    @ta.final
+    def cast(self) -> MaysyncFn[T]:
+        return ta.cast('MaysyncFn[T]', self)
+
+
+class MaysyncGeneratorFn_(abc.ABC, ta.Generic[O, I]):  # noqa
+    @ta.final
+    def cast(self) -> MaysyncGenerator[O, I]:
+        return ta.cast('MaysyncGenerator[O, I]', self)
 
 
 ##
@@ -125,7 +148,7 @@ class _FnMaywaitable(_Maywaitable[_FnMaysync[T], T]):
 def make_maysync(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
-) -> Maysync[T]:
+) -> MaysyncFn[T]:
     return _FnMaysync(s, a)
 
 
@@ -157,7 +180,7 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
     #
     # def _is_ag(self) -> bool:
     #     if self._is_ag_ is None:
-    #         if isinstance(self._mg, _MgMaysyncFn):
+    #         if isinstance(self._mg, _MgWrapper):
     #             self._is_ag_ = self._mg._is_ag  # noqa
     #         else:
     #             self._is_ag_ = inspect.isasyncgenfunction(self._mg)
@@ -230,7 +253,7 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
 
 
 @ta.final
-class _MgMaysyncFn:
+class _MgWrapper:
     def __init__(
             self,
             m,
@@ -253,7 +276,7 @@ class _MgMaysyncFn:
         )
 
     def __get__(self, instance, owner=None):
-        return _MgMaysyncFn(
+        return _MgWrapper(
             self._m.__get__(instance, owner),
             # is_ag=self._is_ag,
         )
@@ -298,8 +321,8 @@ class _MgMaysyncFn:
                 a_.close()
 
 
-def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysync[T]:
-    return _MgMaysync(_MgMaysyncFn(m))
+def maysync(m: ta.Callable[..., ta.AsyncGenerator[T]]) -> MaysyncFn[T]:
+    return _MgMaysync(_MgWrapper(m))
 
 
 ##
@@ -309,7 +332,7 @@ def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysync[T]:
 class _MaysyncOp:
     def __init__(
             self,
-            x: Maysync[T],
+            x: MaysyncFn[T],
             args: ta.Tuple[ta.Any, ...],
             kwargs: ta.Mapping[str, ta.Any],
     ) -> None:

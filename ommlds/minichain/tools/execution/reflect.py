@@ -17,7 +17,7 @@ from .catalog import ToolCatalogEntry
 
 def reflect_tool_catalog_entry(fn: ta.Callable) -> ToolCatalogEntry:
     impl: ToolFn.Impl
-    if isinstance(fn, lang.Maysync_):
+    if isinstance(fn, lang.MaysyncFn_):
         impl = ToolFn.MaysyncImpl(fn.cast())
     else:
         # FIXME: assumes sync
