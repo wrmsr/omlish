@@ -6,6 +6,7 @@ TODO:
 """
 import abc
 import functools
+import types
 import typing as ta
 
 
@@ -13,8 +14,6 @@ T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
 
 _MaysyncX = ta.TypeVar('_MaysyncX')
-
-_MaysyncGen = ta.Generator['_MaysyncOp', ta.Any, T]  # ta.TypeAlias
 
 
 ##
@@ -60,8 +59,8 @@ class _Maywaitable(abc.ABC, ta.Generic[_MaysyncX, T]):
     def __init__(
             self,
             x: _MaysyncX,
-            *args: ta.Any,
-            **kwargs: ta.Any,
+            args: ta.Any,
+            kwargs: ta.Any,
     ) -> None:
         self._x = x
         self._args = args
@@ -70,10 +69,9 @@ class _Maywaitable(abc.ABC, ta.Generic[_MaysyncX, T]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._x!r})'
 
-    @ta.final
     def m(self) -> ta.Awaitable[T]:
         return _MaysyncFuture(_MaysyncOp(
-            ta.cast(ta.Any, self._x),
+            self._x,  # type: ignore
             self._args,
             self._kwargs,
         ))
@@ -112,7 +110,7 @@ class _FnMaysync(Maysync_, ta.Generic[T]):
         )
 
     def __call__(self, *args, **kwargs):
-        return _FnMaywaitable(self, *args, **kwargs)
+        return _FnMaywaitable(self, args, kwargs)
 
 
 @ta.final
@@ -138,7 +136,7 @@ def make_maysync(
 class _MgMaysync(Maysync_, ta.Generic[T]):
     def __init__(
             self,
-            mg: ta.Callable[..., _MaysyncGen[T]],
+            mg: ta.Callable[..., ta.Generator['_MaysyncOp', ta.Any, T]],
     ) -> None:
         self._mg = mg
 
@@ -155,8 +153,21 @@ class _MgMaysync(Maysync_, ta.Generic[T]):
             self._mg.__get__(instance, owner),  # noqa
         )
 
+    # _is_ag_: ta.Optional[bool] = None
+    #
+    # def _is_ag(self) -> bool:
+    #     if self._is_ag_ is None:
+    #         if isinstance(self._mg, _MgMaysyncFn):
+    #             self._is_ag_ = self._mg._is_ag  # noqa
+    #         else:
+    #             self._is_ag_ = inspect.isasyncgenfunction(self._mg)
+    #     return self._is_ag_
+
     def __call__(self, *args, **kwargs):
-        return _MgMaywaitable(self, *args, **kwargs)
+        # if self._is_ag():
+        #     raise NotImplementedError
+        # else:
+        return _MgMaywaitable(self, args, kwargs)
 
 
 @ta.final
@@ -220,47 +231,71 @@ class _MgMaywaitable(_Maywaitable[_MgMaysync[T], T]):
 
 @ta.final
 class _MgMaysyncFn:
-    def __init__(self, m):
+    def __init__(
+            self,
+            m,
+            # *,
+            # is_ag=None,
+    ):
         self._m = m
+
+        # if is_ag is None:
+        #     is_ag = inspect.isasyncgenfunction(m)
+        # self._is_ag = is_ag
 
         functools.update_wrapper(self, m, updated=())
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self._m!r})'
+        return (
+            f'{self.__class__.__name__}@{id(self):x}({self._m!r}' +  # noqa
+            # (f', is_ag={self._is_ag!r}' if self._is_ag else '') +
+            f')'
+        )
 
     def __get__(self, instance, owner=None):
         return _MgMaysyncFn(
             self._m.__get__(instance, owner),
+            # is_ag=self._is_ag,
         )
 
     def __call__(self, *args, **kwargs):
-        a = self._m(*args, **kwargs).__await__()
-        try:
-            g = iter(a)
+        a_ = self._m(*args, **kwargs)
+
+        if isinstance(a_, types.AsyncGeneratorType):
+            raise NotImplementedError
+
+        else:
             try:
-                while True:
+                a = a_.__await__()
+                try:
+                    g = iter(a)
                     try:
-                        o = g.send(None)
-                    except StopIteration as e:
-                        return e.value
+                        while True:
+                            try:
+                                o = g.send(None)
+                            except StopIteration as e:
+                                return e.value
 
-                    if not isinstance(o, _MaysyncFuture):
-                        raise TypeError(o)
+                            if not isinstance(o, _MaysyncFuture):
+                                raise TypeError(o)
 
-                    if not o.done:
-                        try:
-                            o.result = yield o.op
-                        except BaseException as e:  # noqa
-                            o.error = e
-                        o.done = True
+                            if not o.done:
+                                try:
+                                    o.result = yield o.op
+                                except BaseException as e:  # noqa
+                                    o.error = e
+                                o.done = True
 
-                    del o
+                            del o
+
+                    finally:
+                        g.close()
+
+                finally:
+                    a.close()
 
             finally:
-                g.close()
-
-        finally:
-            a.close()
+                a_.close()
 
 
 def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> Maysync[T]:

@@ -15,9 +15,12 @@ async def a_inc(i: int) -> int:
     return i + 2
 
 
+m_inc = make_maysync(s_inc, a_inc)
+
+
 @maysync
 async def m_frob(i: int) -> int:
-    return await make_maysync(s_inc, a_inc)(i).m()
+    return await m_inc(i).m()
 
 
 @maysync
@@ -34,3 +37,44 @@ def test_maysync():
 async def test_async_maysync():
     assert await m_frob(3).a() == 5
     assert await m_grob(3).a() == 115
+
+
+##
+
+
+async def a_foo():
+    for i in range(3):
+        yield s_inc(i)
+
+
+async def a_bar(c=0):
+    async for i in a_foo():
+        c += i + 1
+    return c
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_async_generator():
+    assert (await a_bar(3)) == 12
+
+
+##
+
+
+# @maysync
+# async def m_foo():
+#     for i in range(3):
+#         yield await m_inc(i).m()
+#
+#
+# @maysync
+# async def m_bar():
+#     c = 0
+#     async for i in await m_foo().m():
+#         c += i + 1
+#     return c
+#
+#
+# @pytest.mark.asyncs('asyncio')
+# async def test_async_maysync_generator():
+#     assert (await m_bar().a()) == 9
