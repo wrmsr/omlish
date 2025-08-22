@@ -37,13 +37,13 @@ from .names import MODEL_NAMES
 # )
 @static_check_is_chat_choices_service
 class OpenaiChatChoicesService:
-    DEFAULT_MODEL: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
+    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
 
     def __init__(self, *configs: ApiKey | ModelName | DefaultOptions) -> None:
         super().__init__()
 
         with tv.consume(*configs) as cc:
-            self._model_name = cc.pop(self.DEFAULT_MODEL)
+            self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 

@@ -33,7 +33,7 @@ from .names import MODEL_NAMES
 # )
 @static_check_is_chat_choices_service
 class AnthropicChatChoicesService:
-    DEFAULT_MODEL: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
+    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -49,7 +49,7 @@ class AnthropicChatChoicesService:
 
         with tv.consume(*configs) as cc:
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
-            self._model_name = cc.pop(self.DEFAULT_MODEL)
+            self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, AiMessage):
