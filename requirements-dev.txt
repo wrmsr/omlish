@@ -114,7 +114,7 @@ hf-xet==1.1.8  # @omlish-venv !13t !13dt !14t
 
 datasets==4.0.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.55.3; python_version < "3.14"  # @omlish-venv !14t
+transformers==4.55.4; python_version < "3.14"  # @omlish-venv !14t
 sentence-transformers==5.1.0; python_version < "3.14"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121

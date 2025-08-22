@@ -134,7 +134,7 @@ lazy_loader==0.4
 litecli==1.15.0
 llama_cpp_python==0.3.16
 lsprotocol==2023.0.1
-lxml==6.0.0
+lxml==6.0.1
 lz4==4.4.4
 markdown-it-py==4.0.0
 MarkupSafe==3.0.2
@@ -292,7 +292,7 @@ torchvision==0.23.0
 tornado==6.5.2
 tqdm==4.67.1
 traitlets==5.14.3
-transformers==4.55.3
+transformers==4.55.4
 tree-sitter==0.25.1
 tree-sitter-python==0.23.6
 trino==0.336.0

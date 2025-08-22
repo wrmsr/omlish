@@ -148,7 +148,7 @@ def _main() -> None:
             f'dct = _run(**{run_kw!r})',
             f'import json',
             f'with open({out_file!r}, "w") as f:',  # noqa
-            f'    print(f.write(json.dumps(dct)))',
+            f'    f.write(json.dumps(dct))',
         ])
 
         subprocess.check_call([exe, '-c', payload])
