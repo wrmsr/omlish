@@ -32,7 +32,7 @@ class ToolFn(lang.Final):
 
     @dc.dataclass(frozen=True)
     class MaysyncImpl(Impl):
-        m: lang.Maysync
+        m: lang.MaysyncFn
 
     impl: Impl
 
@@ -100,7 +100,7 @@ async def m_execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
-    m_fn: lang.Maysync
+    m_fn: lang.MaysyncFn
     if isinstance(tfn.impl, ToolFn.FnImpl):
         m_fn = lang.make_maysync(
             tfn.impl.s if tfn.impl.s is not None else _no_sync_tool_impl,
