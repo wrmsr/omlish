@@ -16,8 +16,8 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....configs import Config
 from ....llms.types import MaxTokens
-from ....models.configs import ModelSpecifier
 from ....models.configs import ModelRepo
+from ....models.configs import ModelSpecifier
 from ....standard import DefaultOptions
 from ...strings.manifests import BackendStringsManifest
 
@@ -45,7 +45,7 @@ class MlxChatChoicesService(lang.ExitStacked):
         # 'mlx-community/DeepSeek-Coder-V2-Lite-Instruct-8bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-4bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
-        ModelRepo('mlx-community/Llama-3.3-70B-Instruct-8bit')
+        ModelRepo('mlx-community', 'Llama-3.3-70B-Instruct-8bit')
         # 'mlx-community/Mistral-Small-3.1-Text-24B-Instruct-2503-8bit'
         # 'mlx-community/Mixtral-8x7B-Instruct-v0.1'
         # 'mlx-community/QwQ-32B-Preview-8bit'
@@ -85,7 +85,11 @@ class MlxChatChoicesService(lang.ExitStacked):
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         check.not_none(self._exit_stack)
 
-        return mlxu.load_model(self._model_name.v)
+        mdl = self._model
+        if isinstance(mdl, ModelRepo):
+            return mlxu.load_model('/'.join([mdl.namespace, mdl.repo]))
+        else:
+            raise TypeError(mdl)
 
     _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
         max_tokens=MaxTokens,
