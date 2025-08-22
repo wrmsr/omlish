@@ -216,13 +216,36 @@ class _FpMaysyncGenerator(
     _MaysyncGenerator[_FpMaysyncGeneratorFn[O, I], O, I],
 ):
     def s(self) -> ta.Generator[O, I, None]:
-        # FIXME: I???
         yield from self._x._s(*self._args, **self._kwargs)  # noqa
 
     async def a(self) -> ta.AsyncGenerator[O, I]:
-        # FIXME: I???
-        async for o in self._x._a(*self._args, **self._kwargs):  # noqa
-            yield o
+        g = self._x._a(*self._args, **self._kwargs)  # noqa
+
+        i: ta.Any = None
+        e: ta.Any = None
+
+        try:
+            while True:
+                try:
+                    if e is not None:
+                        o = await g.athrow(e)
+                    else:
+                        o = await g.asend(i)
+                except StopAsyncIteration:
+                    return
+
+                i = None
+                e = None
+
+                try:
+                    i = yield o
+                except BaseException as ex:  # noqa
+                    e = ex
+
+                del o
+
+        finally:
+            await g.aclose()
 
 
 def make_maysync_generator_fn(
@@ -316,13 +339,14 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
             i = None
             e = None
 
-            if not isinstance(o, _MaysyncOp):
-                raise TypeError(o)
+            if isinstance(o, _MaysyncOp):
+                try:
+                    i = o.x(*o.args, **o.kwargs).s()
+                except BaseException as ex:  # noqa
+                    e = ex
 
-            try:
-                i = o.x(*o.args, **o.kwargs).s()
-            except BaseException as ex:  # noqa
-                e = ex
+            else:
+                raise TypeError(o)
 
             del o
 
@@ -344,13 +368,14 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
             i = None
             e = None
 
-            if not isinstance(o, _MaysyncOp):
-                raise TypeError(o)
+            if isinstance(o, _MaysyncOp):
+                try:
+                    i = await o.x(*o.args, **o.kwargs).a()
+                except BaseException as ex:  # noqa
+                    e = ex
 
-            try:
-                i = await o.x(*o.args, **o.kwargs).a()
-            except BaseException as ex:  # noqa
-                e = ex
+            else:
+                raise TypeError(o)
 
             del o
 
@@ -389,16 +414,19 @@ class _MgMaysyncGenerator(
             e = None
 
             if isinstance(o, _MaysyncGeneratorYield):
-                i = yield o.v
-                continue
+                try:
+                    i = yield o.v
+                except BaseException as ex:  # noqa
+                    e = ex
 
-            if not isinstance(o, _MaysyncOp):
+            elif isinstance(o, _MaysyncOp):
+                try:
+                    i = o.x(*o.args, **o.kwargs).a()
+                except BaseException as ex:  # noqa
+                    e = ex
+
+            else:
                 raise TypeError(o)
-
-            try:
-                i = o.x(*o.args, **o.kwargs).s()
-            except BaseException as ex:  # noqa
-                e = ex
 
             del o
 
@@ -423,16 +451,19 @@ class _MgMaysyncGenerator(
             e = None
 
             if isinstance(o, _MaysyncGeneratorYield):
-                i = yield o.v
-                continue
+                try:
+                    i = yield o.v
+                except BaseException as ex:  # noqa
+                    e = ex
 
-            if not isinstance(o, _MaysyncOp):
+            elif isinstance(o, _MaysyncOp):
+                try:
+                    i = await o.x(*o.args, **o.kwargs).a()
+                except BaseException as ex:  # noqa
+                    e = ex
+
+            else:
                 raise TypeError(o)
-
-            try:
-                i = await o.x(*o.args, **o.kwargs).a()
-            except BaseException as ex:  # noqa
-                e = ex
 
             del o
 
