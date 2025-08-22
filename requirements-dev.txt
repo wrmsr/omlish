@@ -18,9 +18,9 @@ flake8-pyproject==1.2.3
 ruff==0.12.10
 
 docutils-stubs==0.0.22
-types-paramiko==4.0.0.20250821  # @omlish-venv !13t !13dt !14t
-types-pyyaml==6.0.12.20250809
-types-ujson==5.10.0.20250326
+types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt !14t
+types-pyyaml==6.0.12.20250822
+types-ujson==5.10.0.20250822
 
 black==25.1.0
 mypy==1.17.1
