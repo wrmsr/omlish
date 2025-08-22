@@ -6,6 +6,7 @@ TODO:
 """
 import abc
 import functools
+import inspect
 import types
 import typing as ta
 
@@ -19,9 +20,10 @@ O_co = ta.TypeVar('O_co', covariant=True)
 I = ta.TypeVar('I')
 I_contra = ta.TypeVar('I_contra', contravariant=True)
 
-R = ta.TypeVar('R')
-
 _MaysyncX = ta.TypeVar('_MaysyncX')
+
+_MaysyncRS = ta.TypeVar('_MaysyncRS')
+_MaysyncRA = ta.TypeVar('_MaysyncRA')
 
 
 ##
@@ -130,12 +132,11 @@ class _MaysyncGenerator(
     ta.Generic[_MaysyncX, O, I],
 ):
     def m(self) -> ta.AsyncGenerator[O, I]:
-        # return _MaysyncIterator(_MaysyncOp(
-        #     self._x,
-        #     self._args,
-        #     self._kwargs,
-        # ))
-        raise NotImplementedError
+        return _MaysyncGeneratorFuture(_MaysyncOp(  # noqa
+            self._x,
+            self._args,
+            self._kwargs,
+        ))
 
 
 ##
@@ -143,12 +144,12 @@ class _MaysyncGenerator(
 
 class _FpMaysyncFnLike(
     abc.ABC,
-    ta.Generic[T, R],
+    ta.Generic[_MaysyncRS, _MaysyncRA],
 ):
     def __init__(
             self,
-            s: ta.Callable[..., T],
-            a: ta.Callable[..., R],
+            s: ta.Callable[..., _MaysyncRS],
+            a: ta.Callable[..., _MaysyncRA],
     ) -> None:
         if s is None:
             raise TypeError(s)
@@ -184,7 +185,9 @@ class _FpMaysyncFn(
 
 
 @ta.final
-class _FpMaywaitable(_Maywaitable[_FpMaysyncFn[T], T]):
+class _FpMaywaitable(
+    _Maywaitable[_FpMaysyncFn[T], T],
+):
     def s(self) -> T:
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
@@ -192,11 +195,66 @@ class _FpMaywaitable(_Maywaitable[_FpMaysyncFn[T], T]):
         return await self._x._a(*self._args, **self._kwargs)  # noqa
 
 
-def make_maysync(
+def make_maysync_fn(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
 ) -> MaysyncFn[T]:
     return _FpMaysyncFn(s, a)
+
+
+@ta.final
+class _FpMaysyncGeneratorFn(
+    _FpMaysyncFnLike[ta.Generator[O, I, None], ta.AsyncGenerator[O, I]],
+    MaysyncGeneratorFn_[O, I],
+    ta.Generic[O, I],
+):
+    def __call__(self, *args, **kwargs):
+        return _FpMaysyncGenerator(self, args, kwargs)
+
+
+@ta.final
+class _FpMaysyncGenerator(
+    _MaysyncGenerator[_FpMaysyncGeneratorFn[O, I], O, I],
+):
+    def s(self) -> ta.Generator[O, I, None]:
+        # FIXME: I???
+        yield from self._x._s(*self._args, **self._kwargs)  # noqa
+
+    async def a(self) -> ta.AsyncGenerator[O, I]:
+        # FIXME: I???
+        async for o in self._x._a(*self._args, **self._kwargs):  # noqa
+            yield o
+
+
+def make_maysync_generator_fn(
+        s: ta.Callable[..., ta.Generator[O, I, None]],
+        a: ta.Callable[..., ta.AsyncGenerator[O, I]],
+) -> MaysyncGeneratorFn[O, I]:
+    return _FpMaysyncGeneratorFn(s, a)
+
+
+@ta.overload
+def make_maysync(
+        s: ta.Callable[..., T],
+        a: ta.Callable[..., ta.Awaitable[T]],
+) -> MaysyncFn[T]:
+    ...
+
+
+@ta.overload
+def make_maysync(
+        s: ta.Callable[..., ta.Generator[O, I, None]],
+        a: ta.Callable[..., ta.AsyncGenerator[O, I]],
+) -> MaysyncGeneratorFn[O, I]:
+    ...
+
+
+def make_maysync(s, a):
+    # FIXME: lame and fat import
+    if inspect.isasyncgenfunction(a):
+        return make_maysync_generator_fn(s, a)
+    else:
+        return make_maysync_fn(s, a)
 
 
 ##
@@ -344,7 +402,7 @@ class _MgWrapper:
         a_ = self._m(*args, **kwargs)
 
         if isinstance(a_, types.AsyncGeneratorType):
-            raise NotImplementedError
+            ai = a_.__aiter__()  # noqa
 
         else:
             try:
@@ -431,3 +489,41 @@ class _MaysyncFuture(ta.Generic[T]):
             raise self.error
         else:
             return self.result
+
+
+@ta.final
+class _MaysyncGeneratorFuture(ta.Generic[O, I]):
+    def __init__(
+            self,
+            op: _MaysyncOp,
+    ) -> None:
+        self.op = op
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        return await self.asend(None)
+
+    async def asend(self, value):
+        # raise StopAsyncIteration
+        raise NotImplementedError
+
+    async def athrow(self, typ, val=None, tb=None):
+        # if val is None:
+        #     if tb is None:
+        #         raise typ
+        #     val = typ()
+        # if tb is not None:
+        #     val = val.with_traceback(tb)
+        # raise val
+        raise NotImplementedError
+
+    async def aclose(self):
+        # try:
+        #     await self.athrow(GeneratorExit)
+        # except (GeneratorExit, StopAsyncIteration):
+        #     pass
+        # else:
+        #     raise RuntimeError("asynchronous generator ignored GeneratorExit")
+        raise NotImplementedError
