@@ -421,7 +421,7 @@ class _MgMaysyncGenerator(
 
             elif isinstance(o, _MaysyncOp):
                 try:
-                    i = o.x(*o.args, **o.kwargs).a()
+                    i = o.x(*o.args, **o.kwargs).s()
                 except BaseException as ex:  # noqa
                     e = ex
 
