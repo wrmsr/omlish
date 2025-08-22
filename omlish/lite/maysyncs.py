@@ -19,6 +19,8 @@ O_co = ta.TypeVar('O_co', covariant=True)
 I = ta.TypeVar('I')
 I_contra = ta.TypeVar('I_contra', contravariant=True)
 
+R = ta.TypeVar('R')
+
 _MaysyncX = ta.TypeVar('_MaysyncX')
 
 
@@ -90,7 +92,10 @@ class MaysyncGeneratorFn_(Maysync_, abc.ABC, ta.Generic[O, I]):  # noqa
 ##
 
 
-class _MaywaitableLike(abc.ABC, ta.Generic[_MaysyncX]):
+class _MaywaitableLike(
+    abc.ABC,
+    ta.Generic[_MaysyncX],
+):
     @ta.final
     def __init__(
             self,
@@ -106,7 +111,11 @@ class _MaywaitableLike(abc.ABC, ta.Generic[_MaysyncX]):
         return f'{self.__class__.__name__}@{id(self):x}({self._x!r})'
 
 
-class _Maywaitable(_MaywaitableLike[_MaysyncX], abc.ABC, ta.Generic[_MaysyncX, T]):
+class _Maywaitable(
+    _MaywaitableLike[_MaysyncX],
+    abc.ABC,
+    ta.Generic[_MaysyncX, T],
+):
     def m(self) -> ta.Awaitable[T]:
         return _MaysyncFuture(_MaysyncOp(
             self._x,
@@ -115,24 +124,31 @@ class _Maywaitable(_MaywaitableLike[_MaysyncX], abc.ABC, ta.Generic[_MaysyncX, T
         ))
 
 
-# class _MaysyncGenerator(_MaywaitableLike[_MaysyncX], abc.ABC, ta.Generic[_MaysyncX, O, I]):
-#     def m(self) -> ta.AsyncGenerator[O, I]:
-#         return _MaysyncFuture(_MaysyncOp(
-#             self._x,
-#             self._args,
-#             self._kwargs,
-#         ))
+class _MaysyncGenerator(
+    _MaywaitableLike[_MaysyncX],
+    abc.ABC,
+    ta.Generic[_MaysyncX, O, I],
+):
+    def m(self) -> ta.AsyncGenerator[O, I]:
+        # return _MaysyncIterator(_MaysyncOp(
+        #     self._x,
+        #     self._args,
+        #     self._kwargs,
+        # ))
+        raise NotImplementedError
 
 
 ##
 
 
-@ta.final
-class _FnMaysyncFn(MaysyncFn_[T], ta.Generic[T]):
+class _FpMaysyncFnLike(
+    abc.ABC,
+    ta.Generic[T, R],
+):
     def __init__(
             self,
             s: ta.Callable[..., T],
-            a: ta.Callable[..., ta.Awaitable[T]],
+            a: ta.Callable[..., R],
     ) -> None:
         if s is None:
             raise TypeError(s)
@@ -151,17 +167,24 @@ class _FnMaysyncFn(MaysyncFn_[T], ta.Generic[T]):
         )
 
     def __get__(self, instance, owner=None):
-        return _FnMaysyncFn(
+        return _FpMaysyncFn(
             self._s.__get__(instance, owner),  # noqa
             self._a.__get__(instance, owner),  # noqa
         )
 
+
+@ta.final
+class _FpMaysyncFn(
+    _FpMaysyncFnLike[T, ta.Awaitable[T]],
+    MaysyncFn_[T],
+    ta.Generic[T],
+):
     def __call__(self, *args, **kwargs):
-        return _FnMaywaitable(self, args, kwargs)
+        return _FpMaywaitable(self, args, kwargs)
 
 
 @ta.final
-class _FnMaywaitable(_Maywaitable[_FnMaysyncFn[T], T]):
+class _FpMaywaitable(_Maywaitable[_FpMaysyncFn[T], T]):
     def s(self) -> T:
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
@@ -173,17 +196,19 @@ def make_maysync(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
 ) -> MaysyncFn[T]:
-    return _FnMaysyncFn(s, a)
+    return _FpMaysyncFn(s, a)
 
 
 ##
 
 
-@ta.final
-class _MgMaysyncFn(MaysyncFn_[T], ta.Generic[T]):
+class _MgMaysyncFnLike(
+    abc.ABC,
+    ta.Generic[T],
+):
     def __init__(
             self,
-            mg: ta.Callable[..., ta.Generator['_MaysyncOp', ta.Any, T]],
+            mg: ta.Callable[..., T],
     ) -> None:
         self._mg = mg
 
@@ -200,6 +225,16 @@ class _MgMaysyncFn(MaysyncFn_[T], ta.Generic[T]):
             self._mg.__get__(instance, owner),  # noqa
         )
 
+    @abc.abstractmethod  # noqa
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+class _MgMaysyncFn(
+    _MgMaysyncFnLike[ta.Generator['_MaysyncOp', ta.Any, T]],
+    MaysyncFn_[T],
+    ta.Generic[T],
+):
     # _is_ag_: ta.Optional[bool] = None
     #
     # def _is_ag(self) -> bool:
