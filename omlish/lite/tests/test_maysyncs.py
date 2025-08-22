@@ -60,16 +60,16 @@ async def a_gen(i: int) -> ta.AsyncGenerator[int, None]:
 m_gen = make_maysync(s_gen, a_gen)
 
 
-# @maysync
-# async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
-#     async for j in m_gen(i).m():
-#         yield j + 10
-#
-#
-# @maysync
-# async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
-#     async for j in m_gen_frob(i + 20).m():
-#         yield j + 100
+@maysync
+async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
+    async for j in m_gen(i).m():
+        yield j + 10
+
+
+@maysync
+async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
+    async for j in m_gen_frob(i + 20).m():
+        yield j + 100
 
 
 class TestMaysyncGenerators(unittest.TestCase):
