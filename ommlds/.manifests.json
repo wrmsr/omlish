@@ -122,7 +122,7 @@
     "module": ".minichain.backends.impls.huggingface.repos",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/huggingface/repos.py",
-    "line": 9,
+    "line": 11,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.huggingface.repos",
@@ -199,7 +199,7 @@
     "module": ".minichain.backends.impls.mlx.chat",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
-    "line": 28,
+    "line": 29,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -214,7 +214,7 @@
     "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
-    "line": 38,
+    "line": 39,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mlx.chat",

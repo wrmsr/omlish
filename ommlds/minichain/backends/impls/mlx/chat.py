@@ -16,6 +16,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....configs import Config
 from ....llms.types import MaxTokens
+from ....models.configs import ModelPath
 from ....models.configs import ModelRepo
 from ....models.configs import ModelSpecifier
 from ....standard import DefaultOptions
@@ -88,6 +89,8 @@ class MlxChatChoicesService(lang.ExitStacked):
         mdl = self._model
         if isinstance(mdl, ModelRepo):
             return mlxu.load_model('/'.join([mdl.namespace, mdl.repo]))
+        elif isinstance(mdl, ModelPath):
+            return mlxu.load_model(mdl.v)
         else:
             raise TypeError(mdl)
 

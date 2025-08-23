@@ -25,6 +25,10 @@ class ModelRepo(ModelSpecifier):
     namespace: str
     repo: str
 
+    @property
+    def slashed(self) -> str:
+        return '/'.join([self.namespace, self.repo])
+
     _: dc.KW_ONLY
 
     tag: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
