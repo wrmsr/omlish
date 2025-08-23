@@ -119,6 +119,23 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.huggingface.repos",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/huggingface/repos.py",
+    "line": 9,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.huggingface.repos",
+        "attr": "HuggingfaceModelRepoResolver",
+        "name": "huggingface",
+        "aliases": [
+          "hf"
+        ],
+        "type": "ModelRepoResolver"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
@@ -462,6 +479,18 @@
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.completion",
         "attr": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.models.repos.resolving",
+    "attr": null,
+    "file": "ommlds/minichain/models/repos/resolving.py",
+    "line": 17,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.models.repos.resolving",
+        "attr": "ModelRepoResolver"
       }
     }
   },
