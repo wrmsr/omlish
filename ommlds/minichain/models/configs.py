@@ -29,6 +29,12 @@ class ModelRepo(ModelSpecifier):
     def slashed(self) -> str:
         return '/'.join([self.namespace, self.repo])
 
+    @classmethod
+    def parse(cls, s: str) -> 'ModelRepo':
+        # FIXME: lol
+        ns, r = s.split('/')
+        return ModelRepo(ns, r)
+
     _: dc.KW_ONLY
 
     tag: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
