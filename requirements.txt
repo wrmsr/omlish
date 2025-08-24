@@ -36,7 +36,7 @@ pg8000==1.31.4
 
 #> mysql-connector-python==9.1.0
 #> mysqlclient==2.2.5; sys_platform == "darwin"  # brew install mysql pkg-config
-pymysql==1.1.1
+pymysql==1.1.2
 
 # pyhive
 
@@ -67,7 +67,7 @@ cbor2==5.7.0
 ### web
 
 h11==0.16.0
-h2==4.2.0
+h2==4.3.0
 priority==2.0.0
 wsproto==1.2.0
 

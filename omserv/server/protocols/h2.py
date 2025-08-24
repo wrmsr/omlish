@@ -153,8 +153,7 @@ class H2Protocol(Protocol):
         await self._flush()
 
         if headers is not None:
-            event = h2.events.RequestReceived()
-            event.stream_id = 1
+            event = h2.events.RequestReceived(stream_id=1)
             event.headers = [hpack.HeaderTuple(*t) for t in headers]
             await self._create_stream(event)
             await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
@@ -396,7 +395,7 @@ class H2Protocol(Protocol):
 
         await self.streams[stream_id].handle(Request(
             stream_id=stream_id,
-            headers=filter_pseudo_headers(check.not_none(request.headers)),  # type: ignore[arg-type]
+            headers=filter_pseudo_headers(check.not_none(request.headers)),
             http_version='2',
             method=method,
             raw_path=raw_path,
@@ -429,8 +428,7 @@ class H2Protocol(Protocol):
             pass
 
         else:
-            event = h2.events.RequestReceived()
-            event.stream_id = push_stream_id
+            event = h2.events.RequestReceived(stream_id=push_stream_id)
             event.headers = [hpack.HeaderTuple(*t) for t in request_headers]
             await self._create_stream(event)
             await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
