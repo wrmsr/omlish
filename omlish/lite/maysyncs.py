@@ -430,11 +430,11 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
                     except AttributeError:
                         ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).s()
 
-                    if o.c == 'asend':
+                    if o.c == 'send':
                         gl = lambda: ug.send(*o.args)  # noqa
-                    elif o.c == 'athrow':
+                    elif o.c == 'throw':
                         gl = lambda: ug.throw(*o.args)  # noqa
-                    elif o.c == 'aclose':
+                    elif o.c == 'close':
                         raise NotImplementedError
                     else:
                         raise RuntimeError(o.c)
@@ -477,6 +477,27 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
                 if isinstance(o, _MaysyncOp):
                     try:
                         i = await o.x(*o.args, **o.kwargs).a()
+                    except BaseException as ex:  # noqa
+                        e = ex
+
+                elif isinstance(o, _MaysyncGeneratorOp):
+                    # FIXME: finally: .close
+                    try:
+                        ug = o.rg.ug
+                    except AttributeError:
+                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).a().__aiter__()
+
+                    if o.c == 'send':
+                        gl = lambda: ug.asend(*o.args)  # noqa
+                    elif o.c == 'throw':
+                        gl = lambda: ug.athrow(*o.args)  # noqa
+                    elif o.c == 'close':
+                        raise NotImplementedError
+                    else:
+                        raise RuntimeError(o.c)
+
+                    try:
+                        i = await gl()
                     except BaseException as ex:  # noqa
                         e = ex
 
@@ -807,7 +828,7 @@ class _MaysyncGeneratorOp:
     def __init__(
             self,
             rg: '_MaysyncRunningGenerator',
-            c: ta.Literal['asend', 'athrow', 'aclose'],
+            c: ta.Literal['send', 'throw', 'close'],
             args: ta.Tuple[ta.Any, ...],
     ) -> None:
         self.rg = rg
@@ -861,10 +882,10 @@ class _MaysyncRunningGenerator:
         return self.asend(None)
 
     def asend(self, value):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'asend', (value,)))
+        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'send', (value,)))
 
     def athrow(self, et, e=None, tb=None):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'athrow', (et, e, tb)))
+        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'throw', (et, e, tb)))
 
     def aclose(self):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'aclose', ()))
+        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'close', ()))
