@@ -694,46 +694,45 @@ class _MgGeneratorDriver(_MgDriverLike):
         i: ta.Any = None
         e: ta.Any = None
 
-        try:
-            while True:
+        while True:
+            try:
                 if e is not None:
                     coro = ai.athrow(e)
                 else:
                     coro = ai.asend(i)
+            except StopAsyncIteration:
+                return
 
-                i = None
-                e = None
+            i = None
+            e = None
 
-                try:
-                    g = coro.__await__()
-                    while True:
-                        try:
-                            o = g.send(None)
-                        except StopIteration as ex:
-                            i = ex.value
-                            break
+            try:
+                g = coro.__await__()
+                while True:
+                    try:
+                        o = g.send(None)
+                    except StopIteration as ex:
+                        i = ex.value
+                        break
 
-                        if isinstance(o, _MaysyncFuture):
-                            if not o.done:
-                                try:
-                                    o.result = yield o.op
-                                except BaseException as ex:  # noqa
-                                    o.error = ex
-                                o.done = True
+                    if isinstance(o, _MaysyncFuture):
+                        if not o.done:
+                            try:
+                                o.result = yield o.op
+                            except BaseException as ex:  # noqa
+                                o.error = ex
+                            o.done = True
 
-                        else:
-                            raise TypeError(o)
+                    else:
+                        raise TypeError(o)
 
-                finally:
-                    coro.close()
+            finally:
+                coro.close()
 
-                try:
-                    i = yield _MaysyncGeneratorYield(i)
-                except BaseException as ex:  # noqa
-                    e = ex
-
-        except StopAsyncIteration:
-            return
+            try:
+                i = yield _MaysyncGeneratorYield(i)
+            except BaseException as ex:  # noqa
+                e = ex
 
 
 def maysync_generator_fn(
