@@ -1,8 +1,35 @@
 # ruff: noqa: UP006 UP043 UP045
 # @omlish-lite
 """
+A system for writing a python function once which can then be effectively used in both sync and async contexts including
+IO, under any event loop. Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is
+an object with three nullary methods:
+
+ - `def s()` - to be called in sync contexts
+ - `async def a()` - to be called in async contexts
+ - `async def m()` - to be called in maysync contexts
+
+For example, a maysync function `m_inc_int(x: int) -> int` would be used as such:
+
+ - `assert m_inc_int(5).s() == 6` in sync contexts
+ - `assert await m_inc_int(5).a() == 6` in async contexts
+ - `assert await m_inc_int(5).m() == 6` in maysync contexts
+
+Maysync fns may be constructed in two ways: either using `make_maysync`, providing an equivalent pair of sync and async
+functions, or using the `@maysync` decorator to wrap a 'maysync flavored' async function. 'Maysync flavored' async
+functions are ones which only call other maysync functions through their 'maysync context' - that is, they (and they
+alone) use the 'm' methods on maywaitables - for example: `await m_foo().m()`. Being regular python functions they are
+free to call whatever they like - for example doing sync IO - but the point is to, ideally, route all IO through maysync
+functions such that the maysync code is fully efficiently usable in any context.
+
+===
+
 TODO:
  - __del__
+ - maysync context managers
+ - CancelledError
+ - is _MaysyncGeneratorYield awaitable?
+ - for debug, mask any running eventloop while running maysync code
 """
 import abc
 import functools
@@ -31,10 +58,10 @@ _MaysyncRA = ta.TypeVar('_MaysyncRA')
 class Maywaitable(ta.Protocol[T_co]):
     """
     The maysync version of `Awaitable[T]`. Non-generator maysync functions return a `Maywaitable`, with the following
-    methods:
+    nullary methods:
 
-     - `def s()` - to be called in synchronous contexts
-     - `async def a()` - to be called in asynchronous contexts
+     - `def s()` - to be called in sync contexts
+     - `async def a()` - to be called in async contexts
      - `async def m()` - to be called in maysync contexts
 
     Only the proper method should be called in each context.
@@ -55,8 +82,8 @@ class MaysyncGenerator(ta.Protocol[O_co, I_contra]):
     The maysync version of `AsyncGenerator[O, I]`. Generator maysync functions return a `MaysyncGenerator`, with the
     following methods:
 
-     - `def s()` - to be called in synchronous contexts
-     - `async def a()` - to be called in asynchronous contexts
+     - `def s()` - to be called in sync contexts
+     - `async def a()` - to be called in async contexts
      - `async def m()` - to be called in maysync contexts
 
     Only the proper method should be called in each context.
@@ -80,6 +107,13 @@ MaysyncGeneratorFn = ta.Callable[..., MaysyncGenerator[O, I]]  # ta.TypeAlias  #
 
 
 class Maysync_(abc.ABC):  # noqa
+    """
+    Abstract base class for maysync objects - either MaysyncFn's or MaysyncGeneratorFn's.
+
+    The concrete implementations are module-level implementation detail, and in general users should make a point to
+    only interact with the protocols defined above, but introspection can be necessary at times.
+    """
+
     def __init_subclass__(cls, **kwargs):
         if Maysync_ in cls.__bases__ and abc.ABC not in cls.__bases__:
             raise TypeError(cls)
@@ -92,6 +126,8 @@ class Maysync_(abc.ABC):  # noqa
 
     @abc.abstractmethod
     def fn_pair(self) -> ta.Optional[FnPair]:
+        """If this maysync object is backed by a (sync, async) pair of functions, returns the pair."""
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -99,7 +135,7 @@ class Maysync_(abc.ABC):  # noqa
         pass
 
     @abc.abstractmethod
-    def __call__(self, *args, **kwargs):  # -> Maywaitable[T]
+    def __call__(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -122,6 +158,8 @@ class _MaywaitableLike(
     abc.ABC,
     ta.Generic[_MaysyncX],
 ):
+    """Abstract base class for the maysync versions of `Awaitable[T]` and `AsyncGenerator[O, I]`."""
+
     @ta.final
     def __init__(
             self,
@@ -156,11 +194,13 @@ class _MaysyncGenerator(
     ta.Generic[_MaysyncX, O, I],
 ):
     def m(self) -> ta.AsyncGenerator[O, I]:
-        return _MaysyncGeneratorFuture(_MaysyncOp(  # noqa
-            self._x,
-            self._args,
-            self._kwargs,
-        ))
+        # return _MaysyncGeneratorFuture(_MaysyncOp(  # noqa
+        #     self._x,
+        #     self._args,
+        #     self._kwargs,
+        # ))
+        # FIXME:
+        raise NotImplementedError
 
 
 ##
@@ -170,6 +210,8 @@ class _FpMaysyncFnLike(
     abc.ABC,
     ta.Generic[_MaysyncRS, _MaysyncRA],
 ):
+    """A maysync object backed by an underlying (sync, async) function pair."""
+
     def __init__(
             self,
             s: ta.Callable[..., _MaysyncRS],
@@ -223,6 +265,8 @@ def make_maysync_fn(
         s: ta.Callable[..., T],
         a: ta.Callable[..., ta.Awaitable[T]],
 ) -> MaysyncFn[T]:
+    """Constructs a MaysyncFn from a (sync, async) function pair."""
+
     return _FpMaysyncFn(s, a)
 
 
@@ -277,6 +321,8 @@ def make_maysync_generator_fn(
         s: ta.Callable[..., ta.Generator[O, I, None]],
         a: ta.Callable[..., ta.AsyncGenerator[O, I]],
 ) -> MaysyncGeneratorFn[O, I]:
+    """Constructs a MaysyncGeneratorFn from a (sync, async) generator function pair."""
+
     return _FpMaysyncGeneratorFn(s, a)
 
 
@@ -297,7 +343,10 @@ def make_maysync(
 
 
 def make_maysync(s, a):
-    """Constructs a MaysyncFn or MaysyncGeneratorFn from a (sync, async) function pair."""
+    """
+    Constructs a MaysyncFn or MaysyncGeneratorFn from a (sync, async) function pair, using `inspect.isasyncgenfunction`
+    to determine the type.
+    """
 
     if inspect.isasyncgenfunction(a):
         return make_maysync_generator_fn(s, a)
@@ -312,6 +361,11 @@ class _MgMaysyncFnLike(
     abc.ABC,
     ta.Generic[T],
 ):
+    """
+    A maysync object backed by an underlying generator yielding _MaysyncOp's. The _MgDriver and _MgGeneratorDriver
+    classes produce such generators.
+    """
+
     def __init__(
             self,
             mg: ta.Callable[..., T],
@@ -498,6 +552,11 @@ class _MgMaysyncGenerator(
 
 
 class _MgDriverLike(abc.ABC):
+    """
+    Abstract base class for the _MgDriver and _MgGeneratorDriver classes, which produce generators yielding _MaysyncOp's
+    from a given underlying 'masync flavored' async function provided by the user.
+    """
+
     def __init__(self, m):
         self._m = m
 
@@ -556,6 +615,8 @@ class _MgDriver(_MgDriverLike):
 def maysync_fn(
         m: ta.Callable[..., ta.Awaitable[T]],
 ) -> MaysyncFn[T]:
+    """Constructs a MaysyncFn from a 'maysync flavored' async function."""
+
     return _MgMaysyncFn(_MgDriver(m))
 
 
@@ -612,6 +673,8 @@ class _MgGeneratorDriver(_MgDriverLike):
 def maysync_generator_fn(
         m: ta.Callable[..., ta.AsyncGenerator[O, I]],
 ) -> MaysyncGeneratorFn[O, I]:
+    """Constructs a MaysyncGeneratorFn from a 'maysync flavored' async generator function."""
+
     return _MgMaysyncGeneratorFn(_MgGeneratorDriver(m))
 
 
@@ -627,8 +690,8 @@ def maysync(m: ta.Callable[..., ta.AsyncGenerator[O, I]]) -> MaysyncGeneratorFn[
 
 def maysync(m):
     """
-    Constructs a MaysyncFn or MaysyncGeneratorFn from 'maysync flavored' async function or async generator function.
-    Usable as a decorator.
+    Constructs a MaysyncFn or MaysyncGeneratorFn from 'maysync flavored' async function or async generator function,
+    using `inspect.isasyncgenfunction` to determine the type. Usable as a decorator.
     """
 
     if inspect.isasyncgenfunction(m):
@@ -688,37 +751,3 @@ class _MaysyncFuture(ta.Generic[T]):
 
 class _MaysyncGeneratorYield(ta.NamedTuple):
     v: ta.Any
-
-
-@ta.final
-class _MaysyncGeneratorFuture(ta.Generic[O, I]):
-    def __init__(
-            self,
-            op: _MaysyncOp,
-    ) -> None:
-        self.op = op
-
-        self._ag: ta.Optional[ta.AsyncGenerator] = None
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        return await self.asend(None)
-
-    async def _get_ag(self):
-        if self._ag is None:
-            self._ag = await _MaysyncFuture(self.op)
-        return self._ag
-
-    async def asend(self, value):
-        ag = await self._get_ag()
-        return await ag.asend(value)
-
-    async def athrow(self, typ, val=None, tb=None):
-        ag = await self._get_ag()
-        return await ag.athrow(typ, val, tb)
-
-    async def aclose(self):
-        ag = await self._get_ag()
-        return await ag.aclose()
