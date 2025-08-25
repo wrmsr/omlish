@@ -654,14 +654,6 @@ class _MgDriver(_MgDriverLike):
                                     o.error = e
                                 o.done = True
 
-                        elif isinstance(o, _MaysyncGeneratorFuture):
-                            if not o.done:
-                                try:
-                                    o.result = yield o.gop
-                                except BaseException as e:  # noqa
-                                    o.error = e
-                                o.done = True
-
                         else:
                             raise TypeError(o)
 
@@ -768,22 +760,6 @@ def maysync(m):
 ##
 
 
-@ta.final
-class _MaysyncOp:
-    def __init__(
-            self,
-            x: ta.Any,
-            args: ta.Tuple[ta.Any, ...],
-            kwargs: ta.Mapping[str, ta.Any],
-    ) -> None:
-        self.x = x
-        self.args = args
-        self.kwargs = kwargs
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.x!r})'
-
-
 class _MaysyncFutureNotAwaitedError(RuntimeError):
     pass
 
@@ -792,7 +768,7 @@ class _MaysyncFutureNotAwaitedError(RuntimeError):
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
             self,
-            op: _MaysyncOp,
+            op: ta.Union['_MaysyncOp', '_MaysyncGeneratorOp'],
     ) -> None:
         self.op = op
 
@@ -814,7 +790,20 @@ class _MaysyncFuture(ta.Generic[T]):
             return self.result
 
 
-#
+@ta.final
+class _MaysyncOp:
+    def __init__(
+            self,
+            x: ta.Any,
+            args: ta.Tuple[ta.Any, ...],
+            kwargs: ta.Mapping[str, ta.Any],
+    ) -> None:
+        self.x = x
+        self.args = args
+        self.kwargs = kwargs
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self.x!r})'
 
 
 @ta.final
@@ -839,32 +828,6 @@ class _MaysyncGeneratorOp:
 
 
 @ta.final
-class _MaysyncGeneratorFuture:
-    def __init__(
-            self,
-            gop: _MaysyncGeneratorOp,
-    ) -> None:
-        self.gop = gop
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.gop!r}, done={self.done!r})'
-
-    done: bool = False
-    result: ta.Any
-    error: ta.Optional[BaseException] = None
-
-    def __await__(self):
-        if not self.done:
-            yield self
-        if not self.done:
-            raise _MaysyncFutureNotAwaitedError
-        if self.error is not None:
-            raise self.error
-        else:
-            return self.result
-
-
-@ta.final
 class _MaysyncRunningGenerator:
     def __init__(
             self,
@@ -881,10 +844,10 @@ class _MaysyncRunningGenerator:
         return self.asend(None)
 
     def asend(self, value):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'send', (value,)))
+        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'send', (value,)))
 
     def athrow(self, et, e=None, tb=None):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'throw', (et, e, tb)))
+        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'throw', (et, e, tb)))
 
     def aclose(self):
-        return _MaysyncGeneratorFuture(_MaysyncGeneratorOp(self, 'close', ()))
+        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'close', ()))
