@@ -402,7 +402,6 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
     def s(self) -> T:
         g = self._x._mg(*self._args, **self._kwargs)  # noqa
         try:
-            o: ta.Any
             i: ta.Any = None
             e: ta.Any = None
 
@@ -425,53 +424,29 @@ class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
                         e = ex
 
                 elif isinstance(o, _MaysyncGeneratorOp):
-                    go = o
-                    o = ta.cast(ta.Any, o)
-
-                    g2 = go.rg.op.x(*go.rg.op.args, **go.rg.op.kwargs).s()
+                    # FIXME: finally: .close
                     try:
-                        while True:
-                            if isinstance(o, _MaysyncOp):
-                                try:
-                                    i = o.x(*o.args, **o.kwargs).s()
-                                except BaseException as ex:  # noqa
-                                    e = ex
+                        ug = o.rg.ug
+                    except AttributeError:
+                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).s()
 
-                            elif isinstance(o, _MaysyncGeneratorOp):
-                                if o.rg is not go.rg:
-                                    raise RuntimeError
+                    if o.c == 'asend':
+                        gl = lambda: ug.send(*o.args)  # noqa
+                    elif o.c == 'athrow':
+                        gl = lambda: ug.throw(*o.args)  # noqa
+                    elif o.c == 'aclose':
+                        raise NotImplementedError
+                    else:
+                        raise RuntimeError(o.c)
 
-                                if o.c == 'asend':
-                                    gl = lambda: g2.send(*o.args)  # noqa
-                                elif o.c == 'athrow':
-                                    gl = lambda: g2.throw(*o.args)  # noqa
-                                elif o.c == 'aclose':
-                                    raise NotImplementedError
-                                else:
-                                    raise RuntimeError(o.c)
-
-                                try:
-                                    i = gl()
-                                except StopIteration as ex:
-                                    if ex.value is not None:
-                                        raise TypeError from ex
-                                    e = StopAsyncIteration
-                                except BaseException as ex:  # noqa
-                                    e = ex
-
-                            else:
-                                raise TypeError(o)
-
-                            try:
-                                if e is not None:
-                                    i = g.throw(e)
-                                else:
-                                    i = g.send(i)
-                            except StopIteration as ex:
-                                return ex.value
-
-                    finally:
-                        g2.close()
+                    try:
+                        i = gl()
+                    except StopIteration as ex:
+                        if ex.value is not None:
+                            raise TypeError from ex
+                        e = StopAsyncIteration
+                    except BaseException as ex:  # noqa
+                        e = ex
 
                 else:
                     raise TypeError(o)
@@ -876,6 +851,8 @@ class _MaysyncRunningGenerator:
             op: _MaysyncOp,
     ) -> None:
         self.op = op
+
+    ug: ta.Any
 
     def __aiter__(self):
         return self
