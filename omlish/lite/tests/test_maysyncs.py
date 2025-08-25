@@ -61,6 +61,14 @@ m_gen = make_maysync(s_gen, a_gen)
 
 
 @maysync
+async def m_use_gen(i: int) -> int:
+    c = 0
+    async for j in m_gen(i).m():
+        c += j
+    return c
+
+
+@maysync
 async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i).m()
     async for j in m_gen(i).m():
@@ -80,8 +88,11 @@ async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
 
 class TestMaysyncGenerators(unittest.TestCase):
     def test_maysync_generator(self):
+        assert m_use_gen(3).s() == 9
+        assert sync_await(m_use_gen(3).a) == 11
+
         assert list(m_gen(3).s()) == [4, 5]
         assert sync_async_list(m_gen(3).a) == [5, 6]
 
-        # assert list(m_gen_frob(3).s()) == [4, 5]
-        # assert list(m_gen_grob(3).s()) == 114
+        assert list(m_gen_frob(3).s()) == [4, 5]
+        assert list(m_gen_grob(3).s()) == 114
