@@ -96,3 +96,28 @@ class TestMaysyncGenerators(unittest.TestCase):
 
         assert list(m_gen_frob(3).s()) == [4, 5]
         assert list(m_gen_grob(3).s()) == 114
+
+
+@maysync
+async def m_nest0(i: int) -> int:
+    return (await m_inc(i).m()) + (await m_inc(i).m())
+
+
+@maysync
+async def m_nest1(i: int) -> int:
+    return (await m_nest0(i).m()) + (await m_nest0(i).m())
+
+
+@maysync
+async def m_nest2(i: int) -> int:
+    return (await m_nest1(i).m()) + (await m_nest1(i).m())
+
+
+@maysync
+async def m_nest3(i: int) -> int:
+    return (await m_nest2(i).m()) + (await m_nest2(i).m())
+
+
+class TestNesting(unittest.TestCase):
+    def test_nesting(self):
+        assert m_nest3(3).s() == 64

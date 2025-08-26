@@ -647,6 +647,15 @@ class _MgDriver(_MgDriverLike):
                             return e.value
 
                         if isinstance(o, _MaysyncFuture):
+                            if isinstance(o.op, _MaysyncGeneratorOp):
+                                try:
+                                    og = o.op.rg.og
+                                except AttributeError:
+                                    o.op.rg.og = g
+                                else:
+                                    if og is not g:
+                                        raise RuntimeError
+
                             if not o.done:
                                 try:
                                     o.result = yield o.op
@@ -835,6 +844,7 @@ class _MaysyncRunningGenerator:
     ) -> None:
         self.op = op
 
+    og: ta.Any
     ug: ta.Any
 
     def __aiter__(self):
