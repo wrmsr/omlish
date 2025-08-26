@@ -54,7 +54,7 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
             spec=msh.marshal(tce.spec),
             args=tr.args,
         )
-        cr = await ptk.m_strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n').m()
+        cr = await ptk.m_strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n').a()
 
         if not cr:
             raise ToolExecutionRequestDeniedError
@@ -85,10 +85,10 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
     async def m_execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 
-        await self._confirmation.m_confirm_tool_execution_or_raise(tr, tce).m()
+        await self._confirmation.m_confirm_tool_execution_or_raise(tr, tce).a()
 
         return await mc.m_execute_tool_request(
             mc.ToolContext(),
             tce.executor(),
             tr,
-        ).m()
+        ).a()

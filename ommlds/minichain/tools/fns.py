@@ -115,7 +115,7 @@ async def m_execute_tool_fn(
     if isinstance(tfn.input, ToolFn.DataclassInput):
         raise NotImplementedError
     elif isinstance(tfn.input, ToolFn.KwargsInput):
-        out = await m_fn(**args).m()
+        out = await m_fn(**args).a()
     else:
         raise NotImplementedError
 

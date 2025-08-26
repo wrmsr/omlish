@@ -280,11 +280,11 @@ from .lazyglobals import (  # noqa
 )
 
 from .maysyncs import (  # noqa
-    MaysyncFnP,
+    MaysyncFn,
+    MaysyncGeneratorFn,
 
     make_maysync,
     make_maysync_from_sync,
-
     maysync,
 )
 
@@ -427,9 +427,11 @@ just = Maybe.just
 
 from ..lite.maysyncs import (  # noqa
     Maywaitable,
-    MaysyncFn,
+    MaysyncGenerator,
+
     Maysync_,
     MaysyncFn_,
+    MaysyncGeneratorFn_,
 )
 
 from ..lite.reprs import (  # noqa

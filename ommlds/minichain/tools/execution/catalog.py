@@ -76,4 +76,4 @@ class ToolCatalog(ToolExecutor):
             ctx,
             name,
             args,
-        ).m()
+        ).a()

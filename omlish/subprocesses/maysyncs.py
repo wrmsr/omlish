@@ -68,7 +68,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             *cmd: str,
             **kwargs: ta.Any,
     ) -> str:
-        return (await self.check_output(*cmd, **kwargs).m()).decode().strip()
+        return (await self.check_output(*cmd, **kwargs).a()).decode().strip()
 
     #
 
@@ -78,7 +78,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             *cmd: str,
             **kwargs: ta.Any,
     ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call(*cmd, **kwargs).m), Exception):
+        if isinstance(await self.async_try_fn(self.check_call(*cmd, **kwargs).a), Exception):
             return False
         else:
             return True
@@ -89,7 +89,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             *cmd: str,
             **kwargs: ta.Any,
     ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output(*cmd, **kwargs).m), Exception):
+        if isinstance(ret := await self.async_try_fn(self.check_output(*cmd, **kwargs).a), Exception):
             return None
         else:
             return ret
@@ -100,7 +100,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             *cmd: str,
             **kwargs: ta.Any,
     ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs).m()) is None:
+        if (ret := await self.try_output(*cmd, **kwargs).a()) is None:
             return None
         else:
             return ret.decode().strip()

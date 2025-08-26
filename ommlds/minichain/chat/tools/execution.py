@@ -19,7 +19,7 @@ async def m_execute_tool_request(
         ctx,
         ter.name,
         ter.args,
-    ).m()
+    ).a()
 
     return ToolExecResultMessage(
         id=ter.id,

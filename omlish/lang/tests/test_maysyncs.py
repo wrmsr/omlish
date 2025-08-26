@@ -1,9 +1,18 @@
 import asyncio
+import typing as ta
 
 import pytest
+import sniffio
 
+from ..imports.lazy import proxy_import
 from ..maysyncs import make_maysync
 from ..maysyncs import maysync
+
+
+if ta.TYPE_CHECKING:
+    import trio
+else:
+    trio = proxy_import('trio')
 
 
 ##
@@ -14,7 +23,12 @@ def s_inc(i: int) -> int:
 
 
 async def a_inc(i: int) -> int:
-    await asyncio.sleep(.01)
+    if (cal := sniffio.current_async_library()) == 'asyncio':
+        await asyncio.sleep(.01)
+    elif cal == 'trio':
+        await trio.sleep(.01)
+    else:
+        raise RuntimeError(cal)
     return i + 2
 
 
@@ -23,12 +37,12 @@ m_inc = make_maysync(s_inc, a_inc)
 
 @maysync
 async def m_frob(i: int) -> int:
-    return await m_inc(i).m()
+    return await m_inc(i).a()
 
 
 @maysync
 async def m_grob(i: int) -> int:
-    return await m_frob(i + 10).m() + 100
+    return await m_frob(i + 10).a() + 100
 
 
 def test_maysync():
@@ -64,20 +78,35 @@ async def test_async_generator():
 ##
 
 
-# @maysync
-# async def m_foo():
-#     for i in range(3):
-#         yield await m_inc(i).m()
-#
-#
-# @maysync
-# async def m_bar():
-#     c = 0
-#     async for i in await m_foo().m():
-#         c += i + 1
-#     return c
+@maysync
+async def m_foo():
+    for i in range(3):
+        yield await m_inc(i).a()
 
 
-# @pytest.mark.asyncs('asyncio')
-# async def test_async_maysync_generator():
-#     assert (await m_bar().a()) == 9
+@maysync
+async def m_bar():
+    c = 0
+    async for i in m_foo().a():
+        c += i + 1
+    return c
+
+
+@maysync
+async def m_bar_with_m_bar_s():
+    assert m_bar().s() == 9
+    c = 0
+    async for i in m_foo().a():
+        c += i + 1
+    return c
+
+
+def test_sync_maysync_generator():
+    assert m_bar().s() == 9
+    assert m_bar_with_m_bar_s().s() == 9
+
+
+@pytest.mark.asyncs('asyncio', 'trio')
+async def test_async_maysync_generator():
+    assert (await m_bar().a()) == 12
+    assert (await m_bar_with_m_bar_s().a()) == 12

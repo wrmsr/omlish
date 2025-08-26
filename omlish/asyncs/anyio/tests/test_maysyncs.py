@@ -15,12 +15,12 @@ async def a_inc(i: int) -> int:
 
 @lang.maysync
 async def m_frob(i: int) -> int:
-    return await lang.make_maysync(s_inc, a_inc)(i).m()
+    return await lang.make_maysync(s_inc, a_inc)(i).a()
 
 
 @lang.maysync
 async def m_grob(i: int) -> int:
-    return await m_frob(i + 10).m() + 100
+    return await m_frob(i + 10).a() + 100
 
 
 def test_maysync():

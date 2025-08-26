@@ -1,34 +1,30 @@
-# ruff: noqa: UP006 UP043 UP045
+# ruff: noqa: UP006 UP043 UP045 UP046 UP047
 # @omlish-lite
 """
 A system for writing a python function once which can then be effectively used in both sync and async contexts -
 including IO, under any (or no) event loop.
 
-Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is an object with three
+Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is an object with two
 nullary methods:
 
  - `def s()` - to be called in sync contexts
- - `async def a()` - to be called in async contexts
- - `async def m()` - to be called in maysync contexts
+ - `async def a()` - to be called in async and maysync contexts
 
 For example, a maysync function `m_inc_int(x: int) -> int` would be used as such:
 
  - `assert m_inc_int(5).s() == 6` in sync contexts
- - `assert await m_inc_int(5).a() == 6` in async contexts
- - `assert await m_inc_int(5).m() == 6` in maysync contexts
+ - `assert await m_inc_int(5).a() == 6` in async and maysync contexts
 
 Maysync fns may be constructed in two ways: either using `make_maysync`, providing an equivalent pair of sync and async
 functions, or using the `@maysync` decorator to wrap a 'maysync flavored' async function. 'Maysync flavored' async
-functions are ones which only call other maysync functions through their 'maysync context' - that is, they (and they
-alone) use the 'm' methods on maywaitables - for example: `await m_foo().m()`. Being regular python functions they are
-free to call whatever they like - for example doing sync IO - but the point is to, ideally, route all IO through maysync
-functions such that the maysync code is fully efficiently usable in any context.
+functions are ones which only call other maysync functions through their 'maysync context' - that is, they  use the 'a'
+methods on maywaitables - for example: `await m_foo().a()` - and the maysync machinery will ultimately call the
+appropriate 'leaf' sync or async functions. Being regular python functions they are free to call whatever they like -
+for example doing sync IO - but the point is to, ideally, route all IO through maysync functions such that the maysync
+code is fully efficiently usable in any context.
 
-This code is still written in a very dumb and explicit style primarily for auditability, but secondarily to minimize
-performance impact.
-
-Internally, it's not really correct to say that there is 'no event loop' in the maysync context - rather, each call to
-a maysync fn runs within its own tiny event loop.
+Internally, it's not really correct to say that there is 'no event loop' in the maysync context - rather, each
+'entrypoint' call to a maysync fn runs within its own tiny event loop.
 
 ===
 
@@ -36,17 +32,15 @@ TODO:
  - __del__
  - (test) maysync context managers
  - CancelledError
- - sys.set_asyncgen_hooks probably
- - is _MaysyncGeneratorYield awaitable?
  - for debug, mask any running eventloop while running maysync code
  - `[CO_ASYNC_GENERATOR] = {k for k, v in dis.COMPILER_FLAG_NAMES.items() if v == 'ASYNC_GENERATOR'}` ? inspect is big..
   - works down to 3.8
- - if we already have to touch a threadlocal via asyncgen_hooks, should we just go ahead and make `a()` *auto*? :/
-  - would this straight up remove half the code and speed up the async path to native speed?
 """
 import abc
 import functools
 import inspect
+import sys
+import threading
 import typing as ta
 
 
@@ -86,9 +80,6 @@ class Maywaitable(ta.Protocol[T_co]):
     def a(self) -> ta.Awaitable[T_co]:
         ...
 
-    def m(self) -> ta.Awaitable[T_co]:
-        ...
-
 
 class MaysyncGenerator(ta.Protocol[O_co, I_contra]):
     """
@@ -106,9 +97,6 @@ class MaysyncGenerator(ta.Protocol[O_co, I_contra]):
         ...
 
     def a(self) -> ta.AsyncGenerator[O_co, I_contra]:
-        ...
-
-    def m(self) -> ta.AsyncGenerator[O_co, I_contra]:
         ...
 
 
@@ -167,6 +155,60 @@ class MaysyncGeneratorFn_(Maysync_, abc.ABC, ta.Generic[O, I]):  # noqa
 ##
 
 
+class _MaysyncThreadLocal(threading.local):
+    context: ta.Optional['_MaysyncContext'] = None
+
+
+class _MaysyncContext(abc.ABC):
+    mode: ta.ClassVar[ta.Literal['s', 'a']]
+
+    @classmethod
+    def current(cls) -> ta.Optional['_MaysyncContext']:
+        return _MaysyncThreadLocal.context
+
+    @abc.abstractmethod
+    def run(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
+        raise NotImplementedError
+
+
+@ta.final
+class _SyncMaysyncContext(_MaysyncContext):
+    mode: ta.ClassVar[ta.Literal['s']] = 's'
+
+    def run(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
+        prev = _MaysyncThreadLocal.context
+        _MaysyncThreadLocal.context = self
+
+        ph = sys.get_asyncgen_hooks()
+        sys.set_asyncgen_hooks(firstiter=None, finalizer=None)
+
+        try:
+            return fn(*args, **kwargs)
+
+        finally:
+            sys.set_asyncgen_hooks(*ph)
+
+            _MaysyncThreadLocal.context = prev
+
+
+@ta.final
+class _AsyncMaysyncContext(_MaysyncContext):
+    mode: ta.ClassVar[ta.Literal['a']] = 'a'
+
+    def run(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
+        prev = _MaysyncThreadLocal.context
+        _MaysyncThreadLocal.context = self
+
+        try:
+            return fn(*args, **kwargs)
+
+        finally:
+            _MaysyncThreadLocal.context = prev
+
+
+##
+
+
 class _MaywaitableLike(
     abc.ABC,
     ta.Generic[_MaysyncX],
@@ -193,13 +235,7 @@ class _Maywaitable(
     abc.ABC,
     ta.Generic[_MaysyncX, T],
 ):
-    @ta.final
-    def m(self) -> ta.Awaitable[T]:
-        return _MaysyncFuture(_MaysyncOp(
-            self._x,
-            self._args,
-            self._kwargs,
-        ))
+    pass
 
 
 class _MaysyncGenerator(
@@ -207,13 +243,7 @@ class _MaysyncGenerator(
     abc.ABC,
     ta.Generic[_MaysyncX, O, I],
 ):
-    @ta.final
-    def m(self) -> ta.AsyncGenerator[O, I]:
-        return _MaysyncRunningGenerator(_MaysyncOp(  # noqa
-            self._x,
-            self._args,
-            self._kwargs,
-        ))
+    pass
 
 
 ##
@@ -270,8 +300,11 @@ class _FpMaywaitable(
     def s(self) -> T:
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
-    async def a(self) -> T:
-        return await self._x._a(*self._args, **self._kwargs)  # noqa
+    def a(self) -> ta.Awaitable[T]:
+        if _MaysyncContext.current() is not None:
+            return _MaysyncFuture(self._x, self._args, self._kwargs)
+
+        return self._x._a(*self._args, **self._kwargs)  # noqa
 
 
 def make_maysync_fn(
@@ -298,36 +331,42 @@ class _FpMaysyncGenerator(
     _MaysyncGenerator[_FpMaysyncGeneratorFn[O, I], O, I],
 ):
     def s(self) -> ta.Generator[O, I, None]:
-        yield from self._x._s(*self._args, **self._kwargs)  # noqa
+        return self._x._s(*self._args, **self._kwargs)  # noqa
 
-    async def a(self) -> ta.AsyncGenerator[O, I]:
-        g = self._x._a(*self._args, **self._kwargs)  # noqa
+    def a(self) -> ta.AsyncGenerator[O, I]:
+        if (ctx := _MaysyncContext.current()) is not None and ctx.mode == 's':
+            async def inner():
+                g = self._x._s(*self._args, **self._kwargs)  # noqa
 
-        i: ta.Any = None
-        e: ta.Any = None
+                i: ta.Any = None
+                e: ta.Any = None
 
-        try:
-            while True:
-                try:
-                    if e is not None:
-                        o = await g.athrow(e)
-                    else:
-                        o = await g.asend(i)
-                except StopAsyncIteration:
-                    return
+                while True:
+                    try:
+                        if e is not None:
+                            o = g.throw(e)
+                        else:
+                            o = g.send(i)
+                    except StopIteration as ex:
+                        if ex.value is not None:
+                            raise TypeError(ex) from None
+                        return
 
-                i = None
-                e = None
+                    i = None
+                    e = None
 
-                try:
-                    i = yield o
-                except BaseException as ex:  # noqa
-                    e = ex
+                    try:
+                        i = yield o
+                    except StopIteration as ex:  # noqa
+                        raise NotImplementedError  # noqa
+                    except StopAsyncIteration as ex:  # noqa
+                        raise NotImplementedError  # noqa
+                    except BaseException as ex:  # noqa
+                        e = ex
 
-                del o
+            return inner()
 
-        finally:
-            await g.aclose()
+        return self._x._a(*self._args, **self._kwargs)  # noqa
 
 
 def make_maysync_generator_fn(
@@ -403,8 +442,9 @@ class _MgMaysyncFnLike(
         raise NotImplementedError
 
 
+@ta.final
 class _MgMaysyncFn(
-    _MgMaysyncFnLike[ta.Generator[ta.Union['_MaysyncOp', '_MaysyncGeneratorOp'], ta.Any, T]],
+    _MgMaysyncFnLike[ta.Awaitable[T]],
     MaysyncFn_[T],
     ta.Generic[T],
 ):
@@ -413,120 +453,73 @@ class _MgMaysyncFn(
 
 
 @ta.final
-class _MgMaywaitable(_Maywaitable[_MgMaysyncFn[T], T]):
+class _MgMaysyncDriver:
+    def __init__(self, ctx, mg):
+        self.ctx = ctx
+        self.mg = mg
+
+    value: ta.Any
+
+    def __iter__(self):
+        try:
+            a = self.mg.__await__()
+            try:
+                g = iter(a)
+                try:
+                    while True:
+                        try:
+                            f = self.ctx.run(g.send, None)
+                        except StopIteration as ex:
+                            self.value = ex.value
+                            return
+
+                        if not isinstance(f, _MaysyncFuture):
+                            raise TypeError(f)
+
+                        yield f
+                        del f
+
+                finally:
+                    self.ctx.run(g.close)
+
+            finally:
+                self.ctx.run(a.close)
+
+        finally:
+            self.ctx.run(self.mg.close)
+
+
+@ta.final
+class _MgMaywaitable(
+    _Maywaitable[_MgMaysyncFn[T], T],
+):
+    def _driver(self, ctx: _MaysyncContext) -> _MgMaysyncDriver:
+        return _MgMaysyncDriver(ctx, self._x._mg(*self._args, **self._kwargs))  # noqa
+
     def s(self) -> T:
-        g = self._x._mg(*self._args, **self._kwargs)  # noqa
-        try:
-            i: ta.Any = None
-            e: ta.Any = None
+        for f in (drv := self._driver(_SyncMaysyncContext())):
+            f.s()
+            del f
 
-            while True:
-                try:
-                    if e is not None:
-                        o = g.throw(e)
-                    else:
-                        o = g.send(i)
-                except StopIteration as ex:
-                    return ex.value
+        return drv.value
 
-                i = None
-                e = None
+    def a(self) -> ta.Awaitable[T]:
+        if (ctx := _MaysyncContext.current()) is None or ctx.mode == 'a':
+            return self._x._mg(*self._args, **self._kwargs)  # noqa
 
-                if isinstance(o, _MaysyncOp):
-                    try:
-                        i = o.x(*o.args, **o.kwargs).s()
-                    except BaseException as ex:  # noqa
-                        e = ex
+        async def inner():
+            for f in (drv := self._driver(_AsyncMaysyncContext())):
+                await f.a()
+                del f
 
-                elif isinstance(o, _MaysyncGeneratorOp):
-                    # FIXME: finally: .close
-                    try:
-                        ug = o.rg.ug
-                    except AttributeError:
-                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).s()
+            return drv.value
 
-                    if o.c == 'send':
-                        gl = lambda: ug.send(*o.args)  # noqa
-                    elif o.c == 'throw':
-                        gl = lambda: ug.throw(*o.args)  # noqa
-                    elif o.c == 'close':
-                        raise NotImplementedError
-                    else:
-                        raise RuntimeError(o.c)
-
-                    try:
-                        i = gl()
-                    except StopIteration as ex:
-                        if ex.value is not None:
-                            raise TypeError from ex
-                        e = StopAsyncIteration
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                else:
-                    raise TypeError(o)
-
-                del o
-
-        finally:
-            g.close()
-
-    async def a(self) -> T:
-        g = self._x._mg(*self._args, **self._kwargs)  # noqa
-        try:
-            i: ta.Any = None
-            e: ta.Any = None
-
-            while True:
-                try:
-                    if e is not None:
-                        o = g.throw(e)
-                    else:
-                        o = g.send(i)
-                except StopIteration as ex:
-                    return ex.value
-
-                i = None
-                e = None
-
-                if isinstance(o, _MaysyncOp):
-                    try:
-                        i = await o.x(*o.args, **o.kwargs).a()
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                elif isinstance(o, _MaysyncGeneratorOp):
-                    # FIXME: finally: .close
-                    try:
-                        ug = o.rg.ug
-                    except AttributeError:
-                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).a().__aiter__()
-
-                    if o.c == 'send':
-                        gl = lambda: ug.asend(*o.args)  # noqa
-                    elif o.c == 'throw':
-                        gl = lambda: ug.athrow(*o.args)  # noqa
-                    elif o.c == 'close':
-                        raise NotImplementedError
-                    else:
-                        raise RuntimeError(o.c)
-
-                    try:
-                        i = await gl()
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                else:
-                    raise TypeError(o)
-
-                del o
-
-        finally:
-            g.close()
+        return inner()
 
 
+@ta.final
 class _MgMaysyncGeneratorFn(
-    _MgMaysyncFnLike[ta.Any],  # ?? #ta.Generator[ta.Union['_MaysyncOp', '_MaysyncGeneratorOp'], ta.Any, T]],
+    _MgMaysyncFnLike[ta.AsyncGenerator[O, I]],
     MaysyncGeneratorFn_[O, I],
     ta.Generic[O, I],
 ):
@@ -535,203 +528,118 @@ class _MgMaysyncGeneratorFn(
 
 
 @ta.final
-class _MgMaysyncGenerator(
-    _MaysyncGenerator[_MgMaysyncGeneratorFn[O, I], O, I],
-):
-    def s(self) -> ta.Generator[O, I, None]:
-        g = self._x._mg(*self._args, **self._kwargs)  # noqa
+class _MgMaysyncGeneratorDriver:
+    def __init__(self, ctx, ag):
+        self.ctx = ctx
+        self.ag = ag
+
+    def __iter__(self):
         try:
-            i: ta.Any = None
-            e: ta.Any = None
+            ai = self.ag.__aiter__()
+            try:
+                i: ta.Any = None
+                e: ta.Any = None
 
-            while True:
-                try:
+                while True:
                     if e is not None:
-                        o = g.throw(e)
+                        coro = ai.athrow(e)
                     else:
-                        o = g.send(i)
-                except StopIteration as ex:
-                    if ex.value is not None:
-                        raise TypeError from ex
-                    return
+                        coro = ai.asend(i)
 
-                i = None
-                e = None
+                    i = None
+                    e = None
 
-                if isinstance(o, _MaysyncGeneratorYield):
-                    try:
-                        i = yield o.v
-                    except BaseException as ex:  # noqa
-                        e = ex
+                    for f in (drv := _MgMaysyncDriver(self.ctx, coro)):
+                        if (x := (yield ('f', f))) is not None:
+                            raise RuntimeError(x)
 
-                elif isinstance(o, _MaysyncOp):
-                    try:
-                        i = o.x(*o.args, **o.kwargs).s()
-                    except BaseException as ex:  # noqa
-                        e = ex
+                        del f
 
-                elif isinstance(o, _MaysyncGeneratorOp):
-                    # FIXME: finally: .close
-                    try:
-                        ug = o.rg.ug
-                    except AttributeError:
-                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).s()
+                    i, e = yield ('o', drv.value)
 
-                    if o.c == 'send':
-                        gl = lambda: ug.send(*o.args)  # noqa
-                    elif o.c == 'throw':
-                        gl = lambda: ug.throw(*o.args)  # noqa
-                    elif o.c == 'close':
-                        raise NotImplementedError
-                    else:
-                        raise RuntimeError(o.c)
-
-                    try:
-                        i = gl()
-                    except StopIteration as ex:
-                        if ex.value is not None:
-                            raise TypeError from ex
-                        e = StopAsyncIteration
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                else:
-                    raise TypeError(o)
-
-                del o
+            finally:
+                for f in _MgMaysyncDriver(self.ctx, ai.aclose()):
+                    yield ('f', f)
 
         finally:
-            g.close()
-
-    async def a(self) -> ta.AsyncGenerator[O, I]:
-        g = self._x._mg(*self._args, **self._kwargs)  # noqa
-        try:
-            i: ta.Any = None
-            e: ta.Any = None
-
-            while True:
-                try:
-                    if e is not None:
-                        o = g.throw(e)
-                    else:
-                        o = g.send(i)
-                except StopIteration as ex:
-                    if ex.value is not None:
-                        raise TypeError from ex
-                    return
-
-                i = None
-                e = None
-
-                if isinstance(o, _MaysyncGeneratorYield):
-                    try:
-                        i = yield o.v
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                elif isinstance(o, _MaysyncOp):
-                    try:
-                        i = await o.x(*o.args, **o.kwargs).a()
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                elif isinstance(o, _MaysyncGeneratorOp):
-                    # FIXME: finally: .close
-                    try:
-                        ug = o.rg.ug
-                    except AttributeError:
-                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).a().__aiter__()
-
-                    if o.c == 'send':
-                        gl = lambda: ug.asend(*o.args)  # noqa
-                    elif o.c == 'throw':
-                        gl = lambda: ug.athrow(*o.args)  # noqa
-                    elif o.c == 'close':
-                        raise NotImplementedError
-                    else:
-                        raise RuntimeError(o.c)
-
-                    try:
-                        i = await gl()
-                    except StopIteration as ex:
-                        if ex.value is not None:
-                            raise TypeError from ex
-                        e = StopAsyncIteration
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-                else:
-                    raise TypeError(o)
-
-                del o
-
-        finally:
-            g.close()
-
-
-#
-
-
-class _MgDriverLike(abc.ABC):
-    """
-    Abstract base class for the _MgDriver and _MgGeneratorDriver classes, which produce generators yielding _MaysyncOp's
-    from a given underlying 'masync flavored' async function provided by the user.
-    """
-
-    def __init__(self, m):
-        self._m = m
-
-        functools.update_wrapper(self, m, updated=())
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self._m!r})'
-
-    def __get__(self, instance, owner=None):
-        return self.__class__(
-            self._m.__get__(instance, owner),
-        )
-
-    @abc.abstractmethod
-    def __call__(self, *args, **kwargs):
-        raise NotImplementedError
+            for f in _MgMaysyncDriver(self.ctx, self.ag.aclose()):
+                yield ('f', f)
 
 
 @ta.final
-class _MgDriver(_MgDriverLike):
-    def __call__(self, *args, **kwargs):
-        a_ = self._m(*args, **kwargs)
-        try:
-            a = a_.__await__()
+class _MgMaysyncGenerator(
+    _MaysyncGenerator[_MgMaysyncGeneratorFn[O, I], O, I],
+):
+    def _driver(self, ctx: _MaysyncContext) -> _MgMaysyncGeneratorDriver:
+        return _MgMaysyncGeneratorDriver(ctx, self._x._mg(*self._args, **self._kwargs))  # noqa
+
+    def s(self) -> ta.Generator[O, I, None]:
+        drv = self._driver(_SyncMaysyncContext())
+        di = iter(drv)
+
+        ie: ta.Any = None
+
+        while True:
             try:
-                g = iter(a)
+                t, x = di.send(ie)
+            except StopAsyncIteration:
+                return
+            except StopIteration:
+                raise RuntimeError from None
+
+            ie = None
+
+            if t == 'f':
+                x.s()
+
+            elif t == 'o':
                 try:
-                    while True:
-                        try:
-                            o = g.send(None)
-                        except StopIteration as e:
-                            return e.value
+                    y = yield x
+                    ie = (y, None)
+                except BaseException as ex:  # noqa
+                    ie = (None, ex)
 
-                        if isinstance(o, _MaysyncFuture):
-                            if not o.done:
-                                try:
-                                    o.result = yield o.op
-                                except BaseException as e:  # noqa
-                                    o.error = e
-                                o.done = True
+            else:
+                raise RuntimeError((t, x))
 
-                        else:
-                            raise TypeError(o)
+            del x
 
-                        del o
+    def a(self) -> ta.AsyncGenerator[O, I]:
+        if _MaysyncContext.current() is not None:
+            return self._x._mg(*self._args, **self._kwargs)  # noqa
 
-                finally:
-                    g.close()
+        async def inner():
+            drv = self._driver(_AsyncMaysyncContext())
+            di = iter(drv)
 
-            finally:
-                a.close()
+            ie: ta.Any = None
 
-        finally:
-            a_.close()
+            while True:
+                try:
+                    t, x = di.send(ie)
+                except StopAsyncIteration:
+                    return
+                except StopIteration:
+                    raise RuntimeError from None
+
+                ie = None
+
+                if t == 'f':
+                    await x.a()
+
+                elif t == 'o':
+                    try:
+                        y = yield x
+                        ie = (y, None)
+                    except BaseException as ex:  # noqa
+                        ie = (None, ex)
+
+                else:
+                    raise RuntimeError((t, x))
+
+                del x
+
+        return inner()
 
 
 def maysync_fn(
@@ -739,60 +647,7 @@ def maysync_fn(
 ) -> MaysyncFn[T]:
     """Constructs a MaysyncFn from a 'maysync flavored' async function."""
 
-    return _MgMaysyncFn(_MgDriver(m))
-
-
-@ta.final
-class _MgGeneratorDriver(_MgDriverLike):
-    def __call__(self, *args, **kwargs):
-        ag = self._m(*args, **kwargs)
-        ai = ag.__aiter__()
-
-        i: ta.Any = None
-        e: ta.Any = None
-
-        while True:
-            if e is not None:
-                coro = ai.athrow(e)
-            else:
-                coro = ai.asend(i)
-
-            i = None
-            e = None
-
-            try:
-                g = coro.__await__()
-                while True:
-                    try:
-                        o = g.send(None)
-                    except StopIteration as ex:
-                        i = ex.value
-                        break
-                    except StopAsyncIteration:
-                        # FIXME: aclose
-                        return
-                    except BaseException as ex:  # noqa
-                        e = ex
-                        break
-
-                    if isinstance(o, _MaysyncFuture):
-                        if not o.done:
-                            try:
-                                o.result = yield o.op
-                            except BaseException as ex:  # noqa
-                                o.error = ex
-                            o.done = True
-
-                    else:
-                        raise TypeError(o)
-
-            finally:
-                coro.close()
-
-            try:
-                i = yield _MaysyncGeneratorYield(i)
-            except BaseException as ex:  # noqa
-                e = ex
+    return _MgMaysyncFn(m)
 
 
 def maysync_generator_fn(
@@ -800,16 +655,20 @@ def maysync_generator_fn(
 ) -> MaysyncGeneratorFn[O, I]:
     """Constructs a MaysyncGeneratorFn from a 'maysync flavored' async generator function."""
 
-    return _MgMaysyncGeneratorFn(_MgGeneratorDriver(m))
+    return _MgMaysyncGeneratorFn(m)
 
 
 @ta.overload
-def maysync(m: ta.Callable[..., ta.Awaitable[T]]) -> MaysyncFn[T]:
+def maysync(
+        m: ta.Callable[..., ta.Awaitable[T]],
+) -> MaysyncFn[T]:
     ...
 
 
 @ta.overload
-def maysync(m: ta.Callable[..., ta.AsyncGenerator[O, I]]) -> MaysyncGeneratorFn[O, I]:
+def maysync(
+        m: ta.Callable[..., ta.AsyncGenerator[O, I]],
+) -> MaysyncGeneratorFn[O, I]:
     ...
 
 
@@ -828,6 +687,7 @@ def maysync(m):
 ##
 
 
+@ta.final
 class _MaysyncFutureNotAwaitedError(RuntimeError):
     pass
 
@@ -836,12 +696,16 @@ class _MaysyncFutureNotAwaitedError(RuntimeError):
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
             self,
-            op: ta.Union['_MaysyncOp', '_MaysyncGeneratorOp'],
+            x: ta.Any,
+            args: ta.Tuple[ta.Any, ...],
+            kwargs: ta.Mapping[str, ta.Any],
     ) -> None:
-        self.op = op
+        self.x = x
+        self.args = args
+        self.kwargs = kwargs
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.op!r}, done={self.done!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self.x!r}, done={self.done!r})'
 
     done: bool = False
     result: T
@@ -857,65 +721,22 @@ class _MaysyncFuture(ta.Generic[T]):
         else:
             return self.result
 
+    def s(self) -> None:
+        if self.done:
+            return
 
-@ta.final
-class _MaysyncOp:
-    def __init__(
-            self,
-            x: ta.Any,
-            args: ta.Tuple[ta.Any, ...],
-            kwargs: ta.Mapping[str, ta.Any],
-    ) -> None:
-        self.x = x
-        self.args = args
-        self.kwargs = kwargs
+        try:
+            self.result = self.x(*self.args, **self.kwargs).s()
+        except BaseException as ex:  # noqa
+            self.error = ex
+        self.done = True
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.x!r})'
+    async def a(self) -> None:
+        if self.done:
+            return
 
-
-@ta.final
-class _MaysyncGeneratorYield(ta.NamedTuple):
-    v: ta.Any
-
-
-@ta.final
-class _MaysyncGeneratorOp:
-    def __init__(
-            self,
-            rg: '_MaysyncRunningGenerator',
-            c: ta.Literal['send', 'throw', 'close'],
-            args: ta.Tuple[ta.Any, ...],
-    ) -> None:
-        self.rg = rg
-        self.c = c
-        self.args = args
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.rg!r}, {self.c!r})'
-
-
-@ta.final
-class _MaysyncRunningGenerator:
-    def __init__(
-            self,
-            op: _MaysyncOp,
-    ) -> None:
-        self.op = op
-
-    ug: ta.Any
-
-    def __aiter__(self):
-        return self
-
-    def __anext__(self):
-        return self.asend(None)
-
-    def asend(self, value):
-        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'send', (value,)))
-
-    def athrow(self, et, e=None, tb=None):
-        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'throw', (et, e, tb)))
-
-    def aclose(self):
-        return _MaysyncFuture(_MaysyncGeneratorOp(self, 'close', ()))
+        try:
+            self.result = await self.x(*self.args, **self.kwargs).a()
+        except BaseException as ex:  # noqa
+            self.error = ex
+        self.done = True

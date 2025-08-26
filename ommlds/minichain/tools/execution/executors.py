@@ -42,7 +42,7 @@ class ToolFnToolExecutor(ToolExecutor):
             return await m_execute_tool_fn(
                 self.tool_fn,
                 args,
-            ).m()
+            ).a()
 
 
 ##
@@ -59,4 +59,4 @@ class NameSwitchedToolExecutor(ToolExecutor):
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:
-        return await self.tool_executors_by_name[name].m_execute_tool(ctx, name, args).m()
+        return await self.tool_executors_by_name[name].m_execute_tool(ctx, name, args).a()
