@@ -572,8 +572,7 @@ class _MgMaysyncGenerator(
         return _MgMaysyncGeneratorDriver(ctx, self._x._mg(*self._args, **self._kwargs))  # noqa
 
     def s(self) -> ta.Generator[O, I, None]:
-        drv = self._driver(_SyncMaysyncContext())
-        di = iter(drv)
+        di = iter(self._driver(_SyncMaysyncContext()))
 
         ie: ta.Any = None
 
@@ -607,8 +606,7 @@ class _MgMaysyncGenerator(
             return self._x._mg(*self._args, **self._kwargs)  # noqa
 
         async def inner():
-            drv = self._driver(_AsyncMaysyncContext())
-            di = iter(drv)
+            di = iter(self._driver(_AsyncMaysyncContext()))
 
             ie: ta.Any = None
 
