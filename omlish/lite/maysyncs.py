@@ -68,8 +68,7 @@ class Maywaitable(ta.Protocol[T_co]):
     nullary methods:
 
      - `def s()` - to be called in sync contexts
-     - `async def a()` - to be called in async contexts
-     - `async def m()` - to be called in maysync contexts
+     - `async def a()` - to be called in async and maysync contexts
 
     Only the proper method should be called in each context.
     """
@@ -87,8 +86,7 @@ class MaysyncGenerator(ta.Protocol[O_co, I_contra]):
     following methods:
 
      - `def s()` - to be called in sync contexts
-     - `async def a()` - to be called in async contexts
-     - `async def m()` - to be called in maysync contexts
+     - `async def a()` - to be called in async and maysync contexts
 
     Only the proper method should be called in each context.
     """

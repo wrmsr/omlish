@@ -1504,6 +1504,7 @@ class ResourceType(_enum.Enum):
     FPGA_IMAGE = 'fpga-image'
     HOST_RESERVATION = 'host-reservation'
     IMAGE = 'image'
+    IMAGE_USAGE_REPORT = 'image-usage-report'
     IMPORT_IMAGE_TASK = 'import-image-task'
     IMPORT_SNAPSHOT_TASK = 'import-snapshot-task'
     INSTANCE = 'instance'
