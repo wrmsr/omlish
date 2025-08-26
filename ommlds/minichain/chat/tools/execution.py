@@ -10,12 +10,12 @@ from ..messages import ToolExecResultMessage
 
 
 @lang.maysync
-async def m_execute_tool_request(
+async def execute_tool_request(
         ctx: ToolContext,
         tex: ToolExecutor,
         ter: ToolExecRequest,
 ) -> ToolExecResultMessage:
-    result_str = await tex.m_execute_tool(
+    result_str = await tex.execute_tool(
         ctx,
         ter.name,
         ter.args,

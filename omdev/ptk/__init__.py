@@ -100,4 +100,4 @@ from prompt_toolkit.widgets.toolbars import ValidationToolbar
 from .confirm import create_strict_confirm_session
 
 #
-from .confirm import m_strict_confirm
+from .confirm import strict_confirm

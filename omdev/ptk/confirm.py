@@ -44,7 +44,7 @@ def create_strict_confirm_session(
 
 
 @lang.maysync
-async def m_strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> bool:
+async def strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> bool:
     """Display a confirmation prompt that returns True/False. Requires an explicit answer."""
 
     while True:

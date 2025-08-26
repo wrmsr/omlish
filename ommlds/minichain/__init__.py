@@ -61,7 +61,7 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.tools.execution import (  # noqa
-        m_execute_tool_request,
+        execute_tool_request,
     )
 
     from .chat.transforms.base import (  # noqa
@@ -297,7 +297,7 @@ with _lang.auto_proxy_init(
     from .tools.fns import (  # noqa
         ToolFn,
 
-        m_execute_tool_fn,
+        execute_tool_fn,
     )
 
     from .tools.jsonschema import (  # noqa
