@@ -555,6 +555,31 @@ class _MgMaysyncGenerator(
                     except BaseException as ex:  # noqa
                         e = ex
 
+                elif isinstance(o, _MaysyncGeneratorOp):
+                    # FIXME: finally: .close
+                    try:
+                        ug = o.rg.ug
+                    except AttributeError:
+                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).s()
+
+                    if o.c == 'send':
+                        gl = lambda: ug.send(*o.args)  # noqa
+                    elif o.c == 'throw':
+                        gl = lambda: ug.throw(*o.args)  # noqa
+                    elif o.c == 'close':
+                        raise NotImplementedError
+                    else:
+                        raise RuntimeError(o.c)
+
+                    try:
+                        i = gl()
+                    except StopIteration as ex:
+                        if ex.value is not None:
+                            raise TypeError from ex
+                        e = StopAsyncIteration
+                    except BaseException as ex:  # noqa
+                        e = ex
+
                 else:
                     raise TypeError(o)
 
@@ -647,15 +672,6 @@ class _MgDriver(_MgDriverLike):
                             return e.value
 
                         if isinstance(o, _MaysyncFuture):
-                            if isinstance(o.op, _MaysyncGeneratorOp):
-                                try:
-                                    og = o.op.rg.og
-                                except AttributeError:
-                                    o.op.rg.og = g
-                                else:
-                                    if og is not g:
-                                        raise RuntimeError
-
                             if not o.done:
                                 try:
                                     o.result = yield o.op
@@ -696,13 +712,10 @@ class _MgGeneratorDriver(_MgDriverLike):
         e: ta.Any = None
 
         while True:
-            try:
-                if e is not None:
-                    coro = ai.athrow(e)
-                else:
-                    coro = ai.asend(i)
-            except StopAsyncIteration:
-                return
+            if e is not None:
+                coro = ai.athrow(e)
+            else:
+                coro = ai.asend(i)
 
             i = None
             e = None
@@ -714,6 +727,12 @@ class _MgGeneratorDriver(_MgDriverLike):
                         o = g.send(None)
                     except StopIteration as ex:
                         i = ex.value
+                        break
+                    except StopAsyncIteration:
+                        # FIXME: aclose
+                        return
+                    except BaseException as ex:  # noqa
+                        e = ex
                         break
 
                     if isinstance(o, _MaysyncFuture):
@@ -844,7 +863,6 @@ class _MaysyncRunningGenerator:
     ) -> None:
         self.op = op
 
-    og: ta.Any
     ug: ta.Any
 
     def __aiter__(self):
