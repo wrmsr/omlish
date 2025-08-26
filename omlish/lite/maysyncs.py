@@ -1,9 +1,11 @@
 # ruff: noqa: UP006 UP043 UP045
 # @omlish-lite
 """
-A system for writing a python function once which can then be effectively used in both sync and async contexts including
-IO, under any event loop. Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is
-an object with three nullary methods:
+A system for writing a python function once which can then be effectively used in both sync and async contexts -
+including IO, under any (or no) event loop.
+
+Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is an object with three
+nullary methods:
 
  - `def s()` - to be called in sync contexts
  - `async def a()` - to be called in async contexts
@@ -22,14 +24,25 @@ alone) use the 'm' methods on maywaitables - for example: `await m_foo().m()`. B
 free to call whatever they like - for example doing sync IO - but the point is to, ideally, route all IO through maysync
 functions such that the maysync code is fully efficiently usable in any context.
 
+This code is still written in a very dumb and explicit style primarily for auditability, but secondarily to minimize
+performance impact.
+
+Internally, it's not really correct to say that there is 'no event loop' in the maysync context - rather, each call to
+a maysync fn runs within its own tiny event loop.
+
 ===
 
 TODO:
  - __del__
- - maysync context managers
+ - (test) maysync context managers
  - CancelledError
+ - sys.set_asyncgen_hooks probably
  - is _MaysyncGeneratorYield awaitable?
  - for debug, mask any running eventloop while running maysync code
+ - `[CO_ASYNC_GENERATOR] = {k for k, v in dis.COMPILER_FLAG_NAMES.items() if v == 'ASYNC_GENERATOR'}` ? inspect is big..
+  - works down to 3.8
+ - if we already have to touch a threadlocal via asyncgen_hooks, should we just go ahead and make `a()` *auto*? :/
+  - would this straight up remove half the code and speed up the async path to native speed?
 """
 import abc
 import functools
@@ -180,6 +193,7 @@ class _Maywaitable(
     abc.ABC,
     ta.Generic[_MaysyncX, T],
 ):
+    @ta.final
     def m(self) -> ta.Awaitable[T]:
         return _MaysyncFuture(_MaysyncOp(
             self._x,
@@ -193,6 +207,7 @@ class _MaysyncGenerator(
     abc.ABC,
     ta.Generic[_MaysyncX, O, I],
 ):
+    @ta.final
     def m(self) -> ta.AsyncGenerator[O, I]:
         return _MaysyncRunningGenerator(_MaysyncOp(  # noqa
             self._x,
@@ -617,6 +632,31 @@ class _MgMaysyncGenerator(
                 elif isinstance(o, _MaysyncOp):
                     try:
                         i = await o.x(*o.args, **o.kwargs).a()
+                    except BaseException as ex:  # noqa
+                        e = ex
+
+                elif isinstance(o, _MaysyncGeneratorOp):
+                    # FIXME: finally: .close
+                    try:
+                        ug = o.rg.ug
+                    except AttributeError:
+                        ug = o.rg.ug = o.rg.op.x(*o.rg.op.args, **o.rg.op.kwargs).a().__aiter__()
+
+                    if o.c == 'send':
+                        gl = lambda: ug.asend(*o.args)  # noqa
+                    elif o.c == 'throw':
+                        gl = lambda: ug.athrow(*o.args)  # noqa
+                    elif o.c == 'close':
+                        raise NotImplementedError
+                    else:
+                        raise RuntimeError(o.c)
+
+                    try:
+                        i = await gl()
+                    except StopIteration as ex:
+                        if ex.value is not None:
+                            raise TypeError from ex
+                        e = StopAsyncIteration
                     except BaseException as ex:  # noqa
                         e = ex
 

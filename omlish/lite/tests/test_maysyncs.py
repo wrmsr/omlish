@@ -109,6 +109,7 @@ class TestMaysyncGenerators(unittest.TestCase):
         assert list(m_gen_grob(3).s()) == [134, 135]
 
         assert list(m_gen_grob_nested(3).s()) == [1075, 1076, 134, 1076, 1077, 135]
+        assert sync_async_list(m_gen_grob_nested(3).a) == [1077, 1078, 135, 1078, 1079, 136]
 
 
 @maysync
