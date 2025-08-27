@@ -411,11 +411,6 @@ class _MgMaysyncFnLike(
     abc.ABC,
     ta.Generic[T],
 ):
-    """
-    A maysync object backed by an underlying generator yielding _MaysyncOp's. The _MgDriver and _MgGeneratorDriver
-    classes produce such generators.
-    """
-
     def __init__(
             self,
             mg: ta.Callable[..., T],
