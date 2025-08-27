@@ -37,7 +37,6 @@ TODO:
   - works down to 3.8
  - make_maysync_from_sync can run with asyncio.run_in_thread
  - make_maysync_from_async can run with asyncio.run_soon
- - elide redundant close/aclose for known cpy machinery
 """
 import abc
 import functools
@@ -180,14 +179,18 @@ class _SyncMaysyncContext(_MaysyncContext):
         prev = _MaysyncThreadLocal.context
         _MaysyncThreadLocal.context = self
 
-        ph = sys.get_asyncgen_hooks()
-        sys.set_asyncgen_hooks(firstiter=None, finalizer=None)
+        ph: ta.Any = sys.get_asyncgen_hooks()
+        if ph.firstiter is not None or ph.finalizer is not None:
+            sys.set_asyncgen_hooks(firstiter=None, finalizer=None)
+        else:
+            ph = None
 
         try:
             return fn(*args, **kwargs)
 
         finally:
-            sys.set_asyncgen_hooks(*ph)
+            if ph is not None:
+                sys.set_asyncgen_hooks(*ph)
 
             _MaysyncThreadLocal.context = prev
 
@@ -476,7 +479,8 @@ class _MgMaysyncDriver:
                         del f
 
                 finally:
-                    self.ctx.run(g.close)
+                    if g is not a:
+                        self.ctx.run(g.close)
 
             finally:
                 self.ctx.run(a.close)
@@ -564,8 +568,9 @@ class _MgMaysyncGeneratorDriver:
                     i, e = yield ('o', drv.value)  # type: ignore[misc]
 
             finally:
-                for f in _MgMaysyncDriver(self.ctx, ai.aclose()):
-                    yield ('f', f)
+                if ai is not self.ag:
+                    for f in _MgMaysyncDriver(self.ctx, ai.aclose()):
+                        yield ('f', f)
 
         finally:
             for f in _MgMaysyncDriver(self.ctx, self.ag.aclose()):
