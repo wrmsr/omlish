@@ -162,10 +162,6 @@ class _MaysyncThreadLocal(threading.local):
 class _MaysyncContext(abc.ABC):
     mode: ta.ClassVar[ta.Literal['s', 'a']]
 
-    @classmethod
-    def current(cls) -> ta.Optional['_MaysyncContext']:
-        return _MaysyncThreadLocal.context
-
     @abc.abstractmethod
     def run(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
         raise NotImplementedError
@@ -226,9 +222,7 @@ class _MaywaitableLike(
             args: ta.Tuple[ta.Any, ...],
             kwargs: ta.Mapping[str, ta.Any],
     ) -> None:
-        self._x = x
-        self._args = args
-        self._kwargs = kwargs
+        self._x, self._args, self._kwargs = x, args, kwargs
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._x!r})'
@@ -305,8 +299,8 @@ class _FpMaywaitable(
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
     def a(self) -> ta.Awaitable[T]:
-        if _MaysyncContext.current() is not None:
-            return _MaysyncFuture(functools.partial(self._x, *self._args, **self._kwargs))  # noqa
+        if _MaysyncThreadLocal.context is not None:
+            return _MaysyncFuture(self)
 
         return self._x._a(*self._args, **self._kwargs)  # noqa
 
@@ -338,7 +332,7 @@ class _FpMaysyncGenerator(
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
     def a(self) -> ta.AsyncGenerator[O, I]:
-        if (ctx := _MaysyncContext.current()) is not None and ctx.mode == 's':
+        if (ctx := _MaysyncThreadLocal.context) is not None and ctx.mode == 's':
             async def inner():
                 g = self._x._s(*self._args, **self._kwargs)  # noqa
 
@@ -504,7 +498,7 @@ class _MgMaywaitable(
         return drv.value
 
     def a(self) -> ta.Awaitable[T]:
-        if (ctx := _MaysyncContext.current()) is None or ctx.mode == 'a':
+        if (ctx := _MaysyncThreadLocal.context) is None or ctx.mode == 'a':
             return self._x._mg(*self._args, **self._kwargs)  # noqa
 
         async def inner():
@@ -614,7 +608,7 @@ class _MgMaysyncGenerator(
             del x
 
     def a(self) -> ta.AsyncGenerator[O, I]:
-        if _MaysyncContext.current() is not None:
+        if _MaysyncThreadLocal.context is not None:
             return self._x._mg(*self._args, **self._kwargs)  # noqa
 
         async def inner():
@@ -703,7 +697,7 @@ class _MaysyncFutureNotAwaitedError(RuntimeError):
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
             self,
-            x: ta.Callable[[], Maywaitable[T]],
+            x: Maywaitable[T],
     ) -> None:
         self._x = x
 
@@ -729,7 +723,7 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = self._x().s()
+            self.result = self._x.s()
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
@@ -739,7 +733,7 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = await self._x().a()
+            self.result = await self._x.a()
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
