@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP043 UP045 UP046 UP047
+# ruff: noqa: UP006 UP007 UP043 UP045 UP046 UP047
 # @omlish-lite
 """
 A system for writing a python function once which can then be effectively used in both sync and async contexts -
@@ -303,7 +303,7 @@ class _FpMaywaitable(
 
     def a(self) -> ta.Awaitable[T]:
         if _MaysyncContext.current() is not None:
-            return _MaysyncFuture(self._x, self._args, self._kwargs)  # noqa
+            return _MaysyncFuture(functools.partial(self._x, *self._args, **self._kwargs))  # noqa
 
         return self._x._a(*self._args, **self._kwargs)  # noqa
 
@@ -698,16 +698,12 @@ class _MaysyncFutureNotAwaitedError(RuntimeError):
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
             self,
-            x: ta.Callable[..., Maywaitable[T]],
-            args: ta.Tuple[ta.Any, ...],
-            kwargs: ta.Mapping[str, ta.Any],
+            x: ta.Callable[[], Maywaitable[T]],
     ) -> None:
-        self.x = x
-        self.args = args
-        self.kwargs = kwargs
+        self._x = x
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self.x!r}, done={self.done!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._x!r}, done={self.done!r})'
 
     done: bool = False
     result: T
@@ -728,7 +724,7 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = self.x(*self.args, **self.kwargs).s()
+            self.result = self._x().s()
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
@@ -738,7 +734,7 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = await self.x(*self.args, **self.kwargs).a()
+            self.result = await self._x().a()
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
