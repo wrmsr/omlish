@@ -105,7 +105,7 @@ class Project(ProjectBase):
 
             'apsw ~= 3.50',
 
-            'sqlean.py ~= 3.49',
+            'sqlean.py ~= 3.50',
 
             'duckdb ~= 1.3',
         ],
