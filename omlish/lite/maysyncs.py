@@ -303,7 +303,7 @@ class _FpMaywaitable(
 
     def a(self) -> ta.Awaitable[T]:
         if _MaysyncContext.current() is not None:
-            return _MaysyncFuture(self._x, self._args, self._kwargs)
+            return _MaysyncFuture(self._x, self._args, self._kwargs)  # noqa
 
         return self._x._a(*self._args, **self._kwargs)  # noqa
 
@@ -450,13 +450,13 @@ class _MgMaysyncFn(
 
 @ta.final
 class _MgMaysyncDriver:
-    def __init__(self, ctx, mg):
+    def __init__(self, ctx: _MaysyncContext, mg: ta.Any) -> None:
         self.ctx = ctx
         self.mg = mg
 
     value: ta.Any
 
-    def __iter__(self):
+    def __iter__(self) -> ta.Generator['_MaysyncFuture', None, None]:
         try:
             a = self.mg.__await__()
             try:
@@ -525,11 +525,21 @@ class _MgMaysyncGeneratorFn(
 
 @ta.final
 class _MgMaysyncGeneratorDriver:
-    def __init__(self, ctx, ag):
+    def __init__(self, ctx: _MaysyncContext, ag: ta.Any) -> None:
         self.ctx = ctx
         self.ag = ag
 
-    def __iter__(self):
+    def __iter__(self) -> ta.Generator[
+        ta.Union[
+            ta.Tuple[ta.Literal['f'], '_MaysyncFuture'],
+            ta.Tuple[ta.Literal['o'], ta.Any],
+        ],
+        ta.Union[
+            ta.Tuple[ta.Any, BaseException],
+            None,
+        ],
+        None,
+    ]:
         try:
             ai = self.ag.__aiter__()
             try:
@@ -551,7 +561,7 @@ class _MgMaysyncGeneratorDriver:
 
                         del f
 
-                    i, e = yield ('o', drv.value)
+                    i, e = yield ('o', drv.value)  # type: ignore[misc]
 
             finally:
                 for f in _MgMaysyncDriver(self.ctx, ai.aclose()):
@@ -589,7 +599,7 @@ class _MgMaysyncGenerator(
 
             elif t == 'o':
                 try:
-                    ie = ((yield x), None)
+                    ie = ((yield x), None)  # type: ignore[misc]
                 except BaseException as ex:  # noqa
                     ie = (None, ex)
 
@@ -688,7 +698,7 @@ class _MaysyncFutureNotAwaitedError(RuntimeError):
 class _MaysyncFuture(ta.Generic[T]):
     def __init__(
             self,
-            x: ta.Any,
+            x: ta.Callable[..., Maywaitable[T]],
             args: ta.Tuple[ta.Any, ...],
             kwargs: ta.Mapping[str, ta.Any],
     ) -> None:
