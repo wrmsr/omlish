@@ -100,6 +100,7 @@ class AnyMaysyncFn(abc.ABC, ta.Generic[_MaysyncRS, _MaysyncRA]):  # noqa
         raise NotImplementedError
 
 
+@ta.final
 class MaywaitableAlreadyConsumedError(Exception):
     pass
 
