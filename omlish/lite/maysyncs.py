@@ -107,14 +107,34 @@ MaysyncFn = ta.Callable[..., Maywaitable[T]]  # ta.TypeAlias  # omlish-amalg-typ
 MaysyncGeneratorFn = ta.Callable[..., MaysyncGenerator[O, I]]  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
 
+##
+# Abstract base class for maysync objects - either MaysyncFn's or MaysyncGeneratorFn's.
+#
+# The concrete implementations are module-level implementation detail, and in general users should make a point to only
+# interact with the protocols defined above, but introspection can be necessary at times.
+
+
+class Maywaitable_(abc.ABC, ta.Generic[T]):  # noqa
+    @abc.abstractmethod
+    def s(self) -> T:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def a(self) -> ta.Awaitable[T]:
+        raise NotImplementedError
+
+
+class MaysyncGenerator_(abc.ABC, ta.Generic[O, I]):  # noqa
+    @abc.abstractmethod
+    def s(self) -> ta.Generator[O, I, None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def a(self) -> ta.AsyncGenerator[O, I]:
+        raise NotImplementedError
+
+
 class Maysync_(abc.ABC):  # noqa
-    """
-    Abstract base class for maysync objects - either MaysyncFn's or MaysyncGeneratorFn's.
-
-    The concrete implementations are module-level implementation detail, and in general users should make a point to
-    only interact with the protocols defined above, but introspection can be necessary at times.
-    """
-
     def __init_subclass__(cls, **kwargs):
         if Maysync_ in cls.__bases__ and abc.ABC not in cls.__bases__:
             raise TypeError(cls)
@@ -206,6 +226,13 @@ class _AsyncMaysyncContext(_MaysyncContext):
             _MaysyncThreadLocal.context = prev
 
 
+def current_maysync_mode() -> ta.Literal['s', 'a', None]:
+    if (ctx := _MaysyncThreadLocal.context) is not None:
+        return ctx.mode
+    else:
+        return None
+
+
 ##
 
 
@@ -230,6 +257,7 @@ class _MaywaitableLike(
 
 class _Maywaitable(
     _MaywaitableLike[_MaysyncX],
+    Maywaitable_[T],
     abc.ABC,
     ta.Generic[_MaysyncX, T],
 ):
@@ -238,6 +266,7 @@ class _Maywaitable(
 
 class _MaysyncGenerator(
     _MaywaitableLike[_MaysyncX],
+    MaysyncGenerator_[O, I],
     abc.ABC,
     ta.Generic[_MaysyncX, O, I],
 ):
@@ -529,8 +558,8 @@ class _MgMaysyncGeneratorDriver:
 
     def __iter__(self) -> ta.Generator[
         ta.Union[
+            ta.Tuple[ta.Literal['y'], ta.Any],
             ta.Tuple[ta.Literal['f'], '_MaysyncFuture'],
-            ta.Tuple[ta.Literal['o'], ta.Any],
         ],
         ta.Union[
             ta.Tuple[ta.Any, BaseException],
@@ -559,7 +588,7 @@ class _MgMaysyncGeneratorDriver:
 
                         del f
 
-                    i, e = yield ('o', drv.value)  # type: ignore[misc]
+                    i, e = yield ('y', drv.value)  # type: ignore[misc]
 
             finally:
                 if ai is not self.ag:
@@ -596,7 +625,7 @@ class _MgMaysyncGenerator(
             if t == 'f':
                 x.s()
 
-            elif t == 'o':
+            elif t == 'y':
                 try:
                     ie = ((yield x), None)  # type: ignore[misc]
                 except BaseException as ex:  # noqa
@@ -629,7 +658,7 @@ class _MgMaysyncGenerator(
                 if t == 'f':
                     await x.a()
 
-                elif t == 'o':
+                elif t == 'y':
                     try:
                         ie = ((yield x), None)
                     except BaseException as ex:  # noqa
