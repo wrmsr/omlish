@@ -171,6 +171,8 @@ from .descriptors import (  # noqa
     decorator,
     is_method_descriptor,
     item_property,
+    unwrap_callable,
+    unwrap_callable_with_partials,
     unwrap_func,
     unwrap_func_with_partials,
     unwrap_method_descriptors,

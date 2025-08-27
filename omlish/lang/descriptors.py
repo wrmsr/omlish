@@ -92,6 +92,20 @@ def unwrap_func(fn: ta.Any) -> ta.Any:
 ##
 
 
+def unwrap_callable_with_partials(obj: ta.Any) -> tuple[ta.Any, list[functools.partial]]:
+    if isinstance(obj, type):
+        obj = obj.__call__
+    return unwrap_func_with_partials(obj)
+
+
+def unwrap_callable(obj: ta.Any) -> ta.Any:
+    uw, _ = unwrap_callable_with_partials(obj)
+    return uw
+
+
+##
+
+
 def update_wrapper(
         wrapper: T,
         wrapped: ta.Any,

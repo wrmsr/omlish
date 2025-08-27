@@ -21,7 +21,7 @@ class ToolFn(lang.Final):
     class Impl(lang.Sealed, lang.Abstract):
         pass
 
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class FnImpl(Impl):
         s: ta.Callable[..., ta.Any] | None = None
         a: ta.Callable[..., ta.Awaitable[ta.Any]] | None = None
@@ -98,12 +98,17 @@ async def _no_async_tool_impl(*args, **kwargs):
 async def execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
+        *,
+        forbid_sync_as_async: bool = False,
 ) -> str:
     m_fn: ta.Callable[..., ta.Awaitable[ta.Any]]
     if isinstance(tfn.impl, ToolFn.FnImpl):
+        s_fn = tfn.impl.s
+        if (a_fn := tfn.impl.a) is None and not forbid_sync_as_async and s_fn is not None:
+            a_fn = lang.as_async(s_fn)
         m_fn = lang.make_maysync(
-            tfn.impl.s if tfn.impl.s is not None else _no_sync_tool_impl,
-            tfn.impl.a if tfn.impl.a is not None else _no_async_tool_impl,
+            s_fn if s_fn is not None else _no_sync_tool_impl,
+            a_fn if a_fn is not None else _no_async_tool_impl,
         )
     elif isinstance(tfn.impl, ToolFn.MaysyncImpl):
         m_fn = tfn.impl.m

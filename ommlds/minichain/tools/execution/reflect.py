@@ -1,6 +1,5 @@
 """
 TODO:
- - one-sided, sync ^ async, reflect sig
 """
 import inspect
 import typing as ta
@@ -17,12 +16,12 @@ from .catalog import ToolCatalogEntry
 
 def reflect_tool_catalog_entry(fn: ta.Callable) -> ToolCatalogEntry:
     impl: ToolFn.Impl
-    if inspect.iscoroutinefunction(fn):
-        # FIXME: check mark lol
+    if lang.is_maysync(fn):
         impl = ToolFn.MaysyncImpl(fn)
+    elif inspect.iscoroutinefunction(lang.unwrap_callable(fn)):
+        impl = ToolFn.FnImpl(a=fn)
     else:
-        # FIXME: assumes sync
-        impl = ToolFn.FnImpl(fn, lang.as_async(fn))
+        impl = ToolFn.FnImpl(s=fn, a=lang.as_async(fn))
 
     sig = inspect.signature(fn)
     if sig.return_annotation is not str:
