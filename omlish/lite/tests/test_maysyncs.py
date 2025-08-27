@@ -4,6 +4,7 @@ import unittest
 
 from ..maysyncs import make_maysync
 from ..maysyncs import maysync
+from ..maysyncs import run_maysync
 from .utils import sync_async_list
 from .utils import sync_await
 
@@ -24,24 +25,24 @@ m_inc = make_maysync(s_inc, a_inc)
 
 @maysync
 async def m_frob(i: int) -> int:
-    return await m_inc(i + 10).a()
+    return await m_inc(i + 10)
 
 
 @maysync
 async def m_grob(i: int) -> int:
-    return await m_frob(i + 20).a() + 100
+    return await m_frob(i + 20) + 100
 
 
 class TestMaysync(unittest.TestCase):
     def test_maysync(self):
-        assert m_inc(3).s() == 4
-        assert sync_await(m_inc(3).a) == 5
+        assert run_maysync(m_inc(3)) == 4
+        assert sync_await(m_inc(3)) == 5
 
-        assert m_frob(3).s() == 14
-        assert sync_await(m_frob(3).a) == 15
+        assert run_maysync(m_frob(3)) == 14
+        assert sync_await(m_frob(3)) == 15
 
-        assert m_grob(3).s() == 134
-        assert sync_await(m_grob(3).a) == 135
+        assert run_maysync(m_grob(3)) == 134
+        assert sync_await(m_grob(3)) == 135
 
 
 ##
@@ -49,24 +50,24 @@ class TestMaysync(unittest.TestCase):
 
 @maysync
 async def m_tls_frob(i: int) -> int:
-    return await m_inc(i + 10).a()
+    return await m_inc(i + 10)
 
 
 @maysync
 async def m_tls_grob(i: int) -> int:
-    return await m_frob(i + 20).a() + 100
+    return await m_frob(i + 20) + 100
 
 
 class TestTlsMaysync(unittest.TestCase):
     def test_tls_maysync(self):
-        assert m_inc(3).s() == 4
-        assert sync_await(m_inc(3).a) == 5
+        assert run_maysync(m_inc(3)) == 4
+        assert sync_await(m_inc(3)) == 5
 
-        assert m_tls_frob(3).s() == 14
-        assert sync_await(m_tls_frob(3).a) == 15
+        assert run_maysync(m_tls_frob(3)) == 14
+        assert sync_await(m_tls_frob(3)) == 15
 
-        assert m_tls_grob(3).s() == 134
-        assert sync_await(m_tls_grob(3).a) == 135
+        assert run_maysync(m_tls_grob(3)) == 134
+        assert sync_await(m_tls_grob(3)) == 135
 
 
 ##
@@ -88,75 +89,75 @@ m_gen = make_maysync(s_gen, a_gen)
 @maysync
 async def m_use_gen(i: int) -> int:
     c = 0
-    async for j in m_gen(i).a():
+    async for j in m_gen(i):
         c += j
     return c
 
 
 @maysync
 async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
-    await m_grob(i).a()
-    async for j in m_gen(i).a():
-        await m_grob(i).a()
+    await m_grob(i)
+    async for j in m_gen(i):
+        await m_grob(i)
         yield j + 10
-    await m_grob(i).a()
+    await m_grob(i)
 
 
 @maysync
 async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
-    await m_grob(i).a()
-    async for j in m_gen_frob(i + 20).a():
-        await m_grob(i).a()
+    await m_grob(i)
+    async for j in m_gen_frob(i + 20):
+        await m_grob(i)
         yield j + 100
-    await m_grob(i).a()
+    await m_grob(i)
 
 
 @maysync
 async def m_gen_grob_nested(i: int) -> ta.AsyncGenerator[int, None]:
-    await m_grob(i).a()
-    async for j in m_gen_frob(i + 20).a():
-        async for k in m_gen_frob(j + 30).a():
-            await m_grob(i).a()
+    await m_grob(i)
+    async for j in m_gen_frob(i + 20):
+        async for k in m_gen_frob(j + 30):
+            await m_grob(i)
             yield k + 1000
         yield j + 100
-    await m_grob(i).a()
+    await m_grob(i)
 
 
 class TestMaysyncGenerators(unittest.TestCase):
     def test_maysync_generator(self):
-        assert m_use_gen(3).s() == 9
-        assert sync_await(m_use_gen(3).a) == 11
+        assert run_maysync(m_use_gen(3)) == 9
+        assert sync_await(m_use_gen(3)) == 11
 
-        assert list(m_gen(3).s()) == [4, 5]
-        assert sync_async_list(m_gen(3).a) == [5, 6]
+        assert list(run_maysync(m_gen(3))) == [4, 5]
+        assert sync_async_list(m_gen(3)) == [5, 6]
 
-        assert list(m_gen_frob(3).s()) == [14, 15]
-        assert list(m_gen_grob(3).s()) == [134, 135]
+        assert list(run_maysync(m_gen_frob(3))) == [14, 15]
+        assert list(run_maysync(m_gen_grob(3))) == [134, 135]
 
-        assert list(m_gen_grob_nested(3).s()) == [1075, 1076, 134, 1076, 1077, 135]
-        assert sync_async_list(m_gen_grob_nested(3).a) == [1077, 1078, 135, 1078, 1079, 136]
+        assert list(run_maysync(m_gen_grob_nested(3))) == [1075, 1076, 134, 1076, 1077, 135]
+        assert sync_async_list(m_gen_grob_nested(3)) == [1077, 1078, 135, 1078, 1079, 136]
 
 
 @maysync
 async def m_nest0(i: int) -> int:
-    return (await m_inc(i).a()) + (await m_inc(i).a())
+    return (await m_inc(i)) + (await m_inc(i))
 
 
 @maysync
 async def m_nest1(i: int) -> int:
-    return (await m_nest0(i).a()) + (await m_nest0(i).a())
+    return (await m_nest0(i)) + (await m_nest0(i))
 
 
 @maysync
 async def m_nest2(i: int) -> int:
-    return (await m_nest1(i).a()) + (await m_nest1(i).a())
+    return (await m_nest1(i)) + (await m_nest1(i))
 
 
 @maysync
 async def m_nest3(i: int) -> int:
-    return (await m_nest2(i).a()) + (await m_nest2(i).a())
+    return (await m_nest2(i)) + (await m_nest2(i))
 
 
 class TestNesting(unittest.TestCase):
     def test_nesting(self):
-        assert m_nest3(3).s() == 64
+        assert run_maysync(m_nest3(3)) == 64

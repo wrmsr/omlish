@@ -48,7 +48,7 @@ maysync_subprocesses = MaysyncSubprocesses(
 
 @pytest.mark.asyncs('asyncio')
 async def test_maysync_subprocesses():
-    out = await maysync_subprocesses.check_output('echo 42', shell=True).a()
+    out = await maysync_subprocesses.check_output('echo 42', shell=True)
     assert int(out.decode().strip()) == 42
-    assert check.not_none(await maysync_subprocesses.try_output('echo', 'hi').a()).decode() == 'hi\n'
-    assert (await maysync_subprocesses.try_output('xcho', 'hi').a()) is None
+    assert check.not_none(await maysync_subprocesses.try_output('echo', 'hi')).decode() == 'hi\n'
+    assert (await maysync_subprocesses.try_output('xcho', 'hi')) is None

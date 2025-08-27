@@ -4,6 +4,7 @@ import typing as ta
 import pytest
 import sniffio
 
+from ...lite.maysyncs import run_maysync
 from ..imports.lazy import proxy_import
 from ..maysyncs import make_maysync
 from ..maysyncs import maysync
@@ -37,23 +38,23 @@ m_inc = make_maysync(s_inc, a_inc)
 
 @maysync
 async def m_frob(i: int) -> int:
-    return await m_inc(i).a()
+    return await m_inc(i)
 
 
 @maysync
 async def m_grob(i: int) -> int:
-    return await m_frob(i + 10).a() + 100
+    return await m_frob(i + 10) + 100
 
 
 def test_maysync():
-    assert m_frob(3).s() == 4
-    assert m_grob(3).s() == 114
+    assert run_maysync(m_frob(3)) == 4
+    assert run_maysync(m_grob(3)) == 114
 
 
 @pytest.mark.asyncs('asyncio')
 async def test_async_maysync():
-    assert await m_frob(3).a() == 5
-    assert await m_grob(3).a() == 115
+    assert await m_frob(3) == 5
+    assert await m_grob(3) == 115
 
 
 ##
@@ -72,7 +73,7 @@ async def a_bar(c=0):
 
 @pytest.mark.asyncs('asyncio')
 async def test_async_generator():
-    assert (await a_bar(3)) == 12
+    assert await a_bar(3) == 12
 
 
 ##
@@ -81,32 +82,32 @@ async def test_async_generator():
 @maysync
 async def m_foo():
     for i in range(3):
-        yield await m_inc(i).a()
+        yield await m_inc(i)
 
 
 @maysync
 async def m_bar():
     c = 0
-    async for i in m_foo().a():
+    async for i in m_foo():
         c += i + 1
     return c
 
 
 @maysync
 async def m_bar_with_m_bar_s():
-    assert m_bar().s() == 9
+    assert run_maysync(m_bar()) == 9
     c = 0
-    async for i in m_foo().a():
+    async for i in m_foo():
         c += i + 1
     return c
 
 
 def test_sync_maysync_generator():
-    assert m_bar().s() == 9
-    assert m_bar_with_m_bar_s().s() == 9
+    assert run_maysync(m_bar()) == 9
+    assert run_maysync(m_bar_with_m_bar_s()) == 9
 
 
 @pytest.mark.asyncs('asyncio', 'trio')
 async def test_async_maysync_generator():
-    assert (await m_bar().a()) == 12
-    assert (await m_bar_with_m_bar_s().a()) == 12
+    assert await m_bar() == 12
+    assert await m_bar_with_m_bar_s() == 12

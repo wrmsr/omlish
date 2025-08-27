@@ -4,7 +4,7 @@ async def async_list(fn, *args, **kwargs) -> list:
     return [v async for v in fn(*args, **kwargs)]
 
 
-def sync_await(fn, *args, **kwargs):
+def sync_await(aw):
     """Taken from lang.asyncs"""
 
     ret = missing = object()
@@ -12,7 +12,7 @@ def sync_await(fn, *args, **kwargs):
     async def gate():
         nonlocal ret
 
-        ret = await fn(*args, **kwargs)
+        ret = await aw
 
     cr = gate()
     try:
@@ -30,7 +30,7 @@ def sync_await(fn, *args, **kwargs):
     return ret
 
 
-def sync_async_list(fn, *args, **kwargs):
+def sync_async_list(ai):
     """Taken from lang.asyncs"""
 
     lst = None
@@ -38,9 +38,9 @@ def sync_async_list(fn, *args, **kwargs):
     async def inner():
         nonlocal lst
 
-        lst = [v async for v in fn(*args, **kwargs)]
+        lst = [v async for v in ai]
 
-    sync_await(inner)
+    sync_await(inner())
 
     if not isinstance(lst, list):
         raise TypeError(lst)

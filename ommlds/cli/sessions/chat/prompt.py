@@ -126,7 +126,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
 
                 tr: mc.ToolExecRequest = check.single(check.not_none(trs))
 
-                trm = await self._tool_exec_request_executor.execute_tool_request(tr).a()
+                trm = await self._tool_exec_request_executor.execute_tool_request(tr)
 
                 print(trm.c)
                 new_chat.append(trm)

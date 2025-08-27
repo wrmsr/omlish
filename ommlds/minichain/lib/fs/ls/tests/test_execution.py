@@ -1,6 +1,7 @@
 import os.path
 
 from omlish import check
+from omlish import lang
 
 from .....chat.messages import ToolExecRequest
 from .....chat.tools.execution import execute_tool_request
@@ -33,12 +34,12 @@ def test_ls_tool():
         check.not_none(ls_tool().name): ls_tool().executor(),
     })
 
-    tool_exec_result = execute_tool_request(
+    tool_exec_result = lang.run_maysync(execute_tool_request(
         ToolContext.new(
             tool_exec_request,
         ),
         tool_executor,
         tool_exec_request,
-    ).s()
+    ))
 
     print(tool_exec_result)

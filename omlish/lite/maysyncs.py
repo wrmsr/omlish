@@ -4,24 +4,20 @@
 A system for writing a python function once which can then be effectively used in both sync and async contexts -
 including IO, under any (or no) event loop.
 
-Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which is an object with two
-nullary methods:
-
- - `def s()` - to be called in sync contexts
- - `async def a()` - to be called in async and maysync contexts
+Where an 'async fn' returns an 'awaitable', a 'maysync fn' returns a 'maywaitable', which may be `await`'ed in async or
+maysync contexts, or passed to `run_maysync` to be run sync.
 
 For example, a maysync function `m_inc_int(x: int) -> int` would be used as such:
 
- - `assert m_inc_int(5).s() == 6` in sync contexts
- - `assert await m_inc_int(5).a() == 6` in async and maysync contexts
+ - `run_maysync(m_inc_int(5)) == 6` in sync contexts
+ - `assert await m_inc_int(5) == 6` in async and maysync contexts
 
 Maysync fns may be constructed in two ways: either using `make_maysync`, providing an equivalent pair of sync and async
 functions, or using the `@maysync` decorator to wrap a 'maysync flavored' async function. 'Maysync flavored' async
-functions are ones which only call other maysync functions through their 'maysync context' - that is, they  use the 'a'
-methods on maywaitables - for example: `await m_foo().a()` - and the maysync machinery will ultimately call the
-appropriate 'leaf' sync or async functions. Being regular python functions they are free to call whatever they like -
-for example doing sync IO - but the point is to, ideally, route all IO through maysync functions such that the maysync
-code is fully efficiently usable in any context.
+functions are ones which only call other maysync functions through their 'maysync context' - the maysync machinery will
+ultimately call the appropriate 'leaf' sync or async functions. Being regular python functions they are free to call
+whatever they like - for example doing sync IO - but the point is to, ideally, route all IO through maysync functions
+such that the maysync code is fully efficiently usable in any context.
 
 Internally, it's not really correct to say that there is 'no event loop' in the maysync context - rather, each
 'entrypoint' call to a maysync fn runs within its own tiny event loop.
@@ -75,10 +71,10 @@ class Maywaitable(ta.Protocol[T_co]):
     Only the proper method should be called in each context.
     """
 
-    def s(self) -> T_co:
+    def __run_maysync__(self) -> T_co:
         ...
 
-    def a(self) -> ta.Awaitable[T_co]:
+    def __await__(self) -> ta.Generator[ta.Any, None, T_co]:
         ...
 
 
@@ -93,10 +89,22 @@ class MaysyncGenerator(ta.Protocol[O_co, I_contra]):
     Only the proper method should be called in each context.
     """
 
-    def s(self) -> ta.Generator[O_co, I_contra, None]:
+    def __run_maysync__(self) -> ta.Generator[O_co, I_contra, None]:
         ...
 
-    def a(self) -> ta.AsyncGenerator[O_co, I_contra]:
+    def __aiter__(self) -> ta.AsyncGenerator[O_co, I_contra]:
+        ...
+
+    def __anext__(self) -> ta.Awaitable[O_co]:
+        ...
+
+    def asend(self, value: I_contra) -> ta.Awaitable[O_co]:
+        ...
+
+    def athrow(self, typ, val=None, tb=None):
+        ...
+
+    def aclose(self) -> ta.Awaitable[None]:
         ...
 
 
@@ -116,21 +124,36 @@ MaysyncGeneratorFn = ta.Callable[..., MaysyncGenerator[O, I]]  # ta.TypeAlias  #
 
 class Maywaitable_(abc.ABC, ta.Generic[T]):  # noqa
     @abc.abstractmethod
-    def s(self) -> T:
+    def __run_maysync__(self) -> T:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def a(self) -> ta.Awaitable[T]:
+    def __await__(self) -> ta.Generator[ta.Any, None, T]:
         raise NotImplementedError
 
 
 class MaysyncGenerator_(abc.ABC, ta.Generic[O, I]):  # noqa
     @abc.abstractmethod
-    def s(self) -> ta.Generator[O, I, None]:
+    def __run_maysync__(self) -> ta.Generator[O, I, None]:
+        raise NotImplementedError
+
+    def __aiter__(self) -> ta.AsyncGenerator[O, I]:
+        return self  # type: ignore[return-value]
+
+    @abc.abstractmethod
+    def __anext__(self) -> ta.Awaitable[O]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def a(self) -> ta.AsyncGenerator[O, I]:
+    def asend(self, value: I) -> ta.Awaitable[O]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def athrow(self, typ, val=None, tb=None):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def aclose(self) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
@@ -270,7 +293,52 @@ class _MaysyncGenerator(
     abc.ABC,
     ta.Generic[_MaysyncX, O, I],
 ):
-    pass
+    _sg: ta.Optional[ta.Generator[O, I, None]] = None
+    _ag: ta.Optional[ta.AsyncGenerator[O, I]] = None
+
+    @abc.abstractmethod
+    def _make_sg(self) -> ta.Generator[O, I, None]:
+        raise NotImplementedError
+
+    @ta.final
+    def _get_sg(self) -> ta.Generator[O, I, None]:
+        if (sg := self._sg) is None:
+            if self._ag is not None:
+                raise RuntimeError
+            sg = self._sg = self._make_sg()
+        return sg
+
+    @abc.abstractmethod
+    def _make_ag(self) -> ta.AsyncGenerator[O, I]:
+        raise NotImplementedError
+
+    @ta.final
+    def _get_ag(self) -> ta.AsyncGenerator[O, I]:
+        if (ag := self._ag) is None:
+            if self._sg is not None:
+                raise RuntimeError
+            ag = self._ag = self._make_ag()
+        return ag
+
+    @ta.final
+    def __run_maysync__(self) -> ta.Generator[O, I, None]:
+        return (self._sg if self._sg is not None else self._get_sg())
+
+    @ta.final
+    def __anext__(self) -> ta.Awaitable[O]:
+        return (self._ag if self._ag is not None else self._get_ag()).__anext__()
+
+    @ta.final
+    def asend(self, value: I) -> ta.Awaitable[O]:
+        return (self._ag if self._ag is not None else self._get_ag()).asend(value)
+
+    @ta.final
+    def athrow(self, typ, val=None, tb=None):
+        return (self._ag if self._ag is not None else self._get_ag()).athrow(typ, val, tb)
+
+    @ta.final
+    def aclose(self) -> ta.Awaitable[None]:
+        return (self._ag if self._ag is not None else self._get_ag()).aclose()
 
 
 ##
@@ -324,14 +392,14 @@ class _FpMaysyncFn(
 class _FpMaywaitable(
     _Maywaitable[_FpMaysyncFn[T], T],
 ):
-    def s(self) -> T:
+    def __run_maysync__(self) -> T:
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
-    def a(self) -> ta.Awaitable[T]:
+    def __await__(self) -> ta.Generator[ta.Any, None, T]:
         if _MaysyncThreadLocal.context is not None:
-            return _MaysyncFuture(self)
+            return _MaysyncFuture(self).__await__()
 
-        return self._x._a(*self._args, **self._kwargs)  # noqa
+        return self._x._a(*self._args, **self._kwargs).__await__()  # noqa
 
 
 def make_maysync_fn(
@@ -357,10 +425,10 @@ class _FpMaysyncGeneratorFn(
 class _FpMaysyncGenerator(
     _MaysyncGenerator[_FpMaysyncGeneratorFn[O, I], O, I],
 ):
-    def s(self) -> ta.Generator[O, I, None]:
+    def _make_sg(self) -> ta.Generator[O, I, None]:
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
-    def a(self) -> ta.AsyncGenerator[O, I]:
+    def _make_ag(self) -> ta.AsyncGenerator[O, I]:
         if (ctx := _MaysyncThreadLocal.context) is not None and ctx.mode == 's':
             async def inner():
                 g = self._x._s(*self._args, **self._kwargs)  # noqa
@@ -393,7 +461,8 @@ class _FpMaysyncGenerator(
 
             return inner()
 
-        return self._x._a(*self._args, **self._kwargs)  # noqa
+        else:
+            return self._x._a(*self._args, **self._kwargs)  # noqa
 
 
 def make_maysync_generator_fn(
@@ -519,16 +588,16 @@ class _MgMaywaitable(
     def _driver(self, ctx: _MaysyncContext) -> _MgMaysyncDriver:
         return _MgMaysyncDriver(ctx, self._x._mg(*self._args, **self._kwargs))  # noqa
 
-    def s(self) -> T:
+    def __run_maysync__(self) -> T:
         for f in (drv := self._driver(_SyncMaysyncContext())):
             f.s()
             del f
 
         return drv.value
 
-    def a(self) -> ta.Awaitable[T]:
+    def __await__(self) -> ta.Generator[ta.Any, None, T]:
         if (ctx := _MaysyncThreadLocal.context) is None or ctx.mode == 'a':
-            return self._x._mg(*self._args, **self._kwargs)  # noqa
+            return self._x._mg(*self._args, **self._kwargs).__await__()  # noqa
 
         async def inner():
             for f in (drv := self._driver(_AsyncMaysyncContext())):
@@ -537,7 +606,7 @@ class _MgMaywaitable(
 
             return drv.value
 
-        return inner()
+        return inner().__await__()
 
 
 @ta.final
@@ -607,7 +676,7 @@ class _MgMaysyncGenerator(
     def _driver(self, ctx: _MaysyncContext) -> _MgMaysyncGeneratorDriver:
         return _MgMaysyncGeneratorDriver(ctx, self._x._mg(*self._args, **self._kwargs))  # noqa
 
-    def s(self) -> ta.Generator[O, I, None]:
+    def _make_sg(self) -> ta.Generator[O, I, None]:
         di = iter(self._driver(_SyncMaysyncContext()))
 
         ie: ta.Any = None
@@ -636,7 +705,7 @@ class _MgMaysyncGenerator(
 
             del x
 
-    def a(self) -> ta.AsyncGenerator[O, I]:
+    def _make_ag(self) -> ta.AsyncGenerator[O, I]:
         if _MaysyncThreadLocal.context is not None:
             return self._x._mg(*self._args, **self._kwargs)  # noqa
 
@@ -737,7 +806,7 @@ class _MaysyncFuture(ta.Generic[T]):
     result: T
     error: ta.Optional[BaseException] = None
 
-    def __await__(self):
+    def __await__(self) -> ta.Generator['_MaysyncFuture', None, T]:
         if not self.done:
             yield self
         if not self.done:
@@ -752,7 +821,7 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = self._x.s()
+            self.result = self._x.__run_maysync__()
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
@@ -762,7 +831,45 @@ class _MaysyncFuture(ta.Generic[T]):
             return
 
         try:
-            self.result = await self._x.a()
+            self.result = await self._x
         except BaseException as ex:  # noqa
             self.error = ex
         self.done = True
+
+
+##
+
+
+@ta.overload
+def run_maysync(
+        m: Maywaitable[T],
+) -> T:
+    ...
+
+
+@ta.overload
+def run_maysync(
+        m: ta.Awaitable[T],
+) -> T:
+    ...
+
+
+@ta.overload
+def run_maysync(
+        m: MaysyncGenerator[O, I],
+) -> ta.Generator[O, I, None]:
+    ...
+
+
+@ta.overload
+def run_maysync(
+        m: ta.AsyncGenerator[O, I],
+) -> ta.Generator[O, I, None]:
+    ...
+
+
+def run_maysync(m):
+    if isinstance(m, (Maywaitable_, MaysyncGenerator_)):
+        return m.__run_maysync__()
+    else:
+        raise TypeError(m)

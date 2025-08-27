@@ -432,9 +432,14 @@ from ..lite.maysyncs import (  # noqa
     Maywaitable,
     MaysyncGenerator,
 
+    Maywaitable_,
+    MaysyncGenerator_,
+
     Maysync_,
     MaysyncFn_,
     MaysyncGeneratorFn_,
+
+    run_maysync,
 )
 
 from ..lite.reprs import (  # noqa

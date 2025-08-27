@@ -4,6 +4,7 @@ import typing as ta
 import unittest
 
 from ...lite.check import check
+from ...lite.maysyncs import run_maysync
 from ..asyncs import AbstractAsyncSubprocesses
 from ..maysyncs import MaysyncSubprocesses
 from ..run import SubprocessRun
@@ -28,6 +29,6 @@ maysync_subprocesses = MaysyncSubprocesses(
 
 class TestMaysyncSubprocesses(unittest.TestCase):
     def test_subprocesses_output(self):
-        maysync_subprocesses.check_output('echo', 'hi').s()
-        self.assertEqual(check.not_none(maysync_subprocesses.try_output('echo', 'hi').s()).decode(), 'hi\n')
-        self.assertIsNone(maysync_subprocesses.try_output('xcho', 'hi').s())
+        run_maysync(maysync_subprocesses.check_output('echo', 'hi'))
+        self.assertEqual(check.not_none(run_maysync(maysync_subprocesses.try_output('echo', 'hi'))).decode(), 'hi\n')  # noqa
+        self.assertIsNone(run_maysync(maysync_subprocesses.try_output('xcho', 'hi')))
