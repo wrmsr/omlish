@@ -5,9 +5,7 @@ import sys
 import typing as ta
 
 from ..lite.maysyncs import make_maysync
-from ..lite.timeouts import TimeoutLike
 from .asyncs import AbstractAsyncSubprocesses
-from .base import BaseSubprocesses
 from .run import SubprocessRun
 from .run import SubprocessRunOutput
 from .sync import AbstractSubprocesses
@@ -16,94 +14,7 @@ from .sync import AbstractSubprocesses
 ##
 
 
-class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
-    @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
-        raise NotImplementedError
-
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: TimeoutLike = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[SubprocessRunOutput]:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[bytes]:
-        raise NotImplementedError
-
-    #
-
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
-
-    #
-
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
-
-
-##
-
-
-class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
+class MaysyncSubprocesses(AbstractAsyncSubprocesses, abc.ABC):
     def __init__(
             self,
             subprocesses: AbstractSubprocesses,
@@ -124,23 +35,23 @@ class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
 
     #
 
-    def check_call(
+    async def check_call(
             self,
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
-    ) -> ta.Awaitable[None]:
-        return make_maysync(
+    ) -> None:
+        return await make_maysync(
             self._subprocesses.check_call,
             self._async_subprocesses.check_call,
         )(*cmd, stdout=stdout, **kwargs)
 
-    def check_output(
+    async def check_output(
             self,
             *cmd: str,
             **kwargs: ta.Any,
-    ) -> ta.Awaitable[bytes]:
-        return make_maysync(
+    ) -> bytes:
+        return await make_maysync(
             self._subprocesses.check_output,
             self._async_subprocesses.check_output,
         )(*cmd, **kwargs)
