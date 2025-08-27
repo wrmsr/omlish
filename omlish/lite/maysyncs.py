@@ -586,8 +586,7 @@ class _MgMaysyncGenerator(
 
             elif t == 'o':
                 try:
-                    y = yield x
-                    ie = (y, None)
+                    ie = ((yield x), None)
                 except BaseException as ex:  # noqa
                     ie = (None, ex)
 
@@ -620,8 +619,7 @@ class _MgMaysyncGenerator(
 
                 elif t == 'o':
                     try:
-                        y = yield x
-                        ie = (y, None)
+                        ie = ((yield x), None)
                     except BaseException as ex:  # noqa
                         ie = (None, ex)
 
