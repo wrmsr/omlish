@@ -20,7 +20,7 @@ class ToolExecutor(lang.Abstract):
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
-    ) -> lang.Maywaitable[str]:
+    ) -> ta.Awaitable[str]:
         raise NotImplementedError
 
 
@@ -31,7 +31,6 @@ class ToolExecutor(lang.Abstract):
 class ToolFnToolExecutor(ToolExecutor):
     tool_fn: ToolFn
 
-    @lang.maysync
     async def execute_tool(
             self,
             ctx: ToolContext,
@@ -52,7 +51,6 @@ class ToolFnToolExecutor(ToolExecutor):
 class NameSwitchedToolExecutor(ToolExecutor):
     tool_executors_by_name: ta.Mapping[str, ToolExecutor]
 
-    @lang.maysync
     async def execute_tool(
             self,
             ctx: ToolContext,

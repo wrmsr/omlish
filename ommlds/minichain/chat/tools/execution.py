@@ -1,5 +1,3 @@
-from omlish import lang
-
 from ...tools.execution.context import ToolContext
 from ...tools.execution.executors import ToolExecutor
 from ..messages import ToolExecRequest
@@ -9,7 +7,6 @@ from ..messages import ToolExecResultMessage
 ##
 
 
-@lang.maysync
 async def execute_tool_request(
         ctx: ToolContext,
         tex: ToolExecutor,

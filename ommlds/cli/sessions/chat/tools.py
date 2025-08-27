@@ -28,12 +28,11 @@ class ToolExecutionConfirmation(lang.Abstract):
             self,
             tr: mc.ToolExecRequest,
             tce: mc.ToolCatalogEntry,
-    ) -> lang.Maywaitable[None]:
+    ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
 class NopToolExecutionConfirmation(ToolExecutionConfirmation):
-    @lang.maysync
     async def confirm_tool_execution_or_raise(
             self,
             tr: mc.ToolExecRequest,
@@ -43,7 +42,6 @@ class NopToolExecutionConfirmation(ToolExecutionConfirmation):
 
 
 class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
-    @lang.maysync
     async def confirm_tool_execution_or_raise(
             self,
             tr: mc.ToolExecRequest,
@@ -65,7 +63,7 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
 
 class ToolExecRequestExecutor(lang.Abstract):
     @abc.abstractmethod
-    def execute_tool_request(self, tr: mc.ToolExecRequest) -> lang.Maywaitable[mc.ToolExecResultMessage]:
+    def execute_tool_request(self, tr: mc.ToolExecRequest) -> ta.Awaitable[mc.ToolExecResultMessage]:
         raise NotImplementedError
 
 
@@ -81,7 +79,6 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
         self._catalog = catalog
         self._confirmation = confirmation
 
-    @lang.maysync
     async def execute_tool_request(self, tr: mc.ToolExecRequest) -> mc.ToolExecResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 

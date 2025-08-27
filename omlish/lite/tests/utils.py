@@ -1,9 +1,3 @@
-async def async_list(fn, *args, **kwargs) -> list:
-    """Taken from lang.asyncs"""
-
-    return [v async for v in fn(*args, **kwargs)]
-
-
 def sync_await(aw):
     """Taken from lang.asyncs"""
 

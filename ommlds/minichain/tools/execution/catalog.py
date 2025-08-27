@@ -63,7 +63,6 @@ class ToolCatalog(ToolExecutor):
     def by_name(self) -> ta.Mapping[str, ToolCatalogEntry]:
         return self._by_name
 
-    @lang.maysync
     async def execute_tool(
             self,
             ctx: ToolContext,

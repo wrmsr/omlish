@@ -3,7 +3,6 @@ import typing as ta
 import unittest
 
 from ..maysyncs import make_maysync
-from ..maysyncs import maysync
 from ..maysyncs import run_maysync
 from .utils import sync_async_list
 from .utils import sync_await
@@ -23,12 +22,10 @@ async def a_inc(i: int) -> int:
 m_inc = make_maysync(s_inc, a_inc)
 
 
-@maysync
 async def m_frob(i: int) -> int:
     return await m_inc(i + 10)
 
 
-@maysync
 async def m_grob(i: int) -> int:
     return await m_frob(i + 20) + 100
 
@@ -48,12 +45,10 @@ class TestMaysync(unittest.TestCase):
 ##
 
 
-@maysync
 async def m_tls_frob(i: int) -> int:
     return await m_inc(i + 10)
 
 
-@maysync
 async def m_tls_grob(i: int) -> int:
     return await m_frob(i + 20) + 100
 
@@ -86,7 +81,6 @@ async def a_gen(i: int) -> ta.AsyncGenerator[int, None]:
 m_gen = make_maysync(s_gen, a_gen)
 
 
-@maysync
 async def m_use_gen(i: int) -> int:
     c = 0
     async for j in m_gen(i):
@@ -94,7 +88,6 @@ async def m_use_gen(i: int) -> int:
     return c
 
 
-@maysync
 async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i)
     async for j in m_gen(i):
@@ -103,7 +96,6 @@ async def m_gen_frob(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i)
 
 
-@maysync
 async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i)
     async for j in m_gen_frob(i + 20):
@@ -112,7 +104,6 @@ async def m_gen_grob(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i)
 
 
-@maysync
 async def m_gen_grob_nested(i: int) -> ta.AsyncGenerator[int, None]:
     await m_grob(i)
     async for j in m_gen_frob(i + 20):
@@ -138,22 +129,18 @@ class TestMaysyncGenerators(unittest.TestCase):
         assert sync_async_list(m_gen_grob_nested(3)) == [1077, 1078, 135, 1078, 1079, 136]
 
 
-@maysync
 async def m_nest0(i: int) -> int:
     return (await m_inc(i)) + (await m_inc(i))
 
 
-@maysync
 async def m_nest1(i: int) -> int:
     return (await m_nest0(i)) + (await m_nest0(i))
 
 
-@maysync
 async def m_nest2(i: int) -> int:
     return (await m_nest1(i)) + (await m_nest1(i))
 
 
-@maysync
 async def m_nest3(i: int) -> int:
     return (await m_nest2(i)) + (await m_nest2(i))
 

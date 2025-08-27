@@ -32,7 +32,7 @@ class ToolFn(lang.Final):
 
     @dc.dataclass(frozen=True)
     class MaysyncImpl(Impl):
-        m: lang.MaysyncFn
+        m: ta.Callable[..., ta.Awaitable[ta.Any]]
 
     impl: Impl
 
@@ -95,12 +95,11 @@ async def _no_async_tool_impl(*args, **kwargs):
 ##
 
 
-@lang.maysync
 async def execute_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
 ) -> str:
-    m_fn: lang.MaysyncFn
+    m_fn: ta.Callable[..., ta.Awaitable[ta.Any]]
     if isinstance(tfn.impl, ToolFn.FnImpl):
         m_fn = lang.make_maysync(
             tfn.impl.s if tfn.impl.s is not None else _no_sync_tool_impl,

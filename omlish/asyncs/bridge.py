@@ -70,7 +70,7 @@ def trivial_s_to_a(fn):
 
 def trivial_a_to_s(fn):
     def inner(*args, **kwargs):
-        return lang.sync_await(fn, *args, **kwargs)
+        return lang.sync_await(fn(*args, **kwargs))
     return inner
 
 

@@ -280,15 +280,11 @@ from .lazyglobals import (  # noqa
 )
 
 from .maysyncs import (  # noqa
-    MaysyncFn,
-    MaysyncGeneratorFn,
-
+    make_maysync_fn,
+    make_maysync_generator_fn,
     make_maysync,
-    make_maysync_from_sync,
 
-    maysync_fn,
-    maysync_generator_fn,
-    maysync,
+    make_maysync_from_sync,
 )
 
 from .objects import (  # noqa
@@ -429,15 +425,21 @@ empty = Maybe.empty
 just = Maybe.just
 
 from ..lite.maysyncs import (  # noqa
+    mark_maysync,
+    is_maysync,
+
+    AnyMaysyncFn,
+
+    MaywaitableAlreadyConsumedError,
+    AnyMaywaitable,
+
+    MaysyncFn,
     Maywaitable,
+
+    MaysyncGeneratorFn,
     MaysyncGenerator,
 
-    Maywaitable_,
-    MaysyncGenerator_,
-
-    Maysync_,
-    MaysyncFn_,
-    MaysyncGeneratorFn_,
+    is_running_maysync,
 
     run_maysync,
 )

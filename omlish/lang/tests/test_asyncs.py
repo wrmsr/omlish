@@ -14,7 +14,7 @@ async def test_async_list():
         await asyncio.sleep(.01)
         yield x + 1
 
-    assert (await async_list(barf, 3)) == [3, 4]
+    assert await async_list(barf(3)) == [3, 4]
 
 
 def test_sync_await():
@@ -30,13 +30,13 @@ def test_sync_await():
     async def f1():
         return inc()
 
-    assert sync_await(f1) == 1
+    assert sync_await(f1()) == 1
 
     async def f2():
         await f1()
         return inc()
 
-    assert sync_await(f2) == 3
+    assert sync_await(f2()) == 3
 
     #
 
@@ -52,7 +52,7 @@ def test_sync_await():
         async with acm():
             return inc()
 
-    assert sync_await(f3) == 5
+    assert sync_await(f3()) == 5
     assert c == 6
 
     #
@@ -75,7 +75,7 @@ def test_sync_await():
                 raise exc(l)
         return l
 
-    assert sync_await(ai) == [9, 12]
+    assert sync_await(ai()) == [9, 12]
     assert c == 16
 
     #
@@ -84,7 +84,7 @@ def test_sync_await():
         pass
 
     with pytest.raises(FooError) as ex:
-        sync_await(ai, FooError)
+        sync_await(ai(FooError))
 
     assert ex.value.args[0] == [19]
     assert c == 21

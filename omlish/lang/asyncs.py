@@ -2,29 +2,24 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
-P = ta.ParamSpec('P')
 
 
 ##
 
 
 async def async_list(
-        fn: ta.Callable[P, ta.AsyncIterator[T]],
-        *args: P.args,
-        **kwargs: P.kwargs,
+        ai: ta.AsyncIterable[T],
 ) -> list[T]:
     """Simply eagerly reads the full contents of a function call returning an async iterator."""
 
-    return [v async for v in fn(*args, **kwargs)]
+    return [v async for v in ai]
 
 
 ##
 
 
 def sync_await(
-        fn: ta.Callable[P, ta.Awaitable[T]],
-        *args: P.args,
-        **kwargs: P.kwargs,
+        aw: ta.Awaitable[T],
 ) -> T:
     """
     Allows for the synchronous execution of async functions which will never actually *externally* await anything. These
@@ -37,7 +32,7 @@ def sync_await(
     async def gate():
         nonlocal ret
 
-        ret = await fn(*args, **kwargs)
+        ret = await aw
 
     cr = gate()
     try:
@@ -56,9 +51,7 @@ def sync_await(
 
 
 def sync_async_list(
-        fn: ta.Callable[P, ta.AsyncIterator[T]],
-        *args: P.args,
-        **kwargs: P.kwargs,
+        ai: ta.AsyncIterable[T],
 ) -> list[T]:
     """
     Uses `sync_await` to synchronously read the full contents of a function call returning an async iterator, given that
@@ -70,9 +63,9 @@ def sync_async_list(
     async def inner():
         nonlocal lst
 
-        lst = [v async for v in fn(*args, **kwargs)]
+        lst = [v async for v in ai]
 
-    sync_await(inner)
+    sync_await(inner())
 
     if not isinstance(lst, list):
         raise TypeError(lst)

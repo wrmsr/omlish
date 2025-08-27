@@ -4,9 +4,7 @@ import abc
 import sys
 import typing as ta
 
-from ..lite.maysyncs import Maywaitable
 from ..lite.maysyncs import make_maysync
-from ..lite.maysyncs import maysync
 from ..lite.timeouts import TimeoutLike
 from .asyncs import AbstractAsyncSubprocesses
 from .base import BaseSubprocesses
@@ -20,7 +18,7 @@ from .sync import AbstractSubprocesses
 
 class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
     @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> Maywaitable[SubprocessRunOutput]:
+    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         raise NotImplementedError
 
     def run(
@@ -31,7 +29,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             check: bool = False,
             capture_output: ta.Optional[bool] = None,
             **kwargs: ta.Any,
-    ) -> Maywaitable[SubprocessRunOutput]:
+    ) -> ta.Awaitable[SubprocessRunOutput]:
         return self.run_(SubprocessRun(
             cmd=cmd,
             input=input,
@@ -49,7 +47,7 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
-    ) -> Maywaitable[None]:
+    ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -57,12 +55,11 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
             self,
             *cmd: str,
             **kwargs: ta.Any,
-    ) -> Maywaitable[bytes]:
+    ) -> ta.Awaitable[bytes]:
         raise NotImplementedError
 
     #
 
-    @maysync
     async def check_output_str(
             self,
             *cmd: str,
@@ -72,7 +69,6 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
 
     #
 
-    @maysync
     async def try_call(
             self,
             *cmd: str,
@@ -83,7 +79,6 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
         else:
             return True
 
-    @maysync
     async def try_output(
             self,
             *cmd: str,
@@ -94,7 +89,6 @@ class AbstractMaysyncSubprocesses(BaseSubprocesses, abc.ABC):
         else:
             return ret
 
-    @maysync
     async def try_output_str(
             self,
             *cmd: str,
@@ -122,7 +116,7 @@ class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
 
     #
 
-    def run_(self, run: SubprocessRun) -> Maywaitable[SubprocessRunOutput]:
+    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         return make_maysync(
             self._subprocesses.run,
             self._async_subprocesses.run,
@@ -135,7 +129,7 @@ class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
-    ) -> Maywaitable[None]:
+    ) -> ta.Awaitable[None]:
         return make_maysync(
             self._subprocesses.check_call,
             self._async_subprocesses.check_call,
@@ -145,7 +139,7 @@ class MaysyncSubprocesses(AbstractMaysyncSubprocesses):
             self,
             *cmd: str,
             **kwargs: ta.Any,
-    ) -> Maywaitable[bytes]:
+    ) -> ta.Awaitable[bytes]:
         return make_maysync(
             self._subprocesses.check_output,
             self._async_subprocesses.check_output,
