@@ -35,6 +35,9 @@ TODO:
  - for debug, mask any running eventloop while running maysync code
  - `[CO_ASYNC_GENERATOR] = {k for k, v in dis.COMPILER_FLAG_NAMES.items() if v == 'ASYNC_GENERATOR'}` ? inspect is big..
   - works down to 3.8
+ - make_maysync_from_sync can run with asyncio.run_in_thread
+ - make_maysync_from_async can run with asyncio.run_soon
+ - elide redundant close/aclose for known cpy machinery
 """
 import abc
 import functools
