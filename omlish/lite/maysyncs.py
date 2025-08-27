@@ -429,40 +429,39 @@ class _FpMaysyncGenerator(
         return self._x._s(*self._args, **self._kwargs)  # noqa
 
     def _make_ag(self) -> ta.AsyncGenerator[O, I]:
-        if (ctx := _MaysyncThreadLocal.context) is not None and ctx.mode == 's':
-            async def inner():
-                g = self._x._s(*self._args, **self._kwargs)  # noqa
-
-                i: ta.Any = None
-                e: ta.Any = None
-
-                while True:
-                    try:
-                        if e is not None:
-                            o = g.throw(e)
-                        else:
-                            o = g.send(i)
-                    except StopIteration as ex:
-                        if ex.value is not None:
-                            raise TypeError(ex) from None
-                        return
-
-                    i = None
-                    e = None
-
-                    try:
-                        i = yield o
-                    except StopIteration as ex:  # noqa
-                        raise NotImplementedError  # noqa
-                    except StopAsyncIteration as ex:  # noqa
-                        raise NotImplementedError  # noqa
-                    except BaseException as ex:  # noqa
-                        e = ex
-
-            return inner()
-
-        else:
+        if (ctx := _MaysyncThreadLocal.context) is None or ctx.mode == 'a':
             return self._x._a(*self._args, **self._kwargs)  # noqa
+
+        async def inner():
+            g = self._x._s(*self._args, **self._kwargs)  # noqa
+
+            i: ta.Any = None
+            e: ta.Any = None
+
+            while True:
+                try:
+                    if e is not None:
+                        o = g.throw(e)
+                    else:
+                        o = g.send(i)
+                except StopIteration as ex:
+                    if ex.value is not None:
+                        raise TypeError(ex) from None
+                    return
+
+                i = None
+                e = None
+
+                try:
+                    i = yield o
+                except StopIteration as ex:  # noqa
+                    raise NotImplementedError  # noqa
+                except StopAsyncIteration as ex:  # noqa
+                    raise NotImplementedError  # noqa
+                except BaseException as ex:  # noqa
+                    e = ex
+
+        return inner()
 
 
 def make_maysync_generator_fn(
