@@ -2,15 +2,15 @@ import typing as ta
 
 from omlish import check
 
-from ... import minichain as mc
-from ...minichain.backends.strings.parsing import parse_backend_string
-from ...minichain.backends.strings.resolving import BackendStringResolver
-from ...minichain.backends.strings.resolving import ResolveBackendStringArgs
-from ...minichain.backends.strings.resolving import build_manifest_backend_string_resolver
-from ...minichain.models.configs import ModelPath
-from ...minichain.models.configs import ModelRepo
-from ...minichain.models.repos.resolving import ModelRepoResolver
-from .catalog import BackendCatalog
+from ...models.configs import ModelPath
+from ...models.configs import ModelRepo
+from ...models.repos.resolving import ModelRepoResolver
+from ...registries.globals import registry_new
+from ..strings.parsing import parse_backend_string
+from ..strings.resolving import BackendStringResolver
+from ..strings.resolving import ResolveBackendStringArgs
+from ..strings.resolving import build_manifest_backend_string_resolver
+from .base import BackendCatalog
 
 
 ##
@@ -46,7 +46,7 @@ class BackendStringBackendCatalog(BackendCatalog):
             mrp = check.not_none(mrr.resolve(mr))
             al = [ModelPath(mrp.path), *al[1:]]
 
-        return mc.registry_new(
+        return registry_new(
             service_cls,
             rs.name,
             *al,

@@ -4,7 +4,7 @@ from omlish import lang
 from omlish.formats import json
 
 from .... import minichain as mc
-from ...backends.catalog import BackendCatalog
+from ....minichain.backends.catalogs.base import BackendCatalog
 from ..base import Session
 
 

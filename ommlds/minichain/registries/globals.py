@@ -68,7 +68,7 @@ class _GlobalRegistry(lang.Final, lang.NotInstantiable):
         with cls._lock:
             if (i := cls._instance) is not None:
                 i.register_type(
-                    cls,
+                    clz,
                     module=module,
                 )
             else:

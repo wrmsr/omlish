@@ -4,7 +4,7 @@ import typing as ta
 from omlish import lang
 
 from .... import minichain as mc
-from ...backends.catalog import BackendCatalog
+from ....minichain.backends.catalogs.base import BackendCatalog
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatSession
 from .printing import ChatSessionPrinter
