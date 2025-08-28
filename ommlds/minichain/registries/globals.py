@@ -81,6 +81,10 @@ class _GlobalRegistry(lang.Final, lang.NotInstantiable):
 ##
 
 
+def get_global_registry() -> Registry:
+    return _GlobalRegistry.instance()
+
+
 def register_type(
         cls: T,
         *,

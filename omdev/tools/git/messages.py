@@ -41,7 +41,7 @@ class GitMessageGenerator(abc.ABC):
 @dc.dataclass(frozen=True, kw_only=True)
 class GitMessageGeneratorManifest(NameAliasesManifest, ModAttrManifest):
     def load_cls(self) -> type[GitMessageGenerator]:
-        return check.issubclass(self.load(), GitMessageGenerator)
+        return check.issubclass(self.resolve(), GitMessageGenerator)
 
 
 class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGeneratorManifest, abc.ABC):

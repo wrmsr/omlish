@@ -51,7 +51,7 @@ class Registry:
         }
 
         self._registry_type_cls_by_name: dict[str, type] = {}
-        self._registry_cls_by_name_by_type: dict[str, dict[str, type]] = {}
+        self._registry_cls_by_name_by_type_name: dict[str, dict[str, type]] = {}
 
         self._registered_types: dict[ta.Any, Registry._RegisteredType] = {}
         self._resolved_registry_type_names_by_registered_type: dict[ta.Any, str] = {}
@@ -120,8 +120,9 @@ class Registry:
                 return self._registry_type_cls_by_name[name]
             except KeyError:
                 pass
+
             m = self._registry_type_manifests_by_name[name]
-            cls = m.load()
+            cls = m.resolve()
             self._registry_type_cls_by_name[name] = cls
             return cls
 
@@ -135,9 +136,9 @@ class Registry:
                 type_name = self._resolved_registry_type_names_by_registered_type[selector]
 
             try:
-                d = self._registry_cls_by_name_by_type[type_name]
+                d = self._registry_cls_by_name_by_type_name[type_name]
             except KeyError:
-                d = self._registry_cls_by_name_by_type[type_name] = {}
+                d = self._registry_cls_by_name_by_type_name[type_name] = {}
 
             try:
                 return d[name]
@@ -145,7 +146,7 @@ class Registry:
                 pass
 
             m = self._registry_manifests_by_name_by_type[type_name][name]
-            cls = m.load()
+            cls = m.resolve()
             d[name] = cls
 
             return cls

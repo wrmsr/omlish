@@ -5,6 +5,7 @@ from omlish import check
 from ... import minichain as mc
 from ...minichain.backends.strings.parsing import parse_backend_string
 from ...minichain.backends.strings.resolving import BackendStringResolver
+from ...minichain.backends.strings.resolving import ResolveBackendStringArgs
 from ...minichain.backends.strings.resolving import build_manifest_backend_string_resolver
 from ...minichain.models.configs import ModelPath
 from ...minichain.models.configs import ModelRepo
@@ -31,7 +32,10 @@ class BackendStringBackendCatalog(BackendCatalog):
 
     def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         ps = parse_backend_string(name)
-        rs = check.not_none(self._string_resolver.resolve_backend_string(ps))
+        rs = check.not_none(self._string_resolver.resolve_backend_string(ResolveBackendStringArgs(
+            service_cls,
+            ps,
+        )))
 
         al = list(rs.args or [])
 
@@ -44,7 +48,7 @@ class BackendStringBackendCatalog(BackendCatalog):
 
         return mc.registry_new(
             service_cls,
-            rs.backend_name,
+            rs.name,
             *al,
             *args,
             **kwargs,

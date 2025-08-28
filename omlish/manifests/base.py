@@ -15,7 +15,7 @@ class ModAttrManifest:
     module: str
     attr: str
 
-    def load(self) -> ta.Any:
+    def resolve(self) -> ta.Any:
         import importlib  # noqa
 
         mod = importlib.import_module(self.module)

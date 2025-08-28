@@ -77,7 +77,7 @@ class CodecRegistry:
             codec_or_lazy = self._by_name[name]
 
             if isinstance(codec_or_lazy, LazyLoadedCodec):
-                codec = check.isinstance(codec_or_lazy.load(), Codec)
+                codec = check.isinstance(codec_or_lazy.resolve(), Codec)
                 self._by_name[name] = codec
                 self._post_load(codec)
             else:
