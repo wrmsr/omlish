@@ -40,6 +40,15 @@ def bind_backends(
             inj.bind(BackendCatalog, to_key=BackendStringBackendCatalog),
         ])
 
+        from ...minichain.backends.impls.huggingface.repos import HuggingfaceModelRepoResolver
+        from ...minichain.models.repos.resolving import ModelRepoResolver
+
+        lst.extend([
+            inj.bind(HuggingfaceModelRepoResolver, singleton=True),
+            inj.bind(ModelRepoResolver, to_key=HuggingfaceModelRepoResolver),
+
+        ])
+
     else:
         lst.extend([
             inj.bind(SimpleBackendCatalog, singleton=True),

@@ -1,8 +1,16 @@
-import huggingface_hub as hf
+import typing as ta
+
+from omlish import lang
 
 from ....models.configs import ModelRepo
 from ....models.repos.resolving import ModelRepoResolver
 from ....models.repos.resolving import ResolvedModelRepo
+
+
+if ta.TYPE_CHECKING:
+    import huggingface_hub as hf
+else:
+    hf = lang.proxy_import('huggingface_hub')
 
 
 ##
