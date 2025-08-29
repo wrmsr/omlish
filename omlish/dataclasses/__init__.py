@@ -1,3 +1,7 @@
+# ruff: noqa: I001
+import sys as _sys
+
+
 ##
 # stdlib interface
 
@@ -43,12 +47,28 @@ from .tools.as_ import (  # noqa
 ##
 # globals hack
 
-globals()['field'] = xfield
 
-globals()['dataclass'] = xdataclass
-globals()['make_dataclass'] = xmake_dataclass
+def _self_patching_global_proxy(l, r, ak_fn=None):
+    def inner(*args, **kwargs):
+        fn = getattr(_sys.modules[__name__], r)
+        globals()[l] = fn
+        if ak_fn:
+            args, kwargs = ak_fn(*args, **kwargs)
+        return fn(*args, **kwargs)
+    return inner
 
-globals()['replace'] = xreplace
+
+globals()['field'] = _self_patching_global_proxy('field', 'xfield')
+
+globals()['dataclass'] = _self_patching_global_proxy('dataclass', 'xdataclass')
+
+globals()['make_dataclass'] = _self_patching_global_proxy(
+    'make_dataclass',
+    'xmake_dataclass',
+    lambda *args, _frame_offset=1, **kwargs: (args, dict(_frame_offset=_frame_offset + 1, **kwargs)),
+)
+
+globals()['replace'] = _self_patching_global_proxy('replace', 'xreplace')
 
 
 ##

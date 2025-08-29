@@ -55,6 +55,8 @@ def make_dataclass(  # noqa
         terse_repr: bool | None = None,
 
         allow_redundant_decorator: bool | None = None,
+
+        _frame_offset: int = 1,
 ):
     if decorator is not dataclass:
         raise TypeError(
@@ -136,14 +138,14 @@ def make_dataclass(  # noqa
 
     if _IS_PY_3_14:
         # For now, set annotations including the _ANY_MARKER.
-        cls.__annotate__ = annotate_method  # type: ignore
+        cls.__annotate__ = annotate_method  # type: ignore  # noqa
 
     if module is None:
         try:
-            module = sys._getframemodulename(1) or '__main__'  # type: ignore  # noqa
+            module = sys._getframemodulename(_frame_offset) or '__main__'  # type: ignore  # noqa
         except AttributeError:
             with contextlib.suppress(AttributeError, ValueError):
-                module = sys._getframe(1).f_globals.get('__name__', '__main__')  # noqa
+                module = sys._getframe(_frame_offset).f_globals.get('__name__', '__main__')  # noqa
     if module is not None:
         cls.__module__ = module
 

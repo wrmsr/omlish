@@ -15,7 +15,6 @@ import typing as ta
 from omlish import check
 from omlish import collections as col
 from omlish import lang
-from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_FILE_NAME
 from omlish.dataclasses.impl.configs import PackageConfig
 from omlish.dataclasses.impl.generation.compilation import OpCompiler
 from omlish.dataclasses.impl.generation.processor import Codegen as CodegenProcessingOption
@@ -74,12 +73,13 @@ class DataclassCodeGen:
 
         trie: col.Trie[str, PackageConfig] = col.Trie()
         for root_dir in root_dirs:
-            for dp, _, fns in os.walk(root_dir):
-                if PACKAGE_CONFIG_FILE_NAME in fns:
-                    with open(os.path.join(dp, PACKAGE_CONFIG_FILE_NAME)) as f:
-                        config = PackageConfig.loads(f.read())
-                    pkg_parts = dp.split(os.sep)
-                    trie[pkg_parts] = config
+            for dp, _, fns in os.walk(root_dir):  # noqa
+                # if PACKAGE_CONFIG_FILE_NAME in fns:
+                #     with open(os.path.join(dp, PACKAGE_CONFIG_FILE_NAME)) as f:
+                #         config = PackageConfig.loads(f.read())
+                #     pkg_parts = dp.split(os.sep)
+                #     trie[pkg_parts] = config
+                pass
 
         return trie
 
