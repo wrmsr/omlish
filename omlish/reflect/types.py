@@ -58,12 +58,12 @@ class _Special:
     nparams: int
 
     @classmethod
-    def from_alias(cls, v: _SpecialGenericAlias) -> '_Special':  # type: ignore
+    def from_alias(cls, sa: _SpecialGenericAlias) -> '_Special':  # type: ignore
         return cls(
-            v._name,  # type: ignore  # noqa
-            v,
-            v.__origin__,  # type: ignore
-            v._nparams,  # type: ignore  # noqa
+            sa._name,  # type: ignore  # noqa
+            sa,
+            sa.__origin__,  # type: ignore
+            sa._nparams,  # type: ignore  # noqa
         )
 
 
@@ -138,7 +138,25 @@ class _KnownSpecials:
     #
 
     def _get_lazy_by_name(self, name: str) -> _Special | None:
-        return None
+        if name not in self._lazies_by_name:
+            return None
+
+        with self._lock:
+            if (x := self._by_name.get(name)) is not None:
+                return x
+
+            if (lz := self._lazies_by_name.get(name)) is None:
+                return None
+
+            sa = getattr(ta, lz.name)
+            if not isinstance(sa, _SpecialGenericAlias):
+                raise TypeError(sa)
+
+            sp = _Special.from_alias(sa)
+            del self._lazies_by_name[lz.name]
+            self._add(sp)
+
+            return sp
 
     def get_by_name(self, name: str) -> _Special | None:
         try:
@@ -175,7 +193,7 @@ _KNOWN_SPECIALS = _KnownSpecials(
             # https://github.com/python/cpython/commit/305be5fb1a1ece7f9651ae98053dbe79bf439aa4
             'ForwardRef',
         ]
-        if not hasattr(ta, 'ForwardRef')
+        if n not in ta.__dict__
     ],
 )
 
