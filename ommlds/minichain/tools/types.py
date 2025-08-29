@@ -13,6 +13,9 @@ from omlish import reflect as rfl
 from ..content.materialize import CanContent
 
 
+msh.register_global_module_import('._marshal', __package__)
+
+
 ##
 
 
@@ -180,9 +183,3 @@ class ToolExecRequest(lang.Final):
     args: ta.Mapping[str, ta.Any]
 
     raw_args: str | None = None
-
-
-##
-
-
-lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

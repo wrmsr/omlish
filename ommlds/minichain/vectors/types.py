@@ -14,12 +14,16 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 
 if ta.TYPE_CHECKING:
     import numpy as np
 else:
     np = lang.proxy_import('numpy')
+
+
+msh.register_global_module_import('._marshal', __package__)
 
 
 ##
@@ -169,9 +173,3 @@ class Vector(lang.Final, ta.Sequence[float]):
             self._s = si.ctor(self._s)
 
         return self._s  # type: ignore
-
-
-##
-
-
-lang.register_conditional_import('omlish.marshal', '._marshal', __package__)

@@ -112,8 +112,10 @@ Q = StdBuilder()
 ##
 
 
-from ... import lang as _lang  # noqa
+from ... import marshal as _msh  # noqa
 
-_lang.register_conditional_import('...marshal', '.marshal', __package__)
+_msh.register_global_module_import('._marshal', __package__)
+
+from ... import lang as _lang  # noqa
 
 _lang.trigger_conditional_imports(__package__)

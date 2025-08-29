@@ -49,6 +49,6 @@ from .values import (  # noqa
 ##
 
 
-from .. import lang as _lang
+from .. import marshal as _msh
 
-_lang.register_conditional_import('..marshal', '.marshal', __package__)
+_msh.register_global_module_import('.marshal', __package__)

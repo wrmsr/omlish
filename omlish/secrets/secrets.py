@@ -20,6 +20,10 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
+from .. import marshal as msh
+
+
+msh.register_global_module_import('.marshal', __package__)
 
 
 log = logging.getLogger(__name__)
@@ -341,9 +345,3 @@ class EnvVarSecrets(Secrets):
             return dct.pop(ekey)
         else:
             return dct[ekey]
-
-
-##
-
-
-lang.register_conditional_import('..marshal', '.marshal', __package__)

@@ -1,4 +1,4 @@
-from omlish import lang as _lang
+from omlish import marshal as _msh
 
 
-_lang.register_conditional_import('omlish.marshal', '.marshal', __package__)
+_msh.register_global_module_import('._marshal', __package__)

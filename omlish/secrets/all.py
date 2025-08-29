@@ -16,12 +16,3 @@ from .secrets import (  # noqa
 )
 
 ref = SecretRef
-
-
-##
-
-
-from .. import lang as _lang  # noqa
-
-# FIXME: only happens when 'all' is imported lol
-_lang.register_conditional_import('..marshal', '.marshal', __package__)
