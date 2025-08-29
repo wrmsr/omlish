@@ -105,6 +105,10 @@ class _KnownSpecials:
         for k, dct in uds:
             if k in dct:
                 raise KeyError(k)
+
+        if sp.name in self._lazies_by_name:
+            raise KeyError(sp.name)
+
         self._lst.append(sp)
         for k, dct in uds:
             dct[k] = sp
@@ -118,7 +122,12 @@ class _KnownSpecials:
     #
 
     def _add_lazy(self, lz: _LazySpecial) -> None:
-        pass
+        if lz.name in self._lazies_by_name:
+            raise KeyError(lz.name)
+        if lz.name in self._by_name:
+            raise KeyError(lz.name)
+
+        self._lazies_by_name[lz.name] = lz
 
     def add_lazy(self, *lazy_specials: _LazySpecial) -> ta.Self:
         with self._lock:
@@ -128,16 +137,22 @@ class _KnownSpecials:
 
     #
 
+    def _get_lazy_by_name(self, name: str) -> _Special | None:
+        return None
+
     def get_by_name(self, name: str) -> _Special | None:
-        return self._by_name.get(name)
+        try:
+            return self._by_name.get(name)
+        except KeyError:
+            pass
+        return self._get_lazy_by_name(name)
 
     def get_by_alias(self, alias: _SpecialGenericAlias) -> _Special | None:  # type: ignore
         try:
             return self._by_alias[alias]
         except KeyError:
             pass
-
-        return None
+        return self._get_lazy_by_name(alias._name)  # type: ignore  # noqa
 
     def get_by_origin(self, origin: type) -> _Special | None:
         return self._by_origin.get(origin)
@@ -150,15 +165,17 @@ _KNOWN_SPECIALS = _KnownSpecials(
         if isinstance(v, _SpecialGenericAlias)
     ],
     [
-        # https://github.com/python/cpython/commit/e8be0c9c5a7c2327b3dd64009f45ee0682322dcb
-        *[_LazySpecial(n) for n in [
+        _LazySpecial(n)
+        for n in [
+            # https://github.com/python/cpython/commit/e8be0c9c5a7c2327b3dd64009f45ee0682322dcb
             'Pattern',
             'Match',
             'ContextManager',
             'AsyncContextManager',
-        ]],
-        # https://github.com/python/cpython/commit/305be5fb1a1ece7f9651ae98053dbe79bf439aa4
-        *([_LazySpecial('ForwardRef')] if not hasattr(ta, 'ForwardRef') else []),
+            # https://github.com/python/cpython/commit/305be5fb1a1ece7f9651ae98053dbe79bf439aa4
+            'ForwardRef',
+        ]
+        if not hasattr(ta, 'ForwardRef')
     ],
 )
 
