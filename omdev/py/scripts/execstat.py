@@ -185,14 +185,19 @@ def _main() -> None:
             'rss_s': f'{rss:_}',
         })
 
-    if args.modules:
+    if args.modules or args.modules_ordered:
+        mods = results[0]['modules']
         out.update({
-            'modules': sorted(results[0]['modules']),
+            'num_modules': len(mods),
         })
-    if args.modules_ordered:
-        out.update({
-            'modules_ordered': results[0]['modules'],
-        })
+        if args.modules:
+            out.update({
+                'modules': sorted(mods),
+            })
+        if args.modules_ordered:
+            out.update({
+                'modules_ordered': mods,
+            })
 
     print(json.dumps(out, indent=2))
 

@@ -1,5 +1,4 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
 from ... import lang
@@ -48,27 +47,6 @@ class UnmarshalerFactory(lang.Abstract):
     @abc.abstractmethod
     def make_unmarshaler(self) -> UnmarshalerMaker:
         raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class MarshalerFactory_(MarshalerFactory):  # noqa
-    fn: MarshalerMaker
-
-    @property
-    def make_marshaler(self) -> MarshalerMaker:
-        return self.fn
-
-
-@dc.dataclass(frozen=True)
-class UnmarshalerFactory_(UnmarshalerFactory):  # noqa
-    fn: UnmarshalerMaker
-
-    @property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
-        return self.fn
 
 
 ##

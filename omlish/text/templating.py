@@ -9,15 +9,17 @@ import string
 import typing as ta
 
 from .. import lang
-from .minja import MinjaTemplate
-from .minja import MinjaTemplateParam
-from .minja import compile_minja_template
 
 
 if ta.TYPE_CHECKING:
     import jinja2
+
+    from . import minja
+
 else:
     jinja2 = lang.proxy_import('jinja2')
+
+    minja = lang.proxy_import('.minja', __package__)
 
 
 ##
@@ -97,7 +99,7 @@ pep292_templater = Pep292Templater.from_string
 
 @dc.dataclass(frozen=True)
 class MinjaTemplater(Templater):
-    tmpl: MinjaTemplate
+    tmpl: 'minja.MinjaTemplate'
 
     ENV_IDENT: ta.ClassVar[str] = 'env'
 
@@ -110,12 +112,12 @@ class MinjaTemplater(Templater):
             src: str,
             **ns: ta.Any,
     ) -> 'MinjaTemplater':
-        tmpl = compile_minja_template(
+        tmpl = minja.compile_minja_template(
             src,
             [
-                MinjaTemplateParam(cls.ENV_IDENT),
+                minja.MinjaTemplateParam(cls.ENV_IDENT),
                 *[
-                    MinjaTemplateParam.new(k, v)
+                    minja.MinjaTemplateParam.new(k, v)
                     for k, v in ns.items()
                 ],
             ],

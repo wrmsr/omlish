@@ -4,7 +4,6 @@ import typing as ta
 from omlish import lang
 
 from .... import minichain as mc
-from ....minichain.backends.catalogs.base import BackendCatalog
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatSession
 from .printing import ChatSessionPrinter
@@ -36,7 +35,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             *,
             state_manager: ChatStateManager,
             printer: ChatSessionPrinter,
-            backend_catalog: BackendCatalog,
+            backend_catalog: mc.BackendCatalog,
     ) -> None:
         super().__init__(config)
 

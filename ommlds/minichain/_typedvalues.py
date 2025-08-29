@@ -3,33 +3,16 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish import typedvalues as tv
-from omlish.funcs import match as mfs
-from omlish.typedvalues.marshal import build_typed_values_marshaler
-from omlish.typedvalues.marshal import build_typed_values_unmarshaler
 
 
-##
-
-
-@dc.dataclass()
-class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    tvs_rty: rfl.Type
-
-    @mfs.simple(lambda _, ctx, rty: True)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return build_typed_values_marshaler(ctx, self.tvs_rty)
-
-
-@dc.dataclass()
-class _TypedValuesFieldUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    tvs_rty: rfl.Type
-
-    @mfs.simple(lambda _, ctx, rty: True)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return build_typed_values_unmarshaler(ctx, self.tvs_rty)
+if ta.TYPE_CHECKING:
+    from . import _marshal
+else:
+    _marshal = lang.proxy_import('._marshal', __package__)
 
 
 ##
@@ -90,7 +73,13 @@ def _tv_field_metadata(
             options=msh.FieldOptions(
                 omit_if=operator.not_,
             ),
-            marshaler_factory=_TypedValuesFieldMarshalerFactory(tvs_rty),
-            unmarshaler_factory=_TypedValuesFieldUnmarshalerFactory(tvs_rty),
+            marshaler_factory=msh.FuncMarshalerFactory(
+                lambda ctx, rty: True,
+                lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty)(ctx, rty),  # noqa
+            ),
+            unmarshaler_factory=msh.FuncUnmarshalerFactory(
+                lambda ctx, rty: True,
+                lambda ctx, rty: _marshal._TypedValuesFieldUnmarshalerFactory(tvs_rty)(ctx, rty),  # noqa
+            ),
         ),
     }

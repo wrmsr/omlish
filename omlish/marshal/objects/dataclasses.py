@@ -1,5 +1,6 @@
 """
 TODO:
+ - clean up yeesh
  - tangled with objects - Field/ObjectMetadata defined over there but unused
 """
 import typing as ta
@@ -158,11 +159,17 @@ def get_dataclass_field_infos(
     return FieldInfos(ret)
 
 
-def _make_field_obj(ctx, ty, obj, fac):
+def _make_field_obj(
+        ctx,
+        ty,
+        obj,
+        fac,
+        fac_attr,
+):
     if obj is not None:
         return obj
     if fac is not None:
-        return fac(ctx, ty)
+        return getattr(fac, fac_attr)(ctx, ty)
     return ctx.make(ty)
 
 
@@ -210,7 +217,16 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, SimpleMarshalerFactory
         fis = self._get_field_infos(ty, ctx.options)
 
         fields = [
-            (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
+            (
+                fi,
+                _make_field_obj(
+                    ctx,
+                    fi.type,
+                    fi.metadata.marshaler,
+                    fi.metadata.marshaler_factory,
+                    'make_marshaler',
+                ),
+            )
             for fi in fis
             if fi.name not in dc_md.specials.set
         ]
@@ -262,7 +278,16 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, SimpleUnmarshalerFac
                     ret.extend(e_ns)
 
             else:
-                tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
+                tup = (
+                    fi,
+                    _make_field_obj(
+                        ctx,
+                        fi.type,
+                        fi.metadata.unmarshaler,
+                        fi.metadata.unmarshaler_factory,
+                        'make_unmarshaler',
+                    ),
+                )
 
                 for pfx in prefixes:
                     for un in fi.unmarshal_names:

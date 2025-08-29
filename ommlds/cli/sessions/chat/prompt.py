@@ -4,7 +4,6 @@ from omlish import check
 from omlish import lang
 
 from .... import minichain as mc
-from ....minichain.backends.catalogs.base import BackendCatalog
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
@@ -41,7 +40,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             state_manager: ChatStateManager,
             chat_options: ChatOptions | None = None,
             printer: ChatSessionPrinter,
-            backend_catalog: BackendCatalog,
+            backend_catalog: mc.BackendCatalog,
             tool_exec_request_executor: ToolExecRequestExecutor,
     ) -> None:
         super().__init__(config)

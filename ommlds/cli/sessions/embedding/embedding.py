@@ -4,7 +4,6 @@ from omlish import lang
 from omlish.formats import json
 
 from .... import minichain as mc
-from ....minichain.backends.catalogs.base import BackendCatalog
 from ..base import Session
 
 
@@ -27,7 +26,7 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
             self,
             config: Config,
             *,
-            backend_catalog: BackendCatalog,
+            backend_catalog: mc.BackendCatalog,
     ) -> None:
         super().__init__(config)
 

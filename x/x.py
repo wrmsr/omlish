@@ -1,6 +1,4 @@
-import typing as ta
-
-from omlish import reflect as rfl
+from ommlds import minichain as mc
 
 
-rfl.type_(ta.ContextManager)
+mc.Content  # noqa

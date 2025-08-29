@@ -3,8 +3,7 @@ import typing as ta
 from omlish import inject as inj
 from omlish import lang
 
-from ...minichain.backends.catalogs.base import BackendCatalog
-from ...minichain.backends.catalogs.strings import BackendStringBackendCatalog
+from ... import minichain as mc
 
 
 ##
@@ -14,16 +13,15 @@ def bind_strings_backends() -> inj.Elements:
     lst: list[inj.Elemental] = []
 
     lst.extend([
-        inj.bind(BackendStringBackendCatalog, singleton=True),
-        inj.bind(BackendCatalog, to_key=BackendStringBackendCatalog),
+        inj.bind(mc.BackendStringBackendCatalog, singleton=True),
+        inj.bind(mc.BackendCatalog, to_key=mc.BackendStringBackendCatalog),
     ])
 
     from ...minichain.backends.impls.huggingface.repos import HuggingfaceModelRepoResolver
-    from ...minichain.models.repos.resolving import ModelRepoResolver
 
     lst.extend([
         inj.bind(HuggingfaceModelRepoResolver, singleton=True),
-        inj.bind(ModelRepoResolver, to_key=HuggingfaceModelRepoResolver),
+        inj.bind(mc.ModelRepoResolver, to_key=HuggingfaceModelRepoResolver),
 
     ])
 
@@ -33,14 +31,10 @@ def bind_strings_backends() -> inj.Elements:
 def bind_simple_backends() -> inj.Elements:
     lst: list[inj.Elemental] = []
 
-    from ...minichain.backends.catalogs.simple import SimpleBackendCatalog
-    from ...minichain.backends.catalogs.simple import SimpleBackendCatalogEntries
-    from ...minichain.backends.catalogs.simple import SimpleBackendCatalogEntry
-
     lst.extend([
-        inj.set_binder[SimpleBackendCatalogEntry](),
+        inj.set_binder[mc.SimpleBackendCatalogEntry](),
         inj.bind(
-            lang.typed_lambda(SimpleBackendCatalogEntries, s=ta.AbstractSet[SimpleBackendCatalogEntry])(
+            lang.typed_lambda(mc.SimpleBackendCatalogEntries, s=ta.AbstractSet[mc.SimpleBackendCatalogEntry])(
                 lambda s: list(s),
             ),
             singleton=True,
@@ -48,14 +42,14 @@ def bind_simple_backends() -> inj.Elements:
     ])
 
     lst.extend([
-        inj.bind(SimpleBackendCatalog, singleton=True),
-        inj.bind(BackendCatalog, to_key=SimpleBackendCatalog),
+        inj.bind(mc.SimpleBackendCatalog, singleton=True),
+        inj.bind(mc.BackendCatalog, to_key=mc.SimpleBackendCatalog),
     ])
 
     from .standard import STANDARD_BACKEND_CATALOG_ENTRIES
 
     lst.extend([
-        inj.bind_set_entry_const(ta.AbstractSet[SimpleBackendCatalogEntry], e)
+        inj.bind_set_entry_const(ta.AbstractSet[mc.SimpleBackendCatalogEntry], e)
         for e in STANDARD_BACKEND_CATALOG_ENTRIES
     ])
 

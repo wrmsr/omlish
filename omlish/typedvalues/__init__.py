@@ -1,54 +1,61 @@
-from .accessor import (  # noqa
-    TypedValuesAccessor,
-)
+from .. import lang as _lang
 
-from .collection import (  # noqa
-    DuplicateUniqueTypedValueError,
 
-    TypedValues,
+with _lang.auto_proxy_init(globals()) as _api_cap:
+    ##
 
-    collect,
-    as_collection,
-)
+    from .accessor import (  # noqa
+        TypedValuesAccessor,
+    )
 
-from .consumer import (  # noqa
-    UnconsumedTypedValuesError,
+    from .collection import (  # noqa
+        DuplicateUniqueTypedValueError,
 
-    TypedValuesConsumer,
+        TypedValues,
 
-    consume,
-)
+        collect,
+        as_collection,
+    )
 
-from .generic import (  # noqa
-    TypedValueGeneric,
-)
+    from .consumer import (  # noqa
+        UnconsumedTypedValuesError,
 
-from .holder import (  # noqa
-    TypedValueHolder,
-)
+        TypedValuesConsumer,
 
-from .of_ import (  # noqa
-    of,
-)
+        consume,
+    )
 
-from .reflect import (  # noqa
-    reflect_typed_values_impls,
-)
+    from .generic import (  # noqa
+        TypedValueGeneric,
+    )
 
-from .values import (  # noqa
-    TypedValue,
+    from .holder import (  # noqa
+        TypedValueHolder,
+    )
 
-    UniqueTypedValue,
+    from .of_ import (  # noqa
+        of,
+    )
 
-    ScalarTypedValue,
+    from .reflect import (  # noqa
+        reflect_typed_values_impls,
+    )
 
-    UniqueScalarTypedValue,
-)
+    from .values import (  # noqa
+        TypedValue,
+
+        UniqueTypedValue,
+
+        ScalarTypedValue,
+
+        UniqueScalarTypedValue,
+    )
 
 
 ##
 
 
 from .. import marshal as _msh
+
 
 _msh.register_global_module_import('.marshal', __package__)

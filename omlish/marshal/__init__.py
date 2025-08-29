@@ -39,6 +39,14 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         UnhandledTypeError,
     )
 
+    from .base.funcs import (  # noqa
+        FuncMarshaler,
+        FuncUnmarshaler,
+
+        FuncMarshalerFactory,
+        FuncUnmarshalerFactory,
+    )
+
     from .base.options import (  # noqa
         Option,
     )
@@ -63,8 +71,7 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         MarshalerFactory,
         UnmarshalerFactory,
 
-        MarshalerFactory_,
-        UnmarshalerFactory_,
+        Marshaling,
     )
 
     from .base.values import (  # noqa
@@ -113,11 +120,6 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
     from .factories.typecache import (  # noqa
         TypeCacheMarshalerFactory,
         TypeCacheUnmarshalerFactory,
-    )
-
-    from .factories.func import (  # noqa
-        FuncMarshaler,
-        FuncUnmarshaler,
     )
 
     from .factories.recursive import (  # noqa
@@ -241,11 +243,3 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
 
         install_standard_factories,
     )
-
-
-##
-
-
-from .. import lang as _lang
-
-_lang.trigger_conditional_imports(__package__)

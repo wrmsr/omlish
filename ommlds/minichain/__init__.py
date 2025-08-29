@@ -10,6 +10,49 @@ with _lang.auto_proxy_init(
 ):
     ##
 
+    from .backends.catalogs.base import (  # noqa
+        BackendCatalog,
+    )
+
+    from .backends.catalogs.simple import (  # noqa
+        SimpleBackendCatalogEntry,
+        SimpleBackendCatalogEntries,
+
+        SimpleBackendCatalog,
+
+        simple_backend_catalog_entry,
+    )
+
+    from .backends.catalogs.strings import (  # noqa
+        BackendStringBackendCatalog,
+    )
+
+    from .backends.strings.manifests import (  # noqa
+        BackendStringsManifest,
+    )
+
+    from .backends.strings.parsing import (  # noqa
+        ParsedBackendString,
+
+        parse_backend_string,
+    )
+
+    from .backends.strings.resolving import (  # noqa
+        ResolveBackendStringArgs,
+        ResolveBackendStringResult,
+        AmbiguousBackendStringResolutionError,
+        BackendStringResolver,
+
+        CompositeBackendStringResolver,
+        FirstCompositeBackendStringResolver,
+        UniqueCompositeBackendStringResolver,
+        ManifestBackendStringResolver,
+
+        build_manifest_backend_string_resolver,
+    )
+
+    ##
+
     from .chat.choices.adapters import (  # noqa
         ChatChoicesServiceChatService,
     )
@@ -227,11 +270,20 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .models.repos.resolving import (  # noqa
+        ResolvedModelRepo,
+        ModelRepoResolver,
+    )
+
     from .models.configs import (  # noqa
         ModelSpecifier,
         ModelName,
         ModelPath,
         ModelRepo,
+    )
+
+    from .models.names import (  # noqa
+        ModelNameCollection,
     )
 
     ##
