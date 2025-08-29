@@ -183,6 +183,9 @@ class AutoProxyInitErrors:
         def __repr__(self) -> str:
             return f'{self.__class__.__qualname__}(unreferenced={self.unreferenced!r})'
 
+    class CaptureInProgressError(AutoProxyInitError):
+        pass
+
 
 class _AutoProxyInitCapture:
     class ModuleSpec(ta.NamedTuple):
@@ -418,20 +421,12 @@ class _AutoProxyInitCapture:
 
     #
 
-    class ProxyInit(ta.NamedTuple):
-        package: str
-        attrs: ta.Sequence[tuple[str | None, str]]
-
-    class BuiltProxyInits(ta.NamedTuple):
-        proxy_inits: ta.Sequence['_AutoProxyInitCapture.ProxyInit']
-        unreferenced: ta.Mapping[str, ta.Sequence[str | None]] | None
-
     def build_proxy_inits(
             self,
             init_globals: ta.MutableMapping[str, ta.Any],  # noqa
             *,
             collect_unreferenced: bool = False,
-    ) -> BuiltProxyInits:
+    ) -> 'AutoProxyInit.CapturedProxyInits':
         dct: dict[_AutoProxyInitCapture._Module, list[tuple[str | None, str]]] = {}
 
         rem_whole_mods: set[_AutoProxyInitCapture._Module] = set()
@@ -462,7 +457,7 @@ class _AutoProxyInitCapture:
                 dct.setdefault(m, []).append((None, attr))
                 rem_whole_mods.discard(m)
 
-        lst: list[_AutoProxyInitCapture.ProxyInit] = []
+        lst: list[AutoProxyInit.ProxyInit] = []
         for m, ts in dct.items():
             if not m.spec.name:
                 if not m.spec.level:
@@ -470,13 +465,13 @@ class _AutoProxyInitCapture:
                 for imp_attr, as_attr in ts:
                     if not imp_attr:
                         raise RuntimeError
-                    lst.append(_AutoProxyInitCapture.ProxyInit(
+                    lst.append(AutoProxyInit.ProxyInit(
                         '.' * m.spec.level + imp_attr,
                         [(None, as_attr)],
                     ))
 
             else:
-                lst.append(_AutoProxyInitCapture.ProxyInit(
+                lst.append(AutoProxyInit.ProxyInit(
                     str(m.spec),
                     ts,
                 ))
@@ -490,13 +485,29 @@ class _AutoProxyInitCapture:
                 m, a = self._attrs[ma]
                 unreferenced.setdefault(str(m.spec), []).append(a)
 
-        return _AutoProxyInitCapture.BuiltProxyInits(
+        return AutoProxyInit.CapturedProxyInits(
             lst,
             unreferenced,
         )
 
 
-class AutoProxyInitState:
+class AutoProxyInit:
+    class ProxyInit(ta.NamedTuple):
+        package: str
+        attrs: ta.Sequence[tuple[str | None, str]]
+
+    class CapturedProxyInits(ta.NamedTuple):
+        proxy_inits: ta.Sequence['AutoProxyInit.ProxyInit']
+        unreferenced: ta.Mapping[str, ta.Sequence[str | None]] | None
+
+        @property
+        def attrs(self) -> ta.Iterator[str]:
+            for pi in self.proxy_inits:
+                for _, a in pi.attrs:
+                    yield a
+
+    #
+
     def __init__(
             self,
             init_globals: ta.MutableMapping[str, ta.Any],
@@ -519,19 +530,105 @@ class AutoProxyInitState:
     def eager(self) -> bool:
         return self._eager
 
-    class _Result(ta.NamedTuple):
-        pass
+    #
 
-    _result: _Result
+    class _Result(ta.NamedTuple):
+        captured: 'AutoProxyInit.CapturedProxyInits'
+
+    _result_: _Result | None = None
 
     @property
-    def is_done(self) -> bool:
+    def _result(self) -> _Result:
+        if (rs := self._result_) is None:
+            raise AutoProxyInitErrors.CaptureInProgressError
+        return rs
+
+    @property
+    def is_complete(self) -> bool:
+        return self._result_ is not None
+
+    @property
+    def captured(self) -> CapturedProxyInits:
+        return self._result.captured
+
+    #
+
+    @contextlib.contextmanager
+    def _capture(
+            self,
+            *,
+            unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
+            raise_unreferenced: bool = False,
+    ) -> ta.Iterator[None]:
+        if self._result_ is not None:
+            raise AutoProxyInitError('capture already complete')
+
+        if self._disable:
+            self._result_ = AutoProxyInit._Result(
+                AutoProxyInit.CapturedProxyInits(
+                    [],
+                    None,
+                ),
+            )
+            yield
+            return
+
+        cap = _AutoProxyInitCapture()
+
+        with cap.hook_context(self._init_globals):
+            yield
+
+        cap.verify_state(self._init_globals)
+
+        blt = cap.build_proxy_inits(
+            self._init_globals,
+            collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
+        )
+
+        if blt.unreferenced:
+            if unreferenced_callback:
+                unreferenced_callback(blt.unreferenced)
+            if raise_unreferenced:
+                raise AutoProxyInitErrors.UnreferencedImportsError(blt.unreferenced)
+
+        for pi in blt.proxy_inits:
+            for _, a in pi.attrs:
+                del self._init_globals[a]
+
+            proxy_init(
+                self._init_globals,
+                pi.package,
+                pi.attrs,
+            )
+
+        if self._eager:
+            lg = LazyGlobals.install(self._init_globals)
+
+            for a in blt.attrs:
+                lg.get(a)
+
+        self._result_ = AutoProxyInit._Result(
+            blt,
+        )
+
+    #
+
+    def update_exports(self) -> None:
+        cap = self._result.captured
+
         try:
-            self._result  # noqa
-        except AttributeError:
-            return False
+            al: ta.Any = self._init_globals['__all__']
+        except KeyError:
+            al = self._init_globals['__all__'] = [k for k in self._init_globals if not k.startswith('_')]
         else:
-            return True
+            if not isinstance(al, ta.MutableSequence):
+                al = self._init_globals['__all__'] = list(al)
+
+        al_s = set(al)
+        for a in cap.attrs:
+            if a not in al_s:
+                al.append(a)
+                al_s.add(a)
 
 
 @contextlib.contextmanager
@@ -543,57 +640,21 @@ def auto_proxy_init(
 
         unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
         raise_unreferenced: bool = False,
-) -> ta.Iterator[AutoProxyInitState]:
+) -> ta.Iterator[AutoProxyInit]:
     """
     This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
     implicitly does anyway. It further relies on temporarily patching `__builtins__.__import__`, but could be switched
     to use any number of other import hooks.
     """
 
-    st = AutoProxyInitState(
+    inst = AutoProxyInit(
         init_globals,
         disable=disable,
         eager=eager,
     )
 
-    if disable:
-        st._result = AutoProxyInitState._Result()  # noqa
-        yield st
-        return
-
-    cap = _AutoProxyInitCapture()
-
-    with cap.hook_context(init_globals):
-        yield st
-
-    cap.verify_state(init_globals)
-
-    blt = cap.build_proxy_inits(
-        init_globals,
-        collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
-    )
-
-    if blt.unreferenced:
-        if unreferenced_callback:
-            unreferenced_callback(blt.unreferenced)
-        if raise_unreferenced:
-            raise AutoProxyInitErrors.UnreferencedImportsError(blt.unreferenced)
-
-    for pi in blt.proxy_inits:
-        for _, a in pi.attrs:
-            del init_globals[a]
-
-        proxy_init(
-            init_globals,
-            pi.package,
-            pi.attrs,
-        )
-
-    if eager:
-        lg = LazyGlobals.install(init_globals)
-
-        for pi in blt.proxy_inits:
-            for _, a in pi.attrs:
-                lg.get(a)
-
-    st._result = AutoProxyInitState._Result()  # noqa
+    with inst._capture(  # noqa
+        unreferenced_callback=unreferenced_callback,
+        raise_unreferenced=raise_unreferenced,
+    ):
+        yield inst

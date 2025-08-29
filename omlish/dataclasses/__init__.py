@@ -4,7 +4,7 @@ import sys as _sys
 from .. import lang as _lang
 
 
-with _lang.auto_proxy_init(globals()):
+with _lang.auto_proxy_init(globals()) as _api_cap:
     ##
 
     ##
@@ -178,3 +178,7 @@ globals()['make_dataclass'] = _self_patching_global_proxy(
 )
 
 globals()['replace'] = _self_patching_global_proxy('replace', 'xreplace')
+
+
+_api_cap.update_exports()
+del _api_cap
