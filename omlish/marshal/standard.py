@@ -1,3 +1,8 @@
+"""
+FIXME:
+ - lock lol
+  - probably move to global registry somehow
+"""
 import typing as ta
 
 from .base.types import MarshalerFactory

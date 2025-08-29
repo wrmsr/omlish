@@ -8,8 +8,13 @@ from .base.types import MarshalerFactory
 from .base.types import Marshaling
 from .base.types import UnmarshalerFactory
 from .base.values import Value
-from .standard import new_standard_marshaler_factory
-from .standard import new_standard_unmarshaler_factory
+from .factories.moduleimport.configs import ModuleImport
+
+
+if ta.TYPE_CHECKING:
+    from . import standard
+else:
+    standard = lang.proxy_import('.standard', __package__)
 
 
 T = ta.TypeVar('T')
@@ -28,12 +33,12 @@ def global_config_registry() -> ConfigRegistry:
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
 def global_marshaler_factory() -> MarshalerFactory:
-    return new_standard_marshaler_factory()
+    return standard.new_standard_marshaler_factory()
 
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
 def global_unmarshaler_factory() -> UnmarshalerFactory:
-    return new_standard_unmarshaler_factory()
+    return standard.new_standard_unmarshaler_factory()
 
 
 class _GlobalMarshaling(Marshaling, lang.Final):
@@ -85,4 +90,14 @@ def register_global_config(
         key,
         *items,
         identity=identity,
+    )
+
+
+def register_global_module_import(
+        name: str,
+        package: str | None = None,
+) -> None:
+    global_config_registry().register(
+        None,
+        ModuleImport(name, package),
     )

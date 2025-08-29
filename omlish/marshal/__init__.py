@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 """
 TODO:
  - redacted
@@ -15,226 +16,231 @@ See:
  - https://github.com/Fatal1ty/mashumaro
  - https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
 """
+from .. import lang as _lang
 
 
-from .base.configs import (  # noqa
-    Config,
-    ConfigRegistry,
-)
+with _lang.auto_proxy_init(globals()) as _api_cap:
+    ##
 
-from .base.contexts import (  # noqa
-    BaseContext,
-    MarshalContext,
-    UnmarshalContext,
-)
+    from .base.configs import (  # noqa
+        Config,
+        ConfigRegistry,
+    )
 
-from .base.errors import (  # noqa
-    ForbiddenTypeError,
-    MarshalError,
-    UnhandledTypeError,
-)
+    from .base.contexts import (  # noqa
+        BaseContext,
+        MarshalContext,
+        UnmarshalContext,
+    )
 
-from .base.options import (  # noqa
-    Option,
-)
+    from .base.errors import (  # noqa
+        ForbiddenTypeError,
+        MarshalError,
+        UnhandledTypeError,
+    )
 
-from .base.overrides import (  # noqa
-    Override,
-    ReflectOverride,
-)
+    from .base.options import (  # noqa
+        Option,
+    )
 
-from .base.registries import (  # noqa
-    RegistrySealedError,
-    Registry,
-)
+    from .base.overrides import (  # noqa
+        Override,
+        ReflectOverride,
+    )
 
-from .base.types import (  # noqa
-    Marshaler,
-    Unmarshaler,
+    from .base.registries import (  # noqa
+        RegistrySealedError,
+        Registry,
+    )
 
-    MarshalerMaker,
-    UnmarshalerMaker,
+    from .base.types import (  # noqa
+        Marshaler,
+        Unmarshaler,
 
-    MarshalerFactory,
-    UnmarshalerFactory,
+        MarshalerMaker,
+        UnmarshalerMaker,
 
-    MarshalerFactory_,
-    UnmarshalerFactory_,
-)
+        MarshalerFactory,
+        UnmarshalerFactory,
 
-from .base.values import (  # noqa
-    Value,
-)
+        MarshalerFactory_,
+        UnmarshalerFactory_,
+    )
 
-from .composite.iterables import (  # noqa
-    IterableMarshaler,
-    IterableUnmarshaler,
-)
+    from .base.values import (  # noqa
+        Value,
+    )
 
-from .composite.wrapped import (  # noqa
-    WrappedMarshaler,
-    WrappedUnmarshaler,
-)
+    from .composite.iterables import (  # noqa
+        IterableMarshaler,
+        IterableUnmarshaler,
+    )
 
-from .factories.simple import (  # noqa
-    SimpleMarshalerFactory,
-    SimpleUnmarshalerFactory,
-)
+    from .composite.wrapped import (  # noqa
+        WrappedMarshaler,
+        WrappedUnmarshaler,
+    )
 
-from .factories.match import (  # noqa
-    MarshalerFactoryMatchClass,
-    UnmarshalerFactoryMatchClass,
-)
+    from .factories.simple import (  # noqa
+        SimpleMarshalerFactory,
+        SimpleUnmarshalerFactory,
+    )
 
-from .factories.moduleimport.configs import (  # noqa
-    ModuleImport,
-)
+    from .factories.match import (  # noqa
+        MarshalerFactoryMatchClass,
+        UnmarshalerFactoryMatchClass,
+    )
 
-from .factories.moduleimport.factories import (  # noqa
-    ModuleImportingMarshalerFactory,
-    ModuleImportingUnmarshalerFactory,
-)
+    from .factories.moduleimport.configs import (  # noqa
+        ModuleImport,
+    )
 
-from .factories.multi import (  # noqa
-    MultiMarshalerFactory,
-    MultiUnmarshalerFactory,
-)
+    from .factories.moduleimport.factories import (  # noqa
+        ModuleImportingMarshalerFactory,
+        ModuleImportingUnmarshalerFactory,
+    )
 
-from .factories.typemap import (  # noqa
-    TypeMapMarshalerFactory,
-    TypeMapUnmarshalerFactory,
-)
+    from .factories.multi import (  # noqa
+        MultiMarshalerFactory,
+        MultiUnmarshalerFactory,
+    )
 
-from .factories.typecache import (  # noqa
-    TypeCacheMarshalerFactory,
-    TypeCacheUnmarshalerFactory,
-)
+    from .factories.typemap import (  # noqa
+        TypeMapMarshalerFactory,
+        TypeMapUnmarshalerFactory,
+    )
 
-from .factories.func import (  # noqa
-    FuncMarshaler,
-    FuncUnmarshaler,
-)
+    from .factories.typecache import (  # noqa
+        TypeCacheMarshalerFactory,
+        TypeCacheUnmarshalerFactory,
+    )
 
-from .factories.recursive import (  # noqa
-    RecursiveMarshalerFactory,
-    RecursiveUnmarshalerFactory,
-)
+    from .factories.func import (  # noqa
+        FuncMarshaler,
+        FuncUnmarshaler,
+    )
 
-from .objects.dataclasses import (  # noqa
-    AbstractDataclassFactory,
-    DataclassMarshalerFactory,
-    DataclassUnmarshalerFactory,
-    get_dataclass_field_infos,
-    get_dataclass_metadata,
-)
+    from .factories.recursive import (  # noqa
+        RecursiveMarshalerFactory,
+        RecursiveUnmarshalerFactory,
+    )
 
-from .objects.helpers import (  # noqa
-    update_fields_metadata,
-    update_object_metadata,
-    with_field_metadata,
-)
+    from .objects.dataclasses import (  # noqa
+        AbstractDataclassFactory,
+        DataclassMarshalerFactory,
+        DataclassUnmarshalerFactory,
+        get_dataclass_field_infos,
+        get_dataclass_metadata,
+    )
 
-from .objects.marshal import (  # noqa
-    ObjectMarshaler,
-    SimpleObjectMarshalerFactory,
-)
+    from .objects.helpers import (  # noqa
+        update_fields_metadata,
+        update_object_metadata,
+        with_field_metadata,
+    )
 
-from .objects.metadata import (  # noqa
-    FieldInfo,
-    FieldInfos,
-    FieldMetadata,
-    FieldOptions,
-    ObjectMetadata,
-    ObjectSpecials,
-)
+    from .objects.marshal import (  # noqa
+        ObjectMarshaler,
+        SimpleObjectMarshalerFactory,
+    )
 
-from .objects.unmarshal import (  # noqa
-    ObjectUnmarshaler,
-    SimpleObjectUnmarshalerFactory,
-)
+    from .objects.metadata import (  # noqa
+        FieldInfo,
+        FieldInfos,
+        FieldMetadata,
+        FieldOptions,
+        ObjectMetadata,
+        ObjectSpecials,
+    )
 
-from .polymorphism.marshal import (  # noqa
-    PolymorphismMarshaler,
-    PolymorphismMarshalerFactory,
-    make_polymorphism_marshaler,
-)
+    from .objects.unmarshal import (  # noqa
+        ObjectUnmarshaler,
+        SimpleObjectUnmarshalerFactory,
+    )
 
-from .polymorphism.metadata import (  # noqa
-    FieldTypeTagging,
-    Impl,
-    Impls,
-    Polymorphism,
-    TypeTagging,
-    WrapperTypeTagging,
-    polymorphism_from_impls,
-    polymorphism_from_subclasses,
-)
+    from .polymorphism.marshal import (  # noqa
+        PolymorphismMarshaler,
+        PolymorphismMarshalerFactory,
+        make_polymorphism_marshaler,
+    )
 
-from .polymorphism.standard import (  # noqa
-    standard_polymorphism_factories,
-)
+    from .polymorphism.metadata import (  # noqa
+        FieldTypeTagging,
+        Impl,
+        Impls,
+        Polymorphism,
+        TypeTagging,
+        WrapperTypeTagging,
+        polymorphism_from_impls,
+        polymorphism_from_subclasses,
+    )
 
-from .polymorphism.unions import (  # noqa
-    PRIMITIVE_UNION_TYPES,
-    PolymorphismUnionMarshalerFactory,
-    PolymorphismUnionUnmarshalerFactory,
-    PrimitiveUnionMarshaler,
-    PrimitiveUnionMarshalerFactory,
-    PrimitiveUnionUnmarshaler,
-    PrimitiveUnionUnmarshalerFactory,
-)
+    from .polymorphism.standard import (  # noqa
+        standard_polymorphism_factories,
+    )
 
-from .polymorphism.unmarshal import (  # noqa
-    PolymorphismUnmarshaler,
-    PolymorphismUnmarshalerFactory,
-    make_polymorphism_unmarshaler,
-)
+    from .polymorphism.unions import (  # noqa
+        PRIMITIVE_UNION_TYPES,
+        PolymorphismUnionMarshalerFactory,
+        PolymorphismUnionUnmarshalerFactory,
+        PrimitiveUnionMarshaler,
+        PrimitiveUnionMarshalerFactory,
+        PrimitiveUnionUnmarshaler,
+        PrimitiveUnionUnmarshalerFactory,
+    )
 
-from .singular.base64 import (  # noqa
-    BASE64_MARSHALER_FACTORY,
-    BASE64_UNMARSHALER_FACTORY,
-)
+    from .polymorphism.unmarshal import (  # noqa
+        PolymorphismUnmarshaler,
+        PolymorphismUnmarshalerFactory,
+        make_polymorphism_unmarshaler,
+    )
 
-from .singular.primitives import (  # noqa
-    PRIMITIVE_TYPES,
-)
+    from .singular.base64 import (  # noqa
+        BASE64_MARSHALER_FACTORY,
+        BASE64_UNMARSHALER_FACTORY,
+    )
 
-from .trivial.forbidden import (  # noqa
-    ForbiddenTypeMarshalerFactory,
-    ForbiddenTypeUnmarshalerFactory,
-)
+    from .singular.primitives import (  # noqa
+        PRIMITIVE_TYPES,
+    )
 
-from .trivial.nop import (  # noqa
-    NOP_MARSHALER_UNMARSHALER,
-    NopMarshalerUnmarshaler,
-)
+    from .trivial.forbidden import (  # noqa
+        ForbiddenTypeMarshalerFactory,
+        ForbiddenTypeUnmarshalerFactory,
+    )
 
-from .globals import (  # noqa
-    global_config_registry,
-    global_marshaler_factory,
-    global_unmarshaler_factory,
-    global_marshaling,
+    from .trivial.nop import (  # noqa
+        NOP_MARSHALER_UNMARSHALER,
+        NopMarshalerUnmarshaler,
+    )
 
-    marshal,
-    unmarshal,
+    from .globals import (  # noqa
+        global_config_registry,
+        global_marshaler_factory,
+        global_unmarshaler_factory,
+        global_marshaling,
 
-    register_global_config,
-)
+        marshal,
+        unmarshal,
 
-from .naming import (  # noqa
-    Naming,
-    translate_name,
-)
+        register_global_config,
+        register_global_module_import,
+    )
 
-from .standard import (  # noqa
-    STANDARD_MARSHALER_FACTORIES,
-    new_standard_marshaler_factory,
+    from .naming import (  # noqa
+        Naming,
+        translate_name,
+    )
 
-    STANDARD_UNMARSHALER_FACTORIES,
-    new_standard_unmarshaler_factory,
+    from .standard import (  # noqa
+        STANDARD_MARSHALER_FACTORIES,
+        new_standard_marshaler_factory,
 
-    install_standard_factories,
-)
+        STANDARD_UNMARSHALER_FACTORIES,
+        new_standard_unmarshaler_factory,
+
+        install_standard_factories,
+    )
 
 
 ##
