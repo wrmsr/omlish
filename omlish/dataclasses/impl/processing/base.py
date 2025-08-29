@@ -1,6 +1,6 @@
 """
 TODO:
- - Configurable? class Config crtc?
+ - Configurable? class Config crtp?
   - all config on specs? prob not desirable purity, prob want ~some~ global config if only defaults
    - ProcessorConfigSpecProviderFactoryThingy?
   - FIXME: for now these are processor ctor kwargs that are never overridden

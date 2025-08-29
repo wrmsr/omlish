@@ -16,8 +16,8 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
-from .factories.moduleimport import ModuleImportingMarshalerFactory
-from .factories.moduleimport import ModuleImportingUnmarshalerFactory
+from .factories.moduleimport.factories import ModuleImportingMarshalerFactory
+from .factories.moduleimport.factories import ModuleImportingUnmarshalerFactory
 from .factories.multi import MultiMarshalerFactory
 from .factories.multi import MultiUnmarshalerFactory
 from .factories.recursive import RecursiveMarshalerFactory

@@ -11,18 +11,18 @@ import importlib
 import threading
 import typing as ta
 
-from ... import reflect as rfl
-from ...funcs import match as mfs
-from ..base.configs import ModuleImport
-from ..base.contexts import BaseContext
-from ..base.contexts import MarshalContext
-from ..base.contexts import UnmarshalContext
-from ..base.types import Marshaler
-from ..base.types import MarshalerFactory
-from ..base.types import MarshalerMaker
-from ..base.types import Unmarshaler
-from ..base.types import UnmarshalerFactory
-from ..base.types import UnmarshalerMaker
+from .... import reflect as rfl
+from ....funcs import match as mfs
+from ...base.contexts import BaseContext
+from ...base.contexts import MarshalContext
+from ...base.contexts import UnmarshalContext
+from ...base.types import Marshaler
+from ...base.types import MarshalerFactory
+from ...base.types import MarshalerMaker
+from ...base.types import Unmarshaler
+from ...base.types import UnmarshalerFactory
+from ...base.types import UnmarshalerMaker
+from .configs import ModuleImport
 
 
 R = ta.TypeVar('R')
@@ -45,11 +45,13 @@ class _ModuleImportingFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
             importlib.import_module(mi.name, mi.package)
 
     def _import_if_necessary(self, ctx: ContextT) -> None:
-        if not self._has_imported:
-            with self._lock:
-                if not self._has_imported:
-                    self._do_import(ctx)
-                    self._has_imported = True
+        # FIXME:
+        # if not self._has_imported:
+        #     with self._lock:
+        #         if not self._has_imported:
+        #             self._do_import(ctx)
+        #             self._has_imported = True
+        self._do_import(ctx)
 
     def guard(self, ctx: ContextT, rty: rfl.Type) -> bool:
         self._import_if_necessary(ctx)

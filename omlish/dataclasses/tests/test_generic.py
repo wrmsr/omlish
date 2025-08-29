@@ -2,7 +2,7 @@ import inspect
 import pprint
 import typing as ta
 
-from ..impl import api
+from ..impl.api import dataclass
 
 
 T = ta.TypeVar('T')
@@ -13,7 +13,7 @@ V = ta.TypeVar('V')
 ##
 
 
-@api.dataclass(frozen=True, generic_init=True)
+@dataclass(frozen=True, generic_init=True)
 class Thing(ta.Generic[T]):
     s: set[T]
     # mk: ta.Mapping[K, T]
@@ -26,17 +26,17 @@ class Thing(ta.Generic[T]):
     mfv: ta.Mapping[T, frozenset[str]]
 
 
-@api.dataclass(frozen=True, generic_init=True)
+@dataclass(frozen=True, generic_init=True)
 class IntThing(Thing[int]):
     pass
 
 
-@api.dataclass(frozen=True, generic_init=True)
+@dataclass(frozen=True, generic_init=True)
 class Thing2(Thing[K]):
     pass
 
 
-@api.dataclass(frozen=True, generic_init=True)
+@dataclass(frozen=True, generic_init=True)
 class IntThing2(Thing2[int]):
     pass
 

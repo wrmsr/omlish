@@ -20,8 +20,6 @@ See:
 from .base.configs import (  # noqa
     Config,
     ConfigRegistry,
-
-    ModuleImport,
 )
 
 from .base.contexts import (  # noqa
@@ -88,7 +86,11 @@ from .factories.match import (  # noqa
     UnmarshalerFactoryMatchClass,
 )
 
-from .factories.moduleimport import (  # noqa
+from .factories.moduleimport.configs import (  # noqa
+    ModuleImport,
+)
+
+from .factories.moduleimport.factories import (  # noqa
     ModuleImportingMarshalerFactory,
     ModuleImportingUnmarshalerFactory,
 )

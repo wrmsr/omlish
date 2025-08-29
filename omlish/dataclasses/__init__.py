@@ -31,18 +31,6 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         replace,
     )
 
-    from .impl.api import (  # noqa
-        dataclass as xdataclass,
-
-        make_dataclass as xmake_dataclass,
-
-        field as xfield,
-    )
-
-    from .impl.concerns.replace import (  # noqa
-        replace as xreplace,
-    )
-
     from .tools.as_ import (  # noqa
         asdict,
         astuple,
@@ -51,17 +39,39 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
     ##
     # additional interface
 
-    from .impl.api import (  # noqa
+    from .impl.api.classes.decorator import (  # noqa
+        dataclass as xdataclass,
+    )
+
+    from .impl.api.classes.make import (  # noqa
+        make_dataclass as xmake_dataclass,
+    )
+
+    from .impl.api.classes.metadata import (  # noqa
         append_class_metadata,
         extra_class_params,
         init,
         metadata,
         validate,
+    )
 
+    from .impl.api.fields.metadata import (  # noqa
         extra_field_params,
         set_field_metadata,
         update_extra_field_params,
         with_extra_field_params,
+    )
+
+    from .impl.api.fields.constructor import (  # noqa
+        field as xfield,
+    )
+
+    from .impl.concerns.replace import (  # noqa
+        replace as xreplace,
+    )
+
+    from .impl.configs import (  # noqa
+        init_package,
     )
 
     from .errors import (  # noqa

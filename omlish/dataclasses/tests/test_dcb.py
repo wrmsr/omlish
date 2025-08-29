@@ -13,7 +13,10 @@ import dataclasses as dc
 import inspect
 import typing as ta
 
-from ..impl import api
+from ..impl.api import dataclass
+from ..impl.api import field
+from ..impl.api import init
+from ..impl.api import validate
 
 
 T = ta.TypeVar('T')
@@ -24,22 +27,22 @@ V = ta.TypeVar('V')
 ##
 
 
-@api.dataclass(frozen=True, order=True)
+@dataclass(frozen=True, order=True)
 class A:
     i: int
-    s: str = api.field(repr_fn=lambda s: f'{s}!', override=True, check_type=True)
-    d: int = api.field(default=5, coerce=int)
-    l: ta.Sequence = api.field(
+    s: str = field(repr_fn=lambda s: f'{s}!', override=True, check_type=True)
+    d: int = field(default=5, coerce=int)
+    l: ta.Sequence = field(
         default_factory=tuple,
         repr_priority=-1,
         validate=lambda l: not (l and len(l) == 2),
     )
 
-    @api.init
+    @init
     def _init_foo(self) -> None:
         print('hi!')
 
-    @api.validate  # noqa
+    @validate  # noqa
     @staticmethod
     def _validate_foo_not_in_l(l):
         return 'foo' not in l
@@ -48,9 +51,9 @@ class A:
         pass
 
 
-@api.dataclass(frozen=True, order=True)
+@dataclass(frozen=True, order=True)
 class B(A):
-    x: int = api.field(default=10)
+    x: int = field(default=10)
 
 
 def test_dcb():
