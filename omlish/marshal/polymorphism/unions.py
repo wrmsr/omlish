@@ -6,13 +6,13 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import match as mfs
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import SimpleMarshalerFactory
-from ..base import SimpleUnmarshalerFactory
-from ..base import UnmarshalContext
-from ..base import Unmarshaler
-from ..values import Value
+from ..base.contexts import MarshalContext
+from ..base.contexts import UnmarshalContext
+from ..base.types import Marshaler
+from ..base.types import Unmarshaler
+from ..base.values import Value
+from ..factories.simple import SimpleMarshalerFactory
+from ..factories.simple import SimpleUnmarshalerFactory
 from .marshal import make_polymorphism_marshaler
 from .metadata import Impls
 from .metadata import TypeTagging

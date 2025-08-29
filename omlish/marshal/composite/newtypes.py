@@ -1,11 +1,11 @@
 from ... import check
 from ... import reflect as rfl
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import SimpleMarshalerFactory
-from ..base import SimpleUnmarshalerFactory
-from ..base import UnmarshalContext
-from ..base import Unmarshaler
+from ..base.contexts import MarshalContext
+from ..base.contexts import UnmarshalContext
+from ..base.types import Marshaler
+from ..base.types import Unmarshaler
+from ..factories.simple import SimpleMarshalerFactory
+from ..factories.simple import SimpleUnmarshalerFactory
 
 
 ##

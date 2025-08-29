@@ -5,9 +5,9 @@ import enum
 import fractions
 import typing as ta
 
-from ..base import MarshalContext
-from ..base import UnmarshalContext
-from ..registries import Registry
+from ..base.contexts import MarshalContext
+from ..base.contexts import UnmarshalContext
+from ..base.registries import Registry
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
 from .foox import Foox

@@ -4,10 +4,10 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import reflect as rfl
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import SimpleMarshalerFactory
-from ..values import Value
+from ..base.contexts import MarshalContext
+from ..base.types import Marshaler
+from ..base.values import Value
+from ..factories.simple import SimpleMarshalerFactory
 from .metadata import FieldInfo
 from .metadata import FieldInfos
 from .metadata import ObjectSpecials

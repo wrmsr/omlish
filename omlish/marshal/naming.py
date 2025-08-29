@@ -7,7 +7,7 @@ import enum
 
 from .. import check
 from .. import lang
-from .base import Option
+from .base.options import Option
 
 
 ##

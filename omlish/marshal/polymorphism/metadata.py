@@ -2,9 +2,9 @@ import dataclasses as dc
 import typing as ta
 
 from ... import lang
+from ..base.registries import RegistryItem
 from ..naming import Naming
 from ..naming import translate_name
-from ..registries import RegistryItem
 
 
 ##

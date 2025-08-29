@@ -1,15 +1,15 @@
 import typing as ta
 
 from .. import lang
-from .base import MarshalContext
-from .base import MarshalerFactory
-from .base import UnmarshalContext
-from .base import UnmarshalerFactory
-from .registries import Registry
-from .registries import RegistryItem
+from .base.contexts import MarshalContext
+from .base.contexts import UnmarshalContext
+from .base.registries import Registry
+from .base.registries import RegistryItem
+from .base.types import MarshalerFactory
+from .base.types import UnmarshalerFactory
+from .base.values import Value
 from .standard import new_standard_marshaler_factory
 from .standard import new_standard_unmarshaler_factory
-from .values import Value
 
 
 T = ta.TypeVar('T')

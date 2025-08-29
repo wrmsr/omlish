@@ -1,19 +1,7 @@
-"""
-Null
-Bool
-Int
-Float
-Number
-String
-Bytes
-Array
-Object
-Any
-"""
 import typing as ta
 
 
-Value = ta.Union[  # noqa
+Value: ta.TypeAlias = ta.Union[  # noqa
     None,
 
     bool,

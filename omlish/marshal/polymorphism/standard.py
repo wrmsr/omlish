@@ -1,7 +1,7 @@
 import typing as ta
 
-from ..base import MarshalerFactory
-from ..base import UnmarshalerFactory
+from ..base.types import MarshalerFactory
+from ..base.types import UnmarshalerFactory
 from .marshal import PolymorphismMarshalerFactory
 from .metadata import Polymorphism
 from .metadata import TypeTagging

@@ -4,12 +4,12 @@ from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import match as mfs
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import MarshalerFactoryMatchClass
-from ..base import UnmarshalContext
-from ..base import Unmarshaler
-from ..base import UnmarshalerFactoryMatchClass
+from ..base.contexts import MarshalContext
+from ..base.contexts import UnmarshalContext
+from ..base.types import Marshaler
+from ..base.types import Unmarshaler
+from ..factories.match import MarshalerFactoryMatchClass
+from ..factories.match import UnmarshalerFactoryMatchClass
 from .iterables import DEFAULT_ITERABLE_CONCRETE_TYPES
 from .iterables import IterableMarshaler
 from .iterables import IterableUnmarshaler

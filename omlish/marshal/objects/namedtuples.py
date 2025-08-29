@@ -5,13 +5,13 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import Option
-from ..base import SimpleMarshalerFactory
-from ..base import SimpleUnmarshalerFactory
-from ..base import UnmarshalContext
-from ..base import Unmarshaler
+from ..base.contexts import MarshalContext
+from ..base.contexts import UnmarshalContext
+from ..base.options import Option
+from ..base.types import Marshaler
+from ..base.types import Unmarshaler
+from ..factories.simple import SimpleMarshalerFactory
+from ..factories.simple import SimpleUnmarshalerFactory
 from .marshal import ObjectMarshaler
 from .metadata import FieldInfo
 from .metadata import FieldInfos

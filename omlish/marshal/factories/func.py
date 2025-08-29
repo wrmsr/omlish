@@ -1,6 +1,7 @@
-import dataclasses as dc
 import typing as ta
 
+from ... import dataclasses as dc
+from ... import lang
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
@@ -12,18 +13,16 @@ from ..base.values import Value
 
 
 @dc.dataclass(frozen=True)
-class WrappedMarshaler(Marshaler):
-    wrapper: ta.Callable[[MarshalContext, ta.Any], ta.Any]
-    m: Marshaler
+class FuncMarshaler(Marshaler, lang.Final):
+    fn: ta.Callable[[MarshalContext, ta.Any], Value]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        return self.m.marshal(ctx, self.wrapper(ctx, o))
+        return self.fn(ctx, o)
 
 
 @dc.dataclass(frozen=True)
-class WrappedUnmarshaler(Unmarshaler):
-    unwrapper: ta.Callable[[UnmarshalContext, ta.Any], ta.Any]
-    u: Unmarshaler
+class FuncUnmarshaler(Unmarshaler, lang.Final):
+    fn: ta.Callable[[UnmarshalContext, Value], ta.Any]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        return self.unwrapper(ctx, self.u.unmarshal(ctx, v))
+        return self.fn(ctx, v)

@@ -1,4 +1,48 @@
-from .base import (  # noqa
+"""
+TODO:
+ - redacted
+ - strongly typed MarshalerFactory base class?
+ - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
+ - streaming? Start/EndObject, etc..
+ - lang.Marker - class name, handle type[Foo]
+  - can't disambiguate from str - can't coexist in bare union
+ - factories being free MatchFns does more harm than good - in practice these are such big guns you want to write a
+   class body if only ceremonially
+
+See:
+ - https://github.com/python-attrs/cattrs
+ - https://github.com/jcrist/msgspec
+ - https://github.com/Fatal1ty/mashumaro
+ - https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
+"""
+
+
+from .base.contexts import (  # noqa
+    BaseContext,
+    MarshalContext,
+    UnmarshalContext,
+)
+
+from .base.errors import (  # noqa
+    ForbiddenTypeError,
+    MarshalError,
+    UnhandledTypeError,
+)
+
+from .base.options import (  # noqa
+    Option,
+)
+
+from .base.overrides import (  # noqa
+    Override,
+    ReflectOverride,
+)
+
+from .base.registries import (  # noqa
+    Registry,
+)
+
+from .base.types import (  # noqa
     Marshaler,
     Unmarshaler,
 
@@ -10,34 +54,10 @@ from .base import (  # noqa
 
     MarshalerFactory_,
     UnmarshalerFactory_,
+)
 
-    SimpleMarshalerFactory,
-    SimpleUnmarshalerFactory,
-
-    MarshalerFactoryMatchClass,
-    UnmarshalerFactoryMatchClass,
-
-    MultiMarshalerFactory,
-    MultiUnmarshalerFactory,
-
-    TypeMapMarshalerFactory,
-    TypeMapUnmarshalerFactory,
-
-    TypeCacheMarshalerFactory,
-    TypeCacheUnmarshalerFactory,
-
-    FuncMarshaler,
-    FuncUnmarshaler,
-
-    BaseContext,
-    MarshalContext,
-    UnmarshalContext,
-
-    RecursiveMarshalerFactory,
-    RecursiveUnmarshalerFactory,
-
-    Override,
-    ReflectOverride,
+from .base.values import (  # noqa
+    Value,
 )
 
 from .composite.iterables import (  # noqa
@@ -50,27 +70,39 @@ from .composite.wrapped import (  # noqa
     WrappedUnmarshaler,
 )
 
-from .errors import (  # noqa
-    ForbiddenTypeError,
-    MarshalError,
-    UnhandledTypeError,
+from .factories.simple import (  # noqa
+    SimpleMarshalerFactory,
+    SimpleUnmarshalerFactory,
 )
 
-from .globals import (  # noqa
-    GLOBAL_REGISTRY,
-
-    global_marshaler_factory,
-    marshal,
-
-    global_unmarshaler_factory,
-    unmarshal,
-
-    register_global,
+from .factories.match import (  # noqa
+    MarshalerFactoryMatchClass,
+    UnmarshalerFactoryMatchClass,
 )
 
-from .naming import (  # noqa
-    Naming,
-    translate_name,
+from .factories.multi import (  # noqa
+    MultiMarshalerFactory,
+    MultiUnmarshalerFactory,
+)
+
+from .factories.typemap import (  # noqa
+    TypeMapMarshalerFactory,
+    TypeMapUnmarshalerFactory,
+)
+
+from .factories.typecache import (  # noqa
+    TypeCacheMarshalerFactory,
+    TypeCacheUnmarshalerFactory,
+)
+
+from .factories.func import (  # noqa
+    FuncMarshaler,
+    FuncUnmarshaler,
+)
+
+from .factories.recursive import (  # noqa
+    RecursiveMarshalerFactory,
+    RecursiveUnmarshalerFactory,
 )
 
 from .objects.dataclasses import (  # noqa
@@ -152,20 +184,6 @@ from .singular.primitives import (  # noqa
     PRIMITIVE_TYPES,
 )
 
-from .registries import (  # noqa
-    Registry,
-)
-
-from .standard import (  # noqa
-    STANDARD_MARSHALER_FACTORIES,
-    new_standard_marshaler_factory,
-
-    STANDARD_UNMARSHALER_FACTORIES,
-    new_standard_unmarshaler_factory,
-
-    install_standard_factories,
-)
-
 from .trivial.forbidden import (  # noqa
     ForbiddenTypeMarshalerFactory,
     ForbiddenTypeUnmarshalerFactory,
@@ -176,8 +194,31 @@ from .trivial.nop import (  # noqa
     NopMarshalerUnmarshaler,
 )
 
-from .values import (  # noqa
-    Value,
+from .globals import (  # noqa
+    GLOBAL_REGISTRY,
+
+    global_marshaler_factory,
+    marshal,
+
+    global_unmarshaler_factory,
+    unmarshal,
+
+    register_global,
+)
+
+from .naming import (  # noqa
+    Naming,
+    translate_name,
+)
+
+from .standard import (  # noqa
+    STANDARD_MARSHALER_FACTORIES,
+    new_standard_marshaler_factory,
+
+    STANDARD_UNMARSHALER_FACTORIES,
+    new_standard_unmarshaler_factory,
+
+    install_standard_factories,
 )
 
 

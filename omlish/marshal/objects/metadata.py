@@ -4,10 +4,10 @@ from ... import cached
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
-from ..base import Marshaler
-from ..base import MarshalerFactory
-from ..base import Unmarshaler
-from ..base import UnmarshalerFactory
+from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
+from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..naming import Naming
 
 

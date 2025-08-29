@@ -1,13 +1,9 @@
-"""
-TODO:
- - inheritance
-"""
 import dataclasses as dc
 import threading
 import typing as ta
 
-from .. import collections as col
-from .. import lang
+from ... import collections as col
+from ... import lang
 
 
 ##

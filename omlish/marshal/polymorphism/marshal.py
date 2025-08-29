@@ -5,10 +5,10 @@ import typing as ta
 from ... import check
 from ... import lang
 from ... import reflect as rfl
-from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import SimpleMarshalerFactory
-from ..values import Value
+from ..base.contexts import MarshalContext
+from ..base.types import Marshaler
+from ..base.values import Value
+from ..factories.simple import SimpleMarshalerFactory
 from .metadata import FieldTypeTagging
 from .metadata import Impls
 from .metadata import Polymorphism
