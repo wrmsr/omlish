@@ -1,6 +1,18 @@
 """
 ~> https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c
 """
+from .. import dataclasses as _dc
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
 from .binder import (  # noqa
     bind,
     bind_as_fn,

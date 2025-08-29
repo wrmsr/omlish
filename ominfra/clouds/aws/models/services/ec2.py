@@ -1598,11 +1598,13 @@ class RouteOrigin(_enum.Enum):
     CREATE_ROUTE_TABLE = 'CreateRouteTable'
     CREATE_ROUTE = 'CreateRoute'
     ENABLE_VGW_ROUTE_PROPAGATION = 'EnableVgwRoutePropagation'
+    ADVERTISEMENT = 'Advertisement'
 
 
 class RouteState(_enum.Enum):
     ACTIVE = 'active'
     BLACKHOLE = 'blackhole'
+    FILTERED = 'filtered'
 
 
 class RouteTableAssociationStateCode(_enum.Enum):

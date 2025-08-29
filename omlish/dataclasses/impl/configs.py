@@ -20,7 +20,7 @@ DEFAULT_PACKAGE_CONFIG = PackageConfig()
 
 
 def init_package(
-        name: str,
+        init_globals: ta.MutableMapping[str, ta.Any],
         *,
         codegen: bool = False,
 ) -> None:

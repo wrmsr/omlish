@@ -28,11 +28,11 @@ class Project(ProjectBase):
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
             'tinygrad ~= 0.11',
 
-            'tokenizers ~= 0.21',
+            'tokenizers ~= 0.22',
 
             'torch ~= 2.8',
 
-            'transformers ~= 4.55',
+            'transformers ~= 4.56',
             'sentence-transformers ~= 5.1',
         ],
 

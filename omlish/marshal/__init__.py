@@ -16,7 +16,19 @@ See:
  - https://github.com/Fatal1ty/mashumaro
  - https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
 """
-from .. import lang as _lang
+from .. import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
+from .. import lang as _lang  # noqa
 
 
 with _lang.auto_proxy_init(globals()) as _api_cap:
