@@ -233,10 +233,10 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
     )
 
     from .standard import (  # noqa
-        STANDARD_MARSHALER_FACTORIES,
+        DEFAULT_STANDARD_MARSHALER_FACTORIES,
         new_standard_marshaler_factory,
 
-        STANDARD_UNMARSHALER_FACTORIES,
+        DEFAULT_STANDARD_UNMARSHALER_FACTORIES,
         new_standard_unmarshaler_factory,
 
         install_standard_factories,

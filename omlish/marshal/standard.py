@@ -21,6 +21,8 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
+from .factories.invalidate import InvalidatableMarshalerFactory
+from .factories.invalidate import InvalidatableUnmarshalerFactory
 from .factories.moduleimport.factories import ModuleImportingMarshalerFactory
 from .factories.moduleimport.factories import ModuleImportingUnmarshalerFactory
 from .factories.multi import MultiMarshalerFactory
@@ -52,7 +54,7 @@ from .trivial.any import ANY_UNMARSHALER_FACTORY
 ##
 
 
-STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
+DEFAULT_STANDARD_MARSHALER_FACTORIES: ta.Sequence[MarshalerFactory] = [
     PRIMITIVE_MARSHALER_FACTORY,
     NewtypeMarshalerFactory(),
     OptionalMarshalerFactory(),
@@ -72,28 +74,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
 ]
 
 
-def new_standard_marshaler_factory(
-        *,
-        first: ta.Iterable[MarshalerFactory] | None = None,
-        last: ta.Iterable[MarshalerFactory] | None = None,
-) -> MarshalerFactory:
-    f: MarshalerFactory = MultiMarshalerFactory([
-        *(first if first is not None else []),
-        *STANDARD_MARSHALER_FACTORIES,
-        *(last if last is not None else []),
-    ])
-
-    f = RecursiveMarshalerFactory(f)
-    f = TypeCacheMarshalerFactory(f)
-    f = ModuleImportingMarshalerFactory(f)
-
-    return f
-
-
-##
-
-
-STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
+DEFAULT_STANDARD_UNMARSHALER_FACTORIES: ta.Sequence[UnmarshalerFactory] = [
     PRIMITIVE_UNMARSHALER_FACTORY,
     NewtypeUnmarshalerFactory(),
     OptionalUnmarshalerFactory(),
@@ -113,6 +94,27 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
 ]
 
 
+##
+
+
+def new_standard_marshaler_factory(
+        *,
+        first: ta.Iterable[MarshalerFactory] | None = None,
+        last: ta.Iterable[MarshalerFactory] | None = None,
+) -> MarshalerFactory:
+    f: MarshalerFactory = MultiMarshalerFactory([
+        *(first if first is not None else []),
+        *DEFAULT_STANDARD_MARSHALER_FACTORIES,
+        *(last if last is not None else []),
+    ])
+
+    f = RecursiveMarshalerFactory(f)
+    f = TypeCacheMarshalerFactory(f)
+    f = ModuleImportingMarshalerFactory(f)
+
+    return f
+
+
 def new_standard_unmarshaler_factory(
         *,
         first: ta.Iterable[UnmarshalerFactory] | None = None,
@@ -120,7 +122,7 @@ def new_standard_unmarshaler_factory(
 ) -> UnmarshalerFactory:
     f: UnmarshalerFactory = MultiUnmarshalerFactory([
         *(first if first is not None else []),
-        *STANDARD_UNMARSHALER_FACTORIES,
+        *DEFAULT_STANDARD_UNMARSHALER_FACTORIES,
         *(last if last is not None else []),
     ])
 
@@ -141,11 +143,11 @@ def install_standard_factories(
         k = False
 
         if isinstance(f, MarshalerFactory):
-            STANDARD_MARSHALER_FACTORIES[0:0] = [f]
+            DEFAULT_STANDARD_MARSHALER_FACTORIES[0:0] = [f]
             k = True
 
         if isinstance(f, UnmarshalerFactory):
-            STANDARD_UNMARSHALER_FACTORIES[0:0] = [f]
+            DEFAULT_STANDARD_UNMARSHALER_FACTORIES[0:0] = [f]
             k = True
 
         if not k:
