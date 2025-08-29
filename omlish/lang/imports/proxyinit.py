@@ -640,6 +640,8 @@ def auto_proxy_init(
 
         unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
         raise_unreferenced: bool = False,
+
+        update_exports: bool = False,
 ) -> ta.Iterator[AutoProxyInit]:
     """
     This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
@@ -658,3 +660,6 @@ def auto_proxy_init(
         raise_unreferenced=raise_unreferenced,
     ):
         yield inst
+
+    if update_exports:
+        inst.update_exports()

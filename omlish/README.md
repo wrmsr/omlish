@@ -14,9 +14,9 @@ dependencies of any kind**.
     `cached_property` tools, which are more capable than
     [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache).
   - **[imports](https://github.com/wrmsr/omlish/blob/master/omlish/lang/imports.py)** - Import tools like:
-    - `proxy_import` - for late-loaded imports
-    - `proxy_init` - for late-loaded module globals
-    - `auto_proxy_init` - for automatic late-loaded package exports
+    - `proxy_import` - For late-loaded imports.
+    - `proxy_init` - For late-loaded module globals.
+    - `auto_proxy_init` - For automatic late-loaded package exports.
   - **[classes](https://github.com/wrmsr/omlish/blob/master/omlish/lang/classes)** - Class tools and bases, such as
     `Abstract` (which checks at subclass definition not instantiation), `Sealed` / `PackageSealed`, and `Final`.
   - **[maybes](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maybes.py)** - A simple, nestable formalization

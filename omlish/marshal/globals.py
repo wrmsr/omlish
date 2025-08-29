@@ -36,7 +36,7 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
     return new_standard_unmarshaler_factory()
 
 
-class _GlobalMarshaling(Marshaling):
+class _GlobalMarshaling(Marshaling, lang.Final):
     def registry(self) -> Registry:
         return global_registry()
 

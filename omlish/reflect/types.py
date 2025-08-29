@@ -18,6 +18,7 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import threading
 import types
 import typing as ta
 
@@ -57,7 +58,47 @@ class _Special:
     nparams: int
 
 
-_KNOWN_SPECIALS = [
+class _KnownSpecials:
+    def __init__(self, *specials: _Special) -> None:
+        super().__init__()
+
+        self._lock = threading.RLock()
+
+        self._lst: list[_Special] = []
+        self._by_name: dict[str, _Special] = {}
+        self._by_alias: dict[_SpecialGenericAlias, _Special] = {}
+        self._by_origin: dict[type, _Special] = {}
+
+        for sp in specials:
+            self.add(sp)
+
+    def add(self, sp: _Special) -> ta.Self:
+        with self._lock:
+            uds: list[tuple[ta.Any, ta.MutableMapping]] = [
+                (sp.name, self._by_name),
+                (sp.alias, self._by_alias),
+                (sp.origin, self._by_origin),
+            ]
+            for k, dct in uds:
+                if k in dct:
+                    raise KeyError(k)
+            self._lst.append(sp)
+            for k, dct in uds:
+                dct[k] = sp
+
+        return self
+
+    def get_by_name(self, name: str) -> _Special | None:
+        return self._by_name.get(name)
+
+    def get_by_alias(self, alias: _SpecialGenericAlias) -> _Special | None:
+        return self._by_alias.get(alias)
+
+    def get_by_origin(self, origin: type) -> _Special | None:
+        return self._by_origin.get(origin)
+
+
+_KNOWN_SPECIALS = _KnownSpecials(*[
     _Special(
         v._name,  # noqa
         v,
@@ -66,11 +107,11 @@ _KNOWN_SPECIALS = [
     )
     for v in ta.__dict__.values()  # noqa
     if isinstance(v, _SpecialGenericAlias)
-]
+])
 
-_KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
-_KNOWN_SPECIALS_BY_ALIAS = {s.alias: s for s in _KNOWN_SPECIALS}
-_KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
+
+##
+
 
 _MAX_KNOWN_SPECIAL_TYPE_VARS = 16
 
@@ -99,7 +140,7 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
         if issubclass(obj, ta.Generic):  # type: ignore
             return obj.__dict__.get('__parameters__', ())  # noqa
 
-        if (ks := _KNOWN_SPECIALS_BY_ORIGIN.get(obj)) is not None:
+        if (ks := _KNOWN_SPECIALS.get_by_origin(obj)) is not None:
             if (np := ks.nparams) < 0:
                 raise TypeError(obj)
             return _KNOWN_SPECIAL_TYPE_VARS[:np]
@@ -442,7 +483,7 @@ class Reflector:
         # Special Generic
 
         if isinstance(obj, _SpecialGenericAlias):
-            if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
+            if (ks := _KNOWN_SPECIALS.get_by_alias(obj)) is not None:
                 if check_only:
                     return None
 
