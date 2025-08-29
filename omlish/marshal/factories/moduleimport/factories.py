@@ -7,7 +7,6 @@ FIXME:
 TODO:
  - per-type module imports
 """
-import importlib
 import threading
 import typing as ta
 
@@ -33,16 +32,28 @@ ContextT = ta.TypeVar('ContextT', bound=BaseContext)
 
 
 class _ModuleImportingFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
-    def __init__(self, f: mfs.MatchFn[[ContextT, rfl.Type], R]) -> None:
+    def __init__(
+            self,
+            f: mfs.MatchFn[[ContextT, rfl.Type], R],
+            callback: ta.Callable[[], None] | None = None,
+    ) -> None:
         super().__init__()
 
         self._f = f
+        self._callback = callback
+
         self._lock = threading.RLock()
         self._has_imported = False
 
     def _do_import(self, ctx: ContextT) -> None:
+        c = 0
         for mi in ctx.config_registry.get_of(None, ModuleImport):
-            importlib.import_module(mi.name, mi.package)
+            if mi.import_if_necessary():
+                c += 1
+
+        if c:
+            if self._callback is not None:
+                self._callback()
 
     def _import_if_necessary(self, ctx: ContextT) -> None:
         # FIXME:
@@ -66,11 +77,18 @@ class _ModuleImportingFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
 
 
 class ModuleImportingMarshalerFactory(MarshalerFactory):
-    def __init__(self, f: MarshalerFactory) -> None:
+    def __init__(
+            self,
+            f: MarshalerFactory,
+            callback: ta.Callable[[], None] | None = None,
+    ) -> None:
         super().__init__()
 
         self._f = f
-        self._tcf: _ModuleImportingFactory[MarshalContext, Marshaler] = _ModuleImportingFactory(f.make_marshaler)
+        self._tcf: _ModuleImportingFactory[MarshalContext, Marshaler] = _ModuleImportingFactory(
+            f.make_marshaler,
+            callback,
+        )
 
     @property
     def make_marshaler(self) -> MarshalerMaker:
@@ -78,11 +96,18 @@ class ModuleImportingMarshalerFactory(MarshalerFactory):
 
 
 class ModuleImportingUnmarshalerFactory(UnmarshalerFactory):
-    def __init__(self, f: UnmarshalerFactory) -> None:
+    def __init__(
+            self,
+            f: UnmarshalerFactory,
+            callback: ta.Callable[[], None] | None = None,
+    ) -> None:
         super().__init__()
 
         self._f = f
-        self._tcf: _ModuleImportingFactory[UnmarshalContext, Unmarshaler] = _ModuleImportingFactory(f.make_unmarshaler)
+        self._tcf: _ModuleImportingFactory[UnmarshalContext, Unmarshaler] = _ModuleImportingFactory(
+            f.make_unmarshaler,
+            callback,
+        )
 
     @property
     def make_unmarshaler(self) -> UnmarshalerMaker:

@@ -75,11 +75,21 @@ class _InvalidatableFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
 
 
 class InvalidatableMarshalerFactory(MarshalerFactory):
-    def __init__(self, fn: ta.Callable[[], MarshalerFactory]) -> None:
+    def __init__(
+            self,
+            fn: ta.Callable[[], MarshalerFactory],
+            check_fn: ta.Callable[[], bool] | None = None,
+    ) -> None:
         super().__init__()
 
         self._fn = fn
-        self._u: _InvalidatableFactory[MarshalContext, Marshaler] = _InvalidatableFactory(lambda: fn().make_marshaler)
+        self._u: _InvalidatableFactory[MarshalContext, Marshaler] = _InvalidatableFactory(
+            lambda: fn().make_marshaler,
+            check_fn,
+        )
+
+    def invalidate(self) -> None:
+        self._u.invalidate()
 
     @property
     def make_marshaler(self) -> MarshalerMaker:
@@ -87,11 +97,21 @@ class InvalidatableMarshalerFactory(MarshalerFactory):
 
 
 class InvalidatableUnmarshalerFactory(UnmarshalerFactory):
-    def __init__(self, fn: ta.Callable[[], UnmarshalerFactory]) -> None:
+    def __init__(
+            self,
+            fn: ta.Callable[[], UnmarshalerFactory],
+            check_fn: ta.Callable[[], bool] | None = None,
+    ) -> None:
         super().__init__()
 
         self._fn = fn
-        self._u: _InvalidatableFactory[UnmarshalContext, Unmarshaler] = _InvalidatableFactory(lambda: fn().make_unmarshaler)  # noqa
+        self._u: _InvalidatableFactory[UnmarshalContext, Unmarshaler] = _InvalidatableFactory(
+            lambda: fn().make_unmarshaler,
+            check_fn,
+        )
+
+    def invalidate(self) -> None:
+        self._u.invalidate()
 
     @property
     def make_unmarshaler(self) -> UnmarshalerMaker:

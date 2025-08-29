@@ -247,6 +247,7 @@ ignore = [
     'SIM108',  # if-else-block-instead-of-if-exp
     'SIM114',  # if-with-same-arms
     'SIM117',  # multiple-with-statements
+    'SIM300',  # yoda-conditions
     'T201',  # print
     'T203',  # p-print
     'TC001',  # typing-only-first-party-import

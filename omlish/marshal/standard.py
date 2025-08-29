@@ -1,8 +1,9 @@
 """
 FIXME:
- - lock lol
-  - probably move to global registry somehow
+ - this is gross and temporary
+  - move to global registry somehow
 """
+import threading
 import typing as ta
 
 from .base.types import MarshalerFactory
@@ -54,44 +55,50 @@ from .trivial.any import ANY_UNMARSHALER_FACTORY
 ##
 
 
-DEFAULT_STANDARD_MARSHALER_FACTORIES: ta.Sequence[MarshalerFactory] = [
-    PRIMITIVE_MARSHALER_FACTORY,
-    NewtypeMarshalerFactory(),
-    OptionalMarshalerFactory(),
-    PrimitiveUnionMarshalerFactory(),
-    DataclassMarshalerFactory(),
-    NamedtupleMarshalerFactory(),
-    EnumMarshalerFactory(),
-    LiteralMarshalerFactory(),
-    NUMBERS_MARSHALER_FACTORY,
-    UUID_MARSHALER_FACTORY,
-    DATETIME_MARSHALER_FACTORY,
-    MaybeMarshalerFactory(),
-    MappingMarshalerFactory(),
-    SequenceNotStrMarshalerFactory(),
-    IterableMarshalerFactory(),
-    ANY_MARSHALER_FACTORY,
-]
+class StandardFactories(ta.NamedTuple):
+    marshaler_factories: ta.Sequence[MarshalerFactory]
+    unmarshaler_factories: ta.Sequence[UnmarshalerFactory]
 
 
-DEFAULT_STANDARD_UNMARSHALER_FACTORIES: ta.Sequence[UnmarshalerFactory] = [
-    PRIMITIVE_UNMARSHALER_FACTORY,
-    NewtypeUnmarshalerFactory(),
-    OptionalUnmarshalerFactory(),
-    PrimitiveUnionUnmarshalerFactory(),
-    DataclassUnmarshalerFactory(),
-    NamedtupleUnmarshalerFactory(),
-    EnumUnmarshalerFactory(),
-    LiteralUnmarshalerFactory(),
-    NUMBERS_UNMARSHALER_FACTORY,
-    UUID_UNMARSHALER_FACTORY,
-    DATETIME_UNMARSHALER_FACTORY,
-    MaybeUnmarshalerFactory(),
-    MappingUnmarshalerFactory(),
-    SequenceNotStrUnmarshalerFactory(),
-    IterableUnmarshalerFactory(),
-    ANY_UNMARSHALER_FACTORY,
-]
+DEFAULT_STANDARD_FACTORIES = StandardFactories(
+    (
+        PRIMITIVE_MARSHALER_FACTORY,
+        NewtypeMarshalerFactory(),
+        OptionalMarshalerFactory(),
+        PrimitiveUnionMarshalerFactory(),
+        DataclassMarshalerFactory(),
+        NamedtupleMarshalerFactory(),
+        EnumMarshalerFactory(),
+        LiteralMarshalerFactory(),
+        NUMBERS_MARSHALER_FACTORY,
+        UUID_MARSHALER_FACTORY,
+        DATETIME_MARSHALER_FACTORY,
+        MaybeMarshalerFactory(),
+        MappingMarshalerFactory(),
+        SequenceNotStrMarshalerFactory(),
+        IterableMarshalerFactory(),
+        ANY_MARSHALER_FACTORY,
+    ),
+
+    (
+        PRIMITIVE_UNMARSHALER_FACTORY,
+        NewtypeUnmarshalerFactory(),
+        OptionalUnmarshalerFactory(),
+        PrimitiveUnionUnmarshalerFactory(),
+        DataclassUnmarshalerFactory(),
+        NamedtupleUnmarshalerFactory(),
+        EnumUnmarshalerFactory(),
+        LiteralUnmarshalerFactory(),
+        NUMBERS_UNMARSHALER_FACTORY,
+        UUID_UNMARSHALER_FACTORY,
+        DATETIME_UNMARSHALER_FACTORY,
+        MaybeUnmarshalerFactory(),
+        MappingUnmarshalerFactory(),
+        SequenceNotStrUnmarshalerFactory(),
+        IterableUnmarshalerFactory(),
+        ANY_UNMARSHALER_FACTORY,
+    ),
+)
 
 
 ##
@@ -102,17 +109,32 @@ def new_standard_marshaler_factory(
         first: ta.Iterable[MarshalerFactory] | None = None,
         last: ta.Iterable[MarshalerFactory] | None = None,
 ) -> MarshalerFactory:
-    f: MarshalerFactory = MultiMarshalerFactory([
-        *(first if first is not None else []),
-        *DEFAULT_STANDARD_MARSHALER_FACTORIES,
-        *(last if last is not None else []),
-    ])
+    gl: ta.Any = None
 
-    f = RecursiveMarshalerFactory(f)
-    f = TypeCacheMarshalerFactory(f)
-    f = ModuleImportingMarshalerFactory(f)
+    def fi_fn():
+        nonlocal gl
+        gl = DEFAULT_STANDARD_FACTORIES
 
-    return f
+        fi: MarshalerFactory = MultiMarshalerFactory([
+            *(first if first is not None else []),
+            *gl.marshaler_factories,
+            *(last if last is not None else []),
+        ])
+
+        fi = RecursiveMarshalerFactory(fi)
+
+        fi = TypeCacheMarshalerFactory(fi)
+
+        return fi
+
+    fo: MarshalerFactory = (iv := InvalidatableMarshalerFactory(
+        fi_fn,
+        lambda: DEFAULT_STANDARD_FACTORIES is not gl,
+    ))
+
+    fo = ModuleImportingMarshalerFactory(fo, iv.invalidate)
+
+    return fo
 
 
 def new_standard_unmarshaler_factory(
@@ -120,35 +142,67 @@ def new_standard_unmarshaler_factory(
         first: ta.Iterable[UnmarshalerFactory] | None = None,
         last: ta.Iterable[UnmarshalerFactory] | None = None,
 ) -> UnmarshalerFactory:
-    f: UnmarshalerFactory = MultiUnmarshalerFactory([
-        *(first if first is not None else []),
-        *DEFAULT_STANDARD_UNMARSHALER_FACTORIES,
-        *(last if last is not None else []),
-    ])
+    gl: ta.Any = None
 
-    f = RecursiveUnmarshalerFactory(f)
-    f = TypeCacheUnmarshalerFactory(f)
-    f = ModuleImportingUnmarshalerFactory(f)
+    def fi_fn():
+        nonlocal gl
+        gl = DEFAULT_STANDARD_FACTORIES
 
-    return f
+        fi: UnmarshalerFactory = MultiUnmarshalerFactory([
+            *(first if first is not None else []),
+            *gl.unmarshaler_factories,
+            *(last if last is not None else []),
+        ])
+
+        fi = RecursiveUnmarshalerFactory(fi)
+
+        fi = TypeCacheUnmarshalerFactory(fi)
+
+        return fi
+
+    fo: UnmarshalerFactory = (iv := InvalidatableUnmarshalerFactory(
+        fi_fn,
+        lambda: DEFAULT_STANDARD_FACTORIES is not gl,
+    ))
+
+    fo = ModuleImportingUnmarshalerFactory(fo, iv.invalidate)
+
+    return fo
 
 
 ##
 
 
+_GLOBAL_LOCK = threading.RLock()
+
+
 def install_standard_factories(
         *factories: MarshalerFactory | UnmarshalerFactory,
 ) -> None:
-    for f in factories:
-        k = False
+    with _GLOBAL_LOCK:
+        global DEFAULT_STANDARD_FACTORIES
 
-        if isinstance(f, MarshalerFactory):
-            DEFAULT_STANDARD_MARSHALER_FACTORIES[0:0] = [f]
-            k = True
+        m_lst: list[MarshalerFactory] = list(DEFAULT_STANDARD_FACTORIES.marshaler_factories)
+        u_lst: list[UnmarshalerFactory] = list(DEFAULT_STANDARD_FACTORIES.unmarshaler_factories)
 
-        if isinstance(f, UnmarshalerFactory):
-            DEFAULT_STANDARD_UNMARSHALER_FACTORIES[0:0] = [f]
-            k = True
+        for f in factories:
+            k = False
 
-        if not k:
-            raise TypeError(f)
+            if isinstance(f, MarshalerFactory):
+                m_lst[0:0] = [f]
+                k = True
+
+            if isinstance(f, UnmarshalerFactory):
+                u_lst[0:0] = [f]
+                k = True
+
+            if not k:
+                raise TypeError(f)
+
+        new = StandardFactories(
+            tuple(m_lst),
+            tuple(u_lst),
+        )
+
+        if new != DEFAULT_STANDARD_FACTORIES:
+            DEFAULT_STANDARD_FACTORIES = new
