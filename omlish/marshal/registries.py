@@ -36,7 +36,7 @@ class Registry:
     def __init__(self) -> None:
         super().__init__()
 
-        self._mtx = threading.Lock()
+        self._lock = threading.Lock()
         self._idct: ta.MutableMapping[ta.Any, _KeyRegistryItems] = col.IdentityKeyDict()
         self._dct: dict[ta.Any, _KeyRegistryItems] = {}
 
@@ -46,7 +46,7 @@ class Registry:
             *items: RegistryItem,
             identity: bool = False,
     ) -> 'Registry':
-        with self._mtx:
+        with self._lock:
             dct: ta.Any = self._idct if identity else self._dct
             if (sr := dct.get(key)) is None:
                 sr = dct[key] = _KeyRegistryItems(key)

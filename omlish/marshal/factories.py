@@ -44,11 +44,11 @@ class TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
 
         self._f = f
         self._dct: dict[rfl.Type, R | None] = {}
-        self._mtx = threading.RLock()
+        self._lock = threading.RLock()
 
     def guard(self, ctx: C, rty: rfl.Type) -> bool:
         check.isinstance(rty, rfl.TYPES)
-        with self._mtx:
+        with self._lock:
             try:
                 e = self._dct[rty]
             except KeyError:
@@ -62,7 +62,7 @@ class TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
 
     def fn(self, ctx: C, rty: rfl.Type) -> R:
         check.isinstance(rty, rfl.TYPES)
-        with self._mtx:
+        with self._lock:
             try:
                 e = self._dct[rty]
             except KeyError:
