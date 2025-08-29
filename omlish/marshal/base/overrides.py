@@ -1,4 +1,5 @@
 import typing as ta
+
 from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
@@ -6,12 +7,11 @@ from .registries import RegistryItem
 
 
 if ta.TYPE_CHECKING:
+    from . import types as _types
     from .types import Marshaler
     from .types import MarshalerFactory
     from .types import Unmarshaler
     from .types import UnmarshalerFactory
-
-    from . import types as _types
 
 else:
     _types = lang.proxy_import('.types', __package__)

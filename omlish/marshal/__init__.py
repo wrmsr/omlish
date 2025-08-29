@@ -195,12 +195,12 @@ from .trivial.nop import (  # noqa
 )
 
 from .globals import (  # noqa
-    GLOBAL_REGISTRY,
-
+    global_registry,
     global_marshaler_factory,
-    marshal,
-
     global_unmarshaler_factory,
+    global_marshaling,
+
+    marshal,
     unmarshal,
 
     register_global,

@@ -29,10 +29,16 @@ class _KeyRegistryItems:
 
 
 class Registry:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            lock: ta.Optional[threading.RLock] = None,  # noqa
+    ) -> None:
         super().__init__()
 
-        self._lock = threading.Lock()
+        if lock is None:
+            lock = threading.RLock()
+        self._lock = lock
         self._idct: ta.MutableMapping[ta.Any, _KeyRegistryItems] = col.IdentityKeyDict()
         self._dct: dict[ta.Any, _KeyRegistryItems] = {}
 

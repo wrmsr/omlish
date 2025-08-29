@@ -122,7 +122,7 @@
     "module": ".minichain.backends.impls.huggingface.repos",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/huggingface/repos.py",
-    "line": 19,
+    "line": 24,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.huggingface.repos",
