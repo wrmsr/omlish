@@ -1,6 +1,7 @@
 # Overview
 
-Core utilities and foundational code. It's relatively large but completely self-contained.
+Core utilities and foundational code. It's relatively large but completely self-contained, and has **no required
+dependencies of any kind**.
 
 # Notable packages
 
@@ -20,6 +21,8 @@ Core utilities and foundational code. It's relatively large but completely self-
     of the presence or absence of an object, as in [many](https://en.cppreference.com/w/cpp/utility/optional)
     [other](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html)
     [languages](https://doc.rust-lang.org/std/option/).
+  - **[maysync](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maysyncs.py)** - A lightweight means of sharing
+    code between sync and async contexts, eliminating the need for maintaining sync and async versions of functions.
 
 - **[bootstrap](https://github.com/wrmsr/omlish/blob/master/omlish/bootstrap)** - A centralized, configurable,
   all-in-one collection of various process-initialization minutiae like resource limiting, profiling, remote debugging,
@@ -115,12 +118,12 @@ Core utilities and foundational code. It's relatively large but completely self-
 
 - **[sql](https://github.com/wrmsr/omlish/blob/master/omlish/sql)** - A collection of SQL utilities, including:
 
-  - **[alchemy](https://github.com/wrmsr/omlish/blob/master/omlish/sql/alchemy)** - SQLAlchemy utilities. The codebase
-    is moving away from SQLAlchemy however in favor of its own internal SQL api.
   - **[api](https://github.com/wrmsr/omlish/blob/master/omlish/sql/api)** - An abstracted api for SQL interaction, with
     support for dbapi compatible drivers (and a SQLAlchemy adapter).
   - **[queries](https://github.com/wrmsr/omlish/blob/master/omlish/sql/queries)** - A SQL query builder with a fluent
     interface.
+  - **[alchemy](https://github.com/wrmsr/omlish/blob/master/omlish/sql/alchemy)** - SQLAlchemy utilities. The codebase
+    is moving away from SQLAlchemy however in favor of its own internal SQL api.
 
 - **[testing](https://github.com/wrmsr/omlish/blob/master/omlish/testing)** - Test - primarily pytest - helpers,
   including:
@@ -170,15 +173,15 @@ Code written in this style has notable differences from standard code, including
 
 # Dependencies
 
-This library has no required dependencies of any kind, but there are numerous optional integrations - see
+This library has no required dependencies of any kind, but there are some optional integrations - see
 [`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omlish/__about__.py) for a full list, but some specific
 examples are:
 
+- **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
+  capability of [check](https://github.com/wrmsr/omlish/blob/master/omlish/check.py).
 - **anyio** - While lite code must use only asyncio, non-trivial async standard code prefers to be written to anyio.
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
-- **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
-  capability of [check](https://github.com/wrmsr/omlish/blob/master/omlish/check.py).
 - **wrapt** - For (optionally-enabled) injector circular proxies.
 - **greenlet** - For some gnarly stuff like the
   [sync<->async bridge](https://github.com/wrmsr/omlish/blob/master/omlish/asyncs/bridge.py) and the
