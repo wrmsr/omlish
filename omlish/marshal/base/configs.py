@@ -16,3 +16,10 @@ ConfigRegistry: ta.TypeAlias = Registry[Config]
 
 
 EMPTY_CONFIG_REGISTRY = ConfigRegistry().seal()
+
+
+##
+
+
+class ModuleImport(Config, lang.Final):
+    pass

@@ -16,6 +16,8 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
+from .factories.moduleimport import ModuleImportingMarshalerFactory
+from .factories.moduleimport import ModuleImportingUnmarshalerFactory
 from .factories.multi import MultiMarshalerFactory
 from .factories.multi import MultiUnmarshalerFactory
 from .factories.recursive import RecursiveMarshalerFactory
@@ -70,13 +72,15 @@ def new_standard_marshaler_factory(
         first: ta.Iterable[MarshalerFactory] | None = None,
         last: ta.Iterable[MarshalerFactory] | None = None,
 ) -> MarshalerFactory:
-    return TypeCacheMarshalerFactory(
-        RecursiveMarshalerFactory(
-            MultiMarshalerFactory([
-                *(first if first is not None else []),
-                *STANDARD_MARSHALER_FACTORIES,
-                *(last if last is not None else []),
-            ]),
+    return ModuleImportingMarshalerFactory(
+        TypeCacheMarshalerFactory(
+            RecursiveMarshalerFactory(
+                MultiMarshalerFactory([
+                    *(first if first is not None else []),
+                    *STANDARD_MARSHALER_FACTORIES,
+                    *(last if last is not None else []),
+                ]),
+            ),
         ),
     )
 
@@ -109,13 +113,15 @@ def new_standard_unmarshaler_factory(
         first: ta.Iterable[UnmarshalerFactory] | None = None,
         last: ta.Iterable[UnmarshalerFactory] | None = None,
 ) -> UnmarshalerFactory:
-    return TypeCacheUnmarshalerFactory(
-        RecursiveUnmarshalerFactory(
-            MultiUnmarshalerFactory([
-                *(first if first is not None else []),
-                *STANDARD_UNMARSHALER_FACTORIES,
-                *(last if last is not None else []),
-            ]),
+    return ModuleImportingUnmarshalerFactory(
+        TypeCacheUnmarshalerFactory(
+            RecursiveUnmarshalerFactory(
+                MultiUnmarshalerFactory([
+                    *(first if first is not None else []),
+                    *STANDARD_UNMARSHALER_FACTORIES,
+                    *(last if last is not None else []),
+                ]),
+            ),
         ),
     )
 

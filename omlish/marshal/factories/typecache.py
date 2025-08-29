@@ -31,23 +31,43 @@ class _TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
 
     def guard(self, ctx: C, rty: rfl.Type) -> bool:
         check.isinstance(rty, rfl.TYPES)
+
+        try:
+            return self._dct[rty] is not None
+        except KeyError:
+            pass
+
         with self._lock:
             try:
                 e = self._dct[rty]
+
             except KeyError:
                 if self._f.guard(ctx, rty):
                     return True
                 else:
                     self._dct[rty] = None
                     return False
+
             else:
                 return e is not None
 
     def fn(self, ctx: C, rty: rfl.Type) -> R:
         check.isinstance(rty, rfl.TYPES)
+
+        try:
+            e = self._dct[rty]
+        except KeyError:
+            pass
+        else:
+            if e is None:
+                raise mfs.MatchGuardError(ctx, rty)
+            else:
+                return e
+
         with self._lock:
             try:
                 e = self._dct[rty]
+
             except KeyError:
                 try:
                     ret = self._f(ctx, rty)
@@ -57,11 +77,11 @@ class _TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
                 else:
                     self._dct[rty] = ret
                     return ret
+
+            if e is None:
+                raise mfs.MatchGuardError(ctx, rty)
             else:
-                if e is None:
-                    raise mfs.MatchGuardError(ctx, rty)
-                else:
-                    return e
+                return e
 
 
 ##
