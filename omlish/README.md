@@ -13,15 +13,17 @@ dependencies of any kind**.
   - **[cached](https://github.com/wrmsr/omlish/blob/master/omlish/lang/cached)** - The standard `cached_function` /
     `cached_property` tools, which are more capable than
     [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache).
-  - **[imports](https://github.com/wrmsr/omlish/blob/master/omlish/lang/imports.py)** - Import tools like `proxy_import`
-    for late-loaded imports and `proxy_init` for late-loaded module globals.
+  - **[imports](https://github.com/wrmsr/omlish/blob/master/omlish/lang/imports.py)** - Import tools like:
+    - `proxy_import` - for late-loaded imports
+    - `proxy_init` - for late-loaded module globals
+    - `auto_proxy_init` - for automatic late-loaded package exports
   - **[classes](https://github.com/wrmsr/omlish/blob/master/omlish/lang/classes)** - Class tools and bases, such as
     `Abstract` (which checks at subclass definition not instantiation), `Sealed` / `PackageSealed`, and `Final`.
   - **[maybes](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maybes.py)** - A simple, nestable formalization
     of the presence or absence of an object, as in [many](https://en.cppreference.com/w/cpp/utility/optional)
     [other](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html)
     [languages](https://doc.rust-lang.org/std/option/).
-  - **[maysync](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maysyncs.py)** - A lightweight means of sharing
+  - **[maysyncs](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maysyncs.py)** - A lightweight means of sharing
     code between sync and async contexts, eliminating the need for maintaining sync and async versions of functions.
 
 - **[bootstrap](https://github.com/wrmsr/omlish/blob/master/omlish/bootstrap)** - A centralized, configurable,
