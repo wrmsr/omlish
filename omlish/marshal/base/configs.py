@@ -1,3 +1,4 @@
+import dataclasses as dc
 import typing as ta
 
 from ... import lang
@@ -21,5 +22,7 @@ EMPTY_CONFIG_REGISTRY = ConfigRegistry().seal()
 ##
 
 
+@dc.dataclass(frozen=True, eq=False)
 class ModuleImport(Config, lang.Final):
-    pass
+    name: str
+    package: str | None = None

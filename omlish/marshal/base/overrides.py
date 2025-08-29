@@ -1,6 +1,7 @@
+import dataclasses as dc
 import typing as ta
 
-from ... import dataclasses as dc
+from ... import check
 from ... import lang
 from ... import reflect as rfl
 from .configs import Config
@@ -22,11 +23,15 @@ else:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Override(Config, lang.Final):
-    marshaler: ta.Optional['Marshaler'] = dc.xfield(None, validate=lambda v: isinstance(v, (_types.Marshaler, type(None))))  # noqa
+    marshaler: ta.Optional['Marshaler'] = None
     marshaler_factory: ta.Optional['MarshalerFactory'] = None
 
-    unmarshaler: ta.Optional['Unmarshaler'] = dc.xfield(None, validate=lambda v: isinstance(v, (_types.Unmarshaler, type(None))))  # noqa
+    unmarshaler: ta.Optional['Unmarshaler'] = None
     unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.marshaler, (_types.Marshaler, None))
+        check.isinstance(self.unmarshaler, (_types.Unmarshaler, None))
 
 
 @dc.dataclass(frozen=True)
