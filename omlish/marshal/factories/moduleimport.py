@@ -1,3 +1,7 @@
+"""
+TODO:
+ - per-type module imports
+"""
 import threading
 import typing as ta
 
@@ -25,13 +29,25 @@ class _ModuleImportingFactory(mfs.MatchFn[[C, rfl.Type], R]):
         super().__init__()
 
         self._f = f
-        self._dct: dict[rfl.Type, R | None] = {}
         self._lock = threading.RLock()
+        self._has_imported = False
+
+    def _do_import(self) -> None:
+        pass
+
+    def _import_if_necessary(self) -> None:
+        if not self._has_imported:
+            with self._lock:
+                if not self._has_imported:
+                    self._do_import()
+                    self._has_imported = True
 
     def guard(self, ctx: C, rty: rfl.Type) -> bool:
+        self._import_if_necessary()
         return self._f.guard(ctx, rty)
 
     def fn(self, ctx: C, rty: rfl.Type) -> R:
+        self._import_if_necessary()
         return self._f(ctx, rty)
 
 

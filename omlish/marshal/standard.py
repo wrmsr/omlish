@@ -72,17 +72,17 @@ def new_standard_marshaler_factory(
         first: ta.Iterable[MarshalerFactory] | None = None,
         last: ta.Iterable[MarshalerFactory] | None = None,
 ) -> MarshalerFactory:
-    return ModuleImportingMarshalerFactory(
-        TypeCacheMarshalerFactory(
-            RecursiveMarshalerFactory(
-                MultiMarshalerFactory([
-                    *(first if first is not None else []),
-                    *STANDARD_MARSHALER_FACTORIES,
-                    *(last if last is not None else []),
-                ]),
-            ),
-        ),
-    )
+    f: MarshalerFactory = MultiMarshalerFactory([
+        *(first if first is not None else []),
+        *STANDARD_MARSHALER_FACTORIES,
+        *(last if last is not None else []),
+    ])
+
+    f = RecursiveMarshalerFactory(f)
+    f = TypeCacheMarshalerFactory(f)
+    f = ModuleImportingMarshalerFactory(f)
+
+    return f
 
 
 ##
@@ -113,17 +113,17 @@ def new_standard_unmarshaler_factory(
         first: ta.Iterable[UnmarshalerFactory] | None = None,
         last: ta.Iterable[UnmarshalerFactory] | None = None,
 ) -> UnmarshalerFactory:
-    return ModuleImportingUnmarshalerFactory(
-        TypeCacheUnmarshalerFactory(
-            RecursiveUnmarshalerFactory(
-                MultiUnmarshalerFactory([
-                    *(first if first is not None else []),
-                    *STANDARD_UNMARSHALER_FACTORIES,
-                    *(last if last is not None else []),
-                ]),
-            ),
-        ),
-    )
+    f: UnmarshalerFactory = MultiUnmarshalerFactory([
+        *(first if first is not None else []),
+        *STANDARD_UNMARSHALER_FACTORIES,
+        *(last if last is not None else []),
+    ])
+
+    f = RecursiveUnmarshalerFactory(f)
+    f = TypeCacheUnmarshalerFactory(f)
+    f = ModuleImportingUnmarshalerFactory(f)
+
+    return f
 
 
 ##
