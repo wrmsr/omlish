@@ -1,5 +1,7 @@
 from .abstract import (  # noqa
     AbstractLifecycle,
+
+    AbstractAsyncLifecycle,
 )
 
 from .base import (  # noqa
@@ -7,9 +9,13 @@ from .base import (  # noqa
     AnyLifecycle,
     AnyCallbackLifecycle,
 
+    LifecycleCallback,
     CallbackLifecycle,
     Lifecycle,
-    LifecycleCallback,
+
+    AsyncLifecycleCallback,
+    CallbackAsyncLifecycle,
+    AsyncLifecycle,
 )
 
 from .contextmanagers import (  # noqa

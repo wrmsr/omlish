@@ -12,22 +12,25 @@ AnyLifecycleCallback: ta.TypeAlias = ta.Callable[[AnyLifecycleT], R]
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], R]
 
+AsyncLifecycleT = ta.TypeVar('AsyncLifecycleT', bound='AsyncLifecycle')
+AsyncLifecycleCallback: ta.TypeAlias = ta.Callable[[AsyncLifecycleT], R]
+
 
 ##
 
 
 class AnyLifecycle(lang.Abstract, ta.Generic[R]):
     def lifecycle_construct(self) -> R | None:
-        pass
+        return None
 
     def lifecycle_start(self) -> R | None:
-        pass
+        return None
 
     def lifecycle_stop(self) -> R | None:
-        pass
+        return None
 
     def lifecycle_destroy(self) -> R | None:
-        pass
+        return None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -79,6 +82,21 @@ class Lifecycle(AnyLifecycle[None]):
 
 class CallbackLifecycle(
     AnyCallbackLifecycle[LifecycleT, None],
+    lang.Final,
+    ta.Generic[LifecycleT],
+):
+    pass
+
+
+##
+
+
+class AsyncLifecycle(AnyLifecycle[ta.Awaitable[None]]):
+    pass
+
+
+class CallbackAsyncLifecycle(
+    AnyCallbackLifecycle[LifecycleT, ta.Awaitable[None]],
     lang.Final,
     ta.Generic[LifecycleT],
 ):
