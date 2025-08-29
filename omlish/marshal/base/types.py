@@ -5,12 +5,13 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import match as mfs
+from .contexts import MarshalContext
+from .contexts import UnmarshalContext
+from .registries import Registry
 from .values import Value
 
 
-if ta.TYPE_CHECKING:
-    from .contexts import MarshalContext
-    from .contexts import UnmarshalContext
+T = ta.TypeVar('T')
 
 
 ##
@@ -18,21 +19,21 @@ if ta.TYPE_CHECKING:
 
 class Marshaler(lang.Abstract):
     @abc.abstractmethod
-    def marshal(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         raise NotImplementedError
 
 
 class Unmarshaler(lang.Abstract):
     @abc.abstractmethod
-    def unmarshal(self, ctx: 'UnmarshalContext', v: Value) -> ta.Any:
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         raise NotImplementedError
 
 
 ##
 
 
-MarshalerMaker: ta.TypeAlias = mfs.MatchFn[['MarshalContext', rfl.Type], Marshaler]
-UnmarshalerMaker: ta.TypeAlias = mfs.MatchFn[['UnmarshalContext', rfl.Type], Unmarshaler]
+MarshalerMaker: ta.TypeAlias = mfs.MatchFn[[MarshalContext, rfl.Type], Marshaler]
+UnmarshalerMaker: ta.TypeAlias = mfs.MatchFn[[UnmarshalContext, rfl.Type], Unmarshaler]
 
 
 class MarshalerFactory(lang.Abstract):
@@ -68,3 +69,54 @@ class UnmarshalerFactory_(UnmarshalerFactory):  # noqa
     @property
     def make_unmarshaler(self) -> UnmarshalerMaker:
         return self.fn
+
+
+##
+
+
+class Marshaling(lang.Abstract):
+    @abc.abstractmethod
+    def registry(self) -> Registry:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def marshaler_factory(self) -> MarshalerFactory:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unmarshaler_factory(self) -> UnmarshalerFactory:
+        raise NotImplementedError
+
+    #
+
+    def new_marshal_context(self, **kwargs: ta.Any) -> MarshalContext:
+        return MarshalContext(
+            self.registry(),
+            factory=self.marshaler_factory(),
+            **kwargs,
+        )
+
+    def new_unmarshal_context(self, **kwargs: ta.Any) -> UnmarshalContext:
+        return UnmarshalContext(
+            self.registry(),
+            factory=self.unmarshaler_factory(),
+            **kwargs,
+        )
+
+    #
+
+    @ta.final
+    def marshal(self, obj: ta.Any, ty: ta.Any | None = None, **kwargs: ta.Any) -> Value:
+        return self.new_marshal_context(**kwargs).marshal(obj, ty)
+
+    @ta.overload
+    def unmarshal(self, v: Value, ty: type[T], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def unmarshal(self, v: Value, ty: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        ...
+
+    @ta.final
+    def unmarshal(self, v, ty, **kwargs):
+        return self.new_unmarshal_context(**kwargs).unmarshal(v, ty)

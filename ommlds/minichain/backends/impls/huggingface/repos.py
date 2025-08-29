@@ -1,3 +1,8 @@
+"""
+TODO:
+ - local-only check first
+  - cat ~/.cache/.../models/.../refs/main -> c5bfd839cd4cda0e5a39a97e00218d9c56e468af
+"""
 import typing as ta
 
 from omlish import lang

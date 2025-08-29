@@ -9,12 +9,15 @@ from ...funcs import match as mfs
 from .errors import UnhandledTypeError
 from .options import Option
 from .overrides import ReflectOverride
-from .registries import Registry
-from .types import Marshaler
-from .types import MarshalerFactory
-from .types import Unmarshaler
-from .types import UnmarshalerFactory
-from .values import Value
+
+
+if ta.TYPE_CHECKING:
+    from .registries import Registry
+    from .types import Marshaler
+    from .types import MarshalerFactory
+    from .types import Unmarshaler
+    from .types import UnmarshalerFactory
+    from .values import Value
 
 
 T = ta.TypeVar('T')
@@ -25,7 +28,7 @@ T = ta.TypeVar('T')
 
 @dc.dataclass(frozen=True)
 class BaseContext(lang.Abstract):
-    registry: Registry
+    registry: 'Registry'
     options: col.TypeMap[Option] = col.TypeMap()
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
@@ -39,24 +42,24 @@ class BaseContext(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class MarshalContext(BaseContext, lang.Final):
-    factory: MarshalerFactory | None = None
+    factory: ta.Optional['MarshalerFactory'] = None
 
-    def make(self, o: ta.Any) -> Marshaler:
+    def make(self, o: ta.Any) -> 'Marshaler':
         rty = self._reflect(o)
         try:
             return check.not_none(self.factory).make_marshaler(self, rty)
         except mfs.MatchGuardError:
             raise UnhandledTypeError(rty)  # noqa
 
-    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> Value:
+    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
         return self.make(ty if ty is not None else type(obj)).marshal(self, obj)
 
 
 @dc.dataclass(frozen=True)
 class UnmarshalContext(BaseContext, lang.Final):
-    factory: UnmarshalerFactory | None = None
+    factory: ta.Optional['UnmarshalerFactory'] = None
 
-    def make(self, o: ta.Any) -> Unmarshaler:
+    def make(self, o: ta.Any) -> 'Unmarshaler':
         rty = self._reflect(o)
         try:
             return check.not_none(self.factory).make_unmarshaler(self, rty)
@@ -64,11 +67,11 @@ class UnmarshalContext(BaseContext, lang.Final):
             raise UnhandledTypeError(rty)  # noqa
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: type[T]) -> T:
+    def unmarshal(self, v: 'Value', ty: type[T]) -> T:
         ...
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: ta.Any) -> ta.Any:
+    def unmarshal(self, v: 'Value', ty: ta.Any) -> ta.Any:
         ...
 
     def unmarshal(self, v, ty):
