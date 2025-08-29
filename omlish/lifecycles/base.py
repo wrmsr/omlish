@@ -4,50 +4,82 @@ from .. import dataclasses as dc
 from .. import lang
 
 
+R = ta.TypeVar('R')
+
+AnyLifecycleT = ta.TypeVar('AnyLifecycleT', bound='AnyLifecycle')
+AnyLifecycleCallback: ta.TypeAlias = ta.Callable[[AnyLifecycleT], R]
+
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
-LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], None]
+LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], R]
 
 
 ##
 
 
-class Lifecycle:
-    def lifecycle_construct(self) -> None:
+class AnyLifecycle(lang.Abstract, ta.Generic[R]):
+    def lifecycle_construct(self) -> R | None:
         pass
 
-    def lifecycle_start(self) -> None:
+    def lifecycle_start(self) -> R | None:
         pass
 
-    def lifecycle_stop(self) -> None:
+    def lifecycle_stop(self) -> R | None:
         pass
 
-    def lifecycle_destroy(self) -> None:
+    def lifecycle_destroy(self) -> R | None:
         pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class CallbackLifecycle(Lifecycle, lang.Final, ta.Generic[LifecycleT]):
-    on_construct: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
-    on_start: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
-    on_stop: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
-    on_destroy: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
+class AnyCallbackLifecycle(
+    AnyLifecycle[R],
+    lang.Abstract,
+    ta.Generic[AnyLifecycleT, R],
+):
+    on_construct: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
+    on_start: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
+    on_stop: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
+    on_destroy: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
 
     @ta.override
-    def lifecycle_construct(self) -> None:
+    def lifecycle_construct(self) -> R | None:
         if self.on_construct is not None:
-            self.on_construct(self)
+            return self.on_construct(self)
+        else:
+            return None
 
     @ta.override
-    def lifecycle_start(self) -> None:
+    def lifecycle_start(self) -> R | None:
         if self.on_start is not None:
-            self.on_start(self)
+            return self.on_start(self)
+        else:
+            return None
 
     @ta.override
-    def lifecycle_stop(self) -> None:
+    def lifecycle_stop(self) -> R | None:
         if self.on_stop is not None:
-            self.on_stop(self)
+            return self.on_stop(self)
+        else:
+            return None
 
     @ta.override
-    def lifecycle_destroy(self) -> None:
+    def lifecycle_destroy(self) -> R | None:
         if self.on_destroy is not None:
-            self.on_destroy(self)
+            return self.on_destroy(self)
+        else:
+            return None
+
+
+##
+
+
+class Lifecycle(AnyLifecycle[None]):
+    pass
+
+
+class CallbackLifecycle(
+    AnyCallbackLifecycle[LifecycleT, None],
+    lang.Final,
+    ta.Generic[LifecycleT],
+):
+    pass
