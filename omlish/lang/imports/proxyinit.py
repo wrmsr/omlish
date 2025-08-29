@@ -496,6 +496,44 @@ class _AutoProxyInitCapture:
         )
 
 
+class AutoProxyInitState:
+    def __init__(
+            self,
+            init_globals: ta.MutableMapping[str, ta.Any],
+            *,
+            disable: bool,
+            eager: bool,
+    ) -> None:
+        super().__init__()
+
+        self._init_globals = init_globals
+
+        self._disable = disable
+        self._eager = eager
+
+    @property
+    def disable(self) -> bool:
+        return self._disable
+
+    @property
+    def eager(self) -> bool:
+        return self._eager
+
+    class _Result(ta.NamedTuple):
+        pass
+
+    _result: _Result
+
+    @property
+    def is_done(self) -> bool:
+        try:
+            self._result  # noqa
+        except AttributeError:
+            return False
+        else:
+            return True
+
+
 @contextlib.contextmanager
 def auto_proxy_init(
         init_globals: ta.MutableMapping[str, ta.Any],
@@ -505,21 +543,28 @@ def auto_proxy_init(
 
         unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
         raise_unreferenced: bool = False,
-) -> ta.Iterator[None]:
+) -> ta.Iterator[AutoProxyInitState]:
     """
     This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
     implicitly does anyway. It further relies on temporarily patching `__builtins__.__import__`, but could be switched
     to use any number of other import hooks.
     """
 
+    st = AutoProxyInitState(
+        init_globals,
+        disable=disable,
+        eager=eager,
+    )
+
     if disable:
-        yield
+        st._result = AutoProxyInitState._Result()  # noqa
+        yield st
         return
 
     cap = _AutoProxyInitCapture()
 
     with cap.hook_context(init_globals):
-        yield
+        yield st
 
     cap.verify_state(init_globals)
 
@@ -550,3 +595,5 @@ def auto_proxy_init(
         for pi in blt.proxy_inits:
             for _, a in pi.attrs:
                 lg.get(a)
+
+    st._result = AutoProxyInitState._Result()  # noqa

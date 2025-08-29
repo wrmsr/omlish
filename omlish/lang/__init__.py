@@ -243,6 +243,7 @@ from .imports.proxyinit import (  # noqa
 
     AutoProxyInitError,
     AutoProxyInitErrors,
+    AutoProxyInitState,
     auto_proxy_init,
 )
 
