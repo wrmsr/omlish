@@ -57,57 +57,110 @@ class _Special:
     origin: type
     nparams: int
 
+    @classmethod
+    def from_alias(cls, v: _SpecialGenericAlias) -> '_Special':  # type: ignore
+        return cls(
+            v._name,  # type: ignore  # noqa
+            v,
+            v.__origin__,  # type: ignore
+            v._nparams,  # type: ignore  # noqa
+        )
+
+
+@dc.dataclass(frozen=True)
+class _LazySpecial:
+    name: str
+
 
 class _KnownSpecials:
-    def __init__(self, *specials: _Special) -> None:
+    def __init__(
+            self,
+            specials: ta.Iterable[_Special] = (),
+            lazy_specials: ta.Iterable[_LazySpecial] = (),
+    ) -> None:
         super().__init__()
 
         self._lock = threading.RLock()
 
         self._lst: list[_Special] = []
         self._by_name: dict[str, _Special] = {}
-        self._by_alias: dict[_SpecialGenericAlias, _Special] = {}
+        self._by_alias: dict[_SpecialGenericAlias, _Special] = {}  # type: ignore
         self._by_origin: dict[type, _Special] = {}
 
+        self._lazies_by_name: dict[str, _LazySpecial] = {}
+
         for sp in specials:
-            self.add(sp)
+            self._add(sp)
+        for lz in lazy_specials:
+            self._add_lazy(lz)
 
-    def add(self, sp: _Special) -> ta.Self:
+    #
+
+    def _add(self, sp: _Special) -> None:
+        uds: list[tuple[ta.Any, ta.MutableMapping]] = [
+            (sp.name, self._by_name),
+            (sp.alias, self._by_alias),
+            (sp.origin, self._by_origin),
+        ]
+        for k, dct in uds:
+            if k in dct:
+                raise KeyError(k)
+        self._lst.append(sp)
+        for k, dct in uds:
+            dct[k] = sp
+
+    def add(self, *specials: _Special) -> ta.Self:
         with self._lock:
-            uds: list[tuple[ta.Any, ta.MutableMapping]] = [
-                (sp.name, self._by_name),
-                (sp.alias, self._by_alias),
-                (sp.origin, self._by_origin),
-            ]
-            for k, dct in uds:
-                if k in dct:
-                    raise KeyError(k)
-            self._lst.append(sp)
-            for k, dct in uds:
-                dct[k] = sp
-
+            for sp in specials:
+                self._add(sp)
         return self
+
+    #
+
+    def _add_lazy(self, lz: _LazySpecial) -> None:
+        pass
+
+    def add_lazy(self, *lazy_specials: _LazySpecial) -> ta.Self:
+        with self._lock:
+            for lz in lazy_specials:
+                self._add_lazy(lz)
+        return self
+
+    #
 
     def get_by_name(self, name: str) -> _Special | None:
         return self._by_name.get(name)
 
-    def get_by_alias(self, alias: _SpecialGenericAlias) -> _Special | None:
-        return self._by_alias.get(alias)
+    def get_by_alias(self, alias: _SpecialGenericAlias) -> _Special | None:  # type: ignore
+        try:
+            return self._by_alias[alias]
+        except KeyError:
+            pass
+
+        return None
 
     def get_by_origin(self, origin: type) -> _Special | None:
         return self._by_origin.get(origin)
 
 
-_KNOWN_SPECIALS = _KnownSpecials(*[
-    _Special(
-        v._name,  # noqa
-        v,
-        v.__origin__,
-        v._nparams,  # noqa
-    )
-    for v in ta.__dict__.values()  # noqa
-    if isinstance(v, _SpecialGenericAlias)
-])
+_KNOWN_SPECIALS = _KnownSpecials(
+    [
+        _Special.from_alias(v)
+        for v in ta.__dict__.values()  # noqa
+        if isinstance(v, _SpecialGenericAlias)
+    ],
+    [
+        # https://github.com/python/cpython/commit/e8be0c9c5a7c2327b3dd64009f45ee0682322dcb
+        *[_LazySpecial(n) for n in [
+            'Pattern',
+            'Match',
+            'ContextManager',
+            'AsyncContextManager',
+        ]],
+        # https://github.com/python/cpython/commit/305be5fb1a1ece7f9651ae98053dbe79bf439aa4
+        *([_LazySpecial('ForwardRef')] if not hasattr(ta, 'ForwardRef') else []),
+    ],
+)
 
 
 ##
