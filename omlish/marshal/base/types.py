@@ -5,9 +5,9 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import match as mfs
+from .configs import ConfigRegistry
 from .contexts import MarshalContext
 from .contexts import UnmarshalContext
-from .registries import Registry
 from .values import Value
 
 
@@ -76,7 +76,7 @@ class UnmarshalerFactory_(UnmarshalerFactory):  # noqa
 
 class Marshaling(lang.Abstract):
     @abc.abstractmethod
-    def registry(self) -> Registry:
+    def config_registry(self) -> ConfigRegistry:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -91,14 +91,14 @@ class Marshaling(lang.Abstract):
 
     def new_marshal_context(self, **kwargs: ta.Any) -> MarshalContext:
         return MarshalContext(
-            self.registry(),
+            config_registry=self.config_registry(),
             factory=self.marshaler_factory(),
             **kwargs,
         )
 
     def new_unmarshal_context(self, **kwargs: ta.Any) -> UnmarshalContext:
         return UnmarshalContext(
-            self.registry(),
+            config_registry=self.config_registry(),
             factory=self.unmarshaler_factory(),
             **kwargs,
         )

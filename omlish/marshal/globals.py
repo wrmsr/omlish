@@ -2,8 +2,8 @@ import threading
 import typing as ta
 
 from .. import lang
-from .base.registries import Registry
-from .base.registries import RegistryItem
+from .base.configs import Config
+from .base.configs import ConfigRegistry
 from .base.types import MarshalerFactory
 from .base.types import Marshaling
 from .base.types import UnmarshalerFactory
@@ -22,8 +22,8 @@ _GLOBAL_LOCK = threading.RLock()
 
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
-def global_registry() -> Registry:
-    return Registry(lock=_GLOBAL_LOCK)
+def global_config_registry() -> ConfigRegistry:
+    return ConfigRegistry(lock=_GLOBAL_LOCK)
 
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
@@ -37,8 +37,8 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
 
 
 class _GlobalMarshaling(Marshaling, lang.Final):
-    def registry(self) -> Registry:
-        return global_registry()
+    def config_registry(self) -> ConfigRegistry:
+        return global_config_registry()
 
     def marshaler_factory(self) -> MarshalerFactory:
         return global_marshaler_factory()
@@ -76,12 +76,12 @@ def unmarshal(v, ty, **kwargs):
 ##
 
 
-def register_global(
+def register_global_config(
         key: ta.Any,
-        *items: RegistryItem,
+        *items: Config,
         identity: bool = False,
 ) -> None:
-    global_registry().register(
+    global_config_registry().register(
         key,
         *items,
         identity=identity,

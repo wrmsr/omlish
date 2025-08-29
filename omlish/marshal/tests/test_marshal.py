@@ -5,9 +5,9 @@ import enum
 import fractions
 import typing as ta
 
+from ..base.configs import ConfigRegistry
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
-from ..base.registries import Registry
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
 from .foox import Foox
@@ -37,7 +37,7 @@ def test_marshal():
 
     mf = new_standard_marshaler_factory()
 
-    reg: Registry = Registry()
+    reg = ConfigRegistry()
 
     print()
 
@@ -45,7 +45,7 @@ def test_marshal():
     print(obj)
     print()
 
-    mc = MarshalContext(registry=reg, factory=mf)
+    mc = MarshalContext(config_registry=reg, factory=mf)
     for _ in range(2):
         mobj = mc.make(type(obj)).marshal(mc, obj)
         print(mobj)
@@ -53,7 +53,7 @@ def test_marshal():
 
     uf = new_standard_unmarshaler_factory()
 
-    uc = UnmarshalContext(registry=reg, factory=uf)
+    uc = UnmarshalContext(config_registry=reg, factory=uf)
     for _ in range(2):
         uobj = uc.make(type(obj)).unmarshal(uc, mobj)  # noqa
         print(uobj)

@@ -1,8 +1,8 @@
 import dataclasses as dc
 
+from ...base.configs import ConfigRegistry
 from ...base.contexts import MarshalContext
 from ...base.contexts import UnmarshalContext
-from ...base.registries import Registry
 from ...base.types import MarshalerFactory
 from ...base.types import UnmarshalerFactory
 from ...factories.multi import MultiMarshalerFactory
@@ -76,13 +76,13 @@ def _test_polymorphism(tt):
 
     o = PS2('0', PS1('1', 420))
 
-    reg: Registry = Registry()
+    reg = ConfigRegistry()
 
-    mc = MarshalContext(registry=reg, factory=mf)
+    mc = MarshalContext(config_registry=reg, factory=mf)
     v = mc.make(PB).marshal(mc, o)
     print(v)
 
-    uc = UnmarshalContext(registry=reg, factory=uf)
+    uc = UnmarshalContext(config_registry=reg, factory=uf)
     o2 = uc.make(PB).unmarshal(uc, v)
     print(o2)
 

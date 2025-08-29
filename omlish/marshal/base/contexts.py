@@ -6,13 +6,14 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import match as mfs
+from .configs import EMPTY_CONFIG_REGISTRY
+from .configs import ConfigRegistry
 from .errors import UnhandledTypeError
 from .options import Option
 from .overrides import ReflectOverride
 
 
 if ta.TYPE_CHECKING:
-    from .registries import Registry
     from .types import Marshaler
     from .types import MarshalerFactory
     from .types import Unmarshaler
@@ -26,21 +27,21 @@ T = ta.TypeVar('T')
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class BaseContext(lang.Abstract):
-    registry: 'Registry'
+    config_registry: ConfigRegistry = EMPTY_CONFIG_REGISTRY
     options: col.TypeMap[Option] = col.TypeMap()
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
         def override(o):
-            if (ovr := self.registry.get_of(o, ReflectOverride)):
+            if (ovr := self.config_registry.get_of(o, ReflectOverride)):
                 return ovr[-1].rty
             return None
 
         return rfl.Reflector(override=override).type(o)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class MarshalContext(BaseContext, lang.Final):
     factory: ta.Optional['MarshalerFactory'] = None
 
@@ -55,7 +56,7 @@ class MarshalContext(BaseContext, lang.Final):
         return self.make(ty if ty is not None else type(obj)).marshal(self, obj)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalContext(BaseContext, lang.Final):
     factory: ta.Optional['UnmarshalerFactory'] = None
 

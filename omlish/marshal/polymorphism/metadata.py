@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from ... import lang
-from ..base.registries import RegistryItem
+from ..base.configs import Config
 from ..naming import Naming
 from ..naming import translate_name
 
@@ -10,7 +10,7 @@ from ..naming import translate_name
 ##
 
 
-class TypeTagging(RegistryItem, lang.Abstract, lang.Sealed):
+class TypeTagging(Config, lang.Abstract, lang.Sealed):
     pass
 
 

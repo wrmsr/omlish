@@ -165,13 +165,13 @@ def _install_standard_marshalling() -> None:
         _CanContentUnmarshalerFactory(),
     )
 
-    msh.register_global(
+    msh.register_global_config(
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,
     )
 
-    msh.register_global(
+    msh.register_global_config(
         CanContent,
         msh.ReflectOverride(MarshalCanContent),
         identity=True,

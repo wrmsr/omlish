@@ -75,7 +75,7 @@ def _install_standard_marshalling() -> None:
         RequiresMarkerListMarshalerFactory(),
     )
 
-    msh.register_global(
+    msh.register_global_config(
         RequiresMarkerList,
         msh.ReflectOverride(MarshalRequiresMarkerList),
         identity=True,

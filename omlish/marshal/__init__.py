@@ -17,6 +17,11 @@ See:
 """
 
 
+from .base.configs import (  # noqa
+    Config,
+    ConfigRegistry,
+)
+
 from .base.contexts import (  # noqa
     BaseContext,
     MarshalContext,
@@ -39,6 +44,7 @@ from .base.overrides import (  # noqa
 )
 
 from .base.registries import (  # noqa
+    RegistrySealedError,
     Registry,
 )
 
@@ -195,7 +201,7 @@ from .trivial.nop import (  # noqa
 )
 
 from .globals import (  # noqa
-    global_registry,
+    global_config_registry,
     global_marshaler_factory,
     global_unmarshaler_factory,
     global_marshaling,
@@ -203,7 +209,7 @@ from .globals import (  # noqa
     marshal,
     unmarshal,
 
-    register_global,
+    register_global_config,
 )
 
 from .naming import (  # noqa

@@ -3,7 +3,7 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
-from .registries import RegistryItem
+from .configs import Config
 
 
 if ta.TYPE_CHECKING:
@@ -21,7 +21,7 @@ else:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Override(RegistryItem, lang.Final):
+class Override(Config, lang.Final):
     marshaler: ta.Optional['Marshaler'] = dc.xfield(None, validate=lambda v: isinstance(v, (_types.Marshaler, type(None))))  # noqa
     marshaler_factory: ta.Optional['MarshalerFactory'] = None
 
@@ -30,5 +30,5 @@ class Override(RegistryItem, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class ReflectOverride(RegistryItem, lang.Final):
+class ReflectOverride(Config, lang.Final):
     rty: rfl.Type

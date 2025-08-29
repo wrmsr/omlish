@@ -5,7 +5,6 @@ from .... import dataclasses as dc
 from ....lite import marshal as lmsh
 from ...base.contexts import MarshalContext
 from ...base.contexts import UnmarshalContext
-from ...base.registries import Registry
 from ...globals import marshal
 from ...globals import unmarshal
 from ...standard import new_standard_unmarshaler_factory
@@ -46,14 +45,14 @@ def test_unknown_fields():
         {fi.name: (fi, NOP_MARSHALER_UNMARSHALER) for fi in fis},
         specials=ObjectSpecials(unknown='x'),
     )
-    c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
+    c = ou.unmarshal(UnmarshalContext(), {'i': 420, 's': 'foo', 'qqq': 'huh'})
     assert c == C(i=420, s='foo', x={'qqq': 'huh'})
 
     om = ObjectMarshaler(
         [(fi, NOP_MARSHALER_UNMARSHALER) for fi in fis],
         specials=ObjectSpecials(unknown='x'),
     )
-    o = om.marshal(MarshalContext(Registry()), c)
+    o = om.marshal(MarshalContext(), c)
     assert o == {'i': 420, 's': 'foo', 'qqq': 'huh'}
 
 
@@ -73,7 +72,7 @@ def test_decorated_unknown_field():
         'frab': False,
     }
 
-    uc = UnmarshalContext(Registry(), factory=new_standard_unmarshaler_factory())
+    uc = UnmarshalContext(factory=new_standard_unmarshaler_factory())
     u = uc.make(ImageUploadResponse)
 
     o = u.unmarshal(uc, d)
@@ -110,14 +109,14 @@ def test_source_fields():
         specials=ObjectSpecials(source='x'),
         ignore_unknown=True,
     )
-    c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
+    c = ou.unmarshal(UnmarshalContext(), {'i': 420, 's': 'foo', 'qqq': 'huh'})
     assert c == C(i=420, s='foo', x={'i': 420, 's': 'foo', 'qqq': 'huh'})
 
     om = ObjectMarshaler(
         [(fi, NOP_MARSHALER_UNMARSHALER) for fi in fis],
         specials=ObjectSpecials(source='x'),
     )
-    o = om.marshal(MarshalContext(Registry()), c)
+    o = om.marshal(MarshalContext(), c)
     assert o == {'i': 420, 's': 'foo'}
 
 
