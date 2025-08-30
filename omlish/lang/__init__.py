@@ -145,22 +145,42 @@ with _auto_proxy_init(
     )
 
     from .contextmanagers import (  # noqa
-        AsyncContextManager,
         ContextManaged,
-        ContextManager,
-        ContextWrapped,
-        DefaultLockable,
-        Lockable,
+        SelfContextManaged,
+        ValueContextManager,
         NOP_CONTEXT_MANAGER,
-        NopContextManager,
-        Timer,
+
+        AsyncContextManaged,
+        SelfAsyncContextManaged,
+        ValueAsyncContextManager,
+        NOP_ASYNC_CONTEXT_MANAGER,
+
+        AsyncContextManager,
+
+        ContextManager,
+
+        maybe_managing,
+        disposing,
         breakpoint_on_exception,
         context_var_setting,
+
+        as_async_context_manager,
+
+        ContextWrappable,
+        ContextWrapped,
         context_wrapped,
+
+        Lockable,
+        DefaultLockable,
         default_lock,
-        disposing,
+
+        AsyncLockable,
+        DefaultAsyncLockable,
+        default_async_lock,
+
+        Timer,
+
         double_check_setdefault,
-        maybe_managing,
     )
 
     from .datetimes import (  # noqa

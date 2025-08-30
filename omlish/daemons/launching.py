@@ -94,7 +94,7 @@ class Launcher:
             if (pid_file := self._pid_file) is not None:
                 if not isinstance(spawner, InProcessSpawner):
                     pidfile = es.enter_context(open_inheritable_pidfile(pid_file))
-                    pidfile_manager = lang.NopContextManager(pidfile)
+                    pidfile_manager = lang.ValueContextManager(pidfile)
 
                 else:
                     check.state(not self._reparent_process)

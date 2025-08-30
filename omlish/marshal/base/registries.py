@@ -53,6 +53,7 @@ class Registry(ta.Generic[RegistryItemT]):
         self._dct: dict[ta.Any, _KeyRegistryItems[RegistryItemT]] = {}
         self._id_dct: ta.MutableMapping[ta.Any, _KeyRegistryItems[RegistryItemT]] = col.IdentityKeyDict()
 
+        self._version = 0
         self._sealed = False
 
     #
@@ -84,6 +85,9 @@ class Registry(ta.Generic[RegistryItemT]):
             *items: RegistryItemT,
             identity: bool = False,
     ) -> ta.Self:
+        if not items:
+            return self
+
         with self._lock:
             if self._sealed:
                 raise RegistrySealedError(self)
@@ -92,6 +96,8 @@ class Registry(ta.Generic[RegistryItemT]):
             if (sr := dct.get(key)) is None:
                 sr = dct[key] = _KeyRegistryItems(key)
             sr.add(*items)
+
+            self._version += 1
 
         return self
 

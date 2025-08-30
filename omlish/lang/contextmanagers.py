@@ -2,6 +2,7 @@
 TODO:
  - AsyncExitStacked
  - lol does double_check_setdefault need a CowDict in FT?
+ - AsyncLockable, DefaultAsyncLockable
 """
 import abc
 import contextlib
@@ -21,14 +22,9 @@ V = ta.TypeVar('V')
 ##
 
 
-class _NOT_SET:  # noqa
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-
-class ContextManaged:
-    def __enter__(self) -> ta.Self:
-        return self
+class ContextManaged(abc.ABC):  # noqa
+    def __enter__(self):
+        return None
 
     def __exit__(
             self,
@@ -39,23 +35,56 @@ class ContextManaged:
         return None
 
 
-class NopContextManager(ContextManaged):
-    def __init__(self, /, value: ta.Any = _NOT_SET) -> None:
+class SelfContextManaged(ContextManaged):
+    def __enter__(self) -> ta.Self:
+        return self
+
+
+class ValueContextManager(ContextManaged, ta.Generic[T]):
+    def __init__(self, value: T) -> None:
         super().__init__()
 
         self._value = value
 
-    def __enter__(self):
-        if (value := self._value) is _NOT_SET:
-            return self
-        else:
-            return value
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        raise TypeError
+    def __enter__(self) -> T:
+        return self._value
 
 
-NOP_CONTEXT_MANAGER = NopContextManager()
+NOP_CONTEXT_MANAGER = ValueContextManager(None)
+
+
+#
+
+
+class AsyncContextManaged(abc.ABC):  # noqa
+    async def __aenter__(self):
+        return None
+
+    async def __aexit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
+        return None
+
+
+class SelfAsyncContextManaged(AsyncContextManaged):
+    async def __aenter__(self) -> ta.Self:
+        return self
+
+
+class ValueAsyncContextManager(AsyncContextManaged, ta.Generic[T]):
+    def __init__(self, value: T) -> None:
+        super().__init__()
+
+        self._value = value
+
+    async def __aenter__(self) -> T:
+        return self._value
+
+
+NOP_ASYNC_CONTEXT_MANAGER = ValueAsyncContextManager(None)
 
 
 ##
@@ -88,6 +117,9 @@ class ContextManager(abc.ABC, ta.Generic[T]):
             exc_tb: types.TracebackType | None,
     ) -> bool | None:
         return self._contextmanager.__exit__(exc_type, exc_val, exc_tb)
+
+
+#
 
 
 class AsyncContextManager(abc.ABC, ta.Generic[T]):
@@ -155,6 +187,15 @@ def context_var_setting(var: contextvars.ContextVar[T], val: T) -> ta.Iterator[T
         yield val
     finally:
         var.reset(token)
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def as_async_context_manager(cm: ta.ContextManager[T]) -> ta.AsyncIterator[T]:
+    with cm as v:
+        yield v
 
 
 ##
@@ -251,6 +292,30 @@ def default_lock(value: DefaultLockable, default: DefaultLockable = None) -> Loc
         return value
 
     elif isinstance(value, ta.ContextManager):
+        return lambda: value
+
+    else:
+        raise TypeError(value)
+
+
+#
+
+
+AsyncLockable = ta.Callable[[], ta.AsyncContextManager]
+DefaultAsyncLockable = AsyncLockable | ta.AsyncContextManager | None
+
+
+def default_async_lock(value: DefaultAsyncLockable, default: DefaultAsyncLockable = None) -> AsyncLockable:
+    if value is None:
+        value = default
+
+    if value is None:
+        return lambda: NOP_ASYNC_CONTEXT_MANAGER
+
+    elif callable(value):
+        return value
+
+    elif isinstance(value, ta.AsyncContextManager):
         return lambda: value
 
     else:
