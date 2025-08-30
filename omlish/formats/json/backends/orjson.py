@@ -48,6 +48,7 @@ class Options:
 
     ##
 
+    @lang.cached_function
     def __int__(self) -> int:
         return (
             (oj.OPT_APPEND_NEWLINE if self.append_newline else 0) |

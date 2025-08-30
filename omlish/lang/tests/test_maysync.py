@@ -5,9 +5,9 @@ import typing as ta
 import pytest
 import sniffio
 
-from ...lite.maysyncs import run_maysync
+from ...lite.maysync import run_maysync
 from ..imports.lazy import proxy_import
-from ..maysyncs import make_maysync
+from ..maysync import make_maysync
 
 
 if ta.TYPE_CHECKING:

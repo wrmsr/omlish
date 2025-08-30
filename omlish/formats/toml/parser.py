@@ -49,8 +49,8 @@ import types
 import typing as ta
 
 
-TomlParseFloat = ta.Callable[[str], ta.Any]
-TomlKey = ta.Tuple[str, ...]
+TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
+TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
 

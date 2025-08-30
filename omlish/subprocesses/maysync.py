@@ -4,7 +4,7 @@ import abc
 import sys
 import typing as ta
 
-from ..lite.maysyncs import make_maysync
+from ..lite.maysync import make_maysync
 from .asyncs import AbstractAsyncSubprocesses
 from .run import SubprocessRun
 from .run import SubprocessRunOutput

@@ -4,9 +4,9 @@ import typing as ta
 import unittest
 
 from ...lite.check import check
-from ...lite.maysyncs import run_maysync
+from ...lite.maysync import run_maysync
 from ..asyncs import AbstractAsyncSubprocesses
-from ..maysyncs import MaysyncSubprocesses
+from ..maysync import MaysyncSubprocesses
 from ..run import SubprocessRun
 from ..run import SubprocessRunOutput
 from ..sync import subprocesses

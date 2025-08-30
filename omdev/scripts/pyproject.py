@@ -91,8 +91,8 @@ VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, Vers
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
 # ../../omlish/formats/toml/parser.py
-TomlParseFloat = ta.Callable[[str], ta.Any]
-TomlKey = ta.Tuple[str, ...]
+TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
+TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
 # ../../omlish/lite/cached.py

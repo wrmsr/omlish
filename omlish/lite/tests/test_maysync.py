@@ -2,8 +2,8 @@
 import typing as ta
 import unittest
 
-from ..maysyncs import make_maysync
-from ..maysyncs import run_maysync
+from ..maysync import make_maysync
+from ..maysync import run_maysync
 from .utils import sync_async_list
 from .utils import sync_await
 

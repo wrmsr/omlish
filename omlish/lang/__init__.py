@@ -317,7 +317,7 @@ with _auto_proxy_init(
         just,
     )
 
-    from .maysyncs import (  # noqa
+    from .maysync import (  # noqa
         make_maysync_fn,
         make_maysync_generator_fn,
         make_maysync,
@@ -459,7 +459,7 @@ with _auto_proxy_init(
         Maybe,
     )
 
-    from ..lite.maysyncs import (  # noqa
+    from ..lite.maysync import (  # noqa
         mark_maysync,
         is_maysync,
 

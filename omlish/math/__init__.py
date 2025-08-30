@@ -1,83 +1,89 @@
-from .bits import (  # noqa
-    get_bit,
-    get_bits,
-    set_bit,
-    set_bits,
-)
+from .. import lang as _lang
 
-from .c import (  # noqa
-    cdiv,
-    cmod,
-)
 
-from .fixed import (  # noqa
-    CheckedFixedWidthIntError,
-    OverflowFixedWidthIntError,
-    UnderflowFixedWidthIntError,
+with _lang.auto_proxy_init(globals()):
+    ##
 
-    FixedWidthInt,
+    from .bits import (  # noqa
+        get_bit,
+        get_bits,
+        set_bit,
+        set_bits,
+    )
 
-    SignedInt,
-    UnsignedInt,
+    from .c import (  # noqa
+        cdiv,
+        cmod,
+    )
 
-    CheckedInt,
-    ClampedInt,
+    from .fixed import (  # noqa
+        CheckedFixedWidthIntError,
+        OverflowFixedWidthIntError,
+        UnderflowFixedWidthIntError,
 
-    AnyInt8,
-    AnyInt16,
-    AnyInt32,
-    AnyInt64,
-    AnyInt128,
+        FixedWidthInt,
 
-    CheckedInt8,
-    CheckedInt16,
-    CheckedInt32,
-    CheckedInt64,
-    CheckedInt128,
+        SignedInt,
+        UnsignedInt,
 
-    CheckedUint8,
-    CheckedUint16,
-    CheckedUint32,
-    CheckedUint64,
-    CheckedUint128,
+        CheckedInt,
+        ClampedInt,
 
-    ClampedInt8,
-    ClampedInt16,
-    ClampedInt32,
-    ClampedInt64,
-    ClampedInt128,
+        AnyInt8,
+        AnyInt16,
+        AnyInt32,
+        AnyInt64,
+        AnyInt128,
 
-    ClampedUint8,
-    ClampedUint16,
-    ClampedUint32,
-    ClampedUint64,
-    ClampedUint128,
+        CheckedInt8,
+        CheckedInt16,
+        CheckedInt32,
+        CheckedInt64,
+        CheckedInt128,
 
-    WrappedInt8,
-    WrappedInt16,
-    WrappedInt32,
-    WrappedInt64,
-    WrappedInt128,
+        CheckedUint8,
+        CheckedUint16,
+        CheckedUint32,
+        CheckedUint64,
+        CheckedUint128,
 
-    WrappedUint8,
-    WrappedUint16,
-    WrappedUint32,
-    WrappedUint64,
-    WrappedUint128,
-)
+        ClampedInt8,
+        ClampedInt16,
+        ClampedInt32,
+        ClampedInt64,
+        ClampedInt128,
 
-from .floats import (  # noqa
-    isclose,
-    float_to_bytes,
-    bytes_to_float,
-)
+        ClampedUint8,
+        ClampedUint16,
+        ClampedUint32,
+        ClampedUint64,
+        ClampedUint128,
 
-from .stats import (  # noqa
-    get_quantile,
+        WrappedInt8,
+        WrappedInt16,
+        WrappedInt32,
+        WrappedInt64,
+        WrappedInt128,
 
-    Stats,
-)
+        WrappedUint8,
+        WrappedUint16,
+        WrappedUint32,
+        WrappedUint64,
+        WrappedUint128,
+    )
 
-from .histogram import (  # noqa
-    SamplingHistogram,
-)
+    from .floats import (  # noqa
+        isclose,
+        float_to_bytes,
+        bytes_to_float,
+    )
+
+    from .stats import (  # noqa
+        get_quantile,
+
+        Stats,
+    )
+
+    from .histogram import (  # noqa
+        SamplingHistogram,
+    )

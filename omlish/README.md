@@ -23,7 +23,7 @@ dependencies of any kind**.
     of the presence or absence of an object, as in [many](https://en.cppreference.com/w/cpp/utility/optional)
     [other](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html)
     [languages](https://doc.rust-lang.org/std/option/).
-  - **[maysyncs](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maysyncs.py)** - A lightweight means of sharing
+  - **[maysync](https://github.com/wrmsr/omlish/blob/master/omlish/lite/maysync.py)** - A lightweight means of sharing
     code between sync and async contexts, eliminating the need for maintaining sync and async versions of functions.
 
 - **[bootstrap](https://github.com/wrmsr/omlish/blob/master/omlish/bootstrap)** - A centralized, configurable,

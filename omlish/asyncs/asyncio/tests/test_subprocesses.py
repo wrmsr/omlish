@@ -4,7 +4,7 @@ import typing as ta
 import pytest
 
 from .... import check
-from ....subprocesses.maysyncs import MaysyncSubprocesses
+from ....subprocesses.maysync import MaysyncSubprocesses
 from ....subprocesses.run import SubprocessRun
 from ....subprocesses.run import SubprocessRunOutput
 from ....subprocesses.sync import AbstractSubprocesses

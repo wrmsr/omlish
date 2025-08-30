@@ -1,8 +1,8 @@
 import typing as ta
 
-from ..lite.maysyncs import MaysyncFn
-from ..lite.maysyncs import MaysyncGeneratorFn
-from ..lite.maysyncs import make_maysync as _make_maysync
+from ..lite.maysync import MaysyncFn
+from ..lite.maysync import MaysyncGeneratorFn
+from ..lite.maysync import make_maysync as _make_maysync
 from .functions import as_async
 
 

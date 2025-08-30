@@ -28,7 +28,7 @@ Development utilities and support code.
   data, obviously in the vein of [jq](https://github.com/jqlang/jq) but using the internal
   [jmespath](https://github.com/wrmsr/omlish/blob/master/omlish/specs/jmespath) engine. supports
   [true streaming](https://github.com/wrmsr/omlish/blob/master/omlish/formats/json/stream) json input and output, as
-  well as [various other](https://github.com/wrmsr/omlish/blob/master/tools/json/formats.py) non-streaming input
+  well as [various other](https://github.com/wrmsr/omlish/blob/master/omdev/tools/json/formats.py) non-streaming input
   formats.
 
 - **[tools.git](https://github.com/wrmsr/omlish/blob/master/omdev/tools/git)** (cli: `om git`) - a tool for various lazy

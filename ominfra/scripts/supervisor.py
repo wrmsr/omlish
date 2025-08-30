@@ -112,8 +112,8 @@ ConfigMap = ta.Mapping[str, ta.Any]
 IniSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
 
 # ../../omlish/formats/toml/parser.py
-TomlParseFloat = ta.Callable[[str], ta.Any]
-TomlKey = ta.Tuple[str, ...]
+TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
+TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
 # ../../omlish/lite/cached.py

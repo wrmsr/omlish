@@ -512,8 +512,8 @@ class AutoProxyInit:
             self,
             init_globals: ta.MutableMapping[str, ta.Any],
             *,
-            disable: bool,
-            eager: bool,
+            disable: bool = False,
+            eager: bool = False,
     ) -> None:
         super().__init__()
 
