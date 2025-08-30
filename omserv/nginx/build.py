@@ -20,7 +20,7 @@ from omlish import lang
 NGINX_VERSION = '1.28.0'
 NGINX_SRC_URL = f'https://nginx.org/download/nginx-{NGINX_VERSION}.tar.gz'
 
-NGINX_VTS_VERSION = '0.2.2'
+NGINX_VTS_VERSION = '0.2.4'
 NGINX_VTS_SRC_URL = f'https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v{NGINX_VTS_VERSION}.tar.gz'
 
 
