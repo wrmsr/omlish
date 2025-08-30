@@ -1,50 +1,57 @@
-from .callers import (  # noqa
-    LoggingCaller,
-)
+# rufF: noqa: I001
+from .. import lang as _lang
 
-from .color import (  # noqa
-    ColorLogFormatter,
-)
 
-from .filters import (  # noqa
-    TidLogFilter,
-)
+with _lang.auto_proxy_init(globals()):
+    ##
 
-from .handlers import (  # noqa
-    ListHandler,
-)
+    from .callers import (  # noqa
+        LoggingCaller,
+    )
 
-from .json import (  # noqa
-    JsonLogFormatter,
-)
+    from .color import (  # noqa
+        ColorLogFormatter,
+    )
 
-from .noisy import (  # noqa
-    silence_noisy_loggers,
-)
+    from .filters import (  # noqa
+        TidLogFilter,
+    )
 
-from .protocol import (  # noqa
-    LogLevel,
+    from .handlers import (  # noqa
+        ListHandler,
+    )
 
-    Logging,
-    NopLogging,
-    AbstractLogging,
-    StdlibLogging,
-)
+    from .json import (  # noqa
+        JsonLogFormatter,
+    )
 
-from .proxy import (  # noqa
-    ProxyLogFilterer,
-    ProxyLogHandler,
-)
+    from .noisy import (  # noqa
+        silence_noisy_loggers,
+    )
 
-from .standard import (  # noqa
-    STANDARD_LOG_FORMAT_PARTS,
-    StandardLogFormatter,
+    from .protocol import (  # noqa
+        LogLevel,
 
-    StandardConfiguredLogHandler,
+        Logging,
+        NopLogging,
+        AbstractLogging,
+        StdlibLogging,
+    )
 
-    configure_standard_logging,
-)
+    from .proxy import (  # noqa
+        ProxyLogFilterer,
+        ProxyLogHandler,
+    )
 
-from .utils import (  # noqa
-    error_logging,
-)
+    from .standard import (  # noqa
+        STANDARD_LOG_FORMAT_PARTS,
+        StandardLogFormatter,
+
+        StandardConfiguredLogHandler,
+
+        configure_standard_logging,
+    )
+
+    from .utils import (  # noqa
+        error_logging,
+    )

@@ -1,37 +1,43 @@
 # ruff: noqa: I001
-from .flattening import (  # noqa
-    ConfigFlattening as Flattening,
-)
+from ... import lang as _lang
 
-from .inheritance import (  # noqa
-    build_config_inherited_values as build_inherited_values,
-)
 
-from .matching import (  # noqa
-    MatchingConfigRewriter as MatchingRewriter,
+with _lang.auto_proxy_init(globals()):
+    ##
 
-    matched_config_rewrite as matched_rewrite,
-)
+    from .flattening import (  # noqa
+        ConfigFlattening as Flattening,
+    )
 
-from .merging import (  # noqa
-    merge_configs as merge,
-)
+    from .inheritance import (  # noqa
+        build_config_inherited_values as build_inherited_values,
+    )
 
-from .names import (  # noqa
-    build_config_named_children as build_named_children,
-)
+    from .matching import (  # noqa
+        MatchingConfigRewriter as MatchingRewriter,
 
-from .rewriting import (  # noqa
-    ConfigRewriterItem as RewriterItem,
-    ConfigRewriterPath as RewriterPath,
+        matched_config_rewrite as matched_rewrite,
+    )
 
-    RawConfigMetadata as RawMetadata,
+    from .merging import (  # noqa
+        merge_configs as merge,
+    )
 
-    ConfigRewriter as Rewriter,
-)
+    from .names import (  # noqa
+        build_config_named_children as build_named_children,
+    )
 
-from .strings import (  # noqa
-    StringConfigRewriter as StringRewriter,
+    from .rewriting import (  # noqa
+        ConfigRewriterItem as RewriterItem,
+        ConfigRewriterPath as RewriterPath,
 
-    format_config_strings as format_strings,
-)
+        RawConfigMetadata as RawMetadata,
+
+        ConfigRewriter as Rewriter,
+    )
+
+    from .strings import (  # noqa
+        StringConfigRewriter as StringRewriter,
+
+        format_config_strings as format_strings,
+    )

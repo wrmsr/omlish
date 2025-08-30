@@ -1,47 +1,54 @@
-# ruff: noqa: I001
-from .classes import (  # noqa
-    Configurable,
-)
+# rufF: noqa: I001
+from .. import lang as _lang
 
-from .formats import (  # noqa
-    ConfigData as Data,
 
-    ConfigLoader as Loader,
+with _lang.auto_proxy_init(globals()):
+    ##
 
-    ConfigRenderer as Renderer,
+    from .classes import (  # noqa
+        Configurable,
+    )
 
-    ObjConfigData as ObjData,
+    from .formats import (  # noqa
+        ConfigData as Data,
 
-    JsonConfigData as JsonData,
-    JsonConfigLoader as JsonLoader,
-    JsonConfigRenderer as JsonRenderer,
+        ConfigLoader as Loader,
 
-    TomlConfigData as TomlData,
-    TomlConfigLoader as TomlLoader,
-    TomlConfigRenderer as TomlRenderer,
+        ConfigRenderer as Renderer,
 
-    YamlConfigData as YamlData,
-    YamlConfigLoader as YamlLoader,
-    YamlConfigRenderer as YamlRenderer,
+        ObjConfigData as ObjData,
 
-    IniConfigData as IniData,
-    IniConfigLoader as IniLoader,
-    IniConfigRenderer as IniRenderer,
+        JsonConfigData as JsonData,
+        JsonConfigLoader as JsonLoader,
+        JsonConfigRenderer as JsonRenderer,
 
-    SwitchedConfigFileLoader as SwitchedFileLoader,
+        TomlConfigData as TomlData,
+        TomlConfigLoader as TomlLoader,
+        TomlConfigRenderer as TomlRenderer,
 
-    DEFAULT_CONFIG_LOADERS as DEFAULT_LOADERS,
-    DEFAULT_CONFIG_LOADER as DEFAULT_LOADER,
-    DEFAULT_CONFIG_FILE_LOADER as DEFAULT_FILE_LOADER,
+        YamlConfigData as YamlData,
+        YamlConfigLoader as YamlLoader,
+        YamlConfigRenderer as YamlRenderer,
 
-    SwitchedConfigRenderer as SwitchedRenderer,
+        IniConfigData as IniData,
+        IniConfigLoader as IniLoader,
+        IniConfigRenderer as IniRenderer,
 
-    DEFAULT_CONFIG_RENDERERS as DEFAULT_RENDERERS,
-    DEFAULT_CONFIG_RENDERER as DEFAULT_RENDERER,
-)
+        SwitchedConfigFileLoader as SwitchedFileLoader,
 
-from .types import (  # noqa
-    ConfigMap as Map,
-)
+        DEFAULT_CONFIG_LOADERS as DEFAULT_LOADERS,
+        DEFAULT_CONFIG_LOADER as DEFAULT_LOADER,
+        DEFAULT_CONFIG_FILE_LOADER as DEFAULT_FILE_LOADER,
+
+        SwitchedConfigRenderer as SwitchedRenderer,
+
+        DEFAULT_CONFIG_RENDERERS as DEFAULT_RENDERERS,
+        DEFAULT_CONFIG_RENDERER as DEFAULT_RENDERER,
+    )
+
+    from .types import (  # noqa
+        ConfigMap as Map,
+    )
+
 
 from .processing import all as processing  # noqa
