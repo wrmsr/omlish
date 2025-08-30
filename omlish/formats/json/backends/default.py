@@ -2,9 +2,15 @@ import typing as ta
 
 from .... import lang
 from .base import Backend
-from .orjson import orjson_backend
 from .std import std_backend
-from .ujson import ujson_backend
+
+
+if ta.TYPE_CHECKING:
+    from . import orjson as oj
+    from . import ujson as uj
+else:
+    oj = lang.proxy_import('.orjson', __package__)
+    uj = lang.proxy_import('.ujson', __package__)
 
 
 ##
@@ -12,12 +18,13 @@ from .ujson import ujson_backend
 
 @lang.cached_function
 def default_backend() -> Backend:
-    for fn in [
-        orjson_backend,
-        ujson_backend,
+    for (im, bm, fn) in [
+        ('orjson', oj, 'orjson_backend'),
+        ('ujson', uj, 'ujson_backend'),
     ]:
-        if (be := fn()) is not None:
-            return be
+        if lang.can_import(im):
+            if (be := getattr(bm, fn)()) is not None:
+                return be
 
     return std_backend()
 
