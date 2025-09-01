@@ -39,11 +39,11 @@ class AnyLogging(ta.Protocol[T_co]):
     def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T_co: ...
 
 
-class Logging(AnyLogging[None]):
+class Logging(AnyLogging[None], ta.Protocol):
     pass
 
 
-class AsyncLogging(AnyLogging[ta.Awaitable[None]]):
+class AsyncLogging(AnyLogging[ta.Awaitable[None]], ta.Protocol):
     pass
 
 
@@ -69,30 +69,29 @@ class AnyAbstractLogging(abc.ABC, ta.Generic[T]):
     #
 
     def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.DEBUG, msg, args, **kwargs)
+        return self.log(logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.INFO, msg, args, **kwargs)
+        return self.log(logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.WARNING, msg, args, **kwargs)
+        return self.log(logging.WARNING, msg, *args, **kwargs)
 
     def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.ERROR, msg, args, **kwargs)
+        return self.log(logging.ERROR, msg, *args, **kwargs)
 
     def exception(self, msg: str, *args: ta.Any, exc_info: bool = True, **kwargs: ta.Any) -> T:
         return self.error(msg, *args, exc_info=exc_info, **kwargs)
 
     def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.CRITICAL, msg, args, **kwargs)
+        return self.log(logging.CRITICAL, msg, *args, **kwargs)
 
     @abc.abstractmethod
     def log(
             self,
             level: int,
             msg: str,
-            args: ta.Any,
-            *,
+            *args: ta.Any,
             exc_info: ta.Any = None,
             extra: ta.Any = None,
             stack_info: bool = False,

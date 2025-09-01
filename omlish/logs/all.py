@@ -32,9 +32,18 @@ with _lang.auto_proxy_init(globals()):
     from .protocol import (  # noqa
         LogLevel,
 
+        AnyLogging,
         Logging,
-        NopLogging,
+        AsyncLogging,
+
+        AnyAbstractLogging,
         AbstractLogging,
+        AbstractAsyncLogging,
+
+        AnyNopLogging,
+        NopLogging,
+        NopAsyncLogging,
+
         StdlibLogging,
     )
 
