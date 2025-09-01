@@ -4,6 +4,7 @@ TODO:
  - pyproject api!
 """
 import importlib.metadata
+import re
 import sys
 import tomllib
 
@@ -36,11 +37,13 @@ def _main() -> None:
             opt_req = parse_requirement(opt_dep)
             opt_cn = canonicalize_name(opt_req.name, validate=True)
             opt_spec = Specifier(opt_req.specifier)
+            if re.fullmatch(r'~=\s*\d+(\.\d+)*', str(opt_spec)):
+                opt_spec = Specifier(str(opt_spec) + '.0')
 
             opt_dist = dist_dct[opt_cn]
             opt_ver = opt_dist.version
 
-            print((opt_dep, opt_spec, opt_ver))
+            # print((opt_dep, opt_spec, opt_ver))
             if not opt_spec.contains(opt_ver):
                 print(f'{pkg} :: {opt_cn} : {opt_spec} ! {opt_ver}')
 

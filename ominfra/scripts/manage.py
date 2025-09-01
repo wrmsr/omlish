@@ -4981,7 +4981,7 @@ class Specifier(BaseSpecifier):
     ) -> None:
         match = self._regex.search(spec)
         if not match:
-            raise InvalidSpecifier(f"Invalid specifier: '{spec}'")
+            raise InvalidSpecifier(f'Invalid specifier: {spec!r}')
 
         self._spec: ta.Tuple[str, str] = (
             match.group('operator').strip(),
@@ -4996,7 +4996,7 @@ class Specifier(BaseSpecifier):
             return self._prereleases
 
         operator, version = self._spec
-        if operator in ['==', '>=', '<=', '~=', '===']:
+        if operator in ['==', '>=', '<=', '~=', '===', '>', '<']:
             if operator == '==' and version.endswith('.*'):
                 version = version[:-2]
 
@@ -5206,12 +5206,15 @@ def _pad_version(left: ta.List[str], right: ta.List[str]) -> ta.Tuple[ta.List[st
 class SpecifierSet(BaseSpecifier):
     def __init__(
             self,
-            specifiers: str = '',
+            specifiers: ta.Union[str, ta.Iterable['Specifier']] = '',
             prereleases: ta.Optional[bool] = None,
     ) -> None:
-        split_specifiers = [s.strip() for s in specifiers.split(',') if s.strip()]
+        if isinstance(specifiers, str):
+            split_specifiers = [s.strip() for s in specifiers.split(',') if s.strip()]
+            self._specs = frozenset(map(Specifier, split_specifiers))
+        else:
+            self._specs = frozenset(specifiers)
 
-        self._specs = frozenset(map(Specifier, split_specifiers))
         self._prereleases = prereleases
 
     @property
