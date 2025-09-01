@@ -1,6 +1,4 @@
-# ruff: noqa: A002
-# ruff: noqa: N802
-# ruff: noqa: N815
+# ruff: noqa: A002 N802 N815
 import types
 import typing as ta
 
@@ -94,6 +92,8 @@ class LogRecord:
 
 
 class Formatter(ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#formatter-objects"""
+
     default_time_format: ta.ClassVar[str]
     default_msec_format: ta.ClassVar[str]
 
@@ -111,6 +111,8 @@ class Formatter(ta.Protocol):
 
 
 class BufferingFormatter(ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#logging.BufferingFormatter"""
+
     def formatHeader(self, records: ta.Sequence[LogRecord]) -> str: ...
 
     def formatFooter(self, records: ta.Sequence[LogRecord]) -> str: ...
@@ -122,10 +124,14 @@ class BufferingFormatter(ta.Protocol):
 
 
 class Filter(ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#filter-objects"""
+
     def filter(self, record: LogRecord) -> bool: ...
 
 
 class Filterer(ta.Protocol):
+    """A base class for loggers and handlers which allows them to share common code."""
+
     def addFilter(self, filter: Filter) -> None: ...
 
     def removeFilter(self, filter: Filter) -> None: ...
@@ -136,7 +142,9 @@ class Filterer(ta.Protocol):
 ##
 
 
-class Handler(ta.Protocol):
+class Handler(Filterer, ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#handler-objects"""
+
     level: Level
 
     def get_name(self) -> str: ...
@@ -177,6 +185,8 @@ class Stream(ta.Protocol):
 
 
 class StreamHandler(Handler):
+    """https://docs.python.org/3/library/logging.handlers.html#logging.StreamHandler"""
+
     terminator: ta.ClassVar[str]
 
     stream: Stream
@@ -192,6 +202,8 @@ class StreamHandler(Handler):
 
 
 class Manager(ta.Protocol):
+    """There is [under normal circumstances] just one Manager instance, which holds the hierarchy of loggers."""
+
     root: 'Logger'
 
     disable: Level
@@ -215,6 +227,8 @@ Caller: ta.TypeAlias = tuple[
 
 
 class Logger(Filterer, ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#logger-objects"""
+
     name: str
     level: Level
     parent: ta.Optional['Logger']
@@ -274,6 +288,8 @@ class Logger(Filterer, ta.Protocol):
 
 
 class LoggerAdapter(ta.Protocol):
+    """https://docs.python.org/3/library/logging.html#loggeradapter-objects"""
+
     logger: Logger
     extra: ta.Mapping[str, ta.Any]
 
