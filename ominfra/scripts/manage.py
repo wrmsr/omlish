@@ -4833,7 +4833,7 @@ def get_cache_dir() -> str:
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
-# https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
+# https://github.com/pypa/packaging/blob/48125006684bb2d7d28c50af48a03176da45942d/src/packaging/specifiers.py
 
 
 ##
@@ -5122,40 +5122,38 @@ class Specifier(BaseSpecifier):
         return self.contains(item)
 
     def contains(self, item: UnparsedVersion, prereleases: ta.Optional[bool] = None) -> bool:
-        if prereleases is None:
-            prereleases = self.prereleases
-
-        normalized_item = _coerce_version(item)
-
-        if normalized_item.is_prerelease and not prereleases:
-            return False
-
-        operator_callable: CallableVersionOperator = self._get_operator(self.operator)
-        return operator_callable(normalized_item, self.version)
+        return bool(list(self.filter([item], prereleases=prereleases)))
 
     def filter(
             self,
             iterable: ta.Iterable[UnparsedVersionVar],
             prereleases: ta.Optional[bool] = None,
     ) -> ta.Iterator[UnparsedVersionVar]:
-        yielded = False
-        found_prereleases = []
+        prereleases_versions = []
+        found_non_prereleases = False
 
-        kw = {'prereleases': prereleases if prereleases is not None else True}
+        include_prereleases = (
+            prereleases if prereleases is not None else self.prereleases
+        )
+
+        operator_callable = self._get_operator(self.operator)
 
         for version in iterable:
             parsed_version = _coerce_version(version)
 
-            if self.contains(parsed_version, **kw):
-                if parsed_version.is_prerelease and not (prereleases or self.prereleases):
-                    found_prereleases.append(version)
-                else:
-                    yielded = True
+            if operator_callable(parsed_version, self.version):
+                if not parsed_version.is_prerelease or include_prereleases:
+                    found_non_prereleases = True
                     yield version
+                elif prereleases is None and self._prereleases is not False:
+                    prereleases_versions.append(version)
 
-        if not yielded and found_prereleases:
-            for version in found_prereleases:
-                yield version
+        if (
+                not found_non_prereleases and
+                prereleases is None and
+                self._prereleases is not False
+        ):
+            yield from prereleases_versions
 
 
 _version_prefix_regex = re.compile(r'^([0-9]+)((?:a|b|c|rc)[0-9]+)$')
@@ -5225,7 +5223,10 @@ class SpecifierSet(BaseSpecifier):
         if not self._specs:
             return None
 
-        return any(s.prereleases for s in self._specs)
+        if any(s.prereleases for s in self._specs):
+            return True
+
+        return None
 
     @prereleases.setter
     def prereleases(self, value: bool) -> None:
@@ -5292,28 +5293,22 @@ class SpecifierSet(BaseSpecifier):
         if not isinstance(item, Version):
             item = Version(item)
 
-        if prereleases is None:
-            prereleases = self.prereleases
-
-        if not prereleases and item.is_prerelease:
-            return False
-
         if installed and item.is_prerelease:
-            item = Version(item.base_version)
+            prereleases = True
 
-        return all(s.contains(item, prereleases=prereleases) for s in self._specs)
+        return bool(list(self.filter([item], prereleases=prereleases)))
 
     def filter(
             self,
             iterable: ta.Iterable[UnparsedVersionVar],
             prereleases: ta.Optional[bool] = None,
     ) -> ta.Iterator[UnparsedVersionVar]:
-        if prereleases is None:
+        if prereleases is None and self.prereleases is not None:
             prereleases = self.prereleases
 
         if self._specs:
             for spec in self._specs:
-                iterable = spec.filter(iterable, prereleases=bool(prereleases))
+                iterable = spec.filter(iterable, prereleases=prereleases)
             return iter(iterable)
 
         else:
