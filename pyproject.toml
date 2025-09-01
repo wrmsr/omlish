@@ -229,6 +229,7 @@ ignore = [
     'RET504',  # unnecessary-assign
     'RET505',  # superfluous-else-return
     'RET506',  # superfluous-else-raise
+    'RET507',  # superfluous-else-continue
     'RET508',  # superfluous-else-break
     'RUF001',  # ambiguous-unicode-character-string
     'RUF009',  # function-call-in-dataclass-default-argument
