@@ -1,7 +1,28 @@
+import pytest
+
 from ..iterables import common_prefix_len
+from ..iterables import consume
 from ..iterables import itergen
 from ..iterables import peek
 from ..iterables import prodrange
+
+
+def test_consume():
+    l = []
+
+    def f():
+        for i in range(3):
+            yield i
+            l.append(i)
+
+    g = f()
+    assert not l
+    consume(g)
+
+    with pytest.raises(StopIteration):
+        next(g)
+
+    assert l == list(range(3))
 
 
 def test_peek():

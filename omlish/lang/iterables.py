@@ -1,4 +1,4 @@
-import dataclasses as dc
+import collections
 import functools
 import itertools
 import typing as ta
@@ -22,9 +22,8 @@ def take(n: int, it: ta.Iterable[T]) -> list[T]:
     return list(itertools.islice(it, n))
 
 
-def exhaust(it: ta.Iterable[ta.Any]) -> None:
-    for _ in it:
-        pass
+def consume(it: ta.Iterable[ta.Any]) -> None:
+    collections.deque(it, maxlen=0)
 
 
 def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
@@ -87,9 +86,10 @@ def readiter(f, sz):
 ##
 
 
-@dc.dataclass(frozen=True)
+@ta.final
 class IterGen(ta.Generic[T]):
-    fn: ta.Callable[[], ta.Iterable[T]]
+    def __init__(self, fn: ta.Callable[[], ta.Iterable[T]]) -> None:
+        self.fn = fn
 
     def __iter__(self):
         return iter(self.fn())

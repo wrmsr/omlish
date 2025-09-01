@@ -117,7 +117,7 @@ class NodeWrappingConstructorMixin:
         gen = check.isinstance(fn(node), types.GeneratorType)
         yield omap
         uomap = next(gen)
-        lang.exhaust(gen)
+        lang.consume(gen)
         for key, value in uomap:
             omap.append(NodeWrapped((key, value), node))
 

@@ -184,7 +184,7 @@ class Stream(ta.Protocol):
     def close(self) -> None: ...  # OPTIONAL METHOD
 
 
-class StreamHandler(Handler):
+class StreamHandler(Handler, ta.Protocol):
     """https://docs.python.org/3/library/logging.handlers.html#logging.StreamHandler"""
 
     terminator: ta.ClassVar[str]

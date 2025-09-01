@@ -295,7 +295,7 @@ with _auto_proxy_init(
         asrange,
         chunk,
         common_prefix_len,
-        exhaust,
+        consume,
         flatmap,
         flatten,
         ilen,
