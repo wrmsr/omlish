@@ -25,13 +25,15 @@ with _lang.auto_proxy_init(globals()):
         JsonLogFormatter,
     )
 
+    from .levels import (  # noqa
+        LogLevel,
+    )
+
     from .noisy import (  # noqa
         silence_noisy_loggers,
     )
 
     from .protocol import (  # noqa
-        LogLevel,
-
         AnyLogging,
         Logging,
         AsyncLogging,

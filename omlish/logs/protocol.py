@@ -6,12 +6,11 @@ import sys
 import typing as ta
 
 from .callers import LoggingCaller
+from .levels import LogLevel
 
 
 T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
-
-LogLevel = int  # ta.TypeAlias
 
 
 ##
