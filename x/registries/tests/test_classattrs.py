@@ -1,6 +1,6 @@
 import typing as ta
 
-from ..attrs import RegistryClassAttr
+from ..classattrs import RegistryClassAttr
 
 
 def test_attrs():

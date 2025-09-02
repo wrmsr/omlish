@@ -83,13 +83,9 @@ class Registry(lang.Abstract, ta.Generic[K, V]):  # noqa
     def children(self) -> ta.Sequence['Registry[K, V]']:
         return ()
 
-    #
-
     def values(self, k: K) -> ta.Iterator[V]:
         for x in self[k]:
             yield x.v
-
-    #
 
     def __len__(self) -> int:
         i = 0

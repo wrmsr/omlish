@@ -95,7 +95,7 @@ pygments==2.19.2
 mwparserfromhell==0.7.2  # @omlish-venv !13t !13dt !14t
 wikitextparser==0.56.4  # @omlish-venv !14t  # !! GPL
 
-executing==2.2.0
+executing==2.2.1
 asttokens==3.0.0
 
 numpy>=1.24
