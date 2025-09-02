@@ -507,3 +507,7 @@ with _auto_proxy_init(
 
         typing_annotations_attr,
     )
+
+    from ..lite.wrappers import (  # noqa
+        update_wrapper_no_annotations,
+    )

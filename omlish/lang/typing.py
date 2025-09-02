@@ -5,9 +5,10 @@ TODO:
   - probably need to gen types per inst
  - typed_factory
 """
-import functools
 import inspect
 import typing as ta
+
+from ..lite.wrappers import update_wrapper_no_annotations
 
 
 Ty = ta.TypeVar('Ty', bound=type)
@@ -59,26 +60,6 @@ def protocol_check(proto: type) -> ta.Callable[[Ty], Ty]:
 ##
 
 
-_ANN_ATTRS: frozenset[str] = frozenset([
-    '__annotations__',
-
-    '__annotate__',
-    '__annotate_func__',
-
-    '__annotations_cache__',
-])
-
-_UPDATE_WRAPPER_ASSIGNED_NO_ANNS = list(frozenset(functools.WRAPPER_ASSIGNMENTS) - _ANN_ATTRS)
-
-
-def _update_wrapper_no_anns(wrapper, wrapped):
-    functools.update_wrapper(wrapper, wrapped, assigned=_UPDATE_WRAPPER_ASSIGNED_NO_ANNS)
-    return wrapper
-
-
-##
-
-
 _MISSING = object()
 
 
@@ -113,7 +94,7 @@ def typed_lambda(ret=_MISSING, **kw):  # noqa
         src = f'{"".join(proto)} {"".join(call)}'
         exec(src, ns)
 
-        lam = _update_wrapper_no_anns(ns['__lam'], fn)
+        lam = update_wrapper_no_annotations(ns['__lam'], fn)
         lam.__signature__ = inspect.signature(lam, follow_wrapped=False)
         return lam
 
@@ -131,7 +112,7 @@ def typed_partial(obj, **kw):  # noqa
 
     sig = inspect.signature(obj)
 
-    inner = _update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
+    inner = update_wrapper_no_annotations(lambda **lkw: obj(**lkw, **kw), obj)
 
     ret = (
         obj if isinstance(obj, type) else
@@ -149,7 +130,7 @@ def typed_partial(obj, **kw):  # noqa
         },
     )(inner)
 
-    return _update_wrapper_no_anns(lam, obj)
+    return update_wrapper_no_annotations(lam, obj)
 
 
 ##
