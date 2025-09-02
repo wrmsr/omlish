@@ -332,9 +332,6 @@ with _auto_proxy_init(
         arg_repr,
         can_weakref,
         deep_subclasses,
-        dir_dict,
-        mro_dict,
-        mro_owner_dict,
         new_type,
         opt_repr,
         super_meta,
@@ -477,6 +474,12 @@ with _auto_proxy_init(
         is_running_maysync,
 
         run_maysync,
+    )
+
+    from ..lite.objects import (  # noqa
+        mro_dict,
+        mro_owner_dict,
+        dir_dict,
     )
 
     from ..lite.reprs import (  # noqa

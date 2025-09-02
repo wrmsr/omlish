@@ -101,64 +101,6 @@ def deep_subclasses(
         todo.extend(reversed(cur.__subclasses__()))
 
 
-def mro_owner_dict(
-        instance_cls: type,
-        owner_cls: type | None = None,
-        *,
-        bottom_up_key_order: bool = False,
-        sort_keys: bool = False,
-) -> ta.Mapping[str, tuple[type, ta.Any]]:
-    if owner_cls is None:
-        owner_cls = instance_cls
-
-    mro = instance_cls.__mro__[-2::-1]
-    try:
-        pos = mro.index(owner_cls)
-    except ValueError:
-        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
-
-    dct: dict[str, tuple[type, ta.Any]] = {}
-    if not bottom_up_key_order:
-        for cur_cls in mro[:pos + 1][::-1]:
-            for k, v in cur_cls.__dict__.items():
-                if k not in dct:
-                    dct[k] = (cur_cls, v)
-
-    else:
-        for cur_cls in mro[:pos + 1]:
-            dct.update({k: (cur_cls, v) for k, v in cur_cls.__dict__.items()})
-
-    if sort_keys:
-        dct = dict(sorted(dct.items(), key=lambda t: t[0]))
-
-    return dct
-
-
-def mro_dict(
-        instance_cls: type,
-        owner_cls: type | None = None,
-        *,
-        bottom_up_key_order: bool = False,
-        sort_keys: bool = False,
-) -> ta.Mapping[str, ta.Any]:
-    return {
-        k: v
-        for k, (o, v) in mro_owner_dict(
-            instance_cls,
-            owner_cls,
-            bottom_up_key_order=bottom_up_key_order,
-            sort_keys=sort_keys,
-        ).items()
-    }
-
-
-def dir_dict(o: ta.Any) -> dict[str, ta.Any]:
-    return {
-        a: getattr(o, a)
-        for a in dir(o)
-    }
-
-
 ##
 
 

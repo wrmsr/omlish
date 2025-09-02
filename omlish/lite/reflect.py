@@ -91,18 +91,3 @@ def is_literal_type(spec: ta.Any) -> bool:
 
 def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
     return spec.__args__
-
-
-##
-
-
-def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
-    seen = set()
-    todo = list(reversed(cls.__subclasses__()))
-    while todo:
-        cur = todo.pop()
-        if cur in seen:
-            continue
-        seen.add(cur)
-        yield cur
-        todo.extend(reversed(cur.__subclasses__()))

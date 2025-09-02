@@ -8,7 +8,7 @@ from omlish.lite.check import check
 from omlish.lite.marshal import ObjMarshalContext
 from omlish.lite.marshal import ObjMarshaler
 from omlish.lite.marshal import set_obj_marshaler
-from omlish.lite.reflect import deep_subclasses
+from omlish.lite.objects import deep_subclasses
 
 from .configs import DoerDefConfig
 from .configs import DoerExecutableConfig

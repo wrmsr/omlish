@@ -20,7 +20,7 @@ import uuid
 import weakref
 
 from .check import check
-from .reflect import deep_subclasses
+from .objects import deep_subclasses
 from .reflect import get_literal_type_args
 from .reflect import get_new_type_supertype
 from .reflect import is_generic_alias
