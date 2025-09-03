@@ -25,6 +25,8 @@ from .types import TypedLoggerValueProvider
 
 TypedLoggerBindingItem = ta.Union[TypedLoggerField, TypedLoggerValueOrProvider, 'TypedLoggerBindings', 'TypedLoggerValueWrapper']  # ta.TypeAlias  # noqa
 
+TypedLoggerValueWrapperFn = ta.Callable[[ta.Any], TypedLoggerValue]  # ta.TypeAlias
+
 
 ##
 
@@ -35,7 +37,7 @@ class TypedLoggerDuplicateBindingsError(Exception):
             *,
             keys: ta.Optional[ta.Dict[str, ta.List[TypedLoggerFieldValue]]] = None,
             values: ta.Optional[ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]]] = None,
-            wrappers: ta.Optional[ta.Dict[type, ta.List[ta.Callable[[ta.Any], TypedLoggerValue]]]] = None,
+            wrappers: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None,
     ) -> None:
         super().__init__()
 
@@ -123,9 +125,38 @@ class TypedLoggerBindings:
 
         #
 
-        dup_vwd: ta.Optional[ta.Dict[type, ta.List[ta.Callable[[ta.Any], TypedLoggerValue]]]] = None
+        dup_vwd: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None
 
-        vws: ta.Optional[TypedLoggerBindings._ValueWrappingState] = None
+        vws: ta.Optional[TypedLoggerBindings._ValueWrappingState]
+
+        if vwl:
+            if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), TypedLoggerBindings._ValueWrappingState):
+                vws = vwl0
+
+            else:
+                vwd: ta.Dict[type, TypedLoggerValueWrapperFn] = {}
+
+                add_vwd: ta.Callable[[type, TypedLoggerValueWrapperFn], None]
+
+                if not override:
+                    dup_vwd = {}
+
+                    def add_vwd(vw_ty: type, vw_fn: TypedLoggerValueWrapperFn) -> None:  # noqa
+                        if vw_ty in vwd:
+                            dup_vwd.setdefault(vw_ty, []).append(vw_fn)
+                        else:
+                            vwd[vw_ty] = vw_fn
+
+                else:
+                    add_vwd = vwd.__setitem__
+
+                for vo in vwl:
+                    vo._typed_logger_visit_value_wrappers(add_vwd)  # noqa
+
+                raise NotImplementedError
+
+        else:
+            vws = None
 
         #
 
@@ -174,13 +205,16 @@ class TypedLoggerBindings:
     #
 
     @ta.final
-    class _ValueWrappingState(ta.NamedTuple):
-        dct: ta.Mapping[type, ta.Callable[[ta.Any], TypedLoggerValue]]
-        sdf: ta.Callable[[ta.Any], TypedLoggerValue]
+    class _ValueWrappingState:
+        def __init__(self, dct: ta.Mapping[type, TypedLoggerValueWrapperFn]) -> None:
+            self.dct = dct
 
-    @staticmethod
-    def _no_value_wrappers(o):
-        raise TypeError(o)
+        sdf: ta.Optional[ta.Callable[[ta.Any], TypedLoggerValue]] = None
+
+        #
+
+        def _typed_logger_visit_value_wrappers(self, fn: ta.Callable[[type, TypedLoggerValueWrapperFn], None]) -> None:  # noqa
+            pass
 
     #
 
@@ -200,12 +234,15 @@ class TypedLoggerBindings:
 @ta.final
 class TypedLoggerValueWrapper(ta.NamedTuple):
     tys: ta.FrozenSet[type]
-    fn: ta.Callable[[ta.Any], TypedLoggerValue]
+    fn: TypedLoggerValueWrapperFn
 
     #
 
     def _typed_logger_visit_bindings(self, vst: TypedLoggerBindings._Visitor) -> None:  # noqa
         vst.accept_value_wrapping(self)
+
+    def _typed_logger_visit_value_wrappers(self, fn: ta.Callable[[type, TypedLoggerValueWrapperFn], None]) -> None:  # noqa
+        pass
 
 
 ##
