@@ -156,9 +156,6 @@ class TypedLoggerBindings:
                 if vwd and not dup_vwd:
                     vws = TypedLoggerBindings._ValueWrappingState(vwd)
 
-                    # Heavy, but ensures early that we have a valid singledispatch.
-                    vws.sdf()
-
         #
 
         if dup_kd or dup_vd or dup_vwd:
@@ -173,7 +170,8 @@ class TypedLoggerBindings:
 
         self._const_value_map: ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = cvd
 
-        self._vws = vws
+        self._value_wrapping = vws
+        self._value_wrapper_fn: ta.Optional[TypedLoggerValueWrapperFn] = vws.sdf if vws is not None else None
 
     #
 
@@ -210,28 +208,18 @@ class TypedLoggerBindings:
         def __init__(self, dct: ta.Mapping[type, TypedLoggerValueWrapperFn]) -> None:
             self.dct = dct
 
-        _sdf: ta.Optional[ta.Callable[[ta.Any], TypedLoggerValue]] = None
-
-        def sdf(self) -> ta.Callable[[ta.Any], TypedLoggerValue]:
-            if (x := self._sdf) is not None:
-                return x
-
             @functools.singledispatch
-            def sdf(o: ta.Any) -> TypedLoggerValue:
+            def wrap_value(o: ta.Any) -> TypedLoggerValue:
                 raise UnhandledTypedValueWrapperTypeError(o)
 
-            collections.deque(itertools.starmap(sdf.register, self.dct.items()), maxlen=0)
+            collections.deque(itertools.starmap(wrap_value.register, self.dct.items()), maxlen=0)
 
-            self._sdf = sdf
-            return sdf
-
-        def value_wrap(self, o: ta.Any) -> TypedLoggerValue:
-            return self.sdf()(o)
+            self.sdf = wrap_value
 
         #
 
         def _typed_logger_visit_value_wrappers(self, fn: ta.Callable[[type, TypedLoggerValueWrapperFn], None]) -> None:  # noqa
-            pass
+            collections.deque(itertools.starmap(fn, self.dct.items()), maxlen=0)
 
     #
 
@@ -241,7 +229,7 @@ class TypedLoggerBindings:
 
         vst.accept_const_values(self._const_value_map.items())
 
-        if (vws := self._vws) is not None:
+        if (vws := self._value_wrapping) is not None:
             vst.accept_value_wrapping(vws)
 
 
@@ -263,7 +251,8 @@ class TypedLoggerValueWrapper(ta.NamedTuple):
         vst.accept_value_wrapping(self)
 
     def _typed_logger_visit_value_wrappers(self, fn: ta.Callable[[type, TypedLoggerValueWrapperFn], None]) -> None:  # noqa
-        pass
+        for ty in self.tys:
+            fn(ty, self.fn)
 
 
 ##

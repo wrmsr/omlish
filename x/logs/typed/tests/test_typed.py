@@ -28,6 +28,7 @@ lol ok:
 
 https://docs.python.org/3/library/typing.html#user-defined-generic-types
 """
+import dataclasses as dc
 import logging
 
 from omlish.logs import all as logs
@@ -43,6 +44,11 @@ log = logging.getLogger(__name__)
 
 class Tag(TypedLoggerValue[str]):
     _default_key = True
+
+
+@dc.dataclass(frozen=True)
+class Thingy:
+    s: str
 
 
 def test_typed():
