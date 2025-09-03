@@ -272,6 +272,40 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
 ##
 
 
+@ta.final
+class ChainTypedLoggerBindings(TypedLoggerBindings):
+    def __init__(
+            self,
+            parent: TypedLoggerBindings,
+    ) -> None:
+        super().__init__()
+
+        self._parent = parent
+
+    @property
+    def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
+        return self._parent.key_map
+
+    def lookup_value(self, cls: ta.Type[TypedLoggerValue]) -> ta.Optional[TypedLoggerValueOrProviderOrAbsent]:
+        return self._parent.lookup_value(cls)
+
+    @property
+    def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:
+        return self._parent.const_value_map
+
+    @property
+    def value_wrapper_fn(self) -> ta.Optional[TypedLoggerValueWrapperFn]:
+        return self._parent.value_wrapper_fn
+
+    #
+
+    def _typed_logger_visit_bindings(self, vst: 'TypedLoggerBindings._Visitor') -> None:
+        self._parent._typed_logger_visit_bindings(vst)
+
+
+##
+
+
 class UnhandledTypedValueWrapperTypeError(TypeError):
     pass
 
