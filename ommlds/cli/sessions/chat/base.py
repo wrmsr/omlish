@@ -26,7 +26,7 @@ ChatOptions = ta.NewType('ChatOptions', ta.Sequence[ChatOption])
 ChatSessionConfigT = ta.TypeVar('ChatSessionConfigT', bound='ChatSession.Config')
 
 
-class ChatSession(Session[ChatSessionConfigT], lang.Abstract, ta.Generic[ChatSessionConfigT]):  # noqa
+class ChatSession(Session[ChatSessionConfigT], lang.Abstract, ta.Generic[ChatSessionConfigT]):
     @dc.dataclass(frozen=True)
     class Config(Session.Config, lang.Abstract):
         _: dc.KW_ONLY

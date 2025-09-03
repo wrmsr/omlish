@@ -22,9 +22,12 @@ def test_abstract():
 
     with pytest.raises(TypeError):
         C()
+
     D()
+
     with pytest.raises(TypeError):
         E()
+
     F()
 
 

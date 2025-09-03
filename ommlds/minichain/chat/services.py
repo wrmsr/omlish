@@ -34,7 +34,7 @@ def static_check_is_chat_service[T: ChatService](t: type[T]) -> type[T]:
 
 
 @static_check_is_chat_service
-class AbstractChatService(lang.Abstract):  # noqa
+class AbstractChatService(lang.Abstract):
     @abc.abstractmethod
     def invoke(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError

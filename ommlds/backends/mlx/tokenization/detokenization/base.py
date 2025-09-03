@@ -75,7 +75,7 @@ class StreamingDetokenizer(lang.Abstract):
 ##
 
 
-class BaseStreamingDetokenizer(StreamingDetokenizer, lang.Abstract):  # noqa
+class BaseStreamingDetokenizer(StreamingDetokenizer, lang.Abstract):
     def __init__(self) -> None:
         super().__init__()
 

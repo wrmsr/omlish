@@ -1,8 +1,12 @@
 # ruff: noqa: PT027
 import abc
+import typing as ta
 import unittest
 
 from ..abstract import Abstract
+
+
+T = ta.TypeVar('T')
 
 
 class TestAbstract(unittest.TestCase):
@@ -21,9 +25,12 @@ class TestAbstract(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             C()
+
         D()
+
         with self.assertRaises(TypeError):
             E()
+
         F()
 
     def test_abstract2(self):
@@ -65,3 +72,28 @@ class TestAbstract(unittest.TestCase):
         with self.assertRaises(TypeError):
             class D(A):
                 pass
+
+    def test_abstract_mro_check(self):
+        class C1(Abstract, abc.ABC):
+            pass
+
+        # class C2(Abstract, ta.Generic[T]):
+        #     pass
+
+        # class C3(Abstract, abc.ABC, ta.Generic[T]):
+        #     pass
+
+        with self.assertRaises(TypeError) as te:
+            class C4(abc.ABC, Abstract):
+                pass
+        assert str(te.exception).endswith('(ABC, Abstract)')
+
+        # with self.assertRaises(TypeError) as te:
+        #     class C5(ta.Generic[T], Abstract):
+        #         pass
+        # assert str(te.exception).endswith('(Generic, Abstract)')
+
+        # with self.assertRaises(TypeError) as te:
+        #     class C6(Abstract, ta.Generic[T], abc.ABC):
+        #         pass
+        # assert str(te.exception).endswith('(Abstract, Generic, ABC)')

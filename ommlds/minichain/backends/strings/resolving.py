@@ -52,7 +52,7 @@ class BackendStringResolver(lang.Abstract):
 ##
 
 
-class CompositeBackendStringResolver(BackendStringResolver, lang.Abstract):  # noqa
+class CompositeBackendStringResolver(BackendStringResolver, lang.Abstract):
     def __init__(
             self,
             children: ta.Iterable[BackendStringResolver],

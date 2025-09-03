@@ -67,38 +67,3 @@ def make_abstract(obj: T) -> T:
 
     else:
         return obj
-
-
-##
-
-
-def unabstract_class(
-        members: ta.Iterable[str | tuple[str, ta.Any]],
-):  # -> ta.Callable[[type[T]], type[T]]:
-    def inner(cls):
-        if isinstance(members, str):
-            raise TypeError(members)
-
-        ams = getattr(cls, _ABSTRACT_METHODS_ATTR)
-
-        names: set[str] = set()
-        for m in members:
-            if isinstance(m, str):
-                if m not in ams:
-                    raise NameError(m)
-                getattr(cls, m)
-                names.add(m)
-
-            elif isinstance(m, tuple):
-                name, impl = m
-                if name not in ams:
-                    raise NameError(name)
-                if isinstance(impl, str):
-                    impl = getattr(cls, impl)
-                setattr(cls, name, impl)
-                names.add(name)
-
-        setattr(cls, _ABSTRACT_METHODS_ATTR, ams - names)
-        return cls
-
-    return inner

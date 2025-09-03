@@ -73,7 +73,6 @@ with _auto_proxy_init(
         is_abstract_class,
         is_abstract_method,
         make_abstract,
-        unabstract_class,
     )
 
     from .classes.bindable import (  # noqa

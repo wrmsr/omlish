@@ -69,6 +69,9 @@ class TypedLoggerBindings:
 
         vst: TypedLoggerBindings._Visitor
 
+        # vwl: ta.List[TypedLoggerBindings._ValueWrappingState] = []
+        # vwd: ta.Dict[type, ta.Callable[[ta.Any], TypedLoggerValue]] = {}
+
         if not override:
             def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
                 if kd_k in kd:
@@ -124,7 +127,7 @@ class TypedLoggerBindings:
         self._const_value_map: ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = cvd
 
     @ta.final
-    class _ValueWrapping(ta.NamedTuple):
+    class _ValueWrappingState(ta.NamedTuple):
         dct: ta.Mapping[type, ta.Callable[[ta.Any], TypedLoggerValue]]
         sdf: ta.Callable[[ta.Any], TypedLoggerValue]
 
@@ -137,6 +140,9 @@ class TypedLoggerBindings:
         accept_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]], None]  # noqa
 
         accept_const_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]]], None]  # noqa
+
+        _accept_value_wrapper: ta.Callable[[type, ta.Callable[[ta.Any], TypedLoggerValue]], None]
+        _accept_value_wrapping_state: ta.Callable[['TypedLoggerBindings._ValueWrappingState'], None]
 
     @property
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:

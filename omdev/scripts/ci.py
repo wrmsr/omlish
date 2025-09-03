@@ -537,6 +537,7 @@ class Abstract:
      - This is a mixin, not a metaclass.
      - As it is not an ABCMeta, this does not support virtual base classes. As a result, operations like `isinstance`
        and `issubclass` are ~7x faster.
+     - It additionally enforces a base class order of (Abstract, abc.ABC) to preemptively prevent common mro conflicts.
 
     If not mixed-in with an ABCMeta, it will update __abstractmethods__ itself.
     """
@@ -584,6 +585,15 @@ class Abstract:
                         for a, c in ams.items()
                     ])),
                 )
+
+        xbi = (Abstract, abc.ABC)  # , ta.Generic ?
+        bis = [(cls.__bases__.index(b), b) for b in xbi if b in cls.__bases__]
+        if bis != sorted(bis):
+            raise TypeError(
+                f'Abstract subclass {cls.__name__} must have proper base class order of '
+                f'({", ".join(getattr(b, "__name__") for b in xbi)}), got: '
+                f'({", ".join(getattr(b, "__name__") for _, b in sorted(bis))})',
+            )
 
         if not isinstance(cls, abc.ABCMeta):
             update_abstracts(cls, force=True)
