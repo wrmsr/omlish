@@ -128,7 +128,7 @@ class TypedLoggerBindings:
         dup_vwd: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None
 
         vws: ta.Optional[TypedLoggerBindings._ValueWrappingState] = None
-        vwf: ta.Optional[TypedLoggerValueWrapperFn]
+        vwf: ta.Optional[TypedLoggerValueWrapperFn] = None
 
         if vwl:
             if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), TypedLoggerBindings._ValueWrappingState):
@@ -244,7 +244,7 @@ class UnhandledTypedValueWrapperTypeError(TypeError):
 
 @ta.final
 class TypedLoggerValueWrapper(ta.NamedTuple):
-    tys: ta.FrozenSet[type]
+    tys: ta.AbstractSet[type]
     fn: TypedLoggerValueWrapperFn
 
     #
@@ -305,6 +305,8 @@ def as_typed_logger_bindings(
 
         add_default_values: bool = False,
         default_value_filter: ta.Optional[ta.Callable[[ta.Type[DefaultTypedLoggerValue]], bool]] = None,
+
+        value_wrapper: ta.Optional[TypedLoggerValueWrapperFn] = None,
 ) -> ta.Sequence[TypedLoggerBindingItem]:
     """This functionality is combined to preserve final key ordering."""
 
@@ -364,6 +366,18 @@ def as_typed_logger_bindings(
 
             else:
                 lst.append(TypedLoggerField(k, TypedLoggerConstFieldValue(v)))
+
+        elif value_wrapper is not None:
+            wv = value_wrapper(o)
+            if not isinstance(wv, TypedLoggerValue):
+                raise TypeError(wv)
+
+            lst.append(wv)
+
+            if add_default_keys:
+                if (dk := wv.default_key()) is not None:
+                    if default_key_filter is None or default_key_filter(dk):
+                        lst.append(TypedLoggerField(dk, wv))
 
         else:
             # ta.assert_never(o)

@@ -110,6 +110,7 @@ class TypedLoggerImpl:
                 *items,
                 *kwargs.items(),
                 add_default_keys=True,
+                value_wrapper=self._bindings._value_wrapper_fn,  # noqa
             ),
             override=True,
         )
