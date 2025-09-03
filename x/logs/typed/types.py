@@ -7,6 +7,7 @@ TODO:
 import abc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.reflect import is_union_alias
 from omlish.lite.strings import snake_case
 from omlish.lite.wrappers import update_wrapper_no_annotations
@@ -81,7 +82,7 @@ class ABSENT_TYPED_LOGGER_VALUE:  # noqa
 ##
 
 
-class TypedLoggerValue(abc.ABC, ta.Generic[T]):
+class TypedLoggerValue(Abstract, ta.Generic[T]):
     def __init__(self, v: T) -> None:
         self._v = v
 
@@ -189,7 +190,7 @@ class TypedLoggerValue(abc.ABC, ta.Generic[T]):
         vst.accept_const_values(((type(self), self),))
 
 
-class DefaultTypedLoggerValue(TypedLoggerValue[T], abc.ABC):
+class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
     _default_value: ta.ClassVar[ta.Union[
         AbsentTypedLoggerValue,
         classmethod,
@@ -231,7 +232,7 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], abc.ABC):
 ##
 
 
-class TypedLoggerValueProvider(abc.ABC, ta.Generic[TypedLoggerValueT]):
+class TypedLoggerValueProvider(Abstract, ta.Generic[TypedLoggerValueT]):
     @property
     @abc.abstractmethod
     def cls(self) -> ta.Type[TypedLoggerValueT]:
