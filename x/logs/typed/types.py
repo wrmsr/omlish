@@ -1,9 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045 UP046
 # @omlish-lite
-"""
-TODO:
- - support forward refs in fn providers, but only import inspect lazily, and nothing in base code needs it
-"""
 import abc
 import typing as ta
 
@@ -333,13 +329,6 @@ class FnTypedLoggerValueProviderAnnotationError(TypeError):
 
 @ta.final
 class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
-    """
-    Notes on kw inspection:
-     - Does not import inspect due to its weight
-     - Supports 3.14 due to `__annotations__` fallback magic attr
-     - Doesn't need defaults introspection as fns should set a default themselves
-    """
-
     def __init__(
             self,
             cls: ta.Type[TypedLoggerValueT],
@@ -362,14 +351,14 @@ class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
                 raise RuntimeError(f'Recursive unwrap: {o!r} in {s!r}')
             s.add(o)
 
-        anns = dict(getattr(o, '__annotations__', {}))
-        anns.pop('return', None)
-        if not anns:
-            return {}
+        def get_kw(anns: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Type[TypedLoggerValue]]:
+            anns = dict(anns)
+            anns.pop('return', None)
+            if not anns:
+                return {}
 
-        def get_kw(dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Type[TypedLoggerValue]]:
             kw: ta.Dict[str, ta.Type[TypedLoggerValue]] = {}
-            for k, v in dct.items():
+            for k, v in anns.items():
                 def bad() -> ta.NoReturn:
                     raise FnTypedLoggerValueProviderAnnotationError(
                         f'{fn} has invalid annotation {k} of {v} - must be subtype of TypedLoggerValue or'  # noqa
@@ -382,7 +371,7 @@ class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
                         bad()
                     [a] = us - {AbsentTypedLoggerValue}
 
-                if not isinstance(a, type) and issubclass(a, TypedLoggerValue):
+                if not (isinstance(a, type) and issubclass(a, TypedLoggerValue)):
                     bad()
 
                 kw[k] = a
@@ -390,11 +379,13 @@ class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
             return kw
 
         try:
-            return get_kw(anns)
+            # Note: transparently falls back to magic property on 3.14+
+            return get_kw(getattr(o, '__annotations__', {}))
         except FnTypedLoggerValueProviderAnnotationError:
             pass
 
-        raise FnTypedLoggerValueProviderAnnotationError
+        # This is much slower, so only do it if necessary.
+        return get_kw(ta.get_type_hints(o))
 
     @property
     def cls(self) -> ta.Type[TypedLoggerValueT]:

@@ -62,7 +62,7 @@ class Thingy2Tlv(DefaultTypedLoggerValue[str]):
     _default_key = 'thingy2'
 
     @classmethod
-    def _default_value(cls, thingy: ThingyTlv) -> str:
+    def _default_value(cls, thingy: 'ThingyTlv') -> str:
         return thingy.v.s + ' - 2'
 
 
