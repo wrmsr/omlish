@@ -208,17 +208,22 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
 
         dp: TypedLoggerValueProvider
         dv = next(mc.__dict__['_default_value'] for mc in cls.__mro__ if '_default_value' in mc.__dict__)
+
         if dv is ABSENT_TYPED_LOGGER_VALUE:
             dp = ConstTypedLoggerValueProvider(cls, ABSENT_TYPED_LOGGER_VALUE)
+
         elif isinstance(dv, classmethod):
             fn = dv.__get__(None, cls)
             fl: ta.Any = lambda **kw: cls(v) if (v := fn(**kw)) is not ABSENT_TYPED_LOGGER_VALUE else v
             dp = FnTypedLoggerValueProvider(cls, update_wrapper_no_annotations(fl, fn))
+
         elif isinstance(dv, TypedLoggerValue.ContextLambda):
             fl = lambda ctx: cls(dv.fn(ctx))
             dp = ContextFnTypedLoggerValueProvider(cls, update_wrapper_no_annotations(fl, dv.fn))
+
         else:
             dp = ConstTypedLoggerValueProvider(cls, cls(dv))
+
         cls.__default_provider = dp  # type: ignore[attr-defined]
 
     #
@@ -322,6 +327,10 @@ class ContextFnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValu
 #
 
 
+class FnTypedLoggerValueProviderAnnotationError(TypeError):
+    pass
+
+
 @ta.final
 class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
     """
@@ -358,26 +367,34 @@ class FnTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT]):
         if not anns:
             return {}
 
-        kw: ta.Dict[str, ta.Type[TypedLoggerValue]] = {}
-        for k, v in anns.items():
-            def bad() -> ta.NoReturn:
-                raise TypeError(
-                    f'{fn} has invalid annotation {k} of {v} - must be subtype of TypedLoggerValue or'  # noqa
-                    f'Union[TypedLoggerValue, AbsentTypedLoggerValue]',
-                )
+        def get_kw(dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Type[TypedLoggerValue]]:
+            kw: ta.Dict[str, ta.Type[TypedLoggerValue]] = {}
+            for k, v in dct.items():
+                def bad() -> ta.NoReturn:
+                    raise FnTypedLoggerValueProviderAnnotationError(
+                        f'{fn} has invalid annotation {k} of {v} - must be subtype of TypedLoggerValue or'  # noqa
+                        f'Union[TypedLoggerValue, AbsentTypedLoggerValue]',
+                    )
 
-            a = v
-            if is_union_alias(a):
-                if len(us := set(a)) != 2 or AbsentTypedLoggerValue not in us:
+                a = v
+                if is_union_alias(a):
+                    if len(us := set(a)) != 2 or AbsentTypedLoggerValue not in us:
+                        bad()
+                    [a] = us - {AbsentTypedLoggerValue}
+
+                if not isinstance(a, type) and issubclass(a, TypedLoggerValue):
                     bad()
-                [a] = us - {AbsentTypedLoggerValue}
 
-            if not isinstance(a, type) and issubclass(a, TypedLoggerValue):
-                bad()
+                kw[k] = a
 
-            kw[k] = a
+            return kw
 
-        return anns
+        try:
+            return get_kw(anns)
+        except FnTypedLoggerValueProviderAnnotationError:
+            pass
+
+        raise FnTypedLoggerValueProviderAnnotationError
 
     @property
     def cls(self) -> ta.Type[TypedLoggerValueT]:

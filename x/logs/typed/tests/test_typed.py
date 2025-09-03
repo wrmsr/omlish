@@ -35,6 +35,7 @@ from omlish.logs import all as logs
 
 from ..bindings import TypedLoggerValueWrapper
 from ..bindings import TypedLoggerBindings
+from ..types import DefaultTypedLoggerValue
 from ..types import TypedLoggerValue
 
 
@@ -55,6 +56,14 @@ class Thingy:
 
 class ThingyTlv(TypedLoggerValue[Thingy]):
     _default_key = 'thingy'
+
+
+class Thingy2Tlv(DefaultTypedLoggerValue[str]):
+    _default_key = 'thingy2'
+
+    @classmethod
+    def _default_value(cls, thingy: ThingyTlv) -> str:
+        return thingy.v.s + ' - 2'
 
 
 def test_typed():
@@ -112,6 +121,7 @@ def test_typed():
         Tag('some tag'),
         ('foo', 'bar'),
         Thingy('wrap me'),  # type: ignore
+        Thingy2Tlv,
         barf=True,
     )
 
