@@ -128,6 +128,7 @@ class TypedLoggerBindings:
         dup_vwd: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None
 
         vws: ta.Optional[TypedLoggerBindings._ValueWrappingState] = None
+        vwf: ta.Optional[TypedLoggerValueWrapperFn]
 
         if vwl:
             if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), TypedLoggerBindings._ValueWrappingState):
@@ -155,6 +156,7 @@ class TypedLoggerBindings:
 
                 if vwd and not dup_vwd:
                     vws = TypedLoggerBindings._ValueWrappingState(vwd)
+                    vwf = vws.sdf
 
         #
 
@@ -171,7 +173,7 @@ class TypedLoggerBindings:
         self._const_value_map: ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = cvd
 
         self._value_wrapping = vws
-        self._value_wrapper_fn: ta.Optional[TypedLoggerValueWrapperFn] = vws.sdf if vws is not None else None
+        self._value_wrapper_fn = vwf
 
     #
 
