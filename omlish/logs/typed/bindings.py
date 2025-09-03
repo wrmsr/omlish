@@ -3,13 +3,16 @@
 """
 TODO:
  - optimization of just using ChainMap when override?
+  - TypedLoggerBindings as Abstract, FullTLB and LimitedTLB subtypes, limited
  - TypedLoggerBindingsBuilder ?
 """
+import abc
 import collections
 import functools
 import itertools
 import typing as ta
 
+from ...lite.abstract import Abstract
 from .types import TYPED_LOGGER_VALUE_OR_PROVIDER_OR_ABSENT_TYPES
 from .types import TYPED_LOGGER_VALUE_OR_PROVIDER_TYPES
 from .types import DefaultTypedLoggerValue
@@ -18,14 +21,14 @@ from .types import TypedLoggerField
 from .types import TypedLoggerFieldValue
 from .types import TypedLoggerValue
 from .types import TypedLoggerValueOrAbsent
-from .types import TypedLoggerValueOrProvider
+from .types import TypedLoggerValueOrProvider  # noqa
 from .types import TypedLoggerValueOrProviderOrAbsent
 from .types import TypedLoggerValueProvider
 
 
-TypedLoggerBindingItem = ta.Union[TypedLoggerField, TypedLoggerValueOrProvider, 'TypedLoggerBindings', 'TypedLoggerValueWrapper']  # ta.TypeAlias  # noqa
+TypedLoggerBindingItem = ta.Union['TypedLoggerField', 'TypedLoggerValueOrProvider', 'TypedLoggerBindings', 'TypedLoggerValueWrapper']  # ta.TypeAlias  # noqa
 
-TypedLoggerValueWrapperFn = ta.Callable[[ta.Any], TypedLoggerValue]  # ta.TypeAlias
+TypedLoggerValueWrapperFn = ta.Callable[[ta.Any], 'TypedLoggerValue']  # ta.TypeAlias
 
 
 ##
@@ -57,8 +60,51 @@ class TypedLoggerDuplicateBindingsError(Exception):
         )
 
 
+class TypedLoggerBindings(Abstract):
+    @property
+    @abc.abstractmethod
+    def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def value_wrapper_fn(self) -> ta.Optional[TypedLoggerValueWrapperFn]:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    class _Visitor(ta.NamedTuple):
+        accept_key: ta.Callable[[str, TypedLoggerFieldValue], None]
+        accept_keys: ta.Callable[[ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]], None]
+
+        accept_value: ta.Callable[[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent], None]
+        accept_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]], None]  # noqa
+
+        accept_const_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]]], None]  # noqa
+
+        accept_value_wrapping: ta.Callable[[ta.Union['TypedLoggerValueWrapper', 'FullTypedLoggerBindings._ValueWrappingState']], None]  # noqa
+
+    @abc.abstractmethod
+    def _typed_logger_visit_bindings(self, vst: _Visitor) -> None:
+        raise NotImplementedError
+
+
+##
+
+
 @ta.final
-class TypedLoggerBindings:
+class FullTypedLoggerBindings(TypedLoggerBindings):
     def __init__(
             self,
             *items: TypedLoggerBindingItem,
@@ -74,7 +120,7 @@ class TypedLoggerBindings:
 
         vst: TypedLoggerBindings._Visitor
 
-        vwl: ta.List[ta.Union[TypedLoggerValueWrapper, TypedLoggerBindings._ValueWrappingState]] = []
+        vwl: ta.List[ta.Union[TypedLoggerValueWrapper, FullTypedLoggerBindings._ValueWrappingState]] = []
 
         if not override:
             def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
@@ -95,7 +141,7 @@ class TypedLoggerBindings:
             def add_vds(it: ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]) -> None:  # noqa
                 collections.deque(itertools.starmap(add_vd, it), maxlen=0)
 
-            vst = TypedLoggerBindings._Visitor(
+            vst = TypedLoggerBindings._Visitor(  # noqa
                 add_kd,
                 add_kds,
 
@@ -108,7 +154,7 @@ class TypedLoggerBindings:
             )
 
         else:
-            vst = TypedLoggerBindings._Visitor(
+            vst = TypedLoggerBindings._Visitor(  # noqa
                 kd.__setitem__,
                 kd.update,
 
@@ -127,11 +173,11 @@ class TypedLoggerBindings:
 
         dup_vwd: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None
 
-        vws: ta.Optional[TypedLoggerBindings._ValueWrappingState] = None
+        vws: ta.Optional[FullTypedLoggerBindings._ValueWrappingState] = None
         vwf: ta.Optional[TypedLoggerValueWrapperFn] = None
 
         if vwl:
-            if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), TypedLoggerBindings._ValueWrappingState):
+            if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), FullTypedLoggerBindings._ValueWrappingState):
                 vws = vwl0
 
             else:
@@ -155,7 +201,7 @@ class TypedLoggerBindings:
                     vo._typed_logger_visit_value_wrappers(add_vwd)  # noqa
 
                 if vwd and not dup_vwd:
-                    vws = TypedLoggerBindings._ValueWrappingState(vwd)
+                    vws = FullTypedLoggerBindings._ValueWrappingState(vwd)
                     vwf = vws.sdf
 
         #
@@ -177,20 +223,6 @@ class TypedLoggerBindings:
 
     #
 
-    @ta.final
-    class _Visitor(ta.NamedTuple):
-        accept_key: ta.Callable[[str, TypedLoggerFieldValue], None]
-        accept_keys: ta.Callable[[ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]], None]
-
-        accept_value: ta.Callable[[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent], None]
-        accept_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]], None]  # noqa
-
-        accept_const_values: ta.Callable[[ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]]], None]  # noqa
-
-        accept_value_wrapping: ta.Callable[[ta.Union['TypedLoggerValueWrapper', 'TypedLoggerBindings._ValueWrappingState']], None]  # noqa
-
-    #
-
     @property
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
         return self._key_map
@@ -202,6 +234,10 @@ class TypedLoggerBindings:
     @property
     def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:
         return self._const_value_map
+
+    @property
+    def value_wrapper_fn(self) -> ta.Optional[TypedLoggerValueWrapperFn]:
+        return self._value_wrapper_fn
 
     #
 
@@ -225,7 +261,7 @@ class TypedLoggerBindings:
 
     #
 
-    def _typed_logger_visit_bindings(self, vst: _Visitor) -> None:
+    def _typed_logger_visit_bindings(self, vst: TypedLoggerBindings._Visitor) -> None:
         vst.accept_keys(self._key_map.items())
         vst.accept_values(self._value_map.items())
 
@@ -271,7 +307,7 @@ TYPED_LOGGER_BINDING_ITEM_TYPES: ta.Tuple[ta.Type[TypedLoggerBindingItem], ...] 
 ##
 
 
-CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move'
+CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     TypedLoggerBindingItem,
     ta.Type[TypedLoggerValue],
     ta.Tuple[

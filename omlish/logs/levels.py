@@ -2,3 +2,6 @@
 
 
 LogLevel = int  # ta.TypeAlias
+
+
+##

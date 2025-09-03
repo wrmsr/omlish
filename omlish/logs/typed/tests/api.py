@@ -5,6 +5,7 @@ import typing as ta
 
 from ...levels import LogLevel
 from ..bindings import CanTypedLoggerBinding
+from ..bindings import FullTypedLoggerBindings
 from ..bindings import TypedLoggerBindings
 from ..bindings import as_typed_logger_bindings
 from ..contexts import TypedLoggerContext
@@ -18,7 +19,7 @@ from ..values import StandardTypedLoggerValues
 ##
 
 
-DEFAULT_TYPED_LOGGER_BINDINGS = TypedLoggerBindings(
+DEFAULT_TYPED_LOGGER_BINDINGS = FullTypedLoggerBindings(
     TypedLoggerField('time', StandardTypedLoggerValues.Time),
     TypedLoggerField('level', StandardTypedLoggerValues.LevelName),
     TypedLoggerField('msg', StandardTypedLoggerValues.Msg),
@@ -100,7 +101,7 @@ class TypedLoggerImpl:
 
         # LoggingCaller.
 
-        bs = TypedLoggerBindings(
+        bs = FullTypedLoggerBindings(
             self._bindings,
             StandardTypedLoggerValues.TimeNs(time.time_ns()),
             StandardTypedLoggerValues.Level(level),
@@ -109,7 +110,7 @@ class TypedLoggerImpl:
                 *items,
                 *kwargs.items(),
                 add_default_keys=True,
-                value_wrapper=self._bindings._value_wrapper_fn,  # noqa
+                value_wrapper=self._bindings.value_wrapper_fn,
             ),
             override=True,
         )

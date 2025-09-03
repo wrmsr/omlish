@@ -197,11 +197,12 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
     @ta.final
     @classmethod
     def default_provider(cls) -> 'TypedLoggerValueProvider':
-        return cls.__default_provider  # type: ignore[attr-defined]
+        try:
+            return cls.__default_provider  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
+        # Must be done late to support typing forwardrefs.
         dp: TypedLoggerValueProvider
         dv = next(mc.__dict__['_default_value'] for mc in cls.__mro__ if '_default_value' in mc.__dict__)
 
@@ -221,6 +222,7 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
             dp = ConstTypedLoggerValueProvider(cls, cls(dv))
 
         cls.__default_provider = dp  # type: ignore[attr-defined]
+        return dp
 
     #
 

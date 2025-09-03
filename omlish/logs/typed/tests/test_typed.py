@@ -31,10 +31,12 @@ https://docs.python.org/3/library/typing.html#user-defined-generic-types
 import dataclasses as dc
 import logging
 
-from ..bindings import TypedLoggerBindings
+from ..bindings import FullTypedLoggerBindings
 from ..bindings import TypedLoggerValueWrapper
 from ..types import DefaultTypedLoggerValue
 from ..types import TypedLoggerValue
+from .api import DEFAULT_TYPED_LOGGER_BINDINGS
+from .api import TypedLoggerImpl
 
 
 log = logging.getLogger(__name__)
@@ -65,50 +67,10 @@ class Thingy2Tlv(DefaultTypedLoggerValue[str]):
 
 
 def test_typed():
-    # l = TypedLoggerImpl(TypedLoggerValueNamespace(
-    #     Tag('foo'),
-    #     ThreadId(420),
-    #     TimeProvider,
-    # ))
-    # l.log(10)
-    # l.log(10, 'hi', Tag('bar'))
-    # l.log(10, ('hi',), Tag('bar'))
-
-    # bl: list = [
-    #     # TimeNs(420),
-    #     Time,
-    #     ('foo', 'bar'),
-    #     # Tag,
-    #     ('other_tag', Tag),
-    # ]
-    # bsl: list = [
-    #     Level(logging.INFO),
-    #     *as_typed_logger_bindings(*bl),
-    #     *build_default_provider_typed_logger_bindings(*bl),
-    #     *build_default_key_field_typed_logger_bindings(*bl),
-    #     Tag('some tag'),
-    # ]
-    # bs = TypedLoggerBindings(*bsl)
-    # ctx = TypedLoggerContext(bs)
-    # print()
-    # for k, fv in ctx.bindings.key_map.items():
-    #     print((k, ctx.resolve_field_value(fv)))
-    # print()
-    #
-    # bs2 = TypedLoggerBindings(bs, Tag('hi'), override=True)
-    # ctx2 = TypedLoggerContext(bs2)
-    # print(ctx2[Tag])
-    # print(ctx.bindings.key_map)
-    #
-    # # TODO: args to bindings items - Time -> Time.default()
-
     # logs.configure_standard_logging()
     log.info('hi')
 
-    from .api import DEFAULT_TYPED_LOGGER_BINDINGS  # noqa
-    from .api import TypedLoggerImpl  # noqa
-
-    slog = TypedLoggerImpl(TypedLoggerBindings(
+    slog = TypedLoggerImpl(FullTypedLoggerBindings(
         DEFAULT_TYPED_LOGGER_BINDINGS,
         TypedLoggerValueWrapper({Thingy}, ThingyTlv),
     ))
