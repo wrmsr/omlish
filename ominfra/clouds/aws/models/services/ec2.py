@@ -37,6 +37,11 @@ class ArchitectureValues(_enum.Enum):
     ARM64_MAC = 'arm64_mac'
 
 
+class AttachmentLimitType(_enum.Enum):
+    SHARED = 'shared'
+    DEDICATED = 'dedicated'
+
+
 class AttachmentStatus(_enum.Enum):
     ATTACHING = 'attaching'
     ATTACHED = 'attached'
@@ -1297,6 +1302,32 @@ class InstanceType(_enum.Enum):
     C8GN_METAL_48XL = 'c8gn.metal-48xl'
     F2_6XLARGE = 'f2.6xlarge'
     P6E_GB200_36XLARGE = 'p6e-gb200.36xlarge'
+    G6F_LARGE = 'g6f.large'
+    G6F_XLARGE = 'g6f.xlarge'
+    G6F_2XLARGE = 'g6f.2xlarge'
+    G6F_4XLARGE = 'g6f.4xlarge'
+    GR6F_4XLARGE = 'gr6f.4xlarge'
+    P5_4XLARGE = 'p5.4xlarge'
+    R8I_LARGE = 'r8i.large'
+    R8I_XLARGE = 'r8i.xlarge'
+    R8I_2XLARGE = 'r8i.2xlarge'
+    R8I_4XLARGE = 'r8i.4xlarge'
+    R8I_8XLARGE = 'r8i.8xlarge'
+    R8I_12XLARGE = 'r8i.12xlarge'
+    R8I_16XLARGE = 'r8i.16xlarge'
+    R8I_24XLARGE = 'r8i.24xlarge'
+    R8I_32XLARGE = 'r8i.32xlarge'
+    R8I_48XLARGE = 'r8i.48xlarge'
+    R8I_96XLARGE = 'r8i.96xlarge'
+    R8I_METAL_48XL = 'r8i.metal-48xl'
+    R8I_METAL_96XL = 'r8i.metal-96xl'
+    R8I_FLEX_LARGE = 'r8i-flex.large'
+    R8I_FLEX_XLARGE = 'r8i-flex.xlarge'
+    R8I_FLEX_2XLARGE = 'r8i-flex.2xlarge'
+    R8I_FLEX_4XLARGE = 'r8i-flex.4xlarge'
+    R8I_FLEX_8XLARGE = 'r8i-flex.8xlarge'
+    R8I_FLEX_12XLARGE = 'r8i-flex.12xlarge'
+    R8I_FLEX_16XLARGE = 'r8i-flex.16xlarge'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
@@ -1349,6 +1380,8 @@ MaxIpv6AddrPerInterface = _ta.NewType('MaxIpv6AddrPerInterface', int)
 MaxNetworkInterfaces = _ta.NewType('MaxNetworkInterfaces', int)
 
 MaximumBandwidthInMbps = _ta.NewType('MaximumBandwidthInMbps', int)
+
+MaximumEbsAttachments = _ta.NewType('MaximumEbsAttachments', int)
 
 MaximumEfaInterfaces = _ta.NewType('MaximumEfaInterfaces', int)
 
@@ -4064,6 +4097,18 @@ class EbsInfo(
         member_name='NvmeSupport',
         serialization_name='nvmeSupport',
         shape_name='EbsNvmeSupport',
+    ))
+
+    maximum_ebs_attachments: MaximumEbsAttachments | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumEbsAttachments',
+        serialization_name='maximumEbsAttachments',
+        shape_name='MaximumEbsAttachments',
+    ))
+
+    attachment_limit_type: AttachmentLimitType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AttachmentLimitType',
+        serialization_name='attachmentLimitType',
+        shape_name='AttachmentLimitType',
     ))
 
 
