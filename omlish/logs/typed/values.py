@@ -7,9 +7,8 @@ import threading
 import time
 import typing as ta
 
-from omlish.logs.callers import LoggingCaller
-from omlish.logs.levels import LogLevel
-
+from ...logs.callers import LoggingCaller
+from ...logs.levels import LogLevel
 from .types import ABSENT_TYPED_LOGGER_VALUE
 from .types import AbsentTypedLoggerValue
 from .types import DefaultTypedLoggerValue

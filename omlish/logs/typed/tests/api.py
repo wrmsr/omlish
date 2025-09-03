@@ -3,17 +3,16 @@
 import time
 import typing as ta
 
-from omlish.logs.levels import LogLevel
-
-from .bindings import CanTypedLoggerBinding
-from .bindings import TypedLoggerBindings
-from .bindings import as_typed_logger_bindings
-from .contexts import TypedLoggerContext
-from .types import ABSENT_TYPED_LOGGER_VALUE
-from .types import ConstTypedLoggerValueProvider
-from .types import TypedLoggerField
-from .types import TypedLoggerFieldValue
-from .values import StandardTypedLoggerValues
+from ...levels import LogLevel
+from ..bindings import CanTypedLoggerBinding
+from ..bindings import TypedLoggerBindings
+from ..bindings import as_typed_logger_bindings
+from ..contexts import TypedLoggerContext
+from ..types import ABSENT_TYPED_LOGGER_VALUE
+from ..types import ConstTypedLoggerValueProvider
+from ..types import TypedLoggerField
+from ..types import TypedLoggerFieldValue
+from ..values import StandardTypedLoggerValues
 
 
 ##
@@ -33,12 +32,12 @@ _ABSENT_TYPED_LOGGER_MSG_PROVIDER = ConstTypedLoggerValueProvider(StandardTypedL
 
 class TypedLogger(ta.Protocol):
     def log(
-            self,
-            level: LogLevel,
-            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
-            /,
-            *items: CanTypedLoggerBinding,
-            **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
+        self,
+        level: LogLevel,
+        msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
+        /,
+        *items: CanTypedLoggerBinding,
+        **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None: ...
 
 

@@ -31,8 +31,6 @@ https://docs.python.org/3/library/typing.html#user-defined-generic-types
 import dataclasses as dc
 import logging
 
-from omlish.logs import all as logs
-
 from ..bindings import TypedLoggerBindings
 from ..bindings import TypedLoggerValueWrapper
 from ..types import DefaultTypedLoggerValue
@@ -104,11 +102,11 @@ def test_typed():
     #
     # # TODO: args to bindings items - Time -> Time.default()
 
-    logs.configure_standard_logging()
+    # logs.configure_standard_logging()
     log.info('hi')
 
-    from ..api import DEFAULT_TYPED_LOGGER_BINDINGS  # noqa
-    from ..api import TypedLoggerImpl  # noqa
+    from .api import DEFAULT_TYPED_LOGGER_BINDINGS  # noqa
+    from .api import TypedLoggerImpl  # noqa
 
     slog = TypedLoggerImpl(TypedLoggerBindings(
         DEFAULT_TYPED_LOGGER_BINDINGS,

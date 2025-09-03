@@ -3,10 +3,10 @@
 import abc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.reflect import is_union_alias
-from omlish.lite.strings import snake_case
-from omlish.lite.wrappers import update_wrapper_no_annotations
+from ...lite.abstract import Abstract
+from ...lite.reflect import is_union_alias
+from ...lite.strings import snake_case
+from ...lite.wrappers import update_wrapper_no_annotations
 
 
 if ta.TYPE_CHECKING:
