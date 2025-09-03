@@ -36,7 +36,7 @@ from ..bindings import TypedLoggerValueWrapper
 from ..types import DefaultTypedLoggerValue
 from ..types import TypedLoggerValue
 from .api import DEFAULT_TYPED_LOGGER_BINDINGS
-from .api import TypedLoggerImpl
+from .api import TypedLogger
 
 
 log = logging.getLogger(__name__)
@@ -70,13 +70,12 @@ def test_typed():
     # logs.configure_standard_logging()
     log.info('hi')
 
-    slog = TypedLoggerImpl(FullTypedLoggerBindings(
+    slog = TypedLogger(FullTypedLoggerBindings(
         DEFAULT_TYPED_LOGGER_BINDINGS,
         TypedLoggerValueWrapper({Thingy}, ThingyTlv),
     ))
 
-    slog.log(
-        logging.INFO,
+    slog.info(
         'hi',
         Tag('some tag'),
         ('foo', 'bar'),
@@ -85,5 +84,7 @@ def test_typed():
         barf=True,
     )
 
-    slog.log(logging.INFO, 'abcd')
-    slog.log(logging.INFO, ('abc %d efg', 420))
+    slog.info('abcd')
+    slog.info(('abc %d efg', 420))
+
+    slog.info(lambda: 'abcd')

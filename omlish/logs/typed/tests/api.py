@@ -1,8 +1,11 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import logging
+import sys
 import time
 import typing as ta
 
+from ...callers import LoggingCaller
 from ...levels import LogLevel
 from ..bindings import CanTypedLoggerBinding
 from ..bindings import FullTypedLoggerBindings
@@ -31,63 +34,146 @@ _ABSENT_TYPED_LOGGER_MSG_PROVIDER = ConstTypedLoggerValueProvider(StandardTypedL
 ##
 
 
-class TypedLogger(ta.Protocol):
-    def log(
-        self,
-        level: LogLevel,
-        msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
-        /,
-        *items: CanTypedLoggerBinding,
-        **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
-    ) -> None: ...
-
-
-class TypedLoggerImpl:
+class TypedLogger:
     def __init__(
             self,
             bindings: TypedLoggerBindings,
+            *,
+            level: LogLevel = logging.INFO,
     ) -> None:
         super().__init__()
 
         self._bindings = bindings
+        self._level = level
 
     #
 
-    @ta.overload
-    def log_(
+    def info(
             self,
-            level: LogLevel,
-            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
+            msg: ta.Union[
+                str,
+                tuple,
+                CanTypedLoggerBinding,
+                ta.Callable[
+                    [],
+                    ta.Sequence[ta.Union[
+                        str,
+                        tuple,
+                        CanTypedLoggerBinding,
+                        None,
+                    ]],
+                ],
+                None,
+            ] = None,
             /,
             *items: CanTypedLoggerBinding,
+
+            _logging_stack_offset: int = 0,
+
             **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
-        ...
+        return self.log(
+            logging.INFO,
+            msg,
+            *items,
 
-    @ta.overload
-    def log_(
-            self,
-            level: LogLevel,
-            fn: ta.Callable[[], ta.Sequence[ta.Union[str, CanTypedLoggerBinding, None]]],
-            /,
-    ) -> None:
-        ...
+            _logging_stack_offset=_logging_stack_offset + 1,
 
-    def log_(self, *args, **kwargs):
-        # TODO: the fn form forbids additional args / kwargs - strictly a single callable
-        raise NotImplementedError
+            **kwargs,  # type: ignore[arg-type]
+        )
 
     #
 
     def log(
             self,
             level: LogLevel,
-            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
+            msg: ta.Union[
+                str,
+                tuple,
+                CanTypedLoggerBinding,
+                ta.Callable[
+                    [],
+                    ta.Sequence[ta.Union[
+                        str,
+                        tuple,
+                        CanTypedLoggerBinding,
+                        None,
+                    ]],
+                ],
+                None,
+            ] = None,
             /,
             *items: CanTypedLoggerBinding,
+
+            _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
+
+            _logging_stack_offset: int = 0,
+            _logging_stack_info: bool = False,
+
+            **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
+    ) -> None:
+        if _logging_exc_info is True:
+            _logging_exc_info = sys.exc_info()
+
+        if self._level < level:
+            return
+
+        if (
+                callable(msg) and
+                not isinstance(msg, type)  # it may be a type[TypedLoggerValue]
+        ):
+            t = msg()  # noqa
+
+            if isinstance(t, str):
+                msg = t
+
+            elif not t:
+                msg = None
+
+            else:
+                raise NotImplementedError
+
+        self._do_log(
+            level,
+            msg,
+            *items,
+
+            _logging_exc_info=_logging_exc_info,
+
+            _logging_stack_offset=_logging_stack_offset + 1,
+            _logging_stack_info=_logging_stack_info,
+
+            **kwargs,
+        )
+
+    def _do_log(
+            self,
+            level: LogLevel,
+            msg: ta.Union[
+                str,
+                tuple,
+                CanTypedLoggerBinding,
+                None,
+            ] = None,
+            /,
+            *items: CanTypedLoggerBinding,
+
+            _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
+
+            _logging_stack_offset: int = 0,
+            _logging_stack_info: bool = False,
+
             **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
         # TODO: log(INFO, lambda: (...))
+
+        if _logging_exc_info is True:
+            _logging_exc_info = sys.exc_info()
+
+        caller = LoggingCaller.find(  # noqa
+            _logging_stack_offset,
+            stack_info=_logging_stack_info,
+        )
 
         msg_items: ta.Sequence[CanTypedLoggerBinding]
         if msg is None:
@@ -98,8 +184,6 @@ class TypedLoggerImpl:
             msg_items = (StandardTypedLoggerValues.Msg(msg[0] % msg[1:]),)
         else:
             msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER, msg)
-
-        # LoggingCaller.
 
         bs = FullTypedLoggerBindings(
             self._bindings,

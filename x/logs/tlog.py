@@ -6,7 +6,7 @@ import logging
 from omlish.logs.typed.bindings import FullTypedLoggerBindings
 from omlish.logs.typed.bindings import TypedLoggerValueWrapper
 from omlish.logs.typed.tests.api import DEFAULT_TYPED_LOGGER_BINDINGS
-from omlish.logs.typed.tests.api import TypedLoggerImpl
+from omlish.logs.typed.tests.api import TypedLogger
 from omlish.logs.typed.types import DefaultTypedLoggerValue
 from omlish.logs.typed.types import TypedLoggerValue
 
@@ -35,7 +35,7 @@ class LoggerValues:
 
 
 def _main() -> None:
-    tlog = TypedLoggerImpl(FullTypedLoggerBindings(
+    tlog = TypedLogger(FullTypedLoggerBindings(
         DEFAULT_TYPED_LOGGER_BINDINGS,
         TypedLoggerValueWrapper({Thingy}, LoggerValues.Thingy_),
     ))

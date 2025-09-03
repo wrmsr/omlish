@@ -67,23 +67,23 @@ class AnyAbstractLogging(abc.ABC, ta.Generic[T]):
 
     #
 
-    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.DEBUG, msg, *args, **kwargs)
+    def debug(self, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:
+        return self.log(logging.DEBUG, msg, *args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
-    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.INFO, msg, *args, **kwargs)
+    def info(self, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:
+        return self.log(logging.INFO, msg, *args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
-    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.WARNING, msg, *args, **kwargs)
+    def warning(self, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:
+        return self.log(logging.WARNING, msg, *args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
-    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.ERROR, msg, *args, **kwargs)
+    def error(self, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:
+        return self.log(logging.ERROR, msg, *args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
-    def exception(self, msg: str, *args: ta.Any, exc_info: bool = True, **kwargs: ta.Any) -> T:
-        return self.error(msg, *args, exc_info=exc_info, **kwargs)
+    def exception(self, msg: str, *args: ta.Any, exc_info: bool = True, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:  # noqa
+        return self.error(msg, *args, exc_info=exc_info, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)  # noqa
 
-    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.log(logging.CRITICAL, msg, *args, **kwargs)
+    def critical(self, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> T:
+        return self.log(logging.CRITICAL, msg, *args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
     @abc.abstractmethod
     def log(
@@ -94,16 +94,17 @@ class AnyAbstractLogging(abc.ABC, ta.Generic[T]):
             exc_info: ta.Any = None,
             extra: ta.Any = None,
             stack_info: bool = False,
+            _logging_stack_offset: int = 0,
     ) -> T:
         raise NotImplementedError
 
 
 class AbstractLogging(AnyAbstractLogging[None], abc.ABC):
-    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> None:
         if not isinstance(level, int):
             raise TypeError('Level must be an integer.')
         if self.is_enabled_for(level):
-            self._log(level, msg, args, **kwargs)
+            self._log(level, msg, args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
     @abc.abstractmethod
     def _log(
@@ -115,16 +116,17 @@ class AbstractLogging(AnyAbstractLogging[None], abc.ABC):
             exc_info: ta.Any = None,
             extra: ta.Any = None,
             stack_info: bool = False,
+            _logging_stack_offset: int = 0,
     ) -> None:
         raise NotImplementedError
 
 
 class AbstractAsyncLogging(AnyAbstractLogging[ta.Awaitable[None]], abc.ABC):
-    async def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None:
+    async def log(self, level: LogLevel, msg: str, *args: ta.Any, _logging_stack_offset: int = 0, **kwargs: ta.Any) -> None:  # noqa
         if not isinstance(level, int):
             raise TypeError('Level must be an integer.')
         if self.is_enabled_for(level):
-            await self._log(level, msg, args, **kwargs)
+            await self._log(level, msg, args, _logging_stack_offset=_logging_stack_offset + 1, **kwargs)
 
     @abc.abstractmethod
     def _log(
@@ -136,6 +138,7 @@ class AbstractAsyncLogging(AnyAbstractLogging[ta.Awaitable[None]], abc.ABC):
             exc_info: ta.Any = None,
             extra: ta.Any = None,
             stack_info: bool = False,
+            _logging_stack_offset: int = 0,
     ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
@@ -189,8 +192,9 @@ class StdlibLogging(AbstractLogging):
             exc_info: ta.Any = None,
             extra: ta.Any = None,
             stack_info: bool = False,
+            _logging_stack_offset: int = 0,
     ) -> None:
-        caller = LoggingCaller.find(stack_info)
+        caller = LoggingCaller.find(_logging_stack_offset, stack_info=stack_info)
 
         if exc_info:
             if isinstance(exc_info, BaseException):
