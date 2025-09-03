@@ -10,9 +10,9 @@ import functools
 import itertools
 import typing as ta
 
-from .types import DefaultTypedLoggerValue
 from .types import TYPED_LOGGER_VALUE_OR_PROVIDER_OR_ABSENT_TYPES
 from .types import TYPED_LOGGER_VALUE_OR_PROVIDER_TYPES
+from .types import DefaultTypedLoggerValue
 from .types import TypedLoggerConstFieldValue
 from .types import TypedLoggerField
 from .types import TypedLoggerFieldValue

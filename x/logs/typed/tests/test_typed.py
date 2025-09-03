@@ -33,8 +33,8 @@ import logging
 
 from omlish.logs import all as logs
 
-from ..bindings import TypedLoggerValueWrapper
 from ..bindings import TypedLoggerBindings
+from ..bindings import TypedLoggerValueWrapper
 from ..types import DefaultTypedLoggerValue
 from ..types import TypedLoggerValue
 

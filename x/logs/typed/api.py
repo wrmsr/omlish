@@ -9,11 +9,11 @@ from .bindings import CanTypedLoggerBinding
 from .bindings import TypedLoggerBindings
 from .bindings import as_typed_logger_bindings
 from .contexts import TypedLoggerContext
+from .types import ABSENT_TYPED_LOGGER_VALUE
+from .types import ConstTypedLoggerValueProvider
 from .types import TypedLoggerField
 from .types import TypedLoggerFieldValue
-from .types import ABSENT_TYPED_LOGGER_VALUE
 from .values import StandardTypedLoggerValues
-from .types import ConstTypedLoggerValueProvider
 
 
 ##
