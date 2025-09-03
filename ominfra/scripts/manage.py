@@ -6519,7 +6519,78 @@ class OBJ_MARSHALER_OMIT_IF_NONE(ObjMarshalerFieldMetadata):  # noqa
 ##
 
 
-class ObjMarshalerManager:
+class ObjMarshalerManager(Abstract):
+    @abc.abstractmethod
+    def make_obj_marshaler(
+            self,
+            ty: ta.Any,
+            rec: ta.Callable[[ta.Any], ObjMarshaler],
+            *,
+            non_strict_fields: bool = False,
+    ) -> ObjMarshaler:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_obj_marshaler(
+            self,
+            ty: ta.Any,
+            m: ObjMarshaler,
+            *,
+            override: bool = False,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_obj_marshaler(
+            self,
+            ty: ta.Any,
+            *,
+            no_cache: bool = False,
+            **kwargs: ta.Any,
+    ) -> ObjMarshaler:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
+        raise NotImplementedError
+
+    #
+
+    def marshal_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Any = None,
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> ta.Any:
+        m = self.get_obj_marshaler(ty if ty is not None else type(o))
+        return m.marshal(o, self.make_context(opts))
+
+    def unmarshal_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Union[ta.Type[T], ta.Any],
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> T:
+        m = self.get_obj_marshaler(ty)
+        return m.unmarshal(o, self.make_context(opts))
+
+    def roundtrip_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Any = None,
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> ta.Any:
+        if ty is None:
+            ty = type(o)
+        m: ta.Any = self.marshal_obj(o, ty, opts)
+        u: ta.Any = self.unmarshal_obj(m, ty, opts)
+        return u
+
+
+#
+
+
+class ObjMarshalerManagerImpl(ObjMarshalerManager):
     def __init__(
             self,
             *,
@@ -6740,43 +6811,18 @@ class ObjMarshalerManager:
                 self._obj_marshalers[ty] = m
             return m
 
-    #
-
-    def _make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
+    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
         return ObjMarshalContext(
             options=opts or self._default_options,
             manager=self,
         )
 
-    def marshal_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Any = None,
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> ta.Any:
-        m = self.get_obj_marshaler(ty if ty is not None else type(o))
-        return m.marshal(o, self._make_context(opts))
 
-    def unmarshal_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Union[ta.Type[T], ta.Any],
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> T:
-        m = self.get_obj_marshaler(ty)
-        return m.unmarshal(o, self._make_context(opts))
+def new_obj_marshaler_manager(**kwargs: ta.Any) -> ObjMarshalerManager:
+    return ObjMarshalerManagerImpl(**kwargs)
 
-    def roundtrip_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Any = None,
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> ta.Any:
-        if ty is None:
-            ty = type(o)
-        m: ta.Any = self.marshal_obj(o, ty, opts)
-        u: ta.Any = self.unmarshal_obj(m, ty, opts)
-        return u
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -6788,7 +6834,7 @@ class ObjMarshalContext:
 ##
 
 
-OBJ_MARSHALER_MANAGER = ObjMarshalerManager()
+OBJ_MARSHALER_MANAGER = new_obj_marshaler_manager()
 
 set_obj_marshaler = OBJ_MARSHALER_MANAGER.set_obj_marshaler
 get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
@@ -14685,7 +14731,7 @@ def bind_main(
     #
 
     def build_obj_marshaler_manager(insts: ObjMarshalerInstallers) -> ObjMarshalerManager:
-        msh = ObjMarshalerManager()
+        msh = new_obj_marshaler_manager()
         inst: ObjMarshalerInstaller
         for inst in insts:
             inst.fn(msh)

@@ -5,6 +5,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 from omlish.lite.marshal import ObjMarshalerManager
+from omlish.lite.marshal import new_obj_marshaler_manager
 
 from .bootstrap import MainBootstrap
 from .commands.inject import bind_commands
@@ -63,7 +64,7 @@ def bind_main(
     #
 
     def build_obj_marshaler_manager(insts: ObjMarshalerInstallers) -> ObjMarshalerManager:
-        msh = ObjMarshalerManager()
+        msh = new_obj_marshaler_manager()
         inst: ObjMarshalerInstaller
         for inst in insts:
             inst.fn(msh)

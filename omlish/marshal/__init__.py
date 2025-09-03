@@ -9,6 +9,7 @@ TODO:
   - can't disambiguate from str - can't coexist in bare union
  - factories being free MatchFns does more harm than good - in practice these are such big guns you want to write a
    class body if only ceremonially
+ - simple lite interop like inj - alt ObjMarshalerManager impl for Context
 
 See:
  - https://github.com/python-attrs/cattrs
