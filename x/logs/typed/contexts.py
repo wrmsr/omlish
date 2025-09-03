@@ -8,6 +8,7 @@ from .types import AbsentTypedLoggerValue
 from .types import ResolvedTypedLoggerFieldValue
 from .types import TypedLoggerFieldValue
 from .types import TypedLoggerValue
+from .types import TypedLoggerValueOrAbsent
 from .types import UnwrappedTypedLoggerFieldValue
 
 
@@ -65,7 +66,7 @@ class TypedLoggerContext:
         self._no_auto_default_values = no_auto_default_values
         self._default_absent = default_absent
 
-        self._values: ta.Dict[ta.Type[TypedLoggerValue], ta.Union[TypedLoggerValue, AbsentTypedLoggerValue]] = dict(bindings.const_value_map)  # noqa
+        self._values: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = dict(bindings.const_value_map)  # noqa
         self._rec: ta.Dict[ta.Type[TypedLoggerValue], None] = {}
 
     @property
@@ -96,7 +97,7 @@ class TypedLoggerContext:
 
         self._rec[cls] = None
         try:
-            v: ta.Union[TypedLoggerValue, AbsentTypedLoggerValue]
+            v: ta.Union[TypedLoggerValueOrAbsent]
 
             try:
                 bv = self._bindings.value_map[cls]

@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.1.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.8.14
+uv>=0.8.15
 
 pytest==8.4.1
 pytest-benchmark==5.1.0
@@ -102,7 +102,7 @@ numpy>=1.24
 
 prompt-toolkit==3.0.52
 
-snowflake-connector-python[secure-local-storage]==3.17.2  # @omlish-venv !13t !13dt !14t
+snowflake-connector-python[secure-local-storage]==3.17.3  # @omlish-venv !13t !13dt !14t
 snowflake-sqlalchemy==1.7.6  # @omlish-venv !13t !13dt !14t
 
 trino==0.336.0  # @omlish-venv !13t !13dt !14t

@@ -5,8 +5,6 @@ TODO:
  - optimization of just using ChainMap when override?
  - TypedLoggerBindingsBuilder ?
 """
-import collections
-import itertools
 import typing as ta
 
 from .types import DefaultTypedLoggerValue
