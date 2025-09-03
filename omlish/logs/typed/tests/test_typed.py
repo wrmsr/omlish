@@ -88,3 +88,7 @@ def test_typed():
     slog.info(('abc %d efg', 420))
 
     slog.info(lambda: 'abcd')
+    slog.info(Tag('some tag'))
+    slog.info(lambda: Tag('some tag'))
+    slog.info(lambda: [Tag('some tag')])
+    slog.info(lambda: ['hi', Tag('some tag')])

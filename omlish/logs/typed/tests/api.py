@@ -19,6 +19,10 @@ from ..types import TypedLoggerFieldValue
 from ..values import StandardTypedLoggerValues
 
 
+TypedLoggerMsgArg = ta.Union[str, tuple, 'CanTypedLoggerBinding', None]  # ta.TypeAlias
+FnTypedLoggerMsgArg = ta.Union[TypedLoggerMsgArg, ta.Callable[[], ta.Union[TypedLoggerMsgArg, ta.Sequence[TypedLoggerMsgArg]]]]  # ta.TypeAlias  # noqa
+
+
 ##
 
 
@@ -50,21 +54,7 @@ class TypedLogger:
 
     def info(
             self,
-            msg: ta.Union[
-                str,
-                tuple,
-                CanTypedLoggerBinding,
-                ta.Callable[
-                    [],
-                    ta.Sequence[ta.Union[
-                        str,
-                        tuple,
-                        CanTypedLoggerBinding,
-                        None,
-                    ]],
-                ],
-                None,
-            ] = None,
+            msg: FnTypedLoggerMsgArg = None,
             /,
             *items: CanTypedLoggerBinding,
 
@@ -87,21 +77,7 @@ class TypedLogger:
     def log(
             self,
             level: LogLevel,
-            msg: ta.Union[
-                str,
-                tuple,
-                CanTypedLoggerBinding,
-                ta.Callable[
-                    [],
-                    ta.Sequence[ta.Union[
-                        str,
-                        tuple,
-                        CanTypedLoggerBinding,
-                        None,
-                    ]],
-                ],
-                None,
-            ] = None,
+            msg: FnTypedLoggerMsgArg = None,
             /,
             *items: CanTypedLoggerBinding,
 
@@ -113,10 +89,13 @@ class TypedLogger:
             **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
         if _logging_exc_info is True:
+            # Get this early, before checking levels.
             _logging_exc_info = sys.exc_info()
 
         if self._level < level:
             return
+
+        out_msg: TypedLoggerMsgArg
 
         if (
                 callable(msg) and
@@ -124,18 +103,18 @@ class TypedLogger:
         ):
             t = msg()  # noqa
 
-            if isinstance(t, str):
-                msg = t
-
-            elif not t:
-                msg = None
-
+            if isinstance(t, str) or not isinstance(t, ta.Iterable):
+                out_msg = t
             else:
-                raise NotImplementedError
+                out_msg = t[0]
+                items = (*t[1:], *items)
+
+        else:
+            out_msg = msg
 
         self._do_log(
             level,
-            msg,
+            out_msg,
             *items,
 
             _logging_exc_info=_logging_exc_info,
@@ -149,12 +128,7 @@ class TypedLogger:
     def _do_log(
             self,
             level: LogLevel,
-            msg: ta.Union[
-                str,
-                tuple,
-                CanTypedLoggerBinding,
-                None,
-            ] = None,
+            msg: TypedLoggerMsgArg = None,
             /,
             *items: CanTypedLoggerBinding,
 
@@ -165,8 +139,6 @@ class TypedLogger:
 
             **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
-        # TODO: log(INFO, lambda: (...))
-
         if _logging_exc_info is True:
             _logging_exc_info = sys.exc_info()
 
@@ -202,5 +174,6 @@ class TypedLogger:
         ctx = TypedLoggerContext(bs)
 
         for k, fv in ctx.bindings.key_map.items():
-            print((k, ctx.unwrap_field_value(fv)))
+            if (ufv := ctx.unwrap_field_value(fv)) is not ABSENT_TYPED_LOGGER_VALUE:
+                print((k, ufv))
         print()
