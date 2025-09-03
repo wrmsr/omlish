@@ -11,7 +11,10 @@ from .bindings import as_typed_logger_bindings
 from .contexts import TypedLoggerContext
 from .types import TypedLoggerField
 from .types import TypedLoggerFieldValue
+from .types import TypedLoggerValue
+from .types import ABSENT_TYPED_LOGGER_VALUE
 from .values import StandardTypedLoggerValues
+from .types import ConstTypedLoggerValueProvider
 
 
 ##
@@ -22,6 +25,8 @@ DEFAULT_TYPED_LOGGER_BINDINGS = TypedLoggerBindings(
     TypedLoggerField('level', StandardTypedLoggerValues.LevelName),
     TypedLoggerField('msg', StandardTypedLoggerValues.Msg),
 )
+
+_ABSENT_TYPED_LOGGER_MSG_PROVIDER = ConstTypedLoggerValueProvider(StandardTypedLoggerValues.Msg, ABSENT_TYPED_LOGGER_VALUE)  # noqa
 
 
 ##
@@ -71,13 +76,26 @@ class TypedLoggerImpl:
                 ta.Any,
             ],
     ) -> None:
+        # TODO: log(INFO, lambda: (...))
+
+        msg_items: ta.Sequence[CanTypedLoggerBinding]
+        if msg is None:
+            msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER,)
+        elif isinstance(msg, str):
+            msg_items = (StandardTypedLoggerValues.Msg(msg),)
+        elif isinstance(msg, tuple):
+            msg_items = (StandardTypedLoggerValues.Msg(msg[0] % msg[1:]),)
+        else:
+            msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER, msg)
+
         # LoggingCaller.
+
         bs = TypedLoggerBindings(
             self._bindings,
             StandardTypedLoggerValues.TimeNs(time.time_ns()),
             StandardTypedLoggerValues.Level(level),
-            StandardTypedLoggerValues.Msg(ta.cast(str, msg)),
             *as_typed_logger_bindings(
+                *msg_items,
                 *items,
                 *kwargs.items(),
                 add_default_keys=True,

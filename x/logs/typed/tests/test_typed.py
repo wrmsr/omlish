@@ -45,7 +45,6 @@ class Tag(TypedLoggerValue[str]):
     _default_key = True
 
 
-
 def test_typed():
     # l = TypedLoggerImpl(TypedLoggerValueNamespace(
     #     Tag('foo'),
