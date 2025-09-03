@@ -90,6 +90,7 @@ def test_typed():
     from ..api import TypedLoggerImpl  # noqa
 
     slog = TypedLoggerImpl(DEFAULT_TYPED_LOGGER_BINDINGS)
+
     slog.log(
         logging.INFO,
         'hi',
@@ -97,3 +98,6 @@ def test_typed():
         ('foo', 'bar'),
         barf=True,
     )
+
+    slog.log(logging.INFO, 'abcd')
+    slog.log(logging.INFO, ('abc %d efg', 420))

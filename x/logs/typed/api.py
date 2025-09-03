@@ -36,18 +36,10 @@ class TypedLogger(ta.Protocol):
     def log(
             self,
             level: LogLevel,
-            msg: ta.Union[
-                str,
-                tuple,
-                CanTypedLoggerBinding,
-                None,
-            ] = None,
+            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
             /,
             *items: CanTypedLoggerBinding,
-            **kwargs: ta.Union[
-                TypedLoggerFieldValue,
-                ta.Any,
-            ],
+            **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None: ...
 
 
@@ -60,21 +52,41 @@ class TypedLoggerImpl:
 
         self._bindings = bindings
 
+    #
+
+    @ta.overload
+    def log_(
+            self,
+            level: LogLevel,
+            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
+            /,
+            *items: CanTypedLoggerBinding,
+            **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
+    ) -> None:
+        ...
+
+    @ta.overload
+    def log_(
+            self,
+            level: LogLevel,
+            fn: ta.Callable[[], ta.Sequence[ta.Union[str, CanTypedLoggerBinding, None]]],
+            /,
+    ) -> None:
+        ...
+
+    def log_(self, *args, **kwargs):
+        # TODO: the fn form forbids additional args / kwargs - strictly a single callable
+        raise NotImplementedError
+
+    #
+
     def log(
             self,
             level: LogLevel,
-            msg: ta.Union[
-                str,
-                tuple,
-                CanTypedLoggerBinding,
-                None,
-            ] = None,
+            msg: ta.Union[str, tuple, CanTypedLoggerBinding, None] = None,
             /,
             *items: CanTypedLoggerBinding,
-            **kwargs: ta.Union[
-                TypedLoggerFieldValue,
-                ta.Any,
-            ],
+            **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
         # TODO: log(INFO, lambda: (...))
 
