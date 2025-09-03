@@ -120,6 +120,7 @@ class TypedLoggerBindings:
 
         self._key_map: ta.Mapping[str, TypedLoggerFieldValue] = kd
         self._value_map: ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = vd
+
         self._const_value_map: ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = cvd
 
     @ta.final
@@ -154,6 +155,7 @@ class TypedLoggerBindings:
     def _typed_logger_visit_bindings(self, vst: _Visitor) -> None:
         vst.accept_keys(self._key_map.items())
         vst.accept_values(self._value_map.items())
+
         vst.accept_const_values(self._const_value_map.items())
 
 
