@@ -12,7 +12,7 @@ from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
 
 @dc.dataclass(frozen=True)
-class DataServerTarget(Abstract):  # noqa
+class DataServerTarget(Abstract):
     content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 

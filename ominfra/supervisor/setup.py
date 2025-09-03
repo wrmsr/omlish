@@ -2,6 +2,8 @@
 import abc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
+
 from .utils.users import User
 
 
@@ -14,7 +16,7 @@ SupervisorUser = ta.NewType('SupervisorUser', User)
 ##
 
 
-class DaemonizeListener(abc.ABC):  # noqa
+class DaemonizeListener(Abstract):
     def before_daemonize(self) -> None:  # noqa
         pass
 
@@ -28,7 +30,7 @@ DaemonizeListeners = ta.NewType('DaemonizeListeners', ta.Sequence[DaemonizeListe
 ##
 
 
-class SupervisorSetup(abc.ABC):
+class SupervisorSetup(Abstract):
     @abc.abstractmethod
     def setup(self) -> None:
         raise NotImplementedError

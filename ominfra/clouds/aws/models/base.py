@@ -1,4 +1,3 @@
-import abc
 import typing as ta
 
 from omlish import cached
@@ -29,7 +28,7 @@ TagList: ta.TypeAlias = ta.Sequence[Tag]
 ##
 
 
-class ValueType(abc.ABC):  # noqa
+class ValueType(lang.Abstract):
     pass
 
 

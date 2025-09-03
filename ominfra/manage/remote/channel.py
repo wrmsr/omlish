@@ -5,6 +5,7 @@ import json
 import struct
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
 from omlish.lite.marshal import ObjMarshalerManager
@@ -16,7 +17,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class RemoteChannel(abc.ABC):
+class RemoteChannel(Abstract):
     @abc.abstractmethod
     def send_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Awaitable[None]:
         raise NotImplementedError

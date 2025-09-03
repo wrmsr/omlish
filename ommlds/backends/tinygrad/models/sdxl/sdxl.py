@@ -56,6 +56,7 @@ from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
 
 from omlish import check
+from omlish import lang
 
 from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder
@@ -481,7 +482,7 @@ class Sdxl:
 ##
 
 
-class Guider(abc.ABC):
+class Guider(lang.Abstract):
     def __init__(self, scale: float) -> None:
         super().__init__()
 

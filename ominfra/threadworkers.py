@@ -16,6 +16,7 @@ import threading
 import time
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.logs import log
 
@@ -27,7 +28,7 @@ ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 ##
 
 
-class ThreadWorker(ExitStacked, abc.ABC):
+class ThreadWorker(ExitStacked, Abstract):
     def __init__(
             self,
             *,

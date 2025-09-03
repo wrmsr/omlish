@@ -8,6 +8,7 @@ import subprocess
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.shlex import shlex_maybe_quote
 from omlish.subprocesses.base import SUBPROCESS_CHANNEL_OPTION_VALUES
@@ -17,7 +18,7 @@ from omlish.subprocesses.base import SubprocessChannelOption
 ##
 
 
-class RemoteSpawning(abc.ABC):
+class RemoteSpawning(Abstract):
     @dc.dataclass(frozen=True)
     class Target:
         shell: ta.Optional[str] = None

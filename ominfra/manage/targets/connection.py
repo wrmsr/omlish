@@ -4,6 +4,7 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from ..bootstrap import MainBootstrap
@@ -24,7 +25,7 @@ from .targets import SubprocessManageTarget
 ##
 
 
-class ManageTargetConnector(abc.ABC):
+class ManageTargetConnector(Abstract):
     @abc.abstractmethod
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
         raise NotImplementedError

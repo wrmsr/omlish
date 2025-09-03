@@ -530,8 +530,8 @@ class Abstract:
     """
     Different from, but interoperable with, abc.ABC / abc.ABCMeta:
 
-     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
-       present in the class's direct bases.
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract or abc.ABC are
+       explicitly present in the class's direct bases.
      - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
        abstractmethods left on the class.
      - This is a mixin, not a metaclass.
@@ -2571,7 +2571,7 @@ def is_in_github_actions() -> bool:
 
 
 @dc.dataclass(frozen=True)
-class OciDataRef(abc.ABC):  # noqa
+class OciDataRef(Abstract):
     pass
 
 
@@ -5514,7 +5514,7 @@ class DirectoryFileCache(FileCache):
 
 class DataCache:
     @dc.dataclass(frozen=True)
-    class Data(Abstract):  # noqa
+    class Data(Abstract):
         pass
 
     @dc.dataclass(frozen=True)
@@ -5622,7 +5622,7 @@ class FileCacheDataCache(DataCache):
 
 class GithubCacheClient(Abstract):
     @dc.dataclass(frozen=True)
-    class Entry(Abstract):  # noqa
+    class Entry(Abstract):
         pass
 
     @abc.abstractmethod
@@ -6262,7 +6262,7 @@ class AzureBlockBlobUploader:
 
 
 @dc.dataclass(frozen=True)
-class DataServerTarget(Abstract):  # noqa
+class DataServerTarget(Abstract):
     content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
@@ -6379,7 +6379,7 @@ class UrlDataServerTarget(DataServerTarget):
 
 
 @dc.dataclass()
-class OciDataclass(abc.ABC):  # noqa
+class OciDataclass(Abstract):
     pass
 
 
@@ -6539,7 +6539,7 @@ def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifes
 ##
 
 
-class OciRepository(abc.ABC):
+class OciRepository(Abstract):
     @abc.abstractmethod
     def contains_blob(self, digest: str) -> bool:
         raise NotImplementedError
@@ -6579,7 +6579,7 @@ class OciRepository(abc.ABC):
             raise TypeError(obj)
 
 
-class FileOciRepository(OciRepository, abc.ABC):
+class FileOciRepository(OciRepository, Abstract):
     @abc.abstractmethod
     def read_file(self, path: str) -> bytes:
         raise NotImplementedError
@@ -9127,7 +9127,7 @@ OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
 
 
 @dc.dataclass()
-class OciMediaDataclass(abc.ABC):  # noqa
+class OciMediaDataclass(Abstract):
     SCHEMA_VERSION: ta.ClassVar[int]
 
     @property
@@ -10654,7 +10654,7 @@ class CacheServedDockerImageManifest:
         content_length: int
 
         @dc.dataclass(frozen=True)
-        class Target(Abstract):  # noqa
+        class Target(Abstract):
             pass
 
         @dc.dataclass(frozen=True)
@@ -11356,7 +11356,7 @@ class CoroHttpServerSocketHandler(SocketHandler_):
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses):
+class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
     @abc.abstractmethod
     def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         raise NotImplementedError

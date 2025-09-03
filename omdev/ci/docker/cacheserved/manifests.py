@@ -25,7 +25,7 @@ class CacheServedDockerImageManifest:
         content_length: int
 
         @dc.dataclass(frozen=True)
-        class Target(Abstract):  # noqa
+        class Target(Abstract):
             pass
 
         @dc.dataclass(frozen=True)

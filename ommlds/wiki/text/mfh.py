@@ -4,7 +4,6 @@ TODO:
 
 https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes
 """
-import abc
 import operator
 import typing as ta
 
@@ -30,12 +29,12 @@ Wikicode: ta.TypeAlias = 'mfh.wikicode.Wikicode'
 
 
 @dc.dataclass(frozen=True)
-class Node(abc.ABC):  # noqa
+class Node(lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class ContentNode(Node, abc.ABC):  # noqa
+class ContentNode(Node, lang.Abstract):
     pass
 
 

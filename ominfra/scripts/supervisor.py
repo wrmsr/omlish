@@ -101,10 +101,6 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# utils/collections.py
-K = ta.TypeVar('K')
-V = ta.TypeVar('V')
-
 # ../../omlish/configs/types.py
 ConfigMap = ta.Mapping[str, ta.Any]
 
@@ -137,8 +133,12 @@ A2 = ta.TypeVar('A2')
 SocketAddress = ta.Any
 
 # events.py
-EventCallback = ta.Callable[['Event'], None]
+EventCallback = ta.Callable[['Event'], None]  # ta.TypeAlias
 ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
+
+# utils/collections.py
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 # ../../omlish/configs/formats.py
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
@@ -195,6 +195,9 @@ class NoPermissionError(ProcessError):
 
 ########################################
 # ../privileges.py
+
+
+##
 
 
 def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
@@ -327,56 +330,10 @@ class SupervisorState(enum.IntEnum):
 
 
 ########################################
-# ../utils/collections.py
-
-
-class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
-    @property
-    @abc.abstractmethod
-    def _by_key(self) -> ta.Mapping[K, V]:
-        raise NotImplementedError
-
-    def __iter__(self) -> ta.Iterator[V]:
-        return iter(self._by_key.values())
-
-    def __len__(self) -> int:
-        return len(self._by_key)
-
-    def __contains__(self, key: K) -> bool:
-        return key in self._by_key
-
-    def __getitem__(self, key: K) -> V:
-        return self._by_key[key]
-
-    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
-        return self._by_key.get(key, default)
-
-    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
-        return iter(self._by_key.items())
-
-
-class KeyedCollection(KeyedCollectionAccessors[K, V]):
-    def __init__(self, items: ta.Iterable[V]) -> None:
-        super().__init__()
-
-        by_key: ta.Dict[K, V] = {}
-        for v in items:
-            if (k := self._key(v)) in by_key:
-                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
-            by_key[k] = v
-        self.__by_key = by_key
-
-    @property
-    def _by_key(self) -> ta.Mapping[K, V]:
-        return self.__by_key
-
-    @abc.abstractmethod
-    def _key(self, v: V) -> K:
-        raise NotImplementedError
-
-
-########################################
 # ../utils/diag.py
+
+
+##
 
 
 def compact_traceback() -> ta.Tuple[
@@ -408,6 +365,9 @@ def compact_traceback() -> ta.Tuple[
 
 ########################################
 # ../utils/fs.py
+
+
+##
 
 
 def try_unlink(path: str) -> bool:
@@ -1801,8 +1761,8 @@ class Abstract:
     """
     Different from, but interoperable with, abc.ABC / abc.ABCMeta:
 
-     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
-       present in the class's direct bases.
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract or abc.ABC are
+       explicitly present in the class's direct bases.
      - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
        abstractmethods left on the class.
      - This is a mixin, not a metaclass.
@@ -2968,7 +2928,7 @@ class SocketAndAddress(ta.NamedTuple):
 ##
 
 
-class Event(abc.ABC):  # noqa
+class Event(Abstract):
     """Abstract event type."""
 
 
@@ -2999,7 +2959,7 @@ class EventCallbacks:
 ##
 
 
-class ProcessLogEvent(Event, abc.ABC):
+class ProcessLogEvent(Event, Abstract):
     channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
@@ -3021,7 +2981,7 @@ class ProcessLogStderrEvent(ProcessLogEvent):
 #
 
 
-class ProcessCommunicationEvent(Event, abc.ABC):
+class ProcessCommunicationEvent(Event, Abstract):
     # event mode tokens
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
@@ -3254,7 +3214,62 @@ def get_event_name_by_type(requested):
 
 
 ########################################
+# ../utils/collections.py
+
+
+##
+
+
+class KeyedCollectionAccessors(Abstract, ta.Generic[K, V]):
+    @property
+    @abc.abstractmethod
+    def _by_key(self) -> ta.Mapping[K, V]:
+        raise NotImplementedError
+
+    def __iter__(self) -> ta.Iterator[V]:
+        return iter(self._by_key.values())
+
+    def __len__(self) -> int:
+        return len(self._by_key)
+
+    def __contains__(self, key: K) -> bool:
+        return key in self._by_key
+
+    def __getitem__(self, key: K) -> V:
+        return self._by_key[key]
+
+    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
+        return self._by_key.get(key, default)
+
+    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
+        return iter(self._by_key.items())
+
+
+class KeyedCollection(KeyedCollectionAccessors[K, V], Abstract):
+    def __init__(self, items: ta.Iterable[V]) -> None:
+        super().__init__()
+
+        by_key: ta.Dict[K, V] = {}
+        for v in items:
+            if (k := self._key(v)) in by_key:
+                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
+            by_key[k] = v
+        self.__by_key = by_key
+
+    @property
+    def _by_key(self) -> ta.Mapping[K, V]:
+        return self.__by_key
+
+    @abc.abstractmethod
+    def _key(self, v: V) -> K:
+        raise NotImplementedError
+
+
+########################################
 # ../utils/fds.py
+
+
+##
 
 
 class PipeFds(ta.NamedTuple):
@@ -6171,6 +6186,9 @@ def parse_logging_level(value: ta.Union[str, int]) -> int:
 # ../pipes.py
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class ProcessPipes:
     child_stdin: ta.Optional[Fd] = None
@@ -6260,7 +6278,7 @@ SupervisorUser = ta.NewType('SupervisorUser', User)
 ##
 
 
-class DaemonizeListener(abc.ABC):  # noqa
+class DaemonizeListener(Abstract):
     def before_daemonize(self) -> None:  # noqa
         pass
 
@@ -6274,7 +6292,7 @@ DaemonizeListeners = ta.NewType('DaemonizeListeners', ta.Sequence[DaemonizeListe
 ##
 
 
-class SupervisorSetup(abc.ABC):
+class SupervisorSetup(Abstract):
     @abc.abstractmethod
     def setup(self) -> None:
         raise NotImplementedError
@@ -7794,7 +7812,7 @@ ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
 @functools.total_ordering
-class ConfigPriorityOrdered(abc.ABC):
+class ConfigPriorityOrdered(Abstract):
     @property
     @abc.abstractmethod
     def config(self) -> ta.Any:
@@ -7813,7 +7831,7 @@ class ConfigPriorityOrdered(abc.ABC):
 ##
 
 
-class SupervisorStateManager(abc.ABC):
+class SupervisorStateManager(Abstract):
     @property
     @abc.abstractmethod
     def state(self) -> SupervisorState:
@@ -7827,13 +7845,13 @@ class SupervisorStateManager(abc.ABC):
 ##
 
 
-class HasDispatchers(abc.ABC):
+class HasDispatchers(Abstract):
     @abc.abstractmethod
     def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
-class ProcessDispatcher(FdioHandler, abc.ABC):
+class ProcessDispatcher(FdioHandler, Abstract):
     @property
     @abc.abstractmethod
     def channel(self) -> ProcessOutputChannel:
@@ -7845,7 +7863,7 @@ class ProcessDispatcher(FdioHandler, abc.ABC):
         raise NotImplementedError
 
 
-class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
+class ProcessOutputDispatcher(ProcessDispatcher, Abstract):
     @abc.abstractmethod
     def remove_logs(self) -> None:
         raise NotImplementedError
@@ -7855,7 +7873,7 @@ class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
         raise NotImplementedError
 
 
-class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
+class ProcessInputDispatcher(ProcessDispatcher, Abstract):
     @abc.abstractmethod
     def write(self, chars: ta.Union[bytes, str]) -> None:
         raise NotImplementedError
@@ -7871,7 +7889,7 @@ class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
 class Process(
     ConfigPriorityOrdered,
     HasDispatchers,
-    abc.ABC,
+    Abstract,
 ):
     @property
     @abc.abstractmethod
@@ -7927,7 +7945,7 @@ class Process(
 class ProcessGroup(
     ConfigPriorityOrdered,
     KeyedCollectionAccessors[str, Process],
-    abc.ABC,
+    Abstract,
 ):
     @property
     @abc.abstractmethod
@@ -8530,6 +8548,9 @@ class CoroHttpServer:
 # ../dispatchers.py
 
 
+##
+
+
 class Dispatchers(KeyedCollection[Fd, FdioHandler]):
     def _key(self, v: FdioHandler) -> Fd:
         return Fd(v.fd())
@@ -8562,7 +8583,10 @@ class Dispatchers(KeyedCollection[Fd, FdioHandler]):
 # ../dispatchersimpl.py
 
 
-class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
+##
+
+
+class BaseProcessDispatcherImpl(ProcessDispatcher, Abstract):
     def __init__(
             self,
             process: Process,
@@ -8884,6 +8908,9 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
 
 ########################################
 # ../groupsimpl.py
+
+
+##
 
 
 class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
@@ -9368,6 +9395,9 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
 # ../groups.py
 
 
+##
+
+
 class ProcessGroupManager(
     KeyedCollectionAccessors[str, ProcessGroup],
     HasDispatchers,
@@ -9543,6 +9573,9 @@ class IoManager(HasDispatchers):
 
 ########################################
 # ../spawning.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -10175,6 +10208,9 @@ class ProcessImpl(Process):
 # ../signals.py
 
 
+##
+
+
 class SignalHandler:
     def __init__(
             self,
@@ -10789,6 +10825,9 @@ class Supervisor:
 
 ########################################
 # ../inject.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)

@@ -3,6 +3,7 @@ import abc
 import os.path
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from ..types import DeployHome
@@ -12,7 +13,7 @@ from .paths import DeployPath
 ##
 
 
-class DeployPathOwner(abc.ABC):
+class DeployPathOwner(Abstract):
     @abc.abstractmethod
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         raise NotImplementedError
@@ -21,7 +22,7 @@ class DeployPathOwner(abc.ABC):
 DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
 
 
-class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
+class SingleDirDeployPathOwner(DeployPathOwner, Abstract):
     def __init__(
             self,
             *args: ta.Any,

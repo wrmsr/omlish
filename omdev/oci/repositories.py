@@ -5,6 +5,7 @@ import os.path
 import tarfile
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.os.paths import is_path_in_dir
 
@@ -17,7 +18,7 @@ from .datarefs import TarFileOciDataRef
 ##
 
 
-class OciRepository(abc.ABC):
+class OciRepository(Abstract):
     @abc.abstractmethod
     def contains_blob(self, digest: str) -> bool:
         raise NotImplementedError
@@ -57,7 +58,7 @@ class OciRepository(abc.ABC):
             raise TypeError(obj)
 
 
-class FileOciRepository(OciRepository, abc.ABC):
+class FileOciRepository(OciRepository, Abstract):
     @abc.abstractmethod
     def read_file(self, path: str) -> bytes:
         raise NotImplementedError

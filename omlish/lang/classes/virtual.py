@@ -59,7 +59,7 @@ class _VirtualMeta(abc.ABCMeta):
             if get_missing_reqs(subclass):
                 return False
             if user_subclasshook is not None:
-                ret = user_subclasshook(cls, subclass)
+                ret = user_subclasshook(cls, subclass)  # noqa
             else:
                 ret = super(kls, cls).__subclasshook__(subclass)  # type: ignore
             return True if ret is NotImplemented else ret

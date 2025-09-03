@@ -36,6 +36,7 @@ import types
 import typing as ta
 
 from omlish.formats.toml.writer import TomlWriter
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 from omlish.subprocesses.sync import subprocesses
@@ -48,7 +49,7 @@ from ..packaging.revisions import GitRevisionAdder
 ##
 
 
-class BasePyprojectPackageGenerator(abc.ABC):
+class BasePyprojectPackageGenerator(Abstract):
     def __init__(
             self,
             dir_name: str,

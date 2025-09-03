@@ -13,6 +13,8 @@ import time
 import types
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
@@ -22,7 +24,7 @@ V = ta.TypeVar('V')
 ##
 
 
-class ContextManaged(abc.ABC):  # noqa
+class ContextManaged(Abstract):
     def __enter__(self):
         return None
 
@@ -56,7 +58,7 @@ NOP_CONTEXT_MANAGER = ValueContextManager(None)
 #
 
 
-class AsyncContextManaged(abc.ABC):  # noqa
+class AsyncContextManaged(Abstract):
     async def __aenter__(self):
         return None
 
@@ -90,7 +92,7 @@ NOP_ASYNC_CONTEXT_MANAGER = ValueAsyncContextManager(None)
 ##
 
 
-class ContextManager(abc.ABC, ta.Generic[T]):
+class ContextManager(Abstract, ta.Generic[T]):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -122,7 +124,7 @@ class ContextManager(abc.ABC, ta.Generic[T]):
 #
 
 
-class AsyncContextManager(abc.ABC, ta.Generic[T]):
+class AsyncContextManager(Abstract, ta.Generic[T]):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 

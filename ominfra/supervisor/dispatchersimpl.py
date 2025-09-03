@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import errno
 import logging
 import os
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.logs import log
 
 from .configs import ProcessConfig
@@ -26,7 +26,10 @@ from .utils.strings import find_prefix_at_end
 from .utils.strings import strip_escapes
 
 
-class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
+##
+
+
+class BaseProcessDispatcherImpl(ProcessDispatcher, Abstract):
     def __init__(
             self,
             process: Process,

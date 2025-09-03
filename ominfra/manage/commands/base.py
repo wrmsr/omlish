@@ -5,6 +5,7 @@ import logging
 import traceback
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.strings import snake_case
 
@@ -17,9 +18,9 @@ CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 
 @dc.dataclass(frozen=True)
-class Command(abc.ABC, ta.Generic[CommandOutputT]):
+class Command(Abstract, ta.Generic[CommandOutputT]):
     @dc.dataclass(frozen=True)
-    class Output(abc.ABC):  # noqa
+    class Output(Abstract):
         pass
 
     @ta.final
@@ -65,7 +66,7 @@ class CommandException:
         )
 
 
-class CommandOutputOrException(abc.ABC, ta.Generic[CommandOutputT]):
+class CommandOutputOrException(Abstract, ta.Generic[CommandOutputT]):
     @property
     @abc.abstractmethod
     def output(self) -> ta.Optional[CommandOutputT]:
@@ -83,7 +84,7 @@ class CommandOutputOrExceptionData(CommandOutputOrException):
     exception: ta.Optional[CommandException] = None
 
 
-class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
+class CommandExecutor(Abstract, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
     def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
         raise NotImplementedError

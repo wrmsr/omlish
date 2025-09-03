@@ -1235,8 +1235,8 @@ class Abstract:
     """
     Different from, but interoperable with, abc.ABC / abc.ABCMeta:
 
-     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
-       present in the class's direct bases.
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract or abc.ABC are
+       explicitly present in the class's direct bases.
      - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
        abstractmethods left on the class.
      - This is a mixin, not a metaclass.
@@ -3120,7 +3120,7 @@ TODO:
 ##
 
 
-class ThreadWorker(ExitStacked, abc.ABC):
+class ThreadWorker(ExitStacked, Abstract):
     def __init__(
             self,
             *,

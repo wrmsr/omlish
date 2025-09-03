@@ -2,8 +2,8 @@ import abc
 import functools
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.maybes import Maybe
-from .classes.restrict import Abstract
 
 
 T = ta.TypeVar('T')
@@ -45,7 +45,7 @@ class GeneratorLike(ta.Protocol[O_co, I_contra, R_co]):
         ...
 
 
-class GeneratorLike_(abc.ABC, ta.Generic[O, I, R]):  # noqa
+class GeneratorLike_(Abstract, ta.Generic[O, I, R]):  # noqa
     @abc.abstractmethod
     def send(self, i: I) -> O:  # Raises[StopIteration[R]]
         raise NotImplementedError

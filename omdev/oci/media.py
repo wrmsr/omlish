@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
@@ -23,7 +23,7 @@ OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
 
 
 @dc.dataclass()
-class OciMediaDataclass(abc.ABC):  # noqa
+class OciMediaDataclass(Abstract):
     SCHEMA_VERSION: ta.ClassVar[int]
 
     @property

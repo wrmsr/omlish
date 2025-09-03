@@ -13,6 +13,7 @@ from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
 
 from omlish import check
+from omlish import lang
 
 
 ##
@@ -164,7 +165,7 @@ class Tokenizer:
 ##
 
 
-class Embedder(abc.ABC):
+class Embedder(lang.Abstract):
     input_key: str
 
     @abc.abstractmethod

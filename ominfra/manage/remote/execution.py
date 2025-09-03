@@ -3,7 +3,6 @@
 TODO:
  - sequence all messages
 """
-import abc
 import asyncio
 import dataclasses as dc
 import itertools
@@ -11,6 +10,7 @@ import logging
 import time
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.logs import log
 
@@ -29,7 +29,7 @@ T = ta.TypeVar('T')
 
 
 class _RemoteProtocol:
-    class Message(abc.ABC):  # noqa
+    class Message(Abstract):
         async def send(self, chan: RemoteChannel) -> None:
             await chan.send_obj(self, _RemoteProtocol.Message)
 
@@ -39,7 +39,7 @@ class _RemoteProtocol:
 
     #
 
-    class Request(Message, abc.ABC):  # noqa
+    class Request(Message, Abstract):
         pass
 
     @dc.dataclass(frozen=True)
@@ -53,7 +53,7 @@ class _RemoteProtocol:
 
     #
 
-    class Response(Message, abc.ABC):  # noqa
+    class Response(Message, Abstract):
         pass
 
     @dc.dataclass(frozen=True)

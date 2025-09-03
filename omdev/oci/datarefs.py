@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import dataclasses as dc
 import functools
 import hashlib
@@ -10,6 +9,7 @@ import shutil
 import tarfile
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
@@ -18,7 +18,7 @@ from omlish.lite.check import check
 
 
 @dc.dataclass(frozen=True)
-class OciDataRef(abc.ABC):  # noqa
+class OciDataRef(Abstract):
     pass
 
 

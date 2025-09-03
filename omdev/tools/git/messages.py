@@ -16,7 +16,7 @@ from . import consts
 ##
 
 
-class GitMessageGenerator(abc.ABC):
+class GitMessageGenerator(lang.Abstract):
     @dc.dataclass(frozen=True, kw_only=True)
     class GenerateCommitMessageArgs:
         cwd: str | None = None
@@ -44,7 +44,7 @@ class GitMessageGeneratorManifest(NameAliasesManifest, ModAttrManifest):
         return check.issubclass(self.resolve(), GitMessageGenerator)
 
 
-class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGeneratorManifest, abc.ABC):
+class StaticGitMessageGeneratorManifest(StaticModAttrManifest, GitMessageGeneratorManifest, lang.Abstract):
     pass
 
 

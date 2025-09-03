@@ -1,12 +1,12 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import typing as ta
+
+from omlish.lite.abstract import Abstract
 
 from .states import ProcessState
 
 
-EventCallback = ta.Callable[['Event'], None]
-
+EventCallback = ta.Callable[['Event'], None]  # ta.TypeAlias
 
 ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 
@@ -14,7 +14,7 @@ ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 ##
 
 
-class Event(abc.ABC):  # noqa
+class Event(Abstract):
     """Abstract event type."""
 
 
@@ -45,7 +45,7 @@ class EventCallbacks:
 ##
 
 
-class ProcessLogEvent(Event, abc.ABC):
+class ProcessLogEvent(Event, Abstract):
     channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
@@ -67,7 +67,7 @@ class ProcessLogStderrEvent(ProcessLogEvent):
 #
 
 
-class ProcessCommunicationEvent(Event, abc.ABC):
+class ProcessCommunicationEvent(Event, Abstract):
     # event mode tokens
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'

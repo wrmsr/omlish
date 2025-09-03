@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import dataclasses as dc
 import typing as ta
 
 from omlish.formats.ini.sections import IniSectionSettingsMap
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.marshal import register_single_field_type_obj_marshaler
 
@@ -13,7 +13,7 @@ from ..paths.specs import check_valid_deploy_spec_path
 ##
 
 
-class DeployAppConfContent(abc.ABC):  # noqa
+class DeployAppConfContent(Abstract):
     pass
 
 

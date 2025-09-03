@@ -208,6 +208,11 @@ class KMSKeyNotAccessibleFault(
     pass
 
 
+class MasterUserAuthenticationType(_enum.Enum):
+    PASSWORD = 'password'
+    IAM_DB_AUTH = 'iam-db-auth'
+
+
 @_dc.dataclass(frozen=True, kw_only=True)
 class NetworkTypeNotSupported(
     _base.Shape,
@@ -1029,6 +1034,11 @@ class CreateDBInstanceMessage(
     engine_lifecycle_support: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EngineLifecycleSupport',
         shape_name='String',
+    ))
+
+    master_user_authentication_type: MasterUserAuthenticationType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MasterUserAuthenticationType',
+        shape_name='MasterUserAuthenticationType',
     ))
 
 

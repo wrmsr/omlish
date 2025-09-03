@@ -22,6 +22,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 T = ta.TypeVar('T')
 ValueT_co = ta.TypeVar('ValueT_co', covariant=True)
@@ -131,7 +133,7 @@ async def acapture(
 
 
 @dc.dataclass(repr=False, init=False, slots=True, frozen=True, order=True)
-class Outcome(abc.ABC, ta.Generic[ValueT_co]):
+class Outcome(Abstract, ta.Generic[ValueT_co]):
     """
     An abstract class representing the result of a Python computation.
 

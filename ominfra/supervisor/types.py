@@ -4,6 +4,7 @@ import functools
 import typing as ta
 
 from omlish.io.fdio.handlers import FdioHandler
+from omlish.lite.abstract import Abstract
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
@@ -33,7 +34,7 @@ ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
 @functools.total_ordering
-class ConfigPriorityOrdered(abc.ABC):
+class ConfigPriorityOrdered(Abstract):
     @property
     @abc.abstractmethod
     def config(self) -> ta.Any:
@@ -52,7 +53,7 @@ class ConfigPriorityOrdered(abc.ABC):
 ##
 
 
-class SupervisorStateManager(abc.ABC):
+class SupervisorStateManager(Abstract):
     @property
     @abc.abstractmethod
     def state(self) -> SupervisorState:
@@ -66,13 +67,13 @@ class SupervisorStateManager(abc.ABC):
 ##
 
 
-class HasDispatchers(abc.ABC):
+class HasDispatchers(Abstract):
     @abc.abstractmethod
     def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
-class ProcessDispatcher(FdioHandler, abc.ABC):
+class ProcessDispatcher(FdioHandler, Abstract):
     @property
     @abc.abstractmethod
     def channel(self) -> ProcessOutputChannel:
@@ -84,7 +85,7 @@ class ProcessDispatcher(FdioHandler, abc.ABC):
         raise NotImplementedError
 
 
-class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
+class ProcessOutputDispatcher(ProcessDispatcher, Abstract):
     @abc.abstractmethod
     def remove_logs(self) -> None:
         raise NotImplementedError
@@ -94,7 +95,7 @@ class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
         raise NotImplementedError
 
 
-class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
+class ProcessInputDispatcher(ProcessDispatcher, Abstract):
     @abc.abstractmethod
     def write(self, chars: ta.Union[bytes, str]) -> None:
         raise NotImplementedError
@@ -110,7 +111,7 @@ class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
 class Process(
     ConfigPriorityOrdered,
     HasDispatchers,
-    abc.ABC,
+    Abstract,
 ):
     @property
     @abc.abstractmethod
@@ -166,7 +167,7 @@ class Process(
 class ProcessGroup(
     ConfigPriorityOrdered,
     KeyedCollectionAccessors[str, Process],
-    abc.ABC,
+    Abstract,
 ):
     @property
     @abc.abstractmethod

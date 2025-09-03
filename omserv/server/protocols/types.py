@@ -1,5 +1,7 @@
 import abc
 
+from omlish import lang
+
 from ..events import ProtocolEvent
 from ..events import ServerEvent
 
@@ -7,7 +9,7 @@ from ..events import ServerEvent
 ##
 
 
-class Protocol(abc.ABC):
+class Protocol(lang.Abstract):
     @abc.abstractmethod
     async def initiate(self) -> None:
         raise NotImplementedError

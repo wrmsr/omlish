@@ -1,7 +1,7 @@
-import abc
 import dataclasses as dc
 import sys
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 from omlish.os.linux import LinuxOsRelease
@@ -11,11 +11,11 @@ from omlish.os.linux import LinuxOsRelease
 
 
 @dc.dataclass(frozen=True)
-class Platform(abc.ABC):  # noqa
+class Platform(Abstract):
     pass
 
 
-class LinuxPlatform(Platform, abc.ABC):
+class LinuxPlatform(Platform, Abstract):
     pass
 
 

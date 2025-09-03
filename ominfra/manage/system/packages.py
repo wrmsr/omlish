@@ -10,6 +10,7 @@ import os
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 
@@ -25,7 +26,7 @@ class SystemPackage:
     version: ta.Optional[str] = None
 
 
-class SystemPackageManager(abc.ABC):
+class SystemPackageManager(Abstract):
     @abc.abstractmethod
     def update(self) -> ta.Awaitable[None]:
         raise NotImplementedError

@@ -3,7 +3,6 @@
 import sys
 import typing as ta
 
-from ..lite.abstract import Abstract
 from ..lite.maysync import make_maysync
 from .asyncs import AbstractAsyncSubprocesses
 from .run import SubprocessRun
@@ -14,7 +13,7 @@ from .sync import AbstractSubprocesses
 ##
 
 
-class MaysyncSubprocesses(AbstractAsyncSubprocesses, Abstract):
+class MaysyncSubprocesses(AbstractAsyncSubprocesses):
     def __init__(
             self,
             subprocesses: AbstractSubprocesses,

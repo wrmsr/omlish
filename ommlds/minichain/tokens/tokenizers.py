@@ -41,7 +41,7 @@ class Tokenizer(lang.Abstract):
 ##
 
 
-class BaseTokenizer(Tokenizer, abc.ABC):
+class BaseTokenizer(Tokenizer, lang.Abstract):
     def __init__(
             self,
             vocab: Vocab,

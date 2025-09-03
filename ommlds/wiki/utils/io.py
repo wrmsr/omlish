@@ -32,7 +32,7 @@ else:
 ##
 
 
-class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
+class BytesReaderWrapper(ta.IO[bytes], lang.Abstract):
     def __init__(self, f: ta.IO[bytes]) -> None:
         super().__init__()
 

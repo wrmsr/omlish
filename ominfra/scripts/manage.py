@@ -2415,8 +2415,8 @@ class Abstract:
     """
     Different from, but interoperable with, abc.ABC / abc.ABCMeta:
 
-     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
-       present in the class's direct bases.
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract or abc.ABC are
+       explicitly present in the class's direct bases.
      - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
        abstractmethods left on the class.
      - This is a mixin, not a metaclass.
@@ -5113,9 +5113,9 @@ class SpecifierSet(BaseSpecifier):
 
 
 @dc.dataclass(frozen=True)
-class Command(abc.ABC, ta.Generic[CommandOutputT]):
+class Command(Abstract, ta.Generic[CommandOutputT]):
     @dc.dataclass(frozen=True)
-    class Output(abc.ABC):  # noqa
+    class Output(Abstract):
         pass
 
     @ta.final
@@ -5161,7 +5161,7 @@ class CommandException:
         )
 
 
-class CommandOutputOrException(abc.ABC, ta.Generic[CommandOutputT]):
+class CommandOutputOrException(Abstract, ta.Generic[CommandOutputT]):
     @property
     @abc.abstractmethod
     def output(self) -> ta.Optional[CommandOutputT]:
@@ -5179,7 +5179,7 @@ class CommandOutputOrExceptionData(CommandOutputOrException):
     exception: ta.Optional[CommandException] = None
 
 
-class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
+class CommandExecutor(Abstract, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
     def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
         raise NotImplementedError
@@ -5344,11 +5344,11 @@ def get_remote_payload_src(
 
 
 @dc.dataclass(frozen=True)
-class Platform(abc.ABC):  # noqa
+class Platform(Abstract):
     pass
 
 
-class LinuxPlatform(Platform, abc.ABC):
+class LinuxPlatform(Platform, Abstract):
     pass
 
 
@@ -5463,7 +5463,7 @@ It's desugaring. Subprocess and locals are only leafs. Retain an origin?
 ##
 
 
-class ManageTarget(abc.ABC):  # noqa
+class ManageTarget(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -5485,15 +5485,15 @@ class PythonRemoteManageTarget:
 #
 
 
-class RemoteManageTarget(ManageTarget, abc.ABC):
+class RemoteManageTarget(ManageTarget, Abstract):
     pass
 
 
-class PhysicallyRemoteManageTarget(RemoteManageTarget, abc.ABC):
+class PhysicallyRemoteManageTarget(RemoteManageTarget, Abstract):
     pass
 
 
-class LocalManageTarget(ManageTarget, abc.ABC):
+class LocalManageTarget(ManageTarget, Abstract):
     pass
 
 
@@ -7701,7 +7701,7 @@ CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command
 ##
 
 
-class DeployAppConfContent(abc.ABC):  # noqa
+class DeployAppConfContent(Abstract):
     pass
 
 
@@ -7819,11 +7819,11 @@ DEPLOY_TAG_ILLEGAL_STRS: ta.AbstractSet[str] = frozenset([
 
 
 @dc.dataclass(frozen=True, order=True)
-class DeployTag(abc.ABC):  # noqa
+class DeployTag(Abstract):
     s: str
 
     def __post_init__(self) -> None:
-        check.not_in(abc.ABC, type(self).__bases__)
+        check.not_in(Abstract, type(self).__bases__)
         check.non_empty_str(self.s)
         for ch in DEPLOY_TAG_ILLEGAL_STRS:
             check.state(ch not in self.s)
@@ -7836,12 +7836,12 @@ class DeployTag(abc.ABC):  # noqa
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if abc.ABC in cls.__bases__:
+        if Abstract in cls.__bases__:
             return
 
         for b in cls.__bases__:
             if issubclass(b, DeployTag):
-                check.in_(abc.ABC, b.__bases__)
+                check.in_(Abstract, b.__bases__)
 
         check.non_empty_str(tn := cls.tag_name)
         check.equal(tn, tn.lower().strip())
@@ -7888,7 +7888,7 @@ class DeployTime(DeployTag):
 ##
 
 
-class NameDeployTag(DeployTag, abc.ABC):  # noqa
+class NameDeployTag(DeployTag, Abstract):
     pass
 
 
@@ -7905,7 +7905,7 @@ class DeployConf(NameDeployTag):
 ##
 
 
-class KeyDeployTag(DeployTag, abc.ABC):  # noqa
+class KeyDeployTag(DeployTag, Abstract):
     pass
 
 
@@ -7922,7 +7922,7 @@ class DeployAppKey(KeyDeployTag):
 ##
 
 
-class RevDeployTag(DeployTag, abc.ABC):  # noqa
+class RevDeployTag(DeployTag, Abstract):
     pass
 
 
@@ -8039,7 +8039,7 @@ ObjMarshalerInstallers = ta.NewType('ObjMarshalerInstallers', ta.Sequence[ObjMar
 ##
 
 
-class RemoteChannel(abc.ABC):
+class RemoteChannel(Abstract):
     @abc.abstractmethod
     def send_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Awaitable[None]:
         raise NotImplementedError
@@ -9752,7 +9752,7 @@ class DeployPathError(Exception):
     pass
 
 
-class DeployPathRenderable(abc.ABC):
+class DeployPathRenderable(Abstract):
     @cached_nullary
     def __str__(self) -> str:
         return self.render(None)
@@ -9765,7 +9765,7 @@ class DeployPathRenderable(abc.ABC):
 ##
 
 
-class DeployPathNamePart(DeployPathRenderable, abc.ABC):
+class DeployPathNamePart(DeployPathRenderable, Abstract):
     @classmethod
     def parse(cls, s: str) -> 'DeployPathNamePart':
         check.non_empty_str(s)
@@ -9857,7 +9857,7 @@ class DeployPathName(DeployPathRenderable):
 
 
 @dc.dataclass(frozen=True)
-class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
+class DeployPathPart(DeployPathRenderable, Abstract):
     name: DeployPathName
 
     @property
@@ -10069,7 +10069,7 @@ TODO:
 
 
 class _RemoteProtocol:
-    class Message(abc.ABC):  # noqa
+    class Message(Abstract):
         async def send(self, chan: RemoteChannel) -> None:
             await chan.send_obj(self, _RemoteProtocol.Message)
 
@@ -10079,7 +10079,7 @@ class _RemoteProtocol:
 
     #
 
-    class Request(Message, abc.ABC):  # noqa
+    class Request(Message, Abstract):
         pass
 
     @dc.dataclass(frozen=True)
@@ -10093,7 +10093,7 @@ class _RemoteProtocol:
 
     #
 
-    class Response(Message, abc.ABC):  # noqa
+    class Response(Message, Abstract):
         pass
 
     @dc.dataclass(frozen=True)
@@ -11009,7 +11009,7 @@ class DeployConfManager:
 ##
 
 
-class DeployPathOwner(abc.ABC):
+class DeployPathOwner(Abstract):
     @abc.abstractmethod
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         raise NotImplementedError
@@ -11018,7 +11018,7 @@ class DeployPathOwner(abc.ABC):
 DeployPathOwners = ta.NewType('DeployPathOwners', ta.Sequence[DeployPathOwner])
 
 
-class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
+class SingleDirDeployPathOwner(DeployPathOwner, Abstract):
     def __init__(
             self,
             *args: ta.Any,
@@ -11191,7 +11191,7 @@ def _remote_execution_main() -> None:
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses):
+class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
     @abc.abstractmethod
     def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         raise NotImplementedError
@@ -12510,7 +12510,7 @@ class DeploySystemdManager:
 ##
 
 
-class RemoteSpawning(abc.ABC):
+class RemoteSpawning(Abstract):
     @dc.dataclass(frozen=True)
     class Target:
         shell: ta.Optional[str] = None
@@ -12627,7 +12627,7 @@ class SystemPackage:
     version: ta.Optional[str] = None
 
 
-class SystemPackageManager(abc.ABC):
+class SystemPackageManager(Abstract):
     @abc.abstractmethod
     def update(self) -> ta.Awaitable[None]:
         raise NotImplementedError
@@ -13681,7 +13681,7 @@ def bind_system(
 ##
 
 
-class ManageTargetConnector(abc.ABC):
+class ManageTargetConnector(Abstract):
     @abc.abstractmethod
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
         raise NotImplementedError

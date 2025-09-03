@@ -13,6 +13,7 @@ import dataclasses as dc
 import itertools
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.strings import split_keep_delimiter
@@ -32,7 +33,7 @@ class DeployPathError(Exception):
     pass
 
 
-class DeployPathRenderable(abc.ABC):
+class DeployPathRenderable(Abstract):
     @cached_nullary
     def __str__(self) -> str:
         return self.render(None)
@@ -45,7 +46,7 @@ class DeployPathRenderable(abc.ABC):
 ##
 
 
-class DeployPathNamePart(DeployPathRenderable, abc.ABC):
+class DeployPathNamePart(DeployPathRenderable, Abstract):
     @classmethod
     def parse(cls, s: str) -> 'DeployPathNamePart':
         check.non_empty_str(s)
@@ -137,7 +138,7 @@ class DeployPathName(DeployPathRenderable):
 
 
 @dc.dataclass(frozen=True)
-class DeployPathPart(DeployPathRenderable, abc.ABC):  # noqa
+class DeployPathPart(DeployPathRenderable, Abstract):
     name: DeployPathName
 
     @property

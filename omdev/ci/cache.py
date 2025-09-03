@@ -230,7 +230,7 @@ class DirectoryFileCache(FileCache):
 
 class DataCache:
     @dc.dataclass(frozen=True)
-    class Data(Abstract):  # noqa
+    class Data(Abstract):
         pass
 
     @dc.dataclass(frozen=True)

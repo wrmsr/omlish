@@ -3,18 +3,18 @@
 It's desugaring. Subprocess and locals are only leafs. Retain an origin?
 ** TWO LAYERS ** - ManageTarget is user-facing, ConnectorTarget is bound, internal
 """
-import abc
 import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 
 ##
 
 
-class ManageTarget(abc.ABC):  # noqa
+class ManageTarget(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -36,15 +36,15 @@ class PythonRemoteManageTarget:
 #
 
 
-class RemoteManageTarget(ManageTarget, abc.ABC):
+class RemoteManageTarget(ManageTarget, Abstract):
     pass
 
 
-class PhysicallyRemoteManageTarget(RemoteManageTarget, abc.ABC):
+class PhysicallyRemoteManageTarget(RemoteManageTarget, Abstract):
     pass
 
 
-class LocalManageTarget(ManageTarget, abc.ABC):
+class LocalManageTarget(ManageTarget, Abstract):
     pass
 
 

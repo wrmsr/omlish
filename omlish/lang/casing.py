@@ -2,6 +2,8 @@ import abc
 import re
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 ##
 
@@ -31,7 +33,7 @@ def _check_all_lowercase(*ps: str) -> None:
 ##
 
 
-class StringCasing(abc.ABC):
+class StringCasing(Abstract):
     @abc.abstractmethod
     def match(self, s: str) -> bool:
         raise NotImplementedError

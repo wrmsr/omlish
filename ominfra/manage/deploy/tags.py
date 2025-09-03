@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.marshal import register_single_field_type_obj_marshaler
 
@@ -30,11 +30,11 @@ DEPLOY_TAG_ILLEGAL_STRS: ta.AbstractSet[str] = frozenset([
 
 
 @dc.dataclass(frozen=True, order=True)
-class DeployTag(abc.ABC):  # noqa
+class DeployTag(Abstract):
     s: str
 
     def __post_init__(self) -> None:
-        check.not_in(abc.ABC, type(self).__bases__)
+        check.not_in(Abstract, type(self).__bases__)
         check.non_empty_str(self.s)
         for ch in DEPLOY_TAG_ILLEGAL_STRS:
             check.state(ch not in self.s)
@@ -47,12 +47,12 @@ class DeployTag(abc.ABC):  # noqa
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if abc.ABC in cls.__bases__:
+        if Abstract in cls.__bases__:
             return
 
         for b in cls.__bases__:
             if issubclass(b, DeployTag):
-                check.in_(abc.ABC, b.__bases__)
+                check.in_(Abstract, b.__bases__)
 
         check.non_empty_str(tn := cls.tag_name)
         check.equal(tn, tn.lower().strip())
@@ -99,7 +99,7 @@ class DeployTime(DeployTag):
 ##
 
 
-class NameDeployTag(DeployTag, abc.ABC):  # noqa
+class NameDeployTag(DeployTag, Abstract):
     pass
 
 
@@ -116,7 +116,7 @@ class DeployConf(NameDeployTag):
 ##
 
 
-class KeyDeployTag(DeployTag, abc.ABC):  # noqa
+class KeyDeployTag(DeployTag, Abstract):
     pass
 
 
@@ -133,7 +133,7 @@ class DeployAppKey(KeyDeployTag):
 ##
 
 
-class RevDeployTag(DeployTag, abc.ABC):  # noqa
+class RevDeployTag(DeployTag, Abstract):
     pass
 
 

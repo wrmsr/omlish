@@ -143,7 +143,7 @@ HANDLES_APP_MARKER_PROCESSORS: AppMarkerProcessorMap = {
 ##
 
 
-class RouteHandlerHolder(lang.Abstract):  # noqa
+class RouteHandlerHolder(lang.Abstract):
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return get_marked_route_handlers(self)
 

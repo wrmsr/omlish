@@ -2,12 +2,17 @@
 import abc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
+
 
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
+##
+
+
+class KeyedCollectionAccessors(Abstract, ta.Generic[K, V]):
     @property
     @abc.abstractmethod
     def _by_key(self) -> ta.Mapping[K, V]:
@@ -32,7 +37,7 @@ class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
         return iter(self._by_key.items())
 
 
-class KeyedCollection(KeyedCollectionAccessors[K, V]):
+class KeyedCollection(KeyedCollectionAccessors[K, V], Abstract):
     def __init__(self, items: ta.Iterable[V]) -> None:
         super().__init__()
 

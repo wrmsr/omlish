@@ -4,6 +4,9 @@ import types
 import typing as ta
 
 
+##
+
+
 def compact_traceback() -> ta.Tuple[
     ta.Tuple[str, str, int],
     ta.Type[BaseException],

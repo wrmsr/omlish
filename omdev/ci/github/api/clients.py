@@ -27,7 +27,7 @@ from ..env import register_github_env_var
 
 class GithubCacheClient(Abstract):
     @dc.dataclass(frozen=True)
-    class Entry(Abstract):  # noqa
+    class Entry(Abstract):
         pass
 
     @abc.abstractmethod

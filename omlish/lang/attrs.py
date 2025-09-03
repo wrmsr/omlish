@@ -3,6 +3,8 @@ import collections.abc
 import functools
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 T = ta.TypeVar('T')
 
@@ -74,7 +76,7 @@ def set_attr(
 ##
 
 
-class AttrOps(abc.ABC):
+class AttrOps(Abstract):
     class NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError

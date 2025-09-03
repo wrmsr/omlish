@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
 from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
@@ -17,7 +17,7 @@ from .datarefs import OciDataRef
 
 
 @dc.dataclass()
-class OciDataclass(abc.ABC):  # noqa
+class OciDataclass(Abstract):
     pass
 
 
