@@ -20,6 +20,7 @@ import abc
 import random
 import typing as ta
 
+from ... import lang
 from ..sorted.sorted import SortedItems
 from . import treap
 from .persistent import PersistentMap
@@ -154,7 +155,7 @@ def new_treap_dict(cmp: ta.Callable[[tuple[K, V], tuple[K, V]], int]) -> Persist
 ##
 
 
-class BaseTreapMapIterator(abc.ABC, ta.Iterator[tuple[K, V]], ta.Generic[K, V]):
+class BaseTreapMapIterator(lang.Abstract, ta.Iterator[tuple[K, V]], ta.Generic[K, V]):
     __slots__ = ('_st', '_n')
 
     def __init__(

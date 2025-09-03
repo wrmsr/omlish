@@ -23,6 +23,7 @@ from ..formats.ini.sections import extract_ini_sections
 from ..formats.ini.sections import render_ini_sections
 from ..formats.toml.parser import toml_loads
 from ..formats.toml.writer import TomlWriter
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.json import json_dumps_pretty
 from .types import ConfigMap
@@ -36,7 +37,7 @@ ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 
 @dc.dataclass(frozen=True)
-class ConfigData(abc.ABC):  # noqa
+class ConfigData(Abstract):
     @abc.abstractmethod
     def as_map(self) -> ConfigMap:
         raise NotImplementedError
@@ -45,7 +46,7 @@ class ConfigData(abc.ABC):  # noqa
 #
 
 
-class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
+class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
     @property
     def file_exts(self) -> ta.Sequence[str]:
         return ()
@@ -67,7 +68,7 @@ class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
 #
 
 
-class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
+class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
     @property
     @abc.abstractmethod
     def data_cls(self) -> ta.Type[ConfigDataT]:
@@ -87,7 +88,7 @@ class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
 
 
 @dc.dataclass(frozen=True)
-class ObjConfigData(ConfigData, abc.ABC):
+class ObjConfigData(ConfigData, Abstract):
     obj: ta.Any
 
     def as_map(self) -> ConfigMap:

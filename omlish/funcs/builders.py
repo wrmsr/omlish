@@ -6,6 +6,7 @@ import os.path
 import sys
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.cached import cached_nullary
 from ..lite.check import check
 from ..os.paths import is_path_in_dir
@@ -14,7 +15,7 @@ from ..os.paths import is_path_in_dir
 ##
 
 
-class FnBuilder(abc.ABC):
+class FnBuilder(Abstract):
     @abc.abstractmethod
     def build_fn(
             self,

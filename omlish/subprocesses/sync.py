@@ -10,6 +10,7 @@ import subprocess
 import sys
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.timeouts import TimeoutLike
 from .base import BaseSubprocesses
 from .run import SubprocessRun
@@ -19,7 +20,7 @@ from .run import SubprocessRunOutput
 ##
 
 
-class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+class AbstractSubprocesses(BaseSubprocesses, Abstract):
     @abc.abstractmethod
     def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
         raise NotImplementedError

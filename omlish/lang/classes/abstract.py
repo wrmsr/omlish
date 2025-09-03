@@ -1,60 +1,14 @@
 import abc
 import typing as ta
 
+from ...lite.abstract import _ABSTRACT_METHODS_ATTR  # noqa
+from ...lite.abstract import _FORCE_ABSTRACT_ATTR  # noqa
+from ...lite.abstract import _IS_ABSTRACT_METHOD_ATTR  # noqa
+from ...lite.abstract import Abstract
+from ...lite.abstract import is_abstract_method
+
 
 T = ta.TypeVar('T')
-
-
-##
-
-
-_ABSTRACT_METHODS_ATTR = '__abstractmethods__'
-_IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
-_FORCE_ABSTRACT_ATTR = '__forceabstract__'
-
-
-#
-
-
-class AbstractTypeError(TypeError):
-    pass
-
-
-class Abstract(abc.ABC):  # noqa
-    __slots__ = ()
-
-    def __forceabstract__(self):
-        raise TypeError
-
-    setattr(__forceabstract__, _IS_ABSTRACT_METHOD_ATTR, True)
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        if Abstract in cls.__bases__:
-            setattr(cls, _FORCE_ABSTRACT_ATTR, getattr(Abstract, _FORCE_ABSTRACT_ATTR))
-        else:
-            setattr(cls, _FORCE_ABSTRACT_ATTR, False)
-
-        super().__init_subclass__(**kwargs)
-
-        if (
-                Abstract not in cls.__bases__ and
-                abc.ABC not in cls.__bases__
-        ):
-            ams = {a for a, o in cls.__dict__.items() if is_abstract_method(o)}
-            seen = set(cls.__dict__)
-            for b in cls.__bases__:
-                ams.update(set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen)
-                seen.update(dir(b))
-
-            if ams:
-                raise AbstractTypeError(
-                    f'Cannot subclass abstract class {cls.__name__} with abstract methods: '
-                    f'{", ".join(map(str, sorted(ams)))}',
-                )
-
-
-def is_abstract_method(obj: ta.Any) -> bool:
-    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
 
 
 ##
@@ -87,7 +41,7 @@ def is_abstract(obj: ta.Any) -> bool:
 _INTERNAL_ABSTRACT_ATTRS = frozenset([_FORCE_ABSTRACT_ATTR])
 
 
-def get_abstract_methods(cls: type, *, include_internal: bool = False) -> frozenset[str]:
+def get_abstracts(cls: type, *, include_internal: bool = False) -> frozenset[str]:
     ms = frozenset(getattr(cls, _ABSTRACT_METHODS_ATTR))
     if not include_internal:
         ms -= _INTERNAL_ABSTRACT_ATTRS

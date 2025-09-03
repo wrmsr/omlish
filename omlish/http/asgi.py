@@ -4,6 +4,7 @@ import typing as ta
 import urllib.parse
 
 from .. import check
+from .. import lang
 from . import consts
 
 
@@ -21,7 +22,7 @@ App: ta.TypeAlias = ta.Callable[[Scope, Recv, Send], ta.Awaitable[None]]
 Wrapper: ta.TypeAlias = ta.Callable[[App, Scope, Recv, Send], ta.Awaitable[None]]
 
 
-class App_(abc.ABC):  # noqa
+class App_(lang.Abstract):  # noqa
     @abc.abstractmethod
     async def __call__(self, scope: Scope, recv: Recv, send: Send) -> None:
         raise NotImplementedError

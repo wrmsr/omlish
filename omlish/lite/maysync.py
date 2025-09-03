@@ -45,6 +45,8 @@ import sys
 import threading
 import typing as ta
 
+from .abstract import Abstract
+
 
 T = ta.TypeVar('T')
 O = ta.TypeVar('O')
@@ -58,7 +60,7 @@ _MaysyncRA = ta.TypeVar('_MaysyncRA')
 ##
 
 
-class AnyMaysyncFn(abc.ABC, ta.Generic[_MaysyncRS, _MaysyncRA]):  # noqa
+class AnyMaysyncFn(Abstract, ta.Generic[_MaysyncRS, _MaysyncRA]):
     def __init__(
             self,
             s: ta.Callable[..., _MaysyncRS],
@@ -105,7 +107,7 @@ class MaywaitableAlreadyConsumedError(Exception):
     pass
 
 
-class AnyMaywaitable(abc.ABC, ta.Generic[_MaysyncX]):
+class AnyMaywaitable(Abstract, ta.Generic[_MaysyncX]):
     @ta.final
     def __init__(
             self,

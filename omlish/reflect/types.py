@@ -16,11 +16,12 @@ TODO:
  - cache this shit, esp generic_mro shit
   - cache __hash__ in Generic/Union
 """
-import abc
 import dataclasses as dc
 import threading
 import types
 import typing as ta
+
+from ..lite.abstract import Abstract
 
 
 _NoneType = types.NoneType  # type: ignore
@@ -275,7 +276,7 @@ def get_type_var_bound(obj: ta.Any) -> ta.Any:
 ##
 
 
-class TypeInfo(abc.ABC):  # noqa
+class TypeInfo(Abstract):
     pass
 
 
@@ -320,7 +321,7 @@ GenericLikeCls = ta.TypeVar('GenericLikeCls')
 
 
 @dc.dataclass(frozen=True)
-class GenericLike(TypeInfo, abc.ABC, ta.Generic[GenericLikeCls]):
+class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
     cls: GenericLikeCls
 
     # args and params are the same length - params maps to the generic origin's params:

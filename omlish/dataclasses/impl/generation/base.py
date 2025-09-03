@@ -2,6 +2,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from .... import lang
 from ..processing.base import ProcessingContext
 from .ops import Op
 from .ops import OpRefMap
@@ -15,7 +16,7 @@ PlanT = ta.TypeVar('PlanT')
 
 
 @dc.dataclass(frozen=True)
-class Plan(abc.ABC):  # noqa
+class Plan(lang.Abstract):
     pass
 
 
@@ -28,7 +29,7 @@ class PlanResult(ta.Generic[PlanT]):
     ref_map: OpRefMap | None = None
 
 
-class Generator(abc.ABC, ta.Generic[PlanT]):
+class Generator(lang.Abstract, ta.Generic[PlanT]):
     @abc.abstractmethod
     def plan(self, ctx: ProcessingContext) -> PlanResult[PlanT] | None:
         raise NotImplementedError

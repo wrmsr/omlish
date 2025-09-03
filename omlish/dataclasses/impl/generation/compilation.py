@@ -7,6 +7,7 @@ import dataclasses as dc
 import typing as ta
 
 from .... import check
+from .... import lang
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_IMPORTS
 from .globals import FN_GLOBALS
@@ -32,7 +33,7 @@ T = ta.TypeVar('T')
 
 
 class OpCompiler:
-    class Style(abc.ABC):
+    class Style(lang.Abstract):
         @abc.abstractmethod
         def header_lines(self) -> ta.Sequence[str]:
             raise NotImplementedError

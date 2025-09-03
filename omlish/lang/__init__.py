@@ -68,9 +68,7 @@ with _auto_proxy_init(
     )
 
     from .classes.abstract import (  # noqa
-        Abstract,
-        AbstractTypeError,
-        get_abstract_methods,
+        get_abstracts,
         is_abstract,
         is_abstract_class,
         is_abstract_method,
@@ -433,6 +431,14 @@ with _auto_proxy_init(
     )
 
     ##
+
+    from ..lite.abstract import (  # noqa
+        is_abstract_method,
+        update_abstracts,
+
+        AbstractTypeError,
+        Abstract,
+    )
 
     from ..lite.args import (  # noqa
         Args,

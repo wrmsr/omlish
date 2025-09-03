@@ -5,12 +5,12 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import abc
 import dataclasses as dc
 import time
 import types
 import typing as ta
 
+from ...lite.abstract import Abstract
 from .events import BlueletEvent
 from .events import BlueletFuture
 from .events import WaitableBlueletEvent
@@ -52,7 +52,7 @@ class _BlueletAwaitableDriver:
 ##
 
 
-class CoreBlueletEvent(BlueletEvent, abc.ABC):  # noqa
+class CoreBlueletEvent(BlueletEvent, Abstract):
     pass
 
 

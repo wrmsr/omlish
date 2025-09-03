@@ -52,7 +52,6 @@ curl -v -XPOST localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
 curl -v -XFOO localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
 curl -v -XFOO localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
 """
-import abc
 import dataclasses as dc
 import email.utils
 import html
@@ -62,6 +61,7 @@ import textwrap
 import time
 import typing as ta
 
+from ....lite.abstract import Abstract
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
 from ...handlers import HttpHandler
@@ -380,7 +380,7 @@ class CoroHttpServer:
 
     #
 
-    class Io(abc.ABC):  # noqa
+    class Io(Abstract):
         pass
 
     #

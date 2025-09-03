@@ -4,6 +4,8 @@ import enum
 import os
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 ##
 
@@ -15,7 +17,7 @@ class TermColor(enum.Enum):
     BLUE = enum.auto()
 
 
-class TermColoring(abc.ABC):
+class TermColoring(Abstract):
     @abc.abstractmethod
     def color(self, c: TermColor, s: str) -> str:
         raise NotImplementedError

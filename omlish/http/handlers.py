@@ -6,6 +6,7 @@ import http.server
 import logging
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..sockets.addresses import SocketAddress
 from .parsing import HttpHeaders
 
@@ -57,7 +58,7 @@ class UnsupportedMethodHttpHandlerError(Exception):
     pass
 
 
-class HttpHandler_(abc.ABC):  # noqa
+class HttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         raise NotImplementedError

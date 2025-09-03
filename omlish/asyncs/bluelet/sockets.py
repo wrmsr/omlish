@@ -5,11 +5,11 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import abc
 import dataclasses as dc
 import socket
 import typing as ta
 
+from ...lite.abstract import Abstract
 from .core import BlueletCoro
 from .core import ReturnBlueletEvent
 from .core import ValueBlueletEvent
@@ -130,7 +130,7 @@ class BlueletConnection:
 ##
 
 
-class SocketBlueletEvent(BlueletEvent, abc.ABC):  # noqa
+class SocketBlueletEvent(BlueletEvent, Abstract):
     pass
 
 

@@ -29,7 +29,7 @@ class ImageClipboardContents(ClipboardContents):
 ##
 
 
-class Clipboard(abc.ABC):
+class Clipboard(lang.Abstract):
     @abc.abstractmethod
     def get(self) -> list[ClipboardContents]:
         raise NotImplementedError

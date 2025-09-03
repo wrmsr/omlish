@@ -114,7 +114,12 @@ class TestMarshalDataclasses(AbstractTestMarshal):
         with self.assertRaises(KeyError):  # noqa
             msh.unmarshal_obj(dict(i=24, j=25), Foo)
 
-        m = dc.replace(msh.get_obj_marshaler(Foo), non_strict=True)  # type: ignore
+        m = msh.FieldsObjMarshaler(
+            Foo,
+            msh.get_obj_marshaler(Foo).fs,  # type: ignore
+            non_strict=True,
+        )
+
         u = m.unmarshal(
             dict(i=24, j=25),
             msh.ObjMarshalContext(

@@ -27,6 +27,7 @@ import typing as ta
 
 from ...diag.lslocks import LslocksCommand
 from ...diag.lsof import LsofCommand
+from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.timeouts import Timeout
 from ...lite.timeouts import TimeoutLike
@@ -37,7 +38,7 @@ from .pidfile import Pidfile
 ##
 
 
-class PidfilePinner(abc.ABC):
+class PidfilePinner(Abstract):
     def __init__(
             self,
             *,

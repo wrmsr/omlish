@@ -1,6 +1,8 @@
 import abc
 import typing as ta
 
+from .. import lang
+
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
@@ -9,7 +11,7 @@ U = ta.TypeVar('U')
 ##
 
 
-class Fn(abc.ABC, ta.Generic[T]):
+class Fn(lang.Abstract, ta.Generic[T]):
     @abc.abstractmethod
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         raise NotImplementedError

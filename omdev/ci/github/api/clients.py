@@ -12,6 +12,7 @@ import urllib.request
 
 from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.http.urllib import NonRaisingUrllibErrorProcessor
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import log
@@ -24,9 +25,9 @@ from ..env import register_github_env_var
 ##
 
 
-class GithubCacheClient(abc.ABC):
+class GithubCacheClient(Abstract):
     @dc.dataclass(frozen=True)
-    class Entry(abc.ABC):  # noqa
+    class Entry(Abstract):  # noqa
         pass
 
     @abc.abstractmethod
@@ -48,7 +49,7 @@ class GithubCacheClient(abc.ABC):
 ##
 
 
-class BaseGithubCacheClient(GithubCacheClient, abc.ABC):
+class BaseGithubCacheClient(GithubCacheClient, Abstract):
     AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
 
     KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')

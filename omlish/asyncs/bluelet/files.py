@@ -5,10 +5,10 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import abc
 import dataclasses as dc
 import typing as ta
 
+from ...lite.abstract import Abstract
 from .core import DelegationBlueletEvent
 from .core import ReturnBlueletEvent
 from .events import BlueletEvent
@@ -19,7 +19,7 @@ from .events import WaitableBlueletEvent
 ##
 
 
-class FileBlueletEvent(BlueletEvent, abc.ABC):
+class FileBlueletEvent(BlueletEvent, Abstract):
     pass
 
 

@@ -3,6 +3,7 @@ import abc
 import socket
 import typing as ta
 
+from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...sockets.addresses import SocketAddress
 
@@ -10,7 +11,7 @@ from ...sockets.addresses import SocketAddress
 ##
 
 
-class FdioHandler(abc.ABC):
+class FdioHandler(Abstract):
     @abc.abstractmethod
     def fd(self) -> int:
         raise NotImplementedError
@@ -46,7 +47,7 @@ class FdioHandler(abc.ABC):
         pass
 
 
-class SocketFdioHandler(FdioHandler, abc.ABC):
+class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
             addr: SocketAddress,

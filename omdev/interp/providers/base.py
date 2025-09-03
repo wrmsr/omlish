@@ -9,6 +9,7 @@ TODO:
 import abc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.strings import snake_case
 
 from ..types import Interp
@@ -19,13 +20,13 @@ from ..types import InterpVersion
 ##
 
 
-class InterpProvider(abc.ABC):
+class InterpProvider(Abstract):
     name: ta.ClassVar[str]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
+        if Abstract not in cls.__bases__ and 'name' not in cls.__dict__:
             sfx = 'InterpProvider'
             if not cls.__name__.endswith(sfx):
                 raise NameError(cls)

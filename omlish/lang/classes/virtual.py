@@ -113,7 +113,7 @@ class Picklable(Virtual):
 ##
 
 
-class Callable(NotInstantiable, Final, ta.Generic[T]):
+class Callable(NotInstantiable, Final, ta.Generic[T], metaclass=abc.ABCMeta):
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         raise TypeError
 

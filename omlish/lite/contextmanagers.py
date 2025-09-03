@@ -190,7 +190,7 @@ def attr_setting(obj, attr, val, *, default=None):  # noqa
 ##
 
 
-class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
+class AsyncClosingManager(contextlib.AbstractAsyncContextManager):
     def __init__(self, thing):
         self.thing = thing
 
@@ -199,3 +199,6 @@ class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
 
     async def __aexit__(self, *exc_info):
         await self.thing.aclose()
+
+
+aclosing = AsyncClosingManager

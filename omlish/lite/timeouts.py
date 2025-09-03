@@ -7,6 +7,8 @@ import abc
 import time
 import typing as ta
 
+from .abstract import Abstract
+
 
 TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
 
@@ -14,7 +16,7 @@ TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['Timeo
 ##
 
 
-class Timeout(abc.ABC):
+class Timeout(Abstract):
     @property
     @abc.abstractmethod
     def can_expire(self) -> bool:

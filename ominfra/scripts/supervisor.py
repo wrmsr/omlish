@@ -128,9 +128,6 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../omlish/lite/maybes.py
-U = ta.TypeVar('U')
-
 # ../../omlish/lite/typing.py
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
@@ -149,15 +146,18 @@ ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 # ../../omlish/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
+# ../../omlish/lite/maybes.py
+U = ta.TypeVar('U')
+
+# ../../omlish/http/handlers.py
+HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
+HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+
 # ../../omlish/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
-
-# ../../omlish/http/handlers.py
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
-HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 # ../../omlish/http/coro/server/server.py
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
@@ -1751,213 +1751,113 @@ class HttpProtocolVersions:
 
 
 ########################################
-# ../../../omlish/io/fdio/pollers.py
+# ../../../omlish/lite/abstract.py
 
 
 ##
 
 
-class FdioPoller(abc.ABC):
-    def __init__(self) -> None:
-        super().__init__()
+_ABSTRACT_METHODS_ATTR = '__abstractmethods__'
+_IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
 
-        self._readable: ta.Set[int] = set()
-        self._writable: ta.Set[int] = set()
 
-    #
+def is_abstract_method(obj: ta.Any) -> bool:
+    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
 
-    def close(self) -> None:  # noqa
-        pass
 
-    def reopen(self) -> None:  # noqa
-        pass
+def update_abstracts(cls, *, force=False):
+    if not force and not hasattr(cls, _ABSTRACT_METHODS_ATTR):
+        # Per stdlib: We check for __abstractmethods__ here because cls might by a C implementation or a python
+        # implementation (especially during testing), and we want to handle both cases.
+        return cls
 
-    #
+    abstracts: ta.Set[str] = set()
 
-    @property
-    @ta.final
-    def readable(self) -> ta.AbstractSet[int]:
-        return self._readable
+    for scls in cls.__bases__:
+        for name in getattr(scls, _ABSTRACT_METHODS_ATTR, ()):
+            value = getattr(cls, name, None)
+            if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
+                abstracts.add(name)
 
-    @property
-    @ta.final
-    def writable(self) -> ta.AbstractSet[int]:
-        return self._writable
+    for name, value in cls.__dict__.items():
+        if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
+            abstracts.add(name)
 
-    #
+    setattr(cls, _ABSTRACT_METHODS_ATTR, frozenset(abstracts))
+    return cls
 
-    @ta.final
-    def register_readable(self, fd: int) -> bool:
-        if fd in self._readable:
-            return False
-        self._register_readable(fd)
-        self._readable.add(fd)
-        return True
 
-    @ta.final
-    def register_writable(self, fd: int) -> bool:
-        if fd in self._writable:
-            return False
-        self._register_writable(fd)
-        self._writable.add(fd)
-        return True
+#
 
-    @ta.final
-    def unregister_readable(self, fd: int) -> bool:
-        if fd not in self._readable:
-            return False
-        self._readable.discard(fd)
-        self._unregister_readable(fd)
-        return True
 
-    @ta.final
-    def unregister_writable(self, fd: int) -> bool:
-        if fd not in self._writable:
-            return False
-        self._writable.discard(fd)
-        self._unregister_writable(fd)
-        return True
+class AbstractTypeError(TypeError):
+    pass
+
+
+_FORCE_ABSTRACT_ATTR = '__forceabstract__'
+
+
+class Abstract:
+    """
+    Different from, but interoperable with, abc.ABC / abc.ABCMeta:
+
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
+       present in the class's direct bases.
+     - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
+       abstractmethods left on the class.
+     - This is a mixin, not a metaclass.
+     - As it is not an ABCMeta, this does not support virtual base classes. As a result, operations like `isinstance`
+       and `issubclass` are ~7x faster.
+
+    If not mixed-in with an ABCMeta, it will update __abstractmethods__ itself.
+    """
+
+    __slots__ = ()
+
+    __abstractmethods__: ta.ClassVar[ta.FrozenSet[str]] = frozenset()
 
     #
 
-    def _register_readable(self, fd: int) -> None:  # noqa
-        pass
+    def __forceabstract__(self):
+        raise TypeError
 
-    def _register_writable(self, fd: int) -> None:  # noqa
-        pass
-
-    def _unregister_readable(self, fd: int) -> None:  # noqa
-        pass
-
-    def _unregister_writable(self, fd: int) -> None:  # noqa
-        pass
+    # This is done manually, rather than through @abc.abstractmethod, to mask it from static analysis.
+    setattr(__forceabstract__, _IS_ABSTRACT_METHOD_ATTR, True)
 
     #
 
-    def update(
-            self,
-            r: ta.AbstractSet[int],
-            w: ta.AbstractSet[int],
-    ) -> None:
-        for f in r - self._readable:
-            self.register_readable(f)
-        for f in w - self._writable:
-            self.register_writable(f)
-        for f in self._readable - r:
-            self.unregister_readable(f)
-        for f in self._writable - w:
-            self.unregister_writable(f)
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        setattr(
+            cls,
+            _FORCE_ABSTRACT_ATTR,
+            getattr(Abstract, _FORCE_ABSTRACT_ATTR) if Abstract in cls.__bases__ else False,
+        )
 
-    #
+        super().__init_subclass__(**kwargs)
 
-    @dc.dataclass(frozen=True)
-    class PollResult:
-        r: ta.Sequence[int] = ()
-        w: ta.Sequence[int] = ()
+        if not (Abstract in cls.__bases__ or abc.ABC in cls.__bases__):
+            ams = {a: cls for a, o in cls.__dict__.items() if is_abstract_method(o)}
 
-        inv: ta.Sequence[int] = ()
+            seen = set(cls.__dict__)
+            for b in cls.__bases__:
+                ams.update({a: b for a in set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen})  # noqa
+                seen.update(dir(b))
 
-        msg: ta.Optional[str] = None
-        exc: ta.Optional[BaseException] = None
+            if ams:
+                raise AbstractTypeError(
+                    f'Cannot subclass abstract class {cls.__name__} with abstract methods: ' +
+                    ', '.join(sorted([
+                        '.'.join([
+                            *([m] if (m := getattr(c, '__module__')) else []),
+                            getattr(c, '__qualname__', getattr(c, '__name__')),
+                            a,
+                        ])
+                        for a, c in ams.items()
+                    ])),
+                )
 
-    @abc.abstractmethod
-    def poll(self, timeout: ta.Optional[float]) -> PollResult:
-        raise NotImplementedError
-
-
-##
-
-
-class SelectFdioPoller(FdioPoller):
-    def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
-        try:
-            r, w, x = select.select(
-                self._readable,
-                self._writable,
-                [],
-                timeout,
-            )
-
-        except OSError as exc:
-            if exc.errno == errno.EINTR:
-                return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-            elif exc.errno == errno.EBADF:
-                return FdioPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
-            else:
-                raise
-
-        return FdioPoller.PollResult(r, w)
-
-
-##
-
-
-PollFdioPoller: ta.Optional[ta.Type[FdioPoller]]
-if hasattr(select, 'poll'):
-
-    class _PollFdioPoller(FdioPoller):
-        def __init__(self) -> None:
-            super().__init__()
-
-            self._poller = select.poll()
-
-        #
-
-        def _register_readable(self, fd: int) -> None:
-            self._update_registration(fd, r=True, w=fd in self._writable)
-
-        def _register_writable(self, fd: int) -> None:
-            self._update_registration(fd, r=fd in self._readable, w=True)
-
-        def _unregister_readable(self, fd: int) -> None:
-            self._update_registration(fd, r=False, w=False)
-
-        def _unregister_writable(self, fd: int) -> None:
-            self._update_registration(fd, r=fd in self._readable, w=False)
-
-        #
-
-        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-        _WRITE = select.POLLOUT
-
-        def _update_registration(self, fd: int, *, r: bool, w: bool) -> None:
-            if r or w:
-                self._poller.register(fd, (self._READ if r else 0) | (self._WRITE if w else 0))
-            else:
-                self._poller.unregister(fd)
-
-        #
-
-        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
-            polled: ta.List[ta.Tuple[int, int]]
-            try:
-                polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
-
-            except OSError as exc:
-                if exc.errno == errno.EINTR:
-                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-                else:
-                    raise
-
-            r: ta.List[int] = []
-            w: ta.List[int] = []
-            inv: ta.List[int] = []
-            for fd, mask in polled:
-                if mask & select.POLLNVAL:
-                    self._poller.unregister(fd)
-                    self._readable.discard(fd)
-                    self._writable.discard(fd)
-                    inv.append(fd)
-                    continue
-                if mask & self._READ:
-                    r.append(fd)
-                if mask & self._WRITE:
-                    w.append(fd)
-            return FdioPoller.PollResult(r, w, inv=inv)
-
-    PollFdioPoller = _PollFdioPoller
-else:
-    PollFdioPoller = None
+        if not isinstance(cls, abc.ABCMeta):
+            update_abstracts(cls, force=True)
 
 
 ########################################
@@ -2544,210 +2444,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 log = logging.getLogger(__name__)
-
-
-########################################
-# ../../../omlish/lite/maybes.py
-
-
-##
-
-
-@functools.total_ordering
-class Maybe(ta.Generic[T]):
-    class ValueNotPresentError(BaseException):
-        pass
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def present(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def must(self) -> T:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def __repr__(self) -> str:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __hash__(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __eq__(self, other) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __lt__(self, other) -> bool:
-        raise NotImplementedError
-
-    #
-
-    @ta.final
-    def __ne__(self, other):
-        return not (self == other)
-
-    @ta.final
-    def __iter__(self) -> ta.Iterator[T]:
-        if self.present:
-            yield self.must()
-
-    @ta.final
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError
-
-    #
-
-    @ta.final
-    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
-        if self.present:
-            consumer(self.must())
-
-    @ta.final
-    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
-        if self.present and predicate(self.must()):
-            return self
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
-        if self.present:
-            return Maybe.just(mapper(self.must()))
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
-        if self.present:
-            if not isinstance(v := mapper(self.must()), Maybe):
-                raise TypeError(v)
-            return v
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return other
-
-    @ta.final
-    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return supplier()
-
-    @ta.final
-    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
-        if self.present:
-            return self.must()
-        else:
-            raise exception_supplier()
-
-    #
-
-    @classmethod
-    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
-        if v is not None:
-            return cls.just(v)
-        else:
-            return cls.empty()
-
-    @classmethod
-    def just(cls, v: T) -> 'Maybe[T]':
-        return _JustMaybe(v)
-
-    _empty: ta.ClassVar['Maybe']
-
-    @classmethod
-    def empty(cls) -> 'Maybe[T]':
-        return Maybe._empty
-
-
-##
-
-
-class _Maybe(Maybe[T], abc.ABC):
-    def __lt__(self, other):
-        if not isinstance(other, _Maybe):
-            return NotImplemented
-        sp = self.present
-        op = other.present
-        if self.present and other.present:
-            return self.must() < other.must()
-        else:
-            return op and not sp
-
-
-class _JustMaybe(_Maybe[T]):
-    __slots__ = ('_v', '_hash')
-
-    def __init__(self, v: T) -> None:
-        super().__init__()
-
-        self._v = v
-
-    @property
-    def present(self) -> bool:
-        return True
-
-    def must(self) -> T:
-        return self._v
-
-    #
-
-    def __repr__(self) -> str:
-        return f'just({self._v!r})'
-
-    _hash: int
-
-    def __hash__(self) -> int:
-        try:
-            return self._hash
-        except AttributeError:
-            pass
-        h = self._hash = hash((_JustMaybe, self._v))
-        return h
-
-    def __eq__(self, other):
-        return (
-            self.__class__ is other.__class__ and
-            self._v == other._v  # noqa
-        )
-
-
-class _EmptyMaybe(_Maybe[T]):
-    __slots__ = ()
-
-    @property
-    def present(self) -> bool:
-        return False
-
-    def must(self) -> T:
-        raise Maybe.ValueNotPresentError
-
-    #
-
-    def __repr__(self) -> str:
-        return 'empty()'
-
-    def __hash__(self) -> int:
-        return hash(_EmptyMaybe)
-
-    def __eq__(self, other):
-        return self.__class__ is other.__class__
-
-
-Maybe._empty = _EmptyMaybe()  # noqa
 
 
 ########################################
@@ -3764,7 +3460,7 @@ TODO:
 
 
 @dc.dataclass(frozen=True)
-class ConfigData(abc.ABC):  # noqa
+class ConfigData(Abstract):
     @abc.abstractmethod
     def as_map(self) -> ConfigMap:
         raise NotImplementedError
@@ -3773,7 +3469,7 @@ class ConfigData(abc.ABC):  # noqa
 #
 
 
-class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
+class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
     @property
     def file_exts(self) -> ta.Sequence[str]:
         return ()
@@ -3795,7 +3491,7 @@ class ConfigLoader(abc.ABC, ta.Generic[ConfigDataT]):
 #
 
 
-class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
+class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
     @property
     @abc.abstractmethod
     def data_cls(self) -> ta.Type[ConfigDataT]:
@@ -3815,7 +3511,7 @@ class ConfigRenderer(abc.ABC, ta.Generic[ConfigDataT]):
 
 
 @dc.dataclass(frozen=True)
-class ObjConfigData(ConfigData, abc.ABC):
+class ObjConfigData(ConfigData, Abstract):
     obj: ta.Any
 
     def as_map(self) -> ConfigMap:
@@ -4069,7 +3765,7 @@ def build_config_named_children(
 ##
 
 
-class ParseHttpRequestResult(abc.ABC):  # noqa
+class ParseHttpRequestResult(Abstract):
     __slots__ = (
         'server_version',
         'request_line',
@@ -4737,7 +4433,7 @@ class IncrementalWriteBuffer:
 ##
 
 
-class FdioHandler(abc.ABC):
+class FdioHandler(Abstract):
     @abc.abstractmethod
     def fd(self) -> int:
         raise NotImplementedError
@@ -4773,7 +4469,7 @@ class FdioHandler(abc.ABC):
         pass
 
 
-class SocketFdioHandler(FdioHandler, abc.ABC):
+class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
             addr: SocketAddress,
@@ -4798,107 +4494,187 @@ class SocketFdioHandler(FdioHandler, abc.ABC):
 
 
 ########################################
-# ../../../omlish/io/fdio/kqueue.py
+# ../../../omlish/io/fdio/pollers.py
 
 
 ##
 
 
-KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]
-if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
+class FdioPoller(Abstract):
+    def __init__(self) -> None:
+        super().__init__()
 
-    class _KqueueFdioPoller(FdioPoller):
-        DEFAULT_MAX_EVENTS = 1000
+        self._readable: ta.Set[int] = set()
+        self._writable: ta.Set[int] = set()
 
-        def __init__(
-                self,
-                *,
-                max_events: int = DEFAULT_MAX_EVENTS,
-        ) -> None:
+    #
+
+    def close(self) -> None:  # noqa
+        pass
+
+    def reopen(self) -> None:  # noqa
+        pass
+
+    #
+
+    @property
+    @ta.final
+    def readable(self) -> ta.AbstractSet[int]:
+        return self._readable
+
+    @property
+    @ta.final
+    def writable(self) -> ta.AbstractSet[int]:
+        return self._writable
+
+    #
+
+    @ta.final
+    def register_readable(self, fd: int) -> bool:
+        if fd in self._readable:
+            return False
+        self._register_readable(fd)
+        self._readable.add(fd)
+        return True
+
+    @ta.final
+    def register_writable(self, fd: int) -> bool:
+        if fd in self._writable:
+            return False
+        self._register_writable(fd)
+        self._writable.add(fd)
+        return True
+
+    @ta.final
+    def unregister_readable(self, fd: int) -> bool:
+        if fd not in self._readable:
+            return False
+        self._readable.discard(fd)
+        self._unregister_readable(fd)
+        return True
+
+    @ta.final
+    def unregister_writable(self, fd: int) -> bool:
+        if fd not in self._writable:
+            return False
+        self._writable.discard(fd)
+        self._unregister_writable(fd)
+        return True
+
+    #
+
+    def _register_readable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _register_writable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _unregister_readable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _unregister_writable(self, fd: int) -> None:  # noqa
+        pass
+
+    #
+
+    def update(
+            self,
+            r: ta.AbstractSet[int],
+            w: ta.AbstractSet[int],
+    ) -> None:
+        for f in r - self._readable:
+            self.register_readable(f)
+        for f in w - self._writable:
+            self.register_writable(f)
+        for f in self._readable - r:
+            self.unregister_readable(f)
+        for f in self._writable - w:
+            self.unregister_writable(f)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class PollResult:
+        r: ta.Sequence[int] = ()
+        w: ta.Sequence[int] = ()
+
+        inv: ta.Sequence[int] = ()
+
+        msg: ta.Optional[str] = None
+        exc: ta.Optional[BaseException] = None
+
+    @abc.abstractmethod
+    def poll(self, timeout: ta.Optional[float]) -> PollResult:
+        raise NotImplementedError
+
+
+##
+
+
+class SelectFdioPoller(FdioPoller):
+    def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
+        try:
+            r, w, x = select.select(
+                self._readable,
+                self._writable,
+                [],
+                timeout,
+            )
+
+        except OSError as exc:
+            if exc.errno == errno.EINTR:
+                return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+            elif exc.errno == errno.EBADF:
+                return FdioPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
+            else:
+                raise
+
+        return FdioPoller.PollResult(r, w)
+
+
+##
+
+
+PollFdioPoller: ta.Optional[ta.Type[FdioPoller]]
+if hasattr(select, 'poll'):
+
+    class _PollFdioPoller(FdioPoller):
+        def __init__(self) -> None:
             super().__init__()
 
-            self._max_events = max_events
-
-            self._kqueue: ta.Optional[ta.Any] = None
-
-        #
-
-        def _get_kqueue(self) -> 'select.kqueue':
-            if (kq := self._kqueue) is not None:
-                return kq
-            kq = select.kqueue()
-            self._kqueue = kq
-            return kq
-
-        def close(self) -> None:
-            if self._kqueue is not None:
-                self._kqueue.close()
-                self._kqueue = None
-
-        def reopen(self) -> None:
-            for fd in self._readable:
-                self._register_readable(fd)
-            for fd in self._writable:
-                self._register_writable(fd)
+            self._poller = select.poll()
 
         #
 
         def _register_readable(self, fd: int) -> None:
-            self._update_registration(fd, 'read', 'add')
+            self._update_registration(fd, r=True, w=fd in self._writable)
 
         def _register_writable(self, fd: int) -> None:
-            self._update_registration(fd, 'write', 'add')
+            self._update_registration(fd, r=fd in self._readable, w=True)
 
         def _unregister_readable(self, fd: int) -> None:
-            self._update_registration(fd, 'read', 'del')
+            self._update_registration(fd, r=False, w=False)
 
         def _unregister_writable(self, fd: int) -> None:
-            self._update_registration(fd, 'write', 'del')
+            self._update_registration(fd, r=fd in self._readable, w=False)
 
         #
 
-        _CONTROL_FILTER_BY_READ_OR_WRITE: ta.ClassVar[ta.Mapping[ta.Literal['read', 'write'], int]] = {
-            'read': select.KQ_FILTER_READ,
-            'write': select.KQ_FILTER_WRITE,
-        }
+        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+        _WRITE = select.POLLOUT
 
-        _CONTROL_FLAGS_BY_ADD_OR_DEL: ta.ClassVar[ta.Mapping[ta.Literal['add', 'del'], int]] = {
-            'add': select.KQ_EV_ADD,
-            'del': select.KQ_EV_DELETE,
-        }
-
-        def _update_registration(
-                self,
-                fd: int,
-                read_or_write: ta.Literal['read', 'write'],
-                add_or_del: ta.Literal['add', 'del'],
-        ) -> None:  # noqa
-            ke = select.kevent(
-                fd,
-                filter=self._CONTROL_FILTER_BY_READ_OR_WRITE[read_or_write],
-                flags=self._CONTROL_FLAGS_BY_ADD_OR_DEL[add_or_del],
-            )
-            kq = self._get_kqueue()
-            try:
-                kq.control([ke], 0)
-
-            except OSError as exc:
-                if exc.errno == errno.EBADF:
-                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
-                    pass
-                elif exc.errno == errno.ENOENT:
-                    # Can happen when trying to remove an already closed socket
-                    if add_or_del == 'add':
-                        raise
-                else:
-                    raise
+        def _update_registration(self, fd: int, *, r: bool, w: bool) -> None:
+            if r or w:
+                self._poller.register(fd, (self._READ if r else 0) | (self._WRITE if w else 0))
+            else:
+                self._poller.unregister(fd)
 
         #
 
         def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
-            kq = self._get_kqueue()
+            polled: ta.List[ta.Tuple[int, int]]
             try:
-                kes = kq.control(None, self._max_events, timeout)
+                polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
@@ -4908,1102 +4684,23 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
             r: ta.List[int] = []
             w: ta.List[int] = []
-            for ke in kes:
-                if ke.filter == select.KQ_FILTER_READ:
-                    r.append(ke.ident)
-                if ke.filter == select.KQ_FILTER_WRITE:
-                    w.append(ke.ident)
-
-            return FdioPoller.PollResult(r, w)
-
-    KqueueFdioPoller = _KqueueFdioPoller
-else:
-    KqueueFdioPoller = None
-
-
-########################################
-# ../../../omlish/lite/inject.py
-
-
-###
-# types
-
-
-@dc.dataclass(frozen=True)
-class InjectorKey(ta.Generic[T]):
-    # Before PEP-560 typing.Generic was a metaclass with a __new__ that takes a 'cls' arg, so instantiating a dataclass
-    # with kwargs (such as through dc.replace) causes `TypeError: __new__() got multiple values for argument 'cls'`.
-    # See:
-    #  - https://github.com/python/cpython/commit/d911e40e788fb679723d78b6ea11cabf46caed5a
-    #  - https://gist.github.com/wrmsr/4468b86efe9f373b6b114bfe85b98fd3
-    cls_: InjectorKeyCls
-
-    tag: ta.Any = None
-    array: bool = False
-
-
-def is_valid_injector_key_cls(cls: ta.Any) -> bool:
-    return isinstance(cls, type) or is_new_type(cls)
-
-
-def check_valid_injector_key_cls(cls: T) -> T:
-    if not is_valid_injector_key_cls(cls):
-        raise TypeError(cls)
-    return cls
-
-
-##
-
-
-class InjectorProvider(abc.ABC):
-    @abc.abstractmethod
-    def provider_fn(self) -> InjectorProviderFn:
-        raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InjectorBinding:
-    key: InjectorKey
-    provider: InjectorProvider
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.key, InjectorKey)
-        check.isinstance(self.provider, InjectorProvider)
-
-
-class InjectorBindings(abc.ABC):
-    @abc.abstractmethod
-    def bindings(self) -> ta.Iterator[InjectorBinding]:
-        raise NotImplementedError
-
-##
-
-
-class Injector(abc.ABC):
-    @abc.abstractmethod
-    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def provide(self, key: ta.Any) -> ta.Any:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def provide_kwargs(
-            self,
-            obj: ta.Any,
-            *,
-            skip_args: int = 0,
-            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
-    ) -> ta.Mapping[str, ta.Any]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def inject(
-            self,
-            obj: ta.Any,
-            *,
-            args: ta.Optional[ta.Sequence[ta.Any]] = None,
-            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> ta.Any:
-        raise NotImplementedError
-
-    def __getitem__(
-            self,
-            target: ta.Union[InjectorKey[T], ta.Type[T]],
-    ) -> T:
-        return self.provide(target)
-
-
-###
-# exceptions
-
-
-class InjectorError(Exception):
-    pass
-
-
-@dc.dataclass()
-class InjectorKeyError(InjectorError):
-    key: InjectorKey
-
-    source: ta.Any = None
-    name: ta.Optional[str] = None
-
-
-class UnboundInjectorKeyError(InjectorKeyError):
-    pass
-
-
-class DuplicateInjectorKeyError(InjectorKeyError):
-    pass
-
-
-class CyclicDependencyInjectorKeyError(InjectorKeyError):
-    pass
-
-
-###
-# keys
-
-
-def as_injector_key(o: ta.Any) -> InjectorKey:
-    if o is inspect.Parameter.empty:
-        raise TypeError(o)
-    if isinstance(o, InjectorKey):
-        return o
-    if is_valid_injector_key_cls(o):
-        return InjectorKey(o)
-    raise TypeError(o)
-
-
-###
-# providers
-
-
-@dc.dataclass(frozen=True)
-class FnInjectorProvider(InjectorProvider):
-    fn: ta.Any
-
-    def __post_init__(self) -> None:
-        check.not_isinstance(self.fn, type)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        def pfn(i: Injector) -> ta.Any:
-            return i.inject(self.fn)
-
-        return pfn
-
-
-@dc.dataclass(frozen=True)
-class CtorInjectorProvider(InjectorProvider):
-    cls_: type
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.cls_, type)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        def pfn(i: Injector) -> ta.Any:
-            return i.inject(self.cls_)
-
-        return pfn
-
-
-@dc.dataclass(frozen=True)
-class ConstInjectorProvider(InjectorProvider):
-    v: ta.Any
-
-    def provider_fn(self) -> InjectorProviderFn:
-        return lambda _: self.v
-
-
-@dc.dataclass(frozen=True)
-class SingletonInjectorProvider(InjectorProvider):
-    p: InjectorProvider
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.p, InjectorProvider)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        v = not_set = object()
-
-        def pfn(i: Injector) -> ta.Any:
-            nonlocal v
-            if v is not_set:
-                v = ufn(i)
-            return v
-
-        ufn = self.p.provider_fn()
-        return pfn
-
-
-@dc.dataclass(frozen=True)
-class LinkInjectorProvider(InjectorProvider):
-    k: InjectorKey
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.k, InjectorKey)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        def pfn(i: Injector) -> ta.Any:
-            return i.provide(self.k)
-
-        return pfn
-
-
-@dc.dataclass(frozen=True)
-class ArrayInjectorProvider(InjectorProvider):
-    ps: ta.Sequence[InjectorProvider]
-
-    def provider_fn(self) -> InjectorProviderFn:
-        ps = [p.provider_fn() for p in self.ps]
-
-        def pfn(i: Injector) -> ta.Any:
-            rv = []
-            for ep in ps:
-                o = ep(i)
-                rv.append(o)
-            return rv
-
-        return pfn
-
-
-###
-# bindings
-
-
-@dc.dataclass(frozen=True)
-class _InjectorBindings(InjectorBindings):
-    bs: ta.Optional[ta.Sequence[InjectorBinding]] = None
-    ps: ta.Optional[ta.Sequence[InjectorBindings]] = None
-
-    def bindings(self) -> ta.Iterator[InjectorBinding]:
-        if self.bs is not None:
-            yield from self.bs
-        if self.ps is not None:
-            for p in self.ps:
-                yield from p.bindings()
-
-
-def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
-    bs: ta.List[InjectorBinding] = []
-    ps: ta.List[InjectorBindings] = []
-
-    for a in args:
-        if isinstance(a, InjectorBindings):
-            ps.append(a)
-        elif isinstance(a, InjectorBinding):
-            bs.append(a)
-        else:
-            raise TypeError(a)
-
-    return _InjectorBindings(
-        bs or None,
-        ps or None,
-    )
-
-
-##
-
-
-def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
-    pm: ta.Dict[InjectorKey, InjectorProvider] = {}
-    am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
-
-    for b in bs.bindings():
-        if b.key.array:
-            al = am.setdefault(b.key, [])
-            if isinstance(b.provider, ArrayInjectorProvider):
-                al.extend(b.provider.ps)
-            else:
-                al.append(b.provider)
-        else:
-            if b.key in pm:
-                raise KeyError(b.key)
-            pm[b.key] = b.provider
-
-    if am:
-        for k, aps in am.items():
-            pm[k] = ArrayInjectorProvider(aps)
-
-    return pm
-
-
-###
-# overrides
-
-
-@dc.dataclass(frozen=True)
-class OverridesInjectorBindings(InjectorBindings):
-    p: InjectorBindings
-    m: ta.Mapping[InjectorKey, InjectorBinding]
-
-    def bindings(self) -> ta.Iterator[InjectorBinding]:
-        for b in self.p.bindings():
-            yield self.m.get(b.key, b)
-
-
-def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
-    m: ta.Dict[InjectorKey, InjectorBinding] = {}
-
-    for b in as_injector_bindings(*args).bindings():
-        if b.key in m:
-            raise DuplicateInjectorKeyError(b.key)
-        m[b.key] = b
-
-    return OverridesInjectorBindings(p, m)
-
-
-###
-# scopes
-
-
-class InjectorScope(abc.ABC):  # noqa
-    def __init__(
-            self,
-            *,
-            _i: Injector,
-    ) -> None:
-        check.not_in(abc.ABC, type(self).__bases__)
-
-        super().__init__()
-
-        self._i = _i
-
-        all_seeds: ta.Iterable[_InjectorScopeSeed] = self._i.provide(InjectorKey(_InjectorScopeSeed, array=True))
-        self._sks = {s.k for s in all_seeds if s.sc is type(self)}
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class State:
-        seeds: ta.Dict[InjectorKey, ta.Any]
-        provisions: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
-
-    def new_state(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> State:
-        vs = dict(vs)
-        check.equal(set(vs.keys()), self._sks)
-        return InjectorScope.State(vs)
-
-    #
-
-    @abc.abstractmethod
-    def state(self) -> State:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.ContextManager[None]:
-        raise NotImplementedError
-
-
-class ExclusiveInjectorScope(InjectorScope, abc.ABC):
-    _st: ta.Optional[InjectorScope.State] = None
-
-    def state(self) -> InjectorScope.State:
-        return check.not_none(self._st)
-
-    @contextlib.contextmanager
-    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
-        check.none(self._st)
-        self._st = self.new_state(vs)
-        try:
-            yield
-        finally:
-            self._st = None
-
-
-class ContextvarInjectorScope(InjectorScope, abc.ABC):
-    _cv: contextvars.ContextVar
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        check.not_in(abc.ABC, cls.__bases__)
-        check.state(not hasattr(cls, '_cv'))
-        cls._cv = contextvars.ContextVar(f'{cls.__name__}_cv')
-
-    def state(self) -> InjectorScope.State:
-        return self._cv.get()
-
-    @contextlib.contextmanager
-    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
-        try:
-            self._cv.get()
-        except LookupError:
-            pass
-        else:
-            raise RuntimeError(f'Scope already entered: {self}')
-        st = self.new_state(vs)
-        tok = self._cv.set(st)
-        try:
-            yield
-        finally:
-            self._cv.reset(tok)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class ScopedInjectorProvider(InjectorProvider):
-    p: InjectorProvider
-    k: InjectorKey
-    sc: ta.Type[InjectorScope]
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.p, InjectorProvider)
-        check.isinstance(self.k, InjectorKey)
-        check.issubclass(self.sc, InjectorScope)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        def pfn(i: Injector) -> ta.Any:
-            st = i[self.sc].state()
-            try:
-                return st.provisions[self.k]
-            except KeyError:
-                pass
-            v = ufn(i)
-            st.provisions[self.k] = v
-            return v
-
-        ufn = self.p.provider_fn()
-        return pfn
-
-
-@dc.dataclass(frozen=True)
-class _ScopeSeedInjectorProvider(InjectorProvider):
-    k: InjectorKey
-    sc: ta.Type[InjectorScope]
-
-    def __post_init__(self) -> None:
-        check.isinstance(self.k, InjectorKey)
-        check.issubclass(self.sc, InjectorScope)
-
-    def provider_fn(self) -> InjectorProviderFn:
-        def pfn(i: Injector) -> ta.Any:
-            st = i[self.sc].state()
-            return st.seeds[self.k]
-        return pfn
-
-
-def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
-    return InjectorBinder.bind(sc, singleton=True)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class _InjectorScopeSeed:
-    sc: ta.Type['InjectorScope']
-    k: InjectorKey
-
-    def __post_init__(self) -> None:
-        check.issubclass(self.sc, InjectorScope)
-        check.isinstance(self.k, InjectorKey)
-
-
-def bind_injector_scope_seed(k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
-    kk = as_injector_key(k)
-    return as_injector_bindings(
-        InjectorBinding(kk, _ScopeSeedInjectorProvider(kk, sc)),
-        InjectorBinder.bind(_InjectorScopeSeed(sc, kk), array=True),
-    )
-
-
-###
-# inspection
-
-
-class _InjectionInspection(ta.NamedTuple):
-    signature: inspect.Signature
-    type_hints: ta.Mapping[str, ta.Any]
-    args_offset: int
-
-
-_INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
-
-
-def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    tgt = obj
-
-    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
-    # eval str annotations *in addition to* getting the signature for parameter information.
-    uw = tgt
-    has_partial = False
-    while True:
-        if isinstance(uw, functools.partial):
-            uw = uw.func
-            has_partial = True
-        else:
-            if (uw2 := inspect.unwrap(uw)) is uw:
-                break
-            uw = uw2
-
-    has_args_offset = False
-
-    if isinstance(tgt, type) and tgt.__new__ is not object.__new__:
-        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
-        #  - https://bugs.python.org/issue40897
-        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
-        tgt = tgt.__init__  # type: ignore[misc]
-        has_args_offset = True
-
-    if tgt in (object.__init__, object.__new__):
-        # inspect strips self for types but not the underlying methods.
-        def dummy(self):
-            pass
-        tgt = dummy
-        has_args_offset = True
-
-    if has_partial and has_args_offset:
-        # TODO: unwrap partials masking parameters like modern python
-        raise InjectorError(
-            'Injector inspection does not currently support both an args offset and a functools.partial: '
-            f'{obj}',
-        )
-
-    return _InjectionInspection(
-        inspect.signature(tgt),
-        ta.get_type_hints(uw),
-        1 if has_args_offset else 0,
-    )
-
-
-def _injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    try:
-        return _INJECTION_INSPECTION_CACHE[obj]
-    except TypeError:
-        return _do_injection_inspect(obj)
-    except KeyError:
-        pass
-    insp = _do_injection_inspect(obj)
-    _INJECTION_INSPECTION_CACHE[obj] = insp
-    return insp
-
-
-class InjectionKwarg(ta.NamedTuple):
-    name: str
-    key: InjectorKey
-    has_default: bool
-
-
-class InjectionKwargsTarget(ta.NamedTuple):
-    obj: ta.Any
-    kwargs: ta.Sequence[InjectionKwarg]
-
-
-def build_injection_kwargs_target(
-        obj: ta.Any,
-        *,
-        skip_args: int = 0,
-        skip_kwargs: ta.Optional[ta.Iterable[str]] = None,
-        raw_optional: bool = False,
-) -> InjectionKwargsTarget:
-    insp = _injection_inspect(obj)
-
-    params = list(insp.signature.parameters.values())
-
-    skip_names: ta.Set[str] = set()
-    if skip_kwargs is not None:
-        skip_names.update(check.not_isinstance(skip_kwargs, str))
-
-    seen: ta.Set[InjectorKey] = set()
-    kws: ta.List[InjectionKwarg] = []
-    for p in params[insp.args_offset + skip_args:]:
-        if p.name in skip_names:
-            continue
-
-        if p.annotation is inspect.Signature.empty:
-            if p.default is not inspect.Parameter.empty:
-                raise KeyError(f'{obj}, {p.name}')
-            continue
-
-        if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
-            raise TypeError(insp)
-
-        # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
-        ann = insp.type_hints.get(p.name, p.annotation)
-        if (
-                not raw_optional and
-                is_optional_alias(ann)
-        ):
-            ann = get_optional_alias_arg(ann)
-
-        k = as_injector_key(ann)
-
-        if k in seen:
-            raise DuplicateInjectorKeyError(k)
-        seen.add(k)
-
-        kws.append(InjectionKwarg(
-            p.name,
-            k,
-            p.default is not inspect.Parameter.empty,
-        ))
-
-    return InjectionKwargsTarget(
-        obj,
-        kws,
-    )
-
-
-###
-# injector
-
-
-_INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
-
-
-@dc.dataclass(frozen=True)
-class _InjectorEager:
-    key: InjectorKey
-
-
-_INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEager, array=True)
-
-
-class _Injector(Injector):
-    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
-
-    def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
-        super().__init__()
-
-        self._bs = check.isinstance(bs, InjectorBindings)
-        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, type(None)))
-
-        self._pfm = {
-            k: v.provider_fn()
-            for k, v in build_injector_provider_map(as_injector_bindings(
-                *self._DEFAULT_BINDINGS,
-                bs,
-            )).items()
-        }
-
-        if _INJECTOR_INJECTOR_KEY in self._pfm:
-            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
-
-        self.__cur_req: ta.Optional[_Injector._Request] = None
-
-        if _INJECTOR_EAGER_ARRAY_KEY in self._pfm:
-            for e in self.provide(_INJECTOR_EAGER_ARRAY_KEY):
-                self.provide(e.key)
-
-    class _Request:
-        def __init__(self, injector: '_Injector') -> None:
-            super().__init__()
-
-            self._injector = injector
-            self._provisions: ta.Dict[InjectorKey, Maybe] = {}
-            self._seen_keys: ta.Set[InjectorKey] = set()
-
-        def handle_key(self, key: InjectorKey) -> Maybe[Maybe]:
-            try:
-                return Maybe.just(self._provisions[key])
-            except KeyError:
-                pass
-            if key in self._seen_keys:
-                raise CyclicDependencyInjectorKeyError(key)
-            self._seen_keys.add(key)
-            return Maybe.empty()
-
-        def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
-            check.in_(key, self._seen_keys)
-            check.not_in(key, self._provisions)
-            self._provisions[key] = mv
-            return mv
-
-    @contextlib.contextmanager
-    def _current_request(self) -> ta.Generator[_Request, None, None]:
-        if (cr := self.__cur_req) is not None:
-            yield cr
-            return
-
-        cr = self._Request(self)
-        try:
-            self.__cur_req = cr
-            yield cr
-        finally:
-            self.__cur_req = None
-
-    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
-        key = as_injector_key(key)
-
-        cr: _Injector._Request
-        with self._current_request() as cr:
-            if (rv := cr.handle_key(key)).present:
-                return rv.must()
-
-            if key == _INJECTOR_INJECTOR_KEY:
-                return cr.handle_provision(key, Maybe.just(self))
-
-            fn = self._pfm.get(key)
-            if fn is not None:
-                return cr.handle_provision(key, Maybe.just(fn(self)))
-
-            if self._p is not None:
-                pv = self._p.try_provide(key)
-                if pv is not None:
-                    return cr.handle_provision(key, Maybe.empty())
-
-            return cr.handle_provision(key, Maybe.empty())
-
-    def provide(self, key: ta.Any) -> ta.Any:
-        v = self.try_provide(key)
-        if v.present:
-            return v.must()
-        raise UnboundInjectorKeyError(key)
-
-    def provide_kwargs(
-            self,
-            obj: ta.Any,
-            *,
-            skip_args: int = 0,
-            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
-    ) -> ta.Mapping[str, ta.Any]:
-        kt = build_injection_kwargs_target(
-            obj,
-            skip_args=skip_args,
-            skip_kwargs=skip_kwargs,
-        )
-
-        ret: ta.Dict[str, ta.Any] = {}
-        for kw in kt.kwargs:
-            if kw.has_default:
-                if not (mv := self.try_provide(kw.key)).present:
+            inv: ta.List[int] = []
+            for fd, mask in polled:
+                if mask & select.POLLNVAL:
+                    self._poller.unregister(fd)
+                    self._readable.discard(fd)
+                    self._writable.discard(fd)
+                    inv.append(fd)
                     continue
-                v = mv.must()
-            else:
-                v = self.provide(kw.key)
-            ret[kw.name] = v
-        return ret
-
-    def inject(
-            self,
-            obj: ta.Any,
-            *,
-            args: ta.Optional[ta.Sequence[ta.Any]] = None,
-            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-    ) -> ta.Any:
-        provided = self.provide_kwargs(
-            obj,
-            skip_args=len(args) if args is not None else 0,
-            skip_kwargs=kwargs if kwargs is not None else None,
-        )
-
-        return obj(
-            *(args if args is not None else ()),
-            **(kwargs if kwargs is not None else {}),
-            **provided,
-        )
-
-
-###
-# binder
-
-
-class InjectorBinder:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    _FN_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        types.FunctionType,
-        types.MethodType,
-
-        classmethod,
-        staticmethod,
-
-        functools.partial,
-        functools.partialmethod,
-    )
-
-    @classmethod
-    def _is_fn(cls, obj: ta.Any) -> bool:
-        return isinstance(obj, cls._FN_TYPES)
-
-    @classmethod
-    def bind_as_fn(cls, icls: ta.Type[T]) -> ta.Type[T]:
-        check.isinstance(icls, type)
-        if icls not in cls._FN_TYPES:
-            cls._FN_TYPES = (*cls._FN_TYPES, icls)
-        return icls
-
-    _BANNED_BIND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        InjectorProvider,
-    )
-
-    @classmethod
-    def bind(
-            cls,
-            obj: ta.Any,
-            *,
-            key: ta.Any = None,
-            tag: ta.Any = None,
-            array: ta.Optional[bool] = None,  # noqa
-
-            to_fn: ta.Any = None,
-            to_ctor: ta.Any = None,
-            to_const: ta.Any = None,
-            to_key: ta.Any = None,
-
-            in_: ta.Optional[ta.Type[InjectorScope]] = None,
-            singleton: bool = False,
-
-            eager: bool = False,
-    ) -> InjectorBindingOrBindings:
-        if obj is None or obj is inspect.Parameter.empty:
-            raise TypeError(obj)
-        if isinstance(obj, cls._BANNED_BIND_TYPES):
-            raise TypeError(obj)
-
-        #
-
-        if key is not None:
-            key = as_injector_key(key)
-
-        #
-
-        has_to = (
-            to_fn is not None or
-            to_ctor is not None or
-            to_const is not None or
-            to_key is not None
-        )
-        if isinstance(obj, InjectorKey):
-            if key is None:
-                key = obj
-        elif isinstance(obj, type):
-            if not has_to:
-                to_ctor = obj
-            if key is None:
-                key = InjectorKey(obj)
-        elif cls._is_fn(obj) and not has_to:
-            to_fn = obj
-            if key is None:
-                insp = _injection_inspect(obj)
-                key_cls: ta.Any = check_valid_injector_key_cls(check.not_none(insp.type_hints.get('return')))
-                key = InjectorKey(key_cls)
-        else:
-            if to_const is not None:
-                raise TypeError('Cannot bind instance with to_const')
-            to_const = obj
-            if key is None:
-                key = InjectorKey(type(obj))
-        del has_to
-
-        #
-
-        if tag is not None:
-            if key.tag is not None:
-                raise TypeError('Tag already set')
-            key = dc.replace(key, tag=tag)
-
-        if array is not None:
-            key = dc.replace(key, array=array)
-
-        #
-
-        providers: ta.List[InjectorProvider] = []
-        if to_fn is not None:
-            providers.append(FnInjectorProvider(to_fn))
-        if to_ctor is not None:
-            providers.append(CtorInjectorProvider(to_ctor))
-        if to_const is not None:
-            providers.append(ConstInjectorProvider(to_const))
-        if to_key is not None:
-            providers.append(LinkInjectorProvider(as_injector_key(to_key)))
-        if not providers:
-            raise TypeError('Must specify provider')
-        if len(providers) > 1:
-            raise TypeError('May not specify multiple providers')
-        provider = check.single(providers)
-
-        #
-
-        pws: ta.List[ta.Any] = []
-        if in_ is not None:
-            check.issubclass(in_, InjectorScope)
-            check.not_in(abc.ABC, in_.__bases__)
-            pws.append(functools.partial(ScopedInjectorProvider, k=key, sc=in_))
-        if singleton:
-            pws.append(SingletonInjectorProvider)
-        if len(pws) > 1:
-            raise TypeError('May not specify multiple provider wrappers')
-        elif pws:
-            provider = check.single(pws)(provider)
-
-        #
-
-        binding = InjectorBinding(key, provider)
-
-        #
-
-        extras: ta.List[InjectorBinding] = []
-
-        if eager:
-            extras.append(bind_injector_eager_key(key))
-
-        #
-
-        if extras:
-            return as_injector_bindings(binding, *extras)
-        else:
-            return binding
-
-
-###
-# injection helpers
-
-
-def make_injector_factory(
-        fn: ta.Callable[..., T],
-        cls: U,
-        ann: ta.Any = None,
-) -> ta.Callable[..., U]:
-    if ann is None:
-        ann = cls
-
-    def outer(injector: Injector) -> ann:
-        def inner(*args, **kwargs):
-            return injector.inject(fn, args=args, kwargs=kwargs)
-        return cls(inner)  # type: ignore
-
-    return outer
-
-
-def bind_injector_array(
-        obj: ta.Any = None,
-        *,
-        tag: ta.Any = None,
-) -> InjectorBindingOrBindings:
-    key = as_injector_key(obj)
-    if tag is not None:
-        if key.tag is not None:
-            raise ValueError('Must not specify multiple tags')
-        key = dc.replace(key, tag=tag)
-
-    if key.array:
-        raise ValueError('Key must not be array')
-
-    return InjectorBinding(
-        dc.replace(key, array=True),
-        ArrayInjectorProvider([]),
-    )
-
-
-def make_injector_array_type(
-        ele: ta.Union[InjectorKey, InjectorKeyCls],
-        cls: U,
-        ann: ta.Any = None,
-) -> ta.Callable[..., U]:
-    if isinstance(ele, InjectorKey):
-        if not ele.array:
-            raise InjectorError('Provided key must be array', ele)
-        key = ele
-    else:
-        key = dc.replace(as_injector_key(ele), array=True)
-
-    if ann is None:
-        ann = cls
-
-    def inner(injector: Injector) -> ann:
-        return cls(injector.provide(key))  # type: ignore[operator]
-
-    return inner
-
-
-def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
-    return InjectorBinding(_INJECTOR_EAGER_ARRAY_KEY, ConstInjectorProvider(_InjectorEager(as_injector_key(key))))
-
-
-###
-# api
-
-
-class InjectionApi:
-    # keys
-
-    def as_key(self, o: ta.Any) -> InjectorKey:
-        return as_injector_key(o)
-
-    def array(self, o: ta.Any) -> InjectorKey:
-        return dc.replace(as_injector_key(o), array=True)
-
-    def tag(self, o: ta.Any, t: ta.Any) -> InjectorKey:
-        return dc.replace(as_injector_key(o), tag=t)
-
-    # bindings
-
-    def as_bindings(self, *args: InjectorBindingOrBindings) -> InjectorBindings:
-        return as_injector_bindings(*args)
-
-    # overrides
-
-    def override(self, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
-        return injector_override(p, *args)
-
-    # scopes
-
-    def bind_scope(self, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
-        return bind_injector_scope(sc)
-
-    def bind_scope_seed(self, k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
-        return bind_injector_scope_seed(k, sc)
-
-    # injector
-
-    def create_injector(self, *args: InjectorBindingOrBindings, parent: ta.Optional[Injector] = None) -> Injector:
-        return _Injector(as_injector_bindings(*args), parent)
-
-    # binder
-
-    def bind(
-            self,
-            obj: ta.Any,
-            *,
-            key: ta.Any = None,
-            tag: ta.Any = None,
-            array: ta.Optional[bool] = None,  # noqa
-
-            to_fn: ta.Any = None,
-            to_ctor: ta.Any = None,
-            to_const: ta.Any = None,
-            to_key: ta.Any = None,
-
-            in_: ta.Optional[ta.Type[InjectorScope]] = None,
-            singleton: bool = False,
-
-            eager: bool = False,
-    ) -> InjectorBindingOrBindings:
-        return InjectorBinder.bind(
-            obj,
-
-            key=key,
-            tag=tag,
-            array=array,
-
-            to_fn=to_fn,
-            to_ctor=to_ctor,
-            to_const=to_const,
-            to_key=to_key,
-
-            in_=in_,
-            singleton=singleton,
-
-            eager=eager,
-        )
-
-    # helpers
-
-    def bind_factory(
-            self,
-            fn: ta.Callable[..., T],
-            cls_: U,
-            ann: ta.Any = None,
-    ) -> InjectorBindingOrBindings:
-        return self.bind(make_injector_factory(fn, cls_, ann))
-
-    def bind_array(
-            self,
-            obj: ta.Any = None,
-            *,
-            tag: ta.Any = None,
-    ) -> InjectorBindingOrBindings:
-        return bind_injector_array(obj, tag=tag)
-
-    def bind_array_type(
-            self,
-            ele: ta.Union[InjectorKey, InjectorKeyCls],
-            cls_: U,
-            ann: ta.Any = None,
-    ) -> InjectorBindingOrBindings:
-        return self.bind(make_injector_array_type(ele, cls_, ann))
-
-
-inj = InjectionApi()
+                if mask & self._READ:
+                    r.append(fd)
+                if mask & self._WRITE:
+                    w.append(fd)
+            return FdioPoller.PollResult(r, w, inv=inv)
+
+    PollFdioPoller = _PollFdioPoller
+else:
+    PollFdioPoller = None
 
 
 ########################################
@@ -6024,7 +4721,7 @@ class ObjMarshalOptions:
     non_strict_fields: bool = False
 
 
-class ObjMarshaler(abc.ABC):
+class ObjMarshaler(Abstract):
     @abc.abstractmethod
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         raise NotImplementedError
@@ -6042,26 +4739,30 @@ class NopObjMarshaler(ObjMarshaler):
         return o
 
 
-@dc.dataclass()
 class ProxyObjMarshaler(ObjMarshaler):
-    m: ta.Optional[ObjMarshaler] = None
+    def __init__(self, m: ta.Optional[ObjMarshaler] = None) -> None:
+        super().__init__()
+
+        self._m = m
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self.m).marshal(o, ctx)
+        return check.not_none(self._m).marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self.m).unmarshal(o, ctx)
+        return check.not_none(self._m).unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class CastObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(o)
+        return self._ty(o)
 
 
 class DynamicObjMarshaler(ObjMarshaler):
@@ -6072,121 +4773,151 @@ class DynamicObjMarshaler(ObjMarshaler):
         return o
 
 
-@dc.dataclass(frozen=True)
 class Base64ObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return base64.b64encode(o).decode('ascii')
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(base64.b64decode(o))
+        return self._ty(base64.b64decode(o))
 
 
-@dc.dataclass(frozen=True)
 class BytesSwitchedObjMarshaler(ObjMarshaler):
-    m: ObjMarshaler
+    def __init__(self, m: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._m = m
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if ctx.options.raw_bytes:
             return o
-        return self.m.marshal(o, ctx)
+        return self._m.marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if ctx.options.raw_bytes:
             return o
-        return self.m.unmarshal(o, ctx)
+        return self._m.unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class EnumObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.name
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty.__members__[o]  # type: ignore
+        return self._ty.__members__[o]  # type: ignore
 
 
-@dc.dataclass(frozen=True)
 class OptionalObjMarshaler(ObjMarshaler):
-    item: ObjMarshaler
+    def __init__(self, item: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._item = item
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.marshal(o, ctx)
+        return self._item.marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.unmarshal(o, ctx)
+        return self._item.unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class PrimitiveUnionObjMarshaler(ObjMarshaler):
-    pt: ta.Tuple[type, ...]
-    x: ta.Optional[ObjMarshaler] = None
+    def __init__(
+            self,
+            pt: ta.Tuple[type, ...],
+            x: ta.Optional[ObjMarshaler] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pt = pt
+        self._x = x
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self.pt):
+        if isinstance(o, self._pt):
             return o
-        elif self.x is not None:
-            return self.x.marshal(o, ctx)
+        elif self._x is not None:
+            return self._x.marshal(o, ctx)
         else:
             raise TypeError(o)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self.pt):
+        if isinstance(o, self._pt):
             return o
-        elif self.x is not None:
-            return self.x.unmarshal(o, ctx)
+        elif self._x is not None:
+            return self._x.unmarshal(o, ctx)
         else:
             raise TypeError(o)
 
 
-@dc.dataclass(frozen=True)
 class LiteralObjMarshaler(ObjMarshaler):
-    item: ObjMarshaler
-    vs: frozenset
+    def __init__(
+            self,
+            item: ObjMarshaler,
+            vs: frozenset,
+    ) -> None:
+        super().__init__()
+
+        self._item = item
+        self._vs = vs
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.item.marshal(check.in_(o, self.vs), ctx)
+        return self._item.marshal(check.in_(o, self._vs), ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.in_(self.item.unmarshal(o, ctx), self.vs)
+        return check.in_(self._item.unmarshal(o, ctx), self._vs)
 
 
-@dc.dataclass(frozen=True)
 class MappingObjMarshaler(ObjMarshaler):
-    ty: type
-    km: ObjMarshaler
-    vm: ObjMarshaler
+    def __init__(
+            self,
+            ty: type,
+            km: ObjMarshaler,
+            vm: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._km = km
+        self._vm = vm
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return {self.km.marshal(k, ctx): self.vm.marshal(v, ctx) for k, v in o.items()}
+        return {self._km.marshal(k, ctx): self._vm.marshal(v, ctx) for k, v in o.items()}
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty((self.km.unmarshal(k, ctx), self.vm.unmarshal(v, ctx)) for k, v in o.items())
+        return self._ty((self._km.unmarshal(k, ctx), self._vm.unmarshal(v, ctx)) for k, v in o.items())
 
 
-@dc.dataclass(frozen=True)
 class IterableObjMarshaler(ObjMarshaler):
-    ty: type
-    item: ObjMarshaler
+    def __init__(
+            self,
+            ty: type,
+            item: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._item = item
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return [self.item.marshal(e, ctx) for e in o]
+        return [self._item.marshal(e, ctx) for e in o]
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(self.item.unmarshal(e, ctx) for e in o)
+        return self._ty(self._item.unmarshal(e, ctx) for e in o)
 
 
-@dc.dataclass(frozen=True)
 class FieldsObjMarshaler(ObjMarshaler):
-    ty: type
-
     @dc.dataclass(frozen=True)
     class Field:
         att: str
@@ -6195,31 +4926,43 @@ class FieldsObjMarshaler(ObjMarshaler):
 
         omit_if_none: bool = False
 
-    fs: ta.Sequence[Field]
+    def __init__(
+            self,
+            ty: type,
+            fs: ta.Sequence[Field],
+            *,
+            non_strict: bool = False,
+    ) -> None:
+        super().__init__()
 
-    non_strict: bool = False
+        self._ty = ty
+        self._fs = fs
+        self._non_strict = non_strict
 
-    #
-
-    _fs_by_att: ta.ClassVar[ta.Mapping[str, Field]]
-    _fs_by_key: ta.ClassVar[ta.Mapping[str, Field]]
-
-    def __post_init__(self) -> None:
         fs_by_att: dict = {}
         fs_by_key: dict = {}
-        for f in self.fs:
+        for f in self._fs:
             check.not_in(check.non_empty_str(f.att), fs_by_att)
             check.not_in(check.non_empty_str(f.key), fs_by_key)
             fs_by_att[f.att] = f
             fs_by_key[f.key] = f
-        self.__dict__['_fs_by_att'] = fs_by_att
-        self.__dict__['_fs_by_key'] = fs_by_key
+
+        self._fs_by_att: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_att
+        self._fs_by_key: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_key
+
+    @property
+    def ty(self) -> type:
+        return self._ty
+
+    @property
+    def fs(self) -> ta.Sequence[Field]:
+        return self._fs
 
     #
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         d = {}
-        for f in self.fs:
+        for f in self._fs:
             mv = f.m.marshal(getattr(o, f.att), ctx)
             if mv is None and f.omit_if_none:
                 continue
@@ -6230,34 +4973,46 @@ class FieldsObjMarshaler(ObjMarshaler):
         kw = {}
         for k, v in o.items():
             if (f := self._fs_by_key.get(k)) is None:
-                if not (self.non_strict or ctx.options.non_strict_fields):
+                if not (self._non_strict or ctx.options.non_strict_fields):
                     raise KeyError(k)
                 continue
             kw[f.att] = f.m.unmarshal(v, ctx)
-        return self.ty(**kw)
+        return self._ty(**kw)
 
 
-@dc.dataclass(frozen=True)
 class SingleFieldObjMarshaler(ObjMarshaler):
-    ty: type
-    fld: str
+    def __init__(
+            self,
+            ty: type,
+            fld: str,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._fld = fld
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return getattr(o, self.fld)
+        return getattr(o, self._fld)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(**{self.fld: o})
+        return self._ty(**{self._fld: o})
 
 
-@dc.dataclass(frozen=True)
 class PolymorphicObjMarshaler(ObjMarshaler):
     class Impl(ta.NamedTuple):
         ty: type
         tag: str
         m: ObjMarshaler
 
-    impls_by_ty: ta.Mapping[type, Impl]
-    impls_by_tag: ta.Mapping[str, Impl]
+    def __init__(
+            self,
+            impls_by_ty: ta.Mapping[type, Impl],
+            impls_by_tag: ta.Mapping[str, Impl],
+    ) -> None:
+        super().__init__()
+
+        self._impls_by_ty = impls_by_ty
+        self._impls_by_tag = impls_by_tag
 
     @classmethod
     def of(cls, impls: ta.Iterable[Impl]) -> 'PolymorphicObjMarshaler':
@@ -6267,24 +5022,29 @@ class PolymorphicObjMarshaler(ObjMarshaler):
         )
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        impl = self.impls_by_ty[type(o)]
+        impl = self._impls_by_ty[type(o)]
         return {impl.tag: impl.m.marshal(o, ctx)}
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         [(t, v)] = o.items()
-        impl = self.impls_by_tag[t]
+        impl = self._impls_by_tag[t]
         return impl.m.unmarshal(v, ctx)
 
 
-@dc.dataclass(frozen=True)
 class DatetimeObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(
+            self,
+            ty: type,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.isoformat()
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty.fromisoformat(o)  # type: ignore
+        return self._ty.fromisoformat(o)  # type: ignore
 
 
 class DecimalObjMarshaler(ObjMarshaler):
@@ -6419,6 +5179,12 @@ class ObjMarshalerManager:
 
     #
 
+    @classmethod
+    def _is_abstract(cls, ty: type) -> bool:
+        return abc.ABC in ty.__bases__ or Abstract in ty.__bases__
+
+    #
+
     def make_obj_marshaler(
             self,
             ty: ta.Any,
@@ -6430,12 +5196,12 @@ class ObjMarshalerManager:
             if (reg := self._registered_obj_marshalers.get(ty)) is not None:
                 return reg
 
-            if abc.ABC in ty.__bases__:
+            if self._is_abstract(ty):
                 tn = ty.__name__
                 impls: ta.List[ta.Tuple[type, str]] = [  # type: ignore[var-annotated]
                     (ity, ity.__name__)
                     for ity in deep_subclasses(ty)
-                    if abc.ABC not in ity.__bases__
+                    if not self._is_abstract(ity)
                 ]
 
                 if all(itn.endswith(tn) for _, itn in impls):
@@ -6601,7 +5367,7 @@ class ObjMarshalerManager:
                 m = self.make_obj_marshaler(ty, rec, **kwargs)
             finally:
                 del self._proxies[ty]
-            p.m = m
+            p._m = m  # noqa
 
             if not no_cache:
                 self._obj_marshalers[ty] = m
@@ -6662,6 +5428,210 @@ get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
 
 marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
 unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
+
+
+########################################
+# ../../../omlish/lite/maybes.py
+
+
+##
+
+
+@functools.total_ordering
+class Maybe(ta.Generic[T]):
+    class ValueNotPresentError(BaseException):
+        pass
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def present(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def must(self) -> T:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __repr__(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __eq__(self, other) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __lt__(self, other) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def __ne__(self, other):
+        return not (self == other)
+
+    @ta.final
+    def __iter__(self) -> ta.Iterator[T]:
+        if self.present:
+            yield self.must()
+
+    @ta.final
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
+    #
+
+    @ta.final
+    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
+        if self.present:
+            consumer(self.must())
+
+    @ta.final
+    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
+        if self.present and predicate(self.must()):
+            return self
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
+        if self.present:
+            return Maybe.just(mapper(self.must()))
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
+        if self.present:
+            if not isinstance(v := mapper(self.must()), Maybe):
+                raise TypeError(v)
+            return v
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return other
+
+    @ta.final
+    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return supplier()
+
+    @ta.final
+    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
+        if self.present:
+            return self.must()
+        else:
+            raise exception_supplier()
+
+    #
+
+    @classmethod
+    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
+        if v is not None:
+            return cls.just(v)
+        else:
+            return cls.empty()
+
+    @classmethod
+    def just(cls, v: T) -> 'Maybe[T]':
+        return _JustMaybe(v)
+
+    _empty: ta.ClassVar['Maybe']
+
+    @classmethod
+    def empty(cls) -> 'Maybe[T]':
+        return Maybe._empty
+
+
+##
+
+
+class _Maybe(Maybe[T], Abstract):
+    def __lt__(self, other):
+        if not isinstance(other, _Maybe):
+            return NotImplemented
+        sp = self.present
+        op = other.present
+        if self.present and other.present:
+            return self.must() < other.must()
+        else:
+            return op and not sp
+
+
+class _JustMaybe(_Maybe[T]):
+    __slots__ = ('_v', '_hash')
+
+    def __init__(self, v: T) -> None:
+        super().__init__()
+
+        self._v = v
+
+    @property
+    def present(self) -> bool:
+        return True
+
+    def must(self) -> T:
+        return self._v
+
+    #
+
+    def __repr__(self) -> str:
+        return f'just({self._v!r})'
+
+    _hash: int
+
+    def __hash__(self) -> int:
+        try:
+            return self._hash
+        except AttributeError:
+            pass
+        h = self._hash = hash((_JustMaybe, self._v))
+        return h
+
+    def __eq__(self, other):
+        return (
+            self.__class__ is other.__class__ and
+            self._v == other._v  # noqa
+        )
+
+
+class _EmptyMaybe(_Maybe[T]):
+    __slots__ = ()
+
+    @property
+    def present(self) -> bool:
+        return False
+
+    def must(self) -> T:
+        raise Maybe.ValueNotPresentError
+
+    #
+
+    def __repr__(self) -> str:
+        return 'empty()'
+
+    def __hash__(self) -> int:
+        return hash(_EmptyMaybe)
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__
+
+
+Maybe._empty = _EmptyMaybe()  # noqa
 
 
 ########################################
@@ -7361,7 +6331,7 @@ class UnsupportedMethodHttpHandlerError(Exception):
     pass
 
 
-class HttpHandler_(abc.ABC):  # noqa
+class HttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
         raise NotImplementedError
@@ -7448,6 +6418,130 @@ class StringResponseHttpHandler(HttpHandler_):
 
 
 ########################################
+# ../../../omlish/io/fdio/kqueue.py
+
+
+##
+
+
+KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]
+if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
+
+    class _KqueueFdioPoller(FdioPoller):
+        DEFAULT_MAX_EVENTS = 1000
+
+        def __init__(
+                self,
+                *,
+                max_events: int = DEFAULT_MAX_EVENTS,
+        ) -> None:
+            super().__init__()
+
+            self._max_events = max_events
+
+            self._kqueue: ta.Optional[ta.Any] = None
+
+        #
+
+        def _get_kqueue(self) -> 'select.kqueue':
+            if (kq := self._kqueue) is not None:
+                return kq
+            kq = select.kqueue()
+            self._kqueue = kq
+            return kq
+
+        def close(self) -> None:
+            if self._kqueue is not None:
+                self._kqueue.close()
+                self._kqueue = None
+
+        def reopen(self) -> None:
+            for fd in self._readable:
+                self._register_readable(fd)
+            for fd in self._writable:
+                self._register_writable(fd)
+
+        #
+
+        def _register_readable(self, fd: int) -> None:
+            self._update_registration(fd, 'read', 'add')
+
+        def _register_writable(self, fd: int) -> None:
+            self._update_registration(fd, 'write', 'add')
+
+        def _unregister_readable(self, fd: int) -> None:
+            self._update_registration(fd, 'read', 'del')
+
+        def _unregister_writable(self, fd: int) -> None:
+            self._update_registration(fd, 'write', 'del')
+
+        #
+
+        _CONTROL_FILTER_BY_READ_OR_WRITE: ta.ClassVar[ta.Mapping[ta.Literal['read', 'write'], int]] = {
+            'read': select.KQ_FILTER_READ,
+            'write': select.KQ_FILTER_WRITE,
+        }
+
+        _CONTROL_FLAGS_BY_ADD_OR_DEL: ta.ClassVar[ta.Mapping[ta.Literal['add', 'del'], int]] = {
+            'add': select.KQ_EV_ADD,
+            'del': select.KQ_EV_DELETE,
+        }
+
+        def _update_registration(
+                self,
+                fd: int,
+                read_or_write: ta.Literal['read', 'write'],
+                add_or_del: ta.Literal['add', 'del'],
+        ) -> None:  # noqa
+            ke = select.kevent(
+                fd,
+                filter=self._CONTROL_FILTER_BY_READ_OR_WRITE[read_or_write],
+                flags=self._CONTROL_FLAGS_BY_ADD_OR_DEL[add_or_del],
+            )
+            kq = self._get_kqueue()
+            try:
+                kq.control([ke], 0)
+
+            except OSError as exc:
+                if exc.errno == errno.EBADF:
+                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
+                    pass
+                elif exc.errno == errno.ENOENT:
+                    # Can happen when trying to remove an already closed socket
+                    if add_or_del == 'add':
+                        raise
+                else:
+                    raise
+
+        #
+
+        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
+            kq = self._get_kqueue()
+            try:
+                kes = kq.control(None, self._max_events, timeout)
+
+            except OSError as exc:
+                if exc.errno == errno.EINTR:
+                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                else:
+                    raise
+
+            r: ta.List[int] = []
+            w: ta.List[int] = []
+            for ke in kes:
+                if ke.filter == select.KQ_FILTER_READ:
+                    r.append(ke.ident)
+                if ke.filter == select.KQ_FILTER_WRITE:
+                    w.append(ke.ident)
+
+            return FdioPoller.PollResult(r, w)
+
+    KqueueFdioPoller = _KqueueFdioPoller
+else:
+    KqueueFdioPoller = None
+
+
+########################################
 # ../../../omlish/lite/configs.py
 
 
@@ -7477,6 +6571,1090 @@ def load_config_file_obj(
             config_dct = pf(config_dct)
 
     return msh.unmarshal_obj(config_dct, cls)
+
+
+########################################
+# ../../../omlish/lite/inject.py
+
+
+###
+# types
+
+
+@dc.dataclass(frozen=True)
+class InjectorKey(ta.Generic[T]):
+    # Before PEP-560 typing.Generic was a metaclass with a __new__ that takes a 'cls' arg, so instantiating a dataclass
+    # with kwargs (such as through dc.replace) causes `TypeError: __new__() got multiple values for argument 'cls'`.
+    # See:
+    #  - https://github.com/python/cpython/commit/d911e40e788fb679723d78b6ea11cabf46caed5a
+    #  - https://gist.github.com/wrmsr/4468b86efe9f373b6b114bfe85b98fd3
+    cls_: InjectorKeyCls
+
+    tag: ta.Any = None
+    array: bool = False
+
+
+def is_valid_injector_key_cls(cls: ta.Any) -> bool:
+    return isinstance(cls, type) or is_new_type(cls)
+
+
+def check_valid_injector_key_cls(cls: T) -> T:
+    if not is_valid_injector_key_cls(cls):
+        raise TypeError(cls)
+    return cls
+
+
+##
+
+
+class InjectorProvider(Abstract):
+    @abc.abstractmethod
+    def provider_fn(self) -> InjectorProviderFn:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InjectorBinding:
+    key: InjectorKey
+    provider: InjectorProvider
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.key, InjectorKey)
+        check.isinstance(self.provider, InjectorProvider)
+
+
+class InjectorBindings(Abstract):
+    @abc.abstractmethod
+    def bindings(self) -> ta.Iterator[InjectorBinding]:
+        raise NotImplementedError
+
+##
+
+
+class Injector(Abstract):
+    @abc.abstractmethod
+    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def provide(self, key: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
+        raise NotImplementedError
+
+    def __getitem__(
+            self,
+            target: ta.Union[InjectorKey[T], ta.Type[T]],
+    ) -> T:
+        return self.provide(target)
+
+
+###
+# exceptions
+
+
+class InjectorError(Exception):
+    pass
+
+
+@dc.dataclass()
+class InjectorKeyError(InjectorError):
+    key: InjectorKey
+
+    source: ta.Any = None
+    name: ta.Optional[str] = None
+
+
+class UnboundInjectorKeyError(InjectorKeyError):
+    pass
+
+
+class DuplicateInjectorKeyError(InjectorKeyError):
+    pass
+
+
+class CyclicDependencyInjectorKeyError(InjectorKeyError):
+    pass
+
+
+###
+# keys
+
+
+def as_injector_key(o: ta.Any) -> InjectorKey:
+    if o is inspect.Parameter.empty:
+        raise TypeError(o)
+    if isinstance(o, InjectorKey):
+        return o
+    if is_valid_injector_key_cls(o):
+        return InjectorKey(o)
+    raise TypeError(o)
+
+
+###
+# providers
+
+
+@dc.dataclass(frozen=True)
+class FnInjectorProvider(InjectorProvider):
+    fn: ta.Any
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.fn, type)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            return i.inject(self.fn)
+
+        return pfn
+
+
+@dc.dataclass(frozen=True)
+class CtorInjectorProvider(InjectorProvider):
+    cls_: type
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.cls_, type)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            return i.inject(self.cls_)
+
+        return pfn
+
+
+@dc.dataclass(frozen=True)
+class ConstInjectorProvider(InjectorProvider):
+    v: ta.Any
+
+    def provider_fn(self) -> InjectorProviderFn:
+        return lambda _: self.v
+
+
+@dc.dataclass(frozen=True)
+class SingletonInjectorProvider(InjectorProvider):
+    p: InjectorProvider
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.p, InjectorProvider)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        v = not_set = object()
+
+        def pfn(i: Injector) -> ta.Any:
+            nonlocal v
+            if v is not_set:
+                v = ufn(i)
+            return v
+
+        ufn = self.p.provider_fn()
+        return pfn
+
+
+@dc.dataclass(frozen=True)
+class LinkInjectorProvider(InjectorProvider):
+    k: InjectorKey
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.k, InjectorKey)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            return i.provide(self.k)
+
+        return pfn
+
+
+@dc.dataclass(frozen=True)
+class ArrayInjectorProvider(InjectorProvider):
+    ps: ta.Sequence[InjectorProvider]
+
+    def provider_fn(self) -> InjectorProviderFn:
+        ps = [p.provider_fn() for p in self.ps]
+
+        def pfn(i: Injector) -> ta.Any:
+            rv = []
+            for ep in ps:
+                o = ep(i)
+                rv.append(o)
+            return rv
+
+        return pfn
+
+
+###
+# bindings
+
+
+@dc.dataclass(frozen=True)
+class _InjectorBindings(InjectorBindings):
+    bs: ta.Optional[ta.Sequence[InjectorBinding]] = None
+    ps: ta.Optional[ta.Sequence[InjectorBindings]] = None
+
+    def bindings(self) -> ta.Iterator[InjectorBinding]:
+        if self.bs is not None:
+            yield from self.bs
+        if self.ps is not None:
+            for p in self.ps:
+                yield from p.bindings()
+
+
+def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
+    bs: ta.List[InjectorBinding] = []
+    ps: ta.List[InjectorBindings] = []
+
+    for a in args:
+        if isinstance(a, InjectorBindings):
+            ps.append(a)
+        elif isinstance(a, InjectorBinding):
+            bs.append(a)
+        else:
+            raise TypeError(a)
+
+    return _InjectorBindings(
+        bs or None,
+        ps or None,
+    )
+
+
+##
+
+
+def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
+    pm: ta.Dict[InjectorKey, InjectorProvider] = {}
+    am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
+
+    for b in bs.bindings():
+        if b.key.array:
+            al = am.setdefault(b.key, [])
+            if isinstance(b.provider, ArrayInjectorProvider):
+                al.extend(b.provider.ps)
+            else:
+                al.append(b.provider)
+        else:
+            if b.key in pm:
+                raise KeyError(b.key)
+            pm[b.key] = b.provider
+
+    if am:
+        for k, aps in am.items():
+            pm[k] = ArrayInjectorProvider(aps)
+
+    return pm
+
+
+###
+# overrides
+
+
+@dc.dataclass(frozen=True)
+class OverridesInjectorBindings(InjectorBindings):
+    p: InjectorBindings
+    m: ta.Mapping[InjectorKey, InjectorBinding]
+
+    def bindings(self) -> ta.Iterator[InjectorBinding]:
+        for b in self.p.bindings():
+            yield self.m.get(b.key, b)
+
+
+def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+    m: ta.Dict[InjectorKey, InjectorBinding] = {}
+
+    for b in as_injector_bindings(*args).bindings():
+        if b.key in m:
+            raise DuplicateInjectorKeyError(b.key)
+        m[b.key] = b
+
+    return OverridesInjectorBindings(p, m)
+
+
+###
+# scopes
+
+
+class InjectorScope(Abstract):
+    def __init__(
+            self,
+            *,
+            _i: Injector,
+    ) -> None:
+        super().__init__()
+
+        self._i = _i
+
+        all_seeds: ta.Iterable[_InjectorScopeSeed] = self._i.provide(InjectorKey(_InjectorScopeSeed, array=True))
+        self._sks = {s.k for s in all_seeds if s.sc is type(self)}
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class State:
+        seeds: ta.Dict[InjectorKey, ta.Any]
+        provisions: ta.Dict[InjectorKey, ta.Any] = dc.field(default_factory=dict)
+
+    def new_state(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> State:
+        vs = dict(vs)
+        check.equal(set(vs.keys()), self._sks)
+        return InjectorScope.State(vs)
+
+    #
+
+    @abc.abstractmethod
+    def state(self) -> State:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.ContextManager[None]:
+        raise NotImplementedError
+
+
+class ExclusiveInjectorScope(InjectorScope, Abstract):
+    _st: ta.Optional[InjectorScope.State] = None
+
+    def state(self) -> InjectorScope.State:
+        return check.not_none(self._st)
+
+    @contextlib.contextmanager
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
+        check.none(self._st)
+        self._st = self.new_state(vs)
+        try:
+            yield
+        finally:
+            self._st = None
+
+
+class ContextvarInjectorScope(InjectorScope, Abstract):
+    _cv: contextvars.ContextVar
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_in(Abstract, cls.__bases__)
+        check.not_in(abc.ABC, cls.__bases__)
+        check.state(not hasattr(cls, '_cv'))
+        cls._cv = contextvars.ContextVar(f'{cls.__name__}_cv')
+
+    def state(self) -> InjectorScope.State:
+        return self._cv.get()
+
+    @contextlib.contextmanager
+    def enter(self, vs: ta.Mapping[InjectorKey, ta.Any]) -> ta.Iterator[None]:
+        try:
+            self._cv.get()
+        except LookupError:
+            pass
+        else:
+            raise RuntimeError(f'Scope already entered: {self}')
+        st = self.new_state(vs)
+        tok = self._cv.set(st)
+        try:
+            yield
+        finally:
+            self._cv.reset(tok)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ScopedInjectorProvider(InjectorProvider):
+    p: InjectorProvider
+    k: InjectorKey
+    sc: ta.Type[InjectorScope]
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.p, InjectorProvider)
+        check.isinstance(self.k, InjectorKey)
+        check.issubclass(self.sc, InjectorScope)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            st = i[self.sc].state()
+            try:
+                return st.provisions[self.k]
+            except KeyError:
+                pass
+            v = ufn(i)
+            st.provisions[self.k] = v
+            return v
+
+        ufn = self.p.provider_fn()
+        return pfn
+
+
+@dc.dataclass(frozen=True)
+class _ScopeSeedInjectorProvider(InjectorProvider):
+    k: InjectorKey
+    sc: ta.Type[InjectorScope]
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.k, InjectorKey)
+        check.issubclass(self.sc, InjectorScope)
+
+    def provider_fn(self) -> InjectorProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            st = i[self.sc].state()
+            return st.seeds[self.k]
+        return pfn
+
+
+def bind_injector_scope(sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+    return InjectorBinder.bind(sc, singleton=True)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class _InjectorScopeSeed:
+    sc: ta.Type['InjectorScope']
+    k: InjectorKey
+
+    def __post_init__(self) -> None:
+        check.issubclass(self.sc, InjectorScope)
+        check.isinstance(self.k, InjectorKey)
+
+
+def bind_injector_scope_seed(k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+    kk = as_injector_key(k)
+    return as_injector_bindings(
+        InjectorBinding(kk, _ScopeSeedInjectorProvider(kk, sc)),
+        InjectorBinder.bind(_InjectorScopeSeed(sc, kk), array=True),
+    )
+
+
+###
+# inspection
+
+
+class _InjectionInspection(ta.NamedTuple):
+    signature: inspect.Signature
+    type_hints: ta.Mapping[str, ta.Any]
+    args_offset: int
+
+
+_INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
+
+
+def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
+    tgt = obj
+
+    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
+    # eval str annotations *in addition to* getting the signature for parameter information.
+    uw = tgt
+    has_partial = False
+    while True:
+        if isinstance(uw, functools.partial):
+            uw = uw.func
+            has_partial = True
+        else:
+            if (uw2 := inspect.unwrap(uw)) is uw:
+                break
+            uw = uw2
+
+    has_args_offset = False
+
+    if isinstance(tgt, type) and tgt.__new__ is not object.__new__:
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        tgt = tgt.__init__  # type: ignore[misc]
+        has_args_offset = True
+
+    if tgt in (object.__init__, object.__new__):
+        # inspect strips self for types but not the underlying methods.
+        def dummy(self):
+            pass
+        tgt = dummy
+        has_args_offset = True
+
+    if has_partial and has_args_offset:
+        # TODO: unwrap partials masking parameters like modern python
+        raise InjectorError(
+            'Injector inspection does not currently support both an args offset and a functools.partial: '
+            f'{obj}',
+        )
+
+    return _InjectionInspection(
+        inspect.signature(tgt),
+        ta.get_type_hints(uw),
+        1 if has_args_offset else 0,
+    )
+
+
+def _injection_inspect(obj: ta.Any) -> _InjectionInspection:
+    try:
+        return _INJECTION_INSPECTION_CACHE[obj]
+    except TypeError:
+        return _do_injection_inspect(obj)
+    except KeyError:
+        pass
+    insp = _do_injection_inspect(obj)
+    _INJECTION_INSPECTION_CACHE[obj] = insp
+    return insp
+
+
+class InjectionKwarg(ta.NamedTuple):
+    name: str
+    key: InjectorKey
+    has_default: bool
+
+
+class InjectionKwargsTarget(ta.NamedTuple):
+    obj: ta.Any
+    kwargs: ta.Sequence[InjectionKwarg]
+
+
+def build_injection_kwargs_target(
+        obj: ta.Any,
+        *,
+        skip_args: int = 0,
+        skip_kwargs: ta.Optional[ta.Iterable[str]] = None,
+        raw_optional: bool = False,
+) -> InjectionKwargsTarget:
+    insp = _injection_inspect(obj)
+
+    params = list(insp.signature.parameters.values())
+
+    skip_names: ta.Set[str] = set()
+    if skip_kwargs is not None:
+        skip_names.update(check.not_isinstance(skip_kwargs, str))
+
+    seen: ta.Set[InjectorKey] = set()
+    kws: ta.List[InjectionKwarg] = []
+    for p in params[insp.args_offset + skip_args:]:
+        if p.name in skip_names:
+            continue
+
+        if p.annotation is inspect.Signature.empty:
+            if p.default is not inspect.Parameter.empty:
+                raise KeyError(f'{obj}, {p.name}')
+            continue
+
+        if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
+            raise TypeError(insp)
+
+        # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
+        ann = insp.type_hints.get(p.name, p.annotation)
+        if (
+                not raw_optional and
+                is_optional_alias(ann)
+        ):
+            ann = get_optional_alias_arg(ann)
+
+        k = as_injector_key(ann)
+
+        if k in seen:
+            raise DuplicateInjectorKeyError(k)
+        seen.add(k)
+
+        kws.append(InjectionKwarg(
+            p.name,
+            k,
+            p.default is not inspect.Parameter.empty,
+        ))
+
+    return InjectionKwargsTarget(
+        obj,
+        kws,
+    )
+
+
+###
+# injector
+
+
+_INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
+
+
+@dc.dataclass(frozen=True)
+class _InjectorEager:
+    key: InjectorKey
+
+
+_INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEager, array=True)
+
+
+class _Injector(Injector):
+    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
+
+    def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
+        super().__init__()
+
+        self._bs = check.isinstance(bs, InjectorBindings)
+        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, type(None)))
+
+        self._pfm = {
+            k: v.provider_fn()
+            for k, v in build_injector_provider_map(as_injector_bindings(
+                *self._DEFAULT_BINDINGS,
+                bs,
+            )).items()
+        }
+
+        if _INJECTOR_INJECTOR_KEY in self._pfm:
+            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
+
+        self.__cur_req: ta.Optional[_Injector._Request] = None
+
+        if _INJECTOR_EAGER_ARRAY_KEY in self._pfm:
+            for e in self.provide(_INJECTOR_EAGER_ARRAY_KEY):
+                self.provide(e.key)
+
+    class _Request:
+        def __init__(self, injector: '_Injector') -> None:
+            super().__init__()
+
+            self._injector = injector
+            self._provisions: ta.Dict[InjectorKey, Maybe] = {}
+            self._seen_keys: ta.Set[InjectorKey] = set()
+
+        def handle_key(self, key: InjectorKey) -> Maybe[Maybe]:
+            try:
+                return Maybe.just(self._provisions[key])
+            except KeyError:
+                pass
+            if key in self._seen_keys:
+                raise CyclicDependencyInjectorKeyError(key)
+            self._seen_keys.add(key)
+            return Maybe.empty()
+
+        def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
+            check.in_(key, self._seen_keys)
+            check.not_in(key, self._provisions)
+            self._provisions[key] = mv
+            return mv
+
+    @contextlib.contextmanager
+    def _current_request(self) -> ta.Generator[_Request, None, None]:
+        if (cr := self.__cur_req) is not None:
+            yield cr
+            return
+
+        cr = self._Request(self)
+        try:
+            self.__cur_req = cr
+            yield cr
+        finally:
+            self.__cur_req = None
+
+    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
+        key = as_injector_key(key)
+
+        cr: _Injector._Request
+        with self._current_request() as cr:
+            if (rv := cr.handle_key(key)).present:
+                return rv.must()
+
+            if key == _INJECTOR_INJECTOR_KEY:
+                return cr.handle_provision(key, Maybe.just(self))
+
+            fn = self._pfm.get(key)
+            if fn is not None:
+                return cr.handle_provision(key, Maybe.just(fn(self)))
+
+            if self._p is not None:
+                pv = self._p.try_provide(key)
+                if pv is not None:
+                    return cr.handle_provision(key, Maybe.empty())
+
+            return cr.handle_provision(key, Maybe.empty())
+
+    def provide(self, key: ta.Any) -> ta.Any:
+        v = self.try_provide(key)
+        if v.present:
+            return v.must()
+        raise UnboundInjectorKeyError(key)
+
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
+        kt = build_injection_kwargs_target(
+            obj,
+            skip_args=skip_args,
+            skip_kwargs=skip_kwargs,
+        )
+
+        ret: ta.Dict[str, ta.Any] = {}
+        for kw in kt.kwargs:
+            if kw.has_default:
+                if not (mv := self.try_provide(kw.key)).present:
+                    continue
+                v = mv.must()
+            else:
+                v = self.provide(kw.key)
+            ret[kw.name] = v
+        return ret
+
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
+        provided = self.provide_kwargs(
+            obj,
+            skip_args=len(args) if args is not None else 0,
+            skip_kwargs=kwargs if kwargs is not None else None,
+        )
+
+        return obj(
+            *(args if args is not None else ()),
+            **(kwargs if kwargs is not None else {}),
+            **provided,
+        )
+
+
+###
+# binder
+
+
+class InjectorBinder:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    _FN_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        types.FunctionType,
+        types.MethodType,
+
+        classmethod,
+        staticmethod,
+
+        functools.partial,
+        functools.partialmethod,
+    )
+
+    @classmethod
+    def _is_fn(cls, obj: ta.Any) -> bool:
+        return isinstance(obj, cls._FN_TYPES)
+
+    @classmethod
+    def bind_as_fn(cls, icls: ta.Type[T]) -> ta.Type[T]:
+        check.isinstance(icls, type)
+        if icls not in cls._FN_TYPES:
+            cls._FN_TYPES = (*cls._FN_TYPES, icls)
+        return icls
+
+    _BANNED_BIND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        InjectorProvider,
+    )
+
+    @classmethod
+    def bind(
+            cls,
+            obj: ta.Any,
+            *,
+            key: ta.Any = None,
+            tag: ta.Any = None,
+            array: ta.Optional[bool] = None,  # noqa
+
+            to_fn: ta.Any = None,
+            to_ctor: ta.Any = None,
+            to_const: ta.Any = None,
+            to_key: ta.Any = None,
+
+            in_: ta.Optional[ta.Type[InjectorScope]] = None,
+            singleton: bool = False,
+
+            eager: bool = False,
+    ) -> InjectorBindingOrBindings:
+        if obj is None or obj is inspect.Parameter.empty:
+            raise TypeError(obj)
+        if isinstance(obj, cls._BANNED_BIND_TYPES):
+            raise TypeError(obj)
+
+        #
+
+        if key is not None:
+            key = as_injector_key(key)
+
+        #
+
+        has_to = (
+            to_fn is not None or
+            to_ctor is not None or
+            to_const is not None or
+            to_key is not None
+        )
+        if isinstance(obj, InjectorKey):
+            if key is None:
+                key = obj
+        elif isinstance(obj, type):
+            if not has_to:
+                to_ctor = obj
+            if key is None:
+                key = InjectorKey(obj)
+        elif cls._is_fn(obj) and not has_to:
+            to_fn = obj
+            if key is None:
+                insp = _injection_inspect(obj)
+                key_cls: ta.Any = check_valid_injector_key_cls(check.not_none(insp.type_hints.get('return')))
+                key = InjectorKey(key_cls)
+        else:
+            if to_const is not None:
+                raise TypeError('Cannot bind instance with to_const')
+            to_const = obj
+            if key is None:
+                key = InjectorKey(type(obj))
+        del has_to
+
+        #
+
+        if tag is not None:
+            if key.tag is not None:
+                raise TypeError('Tag already set')
+            key = dc.replace(key, tag=tag)
+
+        if array is not None:
+            key = dc.replace(key, array=array)
+
+        #
+
+        providers: ta.List[InjectorProvider] = []
+        if to_fn is not None:
+            providers.append(FnInjectorProvider(to_fn))
+        if to_ctor is not None:
+            providers.append(CtorInjectorProvider(to_ctor))
+        if to_const is not None:
+            providers.append(ConstInjectorProvider(to_const))
+        if to_key is not None:
+            providers.append(LinkInjectorProvider(as_injector_key(to_key)))
+        if not providers:
+            raise TypeError('Must specify provider')
+        if len(providers) > 1:
+            raise TypeError('May not specify multiple providers')
+        provider = check.single(providers)
+
+        #
+
+        pws: ta.List[ta.Any] = []
+        if in_ is not None:
+            check.issubclass(in_, InjectorScope)
+            check.not_in(Abstract, in_.__bases__)
+            pws.append(functools.partial(ScopedInjectorProvider, k=key, sc=in_))
+        if singleton:
+            pws.append(SingletonInjectorProvider)
+        if len(pws) > 1:
+            raise TypeError('May not specify multiple provider wrappers')
+        elif pws:
+            provider = check.single(pws)(provider)
+
+        #
+
+        binding = InjectorBinding(key, provider)
+
+        #
+
+        extras: ta.List[InjectorBinding] = []
+
+        if eager:
+            extras.append(bind_injector_eager_key(key))
+
+        #
+
+        if extras:
+            return as_injector_bindings(binding, *extras)
+        else:
+            return binding
+
+
+###
+# injection helpers
+
+
+def make_injector_factory(
+        fn: ta.Callable[..., T],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if ann is None:
+        ann = cls
+
+    def outer(injector: Injector) -> ann:
+        def inner(*args, **kwargs):
+            return injector.inject(fn, args=args, kwargs=kwargs)
+        return cls(inner)  # type: ignore
+
+    return outer
+
+
+def bind_injector_array(
+        obj: ta.Any = None,
+        *,
+        tag: ta.Any = None,
+) -> InjectorBindingOrBindings:
+    key = as_injector_key(obj)
+    if tag is not None:
+        if key.tag is not None:
+            raise ValueError('Must not specify multiple tags')
+        key = dc.replace(key, tag=tag)
+
+    if key.array:
+        raise ValueError('Key must not be array')
+
+    return InjectorBinding(
+        dc.replace(key, array=True),
+        ArrayInjectorProvider([]),
+    )
+
+
+def make_injector_array_type(
+        ele: ta.Union[InjectorKey, InjectorKeyCls],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if isinstance(ele, InjectorKey):
+        if not ele.array:
+            raise InjectorError('Provided key must be array', ele)
+        key = ele
+    else:
+        key = dc.replace(as_injector_key(ele), array=True)
+
+    if ann is None:
+        ann = cls
+
+    def inner(injector: Injector) -> ann:
+        return cls(injector.provide(key))  # type: ignore[operator]
+
+    return inner
+
+
+def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
+    return InjectorBinding(_INJECTOR_EAGER_ARRAY_KEY, ConstInjectorProvider(_InjectorEager(as_injector_key(key))))
+
+
+###
+# api
+
+
+class InjectionApi:
+    # keys
+
+    def as_key(self, o: ta.Any) -> InjectorKey:
+        return as_injector_key(o)
+
+    def array(self, o: ta.Any) -> InjectorKey:
+        return dc.replace(as_injector_key(o), array=True)
+
+    def tag(self, o: ta.Any, t: ta.Any) -> InjectorKey:
+        return dc.replace(as_injector_key(o), tag=t)
+
+    # bindings
+
+    def as_bindings(self, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return as_injector_bindings(*args)
+
+    # overrides
+
+    def override(self, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return injector_override(p, *args)
+
+    # scopes
+
+    def bind_scope(self, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+        return bind_injector_scope(sc)
+
+    def bind_scope_seed(self, k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorBindingOrBindings:
+        return bind_injector_scope_seed(k, sc)
+
+    # injector
+
+    def create_injector(self, *args: InjectorBindingOrBindings, parent: ta.Optional[Injector] = None) -> Injector:
+        return _Injector(as_injector_bindings(*args), parent)
+
+    # binder
+
+    def bind(
+            self,
+            obj: ta.Any,
+            *,
+            key: ta.Any = None,
+            tag: ta.Any = None,
+            array: ta.Optional[bool] = None,  # noqa
+
+            to_fn: ta.Any = None,
+            to_ctor: ta.Any = None,
+            to_const: ta.Any = None,
+            to_key: ta.Any = None,
+
+            in_: ta.Optional[ta.Type[InjectorScope]] = None,
+            singleton: bool = False,
+
+            eager: bool = False,
+    ) -> InjectorBindingOrBindings:
+        return InjectorBinder.bind(
+            obj,
+
+            key=key,
+            tag=tag,
+            array=array,
+
+            to_fn=to_fn,
+            to_ctor=to_ctor,
+            to_const=to_const,
+            to_key=to_key,
+
+            in_=in_,
+            singleton=singleton,
+
+            eager=eager,
+        )
+
+    # helpers
+
+    def bind_factory(
+            self,
+            fn: ta.Callable[..., T],
+            cls_: U,
+            ann: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return self.bind(make_injector_factory(fn, cls_, ann))
+
+    def bind_array(
+            self,
+            obj: ta.Any = None,
+            *,
+            tag: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return bind_injector_array(obj, tag=tag)
+
+    def bind_array_type(
+            self,
+            ele: ta.Union[InjectorKey, InjectorKeyCls],
+            cls_: U,
+            ann: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return self.bind(make_injector_array_type(ele, cls_, ann))
+
+
+inj = InjectionApi()
 
 
 ########################################
@@ -8137,7 +8315,7 @@ class CoroHttpServer:
 
     #
 
-    class Io(abc.ABC):  # noqa
+    class Io(Abstract):
         pass
 
     #

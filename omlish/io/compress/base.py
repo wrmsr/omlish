@@ -1,5 +1,6 @@
 import abc
 
+from ... import lang
 from ..coro import BytesSteppedCoro
 from ..coro import BytesSteppedReaderCoro
 
@@ -7,7 +8,7 @@ from ..coro import BytesSteppedReaderCoro
 ##
 
 
-class Compression(abc.ABC):
+class Compression(lang.Abstract):
     @abc.abstractmethod
     def compress(self, d: bytes) -> bytes:
         raise NotImplementedError
@@ -17,7 +18,7 @@ class Compression(abc.ABC):
         raise NotImplementedError
 
 
-class IncrementalCompression(abc.ABC):
+class IncrementalCompression(lang.Abstract):
     @abc.abstractmethod
     def compress_incremental(self) -> BytesSteppedCoro[None]:
         raise NotImplementedError

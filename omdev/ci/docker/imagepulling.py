@@ -3,6 +3,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.timing import log_timing_context
 from omlish.text.mangle import StringMangler
 
@@ -16,7 +17,7 @@ from .cmds import pull_docker_image
 ##
 
 
-class DockerImagePulling(abc.ABC):
+class DockerImagePulling(Abstract):
     @abc.abstractmethod
     def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
         raise NotImplementedError

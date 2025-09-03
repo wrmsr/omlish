@@ -3,6 +3,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.os.temp import temp_file_context
 
@@ -35,7 +36,7 @@ class DockerCacheKey:
 ##
 
 
-class DockerCache(abc.ABC):
+class DockerCache(Abstract):
     @abc.abstractmethod
     def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Awaitable[ta.Optional[str]]:
         raise NotImplementedError

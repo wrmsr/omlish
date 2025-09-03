@@ -45,7 +45,7 @@ class Kv(lang.Abstract, ta.Generic[K, V]):
         raise NotImplementedError
 
 
-class MutableKv(Kv[K, V], lang.Abstract):  # noqa
+class MutableKv(Kv[K, V], lang.Abstract):
     @abc.abstractmethod
     def __setitem__(self, k: K, v: V, /) -> None:
         raise NotImplementedError

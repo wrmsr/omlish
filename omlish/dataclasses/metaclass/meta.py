@@ -1,5 +1,6 @@
 """
 TODO:
+ - DataABCMeta
  - Rewrite lol
  - Enum - enforce Abstract or Final
 """

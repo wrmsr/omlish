@@ -15,7 +15,7 @@ V = ta.TypeVar('V')
 
 
 class Frozen(ta.Hashable, abc.ABC):
-    pass
+    """Explicitly an abc.ABC, not a lang.Abstract, to support virtual subclassing."""
 
 
 class FrozenDict(ta.Mapping[K, V], Frozen):

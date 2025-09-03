@@ -1,3 +1,4 @@
+# ruff: noqa: N802
 """
 https://github.com/python/cpython/blob/21d2a9ab2f4dcbf1be462d3b7f7a231a46bc1cb7/Parser/asdl.py
 
@@ -54,7 +55,6 @@ constructor   ::= ConstructorId [fields]
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
-# ruff: noqa: N802
 import abc
 import dataclasses as dc
 import enum
@@ -63,6 +63,7 @@ import typing as ta
 
 from .. import cached
 from .. import check
+from .. import lang
 
 
 ##
@@ -73,7 +74,7 @@ from .. import check
 # parsed. This module parses Asdl files and uses a simple AST to represent them. See the EBNF at the top of the file to
 # understand the logical connection between the various node types.
 
-class Ast(abc.ABC):
+class Ast(lang.Abstract):
     @abc.abstractmethod
     def __repr__(self) -> str:
         raise NotImplementedError
@@ -434,7 +435,7 @@ class FlatField:
 
 
 @dc.dataclass(frozen=True)
-class FlatNode(abc.ABC):
+class FlatNode(lang.Abstract):
     name: str
     fields: ta.Sequence[FlatField] = dc.field(default=(), kw_only=True)
     attributes: ta.Sequence[FlatField] = dc.field(default=(), kw_only=True)

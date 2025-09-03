@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import dataclasses as dc
 import os.path
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from ....dataserver.routes import DataServerRoute
@@ -25,7 +25,7 @@ class CacheServedDockerImageManifest:
         content_length: int
 
         @dc.dataclass(frozen=True)
-        class Target(abc.ABC):  # noqa
+        class Target(Abstract):  # noqa
             pass
 
         @dc.dataclass(frozen=True)

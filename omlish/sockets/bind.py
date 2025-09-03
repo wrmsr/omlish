@@ -15,6 +15,7 @@ import socket as socket_
 import stat
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.dataclasses import dataclass_maybe_post_init
 from .addresses import SocketAddress
@@ -31,7 +32,7 @@ CanSocketBinder = ta.Union['SocketBinder', CanSocketBinderConfig]  # ta.TypeAlia
 ##
 
 
-class SocketBinder(abc.ABC, ta.Generic[SocketBinderConfigT]):
+class SocketBinder(Abstract, ta.Generic[SocketBinderConfigT]):
     @dc.dataclass(frozen=True)
     class Config:
         listen_backlog: int = 5

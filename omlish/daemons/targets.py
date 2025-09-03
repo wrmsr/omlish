@@ -44,7 +44,7 @@ class Target(dc.Case):
             raise TypeError(obj)
 
 
-class TargetRunner(abc.ABC):
+class TargetRunner(lang.Abstract):
     @abc.abstractmethod
     def run(self) -> None:
         raise NotImplementedError

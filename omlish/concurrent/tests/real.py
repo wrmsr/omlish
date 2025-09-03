@@ -6,7 +6,6 @@ TODO:
  - thread pooling
 """
 # ruff: noqa: SLF001
-import abc
 import itertools
 import logging
 import threading
@@ -33,7 +32,7 @@ def _squash_args(args: lang.Args) -> ta.Any:
         return None
 
 
-class RealThreadlet(Threadlet, abc.ABC):
+class RealThreadlet(Threadlet, lang.Abstract):
     _seq_counter = itertools.count()
 
     def __init__(

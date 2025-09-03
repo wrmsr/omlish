@@ -3,8 +3,8 @@ import typing as ta
 
 import pytest
 
-from ..abstract import Abstract
-from ..abstract import AbstractTypeError
+from ....lite.abstract import Abstract
+from ....lite.abstract import AbstractTypeError
 from ..restrict import AnySensitive
 from ..restrict import Final
 from ..restrict import FinalTypeError

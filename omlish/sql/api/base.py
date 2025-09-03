@@ -48,14 +48,14 @@ class Rows(ContextCloser, ta.Iterator[Row], lang.Abstract):
 ##
 
 
-class Conn(Querier, lang.Abstract):  # noqa
+class Conn(Querier, lang.Abstract):
     pass
 
 
 ##
 
 
-class Db(Querier, lang.Abstract):  # noqa
+class Db(Querier, lang.Abstract):
     @abc.abstractmethod
     def connect(self) -> Conn:
         raise NotImplementedError

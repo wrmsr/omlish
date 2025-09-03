@@ -5,11 +5,13 @@ import errno
 import select
 import typing as ta
 
+from ...lite.abstract import Abstract
+
 
 ##
 
 
-class FdioPoller(abc.ABC):
+class FdioPoller(Abstract):
     def __init__(self) -> None:
         super().__init__()
 

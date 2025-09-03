@@ -51,6 +51,116 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 
 ########################################
+# ../../../omlish/lite/abstract.py
+
+
+##
+
+
+_ABSTRACT_METHODS_ATTR = '__abstractmethods__'
+_IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
+
+
+def is_abstract_method(obj: ta.Any) -> bool:
+    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
+
+
+def update_abstracts(cls, *, force=False):
+    if not force and not hasattr(cls, _ABSTRACT_METHODS_ATTR):
+        # Per stdlib: We check for __abstractmethods__ here because cls might by a C implementation or a python
+        # implementation (especially during testing), and we want to handle both cases.
+        return cls
+
+    abstracts: ta.Set[str] = set()
+
+    for scls in cls.__bases__:
+        for name in getattr(scls, _ABSTRACT_METHODS_ATTR, ()):
+            value = getattr(cls, name, None)
+            if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
+                abstracts.add(name)
+
+    for name, value in cls.__dict__.items():
+        if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
+            abstracts.add(name)
+
+    setattr(cls, _ABSTRACT_METHODS_ATTR, frozenset(abstracts))
+    return cls
+
+
+#
+
+
+class AbstractTypeError(TypeError):
+    pass
+
+
+_FORCE_ABSTRACT_ATTR = '__forceabstract__'
+
+
+class Abstract:
+    """
+    Different from, but interoperable with, abc.ABC / abc.ABCMeta:
+
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
+       present in the class's direct bases.
+     - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
+       abstractmethods left on the class.
+     - This is a mixin, not a metaclass.
+     - As it is not an ABCMeta, this does not support virtual base classes. As a result, operations like `isinstance`
+       and `issubclass` are ~7x faster.
+
+    If not mixed-in with an ABCMeta, it will update __abstractmethods__ itself.
+    """
+
+    __slots__ = ()
+
+    __abstractmethods__: ta.ClassVar[ta.FrozenSet[str]] = frozenset()
+
+    #
+
+    def __forceabstract__(self):
+        raise TypeError
+
+    # This is done manually, rather than through @abc.abstractmethod, to mask it from static analysis.
+    setattr(__forceabstract__, _IS_ABSTRACT_METHOD_ATTR, True)
+
+    #
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        setattr(
+            cls,
+            _FORCE_ABSTRACT_ATTR,
+            getattr(Abstract, _FORCE_ABSTRACT_ATTR) if Abstract in cls.__bases__ else False,
+        )
+
+        super().__init_subclass__(**kwargs)
+
+        if not (Abstract in cls.__bases__ or abc.ABC in cls.__bases__):
+            ams = {a: cls for a, o in cls.__dict__.items() if is_abstract_method(o)}
+
+            seen = set(cls.__dict__)
+            for b in cls.__bases__:
+                ams.update({a: b for a in set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen})  # noqa
+                seen.update(dir(b))
+
+            if ams:
+                raise AbstractTypeError(
+                    f'Cannot subclass abstract class {cls.__name__} with abstract methods: ' +
+                    ', '.join(sorted([
+                        '.'.join([
+                            *([m] if (m := getattr(c, '__module__')) else []),
+                            getattr(c, '__qualname__', getattr(c, '__name__')),
+                            a,
+                        ])
+                        for a, c in ams.items()
+                    ])),
+                )
+
+        if not isinstance(cls, abc.ABCMeta):
+            update_abstracts(cls, force=True)
+
+
+########################################
 # ../../../omlish/lite/cached.py
 
 
@@ -883,7 +993,7 @@ class ObjMarshalOptions:
     non_strict_fields: bool = False
 
 
-class ObjMarshaler(abc.ABC):
+class ObjMarshaler(Abstract):
     @abc.abstractmethod
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         raise NotImplementedError
@@ -901,26 +1011,30 @@ class NopObjMarshaler(ObjMarshaler):
         return o
 
 
-@dc.dataclass()
 class ProxyObjMarshaler(ObjMarshaler):
-    m: ta.Optional[ObjMarshaler] = None
+    def __init__(self, m: ta.Optional[ObjMarshaler] = None) -> None:
+        super().__init__()
+
+        self._m = m
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self.m).marshal(o, ctx)
+        return check.not_none(self._m).marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self.m).unmarshal(o, ctx)
+        return check.not_none(self._m).unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class CastObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(o)
+        return self._ty(o)
 
 
 class DynamicObjMarshaler(ObjMarshaler):
@@ -931,121 +1045,151 @@ class DynamicObjMarshaler(ObjMarshaler):
         return o
 
 
-@dc.dataclass(frozen=True)
 class Base64ObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return base64.b64encode(o).decode('ascii')
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(base64.b64decode(o))
+        return self._ty(base64.b64decode(o))
 
 
-@dc.dataclass(frozen=True)
 class BytesSwitchedObjMarshaler(ObjMarshaler):
-    m: ObjMarshaler
+    def __init__(self, m: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._m = m
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if ctx.options.raw_bytes:
             return o
-        return self.m.marshal(o, ctx)
+        return self._m.marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if ctx.options.raw_bytes:
             return o
-        return self.m.unmarshal(o, ctx)
+        return self._m.unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class EnumObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.name
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty.__members__[o]  # type: ignore
+        return self._ty.__members__[o]  # type: ignore
 
 
-@dc.dataclass(frozen=True)
 class OptionalObjMarshaler(ObjMarshaler):
-    item: ObjMarshaler
+    def __init__(self, item: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._item = item
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.marshal(o, ctx)
+        return self._item.marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.unmarshal(o, ctx)
+        return self._item.unmarshal(o, ctx)
 
 
-@dc.dataclass(frozen=True)
 class PrimitiveUnionObjMarshaler(ObjMarshaler):
-    pt: ta.Tuple[type, ...]
-    x: ta.Optional[ObjMarshaler] = None
+    def __init__(
+            self,
+            pt: ta.Tuple[type, ...],
+            x: ta.Optional[ObjMarshaler] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pt = pt
+        self._x = x
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self.pt):
+        if isinstance(o, self._pt):
             return o
-        elif self.x is not None:
-            return self.x.marshal(o, ctx)
+        elif self._x is not None:
+            return self._x.marshal(o, ctx)
         else:
             raise TypeError(o)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self.pt):
+        if isinstance(o, self._pt):
             return o
-        elif self.x is not None:
-            return self.x.unmarshal(o, ctx)
+        elif self._x is not None:
+            return self._x.unmarshal(o, ctx)
         else:
             raise TypeError(o)
 
 
-@dc.dataclass(frozen=True)
 class LiteralObjMarshaler(ObjMarshaler):
-    item: ObjMarshaler
-    vs: frozenset
+    def __init__(
+            self,
+            item: ObjMarshaler,
+            vs: frozenset,
+    ) -> None:
+        super().__init__()
+
+        self._item = item
+        self._vs = vs
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.item.marshal(check.in_(o, self.vs), ctx)
+        return self._item.marshal(check.in_(o, self._vs), ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.in_(self.item.unmarshal(o, ctx), self.vs)
+        return check.in_(self._item.unmarshal(o, ctx), self._vs)
 
 
-@dc.dataclass(frozen=True)
 class MappingObjMarshaler(ObjMarshaler):
-    ty: type
-    km: ObjMarshaler
-    vm: ObjMarshaler
+    def __init__(
+            self,
+            ty: type,
+            km: ObjMarshaler,
+            vm: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._km = km
+        self._vm = vm
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return {self.km.marshal(k, ctx): self.vm.marshal(v, ctx) for k, v in o.items()}
+        return {self._km.marshal(k, ctx): self._vm.marshal(v, ctx) for k, v in o.items()}
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty((self.km.unmarshal(k, ctx), self.vm.unmarshal(v, ctx)) for k, v in o.items())
+        return self._ty((self._km.unmarshal(k, ctx), self._vm.unmarshal(v, ctx)) for k, v in o.items())
 
 
-@dc.dataclass(frozen=True)
 class IterableObjMarshaler(ObjMarshaler):
-    ty: type
-    item: ObjMarshaler
+    def __init__(
+            self,
+            ty: type,
+            item: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._item = item
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return [self.item.marshal(e, ctx) for e in o]
+        return [self._item.marshal(e, ctx) for e in o]
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(self.item.unmarshal(e, ctx) for e in o)
+        return self._ty(self._item.unmarshal(e, ctx) for e in o)
 
 
-@dc.dataclass(frozen=True)
 class FieldsObjMarshaler(ObjMarshaler):
-    ty: type
-
     @dc.dataclass(frozen=True)
     class Field:
         att: str
@@ -1054,31 +1198,43 @@ class FieldsObjMarshaler(ObjMarshaler):
 
         omit_if_none: bool = False
 
-    fs: ta.Sequence[Field]
+    def __init__(
+            self,
+            ty: type,
+            fs: ta.Sequence[Field],
+            *,
+            non_strict: bool = False,
+    ) -> None:
+        super().__init__()
 
-    non_strict: bool = False
+        self._ty = ty
+        self._fs = fs
+        self._non_strict = non_strict
 
-    #
-
-    _fs_by_att: ta.ClassVar[ta.Mapping[str, Field]]
-    _fs_by_key: ta.ClassVar[ta.Mapping[str, Field]]
-
-    def __post_init__(self) -> None:
         fs_by_att: dict = {}
         fs_by_key: dict = {}
-        for f in self.fs:
+        for f in self._fs:
             check.not_in(check.non_empty_str(f.att), fs_by_att)
             check.not_in(check.non_empty_str(f.key), fs_by_key)
             fs_by_att[f.att] = f
             fs_by_key[f.key] = f
-        self.__dict__['_fs_by_att'] = fs_by_att
-        self.__dict__['_fs_by_key'] = fs_by_key
+
+        self._fs_by_att: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_att
+        self._fs_by_key: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_key
+
+    @property
+    def ty(self) -> type:
+        return self._ty
+
+    @property
+    def fs(self) -> ta.Sequence[Field]:
+        return self._fs
 
     #
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         d = {}
-        for f in self.fs:
+        for f in self._fs:
             mv = f.m.marshal(getattr(o, f.att), ctx)
             if mv is None and f.omit_if_none:
                 continue
@@ -1089,34 +1245,46 @@ class FieldsObjMarshaler(ObjMarshaler):
         kw = {}
         for k, v in o.items():
             if (f := self._fs_by_key.get(k)) is None:
-                if not (self.non_strict or ctx.options.non_strict_fields):
+                if not (self._non_strict or ctx.options.non_strict_fields):
                     raise KeyError(k)
                 continue
             kw[f.att] = f.m.unmarshal(v, ctx)
-        return self.ty(**kw)
+        return self._ty(**kw)
 
 
-@dc.dataclass(frozen=True)
 class SingleFieldObjMarshaler(ObjMarshaler):
-    ty: type
-    fld: str
+    def __init__(
+            self,
+            ty: type,
+            fld: str,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._fld = fld
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return getattr(o, self.fld)
+        return getattr(o, self._fld)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty(**{self.fld: o})
+        return self._ty(**{self._fld: o})
 
 
-@dc.dataclass(frozen=True)
 class PolymorphicObjMarshaler(ObjMarshaler):
     class Impl(ta.NamedTuple):
         ty: type
         tag: str
         m: ObjMarshaler
 
-    impls_by_ty: ta.Mapping[type, Impl]
-    impls_by_tag: ta.Mapping[str, Impl]
+    def __init__(
+            self,
+            impls_by_ty: ta.Mapping[type, Impl],
+            impls_by_tag: ta.Mapping[str, Impl],
+    ) -> None:
+        super().__init__()
+
+        self._impls_by_ty = impls_by_ty
+        self._impls_by_tag = impls_by_tag
 
     @classmethod
     def of(cls, impls: ta.Iterable[Impl]) -> 'PolymorphicObjMarshaler':
@@ -1126,24 +1294,29 @@ class PolymorphicObjMarshaler(ObjMarshaler):
         )
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        impl = self.impls_by_ty[type(o)]
+        impl = self._impls_by_ty[type(o)]
         return {impl.tag: impl.m.marshal(o, ctx)}
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         [(t, v)] = o.items()
-        impl = self.impls_by_tag[t]
+        impl = self._impls_by_tag[t]
         return impl.m.unmarshal(v, ctx)
 
 
-@dc.dataclass(frozen=True)
 class DatetimeObjMarshaler(ObjMarshaler):
-    ty: type
+    def __init__(
+            self,
+            ty: type,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.isoformat()
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self.ty.fromisoformat(o)  # type: ignore
+        return self._ty.fromisoformat(o)  # type: ignore
 
 
 class DecimalObjMarshaler(ObjMarshaler):
@@ -1278,6 +1451,12 @@ class ObjMarshalerManager:
 
     #
 
+    @classmethod
+    def _is_abstract(cls, ty: type) -> bool:
+        return abc.ABC in ty.__bases__ or Abstract in ty.__bases__
+
+    #
+
     def make_obj_marshaler(
             self,
             ty: ta.Any,
@@ -1289,12 +1468,12 @@ class ObjMarshalerManager:
             if (reg := self._registered_obj_marshalers.get(ty)) is not None:
                 return reg
 
-            if abc.ABC in ty.__bases__:
+            if self._is_abstract(ty):
                 tn = ty.__name__
                 impls: ta.List[ta.Tuple[type, str]] = [  # type: ignore[var-annotated]
                     (ity, ity.__name__)
                     for ity in deep_subclasses(ty)
-                    if abc.ABC not in ity.__bases__
+                    if not self._is_abstract(ity)
                 ]
 
                 if all(itn.endswith(tn) for _, itn in impls):
@@ -1460,7 +1639,7 @@ class ObjMarshalerManager:
                 m = self.make_obj_marshaler(ty, rec, **kwargs)
             finally:
                 del self._proxies[ty]
-            p.m = m
+            p._m = m  # noqa
 
             if not no_cache:
                 self._obj_marshalers[ty] = m

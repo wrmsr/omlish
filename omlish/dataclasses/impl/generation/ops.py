@@ -1,7 +1,7 @@
-import abc
 import dataclasses as dc
 import typing as ta
 
+from .... import lang
 from .globals import FnGlobal
 from .idents import IDENT_PREFIX
 
@@ -50,7 +50,7 @@ IfAttrPresent: ta.TypeAlias = ta.Literal['skip', 'replace', 'error']
 
 
 @dc.dataclass(frozen=True)
-class Op(abc.ABC):  # noqa
+class Op(lang.Abstract):
     pass
 
 

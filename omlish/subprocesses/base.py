@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import contextlib
 import logging
 import os
@@ -8,6 +7,7 @@ import subprocess
 import time
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.timeouts import Timeout
 from .wrap import subprocess_maybe_shell_wrap_exec
 
@@ -54,7 +54,7 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
         return msg
 
 
-class BaseSubprocesses(abc.ABC):  # noqa
+class BaseSubprocesses(Abstract):
     DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
 
     def __init__(

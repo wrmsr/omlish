@@ -8,6 +8,7 @@ import abc
 import typing as ta
 
 from ... import check
+from ... import lang
 from .consts import DEFAULT_BUFFER_SIZE
 
 
@@ -50,7 +51,7 @@ class _StrJoiner:
 ##
 
 
-class CoroReader(abc.ABC, ta.Generic[T]):
+class CoroReader(lang.Abstract, ta.Generic[T]):
     @abc.abstractmethod
     def read(self, sz: int | None) -> ReaderCoro[T, T]:
         raise NotImplementedError
@@ -65,7 +66,7 @@ class CoroReader(abc.ABC, ta.Generic[T]):
 ##
 
 
-class PrependableCoroReader(CoroReader[AnyT]):
+class PrependableCoroReader(CoroReader[AnyT], lang.Abstract):
     def __init__(self) -> None:
         super().__init__()
 
@@ -133,7 +134,7 @@ prependable_str_coro_reader = PrependableStrCoroReader
 ##
 
 
-class BufferedCoroReader(PrependableCoroReader[AnyT], abc.ABC):
+class BufferedCoroReader(PrependableCoroReader[AnyT], lang.Abstract):
     def __init__(
             self,
             buffer_size: int = DEFAULT_BUFFER_SIZE,

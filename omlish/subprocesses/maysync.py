@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import sys
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.maysync import make_maysync
 from .asyncs import AbstractAsyncSubprocesses
 from .run import SubprocessRun
@@ -14,7 +14,7 @@ from .sync import AbstractSubprocesses
 ##
 
 
-class MaysyncSubprocesses(AbstractAsyncSubprocesses, abc.ABC):
+class MaysyncSubprocesses(AbstractAsyncSubprocesses, Abstract):
     def __init__(
             self,
             subprocesses: AbstractSubprocesses,

@@ -15,6 +15,7 @@ import time
 import typing as ta
 import urllib.request
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
@@ -29,7 +30,7 @@ CacheVersion = ta.NewType('CacheVersion', int)
 ##
 
 
-class FileCache(abc.ABC):
+class FileCache(Abstract):
     DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
 
     def __init__(
@@ -229,7 +230,7 @@ class DirectoryFileCache(FileCache):
 
 class DataCache:
     @dc.dataclass(frozen=True)
-    class Data(abc.ABC):  # noqa
+    class Data(Abstract):  # noqa
         pass
 
     @dc.dataclass(frozen=True)

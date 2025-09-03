@@ -1,5 +1,4 @@
 # ruff: noqa: UP006
-# @omlish-lite
 import abc
 import typing as ta
 
@@ -9,7 +8,10 @@ import typing as ta
 
 _ABSTRACT_METHODS_ATTR = '__abstractmethods__'
 _IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
-_FORCE_ABSTRACT_ATTR = '__forceabstract__'
+
+
+def is_abstract_method(obj: ta.Any) -> bool:
+    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
 
 
 def update_abstracts(cls, *, force=False):
@@ -41,11 +43,17 @@ class AbstractTypeError(TypeError):
     pass
 
 
+_FORCE_ABSTRACT_ATTR = '__forceabstract__'
+
+
 class Abstract:
     """
     Different from, but interoperable with, abc.ABC / abc.ABCMeta:
 
-     - This raises AbstractTypeError during class creation, not instance instantiation.
+     - This raises AbstractTypeError during class creation, not instance instantiation - unless Abstract is explicitly
+       present in the class's direct bases.
+     - This will forbid instantiation of classes with Abstract in their direct bases even if there are no
+       abstractmethods left on the class.
      - This is a mixin, not a metaclass.
      - As it is not an ABCMeta, this does not support virtual base classes. As a result, operations like `isinstance`
        and `issubclass` are ~7x faster.
@@ -69,7 +77,8 @@ class Abstract:
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         setattr(
-            cls, _FORCE_ABSTRACT_ATTR,
+            cls,
+            _FORCE_ABSTRACT_ATTR,
             getattr(Abstract, _FORCE_ABSTRACT_ATTR) if Abstract in cls.__bases__ else False,
         )
 
@@ -98,7 +107,3 @@ class Abstract:
 
         if not isinstance(cls, abc.ABCMeta):
             update_abstracts(cls, force=True)
-
-
-def is_abstract_method(obj: ta.Any) -> bool:
-    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))

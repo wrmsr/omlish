@@ -5,11 +5,13 @@ import sys
 import time
 import typing as ta
 
+from ... import lang
+
 
 ##
 
 
-class Deathpact(abc.ABC):
+class Deathpact(lang.Abstract):
     @abc.abstractmethod
     def poll(self) -> None:
         raise NotImplementedError
@@ -23,7 +25,7 @@ class NopDeathpact(Deathpact):
 ##
 
 
-class BaseDeathpact(Deathpact, abc.ABC):
+class BaseDeathpact(Deathpact, lang.Abstract):
     def __init__(
             self,
             *,

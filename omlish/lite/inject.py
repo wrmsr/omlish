@@ -9,6 +9,7 @@ import types
 import typing as ta
 import weakref
 
+from .abstract import Abstract
 from .check import check
 from .maybes import Maybe
 from .reflect import get_optional_alias_arg
@@ -58,7 +59,7 @@ def check_valid_injector_key_cls(cls: T) -> T:
 ##
 
 
-class InjectorProvider(abc.ABC):
+class InjectorProvider(Abstract):
     @abc.abstractmethod
     def provider_fn(self) -> InjectorProviderFn:
         raise NotImplementedError
@@ -77,7 +78,7 @@ class InjectorBinding:
         check.isinstance(self.provider, InjectorProvider)
 
 
-class InjectorBindings(abc.ABC):
+class InjectorBindings(Abstract):
     @abc.abstractmethod
     def bindings(self) -> ta.Iterator[InjectorBinding]:
         raise NotImplementedError
@@ -85,7 +86,7 @@ class InjectorBindings(abc.ABC):
 ##
 
 
-class Injector(abc.ABC):
+class Injector(Abstract):
     @abc.abstractmethod
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         raise NotImplementedError
@@ -344,14 +345,12 @@ def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> 
 # scopes
 
 
-class InjectorScope(abc.ABC):  # noqa
+class InjectorScope(Abstract):
     def __init__(
             self,
             *,
             _i: Injector,
     ) -> None:
-        check.not_in(abc.ABC, type(self).__bases__)
-
         super().__init__()
 
         self._i = _i
@@ -382,7 +381,7 @@ class InjectorScope(abc.ABC):  # noqa
         raise NotImplementedError
 
 
-class ExclusiveInjectorScope(InjectorScope, abc.ABC):
+class ExclusiveInjectorScope(InjectorScope, Abstract):
     _st: ta.Optional[InjectorScope.State] = None
 
     def state(self) -> InjectorScope.State:
@@ -398,12 +397,13 @@ class ExclusiveInjectorScope(InjectorScope, abc.ABC):
             self._st = None
 
 
-class ContextvarInjectorScope(InjectorScope, abc.ABC):
+class ContextvarInjectorScope(InjectorScope, Abstract):
     _cv: contextvars.ContextVar
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
+        check.not_in(Abstract, cls.__bases__)
         check.not_in(abc.ABC, cls.__bases__)
         check.state(not hasattr(cls, '_cv'))
         cls._cv = contextvars.ContextVar(f'{cls.__name__}_cv')
@@ -909,7 +909,7 @@ class InjectorBinder:
         pws: ta.List[ta.Any] = []
         if in_ is not None:
             check.issubclass(in_, InjectorScope)
-            check.not_in(abc.ABC, in_.__bases__)
+            check.not_in(Abstract, in_.__bases__)
             pws.append(functools.partial(ScopedInjectorProvider, k=key, sc=in_))
         if singleton:
             pws.append(SingletonInjectorProvider)

@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import collections.abc
 import dataclasses as dc
 import typing as ta
 
+from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.types import BUILTIN_SCALAR_ITERABLE_TYPES
 
@@ -26,7 +26,7 @@ class RawConfigMetadata:
         raise TypeError
 
 
-class ConfigRewriter(abc.ABC):  # noqa
+class ConfigRewriter(Abstract):
     @dc.dataclass(frozen=True)
     class Context(ta.Generic[T]):
         obj: T

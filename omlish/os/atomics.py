@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.strings import attr_repr
 
@@ -17,7 +18,7 @@ AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 ##
 
 
-class AtomicPathSwap(abc.ABC):
+class AtomicPathSwap(Abstract):
     def __init__(
             self,
             kind: AtomicPathSwapKind,
@@ -105,7 +106,7 @@ class AtomicPathSwap(abc.ABC):
             self.abort()
 
 
-class AtomicPathSwapping(abc.ABC):
+class AtomicPathSwapping(Abstract):
     @abc.abstractmethod
     def begin_atomic_path_swap(
             self,

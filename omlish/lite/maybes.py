@@ -3,6 +3,8 @@ import abc
 import functools
 import typing as ta
 
+from .abstract import Abstract
+
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
@@ -134,7 +136,7 @@ class Maybe(ta.Generic[T]):
 ##
 
 
-class _Maybe(Maybe[T], abc.ABC):
+class _Maybe(Maybe[T], Abstract):
     def __lt__(self, other):
         if not isinstance(other, _Maybe):
             return NotImplemented

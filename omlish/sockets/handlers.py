@@ -3,8 +3,9 @@
 import abc
 import typing as ta
 
+from ..lite.abstract import Abstract
 from .addresses import SocketAddress
-from .io import SocketIoPair  # noqa
+from .io import SocketIoPair
 
 
 SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], None]  # ta.TypeAlias
@@ -13,7 +14,7 @@ SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], None]  # ta.TypeAli
 ##
 
 
-class SocketHandler_(abc.ABC):  # noqa
+class SocketHandler_(Abstract):  # noqa
     @abc.abstractmethod
     def __call__(self, addr: SocketAddress, f: SocketIoPair) -> None:
         raise NotImplementedError

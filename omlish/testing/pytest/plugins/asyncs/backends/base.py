@@ -1,10 +1,12 @@
 import abc
 
+from ...... import lang
+
 
 ##
 
 
-class AsyncsBackend(abc.ABC):
+class AsyncsBackend(lang.Abstract):
     @property
     @abc.abstractmethod
     def name(self) -> str:

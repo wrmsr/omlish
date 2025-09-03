@@ -3,6 +3,7 @@
 import abc
 import typing as ta
 
+from ...lite.abstract import Abstract
 from ...lite.check import check
 
 
@@ -54,7 +55,7 @@ class ConfigFlattening:
         rec([], unflattened)
         return ret
 
-    class UnflattenNode(abc.ABC, ta.Generic[K]):
+    class UnflattenNode(Abstract, ta.Generic[K]):
         @abc.abstractmethod
         def get(self, key: K) -> ta.Any:
             raise NotImplementedError

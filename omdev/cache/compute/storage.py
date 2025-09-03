@@ -1,5 +1,7 @@
 import abc
 
+from omlish import lang
+
 from .types import CacheEntry
 from .types import CacheKey
 
@@ -7,7 +9,7 @@ from .types import CacheKey
 ##
 
 
-class Storage(abc.ABC):
+class Storage(lang.Abstract):
     @abc.abstractmethod
     def get(self, key: CacheKey) -> CacheEntry | None:
         raise NotImplementedError

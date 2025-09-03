@@ -7,6 +7,7 @@ import logging
 import socket
 import typing as ta
 
+from ...lite.abstract import Abstract
 from ..addresses import SocketAndAddress
 from ..handlers import SocketHandler
 from ..io import SocketIoPair
@@ -19,7 +20,7 @@ SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 ##
 
 
-class SocketServerHandler_(abc.ABC):  # noqa
+class SocketServerHandler_(Abstract):  # noqa
     @abc.abstractmethod
     def __call__(self, conn: SocketAndAddress) -> None:
         raise NotImplementedError

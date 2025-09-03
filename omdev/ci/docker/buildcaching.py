@@ -3,6 +3,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
+
 from .cache import DockerCache
 from .cache import DockerCacheKey
 from .cmds import is_docker_image_present
@@ -12,7 +14,7 @@ from .cmds import tag_docker_image
 ##
 
 
-class DockerBuildCaching(abc.ABC):
+class DockerBuildCaching(Abstract):
     @abc.abstractmethod
     def cached_build_docker_image(
             self,

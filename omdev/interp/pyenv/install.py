@@ -8,6 +8,7 @@ import sys
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.abstract import Abstract
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -89,7 +90,7 @@ THREADED_PYENV_INSTALL_OPTS = PyenvInstallOpts(conf_opts=['--disable-gil'])
 #
 
 
-class PyenvInstallOptsProvider(abc.ABC):
+class PyenvInstallOptsProvider(Abstract):
     @abc.abstractmethod
     def opts(self) -> ta.Awaitable[PyenvInstallOpts]:
         raise NotImplementedError

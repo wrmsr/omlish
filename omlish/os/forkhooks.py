@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import os
 import threading
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 
 
@@ -145,7 +145,7 @@ class _ForkHookManager:
 #
 
 
-class ForkHook(abc.ABC):  # noqa
+class ForkHook(Abstract):
     @ta.final
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError

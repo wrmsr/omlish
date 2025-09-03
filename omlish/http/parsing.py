@@ -35,12 +35,12 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
-import abc
 import http.client
 import http.server
 import io
 import typing as ta
 
+from ..lite.abstract import Abstract
 from .versions import HttpProtocolVersion
 from .versions import HttpProtocolVersions
 
@@ -54,7 +54,7 @@ HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 ##
 
 
-class ParseHttpRequestResult(abc.ABC):  # noqa
+class ParseHttpRequestResult(Abstract):
     __slots__ = (
         'server_version',
         'request_line',

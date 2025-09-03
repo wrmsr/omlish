@@ -60,7 +60,7 @@ class Codegen(ProcessingOption):
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
-    class Mode(abc.ABC):
+    class Mode(lang.Abstract):
         @abc.abstractmethod
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
             raise NotImplementedError

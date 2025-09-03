@@ -1,8 +1,9 @@
 # @omlish-lite
 # ruff: noqa: UP006 UP007 UP043 UP045
-import abc
 import dataclasses as dc
 import typing as ta
+
+from ....lite.abstract import Abstract
 
 
 ##
@@ -13,7 +14,7 @@ class CoroHttpClientIo:
 
     #
 
-    class Io(abc.ABC):  # noqa
+    class Io(Abstract):
         pass
 
     #

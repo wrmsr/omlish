@@ -4,6 +4,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.timeouts import TimeoutLike
 
@@ -123,7 +124,7 @@ SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessR
 ##
 
 
-class SubprocessRunnable(abc.ABC, ta.Generic[T]):
+class SubprocessRunnable(Abstract, ta.Generic[T]):
     @abc.abstractmethod
     def make_run(self) -> SubprocessRun:
         raise NotImplementedError

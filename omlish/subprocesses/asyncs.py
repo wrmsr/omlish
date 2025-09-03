@@ -5,6 +5,7 @@ import subprocess
 import sys
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.timeouts import TimeoutLike
 from .base import BaseSubprocesses
@@ -15,7 +16,7 @@ from .run import SubprocessRunOutput
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses):
+class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
     @abc.abstractmethod
     def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
         raise NotImplementedError

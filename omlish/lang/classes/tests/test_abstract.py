@@ -3,7 +3,7 @@ import typing as ta
 
 import pytest
 
-from ..abstract import Abstract
+from ....lite.abstract import Abstract
 from ..abstract import is_abstract
 
 

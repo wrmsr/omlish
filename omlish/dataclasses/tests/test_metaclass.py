@@ -51,15 +51,14 @@ def test_overrides():
             raise NotImplementedError
 
     assert lang.is_abstract_class(A)
-    assert lang.get_abstract_methods(A) == frozenset(['x'])
+    assert lang.get_abstracts(A) == frozenset(['x'])
 
     #
 
-    try:
+    with pytest.raises(lang.AbstractTypeError) as te:
         class B(A):
             pass
-    except lang.AbstractTypeError as te:
-        assert str(te) == 'Cannot subclass abstract class B with abstract methods: x'  # noqa
+    assert '.A.x' in str(te)
 
     #
 

@@ -2,6 +2,7 @@ import abc
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
 
 
 ##
@@ -21,7 +22,7 @@ class Var:
 
 
 @dc.dataclass(frozen=True)
-class Target(abc.ABC):
+class Target(lang.Abstract):
     name: str
     src_files: ta.Sequence[str]
 

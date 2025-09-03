@@ -5,9 +5,10 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import abc
 import dataclasses as dc
 import typing as ta
+
+from ...lite.abstract import Abstract
 
 
 R = ta.TypeVar('R')
@@ -20,7 +21,7 @@ BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
 ##
 
 
-class BlueletEvent(abc.ABC):  # noqa
+class BlueletEvent(Abstract):
     """
     Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet coro coroutine to
     suspend operation and communicate with the scheduler.
@@ -44,7 +45,7 @@ class BlueletWaitables:
     x: ta.Sequence[BlueletWaitable] = ()
 
 
-class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
+class WaitableBlueletEvent(BlueletEvent, Abstract):
     """
     A waitable event is one encapsulating an action that can be waited for using a select() call. That is, it's an event
     with an associated file descriptor.

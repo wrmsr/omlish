@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
-import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.dataclasses import dataclass_maybe_post_init
 from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
@@ -12,7 +12,7 @@ from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
 
 @dc.dataclass(frozen=True)
-class DataServerTarget(abc.ABC):  # noqa
+class DataServerTarget(Abstract):  # noqa
     content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
     content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 

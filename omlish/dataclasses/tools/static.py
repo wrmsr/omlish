@@ -88,7 +88,11 @@ class Static(lang.Abstract):
         #
 
         expected_fld_order: ta.Sequence[str] | None = None
-        is_abstract = lang.is_abstract_class(cls) or abc.ABC in cls.__bases__
+        is_abstract = (
+            lang.is_abstract_class(cls) or
+            abc.ABC in cls.__bases__ or
+            lang.Abstract in cls.__bases__
+        )
         if not is_abstract:
             if is_immediate_dataclass(cls):
                 raise TypeError(cls)

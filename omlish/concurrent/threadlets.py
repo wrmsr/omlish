@@ -19,7 +19,7 @@ else:
 ##
 
 
-class Threadlet(abc.ABC):
+class Threadlet(lang.Abstract):
     """Not safe to identity-key - use `underlying`."""
 
     def __hash__(self):
@@ -52,7 +52,7 @@ class Threadlet(abc.ABC):
         raise NotImplementedError
 
 
-class Threadlets(abc.ABC):
+class Threadlets(lang.Abstract):
     @abc.abstractmethod
     def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
         raise NotImplementedError

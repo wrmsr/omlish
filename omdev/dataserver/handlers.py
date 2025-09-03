@@ -7,6 +7,7 @@ import os
 import typing as ta
 import urllib.request
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from .targets import BytesDataServerTarget
@@ -50,7 +51,7 @@ class DataServerError(Exception):
     pass
 
 
-class DataServerHandler(abc.ABC):
+class DataServerHandler(Abstract):
     @abc.abstractmethod
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         raise NotImplementedError
@@ -59,7 +60,7 @@ class DataServerHandler(abc.ABC):
 ##
 
 
-class DataServerTargetHandler(DataServerHandler, abc.ABC, ta.Generic[DataServerTargetT]):
+class DataServerTargetHandler(DataServerHandler, Abstract, ta.Generic[DataServerTargetT]):
     def __init__(self, target: DataServerTargetT) -> None:
         super().__init__()
 

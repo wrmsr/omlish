@@ -5,6 +5,7 @@ import shlex
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.abstract import Abstract
 from omlish.lite.timing import log_timing_context
 from omlish.os.temp import temp_dir_context
 
@@ -15,7 +16,7 @@ from ...oci.repositories import OciRepository
 ##
 
 
-class DockerImageRepositoryOpener(abc.ABC):
+class DockerImageRepositoryOpener(Abstract):
     @abc.abstractmethod
     def open_docker_image_repository(self, image: str) -> ta.AsyncContextManager[OciRepository]:
         raise NotImplementedError

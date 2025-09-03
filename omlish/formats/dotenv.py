@@ -35,6 +35,8 @@ import shutil
 import tempfile
 import typing as ta
 
+from ..lite.abstract import Abstract
+
 
 ##
 
@@ -52,7 +54,7 @@ _dotenv_posix_variable_pat: ta.Pattern[str] = re.compile(
 )
 
 
-class DotenvAtom(metaclass=abc.ABCMeta):
+class DotenvAtom(Abstract):
     def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         if result is NotImplemented:

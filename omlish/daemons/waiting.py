@@ -4,6 +4,7 @@ import socket
 import typing as ta
 
 from .. import dataclasses as dc
+from .. import lang
 
 
 ##
@@ -13,7 +14,7 @@ class Wait(dc.Case):
     pass
 
 
-class Waiter(abc.ABC):
+class Waiter(lang.Abstract):
     @abc.abstractmethod
     def do_wait(self) -> bool:
         raise NotImplementedError

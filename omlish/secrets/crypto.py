@@ -58,7 +58,7 @@ class DecryptionError(Exception):
     pass
 
 
-class Crypto(abc.ABC):
+class Crypto(lang.Abstract):
     @abc.abstractmethod
     def generate_key(self) -> bytes:
         raise NotImplementedError

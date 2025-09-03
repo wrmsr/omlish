@@ -37,12 +37,12 @@ https://docs.python.org/3/library/unittest.html#command-line-interface
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
-import abc
 import dataclasses as dc
 import types
 import typing as ta
 import unittest
 
+from ...lite.abstract import Abstract
 from .types import UnittestTest
 
 
@@ -65,7 +65,7 @@ class UnittestTargetLoader:
 
     #
 
-    class Target(abc.ABC):  # noqa
+    class Target(Abstract):
         pass
 
     class ModuleTarget(Target):

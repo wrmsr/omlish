@@ -17,7 +17,7 @@ def test_relative_resources() -> None:
         assert 'get_relative_resources' in rsrs['resources.py'].read_bytes().decode()
 
         rsrs = get_relative_resources('..classes', **kwargs)
-        assert 'class Abstract' in rsrs['abstract.py'].read_bytes().decode()
+        assert 'is_abstract_class' in rsrs['abstract.py'].read_bytes().decode()
 
         src = get_relative_resources('...', **kwargs)['.manifests.json'].read_bytes()
         assert isinstance(json.loads(src.decode('utf-8')), list)

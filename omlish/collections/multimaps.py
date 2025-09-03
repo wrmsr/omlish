@@ -13,7 +13,7 @@ MV = ta.TypeVar('MV', bound=ta.Iterable)
 
 
 class MultiMap(ta.Mapping[K, MV], abc.ABC, ta.Generic[K, V, MV]):
-    pass
+    """Explicitly an abc.ABC, not a lang.Abstract, to support virtual subclassing."""
 
 
 SequenceMultiMap: ta.TypeAlias = MultiMap[K, V, ta.Sequence[V]]

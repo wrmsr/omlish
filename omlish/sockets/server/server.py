@@ -1,5 +1,5 @@
-# @omlish-lite
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
 import abc
 import contextlib
 import enum
@@ -8,6 +8,7 @@ import selectors
 import threading
 import typing as ta
 
+from ...lite.abstract import Abstract
 from ...lite.contextmanagers import ExitStacked
 from ...lite.contextmanagers import defer
 from ..addresses import SocketAndAddress
@@ -19,7 +20,7 @@ from .handlers import SocketServerHandler
 ##
 
 
-class SocketServer(abc.ABC):
+class SocketServer(Abstract):
     _DEFAULT_LOGGER = logging.getLogger('.'.join([__name__, 'SocketServer']))
 
     def __init__(
@@ -85,7 +86,7 @@ class SocketServer(abc.ABC):
         ERROR = enum.auto()
         SHUTDOWN = enum.auto()
 
-    class PollContext(ExitStacked, abc.ABC):
+    class PollContext(ExitStacked, Abstract):
         @abc.abstractmethod
         def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
             raise NotImplementedError

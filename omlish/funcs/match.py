@@ -24,7 +24,7 @@ class MatchGuardError(Exception):
     pass
 
 
-class MatchFn(abc.ABC, ta.Generic[P, T]):
+class MatchFn(lang.Abstract, ta.Generic[P, T]):
     @abc.abstractmethod
     def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
         raise NotImplementedError

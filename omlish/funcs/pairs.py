@@ -1,5 +1,4 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
 from .. import lang
@@ -19,7 +18,7 @@ T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
 
-class FnPair(abc.ABC, ta.Generic[F, T]):
+class FnPair(lang.Abstract, ta.Generic[F, T]):
     @abc.abstractmethod
     def forward(self, f: F) -> T:
         raise NotImplementedError
@@ -35,7 +34,7 @@ class FnPair(abc.ABC, ta.Generic[F, T]):
 
     def invert(self) -> 'FnPair[T, F]':
         if isinstance(self, Inverted):
-            return self.fp
+            return self._fp
         return Inverted(self)
 
     def compose(self, nxt: 'FnPair[T, U]') -> 'FnPair[F, U]':
@@ -45,11 +44,22 @@ class FnPair(abc.ABC, ta.Generic[F, T]):
 ##
 
 
-@lang.unabstract_class(['forward', 'backward'])
-@dc.dataclass(frozen=True)
 class Simple(FnPair[F, T]):
-    forward: ta.Callable[[F], T]  # type: ignore
-    backward: ta.Callable[[T], F]  # type: ignore
+    def __init__(
+            self,
+            forward: ta.Callable[[F], T],
+            backward: ta.Callable[[T], F],
+    ) -> None:
+        super().__init__()
+
+        self._forward = self.forward = forward  # type: ignore
+        self._backward = self.backward = backward  # type: ignore
+
+    def forward(self, f: F) -> T:
+        return self._forward(f)
+
+    def backward(self, t: T) -> F:
+        return self._backward(t)
 
 
 of = Simple
@@ -60,31 +70,35 @@ NOP: FnPair[ta.Any, ta.Any] = of(lang.identity, lang.identity)
 ##
 
 
-@dc.dataclass(frozen=True)
 class Inverted(FnPair[F, T]):
-    fp: FnPair[T, F]
+    def __init__(self, fp: FnPair[T, F]) -> None:
+        super().__init__()
+
+        self._fp = fp
 
     def forward(self, f: F) -> T:
-        return self.fp.backward(f)
+        return self._fp.backward(f)
 
     def backward(self, t: T) -> F:
-        return self.fp.forward(t)
+        return self._fp.forward(t)
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
 class Composite(FnPair[F, T]):
-    children: ta.Sequence[FnPair]
+    def __init__(self, children: ta.Sequence[FnPair]) -> None:
+        super().__init__()
+
+        self._children = children
 
     def forward(self, f: F) -> T:
-        for c in self.children:
+        for c in self._children:
             f = c.forward(f)
         return ta.cast(T, f)
 
     def backward(self, t: T) -> F:
-        for c in reversed(self.children):
+        for c in reversed(self._children):
             t = c.backward(t)
         return ta.cast(F, t)
 
@@ -162,15 +176,17 @@ def compose(*ps):
 ##
 
 
-@dc.dataclass(frozen=True)
 class Optional(FnPair[F | None, T | None]):
-    fp: FnPair[F, T]
+    def __init__(self, fp: FnPair[F, T]) -> None:
+        super().__init__()
+
+        self._fp = fp
 
     def forward(self, f: F | None) -> T | None:
-        return None if f is None else self.fp.forward(f)
+        return None if f is None else self._fp.forward(f)
 
     def backward(self, t: T | None) -> F | None:
-        return None if t is None else self.fp.backward(t)
+        return None if t is None else self._fp.backward(t)
 
 
 class Lines(FnPair[ta.Sequence[str], str]):
@@ -184,15 +200,17 @@ class Lines(FnPair[ta.Sequence[str], str]):
 ##
 
 
-@dc.dataclass(frozen=True)
 class Struct(FnPair[tuple, bytes]):
-    fmt: str
+    def __init__(self, fmt: str) -> None:
+        super().__init__()
+
+        self._fmt = fmt
 
     def forward(self, f: tuple) -> bytes:
-        return _struct.pack(self.fmt, *f)
+        return _struct.pack(self._fmt, *f)
 
     def backward(self, t: bytes) -> tuple:
-        return _struct.unpack(self.fmt, t)
+        return _struct.unpack(self._fmt, t)
 
 
 ##

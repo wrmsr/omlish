@@ -34,7 +34,7 @@ def base64url_encode(b: bytes) -> bytes:
 ##
 
 
-class Algorithm(abc.ABC):
+class Algorithm(lang.Abstract):
     @property
     @abc.abstractmethod
     def name(self) -> str:

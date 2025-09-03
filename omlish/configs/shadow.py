@@ -11,6 +11,7 @@ import abc
 import os.path
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..os.mangle import mangle_path
 from .formats import DEFAULT_CONFIG_LOADERS
@@ -23,13 +24,13 @@ ShadowConfig = ta.Mapping[str, ta.Any]  # ta.TypeAlias
 ##
 
 
-class ShadowConfigs(abc.ABC):
+class ShadowConfigs(Abstract):
     @abc.abstractmethod
     def get_shadow_config(self, path: str) -> ta.Optional[ShadowConfig]:
         raise NotImplementedError
 
 
-class FileShadowConfigs(ShadowConfigs, abc.ABC):
+class FileShadowConfigs(ShadowConfigs, Abstract):
     @abc.abstractmethod
     def get_shadow_config_file_path(self, path: str) -> str:
         raise NotImplementedError
