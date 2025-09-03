@@ -127,7 +127,7 @@ class TypedLoggerBindings:
 
         dup_vwd: ta.Optional[ta.Dict[type, ta.List[TypedLoggerValueWrapperFn]]] = None
 
-        vws: ta.Optional[TypedLoggerBindings._ValueWrappingState]
+        vws: ta.Optional[TypedLoggerBindings._ValueWrappingState] = None
 
         if vwl:
             if len(vwl) == 1 and isinstance((vwl0 := vwl[0]), TypedLoggerBindings._ValueWrappingState):
@@ -153,10 +153,11 @@ class TypedLoggerBindings:
                 for vo in vwl:
                     vo._typed_logger_visit_value_wrappers(add_vwd)  # noqa
 
-                raise NotImplementedError
+                if vwd and not dup_vwd:
+                    vws = TypedLoggerBindings._ValueWrappingState(vwd)
 
-        else:
-            vws = None
+                    # Heavy, but ensures early that we have a valid singledispatch.
+                    vws.sdf()
 
         #
 
@@ -209,7 +210,23 @@ class TypedLoggerBindings:
         def __init__(self, dct: ta.Mapping[type, TypedLoggerValueWrapperFn]) -> None:
             self.dct = dct
 
-        sdf: ta.Optional[ta.Callable[[ta.Any], TypedLoggerValue]] = None
+        _sdf: ta.Optional[ta.Callable[[ta.Any], TypedLoggerValue]] = None
+
+        def sdf(self) -> ta.Callable[[ta.Any], TypedLoggerValue]:
+            if (x := self._sdf) is not None:
+                return x
+
+            @functools.singledispatch
+            def sdf(o: ta.Any) -> TypedLoggerValue:
+                raise UnhandledTypedValueWrapperTypeError(o)
+
+            collections.deque(itertools.starmap(sdf.register, self.dct.items()), maxlen=0)
+
+            self._sdf = sdf
+            return sdf
+
+        def value_wrap(self, o: ta.Any) -> TypedLoggerValue:
+            return self.sdf()(o)
 
         #
 
@@ -229,6 +246,10 @@ class TypedLoggerBindings:
 
 
 ##
+
+
+class UnhandledTypedValueWrapperTypeError(TypeError):
+    pass
 
 
 @ta.final

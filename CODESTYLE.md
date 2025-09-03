@@ -46,7 +46,7 @@
 
 - Classes
   - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their
-    definition.
+    definition - *except* if the class is `@ta.Final` and there is explicit reason to not.
   - Prefer to use dataclasses for even moderately complex usecases - if there are, say, more than a 2-element tuple, a
     dataclass should probably be used.
   - `ta.NamedTuple` still has usecases, such as replacing a function's return type from an anonymous tuple to a named
