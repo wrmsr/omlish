@@ -66,9 +66,8 @@ class TypedLoggerBindings(Abstract):
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
         raise NotImplementedError
 
-    @property
     @abc.abstractmethod
-    def value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]:
+    def lookup_value(self, cls: ta.Type[TypedLoggerValue]) -> ta.Optional[TypedLoggerValueOrProviderOrAbsent]:
         raise NotImplementedError
 
     @property
@@ -227,9 +226,8 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
         return self._key_map
 
-    @property
-    def value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]:
-        return self._value_map
+    def lookup_value(self, cls: ta.Type[TypedLoggerValue]) -> ta.Optional[TypedLoggerValueOrProviderOrAbsent]:
+        return self._value_map.get(cls)
 
     @property
     def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:

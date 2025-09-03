@@ -99,10 +99,14 @@ class TypedLoggerContext:
         try:
             v: ta.Union[TypedLoggerValueOrAbsent]
 
-            try:
-                bv = self._bindings.value_map[cls]
+            if (bv := self._bindings.lookup_value(cls)) is not None:
+                if bv is ABSENT_TYPED_LOGGER_VALUE:  # noqa
+                    v = ABSENT_TYPED_LOGGER_VALUE
 
-            except KeyError:
+                else:
+                    v = bv._typed_logger_provide_value(self)  # noqa
+
+            else:
                 if not self._no_auto_default_values and (dt := cls._typed_logger_maybe_provide_default_value(self)):
                     [v] = dt
 
@@ -111,13 +115,6 @@ class TypedLoggerContext:
 
                 else:
                     raise UnboundTypedLoggerValueError(cls) from None
-
-            else:
-                if bv is ABSENT_TYPED_LOGGER_VALUE:  # noqa
-                    v = ABSENT_TYPED_LOGGER_VALUE
-
-                else:
-                    v = bv._typed_logger_provide_value(self)  # noqa
 
             self._values[cls] = v
             return v  # type: ignore[return-value]

@@ -152,6 +152,7 @@ class TypedLogger:
         else:
             msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER, msg)
 
+        # TODO: LimitedTypedLoggerBindings
         bs = FullTypedLoggerBindings(
             self._bindings,
             StandardTypedLoggerValues.TimeNs(time.time_ns()),
