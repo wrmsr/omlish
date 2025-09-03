@@ -82,9 +82,7 @@ class TypedLogger:
             *items: CanTypedLoggerBinding,
 
             _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
-
             _logging_stack_offset: int = 0,
-            _logging_stack_info: bool = False,
 
             **kwargs: ta.Union[TypedLoggerFieldValue, ta.Any],
     ) -> None:
@@ -118,11 +116,9 @@ class TypedLogger:
             *items,
 
             _logging_exc_info=_logging_exc_info,
-
             _logging_stack_offset=_logging_stack_offset + 1,
-            _logging_stack_info=_logging_stack_info,
 
-            **kwargs,
+            **kwargs,  # type: ignore[arg-type]
         )
 
     def _do_log(
@@ -133,7 +129,6 @@ class TypedLogger:
             *items: CanTypedLoggerBinding,
 
             _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
-
             _logging_stack_offset: int = 0,
             _logging_stack_info: bool = False,
 
