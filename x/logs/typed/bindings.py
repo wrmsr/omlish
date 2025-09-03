@@ -73,6 +73,8 @@ class TypedLoggerBindings:
         vst: TypedLoggerBindings._Visitor
 
         vwd: ta.Dict[type, ta.Callable[[ta.Any], TypedLoggerValue]] = {}
+        dup_vwd: ta.Dict[type, ta.List[ta.Callable[[ta.Any], TypedLoggerValue]]] = {}
+
         vwl: ta.List[TypedLoggerBindings._ValueWrappingState] = []
 
         if not override:
@@ -95,7 +97,10 @@ class TypedLoggerBindings:
                 collections.deque(itertools.starmap(add_vd, it), maxlen=0)
 
             def add_vwd(vw_ty: type, vw_fn: ta.Callable[[ta.Any], TypedLoggerValue]) -> None:
-                raise NotImplementedError
+                if vw_ty in vwd:
+                    dup_vwd.setdefault(vw_ty, []).append(vw_fn)
+                else:
+                    vwd[vw_ty] = vw_fn
 
             vst = TypedLoggerBindings._Visitor(
                 add_kd,
@@ -127,10 +132,11 @@ class TypedLoggerBindings:
         for o in items:
             o._typed_logger_visit_bindings(vst)  # noqa
 
-        if dup_kd or dup_vd:
+        if dup_kd or dup_vd or dup_vwd:
             raise TypedLoggerDuplicateBindingsError(
                 keys=dup_kd or None,
                 values=dup_vd or None,
+                wrappers=dup_vwd or None,
             )
 
         self._key_map: ta.Mapping[str, TypedLoggerFieldValue] = kd
