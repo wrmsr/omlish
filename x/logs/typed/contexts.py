@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import time
 import typing as ta
 
 from .types import ABSENT_TYPED_LOGGER_VALUE
@@ -10,6 +9,7 @@ from .types import TypedLoggerFieldValue
 from .types import TypedLoggerValue
 from .types import TypedLoggerValueOrAbsent
 from .types import UnwrappedTypedLoggerFieldValue
+from .types import unwrap_typed_logger_field_value
 
 
 if ta.TYPE_CHECKING:
@@ -138,4 +138,4 @@ class TypedLoggerContext:
             return fv._typed_logger_resolve_field_value(self)  # noqa
 
     def unwrap_field_value(self, fv: TypedLoggerFieldValue) -> UnwrappedTypedLoggerFieldValue:
-        return self.resolve_field_value(fv)._typed_logger_unwrap_field_value(self)  # noqa
+        return unwrap_typed_logger_field_value(self.resolve_field_value(fv))

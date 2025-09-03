@@ -282,6 +282,7 @@ class ConstTypedLoggerValueProvider(TypedLoggerValueProvider[TypedLoggerValueT])
 
     #
 
+    @ta.final
     def _typed_logger_visit_bindings(self, vst: 'TypedLoggerBindings._Visitor') -> None:  # noqa
         vst.accept_values(((self.cls, self),))
         vst.accept_const_values(((self.cls, self._v),))
@@ -448,3 +449,25 @@ TYPED_LOGGER_VALUE_OR_PROVIDER_OR_ABSENT_TYPES: ta.Tuple[ta.Union[
     *TYPED_LOGGER_VALUE_OR_PROVIDER_TYPES,
     ABSENT_TYPED_LOGGER_VALUE,
 )
+
+
+##
+
+
+@ta.overload
+def unwrap_typed_logger_field_value(rfv: TypedLoggerValue[T]) -> TypedLoggerValue[T]:
+    ...
+
+
+@ta.overload
+def unwrap_typed_logger_field_value(rfv: AbsentTypedLoggerValue) -> AbsentTypedLoggerValue:
+    ...
+
+
+@ta.overload
+def unwrap_typed_logger_field_value(rfv: TypedLoggerConstFieldValue) -> ta.Any:
+    ...
+
+
+def unwrap_typed_logger_field_value(rfv):
+    return rfv._typed_logger_unwrap_field_value(rfv)  # noqa
