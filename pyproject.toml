@@ -4,6 +4,7 @@
 [tool.omlish.pyproject]
 pkgs = [
     'omdev',
+    'omextra',
     'ominfra',
     'omlish',
     'ommlds',
@@ -13,6 +14,7 @@ pkgs = [
 [tool.omlish.pyproject.srcs]
 main = [
     'omdev',
+    'omextra',
     'ominfra',
     'omlish',
     'ommlds',

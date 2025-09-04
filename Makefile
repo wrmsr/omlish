@@ -141,6 +141,7 @@ gen: gen-amalg gen-cmake gen-aws gen-manifest gen-pkg
 gen-amalg: venv
 	${PYTHON} -m omdev.amalg gen \
 		-m omdev \
+		-m omextra \
 		-m ominfra \
 		-m omlish \
 		-m omserv \
