@@ -15,7 +15,7 @@ import types
 import typing as ta
 import weakref
 
-from . import lang
+from omlish import lang
 
 
 T = ta.TypeVar('T')

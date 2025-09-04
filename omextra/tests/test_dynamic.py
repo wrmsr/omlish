@@ -2,8 +2,9 @@ import contextlib
 
 import pytest
 
+from omlish.testing import pytest as ptu
+
 from .. import dynamic as dyn
-from ..testing import pytest as ptu
 
 
 def test_dyn():

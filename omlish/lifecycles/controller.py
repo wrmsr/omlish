@@ -2,7 +2,6 @@ import abc
 import typing as ta
 
 from .. import check
-from .. import defs
 from .. import lang
 from .base import AnyLifecycle  # noqa
 from .base import Lifecycle  # noqa
@@ -48,7 +47,7 @@ class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifec
         self._state = LifecycleStates.NEW
         self._listeners: list[AnyLifecycleListener[AnyLifecycleT, R]] = []
 
-    defs.repr('lifecycle', 'state')
+    __repr__ = lang.AttrRepr(['lifecycle', 'state'])
 
     @property
     def lifecycle(self) -> AnyLifecycleT:

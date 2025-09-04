@@ -10,7 +10,7 @@ import functools
 import operator
 import threading
 
-from . import lang
+from omlish import lang
 
 
 ##

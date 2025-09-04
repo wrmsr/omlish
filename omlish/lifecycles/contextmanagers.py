@@ -2,7 +2,6 @@ import types
 import typing as ta
 
 from .. import dataclasses as dc
-from .. import defs
 from .. import lang
 from .base import Lifecycle
 from .controller import LifecycleController
@@ -37,7 +36,7 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
         self._lifecycle = lifecycle
         self._controller = lifecycle if isinstance(lifecycle, LifecycleController) else LifecycleController(lifecycle)
 
-    defs.repr('lifecycle', 'state')
+    __repr__ = lang.AttrRepr(['lifecycle', 'state'])
 
     @property
     def lifecycle(self) -> LifecycleT:
