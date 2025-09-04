@@ -3,21 +3,21 @@ import contextlib
 import io
 import typing as ta
 
-from .. import check
-from .. import lang
-from ..concurrent import threadlets as tls
-from ..sync import ConditionDeque
+from omlish import check
+from omlish import lang
+from omlish.concurrent import threadlets as tls
+from omlish.sync import ConditionDeque
 
 
 if ta.TYPE_CHECKING:
     import threading
 
-    from . import pyio  # noqa
+    from omlish.io import pyio  # noqa
 
 else:
     threading = lang.proxy_import('threading')
 
-    pyio = lang.proxy_import('.pyio', __package__)
+    pyio = lang.proxy_import('omlish.io.pyio')
 
 
 T = ta.TypeVar('T')
