@@ -117,9 +117,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
             *,
             include_raw: bool = False,
             include_space: bool = False,
+            allow_comments: bool = False,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
+        self._allow_comments = allow_comments
 
         self._ofs = 0
         self._line = 1
@@ -199,6 +201,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             if c in 'tfnIN':
                 return self._do_const(c)
+
+            if self._allow_comments and c == '/':
+                return self._do_comment()
 
             self._raise(f'Unexpected character: {c}')
 
@@ -321,3 +326,6 @@ class JsonStreamLexer(GenMachine[str, Token]):
         yield self._make_tok(tk, tv, raw, pos)
 
         return self._do_main()
+
+    def _do_comment(self):
+        raise NotImplementedError
