@@ -157,11 +157,10 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
 ##
 
 
-# @omlish-manifest
-_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
-    [
-        'ChatChoicesService',
-        'ChatChoicesStreamService',
-    ],
-    'tinygrad_llama3',
-)
+# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+#     [
+#         'ChatChoicesService',
+#         'ChatChoicesStreamService',
+#     ],
+#     'tinygrad_llama3',
+# )

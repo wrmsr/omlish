@@ -20,17 +20,15 @@ from ....models.configs import ModelPath
 from ....models.configs import ModelRepo
 from ....models.configs import ModelSpecifier
 from ....standard import DefaultOptions
-from ...strings.manifests import BackendStringsManifest
 
 
 ##
 
 
-# @omlish-manifest
-_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
-    ['ChatChoicesService'],
-    'mlx',
-)
+# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+#     ['ChatChoicesService'],
+#     'mlx',
+# )
 
 
 ##
