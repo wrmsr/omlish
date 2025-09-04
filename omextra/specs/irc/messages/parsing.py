@@ -1,6 +1,7 @@
 import typing as ta
 
-from .... import dataclasses as dc
+from omlish import dataclasses as dc
+
 from .base import Message
 from .formats import MessageFormat
 

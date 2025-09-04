@@ -3,7 +3,7 @@
 # flake8: noqa
 # @omlish-generated
 # Generated from Protobuf3.g4 by ANTLR 4.13.2
-from ....text.antlr._runtime._all import *
+from omlish.text.antlr._runtime._all import *
 if "." in __name__:
     from .Protobuf3Parser import Protobuf3Parser
 else:

@@ -60,6 +60,21 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.anthropic.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
+    "line": 29,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.anthropic.stream",
+        "attr": "AnthropicChatChoicesStreamService",
+        "name": "anthropic",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.duckduckgo.search",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/duckduckgo/search.py",

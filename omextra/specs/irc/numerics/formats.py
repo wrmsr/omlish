@@ -1,8 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
-from .... import check
-from .... import lang
+from omlish import check
+from omlish import lang
 
 
 FormatPart: ta.TypeAlias = ta.Union[str, 'Formats.Optional', 'Formats.Variadic']

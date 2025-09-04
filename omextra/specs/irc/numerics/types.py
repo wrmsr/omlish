@@ -1,7 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from .... import collections as col
+from omlish import collections as col
 
 
 ##

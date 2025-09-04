@@ -10,8 +10,9 @@ https://modern.ircdocs.horse/
 """
 import typing as ta
 
-from .... import check
-from .... import dataclasses as dc
+from omlish import check
+from omlish import dataclasses as dc
+
 from ..numerics import numerics as nr
 from .base import Message
 from .base import MessageFormat

@@ -1,10 +1,10 @@
 import enum
 import typing as ta
 
-from .... import check
-from .... import dataclasses as dc
-from .... import lang
-from ....funcs import pairs as fps
+from omlish import check
+from omlish import dataclasses as dc
+from omlish import lang
+from omlish.funcs import pairs as fps
 
 
 MessageParamsUnpacker: ta.TypeAlias = fps.FnPair[

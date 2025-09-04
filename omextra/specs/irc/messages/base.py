@@ -1,8 +1,9 @@
 import typing as ta
 
-from .... import check
-from .... import dataclasses as dc
-from ....funcs import pairs as fps
+from omlish import check
+from omlish import dataclasses as dc
+from omlish.funcs import pairs as fps
+
 from ..numerics import numerics as nr
 from .formats import MessageFormat
 from .formats import MessageParamsUnpacker

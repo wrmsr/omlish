@@ -51,7 +51,8 @@ class AnthropicChatChoicesService:
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
 
-    def _get_msg_content(self, m: Message) -> str | None:
+    @classmethod
+    def _get_msg_content(cls, m: Message) -> str | None:
         if isinstance(m, AiMessage):
             return check.isinstance(m.c, str)
 

@@ -1,9 +1,10 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from ... import check
-from ...text.antlr import runtime as antlr4
-from ...text.antlr.errors import SilentRaisingErrorListener
+from omlish import check
+from omlish.text.antlr import runtime as antlr4
+from omlish.text.antlr.errors import SilentRaisingErrorListener
+
 from . import nodes as no
 from ._antlr.Protobuf3Lexer import Protobuf3Lexer  # type: ignore
 from ._antlr.Protobuf3Parser import Protobuf3Parser  # type: ignore
