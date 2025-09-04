@@ -31,8 +31,8 @@ class LoggingCaller(ta.NamedTuple):
     def find_frame(cls, ofs: int = 0) -> types.FrameType:
         f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
 
-        while f is not None and hasattr(f, 'f_code'):
-            if f.f_code.co_filename != __file__:
+        while f is not None:
+            if hasattr(f, 'f_code'):
                 return f
 
             f = f.f_back
