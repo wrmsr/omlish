@@ -448,6 +448,30 @@ _AS_TYPED_LOGGER_BINDINGS_FIELD_VALUE_DIRECT_TYPES: ta.Tuple[type, ...] = (
 )
 
 
+# @ta.final
+# class TypedLoggerBindingsBuilder:
+#     def __init__(
+#             self,
+#             *,
+#             add_default_keys: bool = False,
+#             default_key_filter: ta.Optional[ta.Callable[[str], bool]] = None,
+#
+#             add_default_values: bool = False,
+#             default_value_filter: ta.Optional[ta.Callable[[ta.Type[DefaultTypedLoggerValue]], bool]] = None,
+#
+#             value_wrapper: ta.Optional[TypedLoggerValueWrapperFn] = None,
+#     ) -> None:
+#         self._add_default_keys = add_default_keys
+#         self._default_key_filter = default_key_filter
+#
+#         self._add_default_values = add_default_values
+#         self._default_value_filter = default_value_filter
+#
+#         self._value_wrapper = value_wrapper
+#
+#         self._lst: ta.List[TypedLoggerBindingItem] = []
+
+
 def as_typed_logger_bindings(
         *objs: CanTypedLoggerBinding,
 

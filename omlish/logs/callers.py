@@ -32,6 +32,8 @@ class LoggingCaller(ta.NamedTuple):
         f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
 
         while f is not None:
+            # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
+            # stack_offset management.
             if hasattr(f, 'f_code'):
                 return f
 
@@ -46,6 +48,8 @@ class LoggingCaller(ta.NamedTuple):
             *,
             stack_info: bool = False,
     ) -> 'LoggingCaller':
+        # TODO: re-sync with stdlib
+
         f = cls.find_frame(ofs + 1)
         # TODO: ('(unknown file)', 0, '(unknown function)', None) ?
 
