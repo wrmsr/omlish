@@ -1,7 +1,3 @@
-"""
-TODO:
- - go-style tags: +slow,-ci, ...
-"""
 from _pytest.main import resolve_collection_argument  # noqa
 import pytest
 

@@ -9,6 +9,8 @@ with _auto_proxy_init(
     ##
 
     from .asyncs import (  # noqa
+        as_async,
+
         async_list,
 
         sync_await,
@@ -216,7 +218,6 @@ with _auto_proxy_init(
 
     from .functions import (  # noqa
         VoidError,
-        as_async,
         call_with,
         coalesce,
         cond_kw,

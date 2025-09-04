@@ -24,7 +24,6 @@ classifiers = [
 ]
 description = 'omextra'
 dependencies = [
-    'omdev == 0.0.0.dev425',
     'omlish == 0.0.0.dev425',
 ]
 

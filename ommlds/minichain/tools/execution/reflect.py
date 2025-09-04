@@ -21,7 +21,7 @@ def reflect_tool_catalog_entry(fn: ta.Callable) -> ToolCatalogEntry:
     elif inspect.iscoroutinefunction(lang.unwrap_callable(fn)):
         impl = ToolFn.FnImpl(a=fn)
     else:
-        impl = ToolFn.FnImpl(s=fn, a=lang.as_async(fn))
+        impl = ToolFn.FnImpl(s=fn, a=lang.as_async(fn, wrap=True))
 
     sig = inspect.signature(fn)
     if sig.return_annotation is not str:

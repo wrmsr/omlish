@@ -3,7 +3,7 @@ import typing as ta
 from ..lite.maysync import MaysyncFn
 from ..lite.maysync import MaysyncGeneratorFn
 from ..lite.maysync import make_maysync as _make_maysync
-from .functions import as_async
+from .asyncs import as_async
 
 
 T = ta.TypeVar('T')
@@ -68,5 +68,5 @@ def make_maysync_from_sync(
 ) -> ta.Callable[P, ta.Awaitable[T]]:
     return _make_maysync(
         s,
-        a if a is not None else as_async(s),
+        a if a is not None else as_async(s, wrap=True),
     )

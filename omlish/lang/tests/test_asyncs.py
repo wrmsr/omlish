@@ -3,8 +3,14 @@ import contextlib
 
 import pytest
 
+from ..asyncs import as_async
 from ..asyncs import async_list
 from ..asyncs import sync_await
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_as_async():
+    assert (await as_async(lambda: 420)()) == 420
 
 
 @pytest.mark.asyncs('asyncio')

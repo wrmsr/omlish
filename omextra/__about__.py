@@ -8,7 +8,6 @@ class Project(ProjectBase):
     description = 'omextra'
 
     dependencies = [
-        f'omdev == {__version__}',
         f'omlish == {__version__}',
     ]
 

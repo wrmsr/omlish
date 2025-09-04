@@ -1,6 +1,5 @@
 import pytest
 
-from ..functions import as_async
 from ..functions import coalesce
 from ..functions import finally_
 from ..functions import opt_coalesce
@@ -33,11 +32,6 @@ def test_finally():
     with pytest.raises(FooError):
         f()
     assert c == 1
-
-
-@pytest.mark.asyncs('asyncio')
-async def test_as_async():
-    assert (await as_async(lambda: 420)()) == 420
 
 
 def test_coalesce():

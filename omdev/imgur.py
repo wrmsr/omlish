@@ -130,11 +130,11 @@ def _main() -> None:
 
             print(resp.data.link)
 
-    Cli()(exit=True)
+    Cli()(exit=True)  # noqa
 
 
 # @omlish-manifest
-_FOO_CLI_MODULE = CliModule('imgur', __name__)
+_CLI_MODULE = CliModule('imgur', __name__)
 
 
 if __name__ == '__main__':

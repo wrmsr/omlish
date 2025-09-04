@@ -105,7 +105,7 @@ async def execute_tool_fn(
     if isinstance(tfn.impl, ToolFn.FnImpl):
         s_fn = tfn.impl.s
         if (a_fn := tfn.impl.a) is None and not forbid_sync_as_async and s_fn is not None:
-            a_fn = lang.as_async(s_fn)
+            a_fn = lang.as_async(s_fn, wrap=True)
         m_fn = lang.make_maysync(
             s_fn if s_fn is not None else _no_sync_tool_impl,
             a_fn if a_fn is not None else _no_async_tool_impl,
