@@ -291,6 +291,7 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
         vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
         dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
 
+        pcv = dict(parent.const_value_map)
         cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
 
         def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
@@ -304,6 +305,7 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
                 dup_vd.setdefault(vd_k, []).append(vd_v)
             else:
                 vd[vd_k] = vd_v
+                pcv.pop(vd_k, None)
 
         def add_kds(it: 'ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]') -> None:  # noqa
             collections.deque(itertools.starmap(add_kd, it), maxlen=0)
@@ -315,11 +317,11 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
             raise ChainTypedLoggerBindingsUnhandledItemError
 
         vst = TypedLoggerBindings._Visitor(  # noqa
-            kd.__setitem__,
-            kd.update,
+            add_kd,
+            add_kds,
 
-            vd.__setitem__,
-            vd.update,
+            add_vd,
+            add_vds,
 
             cvd.update,
 
@@ -344,7 +346,7 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
 
         self._key_map = {**parent.key_map, **kd}
         self._self_value_map = vd
-        self._self_const_value_map = cvd
+        self._const_value_map = {**pcv, **cvd}
 
     @property
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
@@ -359,7 +361,7 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
 
     @property
     def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:
-        return {**self._parent.const_value_map, **self._self_const_value_map}
+        return self._const_value_map
 
     @property
     def value_wrapper_fn(self) -> ta.Optional[TypedLoggerValueWrapperFn]:
