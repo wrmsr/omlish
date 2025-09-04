@@ -307,6 +307,7 @@ with _auto_proxy_init(
     )
 
     from .lazyglobals import (  # noqa
+        AmbiguousLazyGlobalsFallbackError,
         LazyGlobals,
     )
 

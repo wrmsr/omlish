@@ -4,6 +4,17 @@ import typing as ta
 ##
 
 
+class AmbiguousLazyGlobalsFallbackError(Exception):
+    def __init__(self, attr: str, fallbacks: list[ta.Callable[[str], ta.Any]]) -> None:
+        super().__init__()
+
+        self.attr = attr
+        self.fallbacks = fallbacks
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.attr!r}, {self.fallbacks!r})'
+
+
 class LazyGlobals:
     def __init__(
             self,
@@ -17,6 +28,7 @@ class LazyGlobals:
         self._update_globals = update_globals
 
         self._attr_fns: dict[str, ta.Callable[[], ta.Any]] = {}
+        self._fallback_fns: list[ta.Callable[[str], ta.Callable[[], ta.Any]]] = []
 
     @classmethod
     def install(cls, globals: ta.MutableMapping[str, ta.Any]) -> 'LazyGlobals':  # noqa
@@ -42,13 +54,23 @@ class LazyGlobals:
         self._attr_fns[attr] = fn
         return self
 
-    def get(self, attr: str) -> ta.Any:
-        try:
-            fn = self._attr_fns[attr]
-        except KeyError:
-            raise AttributeError(attr) from None
+    def add_fallback_fn(self, fn: ta.Callable[[str], ta.Callable[[], ta.Any]]) -> 'LazyGlobals':
+        self._fallback_fns.append(fn)
+        return self
 
-        val = fn()
+    def get(self, attr: str) -> ta.Any:
+        val: ta.Any
+
+        if (attr_fn := self._attr_fns.get(attr)) is not None:
+            val = attr_fn()
+
+        elif (fallbacks := [(fb_fn, fb_fn(attr)) for fb_fn in self._fallback_fns]):
+            if len(fallbacks) > 1:
+                raise AmbiguousLazyGlobalsFallbackError(attr, [fb_fn for fb_fn, _ in fallbacks])
+            [val] = fallbacks
+
+        else:
+            raise AttributeError(attr)
 
         if self._update_globals and self._globals is not None:
             self._globals[attr] = val
