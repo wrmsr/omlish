@@ -7,7 +7,8 @@ import typing as ta
 
 from ...callers import LoggingCaller
 from ...levels import LogLevel
-from ..bindings import CanTypedLoggerBinding
+from ..bindings import CanChainTypedLoggerBinding
+from ..bindings import ChainTypedLoggerBindings
 from ..bindings import FullTypedLoggerBindings
 from ..bindings import TypedLoggerBindings
 from ..bindings import as_typed_logger_bindings
@@ -19,7 +20,7 @@ from ..types import TypedLoggerFieldValue
 from ..values import StandardTypedLoggerValues
 
 
-TypedLoggerMsgArg = ta.Union[str, tuple, 'CanTypedLoggerBinding', None]  # ta.TypeAlias
+TypedLoggerMsgArg = ta.Union[str, tuple, 'CanChainTypedLoggerBinding', None]  # ta.TypeAlias
 FnTypedLoggerMsgArg = ta.Union[TypedLoggerMsgArg, ta.Callable[[], ta.Union[TypedLoggerMsgArg, ta.Sequence[TypedLoggerMsgArg]]]]  # ta.TypeAlias  # noqa
 
 
@@ -56,7 +57,7 @@ class TypedLogger:
             self,
             msg: FnTypedLoggerMsgArg = None,
             /,
-            *items: CanTypedLoggerBinding,
+            *items: CanChainTypedLoggerBinding,
 
             _logging_stack_offset: int = 0,
 
@@ -79,7 +80,7 @@ class TypedLogger:
             level: LogLevel,
             msg: FnTypedLoggerMsgArg = None,
             /,
-            *items: CanTypedLoggerBinding,
+            *items: CanChainTypedLoggerBinding,
 
             _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
             _logging_stack_offset: int = 0,
@@ -126,7 +127,7 @@ class TypedLogger:
             level: LogLevel,
             msg: TypedLoggerMsgArg = None,
             /,
-            *items: CanTypedLoggerBinding,
+            *items: CanChainTypedLoggerBinding,
 
             _logging_exc_info: ta.Union[BaseException, tuple, bool] = False,
             _logging_stack_offset: int = 0,
@@ -142,7 +143,7 @@ class TypedLogger:
             stack_info=_logging_stack_info,
         )
 
-        msg_items: ta.Sequence[CanTypedLoggerBinding]
+        msg_items: ta.Sequence[CanChainTypedLoggerBinding]
         if msg is None:
             msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER,)
         elif isinstance(msg, str):
@@ -152,19 +153,17 @@ class TypedLogger:
         else:
             msg_items = (_ABSENT_TYPED_LOGGER_MSG_PROVIDER, msg)
 
-        # TODO: ChainedTypedLoggerBindings
-        bs = FullTypedLoggerBindings(
+        bs: TypedLoggerBindings = ChainTypedLoggerBindings(
             self._bindings,
             StandardTypedLoggerValues.TimeNs(time.time_ns()),
             StandardTypedLoggerValues.Level(level),
-            *as_typed_logger_bindings(
+            *as_typed_logger_bindings(  # type: ignore[arg-type]  # chain items in, chain items out
                 *msg_items,
                 *items,
                 *kwargs.items(),
                 add_default_keys=True,
                 value_wrapper=self._bindings.value_wrapper_fn,
             ),
-            override=True,
         )
 
         ctx = TypedLoggerContext(bs)

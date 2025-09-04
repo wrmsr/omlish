@@ -28,6 +28,8 @@ from .types import TypedLoggerValueProvider
 
 TypedLoggerBindingItem = ta.Union['TypedLoggerField', 'TypedLoggerValueOrProvider', 'TypedLoggerBindings', 'TypedLoggerValueWrapper']  # ta.TypeAlias  # noqa
 
+ChainTypedLoggerBindingItem = ta.Union['TypedLoggerField', 'TypedLoggerValueOrProvider']  # ta.TypeAlias
+
 TypedLoggerValueWrapperFn = ta.Callable[[ta.Any], 'TypedLoggerValue']  # ta.TypeAlias
 
 
@@ -117,9 +119,9 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
 
         cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
 
-        vst: TypedLoggerBindings._Visitor
-
         vwl: ta.List[ta.Union[TypedLoggerValueWrapper, FullTypedLoggerBindings._ValueWrappingState]] = []
+
+        vst: TypedLoggerBindings._Visitor
 
         if not override:
             def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
@@ -128,16 +130,16 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
                 else:
                     kd[kd_k] = kd_v
 
-            def add_vd(vd_k: ta.Type[TypedLoggerValue], vd_v: TypedLoggerValueOrProviderOrAbsent) -> None:  # noqa
+            def add_vd(vd_k: 'ta.Type[TypedLoggerValue]', vd_v: TypedLoggerValueOrProviderOrAbsent) -> None:  # noqa
                 if vd_k in vd:
                     dup_vd.setdefault(vd_k, []).append(vd_v)
                 else:
                     vd[vd_k] = vd_v
 
-            def add_kds(it: ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]) -> None:  # noqa
+            def add_kds(it: 'ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]') -> None:  # noqa
                 collections.deque(itertools.starmap(add_kd, it), maxlen=0)
 
-            def add_vds(it: ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]) -> None:  # noqa
+            def add_vds(it: 'ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]') -> None:  # noqa
                 collections.deque(itertools.starmap(add_vd, it), maxlen=0)
 
             vst = TypedLoggerBindings._Visitor(  # noqa
@@ -272,26 +274,92 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
 ##
 
 
+class ChainTypedLoggerBindingsUnhandledItemError(Exception):
+    pass
+
+
 @ta.final
 class ChainTypedLoggerBindings(TypedLoggerBindings):
     def __init__(
             self,
             parent: TypedLoggerBindings,
+            *items: ChainTypedLoggerBindingItem,
     ) -> None:
-        super().__init__()
+        kd: ta.Dict[str, TypedLoggerFieldValue] = {}
+        dup_kd: ta.Dict[str, ta.List[TypedLoggerFieldValue]] = {}
+
+        vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
+        dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
+
+        cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
+
+        def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
+            if kd_k in kd:
+                dup_kd.setdefault(kd_k, []).append(kd_v)
+            else:
+                kd[kd_k] = kd_v
+
+        def add_vd(vd_k: 'ta.Type[TypedLoggerValue]', vd_v: TypedLoggerValueOrProviderOrAbsent) -> None:  # noqa
+            if vd_k in vd:
+                dup_vd.setdefault(vd_k, []).append(vd_v)
+            else:
+                vd[vd_k] = vd_v
+
+        def add_kds(it: 'ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]') -> None:  # noqa
+            collections.deque(itertools.starmap(add_kd, it), maxlen=0)
+
+        def add_vds(it: 'ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]') -> None:  # noqa
+            collections.deque(itertools.starmap(add_vd, it), maxlen=0)
+
+        def bad_type(*args, **kwargs):  # noqa
+            raise ChainTypedLoggerBindingsUnhandledItemError
+
+        vst = TypedLoggerBindings._Visitor(  # noqa
+            kd.__setitem__,
+            kd.update,
+
+            vd.__setitem__,
+            vd.update,
+
+            cvd.update,
+
+            bad_type,
+        )
+
+        for o in items:
+            try:
+                o._typed_logger_visit_bindings(vst)  # noqa
+            except ChainTypedLoggerBindingsUnhandledItemError:
+                raise ChainTypedLoggerBindingsUnhandledItemError(o) from None
+
+        #
+
+        if dup_kd or dup_vd:
+            raise TypedLoggerDuplicateBindingsError(
+                keys=dup_kd or None,
+                values=dup_vd or None,
+            )
 
         self._parent = parent
 
+        self._key_map = {**parent.key_map, **kd}
+        self._self_value_map = vd
+        self._self_const_value_map = cvd
+
     @property
     def key_map(self) -> ta.Mapping[str, TypedLoggerFieldValue]:
-        return self._parent.key_map
+        return self._key_map
 
     def lookup_value(self, cls: ta.Type[TypedLoggerValue]) -> ta.Optional[TypedLoggerValueOrProviderOrAbsent]:
+        try:
+            return self._self_value_map[cls]
+        except KeyError:
+            pass
         return self._parent.lookup_value(cls)
 
     @property
     def const_value_map(self) -> ta.Mapping[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent]:
-        return self._parent.const_value_map
+        return {**self._parent.const_value_map, **self._self_const_value_map}
 
     @property
     def value_wrapper_fn(self) -> ta.Optional[TypedLoggerValueWrapperFn]:
@@ -300,7 +368,7 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
     #
 
     def _typed_logger_visit_bindings(self, vst: 'TypedLoggerBindings._Visitor') -> None:
-        self._parent._typed_logger_visit_bindings(vst)
+        self._parent._typed_logger_visit_bindings(vst)  # noqa
 
 
 ##
@@ -341,6 +409,19 @@ TYPED_LOGGER_BINDING_ITEM_TYPES: ta.Tuple[ta.Type[TypedLoggerBindingItem], ...] 
 
 CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     TypedLoggerBindingItem,
+    ta.Type[TypedLoggerValue],
+    ta.Tuple[
+        str,
+        ta.Union[
+            TypedLoggerFieldValue,
+            ta.Any,
+        ],
+    ],
+    None,
+]
+
+CanChainTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    ChainTypedLoggerBindingItem,
     ta.Type[TypedLoggerValue],
     ta.Tuple[
         str,

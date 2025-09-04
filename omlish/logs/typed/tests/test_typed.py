@@ -75,20 +75,21 @@ def test_typed():
         TypedLoggerValueWrapper({Thingy}, ThingyTlv),
     ))
 
-    slog.info(
-        'hi',
-        Tag('some tag'),
-        ('foo', 'bar'),
-        Thingy('wrap me'),  # type: ignore
-        Thingy2Tlv,
-        barf=True,
-    )
+    for _ in range(2):
+        slog.info(
+            'hi',
+            Tag('some tag'),
+            ('foo', 'bar'),
+            Thingy('wrap me'),  # type: ignore
+            Thingy2Tlv,
+            barf=True,
+        )
 
-    slog.info('abcd')
-    slog.info(('abc %d efg', 420))
+        slog.info('abcd')
+        slog.info(('abc %d efg', 420))
 
-    slog.info(lambda: 'abcd')
-    slog.info(Tag('some tag'))
-    slog.info(lambda: Tag('some tag'))
-    slog.info(lambda: [Tag('some tag')])
-    slog.info(lambda: ['hi', Tag('some tag')])
+        slog.info(lambda: 'abcd')
+        slog.info(Tag('some tag'))
+        slog.info(lambda: Tag('some tag'))
+        slog.info(lambda: [Tag('some tag')])
+        slog.info(lambda: ['hi', Tag('some tag')])
