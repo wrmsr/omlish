@@ -11,7 +11,6 @@ TODO:
 """
 import abc
 import collections
-import logging
 import os
 import sys
 import time
@@ -21,12 +20,13 @@ import typing as ta
 from .. import dataclasses as dc
 from .. import lang
 from .. import marshal as msh
+from ..logs import all as logs
 
 
 msh.register_global_module_import('.marshal', __package__)
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##
@@ -269,7 +269,7 @@ class LoggingSecrets(Secrets):
             self,
             child: Secrets,
             *,
-            log: logging.Logger | None = None,  # noqa
+            log: logs.LoggerLike | None = None,  # noqa
     ) -> None:
         super().__init__()
 

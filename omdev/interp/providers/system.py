@@ -5,13 +5,13 @@ TODO:
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
 import dataclasses as dc
-import logging
 import os
 import re
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.logs.protocols import LoggerLike
 
 from ...packaging.versions import InvalidVersion
 from ..inspect import InterpInspector
@@ -37,7 +37,7 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

@@ -6,6 +6,7 @@ import sys
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.logs.protocols import LoggerLike
 
 from ..packaging.versions import Version
 from .types import InterpOpts
@@ -48,7 +49,7 @@ class InterpInspector:
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

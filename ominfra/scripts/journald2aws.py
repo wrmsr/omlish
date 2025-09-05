@@ -85,11 +85,14 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
-# ../../../threadworkers.py
-ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
+# ../../../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
 
 # ../../../../omlish/configs/formats.py
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
+
+# ../../../threadworkers.py
+ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
 
 ########################################
@@ -2673,14 +2676,71 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../../../omlish/logs/modules.py
+# ../../../../../omlish/logs/levels.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
-    return logging.getLogger(mod_globals.get('__name__'))
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
 
 
 ########################################
@@ -3390,249 +3450,6 @@ class AwsDataclassMeta:
             return self.cls(**dct)
 
         return AwsDataclassMeta.Converters(d2a, a2d)
-
-
-########################################
-# ../cursor.py
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class JournalctlToAwsCursor:
-    def __init__(
-            self,
-            cursor_file: ta.Optional[str] = None,
-            *,
-            ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._cursor_file = cursor_file
-        self._ensure_locked = ensure_locked
-
-    #
-
-    def get(self) -> ta.Optional[str]:
-        if self._ensure_locked is not None:
-            self._ensure_locked()
-
-        if not (cf := self._cursor_file):
-            return None
-        cf = os.path.expanduser(cf)
-
-        try:
-            with open(cf) as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return None
-
-    def set(self, cursor: str) -> None:
-        if self._ensure_locked is not None:
-            self._ensure_locked()
-
-        if not (cf := self._cursor_file):
-            return
-        cf = os.path.expanduser(cf)
-
-        log.info('Writing cursor file %s : %s', cf, cursor)
-        with open(ncf := cf + '.next', 'w') as f:
-            f.write(cursor)
-
-        os.rename(ncf, cf)
-
-
-########################################
-# ../../../../threadworkers.py
-"""
-FIXME:
- - group is racy af - meditate on has_started, etc
-
-TODO:
- - overhaul stop lol
- - group -> 'context'? :|
-  - shared stop_event?
-"""
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class ThreadWorker(ExitStacked, Abstract):
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-        self._lock = threading.RLock()
-        self._thread: ta.Optional[threading.Thread] = None
-        self._last_heartbeat: ta.Optional[float] = None
-
-        for g in worker_groups or []:
-            g.add(self)
-
-    #
-
-    @contextlib.contextmanager
-    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
-        with self._lock:
-            yield
-
-    #
-
-    def should_stop(self) -> bool:
-        return self._stop_event.is_set()
-
-    class Stopping(Exception):  # noqa
-        pass
-
-    #
-
-    @property
-    def last_heartbeat(self) -> ta.Optional[float]:
-        return self._last_heartbeat
-
-    def _heartbeat(
-            self,
-            *,
-            no_stop_check: bool = False,
-    ) -> None:
-        self._last_heartbeat = time.time()
-
-        if not no_stop_check and self.should_stop():
-            log.info('Stopping: %s', self)
-            raise ThreadWorker.Stopping
-
-    #
-
-    def has_started(self) -> bool:
-        return self._thread is not None
-
-    def is_alive(self) -> bool:
-        return (thr := self._thread) is not None and thr.is_alive()
-
-    def start(self) -> None:
-        with self._lock:
-            if self._thread is not None:
-                raise RuntimeError('Thread already started: %r', self)
-
-            thr = threading.Thread(target=self.__thread_main)
-            self._thread = thr
-            thr.start()
-
-    #
-
-    def __thread_main(self) -> None:
-        try:
-            self._run()
-        except ThreadWorker.Stopping:
-            log.exception('Thread worker stopped: %r', self)
-        except Exception:  # noqa
-            log.exception('Error in worker thread: %r', self)
-            raise
-
-    @abc.abstractmethod
-    def _run(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    def stop(self) -> None:
-        self._stop_event.set()
-
-    def join(
-            self,
-            timeout: ta.Optional[float] = None,
-            *,
-            unless_not_started: bool = False,
-    ) -> None:
-        with self._lock:
-            if self._thread is None:
-                if not unless_not_started:
-                    raise RuntimeError('Thread not started: %r', self)
-                return
-            self._thread.join(timeout)
-
-
-##
-
-
-class ThreadWorkerGroup:
-    @dc.dataclass()
-    class _State:
-        worker: ThreadWorker
-
-        last_heartbeat: ta.Optional[float] = None
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._lock = threading.RLock()
-        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
-        self._last_heartbeat_check: ta.Optional[float] = None
-
-    #
-
-    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
-        with self._lock:
-            for w in workers:
-                if w in self._states:
-                    raise KeyError(w)
-                self._states[w] = ThreadWorkerGroup._State(w)
-
-        return self
-
-    #
-
-    def start_all(self) -> None:
-        thrs = list(self._states)
-        with self._lock:
-            for thr in thrs:
-                if not thr.has_started():
-                    thr.start()
-
-    def stop_all(self) -> None:
-        for w in reversed(list(self._states)):
-            if w.has_started():
-                w.stop()
-
-    def join_all(self, timeout: ta.Optional[float] = None) -> None:
-        for w in reversed(list(self._states)):
-            if w.has_started():
-                w.join(timeout, unless_not_started=True)
-
-    #
-
-    def get_dead(self) -> ta.List[ThreadWorker]:
-        with self._lock:
-            return [thr for thr in self._states if not thr.is_alive()]
-
-    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
-        with self._lock:
-            dct: ta.Dict[ThreadWorker, float] = {}
-            for thr, st in self._states.items():
-                if not thr.has_started():
-                    continue
-                hb = thr.last_heartbeat
-                if hb is None:
-                    hb = time.time()
-                st.last_heartbeat = hb
-                dct[st.worker] = time.time() - hb
-            self._last_heartbeat_check = time.time()
-        return dct
 
 
 ########################################
@@ -4952,6 +4769,37 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
+# ../../../../../omlish/logs/protocols.py
+
+
+##
+
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+
+########################################
 # ../../../../../omlish/logs/std/json.py
 """
 TODO:
@@ -5180,85 +5028,6 @@ class AwsLogMessageBuilder:
 
 
 ########################################
-# ../../../../journald/messages.py
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class JournalctlMessage:
-    raw: bytes
-    dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
-    cursor: ta.Optional[str] = None
-    ts_us: ta.Optional[int] = None  # microseconds UTC
-
-
-class JournalctlMessageBuilder:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._buf = DelimitingBuffer(b'\n')
-
-    _cursor_field = '__CURSOR'
-
-    _timestamp_fields: ta.Sequence[str] = [
-        '_SOURCE_REALTIME_TIMESTAMP',
-        '__REALTIME_TIMESTAMP',
-    ]
-
-    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
-        for fld in self._timestamp_fields:
-            if (tsv := dct.get(fld)) is None:
-                continue
-
-            if isinstance(tsv, str):
-                try:
-                    return int(tsv)
-                except ValueError:
-                    try:
-                        return int(float(tsv))
-                    except ValueError:
-                        log.exception('Failed to parse timestamp: %r', tsv)
-
-            elif isinstance(tsv, (int, float)):
-                return int(tsv)
-
-        log.error('Invalid timestamp: %r', dct)
-        return None
-
-    def _make_message(self, raw: bytes) -> JournalctlMessage:
-        dct = None
-        cursor = None
-        ts = None
-
-        try:
-            dct = json.loads(raw.decode('utf-8', 'replace'))
-        except Exception:  # noqa
-            log.exception('Failed to parse raw message: %r', raw)
-
-        else:
-            cursor = dct.get(self._cursor_field)
-            ts = self._get_message_timestamp(dct)
-
-        return JournalctlMessage(
-            raw=raw,
-            dct=dct,
-            cursor=cursor,
-            ts_us=ts,
-        )
-
-    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
-        ret: ta.List[JournalctlMessage] = []
-        for line in self._buf.feed(data):
-            ret.append(self._make_message(check.isinstance(line, bytes)))
-        return ret
-
-
-########################################
 # ../../../../../omlish/lite/configs.py
 
 
@@ -5288,6 +5057,17 @@ def load_config_file_obj(
             config_dct = pf(config_dct)
 
     return msh.unmarshal_obj(config_dct, cls)
+
+
+########################################
+# ../../../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return logging.getLogger(mod_globals.get('__name__'))  # noqa
 
 
 ########################################
@@ -5437,6 +5217,328 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return subprocess_shell_wrap_exec(*cmd)
     else:
         return cmd
+
+
+########################################
+# ../cursor.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class JournalctlToAwsCursor:
+    def __init__(
+            self,
+            cursor_file: ta.Optional[str] = None,
+            *,
+            ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._cursor_file = cursor_file
+        self._ensure_locked = ensure_locked
+
+    #
+
+    def get(self) -> ta.Optional[str]:
+        if self._ensure_locked is not None:
+            self._ensure_locked()
+
+        if not (cf := self._cursor_file):
+            return None
+        cf = os.path.expanduser(cf)
+
+        try:
+            with open(cf) as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return None
+
+    def set(self, cursor: str) -> None:
+        if self._ensure_locked is not None:
+            self._ensure_locked()
+
+        if not (cf := self._cursor_file):
+            return
+        cf = os.path.expanduser(cf)
+
+        log.info('Writing cursor file %s : %s', cf, cursor)
+        with open(ncf := cf + '.next', 'w') as f:
+            f.write(cursor)
+
+        os.rename(ncf, cf)
+
+
+########################################
+# ../../../../journald/messages.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class JournalctlMessage:
+    raw: bytes
+    dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
+    cursor: ta.Optional[str] = None
+    ts_us: ta.Optional[int] = None  # microseconds UTC
+
+
+class JournalctlMessageBuilder:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._buf = DelimitingBuffer(b'\n')
+
+    _cursor_field = '__CURSOR'
+
+    _timestamp_fields: ta.Sequence[str] = [
+        '_SOURCE_REALTIME_TIMESTAMP',
+        '__REALTIME_TIMESTAMP',
+    ]
+
+    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
+        for fld in self._timestamp_fields:
+            if (tsv := dct.get(fld)) is None:
+                continue
+
+            if isinstance(tsv, str):
+                try:
+                    return int(tsv)
+                except ValueError:
+                    try:
+                        return int(float(tsv))
+                    except ValueError:
+                        log.exception('Failed to parse timestamp: %r', tsv)
+
+            elif isinstance(tsv, (int, float)):
+                return int(tsv)
+
+        log.error('Invalid timestamp: %r', dct)
+        return None
+
+    def _make_message(self, raw: bytes) -> JournalctlMessage:
+        dct = None
+        cursor = None
+        ts = None
+
+        try:
+            dct = json.loads(raw.decode('utf-8', 'replace'))
+        except Exception:  # noqa
+            log.exception('Failed to parse raw message: %r', raw)
+
+        else:
+            cursor = dct.get(self._cursor_field)
+            ts = self._get_message_timestamp(dct)
+
+        return JournalctlMessage(
+            raw=raw,
+            dct=dct,
+            cursor=cursor,
+            ts_us=ts,
+        )
+
+    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
+        ret: ta.List[JournalctlMessage] = []
+        for line in self._buf.feed(data):
+            ret.append(self._make_message(check.isinstance(line, bytes)))
+        return ret
+
+
+########################################
+# ../../../../threadworkers.py
+"""
+FIXME:
+ - group is racy af - meditate on has_started, etc
+
+TODO:
+ - overhaul stop lol
+ - group -> 'context'? :|
+  - shared stop_event?
+"""
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class ThreadWorker(ExitStacked, Abstract):
+    def __init__(
+            self,
+            *,
+            stop_event: ta.Optional[threading.Event] = None,
+            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
+    ) -> None:
+        super().__init__()
+
+        if stop_event is None:
+            stop_event = threading.Event()
+        self._stop_event = stop_event
+
+        self._lock = threading.RLock()
+        self._thread: ta.Optional[threading.Thread] = None
+        self._last_heartbeat: ta.Optional[float] = None
+
+        for g in worker_groups or []:
+            g.add(self)
+
+    #
+
+    @contextlib.contextmanager
+    def _exit_stacked_init_wrapper(self) -> ta.Iterator[None]:
+        with self._lock:
+            yield
+
+    #
+
+    def should_stop(self) -> bool:
+        return self._stop_event.is_set()
+
+    class Stopping(Exception):  # noqa
+        pass
+
+    #
+
+    @property
+    def last_heartbeat(self) -> ta.Optional[float]:
+        return self._last_heartbeat
+
+    def _heartbeat(
+            self,
+            *,
+            no_stop_check: bool = False,
+    ) -> None:
+        self._last_heartbeat = time.time()
+
+        if not no_stop_check and self.should_stop():
+            log.info('Stopping: %s', self)
+            raise ThreadWorker.Stopping
+
+    #
+
+    def has_started(self) -> bool:
+        return self._thread is not None
+
+    def is_alive(self) -> bool:
+        return (thr := self._thread) is not None and thr.is_alive()
+
+    def start(self) -> None:
+        with self._lock:
+            if self._thread is not None:
+                raise RuntimeError('Thread already started: %r', self)
+
+            thr = threading.Thread(target=self.__thread_main)
+            self._thread = thr
+            thr.start()
+
+    #
+
+    def __thread_main(self) -> None:
+        try:
+            self._run()
+        except ThreadWorker.Stopping:
+            log.exception('Thread worker stopped: %r', self)
+        except Exception:  # noqa
+            log.exception('Error in worker thread: %r', self)
+            raise
+
+    @abc.abstractmethod
+    def _run(self) -> None:
+        raise NotImplementedError
+
+    #
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+    def join(
+            self,
+            timeout: ta.Optional[float] = None,
+            *,
+            unless_not_started: bool = False,
+    ) -> None:
+        with self._lock:
+            if self._thread is None:
+                if not unless_not_started:
+                    raise RuntimeError('Thread not started: %r', self)
+                return
+            self._thread.join(timeout)
+
+
+##
+
+
+class ThreadWorkerGroup:
+    @dc.dataclass()
+    class _State:
+        worker: ThreadWorker
+
+        last_heartbeat: ta.Optional[float] = None
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._lock = threading.RLock()
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
+        self._last_heartbeat_check: ta.Optional[float] = None
+
+    #
+
+    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
+        with self._lock:
+            for w in workers:
+                if w in self._states:
+                    raise KeyError(w)
+                self._states[w] = ThreadWorkerGroup._State(w)
+
+        return self
+
+    #
+
+    def start_all(self) -> None:
+        thrs = list(self._states)
+        with self._lock:
+            for thr in thrs:
+                if not thr.has_started():
+                    thr.start()
+
+    def stop_all(self) -> None:
+        for w in reversed(list(self._states)):
+            if w.has_started():
+                w.stop()
+
+    def join_all(self, timeout: ta.Optional[float] = None) -> None:
+        for w in reversed(list(self._states)):
+            if w.has_started():
+                w.join(timeout, unless_not_started=True)
+
+    #
+
+    def get_dead(self) -> ta.List[ThreadWorker]:
+        with self._lock:
+            return [thr for thr in self._states if not thr.is_alive()]
+
+    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
+        with self._lock:
+            dct: ta.Dict[ThreadWorker, float] = {}
+            for thr, st in self._states.items():
+                if not thr.has_started():
+                    continue
+                hb = thr.last_heartbeat
+                if hb is None:
+                    hb = time.time()
+                st.last_heartbeat = hb
+                dct[st.worker] = time.time() - hb
+            self._last_heartbeat_check = time.time()
+        return dct
 
 
 ########################################

@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
-import logging
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.logs.protocols import LoggerLike
 
 from ...packaging.versions import InvalidVersion
 from ...packaging.versions import Version
@@ -33,7 +33,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

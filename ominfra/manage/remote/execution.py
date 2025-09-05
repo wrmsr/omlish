@@ -13,6 +13,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.logs.modules import get_module_logger
+from omlish.logs.protocols import LoggerLike
 
 from ..commands.base import Command
 from ..commands.base import CommandException
@@ -397,7 +398,7 @@ class RemoteCommandExecutor(CommandExecutor):
             self,
             cmd: Command,
             *,
-            log: ta.Optional[logging.Logger] = None,  # noqa
+            log: ta.Optional[LoggerLike] = None,  # noqa
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:

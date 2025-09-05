@@ -27,7 +27,6 @@ import abc
 import codecs
 import contextlib
 import io
-import logging
 import os
 import pathlib
 import re
@@ -36,6 +35,7 @@ import tempfile
 import typing as ta
 
 from ..lite.abstract import Abstract
+from ..logs.protocols import LoggerLike
 
 
 ##
@@ -312,7 +312,7 @@ def parse_dotenv_stream(stream: ta.IO[str]) -> ta.Iterator[DotenvBinding]:
 
 def _dotenv_with_warn_for_invalid_lines(
         mappings: ta.Iterator[DotenvBinding],
-        log: ta.Optional[logging.Logger] = None,
+        log: ta.Optional[LoggerLike] = None,
 ) -> ta.Iterator[DotenvBinding]:
     for mapping in mappings:
         if mapping.error:
@@ -337,7 +337,7 @@ class Dotenv:
         interpolate: bool = True,
         override: bool = True,
         env: ta.Optional[ta.Mapping[str, str]] = None,
-        log: ta.Optional[logging.Logger] = None,
+        log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -415,7 +415,7 @@ def dotenv_get_key(
     key_to_get: str,
     *,
     encoding: ta.Optional[str] = 'utf-8',
-    log: ta.Optional[logging.Logger] = None,
+    log: ta.Optional[LoggerLike] = None,
 ) -> ta.Optional[str]:
     """
     Get the value of a given key from the given .env.
@@ -461,7 +461,7 @@ def dotenv_set_key(
     quote_mode: str = 'always',
     export: bool = False,
     encoding: ta.Optional[str] = 'utf-8',
-    log: ta.Optional[logging.Logger] = None,
+    log: ta.Optional[LoggerLike] = None,
 ) -> ta.Tuple[ta.Optional[bool], str, str]:
     """
     Adds or Updates a key/value to the given .env
@@ -511,7 +511,7 @@ def dotenv_unset_key(
     *,
     quote_mode: str = 'always',
     encoding: ta.Optional[str] = 'utf-8',
-    log: ta.Optional[logging.Logger] = None,
+    log: ta.Optional[LoggerLike] = None,
 ) -> ta.Tuple[ta.Optional[bool], str]:
     """
     Removes a given key from the given `.env` file.
@@ -575,7 +575,7 @@ def dotenv_values(
     interpolate: bool = True,
     encoding: ta.Optional[str] = 'utf-8',
     env: ta.Optional[ta.Mapping[str, str]] = None,
-    log: ta.Optional[logging.Logger] = None,
+    log: ta.Optional[LoggerLike] = None,
 ) -> ta.Dict[str, ta.Optional[str]]:
     """
     Parse a .env file and return its content as a dict.

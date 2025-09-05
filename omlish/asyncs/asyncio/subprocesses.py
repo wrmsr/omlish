@@ -4,12 +4,12 @@ import asyncio.base_subprocess
 import asyncio.subprocess
 import contextlib
 import functools
-import logging
 import subprocess
 import typing as ta
 
 from ...lite.check import check
 from ...lite.timeouts import TimeoutLike
+from ...logs.protocols import LoggerLike
 from ...subprocesses.asyncs import AbstractAsyncSubprocesses
 from ...subprocesses.run import SubprocessRun
 from ...subprocesses.run import SubprocessRunOutput
@@ -28,7 +28,7 @@ class AsyncioProcessCommunicator:
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

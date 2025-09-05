@@ -5,8 +5,9 @@ uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
 """
-import logging
 import typing as ta
+
+from omlish.logs.protocols import LoggerLike
 
 from ..inspect import InterpInspector
 from ..providers.base import InterpProvider
@@ -25,7 +26,7 @@ class UvInterpProvider(InterpProvider):
             *,
             pyenv: Uv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

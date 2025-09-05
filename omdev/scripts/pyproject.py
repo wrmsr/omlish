@@ -112,6 +112,9 @@ A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
 
+# ../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
@@ -2948,14 +2951,71 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/levels.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
-    return logging.getLogger(mod_globals.get('__name__'))
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
 
 
 ########################################
@@ -3830,90 +3890,6 @@ class SpecifierSet(BaseSpecifier):
                 return iter(found_prereleases)
 
             return iter(filtered)
-
-
-########################################
-# ../reqs.py
-"""
-TODO:
- - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
-"""
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class RequirementsRewriter:
-    def __init__(
-            self,
-            venv: ta.Optional[str] = None,
-    ) -> None:
-        super().__init__()
-
-        self._venv = venv
-
-    @cached_nullary
-    def _tmp_dir(self) -> str:
-        return tempfile.mkdtemp('-omlish-reqs')
-
-    VENV_MAGIC = '# @omlish-venv'
-
-    def rewrite_file(self, in_file: str) -> str:
-        with open(in_file) as f:
-            src = f.read()
-
-        in_lines = src.splitlines(keepends=True)
-        out_lines = []
-
-        for l in in_lines:
-            if self.VENV_MAGIC in l:
-                lp, _, rp = l.partition(self.VENV_MAGIC)
-                rp = rp.partition('#')[0]
-                omit = False
-                for v in rp.split():
-                    if v[0] == '!':
-                        if self._venv is not None and self._venv == v[1:]:
-                            omit = True
-                            break
-                    else:
-                        raise NotImplementedError
-
-                if omit:
-                    out_lines.append('# OMITTED:  ' + l)
-                    continue
-
-            out_req = self.rewrite(l.rstrip('\n'), for_file=True)
-            out_lines.append(out_req + '\n')
-
-        out_file = os.path.join(self._tmp_dir(), os.path.basename(in_file))
-        if os.path.exists(out_file):
-            raise Exception(f'file exists: {out_file}')
-
-        with open(out_file, 'w') as f:
-            f.write(''.join(out_lines))
-        log.info('Rewrote requirements file %s to %s', in_file, out_file)
-        return out_file
-
-    def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
-        if in_req.strip().startswith('-r'):
-            l = in_req.strip()
-            lp, _, rp = l.partition(' ')
-            if lp == '-r':
-                inc_in_file, _, rest = rp.partition(' ')
-            else:
-                inc_in_file, rest = lp[2:], rp
-
-            inc_out_file = self.rewrite_file(inc_in_file)
-            if for_file:
-                return ' '.join(['-r ', inc_out_file, rest])
-            else:
-                return '-r' + inc_out_file
-
-        else:
-            return in_req
 
 
 ########################################
@@ -5413,6 +5389,37 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
+# ../../../omlish/logs/protocols.py
+
+
+##
+
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+
+########################################
 # ../../../omlish/logs/std/json.py
 """
 TODO:
@@ -6675,6 +6682,17 @@ inj = InjectionApi()
 
 
 ########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return logging.getLogger(mod_globals.get('__name__'))  # noqa
+
+
+########################################
 # ../../../omlish/logs/standard.py
 """
 TODO:
@@ -7018,6 +7036,90 @@ InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
+# ../reqs.py
+"""
+TODO:
+ - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
+"""
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class RequirementsRewriter:
+    def __init__(
+            self,
+            venv: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        self._venv = venv
+
+    @cached_nullary
+    def _tmp_dir(self) -> str:
+        return tempfile.mkdtemp('-omlish-reqs')
+
+    VENV_MAGIC = '# @omlish-venv'
+
+    def rewrite_file(self, in_file: str) -> str:
+        with open(in_file) as f:
+            src = f.read()
+
+        in_lines = src.splitlines(keepends=True)
+        out_lines = []
+
+        for l in in_lines:
+            if self.VENV_MAGIC in l:
+                lp, _, rp = l.partition(self.VENV_MAGIC)
+                rp = rp.partition('#')[0]
+                omit = False
+                for v in rp.split():
+                    if v[0] == '!':
+                        if self._venv is not None and self._venv == v[1:]:
+                            omit = True
+                            break
+                    else:
+                        raise NotImplementedError
+
+                if omit:
+                    out_lines.append('# OMITTED:  ' + l)
+                    continue
+
+            out_req = self.rewrite(l.rstrip('\n'), for_file=True)
+            out_lines.append(out_req + '\n')
+
+        out_file = os.path.join(self._tmp_dir(), os.path.basename(in_file))
+        if os.path.exists(out_file):
+            raise Exception(f'file exists: {out_file}')
+
+        with open(out_file, 'w') as f:
+            f.write(''.join(out_lines))
+        log.info('Rewrote requirements file %s to %s', in_file, out_file)
+        return out_file
+
+    def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
+        if in_req.strip().startswith('-r'):
+            l = in_req.strip()
+            lp, _, rp = l.partition(' ')
+            if lp == '-r':
+                inc_in_file, _, rest = rp.partition(' ')
+            else:
+                inc_in_file, rest = lp[2:], rp
+
+            inc_out_file = self.rewrite_file(inc_in_file)
+            if for_file:
+                return ' '.join(['-r ', inc_out_file, rest])
+            else:
+                return '-r' + inc_out_file
+
+        else:
+            return in_req
+
+
+########################################
 # ../../../omlish/subprocesses/base.py
 
 
@@ -7060,12 +7162,12 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 
 class BaseSubprocesses(Abstract):
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
 
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
             try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
     ) -> None:
         super().__init__()
@@ -7073,7 +7175,7 @@ class BaseSubprocesses(Abstract):
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
 
-    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+    def set_logger(self, log: ta.Optional[LoggerLike]) -> None:
         self._log = log
 
     #
@@ -7628,7 +7730,7 @@ class AsyncioProcessCommunicator:
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -7851,7 +7953,7 @@ class InterpInspector:
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -8015,7 +8117,7 @@ class Uv:
             self,
             config: UvConfig = UvConfig(),
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -8231,7 +8333,7 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -8614,7 +8716,7 @@ class UvInterpProvider(InterpProvider):
             *,
             pyenv: Uv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -9233,7 +9335,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -9465,7 +9567,7 @@ class InterpVenv:
             cfg: InterpVenvConfig,
             *,
             requirements_processor: ta.Optional[InterpVenvRequirementsProcessor] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

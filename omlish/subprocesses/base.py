@@ -9,6 +9,7 @@ import typing as ta
 
 from ..lite.abstract import Abstract
 from ..lite.timeouts import Timeout
+from ..logs.protocols import LoggerLike
 from .wrap import subprocess_maybe_shell_wrap_exec
 
 
@@ -55,12 +56,12 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 
 class BaseSubprocesses(Abstract):
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
 
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
             try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
     ) -> None:
         super().__init__()
@@ -68,7 +69,7 @@ class BaseSubprocesses(Abstract):
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
 
-    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+    def set_logger(self, log: ta.Optional[LoggerLike]) -> None:
         self._log = log
 
     #

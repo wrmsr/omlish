@@ -131,6 +131,9 @@ A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
 
+# ../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
 # ../../omlish/sockets/addresses.py
 SocketAddress = ta.Any
 
@@ -3059,14 +3062,71 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/levels.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
-    return logging.getLogger(mod_globals.get('__name__'))
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
 
 
 ########################################
@@ -3648,87 +3708,6 @@ def is_fd_open(fd: Fd) -> bool:
 
 def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
     return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
-
-
-########################################
-# ../utils/os.py
-
-
-##
-
-
-def real_exit(code: Rc) -> None:
-    os._exit(code)  # noqa
-
-
-##
-
-
-def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
-    """
-    Decode the status returned by wait() or waitpid().
-
-    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
-    signal; and message is a message telling what happened. It is the caller's responsibility to display the message.
-    """
-
-    if os.WIFEXITED(sts):
-        es = os.WEXITSTATUS(sts) & 0xffff
-        msg = f'exit status {es}'
-        return Rc(es), msg
-
-    elif os.WIFSIGNALED(sts):
-        sig = os.WTERMSIG(sts)
-        msg = f'terminated by {sig_name(sig)}'
-        if hasattr(os, 'WCOREDUMP'):
-            iscore = os.WCOREDUMP(sts)
-        else:
-            iscore = bool(sts & 0x80)
-        if iscore:
-            msg += ' (core dumped)'
-        return Rc(-1), msg
-
-    else:
-        msg = 'unknown termination cause 0x%04x' % sts  # noqa
-        return Rc(-1), msg
-
-
-##
-
-
-class WaitedPid(ta.NamedTuple):
-    pid: Pid
-    sts: Rc
-
-
-def waitpid(
-        *,
-        log: ta.Optional[logging.Logger] = None,
-) -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
-    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-    # lying around.
-    try:
-        pid, sts = os.waitpid(-1, os.WNOHANG)
-
-    except OSError as exc:
-        code = exc.args[0]
-
-        if code not in (errno.ECHILD, errno.EINTR):
-            if log is not None:
-                log.critical('waitpid error %r; a process may not be cleaned up properly', code)
-
-        if code == errno.EINTR:
-            if log is not None:
-                log.debug('EINTR during reap')
-
-        return None
-
-    else:
-        return WaitedPid(pid, sts)  # type: ignore
 
 
 ########################################
@@ -6056,6 +6035,37 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
+# ../../../omlish/logs/protocols.py
+
+
+##
+
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+
+########################################
 # ../../../omlish/logs/std/json.py
 """
 TODO:
@@ -6689,6 +6699,87 @@ class SupervisorSetup(Abstract):
 
 
 ########################################
+# ../utils/os.py
+
+
+##
+
+
+def real_exit(code: Rc) -> None:
+    os._exit(code)  # noqa
+
+
+##
+
+
+def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
+    """
+    Decode the status returned by wait() or waitpid().
+
+    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
+    signal; and message is a message telling what happened. It is the caller's responsibility to display the message.
+    """
+
+    if os.WIFEXITED(sts):
+        es = os.WEXITSTATUS(sts) & 0xffff
+        msg = f'exit status {es}'
+        return Rc(es), msg
+
+    elif os.WIFSIGNALED(sts):
+        sig = os.WTERMSIG(sts)
+        msg = f'terminated by {sig_name(sig)}'
+        if hasattr(os, 'WCOREDUMP'):
+            iscore = os.WCOREDUMP(sts)
+        else:
+            iscore = bool(sts & 0x80)
+        if iscore:
+            msg += ' (core dumped)'
+        return Rc(-1), msg
+
+    else:
+        msg = 'unknown termination cause 0x%04x' % sts  # noqa
+        return Rc(-1), msg
+
+
+##
+
+
+class WaitedPid(ta.NamedTuple):
+    pid: Pid
+    sts: Rc
+
+
+def waitpid(
+        *,
+        log: ta.Optional[LoggerLike] = None,
+) -> ta.Optional[WaitedPid]:
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
+    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
+    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
+    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
+    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
+    # lying around.
+    try:
+        pid, sts = os.waitpid(-1, os.WNOHANG)
+
+    except OSError as exc:
+        code = exc.args[0]
+
+        if code not in (errno.ECHILD, errno.EINTR):
+            if log is not None:
+                log.critical('waitpid error %r; a process may not be cleaned up properly', code)
+
+        if code == errno.EINTR:
+            if log is not None:
+                log.debug('EINTR during reap')
+
+        return None
+
+    else:
+        return WaitedPid(pid, sts)  # type: ignore
+
+
+########################################
 # ../../../omlish/http/handlers.py
 
 
@@ -6747,7 +6838,7 @@ class HttpHandler_(Abstract):  # noqa
 @dc.dataclass(frozen=True)
 class LoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
-    log: logging.Logger
+    log: LoggerLike
     level: int = logging.DEBUG
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -6760,7 +6851,7 @@ class LoggingHttpHandler(HttpHandler_):
 @dc.dataclass(frozen=True)
 class ExceptionLoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
-    log: logging.Logger
+    log: LoggerLike
     message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -8059,6 +8150,17 @@ class InjectionApi:
 
 
 inj = InjectionApi()
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return logging.getLogger(mod_globals.get('__name__'))  # noqa
 
 
 ########################################

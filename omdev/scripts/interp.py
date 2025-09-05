@@ -72,6 +72,9 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
@@ -1383,6 +1386,74 @@ def format_num_bytes(num_bytes: int) -> str:
                 return f'{value:.2f}{suffix}'
 
     return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
+# ../../../omlish/logs/levels.py
+
+
+##
+
+
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
 
 
 ########################################
@@ -2746,6 +2817,37 @@ class PredicateTimeout(Timeout):
 
     def or_(self, o: ta.Any) -> ta.Any:
         return self()
+
+
+########################################
+# ../../../omlish/logs/protocols.py
+
+
+##
+
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
 
 ########################################
@@ -4396,12 +4498,12 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 
 class BaseSubprocesses(Abstract):
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
 
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
             try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
     ) -> None:
         super().__init__()
@@ -4409,7 +4511,7 @@ class BaseSubprocesses(Abstract):
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
 
-    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+    def set_logger(self, log: ta.Optional[LoggerLike]) -> None:
         self._log = log
 
     #
@@ -4767,7 +4869,7 @@ class AsyncioProcessCommunicator:
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -4990,7 +5092,7 @@ class InterpInspector:
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -5154,7 +5256,7 @@ class Uv:
             self,
             config: UvConfig = UvConfig(),
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -5246,7 +5348,7 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -5629,7 +5731,7 @@ class UvInterpProvider(InterpProvider):
             *,
             pyenv: Uv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -5686,7 +5788,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import dataclasses as dc
-import logging
 import typing as ta
 
+from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
 from ..io import close_socket_immediately
 from .handlers import SocketServerHandler
@@ -17,7 +17,7 @@ from .handlers import SocketServerHandler_
 class SslErrorHandlingSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
 
-    log: ta.Optional[logging.Logger] = None
+    log: ta.Optional[LoggerLike] = None
 
     #
 

@@ -39,6 +39,7 @@ import types
 import typing as ta
 import weakref
 
+from ...logs.protocols import LoggerLike
 from .core import BlueletCoro
 from .core import BlueletExcInfo
 from .core import CoreBlueletEvent
@@ -84,7 +85,7 @@ class BlueletCoroException(Exception):  # noqa
 def _bluelet_event_select(
         events: ta.Iterable[BlueletEvent],
         *,
-        log: ta.Optional[logging.Logger] = None,
+        log: ta.Optional[LoggerLike] = None,
 ) -> ta.Set[WaitableBlueletEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
@@ -182,7 +183,7 @@ class _BlueletRunner:
             self,
             root_coro: BlueletCoro,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

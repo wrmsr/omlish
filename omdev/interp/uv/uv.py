@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
-import logging
 import os.path
 import shutil
 import sys
@@ -10,6 +9,7 @@ import typing as ta
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
+from omlish.logs.protocols import LoggerLike
 
 
 ##
@@ -26,7 +26,7 @@ class Uv:
             self,
             config: UvConfig = UvConfig(),
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
-import logging
 import os.path
 import typing as ta
 
@@ -9,6 +8,7 @@ from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.typing import Func2
+from omlish.logs.protocols import LoggerLike
 
 from .default import get_default_interp_resolver
 from .types import InterpSpecifier
@@ -35,7 +35,7 @@ class InterpVenv:
             cfg: InterpVenvConfig,
             *,
             requirements_processor: ta.Optional[InterpVenvRequirementsProcessor] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 import asyncio
 import contextlib
-import logging
 import ssl
 import sys
 import threading
@@ -14,6 +13,7 @@ from omlish.http.handlers import LoggingHttpHandler
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
+from omlish.logs.protocols import LoggerLike
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
 from omlish.sockets.server.server import SocketServer
 
@@ -145,7 +145,7 @@ class DockerDataServer(AsyncExitStacked):
             port: int,
             data_server: DataServer,
             *,
-            handler_log: ta.Optional[logging.Logger] = None,
+            handler_log: ta.Optional[LoggerLike] = None,
             stop_event: ta.Optional[asyncio.Event] = None,
     ) -> None:
         super().__init__()

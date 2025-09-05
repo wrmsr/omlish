@@ -1,13 +1,13 @@
 # ruff: noqa: UP006 UP007 UP045
 import abc
 import dataclasses as dc
-import logging
 import traceback
 import typing as ta
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.strings import snake_case
+from omlish.logs.protocols import LoggerLike
 
 
 CommandT = ta.TypeVar('CommandT', bound='Command')
@@ -93,7 +93,7 @@ class CommandExecutor(Abstract, ta.Generic[CommandT, CommandOutputT]):
             self,
             cmd: CommandT,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException[CommandOutputT]:
         try:

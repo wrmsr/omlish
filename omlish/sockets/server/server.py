@@ -11,6 +11,7 @@ import typing as ta
 from ...lite.abstract import Abstract
 from ...lite.contextmanagers import ExitStacked
 from ...lite.contextmanagers import defer
+from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
 from ..bind import SocketBinder
 from ..io import close_socket_immediately
@@ -29,7 +30,7 @@ class SocketServer:
             handler: SocketServerHandler,
             *,
             on_error: ta.Optional[ta.Callable[[BaseException, ta.Optional[SocketAndAddress]], None]] = None,
-            error_logger: ta.Optional[logging.Logger] = _DEFAULT_LOGGER,
+            error_logger: ta.Optional[LoggerLike] = _DEFAULT_LOGGER,
             poll_interval: float = .5,
             shutdown_timeout: ta.Optional[float] = None,
     ) -> None:

@@ -7,6 +7,7 @@ import logging
 import typing as ta
 
 from ..lite.abstract import Abstract
+from ..logs.protocols import LoggerLike
 from ..sockets.addresses import SocketAddress
 from .parsing import HttpHeaders
 
@@ -70,7 +71,7 @@ class HttpHandler_(Abstract):  # noqa
 @dc.dataclass(frozen=True)
 class LoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
-    log: logging.Logger
+    log: LoggerLike
     level: int = logging.DEBUG
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -83,7 +84,7 @@ class LoggingHttpHandler(HttpHandler_):
 @dc.dataclass(frozen=True)
 class ExceptionLoggingHttpHandler(HttpHandler_):
     handler: HttpHandler
-    log: logging.Logger
+    log: LoggerLike
     message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
 
     def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:

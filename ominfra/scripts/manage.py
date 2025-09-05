@@ -113,14 +113,13 @@ A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
 
+# ../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
 # ../../omdev/packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
-
-# commands/base.py
-CommandT = ta.TypeVar('CommandT', bound='Command')
-CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # ../../omlish/argparse/cli.py
 ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -137,6 +136,10 @@ TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['Timeo
 # ../../omlish/os/atomics.py
 AtomicPathSwapKind = ta.Literal['dir', 'file']
 AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
+
+# commands/base.py
+CommandT = ta.TypeVar('CommandT', bound='Command')
+CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
@@ -3976,14 +3979,71 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/levels.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
-    return logging.getLogger(mod_globals.get('__name__'))
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
 
 
 ########################################
@@ -5444,156 +5504,6 @@ class SpecifierSet(BaseSpecifier):
 
 
 ########################################
-# ../commands/base.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Command(Abstract, ta.Generic[CommandOutputT]):
-    @dc.dataclass(frozen=True)
-    class Output(Abstract):
-        pass
-
-    @ta.final
-    async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check.isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CommandException:
-    name: str
-    repr: str
-
-    traceback: ta.Optional[str] = None
-
-    exc: ta.Optional[ta.Any] = None  # Exception
-
-    cmd: ta.Optional[Command] = None
-
-    @classmethod
-    def of(
-            cls,
-            exc: Exception,
-            *,
-            omit_exc_object: bool = False,
-
-            cmd: ta.Optional[Command] = None,
-    ) -> 'CommandException':
-        return CommandException(
-            name=type(exc).__qualname__,
-            repr=repr(exc),
-
-            traceback=(
-                ''.join(traceback.format_tb(exc.__traceback__))
-                if getattr(exc, '__traceback__', None) is not None else None
-            ),
-
-            exc=None if omit_exc_object else exc,
-
-            cmd=cmd,
-        )
-
-
-class CommandOutputOrException(Abstract, ta.Generic[CommandOutputT]):
-    @property
-    @abc.abstractmethod
-    def output(self) -> ta.Optional[CommandOutputT]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def exception(self) -> ta.Optional[CommandException]:
-        raise NotImplementedError
-
-
-@dc.dataclass(frozen=True)
-class CommandOutputOrExceptionData(CommandOutputOrException):
-    output: ta.Optional[Command.Output] = None
-    exception: ta.Optional[CommandException] = None
-
-
-class CommandExecutor(Abstract, ta.Generic[CommandT, CommandOutputT]):
-    @abc.abstractmethod
-    def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
-        raise NotImplementedError
-
-    async def try_execute(
-            self,
-            cmd: CommandT,
-            *,
-            log: ta.Optional[logging.Logger] = None,
-            omit_exc_object: bool = False,
-    ) -> CommandOutputOrException[CommandOutputT]:
-        try:
-            o = await self.execute(cmd)
-
-        except Exception as e:  # noqa
-            if log is not None:
-                log.exception('Exception executing command: %r', type(cmd))
-
-            return CommandOutputOrExceptionData(exception=CommandException.of(
-                e,
-                omit_exc_object=omit_exc_object,
-                cmd=cmd,
-            ))
-
-        else:
-            return CommandOutputOrExceptionData(output=o)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CommandRegistration:
-    command_cls: ta.Type[Command]
-
-    name: ta.Optional[str] = None
-
-    @property
-    def name_or_default(self) -> str:
-        if not (cls_name := self.command_cls.__name__).endswith('Command'):
-            raise NameError(cls_name)
-        return snake_case(cls_name[:-len('Command')])
-
-
-CommandRegistrations = ta.NewType('CommandRegistrations', ta.Sequence[CommandRegistration])
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CommandExecutorRegistration:
-    command_cls: ta.Type[Command]
-    executor_cls: ta.Type[CommandExecutor]
-
-
-CommandExecutorRegistrations = ta.NewType('CommandExecutorRegistrations', ta.Sequence[CommandExecutorRegistration])
-
-
-##
-
-
-CommandNameMap = ta.NewType('CommandNameMap', ta.Mapping[str, ta.Type[Command]])
-
-
-def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
-    dct: ta.Dict[str, ta.Type[Command]] = {}
-    cr: CommandRegistration
-    for cr in crs:
-        if (name := cr.name_or_default) in dct:
-            raise NameError(name)
-        dct[name] = cr.command_cls
-    return CommandNameMap(dct)
-
-
-########################################
 # ../deploy/paths/specs.py
 
 
@@ -5672,78 +5582,6 @@ def get_remote_payload_src(
 
     import importlib.resources
     return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
-
-
-########################################
-# ../system/platforms.py
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Platform(Abstract):
-    pass
-
-
-class LinuxPlatform(Platform, Abstract):
-    pass
-
-
-class UbuntuPlatform(LinuxPlatform):
-    pass
-
-
-class AmazonLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class GenericLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class DarwinPlatform(Platform):
-    pass
-
-
-class UnknownPlatform(Platform):
-    pass
-
-
-##
-
-
-def _detect_system_platform() -> Platform:
-    plat = sys.platform
-
-    if plat == 'linux':
-        if (osr := LinuxOsRelease.read()) is None:
-            return GenericLinuxPlatform()
-
-        if osr.id == 'amzn':
-            return AmazonLinuxPlatform()
-
-        elif osr.id == 'ubuntu':
-            return UbuntuPlatform()
-
-        else:
-            return GenericLinuxPlatform()
-
-    elif plat == 'darwin':
-        return DarwinPlatform()
-
-    else:
-        return UnknownPlatform()
-
-
-@cached_nullary
-def detect_system_platform() -> Platform:
-    platform = _detect_system_platform()
-    log.info('Detected platform: %r', platform)
-    return platform
 
 
 ########################################
@@ -7610,6 +7448,37 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
+# ../../../omlish/logs/protocols.py
+
+
+##
+
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+
+########################################
 # ../../../omlish/logs/std/json.py
 """
 TODO:
@@ -8028,59 +7897,153 @@ class Interp:
 
 
 ########################################
-# ../commands/marshal.py
-
-
-##
-
-
-def install_command_marshaling(
-        cmds: CommandNameMap,
-        msh: ObjMarshalerManager,
-) -> None:
-    for fn in [
-        lambda c: c,
-        lambda c: c.Output,
-    ]:
-        msh.set_obj_marshaler(
-            fn(Command),
-            PolymorphicObjMarshaler.of([
-                PolymorphicObjMarshaler.Impl(
-                    fn(cmd),
-                    name,
-                    msh.get_obj_marshaler(fn(cmd)),
-                )
-                for name, cmd in cmds.items()
-            ]),
-        )
-
-
-########################################
-# ../commands/ping.py
+# ../commands/base.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PingCommand(Command['PingCommand.Output']):
-    time: float = dc.field(default_factory=time.time)
-
+class Command(Abstract, ta.Generic[CommandOutputT]):
     @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        time: float
+    class Output(Abstract):
+        pass
+
+    @ta.final
+    async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
+        return check.isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
-class PingCommandExecutor(CommandExecutor[PingCommand, PingCommand.Output]):
-    async def execute(self, cmd: PingCommand) -> PingCommand.Output:
-        return PingCommand.Output(cmd.time)
+##
 
 
-########################################
-# ../commands/types.py
+@dc.dataclass(frozen=True)
+class CommandException:
+    name: str
+    repr: str
+
+    traceback: ta.Optional[str] = None
+
+    exc: ta.Optional[ta.Any] = None  # Exception
+
+    cmd: ta.Optional[Command] = None
+
+    @classmethod
+    def of(
+            cls,
+            exc: Exception,
+            *,
+            omit_exc_object: bool = False,
+
+            cmd: ta.Optional[Command] = None,
+    ) -> 'CommandException':
+        return CommandException(
+            name=type(exc).__qualname__,
+            repr=repr(exc),
+
+            traceback=(
+                ''.join(traceback.format_tb(exc.__traceback__))
+                if getattr(exc, '__traceback__', None) is not None else None
+            ),
+
+            exc=None if omit_exc_object else exc,
+
+            cmd=cmd,
+        )
 
 
-CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
+class CommandOutputOrException(Abstract, ta.Generic[CommandOutputT]):
+    @property
+    @abc.abstractmethod
+    def output(self) -> ta.Optional[CommandOutputT]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exception(self) -> ta.Optional[CommandException]:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class CommandOutputOrExceptionData(CommandOutputOrException):
+    output: ta.Optional[Command.Output] = None
+    exception: ta.Optional[CommandException] = None
+
+
+class CommandExecutor(Abstract, ta.Generic[CommandT, CommandOutputT]):
+    @abc.abstractmethod
+    def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
+        raise NotImplementedError
+
+    async def try_execute(
+            self,
+            cmd: CommandT,
+            *,
+            log: ta.Optional[LoggerLike] = None,
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException[CommandOutputT]:
+        try:
+            o = await self.execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+                cmd=cmd,
+            ))
+
+        else:
+            return CommandOutputOrExceptionData(output=o)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CommandRegistration:
+    command_cls: ta.Type[Command]
+
+    name: ta.Optional[str] = None
+
+    @property
+    def name_or_default(self) -> str:
+        if not (cls_name := self.command_cls.__name__).endswith('Command'):
+            raise NameError(cls_name)
+        return snake_case(cls_name[:-len('Command')])
+
+
+CommandRegistrations = ta.NewType('CommandRegistrations', ta.Sequence[CommandRegistration])
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CommandExecutorRegistration:
+    command_cls: ta.Type[Command]
+    executor_cls: ta.Type[CommandExecutor]
+
+
+CommandExecutorRegistrations = ta.NewType('CommandExecutorRegistrations', ta.Sequence[CommandExecutorRegistration])
+
+
+##
+
+
+CommandNameMap = ta.NewType('CommandNameMap', ta.Mapping[str, ta.Type[Command]])
+
+
+def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
+    dct: ta.Dict[str, ta.Type[Command]] = {}
+    cr: CommandRegistration
+    for cr in crs:
+        if (name := cr.name_or_default) in dct:
+            raise NameError(name)
+        dct[name] = cr.command_cls
+    return CommandNameMap(dct)
 
 
 ########################################
@@ -8498,18 +8461,6 @@ class RemoteChannelImpl(RemoteChannel):
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         async with self._input_lock:
             return await self._recv_obj(ty)
-
-
-########################################
-# ../system/config.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SystemConfig:
-    platform: ta.Optional[Platform] = None
 
 
 ########################################
@@ -9716,6 +9667,17 @@ inj = InjectionApi()
 
 
 ########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return logging.getLogger(mod_globals.get('__name__'))  # noqa
+
+
+########################################
 # ../../../omlish/logs/standard.py
 """
 TODO:
@@ -10059,24 +10021,6 @@ InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
-# ../bootstrap.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig = MainConfig()
-
-    deploy_config: DeployConfig = DeployConfig()
-
-    remote_config: RemoteConfig = RemoteConfig()
-
-    system_config: SystemConfig = SystemConfig()
-
-
-########################################
 # ../commands/injection.py
 
 
@@ -10101,25 +10045,59 @@ def bind_command(
 
 
 ########################################
-# ../commands/local.py
+# ../commands/marshal.py
 
 
 ##
 
 
-class LocalCommandExecutor(CommandExecutor):
-    def __init__(
-            self,
-            *,
-            command_executors: CommandExecutorMap,
-    ) -> None:
-        super().__init__()
+def install_command_marshaling(
+        cmds: CommandNameMap,
+        msh: ObjMarshalerManager,
+) -> None:
+    for fn in [
+        lambda c: c,
+        lambda c: c.Output,
+    ]:
+        msh.set_obj_marshaler(
+            fn(Command),
+            PolymorphicObjMarshaler.of([
+                PolymorphicObjMarshaler.Impl(
+                    fn(cmd),
+                    name,
+                    msh.get_obj_marshaler(fn(cmd)),
+                )
+                for name, cmd in cmds.items()
+            ]),
+        )
 
-        self._command_executors = command_executors
 
-    async def execute(self, cmd: Command) -> Command.Output:
-        ce: CommandExecutor = self._command_executors[type(cmd)]
-        return await ce.execute(cmd)
+########################################
+# ../commands/ping.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class PingCommand(Command['PingCommand.Output']):
+    time: float = dc.field(default_factory=time.time)
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        time: float
+
+
+class PingCommandExecutor(CommandExecutor[PingCommand, PingCommand.Output]):
+    async def execute(self, cmd: PingCommand) -> PingCommand.Output:
+        return PingCommand.Output(cmd.time)
+
+
+########################################
+# ../commands/types.py
+
+
+CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
 
 
 ########################################
@@ -10827,7 +10805,7 @@ class RemoteCommandExecutor(CommandExecutor):
             self,
             cmd: Command,
             *,
-            log: ta.Optional[logging.Logger] = None,  # noqa
+            log: ta.Optional[LoggerLike] = None,  # noqa
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:
@@ -10845,6 +10823,78 @@ class RemoteCommandExecutor(CommandExecutor):
 
         else:
             return r
+
+
+########################################
+# ../system/platforms.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Platform(Abstract):
+    pass
+
+
+class LinuxPlatform(Platform, Abstract):
+    pass
+
+
+class UbuntuPlatform(LinuxPlatform):
+    pass
+
+
+class AmazonLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class GenericLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class DarwinPlatform(Platform):
+    pass
+
+
+class UnknownPlatform(Platform):
+    pass
+
+
+##
+
+
+def _detect_system_platform() -> Platform:
+    plat = sys.platform
+
+    if plat == 'linux':
+        if (osr := LinuxOsRelease.read()) is None:
+            return GenericLinuxPlatform()
+
+        if osr.id == 'amzn':
+            return AmazonLinuxPlatform()
+
+        elif osr.id == 'ubuntu':
+            return UbuntuPlatform()
+
+        else:
+            return GenericLinuxPlatform()
+
+    elif plat == 'darwin':
+        return DarwinPlatform()
+
+    else:
+        return UnknownPlatform()
+
+
+@cached_nullary
+def detect_system_platform() -> Platform:
+    platform = _detect_system_platform()
+    log.info('Detected platform: %r', platform)
+    return platform
 
 
 ########################################
@@ -10890,12 +10940,12 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 
 class BaseSubprocesses(Abstract):
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
 
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
             try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
     ) -> None:
         super().__init__()
@@ -10903,7 +10953,7 @@ class BaseSubprocesses(Abstract):
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
 
-    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+    def set_logger(self, log: ta.Optional[LoggerLike]) -> None:
         self._log = log
 
     #
@@ -11145,6 +11195,28 @@ class InterpResolver:
                 print(f'  {n}')
                 for si in lst:
                     print(f'    {si}')
+
+
+########################################
+# ../commands/local.py
+
+
+##
+
+
+class LocalCommandExecutor(CommandExecutor):
+    def __init__(
+            self,
+            *,
+            command_executors: CommandExecutorMap,
+    ) -> None:
+        super().__init__()
+
+        self._command_executors = command_executors
+
+    async def execute(self, cmd: Command) -> Command.Output:
+        ce: CommandExecutor = self._command_executors[type(cmd)]
+        return await ce.execute(cmd)
 
 
 ########################################
@@ -11438,149 +11510,15 @@ class SingleDirDeployPathOwner(DeployPathOwner, Abstract):
 
 
 ########################################
-# ../remote/_main.py
-
-
-log = get_module_logger(globals())  # noqa
+# ../system/config.py
 
 
 ##
 
 
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
-
-        self._fn = fn
-
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
-
-
-##
-
-
-class _RemoteExecutionMain:
-    def __init__(
-            self,
-            chan: RemoteChannel,
-    ) -> None:
-        super().__init__()
-
-        self._chan = chan
-
-        self.__bootstrap: ta.Optional[MainBootstrap] = None
-        self.__injector: ta.Optional[Injector] = None
-
-    @property
-    def _bootstrap(self) -> MainBootstrap:
-        return check.not_none(self.__bootstrap)
-
-    @property
-    def _injector(self) -> Injector:
-        return check.not_none(self.__injector)
-
-    #
-
-    def _timebomb_main(
-            self,
-            delay_s: float,
-            *,
-            sig: int = signal.SIGINT,
-            code: int = 1,
-    ) -> None:
-        time.sleep(delay_s)
-
-        if (pgid := os.getpgid(0)) == os.getpid():
-            os.killpg(pgid, sig)
-
-        os._exit(code)  # noqa
-
-    @cached_nullary
-    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
-        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
-            return None
-
-        thr = threading.Thread(
-            target=functools.partial(self._timebomb_main, tbd),
-            name=f'{self.__class__.__name__}.timebomb',
-            daemon=True,
-        )
-
-        thr.start()
-
-        log.debug('Started timebomb thread: %r', thr)
-
-        return thr
-
-    #
-
-    @cached_nullary
-    def _log_handler(self) -> _RemoteLogHandler:
-        return _RemoteLogHandler(self._chan)
-
-    #
-
-    async def _setup(self) -> None:
-        check.none(self.__bootstrap)
-        check.none(self.__injector)
-
-        # Bootstrap
-
-        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
-
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
-
-        # Post-bootstrap
-
-        if self._bootstrap.remote_config.set_pgid:
-            if os.getpgid(0) != os.getpid():
-                log.debug('Setting pgid')
-                os.setpgid(0, 0)
-
-        if (ds := self._bootstrap.remote_config.deathsig) is not None:
-            log.debug('Setting deathsig: %s', ds)
-            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
-
-        self._timebomb_thread()
-
-        if self._bootstrap.remote_config.forward_logging:
-            log.debug('Installing log forwarder')
-            logging.root.addHandler(self._log_handler())
-
-    #
-
-    async def run(self) -> None:
-        await self._setup()
-
-        executor = self._injector[LocalCommandExecutor]
-
-        handler = _RemoteCommandHandler(self._chan, executor)
-
-        await handler.run()
-
-
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    async def inner() -> None:
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)
-
-        chan = RemoteChannelImpl(
-            input,
-            output,
-        )
-
-        await _RemoteExecutionMain(chan).run()
-
-    asyncio.run(inner())
+@dc.dataclass(frozen=True)
+class SystemConfig:
+    platform: ta.Optional[Platform] = None
 
 
 ########################################
@@ -11934,6 +11872,24 @@ def git_shallow_clone(
 
 
 ########################################
+# ../bootstrap.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MainBootstrap:
+    main_config: MainConfig = MainConfig()
+
+    deploy_config: DeployConfig = DeployConfig()
+
+    remote_config: RemoteConfig = RemoteConfig()
+
+    system_config: SystemConfig = SystemConfig()
+
+
+########################################
 # ../deploy/injection.py
 
 
@@ -12018,7 +11974,7 @@ class AsyncioProcessCommunicator:
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -12241,7 +12197,7 @@ class InterpInspector:
     def __init__(
             self,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -12405,7 +12361,7 @@ class Uv:
             self,
             config: UvConfig = UvConfig(),
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -12903,6 +12859,152 @@ class DeploySystemdManager:
 
 
 ########################################
+# ../remote/_main.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
+##
+
+
+class _RemoteExecutionMain:
+    def __init__(
+            self,
+            chan: RemoteChannel,
+    ) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+        self.__bootstrap: ta.Optional[MainBootstrap] = None
+        self.__injector: ta.Optional[Injector] = None
+
+    @property
+    def _bootstrap(self) -> MainBootstrap:
+        return check.not_none(self.__bootstrap)
+
+    @property
+    def _injector(self) -> Injector:
+        return check.not_none(self.__injector)
+
+    #
+
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        log.debug('Started timebomb thread: %r', thr)
+
+        return thr
+
+    #
+
+    @cached_nullary
+    def _log_handler(self) -> _RemoteLogHandler:
+        return _RemoteLogHandler(self._chan)
+
+    #
+
+    async def _setup(self) -> None:
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
+
+        # Bootstrap
+
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
+
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
+        self._timebomb_thread()
+
+        if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
+            logging.root.addHandler(self._log_handler())
+
+    #
+
+    async def run(self) -> None:
+        await self._setup()
+
+        executor = self._injector[LocalCommandExecutor]
+
+        handler = _RemoteCommandHandler(self._chan, executor)
+
+        await handler.run()
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        chan = RemoteChannelImpl(
+            input,
+            output,
+        )
+
+        await _RemoteExecutionMain(chan).run()
+
+    asyncio.run(inner())
+
+
+########################################
 # ../remote/spawning.py
 
 
@@ -13183,7 +13285,7 @@ class SystemInterpProvider(InterpProvider):
             options: Options = Options(),
             *,
             inspector: ta.Optional[InterpInspector] = None,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -13566,7 +13668,7 @@ class UvInterpProvider(InterpProvider):
             *,
             pyenv: Uv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 
@@ -13862,7 +13964,7 @@ class PyenvInterpProvider(InterpProvider):
             *,
             pyenv: Pyenv,
             inspector: InterpInspector,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[LoggerLike] = None,
     ) -> None:
         super().__init__()
 

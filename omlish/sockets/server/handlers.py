@@ -3,11 +3,11 @@
 import abc
 import concurrent.futures as cf
 import dataclasses as dc
-import logging
 import socket
 import typing as ta
 
 from ...lite.abstract import Abstract
+from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
 from ..handlers import SocketHandler
 from ..io import SocketIoPair
@@ -142,7 +142,7 @@ class ExecutorSocketServerHandler(SocketServerHandler_):
 @dc.dataclass(frozen=True)
 class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
     handler: SocketServerHandler
-    log: logging.Logger
+    log: LoggerLike
 
     ignored: ta.Optional[ta.Container[ta.Type[Exception]]] = None
 

@@ -1,8 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 import errno
-import logging
 import os
 import typing as ta
+
+from omlish.logs.protocols import LoggerLike
 
 from .ostypes import Pid
 from .ostypes import Rc
@@ -58,7 +59,7 @@ class WaitedPid(ta.NamedTuple):
 
 def waitpid(
         *,
-        log: ta.Optional[logging.Logger] = None,
+        log: ta.Optional[LoggerLike] = None,
 ) -> ta.Optional[WaitedPid]:
     # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
     # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
