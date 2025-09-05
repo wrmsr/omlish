@@ -4,6 +4,7 @@ import unittest
 
 from ..std.adapters import StdLogger
 from ..std.handlers import ListLoggingHandler
+from ..std.records import LoggingContextLogRecord
 
 
 class TestLogs(unittest.TestCase):
@@ -30,3 +31,7 @@ class TestLogs(unittest.TestCase):
 
         std_log.info(('hi',))
         std_log.info(('hi %d', 420))
+
+        lr = handler.records[-1]
+        assert isinstance(lr, LoggingContextLogRecord)
+        assert lr.pathname == __file__
