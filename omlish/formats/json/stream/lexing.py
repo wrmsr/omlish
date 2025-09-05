@@ -42,10 +42,13 @@ ControlTokenKind: ta.TypeAlias = ta.Literal[
 
 SpaceTokenKind: ta.TypeAlias = ta.Literal['SPACE']
 
+CommentTokenKind: ta.TypeAlias = ta.Literal['COMMENT']
+
 TokenKind: ta.TypeAlias = ta.Union[  # noqa
     ValueTokenKind,
     ControlTokenKind,
     SpaceTokenKind,
+    CommentTokenKind,
 ]
 
 
@@ -118,10 +121,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
             include_raw: bool = False,
             include_space: bool = False,
             allow_comments: bool = False,
+            include_comments: bool = False,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
         self._allow_comments = allow_comments
+        self._include_comments = include_comments
 
         self._ofs = 0
         self._line = 1
@@ -157,7 +162,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self,
             kind: TokenKind,
             value: ScalarValue,
-            raw: str,
+            raw: str | None,
             pos: Position,
     ) -> ta.Sequence[Token]:
         tok = Token(
@@ -177,9 +182,13 @@ class JsonStreamLexer(GenMachine[str, Token]):
     def _raise(self, msg: str, src: Exception | None = None) -> ta.NoReturn:
         raise JsonStreamLexError(msg, self.pos) from src
 
-    def _do_main(self):
+    def _do_main(self, peek: str | None = None):
         while True:
-            c = self._char_in((yield None))  # noqa
+            if peek is not None:
+                c = peek
+                peek = None
+            else:
+                c = self._char_in((yield None))  # noqa
 
             if not c:
                 return None
@@ -203,7 +212,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 return self._do_const(c)
 
             if self._allow_comments and c == '/':
-                return self._do_comment()
+                yield from self._do_comment()
+                continue
 
             self._raise(f'Unexpected character: {c}')
 
@@ -295,17 +305,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         if not c:
             return None
 
-        if c in CONTROL_TOKENS:
-            yield self._make_tok(CONTROL_TOKENS[c], c, c, pos)
-
-        elif c.isspace():
-            if self._include_space:
-                yield self._make_tok('SPACE', c, c, self.pos)
-
-        else:
-            self._raise(f'Unexpected character after number: {c}')
-
-        return self._do_main()
+        return self._do_main(c)
 
     def _do_const(self, c: str):
         pos = self.pos
@@ -328,4 +328,51 @@ class JsonStreamLexer(GenMachine[str, Token]):
         return self._do_main()
 
     def _do_comment(self):
-        raise NotImplementedError
+        check.state(self._buf.tell() == 0)
+
+        pos = self.pos
+        try:
+            oc = self._char_in((yield None))  # noqa
+        except GeneratorExit:
+            self._raise('Unexpected end of input')
+
+        if oc == '/':
+            while True:
+                try:
+                    ic = self._char_in((yield None))  # noqa
+                except GeneratorExit:
+                    self._raise('Unexpected end of input')
+
+                if ic == '\n':
+                    break
+
+                if self._include_comments:
+                    self._buf.write(ic)
+
+            if self._include_comments:
+                cmt = self._flip_buf()
+                raw = f'//{cmt}\n' if self._include_raw else None
+                yield self._make_tok('COMMENT', cmt, raw, pos)
+
+        elif oc == '*':
+            lc: str | None = None
+            while True:
+                try:
+                    ic = self._char_in((yield None))  # noqa
+                except GeneratorExit:
+                    self._raise('Unexpected end of input')
+
+                if lc == '*' and ic == '/':
+                    break
+
+                if lc is not None and self._include_comments:
+                    self._buf.write(lc)
+                lc = ic
+
+            if self._include_comments:
+                cmt = self._flip_buf()
+                raw = f'/*{cmt}*/' if self._include_raw else None
+                yield self._make_tok('COMMENT', cmt, raw, pos)
+
+        else:
+            self._raise(f'Unexpected character after comment start: {oc}')

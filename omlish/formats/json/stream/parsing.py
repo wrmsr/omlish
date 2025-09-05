@@ -106,7 +106,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         while True:
             tok = yield None
 
-            if tok.kind != 'SPACE':
+            if tok.kind != 'SPACE' and tok.kind != 'COMMENT':
                 return tok
 
     #

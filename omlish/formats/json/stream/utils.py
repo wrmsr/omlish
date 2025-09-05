@@ -15,7 +15,7 @@ class JsonStreamValueParser(lang.ExitStacked):
     include_raw: bool = False
     yield_object_lists: bool = False
 
-    json5: bool = False
+    allow_comments: bool = False
 
     #
 
@@ -26,7 +26,7 @@ class JsonStreamValueParser(lang.ExitStacked):
     def _enter_contexts(self) -> None:
         self._lex = JsonStreamLexer(
             include_raw=self.include_raw,
-            allow_comments=self.json5,
+            allow_comments=self.allow_comments,
         )
 
         self._parse = JsonStreamParser()
