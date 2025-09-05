@@ -1,13 +1,17 @@
 """Utility functions for manipulating directories and directory trees."""
 import errno
-import logging
 import os
+
+from omlish.logs import all as logs
 
 from .errors import DistutilsFileError
 from .errors import DistutilsInternalError
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 # cache for by mkpath() -- in addition to cheapening redundant calls, eliminates redundant "creating /foo/bar/baz"

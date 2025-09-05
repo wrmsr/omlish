@@ -37,7 +37,6 @@ License Agreement.
 """
 import contextlib
 import dataclasses as dc
-import logging
 import os
 import site
 import sys
@@ -46,6 +45,7 @@ import typing as ta
 from omlish import cached
 from omlish import check
 from omlish import lang
+from omlish.logs import all as logs
 
 from . import compilers
 from . import errors
@@ -55,7 +55,10 @@ from . import sysconfig
 from . import util
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 def _get_str_config_var(name: str) -> str:

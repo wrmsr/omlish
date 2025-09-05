@@ -1,7 +1,6 @@
 """
 Contains CCompiler, an abstract base class that defines the interface for the Distutils compiler abstraction model.
 """
-import logging
 import os
 import re
 import sys
@@ -9,6 +8,7 @@ import typing as ta
 import warnings
 
 from omlish import check
+from omlish.logs import all as logs
 
 from ..dir_util import mkpath
 from ..errors import CompileError
@@ -25,7 +25,10 @@ from .options import Macro
 from .options import gen_preprocess_options
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 class CCompiler:

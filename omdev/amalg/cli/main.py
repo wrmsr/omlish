@@ -26,7 +26,6 @@ Targets:
  - supervisor?
 """
 import argparse
-import logging
 import os.path
 import stat
 import typing as ta
@@ -38,7 +37,7 @@ from ..gen.gen import SCAN_COMMENT
 from ..gen.gen import AmalgGenerator
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

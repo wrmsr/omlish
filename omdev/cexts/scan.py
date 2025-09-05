@@ -1,5 +1,4 @@
 import argparse
-import logging
 import os.path
 import typing as ta
 
@@ -8,7 +7,7 @@ from omlish.logs import all as logs
 from .magic import CextMagic
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

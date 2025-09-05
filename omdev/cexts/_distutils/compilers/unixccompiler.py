@@ -14,12 +14,13 @@ from __future__ import annotations
 
 import importlib
 import itertools
-import logging
 import os
 import re
 import shlex
 import sys
 import typing as ta
+
+from omlish.logs import all as logs
 
 from .. import sysconfig
 from ..errors import CompileError
@@ -32,7 +33,10 @@ from .options import gen_lib_options
 from .options import gen_preprocess_options
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 def bypass_compiler_fixup(cmd, args):

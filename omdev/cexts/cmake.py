@@ -33,7 +33,6 @@ Done:
 import argparse
 import dataclasses as dc
 import io
-import logging
 import os.path
 import shutil
 import sys
@@ -50,7 +49,7 @@ from ..cli import CliModule
 from .magic import CextMagic
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

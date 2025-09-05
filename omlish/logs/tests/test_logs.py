@@ -37,3 +37,6 @@ class TestLogs(unittest.TestCase):
         assert isinstance(lr, LoggingContextLogRecord)
         assert os.path.basename(lr.pathname) == 'test_logs.py'
         assert lr.funcName == 'test_logs'
+
+        i = 420
+        std_log.info(f'hi! {i}')

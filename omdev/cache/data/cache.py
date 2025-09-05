@@ -11,7 +11,6 @@ TODO:
  - download resume ala hf_hub
 """
 import contextlib
-import logging
 import os.path
 import shutil
 import subprocess
@@ -25,6 +24,7 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
+from omlish.logs import all as logs
 from omlish.os.files import touch
 
 from ...git.shallow import git_shallow_clone
@@ -37,7 +37,7 @@ from .specs import Spec
 from .specs import UrlSpec
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##
