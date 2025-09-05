@@ -432,7 +432,7 @@ class ManifestLoader:
             return None
         return t.read_text('utf-8')
 
-    MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.manifests.json'
+    MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.omlish-manifests.json'
 
     @classmethod
     def _read_package_raw_manifests(cls, package_name: str) -> ta.Optional[ta.Sequence[Manifest]]:

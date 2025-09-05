@@ -334,7 +334,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         #         '*.c',
         #         '*.cc',
         #         '*.h',
-        #         '.manifests.json',
+        #         '.omlish-manifests.json',
         #         'LICENSE',
         #     ],
         # }

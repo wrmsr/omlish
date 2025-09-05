@@ -407,7 +407,7 @@ class ManifestBuilder:
         ])))
 
         if write:
-            with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:  # noqa
+            with open(os.path.join(pkg_dir, '.omlish-manifests.json'), 'w') as f:  # noqa
                 f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
                 f.write('\n')
 
@@ -425,7 +425,7 @@ def check_package_manifests(
     if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
         raise Exception(pkg_dir)
 
-    manifests_file = os.path.join(pkg_dir, '.manifests.json')
+    manifests_file = os.path.join(pkg_dir, '.omlish-manifests.json')
     if not os.path.isfile(manifests_file):
         raise Exception(f'No manifests file: {manifests_file}')
 

@@ -1,4 +1,4 @@
-from ...cli import CliModule
+from omdev.cli import CliModule
 
 
 # @omlish-manifest

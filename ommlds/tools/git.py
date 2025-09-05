@@ -206,7 +206,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
 
     # TODO: configurable
     DEFAULT_EXCLUDES: ta.ClassVar[ta.Sequence[str]] = [
-        '**/.manifests.json',
+        '**/.omlish-manifests.json',
         '**/_antlr/*',
     ]
 

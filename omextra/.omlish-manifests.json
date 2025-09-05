@@ -1,0 +1,14 @@
+[
+  {
+    "module": ".text.antlr.cli.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omextra/text/antlr/cli/__main__.py",
+    "line": 4,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "antlr",
+        "module": "omextra.text.antlr.cli.__main__"
+      }
+    }
+  }
+]

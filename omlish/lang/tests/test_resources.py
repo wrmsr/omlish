@@ -19,5 +19,5 @@ def test_relative_resources() -> None:
         rsrs = get_relative_resources('..classes', **kwargs)
         assert 'is_abstract_class' in rsrs['abstract.py'].read_bytes().decode()
 
-        src = get_relative_resources('...', **kwargs)['.manifests.json'].read_bytes()
+        src = get_relative_resources('...', **kwargs)['.omlish-manifests.json'].read_bytes()
         assert isinstance(json.loads(src.decode('utf-8')), list)

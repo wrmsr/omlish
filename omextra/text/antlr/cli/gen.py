@@ -10,11 +10,11 @@ import shutil
 import subprocess
 import typing as ta
 
+from omdev.cache import data as dcache
 from omlish import check
 from omlish import lang
 from omlish.os.paths import is_path_in_dir
 
-from ...cache import data as dcache
 from .consts import ANTLR_JAR_URL
 from .consts import ANTLR_RUNTIME_VENDOR
 

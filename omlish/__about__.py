@@ -175,7 +175,7 @@ class SetuptoolsBase:
             '*.g4',
             '*.h',
 
-            '.manifests.json',
+            '.omlish-manifests.json',
 
             'LICENSE',
             'LICENSE.txt',

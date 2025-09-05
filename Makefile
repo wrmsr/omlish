@@ -169,7 +169,7 @@ gen-pkg:
 
 .PHONY: gen-antlr
 gen-antlr:
-	${PYTHON} -m omdev.tools.antlr gen ${SRCS} x
+	${PYTHON} -m omextra.text.antlr.cli gen ${SRCS} x
 
 
 ### Check
