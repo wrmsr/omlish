@@ -24,3 +24,6 @@ class TestLogs(unittest.TestCase):
         std_log.info('hi')
         std_log.warning('hi')
         std_log.error('hi')
+
+        std_log.info(lambda: 'hi')
+        std_log.info(lambda: ('hi %d', 420))

@@ -20,7 +20,7 @@ from .handlers import SocketServerHandler
 ##
 
 
-class SocketServer(Abstract):
+class SocketServer:
     _DEFAULT_LOGGER = logging.getLogger('.'.join([__name__, 'SocketServer']))
 
     def __init__(

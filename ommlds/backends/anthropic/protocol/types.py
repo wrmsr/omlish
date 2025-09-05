@@ -50,12 +50,23 @@ class ToolResult(Content):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+class CacheCreation:
+    ephemeral_5m_input_tokens: int | None = None
+    ephemeral_1h_input_tokens: int | None = None
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
 class Usage:
     input_tokens: int | None = None
     output_tokens: int | None = None
 
     cache_creation_input_tokens: int | None = None
     cache_read_input_tokens: int | None = None
+    cache_creation: CacheCreation | None = None
 
     service_tier: str | None = None
 
