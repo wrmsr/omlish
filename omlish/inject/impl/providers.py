@@ -7,7 +7,6 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
 from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..providers import ConstProvider
@@ -38,9 +37,6 @@ class ProviderImpl(lang.Abstract):
 @dc.dataclass(frozen=True, eq=False)
 class InternalProvider(Provider):
     impl: ProviderImpl
-
-    def provided_ty(self) -> rfl.Type | None:
-        raise TypeError
 
 
 ##

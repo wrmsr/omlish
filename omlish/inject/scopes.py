@@ -5,7 +5,6 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
 from .bindings import Binding
 from .elements import Element
 from .keys import Key
@@ -75,9 +74,6 @@ class SeededScope(Scope, lang.Final):
 class ScopeSeededProvider(Provider):
     ss: SeededScope = dc.xfield(coerce=check.of_isinstance(SeededScope))
     key: Key = dc.xfield(coerce=check.of_isinstance(Key))
-
-    def provided_ty(self) -> rfl.Type | None:
-        return self.key.ty
 
 
 def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:

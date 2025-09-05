@@ -202,7 +202,7 @@ class InjectorImpl(Injector, lang.Final):
     #
 
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
-        return self.try_provide(key)
+        return self._try_provide(key)
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self._try_provide(key)
