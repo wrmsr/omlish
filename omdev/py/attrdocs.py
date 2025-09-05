@@ -24,12 +24,12 @@ class AttrDoc:
     trailing_comment: str | None = None
     preceding_comment: str | None = None
 
-    __repr__ = lang.AttrRepr.of(
+    __repr__ = lang.attr_ops(
         'docstring',
         'trailing_comment',
         'preceding_comment',
-        value_filter=bool,
-    )
+        repr_filter=bool,
+    ).repr
 
 
 _EMPTY_ATTR_DOC = AttrDoc()

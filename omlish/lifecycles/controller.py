@@ -47,7 +47,7 @@ class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifec
         self._state = LifecycleStates.NEW
         self._listeners: list[AnyLifecycleListener[AnyLifecycleT, R]] = []
 
-    __repr__ = lang.AttrRepr(['lifecycle', 'state'])
+    __repr__ = lang.attr_ops('lifecycle', 'state').repr
 
     @property
     def lifecycle(self) -> AnyLifecycleT:

@@ -73,13 +73,6 @@ def split_keep_delimiter(s, d):
 ##
 
 
-def attr_repr(obj: ta.Any, *attrs: str) -> str:
-    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
-
-
-##
-
-
 FORMAT_NUM_BYTES_SUFFIXES: ta.Sequence[str] = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB']
 
 

@@ -22,7 +22,7 @@ class SetProviderImpl(ProviderImpl, lang.Final):
     ps: ta.Sequence[ProviderImpl]
 
     @property
-    def providers(self) -> ta.Iterable[Provider]:
+    def providers(self) -> ta.Iterator[Provider]:
         for p in self.ps:
             yield from p.providers
 
@@ -43,7 +43,7 @@ class MapProviderImpl(ProviderImpl, lang.Final):
     es: ta.Sequence[Entry]
 
     @property
-    def providers(self) -> ta.Iterable[Provider]:
+    def providers(self) -> ta.Iterator[Provider]:
         for e in self.es:
             yield from e.v.providers
 

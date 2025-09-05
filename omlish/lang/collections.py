@@ -9,7 +9,7 @@ V = ta.TypeVar('V')
 ##
 
 
-def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
+def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Any, ta.Any]]:
     if len(args) > 1:
         raise TypeError
 

@@ -148,6 +148,7 @@ class _Maybe(Maybe[T], Abstract):
             return op and not sp
 
 
+@ta.final
 class _JustMaybe(_Maybe[T]):
     __slots__ = ('_v', '_hash')
 
@@ -185,6 +186,7 @@ class _JustMaybe(_Maybe[T]):
         )
 
 
+@ta.final
 class _EmptyMaybe(_Maybe[T]):
     __slots__ = ()
 

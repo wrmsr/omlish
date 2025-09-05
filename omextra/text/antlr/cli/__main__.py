@@ -1,8 +1,8 @@
-from omdev.cli import CliModule
-
-
 # @omlish-manifest
-_CLI_MODULE = CliModule('antlr', __name__)
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
+    'name': 'antlr',
+    'module': __name__,
+}}
 
 
 if __name__ == '__main__':

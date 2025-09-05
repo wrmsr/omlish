@@ -19,7 +19,7 @@ class FooMachine:
     def state(self) -> str | None:
         return self._m.state
 
-    def __call__(self, e: str) -> ta.Iterable[str]:
+    def __call__(self, e: str) -> ta.Iterator[str]:
         return self._m(e)
 
     def _state0(self) -> StrGenerator:

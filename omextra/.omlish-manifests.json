@@ -3,7 +3,7 @@
     "module": ".text.antlr.cli.__main__",
     "attr": "_CLI_MODULE",
     "file": "omextra/text/antlr/cli/__main__.py",
-    "line": 4,
+    "line": 1,
     "value": {
       "!omdev.cli.types.CliModule": {
         "name": "antlr",

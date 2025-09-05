@@ -7,8 +7,8 @@ import tempfile
 import typing as ta
 
 from ..lite.abstract import Abstract
+from ..lite.attrops import attr_repr
 from ..lite.check import check
-from ..lite.strings import attr_repr
 
 
 AtomicPathSwapKind = ta.Literal['dir', 'file']

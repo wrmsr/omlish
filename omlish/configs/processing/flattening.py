@@ -119,7 +119,7 @@ class ConfigFlattening:
     def unflatten(self, flattened: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
         root = ConfigFlattening.UnflattenDict()
 
-        def split_keys(fkey: str) -> ta.Iterable[ta.Union[str, int]]:
+        def split_keys(fkey: str) -> ta.Iterator[ta.Union[str, int]]:
             for part in fkey.split(self._delimiter):
                 if self._index_open in part:
                     check.state(part.endswith(self._index_close))

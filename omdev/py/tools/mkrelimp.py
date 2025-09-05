@@ -32,7 +32,7 @@ def indexfn(
     return -1
 
 
-def interleave(sep: T, it: ta.Iterable[T]) -> ta.Iterable[T]:
+def interleave(sep: T, it: ta.Iterable[T]) -> ta.Iterator[T]:
     for i, e in enumerate(it):
         if i > 0:
             yield sep

@@ -40,7 +40,7 @@ def max_line_width(ft: ptk.StyleAndTextTuples) -> int:
     return max(ptk.fragment_list_width(line) for line in ptk.split_lines(ft))
 
 
-def fragment_list_to_words(fragments: ptk.StyleAndTextTuples) -> ta.Iterable[ptk.OneStyleAndTextTuple]:
+def fragment_list_to_words(fragments: ptk.StyleAndTextTuples) -> ta.Iterator[ptk.OneStyleAndTextTuple]:
     """Split formatted text into word fragments."""
 
     for style, string, *mouse_handler in fragments:

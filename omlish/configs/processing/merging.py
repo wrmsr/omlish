@@ -3,6 +3,7 @@
 """
 TODO:
  - smarter merging than just dumb dict-squashing
+  - at least sequence merging
 """
 import typing as ta
 
@@ -19,13 +20,14 @@ def merge_configs(*ms: ConfigMap) -> ConfigMap:
                 e = o[k]
             except KeyError:
                 o[k] = v
+                continue
+
+            if isinstance(e, ta.Mapping) and isinstance(v, ta.Mapping):
+                rec(e, v)  # noqa
             else:
-                if isinstance(e, ta.Mapping) and isinstance(v, ta.Mapping):
-                    rec(e, v)  # noqa
-                else:
-                    if isinstance(v, ta.Mapping):
-                        v = dict(v)
-                    o[k] = v
+                if isinstance(v, ta.Mapping):
+                    v = dict(v)
+                o[k] = v
 
     o: dict = {}
     for i in ms:

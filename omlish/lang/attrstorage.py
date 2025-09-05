@@ -76,7 +76,7 @@ def set_attr(
 ##
 
 
-class AttrOps(Abstract):
+class AttrStorage(Abstract):
     class NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
             raise TypeError
@@ -97,9 +97,9 @@ class AttrOps(Abstract):
 #
 
 
-class StdAttrOps(AttrOps):
-    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrOps.NOT_SET) -> ta.Any:
-        if default is AttrOps.NOT_SET:
+class StdAttrStorage(AttrStorage):
+    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrStorage.NOT_SET) -> ta.Any:
+        if default is AttrStorage.NOT_SET:
             return getattr(obj, name)
         else:
             return getattr(obj, name, default)
@@ -111,13 +111,13 @@ class StdAttrOps(AttrOps):
         delattr(obj, name)
 
 
-STD_ATTR_OPS = StdAttrOps()
+STD_ATTR_STORAGE = StdAttrStorage()
 
 
 #
 
 
-class DictAttrOps(AttrOps):
+class DictAttrStorage(AttrStorage):
     def __init__(self, dct: ta.MutableMapping[str, ta.Any] | None = None) -> None:
         super().__init__()
 
@@ -125,11 +125,11 @@ class DictAttrOps(AttrOps):
             dct = {}
         self._dct = dct
 
-    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrOps.NOT_SET) -> ta.Any:
+    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrStorage.NOT_SET) -> ta.Any:
         try:
             return self._dct[name]
         except KeyError:
-            if default is not AttrOps.NOT_SET:
+            if default is not AttrStorage.NOT_SET:
                 return default
             raise AttributeError(name) from None
 
@@ -205,13 +205,13 @@ def _get_object_transient_dict(obj: ta.Any) -> TransientDict:
         return obj.__dict__.setdefault(_TRANSIENT_DICT_ATTR, TransientDict())
 
 
-class TransientAttrOps(AttrOps):
-    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrOps.NOT_SET) -> ta.Any:
+class TransientAttrStorage(AttrStorage):
+    def getattr(self, obj: ta.Any, name: str, default: ta.Any = AttrStorage.NOT_SET) -> ta.Any:
         td = _get_object_transient_dict(obj)
         try:
             return td[name]
         except KeyError:
-            if default is not AttrOps.NOT_SET:
+            if default is not AttrStorage.NOT_SET:
                 return default
             raise AttributeError(name) from None
 
@@ -227,8 +227,8 @@ class TransientAttrOps(AttrOps):
             raise AttributeError(name) from None
 
 
-TRANSIENT_ATTR_OPS = TransientAttrOps()
+TRANSIENT_ATTR_STORAGE = TransientAttrStorage()
 
-transient_getattr = TRANSIENT_ATTR_OPS.getattr
-transient_setattr = TRANSIENT_ATTR_OPS.setattr
-transient_delattr = TRANSIENT_ATTR_OPS.delattr
+transient_getattr = TRANSIENT_ATTR_STORAGE.getattr
+transient_setattr = TRANSIENT_ATTR_STORAGE.setattr
+transient_delattr = TRANSIENT_ATTR_STORAGE.delattr

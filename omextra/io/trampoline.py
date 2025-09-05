@@ -135,7 +135,7 @@ class IoTrampoline(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+    def feed(self, *data: bytes) -> ta.Iterator[bytes]:
         raise NotImplementedError
 
 
@@ -198,7 +198,7 @@ class ThreadIoTrampoline(IoTrampoline):
         finally:
             self._out.push(Exited)
 
-    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+    def feed(self, *data: bytes) -> ta.Iterator[bytes]:
         self._in.push(*data)
         while True:
             e = self._out.pop()
@@ -273,7 +273,7 @@ class ThreadletIoTrampoline(IoTrampoline):
             check.not_none(self._tl.parent).throw(e)
             raise
 
-    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+    def feed(self, *data: bytes) -> ta.Iterator[bytes]:
         i: bytes | type[NeedMore]
         for i in data:
             while True:

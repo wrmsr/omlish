@@ -33,6 +33,7 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import abc
 import functools
 import operator
 import typing as ta
@@ -75,7 +76,9 @@ def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
 
 
 def _default_is_abstract(obj: ta.Any) -> bool:
-    return hasattr(obj, '__abstractmethods__')
+    # .lite.abstracts.Abstract has '__abstractmethods__' but is not an ABCMeta, and thus for the purposes of c3 mro are
+    # not considered 'abstract'. What 'abstract' means in this context is 'can have virtual subclasses'.
+    return hasattr(obj, '__abstractmethods__') and isinstance(obj, abc.ABCMeta)
 
 
 def mro(

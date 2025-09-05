@@ -1,7 +1,7 @@
 import pickle
 
-from ..attrs import transient_getattr
-from ..attrs import transient_setattr
+from ..attrstorage import transient_getattr
+from ..attrstorage import transient_setattr
 
 
 class Foo:

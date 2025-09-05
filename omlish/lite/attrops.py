@@ -1,10 +1,11 @@
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 """
 TODO:
- - class Attr(ta.NamedTuple)
  - dotted paths!
+ - per-attr repr transform / filter
 """
-import types
+import types  # noqa
 import typing as ta
 
 
@@ -256,10 +257,10 @@ class AttrOps(ta.Generic[T]):
 
     #
 
-    _eq: ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]]
+    _eq: ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']]
 
     @property
-    def eq(self) -> ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]]:
+    def eq(self) -> ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']]:
         try:
             return self._eq
         except AttributeError:
@@ -287,7 +288,7 @@ class AttrOps(ta.Generic[T]):
     @property
     def hash_eq(self) -> ta.Tuple[
         ta.Callable[[T], int],
-        ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]],
+        ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.hash, self.eq)
 
@@ -295,37 +296,16 @@ class AttrOps(ta.Generic[T]):
     def repr_hash_eq(self) -> ta.Tuple[
         ta.Callable[[T], str],
         ta.Callable[[T], int],
-        ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]],
+        ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.repr, self.hash, self.eq)
+
+
+attr_ops = AttrOps[ta.Any]
 
 
 ##
 
 
-class Point:
-    def __init__(self, x: int, y: int) -> None:
-        self.x, self.y = x, y
-
-    __repr__, __hash__, __eq__ = AttrOps['Point'](lambda o: (o.x, o.y)).repr_hash_eq
-
-
-def _main() -> None:
-    p1 = Point(20, 30)
-    assert repr(p1) == 'Point(x=20, y=30)'
-
-    p2 = Point(40, 50)
-    assert repr(p2) == 'Point(x=40, y=50)'
-    assert p1 != p2
-
-    p1.x = 40
-    assert repr(p1) == 'Point(x=40, y=30)'
-    assert p1 != p2
-
-    p2.y = 30
-    assert repr(p2) == 'Point(x=40, y=30)'
-    assert p1 == p2
-
-
-if __name__ == '__main__':
-    _main()
+def attr_repr(obj: ta.Any, *attrs: str, **kwargs: ta.Any) -> str:
+    return AttrOps(*attrs, **kwargs).repr(obj)

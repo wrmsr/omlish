@@ -235,7 +235,7 @@ PAGEMAP_KEYS = (
 )
 
 
-def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
+def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> ta.Iterator[dict[str, int]]:
     """https://www.kernel.org/doc/Documentation/vm/pagemap.txt"""
 
     _check_linux()
@@ -262,7 +262,7 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
         }
 
 
-def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
+def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterator[dict[str, int]]:
     _check_linux()
     for m in get_process_maps(pid):
         yield from get_process_range_pagemaps(m['address'], m['end_address'], pid)

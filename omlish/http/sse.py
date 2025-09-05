@@ -82,7 +82,7 @@ class SseDecoder:
 
         return e
 
-    def process_line(self, line: bytes) -> ta.Iterable[SseDecoderOutput]:
+    def process_line(self, line: bytes) -> ta.Iterator[SseDecoderOutput]:
         if b'\r' in line or b'\n' in line:
             raise ValueError(line)
 

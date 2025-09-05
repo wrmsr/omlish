@@ -17,17 +17,21 @@ with _auto_proxy_init(
         sync_async_list,
     )
 
-    from .attrs import (  # noqa
-        AttrOps,
+    from .attrstorage import (  # noqa
         AttributePresentError,
-        DictAttrOps,
-        STD_ATTR_OPS,
         SetAttrIfPresent,
-        StdAttrOps,
-        TRANSIENT_ATTR_OPS,
-        TransientAttrOps,
-        TransientDict,
         set_attr,
+
+        AttrStorage,
+
+        StdAttrStorage,
+        STD_ATTR_STORAGE,
+
+        DictAttrStorage,
+
+        TransientDict,
+        TransientAttrStorage,
+        TRANSIENT_ATTR_STORAGE,
         transient_delattr,
         transient_getattr,
         transient_setattr,
@@ -445,6 +449,17 @@ with _auto_proxy_init(
         Args,
     )
 
+    from ..lite.asyncs import (  # noqa
+        opt_await,
+    )
+
+    from ..lite.attrops import (  # noqa
+        AttrOps,
+        attr_ops,
+
+        attr_repr,
+    )
+
     from ..lite.contextmanagers import (  # noqa
         AsyncExitStacked,
         ExitStacked,
@@ -487,11 +502,6 @@ with _auto_proxy_init(
         mro_dict,
         mro_owner_dict,
         dir_dict,
-    )
-
-    from ..lite.reprs import (  # noqa
-        AttrRepr,
-        attr_repr,
     )
 
     from ..lite.timeouts import (  # noqa

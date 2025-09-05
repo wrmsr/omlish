@@ -74,7 +74,7 @@ class Section:
         dashes = '-' * len(self.title)
         return rf'^({self.title})\s*?\n{dashes}\s*$'
 
-    def parse(self, text: str) -> ta.Iterable[DocstringMeta]:
+    def parse(self, text: str) -> ta.Iterator[DocstringMeta]:
         """
         Parse ``DocstringMeta`` objects from the body of this section.
 
@@ -100,7 +100,7 @@ class _KVSection(Section, abc.ABC):
     def _parse_item(self, key: str, value: str) -> DocstringMeta:
         raise NotImplementedError
 
-    def parse(self, text: str) -> ta.Iterable[DocstringMeta]:
+    def parse(self, text: str) -> ta.Iterator[DocstringMeta]:
         for match, next_match in _pairwise(KV_PAT.finditer(text)):
             start = match.end()
             end = next_match.start() if next_match is not None else None
@@ -227,7 +227,7 @@ class YieldsSection(ReturnsSection):
 class DeprecationSection(_SphinxSection):
     """Parser for numpydoc "deprecation warning" sections."""
 
-    def parse(self, text: str) -> ta.Iterable[DocstringDeprecated]:
+    def parse(self, text: str) -> ta.Iterator[DocstringDeprecated]:
         version, desc, *_ = [*text.split(sep='\n', maxsplit=1), None, None]
 
         if desc is not None:
@@ -254,7 +254,7 @@ class ExamplesSection(Section):
                 [ 6586976, 22740995]])
     """
 
-    def parse(self, text: str) -> ta.Iterable[DocstringMeta]:
+    def parse(self, text: str) -> ta.Iterator[DocstringMeta]:
         """
         Parse ``DocstringExample`` objects from the body of this section.
 

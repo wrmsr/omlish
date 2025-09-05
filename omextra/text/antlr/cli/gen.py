@@ -10,13 +10,18 @@ import shutil
 import subprocess
 import typing as ta
 
-from omdev.cache import data as dcache
 from omlish import check
 from omlish import lang
 from omlish.os.paths import is_path_in_dir
 
 from .consts import ANTLR_JAR_URL
 from .consts import ANTLR_RUNTIME_VENDOR
+
+
+if ta.TYPE_CHECKING:
+    from omdev.cache import data as dcache
+else:
+    dcache = lang.proxy_import('omdev.cache.data')
 
 
 log = logging.getLogger(__name__)

@@ -20,7 +20,10 @@ def logfmt_encode(
 ) -> str:
     def encode(s: str) -> str:
         if _LOGFMT_ENCODE_WS_PAT.search(s) is not None:
-            return '"' + s.replace('\\', '\\\\').replace('"', '\\"') + '"'
+            s = s.replace('\\', '\\\\')
+            s = s.replace('\n', '\\n')
+            s = s.replace('"', '\\"')
+            return f'"{s}"'
         else:
             return s
 
@@ -67,7 +70,10 @@ def logfmt_decode(
         if s.startswith('"'):
             if len(s) < 2 or not s.endswith('"'):
                 raise ValueError(s)
-            s = s[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+            s = s[1:-1]
+            s = s.replace('\\"', '"')
+            s = s.replace('\\n', '\n')
+            s = s.replace('\\\\', '\\')
         return s
 
     if value_decoder is None:

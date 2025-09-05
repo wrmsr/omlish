@@ -88,7 +88,7 @@ class GenMachine(ta.Generic[I, O]):
 
     #
 
-    def __call__(self, i: I) -> ta.Iterable[O]:
+    def __call__(self, i: I) -> ta.Iterator[O]:
         if self._gen is None:
             raise GenMachine.ClosedError
 

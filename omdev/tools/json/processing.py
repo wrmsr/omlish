@@ -57,7 +57,7 @@ class Processor:
             factory=self._marshaler_factory(),
         ).marshal(v)
 
-    def process(self, v: ta.Any) -> ta.Iterable[ta.Any]:
+    def process(self, v: ta.Any) -> ta.Iterator[ta.Any]:
         if self._jmespath_expr is not None:
             v = self._jmespath_expr.search(v)
 
