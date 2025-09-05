@@ -5,7 +5,7 @@ import typing as ta
 
 from ..base import Logger
 from ..base import LoggingMsgFn
-from ..contexts import LoggingContext
+from ..contexts import CaptureLoggingContext
 from ..levels import LogLevel
 from .records import LoggingContextLogRecord
 
@@ -26,11 +26,11 @@ class StdLogger(Logger):
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()
 
-    def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
         if not self.is_enabled_for(ctx.level):
             return
 
-        ctx.build_caller()
+        ctx.capture()
 
         ms, args = self._prepare_msg_args(msg, *args)
 

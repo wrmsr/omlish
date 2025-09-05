@@ -5,12 +5,21 @@ import sys
 import threading
 import typing as ta
 
+from ..lite.abstract import Abstract
+
+
+##
+
+
+class LoggingContextInfo(Abstract):
+    pass
+
 
 ##
 
 
 @ta.final
-class LoggingSourceFileInfo(ta.NamedTuple):
+class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):
     file_name: str
     module: str
 
@@ -36,7 +45,7 @@ class LoggingSourceFileInfo(ta.NamedTuple):
 
 
 @ta.final
-class LoggingThreadInfo(ta.NamedTuple):
+class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):
     ident: int
     native_id: ta.Optional[int]
     name: str
@@ -54,7 +63,7 @@ class LoggingThreadInfo(ta.NamedTuple):
 
 
 @ta.final
-class LoggingProcessInfo(ta.NamedTuple):
+class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):
     pid: int
 
     @classmethod
@@ -68,7 +77,7 @@ class LoggingProcessInfo(ta.NamedTuple):
 
 
 @ta.final
-class LoggingMultiprocessingInfo(ta.NamedTuple):
+class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):
     process_name: str
 
     @classmethod
@@ -86,7 +95,7 @@ class LoggingMultiprocessingInfo(ta.NamedTuple):
 
 
 @ta.final
-class LoggingAsyncioTaskInfo(ta.NamedTuple):
+class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):
     name: str
 
     @classmethod

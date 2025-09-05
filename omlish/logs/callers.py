@@ -7,11 +7,13 @@ import traceback
 import types
 import typing as ta
 
+from .infos import LoggingContextInfo
+
 
 ##
 
 
-class LoggingCaller(ta.NamedTuple):
+class LoggingCaller(LoggingContextInfo, ta.NamedTuple):
     file_path: str
     line_no: int
     name: str
@@ -57,8 +59,6 @@ class LoggingCaller(ta.NamedTuple):
         sinfo = None
         if stack_info:
             sio = io.StringIO()
-            # In stdlib, but done elsewhere here:
-            # sio.write('Stack (most recent call last):\n')
             traceback.print_stack(f, file=sio)
             sinfo = sio.getvalue()
             sio.close()

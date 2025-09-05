@@ -5,6 +5,7 @@ import logging
 import sys
 import typing as ta
 
+from ...lite.check import check
 from ..contexts import LoggingContext
 from ..contexts import LoggingExcInfoTuple
 from ..warnings import LoggingSetupWarning
@@ -268,19 +269,33 @@ class LoggingContextLogRecord(logging.LogRecord):
         self.msecs: float = times.msecs
         self.relativeCreated: float = times.relative_created
 
-        thread = ctx.thread
-        self.thread: ta.Optional[int] = thread.ident
-        self.threadName: ta.Optional[str] = thread.name
+        if logging.logThreads:
+            thread = check.not_none(ctx.thread())
+            self.thread: ta.Optional[int] = thread.ident
+            self.threadName: ta.Optional[str] = thread.name
+        else:
+            self.thread = None
+            self.threadName = None
 
-        process = ctx.process
-        self.process: ta.Optional[int] = process.pid
+        if logging.logProcesses:
+            process = check.not_none(ctx.process())
+            self.process: ta.Optional[int] = process.pid
+        else:
+            self.process = None
 
-        if (mp := ctx.multiprocessing) is not None:
-            self.processName: ta.Optional[str] = mp.process_name
+        if logging.logMultiprocessing:
+            if (mp := ctx.multiprocessing()) is not None:
+                self.processName: ta.Optional[str] = mp.process_name
+            else:
+                self.processName = None
         else:
             self.processName = None
 
-        if (at := ctx.asyncio_task) is not None:
-            self.taskName: ta.Optional[str] = at.name
+        # Absent <3.12
+        if getattr(logging, 'logAsyncioTasks', None):
+            if (at := ctx.asyncio_task()) is not None:
+                self.taskName: ta.Optional[str] = at.name
+            else:
+                self.taskName = None
         else:
             self.taskName = None

@@ -1,10 +1,12 @@
 # ruff: noqa: UP006 UP007 UP045 UP046
 # @omlish-lite
+import abc
 import sys
 import time
 import types
 import typing as ta
 
+from ..lite.abstract import Abstract
 from .callers import LoggingCaller
 from .infos import LoggingAsyncioTaskInfo
 from .infos import LoggingMultiprocessingInfo
@@ -24,15 +26,78 @@ LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 ##
 
 
+class LoggingContext(Abstract):
+    @property
+    @abc.abstractmethod
+    def level(self) -> NamedLogLevel:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def time_ns(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def times(self) -> LoggingTimeFields:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        raise NotImplementedError
+
+
+##
+
+
+class CaptureLoggingContext(LoggingContext, Abstract):
+    @abc.abstractmethod
+    def capture(self) -> None:
+        """Must be cooperatively called only from the expected locations."""
+
+        raise NotImplementedError
+
+
 @ta.final
-class LoggingContext:
-    level: NamedLogLevel
-
-    time_ns: int
-
-    exc_info: ta.Optional[LoggingExcInfo] = None
-    exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = None
-
+class CaptureLoggingContextImpl(CaptureLoggingContext):
     @ta.final
     class NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
@@ -52,13 +117,13 @@ class LoggingContext:
             stack_offset: int = 0,
             stack_info: bool = False,
     ) -> None:
-        self.level = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]
+        self._level: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
 
         #
 
         if time_ns is None:
             time_ns = time.time_ns()
-        self.time_ns: int = time_ns
+        self._time_ns: int = time_ns
 
         #
 
@@ -72,15 +137,18 @@ class LoggingContext:
             exc_info = None
 
         if exc_info is not None:
-            self.exc_info = exc_info
+            self._exc_info: ta.Optional[LoggingExcInfo] = exc_info
             if isinstance(exc_info, BaseException):
-                self.exc_info_tuple = (type(exc_info), exc_info, exc_info.__traceback__)
+                self._exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = (type(exc_info), exc_info, exc_info.__traceback__)  # noqa
             else:
-                self.exc_info_tuple = exc_info
+                self._exc_info_tuple = exc_info
+        else:
+            self._exc_info = None
+            self._exc_info_tuple = None
 
         #
 
-        if caller is not LoggingContext.NOT_SET:
+        if caller is not CaptureLoggingContextImpl.NOT_SET:
             self._caller = caller  # type: ignore[assignment]
         else:
             self._stack_offset = stack_offset
@@ -88,12 +156,22 @@ class LoggingContext:
 
         #
 
-        self.thread = LoggingThreadInfo.build()
-        self.process = LoggingProcessInfo.build()
-        self.multiprocessing = LoggingMultiprocessingInfo.build()
-        self.asyncio_task = LoggingAsyncioTaskInfo.build()
+        self._thread = LoggingThreadInfo.build()
+        self._process = LoggingProcessInfo.build()
+        self._multiprocessing = LoggingMultiprocessingInfo.build()
+        self._asyncio_task = LoggingAsyncioTaskInfo.build()
 
     #
+
+    @property
+    def level(self) -> NamedLogLevel:
+        return self._level
+
+    #
+
+    @property
+    def time_ns(self) -> int:
+        return self._time_ns
 
     _times: LoggingTimeFields
 
@@ -107,6 +185,14 @@ class LoggingContext:
         times = self._times = LoggingTimeFields.build(self.time_ns)
         return times
 
+    @property
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        return self._exc_info
+
+    @property
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        return self._exc_info_tuple
+
     #
 
     def inc_stack_offset(self, ofs: int = 1) -> 'LoggingContext':
@@ -116,19 +202,18 @@ class LoggingContext:
 
     _caller: ta.Optional[LoggingCaller]
 
-    def build_caller(self) -> ta.Optional[LoggingCaller]:
+    def capture(self) -> None:
         """Must be cooperatively called only from the exact configured _stack_offset."""
 
         try:
-            return self._caller
+            self._caller  # noqa
         except AttributeError:
             pass
 
-        caller = self._caller = LoggingCaller.find(
+        self._caller = LoggingCaller.find(
             self._stack_offset + 1,
             stack_info=self._stack_info,
         )
-        return caller
 
     def caller(self) -> ta.Optional[LoggingCaller]:
         try:
@@ -149,3 +234,17 @@ class LoggingContext:
 
         src_file = self._source_file = LoggingSourceFileInfo.build(caller.file_path)
         return src_file
+
+    #
+
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        return self._thread
+
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        return self._process
+
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        return self._multiprocessing
+
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        return self._asyncio_task
