@@ -180,5 +180,20 @@ def test_defaults():
     assert_generic_full_eq(rfl.type_(ta.Generator[int]), rfl.Generic(collections.abc.Generator, (int, type(None), type(None)), (_0, _1, _2), ta.Generator[int]))  # noqa
 
 
+def test_trivial():
+    assert rfl.type_(float) is float
+
+    class DumbFloat(float):
+        pass
+
+    assert rfl.type_(DumbFloat) is DumbFloat
+
+    class StupidFloat(float, ta.Generic[T]):
+        pass
+
+    assert_generic_full_eq(rfl.type_(StupidFloat), rfl.Generic(StupidFloat, (T,), (T,), StupidFloat))
+    assert_generic_full_eq(rfl.type_(StupidFloat[int]), rfl.Generic(StupidFloat, (int,), (T,), StupidFloat[int]))
+
+
 if __name__ == '__main__':
     run_all_tests(globals())

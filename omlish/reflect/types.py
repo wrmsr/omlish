@@ -407,6 +407,16 @@ class ReflectTypeError(TypeError):
     pass
 
 
+_TRIVIAL_TYPES: set[ta.Any] = {
+    bool,
+    int,
+    str,
+    float,
+    object,
+    type(None),
+}
+
+
 class Reflector:
     def __init__(
             self,
@@ -449,10 +459,22 @@ class Reflector:
             return ANY
 
         ##
+        # Trivial
+
+        try:
+            if obj in _TRIVIAL_TYPES:
+                return obj
+        except TypeError:
+            pass
+
+        ##
         # Already a Type?
 
         if isinstance(obj, (ta.TypeVar, TypeInfo)):  # noqa
             return obj
+
+        ##
+        # It's a type
 
         oty = type(obj)
 
