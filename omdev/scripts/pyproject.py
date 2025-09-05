@@ -3068,6 +3068,9 @@ class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore
         except Exception:  # noqa
             return None
 
+        if task is None:
+            return None
+
         return cls(
             task.get_name(),  # Always non-None
         )
