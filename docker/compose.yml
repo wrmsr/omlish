@@ -115,7 +115,7 @@ services:
       - '35230:7687'
 
   omlish-pgvector:
-    image: 'pgvector/pgvector:0.8.0-pg17'
+    image: 'pgvector/pgvector:0.8.1-pg17'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'
