@@ -8,6 +8,12 @@ TODO:
  - TypeMap style weak cache of issubclass queries
   - wait.. lazily load the class for virtual subclass queries? xor support virtual bases?
  - weakref class dict keys?
+ - cheap_discover_package_root_dirs: Seq[str] | None = None or smth
+ - maaaybe.. add an EnvVar? OMLISH_MANIFEST_ROOT_DIRS? if set to : delimited, turns off package disco and overrides
+   scan_root_dirs
+  - currently the cli cant subprocess itself and keep manifests working
+  - EnvVar cls is already lite
+
 """
 import dataclasses as dc
 import importlib.machinery

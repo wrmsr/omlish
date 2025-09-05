@@ -180,9 +180,17 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     #
 
-    @ta.final
+    @ta.overload
     def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self._log(LoggingContext(NamedLogLevel.DEBUG, stack_offset=1), msg, *args, **kwargs)
+        ...
+
+    @ta.overload
+    def debug(self, fn: ta.Callable, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(LoggingContext(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
 
     @ta.final
     def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
