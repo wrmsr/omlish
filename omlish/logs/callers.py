@@ -13,7 +13,7 @@ from .infos import LoggingContextInfo
 ##
 
 
-class LoggingCaller(LoggingContextInfo, ta.NamedTuple):
+class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     file_path: str
     line_no: int
     name: str

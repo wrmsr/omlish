@@ -5,21 +5,23 @@ import sys
 import threading
 import typing as ta
 
-from ..lite.abstract import Abstract
-
 
 ##
 
 
-class LoggingContextInfo(Abstract):
-    pass
+class _LoggingContextInfo:
+    def __mro_entries__(self, bases):
+        return ()
+
+
+LoggingContextInfo: type = ta.cast(ta.Any, _LoggingContextInfo())
 
 
 ##
 
 
 @ta.final
-class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):
+class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     file_name: str
     module: str
 
@@ -45,7 +47,7 @@ class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):
 
 
 @ta.final
-class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):
+class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     ident: int
     native_id: ta.Optional[int]
     name: str
@@ -63,7 +65,7 @@ class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):
 
 
 @ta.final
-class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):
+class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     pid: int
 
     @classmethod
@@ -77,7 +79,7 @@ class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):
 
 
 @ta.final
-class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):
+class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     process_name: str
 
     @classmethod
@@ -95,7 +97,7 @@ class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):
 
 
 @ta.final
-class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):
+class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     name: str
 
     @classmethod

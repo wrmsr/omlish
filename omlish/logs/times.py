@@ -11,7 +11,7 @@ from .warnings import LoggingSetupWarning
 ##
 
 
-class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):
+class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
     """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
 
     created: float
