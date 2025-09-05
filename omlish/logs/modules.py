@@ -2,12 +2,12 @@
 import logging
 import typing as ta
 
-from .protocols import LoggerLike
+from .base import Logger
 from .std.adapters import StdLogger
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> Logger:
     return StdLogger(logging.getLogger(mod_globals.get('__name__')))  # noqa
