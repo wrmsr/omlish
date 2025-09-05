@@ -37,6 +37,6 @@ def test_create_task():
     results = asyncio.run(main())
 
     assert results == (
-        'task1 finished after 1 seconds',
-        'task2 finished after 2 seconds',
+        'task1 finished after 0.1 seconds',
+        'task2 finished after 0.2 seconds',
     )
