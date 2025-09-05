@@ -12,7 +12,6 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
     import wrapt  # noqa
 
     class _CyclicDependencyPlaceholder(lang.Final):
-
         def __init__(self, cls: ta.Any) -> None:
             super().__init__()
 
@@ -22,7 +21,6 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
             return f'{type(self).__name__}({self.__cls!r})'
 
     class _CyclicDependencyProxy(wrapt.ObjectProxy, lang.Final):  # noqa
-
         def __init__(self, cls):
             super().__init__(_CyclicDependencyPlaceholder(cls))
 

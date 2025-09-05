@@ -25,7 +25,6 @@ beautifulsoup4==4.13.5
 bitsandbytes==0.42.0
 black==25.1.0
 bleach==6.2.0
-blinker==1.9.0
 blobfile==3.0.0
 boto3==1.40.24
 botocore==1.40.24
@@ -66,9 +65,6 @@ fastjsonschema==2.21.2
 filelock==3.19.1
 flake8==7.3.0
 Flake8-pyproject==1.2.3
-Flask==3.1.2
-Flask-Login==0.6.3
-Flask-SQLAlchemy==3.1.1
 flatbuffers==25.2.10
 fonttools==4.59.2
 fqdn==1.5.1
@@ -107,7 +103,6 @@ ipython==9.5.0
 ipython_pygments_lexers==1.1.1
 ipywidgets==8.1.7
 isoduration==20.11.0
-itsdangerous==2.2.0
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
 jaraco.functools==4.3.0
@@ -178,7 +173,6 @@ onnxruntime==1.22.1
 opencv-python==4.11.0.86
 orjson==3.11.3
 outcome==1.3.0.post0
-overrides==7.7.0
 packaging==25.0
 pandas==2.3.2
 pandocfilters==1.5.1
@@ -323,7 +317,6 @@ wcwidth==0.2.13
 webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
-Werkzeug==3.1.3
 wheel==0.45.1
 widgetsnbextension==4.0.14
 wikitextparser==0.56.4
