@@ -1,5 +1,6 @@
 # @omlish-lite
 import logging
+import os.path
 import unittest
 
 from ..std.adapters import StdLogger
@@ -34,4 +35,5 @@ class TestLogs(unittest.TestCase):
 
         lr = handler.records[-1]
         assert isinstance(lr, LoggingContextLogRecord)
-        assert lr.pathname == __file__
+        assert os.path.basename(lr.pathname) == 'test_logs.py'
+        assert lr.funcName == 'test_logs'
