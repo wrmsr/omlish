@@ -187,7 +187,7 @@ examples are:
 - **wrapt** - For (optionally-enabled) injector circular proxies.
 - **greenlet** - For some gnarly stuff like the
   [sync<->async bridge](https://github.com/wrmsr/omlish/blob/master/omlish/asyncs/bridge.py) and the
-  [io trampoline](https://github.com/wrmsr/omlish/blob/master/omlish/io/trampoline.py).
+  [io trampoline](https://github.com/wrmsr/omlish/blob/master/omextra/io/trampoline.py).
 - **sqlalchemy** - Parts of the codebase use SQLAlchemy for db stuff, but it is being migrated away from in favor of the
   internal api. It will however likely still remain as an optional dep for the api adapter.
 
