@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../ci/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045 UP046
 """
 Inputs:
  - requirements.txt
@@ -66,6 +66,7 @@ import tempfile
 import textwrap
 import threading
 import time
+import traceback
 import types
 import typing as ta
 import urllib.parse
@@ -147,6 +148,11 @@ InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
+# ../../omlish/logs/contexts.py
+LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
+LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
+LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
+
 # ../../omlish/sockets/server/handlers.py
 SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 
@@ -155,6 +161,9 @@ DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
 
 # ../../omlish/http/coro/server/server.py
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+
+# ../../omlish/logs/base.py
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -1792,6 +1801,120 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
+# ../../../omlish/logs/infos.py
+
+
+##
+
+
+class _LoggingContextInfo:
+    def __mro_entries__(self, bases):
+        return ()
+
+
+LoggingContextInfo: type = ta.cast(ta.Any, _LoggingContextInfo())
+
+
+##
+
+
+@ta.final
+class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_name: str
+    module: str
+
+    @classmethod
+    def build(cls, file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
+        if file_path is None:
+            return None
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
+        try:
+            file_name = os.path.basename(file_path)
+            module = os.path.splitext(file_name)[0]
+        except (TypeError, ValueError, AttributeError):
+            return None
+
+        return cls(
+            file_name,
+            module,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    ident: int
+    native_id: ta.Optional[int]
+    name: str
+
+    @classmethod
+    def build(cls) -> 'LoggingThreadInfo':
+        return cls(
+            threading.get_ident(),
+            threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+            threading.current_thread().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    pid: int
+
+    @classmethod
+    def build(cls) -> 'LoggingProcessInfo':
+        return cls(
+            os.getpid(),
+        )
+
+
+##
+
+
+@ta.final
+class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    process_name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingMultiprocessingInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
+        if (mp := sys.modules.get('multiprocessing')) is None:
+            return None
+
+        return cls(
+            mp.current_process().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingAsyncioTaskInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
+        if (asyncio := sys.modules.get('asyncio')) is None:
+            return None
+
+        try:
+            task = asyncio.current_task()
+        except Exception:  # noqa
+            return None
+
+        return cls(
+            task.get_name(),  # Always non-None
+        )
+
+
+########################################
 # ../../../omlish/logs/levels.py
 
 
@@ -1977,6 +2100,17 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../../omlish/logs/warnings.py
+
+
+##
+
+
+class LoggingSetupWarning(Warning):
+    pass
 
 
 ########################################
@@ -4809,6 +4943,73 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
+# ../../../omlish/logs/callers.py
+
+
+##
+
+
+class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_path: str
+    line_no: int
+    name: str
+    stack_info: ta.Optional[str]
+
+    @classmethod
+    def is_internal_frame(cls, frame: types.FrameType) -> bool:
+        file_path = os.path.normcase(frame.f_code.co_filename)
+
+        # Yes, really.
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204
+        # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
+        if 'importlib' in file_path and '_bootstrap' in file_path:
+            return True
+
+        return False
+
+    @classmethod
+    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
+        f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
+
+        while f is not None:
+            # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
+            # stack_offset management.
+            if hasattr(f, 'f_code'):
+                return f
+
+            f = f.f_back
+
+        return None
+
+    @classmethod
+    def find(
+            cls,
+            ofs: int = 0,
+            *,
+            stack_info: bool = False,
+    ) -> ta.Optional['LoggingCaller']:
+        if (f := cls.find_frame(ofs + 1)) is None:
+            return None
+
+        # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
+        sinfo = None
+        if stack_info:
+            sio = io.StringIO()
+            traceback.print_stack(f, file=sio)
+            sinfo = sio.getvalue()
+            sio.close()
+            if sinfo[-1] == '\n':
+                sinfo = sinfo[:-1]
+
+        return cls(
+            f.f_code.co_filename,
+            f.f_lineno or 0,
+            f.f_code.co_name,
+            sinfo,
+        )
+
+
+########################################
 # ../../../omlish/logs/protocols.py
 
 
@@ -4894,6 +5095,89 @@ class JsonLoggingFormatter(logging.Formatter):
             if not (o and v is None)
         }
         return self._json_dumps(dct)
+
+
+########################################
+# ../../../omlish/logs/times.py
+
+
+##
+
+
+class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
+
+    created: float
+    msecs: float
+    relative_created: float
+
+    @classmethod
+    def get_std_start_time_ns(cls) -> int:
+        x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
+
+        # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`, an
+        # int.
+        #
+        # See:
+        #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        #
+        if isinstance(x, float):
+            return int(x * 1e9)
+        else:
+            return x
+
+    @classmethod
+    def build(
+            cls,
+            time_ns: int,
+            *,
+            start_time_ns: ta.Optional[int] = None,
+    ) -> 'LoggingTimeFields':
+        # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        created = time_ns / 1e9  # ns to float seconds
+
+        # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
+        # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
+        # Convert to float by adding 0.0 for historical reasons. See gh-89047
+        msecs = (time_ns % 1_000_000_000) // 1_000_000 + 0.0
+
+        # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+        if msecs == 999.0 and int(created) != time_ns // 1_000_000_000:
+            # ns -> sec conversion can round up, e.g:
+            # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
+            msecs = 0.0
+
+        if start_time_ns is None:
+            start_time_ns = cls.get_std_start_time_ns()
+        relative_created = (time_ns - start_time_ns) / 1e6
+
+        return cls(
+            created,
+            msecs,
+            relative_created,
+        )
+
+
+##
+
+
+class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_logging_start_time() -> None:
+    if (x := LoggingTimeFields.get_std_start_time_ns()) < (t := time.time()):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unexpected logging start time detected: '
+            f'get_std_start_time_ns={x}, '
+            f'time.time()={t}',
+            UnexpectedLoggingStartTimeWarning,
+        )
+
+
+_check_logging_start_time()
 
 
 ########################################
@@ -7219,14 +7503,260 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/contexts.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
-    return logging.getLogger(mod_globals.get('__name__'))  # noqa
+class LoggingContext(Abstract):
+    @property
+    @abc.abstractmethod
+    def level(self) -> NamedLogLevel:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def time_ns(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def times(self) -> LoggingTimeFields:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        raise NotImplementedError
+
+
+##
+
+
+class CaptureLoggingContext(LoggingContext, Abstract):
+    class AlreadyCapturedError(Exception):
+        pass
+
+    class NotCapturedError(Exception):
+        pass
+
+    @abc.abstractmethod
+    def capture(self) -> None:
+        """Must be cooperatively called only from the expected locations."""
+
+        raise NotImplementedError
+
+
+@ta.final
+class CaptureLoggingContextImpl(CaptureLoggingContext):
+    @ta.final
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    #
+
+    def __init__(
+            self,
+            level: LogLevel,
+            *,
+            time_ns: ta.Optional[int] = None,
+
+            exc_info: LoggingExcInfoArg = False,
+
+            caller: ta.Union[LoggingCaller, ta.Type[NOT_SET], None] = NOT_SET,
+            stack_offset: int = 0,
+            stack_info: bool = False,
+    ) -> None:
+        self._level: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+
+        #
+
+        if time_ns is None:
+            time_ns = time.time_ns()
+        self._time_ns: int = time_ns
+
+        #
+
+        if exc_info is True:
+            sys_exc_info = sys.exc_info()
+            if sys_exc_info[0] is not None:
+                exc_info = sys_exc_info
+            else:
+                exc_info = None
+        elif exc_info is False:
+            exc_info = None
+
+        if exc_info is not None:
+            self._exc_info: ta.Optional[LoggingExcInfo] = exc_info
+            if isinstance(exc_info, BaseException):
+                self._exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = (type(exc_info), exc_info, exc_info.__traceback__)  # noqa
+            else:
+                self._exc_info_tuple = exc_info
+
+        #
+
+        if caller is not CaptureLoggingContextImpl.NOT_SET:
+            self._caller = caller  # type: ignore[assignment]
+        else:
+            self._stack_offset = stack_offset
+            self._stack_info = stack_info
+
+    ##
+
+    @property
+    def level(self) -> NamedLogLevel:
+        return self._level
+
+    #
+
+    @property
+    def time_ns(self) -> int:
+        return self._time_ns
+
+    _times: LoggingTimeFields
+
+    @property
+    def times(self) -> LoggingTimeFields:
+        try:
+            return self._times
+        except AttributeError:
+            pass
+
+        times = self._times = LoggingTimeFields.build(self.time_ns)
+        return times
+
+    #
+
+    _exc_info: ta.Optional[LoggingExcInfo] = None
+    _exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = None
+
+    @property
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        return self._exc_info
+
+    @property
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        return self._exc_info_tuple
+
+    ##
+
+    _stack_offset: int
+    _stack_info: bool
+
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+        if hasattr(self, '_stack_offset'):
+            self._stack_offset += ofs
+        return self
+
+    _has_captured: bool = False
+
+    _caller: ta.Optional[LoggingCaller]
+    _source_file: ta.Optional[LoggingSourceFileInfo]
+
+    _thread: ta.Optional[LoggingThreadInfo]
+    _process: ta.Optional[LoggingProcessInfo]
+    _multiprocessing: ta.Optional[LoggingMultiprocessingInfo]
+    _asyncio_task: ta.Optional[LoggingAsyncioTaskInfo]
+
+    def capture(self) -> None:
+        if self._has_captured:
+            raise CaptureLoggingContextImpl.AlreadyCapturedError
+        self._has_captured = True
+
+        if not hasattr(self, '_caller'):
+            self._caller = LoggingCaller.find(
+                self._stack_offset + 1,
+                stack_info=self._stack_info,
+            )
+
+        if (caller := self._caller) is not None:
+            self._source_file = LoggingSourceFileInfo.build(caller.file_path)
+        else:
+            self._source_file = None
+
+        self._thread = LoggingThreadInfo.build()
+        self._process = LoggingProcessInfo.build()
+        self._multiprocessing = LoggingMultiprocessingInfo.build()
+        self._asyncio_task = LoggingAsyncioTaskInfo.build()
+
+    #
+
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        try:
+            return self._caller
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        try:
+            return self._source_file
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    #
+
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        try:
+            return self._thread
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        try:
+            return self._process
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        try:
+            return self._multiprocessing
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        try:
+            return self._asyncio_task
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
 
 ########################################
@@ -7744,324 +8274,6 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return subprocess_shell_wrap_exec(*cmd)
     else:
         return cmd
-
-
-########################################
-# ../cache.py
-"""
-TODO:
- - os.mtime, Config.purge_after_days
-  - nice to have: get a total set of might-need keys ahead of time and keep those
-  - okay: just purge after running
-"""
-
-
-CacheVersion = ta.NewType('CacheVersion', int)
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class FileCache(Abstract):
-    DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
-
-    def __init__(
-            self,
-            *,
-            version: ta.Optional[CacheVersion] = None,
-    ) -> None:
-        super().__init__()
-
-        if version is None:
-            version = self.DEFAULT_CACHE_VERSION
-        check.isinstance(version, int)
-        check.arg(version >= 0)
-        self._version: CacheVersion = version
-
-    @property
-    def version(self) -> CacheVersion:
-        return self._version
-
-    #
-
-    @abc.abstractmethod
-    def get_file(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> ta.Awaitable[str]:
-        raise NotImplementedError
-
-
-#
-
-
-class DirectoryFileCache(FileCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        dir: str
-
-        no_create: bool = False
-        no_purge: bool = False
-
-        no_update_mtime: bool = False
-
-        purge_max_age_s: ta.Optional[float] = None
-        purge_max_size_b: ta.Optional[int] = None
-
-    def __init__(
-            self,
-            config: Config,
-            *,
-            version: ta.Optional[CacheVersion] = None,
-    ) -> None:  # noqa
-        super().__init__(
-            version=version,
-        )
-
-        self._config = config
-
-    @property
-    def dir(self) -> str:
-        return self._config.dir
-
-    #
-
-    VERSION_FILE_NAME = '.ci-cache-version'
-
-    def _iter_dir_contents(self) -> ta.Iterator[str]:
-        for n in sorted(os.listdir(self.dir)):
-            if n.startswith('.'):
-                continue
-            yield os.path.join(self.dir, n)
-
-    @cached_nullary
-    def setup_dir(self) -> None:
-        version_file = os.path.join(self.dir, self.VERSION_FILE_NAME)
-
-        if self._config.no_create:
-            check.state(os.path.isdir(self.dir))
-
-        elif not os.path.isdir(self.dir):
-            os.makedirs(self.dir)
-            with open(version_file, 'w') as f:
-                f.write(f'{self._version}\n')
-            return
-
-        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
-        with open(version_file) as f:
-            dir_version = int(f.read().strip())
-
-        if dir_version == self._version:
-            return
-
-        if self._config.no_purge:
-            raise RuntimeError(f'{dir_version=} != {self._version=}')
-
-        dirs = [n for n in sorted(os.listdir(self.dir)) if os.path.isdir(os.path.join(self.dir, n))]
-        if dirs:
-            raise RuntimeError(
-                f'Refusing to remove stale cache dir {self.dir!r} '
-                f'due to present directories: {", ".join(dirs)}',
-            )
-
-        for fp in self._iter_dir_contents():
-            check.state(os.path.isfile(fp))
-            log.debug('Purging stale cache file: %s', fp)
-            os.unlink(fp)
-
-        os.unlink(version_file)
-
-        with open(version_file, 'w') as f:
-            f.write(str(self._version))
-
-    #
-
-    def purge(self, *, dry_run: bool = False) -> None:
-        purge_max_age_s = self._config.purge_max_age_s
-        purge_max_size_b = self._config.purge_max_size_b
-        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
-            return
-
-        self.setup_dir()
-
-        purge_min_mtime: ta.Optional[float] = None
-        if purge_max_age_s is not None:
-            purge_min_mtime = time.time() - purge_max_age_s
-
-        dct: ta.Dict[str, os.stat_result] = {}
-        for fp in self._iter_dir_contents():
-            check.state(os.path.isfile(fp))
-            dct[fp] = os.stat(fp)
-
-        total_size_b = 0
-        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
-            total_size_b += st.st_size
-
-            purge = False
-            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
-                purge = True
-            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
-                purge = True
-
-            if not purge:
-                continue
-
-            log.debug('Purging cache file: %s', fp)
-            if not dry_run:
-                os.unlink(fp)
-
-    #
-
-    def get_cache_file_path(
-            self,
-            key: str,
-    ) -> str:
-        self.setup_dir()
-        return os.path.join(self.dir, key)
-
-    def format_incomplete_file(self, f: str) -> str:
-        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
-
-    #
-
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        cache_file_path = self.get_cache_file_path(key)
-        if not os.path.exists(cache_file_path):
-            return None
-
-        if not self._config.no_update_mtime:
-            stat_info = os.stat(cache_file_path)
-            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
-
-        return cache_file_path
-
-    async def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = self.get_cache_file_path(key)
-        if steal:
-            shutil.move(file_path, cache_file_path)
-        else:
-            shutil.copyfile(file_path, cache_file_path)
-        return cache_file_path
-
-
-##
-
-
-class DataCache:
-    @dc.dataclass(frozen=True)
-    class Data(Abstract):
-        pass
-
-    @dc.dataclass(frozen=True)
-    class BytesData(Data):
-        data: bytes
-
-    @dc.dataclass(frozen=True)
-    class FileData(Data):
-        file_path: str
-
-    @dc.dataclass(frozen=True)
-    class UrlData(Data):
-        url: str
-
-    #
-
-    @abc.abstractmethod
-    def get_data(self, key: str) -> ta.Awaitable[ta.Optional[Data]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-#
-
-
-@functools.singledispatch
-async def read_data_cache_data(data: DataCache.Data) -> bytes:
-    raise TypeError(data)
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.BytesData) -> bytes:
-    return data.data
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.FileData) -> bytes:
-    with open(data.file_path, 'rb') as f:  # noqa
-        return f.read()
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.UrlData) -> bytes:
-    def inner() -> bytes:
-        with urllib.request.urlopen(urllib.request.Request(  # noqa
-            data.url,
-        )) as resp:
-            return resp.read()
-
-    return await asyncio.get_running_loop().run_in_executor(None, inner)
-
-
-#
-
-
-class FileCacheDataCache(DataCache):
-    def __init__(
-            self,
-            file_cache: FileCache,
-    ) -> None:
-        super().__init__()
-
-        self._file_cache = file_cache
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        if (file_path := await self._file_cache.get_file(key)) is None:
-            return None
-
-        return DataCache.FileData(file_path)
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        steal = False
-
-        if isinstance(data, DataCache.BytesData):
-            file_path = make_temp_file()
-            with open(file_path, 'wb') as f:  # noqa
-                f.write(data.data)
-            steal = True
-
-        elif isinstance(data, DataCache.FileData):
-            file_path = data.file_path
-
-        elif isinstance(data, DataCache.UrlData):
-            raise NotImplementedError
-
-        else:
-            raise TypeError(data)
-
-        await self._file_cache.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
 
 
 ########################################
@@ -9209,15 +9421,518 @@ class CoroHttpServer:
 
 
 ########################################
-# ../../../omlish/lite/timing.py
+# ../../../omlish/logs/base.py
 
 
-log = get_module_logger(globals())  # noqa
+##
 
 
-LogTimingContext.DEFAULT_LOG = log
+class AnyLogger(Abstract, ta.Generic[T]):
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self.get_effective_level() >= level
 
-log_timing_context = log_timing_context  # noqa
+    @abc.abstractmethod
+    def get_effective_level(self) -> LogLevel:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def isEnabledFor(self, level: LogLevel) -> bool:  # noqa
+        return self.is_enabled_for(level)
+
+    @ta.final
+    def getEffectiveLevel(self) -> LogLevel:  # noqa
+        return self.get_effective_level()
+
+    ##
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def log(self, level: LogLevel, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(level, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def info(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.INFO, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def warning(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.WARNING, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def error(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)  # noqa
+
+    #
+
+    @ta.overload
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def critical(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.CRITICAL, stack_offset=1), *args, **kwargs)
+
+    ##
+
+    @classmethod
+    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
+        if callable(msg):
+            if args:
+                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+            x = msg()
+            if isinstance(x, str):
+                return x, ()
+            elif isinstance(x, tuple):
+                if x:
+                    return x[0], x[1:]
+                else:
+                    return '', ()
+            else:
+                raise TypeError(x)
+
+        elif isinstance(msg, tuple):
+            if args:
+                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+            if msg:
+                return msg[0], msg[1:]
+            else:
+                return '', ()
+
+        elif isinstance(msg, str):
+            return msg, args
+
+        else:
+            raise TypeError(msg)
+
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
+        raise NotImplementedError
+
+
+class Logger(AnyLogger[None], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        raise NotImplementedError
+
+
+class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLogger(AnyLogger[T], Abstract):
+    @ta.final
+    def get_effective_level(self) -> LogLevel:
+        return 999
+
+
+@ta.final
+class NopLogger(AnyNopLogger[None], Logger):
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
+
+
+@ta.final
+class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    async def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
+
+
+########################################
+# ../../../omlish/logs/std/records.py
+
+
+##
+
+
+# Ref:
+#  - https://docs.python.org/3/library/logging.html#logrecord-attributes
+#
+# LogRecord:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L276 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L286 (~3.14)  # noqa
+#
+# LogRecord.__init__ args:
+#  - name: str
+#  - level: int
+#  - pathname: str - Confusingly referred to as `fn` before the LogRecord ctor. May be empty or "(unknown file)".
+#  - lineno: int - May be 0.
+#  - msg: str
+#  - args: tuple | dict | 1-tuple[dict]
+#  - exc_info: LoggingExcInfoTuple | None
+#  - func: str | None = None -> funcName
+#  - sinfo: str | None = None -> stack_info
+#
+KNOWN_STD_LOGGING_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # Name of the logger used to log the call. Unmodified by ctor.
+    name=str,
+
+    # The format string passed in the original logging call. Merged with args to produce message, or an arbitrary object
+    # (see Using arbitrary objects as messages). Unmodified by ctor.
+    msg=str,
+
+    # The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge (when
+    # there is only one argument, and it is a dictionary). Ctor will transform a 1-tuple containing a Mapping into just
+    # the mapping, but is otherwise unmodified.
+    args=ta.Union[tuple, dict],
+
+    #
+
+    # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'). Set to
+    # `getLevelName(level)`.
+    levelname=str,
+
+    # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL). Unmodified by ctor.
+    levelno=int,
+
+    #
+
+    # Full pathname of the source file where the logging call was issued (if available). Unmodified by ctor. May default
+    # to "(unknown file)" by Logger.findCaller / Logger._log.
+    pathname=str,
+
+    # Filename portion of pathname. Set to `os.path.basename(pathname)` if successful, otherwise defaults to pathname.
+    filename=str,
+
+    # Module (name portion of filename). Set to `os.path.splitext(filename)[0]`, otherwise defaults to
+    # "Unknown module".
+    module=str,
+
+    #
+
+    # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None. Unmodified by ctor.
+    exc_info=ta.Optional[LoggingExcInfoTuple],
+
+    # Used to cache the traceback text. Simply set to None by ctor, later set by Formatter.format.
+    exc_text=ta.Optional[str],
+
+    #
+
+    # Stack frame information (where available) from the bottom of the stack in the current thread, up to and including
+    # the stack frame of the logging call which resulted in the creation of this record. Set by ctor to `sinfo` arg,
+    # unmodified. Mostly set, if requested, by `Logger.findCaller`, to `traceback.print_stack(f)`, but prepended with
+    # the literal "Stack (most recent call last):\n", and stripped of exactly one trailing `\n` if present.
+    stack_info=ta.Optional[str],
+
+    # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0 by
+    # Logger.findCaller / Logger._log.
+    lineno=int,
+
+    # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to
+    # "(unknown function)" by Logger.findCaller / Logger._log.
+    funcName=str,
+
+    #
+
+    # Time when the LogRecord was created. Set to `time.time_ns() / 1e9` for >=3.13.0b1, otherwise simply `time.time()`.
+    #
+    # See:
+    #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+    #  - https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+    #
+    created=float,
+
+    # Millisecond portion of the time when the LogRecord was created.
+    msecs=float,
+
+    # Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded.
+    relativeCreated=float,
+
+    #
+
+    # Thread ID if available, and `logging.logThreads` is truthy.
+    thread=ta.Optional[int],
+
+    # Thread name if available, and `logging.logThreads` is truthy.
+    threadName=ta.Optional[str],
+
+    #
+
+    # Process name if available. Set to None if `logging.logMultiprocessing` is not truthy. Otherwise, set to
+    # 'MainProcess', then `sys.modules.get('multiprocessing').current_process().name` if that works, otherwise remains
+    # as 'MainProcess'.
+    #
+    # As noted by stdlib:
+    #
+    #   Errors may occur if multiprocessing has not finished loading yet - e.g. if a custom import hook causes
+    #   third-party code to run when multiprocessing calls import. See issue 8200 for an example
+    #
+    processName=ta.Optional[str],
+
+    # Process ID if available - that is, if `hasattr(os, 'getpid')` - and `logging.logProcesses` is truthy, otherwise
+    # None.
+    process=ta.Optional[int],
+
+    #
+
+    # Absent <3.12, otherwise asyncio.Task name if available, and `logging.logAsyncioTasks` is truthy. Set to
+    # `sys.modules.get('asyncio').current_task().get_name()`, otherwise None.
+    taskName=ta.Optional[str],
+)
+
+KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_RECORD_ATTRS)
+
+
+# Formatter:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L514 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L554 (~3.14)  # noqa
+#
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # The logged message, computed as msg % args. Set to `record.getMessage()`.
+    message=str,
+
+    # Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the
+    # numbers after the comma are millisecond portion of the time). Set to `self.formatTime(record, self.datefmt)` if
+    # `self.usesTime()`, otherwise unset.
+    asctime=str,
+
+    # Used to cache the traceback text. If unset (falsey) on the record and `exc_info` is truthy, set to
+    # `self.formatException(record.exc_info)` - otherwise unmodified.
+    exc_text=ta.Optional[str],
+)
+
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
+
+
+##
+
+
+class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_std_logging_record_attrs() -> None:
+    rec_dct = dict(logging.makeLogRecord({}).__dict__)
+
+    if (unk_rec_fields := frozenset(rec_dct) - KNOWN_STD_LOGGING_RECORD_ATTR_SET):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unknown log record attrs detected: {sorted(unk_rec_fields)!r}',
+            UnknownStdLoggingRecordAttrsWarning,
+        )
+
+
+_check_std_logging_record_attrs()
+
+
+##
+
+
+class LoggingContextLogRecord(logging.LogRecord):
+    _SHOULD_ADD_TASK_NAME: ta.ClassVar[bool] = sys.version_info >= (3, 12)
+
+    _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
+    _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
+    _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
+
+    _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
+
+    def __init__(  # noqa
+            self,
+            # name,
+            # level,
+            # pathname,
+            # lineno,
+            # msg,
+            # args,
+            # exc_info,
+            # func=None,
+            # sinfo=None,
+            # **kwargs,
+            *,
+            name: str,
+            msg: str,
+            args: ta.Union[tuple, dict],
+
+            _logging_context: LoggingContext,
+    ) -> None:
+        ctx = _logging_context
+
+        self.name: str = name
+
+        self.msg: str = msg
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307
+        if args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping) and args[0]:
+            args = args[0]  # type: ignore[assignment]
+        self.args: ta.Union[tuple, dict] = args
+
+        self.levelname: str = logging.getLevelName(ctx.level)
+        self.levelno: int = ctx.level
+
+        if (caller := ctx.caller()) is not None:
+            self.pathname: str = caller.file_path
+        else:
+            self.pathname = self._UNKNOWN_PATH_NAME
+
+        if (src_file := ctx.source_file()) is not None:
+            self.filename: str = src_file.file_name
+            self.module: str = src_file.module
+        else:
+            self.filename = self.pathname
+            self.module = self._UNKNOWN_MODULE
+
+        self.exc_info: ta.Optional[LoggingExcInfoTuple] = ctx.exc_info_tuple
+        self.exc_text: ta.Optional[str] = None
+
+        # If ctx.build_caller() was never called, we simply don't have a stack trace.
+        if caller is not None:
+            if (sinfo := caller.stack_info) is not None:
+                self.stack_info: ta.Optional[str] = '\n'.join([
+                    self._STACK_INFO_PREFIX,
+                    sinfo[1:] if sinfo.endswith('\n') else sinfo,
+                ])
+            else:
+                self.stack_info = None
+
+            self.lineno: int = caller.line_no
+            self.funcName: str = caller.name
+
+        else:
+            self.stack_info = None
+
+            self.lineno = 0
+            self.funcName = self._UNKNOWN_FUNC_NAME
+
+        times = ctx.times
+        self.created: float = times.created
+        self.msecs: float = times.msecs
+        self.relativeCreated: float = times.relative_created
+
+        if logging.logThreads:
+            thread = check.not_none(ctx.thread())
+            self.thread: ta.Optional[int] = thread.ident
+            self.threadName: ta.Optional[str] = thread.name
+        else:
+            self.thread = None
+            self.threadName = None
+
+        if logging.logProcesses:
+            process = check.not_none(ctx.process())
+            self.process: ta.Optional[int] = process.pid
+        else:
+            self.process = None
+
+        if logging.logMultiprocessing:
+            if (mp := ctx.multiprocessing()) is not None:
+                self.processName: ta.Optional[str] = mp.process_name
+            else:
+                self.processName = None
+        else:
+            self.processName = None
+
+        # Absent <3.12
+        if getattr(logging, 'logAsyncioTasks', None):
+            if (at := ctx.asyncio_task()) is not None:
+                self.taskName: ta.Optional[str] = at.name
+            else:
+                self.taskName = None
+        else:
+            self.taskName = None
 
 
 ########################################
@@ -9945,6 +10660,2179 @@ async def build_cache_served_docker_image_data_server_routes(
 
 
 ########################################
+# ../../dataserver/server.py
+
+
+##
+
+
+class DataServer:
+    @dc.dataclass(frozen=True)
+    class HandlerRoute:
+        paths: ta.Sequence[str]
+        handler: DataServerHandler
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.paths, str)
+            for p in self.paths:
+                check.non_empty_str(p)
+            check.isinstance(self.handler, DataServerHandler)
+
+        @classmethod
+        def of(cls, obj: ta.Union[
+            'DataServer.HandlerRoute',
+            DataServerRoute,
+        ]) -> 'DataServer.HandlerRoute':
+            if isinstance(obj, cls):
+                return obj
+
+            elif isinstance(obj, DataServerRoute):
+                return cls(
+                    paths=obj.paths,
+                    handler=DataServerTargetHandler.for_target(obj.target),
+                )
+
+            else:
+                raise TypeError(obj)
+
+        @classmethod
+        def of_(cls, *objs: ta.Any) -> ta.List['DataServer.HandlerRoute']:
+            return [cls.of(obj) for obj in objs]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    def __init__(
+            self,
+            routes: ta.Optional[ta.Iterable[HandlerRoute]] = None,
+            config: Config = Config(),
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self.set_routes(routes)
+
+    #
+
+    _routes_by_path: ta.Dict[str, HandlerRoute]
+
+    def set_routes(self, routes: ta.Optional[ta.Iterable[HandlerRoute]]) -> None:
+        routes_by_path: ta.Dict[str, DataServer.HandlerRoute] = {}
+
+        for r in routes or []:
+            for p in r.paths:
+                check.not_in(p, routes_by_path)
+                routes_by_path[p] = r
+
+        self._routes_by_path = routes_by_path
+
+    #
+
+    def handle(self, req: DataServerRequest) -> DataServerResponse:
+        try:
+            rt = self._routes_by_path[req.path]
+        except KeyError:
+            return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+
+        return rt.handler.handle(req)
+
+
+########################################
+# ../../oci/building.py
+
+
+##
+
+
+class OciRepositoryBuilder:
+    @dc.dataclass(frozen=True)
+    class Blob:
+        digest: str
+
+        data: OciDataRef
+        info: OciDataRefInfo
+
+        media_type: ta.Optional[str] = None
+
+        #
+
+        def read(self) -> bytes:
+            with open_oci_data_ref(self.data) as f:
+                return f.read()
+
+        def read_json(self) -> ta.Any:
+            return json.loads(self.read().decode('utf-8'))
+
+        def read_media(
+                self,
+                cls: ta.Type[OciMediaDataclassT] = OciMediaDataclass,  # type: ignore[assignment]
+        ) -> OciMediaDataclassT:
+            mt = check.non_empty_str(self.media_type)
+            dct = self.read_json()
+            obj = unmarshal_oci_media_dataclass(
+                dct,
+                media_type=mt,
+            )
+            return check.isinstance(obj, cls)
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._blobs: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
+
+    #
+
+    def get_blobs(self) -> ta.Dict[str, Blob]:
+        return dict(self._blobs)
+
+    def add_blob(
+            self,
+            r: OciDataRef,
+            ri: ta.Optional[OciDataRefInfo] = None,
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> Blob:
+        if ri is None:
+            ri = OciDataRefInfo(r)
+
+        if (dg := ri.digest()) in self._blobs:
+            raise KeyError(ri.digest())
+
+        blob = self.Blob(
+            digest=dg,
+
+            data=r,
+            info=ri,
+
+            media_type=media_type,
+        )
+
+        self._blobs[dg] = blob
+
+        return blob
+
+    #
+
+    def marshal_media(self, obj: OciMediaDataclass) -> bytes:
+        check.isinstance(obj, OciMediaDataclass)
+        m = marshal_obj(obj)
+        j = json_dumps_compact(m)
+        b = j.encode('utf-8')
+        return b
+
+    def add_media(self, obj: OciMediaDataclass) -> OciMediaDescriptor:
+        b = self.marshal_media(obj)
+
+        r = BytesOciDataRef(b)
+        ri = OciDataRefInfo(r)
+        self.add_blob(
+            r,
+            ri,
+            media_type=obj.media_type,
+        )
+
+        return OciMediaDescriptor(
+            media_type=obj.media_type,
+            digest=ri.digest(),
+            size=ri.size(),
+        )
+
+    #
+
+    def to_media(self, obj: OciDataclass) -> ta.Union[OciMediaDataclass, OciMediaDescriptor]:
+        def make_kw(*exclude):
+            return {
+                a: v
+                for f in dc.fields(obj)
+                if (a := f.name) not in exclude
+                for v in [getattr(obj, a)]
+                if v is not None
+            }
+
+        if isinstance(obj, OciImageIndex):
+            return OciMediaImageIndex(
+                **make_kw('manifests'),
+                manifests=[
+                    self.add_data(m)
+                    for m in obj.manifests
+                ],
+            )
+
+        elif isinstance(obj, OciImageManifest):
+            return OciMediaImageManifest(
+                **make_kw('config', 'layers'),
+                config=self.add_data(obj.config),
+                layers=[
+                    self.add_data(l)
+                    for l in obj.layers
+                ],
+            )
+
+        elif isinstance(obj, OciImageLayer):
+            ri = OciDataRefInfo(obj.data)
+            mt = OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind]
+            self.add_blob(
+                obj.data,
+                ri,
+                media_type=mt,
+            )
+            return OciMediaDescriptor(
+                media_type=mt,
+                digest=ri.digest(),
+                size=ri.size(),
+            )
+
+        elif isinstance(obj, OciImageConfig):
+            return OciMediaImageConfig(**make_kw())
+
+        else:
+            raise TypeError(obj)
+
+    def add_data(self, obj: OciDataclass) -> OciMediaDescriptor:
+        ret = self.to_media(obj)
+
+        if isinstance(ret, OciMediaDataclass):
+            return self.add_media(ret)
+
+        elif isinstance(ret, OciMediaDescriptor):
+            return ret
+
+        else:
+            raise TypeError(ret)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BuiltOciImageIndexRepository:
+    index: OciImageIndex
+
+    media_index_descriptor: OciMediaDescriptor
+    media_index: OciMediaImageIndex
+
+    blobs: ta.Mapping[str, OciRepositoryBuilder.Blob]
+
+
+def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexRepository:
+    builder = OciRepositoryBuilder()
+
+    media_index_descriptor = builder.add_data(index)
+
+    blobs = builder.get_blobs()
+
+    media_index = blobs[media_index_descriptor.digest].read_media(OciMediaImageIndex)
+
+    return BuiltOciImageIndexRepository(
+        index=index,
+
+        media_index_descriptor=media_index_descriptor,
+        media_index=media_index,
+
+        blobs=blobs,
+    )
+
+
+########################################
+# ../../oci/loading.py
+
+
+##
+
+
+class OciRepositoryLoader:
+    def __init__(
+            self,
+            repo: OciRepository,
+    ) -> None:
+        super().__init__()
+
+        self._repo = repo
+
+    #
+
+    def load_object(
+            self,
+            data: bytes,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> T:
+        text = data.decode('utf-8')
+        dct = json.loads(text)
+        obj = unmarshal_oci_media_dataclass(
+            dct,
+            media_type=media_type,
+        )
+        return check.isinstance(obj, cls)
+
+    def read_object(
+            self,
+            digest: str,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> T:
+        data = self._repo.read_blob(digest)
+        return self.load_object(
+            data,
+            cls,
+            media_type=media_type,
+        )
+
+    def read_descriptor(
+            self,
+            desc: OciMediaDescriptor,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+    ) -> ta.Any:
+        return self.read_object(
+            desc.digest,
+            cls,
+            media_type=desc.media_type,
+        )
+
+    #
+
+    def from_media(self, obj: ta.Any) -> ta.Any:
+        def make_kw(*exclude):
+            return {
+                a: getattr(obj, a)
+                for f in dc.fields(obj)
+                if (a := f.name) not in OCI_MEDIA_FIELDS
+                and a not in exclude
+            }
+
+        if isinstance(obj, OciMediaImageConfig):
+            return OciImageConfig(**make_kw())
+
+        elif isinstance(obj, OciMediaImageManifest):
+            return OciImageManifest(
+                **make_kw('config', 'layers'),
+                config=self.from_media(self.read_descriptor(obj.config)),
+                layers=[
+                    OciImageLayer(
+                        kind=lk,
+                        data=self._repo.ref_blob(l.digest),
+                    )
+                    for l in obj.layers
+                    if (lk := OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_.get(l.media_type)) is not None
+                ],
+            )
+
+        elif isinstance(obj, OciMediaImageIndex):
+            return OciImageIndex(
+                **make_kw('manifests'),
+                manifests=[
+                    fm
+                    for m in obj.manifests
+                    if self._repo.contains_blob(m.digest)
+                    for fm in [self.from_media(self.read_descriptor(m))]
+                    if not is_empty_oci_dataclass(fm)
+                ],
+            )
+
+        else:
+            raise TypeError(obj)
+
+
+##
+
+
+def read_oci_repository_root_index(
+        obj: ta.Any,
+        *,
+        file_name: str = 'index.json',
+) -> OciImageIndex:
+    file_repo = check.isinstance(OciRepository.of(obj), FileOciRepository)
+
+    repo_ldr = OciRepositoryLoader(file_repo)
+
+    media_image_idx = repo_ldr.load_object(file_repo.read_file(file_name), OciMediaImageIndex)
+
+    image_idx = repo_ldr.from_media(media_image_idx)
+
+    return check.isinstance(image_idx, OciImageIndex)
+
+
+########################################
+# ../../../omlish/http/coro/server/sockets.py
+
+
+##
+
+
+class CoroHttpServerSocketHandler(SocketHandler_):
+    def __init__(
+            self,
+            server_factory: CoroHttpServerFactory,
+            *,
+            keep_alive: bool = False,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._server_factory = server_factory
+        self._keep_alive = keep_alive
+        self._log_handler = log_handler
+
+    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
+        server = self._server_factory(client_address)
+
+        if self._keep_alive:
+            for i in itertools.count():  # noqa
+                res = self._handle_one(server, fp)
+                if res.close_reason is not None:
+                    break
+
+        else:
+            self._handle_one(server, fp)
+
+    def _handle_one(
+            self,
+            server: CoroHttpServer,
+            fp: SocketIoPair,
+    ) -> CoroHttpServer.CoroHandleResult:
+        gen = server.coro_handle()
+
+        o = next(gen)
+        while True:
+            if isinstance(o, CoroHttpServer.AnyLogIo):
+                i = None
+                if self._log_handler is not None:
+                    self._log_handler(server, o)
+
+            elif isinstance(o, CoroHttpServer.ReadIo):
+                i = fp.r.read(o.sz)
+
+            elif isinstance(o, CoroHttpServer.ReadLineIo):
+                i = fp.r.readline(o.sz)
+
+            elif isinstance(o, CoroHttpServer.WriteIo):
+                i = None
+                fp.w.write(o.data)
+                fp.w.flush()
+
+            else:
+                raise TypeError(o)
+
+            try:
+                if i is not None:
+                    o = gen.send(i)
+                else:
+                    o = next(gen)
+            except StopIteration as e:
+                return check.isinstance(e.value, CoroHttpServer.CoroHandleResult)
+
+
+########################################
+# ../../../omlish/logs/std/adapters.py
+
+
+##
+
+
+class StdLogger(Logger):
+    def __init__(self, std: logging.Logger) -> None:
+        super().__init__()
+
+        self._std = std
+
+    @property
+    def std(self) -> logging.Logger:
+        return self._std
+
+    def get_effective_level(self) -> LogLevel:
+        return self._std.getEffectiveLevel()
+
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+        if not self.is_enabled_for(ctx.level):
+            return
+
+        ctx.capture()
+
+        ms, args = self._prepare_msg_args(msg, *args)
+
+        rec = LoggingContextLogRecord(
+            name=self._std.name,
+            msg=ms,
+            args=args,
+
+            _logging_context=ctx,
+        )
+
+        self._std.handle(rec)
+
+
+########################################
+# ../../../omlish/subprocesses/asyncs.py
+
+
+##
+
+
+class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
+    @abc.abstractmethod
+    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: TimeoutLike = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[SubprocessRunOutput]:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        await self.run(
+            *cmd,
+            stdout=stdout,
+            check=True,
+            **kwargs,
+        )
+
+    async def check_output(
+            self,
+            *cmd: str,
+            stdout: ta.Any = subprocess.PIPE,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        return check.not_none((await self.run(
+            *cmd,
+            stdout=stdout,
+            check=True,
+            **kwargs,
+        )).stdout)
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(
+            *cmd,
+            **kwargs,
+        )).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
+
+
+########################################
+# ../../../omlish/subprocesses/sync.py
+"""
+TODO:
+ - popen
+ - route check_calls through run_?
+"""
+
+
+##
+
+
+class AbstractSubprocesses(BaseSubprocesses, Abstract):
+    @abc.abstractmethod
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
+        raise NotImplementedError
+
+    def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: TimeoutLike = None,
+            check: bool = False,
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> SubprocessRunOutput:
+        return self.run_(SubprocessRun(
+            cmd=cmd,
+            input=input,
+            timeout=timeout,
+            check=check,
+            capture_output=capture_output,
+            kwargs=kwargs,
+        ))
+
+    #
+
+    @abc.abstractmethod
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return self.check_output(*cmd, **kwargs).decode().strip()
+
+    #
+
+    def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
+
+
+##
+
+
+class Subprocesses(AbstractSubprocesses):
+    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
+        with self.prepare_and_wrap(
+                *run.cmd,
+                input=run.input,
+                timeout=run.timeout,
+                check=run.check,
+                capture_output=run.capture_output or False,
+                **(run.kwargs or {}),
+        ) as (cmd, kwargs):
+            proc = subprocess.run(cmd, **kwargs)  # noqa
+
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=proc.returncode,
+
+            stdout=proc.stdout,  # noqa
+            stderr=proc.stderr,  # noqa
+        )
+
+    #
+
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
+            subprocess.check_call(cmd, **kwargs)
+
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
+            return subprocess.check_output(cmd, **kwargs)
+
+
+##
+
+
+subprocesses = Subprocesses()
+
+SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
+
+
+########################################
+# ../requirements.py
+"""
+TODO:
+ - pip compile lol
+  - but still support git+ stuff
+ - req.txt format aware hash
+  - more than just whitespace
+ - pyproject req rewriting
+ - download_requirements bootstrap off prev? not worth the dl?
+  - big deps (torch) change less, probably worth it
+ - follow embedded -r automatically like pyp
+"""
+
+
+##
+
+
+def build_requirements_hash(
+        requirements_txts: ta.Sequence[str],
+) -> str:
+    txt_file_contents: dict = {}
+
+    for txt_file in requirements_txts:
+        txt_file_name = os.path.basename(txt_file)
+        check.not_in(txt_file_name, txt_file_contents)
+        with open(txt_file) as f:
+            txt_contents = f.read()
+        txt_file_contents[txt_file_name] = txt_contents
+
+    #
+
+    lines = []
+    for txt_file, txt_contents in sorted(txt_file_contents.items()):
+        txt_hash = sha256_str(txt_contents)
+        lines.append(f'{txt_file}={txt_hash}')
+
+    return sha256_str('\n'.join(lines))
+
+
+##
+
+
+def download_requirements(
+        image: str,
+        requirements_dir: str,
+        requirements_txts: ta.Sequence[str],
+) -> None:
+    requirements_txt_dir = tempfile.mkdtemp()
+    with defer(lambda: shutil.rmtree(requirements_txt_dir)):
+        for rt in requirements_txts:
+            shutil.copyfile(rt, os.path.join(requirements_txt_dir, os.path.basename(rt)))
+
+        subprocesses.check_call(
+            'docker',
+            'run',
+            '--rm',
+            '-i',
+            '-v', f'{os.path.abspath(requirements_dir)}:/requirements',
+            '-v', f'{requirements_txt_dir}:/requirements_txt',
+            image,
+            'pip',
+            'download',
+            '-d', '/requirements',
+            *itertools.chain.from_iterable(
+                ['-r', f'/requirements_txt/{os.path.basename(rt)}']
+                for rt in requirements_txts
+            ),
+        )
+
+
+########################################
+# ../../dataserver/http.py
+"""
+TODO:
+ - asyncio
+ - chunked transfer - both output and urllib input
+ - range headers
+"""
+
+
+##
+
+
+class DataServerHttpHandler(HttpHandler_):
+    DEFAULT_READ_CHUNK_SIZE = 0x10000
+
+    def __init__(
+            self,
+            ps: DataServer,
+            *,
+            read_chunk_size: int = DEFAULT_READ_CHUNK_SIZE,
+    ) -> None:
+        super().__init__()
+
+        self._ps = ps
+        self._read_chunk_size = read_chunk_size
+
+    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        p_req = DataServerRequest(
+            req.method,
+            req.path,
+        )
+
+        p_resp = self._ps.handle(p_req)
+        try:
+            data: ta.Any
+            if (p_body := p_resp.body) is not None:
+                def stream_data():
+                    try:
+                        while (b := p_body.read(self._read_chunk_size)):
+                            yield b
+                    finally:
+                        p_body.close()
+
+                data = HttpHandlerResponseStreamedData(stream_data())
+
+            else:
+                data = None
+
+            resp = HttpHandlerResponse(
+                status=p_resp.status,
+                headers=p_resp.headers,
+                data=data,
+                close_connection=True,
+            )
+
+            return resp
+
+        except Exception:  # noqa
+            p_resp.close()
+
+            raise
+
+
+########################################
+# ../../oci/dataserver.py
+
+
+##
+
+
+def build_oci_repository_data_server_routes(
+        repo_name: str,
+        built_repo: BuiltOciImageIndexRepository,
+) -> ta.List[DataServerRoute]:
+    base_url_path = f'/v2/{repo_name}'
+
+    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
+
+    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
+
+    for blob in built_repo.blobs.values():
+        repo_contents['/'.join([
+            base_url_path,
+            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
+            blob.digest,
+        ])] = blob
+
+    #
+
+    def build_blob_target(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
+        kw: dict = dict(
+            content_type=check.non_empty_str(blob.media_type),
+        )
+
+        if isinstance(blob.data, BytesOciDataRef):
+            return DataServerTarget.of(blob.data.data, **kw)
+
+        elif isinstance(blob.data, FileOciDataRef):
+            return DataServerTarget.of(file_path=blob.data.path, **kw)
+
+        else:
+            with open_oci_data_ref(blob.data) as f:
+                data = f.read()
+
+            return DataServerTarget.of(data, **kw)
+
+    #
+
+    return [
+        DataServerRoute(
+            paths=[path],
+            target=target,
+        )
+        for path, blob in repo_contents.items()
+        if (target := build_blob_target(blob)) is not None
+    ]
+
+
+########################################
+# ../../../omlish/asyncs/asyncio/subprocesses.py
+
+
+##
+
+
+class AsyncioProcessCommunicator:
+    def __init__(
+            self,
+            proc: asyncio.subprocess.Process,
+            loop: ta.Optional[ta.Any] = None,
+            *,
+            log: ta.Optional[LoggerLike] = None,
+    ) -> None:
+        super().__init__()
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        self._proc = proc
+        self._loop = loop
+        self._log = log
+
+        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
+            proc._transport,  # type: ignore  # noqa
+            asyncio.base_subprocess.BaseSubprocessTransport,
+        )
+
+    @property
+    def _debug(self) -> bool:
+        return self._loop.get_debug()
+
+    async def _feed_stdin(self, input: bytes) -> None:  # noqa
+        stdin = check.not_none(self._proc.stdin)
+        try:
+            if input is not None:
+                stdin.write(input)
+                if self._debug and self._log is not None:
+                    self._log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
+
+            await stdin.drain()
+
+        except (BrokenPipeError, ConnectionResetError) as exc:
+            # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
+            # exceptions.
+            if self._debug and self._log is not None:
+                self._log.debug('%r communicate: stdin got %r', self, exc)
+
+        if self._debug and self._log is not None:
+            self._log.debug('%r communicate: close stdin', self)
+
+        stdin.close()
+
+    async def _noop(self) -> None:
+        return None
+
+    async def _read_stream(self, fd: int) -> bytes:
+        transport: ta.Any = check.not_none(self._transport.get_pipe_transport(fd))
+
+        if fd == 2:
+            stream = check.not_none(self._proc.stderr)
+        else:
+            check.equal(fd, 1)
+            stream = check.not_none(self._proc.stdout)
+
+        if self._debug and self._log is not None:
+            name = 'stdout' if fd == 1 else 'stderr'
+            self._log.debug('%r communicate: read %s', self, name)
+
+        output = await stream.read()
+
+        if self._debug and self._log is not None:
+            name = 'stdout' if fd == 1 else 'stderr'
+            self._log.debug('%r communicate: close %s', self, name)
+
+        transport.close()
+
+        return output
+
+    class Communication(ta.NamedTuple):
+        stdout: ta.Optional[bytes]
+        stderr: ta.Optional[bytes]
+
+    async def _communicate(
+            self,
+            input: ta.Any = None,  # noqa
+    ) -> Communication:
+        stdin_fut: ta.Any
+        if self._proc.stdin is not None:
+            stdin_fut = self._feed_stdin(input)
+        else:
+            stdin_fut = self._noop()
+
+        stdout_fut: ta.Any
+        if self._proc.stdout is not None:
+            stdout_fut = self._read_stream(1)
+        else:
+            stdout_fut = self._noop()
+
+        stderr_fut: ta.Any
+        if self._proc.stderr is not None:
+            stderr_fut = self._read_stream(2)
+        else:
+            stderr_fut = self._noop()
+
+        stdin_res, stdout_res, stderr_res = await asyncio.gather(stdin_fut, stdout_fut, stderr_fut)
+
+        await self._proc.wait()
+
+        return AsyncioProcessCommunicator.Communication(stdout_res, stderr_res)
+
+    async def communicate(
+            self,
+            input: ta.Any = None,  # noqa
+            timeout: TimeoutLike = None,
+    ) -> Communication:
+        return await asyncio_maybe_timeout(self._communicate(input), timeout)
+
+
+##
+
+
+class AsyncioSubprocesses(AbstractAsyncSubprocesses):
+    async def communicate(
+            self,
+            proc: asyncio.subprocess.Process,
+            input: ta.Any = None,  # noqa
+            timeout: TimeoutLike = None,
+    ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+        return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def popen(
+            self,
+            *cmd: str,
+            shell: bool = False,
+            timeout: TimeoutLike = None,
+            **kwargs: ta.Any,
+    ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
+        with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
+            fac: ta.Any
+            if shell:
+                fac = functools.partial(
+                    asyncio.create_subprocess_shell,
+                    check.single(cmd),
+                )
+            else:
+                fac = functools.partial(
+                    asyncio.create_subprocess_exec,
+                    *cmd,
+                )
+
+            proc: asyncio.subprocess.Process = await fac(**kwargs)
+            try:
+                yield proc
+
+            finally:
+                await asyncio_maybe_timeout(proc.wait(), timeout)
+
+    #
+
+    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput[asyncio.subprocess.Process]:
+        kwargs = dict(run.kwargs or {})
+
+        if run.capture_output:
+            kwargs.setdefault('stdout', subprocess.PIPE)
+            kwargs.setdefault('stderr', subprocess.PIPE)
+
+        proc: asyncio.subprocess.Process
+        async with self.popen(*run.cmd, **kwargs) as proc:
+            stdout, stderr = await self.communicate(proc, run.input, run.timeout)
+
+        if run.check and proc.returncode:
+            raise subprocess.CalledProcessError(
+                proc.returncode,
+                run.cmd,
+                output=stdout,
+                stderr=stderr,
+            )
+
+        return SubprocessRunOutput(
+            proc=proc,
+
+            returncode=check.isinstance(proc.returncode, int),
+
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+
+asyncio_subprocesses = AsyncioSubprocesses()
+
+
+########################################
+# ../../../omlish/http/coro/server/simple.py
+"""
+TODO:
+ - logging
+"""
+
+
+@contextlib.contextmanager
+def make_simple_http_server(
+        bind: CanSocketBinder,
+        handler: HttpHandler,
+        *,
+        server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
+        keep_alive: bool = False,
+        ssl_context: ta.Optional['ssl.SSLContext'] = None,
+        ignore_ssl_errors: bool = False,
+        executor: ta.Optional[cf.Executor] = None,
+        use_threads: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Iterator[SocketServer]:
+    check.arg(not (executor is not None and use_threads))
+
+    #
+
+    with contextlib.ExitStack() as es:
+        server_factory = functools.partial(
+            CoroHttpServer,
+            handler=handler,
+            parser=HttpRequestParser(
+                server_version=server_version,
+            ),
+        )
+
+        socket_handler = CoroHttpServerSocketHandler(
+            server_factory,
+            keep_alive=keep_alive,
+        )
+
+        #
+
+        server_handler: SocketServerHandler = SocketHandlerSocketServerHandler(
+            socket_handler,
+        )
+
+        #
+
+        if ssl_context is not None:
+            server_handler = SocketWrappingSocketServerHandler(
+                server_handler,
+                SocketAndAddress.socket_wrapper(functools.partial(
+                    ssl_context.wrap_socket,
+                    server_side=True,
+                )),
+            )
+
+        if ignore_ssl_errors:
+            server_handler = SslErrorHandlingSocketServerHandler(
+                server_handler,
+            )
+
+        #
+
+        server_handler = StandardSocketServerHandler(
+            server_handler,
+        )
+
+        #
+
+        if executor is not None:
+            server_handler = ExecutorSocketServerHandler(
+                server_handler,
+                executor,
+            )
+
+        elif use_threads:
+            server_handler = es.enter_context(ThreadingSocketServerHandler(
+                server_handler,
+            ))
+
+        #
+
+        server = es.enter_context(SocketServer(
+            SocketBinder.of(bind),
+            server_handler,
+            **kwargs,
+        ))
+
+        yield server
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return StdLogger(logging.getLogger(mod_globals.get('__name__')))  # noqa
+
+
+########################################
+# ../cache.py
+"""
+TODO:
+ - os.mtime, Config.purge_after_days
+  - nice to have: get a total set of might-need keys ahead of time and keep those
+  - okay: just purge after running
+"""
+
+
+CacheVersion = ta.NewType('CacheVersion', int)
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class FileCache(Abstract):
+    DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
+
+    def __init__(
+            self,
+            *,
+            version: ta.Optional[CacheVersion] = None,
+    ) -> None:
+        super().__init__()
+
+        if version is None:
+            version = self.DEFAULT_CACHE_VERSION
+        check.isinstance(version, int)
+        check.arg(version >= 0)
+        self._version: CacheVersion = version
+
+    @property
+    def version(self) -> CacheVersion:
+        return self._version
+
+    #
+
+    @abc.abstractmethod
+    def get_file(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> ta.Awaitable[str]:
+        raise NotImplementedError
+
+
+#
+
+
+class DirectoryFileCache(FileCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        dir: str
+
+        no_create: bool = False
+        no_purge: bool = False
+
+        no_update_mtime: bool = False
+
+        purge_max_age_s: ta.Optional[float] = None
+        purge_max_size_b: ta.Optional[int] = None
+
+    def __init__(
+            self,
+            config: Config,
+            *,
+            version: ta.Optional[CacheVersion] = None,
+    ) -> None:  # noqa
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+    @property
+    def dir(self) -> str:
+        return self._config.dir
+
+    #
+
+    VERSION_FILE_NAME = '.ci-cache-version'
+
+    def _iter_dir_contents(self) -> ta.Iterator[str]:
+        for n in sorted(os.listdir(self.dir)):
+            if n.startswith('.'):
+                continue
+            yield os.path.join(self.dir, n)
+
+    @cached_nullary
+    def setup_dir(self) -> None:
+        version_file = os.path.join(self.dir, self.VERSION_FILE_NAME)
+
+        if self._config.no_create:
+            check.state(os.path.isdir(self.dir))
+
+        elif not os.path.isdir(self.dir):
+            os.makedirs(self.dir)
+            with open(version_file, 'w') as f:
+                f.write(f'{self._version}\n')
+            return
+
+        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
+        with open(version_file) as f:
+            dir_version = int(f.read().strip())
+
+        if dir_version == self._version:
+            return
+
+        if self._config.no_purge:
+            raise RuntimeError(f'{dir_version=} != {self._version=}')
+
+        dirs = [n for n in sorted(os.listdir(self.dir)) if os.path.isdir(os.path.join(self.dir, n))]
+        if dirs:
+            raise RuntimeError(
+                f'Refusing to remove stale cache dir {self.dir!r} '
+                f'due to present directories: {", ".join(dirs)}',
+            )
+
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            log.debug('Purging stale cache file: %s', fp)
+            os.unlink(fp)
+
+        os.unlink(version_file)
+
+        with open(version_file, 'w') as f:
+            f.write(str(self._version))
+
+    #
+
+    def purge(self, *, dry_run: bool = False) -> None:
+        purge_max_age_s = self._config.purge_max_age_s
+        purge_max_size_b = self._config.purge_max_size_b
+        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
+            return
+
+        self.setup_dir()
+
+        purge_min_mtime: ta.Optional[float] = None
+        if purge_max_age_s is not None:
+            purge_min_mtime = time.time() - purge_max_age_s
+
+        dct: ta.Dict[str, os.stat_result] = {}
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            dct[fp] = os.stat(fp)
+
+        total_size_b = 0
+        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
+            total_size_b += st.st_size
+
+            purge = False
+            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
+                purge = True
+            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
+                purge = True
+
+            if not purge:
+                continue
+
+            log.debug('Purging cache file: %s', fp)
+            if not dry_run:
+                os.unlink(fp)
+
+    #
+
+    def get_cache_file_path(
+            self,
+            key: str,
+    ) -> str:
+        self.setup_dir()
+        return os.path.join(self.dir, key)
+
+    def format_incomplete_file(self, f: str) -> str:
+        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        cache_file_path = self.get_cache_file_path(key)
+        if not os.path.exists(cache_file_path):
+            return None
+
+        if not self._config.no_update_mtime:
+            stat_info = os.stat(cache_file_path)
+            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
+
+        return cache_file_path
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = self.get_cache_file_path(key)
+        if steal:
+            shutil.move(file_path, cache_file_path)
+        else:
+            shutil.copyfile(file_path, cache_file_path)
+        return cache_file_path
+
+
+##
+
+
+class DataCache:
+    @dc.dataclass(frozen=True)
+    class Data(Abstract):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class BytesData(Data):
+        data: bytes
+
+    @dc.dataclass(frozen=True)
+    class FileData(Data):
+        file_path: str
+
+    @dc.dataclass(frozen=True)
+    class UrlData(Data):
+        url: str
+
+    #
+
+    @abc.abstractmethod
+    def get_data(self, key: str) -> ta.Awaitable[ta.Optional[Data]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+#
+
+
+@functools.singledispatch
+async def read_data_cache_data(data: DataCache.Data) -> bytes:
+    raise TypeError(data)
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.BytesData) -> bytes:
+    return data.data
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.FileData) -> bytes:
+    with open(data.file_path, 'rb') as f:  # noqa
+        return f.read()
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.UrlData) -> bytes:
+    def inner() -> bytes:
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+            data.url,
+        )) as resp:
+            return resp.read()
+
+    return await asyncio.get_running_loop().run_in_executor(None, inner)
+
+
+#
+
+
+class FileCacheDataCache(DataCache):
+    def __init__(
+            self,
+            file_cache: FileCache,
+    ) -> None:
+        super().__init__()
+
+        self._file_cache = file_cache
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        if (file_path := await self._file_cache.get_file(key)) is None:
+            return None
+
+        return DataCache.FileData(file_path)
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        steal = False
+
+        if isinstance(data, DataCache.BytesData):
+            file_path = make_temp_file()
+            with open(file_path, 'wb') as f:  # noqa
+                f.write(data.data)
+            steal = True
+
+        elif isinstance(data, DataCache.FileData):
+            file_path = data.file_path
+
+        elif isinstance(data, DataCache.UrlData):
+            raise NotImplementedError
+
+        else:
+            raise TypeError(data)
+
+        await self._file_cache.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+
+########################################
+# ../compose.py
+"""
+TODO:
+ - fix rmi - only when not referenced anymore
+"""
+
+
+##
+
+
+def get_compose_service_dependencies(
+        compose_file: str,
+        service: str,
+) -> ta.Dict[str, str]:
+    compose_dct = read_yaml_file(compose_file)
+
+    services = compose_dct['services']
+    service_dct = services[service]
+
+    out = {}
+    for dep_service in service_dct.get('depends_on', []):
+        dep_service_dct = services[dep_service]
+        out[dep_service] = dep_service_dct['image']
+
+    return out
+
+
+##
+
+
+class DockerComposeRun(AsyncExitStacked):
+    @dc.dataclass(frozen=True)
+    class Config:
+        compose_file: str
+        service: str
+
+        image: str
+
+        cmd: ShellCmd
+
+        #
+
+        run_options: ta.Optional[ta.Sequence[str]] = None
+
+        cwd: ta.Optional[str] = None
+
+        #
+
+        no_dependencies: bool = False
+        no_dependency_cleanup: bool = False
+
+        #
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.run_options, str)
+
+    def __init__(self, cfg: Config) -> None:
+        super().__init__()
+
+        self._cfg = cfg
+
+        self._subprocess_kwargs = {
+            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
+        }
+
+    #
+
+    def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
+        out = dict(in_dct)
+
+        #
+
+        in_services = in_dct['services']
+        out['services'] = out_services = {}
+
+        #
+
+        in_service: dict = in_services[self._cfg.service]
+        out_services[self._cfg.service] = out_service = dict(in_service)
+
+        out_service['image'] = self._cfg.image
+
+        for k in ['build', 'platform']:
+            out_service.pop(k, None)
+
+        #
+
+        if not self._cfg.no_dependencies:
+            depends_on = in_service.get('depends_on', [])
+
+            for dep_service, in_dep_service_dct in list(in_services.items()):
+                if dep_service not in depends_on:
+                    continue
+
+                out_dep_service: dict = dict(in_dep_service_dct)
+                out_services[dep_service] = out_dep_service
+
+                out_dep_service['ports'] = []
+
+        else:
+            out_service['depends_on'] = []
+
+        #
+
+        return out
+
+    @cached_nullary
+    def rewrite_compose_file(self) -> str:
+        in_dct = read_yaml_file(self._cfg.compose_file)
+
+        out_dct = self._rewrite_compose_dct(in_dct)
+
+        #
+
+        out_compose_file = make_temp_file()
+        self._enter_context(defer(lambda: os.unlink(out_compose_file)))  # noqa
+
+        compose_json = json_dumps_pretty(out_dct)
+
+        with open(out_compose_file, 'w') as f:
+            f.write(compose_json)
+
+        return out_compose_file
+
+    #
+
+    async def _cleanup_dependencies(self) -> None:
+        await asyncio_subprocesses.check_call(
+            'docker',
+            'compose',
+            '-f', self.rewrite_compose_file(),
+            'down',
+        )
+
+    async def run(self) -> None:
+        compose_file = self.rewrite_compose_file()
+
+        async with contextlib.AsyncExitStack() as es:
+            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
+                await es.enter_async_context(adefer(self._cleanup_dependencies()))  # noqa
+
+            sh_cmd = ' '.join([
+                'docker',
+                'compose',
+                '-f', compose_file,
+                'run',
+                '--rm',
+                *itertools.chain.from_iterable(
+                    ['-e', k]
+                    for k in (self._cfg.cmd.env or [])
+                ),
+                *(self._cfg.run_options or []),
+                self._cfg.service,
+                'sh', '-c', shlex.quote(self._cfg.cmd.s),
+            ])
+
+            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
+
+            await run_cmd.run(
+                asyncio_subprocesses.check_call,
+                **self._subprocess_kwargs,
+            )
+
+
+########################################
+# ../docker/cmds.py
+
+
+##
+
+
+async def is_docker_image_present(image: str) -> bool:
+    out = await asyncio_subprocesses.check_output(
+        'docker',
+        'images',
+        '--format', 'json',
+        image,
+    )
+
+    out_s = out.decode('utf-8').strip()
+    if not out_s:
+        return False
+
+    json.loads(out_s)  # noqa
+    return True
+
+
+async def pull_docker_image(
+        image: str,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'pull',
+        image,
+    )
+
+
+async def build_docker_image(
+        docker_file: str,
+        *,
+        tag: ta.Optional[str] = None,
+        cwd: ta.Optional[str] = None,
+        run_options: ta.Optional[ta.Sequence[str]] = None,
+) -> str:
+    with temp_file_context() as id_file:
+        await asyncio_subprocesses.check_call(
+            'docker',
+            'build',
+            '-f', os.path.abspath(docker_file),
+            '--iidfile', id_file,
+            *(['--tag', tag] if tag is not None else []),
+            *(run_options or []),
+            '.',
+            **(dict(cwd=cwd) if cwd is not None else {}),
+        )
+
+        with open(id_file) as f:  # noqa
+            image_id = check.single(f.read().strip().splitlines()).strip()
+
+    return image_id
+
+
+async def tag_docker_image(image: str, tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'tag',
+        image,
+        tag,
+    )
+
+
+async def delete_docker_tag(tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'rmi',
+        tag,
+    )
+
+
+##
+
+
+async def save_docker_tar_cmd(
+        image: str,
+        output_cmd: ShellCmd,
+) -> None:
+    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
+    await cmd.run(asyncio_subprocesses.check_call)
+
+
+async def save_docker_tar(
+        image: str,
+        tar_file: str,
+) -> None:
+    return await save_docker_tar_cmd(
+        image,
+        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
+    )
+
+
+#
+
+
+async def load_docker_tar_cmd(
+        input_cmd: ShellCmd,
+) -> str:
+    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
+
+    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded
+
+
+async def load_docker_tar(
+        tar_file: str,
+) -> str:
+    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
+
+
+##
+
+
+async def ensure_docker_image_setup(
+        image: str,
+        *,
+        cwd: ta.Optional[str] = None,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'run',
+        '--rm',
+        '--entrypoint', '/bin/true',  # FIXME: lol
+        image,
+        **(dict(cwd=cwd) if cwd is not None else {}),
+    )
+
+
+########################################
+# ../docker/dataserver.py
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def start_docker_port_relay(
+        docker_port: int,
+        host_port: int,
+        **kwargs: ta.Any,
+) -> ta.AsyncGenerator[None, None]:
+    proc = await asyncio.create_subprocess_exec(*DockerPortRelay(
+        docker_port,
+        host_port,
+        **kwargs,
+    ).run_cmd())
+
+    try:
+        yield
+
+    finally:
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            pass
+        await proc.wait()
+
+
+##
+
+
+class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            handler: HttpHandler,
+            *,
+            temp_ssl: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._port = port
+        self._handler = handler
+
+        self._temp_ssl = temp_ssl
+
+        self._lock = threading.RLock()
+
+        self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
+        self._thread: ta.Optional[threading.Thread] = None
+        self._thread_exit_event = asyncio.Event()
+        self._server: ta.Optional[SocketServer] = None
+
+    @cached_nullary
+    def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
+        if not self._temp_ssl:
+            return None
+
+        ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: async blocking
+
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(
+            keyfile=ssl_cert.key_file,
+            certfile=ssl_cert.cert_file,
+        )
+
+        return ssl_context
+
+    @contextlib.contextmanager
+    def _make_server(self) -> ta.Iterator[SocketServer]:
+        with make_simple_http_server(
+                self._port,
+                self._handler,
+                ssl_context=self._ssl_context(),
+                ignore_ssl_errors=True,
+                use_threads=True,
+        ) as server:
+            yield server
+
+    def _thread_main(self) -> None:
+        try:
+            check.none(self._server)
+            with self._make_server() as server:
+                self._server = server
+
+                server.run()
+
+        finally:
+            check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
+
+    def is_running(self) -> bool:
+        return self._server is not None
+
+    def shutdown(self) -> None:
+        if (server := self._server) is not None:
+            server.shutdown(block=False)
+
+    async def run(self) -> None:
+        with self._lock:
+            check.none(self._loop)
+            check.none(self._thread)
+            check.state(not self._thread_exit_event.is_set())
+
+            if self._temp_ssl:
+                # Hit the ExitStack from this thread
+                self._ssl_context()
+
+            self._loop = check.not_none(asyncio.get_running_loop())
+            self._thread = threading.Thread(
+                target=self._thread_main,
+                daemon=True,
+            )
+            self._thread.start()
+
+        await self._thread_exit_event.wait()
+
+
+##
+
+
+class DockerDataServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            data_server: DataServer,
+            *,
+            handler_log: ta.Optional[LoggerLike] = None,
+            stop_event: ta.Optional[asyncio.Event] = None,
+    ) -> None:
+        super().__init__()
+
+        self._port = port
+        self._data_server = data_server
+
+        self._handler_log = handler_log
+
+        if stop_event is None:
+            stop_event = asyncio.Event()
+        self._stop_event = stop_event
+
+    @property
+    def stop_event(self) -> asyncio.Event:
+        return self._stop_event
+
+    async def run(self) -> None:
+        # FIXME:
+        #  - shared single server with updatable routes
+        #  - get docker used ports with ns1
+        #  - discover server port with get_available_port
+        #  - discover relay port pair with get_available_ports
+        # relay_port: ta.Optional[ta.Tuple[int, int]] = None
+
+        relay_port: ta.Optional[int] = None
+        if sys.platform == 'darwin':
+            relay_port = self._port
+            server_port = self._port + 1
+        else:
+            server_port = self._port
+
+        #
+
+        handler: HttpHandler = DataServerHttpHandler(self._data_server)
+
+        if self._handler_log is not None:
+            handler = LoggingHttpHandler(
+                handler,
+                self._handler_log,
+            )
+
+        #
+
+        async with contextlib.AsyncExitStack() as es:
+            if relay_port is not None:
+                await es.enter_async_context(start_docker_port_relay(  # noqa
+                    relay_port,
+                    server_port,
+                    intermediate_port=server_port + 1,
+                ))
+
+            async with AsyncioManagedSimpleHttpServer(
+                    server_port,
+                    handler,
+                    temp_ssl=True,
+            ) as server:
+                server_run_task = asyncio.create_task(server.run())
+                try:
+                    await self._stop_event.wait()
+
+                finally:
+                    server.shutdown()
+                    await server_run_task
+
+
+########################################
+# ../../../omlish/lite/timing.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+LogTimingContext.DEFAULT_LOG = log
+
+log_timing_context = log_timing_context  # noqa
+
+
+########################################
+# ../docker/cache.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DockerCacheKey:
+    prefixes: ta.Sequence[str]
+    content: str
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.prefixes, str)
+
+    def append_prefix(self, *prefixes: str) -> 'DockerCacheKey':
+        return dc.replace(self, prefixes=(*self.prefixes, *prefixes))
+
+    SEPARATOR: ta.ClassVar[str] = '--'
+
+    def __str__(self) -> str:
+        return self.SEPARATOR.join([*self.prefixes, self.content])
+
+
+##
+
+
+class DockerCache(Abstract):
+    @abc.abstractmethod
+    def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Awaitable[ta.Optional[str]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+class DockerCacheImpl(DockerCache):
+    def __init__(
+            self,
+            *,
+            file_cache: ta.Optional[FileCache] = None,
+    ) -> None:
+        super().__init__()
+
+        self._file_cache = file_cache
+
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
+        if self._file_cache is None:
+            return None
+
+        cache_file = await self._file_cache.get_file(str(key))
+        if cache_file is None:
+            return None
+
+        get_cache_cmd = ShellCmd(f'cat {cache_file} | zstd -cd --long')
+
+        return await load_docker_tar_cmd(get_cache_cmd)
+
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
+        if self._file_cache is None:
+            return
+
+        with temp_file_context() as tmp_file:
+            write_tmp_cmd = ShellCmd(f'zstd > {tmp_file}')
+
+            await save_docker_tar_cmd(image, write_tmp_cmd)
+
+            await self._file_cache.put_file(str(key), tmp_file, steal=True)
+
+
+########################################
+# ../docker/repositories.py
+
+
+##
+
+
+class DockerImageRepositoryOpener(Abstract):
+    @abc.abstractmethod
+    def open_docker_image_repository(self, image: str) -> ta.AsyncContextManager[OciRepository]:
+        raise NotImplementedError
+
+
+#
+
+
+class DockerImageRepositoryOpenerImpl(DockerImageRepositoryOpener):
+    @contextlib.asynccontextmanager
+    async def open_docker_image_repository(self, image: str) -> ta.AsyncGenerator[OciRepository, None]:
+        with temp_dir_context() as save_dir:
+            with log_timing_context(f'Saving docker image {image}'):
+                await asyncio_subprocesses.check_call(
+                    ' | '.join([
+                        f'docker save {shlex.quote(image)}',
+                        f'tar x -C {shlex.quote(save_dir)}',
+                    ]),
+                    shell=True,
+                )
+
+            yield DirectoryOciRepository(save_dir)
+
+
+########################################
 # ../github/api/clients.py
 
 
@@ -10592,721 +13480,441 @@ class AzureBlockBlobUploader:
 
 
 ########################################
-# ../../dataserver/server.py
+# ../../oci/pack/repositories.py
 
 
 ##
 
 
-class DataServer:
-    @dc.dataclass(frozen=True)
-    class HandlerRoute:
-        paths: ta.Sequence[str]
-        handler: DataServerHandler
+class OciPackedRepositoryBuilder(ExitStacked):
+    def __init__(
+            self,
+            source_repo: OciRepository,
+            *,
+            temp_dir: ta.Optional[str] = None,
 
-        def __post_init__(self) -> None:
-            check.not_isinstance(self.paths, str)
-            for p in self.paths:
-                check.non_empty_str(p)
-            check.isinstance(self.handler, DataServerHandler)
+            num_packed_files: int = 3,  # GH actions have this set to 3, the default
+            packed_compression: ta.Optional[OciCompression] = OciCompression.ZSTD,
+    ) -> None:
+        super().__init__()
 
-        @classmethod
-        def of(cls, obj: ta.Union[
-            'DataServer.HandlerRoute',
-            DataServerRoute,
-        ]) -> 'DataServer.HandlerRoute':
-            if isinstance(obj, cls):
-                return obj
+        self._source_repo = source_repo
 
-            elif isinstance(obj, DataServerRoute):
-                return cls(
-                    paths=obj.paths,
-                    handler=DataServerTargetHandler.for_target(obj.target),
-                )
+        self._given_temp_dir = temp_dir
 
-            else:
-                raise TypeError(obj)
+        check.arg(num_packed_files > 0)
+        self._num_packed_files = num_packed_files
 
-        @classmethod
-        def of_(cls, *objs: ta.Any) -> ta.List['DataServer.HandlerRoute']:
-            return [cls.of(obj) for obj in objs]
+        self._packed_compression = packed_compression
+
+    @cached_nullary
+    def _temp_dir(self) -> str:
+        if (given := self._given_temp_dir) is not None:
+            return given
+        else:
+            return self._enter_context(temp_dir_context())  # noqa
 
     #
 
+    @cached_nullary
+    def _source_image_index(self) -> OciImageIndex:
+        image_index = read_oci_repository_root_index(self._source_repo)
+        return get_single_leaf_oci_image_index(image_index)
+
+    @cached_nullary
+    def _source_image_manifest(self) -> OciImageManifest:
+        return get_single_oci_image_manifest(self._source_image_index())
+
+    #
+
+    @cached_nullary
+    def _extracted_layer_tar_files(self) -> ta.List[str]:
+        image = self._source_image_manifest()
+
+        layer_tar_files = []
+
+        for i, layer in enumerate(image.layers):
+            if isinstance(layer.data, FileOciDataRef):
+                input_file_path = layer.data.path
+
+            else:
+                input_file_path = os.path.join(self._temp_dir(), f'save-layer-{i}.tar')
+                with open(input_file_path, 'wb') as input_file:  # noqa
+                    with open_oci_data_ref(layer.data) as layer_file:
+                        shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
+
+            layer_tar_files.append(input_file_path)
+
+        return layer_tar_files
+
+    #
+
+    @cached_nullary
+    def _unpacked_tar_file(self) -> str:
+        layer_tar_files = self._extracted_layer_tar_files()
+        unpacked_file = os.path.join(self._temp_dir(), 'unpacked.tar')
+
+        with log_timing_context(f'Unpacking docker image {self._source_repo}'):
+            with OciLayerUnpacker(
+                    layer_tar_files,
+                    unpacked_file,
+            ) as lu:
+                lu.write()
+
+        return unpacked_file
+
+    #
+
+    @cached_nullary
+    def _packed_tar_files(self) -> ta.Mapping[str, WrittenOciDataTarFileInfo]:
+        unpacked_tar_file = self._unpacked_tar_file()
+
+        packed_tar_files = [
+            os.path.join(self._temp_dir(), f'packed-{i}.tar')
+            for i in range(self._num_packed_files)
+        ]
+
+        with log_timing_context(f'Packing docker image {self._source_repo}'):
+            with OciLayerPacker(
+                    unpacked_tar_file,
+                    packed_tar_files,
+                    compression=self._packed_compression,
+            ) as lp:
+                return lp.write()
+
+    #
+
+    @cached_nullary
+    def _packed_image_index(self) -> OciImageIndex:
+        image_index = copy.deepcopy(self._source_image_index())
+
+        image = get_single_oci_image_manifest(image_index)
+
+        image.config.history = None
+
+        written = self._packed_tar_files()
+
+        # FIXME: use prebuilt sha256
+        image.layers = [
+            OciImageLayer(
+                kind=OciImageLayer.Kind.from_compression(self._packed_compression),
+                data=FileOciDataRef(output_file),
+            )
+            for output_file, output_file_info in written.items()
+        ]
+
+        image.config.rootfs.diff_ids = [
+            f'sha256:{output_file_info.tar_sha256}'
+            for output_file_info in written.values()
+        ]
+
+        return image_index
+
+    #
+
+    @cached_nullary
+    def build(self) -> BuiltOciImageIndexRepository:
+        return build_oci_index_repository(self._packed_image_index())
+
+
+########################################
+# ../docker/buildcaching.py
+
+
+##
+
+
+class DockerBuildCaching(Abstract):
+    @abc.abstractmethod
+    def cached_build_docker_image(
+            self,
+            cache_key: DockerCacheKey,
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
+    ) -> ta.Awaitable[str]:
+        raise NotImplementedError
+
+
+class DockerBuildCachingImpl(DockerBuildCaching):
     @dc.dataclass(frozen=True)
     class Config:
-        pass
+        service: str
+
+        always_build: bool = False
 
     def __init__(
             self,
-            routes: ta.Optional[ta.Iterable[HandlerRoute]] = None,
-            config: Config = Config(),
+            *,
+            config: Config,
+
+            docker_cache: ta.Optional[DockerCache] = None,
     ) -> None:
         super().__init__()
 
         self._config = config
 
-        self.set_routes(routes)
+        self._docker_cache = docker_cache
 
-    #
+    async def cached_build_docker_image(
+            self,
+            cache_key: DockerCacheKey,
+            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
+    ) -> str:
+        image_tag = f'{self._config.service}:{cache_key!s}'
 
-    _routes_by_path: ta.Dict[str, HandlerRoute]
+        if not self._config.always_build and (await is_docker_image_present(image_tag)):
+            return image_tag
 
-    def set_routes(self, routes: ta.Optional[ta.Iterable[HandlerRoute]]) -> None:
-        routes_by_path: ta.Dict[str, DataServer.HandlerRoute] = {}
+        if (
+                self._docker_cache is not None and
+                (cache_image_id := await self._docker_cache.load_cache_docker_image(cache_key)) is not None
+        ):
+            await tag_docker_image(
+                cache_image_id,
+                image_tag,
+            )
+            return image_tag
 
-        for r in routes or []:
-            for p in r.paths:
-                check.not_in(p, routes_by_path)
-                routes_by_path[p] = r
+        image_id = await build_and_tag(image_tag)
 
-        self._routes_by_path = routes_by_path
+        if self._docker_cache is not None:
+            await self._docker_cache.save_cache_docker_image(cache_key, image_id)
 
-    #
-
-    def handle(self, req: DataServerRequest) -> DataServerResponse:
-        try:
-            rt = self._routes_by_path[req.path]
-        except KeyError:
-            return DataServerResponse(http.HTTPStatus.NOT_FOUND)
-
-        return rt.handler.handle(req)
+        return image_tag
 
 
 ########################################
-# ../../oci/building.py
+# ../docker/cacheserved/cache.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
 
 
-class OciRepositoryBuilder:
+class CacheServedDockerCache(DockerCache):
     @dc.dataclass(frozen=True)
-    class Blob:
-        digest: str
+    class Config:
+        port: int = 5021
 
-        data: OciDataRef
-        info: OciDataRefInfo
+        repack: bool = True
 
-        media_type: ta.Optional[str] = None
+        key_prefix: ta.Optional[str] = 'cs'
 
         #
 
-        def read(self) -> bytes:
-            with open_oci_data_ref(self.data) as f:
-                return f.read()
+        pull_run_cmd: ta.Optional[str] = 'true'
 
-        def read_json(self) -> ta.Any:
-            return json.loads(self.read().decode('utf-8'))
+        #
 
-        def read_media(
-                self,
-                cls: ta.Type[OciMediaDataclassT] = OciMediaDataclass,  # type: ignore[assignment]
-        ) -> OciMediaDataclassT:
-            mt = check.non_empty_str(self.media_type)
-            dct = self.read_json()
-            obj = unmarshal_oci_media_dataclass(
-                dct,
-                media_type=mt,
-            )
-            return check.isinstance(obj, cls)
+        server_start_timeout: TimeoutLike = 5.
+        server_start_sleep: float = .1
 
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._blobs: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
-
-    #
-
-    def get_blobs(self) -> ta.Dict[str, Blob]:
-        return dict(self._blobs)
-
-    def add_blob(
-            self,
-            r: OciDataRef,
-            ri: ta.Optional[OciDataRefInfo] = None,
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> Blob:
-        if ri is None:
-            ri = OciDataRefInfo(r)
-
-        if (dg := ri.digest()) in self._blobs:
-            raise KeyError(ri.digest())
-
-        blob = self.Blob(
-            digest=dg,
-
-            data=r,
-            info=ri,
-
-            media_type=media_type,
-        )
-
-        self._blobs[dg] = blob
-
-        return blob
-
-    #
-
-    def marshal_media(self, obj: OciMediaDataclass) -> bytes:
-        check.isinstance(obj, OciMediaDataclass)
-        m = marshal_obj(obj)
-        j = json_dumps_compact(m)
-        b = j.encode('utf-8')
-        return b
-
-    def add_media(self, obj: OciMediaDataclass) -> OciMediaDescriptor:
-        b = self.marshal_media(obj)
-
-        r = BytesOciDataRef(b)
-        ri = OciDataRefInfo(r)
-        self.add_blob(
-            r,
-            ri,
-            media_type=obj.media_type,
-        )
-
-        return OciMediaDescriptor(
-            media_type=obj.media_type,
-            digest=ri.digest(),
-            size=ri.size(),
-        )
-
-    #
-
-    def to_media(self, obj: OciDataclass) -> ta.Union[OciMediaDataclass, OciMediaDescriptor]:
-        def make_kw(*exclude):
-            return {
-                a: v
-                for f in dc.fields(obj)
-                if (a := f.name) not in exclude
-                for v in [getattr(obj, a)]
-                if v is not None
-            }
-
-        if isinstance(obj, OciImageIndex):
-            return OciMediaImageIndex(
-                **make_kw('manifests'),
-                manifests=[
-                    self.add_data(m)
-                    for m in obj.manifests
-                ],
-            )
-
-        elif isinstance(obj, OciImageManifest):
-            return OciMediaImageManifest(
-                **make_kw('config', 'layers'),
-                config=self.add_data(obj.config),
-                layers=[
-                    self.add_data(l)
-                    for l in obj.layers
-                ],
-            )
-
-        elif isinstance(obj, OciImageLayer):
-            ri = OciDataRefInfo(obj.data)
-            mt = OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind]
-            self.add_blob(
-                obj.data,
-                ri,
-                media_type=mt,
-            )
-            return OciMediaDescriptor(
-                media_type=mt,
-                digest=ri.digest(),
-                size=ri.size(),
-            )
-
-        elif isinstance(obj, OciImageConfig):
-            return OciMediaImageConfig(**make_kw())
-
-        else:
-            raise TypeError(obj)
-
-    def add_data(self, obj: OciDataclass) -> OciMediaDescriptor:
-        ret = self.to_media(obj)
-
-        if isinstance(ret, OciMediaDataclass):
-            return self.add_media(ret)
-
-        elif isinstance(ret, OciMediaDescriptor):
-            return ret
-
-        else:
-            raise TypeError(ret)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class BuiltOciImageIndexRepository:
-    index: OciImageIndex
-
-    media_index_descriptor: OciMediaDescriptor
-    media_index: OciMediaImageIndex
-
-    blobs: ta.Mapping[str, OciRepositoryBuilder.Blob]
-
-
-def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexRepository:
-    builder = OciRepositoryBuilder()
-
-    media_index_descriptor = builder.add_data(index)
-
-    blobs = builder.get_blobs()
-
-    media_index = blobs[media_index_descriptor.digest].read_media(OciMediaImageIndex)
-
-    return BuiltOciImageIndexRepository(
-        index=index,
-
-        media_index_descriptor=media_index_descriptor,
-        media_index=media_index,
-
-        blobs=blobs,
-    )
-
-
-########################################
-# ../../oci/loading.py
-
-
-##
-
-
-class OciRepositoryLoader:
     def __init__(
             self,
-            repo: OciRepository,
+            *,
+            config: Config = Config(),
+
+            image_repo_opener: DockerImageRepositoryOpener,
+            data_cache: DataCache,
     ) -> None:
         super().__init__()
 
-        self._repo = repo
+        self._config = config
 
-    #
+        self._image_repo_opener = image_repo_opener
+        self._data_cache = data_cache
 
-    def load_object(
-            self,
-            data: bytes,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> T:
-        text = data.decode('utf-8')
-        dct = json.loads(text)
-        obj = unmarshal_oci_media_dataclass(
-            dct,
-            media_type=media_type,
-        )
-        return check.isinstance(obj, cls)
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
 
-    def read_object(
-            self,
-            digest: str,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> T:
-        data = self._repo.read_blob(digest)
-        return self.load_object(
-            data,
-            cls,
-            media_type=media_type,
+        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
+            return None
+
+        manifest_bytes = await read_data_cache_data(manifest_data)
+
+        manifest: CacheServedDockerImageManifest = unmarshal_obj(
+            json.loads(manifest_bytes.decode('utf-8')),
+            CacheServedDockerImageManifest,
         )
 
-    def read_descriptor(
-            self,
-            desc: OciMediaDescriptor,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-    ) -> ta.Any:
-        return self.read_object(
-            desc.digest,
-            cls,
-            media_type=desc.media_type,
-        )
+        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
+            cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
 
-    #
+            if isinstance(cache_data, DataCache.BytesData):
+                return DataServerTarget.of(
+                    cache_data.data,
+                    **target_kwargs,
+                )
 
-    def from_media(self, obj: ta.Any) -> ta.Any:
-        def make_kw(*exclude):
-            return {
-                a: getattr(obj, a)
-                for f in dc.fields(obj)
-                if (a := f.name) not in OCI_MEDIA_FIELDS
-                and a not in exclude
-            }
+            elif isinstance(cache_data, DataCache.FileData):
+                return DataServerTarget.of(
+                    file_path=cache_data.file_path,
+                    **target_kwargs,
+                )
 
-        if isinstance(obj, OciMediaImageConfig):
-            return OciImageConfig(**make_kw())
-
-        elif isinstance(obj, OciMediaImageManifest):
-            return OciImageManifest(
-                **make_kw('config', 'layers'),
-                config=self.from_media(self.read_descriptor(obj.config)),
-                layers=[
-                    OciImageLayer(
-                        kind=lk,
-                        data=self._repo.ref_blob(l.digest),
-                    )
-                    for l in obj.layers
-                    if (lk := OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_.get(l.media_type)) is not None
-                ],
-            )
-
-        elif isinstance(obj, OciMediaImageIndex):
-            return OciImageIndex(
-                **make_kw('manifests'),
-                manifests=[
-                    fm
-                    for m in obj.manifests
-                    if self._repo.contains_blob(m.digest)
-                    for fm in [self.from_media(self.read_descriptor(m))]
-                    if not is_empty_oci_dataclass(fm)
-                ],
-            )
-
-        else:
-            raise TypeError(obj)
-
-
-##
-
-
-def read_oci_repository_root_index(
-        obj: ta.Any,
-        *,
-        file_name: str = 'index.json',
-) -> OciImageIndex:
-    file_repo = check.isinstance(OciRepository.of(obj), FileOciRepository)
-
-    repo_ldr = OciRepositoryLoader(file_repo)
-
-    media_image_idx = repo_ldr.load_object(file_repo.read_file(file_name), OciMediaImageIndex)
-
-    image_idx = repo_ldr.from_media(media_image_idx)
-
-    return check.isinstance(image_idx, OciImageIndex)
-
-
-########################################
-# ../../../omlish/http/coro/server/sockets.py
-
-
-##
-
-
-class CoroHttpServerSocketHandler(SocketHandler_):
-    def __init__(
-            self,
-            server_factory: CoroHttpServerFactory,
-            *,
-            keep_alive: bool = False,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._server_factory = server_factory
-        self._keep_alive = keep_alive
-        self._log_handler = log_handler
-
-    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
-        server = self._server_factory(client_address)
-
-        if self._keep_alive:
-            for i in itertools.count():  # noqa
-                res = self._handle_one(server, fp)
-                if res.close_reason is not None:
-                    break
-
-        else:
-            self._handle_one(server, fp)
-
-    def _handle_one(
-            self,
-            server: CoroHttpServer,
-            fp: SocketIoPair,
-    ) -> CoroHttpServer.CoroHandleResult:
-        gen = server.coro_handle()
-
-        o = next(gen)
-        while True:
-            if isinstance(o, CoroHttpServer.AnyLogIo):
-                i = None
-                if self._log_handler is not None:
-                    self._log_handler(server, o)
-
-            elif isinstance(o, CoroHttpServer.ReadIo):
-                i = fp.r.read(o.sz)
-
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
-                i = fp.r.readline(o.sz)
-
-            elif isinstance(o, CoroHttpServer.WriteIo):
-                i = None
-                fp.w.write(o.data)
-                fp.w.flush()
+            elif isinstance(cache_data, DataCache.UrlData):
+                return DataServerTarget.of(
+                    url=cache_data.url,
+                    methods=['GET'],
+                    **target_kwargs,
+                )
 
             else:
-                raise TypeError(o)
+                raise TypeError(cache_data)
 
+        data_server_routes = await build_cache_served_docker_image_data_server_routes(
+            manifest,
+            make_cache_key_target,
+        )
+
+        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
+
+        image_url = f'localhost:{self._config.port}/{key!s}'
+
+        async with DockerDataServer(
+                self._config.port,
+                data_server,
+                handler_log=log,
+        ) as dds:
+            dds_run_task = asyncio.create_task(dds.run())
             try:
-                if i is not None:
-                    o = gen.send(i)
+                timeout = Timeout.of(self._config.server_start_timeout)
+
+                await asyncio_wait_until_can_connect(
+                    'localhost',
+                    self._config.port,
+                    timeout=timeout,
+                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
+                    sleep_s=self._config.server_start_sleep,
+                )
+
+                if (prc := self._config.pull_run_cmd) is not None:
+                    pull_cmd = [
+                        'run',
+                        '--rm',
+                        image_url,
+                        prc,
+                    ]
                 else:
-                    o = next(gen)
-            except StopIteration as e:
-                return check.isinstance(e.value, CoroHttpServer.CoroHandleResult)
+                    pull_cmd = [
+                        'pull',
+                        image_url,
+                    ]
+
+                await asyncio_subprocesses.check_call(
+                    'docker',
+                    *pull_cmd,
+                )
+
+            finally:
+                dds.stop_event.set()
+                await dds_run_task
+
+        return image_url
+
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
+
+        async with contextlib.AsyncExitStack() as es:
+            image_repo: OciRepository = await es.enter_async_context(
+                self._image_repo_opener.open_docker_image_repository(image),
+            )
+
+            root_image_index = read_oci_repository_root_index(image_repo)
+            image_index = get_single_leaf_oci_image_index(root_image_index)
+
+            if self._config.repack:
+                prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
+                    image_repo,
+                ))
+                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
+
+            else:
+                built_repo = build_oci_index_repository(image_index)
+
+            data_server_routes = build_oci_repository_data_server_routes(
+                str(key),
+                built_repo,
+            )
+
+            async def make_file_cache_key(file_path: str) -> str:
+                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
+                await self._data_cache.put_data(
+                    target_cache_key,
+                    DataCache.FileData(file_path),
+                )
+                return target_cache_key
+
+            cache_served_manifest = await build_cache_served_docker_image_manifest(
+                data_server_routes,
+                make_file_cache_key,
+            )
+
+        manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
+
+        await self._data_cache.put_data(
+            str(key),
+            DataCache.BytesData(manifest_data),
+        )
 
 
 ########################################
-# ../../../omlish/subprocesses/asyncs.py
+# ../docker/imagepulling.py
 
 
 ##
 
 
-class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
+class DockerImagePulling(Abstract):
     @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> ta.Awaitable[SubprocessRunOutput]:
+    def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
         raise NotImplementedError
 
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: TimeoutLike = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Awaitable[SubprocessRunOutput]:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
 
-    #
+class DockerImagePullingImpl(DockerImagePulling):
+    @dc.dataclass(frozen=True)
+    class Config:
+        always_pull: bool = False
 
-    async def check_call(
+    def __init__(
             self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
+            *,
+            config: Config = Config(),
+
+            file_cache: ta.Optional[FileCache] = None,
+            docker_cache: ta.Optional[DockerCache] = None,
     ) -> None:
-        await self.run(
-            *cmd,
-            stdout=stdout,
-            check=True,
-            **kwargs,
-        )
+        super().__init__()
 
-    async def check_output(
-            self,
-            *cmd: str,
-            stdout: ta.Any = subprocess.PIPE,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        return check.not_none((await self.run(
-            *cmd,
-            stdout=stdout,
-            check=True,
-            **kwargs,
-        )).stdout)
+        self._config = config
 
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(
-            *cmd,
-            **kwargs,
-        )).decode().strip()
+        self._file_cache = file_cache
+        self._docker_cache = docker_cache
 
-    #
+    async def _pull_docker_image(self, image: str) -> None:
+        if not self._config.always_pull and (await is_docker_image_present(image)):
+            return
 
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
+        key_content = StringMangler.of('-', '/:._').mangle(image)
 
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
+        cache_key = DockerCacheKey(['docker'], key_content)
+        if (
+                self._docker_cache is not None and
+                (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
+        ):
+            return
 
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
+        await pull_docker_image(image)
 
+        if self._docker_cache is not None:
+            await self._docker_cache.save_cache_docker_image(cache_key, image)
 
-########################################
-# ../../../omlish/subprocesses/sync.py
-"""
-TODO:
- - popen
- - route check_calls through run_?
-"""
-
-
-##
-
-
-class AbstractSubprocesses(BaseSubprocesses, Abstract):
-    @abc.abstractmethod
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput:
-        raise NotImplementedError
-
-    def run(
-            self,
-            *cmd: str,
-            input: ta.Any = None,  # noqa
-            timeout: TimeoutLike = None,
-            check: bool = False,
-            capture_output: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> SubprocessRunOutput:
-        return self.run_(SubprocessRun(
-            cmd=cmd,
-            input=input,
-            timeout=timeout,
-            check=check,
-            capture_output=capture_output,
-            kwargs=kwargs,
-        ))
-
-    #
-
-    @abc.abstractmethod
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        raise NotImplementedError
-
-    #
-
-    def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return self.check_output(*cmd, **kwargs).decode().strip()
-
-    #
-
-    def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
-
-
-##
-
-
-class Subprocesses(AbstractSubprocesses):
-    def run_(self, run: SubprocessRun) -> SubprocessRunOutput[subprocess.CompletedProcess]:
-        with self.prepare_and_wrap(
-                *run.cmd,
-                input=run.input,
-                timeout=run.timeout,
-                check=run.check,
-                capture_output=run.capture_output or False,
-                **(run.kwargs or {}),
-        ) as (cmd, kwargs):
-            proc = subprocess.run(cmd, **kwargs)  # noqa
-
-        return SubprocessRunOutput(
-            proc=proc,
-
-            returncode=proc.returncode,
-
-            stdout=proc.stdout,  # noqa
-            stderr=proc.stderr,  # noqa
-        )
-
-    #
-
-    def check_call(
-            self,
-            *cmd: str,
-            stdout: ta.Any = sys.stderr,
-            **kwargs: ta.Any,
-    ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
-            subprocess.check_call(cmd, **kwargs)
-
-    def check_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bytes:
-        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
-            return subprocess.check_output(cmd, **kwargs)
-
-
-##
-
-
-subprocesses = Subprocesses()
-
-SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
+    async def pull_docker_image(self, image: str) -> None:
+        with log_timing_context(f'Load docker image: {image}'):
+            await self._pull_docker_image(image)
 
 
 ########################################
@@ -11664,1665 +14272,6 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
 
 ########################################
-# ../requirements.py
-"""
-TODO:
- - pip compile lol
-  - but still support git+ stuff
- - req.txt format aware hash
-  - more than just whitespace
- - pyproject req rewriting
- - download_requirements bootstrap off prev? not worth the dl?
-  - big deps (torch) change less, probably worth it
- - follow embedded -r automatically like pyp
-"""
-
-
-##
-
-
-def build_requirements_hash(
-        requirements_txts: ta.Sequence[str],
-) -> str:
-    txt_file_contents: dict = {}
-
-    for txt_file in requirements_txts:
-        txt_file_name = os.path.basename(txt_file)
-        check.not_in(txt_file_name, txt_file_contents)
-        with open(txt_file) as f:
-            txt_contents = f.read()
-        txt_file_contents[txt_file_name] = txt_contents
-
-    #
-
-    lines = []
-    for txt_file, txt_contents in sorted(txt_file_contents.items()):
-        txt_hash = sha256_str(txt_contents)
-        lines.append(f'{txt_file}={txt_hash}')
-
-    return sha256_str('\n'.join(lines))
-
-
-##
-
-
-def download_requirements(
-        image: str,
-        requirements_dir: str,
-        requirements_txts: ta.Sequence[str],
-) -> None:
-    requirements_txt_dir = tempfile.mkdtemp()
-    with defer(lambda: shutil.rmtree(requirements_txt_dir)):
-        for rt in requirements_txts:
-            shutil.copyfile(rt, os.path.join(requirements_txt_dir, os.path.basename(rt)))
-
-        subprocesses.check_call(
-            'docker',
-            'run',
-            '--rm',
-            '-i',
-            '-v', f'{os.path.abspath(requirements_dir)}:/requirements',
-            '-v', f'{requirements_txt_dir}:/requirements_txt',
-            image,
-            'pip',
-            'download',
-            '-d', '/requirements',
-            *itertools.chain.from_iterable(
-                ['-r', f'/requirements_txt/{os.path.basename(rt)}']
-                for rt in requirements_txts
-            ),
-        )
-
-
-########################################
-# ../../dataserver/http.py
-"""
-TODO:
- - asyncio
- - chunked transfer - both output and urllib input
- - range headers
-"""
-
-
-##
-
-
-class DataServerHttpHandler(HttpHandler_):
-    DEFAULT_READ_CHUNK_SIZE = 0x10000
-
-    def __init__(
-            self,
-            ps: DataServer,
-            *,
-            read_chunk_size: int = DEFAULT_READ_CHUNK_SIZE,
-    ) -> None:
-        super().__init__()
-
-        self._ps = ps
-        self._read_chunk_size = read_chunk_size
-
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
-        p_req = DataServerRequest(
-            req.method,
-            req.path,
-        )
-
-        p_resp = self._ps.handle(p_req)
-        try:
-            data: ta.Any
-            if (p_body := p_resp.body) is not None:
-                def stream_data():
-                    try:
-                        while (b := p_body.read(self._read_chunk_size)):
-                            yield b
-                    finally:
-                        p_body.close()
-
-                data = HttpHandlerResponseStreamedData(stream_data())
-
-            else:
-                data = None
-
-            resp = HttpHandlerResponse(
-                status=p_resp.status,
-                headers=p_resp.headers,
-                data=data,
-                close_connection=True,
-            )
-
-            return resp
-
-        except Exception:  # noqa
-            p_resp.close()
-
-            raise
-
-
-########################################
-# ../../oci/dataserver.py
-
-
-##
-
-
-def build_oci_repository_data_server_routes(
-        repo_name: str,
-        built_repo: BuiltOciImageIndexRepository,
-) -> ta.List[DataServerRoute]:
-    base_url_path = f'/v2/{repo_name}'
-
-    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
-
-    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
-
-    for blob in built_repo.blobs.values():
-        repo_contents['/'.join([
-            base_url_path,
-            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
-            blob.digest,
-        ])] = blob
-
-    #
-
-    def build_blob_target(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
-        kw: dict = dict(
-            content_type=check.non_empty_str(blob.media_type),
-        )
-
-        if isinstance(blob.data, BytesOciDataRef):
-            return DataServerTarget.of(blob.data.data, **kw)
-
-        elif isinstance(blob.data, FileOciDataRef):
-            return DataServerTarget.of(file_path=blob.data.path, **kw)
-
-        else:
-            with open_oci_data_ref(blob.data) as f:
-                data = f.read()
-
-            return DataServerTarget.of(data, **kw)
-
-    #
-
-    return [
-        DataServerRoute(
-            paths=[path],
-            target=target,
-        )
-        for path, blob in repo_contents.items()
-        if (target := build_blob_target(blob)) is not None
-    ]
-
-
-########################################
-# ../../oci/pack/repositories.py
-
-
-##
-
-
-class OciPackedRepositoryBuilder(ExitStacked):
-    def __init__(
-            self,
-            source_repo: OciRepository,
-            *,
-            temp_dir: ta.Optional[str] = None,
-
-            num_packed_files: int = 3,  # GH actions have this set to 3, the default
-            packed_compression: ta.Optional[OciCompression] = OciCompression.ZSTD,
-    ) -> None:
-        super().__init__()
-
-        self._source_repo = source_repo
-
-        self._given_temp_dir = temp_dir
-
-        check.arg(num_packed_files > 0)
-        self._num_packed_files = num_packed_files
-
-        self._packed_compression = packed_compression
-
-    @cached_nullary
-    def _temp_dir(self) -> str:
-        if (given := self._given_temp_dir) is not None:
-            return given
-        else:
-            return self._enter_context(temp_dir_context())  # noqa
-
-    #
-
-    @cached_nullary
-    def _source_image_index(self) -> OciImageIndex:
-        image_index = read_oci_repository_root_index(self._source_repo)
-        return get_single_leaf_oci_image_index(image_index)
-
-    @cached_nullary
-    def _source_image_manifest(self) -> OciImageManifest:
-        return get_single_oci_image_manifest(self._source_image_index())
-
-    #
-
-    @cached_nullary
-    def _extracted_layer_tar_files(self) -> ta.List[str]:
-        image = self._source_image_manifest()
-
-        layer_tar_files = []
-
-        for i, layer in enumerate(image.layers):
-            if isinstance(layer.data, FileOciDataRef):
-                input_file_path = layer.data.path
-
-            else:
-                input_file_path = os.path.join(self._temp_dir(), f'save-layer-{i}.tar')
-                with open(input_file_path, 'wb') as input_file:  # noqa
-                    with open_oci_data_ref(layer.data) as layer_file:
-                        shutil.copyfileobj(layer_file, input_file, length=1024 * 1024)  # noqa
-
-            layer_tar_files.append(input_file_path)
-
-        return layer_tar_files
-
-    #
-
-    @cached_nullary
-    def _unpacked_tar_file(self) -> str:
-        layer_tar_files = self._extracted_layer_tar_files()
-        unpacked_file = os.path.join(self._temp_dir(), 'unpacked.tar')
-
-        with log_timing_context(f'Unpacking docker image {self._source_repo}'):
-            with OciLayerUnpacker(
-                    layer_tar_files,
-                    unpacked_file,
-            ) as lu:
-                lu.write()
-
-        return unpacked_file
-
-    #
-
-    @cached_nullary
-    def _packed_tar_files(self) -> ta.Mapping[str, WrittenOciDataTarFileInfo]:
-        unpacked_tar_file = self._unpacked_tar_file()
-
-        packed_tar_files = [
-            os.path.join(self._temp_dir(), f'packed-{i}.tar')
-            for i in range(self._num_packed_files)
-        ]
-
-        with log_timing_context(f'Packing docker image {self._source_repo}'):
-            with OciLayerPacker(
-                    unpacked_tar_file,
-                    packed_tar_files,
-                    compression=self._packed_compression,
-            ) as lp:
-                return lp.write()
-
-    #
-
-    @cached_nullary
-    def _packed_image_index(self) -> OciImageIndex:
-        image_index = copy.deepcopy(self._source_image_index())
-
-        image = get_single_oci_image_manifest(image_index)
-
-        image.config.history = None
-
-        written = self._packed_tar_files()
-
-        # FIXME: use prebuilt sha256
-        image.layers = [
-            OciImageLayer(
-                kind=OciImageLayer.Kind.from_compression(self._packed_compression),
-                data=FileOciDataRef(output_file),
-            )
-            for output_file, output_file_info in written.items()
-        ]
-
-        image.config.rootfs.diff_ids = [
-            f'sha256:{output_file_info.tar_sha256}'
-            for output_file_info in written.values()
-        ]
-
-        return image_index
-
-    #
-
-    @cached_nullary
-    def build(self) -> BuiltOciImageIndexRepository:
-        return build_oci_index_repository(self._packed_image_index())
-
-
-########################################
-# ../../../omlish/asyncs/asyncio/subprocesses.py
-
-
-##
-
-
-class AsyncioProcessCommunicator:
-    def __init__(
-            self,
-            proc: asyncio.subprocess.Process,
-            loop: ta.Optional[ta.Any] = None,
-            *,
-            log: ta.Optional[LoggerLike] = None,
-    ) -> None:
-        super().__init__()
-
-        if loop is None:
-            loop = asyncio.get_running_loop()
-
-        self._proc = proc
-        self._loop = loop
-        self._log = log
-
-        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
-            proc._transport,  # type: ignore  # noqa
-            asyncio.base_subprocess.BaseSubprocessTransport,
-        )
-
-    @property
-    def _debug(self) -> bool:
-        return self._loop.get_debug()
-
-    async def _feed_stdin(self, input: bytes) -> None:  # noqa
-        stdin = check.not_none(self._proc.stdin)
-        try:
-            if input is not None:
-                stdin.write(input)
-                if self._debug and self._log is not None:
-                    self._log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
-
-            await stdin.drain()
-
-        except (BrokenPipeError, ConnectionResetError) as exc:
-            # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
-            # exceptions.
-            if self._debug and self._log is not None:
-                self._log.debug('%r communicate: stdin got %r', self, exc)
-
-        if self._debug and self._log is not None:
-            self._log.debug('%r communicate: close stdin', self)
-
-        stdin.close()
-
-    async def _noop(self) -> None:
-        return None
-
-    async def _read_stream(self, fd: int) -> bytes:
-        transport: ta.Any = check.not_none(self._transport.get_pipe_transport(fd))
-
-        if fd == 2:
-            stream = check.not_none(self._proc.stderr)
-        else:
-            check.equal(fd, 1)
-            stream = check.not_none(self._proc.stdout)
-
-        if self._debug and self._log is not None:
-            name = 'stdout' if fd == 1 else 'stderr'
-            self._log.debug('%r communicate: read %s', self, name)
-
-        output = await stream.read()
-
-        if self._debug and self._log is not None:
-            name = 'stdout' if fd == 1 else 'stderr'
-            self._log.debug('%r communicate: close %s', self, name)
-
-        transport.close()
-
-        return output
-
-    class Communication(ta.NamedTuple):
-        stdout: ta.Optional[bytes]
-        stderr: ta.Optional[bytes]
-
-    async def _communicate(
-            self,
-            input: ta.Any = None,  # noqa
-    ) -> Communication:
-        stdin_fut: ta.Any
-        if self._proc.stdin is not None:
-            stdin_fut = self._feed_stdin(input)
-        else:
-            stdin_fut = self._noop()
-
-        stdout_fut: ta.Any
-        if self._proc.stdout is not None:
-            stdout_fut = self._read_stream(1)
-        else:
-            stdout_fut = self._noop()
-
-        stderr_fut: ta.Any
-        if self._proc.stderr is not None:
-            stderr_fut = self._read_stream(2)
-        else:
-            stderr_fut = self._noop()
-
-        stdin_res, stdout_res, stderr_res = await asyncio.gather(stdin_fut, stdout_fut, stderr_fut)
-
-        await self._proc.wait()
-
-        return AsyncioProcessCommunicator.Communication(stdout_res, stderr_res)
-
-    async def communicate(
-            self,
-            input: ta.Any = None,  # noqa
-            timeout: TimeoutLike = None,
-    ) -> Communication:
-        return await asyncio_maybe_timeout(self._communicate(input), timeout)
-
-
-##
-
-
-class AsyncioSubprocesses(AbstractAsyncSubprocesses):
-    async def communicate(
-            self,
-            proc: asyncio.subprocess.Process,
-            input: ta.Any = None,  # noqa
-            timeout: TimeoutLike = None,
-    ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-        return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
-
-    #
-
-    @contextlib.asynccontextmanager
-    async def popen(
-            self,
-            *cmd: str,
-            shell: bool = False,
-            timeout: TimeoutLike = None,
-            **kwargs: ta.Any,
-    ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
-        with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
-            fac: ta.Any
-            if shell:
-                fac = functools.partial(
-                    asyncio.create_subprocess_shell,
-                    check.single(cmd),
-                )
-            else:
-                fac = functools.partial(
-                    asyncio.create_subprocess_exec,
-                    *cmd,
-                )
-
-            proc: asyncio.subprocess.Process = await fac(**kwargs)
-            try:
-                yield proc
-
-            finally:
-                await asyncio_maybe_timeout(proc.wait(), timeout)
-
-    #
-
-    async def run_(self, run: SubprocessRun) -> SubprocessRunOutput[asyncio.subprocess.Process]:
-        kwargs = dict(run.kwargs or {})
-
-        if run.capture_output:
-            kwargs.setdefault('stdout', subprocess.PIPE)
-            kwargs.setdefault('stderr', subprocess.PIPE)
-
-        proc: asyncio.subprocess.Process
-        async with self.popen(*run.cmd, **kwargs) as proc:
-            stdout, stderr = await self.communicate(proc, run.input, run.timeout)
-
-        if run.check and proc.returncode:
-            raise subprocess.CalledProcessError(
-                proc.returncode,
-                run.cmd,
-                output=stdout,
-                stderr=stderr,
-            )
-
-        return SubprocessRunOutput(
-            proc=proc,
-
-            returncode=check.isinstance(proc.returncode, int),
-
-            stdout=stdout,
-            stderr=stderr,
-        )
-
-
-asyncio_subprocesses = AsyncioSubprocesses()
-
-
-########################################
-# ../../../omlish/http/coro/server/simple.py
-"""
-TODO:
- - logging
-"""
-
-
-@contextlib.contextmanager
-def make_simple_http_server(
-        bind: CanSocketBinder,
-        handler: HttpHandler,
-        *,
-        server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
-        keep_alive: bool = False,
-        ssl_context: ta.Optional['ssl.SSLContext'] = None,
-        ignore_ssl_errors: bool = False,
-        executor: ta.Optional[cf.Executor] = None,
-        use_threads: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Iterator[SocketServer]:
-    check.arg(not (executor is not None and use_threads))
-
-    #
-
-    with contextlib.ExitStack() as es:
-        server_factory = functools.partial(
-            CoroHttpServer,
-            handler=handler,
-            parser=HttpRequestParser(
-                server_version=server_version,
-            ),
-        )
-
-        socket_handler = CoroHttpServerSocketHandler(
-            server_factory,
-            keep_alive=keep_alive,
-        )
-
-        #
-
-        server_handler: SocketServerHandler = SocketHandlerSocketServerHandler(
-            socket_handler,
-        )
-
-        #
-
-        if ssl_context is not None:
-            server_handler = SocketWrappingSocketServerHandler(
-                server_handler,
-                SocketAndAddress.socket_wrapper(functools.partial(
-                    ssl_context.wrap_socket,
-                    server_side=True,
-                )),
-            )
-
-        if ignore_ssl_errors:
-            server_handler = SslErrorHandlingSocketServerHandler(
-                server_handler,
-            )
-
-        #
-
-        server_handler = StandardSocketServerHandler(
-            server_handler,
-        )
-
-        #
-
-        if executor is not None:
-            server_handler = ExecutorSocketServerHandler(
-                server_handler,
-                executor,
-            )
-
-        elif use_threads:
-            server_handler = es.enter_context(ThreadingSocketServerHandler(
-                server_handler,
-            ))
-
-        #
-
-        server = es.enter_context(SocketServer(
-            SocketBinder.of(bind),
-            server_handler,
-            **kwargs,
-        ))
-
-        yield server
-
-
-########################################
-# ../compose.py
-"""
-TODO:
- - fix rmi - only when not referenced anymore
-"""
-
-
-##
-
-
-def get_compose_service_dependencies(
-        compose_file: str,
-        service: str,
-) -> ta.Dict[str, str]:
-    compose_dct = read_yaml_file(compose_file)
-
-    services = compose_dct['services']
-    service_dct = services[service]
-
-    out = {}
-    for dep_service in service_dct.get('depends_on', []):
-        dep_service_dct = services[dep_service]
-        out[dep_service] = dep_service_dct['image']
-
-    return out
-
-
-##
-
-
-class DockerComposeRun(AsyncExitStacked):
-    @dc.dataclass(frozen=True)
-    class Config:
-        compose_file: str
-        service: str
-
-        image: str
-
-        cmd: ShellCmd
-
-        #
-
-        run_options: ta.Optional[ta.Sequence[str]] = None
-
-        cwd: ta.Optional[str] = None
-
-        #
-
-        no_dependencies: bool = False
-        no_dependency_cleanup: bool = False
-
-        #
-
-        def __post_init__(self) -> None:
-            check.not_isinstance(self.run_options, str)
-
-    def __init__(self, cfg: Config) -> None:
-        super().__init__()
-
-        self._cfg = cfg
-
-        self._subprocess_kwargs = {
-            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
-        }
-
-    #
-
-    def _rewrite_compose_dct(self, in_dct: ta.Dict[str, ta.Any]) -> ta.Dict[str, ta.Any]:
-        out = dict(in_dct)
-
-        #
-
-        in_services = in_dct['services']
-        out['services'] = out_services = {}
-
-        #
-
-        in_service: dict = in_services[self._cfg.service]
-        out_services[self._cfg.service] = out_service = dict(in_service)
-
-        out_service['image'] = self._cfg.image
-
-        for k in ['build', 'platform']:
-            out_service.pop(k, None)
-
-        #
-
-        if not self._cfg.no_dependencies:
-            depends_on = in_service.get('depends_on', [])
-
-            for dep_service, in_dep_service_dct in list(in_services.items()):
-                if dep_service not in depends_on:
-                    continue
-
-                out_dep_service: dict = dict(in_dep_service_dct)
-                out_services[dep_service] = out_dep_service
-
-                out_dep_service['ports'] = []
-
-        else:
-            out_service['depends_on'] = []
-
-        #
-
-        return out
-
-    @cached_nullary
-    def rewrite_compose_file(self) -> str:
-        in_dct = read_yaml_file(self._cfg.compose_file)
-
-        out_dct = self._rewrite_compose_dct(in_dct)
-
-        #
-
-        out_compose_file = make_temp_file()
-        self._enter_context(defer(lambda: os.unlink(out_compose_file)))  # noqa
-
-        compose_json = json_dumps_pretty(out_dct)
-
-        with open(out_compose_file, 'w') as f:
-            f.write(compose_json)
-
-        return out_compose_file
-
-    #
-
-    async def _cleanup_dependencies(self) -> None:
-        await asyncio_subprocesses.check_call(
-            'docker',
-            'compose',
-            '-f', self.rewrite_compose_file(),
-            'down',
-        )
-
-    async def run(self) -> None:
-        compose_file = self.rewrite_compose_file()
-
-        async with contextlib.AsyncExitStack() as es:
-            if not (self._cfg.no_dependencies or self._cfg.no_dependency_cleanup):
-                await es.enter_async_context(adefer(self._cleanup_dependencies()))  # noqa
-
-            sh_cmd = ' '.join([
-                'docker',
-                'compose',
-                '-f', compose_file,
-                'run',
-                '--rm',
-                *itertools.chain.from_iterable(
-                    ['-e', k]
-                    for k in (self._cfg.cmd.env or [])
-                ),
-                *(self._cfg.run_options or []),
-                self._cfg.service,
-                'sh', '-c', shlex.quote(self._cfg.cmd.s),
-            ])
-
-            run_cmd = dc.replace(self._cfg.cmd, s=sh_cmd)
-
-            await run_cmd.run(
-                asyncio_subprocesses.check_call,
-                **self._subprocess_kwargs,
-            )
-
-
-########################################
-# ../docker/cmds.py
-
-
-##
-
-
-async def is_docker_image_present(image: str) -> bool:
-    out = await asyncio_subprocesses.check_output(
-        'docker',
-        'images',
-        '--format', 'json',
-        image,
-    )
-
-    out_s = out.decode('utf-8').strip()
-    if not out_s:
-        return False
-
-    json.loads(out_s)  # noqa
-    return True
-
-
-async def pull_docker_image(
-        image: str,
-) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'pull',
-        image,
-    )
-
-
-async def build_docker_image(
-        docker_file: str,
-        *,
-        tag: ta.Optional[str] = None,
-        cwd: ta.Optional[str] = None,
-        run_options: ta.Optional[ta.Sequence[str]] = None,
-) -> str:
-    with temp_file_context() as id_file:
-        await asyncio_subprocesses.check_call(
-            'docker',
-            'build',
-            '-f', os.path.abspath(docker_file),
-            '--iidfile', id_file,
-            *(['--tag', tag] if tag is not None else []),
-            *(run_options or []),
-            '.',
-            **(dict(cwd=cwd) if cwd is not None else {}),
-        )
-
-        with open(id_file) as f:  # noqa
-            image_id = check.single(f.read().strip().splitlines()).strip()
-
-    return image_id
-
-
-async def tag_docker_image(image: str, tag: str) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'tag',
-        image,
-        tag,
-    )
-
-
-async def delete_docker_tag(tag: str) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'rmi',
-        tag,
-    )
-
-
-##
-
-
-async def save_docker_tar_cmd(
-        image: str,
-        output_cmd: ShellCmd,
-) -> None:
-    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
-    await cmd.run(asyncio_subprocesses.check_call)
-
-
-async def save_docker_tar(
-        image: str,
-        tar_file: str,
-) -> None:
-    return await save_docker_tar_cmd(
-        image,
-        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
-    )
-
-
-#
-
-
-async def load_docker_tar_cmd(
-        input_cmd: ShellCmd,
-) -> str:
-    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
-
-    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
-
-    line = check.single(out.strip().splitlines())
-    loaded = line.partition(':')[2].strip()
-    return loaded
-
-
-async def load_docker_tar(
-        tar_file: str,
-) -> str:
-    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
-
-
-##
-
-
-async def ensure_docker_image_setup(
-        image: str,
-        *,
-        cwd: ta.Optional[str] = None,
-) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'run',
-        '--rm',
-        '--entrypoint', '/bin/true',  # FIXME: lol
-        image,
-        **(dict(cwd=cwd) if cwd is not None else {}),
-    )
-
-
-########################################
-# ../docker/dataserver.py
-
-
-##
-
-
-@contextlib.asynccontextmanager
-async def start_docker_port_relay(
-        docker_port: int,
-        host_port: int,
-        **kwargs: ta.Any,
-) -> ta.AsyncGenerator[None, None]:
-    proc = await asyncio.create_subprocess_exec(*DockerPortRelay(
-        docker_port,
-        host_port,
-        **kwargs,
-    ).run_cmd())
-
-    try:
-        yield
-
-    finally:
-        try:
-            proc.kill()
-        except ProcessLookupError:
-            pass
-        await proc.wait()
-
-
-##
-
-
-class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
-    def __init__(
-            self,
-            port: int,
-            handler: HttpHandler,
-            *,
-            temp_ssl: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._port = port
-        self._handler = handler
-
-        self._temp_ssl = temp_ssl
-
-        self._lock = threading.RLock()
-
-        self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
-        self._thread: ta.Optional[threading.Thread] = None
-        self._thread_exit_event = asyncio.Event()
-        self._server: ta.Optional[SocketServer] = None
-
-    @cached_nullary
-    def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
-        if not self._temp_ssl:
-            return None
-
-        ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: async blocking
-
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            keyfile=ssl_cert.key_file,
-            certfile=ssl_cert.cert_file,
-        )
-
-        return ssl_context
-
-    @contextlib.contextmanager
-    def _make_server(self) -> ta.Iterator[SocketServer]:
-        with make_simple_http_server(
-                self._port,
-                self._handler,
-                ssl_context=self._ssl_context(),
-                ignore_ssl_errors=True,
-                use_threads=True,
-        ) as server:
-            yield server
-
-    def _thread_main(self) -> None:
-        try:
-            check.none(self._server)
-            with self._make_server() as server:
-                self._server = server
-
-                server.run()
-
-        finally:
-            check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
-
-    def is_running(self) -> bool:
-        return self._server is not None
-
-    def shutdown(self) -> None:
-        if (server := self._server) is not None:
-            server.shutdown(block=False)
-
-    async def run(self) -> None:
-        with self._lock:
-            check.none(self._loop)
-            check.none(self._thread)
-            check.state(not self._thread_exit_event.is_set())
-
-            if self._temp_ssl:
-                # Hit the ExitStack from this thread
-                self._ssl_context()
-
-            self._loop = check.not_none(asyncio.get_running_loop())
-            self._thread = threading.Thread(
-                target=self._thread_main,
-                daemon=True,
-            )
-            self._thread.start()
-
-        await self._thread_exit_event.wait()
-
-
-##
-
-
-class DockerDataServer(AsyncExitStacked):
-    def __init__(
-            self,
-            port: int,
-            data_server: DataServer,
-            *,
-            handler_log: ta.Optional[LoggerLike] = None,
-            stop_event: ta.Optional[asyncio.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        self._port = port
-        self._data_server = data_server
-
-        self._handler_log = handler_log
-
-        if stop_event is None:
-            stop_event = asyncio.Event()
-        self._stop_event = stop_event
-
-    @property
-    def stop_event(self) -> asyncio.Event:
-        return self._stop_event
-
-    async def run(self) -> None:
-        # FIXME:
-        #  - shared single server with updatable routes
-        #  - get docker used ports with ns1
-        #  - discover server port with get_available_port
-        #  - discover relay port pair with get_available_ports
-        # relay_port: ta.Optional[ta.Tuple[int, int]] = None
-
-        relay_port: ta.Optional[int] = None
-        if sys.platform == 'darwin':
-            relay_port = self._port
-            server_port = self._port + 1
-        else:
-            server_port = self._port
-
-        #
-
-        handler: HttpHandler = DataServerHttpHandler(self._data_server)
-
-        if self._handler_log is not None:
-            handler = LoggingHttpHandler(
-                handler,
-                self._handler_log,
-            )
-
-        #
-
-        async with contextlib.AsyncExitStack() as es:
-            if relay_port is not None:
-                await es.enter_async_context(start_docker_port_relay(  # noqa
-                    relay_port,
-                    server_port,
-                    intermediate_port=server_port + 1,
-                ))
-
-            async with AsyncioManagedSimpleHttpServer(
-                    server_port,
-                    handler,
-                    temp_ssl=True,
-            ) as server:
-                server_run_task = asyncio.create_task(server.run())
-                try:
-                    await self._stop_event.wait()
-
-                finally:
-                    server.shutdown()
-                    await server_run_task
-
-
-########################################
-# ../docker/repositories.py
-
-
-##
-
-
-class DockerImageRepositoryOpener(Abstract):
-    @abc.abstractmethod
-    def open_docker_image_repository(self, image: str) -> ta.AsyncContextManager[OciRepository]:
-        raise NotImplementedError
-
-
-#
-
-
-class DockerImageRepositoryOpenerImpl(DockerImageRepositoryOpener):
-    @contextlib.asynccontextmanager
-    async def open_docker_image_repository(self, image: str) -> ta.AsyncGenerator[OciRepository, None]:
-        with temp_dir_context() as save_dir:
-            with log_timing_context(f'Saving docker image {image}'):
-                await asyncio_subprocesses.check_call(
-                    ' | '.join([
-                        f'docker save {shlex.quote(image)}',
-                        f'tar x -C {shlex.quote(save_dir)}',
-                    ]),
-                    shell=True,
-                )
-
-            yield DirectoryOciRepository(save_dir)
-
-
-########################################
-# ../github/cache.py
-
-
-##
-
-
-class GithubCache(FileCache, DataCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        pass
-
-    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
-
-    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
-        1: GithubCacheServiceV1Client,
-        2: GithubCacheServiceV2Client,
-    }
-
-    def __init__(
-            self,
-            config: Config = Config(),
-            *,
-            client: ta.Optional[GithubCacheClient] = None,
-            default_client_version: ta.Optional[int] = None,
-
-            version: ta.Optional[CacheVersion] = None,
-
-            local: DirectoryFileCache,
-    ) -> None:
-        super().__init__(
-            version=version,
-        )
-
-        self._config = config
-
-        if client is None:
-            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
-            client = client_cls(
-                cache_version=self._version,
-            )
-        self._client: GithubCacheClient = client
-
-        self._local = local
-
-    #
-
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with unlinking_if_exists(tmp_file):
-            await self._client.download_file(entry, tmp_file)
-
-            os.replace(tmp_file, local_file)
-
-        return local_file
-
-    async def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = await self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
-
-        await self._client.upload_file(key, cache_file_path)
-
-        return cache_file_path
-
-    #
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return DataCache.FileData(local_file)
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        await FileCacheDataCache(self).put_data(key, data)
-
-
-########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
-
-
-##
-
-
-class GithubCli(ArgparseCli):
-    @argparse_cmd()
-    def list_referenced_env_vars(self) -> None:
-        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
-
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
-        entry = await client.get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
-
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
-
-
-########################################
-# ../docker/cache.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DockerCacheKey:
-    prefixes: ta.Sequence[str]
-    content: str
-
-    def __post_init__(self) -> None:
-        check.not_isinstance(self.prefixes, str)
-
-    def append_prefix(self, *prefixes: str) -> 'DockerCacheKey':
-        return dc.replace(self, prefixes=(*self.prefixes, *prefixes))
-
-    SEPARATOR: ta.ClassVar[str] = '--'
-
-    def __str__(self) -> str:
-        return self.SEPARATOR.join([*self.prefixes, self.content])
-
-
-##
-
-
-class DockerCache(Abstract):
-    @abc.abstractmethod
-    def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Awaitable[ta.Optional[str]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-class DockerCacheImpl(DockerCache):
-    def __init__(
-            self,
-            *,
-            file_cache: ta.Optional[FileCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._file_cache = file_cache
-
-    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
-        if self._file_cache is None:
-            return None
-
-        cache_file = await self._file_cache.get_file(str(key))
-        if cache_file is None:
-            return None
-
-        get_cache_cmd = ShellCmd(f'cat {cache_file} | zstd -cd --long')
-
-        return await load_docker_tar_cmd(get_cache_cmd)
-
-    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
-        if self._file_cache is None:
-            return
-
-        with temp_file_context() as tmp_file:
-            write_tmp_cmd = ShellCmd(f'zstd > {tmp_file}')
-
-            await save_docker_tar_cmd(image, write_tmp_cmd)
-
-            await self._file_cache.put_file(str(key), tmp_file, steal=True)
-
-
-########################################
-# ../github/inject.py
-
-
-##
-
-
-def bind_github() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(GithubCache, singleton=True),
-        inj.bind(DataCache, to_key=GithubCache),
-        inj.bind(FileCache, to_key=GithubCache),
-    ]
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../docker/buildcaching.py
-
-
-##
-
-
-class DockerBuildCaching(Abstract):
-    @abc.abstractmethod
-    def cached_build_docker_image(
-            self,
-            cache_key: DockerCacheKey,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],  # image_tag -> image_id
-    ) -> ta.Awaitable[str]:
-        raise NotImplementedError
-
-
-class DockerBuildCachingImpl(DockerBuildCaching):
-    @dc.dataclass(frozen=True)
-    class Config:
-        service: str
-
-        always_build: bool = False
-
-    def __init__(
-            self,
-            *,
-            config: Config,
-
-            docker_cache: ta.Optional[DockerCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._docker_cache = docker_cache
-
-    async def cached_build_docker_image(
-            self,
-            cache_key: DockerCacheKey,
-            build_and_tag: ta.Callable[[str], ta.Awaitable[str]],
-    ) -> str:
-        image_tag = f'{self._config.service}:{cache_key!s}'
-
-        if not self._config.always_build and (await is_docker_image_present(image_tag)):
-            return image_tag
-
-        if (
-                self._docker_cache is not None and
-                (cache_image_id := await self._docker_cache.load_cache_docker_image(cache_key)) is not None
-        ):
-            await tag_docker_image(
-                cache_image_id,
-                image_tag,
-            )
-            return image_tag
-
-        image_id = await build_and_tag(image_tag)
-
-        if self._docker_cache is not None:
-            await self._docker_cache.save_cache_docker_image(cache_key, image_id)
-
-        return image_tag
-
-
-########################################
-# ../docker/cacheserved/cache.py
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class CacheServedDockerCache(DockerCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        port: int = 5021
-
-        repack: bool = True
-
-        key_prefix: ta.Optional[str] = 'cs'
-
-        #
-
-        pull_run_cmd: ta.Optional[str] = 'true'
-
-        #
-
-        server_start_timeout: TimeoutLike = 5.
-        server_start_sleep: float = .1
-
-    def __init__(
-            self,
-            *,
-            config: Config = Config(),
-
-            image_repo_opener: DockerImageRepositoryOpener,
-            data_cache: DataCache,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._image_repo_opener = image_repo_opener
-        self._data_cache = data_cache
-
-    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
-        if (kp := self._config.key_prefix) is not None:
-            key = key.append_prefix(kp)
-
-        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
-            return None
-
-        manifest_bytes = await read_data_cache_data(manifest_data)
-
-        manifest: CacheServedDockerImageManifest = unmarshal_obj(
-            json.loads(manifest_bytes.decode('utf-8')),
-            CacheServedDockerImageManifest,
-        )
-
-        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
-            cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
-
-            if isinstance(cache_data, DataCache.BytesData):
-                return DataServerTarget.of(
-                    cache_data.data,
-                    **target_kwargs,
-                )
-
-            elif isinstance(cache_data, DataCache.FileData):
-                return DataServerTarget.of(
-                    file_path=cache_data.file_path,
-                    **target_kwargs,
-                )
-
-            elif isinstance(cache_data, DataCache.UrlData):
-                return DataServerTarget.of(
-                    url=cache_data.url,
-                    methods=['GET'],
-                    **target_kwargs,
-                )
-
-            else:
-                raise TypeError(cache_data)
-
-        data_server_routes = await build_cache_served_docker_image_data_server_routes(
-            manifest,
-            make_cache_key_target,
-        )
-
-        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
-
-        image_url = f'localhost:{self._config.port}/{key!s}'
-
-        async with DockerDataServer(
-                self._config.port,
-                data_server,
-                handler_log=log,
-        ) as dds:
-            dds_run_task = asyncio.create_task(dds.run())
-            try:
-                timeout = Timeout.of(self._config.server_start_timeout)
-
-                await asyncio_wait_until_can_connect(
-                    'localhost',
-                    self._config.port,
-                    timeout=timeout,
-                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
-                    sleep_s=self._config.server_start_sleep,
-                )
-
-                if (prc := self._config.pull_run_cmd) is not None:
-                    pull_cmd = [
-                        'run',
-                        '--rm',
-                        image_url,
-                        prc,
-                    ]
-                else:
-                    pull_cmd = [
-                        'pull',
-                        image_url,
-                    ]
-
-                await asyncio_subprocesses.check_call(
-                    'docker',
-                    *pull_cmd,
-                )
-
-            finally:
-                dds.stop_event.set()
-                await dds_run_task
-
-        return image_url
-
-    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
-        if (kp := self._config.key_prefix) is not None:
-            key = key.append_prefix(kp)
-
-        async with contextlib.AsyncExitStack() as es:
-            image_repo: OciRepository = await es.enter_async_context(
-                self._image_repo_opener.open_docker_image_repository(image),
-            )
-
-            root_image_index = read_oci_repository_root_index(image_repo)
-            image_index = get_single_leaf_oci_image_index(root_image_index)
-
-            if self._config.repack:
-                prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
-                    image_repo,
-                ))
-                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
-
-            else:
-                built_repo = build_oci_index_repository(image_index)
-
-            data_server_routes = build_oci_repository_data_server_routes(
-                str(key),
-                built_repo,
-            )
-
-            async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
-                await self._data_cache.put_data(
-                    target_cache_key,
-                    DataCache.FileData(file_path),
-                )
-                return target_cache_key
-
-            cache_served_manifest = await build_cache_served_docker_image_manifest(
-                data_server_routes,
-                make_file_cache_key,
-            )
-
-        manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
-
-        await self._data_cache.put_data(
-            str(key),
-            DataCache.BytesData(manifest_data),
-        )
-
-
-########################################
-# ../docker/imagepulling.py
-
-
-##
-
-
-class DockerImagePulling(Abstract):
-    @abc.abstractmethod
-    def pull_docker_image(self, image: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-class DockerImagePullingImpl(DockerImagePulling):
-    @dc.dataclass(frozen=True)
-    class Config:
-        always_pull: bool = False
-
-    def __init__(
-            self,
-            *,
-            config: Config = Config(),
-
-            file_cache: ta.Optional[FileCache] = None,
-            docker_cache: ta.Optional[DockerCache] = None,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._file_cache = file_cache
-        self._docker_cache = docker_cache
-
-    async def _pull_docker_image(self, image: str) -> None:
-        if not self._config.always_pull and (await is_docker_image_present(image)):
-            return
-
-        key_content = StringMangler.of('-', '/:._').mangle(image)
-
-        cache_key = DockerCacheKey(['docker'], key_content)
-        if (
-                self._docker_cache is not None and
-                (await self._docker_cache.load_cache_docker_image(cache_key)) is not None
-        ):
-            return
-
-        await pull_docker_image(image)
-
-        if self._docker_cache is not None:
-            await self._docker_cache.save_cache_docker_image(cache_key, image)
-
-    async def pull_docker_image(self, image: str) -> None:
-        with log_timing_context(f'Load docker image: {image}'):
-            await self._pull_docker_image(image)
-
-
-########################################
 # ../ci.py
 
 
@@ -13616,6 +14565,152 @@ def bind_docker(
     ])
 
     #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../github/cache.py
+
+
+##
+
+
+class GithubCache(FileCache, DataCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
+    def __init__(
+            self,
+            config: Config = Config(),
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: ta.Optional[int] = None,
+
+            version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
+    ) -> None:
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+        if client is None:
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
+            client = client_cls(
+                cache_version=self._version,
+            )
+        self._client: GithubCacheClient = client
+
+        self._local = local
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with unlinking_if_exists(tmp_file):
+            await self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = await self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        await self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        await FileCacheDataCache(self).put_data(key, data)
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+##
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    async def get_cache_entry(self) -> None:
+        client = GithubCacheServiceV1Client()
+        entry = await client.get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../github/inject.py
+
+
+##
+
+
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(DataCache, to_key=GithubCache),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
 
     return inj.as_bindings(*lst)
 

@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../pyproject/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045 UP046
 """
 TODO:
  - check / tests, src dir sets
@@ -65,6 +65,7 @@ import tarfile
 import tempfile
 import threading
 import time
+import traceback
 import types
 import typing as ta
 import uuid
@@ -137,6 +138,14 @@ InjectorKeyCls = ta.Union[type, ta.NewType]
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+
+# ../../omlish/logs/contexts.py
+LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
+LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
+LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
+
+# ../../omlish/logs/base.py
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -2951,6 +2960,120 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
+# ../../../omlish/logs/infos.py
+
+
+##
+
+
+class _LoggingContextInfo:
+    def __mro_entries__(self, bases):
+        return ()
+
+
+LoggingContextInfo: type = ta.cast(ta.Any, _LoggingContextInfo())
+
+
+##
+
+
+@ta.final
+class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_name: str
+    module: str
+
+    @classmethod
+    def build(cls, file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
+        if file_path is None:
+            return None
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
+        try:
+            file_name = os.path.basename(file_path)
+            module = os.path.splitext(file_name)[0]
+        except (TypeError, ValueError, AttributeError):
+            return None
+
+        return cls(
+            file_name,
+            module,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    ident: int
+    native_id: ta.Optional[int]
+    name: str
+
+    @classmethod
+    def build(cls) -> 'LoggingThreadInfo':
+        return cls(
+            threading.get_ident(),
+            threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+            threading.current_thread().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    pid: int
+
+    @classmethod
+    def build(cls) -> 'LoggingProcessInfo':
+        return cls(
+            os.getpid(),
+        )
+
+
+##
+
+
+@ta.final
+class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    process_name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingMultiprocessingInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
+        if (mp := sys.modules.get('multiprocessing')) is None:
+            return None
+
+        return cls(
+            mp.current_process().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingAsyncioTaskInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
+        if (asyncio := sys.modules.get('asyncio')) is None:
+            return None
+
+        try:
+            task = asyncio.current_task()
+        except Exception:  # noqa
+            return None
+
+        return cls(
+            task.get_name(),  # Always non-None
+        )
+
+
+########################################
 # ../../../omlish/logs/levels.py
 
 
@@ -3136,6 +3259,17 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../../omlish/logs/warnings.py
+
+
+##
+
+
+class LoggingSetupWarning(Warning):
+    pass
 
 
 ########################################
@@ -5389,6 +5523,73 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
+# ../../../omlish/logs/callers.py
+
+
+##
+
+
+class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_path: str
+    line_no: int
+    name: str
+    stack_info: ta.Optional[str]
+
+    @classmethod
+    def is_internal_frame(cls, frame: types.FrameType) -> bool:
+        file_path = os.path.normcase(frame.f_code.co_filename)
+
+        # Yes, really.
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204
+        # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
+        if 'importlib' in file_path and '_bootstrap' in file_path:
+            return True
+
+        return False
+
+    @classmethod
+    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
+        f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
+
+        while f is not None:
+            # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
+            # stack_offset management.
+            if hasattr(f, 'f_code'):
+                return f
+
+            f = f.f_back
+
+        return None
+
+    @classmethod
+    def find(
+            cls,
+            ofs: int = 0,
+            *,
+            stack_info: bool = False,
+    ) -> ta.Optional['LoggingCaller']:
+        if (f := cls.find_frame(ofs + 1)) is None:
+            return None
+
+        # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
+        sinfo = None
+        if stack_info:
+            sio = io.StringIO()
+            traceback.print_stack(f, file=sio)
+            sinfo = sio.getvalue()
+            sio.close()
+            if sinfo[-1] == '\n':
+                sinfo = sinfo[:-1]
+
+        return cls(
+            f.f_code.co_filename,
+            f.f_lineno or 0,
+            f.f_code.co_name,
+            sinfo,
+        )
+
+
+########################################
 # ../../../omlish/logs/protocols.py
 
 
@@ -5474,6 +5675,89 @@ class JsonLoggingFormatter(logging.Formatter):
             if not (o and v is None)
         }
         return self._json_dumps(dct)
+
+
+########################################
+# ../../../omlish/logs/times.py
+
+
+##
+
+
+class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
+
+    created: float
+    msecs: float
+    relative_created: float
+
+    @classmethod
+    def get_std_start_time_ns(cls) -> int:
+        x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
+
+        # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`, an
+        # int.
+        #
+        # See:
+        #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        #
+        if isinstance(x, float):
+            return int(x * 1e9)
+        else:
+            return x
+
+    @classmethod
+    def build(
+            cls,
+            time_ns: int,
+            *,
+            start_time_ns: ta.Optional[int] = None,
+    ) -> 'LoggingTimeFields':
+        # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        created = time_ns / 1e9  # ns to float seconds
+
+        # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
+        # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
+        # Convert to float by adding 0.0 for historical reasons. See gh-89047
+        msecs = (time_ns % 1_000_000_000) // 1_000_000 + 0.0
+
+        # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+        if msecs == 999.0 and int(created) != time_ns // 1_000_000_000:
+            # ns -> sec conversion can round up, e.g:
+            # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
+            msecs = 0.0
+
+        if start_time_ns is None:
+            start_time_ns = cls.get_std_start_time_ns()
+        relative_created = (time_ns - start_time_ns) / 1e6
+
+        return cls(
+            created,
+            msecs,
+            relative_created,
+        )
+
+
+##
+
+
+class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_logging_start_time() -> None:
+    if (x := LoggingTimeFields.get_std_start_time_ns()) < (t := time.time()):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unexpected logging start time detected: '
+            f'get_std_start_time_ns={x}, '
+            f'time.time()={t}',
+            UnexpectedLoggingStartTimeWarning,
+        )
+
+
+_check_logging_start_time()
 
 
 ########################################
@@ -6682,14 +6966,260 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/contexts.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
-    return logging.getLogger(mod_globals.get('__name__'))  # noqa
+class LoggingContext(Abstract):
+    @property
+    @abc.abstractmethod
+    def level(self) -> NamedLogLevel:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def time_ns(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def times(self) -> LoggingTimeFields:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        raise NotImplementedError
+
+
+##
+
+
+class CaptureLoggingContext(LoggingContext, Abstract):
+    class AlreadyCapturedError(Exception):
+        pass
+
+    class NotCapturedError(Exception):
+        pass
+
+    @abc.abstractmethod
+    def capture(self) -> None:
+        """Must be cooperatively called only from the expected locations."""
+
+        raise NotImplementedError
+
+
+@ta.final
+class CaptureLoggingContextImpl(CaptureLoggingContext):
+    @ta.final
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    #
+
+    def __init__(
+            self,
+            level: LogLevel,
+            *,
+            time_ns: ta.Optional[int] = None,
+
+            exc_info: LoggingExcInfoArg = False,
+
+            caller: ta.Union[LoggingCaller, ta.Type[NOT_SET], None] = NOT_SET,
+            stack_offset: int = 0,
+            stack_info: bool = False,
+    ) -> None:
+        self._level: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+
+        #
+
+        if time_ns is None:
+            time_ns = time.time_ns()
+        self._time_ns: int = time_ns
+
+        #
+
+        if exc_info is True:
+            sys_exc_info = sys.exc_info()
+            if sys_exc_info[0] is not None:
+                exc_info = sys_exc_info
+            else:
+                exc_info = None
+        elif exc_info is False:
+            exc_info = None
+
+        if exc_info is not None:
+            self._exc_info: ta.Optional[LoggingExcInfo] = exc_info
+            if isinstance(exc_info, BaseException):
+                self._exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = (type(exc_info), exc_info, exc_info.__traceback__)  # noqa
+            else:
+                self._exc_info_tuple = exc_info
+
+        #
+
+        if caller is not CaptureLoggingContextImpl.NOT_SET:
+            self._caller = caller  # type: ignore[assignment]
+        else:
+            self._stack_offset = stack_offset
+            self._stack_info = stack_info
+
+    ##
+
+    @property
+    def level(self) -> NamedLogLevel:
+        return self._level
+
+    #
+
+    @property
+    def time_ns(self) -> int:
+        return self._time_ns
+
+    _times: LoggingTimeFields
+
+    @property
+    def times(self) -> LoggingTimeFields:
+        try:
+            return self._times
+        except AttributeError:
+            pass
+
+        times = self._times = LoggingTimeFields.build(self.time_ns)
+        return times
+
+    #
+
+    _exc_info: ta.Optional[LoggingExcInfo] = None
+    _exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = None
+
+    @property
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        return self._exc_info
+
+    @property
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        return self._exc_info_tuple
+
+    ##
+
+    _stack_offset: int
+    _stack_info: bool
+
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+        if hasattr(self, '_stack_offset'):
+            self._stack_offset += ofs
+        return self
+
+    _has_captured: bool = False
+
+    _caller: ta.Optional[LoggingCaller]
+    _source_file: ta.Optional[LoggingSourceFileInfo]
+
+    _thread: ta.Optional[LoggingThreadInfo]
+    _process: ta.Optional[LoggingProcessInfo]
+    _multiprocessing: ta.Optional[LoggingMultiprocessingInfo]
+    _asyncio_task: ta.Optional[LoggingAsyncioTaskInfo]
+
+    def capture(self) -> None:
+        if self._has_captured:
+            raise CaptureLoggingContextImpl.AlreadyCapturedError
+        self._has_captured = True
+
+        if not hasattr(self, '_caller'):
+            self._caller = LoggingCaller.find(
+                self._stack_offset + 1,
+                stack_info=self._stack_info,
+            )
+
+        if (caller := self._caller) is not None:
+            self._source_file = LoggingSourceFileInfo.build(caller.file_path)
+        else:
+            self._source_file = None
+
+        self._thread = LoggingThreadInfo.build()
+        self._process = LoggingProcessInfo.build()
+        self._multiprocessing = LoggingMultiprocessingInfo.build()
+        self._asyncio_task = LoggingAsyncioTaskInfo.build()
+
+    #
+
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        try:
+            return self._caller
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        try:
+            return self._source_file
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    #
+
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        try:
+            return self._thread
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        try:
+            return self._process
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        try:
+            return self._multiprocessing
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        try:
+            return self._asyncio_task
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
 
 ########################################
@@ -7036,87 +7566,518 @@ InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
-# ../reqs.py
-"""
-TODO:
- - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
-"""
-
-
-log = get_module_logger(globals())  # noqa
+# ../../../omlish/logs/base.py
 
 
 ##
 
 
-class RequirementsRewriter:
-    def __init__(
-            self,
-            venv: ta.Optional[str] = None,
-    ) -> None:
-        super().__init__()
+class AnyLogger(Abstract, ta.Generic[T]):
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self.get_effective_level() >= level
 
-        self._venv = venv
+    @abc.abstractmethod
+    def get_effective_level(self) -> LogLevel:
+        raise NotImplementedError
 
-    @cached_nullary
-    def _tmp_dir(self) -> str:
-        return tempfile.mkdtemp('-omlish-reqs')
+    #
 
-    VENV_MAGIC = '# @omlish-venv'
+    @ta.final
+    def isEnabledFor(self, level: LogLevel) -> bool:  # noqa
+        return self.is_enabled_for(level)
 
-    def rewrite_file(self, in_file: str) -> str:
-        with open(in_file) as f:
-            src = f.read()
+    @ta.final
+    def getEffectiveLevel(self) -> LogLevel:  # noqa
+        return self.get_effective_level()
 
-        in_lines = src.splitlines(keepends=True)
-        out_lines = []
+    ##
 
-        for l in in_lines:
-            if self.VENV_MAGIC in l:
-                lp, _, rp = l.partition(self.VENV_MAGIC)
-                rp = rp.partition('#')[0]
-                omit = False
-                for v in rp.split():
-                    if v[0] == '!':
-                        if self._venv is not None and self._venv == v[1:]:
-                            omit = True
-                            break
-                    else:
-                        raise NotImplementedError
+    @ta.overload
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
 
-                if omit:
-                    out_lines.append('# OMITTED:  ' + l)
-                    continue
+    @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
 
-            out_req = self.rewrite(l.rstrip('\n'), for_file=True)
-            out_lines.append(out_req + '\n')
+    @ta.overload
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
 
-        out_file = os.path.join(self._tmp_dir(), os.path.basename(in_file))
-        if os.path.exists(out_file):
-            raise Exception(f'file exists: {out_file}')
+    @ta.final
+    def log(self, level: LogLevel, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(level, stack_offset=1), *args, **kwargs)
 
-        with open(out_file, 'w') as f:
-            f.write(''.join(out_lines))
-        log.info('Rewrote requirements file %s to %s', in_file, out_file)
-        return out_file
+    #
 
-    def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
-        if in_req.strip().startswith('-r'):
-            l = in_req.strip()
-            lp, _, rp = l.partition(' ')
-            if lp == '-r':
-                inc_in_file, _, rest = rp.partition(' ')
+    @ta.overload
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def info(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.INFO, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def warning(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.WARNING, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def error(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
+
+    #
+
+    @ta.overload
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)  # noqa
+
+    #
+
+    @ta.overload
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def critical(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.CRITICAL, stack_offset=1), *args, **kwargs)
+
+    ##
+
+    @classmethod
+    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
+        if callable(msg):
+            if args:
+                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+            x = msg()
+            if isinstance(x, str):
+                return x, ()
+            elif isinstance(x, tuple):
+                if x:
+                    return x[0], x[1:]
+                else:
+                    return '', ()
             else:
-                inc_in_file, rest = lp[2:], rp
+                raise TypeError(x)
 
-            inc_out_file = self.rewrite_file(inc_in_file)
-            if for_file:
-                return ' '.join(['-r ', inc_out_file, rest])
+        elif isinstance(msg, tuple):
+            if args:
+                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+            if msg:
+                return msg[0], msg[1:]
             else:
-                return '-r' + inc_out_file
+                return '', ()
+
+        elif isinstance(msg, str):
+            return msg, args
 
         else:
-            return in_req
+            raise TypeError(msg)
+
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
+        raise NotImplementedError
+
+
+class Logger(AnyLogger[None], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        raise NotImplementedError
+
+
+class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLogger(AnyLogger[T], Abstract):
+    @ta.final
+    def get_effective_level(self) -> LogLevel:
+        return 999
+
+
+@ta.final
+class NopLogger(AnyNopLogger[None], Logger):
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
+
+
+@ta.final
+class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    async def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
+
+
+########################################
+# ../../../omlish/logs/std/records.py
+
+
+##
+
+
+# Ref:
+#  - https://docs.python.org/3/library/logging.html#logrecord-attributes
+#
+# LogRecord:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L276 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L286 (~3.14)  # noqa
+#
+# LogRecord.__init__ args:
+#  - name: str
+#  - level: int
+#  - pathname: str - Confusingly referred to as `fn` before the LogRecord ctor. May be empty or "(unknown file)".
+#  - lineno: int - May be 0.
+#  - msg: str
+#  - args: tuple | dict | 1-tuple[dict]
+#  - exc_info: LoggingExcInfoTuple | None
+#  - func: str | None = None -> funcName
+#  - sinfo: str | None = None -> stack_info
+#
+KNOWN_STD_LOGGING_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # Name of the logger used to log the call. Unmodified by ctor.
+    name=str,
+
+    # The format string passed in the original logging call. Merged with args to produce message, or an arbitrary object
+    # (see Using arbitrary objects as messages). Unmodified by ctor.
+    msg=str,
+
+    # The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge (when
+    # there is only one argument, and it is a dictionary). Ctor will transform a 1-tuple containing a Mapping into just
+    # the mapping, but is otherwise unmodified.
+    args=ta.Union[tuple, dict],
+
+    #
+
+    # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'). Set to
+    # `getLevelName(level)`.
+    levelname=str,
+
+    # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL). Unmodified by ctor.
+    levelno=int,
+
+    #
+
+    # Full pathname of the source file where the logging call was issued (if available). Unmodified by ctor. May default
+    # to "(unknown file)" by Logger.findCaller / Logger._log.
+    pathname=str,
+
+    # Filename portion of pathname. Set to `os.path.basename(pathname)` if successful, otherwise defaults to pathname.
+    filename=str,
+
+    # Module (name portion of filename). Set to `os.path.splitext(filename)[0]`, otherwise defaults to
+    # "Unknown module".
+    module=str,
+
+    #
+
+    # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None. Unmodified by ctor.
+    exc_info=ta.Optional[LoggingExcInfoTuple],
+
+    # Used to cache the traceback text. Simply set to None by ctor, later set by Formatter.format.
+    exc_text=ta.Optional[str],
+
+    #
+
+    # Stack frame information (where available) from the bottom of the stack in the current thread, up to and including
+    # the stack frame of the logging call which resulted in the creation of this record. Set by ctor to `sinfo` arg,
+    # unmodified. Mostly set, if requested, by `Logger.findCaller`, to `traceback.print_stack(f)`, but prepended with
+    # the literal "Stack (most recent call last):\n", and stripped of exactly one trailing `\n` if present.
+    stack_info=ta.Optional[str],
+
+    # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0 by
+    # Logger.findCaller / Logger._log.
+    lineno=int,
+
+    # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to
+    # "(unknown function)" by Logger.findCaller / Logger._log.
+    funcName=str,
+
+    #
+
+    # Time when the LogRecord was created. Set to `time.time_ns() / 1e9` for >=3.13.0b1, otherwise simply `time.time()`.
+    #
+    # See:
+    #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+    #  - https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+    #
+    created=float,
+
+    # Millisecond portion of the time when the LogRecord was created.
+    msecs=float,
+
+    # Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded.
+    relativeCreated=float,
+
+    #
+
+    # Thread ID if available, and `logging.logThreads` is truthy.
+    thread=ta.Optional[int],
+
+    # Thread name if available, and `logging.logThreads` is truthy.
+    threadName=ta.Optional[str],
+
+    #
+
+    # Process name if available. Set to None if `logging.logMultiprocessing` is not truthy. Otherwise, set to
+    # 'MainProcess', then `sys.modules.get('multiprocessing').current_process().name` if that works, otherwise remains
+    # as 'MainProcess'.
+    #
+    # As noted by stdlib:
+    #
+    #   Errors may occur if multiprocessing has not finished loading yet - e.g. if a custom import hook causes
+    #   third-party code to run when multiprocessing calls import. See issue 8200 for an example
+    #
+    processName=ta.Optional[str],
+
+    # Process ID if available - that is, if `hasattr(os, 'getpid')` - and `logging.logProcesses` is truthy, otherwise
+    # None.
+    process=ta.Optional[int],
+
+    #
+
+    # Absent <3.12, otherwise asyncio.Task name if available, and `logging.logAsyncioTasks` is truthy. Set to
+    # `sys.modules.get('asyncio').current_task().get_name()`, otherwise None.
+    taskName=ta.Optional[str],
+)
+
+KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_RECORD_ATTRS)
+
+
+# Formatter:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L514 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L554 (~3.14)  # noqa
+#
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # The logged message, computed as msg % args. Set to `record.getMessage()`.
+    message=str,
+
+    # Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the
+    # numbers after the comma are millisecond portion of the time). Set to `self.formatTime(record, self.datefmt)` if
+    # `self.usesTime()`, otherwise unset.
+    asctime=str,
+
+    # Used to cache the traceback text. If unset (falsey) on the record and `exc_info` is truthy, set to
+    # `self.formatException(record.exc_info)` - otherwise unmodified.
+    exc_text=ta.Optional[str],
+)
+
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
+
+
+##
+
+
+class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_std_logging_record_attrs() -> None:
+    rec_dct = dict(logging.makeLogRecord({}).__dict__)
+
+    if (unk_rec_fields := frozenset(rec_dct) - KNOWN_STD_LOGGING_RECORD_ATTR_SET):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unknown log record attrs detected: {sorted(unk_rec_fields)!r}',
+            UnknownStdLoggingRecordAttrsWarning,
+        )
+
+
+_check_std_logging_record_attrs()
+
+
+##
+
+
+class LoggingContextLogRecord(logging.LogRecord):
+    _SHOULD_ADD_TASK_NAME: ta.ClassVar[bool] = sys.version_info >= (3, 12)
+
+    _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
+    _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
+    _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
+
+    _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
+
+    def __init__(  # noqa
+            self,
+            # name,
+            # level,
+            # pathname,
+            # lineno,
+            # msg,
+            # args,
+            # exc_info,
+            # func=None,
+            # sinfo=None,
+            # **kwargs,
+            *,
+            name: str,
+            msg: str,
+            args: ta.Union[tuple, dict],
+
+            _logging_context: LoggingContext,
+    ) -> None:
+        ctx = _logging_context
+
+        self.name: str = name
+
+        self.msg: str = msg
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307
+        if args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping) and args[0]:
+            args = args[0]  # type: ignore[assignment]
+        self.args: ta.Union[tuple, dict] = args
+
+        self.levelname: str = logging.getLevelName(ctx.level)
+        self.levelno: int = ctx.level
+
+        if (caller := ctx.caller()) is not None:
+            self.pathname: str = caller.file_path
+        else:
+            self.pathname = self._UNKNOWN_PATH_NAME
+
+        if (src_file := ctx.source_file()) is not None:
+            self.filename: str = src_file.file_name
+            self.module: str = src_file.module
+        else:
+            self.filename = self.pathname
+            self.module = self._UNKNOWN_MODULE
+
+        self.exc_info: ta.Optional[LoggingExcInfoTuple] = ctx.exc_info_tuple
+        self.exc_text: ta.Optional[str] = None
+
+        # If ctx.build_caller() was never called, we simply don't have a stack trace.
+        if caller is not None:
+            if (sinfo := caller.stack_info) is not None:
+                self.stack_info: ta.Optional[str] = '\n'.join([
+                    self._STACK_INFO_PREFIX,
+                    sinfo[1:] if sinfo.endswith('\n') else sinfo,
+                ])
+            else:
+                self.stack_info = None
+
+            self.lineno: int = caller.line_no
+            self.funcName: str = caller.name
+
+        else:
+            self.stack_info = None
+
+            self.lineno = 0
+            self.funcName = self._UNKNOWN_FUNC_NAME
+
+        times = ctx.times
+        self.created: float = times.created
+        self.msecs: float = times.msecs
+        self.relativeCreated: float = times.relative_created
+
+        if logging.logThreads:
+            thread = check.not_none(ctx.thread())
+            self.thread: ta.Optional[int] = thread.ident
+            self.threadName: ta.Optional[str] = thread.name
+        else:
+            self.thread = None
+            self.threadName = None
+
+        if logging.logProcesses:
+            process = check.not_none(ctx.process())
+            self.process: ta.Optional[int] = process.pid
+        else:
+            self.process = None
+
+        if logging.logMultiprocessing:
+            if (mp := ctx.multiprocessing()) is not None:
+                self.processName: ta.Optional[str] = mp.process_name
+            else:
+                self.processName = None
+        else:
+            self.processName = None
+
+        # Absent <3.12
+        if getattr(logging, 'logAsyncioTasks', None):
+            if (at := ctx.asyncio_task()) is not None:
+                self.taskName: ta.Optional[str] = at.name
+            else:
+                self.taskName = None
+        else:
+            self.taskName = None
 
 
 ########################################
@@ -7417,6 +8378,45 @@ class InterpResolver:
                 print(f'  {n}')
                 for si in lst:
                     print(f'    {si}')
+
+
+########################################
+# ../../../omlish/logs/std/adapters.py
+
+
+##
+
+
+class StdLogger(Logger):
+    def __init__(self, std: logging.Logger) -> None:
+        super().__init__()
+
+        self._std = std
+
+    @property
+    def std(self) -> logging.Logger:
+        return self._std
+
+    def get_effective_level(self) -> LogLevel:
+        return self._std.getEffectiveLevel()
+
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+        if not self.is_enabled_for(ctx.level):
+            return
+
+        ctx.capture()
+
+        ms, args = self._prepare_msg_args(msg, *args)
+
+        rec = LoggingContextLogRecord(
+            name=self._std.name,
+            msg=ms,
+            args=args,
+
+            _logging_context=ctx,
+        )
+
+        self._std.handle(rec)
 
 
 ########################################
@@ -7914,6 +8914,17 @@ asyncio_subprocesses = AsyncioSubprocesses()
 
 
 ########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return StdLogger(logging.getLogger(mod_globals.get('__name__')))  # noqa
+
+
+########################################
 # ../../interp/inspect.py
 
 
@@ -8282,6 +9293,90 @@ class GitRevisionAdder:
 
 
 #
+
+
+########################################
+# ../reqs.py
+"""
+TODO:
+ - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
+"""
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class RequirementsRewriter:
+    def __init__(
+            self,
+            venv: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        self._venv = venv
+
+    @cached_nullary
+    def _tmp_dir(self) -> str:
+        return tempfile.mkdtemp('-omlish-reqs')
+
+    VENV_MAGIC = '# @omlish-venv'
+
+    def rewrite_file(self, in_file: str) -> str:
+        with open(in_file) as f:
+            src = f.read()
+
+        in_lines = src.splitlines(keepends=True)
+        out_lines = []
+
+        for l in in_lines:
+            if self.VENV_MAGIC in l:
+                lp, _, rp = l.partition(self.VENV_MAGIC)
+                rp = rp.partition('#')[0]
+                omit = False
+                for v in rp.split():
+                    if v[0] == '!':
+                        if self._venv is not None and self._venv == v[1:]:
+                            omit = True
+                            break
+                    else:
+                        raise NotImplementedError
+
+                if omit:
+                    out_lines.append('# OMITTED:  ' + l)
+                    continue
+
+            out_req = self.rewrite(l.rstrip('\n'), for_file=True)
+            out_lines.append(out_req + '\n')
+
+        out_file = os.path.join(self._tmp_dir(), os.path.basename(in_file))
+        if os.path.exists(out_file):
+            raise Exception(f'file exists: {out_file}')
+
+        with open(out_file, 'w') as f:
+            f.write(''.join(out_lines))
+        log.info('Rewrote requirements file %s to %s', in_file, out_file)
+        return out_file
+
+    def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
+        if in_req.strip().startswith('-r'):
+            l = in_req.strip()
+            lp, _, rp = l.partition(' ')
+            if lp == '-r':
+                inc_in_file, _, rest = rp.partition(' ')
+            else:
+                inc_in_file, rest = lp[2:], rp
+
+            inc_out_file = self.rewrite_file(inc_in_file)
+            if for_file:
+                return ' '.join(['-r ', inc_out_file, rest])
+            else:
+                return '-r' + inc_out_file
+
+        else:
+            return in_req
 
 
 ########################################

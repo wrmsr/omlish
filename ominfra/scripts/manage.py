@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../manage/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045 UP046
 """
 manage.py -s 'docker run -i python:3.13'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
@@ -150,8 +150,16 @@ InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
+# ../../omlish/logs/contexts.py
+LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
+LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
+LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
+
 # deploy/specs.py
 KeyDeployTagT = ta.TypeVar('KeyDeployTagT', bound='KeyDeployTag')
+
+# ../../omlish/logs/base.py
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -3979,6 +3987,120 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
+# ../../../omlish/logs/infos.py
+
+
+##
+
+
+class _LoggingContextInfo:
+    def __mro_entries__(self, bases):
+        return ()
+
+
+LoggingContextInfo: type = ta.cast(ta.Any, _LoggingContextInfo())
+
+
+##
+
+
+@ta.final
+class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_name: str
+    module: str
+
+    @classmethod
+    def build(cls, file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
+        if file_path is None:
+            return None
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
+        try:
+            file_name = os.path.basename(file_path)
+            module = os.path.splitext(file_name)[0]
+        except (TypeError, ValueError, AttributeError):
+            return None
+
+        return cls(
+            file_name,
+            module,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    ident: int
+    native_id: ta.Optional[int]
+    name: str
+
+    @classmethod
+    def build(cls) -> 'LoggingThreadInfo':
+        return cls(
+            threading.get_ident(),
+            threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+            threading.current_thread().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    pid: int
+
+    @classmethod
+    def build(cls) -> 'LoggingProcessInfo':
+        return cls(
+            os.getpid(),
+        )
+
+
+##
+
+
+@ta.final
+class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    process_name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingMultiprocessingInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
+        if (mp := sys.modules.get('multiprocessing')) is None:
+            return None
+
+        return cls(
+            mp.current_process().name,
+        )
+
+
+##
+
+
+@ta.final
+class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    name: str
+
+    @classmethod
+    def build(cls) -> ta.Optional['LoggingAsyncioTaskInfo']:
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
+        if (asyncio := sys.modules.get('asyncio')) is None:
+            return None
+
+        try:
+            task = asyncio.current_task()
+        except Exception:  # noqa
+            return None
+
+        return cls(
+            task.get_name(),  # Always non-None
+        )
+
+
+########################################
 # ../../../omlish/logs/levels.py
 
 
@@ -4164,6 +4286,17 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../../omlish/logs/warnings.py
+
+
+##
+
+
+class LoggingSetupWarning(Warning):
+    pass
 
 
 ########################################
@@ -7448,6 +7581,73 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
+# ../../../omlish/logs/callers.py
+
+
+##
+
+
+class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    file_path: str
+    line_no: int
+    name: str
+    stack_info: ta.Optional[str]
+
+    @classmethod
+    def is_internal_frame(cls, frame: types.FrameType) -> bool:
+        file_path = os.path.normcase(frame.f_code.co_filename)
+
+        # Yes, really.
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204
+        # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
+        if 'importlib' in file_path and '_bootstrap' in file_path:
+            return True
+
+        return False
+
+    @classmethod
+    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
+        f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
+
+        while f is not None:
+            # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
+            # stack_offset management.
+            if hasattr(f, 'f_code'):
+                return f
+
+            f = f.f_back
+
+        return None
+
+    @classmethod
+    def find(
+            cls,
+            ofs: int = 0,
+            *,
+            stack_info: bool = False,
+    ) -> ta.Optional['LoggingCaller']:
+        if (f := cls.find_frame(ofs + 1)) is None:
+            return None
+
+        # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
+        sinfo = None
+        if stack_info:
+            sio = io.StringIO()
+            traceback.print_stack(f, file=sio)
+            sinfo = sio.getvalue()
+            sio.close()
+            if sinfo[-1] == '\n':
+                sinfo = sinfo[:-1]
+
+        return cls(
+            f.f_code.co_filename,
+            f.f_lineno or 0,
+            f.f_code.co_name,
+            sinfo,
+        )
+
+
+########################################
 # ../../../omlish/logs/protocols.py
 
 
@@ -7533,6 +7733,89 @@ class JsonLoggingFormatter(logging.Formatter):
             if not (o and v is None)
         }
         return self._json_dumps(dct)
+
+
+########################################
+# ../../../omlish/logs/times.py
+
+
+##
+
+
+class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+    """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
+
+    created: float
+    msecs: float
+    relative_created: float
+
+    @classmethod
+    def get_std_start_time_ns(cls) -> int:
+        x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
+
+        # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`, an
+        # int.
+        #
+        # See:
+        #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        #
+        if isinstance(x, float):
+            return int(x * 1e9)
+        else:
+            return x
+
+    @classmethod
+    def build(
+            cls,
+            time_ns: int,
+            *,
+            start_time_ns: ta.Optional[int] = None,
+    ) -> 'LoggingTimeFields':
+        # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+        created = time_ns / 1e9  # ns to float seconds
+
+        # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
+        # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
+        # Convert to float by adding 0.0 for historical reasons. See gh-89047
+        msecs = (time_ns % 1_000_000_000) // 1_000_000 + 0.0
+
+        # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+        if msecs == 999.0 and int(created) != time_ns // 1_000_000_000:
+            # ns -> sec conversion can round up, e.g:
+            # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
+            msecs = 0.0
+
+        if start_time_ns is None:
+            start_time_ns = cls.get_std_start_time_ns()
+        relative_created = (time_ns - start_time_ns) / 1e6
+
+        return cls(
+            created,
+            msecs,
+            relative_created,
+        )
+
+
+##
+
+
+class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_logging_start_time() -> None:
+    if (x := LoggingTimeFields.get_std_start_time_ns()) < (t := time.time()):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unexpected logging start time detected: '
+            f'get_std_start_time_ns={x}, '
+            f'time.time()={t}',
+            UnexpectedLoggingStartTimeWarning,
+        )
+
+
+_check_logging_start_time()
 
 
 ########################################
@@ -9667,14 +9950,260 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omlish/logs/contexts.py
 
 
 ##
 
 
-def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
-    return logging.getLogger(mod_globals.get('__name__'))  # noqa
+class LoggingContext(Abstract):
+    @property
+    @abc.abstractmethod
+    def level(self) -> NamedLogLevel:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def time_ns(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def times(self) -> LoggingTimeFields:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        raise NotImplementedError
+
+
+##
+
+
+class CaptureLoggingContext(LoggingContext, Abstract):
+    class AlreadyCapturedError(Exception):
+        pass
+
+    class NotCapturedError(Exception):
+        pass
+
+    @abc.abstractmethod
+    def capture(self) -> None:
+        """Must be cooperatively called only from the expected locations."""
+
+        raise NotImplementedError
+
+
+@ta.final
+class CaptureLoggingContextImpl(CaptureLoggingContext):
+    @ta.final
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    #
+
+    def __init__(
+            self,
+            level: LogLevel,
+            *,
+            time_ns: ta.Optional[int] = None,
+
+            exc_info: LoggingExcInfoArg = False,
+
+            caller: ta.Union[LoggingCaller, ta.Type[NOT_SET], None] = NOT_SET,
+            stack_offset: int = 0,
+            stack_info: bool = False,
+    ) -> None:
+        self._level: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+
+        #
+
+        if time_ns is None:
+            time_ns = time.time_ns()
+        self._time_ns: int = time_ns
+
+        #
+
+        if exc_info is True:
+            sys_exc_info = sys.exc_info()
+            if sys_exc_info[0] is not None:
+                exc_info = sys_exc_info
+            else:
+                exc_info = None
+        elif exc_info is False:
+            exc_info = None
+
+        if exc_info is not None:
+            self._exc_info: ta.Optional[LoggingExcInfo] = exc_info
+            if isinstance(exc_info, BaseException):
+                self._exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = (type(exc_info), exc_info, exc_info.__traceback__)  # noqa
+            else:
+                self._exc_info_tuple = exc_info
+
+        #
+
+        if caller is not CaptureLoggingContextImpl.NOT_SET:
+            self._caller = caller  # type: ignore[assignment]
+        else:
+            self._stack_offset = stack_offset
+            self._stack_info = stack_info
+
+    ##
+
+    @property
+    def level(self) -> NamedLogLevel:
+        return self._level
+
+    #
+
+    @property
+    def time_ns(self) -> int:
+        return self._time_ns
+
+    _times: LoggingTimeFields
+
+    @property
+    def times(self) -> LoggingTimeFields:
+        try:
+            return self._times
+        except AttributeError:
+            pass
+
+        times = self._times = LoggingTimeFields.build(self.time_ns)
+        return times
+
+    #
+
+    _exc_info: ta.Optional[LoggingExcInfo] = None
+    _exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = None
+
+    @property
+    def exc_info(self) -> ta.Optional[LoggingExcInfo]:
+        return self._exc_info
+
+    @property
+    def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
+        return self._exc_info_tuple
+
+    ##
+
+    _stack_offset: int
+    _stack_info: bool
+
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+        if hasattr(self, '_stack_offset'):
+            self._stack_offset += ofs
+        return self
+
+    _has_captured: bool = False
+
+    _caller: ta.Optional[LoggingCaller]
+    _source_file: ta.Optional[LoggingSourceFileInfo]
+
+    _thread: ta.Optional[LoggingThreadInfo]
+    _process: ta.Optional[LoggingProcessInfo]
+    _multiprocessing: ta.Optional[LoggingMultiprocessingInfo]
+    _asyncio_task: ta.Optional[LoggingAsyncioTaskInfo]
+
+    def capture(self) -> None:
+        if self._has_captured:
+            raise CaptureLoggingContextImpl.AlreadyCapturedError
+        self._has_captured = True
+
+        if not hasattr(self, '_caller'):
+            self._caller = LoggingCaller.find(
+                self._stack_offset + 1,
+                stack_info=self._stack_info,
+            )
+
+        if (caller := self._caller) is not None:
+            self._source_file = LoggingSourceFileInfo.build(caller.file_path)
+        else:
+            self._source_file = None
+
+        self._thread = LoggingThreadInfo.build()
+        self._process = LoggingProcessInfo.build()
+        self._multiprocessing = LoggingMultiprocessingInfo.build()
+        self._asyncio_task = LoggingAsyncioTaskInfo.build()
+
+    #
+
+    def caller(self) -> ta.Optional[LoggingCaller]:
+        try:
+            return self._caller
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
+        try:
+            return self._source_file
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    #
+
+    def thread(self) -> ta.Optional[LoggingThreadInfo]:
+        try:
+            return self._thread
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def process(self) -> ta.Optional[LoggingProcessInfo]:
+        try:
+            return self._process
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
+        try:
+            return self._multiprocessing
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
+
+    def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
+        try:
+            return self._asyncio_task
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
 
 ########################################
@@ -10426,475 +10955,518 @@ class DeploySpec(DeploySpecKeyed[DeployKey]):
 
 
 ########################################
-# ../remote/execution.py
-"""
-TODO:
- - sequence all messages
-"""
-
-
-log = get_module_logger(globals())  # noqa
+# ../../../omlish/logs/base.py
 
 
 ##
 
 
-class _RemoteProtocol:
-    class Message(Abstract):
-        async def send(self, chan: RemoteChannel) -> None:
-            await chan.send_obj(self, _RemoteProtocol.Message)
+class AnyLogger(Abstract, ta.Generic[T]):
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self.get_effective_level() >= level
 
-        @classmethod
-        async def recv(cls: ta.Type[T], chan: RemoteChannel) -> ta.Optional[T]:
-            return await chan.recv_obj(cls)
+    @abc.abstractmethod
+    def get_effective_level(self) -> LogLevel:
+        raise NotImplementedError
 
     #
 
-    class Request(Message, Abstract):
-        pass
+    @ta.final
+    def isEnabledFor(self, level: LogLevel) -> bool:  # noqa
+        return self.is_enabled_for(level)
 
-    @dc.dataclass(frozen=True)
-    class CommandRequest(Request):
-        seq: int
-        cmd: Command
+    @ta.final
+    def getEffectiveLevel(self) -> LogLevel:  # noqa
+        return self.get_effective_level()
 
-    @dc.dataclass(frozen=True)
-    class PingRequest(Request):
-        time: float
+    ##
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def log(self, level: LogLevel, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(level, stack_offset=1), *args, **kwargs)
 
     #
 
-    class Response(Message, Abstract):
-        pass
+    @ta.overload
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
 
-    @dc.dataclass(frozen=True)
-    class LogResponse(Response):
-        s: str
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
 
-    @dc.dataclass(frozen=True)
-    class CommandResponse(Response):
-        seq: int
-        res: CommandOutputOrExceptionData
+    @ta.overload
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
 
-    @dc.dataclass(frozen=True)
-    class PingResponse(Response):
-        time: float
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
 
+    #
 
-##
+    @ta.overload
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
 
+    @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
 
-class _RemoteLogHandler(logging.Handler):
-    def __init__(
-            self,
-            chan: RemoteChannel,
-            loop: ta.Any = None,
-    ) -> None:
-        super().__init__()
+    @ta.overload
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
 
-        self._chan = chan
-        self._loop = loop
+    @ta.final
+    def info(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.INFO, stack_offset=1), *args, **kwargs)
 
-    def emit(self, record):
-        msg = self.format(record)
+    #
 
-        async def inner():
-            await _RemoteProtocol.LogResponse(msg).send(self._chan)
+    @ta.overload
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
 
-        loop = self._loop
-        if loop is None:
-            loop = asyncio.get_running_loop()
-        if loop is not None:
-            asyncio.run_coroutine_threadsafe(inner(), loop)
+    @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
 
+    @ta.overload
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
 
-##
+    @ta.final
+    def warning(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.WARNING, stack_offset=1), *args, **kwargs)
 
+    #
 
-class _RemoteCommandHandler:
-    DEFAULT_PING_INTERVAL_S: float = 3.
+    @ta.overload
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
 
-    def __init__(
-            self,
-            chan: RemoteChannel,
-            executor: CommandExecutor,
-            *,
-            stop: ta.Optional[asyncio.Event] = None,
-            ping_interval_s: float = DEFAULT_PING_INTERVAL_S,
-    ) -> None:
-        super().__init__()
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
 
-        self._chan = chan
-        self._executor = executor
-        self._stop = stop if stop is not None else asyncio.Event()
-        self._ping_interval_s = ping_interval_s
+    @ta.overload
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
 
-        self._cmds_by_seq: ta.Dict[int, _RemoteCommandHandler._Command] = {}
+    @ta.final
+    def error(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
 
-        self._last_ping_send: float = 0.
-        self._ping_in_flight: bool = False
-        self._last_ping_recv: ta.Optional[float] = None
+    #
 
-    def stop(self) -> None:
-        self._stop.set()
+    @ta.overload
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
 
-    @dc.dataclass(frozen=True)
-    class _Command:
-        req: _RemoteProtocol.CommandRequest
-        fut: asyncio.Future
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
 
-    async def run(self) -> None:
-        log.debug('_RemoteCommandHandler loop start: %r', self)
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
 
-        stop_task = asyncio.create_task(self._stop.wait())
-        recv_task: ta.Optional[asyncio.Task] = None
+    @ta.final
+    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)  # noqa
 
-        while not self._stop.is_set():
-            if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
+    #
 
-            if not self._ping_in_flight:
-                if not self._last_ping_recv:
-                    ping_wait_time = 0.
+    @ta.overload
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def critical(self, *args, **kwargs):
+        return self._log(CaptureLoggingContextImpl(NamedLogLevel.CRITICAL, stack_offset=1), *args, **kwargs)
+
+    ##
+
+    @classmethod
+    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
+        if callable(msg):
+            if args:
+                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+            x = msg()
+            if isinstance(x, str):
+                return x, ()
+            elif isinstance(x, tuple):
+                if x:
+                    return x[0], x[1:]
                 else:
-                    ping_wait_time = self._ping_interval_s - (time.time() - self._last_ping_recv)
+                    return '', ()
             else:
-                ping_wait_time = float('inf')
-            wait_time = min(self._ping_interval_s, ping_wait_time)
-            log.debug('_RemoteCommandHandler loop wait: %f', wait_time)
+                raise TypeError(x)
 
-            done, pending = await asyncio.wait(
-                [
-                    stop_task,
-                    recv_task,
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=wait_time,
-            )
+        elif isinstance(msg, tuple):
+            if args:
+                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+            if msg:
+                return msg[0], msg[1:]
+            else:
+                return '', ()
 
-            #
-
-            if (
-                    (time.time() - self._last_ping_send >= self._ping_interval_s) and
-                    not self._ping_in_flight
-            ):
-                now = time.time()
-                self._last_ping_send = now
-                self._ping_in_flight = True
-                await _RemoteProtocol.PingRequest(
-                    time=now,
-                ).send(self._chan)
-
-            #
-
-            if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
-                    recv_task.result(),
-                    (_RemoteProtocol.Message, type(None)),
-                )
-                recv_task = None
-
-                if msg is None:
-                    break
-
-                await self._handle_message(msg)
-
-        log.debug('_RemoteCommandHandler loop stopping: %r', self)
-
-        for task in [
-            stop_task,
-            recv_task,
-        ]:
-            if task is not None and not task.done():
-                task.cancel()
-
-        for cmd in self._cmds_by_seq.values():
-            cmd.fut.cancel()
-
-        log.debug('_RemoteCommandHandler loop exited: %r', self)
-
-    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
-        if isinstance(msg, _RemoteProtocol.PingRequest):
-            log.debug('Ping: %r', msg)
-            await _RemoteProtocol.PingResponse(
-                time=msg.time,
-            ).send(self._chan)
-
-        elif isinstance(msg, _RemoteProtocol.PingResponse):
-            latency_s = time.time() - msg.time
-            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
-            self._last_ping_recv = time.time()
-            self._ping_in_flight = False
-
-        elif isinstance(msg, _RemoteProtocol.CommandRequest):
-            fut = asyncio.create_task(self._handle_command_request(msg))
-            self._cmds_by_seq[msg.seq] = _RemoteCommandHandler._Command(
-                req=msg,
-                fut=fut,
-            )
+        elif isinstance(msg, str):
+            return msg, args
 
         else:
             raise TypeError(msg)
 
-    async def _handle_command_request(self, req: _RemoteProtocol.CommandRequest) -> None:
-        res = await self._executor.try_execute(
-            req.cmd,
-            log=log,
-            omit_exc_object=True,
-        )
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
+        raise NotImplementedError
 
-        await _RemoteProtocol.CommandResponse(
-            seq=req.seq,
-            res=CommandOutputOrExceptionData(
-                output=res.output,
-                exception=res.exception,
-            ),
-        ).send(self._chan)
 
-        self._cmds_by_seq.pop(req.seq)  # noqa
+class Logger(AnyLogger[None], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        raise NotImplementedError
+
+
+class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+        raise NotImplementedError
 
 
 ##
 
 
-@dc.dataclass()
-class RemoteCommandError(Exception):
-    e: CommandException
+class AnyNopLogger(AnyLogger[T], Abstract):
+    @ta.final
+    def get_effective_level(self) -> LogLevel:
+        return 999
 
 
-class RemoteCommandExecutor(CommandExecutor):
-    def __init__(self, chan: RemoteChannel) -> None:
-        super().__init__()
+@ta.final
+class NopLogger(AnyNopLogger[None], Logger):
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
 
-        self._chan = chan
 
-        self._cmd_seq = itertools.count()
-        self._queue: asyncio.Queue = asyncio.Queue()  # asyncio.Queue[RemoteCommandExecutor._Request]
-        self._stop = asyncio.Event()
-        self._loop_task: ta.Optional[asyncio.Task] = None
-        self._reqs_by_seq: ta.Dict[int, RemoteCommandExecutor._Request] = {}
-
-    #
-
-    async def start(self) -> None:
-        check.none(self._loop_task)
-        check.state(not self._stop.is_set())
-        self._loop_task = asyncio.create_task(self._loop())
-
-    async def aclose(self) -> None:
-        self._stop.set()
-        if self._loop_task is not None:
-            await self._loop_task
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class _Request:
-        seq: int
-        cmd: Command
-        fut: asyncio.Future
-
-    async def _loop(self) -> None:
-        log.debug('RemoteCommandExecutor loop start: %r', self)
-
-        stop_task = asyncio.create_task(self._stop.wait())
-        queue_task: ta.Optional[asyncio.Task] = None
-        recv_task: ta.Optional[asyncio.Task] = None
-
-        while not self._stop.is_set():
-            if queue_task is None:
-                queue_task = asyncio.create_task(self._queue.get())
-            if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
-
-            done, pending = await asyncio.wait(
-                [
-                    stop_task,
-                    queue_task,
-                    recv_task,
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-
-            #
-
-            if queue_task in done:
-                req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
-                queue_task = None
-                await self._handle_queued_request(req)
-
-            #
-
-            if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
-                    recv_task.result(),
-                    (_RemoteProtocol.Message, type(None)),
-                )
-                recv_task = None
-
-                if msg is None:
-                    log.debug('RemoteCommandExecutor got eof: %r', self)
-                    break
-
-                await self._handle_message(msg)
-
-        log.debug('RemoteCommandExecutor loop stopping: %r', self)
-
-        for task in [
-            stop_task,
-            queue_task,
-            recv_task,
-        ]:
-            if task is not None and not task.done():
-                task.cancel()
-
-        for req in self._reqs_by_seq.values():
-            req.fut.cancel()
-
-        log.debug('RemoteCommandExecutor loop exited: %r', self)
-
-    async def _handle_queued_request(self, req: _Request) -> None:
-        self._reqs_by_seq[req.seq] = req
-        await _RemoteProtocol.CommandRequest(
-            seq=req.seq,
-            cmd=req.cmd,
-        ).send(self._chan)
-
-    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
-        if isinstance(msg, _RemoteProtocol.PingRequest):
-            log.debug('Ping: %r', msg)
-            await _RemoteProtocol.PingResponse(
-                time=msg.time,
-            ).send(self._chan)
-
-        elif isinstance(msg, _RemoteProtocol.PingResponse):
-            latency_s = time.time() - msg.time
-            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
-
-        elif isinstance(msg, _RemoteProtocol.LogResponse):
-            log.info(msg.s)
-
-        elif isinstance(msg, _RemoteProtocol.CommandResponse):
-            req = self._reqs_by_seq.pop(msg.seq)
-            req.fut.set_result(msg.res)
-
-        else:
-            raise TypeError(msg)
-
-    #
-
-    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        req = RemoteCommandExecutor._Request(
-            seq=next(self._cmd_seq),
-            cmd=cmd,
-            fut=asyncio.Future(),
-        )
-        await self._queue.put(req)
-        return await req.fut
-
-    # @ta.override
-    async def execute(self, cmd: Command) -> Command.Output:
-        r = await self._remote_execute(cmd)
-        if (e := r.exception) is not None:
-            raise RemoteCommandError(e)
-        else:
-            return check.not_none(r.output)
-
-    # @ta.override
-    async def try_execute(
-            self,
-            cmd: Command,
-            *,
-            log: ta.Optional[LoggerLike] = None,  # noqa
-            omit_exc_object: bool = False,
-    ) -> CommandOutputOrException:
-        try:
-            r = await self._remote_execute(cmd)
-
-        except Exception as e:  # noqa
-            if log is not None:
-                log.exception('Exception executing remote command: %r', type(cmd))
-
-            return CommandOutputOrExceptionData(exception=CommandException.of(
-                e,
-                omit_exc_object=omit_exc_object,
-                cmd=cmd,
-            ))
-
-        else:
-            return r
+@ta.final
+class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    async def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+        pass
 
 
 ########################################
-# ../system/platforms.py
-
-
-log = get_module_logger(globals())  # noqa
+# ../../../omlish/logs/std/records.py
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class Platform(Abstract):
-    pass
+# Ref:
+#  - https://docs.python.org/3/library/logging.html#logrecord-attributes
+#
+# LogRecord:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L276 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L286 (~3.14)  # noqa
+#
+# LogRecord.__init__ args:
+#  - name: str
+#  - level: int
+#  - pathname: str - Confusingly referred to as `fn` before the LogRecord ctor. May be empty or "(unknown file)".
+#  - lineno: int - May be 0.
+#  - msg: str
+#  - args: tuple | dict | 1-tuple[dict]
+#  - exc_info: LoggingExcInfoTuple | None
+#  - func: str | None = None -> funcName
+#  - sinfo: str | None = None -> stack_info
+#
+KNOWN_STD_LOGGING_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # Name of the logger used to log the call. Unmodified by ctor.
+    name=str,
+
+    # The format string passed in the original logging call. Merged with args to produce message, or an arbitrary object
+    # (see Using arbitrary objects as messages). Unmodified by ctor.
+    msg=str,
+
+    # The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge (when
+    # there is only one argument, and it is a dictionary). Ctor will transform a 1-tuple containing a Mapping into just
+    # the mapping, but is otherwise unmodified.
+    args=ta.Union[tuple, dict],
+
+    #
+
+    # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'). Set to
+    # `getLevelName(level)`.
+    levelname=str,
+
+    # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL). Unmodified by ctor.
+    levelno=int,
+
+    #
+
+    # Full pathname of the source file where the logging call was issued (if available). Unmodified by ctor. May default
+    # to "(unknown file)" by Logger.findCaller / Logger._log.
+    pathname=str,
+
+    # Filename portion of pathname. Set to `os.path.basename(pathname)` if successful, otherwise defaults to pathname.
+    filename=str,
+
+    # Module (name portion of filename). Set to `os.path.splitext(filename)[0]`, otherwise defaults to
+    # "Unknown module".
+    module=str,
+
+    #
+
+    # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None. Unmodified by ctor.
+    exc_info=ta.Optional[LoggingExcInfoTuple],
+
+    # Used to cache the traceback text. Simply set to None by ctor, later set by Formatter.format.
+    exc_text=ta.Optional[str],
+
+    #
+
+    # Stack frame information (where available) from the bottom of the stack in the current thread, up to and including
+    # the stack frame of the logging call which resulted in the creation of this record. Set by ctor to `sinfo` arg,
+    # unmodified. Mostly set, if requested, by `Logger.findCaller`, to `traceback.print_stack(f)`, but prepended with
+    # the literal "Stack (most recent call last):\n", and stripped of exactly one trailing `\n` if present.
+    stack_info=ta.Optional[str],
+
+    # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0 by
+    # Logger.findCaller / Logger._log.
+    lineno=int,
+
+    # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to
+    # "(unknown function)" by Logger.findCaller / Logger._log.
+    funcName=str,
+
+    #
+
+    # Time when the LogRecord was created. Set to `time.time_ns() / 1e9` for >=3.13.0b1, otherwise simply `time.time()`.
+    #
+    # See:
+    #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+    #  - https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+    #
+    created=float,
+
+    # Millisecond portion of the time when the LogRecord was created.
+    msecs=float,
+
+    # Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded.
+    relativeCreated=float,
+
+    #
+
+    # Thread ID if available, and `logging.logThreads` is truthy.
+    thread=ta.Optional[int],
+
+    # Thread name if available, and `logging.logThreads` is truthy.
+    threadName=ta.Optional[str],
+
+    #
+
+    # Process name if available. Set to None if `logging.logMultiprocessing` is not truthy. Otherwise, set to
+    # 'MainProcess', then `sys.modules.get('multiprocessing').current_process().name` if that works, otherwise remains
+    # as 'MainProcess'.
+    #
+    # As noted by stdlib:
+    #
+    #   Errors may occur if multiprocessing has not finished loading yet - e.g. if a custom import hook causes
+    #   third-party code to run when multiprocessing calls import. See issue 8200 for an example
+    #
+    processName=ta.Optional[str],
+
+    # Process ID if available - that is, if `hasattr(os, 'getpid')` - and `logging.logProcesses` is truthy, otherwise
+    # None.
+    process=ta.Optional[int],
+
+    #
+
+    # Absent <3.12, otherwise asyncio.Task name if available, and `logging.logAsyncioTasks` is truthy. Set to
+    # `sys.modules.get('asyncio').current_task().get_name()`, otherwise None.
+    taskName=ta.Optional[str],
+)
+
+KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_RECORD_ATTRS)
 
 
-class LinuxPlatform(Platform, Abstract):
-    pass
+# Formatter:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L514 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L554 (~3.14)  # noqa
+#
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # The logged message, computed as msg % args. Set to `record.getMessage()`.
+    message=str,
 
+    # Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the
+    # numbers after the comma are millisecond portion of the time). Set to `self.formatTime(record, self.datefmt)` if
+    # `self.usesTime()`, otherwise unset.
+    asctime=str,
 
-class UbuntuPlatform(LinuxPlatform):
-    pass
+    # Used to cache the traceback text. If unset (falsey) on the record and `exc_info` is truthy, set to
+    # `self.formatException(record.exc_info)` - otherwise unmodified.
+    exc_text=ta.Optional[str],
+)
 
-
-class AmazonLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class GenericLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class DarwinPlatform(Platform):
-    pass
-
-
-class UnknownPlatform(Platform):
-    pass
+KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
 
 
 ##
 
 
-def _detect_system_platform() -> Platform:
-    plat = sys.platform
+class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
+    pass
 
-    if plat == 'linux':
-        if (osr := LinuxOsRelease.read()) is None:
-            return GenericLinuxPlatform()
 
-        if osr.id == 'amzn':
-            return AmazonLinuxPlatform()
+def _check_std_logging_record_attrs() -> None:
+    rec_dct = dict(logging.makeLogRecord({}).__dict__)
 
-        elif osr.id == 'ubuntu':
-            return UbuntuPlatform()
+    if (unk_rec_fields := frozenset(rec_dct) - KNOWN_STD_LOGGING_RECORD_ATTR_SET):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unknown log record attrs detected: {sorted(unk_rec_fields)!r}',
+            UnknownStdLoggingRecordAttrsWarning,
+        )
+
+
+_check_std_logging_record_attrs()
+
+
+##
+
+
+class LoggingContextLogRecord(logging.LogRecord):
+    _SHOULD_ADD_TASK_NAME: ta.ClassVar[bool] = sys.version_info >= (3, 12)
+
+    _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
+    _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
+    _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
+
+    _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
+
+    def __init__(  # noqa
+            self,
+            # name,
+            # level,
+            # pathname,
+            # lineno,
+            # msg,
+            # args,
+            # exc_info,
+            # func=None,
+            # sinfo=None,
+            # **kwargs,
+            *,
+            name: str,
+            msg: str,
+            args: ta.Union[tuple, dict],
+
+            _logging_context: LoggingContext,
+    ) -> None:
+        ctx = _logging_context
+
+        self.name: str = name
+
+        self.msg: str = msg
+
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307
+        if args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping) and args[0]:
+            args = args[0]  # type: ignore[assignment]
+        self.args: ta.Union[tuple, dict] = args
+
+        self.levelname: str = logging.getLevelName(ctx.level)
+        self.levelno: int = ctx.level
+
+        if (caller := ctx.caller()) is not None:
+            self.pathname: str = caller.file_path
+        else:
+            self.pathname = self._UNKNOWN_PATH_NAME
+
+        if (src_file := ctx.source_file()) is not None:
+            self.filename: str = src_file.file_name
+            self.module: str = src_file.module
+        else:
+            self.filename = self.pathname
+            self.module = self._UNKNOWN_MODULE
+
+        self.exc_info: ta.Optional[LoggingExcInfoTuple] = ctx.exc_info_tuple
+        self.exc_text: ta.Optional[str] = None
+
+        # If ctx.build_caller() was never called, we simply don't have a stack trace.
+        if caller is not None:
+            if (sinfo := caller.stack_info) is not None:
+                self.stack_info: ta.Optional[str] = '\n'.join([
+                    self._STACK_INFO_PREFIX,
+                    sinfo[1:] if sinfo.endswith('\n') else sinfo,
+                ])
+            else:
+                self.stack_info = None
+
+            self.lineno: int = caller.line_no
+            self.funcName: str = caller.name
 
         else:
-            return GenericLinuxPlatform()
+            self.stack_info = None
 
-    elif plat == 'darwin':
-        return DarwinPlatform()
+            self.lineno = 0
+            self.funcName = self._UNKNOWN_FUNC_NAME
 
-    else:
-        return UnknownPlatform()
+        times = ctx.times
+        self.created: float = times.created
+        self.msecs: float = times.msecs
+        self.relativeCreated: float = times.relative_created
 
+        if logging.logThreads:
+            thread = check.not_none(ctx.thread())
+            self.thread: ta.Optional[int] = thread.ident
+            self.threadName: ta.Optional[str] = thread.name
+        else:
+            self.thread = None
+            self.threadName = None
 
-@cached_nullary
-def detect_system_platform() -> Platform:
-    platform = _detect_system_platform()
-    log.info('Detected platform: %r', platform)
-    return platform
+        if logging.logProcesses:
+            process = check.not_none(ctx.process())
+            self.process: ta.Optional[int] = process.pid
+        else:
+            self.process = None
+
+        if logging.logMultiprocessing:
+            if (mp := ctx.multiprocessing()) is not None:
+                self.processName: ta.Optional[str] = mp.process_name
+            else:
+                self.processName = None
+        else:
+            self.processName = None
+
+        # Absent <3.12
+        if getattr(logging, 'logAsyncioTasks', None):
+            if (at := ctx.asyncio_task()) is not None:
+                self.taskName: ta.Optional[str] = at.name
+            else:
+                self.taskName = None
+        else:
+            self.taskName = None
 
 
 ########################################
@@ -11510,15 +12082,42 @@ class SingleDirDeployPathOwner(DeployPathOwner, Abstract):
 
 
 ########################################
-# ../system/config.py
+# ../../../omlish/logs/std/adapters.py
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class SystemConfig:
-    platform: ta.Optional[Platform] = None
+class StdLogger(Logger):
+    def __init__(self, std: logging.Logger) -> None:
+        super().__init__()
+
+        self._std = std
+
+    @property
+    def std(self) -> logging.Logger:
+        return self._std
+
+    def get_effective_level(self) -> LogLevel:
+        return self._std.getEffectiveLevel()
+
+    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+        if not self.is_enabled_for(ctx.level):
+            return
+
+        ctx.capture()
+
+        ms, args = self._prepare_msg_args(msg, *args)
+
+        rec = LoggingContextLogRecord(
+            name=self._std.name,
+            msg=ms,
+            args=args,
+
+            _logging_context=ctx,
+        )
+
+        self._std.handle(rec)
 
 
 ########################################
@@ -11872,24 +12471,6 @@ def git_shallow_clone(
 
 
 ########################################
-# ../bootstrap.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig = MainConfig()
-
-    deploy_config: DeployConfig = DeployConfig()
-
-    remote_config: RemoteConfig = RemoteConfig()
-
-    system_config: SystemConfig = SystemConfig()
-
-
-########################################
 # ../deploy/injection.py
 
 
@@ -12155,6 +12736,17 @@ class AsyncioSubprocesses(AbstractAsyncSubprocesses):
 
 
 asyncio_subprocesses = AsyncioSubprocesses()
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> LoggerLike:
+    return StdLogger(logging.getLogger(mod_globals.get('__name__')))  # noqa
 
 
 ########################################
@@ -12859,7 +13451,11 @@ class DeploySystemdManager:
 
 
 ########################################
-# ../remote/_main.py
+# ../remote/execution.py
+"""
+TODO:
+ - sequence all messages
+"""
 
 
 log = get_module_logger(globals())  # noqa
@@ -12868,140 +13464,390 @@ log = get_module_logger(globals())  # noqa
 ##
 
 
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
+class _RemoteProtocol:
+    class Message(Abstract):
+        async def send(self, chan: RemoteChannel) -> None:
+            await chan.send_obj(self, _RemoteProtocol.Message)
 
-        self._fn = fn
+        @classmethod
+        async def recv(cls: ta.Type[T], chan: RemoteChannel) -> ta.Optional[T]:
+            return await chan.recv_obj(cls)
 
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
+    #
+
+    class Request(Message, Abstract):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class CommandRequest(Request):
+        seq: int
+        cmd: Command
+
+    @dc.dataclass(frozen=True)
+    class PingRequest(Request):
+        time: float
+
+    #
+
+    class Response(Message, Abstract):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class LogResponse(Response):
+        s: str
+
+    @dc.dataclass(frozen=True)
+    class CommandResponse(Response):
+        seq: int
+        res: CommandOutputOrExceptionData
+
+    @dc.dataclass(frozen=True)
+    class PingResponse(Response):
+        time: float
 
 
 ##
 
 
-class _RemoteExecutionMain:
+class _RemoteLogHandler(logging.Handler):
     def __init__(
             self,
             chan: RemoteChannel,
+            loop: ta.Any = None,
     ) -> None:
         super().__init__()
 
         self._chan = chan
+        self._loop = loop
 
-        self.__bootstrap: ta.Optional[MainBootstrap] = None
-        self.__injector: ta.Optional[Injector] = None
+    def emit(self, record):
+        msg = self.format(record)
 
-    @property
-    def _bootstrap(self) -> MainBootstrap:
-        return check.not_none(self.__bootstrap)
+        async def inner():
+            await _RemoteProtocol.LogResponse(msg).send(self._chan)
 
-    @property
-    def _injector(self) -> Injector:
-        return check.not_none(self.__injector)
+        loop = self._loop
+        if loop is None:
+            loop = asyncio.get_running_loop()
+        if loop is not None:
+            asyncio.run_coroutine_threadsafe(inner(), loop)
 
-    #
 
-    def _timebomb_main(
+##
+
+
+class _RemoteCommandHandler:
+    DEFAULT_PING_INTERVAL_S: float = 3.
+
+    def __init__(
             self,
-            delay_s: float,
+            chan: RemoteChannel,
+            executor: CommandExecutor,
             *,
-            sig: int = signal.SIGINT,
-            code: int = 1,
+            stop: ta.Optional[asyncio.Event] = None,
+            ping_interval_s: float = DEFAULT_PING_INTERVAL_S,
     ) -> None:
-        time.sleep(delay_s)
+        super().__init__()
 
-        if (pgid := os.getpgid(0)) == os.getpid():
-            os.killpg(pgid, sig)
+        self._chan = chan
+        self._executor = executor
+        self._stop = stop if stop is not None else asyncio.Event()
+        self._ping_interval_s = ping_interval_s
 
-        os._exit(code)  # noqa
+        self._cmds_by_seq: ta.Dict[int, _RemoteCommandHandler._Command] = {}
 
-    @cached_nullary
-    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
-        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
-            return None
+        self._last_ping_send: float = 0.
+        self._ping_in_flight: bool = False
+        self._last_ping_recv: ta.Optional[float] = None
 
-        thr = threading.Thread(
-            target=functools.partial(self._timebomb_main, tbd),
-            name=f'{self.__class__.__name__}.timebomb',
-            daemon=True,
-        )
+    def stop(self) -> None:
+        self._stop.set()
 
-        thr.start()
-
-        log.debug('Started timebomb thread: %r', thr)
-
-        return thr
-
-    #
-
-    @cached_nullary
-    def _log_handler(self) -> _RemoteLogHandler:
-        return _RemoteLogHandler(self._chan)
-
-    #
-
-    async def _setup(self) -> None:
-        check.none(self.__bootstrap)
-        check.none(self.__injector)
-
-        # Bootstrap
-
-        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
-
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
-
-        # Post-bootstrap
-
-        if self._bootstrap.remote_config.set_pgid:
-            if os.getpgid(0) != os.getpid():
-                log.debug('Setting pgid')
-                os.setpgid(0, 0)
-
-        if (ds := self._bootstrap.remote_config.deathsig) is not None:
-            log.debug('Setting deathsig: %s', ds)
-            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
-
-        self._timebomb_thread()
-
-        if self._bootstrap.remote_config.forward_logging:
-            log.debug('Installing log forwarder')
-            logging.root.addHandler(self._log_handler())
-
-    #
+    @dc.dataclass(frozen=True)
+    class _Command:
+        req: _RemoteProtocol.CommandRequest
+        fut: asyncio.Future
 
     async def run(self) -> None:
-        await self._setup()
+        log.debug('_RemoteCommandHandler loop start: %r', self)
 
-        executor = self._injector[LocalCommandExecutor]
+        stop_task = asyncio.create_task(self._stop.wait())
+        recv_task: ta.Optional[asyncio.Task] = None
 
-        handler = _RemoteCommandHandler(self._chan, executor)
+        while not self._stop.is_set():
+            if recv_task is None:
+                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
-        await handler.run()
+            if not self._ping_in_flight:
+                if not self._last_ping_recv:
+                    ping_wait_time = 0.
+                else:
+                    ping_wait_time = self._ping_interval_s - (time.time() - self._last_ping_recv)
+            else:
+                ping_wait_time = float('inf')
+            wait_time = min(self._ping_interval_s, ping_wait_time)
+            log.debug('_RemoteCommandHandler loop wait: %f', wait_time)
 
+            done, pending = await asyncio.wait(
+                [
+                    stop_task,
+                    recv_task,
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=wait_time,
+            )
 
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
+            #
 
-    async def inner() -> None:
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)
+            if (
+                    (time.time() - self._last_ping_send >= self._ping_interval_s) and
+                    not self._ping_in_flight
+            ):
+                now = time.time()
+                self._last_ping_send = now
+                self._ping_in_flight = True
+                await _RemoteProtocol.PingRequest(
+                    time=now,
+                ).send(self._chan)
 
-        chan = RemoteChannelImpl(
-            input,
-            output,
+            #
+
+            if recv_task in done:
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
+                    recv_task.result(),
+                    (_RemoteProtocol.Message, type(None)),
+                )
+                recv_task = None
+
+                if msg is None:
+                    break
+
+                await self._handle_message(msg)
+
+        log.debug('_RemoteCommandHandler loop stopping: %r', self)
+
+        for task in [
+            stop_task,
+            recv_task,
+        ]:
+            if task is not None and not task.done():
+                task.cancel()
+
+        for cmd in self._cmds_by_seq.values():
+            cmd.fut.cancel()
+
+        log.debug('_RemoteCommandHandler loop exited: %r', self)
+
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.PingResponse):
+            latency_s = time.time() - msg.time
+            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
+            self._last_ping_recv = time.time()
+            self._ping_in_flight = False
+
+        elif isinstance(msg, _RemoteProtocol.CommandRequest):
+            fut = asyncio.create_task(self._handle_command_request(msg))
+            self._cmds_by_seq[msg.seq] = _RemoteCommandHandler._Command(
+                req=msg,
+                fut=fut,
+            )
+
+        else:
+            raise TypeError(msg)
+
+    async def _handle_command_request(self, req: _RemoteProtocol.CommandRequest) -> None:
+        res = await self._executor.try_execute(
+            req.cmd,
+            log=log,
+            omit_exc_object=True,
         )
 
-        await _RemoteExecutionMain(chan).run()
+        await _RemoteProtocol.CommandResponse(
+            seq=req.seq,
+            res=CommandOutputOrExceptionData(
+                output=res.output,
+                exception=res.exception,
+            ),
+        ).send(self._chan)
 
-    asyncio.run(inner())
+        self._cmds_by_seq.pop(req.seq)  # noqa
+
+
+##
+
+
+@dc.dataclass()
+class RemoteCommandError(Exception):
+    e: CommandException
+
+
+class RemoteCommandExecutor(CommandExecutor):
+    def __init__(self, chan: RemoteChannel) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+        self._cmd_seq = itertools.count()
+        self._queue: asyncio.Queue = asyncio.Queue()  # asyncio.Queue[RemoteCommandExecutor._Request]
+        self._stop = asyncio.Event()
+        self._loop_task: ta.Optional[asyncio.Task] = None
+        self._reqs_by_seq: ta.Dict[int, RemoteCommandExecutor._Request] = {}
+
+    #
+
+    async def start(self) -> None:
+        check.none(self._loop_task)
+        check.state(not self._stop.is_set())
+        self._loop_task = asyncio.create_task(self._loop())
+
+    async def aclose(self) -> None:
+        self._stop.set()
+        if self._loop_task is not None:
+            await self._loop_task
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class _Request:
+        seq: int
+        cmd: Command
+        fut: asyncio.Future
+
+    async def _loop(self) -> None:
+        log.debug('RemoteCommandExecutor loop start: %r', self)
+
+        stop_task = asyncio.create_task(self._stop.wait())
+        queue_task: ta.Optional[asyncio.Task] = None
+        recv_task: ta.Optional[asyncio.Task] = None
+
+        while not self._stop.is_set():
+            if queue_task is None:
+                queue_task = asyncio.create_task(self._queue.get())
+            if recv_task is None:
+                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
+
+            done, pending = await asyncio.wait(
+                [
+                    stop_task,
+                    queue_task,
+                    recv_task,
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+
+            #
+
+            if queue_task in done:
+                req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
+                queue_task = None
+                await self._handle_queued_request(req)
+
+            #
+
+            if recv_task in done:
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
+                    recv_task.result(),
+                    (_RemoteProtocol.Message, type(None)),
+                )
+                recv_task = None
+
+                if msg is None:
+                    log.debug('RemoteCommandExecutor got eof: %r', self)
+                    break
+
+                await self._handle_message(msg)
+
+        log.debug('RemoteCommandExecutor loop stopping: %r', self)
+
+        for task in [
+            stop_task,
+            queue_task,
+            recv_task,
+        ]:
+            if task is not None and not task.done():
+                task.cancel()
+
+        for req in self._reqs_by_seq.values():
+            req.fut.cancel()
+
+        log.debug('RemoteCommandExecutor loop exited: %r', self)
+
+    async def _handle_queued_request(self, req: _Request) -> None:
+        self._reqs_by_seq[req.seq] = req
+        await _RemoteProtocol.CommandRequest(
+            seq=req.seq,
+            cmd=req.cmd,
+        ).send(self._chan)
+
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.PingResponse):
+            latency_s = time.time() - msg.time
+            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
+
+        elif isinstance(msg, _RemoteProtocol.LogResponse):
+            log.info(msg.s)
+
+        elif isinstance(msg, _RemoteProtocol.CommandResponse):
+            req = self._reqs_by_seq.pop(msg.seq)
+            req.fut.set_result(msg.res)
+
+        else:
+            raise TypeError(msg)
+
+    #
+
+    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
+        req = RemoteCommandExecutor._Request(
+            seq=next(self._cmd_seq),
+            cmd=cmd,
+            fut=asyncio.Future(),
+        )
+        await self._queue.put(req)
+        return await req.fut
+
+    # @ta.override
+    async def execute(self, cmd: Command) -> Command.Output:
+        r = await self._remote_execute(cmd)
+        if (e := r.exception) is not None:
+            raise RemoteCommandError(e)
+        else:
+            return check.not_none(r.output)
+
+    # @ta.override
+    async def try_execute(
+            self,
+            cmd: Command,
+            *,
+            log: ta.Optional[LoggerLike] = None,  # noqa
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException:
+        try:
+            r = await self._remote_execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing remote command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+                cmd=cmd,
+            ))
+
+        else:
+            return r
 
 
 ########################################
@@ -13234,6 +14080,78 @@ class YumSystemPackageManager(SystemPackageManager):
                     check.not_none(out.stdout).decode().strip(),
                 )
         return d
+
+
+########################################
+# ../system/platforms.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Platform(Abstract):
+    pass
+
+
+class LinuxPlatform(Platform, Abstract):
+    pass
+
+
+class UbuntuPlatform(LinuxPlatform):
+    pass
+
+
+class AmazonLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class GenericLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class DarwinPlatform(Platform):
+    pass
+
+
+class UnknownPlatform(Platform):
+    pass
+
+
+##
+
+
+def _detect_system_platform() -> Platform:
+    plat = sys.platform
+
+    if plat == 'linux':
+        if (osr := LinuxOsRelease.read()) is None:
+            return GenericLinuxPlatform()
+
+        if osr.id == 'amzn':
+            return AmazonLinuxPlatform()
+
+        elif osr.id == 'ubuntu':
+            return UbuntuPlatform()
+
+        else:
+            return GenericLinuxPlatform()
+
+    elif plat == 'darwin':
+        return DarwinPlatform()
+
+    else:
+        return UnknownPlatform()
+
+
+@cached_nullary
+def detect_system_platform() -> Platform:
+    platform = _detect_system_platform()
+    log.info('Detected platform: %r', platform)
+    return platform
 
 
 ########################################
@@ -13764,125 +14682,6 @@ def bind_commands(
 
 
 ########################################
-# ../remote/connection.py
-
-
-##
-
-
-class PyremoteRemoteExecutionConnector:
-    def __init__(
-            self,
-            *,
-            spawning: RemoteSpawning,
-            msh: ObjMarshalerManager,
-            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
-    ) -> None:
-        super().__init__()
-
-        self._spawning = spawning
-        self._msh = msh
-        self._payload_file = payload_file
-
-    #
-
-    @cached_nullary
-    def _payload_src(self) -> str:
-        return get_remote_payload_src(file=self._payload_file)
-
-    @cached_nullary
-    def _remote_src(self) -> ta.Sequence[str]:
-        return [
-            self._payload_src(),
-            '_remote_execution_main()',
-        ]
-
-    @cached_nullary
-    def _spawn_src(self) -> str:
-        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
-    @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        spawn_src = self._spawn_src()
-        remote_src = self._remote_src()
-
-        async with self._spawning.spawn(
-                tgt,
-                spawn_src,
-                debug=bs.main_config.debug,
-        ) as proc:
-            res = await PyremoteBootstrapDriver(  # noqa
-                remote_src,
-                PyremoteBootstrapOptions(
-                    debug=bs.main_config.debug,
-                ),
-            ).async_run(
-                proc.stdout,
-                proc.stdin,
-            )
-
-            chan = RemoteChannelImpl(
-                proc.stdout,
-                proc.stdin,
-                msh=self._msh,
-            )
-
-            await chan.send_obj(bs)
-
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(chan)) as rce:
-                await rce.start()
-
-                yield rce
-
-
-##
-
-
-class InProcessRemoteExecutionConnector:
-    def __init__(
-            self,
-            *,
-            msh: ObjMarshalerManager,
-            local_executor: LocalCommandExecutor,
-    ) -> None:
-        super().__init__()
-
-        self._msh = msh
-        self._local_executor = local_executor
-
-    @contextlib.asynccontextmanager
-    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        r0, w0 = asyncio_create_bytes_channel()
-        r1, w1 = asyncio_create_bytes_channel()
-
-        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
-        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
-
-        rch = _RemoteCommandHandler(
-            remote_chan,
-            self._local_executor,
-        )
-        rch_task = asyncio.create_task(rch.run())  # noqa
-        try:
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
-                await rce.start()
-
-                yield rce
-
-        finally:
-            rch.stop()
-            await rch_task
-
-
-########################################
 # ../system/commands.py
 
 
@@ -13920,6 +14719,18 @@ class CheckSystemPackageCommandExecutor(CommandExecutor[CheckSystemPackageComman
         ret = await self._mgr.query(*cmd.pkgs)
 
         return CheckSystemPackageCommand.Output(list(ret.values()))
+
+
+########################################
+# ../system/config.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SystemConfig:
+    platform: ta.Optional[Platform] = None
 
 
 ########################################
@@ -14097,34 +14908,21 @@ def bind_interp_uv() -> InjectorBindings:
 
 
 ########################################
-# ../remote/inject.py
+# ../bootstrap.py
 
 
 ##
 
 
-def bind_remote(
-        *,
-        remote_config: RemoteConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(remote_config),
+@dc.dataclass(frozen=True)
+class MainBootstrap:
+    main_config: MainConfig = MainConfig()
 
-        inj.bind(SubprocessRemoteSpawning, singleton=True),
-        inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
+    deploy_config: DeployConfig = DeployConfig()
 
-        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
-        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
-    ]
+    remote_config: RemoteConfig = RemoteConfig()
 
-    #
-
-    if (pf := remote_config.payload_file) is not None:
-        lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
-
-    #
-
-    return inj.as_bindings(*lst)
+    system_config: SystemConfig = SystemConfig()
 
 
 ########################################
@@ -14172,6 +14970,377 @@ def bind_system(
     lst.extend([
         bind_command(CheckSystemPackageCommand, CheckSystemPackageCommandExecutor),
     ])
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../../../omdev/interp/pyenv/inject.py
+
+
+##
+
+
+def bind_interp_pyenv() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(Pyenv, singleton=True),
+
+        inj.bind(PyenvInterpProvider, singleton=True),
+        inj.bind(InterpProvider, to_key=PyenvInterpProvider, array=True),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../remote/_main.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
+##
+
+
+class _RemoteExecutionMain:
+    def __init__(
+            self,
+            chan: RemoteChannel,
+    ) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+        self.__bootstrap: ta.Optional[MainBootstrap] = None
+        self.__injector: ta.Optional[Injector] = None
+
+    @property
+    def _bootstrap(self) -> MainBootstrap:
+        return check.not_none(self.__bootstrap)
+
+    @property
+    def _injector(self) -> Injector:
+        return check.not_none(self.__injector)
+
+    #
+
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        log.debug('Started timebomb thread: %r', thr)
+
+        return thr
+
+    #
+
+    @cached_nullary
+    def _log_handler(self) -> _RemoteLogHandler:
+        return _RemoteLogHandler(self._chan)
+
+    #
+
+    async def _setup(self) -> None:
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
+
+        # Bootstrap
+
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
+
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
+        self._timebomb_thread()
+
+        if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
+            logging.root.addHandler(self._log_handler())
+
+    #
+
+    async def run(self) -> None:
+        await self._setup()
+
+        executor = self._injector[LocalCommandExecutor]
+
+        handler = _RemoteCommandHandler(self._chan, executor)
+
+        await handler.run()
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        chan = RemoteChannelImpl(
+            input,
+            output,
+        )
+
+        await _RemoteExecutionMain(chan).run()
+
+    asyncio.run(inner())
+
+
+########################################
+# ../../../omdev/interp/inject.py
+
+
+##
+
+
+def bind_interp() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        bind_interp_providers(),
+
+        bind_interp_pyenv(),
+
+        bind_interp_uv(),
+
+        inj.bind(InterpInspector, singleton=True),
+    ]
+
+    #
+
+    def provide_interp_resolver_providers(injector: Injector) -> InterpResolverProviders:
+        # FIXME: lol
+        rps: ta.List[ta.Any] = [
+            injector.provide(c)
+            for c in [
+                PyenvInterpProvider,
+                UvInterpProvider,
+                RunningInterpProvider,
+                SystemInterpProvider,
+            ]
+        ]
+
+        return InterpResolverProviders([(rp.name, rp) for rp in rps])
+
+    lst.append(inj.bind(provide_interp_resolver_providers, singleton=True))
+
+    lst.extend([
+        inj.bind(InterpResolver, singleton=True),
+    ])
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../remote/connection.py
+
+
+##
+
+
+class PyremoteRemoteExecutionConnector:
+    def __init__(
+            self,
+            *,
+            spawning: RemoteSpawning,
+            msh: ObjMarshalerManager,
+            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spawning = spawning
+        self._msh = msh
+        self._payload_file = payload_file
+
+    #
+
+    @cached_nullary
+    def _payload_src(self) -> str:
+        return get_remote_payload_src(file=self._payload_file)
+
+    @cached_nullary
+    def _remote_src(self) -> ta.Sequence[str]:
+        return [
+            self._payload_src(),
+            '_remote_execution_main()',
+        ]
+
+    @cached_nullary
+    def _spawn_src(self) -> str:
+        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def connect(
+            self,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        spawn_src = self._spawn_src()
+        remote_src = self._remote_src()
+
+        async with self._spawning.spawn(
+                tgt,
+                spawn_src,
+                debug=bs.main_config.debug,
+        ) as proc:
+            res = await PyremoteBootstrapDriver(  # noqa
+                remote_src,
+                PyremoteBootstrapOptions(
+                    debug=bs.main_config.debug,
+                ),
+            ).async_run(
+                proc.stdout,
+                proc.stdin,
+            )
+
+            chan = RemoteChannelImpl(
+                proc.stdout,
+                proc.stdin,
+                msh=self._msh,
+            )
+
+            await chan.send_obj(bs)
+
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(chan)) as rce:
+                await rce.start()
+
+                yield rce
+
+
+##
+
+
+class InProcessRemoteExecutionConnector:
+    def __init__(
+            self,
+            *,
+            msh: ObjMarshalerManager,
+            local_executor: LocalCommandExecutor,
+    ) -> None:
+        super().__init__()
+
+        self._msh = msh
+        self._local_executor = local_executor
+
+    @contextlib.asynccontextmanager
+    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        r0, w0 = asyncio_create_bytes_channel()
+        r1, w1 = asyncio_create_bytes_channel()
+
+        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
+        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
+
+        rch = _RemoteCommandHandler(
+            remote_chan,
+            self._local_executor,
+        )
+        rch_task = asyncio.create_task(rch.run())  # noqa
+        try:
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
+                await rce.start()
+
+                yield rce
+
+        finally:
+            rch.stop()
+            await rch_task
+
+
+########################################
+# ../../../omdev/interp/default.py
+
+
+##
+
+
+@cached_nullary
+def get_default_interp_resolver() -> InterpResolver:
+    return inj.create_injector(bind_interp())[InterpResolver]
+
+
+########################################
+# ../remote/inject.py
+
+
+##
+
+
+def bind_remote(
+        *,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(remote_config),
+
+        inj.bind(SubprocessRemoteSpawning, singleton=True),
+        inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
+
+        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
+    ]
+
+    #
+
+    if (pf := remote_config.payload_file) is not None:
+        lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
 
     #
 
@@ -14320,113 +15489,6 @@ class SshManageTargetConnector(ManageTargetConnector):
 
 
 ########################################
-# ../../../omdev/interp/pyenv/inject.py
-
-
-##
-
-
-def bind_interp_pyenv() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(Pyenv, singleton=True),
-
-        inj.bind(PyenvInterpProvider, singleton=True),
-        inj.bind(InterpProvider, to_key=PyenvInterpProvider, array=True),
-    ]
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../targets/inject.py
-
-
-##
-
-
-def bind_targets() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(LocalManageTargetConnector, singleton=True),
-        inj.bind(DockerManageTargetConnector, singleton=True),
-        inj.bind(SshManageTargetConnector, singleton=True),
-
-        inj.bind(TypeSwitchedManageTargetConnector, singleton=True),
-        inj.bind(ManageTargetConnector, to_key=TypeSwitchedManageTargetConnector),
-    ]
-
-    #
-
-    def provide_manage_target_connector_map(injector: Injector) -> ManageTargetConnectorMap:
-        return ManageTargetConnectorMap({
-            LocalManageTarget: injector[LocalManageTargetConnector],
-            DockerManageTarget: injector[DockerManageTargetConnector],
-            SshManageTarget: injector[SshManageTargetConnector],
-        })
-    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../../../omdev/interp/inject.py
-
-
-##
-
-
-def bind_interp() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        bind_interp_providers(),
-
-        bind_interp_pyenv(),
-
-        bind_interp_uv(),
-
-        inj.bind(InterpInspector, singleton=True),
-    ]
-
-    #
-
-    def provide_interp_resolver_providers(injector: Injector) -> InterpResolverProviders:
-        # FIXME: lol
-        rps: ta.List[ta.Any] = [
-            injector.provide(c)
-            for c in [
-                PyenvInterpProvider,
-                UvInterpProvider,
-                RunningInterpProvider,
-                SystemInterpProvider,
-            ]
-        ]
-
-        return InterpResolverProviders([(rp.name, rp) for rp in rps])
-
-    lst.append(inj.bind(provide_interp_resolver_providers, singleton=True))
-
-    lst.extend([
-        inj.bind(InterpResolver, singleton=True),
-    ])
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../../../omdev/interp/default.py
-
-
-##
-
-
-@cached_nullary
-def get_default_interp_resolver() -> InterpResolver:
-    return inj.create_injector(bind_interp())[InterpResolver]
-
-
-########################################
 # ../deploy/interp.py
 
 
@@ -14507,6 +15569,38 @@ class DeployVenvManager:
                 pip_cmd = [venv_exe, '-m', 'pip']
 
             await asyncio_subprocesses.check_call(*pip_cmd, 'install', '-r', reqs_txt, cwd=venv_dir)
+
+
+########################################
+# ../targets/inject.py
+
+
+##
+
+
+def bind_targets() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(LocalManageTargetConnector, singleton=True),
+        inj.bind(DockerManageTargetConnector, singleton=True),
+        inj.bind(SshManageTargetConnector, singleton=True),
+
+        inj.bind(TypeSwitchedManageTargetConnector, singleton=True),
+        inj.bind(ManageTargetConnector, to_key=TypeSwitchedManageTargetConnector),
+    ]
+
+    #
+
+    def provide_manage_target_connector_map(injector: Injector) -> ManageTargetConnectorMap:
+        return ManageTargetConnectorMap({
+            LocalManageTarget: injector[LocalManageTargetConnector],
+            DockerManageTarget: injector[DockerManageTargetConnector],
+            SshManageTarget: injector[SshManageTargetConnector],
+        })
+    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
+
+    #
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
