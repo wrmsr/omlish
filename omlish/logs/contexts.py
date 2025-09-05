@@ -89,6 +89,12 @@ class LoggingContext(Abstract):
 
 
 class CaptureLoggingContext(LoggingContext, Abstract):
+    class AlreadyCapturedError(Exception):
+        pass
+
+    class NotCapturedError(Exception):
+        pass
+
     @abc.abstractmethod
     def capture(self) -> None:
         """Must be cooperatively called only from the expected locations."""
@@ -142,9 +148,6 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
                 self._exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = (type(exc_info), exc_info, exc_info.__traceback__)  # noqa
             else:
                 self._exc_info_tuple = exc_info
-        else:
-            self._exc_info = None
-            self._exc_info_tuple = None
 
         #
 
@@ -154,14 +157,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
             self._stack_offset = stack_offset
             self._stack_info = stack_info
 
-        #
-
-        self._thread = LoggingThreadInfo.build()
-        self._process = LoggingProcessInfo.build()
-        self._multiprocessing = LoggingMultiprocessingInfo.build()
-        self._asyncio_task = LoggingAsyncioTaskInfo.build()
-
-    #
+    ##
 
     @property
     def level(self) -> NamedLogLevel:
@@ -185,6 +181,11 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         times = self._times = LoggingTimeFields.build(self.time_ns)
         return times
 
+    #
+
+    _exc_info: ta.Optional[LoggingExcInfo] = None
+    _exc_info_tuple: ta.Optional[LoggingExcInfoTuple] = None
+
     @property
     def exc_info(self) -> ta.Optional[LoggingExcInfo]:
         return self._exc_info
@@ -193,58 +194,83 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
     def exc_info_tuple(self) -> ta.Optional[LoggingExcInfoTuple]:
         return self._exc_info_tuple
 
-    #
+    ##
 
-    def inc_stack_offset(self, ofs: int = 1) -> 'LoggingContext':
+    _stack_offset: int
+    _stack_info: bool
+
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
         if hasattr(self, '_stack_offset'):
             self._stack_offset += ofs
         return self
 
+    _has_captured: bool = False
+
     _caller: ta.Optional[LoggingCaller]
+    _source_file: ta.Optional[LoggingSourceFileInfo]
+
+    _thread: ta.Optional[LoggingThreadInfo]
+    _process: ta.Optional[LoggingProcessInfo]
+    _multiprocessing: ta.Optional[LoggingMultiprocessingInfo]
+    _asyncio_task: ta.Optional[LoggingAsyncioTaskInfo]
 
     def capture(self) -> None:
-        """Must be cooperatively called only from the exact configured _stack_offset."""
+        if self._has_captured:
+            raise CaptureLoggingContextImpl.AlreadyCapturedError
+        self._has_captured = True
 
-        try:
-            self._caller  # noqa
-        except AttributeError:
-            pass
+        if not hasattr(self, '_caller'):
+            self._caller = LoggingCaller.find(
+                self._stack_offset + 1,
+                stack_info=self._stack_info,
+            )
 
-        self._caller = LoggingCaller.find(
-            self._stack_offset + 1,
-            stack_info=self._stack_info,
-        )
+        if (caller := self._caller) is not None:
+            self._source_file = LoggingSourceFileInfo.build(caller.file_path)
+        else:
+            self._source_file = None
+
+        self._thread = LoggingThreadInfo.build()
+        self._process = LoggingProcessInfo.build()
+        self._multiprocessing = LoggingMultiprocessingInfo.build()
+        self._asyncio_task = LoggingAsyncioTaskInfo.build()
+
+    #
 
     def caller(self) -> ta.Optional[LoggingCaller]:
         try:
             return self._caller
         except AttributeError:
-            return None
-
-    _source_file: ta.Optional[LoggingSourceFileInfo]
+            raise CaptureLoggingContext.NotCapturedError from None
 
     def source_file(self) -> ta.Optional[LoggingSourceFileInfo]:
         try:
             return self._source_file
         except AttributeError:
-            pass
-
-        if (caller := self.caller()) is None:
-            return None
-
-        src_file = self._source_file = LoggingSourceFileInfo.build(caller.file_path)
-        return src_file
+            raise CaptureLoggingContext.NotCapturedError from None
 
     #
 
     def thread(self) -> ta.Optional[LoggingThreadInfo]:
-        return self._thread
+        try:
+            return self._thread
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
     def process(self) -> ta.Optional[LoggingProcessInfo]:
-        return self._process
+        try:
+            return self._process
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
     def multiprocessing(self) -> ta.Optional[LoggingMultiprocessingInfo]:
-        return self._multiprocessing
+        try:
+            return self._multiprocessing
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
 
     def asyncio_task(self) -> ta.Optional[LoggingAsyncioTaskInfo]:
-        return self._asyncio_task
+        try:
+            return self._asyncio_task
+        except AttributeError:
+            raise CaptureLoggingContext.NotCapturedError from None
