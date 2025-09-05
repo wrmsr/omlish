@@ -2742,13 +2742,13 @@ def typing_annotations_attr() -> str:
 
 
 ########################################
-# ../../../omlish/logs/filters.py
+# ../../../omlish/logs/std/filters.py
 
 
 ##
 
 
-class TidLogFilter(logging.Filter):
+class TidLoggingFilter(logging.Filter):
     def filter(self, record):
         # FIXME: handle better - missing from wasm and cosmos
         if hasattr(threading, 'get_native_id'):
@@ -2759,13 +2759,13 @@ class TidLogFilter(logging.Filter):
 
 
 ########################################
-# ../../../omlish/logs/proxy.py
+# ../../../omlish/logs/std/proxy.py
 
 
 ##
 
 
-class ProxyLogFilterer(logging.Filterer):
+class ProxyLoggingFilterer(logging.Filterer):
     def __init__(self, underlying: logging.Filterer) -> None:  # noqa
         self._underlying = underlying
 
@@ -2791,9 +2791,9 @@ class ProxyLogFilterer(logging.Filterer):
         return self._underlying.filter(record)
 
 
-class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
+class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
     def __init__(self, underlying: logging.Handler) -> None:  # noqa
-        ProxyLogFilterer.__init__(self, underlying)
+        ProxyLoggingFilterer.__init__(self, underlying)
 
     _underlying: logging.Handler
 
@@ -5726,7 +5726,7 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
-# ../../../omlish/logs/json.py
+# ../../../omlish/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -5736,7 +5736,7 @@ TODO:
 ##
 
 
-class JsonLogFormatter(logging.Formatter):
+class JsonLoggingFormatter(logging.Formatter):
     KEYS: ta.Mapping[str, bool] = {
         'name': False,
         'msg': False,
@@ -7735,6 +7735,7 @@ inj = InjectionApi()
 # ../../../omlish/logs/standard.py
 """
 TODO:
+ - !! move to std !!
  - structured
  - prefixed
  - debug
@@ -7756,7 +7757,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 ]
 
 
-class StandardLogFormatter(logging.Formatter):
+class StandardLoggingFormatter(logging.Formatter):
     @staticmethod
     def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
         return ' '.join(v for k, v in parts)
@@ -7775,7 +7776,7 @@ class StandardLogFormatter(logging.Formatter):
 ##
 
 
-class StandardConfiguredLogHandler(ProxyLogHandler):
+class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
     def __init_subclass__(cls, **kwargs):
         raise TypeError('This class serves only as a marker and should not be subclassed.')
 
@@ -7808,7 +7809,7 @@ def configure_standard_logging(
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
         handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-) -> ta.Optional[StandardConfiguredLogHandler]:
+) -> ta.Optional[StandardConfiguredLoggingHandler]:
     with _locking_logging_module_lock():
         if target is None:
             target = logging.root
@@ -7816,7 +7817,7 @@ def configure_standard_logging(
         #
 
         if not force:
-            if any(isinstance(h, StandardConfiguredLogHandler) for h in list(target.handlers)):
+            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
                 return None
 
         #
@@ -7830,14 +7831,14 @@ def configure_standard_logging(
 
         formatter: logging.Formatter
         if json:
-            formatter = JsonLogFormatter()
+            formatter = JsonLoggingFormatter()
         else:
-            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+            formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
         handler.setFormatter(formatter)
 
         #
 
-        handler.addFilter(TidLogFilter())
+        handler.addFilter(TidLoggingFilter())
 
         #
 
@@ -7850,7 +7851,7 @@ def configure_standard_logging(
 
         #
 
-        return StandardConfiguredLogHandler(handler)
+        return StandardConfiguredLoggingHandler(handler)
 
 
 ########################################

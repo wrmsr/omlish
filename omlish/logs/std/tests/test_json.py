@@ -2,13 +2,13 @@
 import logging
 import unittest
 
-from ..json import JsonLogFormatter
+from ..json import JsonLoggingFormatter
 
 
 class TestJsonLogs(unittest.TestCase):
     def test_json_logs(self):
         for f in [
-            JsonLogFormatter(),
+            JsonLoggingFormatter(),
         ]:
             handler = logging.StreamHandler()
             handler.setFormatter(f)

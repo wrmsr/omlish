@@ -1,5 +1,5 @@
-from ..logs.timing import LogTimingContext
-from ..logs.timing import log_timing_context
+from ..logs.utils import LogTimingContext
+from ..logs.utils import log_timing_context
 from .logs import log
 
 

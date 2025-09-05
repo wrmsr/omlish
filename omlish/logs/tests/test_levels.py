@@ -1,3 +1,4 @@
+# @omlish-lite
 import logging
 import unittest
 

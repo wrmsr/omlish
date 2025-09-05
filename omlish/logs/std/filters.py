@@ -7,7 +7,7 @@ import threading
 ##
 
 
-class TidLogFilter(logging.Filter):
+class TidLoggingFilter(logging.Filter):
     def filter(self, record):
         # FIXME: handle better - missing from wasm and cosmos
         if hasattr(threading, 'get_native_id'):

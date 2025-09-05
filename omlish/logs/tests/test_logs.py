@@ -2,13 +2,13 @@
 import logging
 import unittest
 
-from ..handlers import ListHandler
-from ..protocol import StdlibLogging
+from ..std.adapters import StdLogger
+from ..std.handlers import ListLoggingHandler
 
 
 class TestLogs(unittest.TestCase):
     def test_logs(self):
-        handler = ListHandler()
+        handler = ListLoggingHandler()
 
         log = logging.getLogger(__name__)
         log.handlers.clear()
@@ -19,7 +19,7 @@ class TestLogs(unittest.TestCase):
         log.warning('hi')
         log.error('hi')
 
-        std_log = StdlibLogging(log)
+        std_log = StdLogger(log)
 
         std_log.info('hi')
         std_log.warning('hi')

@@ -7,7 +7,7 @@ import typing as ta
 ##
 
 
-class ListHandler(logging.Handler):
+class ListLoggingHandler(logging.Handler):
     def __init__(self) -> None:
         super().__init__()
 

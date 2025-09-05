@@ -12,23 +12,25 @@ import typing as ta
 
 
 class LoggingCaller(ta.NamedTuple):
-    filename: str
-    lineno: int
-    func: str
-    sinfo: ta.Optional[str]
+    file_path: str
+    line_no: int
+    name: str
+    stack_info: ta.Optional[str]
 
     @classmethod
     def is_internal_frame(cls, frame: types.FrameType) -> bool:
-        filename = os.path.normcase(frame.f_code.co_filename)
+        file_path = os.path.normcase(frame.f_code.co_filename)
 
+        # Yes, really.
+        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204
         # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
-        if 'importlib' in filename and '_bootstrap' in filename:
+        if 'importlib' in file_path and '_bootstrap' in file_path:
             return True
 
         return False
 
     @classmethod
-    def find_frame(cls, ofs: int = 0) -> types.FrameType:
+    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
         f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
 
         while f is not None:
@@ -39,7 +41,7 @@ class LoggingCaller(ta.NamedTuple):
 
             f = f.f_back
 
-        raise RuntimeError
+        return None
 
     @classmethod
     def find(
@@ -47,16 +49,16 @@ class LoggingCaller(ta.NamedTuple):
             ofs: int = 0,
             *,
             stack_info: bool = False,
-    ) -> 'LoggingCaller':
-        # TODO: re-sync with stdlib
+    ) -> ta.Optional['LoggingCaller']:
+        if (f := cls.find_frame(ofs + 1)) is None:
+            return None
 
-        f = cls.find_frame(ofs + 1)
-        # TODO: ('(unknown file)', 0, '(unknown function)', None) ?
-
+        # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
         sinfo = None
         if stack_info:
             sio = io.StringIO()
-            sio.write('Stack (most recent call last):\n')
+            # In stdlib, but done elsewhere here:
+            # sio.write('Stack (most recent call last):\n')
             traceback.print_stack(f, file=sio)
             sinfo = sio.getvalue()
             sio.close()
@@ -65,7 +67,7 @@ class LoggingCaller(ta.NamedTuple):
 
         return cls(
             f.f_code.co_filename,
-            f.f_lineno,
+            f.f_lineno or 0,
             f.f_code.co_name,
             sinfo,
         )

@@ -6,7 +6,7 @@ import logging
 ##
 
 
-class ProxyLogFilterer(logging.Filterer):
+class ProxyLoggingFilterer(logging.Filterer):
     def __init__(self, underlying: logging.Filterer) -> None:  # noqa
         self._underlying = underlying
 
@@ -32,9 +32,9 @@ class ProxyLogFilterer(logging.Filterer):
         return self._underlying.filter(record)
 
 
-class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
+class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
     def __init__(self, underlying: logging.Handler) -> None:  # noqa
-        ProxyLogFilterer.__init__(self, underlying)
+        ProxyLoggingFilterer.__init__(self, underlying)
 
     _underlying: logging.Handler
 

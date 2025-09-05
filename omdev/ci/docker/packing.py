@@ -8,7 +8,7 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.contextmanagers import ExitStacked
-from omlish.logs.timing import log_timing_context
+from omlish.logs.utils import log_timing_context
 from omlish.os.temp import temp_dir_context
 
 from ...oci.building import BuiltOciImageIndexRepository

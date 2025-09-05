@@ -8,6 +8,9 @@ class Project(ProjectBase):
     description = 'omextra'
 
     dependencies = [
+        # FIXME: text.antlr.cli deps omdev.cache.data, yet this lib is 'under' omdev.
+        # f'omdev == {__version__}',
+
         f'omlish == {__version__}',
     ]
 

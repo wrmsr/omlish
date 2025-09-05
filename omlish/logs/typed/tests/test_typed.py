@@ -1,3 +1,4 @@
+# @omlish-lite
 """
 binding language:
  - .bind() more restrictive
@@ -30,6 +31,7 @@ https://docs.python.org/3/library/typing.html#user-defined-generic-types
 """
 import dataclasses as dc
 import logging
+import unittest
 
 from ..bindings import FullTypedLoggerBindings
 from ..bindings import TypedLoggerValueWrapper
@@ -66,30 +68,31 @@ class Thingy2Tlv(DefaultTypedLoggerValue[str]):
         return thingy.v.s + ' - 2'
 
 
-def test_typed():
-    # logs.configure_standard_logging()
-    log.info('hi')
+class TestTyped(unittest.TestCase):
+    def test_typed(self):
+        # logs.configure_standard_logging()
+        log.info('hi')
 
-    slog = TypedLogger(FullTypedLoggerBindings(
-        DEFAULT_TYPED_LOGGER_BINDINGS,
-        TypedLoggerValueWrapper({Thingy}, ThingyTlv),
-    ))
+        slog = TypedLogger(FullTypedLoggerBindings(
+            DEFAULT_TYPED_LOGGER_BINDINGS,
+            TypedLoggerValueWrapper({Thingy}, ThingyTlv),
+        ))
 
-    for _ in range(2):
-        slog.info(
-            'hi',
-            Tag('some tag'),
-            ('foo', 'bar'),
-            Thingy('wrap me'),  # type: ignore
-            Thingy2Tlv,
-            barf=True,
-        )
+        for _ in range(2):
+            slog.info(
+                'hi',
+                Tag('some tag'),
+                ('foo', 'bar'),
+                Thingy('wrap me'),  # type: ignore
+                Thingy2Tlv,
+                barf=True,
+            )
 
-        slog.info('abcd')
-        slog.info(('abc %d efg', 420))
+            slog.info('abcd')
+            slog.info(('abc %d efg', 420))
 
-        slog.info(lambda: 'abcd')
-        slog.info(Tag('some tag'))
-        slog.info(lambda: Tag('some tag'))
-        slog.info(lambda: [Tag('some tag')])
-        slog.info(lambda: ['hi', Tag('some tag')])
+            slog.info(lambda: 'abcd')
+            slog.info(Tag('some tag'))
+            slog.info(lambda: Tag('some tag'))
+            slog.info(lambda: [Tag('some tag')])
+            slog.info(lambda: ['hi', Tag('some tag')])

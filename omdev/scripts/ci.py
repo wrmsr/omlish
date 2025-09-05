@@ -103,6 +103,9 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
+# ../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
 # ../../omlish/sockets/addresses.py
 SocketAddress = ta.Any
 
@@ -1803,13 +1806,81 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/logs/filters.py
+# ../../../omlish/logs/levels.py
 
 
 ##
 
 
-class TidLogFilter(logging.Filter):
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        return self._NAMES_BY_INT.get(self)
+
+    _effective_name: ta.Optional[str]
+
+    @property
+    def effective_name(self) -> ta.Optional[str]:
+        try:
+            return self._effective_name
+        except AttributeError:
+            pass
+
+        if (n := self.exact_name) is None:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    break
+            else:
+                n = None
+
+        self._effective_name = n
+        return n
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({int(self)})'
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name or "INVALID"}:{int(self)}'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
+
+
+########################################
+# ../../../omlish/logs/std/filters.py
+
+
+##
+
+
+class TidLoggingFilter(logging.Filter):
     def filter(self, record):
         # FIXME: handle better - missing from wasm and cosmos
         if hasattr(threading, 'get_native_id'):
@@ -1820,13 +1891,13 @@ class TidLogFilter(logging.Filter):
 
 
 ########################################
-# ../../../omlish/logs/proxy.py
+# ../../../omlish/logs/std/proxy.py
 
 
 ##
 
 
-class ProxyLogFilterer(logging.Filterer):
+class ProxyLoggingFilterer(logging.Filterer):
     def __init__(self, underlying: logging.Filterer) -> None:  # noqa
         self._underlying = underlying
 
@@ -1852,9 +1923,9 @@ class ProxyLogFilterer(logging.Filterer):
         return self._underlying.filter(record)
 
 
-class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
+class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
     def __init__(self, underlying: logging.Handler) -> None:  # noqa
-        ProxyLogFilterer.__init__(self, underlying)
+        ProxyLoggingFilterer.__init__(self, underlying)
 
     _underlying: logging.Handler
 
@@ -1920,63 +1991,6 @@ class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
-
-
-########################################
-# ../../../omlish/logs/timing.py
-
-
-##
-
-
-class LogTimingContext:
-    DEFAULT_LOG: ta.ClassVar[ta.Optional[logging.Logger]] = None
-
-    class _NOT_SPECIFIED:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    def __init__(
-            self,
-            description: str,
-            *,
-            log: ta.Union[logging.Logger, ta.Type[_NOT_SPECIFIED], None] = _NOT_SPECIFIED,  # noqa
-            level: int = logging.DEBUG,
-    ) -> None:
-        super().__init__()
-
-        self._description = description
-        if log is self._NOT_SPECIFIED:
-            log = self.DEFAULT_LOG  # noqa
-        self._log: ta.Optional[logging.Logger] = log  # type: ignore
-        self._level = level
-
-    def set_description(self, description: str) -> 'LogTimingContext':
-        self._description = description
-        return self
-
-    _begin_time: float
-    _end_time: float
-
-    def __enter__(self) -> 'LogTimingContext':
-        self._begin_time = time.time()
-
-        if self._log is not None:
-            self._log.log(self._level, f'Begin : {self._description}')  # noqa
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._end_time = time.time()
-
-        if self._log is not None:
-            self._log.log(
-                self._level,
-                f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
-            )
-
-
-log_timing_context = LogTimingContext
 
 
 ########################################
@@ -4807,16 +4821,38 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
-# ../../../omlish/lite/timing.py
+# ../../../omlish/logs/protocols.py
 
 
-LogTimingContext.DEFAULT_LOG = log
+##
 
-log_timing_context = log_timing_context  # noqa
+
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
 
 ########################################
-# ../../../omlish/logs/json.py
+# ../../../omlish/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -4826,7 +4862,7 @@ TODO:
 ##
 
 
-class JsonLogFormatter(logging.Formatter):
+class JsonLoggingFormatter(logging.Formatter):
     KEYS: ta.Mapping[str, bool] = {
         'name': False,
         'msg': False,
@@ -5667,647 +5703,6 @@ class FileCacheDataCache(DataCache):
             file_path,
             steal=steal,
         )
-
-
-########################################
-# ../github/api/clients.py
-
-
-##
-
-
-class GithubCacheClient(Abstract):
-    @dc.dataclass(frozen=True)
-    class Entry(Abstract):
-        pass
-
-    @abc.abstractmethod
-    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
-        raise NotImplementedError
-
-    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
-        return None
-
-    @abc.abstractmethod
-    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-##
-
-
-class BaseGithubCacheClient(GithubCacheClient, Abstract):
-    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
-
-    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
-
-    DEFAULT_CONCURRENCY = 4
-    DEFAULT_CHUNK_SIZE = 64 * 1024 * 1024
-
-    #
-
-    def __init__(
-            self,
-            *,
-            service_url: str,
-
-            auth_token: ta.Optional[str] = None,
-
-            key_prefix: ta.Optional[str] = None,
-            key_suffix: ta.Optional[str] = None,
-
-            cache_version: int = CI_CACHE_VERSION,
-
-            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
-
-            concurrency: int = DEFAULT_CONCURRENCY,
-            chunk_size: int = DEFAULT_CHUNK_SIZE,
-    ) -> None:
-        super().__init__()
-
-        #
-
-        self._service_url = check.non_empty_str(service_url)
-
-        if auth_token is None:
-            auth_token = self.AUTH_TOKEN_ENV_VAR()
-        self._auth_token = auth_token
-
-        #
-
-        self._key_prefix = key_prefix
-
-        if key_suffix is None:
-            key_suffix = self.KEY_SUFFIX_ENV_VAR()
-        self._key_suffix = check.non_empty_str(key_suffix)
-
-        #
-
-        self._cache_version = check.isinstance(cache_version, int)
-
-        #
-
-        self._given_loop = loop
-
-        #
-
-        check.arg(concurrency > 0)
-        self._concurrency = concurrency
-
-        check.arg(chunk_size > 0)
-        self._chunk_size = chunk_size
-
-    ##
-    # misc
-
-    def _get_loop(self) -> asyncio.AbstractEventLoop:
-        if (loop := self._given_loop) is not None:
-            return loop
-        return asyncio.get_running_loop()
-
-    #
-
-    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
-        if not b:
-            return None
-        return json.loads(b.decode('utf-8-sig'))
-
-    ##
-    # requests
-
-    def _build_request_headers(
-            self,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            *,
-            no_auth: bool = False,
-            content_type: ta.Optional[str] = None,
-            json_content: bool = False,
-    ) -> ta.Dict[str, str]:
-        dct = {}
-
-        if not no_auth and (auth_token := self._auth_token):
-            dct['Authorization'] = f'Bearer {auth_token}'
-
-        if content_type is None and json_content:
-            content_type = 'application/json'
-        if content_type is not None:
-            dct['Content-Type'] = content_type
-
-        if headers:
-            dct.update(headers)
-
-        return dct
-
-    #
-
-    async def _send_urllib_request(
-            self,
-            req: urllib.request.Request,
-    ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
-        def run_sync():
-            opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
-            with opener.open(req) as resp:  # noqa
-                body = resp.read()
-            return (resp, body)
-
-        return await self._get_loop().run_in_executor(None, run_sync)  # noqa
-
-    #
-
-    @dc.dataclass()
-    class ServiceRequestError(RuntimeError):
-        status_code: int
-        body: ta.Optional[bytes]
-
-        def __str__(self) -> str:
-            return repr(self)
-
-    async def _send_request(
-            self,
-            *,
-            url: ta.Optional[str] = None,
-            path: ta.Optional[str] = None,
-
-            method: ta.Optional[str] = None,
-
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            no_auth: bool = False,
-            content_type: ta.Optional[str] = None,
-
-            content: ta.Optional[bytes] = None,
-            json_content: ta.Optional[ta.Any] = None,
-
-            success_status_codes: ta.Optional[ta.Container[int]] = None,
-
-            retry_status_codes: ta.Optional[ta.Container[int]] = None,
-            num_retries: int = 0,
-            retry_sleep: ta.Optional[float] = None,
-    ) -> ta.Optional[ta.Any]:
-        if url is not None and path is not None:
-            raise RuntimeError('Must not pass both url and path')
-        elif path is not None:
-            url = f'{self._service_url}/{path}'
-        url = check.non_empty_str(url)
-
-        if content is not None and json_content is not None:
-            raise RuntimeError('Must not pass both content and json_content')
-        elif json_content is not None:
-            content = json_dumps_compact(json_content).encode('utf-8')
-            header_json_content = True
-        else:
-            header_json_content = False
-
-        if method is None:
-            method = 'POST' if content is not None else 'GET'
-
-        headers = self._build_request_headers(
-            headers,
-            no_auth=no_auth,
-            content_type=content_type,
-            json_content=header_json_content,
-        )
-
-        #
-
-        for n in itertools.count():
-            req = urllib.request.Request(  # noqa
-                url,
-                method=method,
-                headers=headers,
-                data=content,
-            )
-
-            resp, body = await self._send_urllib_request(req)
-
-            #
-
-            if success_status_codes is not None:
-                is_success = resp.status in success_status_codes
-            else:
-                is_success = (200 <= resp.status < 300)
-            if is_success:
-                return self._load_json_bytes(body)
-
-            #
-
-            log.debug(f'Request to url {url} got unsuccessful status code {resp.status}')  # noqa
-
-            if not (
-                retry_status_codes is not None and
-                resp.status in retry_status_codes and
-                n < num_retries
-            ):
-                raise self.ServiceRequestError(resp.status, body)
-
-            if retry_sleep is not None:
-                await asyncio.sleep(retry_sleep)
-
-        raise RuntimeError('Unreachable')
-
-    ##
-    # keys
-
-    KEY_PART_SEPARATOR = '---'
-
-    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
-        return self.KEY_PART_SEPARATOR.join([
-            *([self._key_prefix] if self._key_prefix else []),
-            s,
-            ('' if partial_suffix else self._key_suffix),
-        ])
-
-    ##
-    # downloading
-
-    @dc.dataclass(frozen=True)
-    class _DownloadChunk:
-        key: str
-        url: str
-        out_file: str
-        offset: int
-        size: int
-
-    async def _download_file_chunk_urllib(self, chunk: _DownloadChunk) -> None:
-        req = urllib.request.Request(  # noqa
-            chunk.url,
-            headers={
-                'Range': f'bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
-            },
-        )
-
-        _, buf_ = await self._send_urllib_request(req)
-
-        buf = check.not_none(buf_)
-        check.equal(len(buf), chunk.size)
-
-        #
-
-        def write_sync():
-            with open(chunk.out_file, 'r+b') as f:  # noqa
-                f.seek(chunk.offset, os.SEEK_SET)
-                f.write(buf)
-
-        await self._get_loop().run_in_executor(None, write_sync)  # noqa
-
-    # async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
-    #     async with contextlib.AsyncExitStack() as es:
-    #         f = open(chunk.out_file, 'r+b')
-    #         f.seek(chunk.offset, os.SEEK_SET)
-    #
-    #         tmp_file = es.enter_context(temp_file_context())  # noqa
-    #
-    #         proc = await es.enter_async_context(asyncio_subprocesses.popen(
-    #             'curl',
-    #             '-s',
-    #             '-w', '%{json}',
-    #             '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
-    #             chunk.url,
-    #             output=subprocess.PIPE,
-    #         ))
-    #
-    #         futs = asyncio.gather(
-    #
-    #         )
-    #
-    #         await proc.wait()
-    #
-    #         with open(tmp_file, 'r') as f:  # noqa
-    #             curl_json = tmp_file.read()
-    #
-    #     curl_res = json.loads(curl_json.decode().strip())
-    #
-    #     status_code = check.isinstance(curl_res['response_code'], int)
-    #
-    #     if not (200 <= status_code < 300):
-    #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
-
-    async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
-        with log_timing_context(
-                'Downloading github cache '
-                f'key {chunk.key} '
-                f'file {chunk.out_file} '
-                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
-        ):
-            await self._download_file_chunk_urllib(chunk)
-
-    async def _download_file_chunks(
-            self,
-            *,
-            key: str,
-            url: str,
-            out_file: str,
-    ) -> None:
-        check.non_empty_str(key)
-        check.non_empty_str(url)
-
-        head_resp, _ = await self._send_urllib_request(urllib.request.Request(  # noqa
-            url,
-            method='HEAD',
-        ))
-        file_size = int(head_resp.headers['Content-Length'])
-
-        #
-
-        with open(out_file, 'xb') as f:  # noqa
-            f.truncate(file_size)
-
-        #
-
-        download_tasks = []
-        chunk_size = self._chunk_size
-        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            offset = i * chunk_size
-            size = min(chunk_size, file_size - offset)
-            chunk = self._DownloadChunk(
-                key,
-                url,
-                out_file,
-                offset,
-                size,
-            )
-            download_tasks.append(self._download_file_chunk(chunk))
-
-        await asyncio_wait_concurrent(download_tasks, self._concurrency)
-
-    ##
-    # uploading
-
-    @dc.dataclass(frozen=True)
-    class _UploadChunk:
-        url: str
-        key: str
-        in_file: str
-        offset: int
-        size: int
-
-    UPLOAD_CHUNK_NUM_RETRIES = 10
-    UPLOAD_CHUNK_RETRY_SLEEP = .5
-
-    async def _upload_file_chunk_(self, chunk: _UploadChunk) -> None:
-        with open(chunk.in_file, 'rb') as f:  # noqa
-            f.seek(chunk.offset)
-            buf = f.read(chunk.size)
-
-        check.equal(len(buf), chunk.size)
-
-        await self._send_request(
-            url=chunk.url,
-
-            method='PATCH',
-
-            headers={
-                'Content-Range': f'bytes {chunk.offset}-{chunk.offset + chunk.size - 1}/*',
-            },
-            no_auth=True,
-            content_type='application/octet-stream',
-
-            content=buf,
-
-            success_status_codes=[204],
-
-            # retry_status_codes=[405],
-            num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
-            retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
-        )
-
-    async def _upload_file_chunk(self, chunk: _UploadChunk) -> None:
-        with log_timing_context(
-                f'Uploading github cache {chunk.key} '
-                f'file {chunk.in_file} '
-                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
-        ):
-            await self._upload_file_chunk_(chunk)
-
-    def _generate_file_upload_chunks(
-            self,
-            *,
-            in_file: str,
-            url: str,
-            key: str,
-
-            file_size: ta.Optional[int] = None,
-    ) -> ta.List[_UploadChunk]:
-        check.state(os.path.isfile(in_file))
-
-        if file_size is None:
-            file_size = os.stat(in_file).st_size
-
-        #
-
-        upload_chunks: ta.List[BaseGithubCacheClient._UploadChunk] = []
-        chunk_size = self._chunk_size
-        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
-            offset = i * chunk_size
-            size = min(chunk_size, file_size - offset)
-            upload_chunks.append(self._UploadChunk(
-                url=url,
-                key=key,
-                in_file=in_file,
-                offset=offset,
-                size=size,
-            ))
-
-        return upload_chunks
-
-    async def _upload_file_chunks(
-            self,
-            *,
-            in_file: str,
-            url: str,
-            key: str,
-
-            file_size: ta.Optional[int] = None,
-    ) -> None:
-        upload_tasks = []
-        for chunk in self._generate_file_upload_chunks(
-            in_file=in_file,
-            url=url,
-            key=key,
-            file_size=file_size,
-        ):
-            upload_tasks.append(self._upload_file_chunk(chunk))
-
-        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
-
-
-########################################
-# ../github/api/v2/azure.py
-"""
-TODO:
- - ominfra? no, circdep
-"""
-
-
-##
-
-
-class AzureBlockBlobUploader:
-    """
-    https://learn.microsoft.com/en-us/rest/api/storageservices/put-block
-    https://learn.microsoft.com/en-us/rest/api/storageservices/put-block-list
-    """
-
-    DEFAULT_CONCURRENCY = 4
-
-    @dc.dataclass(frozen=True)
-    class Request:
-        method: str
-        url: str
-        headers: ta.Optional[ta.Dict[str, str]] = None
-        body: ta.Optional[bytes] = None
-
-    @dc.dataclass(frozen=True)
-    class Response:
-        status: int
-        headers: ta.Optional[ta.Mapping[str, str]] = None
-        data: ta.Optional[bytes] = None
-
-        def get_header(self, name: str) -> ta.Optional[str]:
-            for k, v in (self.headers or {}).items():
-                if k.lower() == name.lower():
-                    return v
-            return None
-
-    def __init__(
-            self,
-            blob_url_with_sas: str,
-            make_request: ta.Callable[[Request], ta.Awaitable[Response]],
-            *,
-            api_version: str = '2020-10-02',
-            concurrency: int = DEFAULT_CONCURRENCY,
-    ) -> None:
-        """
-        blob_url_with_sas should be of the form:
-           https://<account>.blob.core.windows.net/<container>/<blob>?<SAS-token>
-        """
-
-        super().__init__()
-
-        self._make_request = make_request
-        self._api_version = api_version
-        check.arg(concurrency >= 1)
-        self._concurrency = concurrency
-
-        parsed = urllib.parse.urlparse(blob_url_with_sas)
-        self._base_url = f'{parsed.scheme}://{parsed.netloc}'
-        parts = parsed.path.lstrip('/').split('/', 1)
-        self._container = parts[0]
-        self._blob_name = parts[1]
-        self._sas = parsed.query
-
-    def _headers(self) -> ta.Dict[str, str]:
-        """Standard headers for Azure Blob REST calls."""
-
-        now = datetime.datetime.now(datetime.UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
-        return {
-            'x-ms-date': now,
-            'x-ms-version': self._api_version,
-        }
-
-    @dc.dataclass(frozen=True)
-    class FileChunk:
-        in_file: str
-        offset: int
-        size: int
-
-    async def _upload_file_chunk_(
-            self,
-            block_id: str,
-            chunk: FileChunk,
-    ) -> None:
-        with open(chunk.in_file, 'rb') as f:  # noqa
-            f.seek(chunk.offset)
-            data = f.read(chunk.size)
-
-        check.equal(len(data), chunk.size)
-
-        params = {
-            'comp': 'block',
-            'blockid': block_id,
-        }
-        query = self._sas + '&' + urllib.parse.urlencode(params)
-        url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
-
-        log.debug(f'Uploading azure blob chunk {chunk} with block id {block_id}')  # noqa
-
-        resp = await self._make_request(self.Request(
-            'PUT',
-            url,
-            headers=self._headers(),
-            body=data,
-        ))
-        if resp.status not in (201, 202):
-            raise RuntimeError(f'Put Block failed: {block_id=} {resp.status=}')
-
-    async def _upload_file_chunk(
-            self,
-            block_id: str,
-            chunk: FileChunk,
-    ) -> None:
-        with log_timing_context(f'Uploading azure blob chunk {chunk} with block id {block_id}'):
-            await self._upload_file_chunk_(
-                block_id,
-                chunk,
-            )
-
-    async def upload_file(
-            self,
-            chunks: ta.List[FileChunk],
-    ) -> ta.Dict[str, ta.Any]:
-        block_ids = []
-
-        # 1) Stage each block
-        upload_tasks = []
-        for idx, chunk in enumerate(chunks):
-            # Generate a predictable block ID (must be URL-safe base64)
-            raw_id = f'{idx:08d}'.encode()
-            block_id = base64.b64encode(raw_id).decode('utf-8')
-            block_ids.append(block_id)
-
-            upload_tasks.append(self._upload_file_chunk(
-                block_id,
-                chunk,
-            ))
-
-        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
-
-        # 2) Commit block list
-        root = ET.Element('BlockList')
-        for bid in block_ids:
-            elm = ET.SubElement(root, 'Latest')
-            elm.text = bid
-        body = ET.tostring(root, encoding='utf-8', method='xml')
-
-        params = {'comp': 'blocklist'}
-        query = self._sas + '&' + urllib.parse.urlencode(params)
-        url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
-
-        log.debug(f'Putting azure blob chunk list block ids {block_ids}')  # noqa
-
-        resp = await self._make_request(self.Request(
-            'PUT',
-            url,
-            headers={
-                **self._headers(),
-                'Content-Type': 'application/xml',
-            },
-            body=body,
-        ))
-        if resp.status not in (200, 201):
-            raise RuntimeError(f'Put Block List failed: {resp.status} {resp.data!r}')
-
-        ret = {
-            'status_code': resp.status,
-            'etag': resp.get_header('ETag'),
-        }
-
-        log.debug(f'Uploaded azure blob chunk {ret}')  # noqa
-
-        return ret
 
 
 ########################################
@@ -8154,6 +7549,7 @@ inj = InjectionApi()
 # ../../../omlish/logs/standard.py
 """
 TODO:
+ - !! move to std !!
  - structured
  - prefixed
  - debug
@@ -8175,7 +7571,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 ]
 
 
-class StandardLogFormatter(logging.Formatter):
+class StandardLoggingFormatter(logging.Formatter):
     @staticmethod
     def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
         return ' '.join(v for k, v in parts)
@@ -8194,7 +7590,7 @@ class StandardLogFormatter(logging.Formatter):
 ##
 
 
-class StandardConfiguredLogHandler(ProxyLogHandler):
+class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
     def __init_subclass__(cls, **kwargs):
         raise TypeError('This class serves only as a marker and should not be subclassed.')
 
@@ -8227,7 +7623,7 @@ def configure_standard_logging(
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
         handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-) -> ta.Optional[StandardConfiguredLogHandler]:
+) -> ta.Optional[StandardConfiguredLoggingHandler]:
     with _locking_logging_module_lock():
         if target is None:
             target = logging.root
@@ -8235,7 +7631,7 @@ def configure_standard_logging(
         #
 
         if not force:
-            if any(isinstance(h, StandardConfiguredLogHandler) for h in list(target.handlers)):
+            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
                 return None
 
         #
@@ -8249,14 +7645,14 @@ def configure_standard_logging(
 
         formatter: logging.Formatter
         if json:
-            formatter = JsonLogFormatter()
+            formatter = JsonLoggingFormatter()
         else:
-            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+            formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
         handler.setFormatter(formatter)
 
         #
 
-        handler.addFilter(TidLogFilter())
+        handler.addFilter(TidLoggingFilter())
 
         #
 
@@ -8269,7 +7665,82 @@ def configure_standard_logging(
 
         #
 
-        return StandardConfiguredLogHandler(handler)
+        return StandardConfiguredLoggingHandler(handler)
+
+
+########################################
+# ../../../omlish/logs/utils.py
+
+
+##
+
+
+def error_logging(log):  # noqa
+    def outer(fn):
+        @functools.wraps(fn)
+        def inner(*args, **kwargs):
+            try:
+                return fn(*args, **kwargs)
+            except Exception:
+                log.exception('Error in %r', fn)
+                raise
+
+        return inner
+
+    return outer
+
+
+##
+
+
+class LogTimingContext:
+    DEFAULT_LOG: ta.ClassVar[ta.Optional[LoggerLike]] = None
+
+    class _NOT_SPECIFIED:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    def __init__(
+            self,
+            description: str,
+            *,
+            log: ta.Union[LoggerLike, ta.Type[_NOT_SPECIFIED], None] = _NOT_SPECIFIED,  # noqa
+            level: int = logging.DEBUG,
+    ) -> None:
+        super().__init__()
+
+        self._description = description
+        if log is self._NOT_SPECIFIED:
+            log = self.DEFAULT_LOG  # noqa
+        self._log: ta.Optional[LoggerLike] = log  # type: ignore
+        self._level = level
+
+    def set_description(self, description: str) -> 'LogTimingContext':
+        self._description = description
+        return self
+
+    _begin_time: float
+    _end_time: float
+
+    def __enter__(self) -> 'LogTimingContext':
+        self._begin_time = time.time()
+
+        if self._log is not None:
+            self._log.log(self._level, f'Begin : {self._description}')  # noqa
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._end_time = time.time()
+
+        if self._log is not None:
+            self._log.log(
+                self._level,
+                f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
+            )
+
+
+log_timing_context = LogTimingContext
 
 
 ########################################
@@ -8589,354 +8060,6 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return subprocess_shell_wrap_exec(*cmd)
     else:
         return cmd
-
-
-########################################
-# ../github/api/v1/client.py
-
-
-##
-
-
-class GithubCacheServiceV1Client(BaseGithubCacheClient):
-    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
-
-    def __init__(
-            self,
-            *,
-            base_url: ta.Optional[str] = None,
-
-            **kwargs: ta.Any,
-    ) -> None:
-        if base_url is None:
-            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
-        service_url = GithubCacheServiceV1.get_service_url(base_url)
-
-        super().__init__(
-            service_url=service_url,
-            **kwargs,
-        )
-
-    #
-
-    def _build_request_headers(
-            self,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Dict[str, str]:
-        return super()._build_request_headers(
-            {
-                'Accept': ';'.join([
-                    'application/json',
-                    f'api-version={GithubCacheServiceV1.API_VERSION}',
-                ]),
-                **(headers or {}),
-            },
-            **kwargs,
-        )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        artifact: GithubCacheServiceV1.ArtifactCacheEntry
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        entry1 = check.isinstance(entry, self.Entry)
-        return entry1.artifact.archive_location
-
-    #
-
-    def _build_get_entry_url_path(self, *keys: str) -> str:
-        qp = dict(
-            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
-            version=str(self._cache_version),
-        )
-
-        return '?'.join([
-            'cache',
-            '&'.join([
-                f'{k}={v}'
-                for k, v in qp.items()
-            ]),
-        ])
-
-    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
-
-    #
-
-    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        obj = await self._send_request(
-            path=self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
-        )
-        if obj is None:
-            return None
-
-        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
-            GithubCacheServiceV1.ArtifactCacheEntry,
-            obj,
-        ))
-
-    #
-
-    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
-        entry1 = check.isinstance(entry, self.Entry)
-        with log_timing_context(
-                'Downloading github cache '
-                f'key {entry1.artifact.cache_key} '
-                f'version {entry1.artifact.cache_version} '
-                f'to {out_file}',
-        ):
-            await self._download_file_chunks(
-                key=check.non_empty_str(entry1.artifact.cache_key),
-                url=check.non_empty_str(entry1.artifact.archive_location),
-                out_file=out_file,
-            )
-
-    #
-
-    async def _upload_file(self, key: str, in_file: str) -> None:
-        fixed_key = self.fix_key(key)
-
-        check.state(os.path.isfile(in_file))
-        file_size = os.stat(in_file).st_size
-
-        #
-
-        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
-            key=fixed_key,
-            cache_size=file_size,
-            version=str(self._cache_version),
-        )
-        reserve_resp_obj = await self._send_request(
-            path='caches',
-            json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
-            success_status_codes=[201],
-        )
-        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
-            GithubCacheServiceV1.ReserveCacheResponse,
-            reserve_resp_obj,
-        )
-        cache_id = check.isinstance(reserve_resp.cache_id, int)
-
-        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
-
-        #
-
-        url = f'{self._service_url}/caches/{cache_id}'
-
-        await self._upload_file_chunks(
-            in_file=in_file,
-            url=url,
-            key=fixed_key,
-            file_size=file_size,
-        )
-
-        #
-
-        commit_req = GithubCacheServiceV1.CommitCacheRequest(
-            size=file_size,
-        )
-        await self._send_request(
-            path=f'caches/{cache_id}',
-            json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
-            success_status_codes=[204],
-        )
-
-    async def upload_file(self, key: str, in_file: str) -> None:
-        with log_timing_context(
-                f'Uploading github cache file {os.path.basename(in_file)} '
-                f'key {key}',
-        ):
-            await self._upload_file(key, in_file)
-
-
-########################################
-# ../github/api/v2/client.py
-
-
-##
-
-
-class GithubCacheServiceV2Client(BaseGithubCacheClient):
-    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
-
-    def __init__(
-            self,
-            *,
-            base_url: ta.Optional[str] = None,
-
-            **kwargs: ta.Any,
-    ) -> None:
-        if base_url is None:
-            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
-        service_url = GithubCacheServiceV2.get_service_url(base_url)
-
-        super().__init__(
-            service_url=service_url,
-            **kwargs,
-        )
-
-    #
-
-    async def _send_method_request(
-            self,
-            method: GithubCacheServiceV2.Method[
-                GithubCacheServiceV2RequestT,
-                GithubCacheServiceV2ResponseT,
-            ],
-            request: GithubCacheServiceV2RequestT,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
-        obj = await self._send_request(
-            path=method.name,
-            json_content=dc.asdict(request),  # type: ignore[call-overload]
-            **kwargs,
-        )
-
-        if obj is None:
-            return None
-        return method.response(**obj)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Entry(GithubCacheClient.Entry):
-        request: GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest
-        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
-
-        def __post_init__(self) -> None:
-            check.state(self.response.ok)
-            check.non_empty_str(self.response.signed_download_url)
-
-    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
-        entry2 = check.isinstance(entry, self.Entry)
-        return check.non_empty_str(entry2.response.signed_download_url)
-
-    #
-
-    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
-        version = str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH)
-
-        req = GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest(
-            key=self.fix_key(key),
-            restore_keys=[self.fix_key(key, partial_suffix=True)],
-            version=version,
-        )
-
-        resp = await self._send_method_request(
-            GithubCacheServiceV2.GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD,
-            req,
-        )
-        if resp is None or not resp.ok:
-            return None
-
-        return self.Entry(
-            request=req,
-            response=resp,
-        )
-
-    #
-
-    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
-        entry2 = check.isinstance(entry, self.Entry)
-        with log_timing_context(
-                'Downloading github cache '
-                f'key {entry2.response.matched_key} '
-                f'version {entry2.request.version} '
-                f'to {out_file}',
-        ):
-            await self._download_file_chunks(
-                key=check.non_empty_str(entry2.response.matched_key),
-                url=check.non_empty_str(entry2.response.signed_download_url),
-                out_file=out_file,
-            )
-
-    #
-
-    async def _upload_file(self, key: str, in_file: str) -> None:
-        fixed_key = self.fix_key(key)
-
-        check.state(os.path.isfile(in_file))
-        file_size = os.stat(in_file).st_size
-
-        #
-
-        version = str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH)
-
-        reserve_resp = check.not_none(await self._send_method_request(
-            GithubCacheServiceV2.CREATE_CACHE_ENTRY_METHOD,  # type: ignore[arg-type]
-            GithubCacheServiceV2.CreateCacheEntryRequest(
-                key=fixed_key,
-                version=version,
-            ),
-        ))
-        check.state(reserve_resp.ok)
-
-        log.debug(f'Github cache file {os.path.basename(in_file)} upload reserved for file size {file_size}')  # noqa
-
-        #
-
-        upload_chunks = self._generate_file_upload_chunks(
-            in_file=in_file,
-            url=reserve_resp.signed_upload_url,
-            key=fixed_key,
-            file_size=file_size,
-        )
-
-        az_chunks = [
-            AzureBlockBlobUploader.FileChunk(
-                in_file=in_file,
-                offset=c.offset,
-                size=c.size,
-            )
-            for c in upload_chunks
-        ]
-
-        async def az_make_request(req: AzureBlockBlobUploader.Request) -> AzureBlockBlobUploader.Response:
-            u_req = urllib.request.Request(  # noqa
-                req.url,
-                method=req.method,
-                headers=req.headers or {},
-                data=req.body,
-            )
-
-            u_resp, u_body = await self._send_urllib_request(u_req)
-
-            return AzureBlockBlobUploader.Response(
-                status=u_resp.status,
-                headers=dict(u_resp.headers),
-                data=u_body,
-            )
-
-        az_uploader = AzureBlockBlobUploader(
-            reserve_resp.signed_upload_url,
-            az_make_request,
-            concurrency=self._concurrency,
-        )
-
-        await az_uploader.upload_file(az_chunks)
-
-        #
-
-        commit_resp = check.not_none(await self._send_method_request(
-            GithubCacheServiceV2.FINALIZE_CACHE_ENTRY_METHOD,  # type: ignore[arg-type]
-            GithubCacheServiceV2.FinalizeCacheEntryUploadRequest(
-                key=fixed_key,
-                size_bytes=file_size,
-                version=version,
-            ),
-        ))
-        check.state(commit_resp.ok)
-
-        log.debug(f'Github cache file {os.path.basename(in_file)} upload complete, entry id {commit_resp.entry_id}')  # noqa
-
-    async def upload_file(self, key: str, in_file: str) -> None:
-        with log_timing_context(
-                f'Uploading github cache file {os.path.basename(in_file)} '
-                f'key {key}',
-        ):
-            await self._upload_file(key, in_file)
 
 
 ########################################
@@ -10084,6 +9207,15 @@ class CoroHttpServer:
 
 
 ########################################
+# ../../../omlish/lite/timing.py
+
+
+LogTimingContext.DEFAULT_LOG = log
+
+log_timing_context = log_timing_context  # noqa
+
+
+########################################
 # ../../../omlish/secrets/tempssl.py
 
 
@@ -10808,132 +9940,644 @@ async def build_cache_served_docker_image_data_server_routes(
 
 
 ########################################
-# ../github/cache.py
+# ../github/api/clients.py
 
 
 ##
 
 
-class GithubCache(FileCache, DataCache):
+class GithubCacheClient(Abstract):
     @dc.dataclass(frozen=True)
-    class Config:
+    class Entry(Abstract):
         pass
 
-    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+    @abc.abstractmethod
+    def get_entry(self, key: str) -> ta.Awaitable[ta.Optional[Entry]]:
+        raise NotImplementedError
 
-    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
-        1: GithubCacheServiceV1Client,
-        2: GithubCacheServiceV2Client,
-    }
+    def get_entry_url(self, entry: Entry) -> ta.Optional[str]:
+        return None
+
+    @abc.abstractmethod
+    def download_file(self, entry: Entry, out_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_file(self, key: str, in_file: str) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class BaseGithubCacheClient(GithubCacheClient, Abstract):
+    AUTH_TOKEN_ENV_VAR = register_github_env_var('ACTIONS_RUNTIME_TOKEN')  # noqa
+
+    KEY_SUFFIX_ENV_VAR = register_github_env_var('GITHUB_RUN_ID')
+
+    DEFAULT_CONCURRENCY = 4
+    DEFAULT_CHUNK_SIZE = 64 * 1024 * 1024
+
+    #
 
     def __init__(
             self,
-            config: Config = Config(),
             *,
-            client: ta.Optional[GithubCacheClient] = None,
-            default_client_version: ta.Optional[int] = None,
+            service_url: str,
 
-            version: ta.Optional[CacheVersion] = None,
+            auth_token: ta.Optional[str] = None,
 
-            local: DirectoryFileCache,
+            key_prefix: ta.Optional[str] = None,
+            key_suffix: ta.Optional[str] = None,
+
+            cache_version: int = CI_CACHE_VERSION,
+
+            loop: ta.Optional[asyncio.AbstractEventLoop] = None,
+
+            concurrency: int = DEFAULT_CONCURRENCY,
+            chunk_size: int = DEFAULT_CHUNK_SIZE,
     ) -> None:
-        super().__init__(
-            version=version,
-        )
+        super().__init__()
 
-        self._config = config
+        #
 
-        if client is None:
-            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
-            client = client_cls(
-                cache_version=self._version,
-            )
-        self._client: GithubCacheClient = client
+        self._service_url = check.non_empty_str(service_url)
 
-        self._local = local
+        if auth_token is None:
+            auth_token = self.AUTH_TOKEN_ENV_VAR()
+        self._auth_token = auth_token
+
+        #
+
+        self._key_prefix = key_prefix
+
+        if key_suffix is None:
+            key_suffix = self.KEY_SUFFIX_ENV_VAR()
+        self._key_suffix = check.non_empty_str(key_suffix)
+
+        #
+
+        self._cache_version = check.isinstance(cache_version, int)
+
+        #
+
+        self._given_loop = loop
+
+        #
+
+        check.arg(concurrency > 0)
+        self._concurrency = concurrency
+
+        check.arg(chunk_size > 0)
+        self._chunk_size = chunk_size
+
+    ##
+    # misc
+
+    def _get_loop(self) -> asyncio.AbstractEventLoop:
+        if (loop := self._given_loop) is not None:
+            return loop
+        return asyncio.get_running_loop()
 
     #
 
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
-
-        if (entry := await self._client.get_entry(key)) is None:
+    def _load_json_bytes(self, b: ta.Optional[bytes]) -> ta.Optional[ta.Any]:
+        if not b:
             return None
+        return json.loads(b.decode('utf-8-sig'))
 
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with unlinking_if_exists(tmp_file):
-            await self._client.download_file(entry, tmp_file)
+    ##
+    # requests
 
-            os.replace(tmp_file, local_file)
-
-        return local_file
-
-    async def put_file(
+    def _build_request_headers(
             self,
-            key: str,
-            file_path: str,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = await self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
+            no_auth: bool = False,
+            content_type: ta.Optional[str] = None,
+            json_content: bool = False,
+    ) -> ta.Dict[str, str]:
+        dct = {}
 
-        await self._client.upload_file(key, cache_file_path)
+        if not no_auth and (auth_token := self._auth_token):
+            dct['Authorization'] = f'Bearer {auth_token}'
 
-        return cache_file_path
+        if content_type is None and json_content:
+            content_type = 'application/json'
+        if content_type is not None:
+            dct['Content-Type'] = content_type
+
+        if headers:
+            dct.update(headers)
+
+        return dct
 
     #
 
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return DataCache.FileData(local_file)
+    async def _send_urllib_request(
+            self,
+            req: urllib.request.Request,
+    ) -> ta.Tuple[http.client.HTTPResponse, ta.Optional[bytes]]:
+        def run_sync():
+            opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
+            with opener.open(req) as resp:  # noqa
+                body = resp.read()
+            return (resp, body)
 
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
+        return await self._get_loop().run_in_executor(None, run_sync)  # noqa
 
-        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+    #
 
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        await FileCacheDataCache(self).put_data(key, data)
+    @dc.dataclass()
+    class ServiceRequestError(RuntimeError):
+        status_code: int
+        body: ta.Optional[bytes]
+
+        def __str__(self) -> str:
+            return repr(self)
+
+    async def _send_request(
+            self,
+            *,
+            url: ta.Optional[str] = None,
+            path: ta.Optional[str] = None,
+
+            method: ta.Optional[str] = None,
+
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            no_auth: bool = False,
+            content_type: ta.Optional[str] = None,
+
+            content: ta.Optional[bytes] = None,
+            json_content: ta.Optional[ta.Any] = None,
+
+            success_status_codes: ta.Optional[ta.Container[int]] = None,
+
+            retry_status_codes: ta.Optional[ta.Container[int]] = None,
+            num_retries: int = 0,
+            retry_sleep: ta.Optional[float] = None,
+    ) -> ta.Optional[ta.Any]:
+        if url is not None and path is not None:
+            raise RuntimeError('Must not pass both url and path')
+        elif path is not None:
+            url = f'{self._service_url}/{path}'
+        url = check.non_empty_str(url)
+
+        if content is not None and json_content is not None:
+            raise RuntimeError('Must not pass both content and json_content')
+        elif json_content is not None:
+            content = json_dumps_compact(json_content).encode('utf-8')
+            header_json_content = True
+        else:
+            header_json_content = False
+
+        if method is None:
+            method = 'POST' if content is not None else 'GET'
+
+        headers = self._build_request_headers(
+            headers,
+            no_auth=no_auth,
+            content_type=content_type,
+            json_content=header_json_content,
+        )
+
+        #
+
+        for n in itertools.count():
+            req = urllib.request.Request(  # noqa
+                url,
+                method=method,
+                headers=headers,
+                data=content,
+            )
+
+            resp, body = await self._send_urllib_request(req)
+
+            #
+
+            if success_status_codes is not None:
+                is_success = resp.status in success_status_codes
+            else:
+                is_success = (200 <= resp.status < 300)
+            if is_success:
+                return self._load_json_bytes(body)
+
+            #
+
+            log.debug(f'Request to url {url} got unsuccessful status code {resp.status}')  # noqa
+
+            if not (
+                retry_status_codes is not None and
+                resp.status in retry_status_codes and
+                n < num_retries
+            ):
+                raise self.ServiceRequestError(resp.status, body)
+
+            if retry_sleep is not None:
+                await asyncio.sleep(retry_sleep)
+
+        raise RuntimeError('Unreachable')
+
+    ##
+    # keys
+
+    KEY_PART_SEPARATOR = '---'
+
+    def fix_key(self, s: str, partial_suffix: bool = False) -> str:
+        return self.KEY_PART_SEPARATOR.join([
+            *([self._key_prefix] if self._key_prefix else []),
+            s,
+            ('' if partial_suffix else self._key_suffix),
+        ])
+
+    ##
+    # downloading
+
+    @dc.dataclass(frozen=True)
+    class _DownloadChunk:
+        key: str
+        url: str
+        out_file: str
+        offset: int
+        size: int
+
+    async def _download_file_chunk_urllib(self, chunk: _DownloadChunk) -> None:
+        req = urllib.request.Request(  # noqa
+            chunk.url,
+            headers={
+                'Range': f'bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+            },
+        )
+
+        _, buf_ = await self._send_urllib_request(req)
+
+        buf = check.not_none(buf_)
+        check.equal(len(buf), chunk.size)
+
+        #
+
+        def write_sync():
+            with open(chunk.out_file, 'r+b') as f:  # noqa
+                f.seek(chunk.offset, os.SEEK_SET)
+                f.write(buf)
+
+        await self._get_loop().run_in_executor(None, write_sync)  # noqa
+
+    # async def _download_file_chunk_curl(self, chunk: _DownloadChunk) -> None:
+    #     async with contextlib.AsyncExitStack() as es:
+    #         f = open(chunk.out_file, 'r+b')
+    #         f.seek(chunk.offset, os.SEEK_SET)
+    #
+    #         tmp_file = es.enter_context(temp_file_context())  # noqa
+    #
+    #         proc = await es.enter_async_context(asyncio_subprocesses.popen(
+    #             'curl',
+    #             '-s',
+    #             '-w', '%{json}',
+    #             '-H', f'Range: bytes={chunk.offset}-{chunk.offset + chunk.size - 1}',
+    #             chunk.url,
+    #             output=subprocess.PIPE,
+    #         ))
+    #
+    #         futs = asyncio.gather(
+    #
+    #         )
+    #
+    #         await proc.wait()
+    #
+    #         with open(tmp_file, 'r') as f:  # noqa
+    #             curl_json = tmp_file.read()
+    #
+    #     curl_res = json.loads(curl_json.decode().strip())
+    #
+    #     status_code = check.isinstance(curl_res['response_code'], int)
+    #
+    #     if not (200 <= status_code < 300):
+    #         raise RuntimeError(f'Curl chunk download {chunk} failed: {curl_res}')
+
+    async def _download_file_chunk(self, chunk: _DownloadChunk) -> None:
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {chunk.key} '
+                f'file {chunk.out_file} '
+                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
+        ):
+            await self._download_file_chunk_urllib(chunk)
+
+    async def _download_file_chunks(
+            self,
+            *,
+            key: str,
+            url: str,
+            out_file: str,
+    ) -> None:
+        check.non_empty_str(key)
+        check.non_empty_str(url)
+
+        head_resp, _ = await self._send_urllib_request(urllib.request.Request(  # noqa
+            url,
+            method='HEAD',
+        ))
+        file_size = int(head_resp.headers['Content-Length'])
+
+        #
+
+        with open(out_file, 'xb') as f:  # noqa
+            f.truncate(file_size)
+
+        #
+
+        download_tasks = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            chunk = self._DownloadChunk(
+                key,
+                url,
+                out_file,
+                offset,
+                size,
+            )
+            download_tasks.append(self._download_file_chunk(chunk))
+
+        await asyncio_wait_concurrent(download_tasks, self._concurrency)
+
+    ##
+    # uploading
+
+    @dc.dataclass(frozen=True)
+    class _UploadChunk:
+        url: str
+        key: str
+        in_file: str
+        offset: int
+        size: int
+
+    UPLOAD_CHUNK_NUM_RETRIES = 10
+    UPLOAD_CHUNK_RETRY_SLEEP = .5
+
+    async def _upload_file_chunk_(self, chunk: _UploadChunk) -> None:
+        with open(chunk.in_file, 'rb') as f:  # noqa
+            f.seek(chunk.offset)
+            buf = f.read(chunk.size)
+
+        check.equal(len(buf), chunk.size)
+
+        await self._send_request(
+            url=chunk.url,
+
+            method='PATCH',
+
+            headers={
+                'Content-Range': f'bytes {chunk.offset}-{chunk.offset + chunk.size - 1}/*',
+            },
+            no_auth=True,
+            content_type='application/octet-stream',
+
+            content=buf,
+
+            success_status_codes=[204],
+
+            # retry_status_codes=[405],
+            num_retries=self.UPLOAD_CHUNK_NUM_RETRIES,
+            retry_sleep=self.UPLOAD_CHUNK_RETRY_SLEEP,
+        )
+
+    async def _upload_file_chunk(self, chunk: _UploadChunk) -> None:
+        with log_timing_context(
+                f'Uploading github cache {chunk.key} '
+                f'file {chunk.in_file} '
+                f'chunk {chunk.offset} - {chunk.offset + chunk.size}',
+        ):
+            await self._upload_file_chunk_(chunk)
+
+    def _generate_file_upload_chunks(
+            self,
+            *,
+            in_file: str,
+            url: str,
+            key: str,
+
+            file_size: ta.Optional[int] = None,
+    ) -> ta.List[_UploadChunk]:
+        check.state(os.path.isfile(in_file))
+
+        if file_size is None:
+            file_size = os.stat(in_file).st_size
+
+        #
+
+        upload_chunks: ta.List[BaseGithubCacheClient._UploadChunk] = []
+        chunk_size = self._chunk_size
+        for i in range((file_size // chunk_size) + (1 if file_size % chunk_size else 0)):
+            offset = i * chunk_size
+            size = min(chunk_size, file_size - offset)
+            upload_chunks.append(self._UploadChunk(
+                url=url,
+                key=key,
+                in_file=in_file,
+                offset=offset,
+                size=size,
+            ))
+
+        return upload_chunks
+
+    async def _upload_file_chunks(
+            self,
+            *,
+            in_file: str,
+            url: str,
+            key: str,
+
+            file_size: ta.Optional[int] = None,
+    ) -> None:
+        upload_tasks = []
+        for chunk in self._generate_file_upload_chunks(
+            in_file=in_file,
+            url=url,
+            key=key,
+            file_size=file_size,
+        ):
+            upload_tasks.append(self._upload_file_chunk(chunk))
+
+        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
 
 
 ########################################
-# ../github/cli.py
+# ../github/api/v2/azure.py
 """
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+TODO:
+ - ominfra? no, circdep
 """
 
 
 ##
 
 
-class GithubCli(ArgparseCli):
-    @argparse_cmd()
-    def list_referenced_env_vars(self) -> None:
-        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+class AzureBlockBlobUploader:
+    """
+    https://learn.microsoft.com/en-us/rest/api/storageservices/put-block
+    https://learn.microsoft.com/en-us/rest/api/storageservices/put-block-list
+    """
 
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
-        entry = await client.get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+    DEFAULT_CONCURRENCY = 4
 
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
+    @dc.dataclass(frozen=True)
+    class Request:
+        method: str
+        url: str
+        headers: ta.Optional[ta.Dict[str, str]] = None
+        body: ta.Optional[bytes] = None
+
+    @dc.dataclass(frozen=True)
+    class Response:
+        status: int
+        headers: ta.Optional[ta.Mapping[str, str]] = None
+        data: ta.Optional[bytes] = None
+
+        def get_header(self, name: str) -> ta.Optional[str]:
+            for k, v in (self.headers or {}).items():
+                if k.lower() == name.lower():
+                    return v
+            return None
+
+    def __init__(
+            self,
+            blob_url_with_sas: str,
+            make_request: ta.Callable[[Request], ta.Awaitable[Response]],
+            *,
+            api_version: str = '2020-10-02',
+            concurrency: int = DEFAULT_CONCURRENCY,
+    ) -> None:
+        """
+        blob_url_with_sas should be of the form:
+           https://<account>.blob.core.windows.net/<container>/<blob>?<SAS-token>
+        """
+
+        super().__init__()
+
+        self._make_request = make_request
+        self._api_version = api_version
+        check.arg(concurrency >= 1)
+        self._concurrency = concurrency
+
+        parsed = urllib.parse.urlparse(blob_url_with_sas)
+        self._base_url = f'{parsed.scheme}://{parsed.netloc}'
+        parts = parsed.path.lstrip('/').split('/', 1)
+        self._container = parts[0]
+        self._blob_name = parts[1]
+        self._sas = parsed.query
+
+    def _headers(self) -> ta.Dict[str, str]:
+        """Standard headers for Azure Blob REST calls."""
+
+        now = datetime.datetime.now(datetime.UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        return {
+            'x-ms-date': now,
+            'x-ms-version': self._api_version,
+        }
+
+    @dc.dataclass(frozen=True)
+    class FileChunk:
+        in_file: str
+        offset: int
+        size: int
+
+    async def _upload_file_chunk_(
+            self,
+            block_id: str,
+            chunk: FileChunk,
+    ) -> None:
+        with open(chunk.in_file, 'rb') as f:  # noqa
+            f.seek(chunk.offset)
+            data = f.read(chunk.size)
+
+        check.equal(len(data), chunk.size)
+
+        params = {
+            'comp': 'block',
+            'blockid': block_id,
+        }
+        query = self._sas + '&' + urllib.parse.urlencode(params)
+        url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
+
+        log.debug(f'Uploading azure blob chunk {chunk} with block id {block_id}')  # noqa
+
+        resp = await self._make_request(self.Request(
+            'PUT',
+            url,
+            headers=self._headers(),
+            body=data,
+        ))
+        if resp.status not in (201, 202):
+            raise RuntimeError(f'Put Block failed: {block_id=} {resp.status=}')
+
+    async def _upload_file_chunk(
+            self,
+            block_id: str,
+            chunk: FileChunk,
+    ) -> None:
+        with log_timing_context(f'Uploading azure blob chunk {chunk} with block id {block_id}'):
+            await self._upload_file_chunk_(
+                block_id,
+                chunk,
+            )
+
+    async def upload_file(
+            self,
+            chunks: ta.List[FileChunk],
+    ) -> ta.Dict[str, ta.Any]:
+        block_ids = []
+
+        # 1) Stage each block
+        upload_tasks = []
+        for idx, chunk in enumerate(chunks):
+            # Generate a predictable block ID (must be URL-safe base64)
+            raw_id = f'{idx:08d}'.encode()
+            block_id = base64.b64encode(raw_id).decode('utf-8')
+            block_ids.append(block_id)
+
+            upload_tasks.append(self._upload_file_chunk(
+                block_id,
+                chunk,
+            ))
+
+        await asyncio_wait_concurrent(upload_tasks, self._concurrency)
+
+        # 2) Commit block list
+        root = ET.Element('BlockList')
+        for bid in block_ids:
+            elm = ET.SubElement(root, 'Latest')
+            elm.text = bid
+        body = ET.tostring(root, encoding='utf-8', method='xml')
+
+        params = {'comp': 'blocklist'}
+        query = self._sas + '&' + urllib.parse.urlencode(params)
+        url = f'{self._base_url}/{self._container}/{self._blob_name}?{query}'
+
+        log.debug(f'Putting azure blob chunk list block ids {block_ids}')  # noqa
+
+        resp = await self._make_request(self.Request(
+            'PUT',
+            url,
+            headers={
+                **self._headers(),
+                'Content-Type': 'application/xml',
+            },
+            body=body,
+        ))
+        if resp.status not in (200, 201):
+            raise RuntimeError(f'Put Block List failed: {resp.status} {resp.data!r}')
+
+        ret = {
+            'status_code': resp.status,
+            'etag': resp.get_header('ETag'),
+        }
+
+        log.debug(f'Uploaded azure blob chunk {ret}')  # noqa
+
+        return ret
 
 
 ########################################
@@ -11655,20 +11299,351 @@ SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 
 
 ########################################
-# ../github/inject.py
+# ../github/api/v1/client.py
 
 
 ##
 
 
-def bind_github() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(GithubCache, singleton=True),
-        inj.bind(DataCache, to_key=GithubCache),
-        inj.bind(FileCache, to_key=GithubCache),
-    ]
+class GithubCacheServiceV1Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_CACHE_URL')
 
-    return inj.as_bindings(*lst)
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV1.get_service_url(base_url)
+
+        super().__init__(
+            service_url=service_url,
+            **kwargs,
+        )
+
+    #
+
+    def _build_request_headers(
+            self,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Dict[str, str]:
+        return super()._build_request_headers(
+            {
+                'Accept': ';'.join([
+                    'application/json',
+                    f'api-version={GithubCacheServiceV1.API_VERSION}',
+                ]),
+                **(headers or {}),
+            },
+            **kwargs,
+        )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        artifact: GithubCacheServiceV1.ArtifactCacheEntry
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry1 = check.isinstance(entry, self.Entry)
+        return entry1.artifact.archive_location
+
+    #
+
+    def _build_get_entry_url_path(self, *keys: str) -> str:
+        qp = dict(
+            keys=','.join(urllib.parse.quote_plus(k) for k in keys),
+            version=str(self._cache_version),
+        )
+
+        return '?'.join([
+            'cache',
+            '&'.join([
+                f'{k}={v}'
+                for k, v in qp.items()
+            ]),
+        ])
+
+    GET_ENTRY_SUCCESS_STATUS_CODES = (200, 204)
+
+    #
+
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
+        obj = await self._send_request(
+            path=self._build_get_entry_url_path(self.fix_key(key, partial_suffix=True)),
+        )
+        if obj is None:
+            return None
+
+        return self.Entry(GithubCacheServiceV1.dataclass_from_json(
+            GithubCacheServiceV1.ArtifactCacheEntry,
+            obj,
+        ))
+
+    #
+
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        entry1 = check.isinstance(entry, self.Entry)
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {entry1.artifact.cache_key} '
+                f'version {entry1.artifact.cache_version} '
+                f'to {out_file}',
+        ):
+            await self._download_file_chunks(
+                key=check.non_empty_str(entry1.artifact.cache_key),
+                url=check.non_empty_str(entry1.artifact.archive_location),
+                out_file=out_file,
+            )
+
+    #
+
+    async def _upload_file(self, key: str, in_file: str) -> None:
+        fixed_key = self.fix_key(key)
+
+        check.state(os.path.isfile(in_file))
+        file_size = os.stat(in_file).st_size
+
+        #
+
+        reserve_req = GithubCacheServiceV1.ReserveCacheRequest(
+            key=fixed_key,
+            cache_size=file_size,
+            version=str(self._cache_version),
+        )
+        reserve_resp_obj = await self._send_request(
+            path='caches',
+            json_content=GithubCacheServiceV1.dataclass_to_json(reserve_req),
+            success_status_codes=[201],
+        )
+        reserve_resp = GithubCacheServiceV1.dataclass_from_json(  # noqa
+            GithubCacheServiceV1.ReserveCacheResponse,
+            reserve_resp_obj,
+        )
+        cache_id = check.isinstance(reserve_resp.cache_id, int)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} got id {cache_id}')  # noqa
+
+        #
+
+        url = f'{self._service_url}/caches/{cache_id}'
+
+        await self._upload_file_chunks(
+            in_file=in_file,
+            url=url,
+            key=fixed_key,
+            file_size=file_size,
+        )
+
+        #
+
+        commit_req = GithubCacheServiceV1.CommitCacheRequest(
+            size=file_size,
+        )
+        await self._send_request(
+            path=f'caches/{cache_id}',
+            json_content=GithubCacheServiceV1.dataclass_to_json(commit_req),
+            success_status_codes=[204],
+        )
+
+    async def upload_file(self, key: str, in_file: str) -> None:
+        with log_timing_context(
+                f'Uploading github cache file {os.path.basename(in_file)} '
+                f'key {key}',
+        ):
+            await self._upload_file(key, in_file)
+
+
+########################################
+# ../github/api/v2/client.py
+
+
+##
+
+
+class GithubCacheServiceV2Client(BaseGithubCacheClient):
+    BASE_URL_ENV_VAR = register_github_env_var('ACTIONS_RESULTS_URL')
+
+    def __init__(
+            self,
+            *,
+            base_url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> None:
+        if base_url is None:
+            base_url = check.non_empty_str(self.BASE_URL_ENV_VAR())
+        service_url = GithubCacheServiceV2.get_service_url(base_url)
+
+        super().__init__(
+            service_url=service_url,
+            **kwargs,
+        )
+
+    #
+
+    async def _send_method_request(
+            self,
+            method: GithubCacheServiceV2.Method[
+                GithubCacheServiceV2RequestT,
+                GithubCacheServiceV2ResponseT,
+            ],
+            request: GithubCacheServiceV2RequestT,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[GithubCacheServiceV2ResponseT]:
+        obj = await self._send_request(
+            path=method.name,
+            json_content=dc.asdict(request),  # type: ignore[call-overload]
+            **kwargs,
+        )
+
+        if obj is None:
+            return None
+        return method.response(**obj)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Entry(GithubCacheClient.Entry):
+        request: GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest
+        response: GithubCacheServiceV2.GetCacheEntryDownloadUrlResponse
+
+        def __post_init__(self) -> None:
+            check.state(self.response.ok)
+            check.non_empty_str(self.response.signed_download_url)
+
+    def get_entry_url(self, entry: GithubCacheClient.Entry) -> ta.Optional[str]:
+        entry2 = check.isinstance(entry, self.Entry)
+        return check.non_empty_str(entry2.response.signed_download_url)
+
+    #
+
+    async def get_entry(self, key: str) -> ta.Optional[GithubCacheClient.Entry]:
+        version = str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH)
+
+        req = GithubCacheServiceV2.GetCacheEntryDownloadUrlRequest(
+            key=self.fix_key(key),
+            restore_keys=[self.fix_key(key, partial_suffix=True)],
+            version=version,
+        )
+
+        resp = await self._send_method_request(
+            GithubCacheServiceV2.GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD,
+            req,
+        )
+        if resp is None or not resp.ok:
+            return None
+
+        return self.Entry(
+            request=req,
+            response=resp,
+        )
+
+    #
+
+    async def download_file(self, entry: GithubCacheClient.Entry, out_file: str) -> None:
+        entry2 = check.isinstance(entry, self.Entry)
+        with log_timing_context(
+                'Downloading github cache '
+                f'key {entry2.response.matched_key} '
+                f'version {entry2.request.version} '
+                f'to {out_file}',
+        ):
+            await self._download_file_chunks(
+                key=check.non_empty_str(entry2.response.matched_key),
+                url=check.non_empty_str(entry2.response.signed_download_url),
+                out_file=out_file,
+            )
+
+    #
+
+    async def _upload_file(self, key: str, in_file: str) -> None:
+        fixed_key = self.fix_key(key)
+
+        check.state(os.path.isfile(in_file))
+        file_size = os.stat(in_file).st_size
+
+        #
+
+        version = str(self._cache_version).zfill(GithubCacheServiceV2.VERSION_LENGTH)
+
+        reserve_resp = check.not_none(await self._send_method_request(
+            GithubCacheServiceV2.CREATE_CACHE_ENTRY_METHOD,  # type: ignore[arg-type]
+            GithubCacheServiceV2.CreateCacheEntryRequest(
+                key=fixed_key,
+                version=version,
+            ),
+        ))
+        check.state(reserve_resp.ok)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} upload reserved for file size {file_size}')  # noqa
+
+        #
+
+        upload_chunks = self._generate_file_upload_chunks(
+            in_file=in_file,
+            url=reserve_resp.signed_upload_url,
+            key=fixed_key,
+            file_size=file_size,
+        )
+
+        az_chunks = [
+            AzureBlockBlobUploader.FileChunk(
+                in_file=in_file,
+                offset=c.offset,
+                size=c.size,
+            )
+            for c in upload_chunks
+        ]
+
+        async def az_make_request(req: AzureBlockBlobUploader.Request) -> AzureBlockBlobUploader.Response:
+            u_req = urllib.request.Request(  # noqa
+                req.url,
+                method=req.method,
+                headers=req.headers or {},
+                data=req.body,
+            )
+
+            u_resp, u_body = await self._send_urllib_request(u_req)
+
+            return AzureBlockBlobUploader.Response(
+                status=u_resp.status,
+                headers=dict(u_resp.headers),
+                data=u_body,
+            )
+
+        az_uploader = AzureBlockBlobUploader(
+            reserve_resp.signed_upload_url,
+            az_make_request,
+            concurrency=self._concurrency,
+        )
+
+        await az_uploader.upload_file(az_chunks)
+
+        #
+
+        commit_resp = check.not_none(await self._send_method_request(
+            GithubCacheServiceV2.FINALIZE_CACHE_ENTRY_METHOD,  # type: ignore[arg-type]
+            GithubCacheServiceV2.FinalizeCacheEntryUploadRequest(
+                key=fixed_key,
+                size_bytes=file_size,
+                version=version,
+            ),
+        ))
+        check.state(commit_resp.ok)
+
+        log.debug(f'Github cache file {os.path.basename(in_file)} upload complete, entry id {commit_resp.entry_id}')  # noqa
+
+    async def upload_file(self, key: str, in_file: str) -> None:
+        with log_timing_context(
+                f'Uploading github cache file {os.path.basename(in_file)} '
+                f'key {key}',
+        ):
+            await self._upload_file(key, in_file)
 
 
 ########################################
@@ -12814,6 +12789,135 @@ class DockerImageRepositoryOpenerImpl(DockerImageRepositoryOpener):
 
 
 ########################################
+# ../github/cache.py
+
+
+##
+
+
+class GithubCache(FileCache, DataCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
+    def __init__(
+            self,
+            config: Config = Config(),
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: ta.Optional[int] = None,
+
+            version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
+    ) -> None:
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+        if client is None:
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
+            client = client_cls(
+                cache_version=self._version,
+            )
+        self._client: GithubCacheClient = client
+
+        self._local = local
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with unlinking_if_exists(tmp_file):
+            await self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = await self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        await self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        await FileCacheDataCache(self).put_data(key, data)
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+##
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    async def get_cache_entry(self) -> None:
+        client = GithubCacheServiceV1Client()
+        entry = await client.get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
 # ../docker/cache.py
 
 
@@ -12882,6 +12986,23 @@ class DockerCacheImpl(DockerCache):
             await save_docker_tar_cmd(image, write_tmp_cmd)
 
             await self._file_cache.put_file(str(key), tmp_file, steal=True)
+
+
+########################################
+# ../github/inject.py
+
+
+##
+
+
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(DataCache, to_key=GithubCache),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
+
+    return inj.as_bindings(*lst)
 
 
 ########################################

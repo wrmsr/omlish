@@ -9,6 +9,7 @@ import unittest
 from omlish.lite.inject import inj
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
+from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.tests.pytest import pytest_mark
@@ -256,7 +257,7 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
                 deploy_config=DeployConfig(),
             ),
 
-            inj.bind(OBJ_MARSHALER_MANAGER),
+            inj.bind(ObjMarshalerManager, to_const=OBJ_MARSHALER_MANAGER),
 
             inj.bind(new_utc_clock, singleton=True),
         )

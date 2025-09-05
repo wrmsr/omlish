@@ -7,13 +7,13 @@ TODO:
 import logging
 import typing as ta
 
-from ..lite.json import json_dumps_compact
+from ...lite.json import json_dumps_compact
 
 
 ##
 
 
-class JsonLogFormatter(logging.Formatter):
+class JsonLoggingFormatter(logging.Formatter):
     KEYS: ta.Mapping[str, bool] = {
         'name': False,
         'msg': False,

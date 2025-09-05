@@ -38,7 +38,7 @@ def test_greenlet():
     _test_threadlets(GreenletThreadlets())
 
 
-LOG_LIST = logs.ListHandler()
+LOG_LIST = logs.ListLoggingHandler()
 
 
 @pytest.mark.skip

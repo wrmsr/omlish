@@ -2,6 +2,7 @@
 # @omlish-lite
 """
 TODO:
+ - !! move to std !!
  - structured
  - prefixed
  - debug
@@ -12,9 +13,9 @@ import datetime
 import logging
 import typing as ta
 
-from .filters import TidLogFilter
-from .json import JsonLogFormatter
-from .proxy import ProxyLogHandler
+from .std.filters import TidLoggingFilter
+from .std.json import JsonLoggingFormatter
+from .std.proxy import ProxyLoggingHandler
 
 
 ##
@@ -31,7 +32,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 ]
 
 
-class StandardLogFormatter(logging.Formatter):
+class StandardLoggingFormatter(logging.Formatter):
     @staticmethod
     def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
         return ' '.join(v for k, v in parts)
@@ -50,7 +51,7 @@ class StandardLogFormatter(logging.Formatter):
 ##
 
 
-class StandardConfiguredLogHandler(ProxyLogHandler):
+class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
     def __init_subclass__(cls, **kwargs):
         raise TypeError('This class serves only as a marker and should not be subclassed.')
 
@@ -83,7 +84,7 @@ def configure_standard_logging(
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
         handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-) -> ta.Optional[StandardConfiguredLogHandler]:
+) -> ta.Optional[StandardConfiguredLoggingHandler]:
     with _locking_logging_module_lock():
         if target is None:
             target = logging.root
@@ -91,7 +92,7 @@ def configure_standard_logging(
         #
 
         if not force:
-            if any(isinstance(h, StandardConfiguredLogHandler) for h in list(target.handlers)):
+            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
                 return None
 
         #
@@ -105,14 +106,14 @@ def configure_standard_logging(
 
         formatter: logging.Formatter
         if json:
-            formatter = JsonLogFormatter()
+            formatter = JsonLoggingFormatter()
         else:
-            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+            formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
         handler.setFormatter(formatter)
 
         #
 
-        handler.addFilter(TidLogFilter())
+        handler.addFilter(TidLoggingFilter())
 
         #
 
@@ -125,4 +126,4 @@ def configure_standard_logging(
 
         #
 
-        return StandardConfiguredLogHandler(handler)
+        return StandardConfiguredLoggingHandler(handler)
