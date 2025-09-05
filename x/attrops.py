@@ -30,12 +30,12 @@ class AttrOps(ta.Generic[T]):
         ) -> None:
             if '.' in name:
                 raise NotImplementedError('Dotted paths not yet supported')
-            if not name.isidentifier():
+            if not name.isidentifier() or name.startswith('__'):
                 raise AttributeError(f'Invalid attr: {name!r}')
             self._name = name
 
             if display is None:
-                display = name
+                display = name[1:] if name.startswith('_') and len(name) > 1 else name
             self._display = display
 
             self._repr = repr
@@ -282,21 +282,49 @@ class AttrOps(ta.Generic[T]):
         self._eq = _eq
         return _eq
 
+    #
 
+    @property
+    def hash_eq(self) -> ta.Tuple[
+        ta.Callable[[T], int],
+        ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]],
+    ]:
+        return (self.hash, self.eq)
+
+    @property
+    def repr_hash_eq(self) -> ta.Tuple[
+        ta.Callable[[T], str],
+        ta.Callable[[T], int],
+        ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]],
+    ]:
+        return (self.repr, self.hash, self.eq)
 
 
 ##
 
 
 class Point:
-    x: int
-    y: int
+    def __init__(self, x: int, y: int) -> None:
+        self.x, self.y = x, y
 
-    a = AttrOps['Point'](lambda o: (o.x, o.y))
+    __repr__, __hash__, __eq__ = AttrOps['Point'](lambda o: (o.x, o.y)).repr_hash_eq
 
 
 def _main() -> None:
-    pass
+    p1 = Point(20, 30)
+    assert repr(p1) == 'Point(x=20, y=30)'
+
+    p2 = Point(40, 50)
+    assert repr(p2) == 'Point(x=40, y=50)'
+    assert p1 != p2
+
+    p1.x = 40
+    assert repr(p1) == 'Point(x=40, y=30)'
+    assert p1 != p2
+
+    p2.y = 30
+    assert repr(p2) == 'Point(x=40, y=30)'
+    assert p1 == p2
 
 
 if __name__ == '__main__':
