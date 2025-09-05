@@ -187,6 +187,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
         ...
 
@@ -198,6 +202,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.overload
     def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
         ...
 
     @ta.overload
@@ -215,6 +223,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
         ...
 
@@ -229,6 +241,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
         ...
 
@@ -240,6 +256,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.overload
     def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
         ...
 
     @ta.overload
@@ -258,6 +278,10 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.overload
     def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
         ...
 
     @ta.overload
