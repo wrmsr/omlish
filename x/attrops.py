@@ -22,13 +22,22 @@ class AttrOps(ta.Generic[T]):
                 name: str,
                 *,
                 display: ta.Optional[str] = None,
+
+                hash: bool = True,  # noqa
+                eq: bool = True,
         ) -> None:
+            if '.' in name:
+                raise NotImplementedError('Dotted paths not yet supported')
             if not name.isidentifier():
                 raise AttributeError(f'Invalid attr: {name!r}')
             self._name = name
+
             if display is None:
                 display = name
             self._display = display
+
+            self._hash = hash
+            self._eq = eq
 
         @classmethod
         def of(
@@ -58,16 +67,22 @@ class AttrOps(ta.Generic[T]):
         def display(self) -> str:
             return self._display
 
+        @property
+        def hash(self) -> bool:
+            return self._hash
+
+        @property
+        def eq(self) -> bool:
+            return self._eq
+
     @ta.overload
     def __init__(
             self,
-            attrs: ta.Sequence[ta.Union[
+            *attrs: ta.Sequence[ta.Union[
                 str,
                 ta.Tuple[str, str],
                 Attr,
             ]],
-            /,
-            *,
             with_module: bool = False,
             use_qualname: bool = False,
             with_id: bool = False,
@@ -96,23 +111,27 @@ class AttrOps(ta.Generic[T]):
 
     def __init__(
             self,
-            arg,
+            *args,
             with_module=False,
             use_qualname=False,
             with_id=False,
             repr_filter=None,
             recursive=False,
     ) -> None:
-        if callable(arg):
-            self._attrs: ta.Sequence[AttrOps.Attr] = self._capture_attrs(arg)
+        if args and len(args) == 1 and callable(args[0]):
+            self._attrs: ta.Sequence[AttrOps.Attr] = self._capture_attrs(args[0])
         else:
-            self._attrs = list(map(AttrOps.Attr.of, arg))
+            self._attrs = list(map(AttrOps.Attr.of, args))
 
         self._with_module: bool = with_module
         self._use_qualname: bool = use_qualname
         self._with_id: bool = with_id
         self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
         self._recursive: bool = recursive
+
+    @property
+    def attrs(self) -> ta.Sequence[Attr]:
+        return self._attrs
 
     #
 
