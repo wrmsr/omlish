@@ -22,7 +22,7 @@ T = ta.TypeVar('T')
 
 LogLevel = int  # ta.TypeAlias
 
-LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple, None]]  # ta.TypeAlias
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
@@ -270,9 +270,23 @@ class AnyLogger(Abstract, ta.Generic[T]):
     def error(self, *args, **kwargs):
         return self._log(LoggingContext(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
 
-    @ta.final
+    #
+
+    @ta.overload
     def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        return self._log(LoggingContext(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), msg, *args, **kwargs)
+        ...
+
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+        return self._log(LoggingContext(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)
 
     #
 
@@ -294,20 +308,50 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     ##
 
+    @classmethod
+    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
+        if callable(msg):
+            if args:
+                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+            x = msg()
+            if isinstance(x, str):
+                return x, ()
+            elif isinstance(x, tuple):
+                if x:
+                    return x[0], x[1:]
+                else:
+                    return '', ()
+            else:
+                raise TypeError(x)
+
+        elif isinstance(msg, tuple):
+            if args:
+                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+            if msg:
+                return msg[0], msg[1:]
+            else:
+                return '', ()
+
+        elif isinstance(msg, str):
+            return msg, args
+
+        else:
+            raise TypeError(msg)
+
     @abc.abstractmethod
-    def _log(self, ctx: LoggingContext, msg: ta.Union[str, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:
+    def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:
         raise NotImplementedError
 
 
 class Logger(AnyLogger[None], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: LoggingContext, msg: ta.Union[str, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:
+    def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
         raise NotImplementedError
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: LoggingContext, msg: ta.Union[str, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+    def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
         raise NotImplementedError
 
 
@@ -322,11 +366,11 @@ class AnyNopLogger(AnyLogger[T], Abstract):
 
 @ta.final
 class NopLogger(AnyNopLogger[None], Logger):
-    def _log(self, ctx: LoggingContext, msg: ta.Union[str, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:
+    def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
         pass
 
 
 @ta.final
 class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
-    async def _log(self, ctx: LoggingContext, msg: ta.Union[str, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    async def _log(self, ctx: LoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
         pass
