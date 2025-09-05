@@ -4,6 +4,7 @@ TODO:
  - class Attr(ta.NamedTuple)
  - dotted paths!
 """
+import types
 import typing as ta
 
 
@@ -23,6 +24,7 @@ class AttrOps(ta.Generic[T]):
                 *,
                 display: ta.Optional[str] = None,
 
+                repr: bool = True,  # noqa
                 hash: bool = True,  # noqa
                 eq: bool = True,
         ) -> None:
@@ -36,6 +38,7 @@ class AttrOps(ta.Generic[T]):
                 display = name
             self._display = display
 
+            self._repr = repr
             self._hash = hash
             self._eq = eq
 
@@ -88,6 +91,7 @@ class AttrOps(ta.Generic[T]):
             with_id: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
+            subtypes_eq: bool = False,
     ) -> None:
         ...
 
@@ -106,6 +110,7 @@ class AttrOps(ta.Generic[T]):
             with_id: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
+            subtypes_eq: bool = False,
     ) -> None:
         ...
 
@@ -117,6 +122,7 @@ class AttrOps(ta.Generic[T]):
             with_id=False,
             repr_filter=None,
             recursive=False,
+            subtypes_eq=False,
     ) -> None:
         if args and len(args) == 1 and callable(args[0]):
             self._attrs: ta.Sequence[AttrOps.Attr] = self._capture_attrs(args[0])
@@ -128,6 +134,7 @@ class AttrOps(ta.Generic[T]):
         self._with_id: bool = with_id
         self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
         self._recursive: bool = recursive
+        self._subtypes_eq: bool = subtypes_eq
 
     @property
     def attrs(self) -> ta.Sequence[Attr]:
@@ -192,9 +199,10 @@ class AttrOps(ta.Generic[T]):
 
         def _repr(o: T) -> str:
             vs = ', '.join(
-                f'{attr.display}={v!r}'
-                for attr in self._attrs
-                for v in [getattr(o, attr.name)]
+                f'{a._display}={v!r}'  # noqa
+                for a in self._attrs
+                if a._repr  # noqa
+                for v in [getattr(o, a._name)]  # noqa
                 if self._repr_filter is None or self._repr_filter(v)
             )
 
@@ -224,6 +232,57 @@ class AttrOps(ta.Generic[T]):
 
         cls._reprlib_ = reprlib
         return reprlib
+
+    #
+
+    _hash: ta.Callable[[T], int]
+
+    @property
+    def hash(self) -> ta.Callable[[T], int]:
+        try:
+            return self._hash
+        except AttributeError:
+            pass
+
+        def _hash(o: T) -> int:
+            return hash(tuple(
+                getattr(o, a._name)  # noqa
+                for a in self._attrs
+                if a._hash  # noqa
+            ))
+
+        self._hash = _hash
+        return _hash
+
+    #
+
+    _eq: ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]]
+
+    @property
+    def eq(self) -> ta.Callable[[T, ta.Any], ta.Union[bool, types.NotImplementedType]]:
+        try:
+            return self._eq
+        except AttributeError:
+            pass
+
+        def _eq(o: T, x: ta.Any) -> 'ta.Union[bool, types.NotImplementedType]':
+            if self._subtypes_eq:
+                if not isinstance(x, type(o)):
+                    return NotImplemented
+            else:
+                if type(x) is not type(o):
+                    return NotImplemented
+
+            return all(
+                getattr(o, a._name) == getattr(x, a._name)  # noqa
+                for a in self._attrs
+                if a._eq  # noqa
+            )
+
+        self._eq = _eq
+        return _eq
+
+
 
 
 ##
