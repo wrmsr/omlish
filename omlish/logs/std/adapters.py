@@ -4,9 +4,9 @@ import logging
 import typing as ta
 
 from ..base import Logger
-from ..base import LoggingContext
 from ..base import LoggingMsgFn
-from ..base import LogLevel
+from ..contexts import LoggingContext
+from ..levels import LogLevel
 from .records import LoggingContextLogRecord
 
 

@@ -28,5 +28,5 @@ class TestLogs(unittest.TestCase):
         std_log.info(lambda: 'hi')
         std_log.info(lambda: ('hi %d', 420))
 
-        std_log.info(('hi'),)
+        std_log.info(('hi',))
         std_log.info(('hi %d', 420))

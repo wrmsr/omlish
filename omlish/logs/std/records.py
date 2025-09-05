@@ -5,8 +5,8 @@ import logging
 import sys
 import typing as ta
 
-from ..base import LoggingContext
-from ..base import LoggingExcInfoTuple
+from ..contexts import LoggingContext
+from ..contexts import LoggingExcInfoTuple
 from ..warnings import LoggingSetupWarning
 
 
