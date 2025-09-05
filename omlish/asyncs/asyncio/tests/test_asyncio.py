@@ -25,8 +25,8 @@ def test_create_task():
 
     async def main():
         # Create tasks
-        task1 = asyncio.create_task(worker('task1', 1))
-        task2 = asyncio.create_task(worker('task2', 2))
+        task1 = asyncio.create_task(worker('task1', .1))
+        task2 = asyncio.create_task(worker('task2', .2))
 
         # Await results
         result1 = await task1

@@ -24,7 +24,8 @@ def init_package(
         *,
         codegen: bool = False,
 ) -> None:
-    pass
+    if init_globals['__name__'] != init_globals['__package__']:
+        raise NameError('Must call dataclasses.init_package from __init__')
 
 
 ##
