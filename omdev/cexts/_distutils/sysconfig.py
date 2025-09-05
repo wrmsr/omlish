@@ -16,6 +16,9 @@ from .errors import DistutilsPlatformError
 from .util import pass_none
 
 
+##
+
+
 IS_PYPY = '__pypy__' in sys.builtin_module_names
 
 # These are needed in a couple of spots, so just compute them once.

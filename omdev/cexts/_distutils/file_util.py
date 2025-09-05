@@ -1,12 +1,16 @@
 """Utility functions for operating on single files."""
 import contextlib
-import logging
 import os
+
+from omlish.logs import all as logs
 
 from .errors import DistutilsFileError
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 # for generating verbose output in 'copy_file()'

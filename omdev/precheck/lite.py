@@ -2,13 +2,13 @@ import asyncio
 import dataclasses as dc
 import glob
 import inspect
-import logging
 import os.path
 import subprocess
 import textwrap
 import typing as ta
 
 from omlish import cached
+from omlish.logs import all as logs
 from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from .. import magic
@@ -16,7 +16,7 @@ from .base import Precheck
 from .base import PrecheckContext
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

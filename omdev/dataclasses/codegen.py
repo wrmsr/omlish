@@ -8,7 +8,6 @@ TODO:
   - more sparse / diffuse intent, not package-level
 """
 import importlib
-import logging
 import os.path
 import typing as ta
 
@@ -21,9 +20,10 @@ from omlish.dataclasses.impl.generation.processor import Codegen as CodegenProce
 from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
 from omlish.dataclasses.impl.processing.base import ProcessingContext
 from omlish.dataclasses.impl.processing.driving import processing_options_context
+from omlish.logs import all as logs
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

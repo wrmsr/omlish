@@ -1,6 +1,5 @@
 """Miscellaneous utility functions -- anything that doesn't fit into one of the other *util.py modules."""
 import functools
-import logging
 import os
 import re
 import string
@@ -8,10 +7,15 @@ import sys
 import sysconfig
 import typing as ta
 
+from omlish.logs import all as logs
+
 from .errors import DistutilsPlatformError
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 def pass_none(func):

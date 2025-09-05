@@ -4,15 +4,19 @@ specific functions for launching another program in a sub-process.
 Also provides the 'find_executable()' to search the path for a given
 executable name.
 """
-import logging
 import os
 import subprocess
 import sys
 
+from omlish.logs import all as logs
+
 from .errors import DistutilsExecError
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
+
+
+##
 
 
 def spawn(cmd, search_path=1, verbose=0, dry_run=False, env=None, debug=False):  # noqa: C901

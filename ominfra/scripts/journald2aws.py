@@ -5729,8 +5729,9 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 class AnyLogger(Abstract, ta.Generic[T]):
+    @ta.final
     def is_enabled_for(self, level: LogLevel) -> bool:
-        return self.get_effective_level() >= level
+        return level >= self.get_effective_level()
 
     @abc.abstractmethod
     def get_effective_level(self) -> LogLevel:

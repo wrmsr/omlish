@@ -21,8 +21,9 @@ LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 
 class AnyLogger(Abstract, ta.Generic[T]):
+    @ta.final
     def is_enabled_for(self, level: LogLevel) -> bool:
-        return self.get_effective_level() >= level
+        return level >= self.get_effective_level()
 
     @abc.abstractmethod
     def get_effective_level(self) -> LogLevel:
