@@ -9,13 +9,16 @@ import time
 import typing as ta
 import urllib.request
 
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from ....journald.messages import JournalctlMessage  # noqa
 from ....threadworkers import ThreadWorker
 from ..logs import AwsLogMessageBuilder
 from ..logs import AwsPutLogEventsResponse
 from .cursor import JournalctlToAwsCursor
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

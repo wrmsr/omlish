@@ -5,12 +5,15 @@ import typing as ta
 
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from ..interp.venvs import InterpVenv
 from ..interp.venvs import InterpVenvRequirementsProcessor
 from .configs import VenvConfig
 from .reqs import RequirementsRewriter
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

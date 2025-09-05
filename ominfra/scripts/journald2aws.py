@@ -1312,6 +1312,8 @@ class Abstract:
 TODO:
  - dotted paths!
  - per-attr repr transform / filter
+ - __ne__ ? cases where it still matters
+ - ordering ?
 """
 
 
@@ -1602,6 +1604,25 @@ class AttrOps(ta.Generic[T]):
         ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.repr, self.hash, self.eq)
+
+    #
+
+    def install(
+            self,
+            locals_dct: ta.MutableMapping[str, ta.Any],
+            *,
+            all: bool = False,  # noqa
+            repr: bool = False,  # noqa
+            hash: bool = False,  # noqa
+            eq: bool = False,
+    ) -> 'AttrOps[T]':
+        if repr or all:
+            locals_dct.update(__repr__=self.repr)
+        if hash or all:
+            locals_dct.update(__hash__=self.hash)
+        if eq or all:
+            locals_dct.update(__eq__=self.eq)
+        return self
 
 
 attr_ops = AttrOps[ta.Any]
@@ -2392,13 +2413,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../../../omlish/lite/logs.py
-
-
-log = logging.getLogger(__name__)
-
-
-########################################
 # ../../../../../omlish/lite/objects.py
 
 
@@ -2656,6 +2670,17 @@ def format_num_bytes(num_bytes: int) -> str:
                 return f'{value:.2f}{suffix}'
 
     return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
+# ../../../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
 
 
 ########################################
@@ -3371,6 +3396,9 @@ class AwsDataclassMeta:
 # ../cursor.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -3428,6 +3456,9 @@ TODO:
  - group -> 'context'? :|
   - shared stop_event?
 """
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -5152,6 +5183,9 @@ class AwsLogMessageBuilder:
 # ../../../../journald/messages.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -5411,6 +5445,9 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 TODO:
  - retries
 """
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -5892,6 +5929,9 @@ $SYSTEMD_URLIFY
 """
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -6033,6 +6073,9 @@ class Journald2AwsConfig:
     aws_batch_size: int = 1_000
     aws_flush_interval_s: float = 1.
 """
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish.io.fdio.pollers import FdioPoller
 from omlish.lite.check import check
-from omlish.lite.logs import log
 from omlish.lite.typing import Func1
+from omlish.logs.modules import get_module_logger
 
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
@@ -25,6 +25,9 @@ from .types import Process
 from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.os import waitpid
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

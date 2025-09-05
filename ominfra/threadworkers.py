@@ -18,11 +18,14 @@ import typing as ta
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.contextmanagers import ExitStacked
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 
 T = ta.TypeVar('T')
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

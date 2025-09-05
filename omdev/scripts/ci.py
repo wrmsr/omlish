@@ -1532,13 +1532,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-
-
-log = logging.getLogger(__name__)
-
-
-########################################
 # ../../../omlish/lite/objects.py
 
 
@@ -1864,6 +1857,17 @@ NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
 NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
 NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
 NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
 
 
 ########################################
@@ -5396,6 +5400,9 @@ TODO:
 
 
 CacheVersion = ta.NewType('CacheVersion', int)
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -9205,6 +9212,9 @@ class CoroHttpServer:
 # ../../../omlish/lite/timing.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 LogTimingContext.DEFAULT_LOG = log
 
 log_timing_context = log_timing_context  # noqa
@@ -9938,6 +9948,9 @@ async def build_cache_served_docker_image_data_server_routes(
 # ../github/api/clients.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -10405,6 +10418,9 @@ class BaseGithubCacheClient(GithubCacheClient, Abstract):
 TODO:
  - ominfra? no, circdep
 """
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -11297,6 +11313,9 @@ SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 # ../github/api/v1/client.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -11455,6 +11474,9 @@ class GithubCacheServiceV1Client(BaseGithubCacheClient):
 
 ########################################
 # ../github/api/v2/client.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -13069,6 +13091,9 @@ class DockerBuildCachingImpl(DockerBuildCaching):
 # ../docker/cacheserved/cache.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -13655,6 +13680,9 @@ def bind_ci(
 
 ########################################
 # cli.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

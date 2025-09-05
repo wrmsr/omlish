@@ -7,15 +7,36 @@ from ..attrops import attr_ops
 from ..attrops import attr_repr
 
 
-class Point:
-    def __init__(self, x: int, y: int) -> None:
-        self.x, self.y = x, y
-
-    __repr__, __hash__, __eq__ = AttrOps['Point'](lambda o: (o.x, o.y)).repr_hash_eq
-
-
 class TestAttrOps(unittest.TestCase):
     def test_attr_ops(self):
+        class Point:
+            def __init__(self, x: int, y: int) -> None:
+                self.x, self.y = x, y
+
+            __repr__, __hash__, __eq__ = AttrOps['Point'](lambda o: (o.x, o.y)).repr_hash_eq
+
+        p1 = Point(20, 30)
+        assert repr(p1) == 'Point(x=20, y=30)'
+
+        p2 = Point(40, 50)
+        assert repr(p2) == 'Point(x=40, y=50)'
+        assert p1 != p2
+
+        p1.x = 40
+        assert repr(p1) == 'Point(x=40, y=30)'
+        assert p1 != p2
+
+        p2.y = 30
+        assert repr(p2) == 'Point(x=40, y=30)'
+        assert p1 == p2
+
+    def test_install(self):
+        class Point:
+            def __init__(self, x: int, y: int) -> None:
+                self.x, self.y = x, y
+
+            AttrOps['Point'](lambda o: (o.x, o.y)).install(locals(), all=True)
+
         p1 = Point(20, 30)
         assert repr(p1) == 'Point(x=20, y=30)'
 

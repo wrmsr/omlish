@@ -1,12 +1,15 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
 
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
 from .deploy import DeployDriverFactory
 from .specs import DeploySpec
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

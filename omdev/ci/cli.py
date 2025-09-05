@@ -22,7 +22,7 @@ from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_cmd
 from omlish.lite.check import check
 from omlish.lite.inject import inj
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 from omlish.logs.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
@@ -33,6 +33,9 @@ from .github.cli import GithubCli
 from .inject import bind_ci
 from .requirements import build_requirements_hash
 from .shell import ShellCmd
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

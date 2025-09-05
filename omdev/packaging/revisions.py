@@ -14,11 +14,14 @@ import zipfile
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 from omlish.logs.standard import configure_standard_logging
 
 from ..git.revisions import get_git_revision
 from .wheelfile import WheelFile
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

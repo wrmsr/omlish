@@ -38,12 +38,15 @@ import typing as ta
 from omlish.formats.toml.writer import TomlWriter
 from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 from omlish.subprocesses.sync import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files
 from ..packaging.revisions import GitRevisionAdder
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

@@ -3,12 +3,15 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
 from .packages import SystemPackage
 from .packages import SystemPackageManager
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

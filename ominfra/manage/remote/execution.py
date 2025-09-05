@@ -12,7 +12,7 @@ import typing as ta
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from ..commands.base import Command
 from ..commands.base import CommandException
@@ -23,6 +23,9 @@ from .channel import RemoteChannel
 
 
 T = ta.TypeVar('T')
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

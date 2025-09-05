@@ -5,8 +5,8 @@ import typing as ta
 import urllib.request
 
 from omlish.lite.check import check
-from omlish.lite.logs import log
 from omlish.lite.timing import log_timing_context
+from omlish.logs.modules import get_module_logger
 
 from ...env import register_github_env_var
 from ..clients import BaseGithubCacheClient
@@ -15,6 +15,9 @@ from .api import GithubCacheServiceV2
 from .api import GithubCacheServiceV2RequestT
 from .api import GithubCacheServiceV2ResponseT
 from .azure import AzureBlockBlobUploader
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

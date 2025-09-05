@@ -18,13 +18,16 @@ import urllib.request
 from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 from omlish.os.temp import make_temp_file
 
 from .consts import CI_CACHE_VERSION
 
 
 CacheVersion = ta.NewType('CacheVersion', int)
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

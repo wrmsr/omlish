@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import signal
 
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from .groups import ProcessGroupManager
 from .states import SupervisorState
@@ -9,6 +9,9 @@ from .types import ProcessOutputDispatcher
 from .types import SupervisorStateManager
 from .utils.signals import SignalReceiver
 from .utils.signals import sig_name
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

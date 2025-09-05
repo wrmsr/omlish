@@ -4,6 +4,8 @@
 TODO:
  - dotted paths!
  - per-attr repr transform / filter
+ - __ne__ ? cases where it still matters
+ - ordering ?
 """
 import types  # noqa
 import typing as ta
@@ -299,6 +301,25 @@ class AttrOps(ta.Generic[T]):
         ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.repr, self.hash, self.eq)
+
+    #
+
+    def install(
+            self,
+            locals_dct: ta.MutableMapping[str, ta.Any],
+            *,
+            all: bool = False,  # noqa
+            repr: bool = False,  # noqa
+            hash: bool = False,  # noqa
+            eq: bool = False,
+    ) -> 'AttrOps[T]':
+        if repr or all:
+            locals_dct.update(__repr__=self.repr)
+        if hash or all:
+            locals_dct.update(__hash__=self.hash)
+        if eq or all:
+            locals_dct.update(__eq__=self.eq)
+        return self
 
 
 attr_ops = AttrOps[ta.Any]

@@ -1,6 +1,9 @@
+from ..logs.modules import get_module_logger
 from ..logs.utils import LogTimingContext
 from ..logs.utils import log_timing_context
-from .logs import log
+
+
+log = get_module_logger(globals())  # noqa
 
 
 LogTimingContext.DEFAULT_LOG = log

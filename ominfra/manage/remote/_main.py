@@ -13,9 +13,9 @@ from omlish.asyncs.asyncio.streams import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.inject import Injector
-from omlish.lite.logs import log
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
+from omlish.logs.modules import get_module_logger
 from omlish.os.deathsig import set_process_deathsig
 
 from ...pyremote import pyremote_bootstrap_finalize
@@ -31,6 +31,9 @@ if ta.TYPE_CHECKING:
     from ..bootstrap_ import main_bootstrap
 else:
     main_bootstrap: ta.Any = None
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

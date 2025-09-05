@@ -40,8 +40,8 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
-from omlish.lite.logs import log
 from omlish.lite.runtime import is_debugger_attached
+from omlish.logs.modules import get_module_logger
 from omlish.os.pidfiles.pidfile import Pidfile
 
 from ....journald.messages import JournalctlMessage  # noqa
@@ -51,6 +51,9 @@ from ..auth import AwsSigner
 from ..logs import AwsLogMessageBuilder
 from .cursor import JournalctlToAwsCursor
 from .poster import JournalctlToAwsPosterWorker
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

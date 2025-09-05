@@ -13,8 +13,11 @@ import xml.etree.ElementTree as ET
 
 from omlish.asyncs.asyncio.utils import asyncio_wait_concurrent
 from omlish.lite.check import check
-from omlish.lite.logs import log
 from omlish.lite.timing import log_timing_context
+from omlish.logs.modules import get_module_logger
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

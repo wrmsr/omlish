@@ -5,7 +5,7 @@ import os
 import typing as ta
 
 from omlish.lite.abstract import Abstract
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
 from .configs import ServerConfig
@@ -24,6 +24,9 @@ from .utils.ostypes import Fd
 from .utils.strings import as_bytes
 from .utils.strings import find_prefix_at_end
 from .utils.strings import strip_escapes
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

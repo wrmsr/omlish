@@ -2,12 +2,15 @@
 import typing as ta
 
 from omlish.io.fdio.pollers import FdioPoller
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 
 from .dispatchers import Dispatchers
 from .types import ExitNow
 from .types import HasDispatchers
 from .utils.ostypes import Fd
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

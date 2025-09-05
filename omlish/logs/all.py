@@ -36,6 +36,10 @@ with _lang.auto_proxy_init(globals()):
         NamedLogLevel,
     )
 
+    from .modules import (  # noqa
+        get_module_logger,
+    )
+
     from .protocols import (  # noqa
         LoggerLike,
     )

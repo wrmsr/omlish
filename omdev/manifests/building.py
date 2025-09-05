@@ -39,7 +39,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.imports import import_attr
 from omlish.lite.json import json_dumps_pretty
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
 from omlish.manifests.base import ModAttrManifest
 from omlish.manifests.globals import GlobalManifestLoader
 from omlish.manifests.types import Manifest
@@ -51,6 +51,9 @@ from .. import magic
 T = ta.TypeVar('T')
 
 ManifestDumperTarget = ta.Union['InlineManifestDumperTarget', 'AttrManifestDumperTarget']  # ta.TypeAlias
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

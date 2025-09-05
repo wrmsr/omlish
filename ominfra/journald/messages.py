@@ -6,7 +6,10 @@ import typing as ta
 
 from omlish.io.buffers import DelimitingBuffer
 from omlish.lite.check import check
-from omlish.lite.logs import log
+from omlish.logs.modules import get_module_logger
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

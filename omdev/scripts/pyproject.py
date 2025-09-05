@@ -2630,13 +2630,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-
-
-log = logging.getLogger(__name__)
-
-
-########################################
 # ../../../omlish/lite/objects.py
 
 
@@ -2952,6 +2945,17 @@ _TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '_
 
 def typing_annotations_attr() -> str:
     return _TYPING_ANNOTATIONS_ATTR
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
 
 
 ########################################
@@ -3834,6 +3838,9 @@ class SpecifierSet(BaseSpecifier):
 TODO:
  - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
 """
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -8060,6 +8067,9 @@ TODO:
 """
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -8647,6 +8657,9 @@ https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """  # noqa
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -9631,6 +9644,9 @@ class PyprojectConfigPreparer:
 
 ########################################
 # ../venvs.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

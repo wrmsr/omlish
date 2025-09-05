@@ -2492,6 +2492,8 @@ class Abstract:
 TODO:
  - dotted paths!
  - per-attr repr transform / filter
+ - __ne__ ? cases where it still matters
+ - ordering ?
 """
 
 
@@ -2782,6 +2784,25 @@ class AttrOps(ta.Generic[T]):
         ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.repr, self.hash, self.eq)
+
+    #
+
+    def install(
+            self,
+            locals_dct: ta.MutableMapping[str, ta.Any],
+            *,
+            all: bool = False,  # noqa
+            repr: bool = False,  # noqa
+            hash: bool = False,  # noqa
+            eq: bool = False,
+    ) -> 'AttrOps[T]':
+        if repr or all:
+            locals_dct.update(__repr__=self.repr)
+        if hash or all:
+            locals_dct.update(__hash__=self.hash)
+        if eq or all:
+            locals_dct.update(__eq__=self.eq)
+        return self
 
 
 attr_ops = AttrOps[ta.Any]
@@ -3572,13 +3593,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-
-
-log = logging.getLogger(__name__)
-
-
-########################################
 # ../../../omlish/lite/objects.py
 
 
@@ -3959,6 +3973,17 @@ _TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '_
 
 def typing_annotations_attr() -> str:
     return _TYPING_ANNOTATIONS_ATTR
+
+
+########################################
+# ../../../omlish/logs/modules.py
+
+
+##
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
 
 
 ########################################
@@ -5651,6 +5676,9 @@ def get_remote_payload_src(
 
 ########################################
 # ../system/platforms.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
@@ -10427,6 +10455,9 @@ TODO:
 """
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -11408,6 +11439,12 @@ class SingleDirDeployPathOwner(DeployPathOwner, Abstract):
 
 ########################################
 # ../remote/_main.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
 
 
 class _RemoteExecutionLogHandler(logging.Handler):
@@ -13747,6 +13784,9 @@ class InProcessRemoteExecutionConnector:
 # ../system/commands.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -14877,6 +14917,9 @@ class DeployDriver:
 # ../deploy/commands.py
 
 
+log = get_module_logger(globals())  # noqa
+
+
 ##
 
 
@@ -15091,6 +15134,9 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 ########################################
 # main.py
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

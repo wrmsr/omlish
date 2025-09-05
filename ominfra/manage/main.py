@@ -18,10 +18,10 @@ from omlish.argparse.cli import argparse_cmd
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.configs import load_config_file_obj
-from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.pycharm import PycharmRemoteDebug
+from omlish.logs.modules import get_module_logger
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
@@ -31,6 +31,9 @@ from .deploy.config import DeployConfig
 from .remote.config import RemoteConfig
 from .targets.connection import ManageTargetConnector
 from .targets.targets import ManageTarget
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##

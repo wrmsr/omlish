@@ -7,8 +7,8 @@ import traceback
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.logs import log
 from omlish.lite.typing import Func1
+from omlish.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
 from .configs import RestartUnconditionally
@@ -34,6 +34,9 @@ from .utils.signals import sig_name
 
 class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
     pass
+
+
+log = get_module_logger(globals())  # noqa
 
 
 ##
