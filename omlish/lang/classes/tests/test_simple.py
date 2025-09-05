@@ -1,6 +1,9 @@
+import pickle
+
 import pytest
 
 from ..restrict import FinalTypeError
+from ..restrict import NotPicklable
 from ..simple import LazySingleton
 from ..simple import Marker
 from ..simple import Singleton
@@ -56,3 +59,54 @@ def test_singletons():
         assert Foo2() is Foo2()
         assert foo2_init_calls == 1
         assert foo_init_calls == 2
+
+
+class UnpicklableSentinel(NotPicklable):
+    pass
+
+
+PICKLED_SENTINEL = UnpicklableSentinel()
+
+
+_NUM_PICKLED_SINGLETON_INSTANTIATIONS = 0
+
+
+class PickledSingleton(Singleton):
+    def __init__(self) -> None:
+        super().__init__()
+        self.barf = PICKLED_SENTINEL
+        global _NUM_PICKLED_SINGLETON_INSTANTIATIONS
+        _NUM_PICKLED_SINGLETON_INSTANTIATIONS += 1
+
+
+def test_singleton_pickling():
+    assert _NUM_PICKLED_SINGLETON_INSTANTIATIONS == 1
+    obj = PickledSingleton()
+    assert _NUM_PICKLED_SINGLETON_INSTANTIATIONS == 1
+    assert obj is PickledSingleton()
+    pkl = pickle.dumps(obj)
+    obj2 = pickle.loads(pkl)  # noqa
+    assert obj2 is PickledSingleton()
+    assert _NUM_PICKLED_SINGLETON_INSTANTIATIONS == 1
+
+
+_NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS = 0
+
+
+class PickledLazySingleton(LazySingleton):
+    def __init__(self) -> None:
+        super().__init__()
+        self.barf = PICKLED_SENTINEL
+        global _NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS
+        _NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS += 1
+
+
+def test_lazy_singleton_pickling():
+    assert _NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS == 0
+    obj = PickledLazySingleton()
+    assert _NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS == 1
+    assert obj is PickledLazySingleton()
+    pkl = pickle.dumps(obj)
+    obj2 = pickle.loads(pkl)  # noqa
+    assert obj2 is PickledLazySingleton()
+    assert _NUM_PICKLED_LAZY_SINGLETON_INSTANTIATIONS == 1

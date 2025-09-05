@@ -63,7 +63,6 @@ class Marker(NotInstantiable, metaclass=_MarkerMeta):
 
 
 _SINGLETON_INSTANCE_ATTR = '__singleton_instance__'
-_SINGLETON_LOCK = threading.RLock()
 
 
 def _set_singleton_instance(inst):
@@ -85,7 +84,24 @@ def _set_singleton_instance(inst):
     return inst
 
 
-class Singleton:
+class _AnySingleton:
+    def __init__(self) -> None:
+        try:
+            type(self).__dict__[_SINGLETON_INSTANCE_ATTR]
+        except KeyError:
+            pass
+        else:
+            raise TypeError(f'Must not re-instantiate singleton {type(self)}')
+
+        super().__init__()
+
+    @ta.final
+    def __reduce__(self):
+        return (type(self), ())
+
+
+class Singleton(_AnySingleton):
+    @ta.final
     def __new__(cls):
         return cls.__dict__[_SINGLETON_INSTANCE_ATTR]
 
@@ -95,15 +111,21 @@ class Singleton:
         _set_singleton_instance(super().__new__(cls))  # noqa
 
 
-class LazySingleton:
+_LAZY_SINGLETON_LOCK = threading.RLock()
+
+
+class LazySingleton(_AnySingleton):
+    @ta.final
     def __new__(cls):
         try:
             return cls.__dict__[_SINGLETON_INSTANCE_ATTR]
         except KeyError:
             pass
-        with _SINGLETON_LOCK:
+
+        with _LAZY_SINGLETON_LOCK:
             try:
                 return cls.__dict__[_SINGLETON_INSTANCE_ATTR]
             except KeyError:
                 pass
+
             return _set_singleton_instance(super().__new__(cls))

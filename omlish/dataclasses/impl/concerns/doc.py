@@ -36,7 +36,7 @@ def _build_cls_doc(cls: type) -> str:
 
 
 class _LazyClsDocDescriptor:
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner=None):
         if instance is not None:
             owner = instance.__class__
         if not owner:

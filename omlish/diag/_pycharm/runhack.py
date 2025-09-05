@@ -51,7 +51,7 @@ class _cached_nullary:  # noqa
 
         return self._value
 
-    def __get__(self, instance, owner):  # noqa
+    def __get__(self, instance, owner=None):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 

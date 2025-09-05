@@ -72,16 +72,13 @@ class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
 
 
 def _check_logging_start_time() -> None:
-    x = LoggingTimeFields.get_std_start_time_ns()
-    ns = time.time_ns()
-
-    if x > ns:
+    if (x := LoggingTimeFields.get_std_start_time_ns()) < (t := time.time()):
         import warnings  # noqa
 
         warnings.warn(
             f'Unexpected logging start time detected: '
             f'get_std_start_time_ns={x}, '
-            f'time.time_ns()={ns}',
+            f'time.time()={t}',
             UnexpectedLoggingStartTimeWarning,
         )
 
