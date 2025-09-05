@@ -42,7 +42,7 @@ from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
 from omlish.logs.standard import configure_standard_logging
-from omlish.os.journald import journald_log_handler_factory
+from omlish.os.journald import journald_logging_handler_factory
 
 from .configs import ServerConfig
 from .configs import prepare_server_config
@@ -83,7 +83,7 @@ def main(
     if not no_logging:
         configure_standard_logging(
             'INFO',
-            handler_factory=journald_log_handler_factory if not (args.no_journald or is_debugger_attached()) else None,
+            handler_factory=journald_logging_handler_factory if not (args.no_journald or is_debugger_attached()) else None,  # noqa
         )
 
     #

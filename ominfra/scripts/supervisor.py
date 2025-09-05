@@ -5855,7 +5855,7 @@ SD_LOG_LEVEL_MAP: ta.Mapping[int, int] = {
 }
 
 
-class JournaldLogHandler(logging.Handler):
+class JournaldLoggingHandler(logging.Handler):
     """
     TODO:
      - fallback handler for when this barfs
@@ -5924,7 +5924,7 @@ class JournaldLogHandler(logging.Handler):
             self.handleError(record)
 
 
-def journald_log_handler_factory(
+def journald_logging_handler_factory(
         *,
         no_tty_check: bool = False,
         no_fallback: bool = False,
@@ -5934,7 +5934,7 @@ def journald_log_handler_factory(
             (no_tty_check or not sys.stderr.isatty()) and
             (no_fallback or sd_try_libsystemd() is not None)
     ):
-        return JournaldLogHandler()
+        return JournaldLoggingHandler()
 
     return logging.StreamHandler()
 
@@ -11024,7 +11024,7 @@ def main(
     if not no_logging:
         configure_standard_logging(
             'INFO',
-            handler_factory=journald_log_handler_factory if not (args.no_journald or is_debugger_attached()) else None,
+            handler_factory=journald_logging_handler_factory if not (args.no_journald or is_debugger_attached()) else None,  # noqa
         )
 
     #
