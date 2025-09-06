@@ -74,4 +74,4 @@ class LlamacppCompletionService:
                 **kwargs,
             )
 
-            return CompletionResponse(output['choices'][0]['text'])  # type: ignore
+            return CompletionResponse(ta.cast(ta.Any, output)['choices'][0]['text'])

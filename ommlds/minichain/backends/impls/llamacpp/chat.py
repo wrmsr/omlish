@@ -135,7 +135,7 @@ class LlamacppChatChoicesService:
             )
 
             out: list[AiChoice] = []
-            for c in output['choices']:  # type: ignore
+            for c in ta.cast(ta.Any, output)['choices']:
                 m = c['message']
                 out.append(AiChoice(AiMessage(m['content'])))
 

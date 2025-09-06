@@ -1,4 +1,5 @@
 import os.path
+import typing as ta
 
 import pytest
 
@@ -33,5 +34,5 @@ def test_llamacpp_completion():
         # stop=['\n'],
     )
 
-    msg = output['choices'][0]['text']  # type: ignore
+    msg = ta.cast(ta.Any, output)['choices'][0]['text']
     assert msg
