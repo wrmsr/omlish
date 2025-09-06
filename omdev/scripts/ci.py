@@ -1807,19 +1807,16 @@ def format_num_bytes(num_bytes: int) -> str:
 ##
 
 
-class _LoggingContextInfo:
-    def __mro_entries__(self, bases):
-        return ()
-
-
-LoggingContextInfo: type = ta.cast(ta.Any, _LoggingContextInfo())
+def logging_context_info(cls):
+    return cls
 
 
 ##
 
 
+@logging_context_info
 @ta.final
-class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+class LoggingSourceFileInfo(ta.NamedTuple):
     file_name: str
     module: str
 
@@ -1844,8 +1841,9 @@ class LoggingSourceFileInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[
 ##
 
 
+@logging_context_info
 @ta.final
-class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+class LoggingThreadInfo(ta.NamedTuple):
     ident: int
     native_id: ta.Optional[int]
     name: str
@@ -1862,8 +1860,9 @@ class LoggingThreadInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc
 ##
 
 
+@logging_context_info
 @ta.final
-class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+class LoggingProcessInfo(ta.NamedTuple):
     pid: int
 
     @classmethod
@@ -1876,8 +1875,9 @@ class LoggingProcessInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[mis
 ##
 
 
+@logging_context_info
 @ta.final
-class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+class LoggingMultiprocessingInfo(ta.NamedTuple):
     process_name: str
 
     @classmethod
@@ -1894,8 +1894,9 @@ class LoggingMultiprocessingInfo(LoggingContextInfo, ta.NamedTuple):  # type: ig
 ##
 
 
+@logging_context_info
 @ta.final
-class LoggingAsyncioTaskInfo(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+class LoggingAsyncioTaskInfo(ta.NamedTuple):
     name: str
 
     @classmethod
@@ -4952,7 +4953,9 @@ class PredicateTimeout(Timeout):
 ##
 
 
-class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+@logging_context_info
+@ta.final
+class LoggingCaller(ta.NamedTuple):
     file_path: str
     line_no: int
     name: str
@@ -5107,7 +5110,9 @@ class JsonLoggingFormatter(logging.Formatter):
 ##
 
 
-class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+@logging_context_info
+@ta.final
+class LoggingTimeFields(ta.NamedTuple):
     """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
 
     created: float

@@ -7,13 +7,15 @@ import traceback
 import types
 import typing as ta
 
-from .infos import LoggingContextInfo
+from .infos import logging_context_info
 
 
 ##
 
 
-class LoggingCaller(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+@logging_context_info
+@ta.final
+class LoggingCaller(ta.NamedTuple):
     file_path: str
     line_no: int
     name: str

@@ -4,14 +4,16 @@ import logging
 import time
 import typing as ta
 
-from .infos import LoggingContextInfo
+from .infos import logging_context_info
 from .warnings import LoggingSetupWarning
 
 
 ##
 
 
-class LoggingTimeFields(LoggingContextInfo, ta.NamedTuple):  # type: ignore[misc]
+@logging_context_info
+@ta.final
+class LoggingTimeFields(ta.NamedTuple):
     """Maps directly to stdlib `logging.LogRecord` fields, and must be kept in sync with it."""
 
     created: float
