@@ -2717,8 +2717,8 @@ class LoggingSourceFileInfo(ta.NamedTuple):
             return None
 
         return cls(
-            file_name,
-            module,
+            file_name=file_name,
+            module=module,
         )
 
 
@@ -2735,9 +2735,9 @@ class LoggingThreadInfo(ta.NamedTuple):
     @classmethod
     def build(cls) -> 'LoggingThreadInfo':
         return cls(
-            threading.get_ident(),
-            threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
-            threading.current_thread().name,
+            ident=threading.get_ident(),
+            native_id=threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+            name=threading.current_thread().name,
         )
 
 
@@ -2752,7 +2752,7 @@ class LoggingProcessInfo(ta.NamedTuple):
     @classmethod
     def build(cls) -> 'LoggingProcessInfo':
         return cls(
-            os.getpid(),
+            pid=os.getpid(),
         )
 
 
@@ -2771,7 +2771,7 @@ class LoggingMultiprocessingInfo(ta.NamedTuple):
             return None
 
         return cls(
-            mp.current_process().name,
+            process_name=mp.current_process().name,
         )
 
 
@@ -2798,7 +2798,7 @@ class LoggingAsyncioTaskInfo(ta.NamedTuple):
             return None
 
         return cls(
-            task.get_name(),  # Always non-None
+            name=task.get_name(),  # Always non-None
         )
 
 
@@ -4984,10 +4984,10 @@ class LoggingCaller(ta.NamedTuple):
                 sinfo = sinfo[:-1]
 
         return cls(
-            f.f_code.co_filename,
-            f.f_lineno or 0,
-            f.f_code.co_name,
-            sinfo,
+            file_path=f.f_code.co_filename,
+            line_no=f.f_lineno or 0,
+            name=f.f_code.co_name,
+            stack_info=sinfo,
         )
 
 
@@ -5105,9 +5105,9 @@ class LoggingTimeFields(ta.NamedTuple):
         relative_created = (time_ns - start_time_ns) / 1e6
 
         return cls(
-            created,
-            msecs,
-            relative_created,
+            created=created,
+            msecs=msecs,
+            relative_created=relative_created,
         )
 
 

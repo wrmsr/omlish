@@ -68,8 +68,8 @@ class LoggingCaller(ta.NamedTuple):
                 sinfo = sinfo[:-1]
 
         return cls(
-            f.f_code.co_filename,
-            f.f_lineno or 0,
-            f.f_code.co_name,
-            sinfo,
+            file_path=f.f_code.co_filename,
+            line_no=f.f_lineno or 0,
+            name=f.f_code.co_name,
+            stack_info=sinfo,
         )

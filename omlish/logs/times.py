@@ -61,9 +61,9 @@ class LoggingTimeFields(ta.NamedTuple):
         relative_created = (time_ns - start_time_ns) / 1e6
 
         return cls(
-            created,
-            msecs,
-            relative_created,
+            created=created,
+            msecs=msecs,
+            relative_created=relative_created,
         )
 
 
