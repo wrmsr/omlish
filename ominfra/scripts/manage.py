@@ -4123,6 +4123,22 @@ class NamedLogLevel(int):
 
     #
 
+    @ta.overload
+    def __new__(cls, name: str) -> 'NamedLogLevel':
+        ...
+
+    @ta.overload
+    def __new__(cls, i: int) -> 'NamedLogLevel':
+        ...
+
+    def __new__(cls, o):
+        if isinstance(o, str):
+            return cls(cls._INTS_BY_NAME[o.upper()])
+        else:
+            return super().__new__(cls, o)
+
+    #
+
     @property
     def exact_name(self) -> ta.Optional[str]:
         return self._NAMES_BY_INT.get(self)

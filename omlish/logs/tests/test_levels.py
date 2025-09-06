@@ -30,3 +30,5 @@ class TestNamedLogLevel(unittest.TestCase):
 
         assert str(NamedLogLevel(logging.INFO)) == 'INFO'
         assert repr(NamedLogLevel(logging.INFO)) == f'NamedLogLevel({logging.INFO})'
+
+        assert NamedLogLevel('info') == logging.INFO
