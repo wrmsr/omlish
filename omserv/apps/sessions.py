@@ -1,17 +1,17 @@
 import contextvars
 import dataclasses as dc
-import logging
 
 from omlish import lang
 from omlish.http import asgi
 from omlish.http import sessions
+from omlish.logs import all as logs
 
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import append_app_marker
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

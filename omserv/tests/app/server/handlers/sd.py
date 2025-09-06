@@ -16,7 +16,6 @@
 import dataclasses as dc
 import functools
 import io
-import logging
 import typing as ta
 
 import anyio.to_thread
@@ -26,6 +25,7 @@ from omlish import lang
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.http import asgi
+from omlish.logs import all as logs
 from omlish.secrets import all as sec
 
 from .....apps.routes import Route
@@ -60,7 +60,7 @@ else:
 # fmt: on
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

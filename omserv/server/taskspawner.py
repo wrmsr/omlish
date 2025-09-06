@@ -1,4 +1,3 @@
-import logging
 import types
 import typing as ta
 
@@ -8,6 +7,7 @@ import anyio.from_thread
 import anyio.to_thread
 
 from omlish import check
+from omlish.logs import all as logs
 
 from .config import Config
 from .debug import handle_error_debug
@@ -18,7 +18,7 @@ from .types import AsgiSendEvent
 from .types import Scope
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

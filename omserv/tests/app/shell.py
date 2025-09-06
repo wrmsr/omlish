@@ -4,7 +4,6 @@ TODO:
 """
 import dataclasses as dc
 import functools
-import logging
 import os.path
 import typing as ta
 
@@ -26,7 +25,7 @@ from ...nodes import registry as nr
 ShellTask = ta.NewType('ShellTask', lang.Func1[anyio.Event, ta.Awaitable[None]])
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

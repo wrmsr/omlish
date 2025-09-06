@@ -1,10 +1,10 @@
-import logging
 import sys
 
 from omlish.diag import pydevd as pdu
+from omlish.logs import all as logs
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

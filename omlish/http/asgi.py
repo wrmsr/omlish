@@ -1,14 +1,14 @@
 import abc
-import logging
 import typing as ta
 import urllib.parse
 
 from .. import check
 from .. import lang
+from ..logs import all as logs
 from . import consts
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

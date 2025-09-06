@@ -1,6 +1,7 @@
 # @omlish-llm-author gemini-2.5-pro
-import logging
 import re
+
+from omlish.logs import all as logs
 
 from .types import ChatMsg
 from .utils import handle_think_tag_prelude
@@ -8,7 +9,7 @@ from .utils import parse_json_from_string
 from .utils import process_tool_call
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

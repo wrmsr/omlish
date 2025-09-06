@@ -1,6 +1,5 @@
 import errno
 import functools
-import logging
 import os
 import random
 import signal  # noqa
@@ -8,6 +7,8 @@ import typing as ta
 
 import anyio
 import anyio.abc
+
+from omlish.logs import all as logs
 
 from .config import Config
 from .lifespans import Lifespan
@@ -22,7 +23,7 @@ from .workercontext import ShutdownError
 from .workercontext import WorkerContext
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

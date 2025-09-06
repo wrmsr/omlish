@@ -1,12 +1,13 @@
-import logging
 import typing as ta
+
+from omlish.logs import all as logs
 
 from ..config import Config
 from ..events import Request
 from ..types import Scope
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

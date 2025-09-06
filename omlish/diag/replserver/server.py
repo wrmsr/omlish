@@ -22,7 +22,6 @@ socat - UNIX-CONNECT:repl.sock
 """
 import contextlib
 import functools
-import logging
 import os
 import socket as sock
 import threading
@@ -31,10 +30,11 @@ import weakref
 
 from ... import check
 from ... import dataclasses as dc
+from ...logs import all as logs
 from .console import InteractiveSocketConsole
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

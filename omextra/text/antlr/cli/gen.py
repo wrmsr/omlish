@@ -3,7 +3,6 @@ TODO:
  - mtime cmp
  - parallelism
 """
-import logging
 import os.path
 import re
 import shutil
@@ -12,6 +11,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish.logs import all as logs
 from omlish.os.paths import is_path_in_dir
 
 from .consts import ANTLR_JAR_URL
@@ -24,7 +24,7 @@ else:
     dcache = lang.proxy_import('omdev.cache.data')
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

@@ -284,7 +284,7 @@
     "module": ".py.tools.mkrelimp",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/tools/mkrelimp.py",
-    "line": 149,
+    "line": 148,
     "value": {
       "!.cli.types.CliModule": {
         "name": "py/mkrelimp",

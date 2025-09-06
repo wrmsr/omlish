@@ -19,7 +19,7 @@ from omlish.logs import all as logs
 from .server import McServer
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

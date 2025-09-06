@@ -30,7 +30,6 @@ import contextlib
 import dataclasses as dc
 import glob
 import io
-import logging
 import os.path
 import signal
 import threading
@@ -56,7 +55,7 @@ from .text import wtp  # noqa
 from .utils.progress import ProgressReporter
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

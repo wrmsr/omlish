@@ -1,8 +1,9 @@
 import enum
-import logging
 import time
 import typing as ta
 import urllib.parse
+
+from omlish.logs import all as logs
 
 from ..config import Config
 from ..events import Body
@@ -25,7 +26,7 @@ from .utils import suppress_body
 from .utils import valid_server_name
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

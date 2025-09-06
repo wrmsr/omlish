@@ -1,6 +1,5 @@
 import argparse
 import itertools
-import logging
 import os.path
 import typing as ta
 
@@ -13,7 +12,7 @@ from ...tokens import all as tks
 T = ta.TypeVar('T')
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

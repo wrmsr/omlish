@@ -1,5 +1,4 @@
 import functools  # noqa
-import logging
 import time
 import urllib.request
 
@@ -10,7 +9,7 @@ from ....sockets.wait import socket_wait_until_can_connect
 from .service import hi_service_daemon
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

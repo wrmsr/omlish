@@ -5,13 +5,13 @@ TODO:
 """
 import contextlib
 import dataclasses as dc
-import logging
 import re
 import typing as ta
 
 from omlish import check
 from omlish import lang
 from omlish.http import asgi
+from omlish.logs import all as logs
 
 from .base import BASE_SERVER_URL
 from .base import SCOPE
@@ -49,7 +49,7 @@ KNOWN_METHODS: tuple[str, ...] = (
 PatOrStr: ta.TypeAlias = re.Pattern | str
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

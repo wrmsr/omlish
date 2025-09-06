@@ -1,13 +1,13 @@
 import abc
 import dataclasses as dc
 import itertools
-import logging
 
 from omlish import check
 from omlish import lang
+from omlish.logs import all as logs
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

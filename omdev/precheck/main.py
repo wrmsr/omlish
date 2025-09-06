@@ -20,7 +20,6 @@ TODO:
 """
 import argparse
 import asyncio
-import logging
 import os.path
 import sys
 import typing as ta
@@ -43,7 +42,7 @@ from .scripts import ScriptDepsPrecheck
 from .unicode import UnicodePrecheck
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

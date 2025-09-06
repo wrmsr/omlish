@@ -3,7 +3,6 @@ TODO:
  - dataclasses
 """
 import argparse
-import logging
 import os
 import re
 import resource
@@ -14,11 +13,12 @@ import typing as ta
 from .. import iterators as it
 from .. import lang
 from ..formats import json
+from ..logs import all as logs
 from ..os.sizes import PAGE_SIZE
 from .procstats import ProcStats
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 PidLike = int | str

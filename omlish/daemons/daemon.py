@@ -16,13 +16,13 @@ TODO:
  - pickle protocol, revision / venv check, multiprocessing manager support
 """
 import itertools
-import logging
 import os.path
 import time
 
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from ..logs import all as logs
 from ..os.pidfiles.pidfile import Pidfile
 from .launching import Launcher
 from .spawning import Spawning
@@ -31,7 +31,7 @@ from .waiting import Wait
 from .waiting import waiter_for
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

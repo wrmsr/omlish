@@ -1,10 +1,10 @@
 import contextvars
 import dataclasses as dc
-import logging
 
 from omlish import lang
 from omlish.http import all as hu
 from omlish.http import asgi
+from omlish.logs import all as logs
 
 from .....apps.markers import AppMarker
 from .....apps.markers import AppMarkerProcessor
@@ -15,7 +15,7 @@ from ...users import User
 from ...users import UserStore
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

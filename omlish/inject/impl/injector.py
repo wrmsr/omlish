@@ -16,12 +16,12 @@ TODO:
 import contextlib
 import functools
 import itertools
-import logging
 import typing as ta
 import weakref
 
 from ... import check
 from ... import lang
+from ...logs import all as logs
 from ..elements import Elements
 from ..errors import CyclicDependencyError
 from ..errors import UnboundKeyError
@@ -42,7 +42,7 @@ from .scopes import ScopeImpl
 from .scopes import make_scope_impl
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

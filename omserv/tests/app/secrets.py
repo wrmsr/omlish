@@ -1,13 +1,13 @@
-import logging
 import os
 
 from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
+from omlish.logs import all as logs
 from omlish.secrets import all as sec
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

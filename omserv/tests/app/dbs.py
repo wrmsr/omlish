@@ -1,4 +1,3 @@
-import logging
 
 import sqlalchemy as sa
 import sqlalchemy.event
@@ -7,12 +6,13 @@ import sqlalchemy.ext.asyncio as saa
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
+from omlish.logs import all as logs
 from omlish.secrets import all as sec
 from omlish.sql import alchemy as sau
 from omlish.sql import dbs
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

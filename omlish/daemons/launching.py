@@ -5,12 +5,12 @@ TODO:
 """
 import contextlib
 import functools
-import logging
 import threading
 import typing as ta
 
 from .. import check
 from .. import lang
+from ..logs import all as logs
 from ..os.pidfiles.manager import open_inheritable_pidfile
 from ..os.pidfiles.pidfile import Pidfile
 from .reparent import reparent_process
@@ -23,7 +23,7 @@ from .targets import Target
 from .targets import target_runner_for
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

@@ -1,14 +1,15 @@
 # @omlish-llm-author gemini-2.5-pro
 import json
-import logging
 import re
 import typing as ta
+
+from omlish.logs import all as logs
 
 from .types import ChatMsg
 from .types import ChatToolCall
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

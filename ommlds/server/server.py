@@ -4,7 +4,6 @@ TODO:
   - core daemon service skeleton should interop with simple server
 """
 import dataclasses as dc
-import logging
 import time
 import typing as ta
 
@@ -18,6 +17,7 @@ from omlish.http.handlers import HttpHandler_
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
 from omlish.http.handlers import LoggingHttpHandler
+from omlish.logs import all as logs
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
 from omlish.sockets.server.server import SocketServer
@@ -32,7 +32,7 @@ else:
     mc_mlx_chat = lang.proxy_import('..minichain.backends.mlxchat', __package__)
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

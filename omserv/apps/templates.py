@@ -1,14 +1,15 @@
 import dataclasses as dc
 import importlib.resources
-import logging
 import typing as ta
 
 import jinja2
 
+from omlish.logs import all as logs
+
 from .base import url_for
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

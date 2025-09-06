@@ -11,7 +11,7 @@ from .gen import GenPy
 from .gen import get_jar_path
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

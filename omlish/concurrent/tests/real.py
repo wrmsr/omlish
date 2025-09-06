@@ -7,16 +7,16 @@ TODO:
 """
 # ruff: noqa: SLF001
 import itertools
-import logging
 import threading
 import typing as ta
 
 from ... import lang
+from ...logs import all as logs
 from ..threadlets import Threadlet
 from ..threadlets import Threadlets
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 def _squash_args(args: lang.Args) -> ta.Any:

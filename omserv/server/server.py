@@ -1,5 +1,4 @@
 import errno
-import logging
 import math
 import typing as ta
 
@@ -7,6 +6,7 @@ import anyio.abc
 
 from omlish import check
 from omlish import lang
+from omlish.logs import all as logs
 
 from .config import Config
 from .events import Closed
@@ -20,7 +20,7 @@ from .types import AppWrapper
 from .workercontext import WorkerContext
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

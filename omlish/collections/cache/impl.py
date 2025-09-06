@@ -10,12 +10,12 @@ TODO:
 import collections
 import contextlib
 import functools
-import logging
 import time
 import typing as ta
 import weakref
 
 from ... import lang
+from ...logs import all as logs
 from .types import Cache
 from .types import Eviction
 from .types import OverweightError
@@ -27,7 +27,7 @@ V = ta.TypeVar('V')
 V2 = ta.TypeVar('V2')
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

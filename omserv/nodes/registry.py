@@ -1,6 +1,5 @@
 import contextlib
 import dataclasses as dc
-import logging
 import socket
 import typing as ta
 import uuid
@@ -12,6 +11,7 @@ from omlish import check
 from omlish import lang
 from omlish.asyncs import all as au
 from omlish.asyncs import anyio as anu
+from omlish.logs import all as logs
 from omlish.sql import alchemy as sau
 
 from .models import Nodes
@@ -19,7 +19,7 @@ from .models import setup_db
 from .sql import utcnow
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

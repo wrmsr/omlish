@@ -19,7 +19,7 @@ from ...config import Config
 from ...default import serve
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

@@ -1,5 +1,4 @@
 import contextlib
-import logging
 import os.path
 import signal
 import typing as ta
@@ -17,7 +16,7 @@ from .client import McServerClient
 from .service import mc_server_service_daemon
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

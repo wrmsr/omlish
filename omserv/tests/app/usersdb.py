@@ -1,17 +1,17 @@
-import logging
 import typing as ta
 
 import sqlalchemy as sa
 import sqlalchemy.orm
 
 from omlish import check
+from omlish.logs import all as logs
 from omlish.sql import alchemy as sau
 
 from .users import User
 from .users import UserStore
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

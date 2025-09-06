@@ -22,7 +22,7 @@ from .handlers import SocketServerHandler
 
 
 class SocketServer:
-    _DEFAULT_LOGGER = logging.getLogger('.'.join([__name__, 'SocketServer']))
+    _DEFAULT_LOGGER: LoggerLike = logging.getLogger('.'.join([__name__, 'SocketServer']))  # FIXME
 
     def __init__(
             self,

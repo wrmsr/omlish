@@ -21,7 +21,6 @@ TODO:
   fatal: Need to specify how to reconcile divergent branches.
 """
 import dataclasses as dc
-import logging
 import os
 import shutil
 import tempfile
@@ -58,7 +57,7 @@ else:
     msh = lang.proxy_import('omlish.marshal')
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

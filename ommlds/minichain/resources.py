@@ -3,7 +3,6 @@ TODO:
  - unify with omlish.sql.api.resources -> omlish.resources
 """
 import contextlib
-import logging
 import threading
 import typing as ta
 
@@ -11,6 +10,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import lang
 from omlish import typedvalues as tv
+from omlish.logs import all as logs
 
 from .types import Option
 
@@ -18,7 +18,7 @@ from .types import Option
 T = ta.TypeVar('T')
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

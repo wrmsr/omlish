@@ -1,17 +1,18 @@
 import encodings.idna  # prevents `LookupError: unknown encoding: idna`  # noqa
 import enum
 import io
-import logging
 import time
 import typing as ta
 import urllib.parse
 
-from omlish import check
 import wsproto as wsp
 import wsproto.events as wse
 import wsproto.extensions
 import wsproto.frame_protocol
 import wsproto.utilities
+
+from omlish import check
+from omlish.logs import all as logs
 
 from ..config import Config
 from ..events import Body
@@ -37,7 +38,7 @@ from .utils import suppress_body
 from .utils import valid_server_name
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

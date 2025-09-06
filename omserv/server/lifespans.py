@@ -1,10 +1,11 @@
-import logging
 import typing as ta
 
 import anyio
 import anyio.abc
 import anyio.from_thread
 import anyio.to_thread
+
+from omlish.logs import all as logs
 
 from .config import Config
 from .debug import handle_error_debug
@@ -15,7 +16,7 @@ from .types import LifespanScope
 from .types import UnexpectedMessageError
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

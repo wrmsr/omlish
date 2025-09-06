@@ -17,7 +17,6 @@ def _attach(repl):
 import ast
 import codeop
 import errno
-import logging
 import socket as sock
 import sys
 import threading
@@ -26,9 +25,10 @@ import types
 import typing as ta
 
 from ... import check
+from ...logs import all as logs
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##

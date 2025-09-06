@@ -18,7 +18,7 @@ from ...services import ServiceDaemon
 from ...services import ServiceTarget
 
 
-log = logging.getLogger(__name__)
+log = logs.get_module_logger(globals())
 
 
 ##
