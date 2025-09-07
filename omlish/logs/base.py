@@ -220,7 +220,7 @@ class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
 class AnyNopLogger(AnyLogger[T], Abstract):
     @ta.final
     def get_effective_level(self) -> LogLevel:
-        return 999
+        return -999
 
 
 @ta.final

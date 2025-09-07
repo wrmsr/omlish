@@ -19,9 +19,7 @@ def as_async(fn: ta.Callable[P, T], *, wrap: bool = False) -> ta.Callable[P, ta.
 ##
 
 
-async def async_list(
-        ai: ta.AsyncIterable[T],
-) -> list[T]:
+async def async_list(ai: ta.AsyncIterable[T]) -> list[T]:
     """Simply eagerly reads the full contents of a function call returning an async iterator."""
 
     return [v async for v in ai]
@@ -30,9 +28,7 @@ async def async_list(
 ##
 
 
-def sync_await(
-        aw: ta.Awaitable[T],
-) -> T:
+def sync_await(aw: ta.Awaitable[T]) -> T:
     """
     Allows for the synchronous execution of async functions which will never actually *externally* await anything. These
     functions are allowed to await any number of other functions - including contextmanagers and generators - so long as

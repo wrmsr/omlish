@@ -86,6 +86,7 @@ class TypedLoggerValue(Abstract, ta.Generic[T]):
     def of(cls: ta.Type[TypedLoggerValueT], v: ta.Any) -> ta.Union[TypedLoggerValueT, AbsentTypedLoggerValue]:
         return cls(v) if v is not ABSENT_TYPED_LOGGER_VALUE else ABSENT_TYPED_LOGGER_VALUE
 
+    @ta.final
     @property
     def v(self) -> T:
         return self._v
