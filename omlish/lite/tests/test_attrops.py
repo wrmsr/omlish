@@ -35,7 +35,7 @@ class TestAttrOps(unittest.TestCase):
             def __init__(self, x: int, y: int) -> None:
                 self.x, self.y = x, y
 
-            AttrOps['Point'](lambda o: (o.x, o.y)).install(locals(), all=True)
+            AttrOps['Point'](lambda o: (o.x, o.y)).install(locals())
 
         p1 = Point(20, 30)
         assert repr(p1) == 'Point(x=20, y=30)'

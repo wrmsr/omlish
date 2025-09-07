@@ -2859,6 +2859,7 @@ class PredicateTimeout(Timeout):
 ##
 
 
+@ta.runtime_checkable
 class LoggerLike(ta.Protocol):
     """Satisfied by both our Logger and stdlib logging.Logger."""
 

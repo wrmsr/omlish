@@ -2779,14 +2779,14 @@ class AttrOps(ta.Generic[T]):
         self._eq = _eq
         return _eq
 
-    #
-
     @property
     def hash_eq(self) -> ta.Tuple[
         ta.Callable[[T], int],
         ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
     ]:
         return (self.hash, self.eq)
+
+    #
 
     @property
     def repr_hash_eq(self) -> ta.Tuple[
@@ -2798,20 +2798,25 @@ class AttrOps(ta.Generic[T]):
 
     #
 
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
     def install(
             self,
             locals_dct: ta.MutableMapping[str, ta.Any],
             *,
-            all: bool = False,  # noqa
-            repr: bool = False,  # noqa
-            hash: bool = False,  # noqa
-            eq: bool = False,
+            repr: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,  # noqa
+            hash: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,  # noqa
+            eq: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,
     ) -> 'AttrOps[T]':
-        if repr or all:
+        if all(a is self.NOT_SET for a in (repr, hash, eq)):
+            repr = hash = eq = True  # noqa
+        if repr:
             locals_dct.update(__repr__=self.repr)
-        if hash or all:
+        if hash:
             locals_dct.update(__hash__=self.hash)
-        if eq or all:
+        if eq:
             locals_dct.update(__eq__=self.eq)
         return self
 
@@ -7693,6 +7698,7 @@ class LoggingCaller(ta.NamedTuple):
 ##
 
 
+@ta.runtime_checkable
 class LoggerLike(ta.Protocol):
     """Satisfied by both our Logger and stdlib logging.Logger."""
 
