@@ -3,7 +3,7 @@ import logging
 import typing as ta
 
 from .base import Logger
-from .std.adapters import StdLogger
+from .std.loggers import StdLogger
 
 
 ##

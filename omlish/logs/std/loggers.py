@@ -23,6 +23,9 @@ class StdLogger(Logger):
     def std(self) -> logging.Logger:
         return self._std
 
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self._std.isEnabledFor(level)
+
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()
 

@@ -5772,7 +5772,6 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 class AnyLogger(Abstract, ta.Generic[T]):
-    @ta.final
     def is_enabled_for(self, level: LogLevel) -> bool:
         return level >= self.get_effective_level()
 
@@ -6281,7 +6280,7 @@ class LoggingContextLogRecord(logging.LogRecord):
 
 
 ########################################
-# ../../../../../omlish/logs/std/adapters.py
+# ../../../../../omlish/logs/std/loggers.py
 
 
 ##
@@ -6296,6 +6295,9 @@ class StdLogger(Logger):
     @property
     def std(self) -> logging.Logger:
         return self._std
+
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self._std.isEnabledFor(level)
 
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()

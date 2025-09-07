@@ -3,8 +3,8 @@ import logging
 import os.path
 import unittest
 
-from ..std.adapters import StdLogger
 from ..std.handlers import ListLoggingHandler
+from ..std.loggers import StdLogger
 from ..std.records import LoggingContextLogRecord
 
 
