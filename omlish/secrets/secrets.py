@@ -8,6 +8,9 @@ TODO:
   - time of retrieval
   - logs accesses
  - types? ssh / url / pw / basicauthtoken / tls / str
+ - read-once?
+ - NotSecret[T]
+ - tainting / MarkupSafe
 """
 import abc
 import collections
