@@ -44,8 +44,6 @@ class StdLogger(Logger):
 
         ctx.capture()
 
-        rec = LoggingContextLogRecord(
-            _logging_context=ctx,
-        )
+        rec = LoggingContextLogRecord(_logging_context=ctx)
 
         self._std.handle(rec)

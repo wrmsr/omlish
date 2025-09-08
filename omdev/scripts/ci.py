@@ -4883,6 +4883,8 @@ class LoggingContextInfos:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
+    #
+
     @logging_context_info
     @ta.final
     class Name(ta.NamedTuple):
@@ -4906,7 +4908,7 @@ class LoggingContextInfos:
     @ta.final
     class Msg(ta.NamedTuple):
         msg: str
-        args: ta.Union[tuple, dict]
+        args: ta.Union[tuple, ta.Mapping[ta.Any, ta.Any], None]
 
         @classmethod
         def build(
@@ -9806,114 +9808,297 @@ _check_std_logging_record_attrs()
 ##
 
 
+class LoggingContextInfoRecordAdapters:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    class Adapter(Abstract, ta.Generic[T]):
+        @abc.abstractmethod
+        def info_to_record(self, info: T) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[T]:
+            raise NotImplementedError
+
+    #
+
+    class Name(Adapter[LoggingContextInfos.Name]):
+        def info_to_record(self, info: LoggingContextInfos.Name) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                name=info.name,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Name:
+            return LoggingContextInfos.Name(
+                name=rec.name,
+            )
+
+    class Level(Adapter[LoggingContextInfos.Level]):
+        def info_to_record(self, info: LoggingContextInfos.Level) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                levelname=info.name,
+                levelno=int(info.level),
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Level:
+            return LoggingContextInfos.Level.build(rec.levelno)
+
+    class Msg(Adapter[LoggingContextInfos.Msg]):
+        def info_to_record(self, info: LoggingContextInfos.Msg) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                msg=info.msg,
+                args=info.args,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Msg:
+            return LoggingContextInfos.Msg(
+                msg=rec.msg,
+                args=rec.args,
+            )
+
+    class Extra(Adapter[LoggingContextInfos.Extra]):
+        def info_to_record(self, info: LoggingContextInfos.Extra) -> ta.Mapping[str, ta.Any]:
+            # FIXME:
+            # if extra is not None:
+            #     for key in extra:
+            #         if (key in ["message", "asctime"]) or (key in rv.__dict__):
+            #             raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+            #         rv.__dict__[key] = extra[key]
+            return dict()
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Extra]:
+            return None
+
+    class Time(Adapter[LoggingContextInfos.Time]):
+        def info_to_record(self, info: LoggingContextInfos.Time) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                created=info.secs,
+                msecs=info.msecs,
+                relativeCreated=info.relative_secs,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Time:
+            return LoggingContextInfos.Time.build(
+                int(rec.created * 1e9),
+            )
+
+    class Exc(Adapter[LoggingContextInfos.Exc]):
+        def info_to_record(self, info: ta.Optional[LoggingContextInfos.Exc]) -> ta.Mapping[str, ta.Any]:
+            if info is not None:
+                return dict(
+                    exc_info=info.info_tuple,
+                    exc_text=None,
+                )
+            else:
+                return dict(
+                    exc_info=None,
+                    exc_text=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Exc]:
+            # FIXME:
+            # error: Argument 1 to "build" of "Exc" has incompatible type
+            # "tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None] | None"; expected  # noqa
+            # "BaseException | tuple[type[BaseException], BaseException, TracebackType | None] | bool | None"  [arg-type]  # noqa
+            return LoggingContextInfos.Exc.build(rec.exc_info)  # type: ignore[arg-type]
+
+    class Caller(Adapter[LoggingContextInfos.Caller]):
+        _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
+        _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
+
+        _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
+
+        def info_to_record(self, caller: ta.Optional[LoggingContextInfos.Caller]) -> ta.Mapping[str, ta.Any]:
+            if caller is not None:
+                if (sinfo := caller.stack_info) is not None:
+                    stack_info: ta.Optional[str] = '\n'.join([
+                        self._STACK_INFO_PREFIX,
+                        sinfo[1:] if sinfo.endswith('\n') else sinfo,
+                    ])
+                else:
+                    stack_info = None
+
+                return dict(
+                    pathname=caller.file_path,
+
+                    lineno=caller.line_no,
+                    funcName=caller.func_name,
+
+                    stack_info=stack_info,
+                )
+
+            else:
+                return dict(
+                    pathname=self._UNKNOWN_PATH_NAME,
+
+                    lineno=0,
+                    funcName=self._UNKNOWN_FUNC_NAME,
+
+                    stack_info=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Caller]:
+            # FIXME: piecemeal?
+            # FIXME: strip _STACK_INFO_PREFIX
+            raise NotImplementedError
+
+    class SourceFile(Adapter[LoggingContextInfos.SourceFile]):
+        _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
+
+        def info_to_record(
+                self,
+                info: ta.Optional[LoggingContextInfos.SourceFile],
+                *,
+                caller_file_path: ta.Optional[str] = None,
+        ) -> ta.Mapping[str, ta.Any]:
+            if info is not None:
+                return dict(
+                    filename=info.file_name,
+                    module=info.module,
+                )
+            else:
+                return dict(
+                    filename=caller_file_path,
+                    module=self._UNKNOWN_MODULE,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.SourceFile]:
+            if not (
+                    rec.module is None or
+                    rec.module == self._UNKNOWN_MODULE
+            ):
+                return LoggingContextInfos.SourceFile(
+                    file_name=rec.filename,
+                    module=rec.module,  # FIXME: piecemeal?
+                )
+            else:
+                return None
+
+    class Thread(Adapter[ta.Optional[LoggingContextInfos.Thread]]):
+        def info_to_record(self, info: ta.Optional[LoggingContextInfos.Thread]) -> ta.Mapping[str, ta.Any]:
+            if (
+                    info is not None and
+                    logging.logThreads
+            ):
+                return dict(
+                    thread=info.ident,
+                    threadName=info.name,
+                )
+            else:
+                return dict(
+                    thread=None,
+                    threadName=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Thread]:
+            if (
+                    (ident := rec.thread) is not None and
+                    (name := rec.threadName) is not None
+            ):
+                return LoggingContextInfos.Thread(
+                    ident=ident,
+                    native_id=None,
+                    name=name,
+                )
+            else:
+                return None
+
+    class Process(Adapter[ta.Optional[LoggingContextInfos.Process]]):
+        def info_to_record(self, info: ta.Optional[LoggingContextInfos.Process]) -> ta.Mapping[str, ta.Any]:
+            if (
+                    info is not None and
+                    logging.logProcesses
+            ):
+                return dict(
+                    process=info.pid,
+                )
+            else:
+                return dict(
+                    process=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Process]:
+            if (
+                    (pid := rec.process) is not None
+            ):
+                return LoggingContextInfos.Process(
+                    pid=pid,
+                )
+            else:
+                return None
+
+    class Multiprocessing(Adapter[ta.Optional[LoggingContextInfos.Multiprocessing]]):
+        def info_to_record(self, info: ta.Optional[LoggingContextInfos.Multiprocessing]) -> ta.Mapping[str, ta.Any]:
+            if (
+                    info is not None and
+                    logging.logMultiprocessing
+            ):
+                return dict(
+                    processName=info.process_name,
+                )
+            else:
+                return dict(
+                    processName=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Multiprocessing]:
+            if (
+                    (process_name := rec.processName) is not None
+            ):
+                return LoggingContextInfos.Multiprocessing(
+                    process_name=process_name,
+                )
+            else:
+                return None
+
+    class AsyncioTask(Adapter[ta.Optional[LoggingContextInfos.AsyncioTask]]):
+        def info_to_record(self, info: ta.Optional[LoggingContextInfos.AsyncioTask]) -> ta.Mapping[str, ta.Any]:
+            if not hasattr(logging, 'logAsyncioTasks'):  # Absent <3.12
+                return dict()
+            elif (
+                    info is not None and
+                    getattr(logging, 'logAsyncioTasks', None)  # Absent <3.12
+            ):
+                return dict(
+                    taskName=info.name,
+                )
+            else:
+                return dict(
+                    taskName=None,
+                )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.AsyncioTask]:
+            if (
+                    (name := getattr(rec, 'taskName', None)) is not None
+            ):
+                return LoggingContextInfos.AsyncioTask(
+                    name=name,
+                )
+            else:
+                return None
+
+
+_LOGGING_CONTEXT_INFO_RECORD_ADAPTERS: ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfoRecordAdapters.Adapter] = {  # noqa
+    LoggingContextInfos.Name: LoggingContextInfoRecordAdapters.Name(),
+    LoggingContextInfos.Level: LoggingContextInfoRecordAdapters.Level(),
+    LoggingContextInfos.Msg: LoggingContextInfoRecordAdapters.Msg(),
+    LoggingContextInfos.Extra: LoggingContextInfoRecordAdapters.Extra(),
+    LoggingContextInfos.Time: LoggingContextInfoRecordAdapters.Time(),
+    LoggingContextInfos.Exc: LoggingContextInfoRecordAdapters.Exc(),
+    LoggingContextInfos.Caller: LoggingContextInfoRecordAdapters.Caller(),
+    LoggingContextInfos.SourceFile: LoggingContextInfoRecordAdapters.SourceFile(),
+    LoggingContextInfos.Thread: LoggingContextInfoRecordAdapters.Thread(),
+    LoggingContextInfos.Process: LoggingContextInfoRecordAdapters.Process(),
+    LoggingContextInfos.Multiprocessing: LoggingContextInfoRecordAdapters.Multiprocessing(),
+    LoggingContextInfos.AsyncioTask: LoggingContextInfoRecordAdapters.AsyncioTask(),
+}
+
+
 class LoggingContextLogRecord(logging.LogRecord):
-    _SHOULD_ADD_TASK_NAME: ta.ClassVar[bool] = sys.version_info >= (3, 12)
-
-    _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
-    _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
-    _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
-
-    _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
-
-    def __init__(  # noqa
-            self,
-            # name,
-            # level,
-            # pathname,
-            # lineno,
-            # msg,
-            # args,
-            # exc_info,
-            # func=None,
-            # sinfo=None,
-            # **kwargs,
-            *,
-            _logging_context: LoggingContext,
-    ) -> None:
-        ctx = _logging_context
-
-        self.name: str = check.not_none(ctx[LoggingContextInfos.Name]).name
-
-        msg = check.not_none(ctx[LoggingContextInfos.Msg])
-        self.msg: str = msg.msg
-        self.args: ta.Union[tuple, dict] = msg.args
-
-        level = check.not_none(ctx[LoggingContextInfos.Level])
-        self.levelname: str = level.name
-        self.levelno: int = int(level.level)
-
-        if (caller := ctx[LoggingContextInfos.Caller]) is not None:
-            self.pathname: str = caller.file_path
-        else:
-            self.pathname = self._UNKNOWN_PATH_NAME
-
-        if (src_file := ctx[LoggingContextInfos.SourceFile]) is not None:
-            self.filename: str = src_file.file_name
-            self.module: str = src_file.module
-        else:
-            self.filename = self.pathname
-            self.module = self._UNKNOWN_MODULE
-
-        if (exc := ctx[LoggingContextInfos.Exc]) is not None:
-            self.exc_info: ta.Optional[LoggingExcInfoTuple] = exc.info_tuple
-        else:
-            self.exc_info = None
-        self.exc_text: ta.Optional[str] = None
-
-        # If ctx.build_caller() was never called, we simply don't have a stack trace.
-        if caller is not None:
-            if (sinfo := caller.stack_info) is not None:
-                self.stack_info: ta.Optional[str] = '\n'.join([
-                    self._STACK_INFO_PREFIX,
-                    sinfo[1:] if sinfo.endswith('\n') else sinfo,
-                ])
-            else:
-                self.stack_info = None
-
-            self.lineno: int = caller.line_no
-            self.funcName: str = caller.func_name
-
-        else:
-            self.stack_info = None
-
-            self.lineno = 0
-            self.funcName = self._UNKNOWN_FUNC_NAME
-
-        times = check.not_none(ctx[LoggingContextInfos.Time])
-        self.created: float = times.secs
-        self.msecs: float = times.msecs
-        self.relativeCreated: float = times.relative_secs
-
-        if logging.logThreads:
-            thread = check.not_none(ctx[LoggingContextInfos.Thread])
-            self.thread: ta.Optional[int] = thread.ident
-            self.threadName: ta.Optional[str] = thread.name
-        else:
-            self.thread = None
-            self.threadName = None
-
-        if logging.logProcesses:
-            process = check.not_none(ctx[LoggingContextInfos.Process])
-            self.process: ta.Optional[int] = process.pid
-        else:
-            self.process = None
-
-        if logging.logMultiprocessing:
-            if (mp := ctx[LoggingContextInfos.Multiprocessing]) is not None:
-                self.processName: ta.Optional[str] = mp.process_name
-            else:
-                self.processName = None
-        else:
-            self.processName = None
-
-        # Absent <3.12
-        if getattr(logging, 'logAsyncioTasks', None):
-            if (at := ctx[LoggingContextInfos.AsyncioTask]) is not None:
-                self.taskName: ta.Optional[str] = at.name
-            else:
-                self.taskName = None
-        else:
-            self.taskName = None
+    def __init__(self, *, _logging_context: LoggingContext) -> None:  # noqa
+        for it, ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.items():
+            self.__dict__.update(ad.info_to_record(_logging_context[it]))
 
 
 ########################################
@@ -11145,9 +11330,7 @@ class StdLogger(Logger):
 
         ctx.capture()
 
-        rec = LoggingContextLogRecord(
-            _logging_context=ctx,
-        )
+        rec = LoggingContextLogRecord(_logging_context=ctx)
 
         self._std.handle(rec)
 

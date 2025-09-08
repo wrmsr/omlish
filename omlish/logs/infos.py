@@ -40,6 +40,8 @@ class LoggingContextInfos:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
+    #
+
     @logging_context_info
     @ta.final
     class Name(ta.NamedTuple):
@@ -63,7 +65,7 @@ class LoggingContextInfos:
     @ta.final
     class Msg(ta.NamedTuple):
         msg: str
-        args: ta.Union[tuple, dict]
+        args: ta.Union[tuple, ta.Mapping[ta.Any, ta.Any], None]
 
         @classmethod
         def build(
