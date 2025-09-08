@@ -3,7 +3,6 @@
 import logging
 import typing as ta
 
-from ...lite.check import check
 from ..base import Logger
 from ..base import LoggingMsgFn
 from ..contexts import CaptureLoggingContext
@@ -32,7 +31,7 @@ class StdLogger(Logger):
         return self._std.getEffectiveLevel()
 
     def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
-        if not self.is_enabled_for(check.not_none(ctx[LoggingContextInfos.Level]).level):
+        if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 
         ctx.set_basic(

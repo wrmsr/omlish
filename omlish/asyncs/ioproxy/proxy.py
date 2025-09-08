@@ -104,7 +104,7 @@ class AsyncIoProxy:
     __proxied_cls__: ta.ClassVar[type]
 
     def __init_subclass__(cls, *, proxied_cls=None, **kwargs):  # noqa
-        super().__init_subclass__()
+        super().__init_subclass__(**kwargs)
 
         cls.__proxied_cls__ = check.isinstance(proxied_cls, (type, None))
 

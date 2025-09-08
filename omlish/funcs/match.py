@@ -208,7 +208,7 @@ class MatchFnClass(MatchFn[P, T]):
         return mf
 
     def __init_subclass__(cls, strict: bool = False, **kwargs: ta.Any) -> None:
-        super().__init_subclass__()
+        super().__init_subclass__(**kwargs)
 
         if '_cls_match_fn' in cls.__dict__:
             raise AttributeError('_cls_match_fn')

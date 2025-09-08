@@ -70,8 +70,8 @@ class FixedWidthInt(int, lang.Abstract):
 
     #
 
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
 
         if lang.is_abstract_class(cls):
             return
