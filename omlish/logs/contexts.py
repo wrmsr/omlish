@@ -8,6 +8,7 @@ from ..lite.abstract import Abstract
 from .infos import LoggingContextInfo
 from .infos import LoggingContextInfos
 from .infos import LoggingExcInfoArg
+from .infos import LoggingMsgFn
 from .levels import LogLevel
 
 
@@ -27,6 +28,18 @@ class LoggingContext(Abstract):
 
 
 class CaptureLoggingContext(LoggingContext, Abstract):
+    @abc.abstractmethod
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContext':
+        raise NotImplementedError
+
+    #
+
     class AlreadyCapturedError(Exception):
         pass
 
@@ -66,11 +79,12 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         if time_ns is None:
             time_ns = time.time_ns()
 
-        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
-            LoggingContextInfos.Level: LoggingContextInfos.Level.build(level),
-            LoggingContextInfos.Time: LoggingContextInfos.Time.build(time_ns),
-            LoggingContextInfos.Exc: LoggingContextInfos.Exc.build(exc_info),
-        }
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {}
+        self._set_info(
+            LoggingContextInfos.Level.build(level),
+            LoggingContextInfos.Time.build(time_ns),
+            LoggingContextInfos.Exc.build(exc_info),
+        )
 
         if caller is not CaptureLoggingContextImpl.NOT_SET:
             self._infos[LoggingContextInfos.Caller] = caller
@@ -78,8 +92,28 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
             self._stack_offset = stack_offset
             self._stack_info = stack_info
 
+    def _set_info(self, *infos: ta.Optional[LoggingContextInfo]) -> 'CaptureLoggingContextImpl':
+        for info in infos:
+            if info is not None:
+                self._infos[type(info)] = info
+        return self
+
     def __getitem__(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
+
+    ##
+
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContextImpl':
+        return self._set_info(
+            LoggingContextInfos.Name(name),
+            LoggingContextInfos.Msg.build(msg, *args),
+        )
 
     ##
 
@@ -99,17 +133,19 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         self._has_captured = True
 
         if LoggingContextInfos.Caller not in self._infos:
-            self._infos[LoggingContextInfos.Caller] = LoggingContextInfos.Caller.build(
+            self._set_info(LoggingContextInfos.Caller.build(
                 self._stack_offset + 1,
                 stack_info=self._stack_info,
-            )
+            ))
 
         if (caller := self[LoggingContextInfos.Caller]) is not None:
-            self._infos[LoggingContextInfos.SourceFile] = LoggingContextInfos.SourceFile.build(caller.file_path)
+            self._set_info(LoggingContextInfos.SourceFile.build(
+                caller.file_path,
+            ))
 
-        self._infos.update({
-            LoggingContextInfos.Thread: LoggingContextInfos.Thread.build(),
-            LoggingContextInfos.Process: LoggingContextInfos.Process.build(),
-            LoggingContextInfos.Multiprocessing: LoggingContextInfos.Multiprocessing.build(),
-            LoggingContextInfos.AsyncioTask: LoggingContextInfos.AsyncioTask.build(),
-        })
+        self._set_info(
+            LoggingContextInfos.Thread.build(),
+            LoggingContextInfos.Process.build(),
+            LoggingContextInfos.Multiprocessing.build(),
+            LoggingContextInfos.AsyncioTask.build(),
+        )

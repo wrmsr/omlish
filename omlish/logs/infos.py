@@ -4,6 +4,7 @@
 TODO:
  - remove redundant info fields only present for std adaptation (Level.name, ...)
 """
+import collections.abc
 import io
 import logging
 import os.path
@@ -17,6 +18,8 @@ import typing as ta
 from .levels import NamedLogLevel
 from .warnings import LoggingSetupWarning
 
+
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
@@ -60,7 +63,53 @@ class LoggingContextInfos:
     @ta.final
     class Msg(ta.NamedTuple):
         msg: str
-        args: ta.Union[tuple, dict, None]
+        args: ta.Union[tuple, dict]
+
+        @classmethod
+        def build(
+                cls,
+                msg: ta.Union[str, tuple, LoggingMsgFn],
+                *args: ta.Any,
+        ) -> 'LoggingContextInfos.Msg':
+            s: str
+            a: ta.Any
+
+            if callable(msg):
+                if args:
+                    raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+                x = msg()
+                if isinstance(x, str):
+                    s, a = x, ()
+                elif isinstance(x, tuple):
+                    if x:
+                        s, a = x[0], x[1:]
+                    else:
+                        s, a = '', ()
+                else:
+                    raise TypeError(x)
+
+            elif isinstance(msg, tuple):
+                if args:
+                    raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+                if msg:
+                    s, a = msg[0], msg[1:]
+                else:
+                    s, a = '', ()
+
+            elif isinstance(msg, str):
+                s, a = msg, args
+
+            else:
+                raise TypeError(msg)
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307  # noqa
+            if a and len(a) == 1 and isinstance(a[0], collections.abc.Mapping) and a[0]:
+                a = a[0]
+
+            return cls(
+                msg=s,
+                args=a,
+            )
 
     @logging_context_info
     @ta.final

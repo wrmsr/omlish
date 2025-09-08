@@ -166,36 +166,6 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     ##
 
-    @classmethod
-    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
-        if callable(msg):
-            if args:
-                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
-            x = msg()
-            if isinstance(x, str):
-                return x, ()
-            elif isinstance(x, tuple):
-                if x:
-                    return x[0], x[1:]
-                else:
-                    return '', ()
-            else:
-                raise TypeError(x)
-
-        elif isinstance(msg, tuple):
-            if args:
-                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
-            if msg:
-                return msg[0], msg[1:]
-            else:
-                return '', ()
-
-        elif isinstance(msg, str):
-            return msg, args
-
-        else:
-            raise TypeError(msg)
-
     @abc.abstractmethod
     def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
         raise NotImplementedError

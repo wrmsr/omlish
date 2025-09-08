@@ -35,15 +35,16 @@ class StdLogger(Logger):
         if not self.is_enabled_for(check.not_none(ctx[LoggingContextInfos.Level]).level):
             return
 
+        ctx.set_basic(
+            name=self._std.name,
+
+            msg=msg,
+            args=args,
+        )
+
         ctx.capture()
 
-        ms, args = self._prepare_msg_args(msg, *args)
-
         rec = LoggingContextLogRecord(
-            name=self._std.name,
-            msg=ms,
-            args=args,
-
             _logging_context=ctx,
         )
 

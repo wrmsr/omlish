@@ -131,6 +131,7 @@ U = ta.TypeVar('U')
 TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
 
 # ../../omlish/logs/infos.py
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
@@ -147,9 +148,6 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
-
-# ../../omlish/logs/base.py
-LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -5488,7 +5486,53 @@ class LoggingContextInfos:
     @ta.final
     class Msg(ta.NamedTuple):
         msg: str
-        args: ta.Union[tuple, dict, None]
+        args: ta.Union[tuple, dict]
+
+        @classmethod
+        def build(
+                cls,
+                msg: ta.Union[str, tuple, LoggingMsgFn],
+                *args: ta.Any,
+        ) -> 'LoggingContextInfos.Msg':
+            s: str
+            a: ta.Any
+
+            if callable(msg):
+                if args:
+                    raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+                x = msg()
+                if isinstance(x, str):
+                    s, a = x, ()
+                elif isinstance(x, tuple):
+                    if x:
+                        s, a = x[0], x[1:]
+                    else:
+                        s, a = '', ()
+                else:
+                    raise TypeError(x)
+
+            elif isinstance(msg, tuple):
+                if args:
+                    raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+                if msg:
+                    s, a = msg[0], msg[1:]
+                else:
+                    s, a = '', ()
+
+            elif isinstance(msg, str):
+                s, a = msg, args
+
+            else:
+                raise TypeError(msg)
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307  # noqa
+            if a and len(a) == 1 and isinstance(a[0], collections.abc.Mapping) and a[0]:
+                a = a[0]
+
+            return cls(
+                msg=s,
+                args=a,
+            )
 
     @logging_context_info
     @ta.final
@@ -7065,6 +7109,18 @@ class LoggingContext(Abstract):
 
 
 class CaptureLoggingContext(LoggingContext, Abstract):
+    @abc.abstractmethod
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContext':
+        raise NotImplementedError
+
+    #
+
     class AlreadyCapturedError(Exception):
         pass
 
@@ -7104,11 +7160,12 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         if time_ns is None:
             time_ns = time.time_ns()
 
-        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
-            LoggingContextInfos.Level: LoggingContextInfos.Level.build(level),
-            LoggingContextInfos.Time: LoggingContextInfos.Time.build(time_ns),
-            LoggingContextInfos.Exc: LoggingContextInfos.Exc.build(exc_info),
-        }
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {}
+        self._set_info(
+            LoggingContextInfos.Level.build(level),
+            LoggingContextInfos.Time.build(time_ns),
+            LoggingContextInfos.Exc.build(exc_info),
+        )
 
         if caller is not CaptureLoggingContextImpl.NOT_SET:
             self._infos[LoggingContextInfos.Caller] = caller
@@ -7116,8 +7173,28 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
             self._stack_offset = stack_offset
             self._stack_info = stack_info
 
+    def _set_info(self, *infos: ta.Optional[LoggingContextInfo]) -> 'CaptureLoggingContextImpl':
+        for info in infos:
+            if info is not None:
+                self._infos[type(info)] = info
+        return self
+
     def __getitem__(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
+
+    ##
+
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContextImpl':
+        return self._set_info(
+            LoggingContextInfos.Name(name),
+            LoggingContextInfos.Msg.build(msg, *args),
+        )
 
     ##
 
@@ -7137,20 +7214,22 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         self._has_captured = True
 
         if LoggingContextInfos.Caller not in self._infos:
-            self._infos[LoggingContextInfos.Caller] = LoggingContextInfos.Caller.build(
+            self._set_info(LoggingContextInfos.Caller.build(
                 self._stack_offset + 1,
                 stack_info=self._stack_info,
-            )
+            ))
 
         if (caller := self[LoggingContextInfos.Caller]) is not None:
-            self._infos[LoggingContextInfos.SourceFile] = LoggingContextInfos.SourceFile.build(caller.file_path)
+            self._set_info(LoggingContextInfos.SourceFile.build(
+                caller.file_path,
+            ))
 
-        self._infos.update({
-            LoggingContextInfos.Thread: LoggingContextInfos.Thread.build(),
-            LoggingContextInfos.Process: LoggingContextInfos.Process.build(),
-            LoggingContextInfos.Multiprocessing: LoggingContextInfos.Multiprocessing.build(),
-            LoggingContextInfos.AsyncioTask: LoggingContextInfos.AsyncioTask.build(),
-        })
+        self._set_info(
+            LoggingContextInfos.Thread.build(),
+            LoggingContextInfos.Process.build(),
+            LoggingContextInfos.Multiprocessing.build(),
+            LoggingContextInfos.AsyncioTask.build(),
+        )
 
 
 ########################################
@@ -7649,36 +7728,6 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     ##
 
-    @classmethod
-    def _prepare_msg_args(cls, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> ta.Tuple[str, tuple]:
-        if callable(msg):
-            if args:
-                raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
-            x = msg()
-            if isinstance(x, str):
-                return x, ()
-            elif isinstance(x, tuple):
-                if x:
-                    return x[0], x[1:]
-                else:
-                    return '', ()
-            else:
-                raise TypeError(x)
-
-        elif isinstance(msg, tuple):
-            if args:
-                raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
-            if msg:
-                return msg[0], msg[1:]
-            else:
-                return '', ()
-
-        elif isinstance(msg, str):
-            return msg, args
-
-        else:
-            raise TypeError(msg)
-
     @abc.abstractmethod
     def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
         raise NotImplementedError
@@ -7924,22 +7973,15 @@ class LoggingContextLogRecord(logging.LogRecord):
             # sinfo=None,
             # **kwargs,
             *,
-            name: str,
-            msg: str,
-            args: ta.Union[tuple, dict],
-
             _logging_context: LoggingContext,
     ) -> None:
         ctx = _logging_context
 
-        self.name: str = name
+        self.name: str = check.not_none(ctx[LoggingContextInfos.Name]).name
 
-        self.msg: str = msg
-
-        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307
-        if args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping) and args[0]:
-            args = args[0]  # type: ignore[assignment]
-        self.args: ta.Union[tuple, dict] = args
+        msg = check.not_none(ctx[LoggingContextInfos.Msg])
+        self.msg: str = msg.msg
+        self.args: ta.Union[tuple, dict] = msg.args
 
         level = check.not_none(ctx[LoggingContextInfos.Level])
         self.levelname: str = level.name
@@ -8346,15 +8388,16 @@ class StdLogger(Logger):
         if not self.is_enabled_for(check.not_none(ctx[LoggingContextInfos.Level]).level):
             return
 
+        ctx.set_basic(
+            name=self._std.name,
+
+            msg=msg,
+            args=args,
+        )
+
         ctx.capture()
 
-        ms, args = self._prepare_msg_args(msg, *args)
-
         rec = LoggingContextLogRecord(
-            name=self._std.name,
-            msg=ms,
-            args=args,
-
             _logging_context=ctx,
         )
 

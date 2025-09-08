@@ -4,7 +4,6 @@
 TODO:
  - TypedDict?
 """
-import collections.abc
 import logging
 import sys
 import typing as ta
@@ -215,22 +214,15 @@ class LoggingContextLogRecord(logging.LogRecord):
             # sinfo=None,
             # **kwargs,
             *,
-            name: str,
-            msg: str,
-            args: ta.Union[tuple, dict],
-
             _logging_context: LoggingContext,
     ) -> None:
         ctx = _logging_context
 
-        self.name: str = name
+        self.name: str = check.not_none(ctx[LoggingContextInfos.Name]).name
 
-        self.msg: str = msg
-
-        # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307
-        if args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping) and args[0]:
-            args = args[0]  # type: ignore[assignment]
-        self.args: ta.Union[tuple, dict] = args
+        msg = check.not_none(ctx[LoggingContextInfos.Msg])
+        self.msg: str = msg.msg
+        self.args: ta.Union[tuple, dict] = msg.args
 
         level = check.not_none(ctx[LoggingContextInfos.Level])
         self.levelname: str = level.name
