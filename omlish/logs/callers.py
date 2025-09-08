@@ -18,7 +18,7 @@ from .infos import logging_context_info
 class LoggingCaller(ta.NamedTuple):
     file_path: str
     line_no: int
-    name: str
+    func_name: str
     stack_info: ta.Optional[str]
 
     @classmethod
@@ -34,8 +34,8 @@ class LoggingCaller(ta.NamedTuple):
         return False
 
     @classmethod
-    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
-        f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
+    def find_frame(cls, stack_offset: int = 0) -> ta.Optional[types.FrameType]:
+        f: ta.Optional[types.FrameType] = sys._getframe(2 + stack_offset)  # noqa
 
         while f is not None:
             # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
@@ -50,11 +50,11 @@ class LoggingCaller(ta.NamedTuple):
     @classmethod
     def find(
             cls,
-            ofs: int = 0,
+            stack_offset: int = 0,
             *,
             stack_info: bool = False,
     ) -> ta.Optional['LoggingCaller']:
-        if (f := cls.find_frame(ofs + 1)) is None:
+        if (f := cls.find_frame(stack_offset + 1)) is None:
             return None
 
         # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
@@ -70,6 +70,6 @@ class LoggingCaller(ta.NamedTuple):
         return cls(
             file_path=f.f_code.co_filename,
             line_no=f.f_lineno or 0,
-            name=f.f_code.co_name,
+            func_name=f.f_code.co_name,
             stack_info=sinfo,
         )

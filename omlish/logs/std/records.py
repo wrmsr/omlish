@@ -256,7 +256,7 @@ class LoggingContextLogRecord(logging.LogRecord):
                 self.stack_info = None
 
             self.lineno: int = caller.line_no
-            self.funcName: str = caller.name
+            self.funcName: str = caller.func_name
 
         else:
             self.stack_info = None

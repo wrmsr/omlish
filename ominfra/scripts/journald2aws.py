@@ -2710,13 +2710,13 @@ class LoggingSourceFileInfo(ta.NamedTuple):
     module: str
 
     @classmethod
-    def build(cls, file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
-        if file_path is None:
+    def build(cls, caller_file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
+        if caller_file_path is None:
             return None
 
         # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
         try:
-            file_name = os.path.basename(file_path)
+            file_name = os.path.basename(caller_file_path)
             module = os.path.splitext(file_name)[0]
         except (TypeError, ValueError, AttributeError):
             return None
@@ -4956,7 +4956,7 @@ def check_lite_runtime_version() -> None:
 class LoggingCaller(ta.NamedTuple):
     file_path: str
     line_no: int
-    name: str
+    func_name: str
     stack_info: ta.Optional[str]
 
     @classmethod
@@ -4972,8 +4972,8 @@ class LoggingCaller(ta.NamedTuple):
         return False
 
     @classmethod
-    def find_frame(cls, ofs: int = 0) -> ta.Optional[types.FrameType]:
-        f: ta.Optional[types.FrameType] = sys._getframe(2 + ofs)  # noqa
+    def find_frame(cls, stack_offset: int = 0) -> ta.Optional[types.FrameType]:
+        f: ta.Optional[types.FrameType] = sys._getframe(2 + stack_offset)  # noqa
 
         while f is not None:
             # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful, manual
@@ -4988,11 +4988,11 @@ class LoggingCaller(ta.NamedTuple):
     @classmethod
     def find(
             cls,
-            ofs: int = 0,
+            stack_offset: int = 0,
             *,
             stack_info: bool = False,
     ) -> ta.Optional['LoggingCaller']:
-        if (f := cls.find_frame(ofs + 1)) is None:
+        if (f := cls.find_frame(stack_offset + 1)) is None:
             return None
 
         # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
@@ -5008,7 +5008,7 @@ class LoggingCaller(ta.NamedTuple):
         return cls(
             file_path=f.f_code.co_filename,
             line_no=f.f_lineno or 0,
-            name=f.f_code.co_name,
+            func_name=f.f_code.co_name,
             stack_info=sinfo,
         )
 
@@ -6234,7 +6234,7 @@ class LoggingContextLogRecord(logging.LogRecord):
                 self.stack_info = None
 
             self.lineno: int = caller.line_no
-            self.funcName: str = caller.name
+            self.funcName: str = caller.func_name
 
         else:
             self.stack_info = None

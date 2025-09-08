@@ -23,13 +23,13 @@ class LoggingSourceFileInfo(ta.NamedTuple):
     module: str
 
     @classmethod
-    def build(cls, file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
-        if file_path is None:
+    def build(cls, caller_file_path: ta.Optional[str]) -> ta.Optional['LoggingSourceFileInfo']:
+        if caller_file_path is None:
             return None
 
         # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
         try:
-            file_name = os.path.basename(file_path)
+            file_name = os.path.basename(caller_file_path)
             module = os.path.splitext(file_name)[0]
         except (TypeError, ValueError, AttributeError):
             return None
