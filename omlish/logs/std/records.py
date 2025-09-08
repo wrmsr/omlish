@@ -11,7 +11,8 @@ import typing as ta
 
 from ...lite.check import check
 from ..contexts import LoggingContext
-from ..contexts import LoggingExcInfoTuple
+from ..infos import LoggingContextInfos
+from ..infos import LoggingExcInfoTuple
 from ..warnings import LoggingSetupWarning
 
 
@@ -231,22 +232,26 @@ class LoggingContextLogRecord(logging.LogRecord):
             args = args[0]  # type: ignore[assignment]
         self.args: ta.Union[tuple, dict] = args
 
-        self.levelname: str = logging.getLevelName(ctx.level)
-        self.levelno: int = ctx.level
+        level = check.not_none(ctx[LoggingContextInfos.Level])
+        self.levelname: str = level.name
+        self.levelno: int = int(level.level)
 
-        if (caller := ctx.caller()) is not None:
+        if (caller := ctx[LoggingContextInfos.Caller]) is not None:
             self.pathname: str = caller.file_path
         else:
             self.pathname = self._UNKNOWN_PATH_NAME
 
-        if (src_file := ctx.source_file()) is not None:
+        if (src_file := ctx[LoggingContextInfos.SourceFile]) is not None:
             self.filename: str = src_file.file_name
             self.module: str = src_file.module
         else:
             self.filename = self.pathname
             self.module = self._UNKNOWN_MODULE
 
-        self.exc_info: ta.Optional[LoggingExcInfoTuple] = ctx.exc_info_tuple
+        if (exc := ctx[LoggingContextInfos.Exc]) is not None:
+            self.exc_info: ta.Optional[LoggingExcInfoTuple] = exc.info_tuple
+        else:
+            self.exc_info = None
         self.exc_text: ta.Optional[str] = None
 
         # If ctx.build_caller() was never called, we simply don't have a stack trace.
@@ -268,13 +273,13 @@ class LoggingContextLogRecord(logging.LogRecord):
             self.lineno = 0
             self.funcName = self._UNKNOWN_FUNC_NAME
 
-        times = ctx.times
-        self.created: float = times.created
+        times = check.not_none(ctx[LoggingContextInfos.Time])
+        self.created: float = times.secs
         self.msecs: float = times.msecs
-        self.relativeCreated: float = times.relative_created
+        self.relativeCreated: float = times.relative_secs
 
         if logging.logThreads:
-            thread = check.not_none(ctx.thread())
+            thread = check.not_none(ctx[LoggingContextInfos.Thread])
             self.thread: ta.Optional[int] = thread.ident
             self.threadName: ta.Optional[str] = thread.name
         else:
@@ -282,13 +287,13 @@ class LoggingContextLogRecord(logging.LogRecord):
             self.threadName = None
 
         if logging.logProcesses:
-            process = check.not_none(ctx.process())
+            process = check.not_none(ctx[LoggingContextInfos.Process])
             self.process: ta.Optional[int] = process.pid
         else:
             self.process = None
 
         if logging.logMultiprocessing:
-            if (mp := ctx.multiprocessing()) is not None:
+            if (mp := ctx[LoggingContextInfos.Multiprocessing]) is not None:
                 self.processName: ta.Optional[str] = mp.process_name
             else:
                 self.processName = None
@@ -297,7 +302,7 @@ class LoggingContextLogRecord(logging.LogRecord):
 
         # Absent <3.12
         if getattr(logging, 'logAsyncioTasks', None):
-            if (at := ctx.asyncio_task()) is not None:
+            if (at := ctx[LoggingContextInfos.AsyncioTask]) is not None:
                 self.taskName: ta.Optional[str] = at.name
             else:
                 self.taskName = None

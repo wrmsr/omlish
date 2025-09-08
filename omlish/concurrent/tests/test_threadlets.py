@@ -6,7 +6,6 @@ from ...logs import all as logs  # noqa
 from ...testing import pytest as ptu
 from ..threadlets import GreenletThreadlets
 from ..threadlets import Threadlets
-from .real import RealThreadlets
 
 
 def _test_threadlets(api: Threadlets):
@@ -36,16 +35,3 @@ def _test_threadlets(api: Threadlets):
 @ptu.skip.if_cant_import('greenlet')
 def test_greenlet():
     _test_threadlets(GreenletThreadlets())
-
-
-LOG_LIST = logs.ListLoggingHandler()
-
-
-@pytest.mark.skip
-def test_real():
-    logs.configure_standard_logging('DEBUG')
-    logging.root.addHandler(LOG_LIST)
-
-    s = RealThreadlets()
-    _test_threadlets(s)
-    s.shutdown()

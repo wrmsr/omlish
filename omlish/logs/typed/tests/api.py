@@ -5,7 +5,7 @@ import sys
 import time
 import typing as ta
 
-from ...callers import LoggingCallerInfo
+from ...infos import LoggingContextInfos
 from ...levels import LogLevel
 from ..bindings import CanChainTypedLoggerBinding
 from ..bindings import ChainTypedLoggerBindings
@@ -138,7 +138,7 @@ class TypedLogger:
         if _logging_exc_info is True:
             _logging_exc_info = sys.exc_info()
 
-        caller = LoggingCallerInfo.build(  # noqa
+        caller = LoggingContextInfos.Caller.build(  # noqa
             _logging_stack_offset,
             stack_info=_logging_stack_info,
         )
