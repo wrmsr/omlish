@@ -9656,6 +9656,13 @@ class LoggingContextInfoRecordAdapters:
         raise TypeError
 
     class Adapter(Abstract, ta.Generic[T]):
+        @property
+        @abc.abstractmethod
+        def info_cls(self) -> ta.Type[LoggingContextInfo]:
+            raise NotImplementedError
+
+        #
+
         @ta.final
         class NOT_SET:  # noqa
             def __new__(cls, *args, **kwargs):  # noqa
@@ -9680,8 +9687,10 @@ class LoggingContextInfoRecordAdapters:
         #
 
         @abc.abstractmethod
-        def info_to_record(self, info: ta.Optional[T]) -> ta.Mapping[str, ta.Any]:
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
             raise NotImplementedError
+
+        #
 
         @abc.abstractmethod
         def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[T]:
@@ -9721,9 +9730,11 @@ class LoggingContextInfoRecordAdapters:
         def _record_attrs(self) -> ta.Mapping[str, ta.Any]:
             raise NotImplementedError
 
+        #
+
         @ta.final
-        def info_to_record(self, info: ta.Optional[T]) -> ta.Mapping[str, ta.Any]:
-            if info is not None:
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(self.info_cls)) is not None:
                 return self._info_to_record(info)
             else:
                 raise TypeError  # FIXME: fallback?
@@ -9732,9 +9743,13 @@ class LoggingContextInfoRecordAdapters:
         def _info_to_record(self, info: T) -> ta.Mapping[str, ta.Any]:
             raise NotImplementedError
 
+        #
+
         @abc.abstractmethod
         def record_to_info(self, rec: logging.LogRecord) -> T:
             raise NotImplementedError
+
+        #
 
         def __init_subclass__(cls, **kwargs: ta.Any) -> None:
             super().__init_subclass__(**kwargs)
@@ -9750,9 +9765,11 @@ class LoggingContextInfoRecordAdapters:
 
         record_defaults: ta.ClassVar[ta.Mapping[str, ta.Any]]
 
+        #
+
         @ta.final
-        def info_to_record(self, info: ta.Optional[T]) -> ta.Mapping[str, ta.Any]:
-            if info is not None:
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(self.info_cls)) is not None:
                 return self._info_to_record(info)
             else:
                 return self.record_defaults
@@ -9760,6 +9777,8 @@ class LoggingContextInfoRecordAdapters:
         @abc.abstractmethod
         def _info_to_record(self, info: T) -> ta.Mapping[str, ta.Any]:
             raise NotImplementedError
+
+        #
 
         def __init_subclass__(cls, **kwargs: ta.Any) -> None:
             super().__init_subclass__(**kwargs)
@@ -9772,6 +9791,8 @@ class LoggingContextInfoRecordAdapters:
     #
 
     class Name(RequiredAdapter[LoggingContextInfos.Name]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Name]] = LoggingContextInfos.Name
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
             # Name of the logger used to log the call. Unmodified by ctor.
             name=str,
@@ -9788,6 +9809,8 @@ class LoggingContextInfoRecordAdapters:
             )
 
     class Level(RequiredAdapter[LoggingContextInfos.Level]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Level]] = LoggingContextInfos.Level
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
             # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'). Set to
             # `getLevelName(level)`.
@@ -9807,6 +9830,8 @@ class LoggingContextInfoRecordAdapters:
             return LoggingContextInfos.Level.build(rec.levelno)
 
     class Msg(RequiredAdapter[LoggingContextInfos.Msg]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Msg]] = LoggingContextInfos.Msg
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
             # The format string passed in the original logging call. Merged with args to produce message, or an
             # arbitrary object (see Using arbitrary objects as messages). Unmodified by ctor.
@@ -9847,6 +9872,8 @@ class LoggingContextInfoRecordAdapters:
     #         return None
 
     class Time(RequiredAdapter[LoggingContextInfos.Time]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Time]] = LoggingContextInfos.Time
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
             # Time when the LogRecord was created. Set to `time.time_ns() / 1e9` for >=3.13.0b1, otherwise simply
             # `time.time()`.
@@ -9877,6 +9904,8 @@ class LoggingContextInfoRecordAdapters:
             )
 
     class Exc(OptionalAdapter[LoggingContextInfos.Exc]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Exc]] = LoggingContextInfos.Exc
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
             # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None. Unmodified by ctor.
             exc_info=(ta.Optional[LoggingExcInfoTuple], None),
@@ -9899,6 +9928,8 @@ class LoggingContextInfoRecordAdapters:
             return LoggingContextInfos.Exc.build(rec.exc_info)  # type: ignore[arg-type]
 
     class Caller(OptionalAdapter[LoggingContextInfos.Caller]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Caller]] = LoggingContextInfos.Caller
+
         _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
         _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
 
@@ -9949,6 +9980,8 @@ class LoggingContextInfoRecordAdapters:
             raise NotImplementedError
 
     class SourceFile(Adapter[LoggingContextInfos.SourceFile]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.SourceFile]] = LoggingContextInfos.SourceFile
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
             # Filename portion of pathname. Set to `os.path.basename(pathname)` if successful, otherwise defaults to
             # pathname.
@@ -9961,22 +9994,23 @@ class LoggingContextInfoRecordAdapters:
 
         _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
 
-        def info_to_record(
-                self,
-                info: ta.Optional[LoggingContextInfos.SourceFile],
-                *,
-                caller_file_path: ta.Optional[str] = None,  # FIXME: not passed
-        ) -> ta.Mapping[str, ta.Any]:
-            if info is not None:
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(LoggingContextInfos.SourceFile)) is not None:
                 return dict(
                     filename=info.file_name,
                     module=info.module,
                 )
-            else:
+
+            if (caller := ctx.get_info(LoggingContextInfos.Caller)) is not None:
                 return dict(
-                    filename=caller_file_path,
+                    filename=caller.file_path,
                     module=self._UNKNOWN_MODULE,
                 )
+
+            return dict(
+                filename=LoggingContextInfoRecordAdapters.Caller._UNKNOWN_PATH_NAME,  # noqa
+                module=self._UNKNOWN_MODULE,
+            )
 
         def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.SourceFile]:
             if not (
@@ -9987,10 +10021,12 @@ class LoggingContextInfoRecordAdapters:
                     file_name=rec.filename,
                     module=rec.module,  # FIXME: piecemeal?
                 )
-            else:
-                return None
+
+            return None
 
     class Thread(OptionalAdapter[LoggingContextInfos.Thread]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Thread]] = LoggingContextInfos.Thread
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
             # Thread ID if available, and `logging.logThreads` is truthy.
             thread=(ta.Optional[int], None),
@@ -10022,6 +10058,8 @@ class LoggingContextInfoRecordAdapters:
             return None
 
     class Process(OptionalAdapter[LoggingContextInfos.Process]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Process]] = LoggingContextInfos.Process
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
             # Process ID if available - that is, if `hasattr(os, 'getpid')` - and `logging.logProcesses` is truthy,
             # otherwise None.
@@ -10047,6 +10085,8 @@ class LoggingContextInfoRecordAdapters:
             return None
 
     class Multiprocessing(OptionalAdapter[LoggingContextInfos.Multiprocessing]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Multiprocessing]] = LoggingContextInfos.Multiprocessing
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
             # Process name if available. Set to None if `logging.logMultiprocessing` is not truthy. Otherwise, set to
             # 'MainProcess', then `sys.modules.get('multiprocessing').current_process().name` if that works, otherwise
@@ -10079,6 +10119,8 @@ class LoggingContextInfoRecordAdapters:
             return None
 
     class AsyncioTask(OptionalAdapter[LoggingContextInfos.AsyncioTask]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.AsyncioTask]] = LoggingContextInfos.AsyncioTask
+
         _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Union[ta.Any, ta.Tuple[ta.Any, ta.Any]]]] = dict(
             # Absent <3.12, otherwise asyncio.Task name if available, and `logging.logAsyncioTasks` is truthy. Set to
             # `sys.modules.get('asyncio').current_task().get_name()`, otherwise None.
@@ -10104,19 +10146,22 @@ class LoggingContextInfoRecordAdapters:
             return None
 
 
+_LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_: ta.Sequence[LoggingContextInfoRecordAdapters.Adapter] = [  # noqa
+    LoggingContextInfoRecordAdapters.Name(),
+    LoggingContextInfoRecordAdapters.Level(),
+    LoggingContextInfoRecordAdapters.Msg(),
+    LoggingContextInfoRecordAdapters.Time(),
+    LoggingContextInfoRecordAdapters.Exc(),
+    LoggingContextInfoRecordAdapters.Caller(),
+    LoggingContextInfoRecordAdapters.SourceFile(),
+    LoggingContextInfoRecordAdapters.Thread(),
+    LoggingContextInfoRecordAdapters.Process(),
+    LoggingContextInfoRecordAdapters.Multiprocessing(),
+    LoggingContextInfoRecordAdapters.AsyncioTask(),
+]
+
 _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS: ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfoRecordAdapters.Adapter] = {  # noqa
-    LoggingContextInfos.Name: LoggingContextInfoRecordAdapters.Name(),
-    LoggingContextInfos.Level: LoggingContextInfoRecordAdapters.Level(),
-    LoggingContextInfos.Msg: LoggingContextInfoRecordAdapters.Msg(),
-    # LoggingContextInfos.Extra: LoggingContextInfoRecordAdapters.Extra(),
-    LoggingContextInfos.Time: LoggingContextInfoRecordAdapters.Time(),
-    LoggingContextInfos.Exc: LoggingContextInfoRecordAdapters.Exc(),
-    LoggingContextInfos.Caller: LoggingContextInfoRecordAdapters.Caller(),
-    LoggingContextInfos.SourceFile: LoggingContextInfoRecordAdapters.SourceFile(),
-    LoggingContextInfos.Thread: LoggingContextInfoRecordAdapters.Thread(),
-    LoggingContextInfos.Process: LoggingContextInfoRecordAdapters.Process(),
-    LoggingContextInfos.Multiprocessing: LoggingContextInfoRecordAdapters.Multiprocessing(),
-    LoggingContextInfos.AsyncioTask: LoggingContextInfoRecordAdapters.AsyncioTask(),
+    ad.info_cls: ad for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_
 }
 
 
@@ -10190,8 +10235,8 @@ class LoggingContextLogRecord(logging.LogRecord):
     #  - sinfo: str | None = None -> stack_info
 
     def __init__(self, *, _logging_context: LoggingContext) -> None:  # noqa
-        for it, ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.items():
-            self.__dict__.update(ad.info_to_record(_logging_context.get_info(it)))
+        for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_:
+            self.__dict__.update(ad.context_to_record(_logging_context))
 
 
 ########################################

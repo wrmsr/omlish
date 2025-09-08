@@ -236,7 +236,7 @@ python-json-logger==3.3.0
 python-snappy==0.7.3
 pytz==2025.2
 PyYAML==6.0.2
-pyzmq==27.0.2
+pyzmq==27.1.0
 rapidocr-onnxruntime==1.4.4
 readme_renderer==44.0
 redis==6.4.0
@@ -272,7 +272,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8
 SQLAlchemy==2.0.43
 sqlean.py==3.50.4.3
-sqlglot==27.13.0
+sqlglot==27.13.1
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3
