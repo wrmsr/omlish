@@ -644,9 +644,10 @@ def auto_proxy_init(
         update_exports: bool = False,
 ) -> ta.Iterator[AutoProxyInit]:
     """
-    This is a bit extreme - use sparingly. It relies on an interpreter-global import lock, but much of the ecosystem
-    implicitly does anyway. It further relies on temporarily patching `__builtins__.__import__`, but could be switched
-    to use any number of other import hooks.
+    This is a bit extreme, but worth it. For simplicity, it currently relies on temporarily patching
+    `__builtins__.__import__` for the duration of its context manager, but it can be switched to use any number of other
+    import hooks (like `sys.meta_path`). It does not rely on any permanent modification to import machinery, only for
+    the duration of its capture.
     """
 
     inst = AutoProxyInit(

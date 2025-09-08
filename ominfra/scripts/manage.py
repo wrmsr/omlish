@@ -11224,6 +11224,10 @@ class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
 
 ########################################
 # ../../../omlish/logs/std/records.py
+"""
+TODO:
+ - TypedDict?
+"""
 
 
 ##
