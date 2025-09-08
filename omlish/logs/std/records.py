@@ -11,6 +11,7 @@ import typing as ta
 
 from ...lite.abstract import Abstract
 from ..contexts import LoggingContext
+from ..contexts import LoggingContextInfoT
 from ..infos import LoggingContextInfo
 from ..infos import LoggingContextInfos
 from ..infos import LoggingExcInfoTuple
@@ -356,8 +357,23 @@ class LoggingContextInfoRecordAdapters:
 
         def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Caller]:
             # FIXME: piecemeal?
-            # FIXME: strip _STACK_INFO_PREFIX
-            raise NotImplementedError
+            if (
+                    rec.pathname != self._UNKNOWN_PATH_NAME and
+                    rec.lineno != 0 and
+                    rec.funcName != self._UNKNOWN_FUNC_NAME
+            ):
+                if (sinfo := rec.stack_info) is not None and sinfo.startswith(self._STACK_INFO_PREFIX):
+                    sinfo = sinfo[len(self._STACK_INFO_PREFIX):]
+                return LoggingContextInfos.Caller(
+                    file_path=rec.pathname,
+
+                    line_no=rec.lineno,
+                    func_name=rec.funcName,
+
+                    stack_info=sinfo,
+                )
+
+            return None
 
     class SourceFile(Adapter[LoggingContextInfos.SourceFile]):
         info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.SourceFile]] = LoggingContextInfos.SourceFile
@@ -393,9 +409,9 @@ class LoggingContextInfoRecordAdapters:
             )
 
         def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.SourceFile]:
-            if not (
-                    rec.module is None or
-                    rec.module == self._UNKNOWN_MODULE
+            if (
+                    rec.module is not None and
+                    rec.module != self._UNKNOWN_MODULE
             ):
                 return LoggingContextInfos.SourceFile(
                     file_name=rec.filename,
@@ -548,16 +564,11 @@ _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS: ta.Mapping[ta.Type[LoggingContextInfo], L
 ##
 
 
-KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(
-    a for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.values() for a in ad.record_attrs
-)
-
-
 # Formatter:
 #  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L514 (3.8)
 #  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L554 (~3.14)  # noqa
 #
-KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
     # The logged message, computed as msg % args. Set to `record.getMessage()`.
     message=str,
 
@@ -571,7 +582,15 @@ KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
     exc_text=ta.Optional[str],
 )
 
-KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
+
+##
+
+
+_KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(
+    a for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.values() for a in ad.record_attrs
+)
+
+_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
 
 
 class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
@@ -581,13 +600,13 @@ class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
 def _check_std_logging_record_attrs() -> None:
     if (
             len([a for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.values() for a in ad.record_attrs]) !=
-            len(KNOWN_STD_LOGGING_RECORD_ATTR_SET)
+            len(_KNOWN_STD_LOGGING_RECORD_ATTR_SET)
     ):
         raise RuntimeError('Duplicate LoggingContextInfoRecordAdapter record attrs')
 
     rec_dct = dict(logging.makeLogRecord({}).__dict__)
 
-    if (unk_rec_fields := frozenset(rec_dct) - KNOWN_STD_LOGGING_RECORD_ATTR_SET):
+    if (unk_rec_fields := frozenset(rec_dct) - _KNOWN_STD_LOGGING_RECORD_ATTR_SET):
         import warnings  # noqa
 
         warnings.warn(
@@ -615,5 +634,28 @@ class LoggingContextLogRecord(logging.LogRecord):
     #  - sinfo: str | None = None -> stack_info
 
     def __init__(self, *, _logging_context: LoggingContext) -> None:  # noqa
+        self._logging_context = _logging_context
+
         for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_:
             self.__dict__.update(ad.context_to_record(_logging_context))
+
+
+##
+
+
+@ta.final
+class LogRecordLoggingContext(LoggingContext):
+    def __init__(self, rec: logging.LogRecord) -> None:
+        if isinstance(rec, LoggingContextLogRecord):
+            raise TypeError(rec)
+
+        self._rec = rec
+
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
+            type(info): info
+            for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_
+            if (info := ad.record_to_info(rec)) is not None
+        }
+
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self._infos.get(ty)

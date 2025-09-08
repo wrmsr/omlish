@@ -33,6 +33,16 @@ class LoggingContext(Abstract):
             raise TypeError(f'LoggingContextInfo absent: {ty}')
         return info
 
+
+@ta.final
+class SimpleLoggingContext(LoggingContext):
+    def __init__(self, *infos: LoggingContextInfo) -> None:
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {type(i): i for i in infos}
+
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self._infos.get(ty)
+
+
 ##
 
 
