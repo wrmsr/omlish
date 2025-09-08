@@ -15,7 +15,7 @@ from .infos import logging_context_info
 
 @logging_context_info
 @ta.final
-class LoggingCaller(ta.NamedTuple):
+class LoggingCallerInfo(ta.NamedTuple):
     file_path: str
     line_no: int
     func_name: str
@@ -48,12 +48,12 @@ class LoggingCaller(ta.NamedTuple):
         return None
 
     @classmethod
-    def find(
+    def build(
             cls,
             stack_offset: int = 0,
             *,
             stack_info: bool = False,
-    ) -> ta.Optional['LoggingCaller']:
+    ) -> ta.Optional['LoggingCallerInfo']:
         if (f := cls.find_frame(stack_offset + 1)) is None:
             return None
 

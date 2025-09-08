@@ -45,7 +45,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .callers import (  # noqa
-        LoggingCaller,
+        LoggingCallerInfo,
     )
 
     from .contexts import (  # noqa

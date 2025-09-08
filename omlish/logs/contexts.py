@@ -7,7 +7,7 @@ import types
 import typing as ta
 
 from ..lite.abstract import Abstract
-from .callers import LoggingCaller
+from .callers import LoggingCallerInfo
 from .infos import LoggingAsyncioTaskInfo
 from .infos import LoggingMultiprocessingInfo
 from .infos import LoggingProcessInfo
@@ -59,7 +59,7 @@ class LoggingContext(Abstract):
     #
 
     @abc.abstractmethod
-    def caller(self) -> ta.Optional[LoggingCaller]:
+    def caller(self) -> ta.Optional[LoggingCallerInfo]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -119,7 +119,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
             exc_info: LoggingExcInfoArg = False,
 
-            caller: ta.Union[LoggingCaller, ta.Type[NOT_SET], None] = NOT_SET,
+            caller: ta.Union[LoggingCallerInfo, ta.Type[NOT_SET], None] = NOT_SET,
             stack_offset: int = 0,
             stack_info: bool = False,
     ) -> None:
@@ -206,7 +206,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
     _has_captured: bool = False
 
-    _caller: ta.Optional[LoggingCaller]
+    _caller: ta.Optional[LoggingCallerInfo]
     _source_file: ta.Optional[LoggingSourceFileInfo]
 
     _thread: ta.Optional[LoggingThreadInfo]
@@ -220,7 +220,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         self._has_captured = True
 
         if not hasattr(self, '_caller'):
-            self._caller = LoggingCaller.find(
+            self._caller = LoggingCallerInfo.build(
                 self._stack_offset + 1,
                 stack_info=self._stack_info,
             )
@@ -237,7 +237,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
     #
 
-    def caller(self) -> ta.Optional[LoggingCaller]:
+    def caller(self) -> ta.Optional[LoggingCallerInfo]:
         try:
             return self._caller
         except AttributeError:

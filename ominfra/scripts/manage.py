@@ -7631,7 +7631,7 @@ class PredicateTimeout(Timeout):
 
 @logging_context_info
 @ta.final
-class LoggingCaller(ta.NamedTuple):
+class LoggingCallerInfo(ta.NamedTuple):
     file_path: str
     line_no: int
     func_name: str
@@ -7664,12 +7664,12 @@ class LoggingCaller(ta.NamedTuple):
         return None
 
     @classmethod
-    def find(
+    def build(
             cls,
             stack_offset: int = 0,
             *,
             stack_info: bool = False,
-    ) -> ta.Optional['LoggingCaller']:
+    ) -> ta.Optional['LoggingCallerInfo']:
         if (f := cls.find_frame(stack_offset + 1)) is None:
             return None
 
@@ -10036,7 +10036,7 @@ class LoggingContext(Abstract):
     #
 
     @abc.abstractmethod
-    def caller(self) -> ta.Optional[LoggingCaller]:
+    def caller(self) -> ta.Optional[LoggingCallerInfo]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -10096,7 +10096,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
             exc_info: LoggingExcInfoArg = False,
 
-            caller: ta.Union[LoggingCaller, ta.Type[NOT_SET], None] = NOT_SET,
+            caller: ta.Union[LoggingCallerInfo, ta.Type[NOT_SET], None] = NOT_SET,
             stack_offset: int = 0,
             stack_info: bool = False,
     ) -> None:
@@ -10183,7 +10183,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
     _has_captured: bool = False
 
-    _caller: ta.Optional[LoggingCaller]
+    _caller: ta.Optional[LoggingCallerInfo]
     _source_file: ta.Optional[LoggingSourceFileInfo]
 
     _thread: ta.Optional[LoggingThreadInfo]
@@ -10197,7 +10197,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
         self._has_captured = True
 
         if not hasattr(self, '_caller'):
-            self._caller = LoggingCaller.find(
+            self._caller = LoggingCallerInfo.build(
                 self._stack_offset + 1,
                 stack_info=self._stack_info,
             )
@@ -10214,7 +10214,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
     #
 
-    def caller(self) -> ta.Optional[LoggingCaller]:
+    def caller(self) -> ta.Optional[LoggingCallerInfo]:
         try:
             return self._caller
         except AttributeError:

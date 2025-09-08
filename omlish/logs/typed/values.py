@@ -7,7 +7,7 @@ import threading
 import time
 import typing as ta
 
-from ...logs.callers import LoggingCaller
+from ...logs.callers import LoggingCallerInfo
 from ...logs.levels import LogLevel
 from .types import ABSENT_TYPED_LOGGER_VALUE
 from .types import AbsentTypedLoggerValue
@@ -57,7 +57,7 @@ class StandardTypedLoggerValues:
 
     #
 
-    class Caller(TypedLoggerValue[LoggingCaller]):
+    class Caller(TypedLoggerValue[LoggingCallerInfo]):
         pass
 
     #
